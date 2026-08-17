@@ -273,6 +273,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
+		bool _isVisibleCumulative = (bool)IsVisibleProperty.DefaultValue;
+
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
@@ -717,7 +719,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that determines whether this element will be visible on screen and take up space in layouts. This is a bindable property.
 		/// </summary>
-		/// <remarks>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
+		/// <remarks>
+		/// <para>This property represents the visibility set directly on the element. The effective visibility, available through <see cref="IView.Visibility"/>, also depends on the visibility of the element's ancestors.</para>
+		/// <para>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</para>
+		/// </remarks>
 		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
@@ -1589,12 +1594,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			if (this is IView fe)
-			{
-				fe.Handler?.UpdateValue(nameof(IView.Visibility));
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -1859,7 +1859,32 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
 
+			var effectiveVisibilityChanged = false;
+			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
+				effectiveVisibilityChanged = UpdateEffectiveVisibility();
+
+			if (propertyName == IsVisibleProperty.PropertyName && !effectiveVisibilityChanged)
+				return;
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
+
+			if (effectiveVisibilityChanged)
+				InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
+
+		bool UpdateEffectiveVisibility()
+		{
+			var parent = Parent;
+			while (parent is not null && parent is not VisualElement)
+				parent = parent.Parent;
+
+			var isVisible = IsVisible && (parent is not VisualElement visualParent || visualParent._isVisibleCumulative);
+			if (_isVisibleCumulative == isVisible)
+				return false;
+
+			_isVisibleCumulative = isVisible;
+			Handler?.UpdateValue(nameof(IView.Visibility));
+			return true;
 		}
 
 		/// <summary>
@@ -2112,7 +2137,7 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
 		/// <inheritdoc/>
-		Visibility IView.Visibility => IsVisible.ToVisibility();
+		Visibility IView.Visibility => _isVisibleCumulative.ToVisibility();
 
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();

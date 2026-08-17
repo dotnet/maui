@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 		bool IsFocused { get; set; }
 
 		/// <summary>
-		/// Gets a value that determines whether this View should be part of the visual tree or not.
+		/// Gets the visibility that a handler should apply to this View. Controls account for the visibility of their ancestors.
 		/// </summary>
 		Visibility Visibility { get; }
 
