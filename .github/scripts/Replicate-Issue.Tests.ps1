@@ -60,7 +60,8 @@ BeforeAll {
         'Get-VerifierTestType',
         'Get-ReplicationTargetTestDeclarations',
         'Resolve-ReplicationVerifierMetadata',
-        'Assert-GeneratedTestContent'
+        'Assert-GeneratedTestContent',
+        'Invoke-BoundedProcess'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -71,6 +72,30 @@ BeforeAll {
 }
 
 Describe 'Replication orchestrator security boundary' {
+    It 'terminates a hung child process at its local timeout' {
+        $sleeper = Join-Path $TestDrive 'sleeper.ps1'
+        "'started'; Start-Sleep -Seconds 30" |
+            Set-Content -LiteralPath $sleeper -Encoding utf8NoBOM
+        $started = [DateTimeOffset]::UtcNow
+
+        $result = Invoke-BoundedProcess `
+            -FilePath 'pwsh' `
+            -Arguments @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $sleeper) `
+            -TimeoutSeconds 1
+
+        $result.TimedOut | Should -BeTrue
+        $result.Output | Should -Contain 'started'
+        ([DateTimeOffset]::UtcNow - $started).TotalSeconds | Should -BeLessThan 10
+    }
+
+    It 'bounds every external replication phase below the job timeout' {
+        $script:Source | Should -Match 'CopilotTimeoutMinutes = 20'
+        $script:Source | Should -Match "-Description 'Preparing the Sandbox app'\s+``\s+-TimeoutSeconds 1800"
+        $script:Source | Should -Match "-Description 'Launching the Sandbox before evidence recording'\s+``\s+-TimeoutSeconds 300"
+        $script:Source | Should -Match "-Description 'Recording the on-device reproduction'\s+``\s+-TimeoutSeconds 300"
+        $script:Source | Should -Match "-Description 'Verifying the targeted reproduction test'\s+``\s+-TimeoutSeconds 5400"
+    }
+
     It 'requires unconditional reproduction tests during generation and repair' {
         $script:Source |
             Should -Match 'must run normally and fail without an environment variable'

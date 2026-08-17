@@ -43,6 +43,9 @@ param(
     [ValidateRange(1, 3)]
     [int]$MaxTestAttempts = 5,
 
+    [ValidateRange(5, 45)]
+    [int]$CopilotTimeoutMinutes = 20,
+
     [string]$Model = ''
 )
 
@@ -1560,16 +1563,17 @@ function Invoke-ReplicationCopilot {
 
     $started = [DateTimeOffset]::UtcNow
     $runResult = Invoke-WithoutReplicationSecrets -Names $publisherSecretNames -ScriptBlock {
-        $capturedLines = @(& copilot @arguments 2>&1)
-        $capturedExitCode = $LASTEXITCODE
-        [pscustomobject]@{
-            Lines = @($capturedLines | ForEach-Object { [string]$_ })
-            ExitCode = $capturedExitCode
-        }
+        Invoke-BoundedProcess `
+            -FilePath 'copilot' `
+            -Arguments $arguments `
+            -TimeoutSeconds ($CopilotTimeoutMinutes * 60)
     }
-    $lines = @($runResult.Lines)
+    $lines = @($runResult.Output)
     $exitCode = [int]$runResult.ExitCode
     $lines | ForEach-Object { [string]$_ } | Set-Content -LiteralPath $logPath -Encoding utf8NoBOM
+    if ($runResult.TimedOut) {
+        throw "Copilot $PhaseName attempt $Attempt timed out after $CopilotTimeoutMinutes minutes."
+    }
     if ($exitCode -ne 0) {
         throw "Copilot $PhaseName attempt $Attempt failed with exit code $exitCode."
     }
@@ -1628,21 +1632,81 @@ function Invoke-ReplicationCopilot {
     }
 }
 
+function Invoke-BoundedProcess {
+    param(
+        [Parameter(Mandatory = $true)][string]$FilePath,
+        [Parameter(Mandatory = $true)][object[]]$Arguments,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, 10800)]
+        [int]$TimeoutSeconds
+    )
+
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FilePath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        [void]$startInfo.ArgumentList.Add([string]$argument)
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start child process: $FilePath"
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $timedOut = -not $process.WaitForExit($TimeoutSeconds * 1000)
+        if ($timedOut) {
+            try {
+                $process.Kill($true)
+            } catch {
+                try { $process.Kill() } catch { $null = $_ }
+            }
+            [void]$process.WaitForExit(10000)
+            if (-not $process.HasExited) {
+                throw "Timed-out child process could not be terminated: $FilePath"
+            }
+        } else {
+            $process.WaitForExit()
+        }
+
+        $output = [Collections.Generic.List[string]]::new()
+        foreach ($text in @($stdoutTask.GetAwaiter().GetResult(), $stderrTask.GetAwaiter().GetResult())) {
+            foreach ($line in ([string]$text -split '\r?\n')) {
+                if ($line.Length -gt 0) {
+                    $output.Add($line)
+                }
+            }
+        }
+        [pscustomobject]@{
+            Output = @($output)
+            ExitCode = if ($process.HasExited) { $process.ExitCode } else { -1 }
+            TimedOut = $timedOut
+        }
+    } finally {
+        $process.Dispose()
+    }
+}
+
 function Invoke-LoggedChildProcess {
     param(
         [Parameter(Mandatory = $true)][string]$ScriptPath,
         [Parameter(Mandatory = $true)][object[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$LogPath,
-        [Parameter(Mandatory = $true)][string]$Description
+        [Parameter(Mandatory = $true)][string]$Description,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, 10800)]
+        [int]$TimeoutSeconds
     )
 
     $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
-        $capturedOutput = @(& pwsh -NoLogo -NoProfile -NonInteractive -File $ScriptPath @Arguments 2>&1)
-        $capturedExitCode = $LASTEXITCODE
-        [pscustomobject]@{
-            Output = @($capturedOutput | ForEach-Object { [string]$_ })
-            ExitCode = $capturedExitCode
-        }
+        Invoke-BoundedProcess `
+            -FilePath 'pwsh' `
+            -Arguments @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments `
+            -TimeoutSeconds $TimeoutSeconds
     }
     $output = @($runResult.Output)
     $exitCode = [int]$runResult.ExitCode
@@ -1651,6 +1715,10 @@ function Invoke-LoggedChildProcess {
     $tail = ($output | Select-Object -Last 30 | ForEach-Object { ConvertTo-ReplicationSafeLog $_ 500 }) -join [Environment]::NewLine
     if ($tail) {
         Write-Host $tail
+    }
+    if ($runResult.TimedOut) {
+        $failureDetails = Get-ReplicationFailureDetails -Output $output
+        throw "$Description timed out after $TimeoutSeconds seconds.`n$failureDetails"
     }
     if ($exitCode -ne 0) {
         $failureDetails = Get-ReplicationFailureDetails -Output $output
@@ -1936,7 +2004,8 @@ try {
                 -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
                 -Arguments $prepareArgs `
                 -LogPath $prepareLog `
-                -Description 'Preparing the Sandbox app'
+                -Description 'Preparing the Sandbox app' `
+                -TimeoutSeconds 1800
 
             $launchArgs = @(
                 '-Platform', $Platform,
@@ -1952,7 +2021,8 @@ try {
                 -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
                 -Arguments $launchArgs `
                 -LogPath (Join-Path $sandboxArtifactDir "launch-attempt-$attempt.log") `
-                -Description 'Launching the Sandbox before evidence recording'
+                -Description 'Launching the Sandbox before evidence recording' `
+                -TimeoutSeconds 300
 
             $escapedRepoRoot = $repoRoot.Replace("'", "''")
             $wrapperArgs = @(
@@ -1984,7 +2054,8 @@ try {
                 -ScriptPath (Join-Path $trustedScripts 'shared/Record-Reproduction.ps1') `
                 -Arguments $recordArguments `
                 -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log") `
-                -Description 'Recording the on-device reproduction'
+                -Description 'Recording the on-device reproduction' `
+                -TimeoutSeconds 300
 
             Copy-SandboxEvidence
             [ordered]@{
@@ -2093,7 +2164,8 @@ try {
                 -ScriptPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') `
                 -Arguments $verificationArgs `
                 -LogPath (Join-Path $sandboxArtifactDir "verification-wrapper-attempt-$attempt.log") `
-                -Description 'Verifying the targeted reproduction test'
+                -Description 'Verifying the targeted reproduction test' `
+                -TimeoutSeconds 5400
             break
         }
         catch {
