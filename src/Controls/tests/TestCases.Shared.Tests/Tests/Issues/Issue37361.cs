@@ -20,14 +20,14 @@ public class Issue37361 : _IssuesUITest
         App.WaitForElement("EmptyViewLabel");
 
         App.ScrollUp("RefreshView");
-        App.WaitForTextToBePresentInElement("StatusLabel", "Refreshes: 1");
+        Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Refreshes: 1"));
 
         App.Tap("AddItemButton");
         App.Tap("ClearItemsButton");
         App.WaitForElement("EmptyViewLabel");
 
         App.ScrollUp("RefreshView");
-        App.WaitForTextToBePresentInElement("StatusLabel", "Refreshes: 2");
+        Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Refreshes: 2"));
     }
 }
 #endif
