@@ -262,6 +262,8 @@ public class $TestName
             [string]$Platform = 'android',
             [string]$TestName = 'Issue12345',
             [string]$TestFilter = 'Issue12345',
+            [string]$TestClassName = 'Microsoft.Maui.DeviceTests.Issue12345',
+            [string]$TestMethodName = 'ReproducesReportedFailure',
             [string]$FailurePattern = 'Expected control to remain visible'
         )
 
@@ -286,6 +288,8 @@ public class $TestName
             TestType = $TestType
             TestName = $TestName
             TestFilter = $TestFilter
+            TestClassName = $TestClassName
+            TestMethodName = $TestMethodName
             FailurePattern = $FailurePattern
             CandidatePath = $CandidatePath
             Source = New-TestSource `
@@ -373,6 +377,8 @@ public class $TestName
             observedBehavior = 'The control disappears'
             testType = $publishedType
             testFilter = $Fixture.TestFilter
+            testClassName = $Fixture.TestClassName
+            testMethodName = $Fixture.TestMethodName
             expectedFailureSignature = $Fixture.FailurePattern
             files = @($Fixture.CandidatePath)
             sandboxFiles = [ordered]@{

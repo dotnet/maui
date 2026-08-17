@@ -2356,6 +2356,8 @@ function Write-BlockedCandidate {
         observedBehavior = $null
         testType = $null
         testFilter = $null
+        testClassName = $null
+        testMethodName = $null
         expectedFailureSignature = $null
         files = @()
         sandboxFiles = $null
@@ -2847,6 +2849,8 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
         observedBehavior = ConvertTo-ReplicationSafeLog ([string]$testProposal.observedBehavior) 500
         testType = [string]$testProposal.testType
         testFilter = [string]$testProposal.testFilter
+        testClassName = [string]$verifierMetadata.ClassName
+        testMethodName = [string]$verifierMetadata.MethodName
         expectedFailureSignature = [string]$testProposal.expectedFailureSignature
         files = $generatedFiles
         sandboxFiles = [ordered]@{

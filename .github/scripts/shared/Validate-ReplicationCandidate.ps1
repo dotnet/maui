@@ -646,6 +646,8 @@ function Read-ReplicationManifest {
         'testType', 'test_type',
         'testName', 'test_name',
         'testFilter', 'test_filter', 'exactFilter', 'exact_filter',
+        'testClassName', 'test_class_name',
+        'testMethodName', 'test_method_name',
         'expectedFailurePattern', 'expected_failure_pattern',
         'expectedFailureSignature', 'expected_failure_signature',
         'reproductionMarker', 'reproduction_marker',
@@ -933,6 +935,38 @@ function Read-ReplicationManifest {
         }
     }
 
+    # The manifest filter is an issue-keyed class token, which reviewers found
+    # does not select the test with the repository's runners. Carry the exact
+    # declaration so the published PR can name a runnable test.
+    # These name the runnable test for the published body. They are descriptive
+    # rather than security-critical, so an older manifest without them degrades
+    # to the filter instead of failing publication.
+    $testClassName = ''
+    $testMethodName = ''
+    $classProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('testClassName', 'test_class_name') `
+        -Context 'Candidate manifest'
+    $methodProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('testMethodName', 'test_method_name') `
+        -Context 'Candidate manifest'
+    if ($null -ne $classProperty.Value -and $null -ne $methodProperty.Value) {
+        $testClassName = ConvertTo-BoundedSingleLine `
+            -Value $classProperty.Value `
+            -Context 'Manifest test class' `
+            -MaximumLength 300
+        $testMethodName = ConvertTo-BoundedSingleLine `
+            -Value $methodProperty.Value `
+            -Context 'Manifest test method' `
+            -MaximumLength 300
+        foreach ($identifier in @($testClassName, $testMethodName)) {
+            if ($identifier -notmatch '^[A-Za-z_][A-Za-z0-9_.]*$') {
+                throw 'Manifest test class and method must be plain .NET identifiers.'
+            }
+        }
+    }
+
     $testNameProperty = Find-AliasedProperty `
         -Object $manifest `
         -Names @('testName', 'test_name') `
@@ -1009,6 +1043,8 @@ function Read-ReplicationManifest {
         TestType = $testType
         TestName = $testName
         TestFilter = $testFilter
+        TestClassName = $testClassName
+        TestMethodName = $testMethodName
         ExpectedFailurePattern = $failurePattern
         SourceMarker = $sourceMarker
         ReproductionMarker = 'UNCONDITIONAL_REPRODUCTION_TEST'

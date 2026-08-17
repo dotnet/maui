@@ -114,6 +114,12 @@ function New-ReplicationPullRequestBody {
     $platform = ConvertTo-ReplicationSingleLine -Value ([string]$Candidate.platform) -MaximumLength 40
     $testType = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testType)
     $testFilter = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testFilter)
+    $exactTestName = if ([string]$Candidate.testClassName -and [string]$Candidate.testMethodName) {
+        ConvertTo-ReplicationInlineCode `
+            -Value ("{0}.{1}" -f [string]$Candidate.testClassName, [string]$Candidate.testMethodName)
+    } else {
+        $testFilter
+    }
 
     # Reviewers repeatedly read the platform above as a claim that the committed
     # test ran on that device. Unit and XAML tests execute on the build host, so
@@ -166,7 +172,8 @@ $marker
 - Base branch: the reproduction commit is applied directly onto the current tip of the pull request base branch, so this diff contains only the added reproduction test. That tip, not the baseline above, is the parent of the commit in this pull request.
 - Test type: **$testType**
 - Test execution host: $testHostDescription
-- Targeted filter: ``$testFilter``
+- Exact test: ``$exactTestName``
+- Targeted filter: ``$testFilter`` — an issue-keyed class token; use the exact test above when a runner needs a precise selector
 - Expected failing assertion: ``$failureSignature``
 $buildLine
 
