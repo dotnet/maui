@@ -421,6 +421,7 @@ function Assert-GeneratedSandboxXaml {
 }
 
 function Assert-GeneratedSandboxSources {
+    $combinedSource = [Text.StringBuilder]::new()
     foreach ($entry in @(
         @{ Path = $sandboxXamlPath; Name = 'Generated Sandbox XAML' },
         @{ Path = $sandboxCodePath; Name = 'Generated Sandbox code-behind' }
@@ -429,6 +430,7 @@ function Assert-GeneratedSandboxSources {
             -Path $entry.Path `
             -Description $entry.Name
         $source = Get-Content -LiteralPath $entry.Path -Raw
+        $null = $combinedSource.AppendLine($source)
         Assert-ReplicationGeneratedSourceSafety `
             -Content $source `
             -Path ([IO.Path]::GetRelativePath($repoRoot, $entry.Path).Replace('\', '/'))
@@ -458,6 +460,13 @@ function Assert-GeneratedSandboxSources {
                 }
             }
         }
+    }
+    $allSource = $combinedSource.ToString()
+    if (
+        $allSource -match '"BUG REPRODUCED:[^"]*"' -and
+        $allSource -notmatch '"(?:PASS:|NO BUG:)[^"]*"'
+    ) {
+        throw 'Generated Sandbox semantic result must expose a PASS: or NO BUG: state before the trigger so a completed negative reproduction is distinguishable from infrastructure failure.'
     }
 }
 
@@ -692,6 +701,17 @@ function Read-GeneratedAppiumPlan {
         [string]$steps[-1].value -cnotmatch '^BUG REPRODUCED:'
     ) {
         throw 'Generated Appium plan final text assertion must prove a BUG REPRODUCED: result.'
+    }
+    if ($finalAction -ceq 'assertTextEquals') {
+        $finalExpected = [string]$steps[-1].value
+        $finalLocatorValue = [string]$steps[-1].locator.value
+        if (
+            $finalLocatorValue.Contains(
+                $finalExpected,
+                [StringComparison]::Ordinal)
+        ) {
+            throw 'Generated Appium plan final semantic assertion must locate a stable result element independently of the expected BUG REPRODUCED: text.'
+        }
     }
     return $plan
 }
@@ -1404,7 +1424,7 @@ Perform only the Sandbox-authoring portion:
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind only after verifying the declaration or proven usage in the checked-out repository; do not guess namespaces.
-3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, assertAppClosed, back, restartApp, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, and assertTextContains require a locator object; assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertAppClosed, back, and restartApp require `"value": null`. restartApp is available only on Android and iOS. assertAppClosed is available only on Windows, only as the final step, and only when the issue reports that the exact trigger crashes or closes the application; it succeeds only when the trusted Sandbox process launched by the runner exits after a preceding ready-state check and trigger action. Never use it for ordinary navigation, element disappearance, window replacement, or a failure already present before recording. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: non-bug outcomes MUST begin with `PASS:` and reproduced outcomes MUST begin with `BUG REPRODUCED:`. Render that verdict on a separate result/status element; never replace the affected control's Text, Title, Content, geometry, or other visible state with the verdict. The recording must keep the affected control visible and, for transition defects, show its pre-trigger reference state before the action and its post-trigger failure state afterward. When the issue says the failure is timing-sensitive, intermittent, a race, or may require multiple attempts, preserve that prerequisite and perform 2-5 bounded reset-and-trigger cycles in the same Appium plan whenever the non-crashing state can be reset. Do not spend whole Sandbox regeneration attempts repeating an unchanged one-shot plan. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. For initial launch, OnAppearing, or OnNavigatedTo issues on Android/iOS, use restartApp or an in-app navigation step after recording begins; evidence that starts with the failure already latched is invalid. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value, except an exact Windows app-crash report may end with assertAppClosed. Swipe values are up|down|left|right. Orientation values are portrait|landscape.
+3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, assertAppClosed, back, restartApp, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, and assertTextContains require a locator object; assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertAppClosed, back, and restartApp require `"value": null`. restartApp is available only on Android and iOS. assertAppClosed is available only on Windows, only as the final step, and only when the issue reports that the exact trigger crashes or closes the application; it succeeds only when the trusted Sandbox process launched by the runner exits after a preceding ready-state check and trigger action. Never use it for ordinary navigation, element disappearance, window replacement, or a failure already present before recording. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. A mutable result/status element is the exception: give it a stable id or AutomationId and locate it independently of its current verdict. Never locate the final result by the expected `BUG REPRODUCED:` text itself. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: initialize the separate result/status element to a visible `PASS:` or `NO BUG:` value before the trigger, and change it to `BUG REPRODUCED:` only when the reported defect is observed. This initialized negative state is required so the trusted runner can distinguish completed non-reproduction from element lookup or infrastructure failure. Never replace the affected control's Text, Title, Content, geometry, or other visible state with the verdict. The recording must keep the affected control visible and, for transition defects, show its pre-trigger reference state before the action and its post-trigger failure state afterward. When the issue says the failure is timing-sensitive, intermittent, a race, or may require multiple attempts, preserve that prerequisite and perform 2-5 bounded reset-and-trigger cycles in the same Appium plan whenever the non-crashing state can be reset. Do not spend whole Sandbox regeneration attempts repeating an unchanged one-shot plan. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. For initial launch, OnAppearing, or OnNavigatedTo issues on Android/iOS, use restartApp or an in-app navigation step after recording begins; evidence that starts with the failure already latched is invalid. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value against that independently located result element, except an exact Windows app-crash report may end with assertAppClosed. Swipe values are up|down|left|right. Orientation values are portrait|landscape.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Do not resolve services through DependencyService, ServiceProvider, GetService, or MauiContext.Services. For a reported custom-handler scenario, direct handler wiring with SetMauiContext(Handler.MauiContext) is allowed when it does not access Services.
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.

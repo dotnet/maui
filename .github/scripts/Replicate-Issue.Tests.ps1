@@ -3,6 +3,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+    $issueAgentContextPath = Join-Path $PSScriptRoot '__missing-issue-agent-context.md'
     $script:Source = Get-Content -LiteralPath $scriptPath -Raw
     $script:BuildSandboxPath = Join-Path $PSScriptRoot 'BuildAndRunSandbox.ps1'
     $script:BuildSandboxSource = Get-Content `
@@ -281,7 +282,7 @@ Describe 'Replication orchestrator security boundary' {
     {
       "action": "assertTextEquals",
       "description": "Verify the exact race result",
-      "locator": { "strategy": "androidText", "value": "BUG REPRODUCED: SearchBar handler race" },
+      "locator": { "strategy": "accessibilityId", "value": "RaceResult" },
       "value": "BUG REPRODUCED: SearchBar handler race",
       "timeoutSeconds": 10
     }
@@ -311,9 +312,16 @@ Describe 'Replication orchestrator security boundary' {
   "issueNumber": 37440,
   "steps": [
     {
+      "action": "tap",
+      "description": "Tap the visible Android trigger",
+      "locator": { "strategy": "androidText", "value": "Reproduce" },
+      "value": null,
+      "timeoutSeconds": 30
+    },
+    {
       "action": "assertTextEquals",
       "description": "Verify the native Android result",
-      "locator": { "strategy": "androidText", "value": "BUG REPRODUCED: Native Android result" },
+      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
       "value": "BUG REPRODUCED: Native Android result",
       "timeoutSeconds": 30
     }
@@ -330,11 +338,59 @@ Describe 'Replication orchestrator security boundary' {
         $Platform = 'android'
         $invalid = Get-Content -LiteralPath $appiumPlanPath -Raw |
             ConvertFrom-Json -Depth 10
+        $invalid.steps[-1].locator = [pscustomobject]@{
+            strategy = 'androidText'
+            value = 'BUG REPRODUCED: Native Android result'
+        }
+        $invalid | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*locate a stable result element independently*'
+
+        $invalid.steps[-1].locator = [pscustomobject]@{
+            strategy = 'accessibilityId'
+            value = 'ResultLabel'
+        }
         $invalid.steps[0].locator.value = 'new UiSelector().text("BUG REPRODUCED")'
         $invalid | ConvertTo-Json -Depth 10 |
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*androidText value is unsafe*'
+    }
+
+    It 'requires a visible non-bug semantic state before the trigger' {
+        $repoRoot = $TestDrive
+        $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
+        $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        @'
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage">
+    <Label x:Name="ResultLabel"
+           AutomationId="ResultLabel"
+           Text="" />
+</ContentPage>
+'@ | Set-Content -LiteralPath $sandboxXamlPath
+        @'
+namespace Maui.Controls.Sample;
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        ResultLabel.Text = "BUG REPRODUCED: Incorrect result";
+    }
+}
+'@ | Set-Content -LiteralPath $sandboxCodePath
+
+        { Assert-GeneratedSandboxSources } |
+            Should -Throw '*must expose a PASS: or NO BUG: state before the trigger*'
+
+        (Get-Content -LiteralPath $sandboxXamlPath -Raw).Replace(
+            'Text=""',
+            'Text="PASS: Incorrect result not observed"') |
+            Set-Content -LiteralPath $sandboxXamlPath
+        { Assert-GeneratedSandboxSources } | Should -Not -Throw
     }
 
     It 'requires exact semantic trigger equivalence in the Sandbox proposal' {
@@ -657,7 +713,7 @@ InitializeComponent();
         $script:TrustedAppiumSource | Should -Match 'case "assertAppClosed"'
         $script:TrustedAppiumSource | Should -Match 'launchedWindowsApp\.HasExited'
         $script:TrustedAppiumSource | Should -Not -Match 'launchedWindowsApp\.ExitCode'
-        $script:TrustedAppiumSource | Should -Match 'Windows Sandbox process exited after the reported trigger'
+        $script:TrustedAppiumSource | Should -Match 'Windows Sandbox process .* exited after the reported trigger'
     }
 
     It 'uses typed Appium properties for reserved Windows capabilities' {
