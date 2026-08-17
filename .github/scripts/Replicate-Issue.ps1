@@ -154,6 +154,45 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationVerificationFailureSummary {
+    <#
+        .SYNOPSIS
+        Explains a rejected verification using the structured verifier result.
+
+        .DESCRIPTION
+        The raw verifier console is mostly banner art, so a retry that only sees
+        it repeats the same mistake. The verifier already records exactly why
+        the attempt was rejected, so state that instead.
+    #>
+    param([Parameter(Mandatory = $true)][string]$VerificationDirectory)
+
+    $resultPath = Join-Path $VerificationDirectory 'verification-result.json'
+    if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
+        return ''
+    }
+
+    try {
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+    } catch {
+        return ''
+    }
+
+    $expected = ConvertTo-ReplicationSafeLog ([string]$result.expectedFailureSignature) 300
+    $actual = ConvertTo-ReplicationSafeLog ([string]$result.actualFailureMessage) 300
+
+    if ($result.infrastructureFailure -eq $true) {
+        return "The test did not run: it failed for build or infrastructure reasons rather than the reported behavior. Actual failure: '$actual'. Make the test compile and run before asserting the bug."
+    }
+    if ($result.verifierPassed -ne $true) {
+        return "The test passed, so it does not reproduce the issue. Assert the reported broken behavior so the test fails on current main."
+    }
+    if ($result.signatureMatched -ne $true) {
+        return "The test failed, but with '$actual' instead of the declared expectedFailureSignature '$expected'. A failure such as a null or setup assertion does not prove the reported bug. Either assert the reported behavior directly so the declared signature is the failure, or declare the signature that the reproduction actually produces."
+    }
+
+    return ''
+}
+
 function Get-ReplicationFailureDetails {
     param(
         [AllowEmptyCollection()][object[]]$Output,
@@ -889,7 +928,7 @@ function Get-ProposedTestFiles {
 
         if ($ValidateNewTargets) {
             if (Get-Item -LiteralPath $fullPath -Force -ErrorAction SilentlyContinue) {
-                throw "The proposed test path already exists: $relativePath"
+                throw "The proposed test path already exists: $relativePath. Reproduction tests must be add-only, so choose a distinct file name such as the issue number followed by a short scenario suffix, and do not modify the existing file."
             }
             $parent = Split-Path -Parent $fullPath
             if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
@@ -2414,6 +2453,11 @@ This identical failure already occurred on the previous attempt. The prior revis
         }
         catch {
             $repairFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 4000
+            $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
+                -VerificationDirectory $verificationDir
+            if ($verificationDiagnosis) {
+                $repairFailureSummary = "$verificationDiagnosis$([Environment]::NewLine)$repairFailureSummary"
+            }
             if ($intentToAddApplied) {
                 & git reset -- @generatedFiles 2>&1 | Out-Null
                 if ($LASTEXITCODE -ne 0) {
@@ -2432,6 +2476,11 @@ This identical failure already occurred on the previous attempt. The prior revis
 
     $verification = Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw | ConvertFrom-Json
     if ($verification.verificationPassed -ne $true) {
+        $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
+            -VerificationDirectory $verificationDir
+        if ($verificationDiagnosis) {
+            throw "Trusted verification did not pass. $verificationDiagnosis"
+        }
         throw 'Trusted verification did not pass.'
     }
     New-TestPatch -Files $generatedFiles

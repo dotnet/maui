@@ -57,6 +57,7 @@ BeforeAll {
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
         'Get-ReplicationFailureDetails',
+        'Get-ReplicationVerificationFailureSummary',
         'Test-PathInsideRoot',
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
@@ -376,6 +377,69 @@ Describe 'Replication orchestrator security boundary' {
         $details | Should -Not -Match 'throw \[System\.InvalidOperationException\]'
         $details | Should -Not -Match '~~~~'
         $details | Should -Not -Match '^\s*\|'
+    }
+
+    It 'diagnoses a verification rejected for the wrong failure signature' {
+        # Verbatim fields from run 14994433 (#36697 ios), where the test failed
+        # on a null precondition instead of the declared reproduction assertion.
+        $dir = Join-Path $TestDrive 'verification'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $false
+            infrastructureFailure = $false
+            expectedFailureSignature = 'Character-spaced Button native title color did not follow the runtime TextColor transitions.'
+            actualFailureMessage = 'Assert.NotNull() Failure: Value is null'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match ([regex]::Escape('Assert.NotNull() Failure: Value is null'))
+        $summary | Should -Match ([regex]::Escape('Character-spaced Button native title color'))
+        $summary | Should -Match 'does not prove the reported bug'
+    }
+
+    It 'distinguishes a passing test and an infrastructure failure' {
+        $dir = Join-Path $TestDrive 'verification-passing'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $false
+            signatureMatched = $false
+            infrastructureFailure = $false
+            expectedFailureSignature = 'x'
+            actualFailureMessage = ''
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+        Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir |
+            Should -Match 'The test passed, so it does not reproduce the issue'
+
+        $infraDir = Join-Path $TestDrive 'verification-infra'
+        New-Item -ItemType Directory -Path $infraDir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $false
+            infrastructureFailure = $true
+            expectedFailureSignature = 'x'
+            actualFailureMessage = 'error CS0246: The type or namespace name could not be found'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $infraDir 'verification-result.json')
+        Get-ReplicationVerificationFailureSummary -VerificationDirectory $infraDir |
+            Should -Match 'build or infrastructure reasons'
+    }
+
+    It 'stays silent when verification actually passed or produced no result' {
+        $dir = Join-Path $TestDrive 'verification-ok'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $true
+            infrastructureFailure = $false
+            expectedFailureSignature = 'x'
+            actualFailureMessage = 'x'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+        Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir |
+            Should -BeExactly ''
+
+        Get-ReplicationVerificationFailureSummary `
+            -VerificationDirectory (Join-Path $TestDrive 'missing') | Should -BeExactly ''
     }
 
     It 'recognizes only paths inside the requested root' {
