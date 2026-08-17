@@ -569,6 +569,7 @@ function Read-GeneratedAppiumPlan {
         'androidText'
     )
 
+    $enteredText = $false
     for ($index = 0; $index -lt $steps.Count; $index++) {
         $step = $steps[$index]
         $stepProperties = @($step.PSObject.Properties.Name | Sort-Object)
@@ -642,6 +643,12 @@ function Read-GeneratedAppiumPlan {
                 ) {
                     throw "Generated Appium step $($index + 1) androidText value is unsafe."
                 }
+                if ($locatorValue -cmatch '^(?:PASS:|NO BUG:|BUG REPRODUCED:)') {
+                    throw "Generated Appium step $($index + 1) must locate a stable result element independently of the mutable verdict text, using an id or AutomationId."
+                }
+                if ($enteredText -and $action -ceq 'tap') {
+                    throw "Generated Appium step $($index + 1) must use a stable id or AutomationId for Android taps after text entry."
+                }
             }
         } elseif ($null -ne $step.locator) {
             throw "Generated Appium step $($index + 1) must not contain a locator."
@@ -663,6 +670,10 @@ function Read-GeneratedAppiumPlan {
             }
         } elseif ($null -ne $step.value) {
             throw "Generated Appium step $($index + 1) must not contain a value."
+        }
+
+        if ($action -ceq 'enterText') {
+            $enteredText = $true
         }
     }
 

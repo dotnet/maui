@@ -143,6 +143,10 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source |
             Should -Match "'androidText'"
         $script:Source |
+            Should -Match "must locate a stable result element independently"
+        $script:Source |
+            Should -Match "must use a stable id or AutomationId for Android taps after text entry"
+        $script:Source |
             Should -Match 'androidText value is unsafe'
     }
 
