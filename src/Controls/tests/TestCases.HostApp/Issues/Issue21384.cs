@@ -1,23 +1,14 @@
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Layouts;
 
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 21384, "InputTransparent has no effect on Windows", PlatformAffected.WinRT)]
 public class Issue21384 : ContentPage
 {
-	int _clickCount;
-	readonly Button _counterButton;
-
 	public Issue21384()
 	{
-		_counterButton = new Button
-		{
-			AutomationId = "CounterButton",
-			Text = "Click me",
-			HorizontalOptions = LayoutOptions.Fill
-		};
-		_counterButton.Clicked += OnCounterClicked;
-
+		var labelCounterButton = CreateCounterButton("CounterButton");
 		var inputTransparentLabel = new Label
 		{
 			AutomationId = "InputTransparentLabel",
@@ -25,16 +16,24 @@ public class Issue21384 : ContentPage
 			InputTransparent = true,
 			Text = "Help"
 		};
-		AbsoluteLayout.SetLayoutBounds(inputTransparentLabel, new Rect(0, 0, 1, 1));
-		AbsoluteLayout.SetLayoutFlags(inputTransparentLabel, AbsoluteLayoutFlags.All);
 
-		var overlay = new AbsoluteLayout
+		var layoutCounterButton = CreateCounterButton("LayoutCounterButton");
+		var inputTransparentLayout = new Grid
 		{
-			HeightRequest = 60,
-			HorizontalOptions = LayoutOptions.Fill
+			AutomationId = "InputTransparentLayout",
+			CascadeInputTransparent = true,
+			Clip = new EllipseGeometry(new Point(100, 30), 100, 30),
+			InputTransparent = true,
+			Children =
+			{
+				new Label
+				{
+					HorizontalOptions = LayoutOptions.Center,
+					Text = "Help",
+					VerticalOptions = LayoutOptions.Center
+				}
+			}
 		};
-		overlay.Add(_counterButton);
-		overlay.Add(inputTransparentLabel);
 
 		Content = new VerticalStackLayout
 		{
@@ -42,16 +41,46 @@ public class Issue21384 : ContentPage
 			Spacing = 25,
 			Children =
 			{
-				overlay
+				CreateOverlay(labelCounterButton, inputTransparentLabel),
+				CreateOverlay(layoutCounterButton, inputTransparentLayout)
 			}
 		};
 	}
 
-	void OnCounterClicked(object sender, EventArgs e)
+	static Button CreateCounterButton(string automationId)
 	{
-		_clickCount++;
-		_counterButton.Text = _clickCount == 1
-			? "Clicked 1 time"
-			: $"Clicked {_clickCount} times";
+		var clickCount = 0;
+		var button = new Button
+		{
+			AutomationId = automationId,
+			HorizontalOptions = LayoutOptions.Fill,
+			Text = "Click me"
+		};
+
+		button.Clicked += (_, _) =>
+		{
+			clickCount++;
+			button.Text = clickCount == 1
+				? "Clicked 1 time"
+				: $"Clicked {clickCount} times";
+		};
+
+		return button;
+	}
+
+	static AbsoluteLayout CreateOverlay(Button button, View inputTransparentOverlay)
+	{
+		AbsoluteLayout.SetLayoutBounds(inputTransparentOverlay, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(inputTransparentOverlay, AbsoluteLayoutFlags.All);
+
+		var overlay = new AbsoluteLayout
+		{
+			HeightRequest = 60,
+			HorizontalOptions = LayoutOptions.Fill
+		};
+		overlay.Add(button);
+		overlay.Add(inputTransparentOverlay);
+
+		return overlay;
 	}
 }

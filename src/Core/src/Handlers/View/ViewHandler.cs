@@ -529,19 +529,21 @@ namespace Microsoft.Maui.Handlers
 		{
 			bool hasContainerOldValue = handler.HasContainer;
 
-#if WINDOWS
-			// Reusing a disconnected handler creates a new platform view; preserve the wrapper's visual-tree slot.
-			if (hasContainerOldValue &&
-				handler.ContainerView is WrapperView wrapper &&
-				handler.PlatformView is PlatformView platformView &&
-				!ReferenceEquals(wrapper.Child, platformView))
+			if (handler is ViewHandler viewHandler)
 			{
-				wrapper.Child = platformView;
-			}
+#if WINDOWS
+				// Reusing a disconnected handler creates a new platform view; preserve the wrapper's visual-tree slot.
+				if (hasContainerOldValue &&
+					handler.ContainerView is WrapperView wrapper &&
+					handler.PlatformView is PlatformView platformView &&
+					!ReferenceEquals(wrapper.Child, platformView))
+				{
+					viewHandler.ReconnectContainer();
+				}
 #endif
 
-			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
+			}
 			else
 				handler.HasContainer = view.NeedsContainer();
 

@@ -21,4 +21,14 @@ public class Issue21384 : _IssuesUITest
 
 		Assert.That(App.FindElement("CounterButton").GetText(), Is.EqualTo("Clicked 1 time"));
 	}
+
+	[Test]
+	[Category(UITestCategories.InputTransparent)]
+	public void InputTransparentClippedLayoutAllowsButtonClick()
+	{
+		App.WaitForElement("LayoutCounterButton");
+		App.Tap("LayoutCounterButton");
+
+		Assert.That(App.FindElement("LayoutCounterButton").GetText(), Is.EqualTo("Clicked 1 time"));
+	}
 }
