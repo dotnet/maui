@@ -103,7 +103,9 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             get
             {
-                ShellSection? shellSection = VirtualView?.CurrentItem?.CurrentItem;
+                // VirtualView throws instead of returning null when disconnected, so `VirtualView?.`
+                // never actually short-circuits. Cast the untyped, nullable interface accessor instead.
+                ShellSection? shellSection = (((IElementHandler)this).VirtualView as Shell)?.CurrentItem?.CurrentItem;
 
                 if (shellSection is null)
                 {
@@ -219,16 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers
             else
             {
                 _backdropBrush = appearance.FlyoutBackdrop;
-
-                var scrimView = _flyoutManager?.ScrimView;
-                if (scrimView is not null)
-                {
-                    scrimView.UpdateBackground(_backdropBrush);
-                    if (Brush.IsNullOrEmpty(_backdropBrush))
-                    {
-                        scrimView.BackgroundColor = UIColor.Clear;
-                    }
-                }
+                ApplyFlyoutBackdrop(this, _backdropBrush);
 
                 if (_flyoutWidth != appearance.FlyoutWidth)
                 {
@@ -259,7 +252,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void IFlyoutContainerDelegate.OnPresentedChangedByGesture(bool isPresented)
         {
-            VirtualView?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, isPresented);
+            (((IElementHandler)this).VirtualView as Shell)?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, isPresented);
         }
 
         void IFlyoutContainerDelegate.OnLayoutBoundsChanged(Rect flyoutBounds, Rect detailBounds)
@@ -281,7 +274,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         bool IFlyoutContainerDelegate.GetCurrentIsPresented()
-            => VirtualView?.FlyoutIsPresented ?? false;
+            => (((IElementHandler)this).VirtualView as Shell)?.FlyoutIsPresented ?? false;
 
         bool IFlyoutContainerDelegate.GetIgnoreSafeArea()
             => true;
@@ -508,7 +501,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public static void MapCurrentItem(ShellHandler handler, Shell shell)
         {
-            if (handler.PlatformView is null || shell.CurrentItem is null)
+            // PlatformView throws instead of returning null when disconnected, so `handler.PlatformView is null`
+            // never actually short-circuits. Cast the untyped, nullable interface accessor instead.
+            if (((IElementHandler)handler).PlatformView is null || shell.CurrentItem is null)
             {
                 return;
             }
@@ -525,18 +520,37 @@ namespace Microsoft.Maui.Controls.Handlers
         public static void MapFlyoutBackdrop(ShellHandler handler, Shell shell)
         {
             handler._backdropBrush = shell.FlyoutBackdrop;
+            ApplyFlyoutBackdrop(handler, shell.FlyoutBackdrop);
+        }
 
+        /// <summary>Applies a Shell.FlyoutBackdrop brush to the scrim view and routes solid colors through
+        /// <see cref="FlyoutContainerManager.SetScrimColor"/> so the color is cached and correctly
+        /// re-applied if the manager's containers are ever torn down and re-packed (previously this API
+        /// had no callers, so the cache was always empty).</summary>
+        static void ApplyFlyoutBackdrop(ShellHandler handler, Brush? backdropBrush)
+        {
             var scrimView = handler._flyoutManager?.ScrimView;
             if (scrimView is null)
             {
                 return;
             }
 
-            scrimView.UpdateBackground(shell.FlyoutBackdrop);
+            scrimView.UpdateBackground(backdropBrush);
 
-            if (Brush.IsNullOrEmpty(shell.FlyoutBackdrop))
+            if (Brush.IsNullOrEmpty(backdropBrush))
             {
                 scrimView.BackgroundColor = UIColor.Clear;
+                handler._flyoutManager?.SetScrimColor(null);
+            }
+            else if (backdropBrush is SolidColorBrush solidColorBrush)
+            {
+                handler._flyoutManager?.SetScrimColor(solidColorBrush.Color?.ToPlatform());
+            }
+            else
+            {
+                // Gradient/image brushes aren't representable as a single UIColor — clear any stale
+                // cached solid color so a future re-pack doesn't incorrectly reapply an old solid backdrop.
+                handler._flyoutManager?.SetScrimColor(null);
             }
         }
 
@@ -651,7 +665,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handlerRef = new WeakReference<ShellHandler>(handler);
             }
 
-            Shell? Shell => _handlerRef.TryGetTarget(out var handler) ? handler.VirtualView : null;
+            // VirtualView throws instead of returning null when disconnected, and this view controller
+            // can legitimately outlive the handler's disconnect during UIKit transitions/rotation.
+            // Cast the untyped, nullable interface accessor instead.
+            Shell? Shell => _handlerRef.TryGetTarget(out var handler) ? ((IElementHandler)handler).VirtualView as Shell : null;
 
             public override bool PrefersHomeIndicatorAutoHidden
                 => Shell?.CurrentPage?.OnThisPlatform()?.PrefersHomeIndicatorAutoHidden() ?? base.PrefersHomeIndicatorAutoHidden;

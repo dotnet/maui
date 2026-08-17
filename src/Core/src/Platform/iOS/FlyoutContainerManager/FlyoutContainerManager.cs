@@ -1065,7 +1065,11 @@ internal class FlyoutContainerManager
 			// Use _flyoutOverlapsDetail (not the idiom-inclusive FlyoutOverlapsDetailsInPopoverMode)
 			// so only Shell's explicit "always overlay" mode skips hiding. Otherwise FlyoutPage on
 			// iPad would wrongly stay "accessible" while the scrim still blocks taps on it.
-			bool shouldHideDetail = _isPresented && !ShouldShowSplitMode && !_flyoutOverlapsDetail;
+			// Also hide whenever the click-off scrim is actively dimming the detail pane
+			// (_dimDetailWithScrim, computed in PerformLayout): Shell hard-codes
+			// _flyoutOverlapsDetail = true, so without this OR, VoiceOver/Appium could still reach
+			// detail content the scrim is visually blocking in Shell's always-overlay case.
+			bool shouldHideDetail = _isPresented && !ShouldShowSplitMode && (!_flyoutOverlapsDetail || _dimDetailWithScrim);
 			_detailContainerView.AccessibilityElementsHidden = shouldHideDetail;
 		}
 	}
