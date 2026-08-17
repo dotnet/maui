@@ -60,6 +60,7 @@ BeforeAll {
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
         'Get-ReplicationElementInventory',
+        'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationExistingIssueTestPaths',
         'Assert-ReplicationScenarioNotBlocked',
         'Test-PathInsideRoot',
@@ -953,6 +954,36 @@ public partial class MainPage : ContentPage
                     -Content $dangerous[$code] -Path 'MainPage.xaml.cs'
             } | Should -Throw "*prohibited '$code'*" -Because "$code must stay blocked"
         }
+    }
+
+    It 'escalates the test tier when the chosen tier cannot observe the defect' {
+        # Issue 37532 reproduced on device and recorded cleanly, but the planned
+        # device test passed on all five attempts because the defect needs real
+        # Shell navigation. Repairing the same plan could never change that.
+        Test-ReplicationTestDidNotReproduce 'Issue37532: PASSED (should fail!)' |
+            Should -BeTrue
+        Test-ReplicationTestDidNotReproduce "1/1 test(s) PASSED but should FAIL!" |
+            Should -BeTrue
+        Test-ReplicationTestDidNotReproduce "Those tests don't reproduce the bug. Revise them!" |
+            Should -BeTrue
+
+        # A build break or an infrastructure fault is repairable in place and
+        # must not trigger a re-plan.
+        Test-ReplicationTestDidNotReproduce 'error CS0104: ambiguous reference' |
+            Should -BeFalse
+        Test-ReplicationTestDidNotReproduce 'VERIFICATION PASSED' | Should -BeFalse
+        Test-ReplicationTestDidNotReproduce '' | Should -BeFalse
+
+        $script:Source.Contains('$maxPlanRounds = 2') | Should -BeTrue
+        $script:Source.Contains('cannot observe the defect the recording already proved') |
+            Should -BeTrue
+        $script:Source.Contains('Clear-ReplicationGeneratedTestFiles') | Should -BeTrue
+        # The last round must still fail rather than escalate forever.
+        $script:Source.Contains('if (-not $finalPlanRound -and') | Should -BeTrue
+
+        # The planner should also avoid the wrong tier in the first place.
+        $script:Source | Should -Match 'cannot observe a defect that only appears after real Shell'
+        $script:Source | Should -Match 'intermittent, occasional, or random'
     }
 
     It 'reports the elements the app exposed when a locator times out' {

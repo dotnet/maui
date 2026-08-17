@@ -942,6 +942,66 @@ function Assert-SandboxChanges {
     }
 }
 
+function Test-ReplicationTestDidNotReproduce {
+    <#
+        .SYNOPSIS
+        Detects a generated test that ran correctly but did not fail.
+
+        .DESCRIPTION
+        This outcome differs from a compile break or an infrastructure fault:
+        the test is sound, the tier simply cannot observe the reported defect,
+        so repairing the same plan repeats the same passing result.
+    #>
+    param(
+        [AllowEmptyString()]
+        [string]$FailureSummary
+    )
+
+    if (-not $FailureSummary) {
+        return $false
+    }
+
+    return (
+        $FailureSummary -match "(?i)PASSED\s*.{0,4}\s*\(should fail" -or
+        $FailureSummary -match "(?i)test\(s\) PASSED but should FAIL" -or
+        $FailureSummary -match "(?i)don't reproduce the bug"
+    )
+}
+
+function Clear-ReplicationGeneratedTestFiles {
+    <#
+        .SYNOPSIS
+        Removes the untracked test files produced by an abandoned plan.
+
+        .DESCRIPTION
+        A re-planned tier must propose new paths, and the proposal validator
+        rejects a target that already exists, so the previous round's files
+        cannot be left behind.
+    #>
+
+    foreach ($entry in @(Get-ReplicationGitStatus)) {
+        if ($entry.Status -ne '??') {
+            continue
+        }
+        if ($entry.Path.StartsWith('CustomAgentLogsTmp/', [StringComparison]::Ordinal)) {
+            continue
+        }
+
+        $approved = $false
+        foreach ($root in $approvedTestRoots) {
+            if ($entry.Path.StartsWith($root, [StringComparison]::Ordinal)) {
+                $approved = $true
+                break
+            }
+        }
+        if (-not $approved) {
+            continue
+        }
+
+        Remove-Item -LiteralPath (Join-Path $repoRoot $entry.Path) -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Get-GeneratedTestFiles {
     $entries = @(Get-ReplicationGitStatus | Where-Object {
         -not $_.Path.StartsWith('CustomAgentLogsTmp/', [StringComparison]::Ordinal)
@@ -1718,7 +1778,7 @@ Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxAr
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last.
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
-reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The automated test must use the same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence as the recorded Sandbox rather than proving a different self-authored harness. For visible rendering, clipping, overflow, disappearance, flicker, or pixel-content defects, managed MAUI Bounds alone are not direct proof: require native-view state or rendered-pixel evidence that distinguishes visible output from managed layout bookkeeping. Size and position oracles must separately prove that the intended item exists at the expected identity/location, then assert an absolute issue-derived dimension or invariant; a relative before/after comparison must not let a missing or mispositioned item masquerade as the reported size change. For keyboard, SafeArea, or ScrollView range defects, use the native inset-aware model, including ContentInset or AdjustedContentInset where relevant, and assert reachable behavior rather than an arbitrary fixed range threshold. For system-inset propagation defects, verify that the runtime supplied a nonzero relevant inset and exercise normal root-window propagation; never call DispatchApplyWindowInsets or OnApplyWindowInsets directly on the target view to manufacture the callback. If the report expects an ordinary bindable-property change to propagate automatically, never call Handler.UpdateValue or a mapper method manually unless that direct API call is itself the reported trigger. If the resulting native state may refresh asynchronously, use a bounded repository-standard eventual assertion or a real completion event rather than sampling it immediately. If the report changes a property after attachment, perform that runtime transition instead of preconfiguring the final value. If the report is dynamic, perform and prove the reported resize, orientation, content mutation, scrolling, or repeated-layout transition; a single fixed layout is insufficient. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. When the report covers several controls or several conditions, report each one separately in the failure message instead of collapsing them into a single count or a single combined token, so the message identifies which control or condition actually failed. When the asserted state is native and may settle after the managed trigger, use a bounded repository-standard eventual assertion rather than a single immediate probe. Every failure message must embed the concrete measured values that decided the assertion, such as the observed size, offset, inset, bounds, colour, count, or state token together with the value the issue expects, so a reader can tell how far the behaviour deviates without rerunning the test. Comparisons over device-derived floating-point measurements such as sizes, offsets, insets, and densities must use a small explicit tolerance rather than exact equality, because platform metrics carry rounding and scaling error. If the test performs an interaction, that interaction must be causally required for the assertion: capture the relevant state before and after it and assert the transition, so the result cannot be identical when the interaction never happened. When the reported defect is a static property of the arranged state and no interaction can affect the assertion, omit the decorative interaction instead of implying a causal link the oracle does not test. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
+reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The automated test must use the same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence as the recorded Sandbox rather than proving a different self-authored harness. For visible rendering, clipping, overflow, disappearance, flicker, or pixel-content defects, managed MAUI Bounds alone are not direct proof: require native-view state or rendered-pixel evidence that distinguishes visible output from managed layout bookkeeping. Size and position oracles must separately prove that the intended item exists at the expected identity/location, then assert an absolute issue-derived dimension or invariant; a relative before/after comparison must not let a missing or mispositioned item masquerade as the reported size change. For keyboard, SafeArea, or ScrollView range defects, use the native inset-aware model, including ContentInset or AdjustedContentInset where relevant, and assert reachable behavior rather than an arbitrary fixed range threshold. For system-inset propagation defects, verify that the runtime supplied a nonzero relevant inset and exercise normal root-window propagation; never call DispatchApplyWindowInsets or OnApplyWindowInsets directly on the target view to manufacture the callback. If the report expects an ordinary bindable-property change to propagate automatically, never call Handler.UpdateValue or a mapper method manually unless that direct API call is itself the reported trigger. If the resulting native state may refresh asynchronously, use a bounded repository-standard eventual assertion or a real completion event rather than sampling it immediately. If the report changes a property after attachment, perform that runtime transition instead of preconfiguring the final value. If the report is dynamic, perform and prove the reported resize, orientation, content mutation, scrolling, or repeated-layout transition; a single fixed layout is insufficient. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. Choose the lightest tier that can actually observe the recorded reproduction, not merely the lightest tier overall: a device test constructs handlers in isolation, so it cannot observe a defect that only appears after real Shell, flyout, tab, modal, or back-navigation transitions, nor one that requires the second and subsequent visit to a page. When the recording had to navigate the running app to expose the defect, plan a UI test and say in lighterTypesRejected which transition the lighter tier cannot perform. When the report describes the defect as intermittent, occasional, or random, repeat the reported transition enough times for the automated test to observe it deterministically, and if no bounded repetition makes it deterministic, declare the scenario blocked instead of publishing a test that passes by chance. When the report covers several controls or several conditions, report each one separately in the failure message instead of collapsing them into a single count or a single combined token, so the message identifies which control or condition actually failed. When the asserted state is native and may settle after the managed trigger, use a bounded repository-standard eventual assertion rather than a single immediate probe. Every failure message must embed the concrete measured values that decided the assertion, such as the observed size, offset, inset, bounds, colour, count, or state token together with the value the issue expects, so a reader can tell how far the behaviour deviates without rerunning the test. Comparisons over device-derived floating-point measurements such as sizes, offsets, insets, and densities must use a small explicit tolerance rather than exact equality, because platform metrics carry rounding and scaling error. If the test performs an interaction, that interaction must be causally required for the assertion: capture the relevant state before and after it and assert the transition, so the result cannot be identical when the interaction never happened. When the reported defect is a static property of the arranged state and no interaction can affect the assertion, omit the decorative interaction instead of implying a causal link the oracle does not test. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
 If the issue requests a new public event, property, method, or other API that does not exist on the baseline, do not reinterpret it as a requirement for an existing event or state to change. A test may cover an existing documented contract that is broken, but a pure new-API/feature request is not an empirically reproducible baseline defect and must be rejected rather than assigned a substitute oracle.
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
@@ -2603,121 +2663,154 @@ This identical failure already occurred on the previous attempt. The prior revis
 
     Restore-TransientSandbox
 
-    $stage = 'test'
-    $testPlanFailureSummary = ''
-    for ($planAttempt = 1; $planAttempt -le 3; $planAttempt++) {
-        Invoke-ReplicationCopilot `
-            -PhaseName 'test-plan' `
-            -Prompt (New-CopilotPrompt `
-                -Phase test-plan `
-                -FailureSummary $testPlanFailureSummary) `
-            -WritePaths @($testProposalPath) `
-            -Attempt $planAttempt
-        try {
-            $plannedTestProposal = Read-TestProposal -ValidateNewTargets
-            break
-        } catch {
-            $testPlanFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
-            Write-Host "Test-plan attempt $planAttempt failed: $testPlanFailureSummary"
-            if ($planAttempt -eq 3) {
-                throw
-            }
-        }
-    }
-    $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
-    $repairFailureSummary = ''
-
-    for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
-        $testAttempts = $attempt
-        $phase = if ($attempt -eq 1) { 'test' } else { 'repair' }
-        $failureSummary = $repairFailureSummary
-        if ($attempt -gt 1 -and (Test-Path -LiteralPath (Join-Path $verificationDir 'verification-result.json'))) {
-            $failureSummary += [Environment]::NewLine
-            $failureSummary += Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw
-        }
-
-        $testWritePaths = @($testProposalPath)
-        $testWritePaths += $plannedTestFiles | ForEach-Object { Join-Path $repoRoot $_ }
-        Invoke-ReplicationCopilot `
-            -PhaseName $phase `
-            -Prompt (New-CopilotPrompt -Phase $phase -FailureSummary $failureSummary) `
-            -WritePaths $testWritePaths `
-            -Attempt $attempt
-
-        $intentToAddApplied = $false
-        try {
-            $generatedFiles = @(Get-GeneratedTestFiles)
-            $testProposal = Read-TestProposal -ActualFiles $generatedFiles
-            Assert-TestProposalMatchesPlan `
-                -Plan $plannedTestProposal `
-                -Proposal $testProposal
-            $verifierTestType = Get-VerifierTestType -TestType ([string]$testProposal.testType)
-            Assert-GeneratedTestContent `
-                -Files $generatedFiles `
-                -Issue $IssueNumber `
-                -TestType $verifierTestType `
-                -TargetPlatform $Platform
-            $verifierMetadata = Resolve-ReplicationVerifierMetadata `
-                -Files $plannedTestFiles `
-                -TestType $verifierTestType `
-                -TestFilter ([string]$testProposal.testFilter) `
-                -Platform $Platform
-
-            foreach ($file in $generatedFiles) {
-                & git add -N -- $file
-                if ($LASTEXITCODE -ne 0) {
-                    throw "Unable to expose generated test to the failure-only verifier: $file"
+    # A tier that cannot observe the defect yields a passing test no matter how
+    # often the same plan is repaired, so allow one re-plan at a tier that can.
+    $tierEscalationSummary = ''
+    $maxPlanRounds = 2
+    for ($planRound = 1; $planRound -le $maxPlanRounds; $planRound++) {
+        $finalPlanRound = ($planRound -eq $maxPlanRounds)
+        $nonReproducingAttempts = 0
+        $escalateTestTier = $false
+        $stage = 'test'
+        $testPlanFailureSummary = $tierEscalationSummary
+        for ($planAttempt = 1; $planAttempt -le 3; $planAttempt++) {
+            Invoke-ReplicationCopilot `
+                -PhaseName 'test-plan' `
+                -Prompt (New-CopilotPrompt `
+                    -Phase test-plan `
+                    -FailureSummary $testPlanFailureSummary) `
+                -WritePaths @($testProposalPath) `
+                -Attempt $planAttempt
+            try {
+                $plannedTestProposal = Read-TestProposal -ValidateNewTargets
+                break
+            } catch {
+                $testPlanFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
+                Write-Host "Test-plan attempt $planAttempt failed: $testPlanFailureSummary"
+                if ($planAttempt -eq 3) {
+                    throw
                 }
             }
-            $intentToAddApplied = $true
-
-            $verificationArgs = @(
-                '-IssueNumber', [string]$IssueNumber,
-                '-Platform', $Platform,
-                '-TestType', $verifierTestType,
-                '-TestFilter', [string]$testProposal.testFilter,
-                '-TestClass', $verifierMetadata.ClassName,
-                '-TestMethod', $verifierMetadata.MethodName,
-                '-ExpectedFailureSignature', [string]$testProposal.expectedFailureSignature,
-                '-VerifierPath', (Join-Path $trustedSkills 'verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'),
-                '-OutputDirectory', $verificationDir
-            )
-            if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.Project)) {
-                $verificationArgs += @('-TestProject', $verifierMetadata.Project)
-            }
-            if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.ProjectPath)) {
-                $verificationArgs += @('-TestProjectPath', $verifierMetadata.ProjectPath)
-            }
-            Invoke-LoggedChildProcess `
-                -ScriptPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') `
-                -Arguments $verificationArgs `
-                -LogPath (Join-Path $sandboxArtifactDir "verification-wrapper-attempt-$attempt.log") `
-                -Description 'Verifying the targeted reproduction test' `
-                -TimeoutSeconds 5400
-            break
         }
-        catch {
-            $repairFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 4000
-            $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
-                -VerificationDirectory $verificationDir
-            if ($verificationDiagnosis) {
-                $repairFailureSummary = "$verificationDiagnosis$([Environment]::NewLine)$repairFailureSummary"
+        $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
+        $repairFailureSummary = ''
+
+        for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
+            $testAttempts = $attempt
+            $phase = if ($attempt -eq 1) { 'test' } else { 'repair' }
+            $failureSummary = $repairFailureSummary
+            if ($attempt -gt 1 -and (Test-Path -LiteralPath (Join-Path $verificationDir 'verification-result.json'))) {
+                $failureSummary += [Environment]::NewLine
+                $failureSummary += Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw
             }
-            if ($intentToAddApplied) {
-                & git reset -- @generatedFiles 2>&1 | Out-Null
-                if ($LASTEXITCODE -ne 0) {
-                    throw 'Failed to clear generated-test intent-to-add state after verification.'
+
+            $testWritePaths = @($testProposalPath)
+            $testWritePaths += $plannedTestFiles | ForEach-Object { Join-Path $repoRoot $_ }
+            Invoke-ReplicationCopilot `
+                -PhaseName $phase `
+                -Prompt (New-CopilotPrompt -Phase $phase -FailureSummary $failureSummary) `
+                -WritePaths $testWritePaths `
+                -Attempt $attempt
+
+            $intentToAddApplied = $false
+            try {
+                $generatedFiles = @(Get-GeneratedTestFiles)
+                $testProposal = Read-TestProposal -ActualFiles $generatedFiles
+                Assert-TestProposalMatchesPlan `
+                    -Plan $plannedTestProposal `
+                    -Proposal $testProposal
+                $verifierTestType = Get-VerifierTestType -TestType ([string]$testProposal.testType)
+                Assert-GeneratedTestContent `
+                    -Files $generatedFiles `
+                    -Issue $IssueNumber `
+                    -TestType $verifierTestType `
+                    -TargetPlatform $Platform
+                $verifierMetadata = Resolve-ReplicationVerifierMetadata `
+                    -Files $plannedTestFiles `
+                    -TestType $verifierTestType `
+                    -TestFilter ([string]$testProposal.testFilter) `
+                    -Platform $Platform
+
+                foreach ($file in $generatedFiles) {
+                    & git add -N -- $file
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Unable to expose generated test to the failure-only verifier: $file"
+                    }
+                }
+                $intentToAddApplied = $true
+
+                $verificationArgs = @(
+                    '-IssueNumber', [string]$IssueNumber,
+                    '-Platform', $Platform,
+                    '-TestType', $verifierTestType,
+                    '-TestFilter', [string]$testProposal.testFilter,
+                    '-TestClass', $verifierMetadata.ClassName,
+                    '-TestMethod', $verifierMetadata.MethodName,
+                    '-ExpectedFailureSignature', [string]$testProposal.expectedFailureSignature,
+                    '-VerifierPath', (Join-Path $trustedSkills 'verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'),
+                    '-OutputDirectory', $verificationDir
+                )
+                if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.Project)) {
+                    $verificationArgs += @('-TestProject', $verifierMetadata.Project)
+                }
+                if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.ProjectPath)) {
+                    $verificationArgs += @('-TestProjectPath', $verifierMetadata.ProjectPath)
+                }
+                Invoke-LoggedChildProcess `
+                    -ScriptPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') `
+                    -Arguments $verificationArgs `
+                    -LogPath (Join-Path $sandboxArtifactDir "verification-wrapper-attempt-$attempt.log") `
+                    -Description 'Verifying the targeted reproduction test' `
+                    -TimeoutSeconds 5400
+                break
+            }
+            catch {
+                $repairFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 4000
+                $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
+                    -VerificationDirectory $verificationDir
+                if ($verificationDiagnosis) {
+                    $repairFailureSummary = "$verificationDiagnosis$([Environment]::NewLine)$repairFailureSummary"
+                }
+                if ($intentToAddApplied) {
+                    & git reset -- @generatedFiles 2>&1 | Out-Null
+                    if ($LASTEXITCODE -ne 0) {
+                        throw 'Failed to clear generated-test intent-to-add state after verification.'
+                    }
+                }
+                if (-not $finalPlanRound -and
+                    (Test-ReplicationTestDidNotReproduce $repairFailureSummary)) {
+                    $nonReproducingAttempts++
+                    if ($nonReproducingAttempts -ge 2) {
+                        $escalateTestTier = $true
+                    }
+                }
+                if ($escalateTestTier) {
+                    Write-Host ("The {0} tier produced a passing test twice; re-planning at a tier that can observe the recorded reproduction." -f
+                        $plannedTestProposal.testType)
+                }
+                elseif ($attempt -eq $MaxTestAttempts) {
+                    throw
                 }
             }
-            if ($attempt -eq $MaxTestAttempts) {
-                throw
+            finally {
+                Copy-VerificationDiagnostics -Attempt $attempt
+                Restore-TrackedVerificationSideEffects -PreservedFiles $generatedFiles
+            }
+            if ($escalateTestTier) {
+                break
             }
         }
-        finally {
-            Copy-VerificationDiagnostics -Attempt $attempt
-            Restore-TrackedVerificationSideEffects -PreservedFiles $generatedFiles
+        if (-not $escalateTestTier) {
+            break
         }
+        $tierEscalationSummary = @"
+The previously planned $($plannedTestProposal.testType) test compiled and ran but passed, so that tier cannot observe the defect the recording already proved.
+Plan the test again at a tier that exercises the same path as the recorded reproduction, escalating unit or XAML to device, and device to UI when the recording required real navigation, gesture, or rendering behaviour.
+Explain in lighterTypesRejected why the previous tier could not observe it. Choose different test files; do not re-propose the same paths.
+"@
+        Clear-ReplicationGeneratedTestFiles
     }
+
 
     $verification = Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw | ConvertFrom-Json
     if ($verification.verificationPassed -ne $true) {
