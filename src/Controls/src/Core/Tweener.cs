@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Controls
 		internal override void ForceFinish()
 		{
 			if (HasFinished)
+			{
 				return;
+			}
 
 			HasFinished = true;
 
