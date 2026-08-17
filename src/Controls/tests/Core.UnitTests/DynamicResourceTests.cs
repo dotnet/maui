@@ -368,6 +368,74 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("FOO", label.Text);
 		}
 
+		[Fact]
+		public void SetDynamicResourceOverridesPriorManualValue()
+		{
+			// https://github.com/dotnet/maui/issues/37540
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary { { "LabelTextColor", Colors.Red } }
+			};
+			var label = new Label { Background = Brush.Transparent };
+			page.Content = label;
+
+			label.SetDynamicResource(VisualElement.BackgroundProperty, "LabelTextColor");
+
+			Assert.Equal(Colors.Red, ((SolidColorBrush)label.Background).Color);
+		}
+
+		[Fact]
+		public void SetDynamicResourceOverridesPriorManualValueForAnyProperty()
+		{
+			// https://github.com/dotnet/maui/issues/37540
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary { { "SomeText", "FOO" } }
+			};
+			var label = new Label { Text = "Manual" };
+			page.Content = label;
+
+			label.SetDynamicResource(Label.TextProperty, "SomeText");
+
+			Assert.Equal("FOO", label.Text);
+		}
+
+		[Fact]
+		public void SetDynamicResourceWithoutPriorManualValueStillApplies()
+		{
+			// https://github.com/dotnet/maui/issues/37540
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary { { "LabelTextColor", Colors.Red } }
+			};
+			var label = new Label();
+			page.Content = label;
+
+			label.SetDynamicResource(VisualElement.BackgroundProperty, "LabelTextColor");
+
+			Assert.Equal(Colors.Red, ((SolidColorBrush)label.Background).Color);
+		}
+
+		[Fact]
+		public void ManualValueSetAfterSetDynamicResourceStillOverridesIt()
+		{
+			// https://github.com/dotnet/maui/issues/37540
+			// Ensures the fix implements "most recent explicit action wins" semantics,
+			// not "DynamicResource unconditionally wins".
+			var page = new ContentPage
+			{
+				Resources = new ResourceDictionary { { "LabelTextColor", Colors.Red } }
+			};
+			var label = new Label();
+			page.Content = label;
+
+			label.SetDynamicResource(VisualElement.BackgroundProperty, "LabelTextColor");
+			Assert.Equal(Colors.Red, ((SolidColorBrush)label.Background).Color);
+
+			label.Background = Brush.Transparent;
+			Assert.Equal(Brush.Transparent, label.Background);
+		}
+
 		class DynamicResourceOrderView : View
 		{
 			public static readonly BindableProperty FirstProperty = BindableProperty.Create(nameof(First), typeof(string), typeof(DynamicResourceOrderView), default(string),
