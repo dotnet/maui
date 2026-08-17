@@ -800,11 +800,14 @@ exit 0
         $script:Source | Should -Match 'substitutes Arrange for a real device orientation change'
         $script:Source | Should -Match 'reportedTrigger and testTrigger must each be a single line of at most 2000 characters'
         $script:Source | Should -Match 'managed MAUI Bounds alone are not direct proof'
+        $script:Source | Should -Match 'missing or mispositioned item masquerade'
         $script:Source | Should -Match 'a single fixed layout is insufficient'
         $script:Source | Should -Match 'same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence'
         $script:Source | Should -Match 'ContentInset or AdjustedContentInset'
         $script:Source | Should -Match 'normal root-window propagation'
         $script:Source | Should -Match 'never call DispatchApplyWindowInsets or OnApplyWindowInsets directly'
+        $script:Source | Should -Match 'never call Handler.UpdateValue or a mapper method manually'
+        $script:Source | Should -Match 'bounded repository-standard eventual assertion'
         $script:Source | Should -Match 'runtime transition instead of preconfiguring the final value'
         $script:Source | Should -Match 'compile-time !MACCATALYST guard'
         ([regex]::Matches(
@@ -894,6 +897,49 @@ public class Issue37418
 
         { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
             Should -Throw '*directly dispatches a system inset callback instead of proving normal root-window propagation*'
+    }
+
+    It 'rejects manually forced handler propagation absent from the reported trigger' {
+        $repoRoot = $TestDrive
+        $IssueNumber = 36573
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Issue36573.Android.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        @'
+public class Issue36573
+{
+    public void ReproducesIssue()
+    {
+        swipeItem.BackgroundColor = Colors.Black;
+        swipeItem.Handler.UpdateValue(nameof(IView.Background));
+        Assert.Equal(Colors.White, nativeIcon.TintColor);
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue36573'
+            expectedFailureSignature = 'SwipeItem icon should retint after its background changes.'
+            files = @($relativePath)
+            reproductionSteps = @('Change the attached SwipeItem background from white to black.')
+            expectedBehavior = 'The implicit FontImageSource tint updates automatically.'
+            observedBehavior = 'The native text updates but the existing icon tint remains stale.'
+            reportedTrigger = 'Set SwipeItem.BackgroundColor through the public bindable property while attached.'
+            testTrigger = 'Set BackgroundColor, force Handler.UpdateValue, then sample the native drawable.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires the Android native drawable.'
+                xaml = 'Requires attached handler propagation.'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+            Should -Throw '*manually calls Handler.UpdateValue even though the reported trigger relies on automatic property propagation*'
     }
 
     It 'rejects managed-only bounds oracles for visible rendering defects' {

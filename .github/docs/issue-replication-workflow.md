@@ -48,9 +48,11 @@ Environment-sensitive tests must explicitly arrange and verify every required lo
 
 Tests must preserve the issue's existing product contract. Requests for a new public API cannot be reinterpreted as failures of a different existing event, and real device actions such as rotation cannot be replaced with synthetic layout calls. Event/state tests use a non-passing sentinel and separately prove the post-trigger transition occurred before asserting its result.
 
-Visible rendering tests must prove visible/native output, not only managed MAUI bounds. The automated test must retain the recorded Sandbox's meaningful hierarchy, assets, sizing constraints, and dynamic action sequence; reports involving resize, rotation, mutation, scrolling, drift, disappearance, or flicker cannot be reduced to a single fixed layout.
+Visible rendering tests must prove visible/native output, not only managed MAUI bounds. Size and position tests first prove the intended item's presence, identity, and location, then assert an absolute issue-derived dimension or invariant so missing or reordered content cannot masquerade as a size regression. The automated test must retain the recorded Sandbox's meaningful hierarchy, assets, sizing constraints, and dynamic action sequence; reports involving resize, rotation, mutation, scrolling, drift, disappearance, or flicker cannot be reduced to a single fixed layout.
 
 Keyboard, SafeArea, and ScrollView range tests must use native inset-aware geometry and behavior rather than arbitrary deltas. System-inset propagation tests must verify a nonzero runtime inset and exercise normal root-window propagation instead of directly dispatching an inset callback to the tested child. Runtime property changes must occur after attachment when that is the reported trigger. iOS-only `.iOS.cs` tests must explicitly exclude Mac Catalyst compilation.
+
+Tests of automatic bindable-property propagation must not call `Handler.UpdateValue` or a mapper manually unless the issue itself reports that direct API. Potentially asynchronous native refreshes use a bounded repository-standard eventual assertion or real completion event rather than an immediate sample.
 
 The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
 
