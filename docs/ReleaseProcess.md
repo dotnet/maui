@@ -17,6 +17,7 @@ The pipeline accepts:
 - `pushNugetOrg`: enables the NuGet.org release stages.
 - `pushPackages`: when `false`, gathers and publishes release artifacts without running approvals or requesting the production NuGet service connection.
 - `nugetIncludeFilters` and `nugetExcludeFilters`: semicolon-separated wildcard filters applied to package file names. Include filters select workload packs; workload manifests remain selected unless an exclude filter removes them, preserving the previous release behavior.
+- `nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters`: recovery-only wildcard filters for pack or manifest files that a previous task invocation already submitted to NuGet.org. These packages stay in the expected verification set but are withheld from another push while NuGet.org validation is still pending. Use only the parameter for the affected publish stage.
 
 ### Preparation
 
@@ -27,7 +28,7 @@ For every selected package, the stage reads the package ID and version from its 
 - `MauiPacksForNuGet`
 - `MauiManifestsForNuGet`
 
-These outputs include `expected-packages.json` and are SBOM-backed by the 1ES pipeline template. They are the immutable inputs for publishing and recovery. A dry run (`pushPackages: false`) produces these artifacts but does not validate service-connection authorization, external NuGet.org authentication, egress, conflicts, or retries.
+These outputs include `expected-packages.json` and the package-availability helper used by the release jobs. They are SBOM-backed by the 1ES pipeline template and are the immutable inputs for publishing and recovery. The preparation stage records the helper's SHA-256 hash, and each production step verifies that hash before executing the artifact copy. A dry run (`pushPackages: false`) produces these artifacts but does not validate service-connection authorization, external NuGet.org authentication, or egress.
 
 ### Publishing and ordering
 
@@ -38,7 +39,11 @@ Workload packs and manifests have separate manual approval points. Their product
 - use `checkout: none`; and
 - invoke `1ES.PublishNuget@1` directly with the `nuget.org (dotnetframework)` service connection.
 
-The publish task allows package conflicts and has task-level retry enabled. After each publish, the pipeline polls NuGet.org for every expected package ID and version and fails with the missing identities if indexing does not complete. The manifest stage depends on successful pack publication and verification, so manifest approval is unavailable until every selected pack is resolvable.
+Before each publish, the job checks every expected package identity against NuGet.org and removes already-published package files from the task input. The 1ES task therefore receives only missing packages and is skipped when every package already exists. This is required because the NuGetCommand-backed external-feed task treats HTTP 409 as a failure even when `allowPackageConflicts` is set. Task-level retry is intentionally disabled because retrying a partially published batch without filtering can fail on the packages that succeeded during the first attempt.
+
+NuGet.org may reserve a package version and return HTTP 409 before that package becomes visible through the flat-container API. When recovering during this validation window, set `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` to the affected file names accepted by the previous task invocation. Leave the parameter for the other stage at `skip`. The availability step removes those files without requiring flat-container visibility, while post-publish verification still requires every expected identity to become available.
+
+After each publish, the pipeline polls NuGet.org for every expected package ID and normalized version with a 30-minute deadline, then fails with the missing identities if indexing does not complete. The manifest stage depends on successful pack publication and verification, so manifest approval is unavailable until every selected pack is resolvable.
 
 The production service connection must be protected by Azure DevOps Environment and/or service-connection approval checks outside repository YAML. Before production use, release owners must confirm that it owns every selected MAUI package ID and has enough quota for the maximum release payload. If one identity cannot cover the payload, publishing must be split into deterministic sequential batches rather than reintroducing repository API keys.
 
@@ -52,7 +57,7 @@ Production publishing cannot be fully tested by a normal dry run because NuGet.o
 | `commitHash: skip` | No gather, approval, service connection, workload-channel, or publish job runs. | None |
 | Artifact dry run | A real release commit performs one gather; filters, identities, counts, and SBOMs in both artifacts are correct. | None |
 | Test-feed run | The same `1ES.PublishNuget@1` shape publishes to an approved non-production feed. | None |
-| Duplicate/retry run | Republishing and a partial test-feed failure prove that `allowPackageConflicts` with `useDotNetTask: false` and task retry are idempotent. | None |
+| Duplicate/recovery run | An existing-version run confirms that published packages are removed before the task, and a partial-publish rerun sends only the remaining packages. | None |
 | Production preflight | Package ownership, authorization checks, external-feed access, and quota are confirmed without exposing credentials. | None |
 | Controlled production no-op | Only if required and explicitly approved, select one version already on NuGet.org to validate conflict handling. | Low |
 | Scheduled release | Use the new path for a planned release only after all earlier phases pass. | Production |
@@ -61,7 +66,7 @@ An internal Azure Artifacts feed proves task mechanics but not the exact externa
 
 ## Recovery
 
-If publishing partially succeeds, rerun only with the same prepared artifact after duplicate and retry behavior has been validated. Do not gather a different BAR drop. The post-publish verification identifies packages still missing from NuGet.org.
+If publishing partially succeeds, rerun with the same commit and selection filters. The availability step removes packages that are already visible on NuGet.org. For packages accepted by the previous invocation but still undergoing NuGet.org validation, set the affected stage's `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` from the package names in the prior task log, leaving the other recovery parameter at `skip`. The task receives only the remaining packages, and post-publish verification checks the complete expected set. Do not release from a different BAR drop.
 
 Published package contents cannot be replaced. If an incorrect version is published, follow the NuGet.org unlist process.
 

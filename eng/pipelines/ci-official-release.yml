@@ -42,6 +42,16 @@ parameters:
   type: string
   default: skip
 
+- name: nugetAlreadyAttemptedPackFilters
+  displayName: "[RECOVERY] Semi-colon (';') separated pack file filters already accepted by NuGet.org"
+  type: string
+  default: skip
+
+- name: nugetAlreadyAttemptedManifestFilters
+  displayName: "[RECOVERY] Semi-colon (';') separated manifest file filters already accepted by NuGet.org"
+  type: string
+  default: skip
+
 - name: VM_IMAGE_HOST
   type: object
   default:
@@ -151,7 +161,9 @@ extends:
                 function Get-PackageIdentity([System.IO.FileInfo] $package) {
                   $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
                   try {
-                    $nuspec = @($archive.Entries | Where-Object { $_.FullName -like '*.nuspec' })
+                    $nuspec = @($archive.Entries | Where-Object {
+                      $_.Name -like '*.nuspec' -and $_.FullName -eq $_.Name
+                    })
                     if ($nuspec.Count -ne 1) {
                       throw "Expected one nuspec in '$($package.FullName)', found $($nuspec.Count)."
                     }
@@ -172,9 +184,17 @@ extends:
                       throw "Package '$($package.FullName)' has no ID or version."
                     }
 
+                    $id = $idNode.InnerText.Trim()
+                    $version = $versionNode.InnerText.Trim()
+                    $filePrefix = "$id."
+                    if (!$package.BaseName.StartsWith($filePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+                      throw "Package file '$($package.Name)' does not start with its ID '$id'."
+                    }
+
                     return [pscustomobject]@{
-                      id = $idNode.InnerText
-                      version = $versionNode.InnerText
+                      id = $id
+                      version = $version
+                      normalizedVersion = $package.BaseName.Substring($filePrefix.Length)
                       fileName = $package.Name
                     }
                   }
@@ -234,6 +254,11 @@ extends:
 
                 $packsPath = '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet'
                 $manifestsPath = '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet'
+                $packageStatusScript = '$(Build.SourcesDirectory)\eng\scripts\nuget_release_packages.ps1'
+                if (!(Test-Path -LiteralPath $packageStatusScript -PathType Leaf)) {
+                  throw "Package status script '$packageStatusScript' was not found."
+                }
+                $packageStatusScriptHash = (Get-FileHash -LiteralPath $packageStatusScript -Algorithm SHA256).Hash
                 New-Item -ItemType Directory -Force -Path $packsPath, $manifestsPath | Out-Null
 
                 foreach ($packageSet in @(
@@ -249,36 +274,47 @@ extends:
                   Write-Host "$($packageSet.Name): $($identities.Count)"
                   $identities | Sort-Object id, version | Format-Table id, version, fileName | Out-String | Write-Host
                   $packageSet.Packages | Copy-Item -Destination $packageSet.Path
+                  Copy-Item -LiteralPath $packageStatusScript -Destination $packageSet.Path
                   ConvertTo-Json -InputObject @($identities | Sort-Object id, version) -Depth 3 |
                     Set-Content -Path (Join-Path $packageSet.Path 'expected-packages.json') -Encoding utf8
                 }
 
-                $manifestPack = $manifestPackages | Select-Object -First 1
+                $manifestMajors = @($manifestPackages | ForEach-Object {
+                  if ($_.Name -notmatch '\.Manifest-(?<major>\d+)\.') {
+                    throw "Could not determine the workload band from manifest '$($_.Name)'."
+                  }
+                  $Matches.major
+                } | Sort-Object -Unique)
+                if ($manifestMajors.Count -ne 1) {
+                  throw "Expected one workload major version, found: $($manifestMajors -join ', ')."
+                }
+
                 $workloadSetsChannel = ''
                 $workloadSetsFeed = ''
-                if ($manifestPack.Name -like '*.Manifest-8.0*') {
+                if ($manifestMajors[0] -eq '8') {
                   $workloadSetsChannel = '.NET 8 Workload Release'
                   $workloadSetsFeed = 'dotnet8-workloads'
                 }
-                elseif ($manifestPack.Name -like '*.Manifest-9.0*') {
+                elseif ($manifestMajors[0] -eq '9') {
                   $workloadSetsChannel = '.NET 9 Workload Release'
                   $workloadSetsFeed = 'dotnet9-workloads'
                 }
-                elseif ($manifestPack.Name -like '*.Manifest-10.0*') {
+                elseif ($manifestMajors[0] -eq '10') {
                   $workloadSetsChannel = '.NET 10 Workload Release'
                   $workloadSetsFeed = 'dotnet10-workloads'
                 }
-                elseif ($manifestPack.Name -like '*.Manifest-11.0*') {
+                elseif ($manifestMajors[0] -eq '11') {
                   $workloadSetsChannel = '.NET 11 Workload Release'
                   $workloadSetsFeed = 'dotnet11-workloads'
                 }
                 if (!$workloadSetsChannel -or !$workloadSetsFeed) {
-                  throw "Could not determine the workload set channel or feed from '$($manifestPack.Name)'."
+                  throw "No workload set channel is configured for .NET $($manifestMajors[0])."
                 }
 
                 Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
                 Write-Host "##vso[task.setvariable variable=WorkloadSetsChannel;isOutput=true]$workloadSetsChannel"
                 Write-Host "##vso[task.setvariable variable=WorkloadSetsFeed;isOutput=true]$workloadSetsFeed"
+                Write-Host "##vso[task.setvariable variable=PackageStatusScriptHash;isOutput=true]$packageStatusScriptHash"
             env:
               COMMIT_HASH: ${{ parameters.commitHash }}
               GH_REPO: ${{ parameters.ghRepo }}
@@ -341,6 +377,8 @@ extends:
             timeoutInMinutes: 90
             dependsOn: push_packs_approval
             condition: eq(dependencies.push_packs_approval.result, 'Succeeded')
+            variables:
+              PackageStatusScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.PackageStatusScriptHash'] ]
             templateContext:
               type: releaseJob
               isProduction: true
@@ -351,50 +389,54 @@ extends:
             steps:
             - checkout: none
 
+            - pwsh: |
+                $scriptPath = '$(Pipeline.Workspace)\MauiPacksForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
+                }
+
+                & $scriptPath `
+                  -Action FilterExisting `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiPacksForNuGet' `
+                  -SkipFilters $env:NUGET_ALREADY_ATTEMPTED_FILTERS
+              displayName: Filter already-published workload packs
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+                NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedPackFilters }}
+
             - task: 1ES.PublishNuget@1
               displayName: Push workload packs to NuGet.org
-              retryCountOnTaskFailure: 2
+              condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
               inputs:
                 useDotNetTask: false
                 packagesToPush: '$(Pipeline.Workspace)\MauiPacksForNuGet\*.nupkg'
                 packageParentPath: '$(Pipeline.Workspace)\MauiPacksForNuGet'
                 nuGetFeedType: external
                 publishFeedCredentials: 'nuget.org (dotnetframework)'
-                allowPackageConflicts: true
 
             - pwsh: |
-                $ErrorActionPreference = 'Stop'
-                $expected = @(Get-Content '$(Pipeline.Workspace)\MauiPacksForNuGet\expected-packages.json' -Raw | ConvertFrom-Json)
-                $missing = @()
-                for ($attempt = 1; $attempt -le 30; $attempt++) {
-                  $missing = @($expected | Where-Object {
-                    $id = $_.id.ToLowerInvariant()
-                    $version = $_.version.ToLowerInvariant()
-                    $url = "https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg"
-                    try {
-                      (Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing).StatusCode -ne 200
-                    }
-                    catch {
-                      $true
-                    }
-                  })
-                  if ($missing.Count -eq 0) {
-                    Write-Host "Verified all $($expected.Count) workload packs on NuGet.org."
-                    exit 0
-                  }
-                  if ($attempt -lt 30) {
-                    Write-Host "Waiting for $($missing.Count) workload packs to become available on NuGet.org (attempt $attempt of 30)."
-                    Start-Sleep -Seconds 20
-                  }
+                $scriptPath = '$(Pipeline.Workspace)\MauiPacksForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
                 }
 
-                $details = $missing | ForEach-Object { "$($_.id) $($_.version)" }
-                throw "The following workload packs are not available from NuGet.org: $($details -join ', ')"
+                & $scriptPath `
+                  -Action Verify `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiPacksForNuGet' `
+                  -MaxAttempts 90 `
+                  -DelaySeconds 20 `
+                  -MaxDurationMinutes 30
               displayName: Verify workload packs on NuGet.org
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
 
         - stage: stage_push_manifests
           displayName: Release manifests
-          dependsOn: stage_push_packs
+          dependsOn:
+          - prepare_release
+          - stage_push_packs
           condition: succeeded()
           jobs:
           - job: push_manifests_approval
@@ -413,6 +455,8 @@ extends:
             timeoutInMinutes: 90
             dependsOn: push_manifests_approval
             condition: eq(dependencies.push_manifests_approval.result, 'Succeeded')
+            variables:
+              PackageStatusScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.PackageStatusScriptHash'] ]
             templateContext:
               type: releaseJob
               isProduction: true
@@ -423,43 +467,45 @@ extends:
             steps:
             - checkout: none
 
+            - pwsh: |
+                $scriptPath = '$(Pipeline.Workspace)\MauiManifestsForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
+                }
+
+                & $scriptPath `
+                  -Action FilterExisting `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiManifestsForNuGet' `
+                  -SkipFilters $env:NUGET_ALREADY_ATTEMPTED_FILTERS
+              displayName: Filter already-published workload manifests
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+                NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedManifestFilters }}
+
             - task: 1ES.PublishNuget@1
               displayName: Push workload manifests to NuGet.org
-              retryCountOnTaskFailure: 2
+              condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
               inputs:
                 useDotNetTask: false
                 packagesToPush: '$(Pipeline.Workspace)\MauiManifestsForNuGet\*.nupkg'
                 packageParentPath: '$(Pipeline.Workspace)\MauiManifestsForNuGet'
                 nuGetFeedType: external
                 publishFeedCredentials: 'nuget.org (dotnetframework)'
-                allowPackageConflicts: true
 
             - pwsh: |
-                $ErrorActionPreference = 'Stop'
-                $expected = @(Get-Content '$(Pipeline.Workspace)\MauiManifestsForNuGet\expected-packages.json' -Raw | ConvertFrom-Json)
-                $missing = @()
-                for ($attempt = 1; $attempt -le 30; $attempt++) {
-                  $missing = @($expected | Where-Object {
-                    $id = $_.id.ToLowerInvariant()
-                    $version = $_.version.ToLowerInvariant()
-                    $url = "https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg"
-                    try {
-                      (Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing).StatusCode -ne 200
-                    }
-                    catch {
-                      $true
-                    }
-                  })
-                  if ($missing.Count -eq 0) {
-                    Write-Host "Verified all $($expected.Count) workload manifests on NuGet.org."
-                    exit 0
-                  }
-                  if ($attempt -lt 30) {
-                    Write-Host "Waiting for $($missing.Count) workload manifests to become available on NuGet.org (attempt $attempt of 30)."
-                    Start-Sleep -Seconds 20
-                  }
+                $scriptPath = '$(Pipeline.Workspace)\MauiManifestsForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
                 }
 
-                $details = $missing | ForEach-Object { "$($_.id) $($_.version)" }
-                throw "The following workload manifests are not available from NuGet.org: $($details -join ', ')"
+                & $scriptPath `
+                  -Action Verify `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiManifestsForNuGet' `
+                  -MaxAttempts 90 `
+                  -DelaySeconds 20 `
+                  -MaxDurationMinutes 30
               displayName: Verify workload manifests on NuGet.org
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
