@@ -9168,6 +9168,16 @@ $orderedArgs = Get-InternalOfficialBuildAzArguments `
     -Project 'internal'
 Assert-Eq -Label "internal Azure query: uses runs list with definition 1095" -Expected 'pipelines runs list --pipeline-ids 1095' -Actual (($orderedArgs[0..4]) -join ' ')
 Assert-Eq -Label "internal Azure query: requests a bounded server-ordered window" -Expected $true -Actual ([bool](($orderedArgs -join ' ') -match '--query-order QueueTimeDesc --top 5'))
+$manualArgs = Get-InternalOfficialBuildAzArguments `
+    -BranchRef $internalReleaseRef `
+    -DefinitionId 1095 `
+    -Organization 'dnceng' `
+    -Project 'internal' `
+    -ManualBuildId '3034000' `
+    -ManualBuildBranchRef $internalReleaseRef
+Assert-Eq -Label "internal Azure manual override: uses runs show with the discovered run ID" `
+    -Expected 'pipelines runs show --id 3034000' `
+    -Actual (($manualArgs[0..4]) -join ' ')
 
 $timeoutFetcher = New-AzdoInternalOfficialBuildFetcher -TimeoutSeconds 7 -ProcessInvoker {
     param($FileName, $Arguments, $TimeoutSeconds)
@@ -9327,8 +9337,9 @@ Assert-Eq -Label "internal identical refs: duplicate query avoided" -Expected 1 
 
 $releaseReadinessSkillText = Get-Content (Join-Path $PSScriptRoot '..' 'SKILL.md') -Raw
 $releaseReadinessAgentText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'agents' 'release-readiness-agent.agent.md') -Raw
-Assert-Eq -Label "internal local command: skill protects PowerShell false from Bash expansion" -Expected $true -Actual ([bool]($releaseReadinessSkillText.Contains("'-PublicSafe:`$false'")))
-Assert-Eq -Label "internal local command: agent protects PowerShell false from Bash expansion" -Expected $true -Actual ([bool]($releaseReadinessAgentText.Contains("'-PublicSafe:`$false'")))
+$bashSafePublicFalseArgument = '''-PublicSafe:$false'''
+Assert-Eq -Label "internal local command: skill protects PowerShell false from Bash expansion" -Expected $true -Actual ([bool]($releaseReadinessSkillText.Contains($bashSafePublicFalseArgument)))
+Assert-Eq -Label "internal local command: agent protects PowerShell false from Bash expansion" -Expected $true -Actual ([bool]($releaseReadinessAgentText.Contains($bashSafePublicFalseArgument)))
 
 # GitHub's GraphQL endpoint can fail independently of the REST API. Prove open
 # and merged PR discovery retain the engine's expected object shape and do not

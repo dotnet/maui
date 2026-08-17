@@ -472,7 +472,7 @@ function Get-InternalOfficialBuildAzArguments {
 
     if (-not [string]::IsNullOrWhiteSpace($ManualBuildId) -and $BranchRef -eq $ManualBuildBranchRef) {
         return @(
-            'pipelines', 'build', 'show',
+            'pipelines', 'runs', 'show',
             '--id', $ManualBuildId,
             '--org', "https://dev.azure.com/$Organization",
             '--project', $Project,
