@@ -65,6 +65,8 @@ Successful publication requires both:
 
 A video alone, a test alone, a compilation error, a timeout, an infrastructure failure, or a missing snapshot baseline does not qualify.
 
+For an exact Windows app-crash report, the final trusted action may assert that the specific Sandbox process launched by the runner exited after a recorded ready-state check and exact trigger. Generic window loss, navigation, or a process that was already absent before the trigger remains infrastructure failure.
+
 ## Safety boundary
 
 Issue content and generated code are untrusted.

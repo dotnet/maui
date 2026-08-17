@@ -208,6 +208,56 @@ Describe 'Replication orchestrator security boundary' {
             Should -Throw "*uses unsupported action 'assertNotExists'*"
     }
 
+    It 'accepts trusted Windows process closure only as the final crash assertion' {
+        $IssueNumber = 36652
+        $Platform = 'windows'
+        $appiumPlanPath = Join-Path $TestDrive 'windows-crash-plan.json'
+        @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 36652,
+  "steps": [
+    {
+      "action": "waitFor",
+      "description": "Prove the Windows app is ready before the trigger",
+      "locator": { "strategy": "accessibilityId", "value": "LoadCrashButton" },
+      "value": null,
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "tap",
+      "description": "Load the reported crashing hierarchy",
+      "locator": { "strategy": "accessibilityId", "value": "LoadCrashButton" },
+      "value": null,
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "assertAppClosed",
+      "description": "Verify the trusted Windows Sandbox process exits",
+      "locator": null,
+      "value": null,
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $appiumPlanPath
+
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+
+        $Platform = 'ios'
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*uses assertAppClosed outside Windows*'
+
+        $Platform = 'windows'
+        $invalid = Get-Content -LiteralPath $appiumPlanPath -Raw |
+            ConvertFrom-Json -Depth 10
+        [array]::Reverse($invalid.steps)
+        $invalid | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*must end with an exact semantic text assertion or trusted Windows app-closure assertion*'
+    }
+
     It 'accepts safe Android literal text locators and rejects other platforms or expressions' {
         $IssueNumber = 37440
         $Platform = 'android'
@@ -484,6 +534,9 @@ InitializeComponent();
         $script:TrustedAppiumSource | Should -Match 'case "restartApp"'
         $script:TrustedAppiumSource | Should -Match 'driver\.TerminateApp\(appId\)'
         $script:TrustedAppiumSource | Should -Match 'driver\.ActivateApp\(appId\)'
+        $script:TrustedAppiumSource | Should -Match 'case "assertAppClosed"'
+        $script:TrustedAppiumSource | Should -Match 'launchedWindowsApp\.HasExited'
+        $script:TrustedAppiumSource | Should -Match 'Windows Sandbox process exited after the reported trigger'
     }
 
     It 'uses typed Appium properties for reserved Windows capabilities' {
@@ -753,9 +806,11 @@ exit 0
         $script:Source |
             Should -Match 'Every string must be non-empty and already trimmed'
         $script:Source |
-            Should -Match 'back, restartApp, swipe, and setOrientation require `"locator": null`'
+            Should -Match 'assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`'
         $script:Source |
             Should -Match 'Do not use assertNotExists or any intermediate assertion'
+        $script:Source |
+            Should -Match 'assertAppClosed is available only on Windows'
         $script:Source |
             Should -Match 'rather than moving the control when the report moves the pointer'
         $script:Source |

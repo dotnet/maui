@@ -50,6 +50,7 @@ try
         ExecuteStep(
             driver,
             platform,
+            launchedWindowsApp,
             step,
             isFinalStep: index == plan.Steps.Count - 1);
         CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
@@ -300,6 +301,7 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
 static void ExecuteStep(
     AppiumDriver driver,
     string platform,
+    Process? launchedWindowsApp,
     ReplicationStep step,
     bool isFinalStep)
 {
@@ -340,6 +342,9 @@ static void ExecuteStep(
                 contains: true,
                 isFinalStep);
             break;
+        case "assertAppClosed":
+            AssertAppClosed(platform, launchedWindowsApp, timeout);
+            break;
         case "back":
             driver.Navigate().Back();
             break;
@@ -369,6 +374,34 @@ static void ExecuteStep(
         default:
             throw new InvalidOperationException($"Unsupported Appium action '{step.Action}'.");
     }
+}
+
+static void AssertAppClosed(
+    string platform,
+    Process? launchedWindowsApp,
+    TimeSpan timeout)
+{
+    if (platform != "windows" || launchedWindowsApp is null)
+    {
+        throw new InvalidOperationException(
+            "assertAppClosed is supported only for the trusted Windows Sandbox process.");
+    }
+
+    var deadline = Stopwatch.StartNew();
+    while (deadline.Elapsed < timeout)
+    {
+        launchedWindowsApp.Refresh();
+        if (launchedWindowsApp.HasExited)
+        {
+            Console.WriteLine(
+                $"BUG REPRODUCED: Windows Sandbox process exited after the reported trigger with code {launchedWindowsApp.ExitCode}.");
+            return;
+        }
+        System.Threading.Thread.Sleep(200);
+    }
+
+    throw new TimeoutException(
+        "Windows Sandbox process remained open after the reported crash trigger.");
 }
 
 static IWebElement WaitForElement(
@@ -522,6 +555,7 @@ static void ValidatePlan(ReplicationPlan plan, string platform)
     var assertions = new HashSet<string>(StringComparer.Ordinal)
     {
         "assertExists",
+        "assertAppClosed",
         "assertNotExists",
         "assertTextEquals",
         "assertTextContains"
