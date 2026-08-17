@@ -48,12 +48,23 @@ try
     {
         var step = plan.Steps[index];
         Console.WriteLine($"STEP {index + 1}/{plan.Steps.Count}: {step.Description}");
-        ExecuteStep(
-            driver,
-            platform,
-            launchedWindowsApp,
-            step,
-            isFinalStep: index == plan.Steps.Count - 1);
+        try
+        {
+            ExecuteStep(
+                driver,
+                platform,
+                launchedWindowsApp,
+                step,
+                isFinalStep: index == plan.Steps.Count - 1);
+        }
+        catch (Exception stepException)
+            when (DescribeUnexpectedAppTermination(launchedWindowsApp, step, stepException)
+                is { } termination)
+        {
+            throw new InvalidOperationException(
+                $"REPLICATION_APP_TERMINATED step={index + 1} action='{step.Action}' {termination}",
+                stepException);
+        }
         CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
     }
 
@@ -383,6 +394,69 @@ static void ExecuteStep(
         default:
             throw new InvalidOperationException($"Unsupported Appium action '{step.Action}'.");
     }
+}
+
+static string? DescribeUnexpectedAppTermination(
+    Process? launchedWindowsApp,
+    ReplicationStep step,
+    Exception exception)
+{
+    // A step that deliberately waits for the app to close is not a crash.
+    if (string.Equals(step.Action, "assertAppClosed", StringComparison.OrdinalIgnoreCase))
+    {
+        return null;
+    }
+
+    if (launchedWindowsApp is not null)
+    {
+        var processId = launchedWindowsApp.Id;
+        launchedWindowsApp.Refresh();
+        if (launchedWindowsApp.HasExited)
+        {
+            // ExitCode throws for a process this runner attached to instead of
+            // starting, so the identity is reported without it.
+            return $"The app under test (process {processId}) exited " +
+                "before this step completed, so every " +
+                "later element lookup failed against a closed window. If the issue " +
+                "reports a crash, hang, or unhandled exception then this termination " +
+                "is the reported defect: assert it deliberately with an assertAppClosed " +
+                "step instead of looking for an element. If the issue does not report a " +
+                "crash, the scenario itself is crashing and must be simplified.";
+        }
+    }
+
+    if (!IndicatesLostAppWindow(exception))
+    {
+        return null;
+    }
+
+    return "The automation session lost the app window, which means the app under " +
+        "test closed or crashed before this step completed. If the issue reports a " +
+        "crash, hang, or unhandled exception then this termination is the reported " +
+        "defect: assert it deliberately with an assertAppClosed step instead of " +
+        "looking for an element. If the issue does not report a crash, the scenario " +
+        "itself is crashing and must be simplified.";
+}
+
+static bool IndicatesLostAppWindow(Exception exception)
+{
+    for (var current = exception; current is not null; current = current.InnerException)
+    {
+        if (current is NoSuchWindowException)
+        {
+            return true;
+        }
+
+        var message = current.Message;
+        if (message.Contains("no such window", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("window has been closed", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("currently selected window", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static void AssertAppClosed(

@@ -155,6 +155,79 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationFailureSignature {
+    <#
+        .SYNOPSIS
+        Reduces a sandbox failure to a stable identity for repeat detection.
+
+        .DESCRIPTION
+        Failure text carries attempt numbers, paths, and process ids that differ
+        between otherwise identical failures, so comparing raw text never
+        recognises a failure the agent has already seen.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$FailureSummary,
+        [int]$MaximumLength = 200
+    )
+
+    $normalized = [string]$FailureSummary
+    $normalized = $normalized -replace '(?i)attempt[- ]?\d+', 'attempt-N'
+    $normalized = $normalized -replace '\b\d{3,}\b', 'N'
+    $normalized = $normalized -replace '(?i)\[[0-9a-f]{6,}\]', '[id]'
+    $normalized = $normalized -replace '[\\/][^\s''"]*[\\/]', '<path>'
+    $normalized = ($normalized -replace '\s+', ' ').Trim()
+    if ($normalized.Length -gt $MaximumLength) {
+        $normalized = $normalized.Substring(0, $MaximumLength)
+    }
+
+    return $normalized
+}
+
+function Get-ReplicationAppTermination {
+    <#
+        .SYNOPSIS
+        Recovers an explicit app crash or close from a trusted recording log.
+
+        .DESCRIPTION
+        When the app under test terminates, every later element lookup fails
+        against a closed window, so the failure reads as generic automation
+        flakiness. Many reported issues are crashes, so the termination itself
+        may be the reproduction and must be stated plainly.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [string]$LogPath,
+        [int]$MaximumLength = 900
+    )
+
+    if (-not (Test-Path -LiteralPath $LogPath -PathType Leaf)) {
+        return ''
+    }
+
+    try {
+        $content = Get-Content -LiteralPath $LogPath -Raw -ErrorAction Stop
+    } catch {
+        return ''
+    }
+
+    $match = [regex]::Match(
+        [string]$content,
+        'REPLICATION_APP_TERMINATED(?<body>.*?)(?:\r?\n\s*(?:at |---)|\z)',
+        [Text.RegularExpressions.RegexOptions]::Singleline)
+    if (-not $match.Success) {
+        return ''
+    }
+
+    $termination = ($match.Groups['body'].Value -replace '\s+', ' ').Trim()
+    if (-not $termination) {
+        return ''
+    }
+
+    return ConvertTo-ReplicationSafeLog $termination $MaximumLength
+}
+
 function Get-ReplicationElementInventory {
     <#
         .SYNOPSIS
@@ -2488,6 +2561,7 @@ try {
         }
     }
     $sandboxFailureSummary = ''
+    $sandboxFailureHistory = [ordered]@{}
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0
     $MaxInfrastructureRetries = 3
@@ -2611,6 +2685,17 @@ $sandboxFailureSummary
 "@
                 }
             }
+            elseif ($sandboxFailureSummary -match '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed') {
+                $termination = Get-ReplicationAppTermination `
+                    -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
+                if ($termination) {
+                    $sandboxFailureSummary = @"
+The app under test closed or crashed during the recorded steps: $termination
+
+$sandboxFailureSummary
+"@
+                }
+            }
             elseif ($sandboxFailureSummary -match '(?i)Element was not visible|no such element|ElementNotFound') {
                 $inventory = Get-ReplicationElementInventory `
                     -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
@@ -2644,13 +2729,30 @@ $sandboxFailureSummary
             if ($attempt -eq $MaxSandboxAttempts) {
                 throw
             }
-            $repeatedSandboxFailure = ($sandboxFailureSummary -eq $previousSandboxFailureSummary)
+            $failureSignature = Get-ReplicationFailureSignature $sandboxFailureSummary
+            $repeatedSandboxFailure = $sandboxFailureHistory.ContainsKey($failureSignature)
             $previousSandboxFailureSummary = $sandboxFailureSummary
             if ($repeatedSandboxFailure) {
+                $earlierAttempt = $sandboxFailureHistory[$failureSignature]
                 $sandboxFailureSummary = @"
 $sandboxFailureSummary
 
-This identical failure already occurred on the previous attempt. The prior revision did not change the offending construct. Take a materially different approach instead of resubmitting equivalent files.
+This same failure already occurred on attempt $earlierAttempt. Repeating a revision that was already tried wastes the remaining attempts. Take a materially different approach instead of resubmitting equivalent files.
+"@
+            }
+            $sandboxFailureHistory[$failureSignature] = $attempt
+            if ($sandboxFailureHistory.Count -gt 1) {
+                # Without the full history the agent oscillates between two
+                # revisions, each of which "fixes" only the failure it just saw.
+                $historyLines = $sandboxFailureHistory.GetEnumerator() |
+                    Sort-Object -Property Value |
+                    ForEach-Object { "- attempt $($_.Value): $($_.Key)" }
+                $sandboxFailureSummary = @"
+$sandboxFailureSummary
+
+Distinct failures seen so far on this issue:
+$($historyLines -join [Environment]::NewLine)
+Your next revision must resolve every one of them at once. Reverting an earlier fix to address the newest failure will simply cycle between them.
 "@
             }
             Restore-TransientSandbox

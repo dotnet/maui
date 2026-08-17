@@ -60,6 +60,8 @@ BeforeAll {
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
         'Get-ReplicationElementInventory',
+        'Get-ReplicationFailureSignature',
+        'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationExistingIssueTestPaths',
         'Assert-ReplicationScenarioNotBlocked',
@@ -184,10 +186,14 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source | Should -Match '\$attempt--'
     }
 
-    It 'escalates guidance when a sandbox attempt repeats an identical failure' {
+    It 'escalates guidance when a sandbox attempt repeats an earlier failure' {
+        # Repeats are matched against every earlier attempt, not only the
+        # previous one, so an A/B/A oscillation is still recognised.
         $script:Source |
-            Should -Match 'This identical failure already occurred on the previous attempt'
-        $script:Source | Should -Match '\$repeatedSandboxFailure = \(\$sandboxFailureSummary -eq \$previousSandboxFailureSummary\)'
+            Should -Match 'This same failure already occurred on attempt \$earlierAttempt'
+        $script:Source.Contains(
+            '$repeatedSandboxFailure = $sandboxFailureHistory.ContainsKey($failureSignature)') |
+            Should -BeTrue
     }
 
     It 'backs off transient Copilot service failures without consuming semantic attempts' {        Test-TransientCopilotServiceFailure `
@@ -1024,6 +1030,60 @@ public class Issue35516
         # The planner should also avoid the wrong tier in the first place.
         $script:Source | Should -Match 'cannot observe a defect that only appears after real Shell'
         $script:Source | Should -Match 'intermittent, occasional, or random'
+    }
+
+    It 'treats the same failure from different attempts as one signature' {
+        $first = Get-ReplicationFailureSignature (
+            'Sandbox attempt 1 failed: CS1503 in D:\a\1\s\src\Sandbox\Main.cs')
+        $second = Get-ReplicationFailureSignature (
+            'Sandbox attempt 3 failed: CS1503 in D:\a\9\s\src\Sandbox\Main.cs')
+        $first | Should -Be $second
+    }
+
+    It 'keeps genuinely different failures distinct' {
+        $build = Get-ReplicationFailureSignature 'The Sandbox build failed with CS1503.'
+        $locator = Get-ReplicationFailureSignature 'Element was not visible.'
+        $build | Should -Not -Be $locator
+    }
+
+    It 'reports every distinct failure so revisions cannot oscillate' {
+        # Build 14997687 alternated between a CS1503 build break and a
+        # not-reproduced run because each attempt only saw the newest failure.
+        $script:Source.Contains('Distinct failures seen so far on this issue:') |
+            Should -BeTrue
+        $script:Source.Contains('$sandboxFailureHistory.ContainsKey($failureSignature)') |
+            Should -BeTrue
+    }
+
+    It 'recovers the termination reason from a recording log' {
+        $log = Join-Path $TestDrive 'record-termination.log'
+        @(
+            'STEP 4/8: Wait for the Map control'
+            "REPLICATION_APP_TERMINATED step=4 action='waitFor' The app under test (process 1234) exited before this step completed."
+            '   at Program.Main()'
+        ) | Set-Content -LiteralPath $log
+
+        $termination = Get-ReplicationAppTermination -LogPath $log
+        $termination | Should -Match 'exited before this step completed'
+    }
+
+    It 'returns nothing when the app never terminated' {
+        $log = Join-Path $TestDrive 'record-clean.log'
+        'STEP 1/2: Wait for the label' | Set-Content -LiteralPath $log
+        Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+    }
+
+    It 'names an app crash instead of reporting a generic lookup timeout' {
+        # Builds 14997683 and 14997708 spent every attempt on
+        # NoSuchWindowException, which was really the app closing mid-scenario.
+        $script:TrustedAppiumSource.Contains('REPLICATION_APP_TERMINATED') | Should -BeTrue
+        $script:TrustedAppiumSource.Contains(
+            'static bool IndicatesLostAppWindow(Exception exception)') | Should -BeTrue
+        # A step that deliberately waits for the app to close is not a crash.
+        $script:TrustedAppiumSource.Contains(
+            'string.Equals(step.Action, "assertAppClosed"') | Should -BeTrue
+        $script:Source.Contains('The app under test closed or crashed during the recorded steps') |
+            Should -BeTrue
     }
 
     It 'reports the elements the app exposed when a locator times out' {
@@ -2538,3 +2598,4 @@ public class $className
         } | Should -Throw '*exactly one targeted test method*'
     }
 }
+
