@@ -34,7 +34,11 @@ Describe 'Trusted replication issue outcome publishing' {
     }
 
     It 'does not handle infrastructure or verification failures' {
-        foreach ($code in @('sandbox_inconclusive', 'verification_inconclusive')) {
+        foreach ($code in @(
+            'copilot_service_unavailable',
+            'sandbox_inconclusive',
+            'verification_inconclusive'
+        )) {
             $candidatePath = Join-Path $TestDrive "$code.json"
             @{
                 issueNumber = 12345

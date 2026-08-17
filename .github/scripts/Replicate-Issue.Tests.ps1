@@ -957,6 +957,7 @@ InitializeComponent();
         $script:TrustedAppiumSource | Should -Match 'MAUI_REPLICATION_RECORDING_START_MARKER'
         $script:TrustedAppiumSource | Should -Match 'WriteRecordingStartMarker\(\)'
         $script:TrustedAppiumSource | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        $script:Source | Should -Match "'copilot_service_unavailable'"
         $script:Source | Should -Match "'sandbox_inconclusive'"
         $script:Source | Should -Match "'sandbox_not_reproduced'"
         $script:Source | Should -Match "'-MaxDurationSeconds', '180'"

@@ -2307,7 +2307,11 @@ try {
 catch {
     $rawReason = [string]$_.Exception.Message
     $reason = ConvertTo-ReplicationSafeLog $rawReason 500
-    $code = if ($stage -eq 'sandbox' -and
+    $code = if ($rawReason.StartsWith(
+        'Copilot service unavailable during ',
+        [StringComparison]::Ordinal)) {
+        'copilot_service_unavailable'
+    } elseif ($stage -eq 'sandbox' -and
         $rawReason.Contains('REPLICATION_NOT_REPRODUCED', [StringComparison]::Ordinal)) {
         'sandbox_not_reproduced'
     } elseif ($stage -eq 'sandbox') {
