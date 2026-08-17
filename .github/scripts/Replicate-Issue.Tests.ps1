@@ -574,6 +574,7 @@ InitializeComponent();
         $script:TrustedAppiumSource | Should -Match 'driver\.ActivateApp\(appId\)'
         $script:TrustedAppiumSource | Should -Match 'case "assertAppClosed"'
         $script:TrustedAppiumSource | Should -Match 'launchedWindowsApp\.HasExited'
+        $script:TrustedAppiumSource | Should -Not -Match 'launchedWindowsApp\.ExitCode'
         $script:TrustedAppiumSource | Should -Match 'Windows Sandbox process exited after the reported trigger'
     }
 

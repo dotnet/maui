@@ -267,6 +267,7 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
                     WorkingDirectory = Path.GetDirectoryName(appPath)
                         ?? throw new InvalidOperationException("Windows app directory is unavailable.")
                 }) ?? throw new InvalidOperationException("Windows Sandbox process did not start.");
+            var launchedWindowsProcessId = launchedWindowsApp.Id;
             var windowDeadline = DateTime.UtcNow.AddSeconds(30);
             while (DateTime.UtcNow < windowDeadline)
             {
@@ -274,7 +275,7 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
                 if (launchedWindowsApp.HasExited)
                 {
                     throw new InvalidOperationException(
-                        $"Windows Sandbox exited with code {launchedWindowsApp.ExitCode} before creating a window.");
+                        $"Windows Sandbox process {launchedWindowsProcessId} exited before creating a window.");
                 }
                 if (launchedWindowsApp.MainWindowHandle != IntPtr.Zero)
                 {
@@ -387,6 +388,7 @@ static void AssertAppClosed(
             "assertAppClosed is supported only for the trusted Windows Sandbox process.");
     }
 
+    var processId = launchedWindowsApp.Id;
     var deadline = Stopwatch.StartNew();
     while (deadline.Elapsed < timeout)
     {
@@ -394,7 +396,7 @@ static void AssertAppClosed(
         if (launchedWindowsApp.HasExited)
         {
             Console.WriteLine(
-                $"BUG REPRODUCED: Windows Sandbox process exited after the reported trigger with code {launchedWindowsApp.ExitCode}.");
+                $"BUG REPRODUCED: Windows Sandbox process {processId} exited after the reported trigger.");
             return;
         }
         System.Threading.Thread.Sleep(200);
