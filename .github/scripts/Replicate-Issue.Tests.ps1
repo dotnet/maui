@@ -777,8 +777,88 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
     }
 
-    It 'reports the exact matched text and line for prohibited content' {
-        $content = @'
+    It 'does not block ordinary English prose in comments or strings' {
+        $benign = @(
+            '// Repeat the selection process until the label updates.',
+            '/* The assembly of visual children is deferred here. */',
+            'Result.Text = "Selection process complete";',
+            'Status.Text = "Open the browser tab and bash the button";',
+            '// Start a timer-free reproduction; no unsafe code is required.',
+            'Note.Text = "This is an unsafe layout in the report";',
+            'var pathLabel = new Label { Text = "Path of travel" };'
+        )
+        foreach ($line in $benign) {
+            {
+                Assert-ReplicationGeneratedSourceSafety -Content $line -Path 'MainPage.xaml.cs'
+            } | Should -Not -Throw -Because "'$line' is inert prose"
+        }
+    }
+
+    It 'still blocks the executable form of every prose-colliding rule' {
+        $dangerous = @{
+            'process-start'             = 'Process.Start("cmd");'
+            'reflection'                = 'var t = typeof(Label).Assembly.GetTypes();'
+            'delays-or-background-work' = 'var timer = new System.Threading.Timer(_ => { });'
+            'device-external-access'    = 'Browser.OpenAsync(uri);'
+            'native-code'               = 'Marshal.ReadInt32(handle);'
+            'file-system'               = 'var text = File.ReadAllText(target);'
+            'network'                   = 'var client = new TcpClient();'
+        }
+        foreach ($code in $dangerous.Keys) {
+            {
+                Assert-ReplicationGeneratedSourceSafety `
+                    -Content $dangerous[$code] -Path 'MainPage.xaml.cs'
+            } | Should -Throw "*prohibited '$code'*" -Because "$code must stay blocked"
+        }
+    }
+
+    It 'cannot be bypassed by hiding code after a slash-slash inside a string' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'var s = "a//b"; Process.Start("cmd");' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'process-start'*"
+
+        $verbatim = @'
+var s = @"a//b";
+Activator.CreateInstance(t);
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $verbatim `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'reflection'*"
+    }
+
+    It 'keeps raw-scope rules scanning comments and strings' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content '// see https://example.invalid for details' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'remote-url'*"
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content '/* VERIFICATION PASSED */' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'verification-spoof'*"
+    }
+
+    It 'allows the XAML Path shape but blocks path IO helpers' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content '<Path Data="M0,0 L10,10"><Path.Fill><SolidColorBrush /></Path.Fill></Path>' `
+                -Path 'MainPage.xaml'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'var p = Path.Combine(a, b);' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'file-system'*"
+    }
+
+    It 'reports the exact matched text and line for prohibited content' {        $content = @'
 public void Ok()
 {
     var label = new Label();
