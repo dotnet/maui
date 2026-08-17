@@ -566,6 +566,19 @@ function Invoke-DefaultProcessOperation {
                         }
                     }
 
+                    if (-not $process.HasExited -and -not $IsWindows -and $kind -eq 'ios') {
+                        # simctl occasionally needs a second interrupt before it
+                        # finalizes the MP4 container; force-killing here yields a
+                        # file with no decodable video stream.
+                        $secondSignal = Invoke-DefaultCommand `
+                            -FilePath '/bin/kill' `
+                            -ArgumentList @('-INT', '--', [string]$process.Id) `
+                            -TimeoutSeconds 5
+                        if ($secondSignal.ExitCode -eq 0) {
+                            [void]$process.WaitForExit($graceMilliseconds)
+                        }
+                    }
+
                     if (
                         -not $process.HasExited -and
                         $waitForNaturalExit -and

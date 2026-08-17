@@ -1713,7 +1713,10 @@ function Test-TransientReproductionInfrastructureFailure {
         $Output -match '(?im)\badb(?:\.exe)?: device .* not found\b' -or
         $Output -match '(?im)\bWebDriverAgent\b.*\b(?:failed to start|timed out)\b' -or
         $Output -match '(?im)\bxcodebuild\b.*\bfailed to (?:launch|install)\b' -or
-        $Output -match '(?im)\bUnable to (?:launch|connect to) the simulator\b'
+        $Output -match '(?im)\bUnable to (?:launch|connect to) the simulator\b' -or
+        $Output -match '(?im)\bDecode recorded MP4 failed\b' -or
+        $Output -match '(?im)\bmatches no streams\b' -or
+        $Output -match '(?im)\bRecorder PID \d+ did not exit\b'
     )
 }
 

@@ -164,6 +164,12 @@ Describe 'Replication orchestrator security boundary' {
             -Output 'device offline' |
             Should -BeTrue
         Test-TransientReproductionInfrastructureFailure `
+            -Output "Decode recorded MP4 failed with exit code 234. Output: Stream map '0:v:0' matches no streams." |
+            Should -BeTrue
+        Test-TransientReproductionInfrastructureFailure `
+            -Output 'Recorder PID 4213 did not exit.' |
+            Should -BeTrue
+        Test-TransientReproductionInfrastructureFailure `
             -Output 'BUG REPRODUCED marker was not observed; the app reported NO BUG' |
             Should -BeFalse
         Test-TransientReproductionInfrastructureFailure `

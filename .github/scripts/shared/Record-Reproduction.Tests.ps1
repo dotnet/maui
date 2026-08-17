@@ -775,4 +775,21 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         } | Should -Throw
         $harness.State.ProcessRequests.Count | Should -Be 0
     }
+
+    It 'sends a second interrupt to simctl before force-killing an iOS recorder' {
+        # A force-killed simctl recording yields an MP4 whose stream map matches
+        # no streams, which failed reproduction runs for issue 33037 on iOS.
+        $recorder = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Record-Reproduction.ps1') -Raw
+
+        $recorder | Should -Match "simctl occasionally needs a second interrupt"
+        $recorder | Should -Match '\$secondSignal = Invoke-DefaultCommand'
+        $recorder.Contains('-not $IsWindows -and $kind -eq ''ios''') |
+            Should -BeTrue
+
+        $forcedIndex = $recorder.IndexOf('$forcedTermination = $true')
+        $secondIndex = $recorder.IndexOf('$secondSignal = Invoke-DefaultCommand')
+        $secondIndex | Should -BeGreaterThan 0
+        $secondIndex | Should -BeLessThan $forcedIndex
+    }
 }
