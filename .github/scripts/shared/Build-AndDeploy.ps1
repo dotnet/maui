@@ -64,6 +64,28 @@ param(
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $scriptDir "shared-utils.ps1")
 
+function Test-TransientAndroidDeployFailure {
+    param(
+        [AllowEmptyString()]
+        [string]$Output
+    )
+
+    foreach ($pattern in @(
+        '(?im)\bADB0010\b',
+        '(?im)\bInstallFailedException\b',
+        '(?im)\bbroken pipe\b',
+        '(?im)\bdevice offline\b',
+        '(?im)\bno devices?/emulators? found\b',
+        '(?im)\bconnection (?:reset|closed)\b'
+    )) {
+        if ($Output -match $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 # Verify project exists
 if (-not (Test-Path $ProjectPath)) {
     Write-Error "Project file not found: $ProjectPath"
@@ -165,22 +187,33 @@ if ($Platform -eq "android") {
             }
         }
         
-        & dotnet build @buildArgs
+        $buildOutput = $null
+        & dotnet build @buildArgs 2>&1 |
+            Tee-Object -Variable buildOutput
         $buildExitCode = $LASTEXITCODE
         
         if ($buildExitCode -eq 0) {
             break
         }
+
+        $buildText = ($buildOutput | ForEach-Object { [string]$_ }) -join "`n"
+        $isTransientAndroidDeployFailure =
+            Test-TransientAndroidDeployFailure -Output $buildText
+
+        if (-not $isTransientAndroidDeployFailure) {
+            Write-Error "Build/deploy failed with a deterministic build or configuration error; skipping ADB retries."
+            break
+        }
         
         if ($attempt -lt $maxAttempts) {
-            Write-Warn "Build/deploy failed (attempt $attempt). ADB0010/broken-pipe errors are transient on API 30 — will retry."
+            Write-Warn "Build/deploy failed with a recognized transient Android deployment error (attempt $attempt); will retry."
         }
     }
     
     $buildDuration = (Get-Date) - $buildStartTime
     
     if ($buildExitCode -ne 0) {
-        Write-Error "Build/deploy failed after $maxAttempts attempts with exit code $buildExitCode"
+        Write-Error "Build/deploy failed after $attempt attempt(s) with exit code $buildExitCode"
         exit $buildExitCode
     }
     

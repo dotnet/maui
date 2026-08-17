@@ -12,6 +12,20 @@ BeforeAll {
     $script:BuildDeploySource = Get-Content `
         -LiteralPath (Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') `
         -Raw
+    $buildDeployTokens = $null
+    $buildDeployErrors = $null
+    $buildDeployAst = [System.Management.Automation.Language.Parser]::ParseInput(
+        $script:BuildDeploySource,
+        [ref]$buildDeployTokens,
+        [ref]$buildDeployErrors)
+    if ($buildDeployErrors) {
+        throw ($buildDeployErrors | ForEach-Object Message) -join [Environment]::NewLine
+    }
+    $testTransientAndroidDeployFailure = $buildDeployAst.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Test-TransientAndroidDeployFailure'
+    }, $true)
+    Invoke-Expression $testTransientAndroidDeployFailure.Extent.Text
     $script:SandboxProjectSource = Get-Content `
         -LiteralPath (Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj') `
         -Raw
@@ -113,6 +127,24 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source | Should -Match "-Description 'Launching the Sandbox before evidence recording'\s+``\s+-TimeoutSeconds 300"
         $script:Source | Should -Match "-Description 'Recording the on-device reproduction'\s+``\s+-TimeoutSeconds 300"
         $script:Source | Should -Match "-Description 'Verifying the targeted reproduction test'\s+``\s+-TimeoutSeconds 5400"
+    }
+
+    It 'retries Android deployment only for recognized transient device failures' {
+        $script:BuildDeploySource | Should -Match '\$isTransientAndroidDeployFailure'
+        $script:BuildDeploySource |
+            Should -Match 'deterministic build or configuration error; skipping ADB retries'
+        $script:BuildDeploySource |
+            Should -Match 'Build/deploy failed after \$attempt attempt\(s\)'
+
+        Test-TransientAndroidDeployFailure `
+            -Output 'error ADB0010: InstallFailedException: Broken pipe' |
+            Should -BeTrue
+        Test-TransientAndroidDeployFailure `
+            -Output 'error CS7036: required parameter propertyName is missing' |
+            Should -BeFalse
+        Test-TransientAndroidDeployFailure `
+            -Output 'XamlC error XFC0000: Cannot resolve type' |
+            Should -BeFalse
     }
 
     It 'requires unconditional reproduction tests during generation and repair' {
