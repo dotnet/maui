@@ -1874,11 +1874,7 @@ namespace Microsoft.Maui.Controls
 
 		bool UpdateEffectiveVisibility()
 		{
-			var parent = Parent;
-			while (parent is not null && parent is not VisualElement)
-				parent = parent.Parent;
-
-			var isVisible = IsVisible && (parent is not VisualElement visualParent || visualParent._isVisibleCumulative);
+			var isVisible = IsVisible && (Parent is not VisualElement parent || parent._isVisibleCumulative);
 			if (_isVisibleCumulative == isVisible)
 				return false;
 

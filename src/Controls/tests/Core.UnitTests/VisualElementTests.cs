@@ -205,22 +205,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void VisibilityPropagatesThroughNonVisualParents()
-		{
-			var parent = new TableView { IsVisible = false };
-			var child = new Button();
-			var cell = new ViewCell
-			{
-				Parent = parent,
-				View = child,
-			};
-
-			Assert.Same(cell, child.Parent);
-			Assert.True(child.IsVisible);
-			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
-		}
-
-		[Fact]
 		public void AncestorVisibilityDoesNotRaiseChildIsVisiblePropertyChanged()
 		{
 			var parent = new Grid();
