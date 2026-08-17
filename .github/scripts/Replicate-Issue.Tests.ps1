@@ -956,6 +956,15 @@ public partial class MainPage : ContentPage
         }
     }
 
+    It 'names the exact false-pass modes reviewers found in published PRs' {
+        # Generic rules were already present and still violated, so each rule
+        # now names the concrete defect a reviewer observed.
+        $script:Source | Should -Match 'no correct run can produce'
+        $script:Source | Should -Match 'CultureInfo.CurrentCulture and DefaultThreadCurrentCulture'
+        $script:Source | Should -Match 'do not introduce an explicit Style, Background, or colour'
+        $script:Source | Should -Match 'ignores every status label can still see'
+    }
+
     It 'escalates the test tier when the chosen tier cannot observe the defect' {
         # Issue 37532 reproduced on device and recorded cleanly, but the planned
         # device test passed on all five attempts because the defect needs real
