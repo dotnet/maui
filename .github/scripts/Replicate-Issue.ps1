@@ -2196,12 +2196,26 @@ try {
     Restore-TransientSandbox
 
     $stage = 'test'
-    Invoke-ReplicationCopilot `
-        -PhaseName 'test-plan' `
-        -Prompt (New-CopilotPrompt -Phase test-plan) `
-        -WritePaths @($testProposalPath) `
-        -Attempt 1
-    $plannedTestProposal = Read-TestProposal -ValidateNewTargets
+    $testPlanFailureSummary = ''
+    for ($planAttempt = 1; $planAttempt -le 3; $planAttempt++) {
+        Invoke-ReplicationCopilot `
+            -PhaseName 'test-plan' `
+            -Prompt (New-CopilotPrompt `
+                -Phase test-plan `
+                -FailureSummary $testPlanFailureSummary) `
+            -WritePaths @($testProposalPath) `
+            -Attempt $planAttempt
+        try {
+            $plannedTestProposal = Read-TestProposal -ValidateNewTargets
+            break
+        } catch {
+            $testPlanFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
+            Write-Host "Test-plan attempt $planAttempt failed: $testPlanFailureSummary"
+            if ($planAttempt -eq 3) {
+                throw
+            }
+        }
+    }
     $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
     $repairFailureSummary = ''
 

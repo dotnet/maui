@@ -937,6 +937,9 @@ InitializeComponent();
         Set-Content -LiteralPath (Join-Path $repoRoot $proposal.files[0]) -Value 'existing'
         { Get-ProposedTestFiles -Proposal $proposal -ValidateNewTargets } |
             Should -Throw '*already exists*'
+        $script:Source | Should -Match 'for \(\$planAttempt = 1; \$planAttempt -le 3; \$planAttempt\+\+\)'
+        $script:Source | Should -Match 'Test-plan attempt \$planAttempt failed'
+        $script:Source | Should -Match '-FailureSummary \$testPlanFailureSummary'
     }
 
     It 'uses stable host identifiers instead of unresolved device variables' {
