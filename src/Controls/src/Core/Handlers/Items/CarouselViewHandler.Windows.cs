@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _positionUpdateFromScroll = -1;
 		bool _hasCurrentItemUpdateFromScroll;
 		object _currentItemUpdateFromScroll;
+		bool _isRecentering;
+		double _recenteringHorizontalOffset;
+		double _recenteringVerticalOffset;
+		bool _isScrollingForward;
 		int _gotoPosition = -1;
 		bool _isCollectionChanged;
 		NotifyCollectionChangedEventHandler _collectionChanged;
@@ -72,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_scrollViewer.SizeChanged -= OnScrollViewSizeChanged;
 			}
 
+			_isRecentering = false;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -577,11 +582,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Suppress intermediate scroll events during a programmatic animated scroll.
-			if (_gotoPosition != -1)
-			{
-				return;
-			}
+			var scrollDelta = CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+				? e.HorizontalDelta
+				: e.VerticalDelta;
+			if (scrollDelta != 0)
+				_isScrollingForward = scrollDelta > 0;
 
 			var position = e.CenterItemIndex;
 			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
@@ -589,18 +594,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				position = ItemsView.Position;
 				_isCollectionChanged = false;
 			}
-			else if (ShouldCenterCarouselItem()
-				&& TryGetClosestVisibleItem(out var closestVisibleIndex, out _, out _, out _))
-			{
-				position = closestVisibleIndex;
-				if (ItemsView.Loop && _loopableCollectionView?.RealCount > 0)
-					position %= _loopableCollectionView.RealCount;
-			}
 
-			if (position == -1)
+			// Suppress intermediate scroll events during a programmatic animated scroll.
+			if (_gotoPosition != -1)
 			{
 				return;
 			}
+
+			// Centered mandatory layouts are reconciled geometrically after the native scroll settles.
+			if (ShouldCenterCarouselItem())
+				return;
+
+			SetPositionFromScroll(position);
+		}
+
+		void SetPositionFromScroll(int physicalPosition)
+		{
+			if (physicalPosition == -1)
+			{
+				return;
+			}
+
+			var position = physicalPosition;
+			if (ItemsView.Loop && _loopableCollectionView?.RealCount > 0)
+				position %= _loopableCollectionView.RealCount;
 
 			if (position == Element.Position)
 			{
@@ -632,8 +649,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsView.SetIsDragging(e.IsIntermediate);
 			ItemsView.IsScrolling = e.IsIntermediate;
 
-			if (!e.IsIntermediate)
-				CenterCarouselItem();
+			if (e.IsIntermediate)
+				return;
+
+			if (_isRecentering)
+			{
+				_isRecentering = false;
+				if (Math.Abs(_scrollViewer.HorizontalOffset - _recenteringHorizontalOffset) < 1
+					&& Math.Abs(_scrollViewer.VerticalOffset - _recenteringVerticalOffset) < 1)
+				{
+					return;
+				}
+			}
+
+			CenterCarouselItem();
 		}
 
 		void CenterCarouselItem()
@@ -641,13 +670,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!InitialPositionSet
 				|| _gotoPosition != -1
 				|| !ShouldCenterCarouselItem()
-				|| !TryGetClosestVisibleItem(out _, out var horizontalOffset, out var verticalOffset, out var distance))
+				|| !TryGetClosestVisibleItem(out var closestVisibleIndex, out var horizontalOffset, out var verticalOffset, out var distance))
 			{
 				return;
 			}
 
+			var closestPosition = closestVisibleIndex;
+			if (ItemsView.Loop && _loopableCollectionView?.RealCount > 0)
+				closestPosition %= _loopableCollectionView.RealCount;
+
+			SetPositionFromScroll(closestVisibleIndex);
+
+			// A nested application update may have selected another item while Position changed.
+			if (_gotoPosition != -1 || ItemsView.Position != closestPosition)
+				return;
+
 			if (distance >= 1)
-				_scrollViewer.ChangeView(horizontalOffset, verticalOffset, null, true);
+			{
+				_isRecentering = true;
+				_recenteringHorizontalOffset = horizontalOffset;
+				_recenteringVerticalOffset = verticalOffset;
+				if (!_scrollViewer.ChangeView(horizontalOffset, verticalOffset, null, true))
+					_isRecentering = false;
+			}
 		}
 
 		bool ShouldCenterCarouselItem()
@@ -679,6 +724,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var currentVerticalOffset = _scrollViewer.VerticalOffset;
 			horizontalOffset = currentHorizontalOffset;
 			verticalOffset = currentVerticalOffset;
+			var closestDistance = double.MaxValue;
 
 			for (int index = firstVisibleIndex; index <= lastVisibleIndex; index++)
 			{
@@ -693,17 +739,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else
 					candidateVerticalOffset = position.Y - ((_scrollViewer.ViewportHeight - container.ActualHeight) / 2);
 
-				candidateHorizontalOffset = Math.Clamp(candidateHorizontalOffset, 0, _scrollViewer.ScrollableWidth);
-				candidateVerticalOffset = Math.Clamp(candidateVerticalOffset, 0, _scrollViewer.ScrollableHeight);
-
 				var candidateDistance = Math.Abs(currentHorizontalOffset - candidateHorizontalOffset)
 					+ Math.Abs(currentVerticalOffset - candidateVerticalOffset);
-				if (candidateDistance < distance)
+				if (candidateDistance < closestDistance - 1
+					|| (_isScrollingForward && candidateDistance < closestDistance + 1))
 				{
 					closestVisibleIndex = index;
-					distance = candidateDistance;
-					horizontalOffset = candidateHorizontalOffset;
-					verticalOffset = candidateVerticalOffset;
+					closestDistance = candidateDistance;
+					horizontalOffset = Math.Clamp(candidateHorizontalOffset, 0, _scrollViewer.ScrollableWidth);
+					verticalOffset = Math.Clamp(candidateVerticalOffset, 0, _scrollViewer.ScrollableHeight);
+					distance = Math.Abs(currentHorizontalOffset - horizontalOffset)
+						+ Math.Abs(currentVerticalOffset - verticalOffset);
 				}
 			}
 
