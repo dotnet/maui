@@ -2204,9 +2204,6 @@ try {
                 '^(?:Copilot service unavailable during |Copilot CLI unavailable:)') {
                 throw
             }
-            if ($attempt -eq $MaxSandboxAttempts) {
-                throw
-            }
             if (Test-TransientReproductionInfrastructureFailure $sandboxFailureSummary) {
                 if ($infrastructureRetries -lt $MaxInfrastructureRetries) {
                     $infrastructureRetries++
@@ -2219,6 +2216,9 @@ try {
                     continue
                 }
                 Write-Host 'Device infrastructure retries exhausted; treating the failure as a semantic attempt.'
+            }
+            if ($attempt -eq $MaxSandboxAttempts) {
+                throw
             }
             $repeatedSandboxFailure = ($sandboxFailureSummary -eq $previousSandboxFailureSummary)
             $previousSandboxFailureSummary = $sandboxFailureSummary
