@@ -103,6 +103,15 @@ function Assert-ReplicationPlatformSourceSafety {
     if ($Platform -ceq 'catalyst' -and $unscopedUIKitContent -match '(?i)\bUIKit\b' -and $normalizedPath -notmatch '(?i)\.iOS\.cs$|/(?:iOS|MacCatalyst)/') {
         throw "Catalyst candidate source '$Path' must place UIKit code in an .iOS.cs file or existing Apple-platform directory."
     }
+
+    if ($Platform -ceq 'ios' -and $normalizedPath -match '(?i)\.iOS\.cs$') {
+        $catalystIncludedContent = Get-ReplicationUnscopedPlatformContent `
+            -Content $Content `
+            -GuardPattern '(?i)^(?:!\s*MACCATALYST|IOS\s*&&\s*!\s*MACCATALYST|!\s*MACCATALYST\s*&&\s*IOS)$'
+        if ($catalystIncludedContent -match '(?m)^\s*\[\s*(?:Fact|Test)\b') {
+            throw "iOS candidate test '$Path' must exclude Mac Catalyst with a compile-time !MACCATALYST guard."
+        }
+    }
 }
 
 function Get-ReplicationUnscopedPlatformContent {

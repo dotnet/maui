@@ -756,6 +756,9 @@ exit 0
         $script:Source | Should -Match 'managed MAUI Bounds alone are not direct proof'
         $script:Source | Should -Match 'a single fixed layout is insufficient'
         $script:Source | Should -Match 'same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence'
+        $script:Source | Should -Match 'ContentInset or AdjustedContentInset'
+        $script:Source | Should -Match 'runtime transition instead of preconfiguring the final value'
+        $script:Source | Should -Match 'compile-time !MACCATALYST guard'
         ([regex]::Matches(
             $script:Source,
             '(?s)-Description ''(?:Reported issue trigger|Automated test trigger)''\s*`\s*-MaximumLength 2000'
@@ -1046,6 +1049,42 @@ static UIKit.UIView FindView() => null;
                 -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue34538.xaml.cs' `
                 -Platform 'ios'
         } | Should -Throw '*without a matching platform-specific path*'
+    }
+
+    It 'requires iOS-only tests to exclude Mac Catalyst compilation' {
+        $unscopedIosTest = @'
+using UIKit;
+
+[Fact]
+public void SoftInputIncreasesBottomScrollRange()
+{
+    _ = new UIScrollView();
+}
+'@
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content $unscopedIosTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/ScrollView/Issue36826.iOS.cs' `
+                -Platform 'ios'
+        } | Should -Throw '*must exclude Mac Catalyst*'
+
+        $guardedIosTest = @'
+using UIKit;
+
+#if !MACCATALYST
+[Fact]
+public void SoftInputIncreasesBottomScrollRange()
+{
+    _ = new UIScrollView();
+}
+#endif
+'@
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content $guardedIosTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/ScrollView/Issue36826.iOS.cs' `
+                -Platform 'ios'
+        } | Should -Not -Throw
     }
 
     It 'rejects test lifecycle code that can run before the guard' {

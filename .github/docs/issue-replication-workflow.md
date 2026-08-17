@@ -50,6 +50,8 @@ Tests must preserve the issue's existing product contract. Requests for a new pu
 
 Visible rendering tests must prove visible/native output, not only managed MAUI bounds. The automated test must retain the recorded Sandbox's meaningful hierarchy, assets, sizing constraints, and dynamic action sequence; reports involving resize, rotation, mutation, scrolling, drift, disappearance, or flicker cannot be reduced to a single fixed layout.
 
+Keyboard, SafeArea, and ScrollView range tests must use native inset-aware geometry and behavior rather than arbitrary deltas, and runtime property changes must occur after attachment when that is the reported trigger. iOS-only `.iOS.cs` tests must explicitly exclude Mac Catalyst compilation.
+
 The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
 
 Successful publication requires both:
