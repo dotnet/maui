@@ -726,17 +726,53 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $manifest.files.preview | Should -BeExactly 'preview.gif'
         $result.sha256 | Should -BeExactly $expectedHash
         $previewCommand = (Get-CommandRequest $harness 'Generate recording preview')[0]
-        $previewLimitIndex = [array]::IndexOf($previewCommand.ArgumentList, '-t')
-        $previewInputIndex = [array]::IndexOf($previewCommand.ArgumentList, '-i')
-        $previewLimitIndex | Should -BeLessThan $previewInputIndex
-        [double]$previewCommand.ArgumentList[$previewLimitIndex + 1] |
-            Should -BeLessOrEqual 6
+        # The reported defect appears at the end of the reproduction, so the
+        # preview compresses the whole recording instead of trimming it to the
+        # opening seconds, which showed only the app launching.
+        $previewCommand.ArgumentList | Should -Not -Contain '-t'
+        $previewFilterIndex = [array]::IndexOf($previewCommand.ArgumentList, '-filter_complex')
+        $previewFilterIndex | Should -BeGreaterThan -1
+        # A recording already inside the preview budget plays at real speed.
+        [string]$previewCommand.ArgumentList[$previewFilterIndex + 1] |
+            Should -Not -Match 'setpts'
         Test-Path -LiteralPath (Join-Path $evidenceDir 'recording.raw.mp4') |
             Should -BeFalse
         Test-Path -LiteralPath (Join-Path $evidenceDir 'thumbnail.png') |
             Should -BeTrue
         Test-Path -LiteralPath (Join-Path $evidenceDir 'preview.gif') |
             Should -BeTrue
+    }
+
+    It 'compresses a long recording into the preview instead of trimming its end' {
+        # PR 155 reported a preview that stopped before the defect appeared,
+        # because the preview kept only the opening seconds while the reported
+        # defect is shown by the final step of the reproduction.
+        $harness = New-RecordingHarness -MediaInfo ([pscustomobject]@{
+            HasVideo        = $true
+            HasAudio        = $false
+            Decodable       = $true
+            DurationSeconds = 24.0
+            Width           = 1280
+            Height          = 720
+            FrameRate       = 15
+        })
+        $evidenceDir = Join-Path $TestDrive 'evidence-long'
+        $null = Invoke-TestRecording `
+            -Harness $harness `
+            -Platform android `
+            -EvidenceDir $evidenceDir `
+            -DeviceUdid 'emulator-5554' `
+            -MaxDurationSeconds 30
+
+        $previewCommand = (Get-CommandRequest $harness 'Generate recording preview')[0]
+        $previewCommand.ArgumentList | Should -Not -Contain '-t'
+        $filterIndex = [array]::IndexOf($previewCommand.ArgumentList, '-filter_complex')
+        $filter = [string]$previewCommand.ArgumentList[$filterIndex + 1]
+        $filter | Should -Match '^setpts=PTS/'
+        $speedUp = [double]([regex]::Match($filter, 'setpts=PTS/([0-9.]+)').Groups[1].Value)
+        # The whole 24s recording has to land inside the 6s preview budget.
+        (24.0 / $speedUp) | Should -BeLessOrEqual 6.0001
+        (24.0 / $speedUp) | Should -BeGreaterThan 5.9
     }
 
     It 'sanitizes subprocess output before surfacing a command failure' {

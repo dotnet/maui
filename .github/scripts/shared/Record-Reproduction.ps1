@@ -1428,9 +1428,22 @@ try {
         -Description 'Recording thumbnail' `
         -MaxBytes $previewMaxBytes)
 
-    $previewDuration = ConvertTo-InvariantArgument (
-        [Math]::Min($previewMaxSeconds, $mediaInfo.DurationSeconds))
+    # The reported defect almost always appears at the end of the reproduction,
+    # so trimming the preview to its first seconds hid the very thing the
+    # preview exists to show. Compress the whole recording into the budget
+    # instead of truncating it.
+    $previewSpeedUp = if ($mediaInfo.DurationSeconds -gt $previewMaxSeconds) {
+        $mediaInfo.DurationSeconds / $previewMaxSeconds
+    } else {
+        1.0
+    }
+    $previewTimeFilter = if ($previewSpeedUp -gt 1.0) {
+        'setpts=PTS/' + (ConvertTo-InvariantArgument $previewSpeedUp) + ','
+    } else {
+        ''
+    }
     $gifFilter = (
+        $previewTimeFilter +
         'fps=8,scale=480:270:force_original_aspect_ratio=decrease:' +
         'force_divisible_by=2,split[s0][s1];' +
         '[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer'
@@ -1443,7 +1456,6 @@ try {
             '-hide_banner',
             '-loglevel', 'error',
             '-protocol_whitelist', 'file,pipe',
-            '-t', $previewDuration,
             '-i', $videoPath,
             '-an',
             '-filter_complex', $gifFilter,
