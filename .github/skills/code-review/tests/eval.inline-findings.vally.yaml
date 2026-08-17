@@ -109,7 +109,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd # fixture: regression-writes-inline-findings-to-disk
+        ref: a620b7255c0d0b730ec4de0d737d942f1777050e # fixture: regression-writes-inline-findings-to-disk
         source: .
     graders:
       # ── Structured floor (necessary, not sufficient) ─────────────────────

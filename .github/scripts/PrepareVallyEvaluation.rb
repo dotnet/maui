@@ -122,7 +122,7 @@ FIXTURES = {
     "eval.inline-findings.vally.yaml" => [
       {
         marker: "regression-writes-inline-findings-to-disk",
-        fallback_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
+        fallback_ref: "a620b7255c0d0b730ec4de0d737d942f1777050e",
         source_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
         message: "Sanitized gradient inline-findings fixture"
       }
@@ -130,19 +130,19 @@ FIXTURES = {
     "eval.vally.yaml" => [
       {
         marker: "gradient-alpha-forced-opaque",
-        fallback_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
+        fallback_ref: "e5e0e04d315e12cc0b5de914d905992f88ab2f0b",
         source_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
         message: "Sanitized gradient regression fixture"
       },
       {
         marker: "native-collection-null-overlays",
-        fallback_ref: "dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9",
+        fallback_ref: "db7f3d6df775b050dc9d2d852d18bcb2d0d06c1c",
         source_ref: "dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9",
         message: "Sanitized map overlay regression fixture"
       },
       {
         marker: "navigatedto-latch-suppresses-reentry",
-        fallback_ref: "8ee24cfe4c38038cec62e09dacc182815310c97d",
+        fallback_ref: "559b61db0ee8d0258f0f4623d83f081d53d598a7",
         source_ref: "8ee24cfe4c38038cec62e09dacc182815310c97d",
         message: "Sanitized navigation lifecycle regression fixture"
       }

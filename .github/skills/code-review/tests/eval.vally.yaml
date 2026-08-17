@@ -117,7 +117,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd # fixture: gradient-alpha-forced-opaque
+        ref: e5e0e04d315e12cc0b5de914d905992f88ab2f0b # fixture: gradient-alpha-forced-opaque
         source: .
       files:
         - src: ../SKILL.md
@@ -233,7 +233,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9 # fixture: native-collection-null-overlays
+        ref: db7f3d6df775b050dc9d2d852d18bcb2d0d06c1c # fixture: native-collection-null-overlays
         source: .
       files:
         - src: ../SKILL.md
@@ -361,7 +361,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: 8ee24cfe4c38038cec62e09dacc182815310c97d # fixture: navigatedto-latch-suppresses-reentry
+        ref: 559b61db0ee8d0258f0f4623d83f081d53d598a7 # fixture: navigatedto-latch-suppresses-reentry
         source: .
       files:
         - src: ../SKILL.md
