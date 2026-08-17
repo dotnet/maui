@@ -952,6 +952,14 @@ public partial class MainPage : ContentPage
         }
     }
 
+    It 'names the code-behind alternative when XAML uses an unsupported directive' {
+        # dotnet/maui#35410 burned two Sandbox attempts repeating x:FactoryMethod
+        # because the rejection never mentioned a supported alternative.
+        $script:Source | Should -Match 'must be assigned from code-behind instead'
+        $script:Source | Should -Match 'Keyboard\.Create in the page constructor'
+        $script:Source | Should -Match 'Do not use x:FactoryMethod, x:Arguments'
+    }
+
     It 'allows the reported COMException type while still blocking real interop' {
         # dotnet/maui#36694 reports a System.Runtime.InteropServices.COMException
         # crash, so naming that exact exception type is the faithful oracle even
