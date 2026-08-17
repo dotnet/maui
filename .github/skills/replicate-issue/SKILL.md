@@ -60,6 +60,7 @@ Empirical proof requires all of:
 - A semantic assertion, device log, deterministic measurement, or issue-caused crash shows expected versus actual behavior.
 - `evidence/repro.mp4` visibly covers those actions and the resulting failure.
 - The affected control, geometry, text, animation, or interaction is visible in the recording. An app-authored `PASS:`/`BUG REPRODUCED:` label is supplemental and cannot be the only visible proof.
+- Keep the semantic verdict on a separate result/status element. Never replace the affected control's text, title, content, geometry, or other visible state with that verdict. For transition defects, record the affected control's pre-trigger reference state and post-trigger failure state continuously.
 - The recording is continuous action-focused evidence, not a slideshow of staged still frames, and the preview reaches the failing state rather than ending on a setup or `PASS` frame.
 - The result is not merely a screenshot difference or missing baseline.
 

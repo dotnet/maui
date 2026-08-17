@@ -397,6 +397,44 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Throw '*prohibited*'
     }
 
+    It 'rejects replacing the affected control content with the semantic verdict' {
+        $repoRoot = $TestDrive
+        $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
+        $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        @'
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage">
+    <Button x:Name="ShowReproductionButton"
+            Text="Show custom button" />
+</ContentPage>
+'@ | Set-Content -LiteralPath $sandboxXamlPath
+        @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void ShowResult(Button customButton, string result)
+    {
+        customButton.Text = result;
+    }
+}
+'@ | Set-Content -LiteralPath $sandboxCodePath
+
+        { Assert-GeneratedSandboxSources } |
+            Should -Throw "*replaces the affected control's visible content with a semantic verdict*"
+
+        (Get-Content -LiteralPath $sandboxCodePath -Raw).
+            Replace('customButton.Text = result;', 'resultLabel.Text = result;') |
+            Set-Content -LiteralPath $sandboxCodePath
+        { Assert-GeneratedSandboxSources } | Should -Not -Throw
+    }
+
     It 'allows ordinary preference variables while rejecting the Preferences API' {
         {
             Assert-ReplicationGeneratedSourceSafety `
@@ -867,6 +905,7 @@ exit 0
         $script:Source | Should -Match 'HandlerNotFoundException.*setup failure'
         $script:Source | Should -Match 'runtime transition instead of preconfiguring the final value'
         $script:Source | Should -Match 'compile-time !MACCATALYST guard'
+        $script:Source | Should -Match "never replace the affected control's Text, Title, Content"
         ([regex]::Matches(
             $script:Source,
             '(?s)-Description ''(?:Reported issue trigger|Automated test trigger)''\s*`\s*-MaximumLength 2000'
