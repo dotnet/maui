@@ -374,9 +374,12 @@ formatting separate:
    is valid in Git paths, merged history may already be built, and a later revert
    can hide an earlier trigger-eligible change. A conclusive non-ancestor result
    means the build is stale; only missing or failed Git evidence remains unknown.
-8. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
+8. Fold local classifications into readiness:
+   `red`/`stale`/`failed-or-stale` → `BLOCKED`,
    `in-progress`/`partial-success` → `WATCH`, `unknown` → `UNKNOWN`; `skipped`
-   is fail-open.
+   is fail-open. For `failed-or-stale`, restore build-currency evidence before
+   choosing between repairing a current failed build and running the official
+   build at current HEAD.
 9. In public-safe mode, omit the internal branch records and local table
    completely. Never serialize build IDs, numbers, SHAs, URLs, raw Azure errors,
    account details, or internal branch evidence into public tracker output.

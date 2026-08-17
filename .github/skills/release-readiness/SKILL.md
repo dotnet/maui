@@ -182,8 +182,11 @@ The internal check is intentionally fail-open:
   `skipped` and does not downgrade the public-data verdict.
 - Azure CLI and GitHub branch queries have bounded execution; a timeout yields
   `unknown` rather than hanging the local readiness run.
-- Local `red`/`stale` maps to `BLOCKED`, `in-progress`/`partial-success` to
-  `WATCH`, and `unknown` to `UNKNOWN`.
+- Local `red`/`stale`/`failed-or-stale` maps to `BLOCKED`,
+  `in-progress`/`partial-success` to `WATCH`, and `unknown` to `UNKNOWN`.
+  For `failed-or-stale`, restore build-currency evidence first; then either repair
+  the failed build if it is current or run the official build at current HEAD if
+  it is stale.
 - `-PublicSafe:$true` omits all internal IDs, SHAs, URLs, and branch rows. The
   public workflow uses this behavior and never receives internal credentials.
 
