@@ -852,6 +852,7 @@ function Invoke-WindowsDeviceTestApp {
                 -AppPath $AppPath `
                 -ArgumentList @($resultFile, [string]$categoryIndex) `
                 -IncludeClasses $IncludeClasses
+            $categoryStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
             if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $categoryRunTimeoutSeconds -Process $process)) {
                 if ($process -and $process.HasExited) {
                     throw "$WindowsDeviceNoResultsMarker Windows device test category '$category' exited without creating $categoryResultFile."
@@ -864,6 +865,27 @@ function Invoke-WindowsDeviceTestApp {
                     throw "$WindowsDeviceTargetTimeoutMarker Windows device test category '$category' did not create $categoryResultFile within ${categoryRunTimeoutSeconds}s while running requested class(es) '$IncludeClasses'$methodScope."
                 }
                 throw "Windows device test category '$category' did not create $categoryResultFile within ${categoryRunTimeoutSeconds}s."
+            }
+
+            # The Windows runner creates the category result file before the test run has
+            # finished writing it. Do not parse on file appearance: wait for the app process
+            # to exit within the original category budget so the XML writer is complete.
+            $remainingMilliseconds = [Math]::Max(
+                1,
+                [int](($categoryRunTimeoutSeconds - $categoryStopwatch.Elapsed.TotalSeconds) * 1000))
+            $exitedInTime = $process.HasExited -or $process.WaitForExit($remainingMilliseconds)
+            if (-not $exitedInTime -and $process.HasExited) {
+                $exitedInTime = $true
+            }
+            if (-not $exitedInTime) {
+                if (-not $process.HasExited) {
+                    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+                }
+                if ($IncludeClasses) {
+                    $methodScope = if ($IncludeMethods) { " and method(s) '$IncludeMethods'" } else { "" }
+                    throw "$WindowsDeviceTargetTimeoutMarker Windows device test category '$category' did not exit within ${categoryRunTimeoutSeconds}s while running requested class(es) '$IncludeClasses'$methodScope."
+                }
+                throw "Windows device test category '$category' did not exit within ${categoryRunTimeoutSeconds}s."
             }
 
             $resultFiles += $categoryResultFile
@@ -885,9 +907,8 @@ function Invoke-WindowsDeviceTestApp {
             -IncludeClasses $IncludeClasses
 
         # A full-suite app creates its single results file and finalizes it only when the
-        # whole run completes, so waiting for the file to merely APPEAR (as the per-category
-        # path can, because each category file is written at that category's completion)
-        # races the writer and reads an empty/partial XML — surfacing as a false
+        # whole run completes, so waiting for the file to merely APPEAR races the writer
+        # and reads an empty/partial XML — surfacing as a false
         # "empty or not valid XML" ENV ERROR even though the run is healthy (PR #36577: the
         # Core Windows full run was read at 247s while it was still executing). Wait for the
         # process to EXIT instead, mirroring how eng/devices/windows.cake launches the
