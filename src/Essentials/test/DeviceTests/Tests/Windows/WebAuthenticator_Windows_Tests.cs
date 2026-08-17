@@ -136,5 +136,31 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			Assert.Equal(expected, actual);
 		}
+
+		[Fact]
+		public void RegistryOwnershipAcceptsDotnetHostedCommand()
+		{
+			var actual = WebAuthenticatorImplementation.IsRegistryCommandOwnedByCurrentExecutable(
+				"\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Apps\\sample.dll\" \"%1\"",
+				@"C:\Program Files\dotnet\dotnet.exe");
+
+			Assert.True(actual);
+		}
+
+		[Fact]
+		public void CallbackRouteExceptionsPreserveTheRedactedCauseChain()
+		{
+			var nativeCause = new InvalidOperationException("native diagnostic");
+			var inspectionFailure = WebAuthenticatorImplementation.CreateCallbackRouteException(
+				"Unable to inspect the current application instance.",
+				nativeCause);
+			var outerFailure = WebAuthenticatorImplementation.CreateCallbackRouteException(
+				"Unable to register the WebAuthenticator callback route.",
+				inspectionFailure);
+
+			Assert.Equal("Unable to register the WebAuthenticator callback route.", outerFailure.Message);
+			Assert.Same(inspectionFailure, outerFailure.InnerException);
+			Assert.Same(nativeCause, outerFailure.InnerException?.InnerException);
+		}
 	}
 }

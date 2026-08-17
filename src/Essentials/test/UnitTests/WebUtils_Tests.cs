@@ -136,6 +136,7 @@ namespace Tests
 		[InlineData("https://example.com/callback", "https://example.com:443/callback", true)]
 		[InlineData("https://example.com:8443/callback", "https://example.com:8443/callback", true)]
 		[InlineData("https://example.com:8443/callback", "https://example.com:9443/callback", false)]
+		[InlineData("maui-auth://host", "maui-auth://host:0", false)]
 		[InlineData("https://example.com/callback", "https://example.com/callback/", false)]
 		[InlineData("https://example.com/", "https://example.com/another/path", true)]
 		[InlineData("maui-auth:/callback", "maui-auth:/callback?code=123", true)]

@@ -278,6 +278,38 @@ namespace Tests
 		}
 
 		[Fact]
+		public async Task CallerCancellationConsumesOnlyMatchingDuplicateCallback()
+		{
+			using var cancellationSource = new CancellationTokenSource();
+			var decoder = new CallbackDecoder(_ => new Dictionary<string, string>());
+			var request = Begin(decoder: decoder, cancellationToken: cancellationSource.Token);
+
+			Assert.True(WebAuthenticatorRequestManager.TryCancelFromCaller(request));
+			Assert.False(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://other?code=ignored")));
+			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback?code=duplicate")));
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request.Task);
+			Assert.Equal(cancellationSource.Token, exception.CancellationToken);
+			Assert.Equal(0, decoder.CallCount);
+		}
+
+		[Fact]
+		public async Task FailureConsumesOnlyMatchingDuplicateCallback()
+		{
+			var expected = new InvalidOperationException("redacted failure");
+			var decoder = new CallbackDecoder(_ => new Dictionary<string, string>());
+			var request = Begin(decoder: decoder);
+
+			Assert.True(WebAuthenticatorRequestManager.TryFail(request, expected));
+			Assert.False(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://other?code=ignored")));
+			Assert.True(WebAuthenticatorRequestManager.TryHandleCallback(new Uri("maui-auth://callback?code=duplicate")));
+
+			var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => request.Task);
+			Assert.Same(expected, actual);
+			Assert.Equal(0, decoder.CallCount);
+		}
+
+		[Fact]
 		public async Task DecoderRunsOnceAndItsExceptionIsPropagated()
 		{
 			var expected = new DecoderException();

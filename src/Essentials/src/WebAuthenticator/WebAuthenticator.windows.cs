@@ -99,11 +99,13 @@ namespace Microsoft.Maui.Authentication
 					{
 						RegisterCallbackRoute(callbackUrl);
 					}
-					catch (Exception)
+					catch (Exception ex)
 					{
 						WebAuthenticatorRequestManager.TryFail(
 							request,
-							new InvalidOperationException("Unable to register the WebAuthenticator callback route."));
+							CreateCallbackRouteException(
+								"Unable to register the WebAuthenticator callback route.",
+								ex));
 					}
 				}
 
@@ -217,9 +219,11 @@ namespace Microsoft.Maui.Authentication
 				currentInstance = AppInstance.GetCurrent();
 				currentKey = currentInstance.Key;
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				throw new InvalidOperationException("Unable to inspect the current application instance.");
+				throw CreateCallbackRouteException(
+					"Unable to inspect the current application instance.",
+					ex);
 			}
 
 			var routeKey = CreateCallbackRouteKey(callbackUrl);
@@ -239,9 +243,11 @@ namespace Microsoft.Maui.Authentication
 			{
 				routeOwner = AppInstance.FindOrRegisterForKey(routeKey);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				throw new InvalidOperationException("Unable to register the WebAuthenticator callback route.");
+				throw CreateCallbackRouteException(
+					"Unable to register the WebAuthenticator callback route.",
+					ex);
 			}
 
 			if (routeOwner is null || !routeOwner.IsCurrent ||
@@ -310,6 +316,11 @@ namespace Microsoft.Maui.Authentication
 		internal static bool CanRegisterCallbackRoute(string? currentKey) =>
 			string.IsNullOrEmpty(currentKey) ||
 			currentKey.StartsWith(CallbackRouteKeyPrefix, StringComparison.Ordinal);
+
+		internal static InvalidOperationException CreateCallbackRouteException(
+			string message,
+			Exception innerException) =>
+			new(message, innerException);
 
 		internal static bool IsSameCallbackRoute(Uri expectedCallbackUrl, Uri callbackUrl) =>
 			string.Equals(

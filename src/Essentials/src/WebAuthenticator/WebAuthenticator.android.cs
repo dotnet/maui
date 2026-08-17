@@ -121,7 +121,11 @@ namespace Microsoft.Maui.Authentication
 							}
 							else
 							{
-								LaunchSystemBrowser(parentActivity, url);
+								WebAuthenticatorIntermediateActivity.StartBrowser(
+									parentActivity,
+									request.Id,
+									url);
+								usesIntermediateActivity = true;
 							}
 						});
 					}
@@ -148,7 +152,7 @@ namespace Microsoft.Maui.Authentication
 					try
 					{
 						await MainThread.InvokeOnMainThreadAsync(() =>
-							WebAuthenticatorIntermediateActivity.RequestCleanup(applicationContext, request.Id));
+							WebAuthenticatorIntermediateActivity.TryRequestCleanup(request.Id));
 					}
 					catch (Exception ex)
 					{

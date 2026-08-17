@@ -28,6 +28,10 @@ namespace Microsoft.Maui.Authentication
 		const int ModeCustomTab = 2;
 		const int ModeCallback = 3;
 		const int ModeCleanup = 4;
+		const int ModeBrowser = 5;
+
+		static readonly object liveOwnerLock = new();
+		static WeakReference<WebAuthenticatorIntermediateActivity>? liveOwner;
 
 		readonly ActivityResultCallback<AuthTabIntent.AuthResult> authTabResultCallback;
 		readonly ActivityResultLauncher? authTabLauncher;
@@ -86,8 +90,9 @@ namespace Microsoft.Maui.Authentication
 			callbackUrl = extras.GetString(CallbackUrlExtra);
 			provider = extras.GetString(ProviderExtra);
 
-			if ((mode != ModeAuthTab && mode != ModeCustomTab) ||
-				string.IsNullOrEmpty(url) || string.IsNullOrEmpty(provider) ||
+			if ((mode != ModeAuthTab && mode != ModeCustomTab && mode != ModeBrowser) ||
+				string.IsNullOrEmpty(url) ||
+				(mode != ModeBrowser && string.IsNullOrEmpty(provider)) ||
 				(mode == ModeAuthTab && string.IsNullOrEmpty(callbackUrl)))
 			{
 				Finish();
@@ -96,6 +101,8 @@ namespace Microsoft.Maui.Authentication
 					new InvalidOperationException("The Android WebAuthenticator launch state was incomplete."));
 				return;
 			}
+
+			RegisterLiveOwner(this);
 		}
 
 		protected override void OnResume()
@@ -104,7 +111,7 @@ namespace Microsoft.Maui.Authentication
 
 			if (IsFinishing || requestId <= 0 || !WebAuthenticatorRequestManager.IsActive(requestId))
 			{
-				Finish();
+				FinishAndReleaseOwner();
 				return;
 			}
 
@@ -115,12 +122,14 @@ namespace Microsoft.Maui.Authentication
 					LaunchAuthTabOrFallback();
 				else if (mode == ModeCustomTab)
 					LaunchCustomTabOrBrowser();
+				else if (mode == ModeBrowser)
+					LaunchBrowser();
 				return;
 			}
 
-			if (mode == ModeCustomTab)
+			if (mode == ModeCustomTab || mode == ModeBrowser)
 			{
-				Finish();
+				FinishAndReleaseOwner();
 				WebAuthenticatorRequestManager.TryCancelFromPlatform(requestId);
 			}
 		}
@@ -135,14 +144,20 @@ namespace Microsoft.Maui.Authentication
 			var incomingMode = intent.GetIntExtra(ModeExtra, 0);
 			if (incomingMode == ModeCallback)
 			{
-				Finish();
+				FinishAndReleaseOwner();
 				RouteCallback(intent);
 			}
 			else if (incomingMode == ModeCleanup &&
 				intent.GetLongExtra(RequestIdExtra, 0) == requestId)
 			{
-				Finish();
+				FinishAndReleaseOwner();
 			}
+		}
+
+		protected override void OnDestroy()
+		{
+			ReleaseLiveOwner(this);
+			base.OnDestroy();
 		}
 
 		protected override void OnSaveInstanceState(Bundle outState)
@@ -174,19 +189,24 @@ namespace Microsoft.Maui.Authentication
 				{
 					if (!fallbackAvailable)
 					{
-						Finish();
+						FinishAndReleaseOwner();
 						WebAuthenticatorRequestManager.TryFail(
 							requestId,
 							new InvalidOperationException("The selected Android Auth Tab provider is no longer available."));
 						return;
 					}
 
-					mode = ModeCustomTab;
 					provider = replacementProvider;
 					if (string.IsNullOrEmpty(provider))
-						LaunchBrowserAndFinish();
+					{
+						mode = ModeBrowser;
+						LaunchBrowser();
+					}
 					else
+					{
+						mode = ModeCustomTab;
 						LaunchCustomTabOrBrowser();
+					}
 					return;
 				}
 			}
@@ -232,7 +252,7 @@ namespace Microsoft.Maui.Authentication
 				}
 				else
 				{
-					Finish();
+					FinishAndReleaseOwner();
 					WebAuthenticatorRequestManager.TryFail(
 						requestId,
 						new InvalidOperationException("The selected Android Auth Tab provider could not be launched."));
@@ -242,6 +262,13 @@ namespace Microsoft.Maui.Authentication
 
 		void LaunchCustomTabOrBrowser()
 		{
+			if (string.IsNullOrEmpty(provider))
+			{
+				mode = ModeBrowser;
+				LaunchBrowser();
+				return;
+			}
+
 			try
 			{
 				using var builder = new CustomTabsIntent.Builder();
@@ -257,7 +284,8 @@ namespace Microsoft.Maui.Authentication
 
 				if (launchIntent.ResolveActivity(packageManager) is null)
 				{
-					LaunchBrowserAndFinish();
+					mode = ModeBrowser;
+					LaunchBrowser();
 					return;
 				}
 
@@ -265,28 +293,20 @@ namespace Microsoft.Maui.Authentication
 			}
 			catch (Exception)
 			{
-				LaunchBrowserAndFinish();
+				mode = ModeBrowser;
+				LaunchBrowser();
 			}
 		}
 
-		void LaunchBrowserAndFinish()
+		void LaunchBrowser()
 		{
-			var failed = false;
 			try
 			{
 				WebAuthenticatorImplementation.LaunchSystemBrowser(this, new Uri(url!));
 			}
 			catch (Exception)
 			{
-				failed = true;
-			}
-			finally
-			{
-				Finish();
-			}
-
-			if (failed)
-			{
+				FinishAndReleaseOwner();
 				WebAuthenticatorRequestManager.TryFail(
 					requestId,
 					new InvalidOperationException("No browser could be opened for web authentication."));
@@ -295,8 +315,14 @@ namespace Microsoft.Maui.Authentication
 
 		void OnAuthTabResult(AuthTabIntent.AuthResult? result)
 		{
-			Finish();
+			FinishAndReleaseOwner();
 			HandleAuthTabResult(requestId, result?.ResultCode, result?.ResultUri?.ToString());
+		}
+
+		void FinishAndReleaseOwner()
+		{
+			ReleaseLiveOwner(this);
+			Finish();
 		}
 
 		internal static void HandleAuthTabResult(long requestId, int? resultCode, string? callbackUri)
@@ -395,6 +421,9 @@ namespace Microsoft.Maui.Authentication
 			activity.StartActivity(CreateLaunchIntent(activity, ModeCustomTab, requestId, url, provider, prefersEphemeral));
 		}
 
+		internal static void StartBrowser(Activity activity, long requestId, Uri url) =>
+			activity.StartActivity(CreateLaunchIntent(activity, ModeBrowser, requestId, url, null, false));
+
 		internal static void StartCallback(Context context, global::Android.Net.Uri? callbackUri)
 		{
 			var intent = new Intent(context, typeof(WebAuthenticatorIntermediateActivity));
@@ -406,15 +435,17 @@ namespace Microsoft.Maui.Authentication
 			context.StartActivity(intent);
 		}
 
-		internal static void RequestCleanup(Context context, long requestId)
+		internal static bool TryRequestCleanup(long requestId)
 		{
-			var intent = new Intent(context, typeof(WebAuthenticatorIntermediateActivity));
+			if (!TryGetLiveOwner(requestId, out var activity))
+				return false;
+
+			var intent = new Intent(activity, typeof(WebAuthenticatorIntermediateActivity));
 			intent.PutExtra(ModeExtra, ModeCleanup);
 			intent.PutExtra(RequestIdExtra, requestId);
 			intent.AddFlags(global::Android.Content.ActivityFlags.ClearTop | global::Android.Content.ActivityFlags.SingleTop);
-			if (context is not Activity)
-				intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
-			context.StartActivity(intent);
+			activity.StartActivity(intent);
+			return true;
 		}
 
 		static Intent CreateLaunchIntent(
@@ -422,16 +453,61 @@ namespace Microsoft.Maui.Authentication
 			int mode,
 			long requestId,
 			Uri url,
-			string provider,
+			string? provider,
 			bool prefersEphemeral)
 		{
 			var intent = new Intent(activity, typeof(WebAuthenticatorIntermediateActivity));
 			intent.PutExtra(ModeExtra, mode);
 			intent.PutExtra(RequestIdExtra, requestId);
 			intent.PutExtra(UrlExtra, url.OriginalString);
-			intent.PutExtra(ProviderExtra, provider);
+			if (!string.IsNullOrEmpty(provider))
+				intent.PutExtra(ProviderExtra, provider);
 			intent.PutExtra(EphemeralExtra, prefersEphemeral);
 			return intent;
+		}
+
+		static void RegisterLiveOwner(WebAuthenticatorIntermediateActivity activity)
+		{
+			lock (liveOwnerLock)
+				liveOwner = new WeakReference<WebAuthenticatorIntermediateActivity>(activity);
+		}
+
+		static bool TryGetLiveOwner(long requestId, out WebAuthenticatorIntermediateActivity activity)
+		{
+			lock (liveOwnerLock)
+			{
+				if (liveOwner is null || !liveOwner.TryGetTarget(out var currentActivity))
+				{
+					liveOwner = null;
+					activity = null!;
+					return false;
+				}
+
+				if (currentActivity.requestId == requestId &&
+					!currentActivity.IsFinishing &&
+					!currentActivity.IsDestroyed)
+				{
+					activity = currentActivity;
+					return true;
+				}
+			}
+
+			activity = null!;
+			return false;
+		}
+
+		static void ReleaseLiveOwner(WebAuthenticatorIntermediateActivity activity)
+		{
+			lock (liveOwnerLock)
+			{
+				if (liveOwner is null)
+					return;
+
+				if (liveOwner.TryGetTarget(out var currentActivity) && !ReferenceEquals(currentActivity, activity))
+					return;
+
+				liveOwner = null;
+			}
 		}
 	}
 }

@@ -3,13 +3,44 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using AndroidX.Browser.Auth;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Authentication;
 using Xunit;
+using ABundle = Android.OS.Bundle;
+using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Activity(Exported = true)]
+	[IntentFilter(
+		new[] { Intent.ActionView },
+		Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+		DataScheme = "maui-webauth-test")]
+	public sealed class WebAuthenticatorTestBrowserActivity : Activity
+	{
+		internal const string Scheme = "maui-webauth-test";
+
+		static TaskCompletionSource<WebAuthenticatorTestBrowserActivity>? pendingLaunch;
+
+		internal static Task<WebAuthenticatorTestBrowserActivity> PrepareForLaunch()
+		{
+			var launch = new TaskCompletionSource<WebAuthenticatorTestBrowserActivity>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			Interlocked.Exchange(ref pendingLaunch, launch);
+			return launch.Task;
+		}
+
+		protected override void OnCreate(ABundle? savedInstanceState)
+		{
+			base.OnCreate(savedInstanceState);
+
+			Interlocked.Exchange(ref pendingLaunch, null)?.TrySetResult(this);
+		}
+	}
+
 	[CollectionDefinition(CollectionName, DisableParallelization = true)]
 	public sealed class AndroidWebAuthenticatorCollection
 	{
@@ -185,6 +216,77 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			await request.Task;
 		}
 
+		[Fact]
+		public async Task SystemBrowserReturnCancelsTheBoundRequest()
+		{
+			var request = Begin();
+			var browserActivity = await StartBrowserAsync(request);
+
+			try
+			{
+				await FinishActivityAsync(browserActivity);
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+					request.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+			}
+			finally
+			{
+				await FinishActivityAsync(browserActivity);
+			}
+		}
+
+		[Fact]
+		public async Task SystemBrowserCallbackCompletesBeforeReturnCancellation()
+		{
+			var first = Begin();
+			var browserActivity = await StartBrowserAsync(first);
+
+			try
+			{
+				await MainThread.InvokeOnMainThreadAsync(() =>
+					WebAuthenticatorIntermediateActivity.StartCallback(
+						browserActivity,
+						global::Android.Net.Uri.Parse("maui-auth://callback?code=sample-code")));
+
+				Assert.Equal(
+					"sample-code",
+					(await first.Task.WaitAsync(TimeSpan.FromSeconds(10))).Properties["code"]);
+				Assert.False(await TryRequestCleanupAsync(first.Id));
+				Assert.True(WebAuthenticatorRequestManager.End(first));
+
+				var successor = Begin();
+				Assert.False(await TryRequestCleanupAsync(first.Id));
+				Assert.False(successor.Task.IsCompleted);
+				Assert.True(WebAuthenticatorRequestManager.TryCancelFromPlatform(successor));
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => successor.Task);
+			}
+			finally
+			{
+				await FinishActivityAsync(browserActivity);
+			}
+		}
+
+		[Fact]
+		public async Task CleanupRequiresAMatchingLiveOwner()
+		{
+			var request = Begin();
+
+			Assert.False(await TryRequestCleanupAsync(request.Id));
+			var browserActivity = await StartBrowserAsync(request);
+
+			try
+			{
+				Assert.False(await TryRequestCleanupAsync(request.Id + 1));
+				Assert.False(request.Task.IsCompleted);
+				Assert.True(WebAuthenticatorRequestManager.TryCancelFromCaller(request));
+				Assert.True(await TryRequestCleanupAsync(request.Id));
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request.Task);
+			}
+			finally
+			{
+				await FinishActivityAsync(browserActivity);
+			}
+		}
+
 		public void Dispose()
 		{
 			for (var index = requests.Count - 1; index >= 0; index--)
@@ -203,6 +305,34 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			requests.Add(request);
 			return request;
 		}
+
+		static async Task<WebAuthenticatorTestBrowserActivity> StartBrowserAsync(WebAuthenticatorRequest request)
+		{
+			var browserLaunch = WebAuthenticatorTestBrowserActivity.PrepareForLaunch();
+			await MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				var activity = MauiPlatform.CurrentActivity ??
+					throw new InvalidOperationException("The current Android Activity is unavailable.");
+
+				WebAuthenticatorIntermediateActivity.StartBrowser(
+					activity,
+					request.Id,
+					new Uri($"{WebAuthenticatorTestBrowserActivity.Scheme}://authorize"));
+			});
+
+			return await browserLaunch.WaitAsync(TimeSpan.FromSeconds(10));
+		}
+
+		static Task<bool> TryRequestCleanupAsync(long requestId) =>
+			MainThread.InvokeOnMainThreadAsync(() =>
+				WebAuthenticatorIntermediateActivity.TryRequestCleanup(requestId));
+
+		static Task FinishActivityAsync(Activity activity) =>
+			MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				if (!activity.IsFinishing && !activity.IsDestroyed)
+					activity.Finish();
+			});
 
 		sealed class CallbackAuthenticator : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 		{

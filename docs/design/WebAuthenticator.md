@@ -12,6 +12,8 @@ token exchange, and token validation remain in the application.
 - Callback, cancellation, and failure race through one process-wide completion reservation.
 - Decoder and platform callbacks run outside the manager lock and at most once.
 - Cleanup completes before cancellation-registration disposal; request removal is the final step.
+- Until request removal, a matching callback after terminal completion has been reserved is consumed
+  as a duplicate, while a route mismatch remains available to other lifecycle handlers.
 - A request cannot resume after process termination.
 
 Route-only callbacks match the configured scheme and, when present, host, effective port, and
@@ -32,15 +34,17 @@ implementation or another lifecycle handler, and the built-in implementation is 
 ### Windows
 
 Packaged apps declare the callback protocol on the current manifest application. Unpackaged apps
-use a protocol command owned by the current executable. A framework-owned `AppInstance` route key
-identifies the callback owner; transient activation processes redirect to that owner and remain
-alive until redirection completes. The route remains registered after the request because explicit
-unregistration prevents reliable re-registration ([Windows App SDK #4420][windows-appsdk-4420]). A
-later `FindOrRegisterForKey` can replace a previous framework route when the callback scheme changes,
-as implemented by [Windows App SDK 2.3.1][windows-appsdk-appinstance]. If the app already owns the
-current instance key, the framework preserves it and the app must cooperatively route protocol
-activations. The originating window is brought to the foreground on a best-effort basis before
-callback decoding and observable completion.
+use a protocol command owned by the current executable. An absolute command targeting another
+executable is rejected; a framework-dependent command is accepted when it uses the current
+`dotnet.exe` host. A framework-owned `AppInstance` route key identifies the callback owner; transient
+activation processes redirect to that owner and remain alive until redirection completes. The route
+remains registered after the request because explicit unregistration prevents reliable
+re-registration ([Windows App SDK #4420][windows-appsdk-4420]). A later `FindOrRegisterForKey` can
+replace a previous framework route when the callback scheme changes, as implemented by [Windows App
+SDK 2.3.1][windows-appsdk-appinstance]. If the app already owns the current instance key, the
+framework preserves it and the app must cooperatively route protocol activations. The originating
+window is brought to the foreground on a best-effort basis before callback decoding and observable
+completion.
 
 ### iOS and Mac Catalyst
 
@@ -53,8 +57,11 @@ the main queue before completing the shared request. The framework does not clea
 Android prefers Auth Tab when a verified Custom Tabs provider supports it. Results are correlated
 by request ID. HTTPS callbacks with a non-default port are not eligible for Auth Tab because that
 transport cannot preserve the port. If Auth Tab is unavailable or ineligible, the implementation
-falls back to a Custom Tab and then the system browser. Custom-scheme fallbacks require a matching
-exported callback activity; HTTPS callbacks require matching Digital Asset Links.
+falls back to a Custom Tab and then the system browser. Both fallback transports are launched from
+a request-owned intermediate activity, so returning from the browser without a callback cancels the
+same request. Caller cancellation only targets a matching live intermediate activity and never
+creates a cleanup activity. Custom-scheme fallbacks require a matching exported callback activity;
+HTTPS callbacks require matching Digital Asset Links.
 
 ## Diagnostics and limitations
 
@@ -62,9 +69,9 @@ Native and operating-system failures can be written to Debug output with their e
 Logs at URI, callback, manager, and application-decoder boundaries remain redacted and must not
 include authorization URLs, callback values, query strings, codes, or tokens.
 
-Native cancellation is reported when the selected transport exposes it. Closing an external
-fallback browser is not always observable. `PrefersEphemeralWebBrowserSession` is best-effort and
-is not guaranteed on Windows.
+Native cancellation is reported when the selected transport exposes it. Android can close its own
+request lifecycle owner, but cannot guarantee that browser UI hosted in a separate external task is
+forcibly closed. `PrefersEphemeralWebBrowserSession` is best-effort and is not guaranteed on Windows.
 
 See the [Essentials samples README](../../src/Essentials/samples/README.md#webauthenticator) for the
 zero-configuration sample and its production-security boundary.
