@@ -446,6 +446,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Border ignores late measure invalidation after handler disconnect - Issue 17523")]
+		public async Task BorderIgnoresLateMeasureInvalidationAfterHandlerDisconnect()
+		{
+			SetupBuilder();
+
+			var border = new Border();
+			var handler = await CreateHandlerAsync<BorderHandler>(border);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				((IElementHandler)handler).DisconnectHandler();
+				BorderHandler.MapInvalidateMeasure(handler, border, null);
+			});
+		}
+
+		[Fact(DisplayName = "Border synchronizes clip host after direct layout owner changes - Issue 17523")]
+		public async Task BorderSynchronizesClipHostAfterDirectLayoutOwnerChanges()
+		{
+			var firstBorder = new MeasureCountingBorder();
+			var secondBorder = new MeasureCountingBorder();
+			var thirdBorder = new MeasureCountingBorder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = new TestContentPanel
+				{
+					CrossPlatformLayout = firstBorder,
+				};
+				platformView.EnableContentClip();
+
+				var availableSize = new global::Windows.Foundation.Size(100, 100);
+				platformView.MeasureForTest(availableSize);
+				platformView.ArrangeForTest(availableSize);
+				var firstMeasureCount = firstBorder.MeasureCount;
+
+				platformView.CrossPlatformLayout = secondBorder;
+				platformView.MeasureForTest(availableSize);
+
+				Assert.Equal(firstMeasureCount, firstBorder.MeasureCount);
+				Assert.Equal(1, secondBorder.MeasureCount);
+				Assert.Same(secondBorder, platformView.ContentClipHost?.CrossPlatformLayout);
+
+				platformView.CrossPlatformLayout = thirdBorder;
+				platformView.ArrangeForTest(new global::Windows.Foundation.Size(101, 100));
+
+				Assert.Same(thirdBorder, platformView.ContentClipHost?.CrossPlatformLayout);
+			});
+		}
+
 		[Fact(DisplayName = "Border refreshes clip host layout when its handler reconnects - Issue 17523")]
 		public async Task BorderRefreshesClipHostLayoutWhenHandlerReconnects()
 		{
@@ -681,6 +730,15 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			protected override ContentPanel CreatePlatformView() =>
 				new() { CrossPlatformLayout = VirtualView };
+		}
+
+		sealed class TestContentPanel : ContentPanel
+		{
+			public global::Windows.Foundation.Size MeasureForTest(global::Windows.Foundation.Size availableSize) =>
+				base.MeasureOverride(availableSize);
+
+			public global::Windows.Foundation.Size ArrangeForTest(global::Windows.Foundation.Size finalSize) =>
+				base.ArrangeOverride(finalSize);
 		}
 
 		sealed class MeasureCountingBorder : Border, ICrossPlatformLayout

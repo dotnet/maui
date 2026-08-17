@@ -74,6 +74,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentClipHost is not null)
 			{
+				SynchronizeContentClipHostLayout();
 				_contentClipHost.Measure(availableSize);
 				measured = _contentClipHost.DesiredSize;
 			}
@@ -116,6 +117,11 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentClipHost is not null)
 			{
+				if (SynchronizeContentClipHostLayout())
+				{
+					_contentClipHost.Measure(finalSize);
+				}
+
 				_contentClipHost.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 				actual = finalSize;
 			}
@@ -233,6 +239,21 @@ namespace Microsoft.Maui.Platform
 				InvalidateMeasure();
 				_contentClipHost?.InvalidateMeasure();
 			}
+		}
+
+		bool SynchronizeContentClipHostLayout()
+		{
+			if (_contentClipHost is null ||
+				ReferenceEquals(_contentClipHost.CrossPlatformLayout, CrossPlatformLayout))
+			{
+				return false;
+			}
+
+			_contentClipHost.CrossPlatformLayout = CrossPlatformLayout;
+			_contentClipHost.InvalidateMeasure();
+			_contentClipHost.InvalidateArrange();
+
+			return true;
 		}
 
 		static void OnBackgroundPropertyChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
