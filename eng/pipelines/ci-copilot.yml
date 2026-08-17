@@ -3616,6 +3616,11 @@ stages:
               # (see PARAM_PR_NUMBER) and read them as env:NAME. Runtime macros $(var)
               # are fine. (This comment deliberately avoids the literal brace syntax.)
               $ErrorActionPreference = 'Continue'
+              $ghRetryHelper = ".github/scripts/shared/Invoke-GhCommandWithRetry.ps1"
+              if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
+                throw "Required GitHub retry helper not found: $ghRetryHelper"
+              }
+              . $ghRetryHelper
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "$env:PARAM_PR_NUMBER"
@@ -4697,18 +4702,22 @@ stages:
                         "> [!WARNING]"
                         "> ### 🔍 Automated review could not complete"
                         ">"
-                        "> A stage of the reviewer pipeline could not finish, so **no review summary was produced** for this run — most often the PR's target branch failing to build. This is usually a transient **infrastructure** issue or a pre-existing break on the base branch, **not** a problem with your change."
+                        "> A trusted setup or review stage could not finish before producing review artifacts. Common causes include a transient GitHub/CI API failure, a CI-agent failure, or a pre-existing break on the target branch; this notice does **not** identify a merge conflict in your change."
                         ">"
                         "> Please re-comment ``/review`` to retry on a fresh agent."
                         ">"
                         "> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline · <a href=`"$buildUrl`">build log</a></sub>"
                       ) -join [Environment]::NewLine
                       $riTmp = New-TemporaryFile
-                      $riBody | Set-Content $riTmp.FullName -Encoding UTF8
-                      gh pr comment $prNumber --repo dotnet/maui --body-file $riTmp.FullName | Out-Null
-                      if ($LASTEXITCODE -eq 0) { Write-Host "✅ Review-incomplete notice posted (Stage 3 fallback)" }
-                      else { Write-Host "⚠️ Review-incomplete notice POST returned non-zero" }
-                      Remove-Item $riTmp.FullName -ErrorAction SilentlyContinue
+                      try {
+                        $riBody | Set-Content $riTmp.FullName -Encoding UTF8
+                        Invoke-GhCommandWithRetry `
+                          -Arguments @('pr', 'comment', $prNumber, '--repo', 'dotnet/maui', '--body-file', $riTmp.FullName) `
+                          -Description "post the review-incomplete notice for PR #$prNumber" | Out-Null
+                        Write-Host "✅ Review-incomplete notice posted (Stage 3 fallback)"
+                      } finally {
+                        Remove-Item $riTmp.FullName -ErrorAction SilentlyContinue
+                      }
                     } catch {
                       Write-Host "⚠️ Review-incomplete notice posting failed (non-fatal): $_"
                     }

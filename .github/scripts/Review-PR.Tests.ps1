@@ -59,6 +59,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
+    . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
 }
 
 Describe 'Phase worktree requirements' {
@@ -67,6 +68,20 @@ Describe 'Phase worktree requirements' {
         Test-PhaseRequiresReviewWorktree -PhaseName 'Gate' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'CopilotReview' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'Post' | Should -BeFalse
+    }
+}
+
+Describe 'Setup PR metadata lookup' {
+    It 'uses the retrying REST helper and reserves not-found for HTTP 404' {
+        $content | Should -Match ([regex]::Escape(
+            'Invoke-GhCommandWithRetry `'))
+        $content | Should -Match ([regex]::Escape(
+            '-Arguments @(''api'', "repos/dotnet/maui/pulls/$PRNumber")'))
+        $content | Should -Match 'PR #\$PRNumber not found \(GitHub returned HTTP 404\)'
+        $content | Should -Not -Match ([regex]::Escape(
+            '$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json'))
+        $content | Should -Match ([regex]::Escape(
+            '$baseRefName = [string]$prInfo.base.ref'))
     }
 }
 
@@ -124,6 +139,16 @@ Describe 'Copilot reviewer configuration' {
         $pipelineContent | Should -Match '(?s)IsNullOrWhiteSpace\(\$gateResult\).*?\$gateResult = ''TIMEDOUT'''
         $pipelineContent | Should -Match ([regex]::Escape("variable=effectiveTrustedGateResult]`$gateResult"))
         $pipelineContent | Should -Match ([regex]::Escape('-TrustedGateResult "$(effectiveTrustedGateResult)"'))
+    }
+
+    It 'extends Copilot startup retries for confirmed GitHub 429 and 5xx failures' {
+        $content | Should -Match ([regex]::Escape('$maxCopilotAuthAttempts = 5'))
+        $content | Should -Match ([regex]::Escape('$maxNonServiceAuthAttempts = 3'))
+        $content | Should -Match ([regex]::Escape('Test-GhCommandFailureIsTransient -Detail $line'))
+        $content | Should -Match ([regex]::Escape('$copilotAuthRetryBaseDelaySec * [Math]::Pow(2, $copilotAttempt - 1)'))
+        $content | Should -Match ([regex]::Escape('[Math]::Min('))
+        $content | Should -Match 'transient GitHub auth-validation service failure'
+        $content | Should -Not -Match 'transient auth-validation 401'
     }
 
     It 'defaults the local test reviewer to GPT-5.6 Sol with long context' {
@@ -411,6 +436,23 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('elseif ($tSkip -gt 0) { "$tPass/$tCount ($tSkip skipped) ✓" }'))
         $pipelineContent | Should -Match ([regex]::Escape('$regularFailed failed$skippedSummary across $categoryText'))
         $pipelineContent | Should -Match ([regex]::Escape('$totalPassed + $totalFailed + $totalSkipped'))
+    }
+
+    It 'retries the deferred review-incomplete notice without misreporting a merge conflict' {
+        $fallbackStart = $pipelineContent.IndexOf('No PRAgent content and no deep results')
+        $fallbackEnd = $pipelineContent.IndexOf('# Replace in-process results with deep results', $fallbackStart)
+
+        $fallbackStart | Should -BeGreaterThan -1
+        $fallbackEnd | Should -BeGreaterThan $fallbackStart
+        $fallbackBlock = $pipelineContent.Substring($fallbackStart, $fallbackEnd - $fallbackStart)
+
+        $pipelineContent | Should -Match ([regex]::Escape(
+            '. $ghRetryHelper'))
+        $fallbackBlock | Should -Match 'Invoke-GhCommandWithRetry'
+        $fallbackBlock | Should -Match 'post the review-incomplete notice'
+        $fallbackBlock | Should -Match 'transient GitHub/CI API failure'
+        $fallbackBlock | Should -Match 'does \*\*not\*\* identify a merge conflict'
+        $fallbackBlock | Should -Not -Match 'gh pr comment \$prNumber'
     }
 
     It 'bounds and deduplicates deep UI diagnostics without duplicating canonical snapshots' {

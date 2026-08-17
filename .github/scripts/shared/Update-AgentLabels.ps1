@@ -18,6 +18,12 @@
     but do not throw or exit with error codes.
 #>
 
+$ghRetryHelper = Join-Path $PSScriptRoot 'Invoke-GhCommandWithRetry.ps1'
+if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
+    throw "Required GitHub retry helper not found: $ghRetryHelper"
+}
+. $ghRetryHelper
+
 # ============================================================
 # Label definitions
 # ============================================================
@@ -71,30 +77,38 @@ function Ensure-LabelExists {
     )
 
     try {
-        # Check if label exists
-        $existing = gh api "repos/$Owner/$Repo/labels/$([uri]::EscapeDataString($LabelName))" 2>$null | ConvertFrom-Json
-        if ($LASTEXITCODE -eq 0 -and $existing) {
+        $labelEndpoint = "repos/$Owner/$Repo/labels/$([uri]::EscapeDataString($LabelName))"
+        $existingJson = Invoke-GhCommandWithRetry `
+            -Arguments @('api', $labelEndpoint) `
+            -Description "read label '$LabelName'" `
+            -AllowNotFound
+        if ($null -ne $existingJson) {
+            $existing = $existingJson | ConvertFrom-Json
             # Label exists — update if description or color changed
             $needsUpdate = ($existing.description -ne $Description) -or ($existing.color -ne $Color)
             if ($needsUpdate) {
-                gh api "repos/$Owner/$Repo/labels/$([uri]::EscapeDataString($LabelName))" `
-                    --method PATCH `
-                    -f description="$Description" `
-                    -f color="$Color" 2>$null | Out-Null
+                Invoke-GhCommandWithRetry `
+                    -Arguments @(
+                        'api', $labelEndpoint,
+                        '--method', 'PATCH',
+                        '-f', "description=$Description",
+                        '-f', "color=$Color"
+                    ) `
+                    -Description "update label '$LabelName'" | Out-Null
                 Write-Host "  🏷️  Updated label: $LabelName" -ForegroundColor Gray
             }
         } else {
             # Label doesn't exist — create it
-            gh api "repos/$Owner/$Repo/labels" `
-                --method POST `
-                -f name="$LabelName" `
-                -f description="$Description" `
-                -f color="$Color" 2>$null | Out-Null
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "  🏷️  Created label: $LabelName" -ForegroundColor Green
-            } else {
-                Write-Host "  ⚠️  Failed to create label: $LabelName" -ForegroundColor Yellow
-            }
+            Invoke-GhCommandWithRetry `
+                -Arguments @(
+                    'api', "repos/$Owner/$Repo/labels",
+                    '--method', 'POST',
+                    '-f', "name=$LabelName",
+                    '-f', "description=$Description",
+                    '-f', "color=$Color"
+                ) `
+                -Description "create label '$LabelName'" | Out-Null
+            Write-Host "  🏷️  Created label: $LabelName" -ForegroundColor Green
         }
     }
     catch {
@@ -112,9 +126,15 @@ function Get-AgentLabels {
         [string]$Repo = 'maui'
     )
 
-    $labels = gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null
-    if ($LASTEXITCODE -ne 0) { return @() }
-    return @($labels | Where-Object { $_ -like 's/agent-*' })
+    try {
+        $labels = Invoke-GhCommandWithRetry `
+            -Arguments @('api', "repos/$Owner/$Repo/issues/$PRNumber/labels", '--jq', '.[].name') `
+            -Description "read labels for PR #$PRNumber"
+        return @(($labels -split "`n") | Where-Object { $_ -like 's/agent-*' })
+    } catch {
+        Write-Host "  ⚠️  Failed to read labels for PR #${PRNumber}: $($_.Exception.Message)" -ForegroundColor Yellow
+        return @()
+    }
 }
 
 # ============================================================
@@ -132,22 +152,16 @@ function Add-Label {
     try {
         $tmp = New-TemporaryFile
         @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
-        $output = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
-            --method POST `
-            --input $tmp 2>&1
-        $exitCode = $LASTEXITCODE
-        if ($exitCode -eq 0) {
-            return $true
-        }
-
-        $message = ($output | Out-String).Trim()
-        if ([string]::IsNullOrWhiteSpace($message)) {
-            $message = "gh api exited with code $exitCode."
-        } elseif ($message.Length -gt 1000) {
-            $message = $message.Substring(0, 1000) + '...'
-        }
-
-        Write-Host "  ⚠️  Failed to add label '$LabelName' to PR #$PRNumber (gh api exit code $exitCode): $message" -ForegroundColor Yellow
+        Invoke-GhCommandWithRetry `
+            -Arguments @(
+                'api', "repos/$Owner/$Repo/issues/$PRNumber/labels",
+                '--method', 'POST',
+                '--input', $tmp.FullName
+            ) `
+            -Description "add label '$LabelName' to PR #$PRNumber" | Out-Null
+        return $true
+    } catch {
+        Write-Host "  ⚠️  Failed to add label '$LabelName' to PR #${PRNumber}: $($_.Exception.Message)" -ForegroundColor Yellow
         return $false
     } finally {
         if ($tmp) {
@@ -167,9 +181,19 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 1>$null 2>$null
-    return $LASTEXITCODE -eq 0
+    try {
+        Invoke-GhCommandWithRetry `
+            -Arguments @(
+                'api', "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))",
+                '--method', 'DELETE'
+            ) `
+            -Description "remove label '$LabelName' from PR #$PRNumber" `
+            -AllowNotFound | Out-Null
+        return $true
+    } catch {
+        Write-Host "  ⚠️  Failed to remove label '$LabelName' from PR #${PRNumber}: $($_.Exception.Message)" -ForegroundColor Yellow
+        return $false
+    }
 }
 
 # ============================================================
