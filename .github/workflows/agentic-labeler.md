@@ -110,6 +110,8 @@ tools:
     #   - prompt hardening below tells the agent to ignore any labeling
     #     instructions found in the issue/PR body.
     min-integrity: none
+  # Community-authored content is read only through GitHub MCP; the agent has no shell.
+  bash: false
 
 concurrency:
   group: "agentic-labeler-${{ github.event.issue.number || github.event.pull_request.number || inputs.issue_number || github.run_id }}"
