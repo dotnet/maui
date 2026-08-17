@@ -52,6 +52,8 @@ Visible rendering tests must prove visible/native output, not only managed MAUI 
 
 Recordings keep the affected control and its visible state on screen. A `PASS:` or `BUG REPRODUCED:` verdict is rendered on a separate result/status element and is only supplemental; it must not replace the affected control's text, title, content, geometry, or other observable state. Transition defects show the pre-trigger reference state and post-trigger failure state continuously.
 
+Timing-sensitive, intermittent, and race-condition reports preserve their repetition prerequisite. If an unsuccessful trigger can be reset safely, the Appium plan performs two to five reset-and-trigger cycles in one device session rather than spending full Sandbox regeneration attempts on the same one-shot plan.
+
 Keyboard, SafeArea, and ScrollView range tests must use native inset-aware geometry and behavior rather than arbitrary deltas. System-inset propagation tests must verify a nonzero runtime inset and exercise normal root-window propagation instead of directly dispatching an inset callback to the tested child. Runtime property changes must occur after attachment when that is the reported trigger. iOS-only `.iOS.cs` tests must explicitly exclude Mac Catalyst compilation.
 
 Tests of automatic bindable-property propagation must not call `Handler.UpdateValue` or a mapper manually unless the issue itself reports that direct API. Potentially asynchronous native refreshes use a bounded repository-standard eventual assertion or real completion event rather than an immediate sample.

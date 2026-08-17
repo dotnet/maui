@@ -48,6 +48,7 @@ BeforeAll {
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
         'Assert-NoDuplicateJsonProperties',
+        'Test-TimingSensitiveIssueContext',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
         'Read-SandboxProposal',
@@ -258,6 +259,48 @@ Describe 'Replication orchestrator security boundary' {
             Should -Throw '*must end with an exact semantic text assertion or trusted Windows app-closure assertion*'
     }
 
+    It 'requires timing-sensitive issues to repeat a resettable trigger in one Appium session' {
+        $IssueNumber = 37425
+        $Platform = 'android'
+        $issueAgentContextPath = Join-Path $TestDrive 'issue-agent-context.md'
+        'The reported race is timing-sensitive and may take a couple of attempts.' |
+            Set-Content -LiteralPath $issueAgentContextPath
+        $appiumPlanPath = Join-Path $TestDrive 'timing-plan.json'
+        @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 37425,
+  "steps": [
+    {
+      "action": "tap",
+      "description": "Trigger the reported navigation race",
+      "locator": { "strategy": "androidText", "value": "Other" },
+      "value": null,
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the exact race result",
+      "locator": { "strategy": "androidText", "value": "BUG REPRODUCED: SearchBar handler race" },
+      "value": "BUG REPRODUCED: SearchBar handler race",
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $appiumPlanPath
+
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*must repeat a resettable issue trigger within one Appium session*'
+
+        $plan = Get-Content -LiteralPath $appiumPlanPath -Raw |
+            ConvertFrom-Json -Depth 10
+        $plan.steps = @($plan.steps[0], $plan.steps[0], $plan.steps[1])
+        $plan | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+        Remove-Item -LiteralPath $issueAgentContextPath
+    }
+
     It 'accepts safe Android literal text locators and rejects other platforms or expressions' {
         $IssueNumber = 37440
         $Platform = 'android'
@@ -323,6 +366,45 @@ Describe 'Replication orchestrator security boundary' {
             Set-Content -LiteralPath $sandboxProposalPath
         { Read-SandboxProposal | Out-Null } |
             Should -Throw '*scenarioDifferences must be empty*'
+    }
+
+    It 'requires timing-sensitive Sandbox proposals to preserve bounded repetition' {
+        $issueAgentContextPath = Join-Path $TestDrive 'issue-agent-context.md'
+        'This intermittent race may require several attempts.' |
+            Set-Content -LiteralPath $issueAgentContextPath
+        $sandboxProposalPath = Join-Path $TestDrive 'sandbox-proposal.json'
+        @'
+{
+  "reproductionSteps": ["Type text and switch Shell tabs."],
+  "expectedBehavior": "Navigation completes.",
+  "observedBehaviorCheck": "The exact handler exception becomes the semantic result.",
+  "reportedTrigger": "Type in the SearchBar and switch tabs once.",
+  "sandboxTrigger": "Type in the SearchBar and switch tabs once.",
+  "scenarioDifferences": [],
+  "files": [
+    "src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml",
+    "src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs",
+    "CustomAgentLogsTmp/Sandbox/appium-plan.json"
+  ]
+}
+'@ | Set-Content -LiteralPath $sandboxProposalPath
+
+        { Read-SandboxProposal | Out-Null } |
+            Should -Throw '*must preserve the reported race and describe bounded repeated trigger attempts*'
+
+        $proposal = Get-Content -LiteralPath $sandboxProposalPath -Raw |
+            ConvertFrom-Json -Depth 10
+        $proposal.reproductionSteps = @(
+            'Repeat the SearchBar tab-navigation race three times in one session.'
+        )
+        $proposal.reportedTrigger =
+            'The timing-sensitive SearchBar race may require multiple attempts.'
+        $proposal.sandboxTrigger =
+            'Reset and repeat the exact SearchBar tab-navigation trigger three times.'
+        $proposal | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $sandboxProposalPath
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+        Remove-Item -LiteralPath $issueAgentContextPath
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
