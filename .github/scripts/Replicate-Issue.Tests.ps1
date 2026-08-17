@@ -954,6 +954,17 @@ public partial class MainPage : ContentPage
         }
     }
 
+    It 'demands measurable, tolerant, and causal assertions' {
+        # Reviewers validating PR 170 (issue 36800) kept an accurate oracle but
+        # asked for the numbers behind the verdict, a rounding tolerance on
+        # device metrics, and an honest causal link between the performed
+        # gesture and the asserted value.
+        $script:Source | Should -Match 'must embed the concrete measured values'
+        $script:Source | Should -Match 'small explicit tolerance rather than exact equality'
+        $script:Source | Should -Match 'causally required for the assertion'
+        $script:Source | Should -Match 'omit the decorative interaction'
+    }
+
     It 'finishes successfully when the empirical answer is conclusive' {
         # A genuine non-reproduction is a valid verdict, not a pipeline defect.
         # Rethrowing failed the task and skipped the publication stage that
