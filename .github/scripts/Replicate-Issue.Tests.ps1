@@ -956,6 +956,37 @@ public partial class MainPage : ContentPage
         }
     }
 
+    It 'rejects a MacCatalyst-suffixed test file mechanically' {
+        # PR 156 published src/.../Issue35516.MacCatalyst.cs before the shared
+        # guard covered it. Shared compile globs also include such a file on
+        # Android and Windows, where its Apple-only references fail with CS0246,
+        # so keep the rejection covered by an authoring-path test.
+        $repoRoot = $TestDrive
+        $relative = 'src/Controls/tests/DeviceTests/Issues/Issue35516.MacCatalyst.cs'
+        $full = Join-Path $repoRoot $relative
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $full) | Out-Null
+        @'
+namespace Microsoft.Maui.DeviceTests;
+public class Issue35516
+{
+    [Fact]
+    public void QueryReachesNativeSearchBar() { Assert.True(false, "boom"); }
+}
+'@ | Set-Content -LiteralPath $full
+
+        try {
+            { Assert-GeneratedTestContent `
+                -Files @($relative) `
+                -Issue 35516 `
+                -TestType 'DeviceTest' `
+                -TargetPlatform 'catalyst' } |
+                Should -Throw -ExpectedMessage '*unsafe MacCatalyst filename*'
+        }
+        finally {
+            Remove-Item -LiteralPath $full -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'names the exact false-pass modes reviewers found in published PRs' {
         # Generic rules were already present and still violated, so each rule
         # now names the concrete defect a reviewer observed.

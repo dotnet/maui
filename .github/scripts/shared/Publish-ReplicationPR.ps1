@@ -114,6 +114,15 @@ function New-ReplicationPullRequestBody {
     $platform = ConvertTo-ReplicationSingleLine -Value ([string]$Candidate.platform) -MaximumLength 40
     $testType = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testType)
     $testFilter = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testFilter)
+
+    # Reviewers repeatedly read the platform above as a claim that the committed
+    # test ran on that device. Unit and XAML tests execute on the build host, so
+    # the recording is device evidence of the issue rather than of the test.
+    $testHostDescription = switch ([string]$Candidate.testType) {
+        'UnitTest' { "the **build host**, not the $platform device. The recording below is on-device evidence of the reported issue, not of this test executing." }
+        'XamlUnitTest' { "the **build host**, not the $platform device. The recording below is on-device evidence of the reported issue, not of this test executing." }
+        default { "the **$platform** device or emulator used for the run above." }
+    }
     $rawFailureSignature = [string]$Candidate.expectedFailureSignature
     $actualFailureMessage = [string]$Candidate.actualFailureMessage
     if ([string]::IsNullOrWhiteSpace($rawFailureSignature) -or
@@ -156,6 +165,7 @@ $marker
 - Validated on baseline commit: ``$baseSha`` — the trusted device reproduction and the failing-test verification both ran against this commit
 - Base branch: the reproduction commit is applied directly onto the current tip of the pull request base branch, so this diff contains only the added reproduction test. That tip, not the baseline above, is the parent of the commit in this pull request.
 - Test type: **$testType**
+- Test execution host: $testHostDescription
 - Targeted filter: ``$testFilter``
 - Expected failing assertion: ``$failureSignature``
 $buildLine
