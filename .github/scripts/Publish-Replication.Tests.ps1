@@ -209,15 +209,18 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
     }
 
-    It 'pins the pull request base to the validated baseline commit' {
-        # PR kubaflo/maui#177 was based on the target default branch, so its
-        # diff listed nine unrelated files alongside the reproduction test.
-        $script:PrSource.Contains('$baseBranchName = "$branchName-base"') | Should -BeTrue
+    It 'builds the reproduction branch on the pull request base so the diff is only the patch' {
+        # PR kubaflo/maui#177 committed the patch onto the validated baseline
+        # while basing the PR on the target default branch, so its diff listed
+        # nine unrelated files. MauiBot cannot push into the target repository,
+        # so the branch must start from the base rather than moving the base.
         $script:PrSource | Should -Match "'replication-target'"
-        $script:PrSource.Contains('$([string]$candidate.baseSha):refs/heads/$baseBranchName') |
+        $script:PrSource.Contains("@('fetch', '--no-tags', '--depth', '1', `$targetRemote, `$BaseBranch)") |
             Should -BeTrue
-        $script:PrSource | Should -Match '--base \$baseBranchName'
-        $script:PrSource.Contains('--base $BaseBranch') | Should -BeFalse
+        $script:PrSource.Contains("@('checkout', '--detach', 'FETCH_HEAD')") | Should -BeTrue
+        $script:PrSource | Should -Match '--base \$BaseBranch'
+        $script:PrSource.Contains("refs/heads/`$baseBranchName") | Should -BeFalse
+        $script:PrSource.Contains("'checkout', '--detach', [string]`$candidate.baseSha") | Should -BeFalse
     }
 }
 
