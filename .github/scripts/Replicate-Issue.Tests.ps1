@@ -62,6 +62,7 @@ BeforeAll {
         'Get-ReplicationElementInventory',
         'Get-ReplicationFailureSignature',
         'Get-ReplicationAttemptFailureKind',
+        'Test-ReplicationFailureAlreadySeen',
         'Test-ReplicationNonReproductionIsConclusive',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
@@ -194,7 +195,7 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source |
             Should -Match 'This same failure already occurred on attempt \$earlierAttempt'
         $script:Source.Contains(
-            '$repeatedSandboxFailure = $sandboxFailureHistory.ContainsKey($failureSignature)') |
+            '$repeatedSandboxFailure = Test-ReplicationFailureAlreadySeen') |
             Should -BeTrue
     }
 
@@ -1053,8 +1054,34 @@ public class Issue35516
         # not-reproduced run because each attempt only saw the newest failure.
         $script:Source.Contains('Distinct failures seen so far on this issue:') |
             Should -BeTrue
-        $script:Source.Contains('$sandboxFailureHistory.ContainsKey($failureSignature)') |
+    }
+
+    It 'recognises a repeated failure through the real history dictionary' {
+        # Build 14999054 crashed here because an OrderedDictionary has no
+        # ContainsKey method, which a source-text assertion cannot catch.
+        $history = [ordered]@{}
+        $signature = Get-ReplicationFailureSignature 'The Sandbox build failed with CS0246.'
+        Test-ReplicationFailureAlreadySeen -History $history -Signature $signature |
+            Should -BeFalse
+
+        $history[$signature] = 1
+        Test-ReplicationFailureAlreadySeen -History $history -Signature $signature |
             Should -BeTrue
+
+        $other = Get-ReplicationFailureSignature 'Element was not visible.'
+        Test-ReplicationFailureAlreadySeen -History $history -Signature $other |
+            Should -BeFalse
+    }
+
+    It 'builds the oscillation report from a real history dictionary' {
+        $history = [ordered]@{}
+        $history['build failure'] = 2
+        $history['not reproduced'] = 1
+        $lines = $history.GetEnumerator() |
+            Sort-Object -Property Value |
+            ForEach-Object { "- attempt $($_.Value): $($_.Key)" }
+        ($lines -join "`n") | Should -BeExactly (
+            "- attempt 1: not reproduced`n- attempt 2: build failure")
     }
 
     It 'recovers the termination reason from a recording log' {

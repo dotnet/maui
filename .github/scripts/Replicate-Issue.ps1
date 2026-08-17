@@ -155,6 +155,23 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Test-ReplicationFailureAlreadySeen {
+    <#
+        .SYNOPSIS
+        Reports whether an earlier attempt already produced this failure.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.Specialized.OrderedDictionary]$History,
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Signature
+    )
+
+    # OrderedDictionary exposes Contains rather than ContainsKey.
+    return $History.Contains($Signature)
+}
+
 function Get-ReplicationAttemptFailureKind {
     <#
         .SYNOPSIS
@@ -204,11 +221,12 @@ function Test-ReplicationNonReproductionIsConclusive {
     #>
     param(
         [Parameter(Mandatory)]
+        [AllowNull()]
         [AllowEmptyCollection()]
         [System.Collections.Generic.List[string]]$AttemptKinds
     )
 
-    if ($AttemptKinds.Count -eq 0) {
+    if ($null -eq $AttemptKinds -or $AttemptKinds.Count -eq 0) {
         return $false
     }
 
@@ -2801,7 +2819,8 @@ $sandboxFailureSummary
                 throw
             }
             $failureSignature = Get-ReplicationFailureSignature $sandboxFailureSummary
-            $repeatedSandboxFailure = $sandboxFailureHistory.ContainsKey($failureSignature)
+            $repeatedSandboxFailure = Test-ReplicationFailureAlreadySeen `
+                -History $sandboxFailureHistory -Signature $failureSignature
             $previousSandboxFailureSummary = $sandboxFailureSummary
             if ($repeatedSandboxFailure) {
                 $earlierAttempt = $sandboxFailureHistory[$failureSignature]
