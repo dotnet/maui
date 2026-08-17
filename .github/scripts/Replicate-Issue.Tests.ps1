@@ -808,6 +808,8 @@ exit 0
         $script:Source | Should -Match 'never call DispatchApplyWindowInsets or OnApplyWindowInsets directly'
         $script:Source | Should -Match 'never call Handler.UpdateValue or a mapper method manually'
         $script:Source | Should -Match 'bounded repository-standard eventual assertion'
+        $script:Source | Should -Match 'register the standard handler for every hierarchy family'
+        $script:Source | Should -Match 'HandlerNotFoundException.*setup failure'
         $script:Source | Should -Match 'runtime transition instead of preconfiguring the final value'
         $script:Source | Should -Match 'compile-time !MACCATALYST guard'
         ([regex]::Matches(

@@ -86,6 +86,9 @@ Describe 'Replication failure-only verification' {
     It 'rejects compilation, timeout, missing baseline, and device failures' {
         Test-ReplicationInfrastructureFailure -Content 'Build FAILED.' | Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'error CS1002: ; expected' | Should -BeTrue
+        Test-ReplicationInfrastructureFailure `
+            -Content 'HandlerNotFoundException: Unable to find a IElementHandler corresponding to Grid.' |
+            Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'Test run timed out' | Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'snapshot baseline was not found' | Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'Android emulator failed to boot' | Should -BeTrue

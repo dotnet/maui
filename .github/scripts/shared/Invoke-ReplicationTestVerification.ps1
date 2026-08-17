@@ -72,6 +72,7 @@ function Test-ReplicationInfrastructureFailure {
         '(?im)^\s*Build FAILED\.?\s*$',
         '(?im)\berror (?:CS|MSB|NETSDK|XLS|APT|XA)\d{3,}\b',
         '(?im)\bNo test matches\b',
+        '(?im)\bHandlerNotFoundException\b|\bUnable to find an? IElementHandler\b',
         '(?im)\b(?:test run|operation|command|task) timed out\b',
         '(?im)\b(?:snapshot|baseline).{0,80}\b(?:missing|not found|does not exist)\b',
         '(?im)\b(?:device|simulator|emulator).{0,80}\b(?:offline|unavailable|failed to boot)\b'
