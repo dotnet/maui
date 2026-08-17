@@ -316,22 +316,22 @@ static void ExecuteStep(
     switch (step.Action)
     {
         case "waitFor":
-            _ = WaitForElement(driver, step.Locator!, timeout);
+            _ = WaitForElement(driver, platform, step.Locator!, timeout);
             break;
         case "tap":
-            WaitForElement(driver, step.Locator!, timeout).Click();
+            WaitForElement(driver, platform, step.Locator!, timeout).Click();
             break;
         case "clear":
-            WaitForElement(driver, step.Locator!, timeout).Clear();
+            WaitForElement(driver, platform, step.Locator!, timeout).Clear();
             break;
         case "enterText":
-            WaitForElement(driver, step.Locator!, timeout).SendKeys(step.Value!);
+            WaitForElement(driver, platform, step.Locator!, timeout).SendKeys(step.Value!);
             break;
         case "assertExists":
-            _ = WaitForElement(driver, step.Locator!, timeout);
+            _ = WaitForElement(driver, platform, step.Locator!, timeout);
             break;
         case "assertNotExists":
-            WaitForAbsence(driver, step.Locator!, timeout);
+            WaitForAbsence(driver, platform, step.Locator!, timeout);
             break;
         case "assertTextEquals":
             AssertElementText(
@@ -416,42 +416,153 @@ static void AssertAppClosed(
 
 static IWebElement WaitForElement(
     AppiumDriver driver,
+    string platform,
     ReplicationLocator locator,
     TimeSpan timeout)
 {
-    var by = CreateLocator(locator);
+    var candidates = CreateLocatorCandidates(locator, platform);
     var wait = new WebDriverWait(driver, timeout);
     return wait.Until(current =>
     {
-        try
+        foreach (var by in candidates)
         {
-            var element = current.FindElement(by);
-            return element.Displayed ? element : null;
+            try
+            {
+                var element = current.FindElement(by);
+                if (element.Displayed)
+                {
+                    return element;
+                }
+            }
+            catch (NoSuchElementException)
+            {
+            }
+            catch (StaleElementReferenceException)
+            {
+            }
+            catch (InvalidSelectorException)
+            {
+            }
         }
-        catch (NoSuchElementException)
-        {
-            return null;
-        }
-        catch (StaleElementReferenceException)
-        {
-            return null;
-        }
+
+        return null;
     }) ?? throw new WebDriverTimeoutException(
-        $"Element was not visible: {locator.Strategy}={locator.Value}");
+        $"Element was not visible: {locator.Strategy}={locator.Value}. " +
+        $"Tried {candidates.Count} equivalent locator(s) on {platform}: " +
+        string.Join(" | ", candidates.Select(by => by.ToString())) +
+        ". Confirm the element sets AutomationId and is accessibility-visible.");
 }
 
 static void WaitForAbsence(
     AppiumDriver driver,
+    string platform,
     ReplicationLocator locator,
     TimeSpan timeout)
 {
-    var by = CreateLocator(locator);
+    var candidates = CreateLocatorCandidates(locator, platform);
     var wait = new WebDriverWait(driver, timeout);
-    if (!wait.Until(current => current.FindElements(by).Count == 0))
+    if (!wait.Until(current => candidates.All(by =>
+    {
+        try
+        {
+            return current.FindElements(by).Count == 0;
+        }
+        catch (InvalidSelectorException)
+        {
+            return true;
+        }
+    })))
     {
         throw new InvalidOperationException(
             $"Element remained present: {locator.Strategy}={locator.Value}");
     }
+}
+
+// MAUI maps AutomationId onto a different native attribute per platform
+// (content-desc or resource-id on Android, name on iOS, AutomationId on
+// Windows), so a single strategy can miss an element that is really there.
+// Every candidate still requires the same named element, so the oracle is
+// unchanged; only the lookup is made robust.
+static IReadOnlyList<By> CreateLocatorCandidates(
+    ReplicationLocator locator,
+    string platform)
+{
+    var primary = CreateLocator(locator);
+    if (locator.Strategy is not ("accessibilityId" or "id"))
+    {
+        return new[] { primary };
+    }
+
+    var value = locator.Value;
+    var candidates = new List<By> { primary };
+    var alternate = locator.Strategy == "accessibilityId"
+        ? MobileBy.Id(value)
+        : MobileBy.AccessibilityId(value);
+    candidates.Add(alternate);
+
+    // An AutomationId that contains a quote cannot be embedded in an XPath
+    // literal safely, so fall back to the attribute strategies only.
+    var xpathSafe = !value.Contains('\'') && !value.Contains('"');
+    var xpathValue = value;
+    switch (platform)
+    {
+        case "android":
+            candidates.Add(MobileBy.AndroidUIAutomator(
+                $"new UiSelector().resourceIdMatches(\".*/{Regex.Escape(value)}\")"));
+            if (xpathSafe)
+            {
+                candidates.Add(MobileBy.XPath(
+                    $"//*[@content-desc='{xpathValue}' or @resource-id='{xpathValue}' or substring-after(@resource-id, '/')='{xpathValue}']"));
+            }
+
+            break;
+        case "ios":
+            if (xpathSafe)
+            {
+                candidates.Add(MobileBy.XPath(
+                    $"//*[@name='{xpathValue}' or @label='{xpathValue}']"));
+            }
+
+            break;
+        case "windows":
+            if (xpathSafe)
+            {
+                candidates.Add(MobileBy.XPath(
+                    $"//*[@AutomationId='{xpathValue}']"));
+            }
+
+            break;
+    }
+
+    return candidates;
+}
+
+static IWebElement? FindFirstDisplayed(
+    ISearchContext context,
+    IReadOnlyList<By> candidates)
+{
+    foreach (var by in candidates)
+    {
+        try
+        {
+            var element = context.FindElement(by);
+            if (element.Displayed)
+            {
+                return element;
+            }
+        }
+        catch (NoSuchElementException)
+        {
+        }
+        catch (StaleElementReferenceException)
+        {
+        }
+        catch (InvalidSelectorException)
+        {
+        }
+    }
+
+    return null;
 }
 
 static By CreateLocator(ReplicationLocator locator) =>
@@ -476,17 +587,17 @@ static void AssertElementText(
     bool isFinalStep)
 {
     var expected = step.Value!;
-    var by = CreateLocator(step.Locator!);
+    var candidates = CreateLocatorCandidates(step.Locator!, platform);
     var wait = new WebDriverWait(driver, timeout);
     var actual = string.Empty;
     try
     {
         wait.Until(current =>
         {
+            var element = FindFirstDisplayed(current, candidates);
             try
             {
-                var element = current.FindElement(by);
-                if (!element.Displayed)
+                if (element is null)
                 {
                     return false;
                 }
