@@ -119,4 +119,12 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'schemaVersion = 2'
         $script:Pipeline | Should -Match 'issueNumber\s+= "\$\{\{ parameters\.IssueNumber \}\}"'
     }
+
+    It 'retains the trusted telemetry subtree in the replication CopilotLogs artifact' {
+        $script:Pipeline | Should -Match '-TokenUsageOutputDir "\$\(Build\.ArtifactStagingDirectory\)/copilot-token-usage/raw"'
+        $script:Pipeline | Should -Match "displayName: 'Stage replication Copilot telemetry'"
+        $script:Pipeline | Should -Match '\$target = Join-Path \$logsDir "copilot-token-usage"'
+        $script:Pipeline | Should -Match "(?s)displayName: 'Publish Replication Copilot Logs'.*?targetPath: '\$\(Build\.ArtifactStagingDirectory\)/copilot-logs'.*?artifact: 'CopilotLogs'"
+        $script:Pipeline | Should -Not -Match "targetPath: '\$\(REPLICATION_ARTIFACT_ROOT\)/copilot-token-usage'"
+    }
 }
