@@ -803,6 +803,8 @@ exit 0
         $script:Source | Should -Match 'a single fixed layout is insufficient'
         $script:Source | Should -Match 'same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence'
         $script:Source | Should -Match 'ContentInset or AdjustedContentInset'
+        $script:Source | Should -Match 'normal root-window propagation'
+        $script:Source | Should -Match 'never call DispatchApplyWindowInsets or OnApplyWindowInsets directly'
         $script:Source | Should -Match 'runtime transition instead of preconfiguring the final value'
         $script:Source | Should -Match 'compile-time !MACCATALYST guard'
         ([regex]::Matches(
@@ -850,6 +852,48 @@ public class Issue31059
 
         { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
             Should -Throw '*substitutes Arrange for a real device orientation change*'
+    }
+
+    It 'rejects directly dispatched system insets as propagation evidence' {
+        $repoRoot = $TestDrive
+        $IssueNumber = 37418
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Issue37418.Android.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        @'
+public class Issue37418
+{
+    public void ReproducesIssue()
+    {
+        ViewCompat.DispatchApplyWindowInsets(contentView, rootInsets);
+        Assert.Equal(expectedTop, contentView.PaddingTop);
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue37418'
+            expectedFailureSignature = 'Content should include the Android system-bar inset.'
+            files = @($relativePath)
+            reproductionSteps = @('Launch edge-to-edge on Android and observe the top content gap.')
+            expectedBehavior = 'The rendered content receives the nonzero system-bar inset from the root window.'
+            observedBehavior = 'The content renders underneath the status bar.'
+            reportedTrigger = 'Launch the Android app edge-to-edge and let system insets propagate from the root window.'
+            testTrigger = 'Dispatch root window insets directly to the child content view and inspect its padding.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires Android window inset propagation.'
+                xaml = 'Requires the native Android root window.'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+            Should -Throw '*directly dispatches a system inset callback instead of proving normal root-window propagation*'
     }
 
     It 'rejects managed-only bounds oracles for visible rendering defects' {

@@ -14,7 +14,8 @@ BeforeAll {
     foreach ($name in @(
         'Test-ReplicationExpectedFailureSignature',
         'Test-ReplicationInfrastructureFailure',
-        'ConvertTo-AzdoSafeReplicationOutput'
+        'ConvertTo-AzdoSafeReplicationOutput',
+        'ConvertTo-BoundedVerificationFailureMessage'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -105,6 +106,19 @@ Describe 'Replication failure-only verification' {
             Should -BeExactly 'bad secret and fake'
     }
 
+    It 'bounds repeated verifier failures while retaining the expected signature' {
+        $signature = 'Fitting ScrollView must not expose a reachable vertical range.'
+        $content = ('unrelated retry failure' * 250) + $signature + ('final context' * 250)
+
+        $bounded = ConvertTo-BoundedVerificationFailureMessage `
+            -Content $content `
+            -Signature $signature
+
+        $bounded.Length | Should -BeLessOrEqual 4096
+        $bounded.Contains($signature, [StringComparison]::Ordinal) | Should -BeTrue
+        $bounded | Should -Match 'verifier output truncated'
+    }
+
     It 'runs the child verifier without an issue guard and clears all publisher tokens' {
         $script:Source | Should -Not -Match "MAUI_REPRODUCTION_ISSUE"
         $script:Source | Should -Match "'GH_TOKEN'"
@@ -146,6 +160,39 @@ Describe 'Replication failure-only verification' {
         $result.testMethod | Should -BeExactly 'ReproducesIssue12345'
         Test-Path -LiteralPath (Join-Path $output 'verifier-machine-result.json') |
             Should -BeFalse
+    }
+
+    It 'persists a bounded failure message when test retries repeat the same assertion' {
+        $signature = 'Fitting ScrollView must not expose a reachable vertical range.'
+        $failure = ((1..30 | ForEach-Object {
+            "Retry $_ failed. $signature Expected PASS but was FAIL."
+        }) -join [Environment]::NewLine)
+        $verifier = Join-Path $TestDrive 'repeated-verifier.ps1'
+        $output = Join-Path $TestDrive 'repeated-success'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage $failure
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 36800 `
+            -Platform ios `
+            -TestType UITest `
+            -TestFilter Issue36800 `
+            -TestClass Microsoft.Maui.TestCases.Tests.Issues.Issue36800 `
+            -TestMethod FittingScrollViewDoesNotExposeSafeAreaAsScrollableRange `
+            -ExpectedFailureSignature $signature `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        $resultText = Get-Content -LiteralPath (
+            Join-Path $output 'verification-result.json') -Raw
+        $result = $resultText | ConvertFrom-Json
+        $result.actualFailureMessage.Length | Should -BeLessOrEqual 4096
+        $result.actualFailureMessage.Contains($signature, [StringComparison]::Ordinal) |
+            Should -BeTrue
+        $result.signatureMatched | Should -BeTrue
+        $result.verificationPassed | Should -BeTrue
     }
 
     It 'does not match a signature present only in test metadata and console output' {

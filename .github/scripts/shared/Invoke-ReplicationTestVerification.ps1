@@ -95,6 +95,38 @@ function ConvertTo-AzdoSafeReplicationOutput {
     return $Value -replace '##vso\[[^\]]*\]', '' -replace '##\[[^\]]*\]', ''
 }
 
+function ConvertTo-BoundedVerificationFailureMessage {
+    param(
+        [AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Signature,
+        [ValidateRange(1024, 4096)][int]$MaximumLength = 4096
+    )
+
+    if ($Content.Length -le $MaximumLength) {
+        return $Content
+    }
+
+    $marker = "$([Environment]::NewLine)... verifier output truncated ...$([Environment]::NewLine)"
+    $headLength = [Math]::Min(2800, $MaximumLength - $marker.Length)
+    $head = $Content.Substring(0, $headLength)
+    $remaining = $MaximumLength - $head.Length - $marker.Length
+
+    if (
+        $head.Contains($Signature, [StringComparison]::Ordinal) -or
+        $remaining -le 0
+    ) {
+        return $head + $marker
+    }
+
+    $signatureIndex = $Content.IndexOf($Signature, [StringComparison]::Ordinal)
+    if ($signatureIndex -lt 0) {
+        return $Content.Substring(0, $MaximumLength - $marker.Length) + $marker
+    }
+
+    $tailLength = [Math]::Min($remaining, $Content.Length - $signatureIndex)
+    return $head + $marker + $Content.Substring($signatureIndex, $tailLength)
+}
+
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
 }
@@ -203,6 +235,9 @@ if (Test-Path -LiteralPath $machineResultPath -PathType Leaf) {
 $signatureMatched = Test-ReplicationExpectedFailureSignature `
     -Content $actualFailureMessage `
     -Signature $ExpectedFailureSignature
+$boundedFailureMessage = ConvertTo-BoundedVerificationFailureMessage `
+    -Content $actualFailureMessage `
+    -Signature $ExpectedFailureSignature
 $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
 $verificationPassed = $verifierPassed -and $signatureMatched -and -not $infrastructureFailure
 
@@ -217,7 +252,7 @@ $result = [ordered]@{
     testClass = $TestClass
     testMethod = $TestMethod
     expectedFailureSignature = $ExpectedFailureSignature
-    actualFailureMessage = $actualFailureMessage
+    actualFailureMessage = $boundedFailureMessage
     verifierExitCode = $exitCode
     verifierPassed = $verifierPassed
     signatureMatched = $signatureMatched
