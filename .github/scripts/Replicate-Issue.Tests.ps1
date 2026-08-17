@@ -76,7 +76,8 @@ BeforeAll {
         'Resolve-ReplicationVerifierMetadata',
         'Assert-GeneratedTestContent',
         'Invoke-BoundedProcess',
-        'Get-ReplicationPwshArguments'
+        'Get-ReplicationPwshArguments',
+        'Test-TransientCopilotServiceFailure'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -118,6 +119,26 @@ Describe 'Replication orchestrator security boundary' {
         $result.TimedOut | Should -BeFalse
         $result.ExitCode | Should -Be 0
         $result.Output | Should -Contain 'expected'
+    }
+
+    It 'backs off transient Copilot service failures without consuming semantic attempts' {
+        Test-TransientCopilotServiceFailure `
+            -Output 'Failed to fetch PAT user login (503): No server is currently available' |
+            Should -BeTrue
+        Test-TransientCopilotServiceFailure `
+            -Output 'HTTP 429: service unavailable due to rate limiting' |
+            Should -BeTrue
+        Test-TransientCopilotServiceFailure `
+            -Output 'Failed to fetch PAT user login (401): Bad credentials' |
+            Should -BeFalse
+        Test-TransientCopilotServiceFailure `
+            -Output 'The generated Sandbox source did not compile: error CS7036' |
+            Should -BeFalse
+        $script:Source | Should -Match '\$serviceRetryDelaysSeconds = @\(30, 60\)'
+        $script:Source |
+            Should -Match 'failed with exit code \$exitCode after \$serviceAttempt service invocation\(s\)'
+        $script:Source |
+            Should -Match 'if \(\$sandboxFailureSummary -match ''\^Copilot service unavailable during ''\)'
     }
 
     It 'bounds every external replication phase below the job timeout' {

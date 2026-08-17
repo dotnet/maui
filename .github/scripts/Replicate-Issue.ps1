@@ -1511,6 +1511,23 @@ Do not add a fix or escalate the test type.
     }
 }
 
+function Test-TransientCopilotServiceFailure {
+    param(
+        [AllowEmptyString()]
+        [string]$Output
+    )
+
+    return (
+        $Output -match '(?im)\b(?:HTTP\s*)?429\b' -or
+        $Output -match '(?im)\b(?:HTTP\s*)?50[234]\b' -or
+        $Output -match '(?im)\bservice unavailable\b' -or
+        $Output -match '(?im)\bno server is currently available\b' -or
+        $Output -match '(?im)\brate limit(?:ed|ing)?\b' -or
+        $Output -match '(?im)\bconnection (?:reset|closed|timed out)\b' -or
+        $Output -match '(?im)\btemporary failure in name resolution\b'
+    )
+}
+
 function Invoke-ReplicationCopilot {
     param(
         [Parameter(Mandatory = $true)][string]$PhaseName,
@@ -1573,20 +1590,53 @@ function Invoke-ReplicationCopilot {
     }
 
     $started = [DateTimeOffset]::UtcNow
-    $runResult = Invoke-WithoutReplicationSecrets -Names $publisherSecretNames -ScriptBlock {
-        Invoke-BoundedProcess `
-            -FilePath 'copilot' `
-            -Arguments $arguments `
-            -TimeoutSeconds ($CopilotTimeoutMinutes * 60)
+    $serviceRetryDelaysSeconds = @(30, 60)
+    $allLines = [Collections.Generic.List[string]]::new()
+    $lines = @()
+    $runResult = $null
+    $exitCode = 1
+
+    for ($serviceAttempt = 1; $serviceAttempt -le 3; $serviceAttempt++) {
+        $runResult = Invoke-WithoutReplicationSecrets -Names $publisherSecretNames -ScriptBlock {
+            Invoke-BoundedProcess `
+                -FilePath 'copilot' `
+                -Arguments $arguments `
+                -TimeoutSeconds ($CopilotTimeoutMinutes * 60)
+        }
+        $lines = @($runResult.Output)
+        foreach ($line in $lines) {
+            $allLines.Add([string]$line)
+        }
+        $exitCode = [int]$runResult.ExitCode
+
+        if ($runResult.TimedOut -or $exitCode -eq 0) {
+            break
+        }
+
+        $failureText = ($lines | ForEach-Object { [string]$_ }) -join "`n"
+        if (
+            -not (Test-TransientCopilotServiceFailure -Output $failureText) -or
+            $serviceAttempt -eq 3
+        ) {
+            break
+        }
+
+        $delaySeconds = $serviceRetryDelaysSeconds[$serviceAttempt - 1]
+        $allLines.Add(
+            "Transient Copilot service failure; retrying invocation in $delaySeconds seconds.")
+        Start-Sleep -Seconds $delaySeconds
     }
-    $lines = @($runResult.Output)
-    $exitCode = [int]$runResult.ExitCode
-    $lines | ForEach-Object { [string]$_ } | Set-Content -LiteralPath $logPath -Encoding utf8NoBOM
+
+    $allLines | Set-Content -LiteralPath $logPath -Encoding utf8NoBOM
     if ($runResult.TimedOut) {
         throw "Copilot $PhaseName attempt $Attempt timed out after $CopilotTimeoutMinutes minutes."
     }
     if ($exitCode -ne 0) {
-        throw "Copilot $PhaseName attempt $Attempt failed with exit code $exitCode."
+        $failureText = ($lines | ForEach-Object { [string]$_ }) -join "`n"
+        if (Test-TransientCopilotServiceFailure -Output $failureText) {
+            throw "Copilot service unavailable during $PhaseName attempt $Attempt after $serviceAttempt bounded invocation(s)."
+        }
+        throw "Copilot $PhaseName attempt $Attempt failed with exit code $exitCode after $serviceAttempt service invocation(s)."
     }
 
     $aicUsed = $null
@@ -2094,6 +2144,9 @@ try {
         catch {
             $sandboxFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
+            if ($sandboxFailureSummary -match '^Copilot service unavailable during ') {
+                throw
+            }
             if ($attempt -eq $MaxSandboxAttempts) {
                 throw
             }
