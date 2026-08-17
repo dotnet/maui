@@ -154,6 +154,7 @@ $marker
 - Issue: [$IssueOwner/$IssueRepository#$issueNumber — $safeTitle]($issueUrl)
 - Platform: **$platform**
 - Baseline commit: ``$baseSha``
+- Base branch: pinned to the baseline commit so this diff contains only the added reproduction test
 - Test type: **$testType**
 - Targeted filter: ``$testFilter``
 - Expected failing assertion: ``$failureSignature``
@@ -409,6 +410,22 @@ if (-not $DryRun) {
             -Arguments @('remote', 'add', $sourceRemote, "https://github.com/$sourceOwner/$sourceRepository.git") `
             -Description 'Configuring reproduction fork'
 
+        # The target repository's default branch is not the validated baseline,
+        # so basing the pull request on it would show every unrelated commit
+        # between them as part of the reproduction. Pin the base to the exact
+        # baseline instead, leaving the diff equal to the add-only patch.
+        $baseBranchName = "$branchName-base"
+        $targetRemote = 'replication-target'
+        & git remote remove $targetRemote 2>$null
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @('remote', 'add', $targetRemote, "https://github.com/$TargetOwner/$TargetRepository.git") `
+            -Description 'Configuring reproduction target'
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @('push', $targetRemote, "$([string]$candidate.baseSha):refs/heads/$baseBranchName") `
+            -Description 'Publishing the validated baseline as the pull request base'
+
         $commitMessage = @"
 Add failing reproduction for #$issueNumber on $platform
 
@@ -427,7 +444,7 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             $prUrl = & gh pr create `
                 --repo "$TargetOwner/$TargetRepository" `
                 --head "$sourceOwner`:$branchName" `
-                --base $BaseBranch `
+                --base $baseBranchName `
                 --title $prTitle `
                 --body-file $bodyPath `
                 --draft

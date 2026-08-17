@@ -208,6 +208,17 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
     }
+
+    It 'pins the pull request base to the validated baseline commit' {
+        # PR kubaflo/maui#177 was based on the target default branch, so its
+        # diff listed nine unrelated files alongside the reproduction test.
+        $script:PrSource.Contains('$baseBranchName = "$branchName-base"') | Should -BeTrue
+        $script:PrSource | Should -Match "'replication-target'"
+        $script:PrSource.Contains('$([string]$candidate.baseSha):refs/heads/$baseBranchName') |
+            Should -BeTrue
+        $script:PrSource | Should -Match '--base \$baseBranchName'
+        $script:PrSource.Contains('--base $BaseBranch') | Should -BeFalse
+    }
 }
 
 Describe 'Trusted replication PR migration' {
