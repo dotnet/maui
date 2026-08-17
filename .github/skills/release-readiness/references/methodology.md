@@ -348,9 +348,11 @@ formatting separate:
    but keep a later proven-current failure `red` when every buffered candidate is
    also a completed failure/cancellation. If the bounded window ends with only
    same-branch failed/canceled indeterminate candidates, preserve a blocking
-   failed-or-stale outcome because every possible currency result blocks. Use
-   `queueTime` with build ID as the deterministic ordering. This prevents both
-   false readiness upgrades and loss of certain blocking evidence.
+   `failed-or-stale` outcome because every possible currency result blocks. Keep
+   that classification distinct from definite `red`: local guidance first restores
+   currency evidence, then chooses failure repair or a current-HEAD rerun. Use
+   `queueTime` with build ID as the deterministic ordering. This prevents both false
+   readiness upgrades and loss of certain blocking evidence.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
    - current completed/succeeded → `green`

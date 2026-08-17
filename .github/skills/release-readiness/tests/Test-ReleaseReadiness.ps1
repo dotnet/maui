@@ -9128,10 +9128,24 @@ $terminalFailedHealth = Get-InternalOfficialBuildHealth `
     -HeadFetcher $internalHeadFetcher `
     -BuildCurrencyFetcher { return $null } `
     -GitHubActions:$false
-Assert-Eq -Label "internal build selection: terminal failed null-currency health remains red" `
-    -Expected 'red' -Actual $terminalFailedHealth.branches[0].classification
+Assert-Eq -Label "internal build selection: terminal failed null-currency health preserves uncertainty" `
+    -Expected 'failed-or-stale' -Actual $terminalFailedHealth.branches[0].classification
+$terminalFailedCheck = @(Convert-InternalOfficialBuildHealthToChecks -Health $terminalFailedHealth -PublicSafe:$false)[0]
 Assert-Eq -Label "internal build selection: terminal failed null-currency readiness remains blocked" `
-    -Expected 'BLOCKED' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $terminalFailedHealth -PublicSafe:$false)[0].Status)
+    -Expected 'BLOCKED' -Actual $terminalFailedCheck.Status
+Assert-Eq -Label "internal build selection: terminal details preserve failed-or-stale uncertainty" `
+    -Expected $true -Actual ([bool]($terminalFailedCheck.Details -match 'either failed/canceled while current or is stale'))
+Assert-Eq -Label "internal build selection: terminal details do not claim current failure" `
+    -Expected $false -Actual ([bool]($terminalFailedCheck.Details -match 'did not succeed at current branch HEAD'))
+Assert-Eq -Label "internal build selection: terminal action restores evidence before choosing remediation" `
+    -Expected $true -Actual ([bool]($terminalFailedCheck.NextAction -match 'Restore build-currency evidence'))
+Assert-Eq -Label "internal build selection: terminal action preserves both remediation paths" `
+    -Expected $true -Actual ([bool]($terminalFailedCheck.NextAction -match 'repair the failed build or run the official pipeline at current branch HEAD'))
+$terminalFailedPublicSafeCheck = @(Convert-InternalOfficialBuildHealthToChecks -Health $terminalFailedHealth -PublicSafe:$true)[0]
+Assert-Eq -Label "internal build selection: public-safe failed-or-stale readiness remains blocked" `
+    -Expected 'BLOCKED' -Actual $terminalFailedPublicSafeCheck.Status
+Assert-Eq -Label "internal build selection: public-safe failed-or-stale details remain generic" `
+    -Expected $false -Actual ([bool](("$($terminalFailedPublicSafeCheck.Details) $($terminalFailedPublicSafeCheck.NextAction)") -match 'failed-or-stale|failed/canceled|build-currency'))
 
 $terminalCanceledBuild = New-InternalBuildFixture `
     -BranchRef $internalInflightRef `

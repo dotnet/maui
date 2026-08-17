@@ -68,7 +68,7 @@ function Get-InternalOfficialBuildClassification {
     if ($BlocksRegardlessOfCurrency -and
         (Test-InternalOfficialBuildHasBlockingResult $Build)) {
         return [PSCustomObject]@{
-            Classification = 'red'
+            Classification = 'failed-or-stale'
             Reason = "completed-$($result.ToLowerInvariant())-or-stale"
         }
     }
@@ -126,8 +126,9 @@ function Get-InternalOfficialBuildOverallClassification {
         'in-progress' = 2
         'partial-success' = 3
         'unknown'     = 4
-        'stale'       = 5
-        'red'         = 6
+        'stale'           = 5
+        'failed-or-stale' = 6
+        'red'             = 6
     }
     $worst = 'skipped'
     foreach ($branch in $Branches) {
@@ -919,7 +920,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
     if ($PublicSafe) {
         $status = switch ($overall) {
             'green' { 'READY' }
-            { $_ -in @('red', 'stale') } { 'BLOCKED' }
+            { $_ -in @('red', 'stale', 'failed-or-stale') } { 'BLOCKED' }
             { $_ -in @('in-progress', 'partial-success') } { 'WATCH' }
             default { 'UNKNOWN' }
         }
@@ -950,7 +951,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
         $build = Get-InternalBuildProperty $branch 'build'
         $status = switch ($classification) {
             'green' { 'READY' }
-            { $_ -in @('red', 'stale') } { 'BLOCKED' }
+            { $_ -in @('red', 'stale', 'failed-or-stale') } { 'BLOCKED' }
             { $_ -in @('in-progress', 'partial-success') } { 'WATCH' }
             default { 'UNKNOWN' }
         }
@@ -959,6 +960,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
             'green' { 'The latest official build succeeded at current branch HEAD.' }
             'red' { 'The latest official build did not succeed at current branch HEAD.' }
             'stale' { 'The latest official build does not match current branch HEAD.' }
+            'failed-or-stale' { 'The observed official build either failed/canceled while current or is stale; build currency could not be determined.' }
             'in-progress' { 'The latest official build has not completed.' }
             'partial-success' { 'The latest official build completed with issues and needs manual review.' }
             default { 'Official-build evidence could not be determined for this branch.' }
@@ -972,6 +974,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
                 'green' { 'No action needed.' }
                 'red' { 'Investigate and repair the failed official build before release.' }
                 'stale' { 'Run the official pipeline at current branch HEAD before judging readiness.' }
+                'failed-or-stale' { 'Restore build-currency evidence, then repair the failed build or run the official pipeline at current branch HEAD as indicated.' }
                 'in-progress' { 'Wait for the current official build to complete.' }
                 'partial-success' { 'Review the partially-succeeded official build legs before release.' }
                 default { 'Verify internal access and confirm the latest official build manually.' }

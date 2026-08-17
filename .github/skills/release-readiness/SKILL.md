@@ -170,7 +170,9 @@ accepting one proven current. Indeterminate candidates are buffered: disagreeing
 possible outcomes remain `unknown`, while a later proven-current failure remains
 `red` only when every buffered candidate is also a completed failure/cancellation.
 A terminal window containing only same-branch failed/canceled indeterminate builds
-also remains blocking because every candidate is either red or stale. This prevents
+also remains blocking as `failed-or-stale` because every candidate is either red
+or stale. Its rendering preserves that uncertainty and requires restoring currency
+evidence before choosing failure repair versus a current-HEAD rerun. This prevents
 both false readiness upgrades and loss of certain blocking evidence.
 
 The internal check is intentionally fail-open:
