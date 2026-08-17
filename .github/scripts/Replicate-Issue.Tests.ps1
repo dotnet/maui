@@ -954,6 +954,27 @@ public partial class MainPage : ContentPage
         }
     }
 
+    It 'finishes successfully when the empirical answer is conclusive' {
+        # A genuine non-reproduction is a valid verdict, not a pipeline defect.
+        # Rethrowing failed the task and skipped the publication stage that
+        # reports the outcome, so runs such as issue 36694 on Windows went red
+        # even though the pipeline had answered the question correctly.
+        $script:Source.Contains(
+            'if ($code -in @(''sandbox_not_reproduced'', ''unsupported_scenario''))') |
+            Should -BeTrue
+        $script:Source | Should -Match 'ISSUE REPLICATION CONCLUDED WITHOUT A CANDIDATE'
+        $script:Source | Should -Match 'exit 0'
+
+        $conclusive = $script:Source.IndexOf('ISSUE REPLICATION CONCLUDED WITHOUT A CANDIDATE')
+        $restore = $script:Source.IndexOf('Sandbox cleanup also failed')
+        $conclusive | Should -BeGreaterThan $restore
+
+        # The outcome publisher only reports blocked candidates carrying this
+        # exact code, so the classifier must keep producing it.
+        $script:Source | Should -Match "'sandbox_not_reproduced'"
+        $script:Source | Should -Match 'REPLICATION_NOT_REPRODUCED'
+    }
+
     It 'accepts a substantiated block only after genuine attempts' {
         # dotnet/maui#36851 needs an unpackaged unit-test host, so the packaged
         # Sandbox can never reproduce it. The agent said so in prose and the run

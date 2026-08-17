@@ -2743,5 +2743,13 @@ catch {
     } catch {
         Write-Warning "Sandbox cleanup also failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
+    if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario')) {
+        # These are conclusive empirical answers rather than pipeline defects.
+        # Failing the task here would skip the publication stage that reports the
+        # outcome on the issue, so finish successfully with the blocked candidate.
+        Write-Host "ISSUE REPLICATION CONCLUDED WITHOUT A CANDIDATE: $code"
+        Write-Host $reason
+        exit 0
+    }
     throw
 }
