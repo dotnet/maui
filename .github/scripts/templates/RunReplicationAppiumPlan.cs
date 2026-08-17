@@ -502,7 +502,7 @@ static IReadOnlyList<By> CreateLocatorCandidates(
 
     // An AutomationId that contains a quote cannot be embedded in an XPath
     // literal safely, so fall back to the attribute strategies only.
-    var xpathSafe = !value.Contains('\'') && !value.Contains('"');
+    var xpathSafe = !value.Contains("'", StringComparison.Ordinal) && !value.Contains("\"", StringComparison.Ordinal);
     var xpathValue = value;
     switch (platform)
     {

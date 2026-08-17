@@ -1295,6 +1295,13 @@ InitializeComponent();
         $script:TrustedAppiumSource | Should -Match 'MAUI_REPLICATION_RECORDING_START_MARKER'
         $script:TrustedAppiumSource | Should -Match 'WriteRecordingStartMarker\(\)'
         $script:TrustedAppiumSource | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        # The trusted runner is compiled inside the repository tree, so its
+        # analyzer rules apply. Run 14995313 lost all five attempts to CA1307
+        # because a locator guard used the string.Contains(char) overload.
+        $charContains = [regex]::Matches(
+            $script:TrustedAppiumSource,
+            "(?<![A-Za-z0-9_])Contains\(\s*'")
+        $charContains.Count | Should -Be 0
         $script:Source | Should -Match "'copilot_service_unavailable'"
         $script:Source | Should -Match "'sandbox_inconclusive'"
         $script:Source | Should -Match "'sandbox_not_reproduced'"
