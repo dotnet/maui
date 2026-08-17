@@ -945,6 +945,41 @@ public partial class MainPage : ContentPage
         }
     }
 
+    It 'blocks reassigning an AutomationId and allows a single assignment' {
+        # kubaflo/maui#173 review: the page set Border.AutomationId twice to
+        # signal progress, which MAUI rejects at runtime for a reason unrelated
+        # to the reported crash.
+        $reassigned = @'
+resultBorder.AutomationId = "ReportedHierarchyNotCompleted";
+void OnSizeChanged(object sender, EventArgs e)
+{
+    resultBorder.AutomationId = "ReportedHierarchyCompleted";
+}
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $reassigned -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*assigns 'resultBorder.AutomationId' 2 times*"
+
+        $single = @'
+resultLabel.AutomationId = "Issue173Result";
+affectedBorder.AutomationId = "Issue173Affected";
+void OnSizeChanged(object sender, EventArgs e)
+{
+    resultLabel.Text = "BUG REPRODUCED:";
+}
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $single -Path 'MainPage.xaml.cs'
+        } | Should -Not -Throw
+
+        # A comparison must not be mistaken for an assignment.
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'if (b.AutomationId == "x" && b.AutomationId == "y") { }' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Not -Throw
+    }
+
     It 'cannot be bypassed by hiding code after a slash-slash inside a string' {
         {
             Assert-ReplicationGeneratedSourceSafety `

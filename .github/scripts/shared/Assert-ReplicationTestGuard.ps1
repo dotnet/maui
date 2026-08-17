@@ -171,6 +171,21 @@ function Assert-ReplicationGeneratedSourceSafety {
             throw "Candidate source '$Path' contains prohibited '$($entry.Code)' content: $(Get-ReplicationUnsafeMatchDetail -ScanText $target -Match $match)"
         }
     }
+
+    # MAUI permits AutomationId to be set only once, so reassigning it to signal
+    # progress throws InvalidOperationException and produces a failure that has
+    # nothing to do with the reported bug.
+    $automationAssignments = [regex]::Matches(
+        $codeText,
+        '(?<target>[A-Za-z_]\w*)\s*\.\s*AutomationId\s*=(?!=)')
+    foreach ($group in ($automationAssignments | Group-Object { $_.Groups['target'].Value })) {
+        if ($group.Count -le 1) {
+            continue
+        }
+
+        $detail = Get-ReplicationUnsafeMatchDetail -ScanText $codeText -Match $group.Group[1]
+        throw "Candidate source '$Path' assigns '$($group.Name).AutomationId' $($group.Count) times: $detail. MAUI allows AutomationId to be set only once, so change a dedicated result element's Text to signal progress instead."
+    }
 }
 
 function Assert-ReplicationPlatformSourceSafety {
