@@ -1428,6 +1428,7 @@ Target: issue $IssueNumber; platform $Platform; device "$DeviceUdid"; artifact r
 The previous trusted-runner attempt failed for this bounded reason:
 $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 Revise the reconstruction to address only that failure.
+If the failure names prohibited content, it quotes the exact matched text and line. Delete or replace that exact construct; do not merely rename it or move it to another file. Reconstruct the scenario using only plain MAUI controls, layouts, bindings, and event handlers.
 If the failure contains a compiler diagnostic, search and read the checked-out repository for the exact symbol declaration and proven usage before editing. Never repeat a fully qualified type after CS0234 or CS0246; fully qualify only with the verified namespace from source or nearby platform code.
 "@
             }
@@ -1525,6 +1526,26 @@ function Test-TransientCopilotServiceFailure {
         $Output -match '(?im)\brate limit(?:ed|ing)?\b' -or
         $Output -match '(?im)\bconnection (?:reset|closed|timed out)\b' -or
         $Output -match '(?im)\btemporary failure in name resolution\b'
+    )
+}
+
+function Test-TransientReproductionInfrastructureFailure {
+    param(
+        [AllowEmptyString()]
+        [string]$Output
+    )
+
+    return (
+        $Output -match '(?im)\bError executing adbExec\b' -or
+        $Output -match '(?im)\buiautomator2ServerInstallTimeout\b' -or
+        $Output -match '(?im)\bappium-uiautomator2-server[^\s]*\.apk''? timed out\b' -or
+        $Output -match '(?im)\bCould not (?:find|start) (?:the )?[Aa]ppium server\b' -or
+        $Output -match '(?im)\bA new session could not be created\b' -or
+        $Output -match '(?im)\bdevice (?:offline|unauthorized|not found)\b' -or
+        $Output -match '(?im)\badb(?:\.exe)?: device .* not found\b' -or
+        $Output -match '(?im)\bWebDriverAgent\b.*\b(?:failed to start|timed out)\b' -or
+        $Output -match '(?im)\bxcodebuild\b.*\bfailed to (?:launch|install)\b' -or
+        $Output -match '(?im)\bUnable to (?:launch|connect to) the simulator\b'
     )
 }
 
@@ -2068,6 +2089,9 @@ $testProposal = $null
 
 try {
     $sandboxFailureSummary = ''
+    $previousSandboxFailureSummary = ''
+    $infrastructureRetries = 0
+    $MaxInfrastructureRetries = 3
     $sandboxSucceeded = $false
     for ($attempt = 1; $attempt -le $MaxSandboxAttempts; $attempt++) {
         $sandboxAttempts = $attempt
@@ -2182,6 +2206,28 @@ try {
             }
             if ($attempt -eq $MaxSandboxAttempts) {
                 throw
+            }
+            if (Test-TransientReproductionInfrastructureFailure $sandboxFailureSummary) {
+                if ($infrastructureRetries -lt $MaxInfrastructureRetries) {
+                    $infrastructureRetries++
+                    Write-Host ("Sandbox attempt {0} hit device infrastructure flakiness; retrying without consuming a semantic attempt ({1}/{2})." -f
+                        $attempt, $infrastructureRetries, $MaxInfrastructureRetries)
+                    $sandboxFailureSummary = ''
+                    $attempt--
+                    Start-Sleep -Seconds (30 * $infrastructureRetries)
+                    Restore-TransientSandbox
+                    continue
+                }
+                Write-Host 'Device infrastructure retries exhausted; treating the failure as a semantic attempt.'
+            }
+            $repeatedSandboxFailure = ($sandboxFailureSummary -eq $previousSandboxFailureSummary)
+            $previousSandboxFailureSummary = $sandboxFailureSummary
+            if ($repeatedSandboxFailure) {
+                $sandboxFailureSummary = @"
+$sandboxFailureSummary
+
+This identical failure already occurred on the previous attempt. The prior revision did not change the offending construct. Take a materially different approach instead of resubmitting equivalent files.
+"@
             }
             Restore-TransientSandbox
         }

@@ -8,7 +8,7 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'http-client'; Pattern = '(?i)\b(?:HttpClient|HttpMessageHandler|HttpRequestMessage|HttpWebRequest|SocketsHttpHandler|RestClient|GrpcChannel)\b' },
         [pscustomobject]@{ Code = 'network'; Pattern = '(?i)\bSystem\s*\.\s*Net\b|\b(?:Dns|WebClient|WebRequest|Socket|TcpClient|TcpListener|UdpClient|WebSocket|ClientWebSocket|NSUrlSession|NSURLSession)\b|\b(?:Java|Android)\s*\.\s*Net\b' },
         [pscustomobject]@{ Code = 'process-start'; Pattern = '(?i)\b(?:Process|ProcessStartInfo|UseShellExecute|Win32Exception|ManagementObject|NSTask|NSWorkspace)\b' },
-        [pscustomobject]@{ Code = 'reflection'; Pattern = '(?i)\bSystem\s*\.\s*Reflection\b|\b(?:Assembly|Activator|AppDomain|MethodInfo|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|InvokeMember|GetMethod|GetProperty|GetField|GetType)\b' },
+        [pscustomobject]@{ Code = 'reflection'; Pattern = '(?i)\bSystem\s*\.\s*Reflection\b|\b(?:Assembly|Activator|AppDomain|MethodInfo|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|InvokeMember|GetMethod|GetProperty|GetField)\b|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
         [pscustomobject]@{ Code = 'native-code'; Pattern = '(?i)\bSystem\s*\.\s*Runtime\s*\.\s*InteropServices\b|\b(?:DllImport|LibraryImport|GeneratedDllImport|NativeLibrary|UnmanagedCallersOnly|GetDelegateForFunctionPointer|Marshal|GCHandle)\b|\b(?:unsafe|stackalloc|extern)\b' },
         [pscustomobject]@{ Code = 'environment-secrets'; Pattern = '(?i)\bEnvironment\s*\.|\bEnvironmentVariableTarget\b|\b(?:GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|AZURE_STORAGE_KEY|AZURE_STORAGE_SAS_TOKEN)\b' },
         [pscustomobject]@{ Code = 'device-external-access'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|WebView|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b|\bPreferences\s*\.' },
@@ -21,6 +21,32 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'conditional-reproduction'; Pattern = '\bMAUI_REPRODUCTION_ISSUE\b' },
         [pscustomobject]@{ Code = 'framework-behavior-switch'; Pattern = '(?i)\bSkipMeasureInvalidatedPropagation\s*=' }
     )
+}
+
+function Get-ReplicationUnsafeMatchDetail {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$ScanText,
+        [Parameter(Mandatory = $true)][System.Text.RegularExpressions.Match]$Match
+    )
+
+    $lineNumber = ($ScanText.Substring(0, $Match.Index) -split "`n").Count
+    $lineStart = $ScanText.LastIndexOf("`n", [Math]::Max($Match.Index - 1, 0)) + 1
+    if ($Match.Index -eq 0) { $lineStart = 0 }
+    $lineEnd = $ScanText.IndexOf("`n", $Match.Index)
+    if ($lineEnd -lt 0) { $lineEnd = $ScanText.Length }
+    $line = $ScanText.Substring($lineStart, $lineEnd - $lineStart)
+
+    $sanitize = {
+        param([string]$Value)
+        $clean = [regex]::Replace($Value, '[\p{C}]', ' ').Trim()
+        if ($clean.Length -gt 160) { $clean = $clean.Substring(0, 160) }
+        return $clean
+    }
+
+    $token = & $sanitize $Match.Value
+    $context = & $sanitize $line
+    return "matched text '$token' on line $lineNumber -> $context"
 }
 
 function Assert-ReplicationGeneratedSourceSafety {
@@ -44,8 +70,9 @@ function Assert-ReplicationGeneratedSourceSafety {
         )
     }
     foreach ($entry in Get-ReplicationUnsafeSourcePatterns) {
-        if ($scanText -match $entry.Pattern) {
-            throw "Candidate source '$Path' contains prohibited '$($entry.Code)' content."
+        $match = [regex]::Match($scanText, $entry.Pattern)
+        if ($match.Success) {
+            throw "Candidate source '$Path' contains prohibited '$($entry.Code)' content: $(Get-ReplicationUnsafeMatchDetail -ScanText $scanText -Match $match)"
         }
     }
 }

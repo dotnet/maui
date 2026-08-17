@@ -239,7 +239,12 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
             options.AddAdditionalAppiumOption("appium:dontStopAppOnReset", true);
             options.AddAdditionalAppiumOption(
                 "appium:uiautomator2ServerInstallTimeout",
+                300_000);
+            options.AddAdditionalAppiumOption(
+                "appium:uiautomator2ServerLaunchTimeout",
                 120_000);
+            options.AddAdditionalAppiumOption("appium:adbExecTimeout", 180_000);
+            options.AddAdditionalAppiumOption("appium:androidInstallTimeout", 300_000);
             options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
             return new AndroidDriver(server, options);
         case "ios":

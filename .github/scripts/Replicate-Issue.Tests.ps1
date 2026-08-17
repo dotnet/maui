@@ -78,6 +78,7 @@ BeforeAll {
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
         'Test-TransientCopilotServiceFailure',
+        'Test-TransientReproductionInfrastructureFailure',
         'Resolve-ReplicationCopilotExecutable'
     )) {
         $function = $ast.Find({
@@ -122,8 +123,35 @@ Describe 'Replication orchestrator security boundary' {
         $result.Output | Should -Contain 'expected'
     }
 
-    It 'backs off transient Copilot service failures without consuming semantic attempts' {
-        Test-TransientCopilotServiceFailure `
+    It 'retries device infrastructure flakiness without consuming semantic attempts' {
+        Test-TransientReproductionInfrastructureFailure `
+            -Output "Error executing adbExec. Original error: 'Command 'adb install -r appium-uiautomator2-server-v7.4.1.apk' timed out after 120000ms'" |
+            Should -BeTrue
+        Test-TransientReproductionInfrastructureFailure `
+            -Output 'A new session could not be created' |
+            Should -BeTrue
+        Test-TransientReproductionInfrastructureFailure `
+            -Output 'device offline' |
+            Should -BeTrue
+        Test-TransientReproductionInfrastructureFailure `
+            -Output 'BUG REPRODUCED marker was not observed; the app reported NO BUG' |
+            Should -BeFalse
+        Test-TransientReproductionInfrastructureFailure `
+            -Output 'Timed out waiting for element with androidText Submit' |
+            Should -BeFalse
+
+        $script:Source | Should -Match '\$MaxInfrastructureRetries = 3'
+        $script:Source | Should -Match 'retrying without consuming a semantic attempt'
+        $script:Source | Should -Match '\$attempt--'
+    }
+
+    It 'escalates guidance when a sandbox attempt repeats an identical failure' {
+        $script:Source |
+            Should -Match 'This identical failure already occurred on the previous attempt'
+        $script:Source | Should -Match '\$repeatedSandboxFailure = \(\$sandboxFailureSummary -eq \$previousSandboxFailureSummary\)'
+    }
+
+    It 'backs off transient Copilot service failures without consuming semantic attempts' {        Test-TransientCopilotServiceFailure `
             -Output 'Failed to fetch PAT user login (503): No server is currently available' |
             Should -BeTrue
         Test-TransientCopilotServiceFailure `
@@ -697,6 +725,33 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
     }
 
+    It 'reports the exact matched text and line for prohibited content' {
+        $content = @'
+public void Ok()
+{
+    var label = new Label();
+    var info = Activator.CreateInstance(typeof(Label));
+}
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $content -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'reflection' content: matched text 'Activator' on line 4*Activator.CreateInstance*"
+    }
+
+    It 'allows benign GetType name inspection but rejects reflective member access' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'Console.WriteLine(sender.GetType().Name);' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'var m = sender.GetType().GetMembers();' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw '*reflection*'
+    }
+
     It 'allows ordinary preference variables while rejecting the Preferences API' {
         {
             Assert-ReplicationGeneratedSourceSafety `
@@ -830,7 +885,11 @@ InitializeComponent();
         $script:BuildSandboxSource | Should -Match 'REPLICATION_WINDOWS_APP_PATH'
         $script:BuildSandboxSource | Should -Match 'shell pidof -s com\.microsoft\.maui\.sandbox'
         $script:TrustedAppiumSource |
-            Should -Match '"appium:uiautomator2ServerInstallTimeout",\s*120_000'
+            Should -Match '"appium:uiautomator2ServerInstallTimeout",\s*300_000'
+        $script:TrustedAppiumSource |
+            Should -Match '"appium:adbExecTimeout",\s*180_000'
+        $script:TrustedAppiumSource |
+            Should -Match '"appium:androidInstallTimeout",\s*300_000'
         $script:TrustedAppiumSource | Should -Match 'case "restartApp"'
         $script:TrustedAppiumSource | Should -Match 'driver\.TerminateApp\(appId\)'
         $script:TrustedAppiumSource | Should -Match 'driver\.ActivateApp\(appId\)'
