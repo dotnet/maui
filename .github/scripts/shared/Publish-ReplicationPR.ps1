@@ -153,8 +153,8 @@ $marker
 
 - Issue: [$IssueOwner/$IssueRepository#$issueNumber — $safeTitle]($issueUrl)
 - Platform: **$platform**
-- Baseline commit: ``$baseSha``
-- Base branch: the reproduction commit is applied directly onto the pull request base, so this diff contains only the added reproduction test
+- Validated on baseline commit: ``$baseSha`` — the trusted device reproduction and the failing-test verification both ran against this commit
+- Base branch: the reproduction commit is applied directly onto the current tip of the pull request base branch, so this diff contains only the added reproduction test. That tip, not the baseline above, is the parent of the commit in this pull request.
 - Test type: **$testType**
 - Targeted filter: ``$testFilter``
 - Expected failing assertion: ``$failureSignature``
@@ -167,6 +167,8 @@ $buildLine
 [Open the full MP4 recording]($($Evidence.blobs.video)) · [Evidence manifest]($($Evidence.blobs.manifest))
 
 The authoritative proof is the trusted targeted test failing with the expected assertion above. The recording corroborates that; for defects with no visible symptom it may show only the app-reported verdict rather than the defect itself.
+
+This recording is of the trusted Sandbox reproduction app that established the behavior on-device, not of the committed test executing. Its on-screen text therefore comes from that Sandbox app and will not match the assertion payload emitted by the committed test. Treat it as corroboration of the symptom, not as exact-head evidence for the commit in this pull request.
 
 ## Reproduction steps
 

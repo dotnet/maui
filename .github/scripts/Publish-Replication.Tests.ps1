@@ -162,7 +162,7 @@ Describe 'Trusted replication pull request publishing' {
         # probative; state its evidentiary role explicitly instead.
         $body | Should -Match 'authoritative proof is the trusted targeted test'
         $body | Should -Match 'only the app-reported verdict rather than the defect itself'
-        $body | Should -Match 'applied directly onto the pull request base'
+        $body | Should -Match 'applied directly onto the current tip of the pull request base branch'
     }
 
     It 'rejects publication when the expected signature is absent from the failure message' {
@@ -250,5 +250,19 @@ Describe 'Trusted replication PR migration' {
         $createIndex | Should -BeGreaterThan -1
         $closeIndex | Should -BeGreaterThan $createIndex
         $script:MigrationSource | Should -Match "state = 'closed'"
+    }
+
+    It 'states the real parent commit and the recording provenance' {
+        # kubaflo/maui#179 and #180 review: the body named the validated
+        # baseline as the parent even though the commit is applied onto the
+        # base branch tip, and the recording was read as exact-head evidence.
+        $body = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
+
+        $body | Should -Match 'Validated on baseline commit'
+        $body | Should -Match 'That tip, not the baseline above, is the parent'
+        $body | Should -Match 'not of the committed test executing'
+        $body | Should -Match 'not as exact-head evidence'
+        $body.Contains('- Baseline commit: ``$baseSha``') | Should -BeFalse
     }
 }
