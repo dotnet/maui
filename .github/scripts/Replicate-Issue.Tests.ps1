@@ -162,6 +162,12 @@ Describe 'Replication orchestrator security boundary' {
             Should -Match 'wait\.Until\(current =>'
         $script:TrustedAppiumSource |
             Should -Match 'catch \(WebDriverTimeoutException exception\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'IsAndroidTextVisible\(current, expected, contains\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'ReadVisibleAndroidNegativeVerdict\(driver\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'new UiSelector\(\)\.textStartsWith'
     }
 
     It 'uses the supported macOS unified-log debug flag' {

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using OpenQA.Selenium;
@@ -330,6 +331,7 @@ static void ExecuteStep(
         case "assertTextEquals":
             AssertElementText(
                 driver,
+                platform,
                 step,
                 timeout,
                 contains: false,
@@ -338,6 +340,7 @@ static void ExecuteStep(
         case "assertTextContains":
             AssertElementText(
                 driver,
+                platform,
                 step,
                 timeout,
                 contains: true,
@@ -461,6 +464,7 @@ static By CreateLocator(ReplicationLocator locator) =>
 
 static void AssertElementText(
     AppiumDriver driver,
+    string platform,
     ReplicationStep step,
     TimeSpan timeout,
     bool contains,
@@ -482,7 +486,13 @@ static void AssertElementText(
                     return false;
                 }
 
-                actual = element.Text ?? string.Empty;
+                actual = ReadElementText(element);
+                if (platform == "android" &&
+                    string.IsNullOrWhiteSpace(actual) &&
+                    IsAndroidTextVisible(current, expected, contains))
+                {
+                    actual = expected;
+                }
                 return contains
                     ? actual.Contains(expected, StringComparison.Ordinal)
                     : string.Equals(actual, expected, StringComparison.Ordinal);
@@ -501,6 +511,12 @@ static void AssertElementText(
     {
         var normalizedActual = actual.Trim();
         if (isFinalStep &&
+            platform == "android" &&
+            string.IsNullOrWhiteSpace(normalizedActual))
+        {
+            normalizedActual = ReadVisibleAndroidNegativeVerdict(driver);
+        }
+        if (isFinalStep &&
             (normalizedActual.StartsWith("PASS:", StringComparison.Ordinal) ||
              normalizedActual.StartsWith("NO BUG:", StringComparison.Ordinal)))
         {
@@ -514,6 +530,64 @@ static void AssertElementText(
             $"Expected element text to {comparison} '{expected}', actual '{actual}'.",
             exception);
     }
+}
+
+static string ReadElementText(IWebElement element)
+{
+    if (!string.IsNullOrWhiteSpace(element.Text))
+    {
+        return element.Text;
+    }
+
+    foreach (var attribute in new[] { "text", "value", "label", "name" })
+    {
+        var value = element.GetAttribute(attribute);
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+    }
+
+    return string.Empty;
+}
+
+static bool IsAndroidTextVisible(
+    IWebDriver driver,
+    string expected,
+    bool contains)
+{
+    var escaped = expected
+        .Replace("\\", "\\\\", StringComparison.Ordinal)
+        .Replace("\"", "\\\"", StringComparison.Ordinal);
+    var selector = contains
+        ? $"new UiSelector().textContains(\"{escaped}\")"
+        : $"new UiSelector().text(\"{escaped}\")";
+    return driver.FindElements(MobileBy.AndroidUIAutomator(selector))
+        .Any(element => element.Displayed);
+}
+
+static string ReadVisibleAndroidNegativeVerdict(AppiumDriver driver)
+{
+    foreach (var prefix in new[] { "PASS:", "NO BUG:" })
+    {
+        var selector = $"new UiSelector().textStartsWith(\"{prefix}\")";
+        foreach (var element in driver.FindElements(
+            MobileBy.AndroidUIAutomator(selector)))
+        {
+            if (!element.Displayed)
+            {
+                continue;
+            }
+
+            var actual = ReadElementText(element).Trim();
+            if (actual.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                return actual;
+            }
+        }
+    }
+
+    return string.Empty;
 }
 
 static void Swipe(AppiumDriver driver, string platform, string direction)
