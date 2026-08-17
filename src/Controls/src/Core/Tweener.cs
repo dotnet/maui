@@ -57,14 +57,7 @@ namespace Microsoft.Maui.Controls
 
 			// The tweeners use long.MaxValue for in-band signaling that they should
 			// jump to the end of the animation 
-			try
-			{
-				_ = _step.Invoke(long.MaxValue);
-			}
-			finally
-			{
-				Finished?.Invoke();
-			}
+			_ = _step.Invoke(long.MaxValue);
 		}
 	}
 
