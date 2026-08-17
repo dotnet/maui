@@ -11,6 +11,9 @@ BeforeAll {
     $script:BuildDeploySource = Get-Content `
         -LiteralPath (Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') `
         -Raw
+    $script:SandboxProjectSource = Get-Content `
+        -LiteralPath (Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj') `
+        -Raw
     $script:TrustedAppiumSource = Get-Content `
         -LiteralPath (Join-Path $PSScriptRoot 'templates/RunReplicationAppiumPlan.cs') `
         -Raw
@@ -497,7 +500,13 @@ InitializeComponent();
         $script:BuildDeploySource |
             Should -Match '"-p:WindowsPackageType=None"'
         $script:BuildDeploySource |
-            Should -Match '"-p:WindowsAppSDKSelfContained=true"'
+            Should -Match '"-p:RuntimeIdentifierOverride=win-x64"'
+        $script:BuildDeploySource |
+            Should -Match '"-p:_MauiReplicationUnpackaged=true"'
+        $script:BuildDeploySource |
+            Should -Not -Match '"-p:WindowsAppSDKSelfContained=true"'
+        $script:SandboxProjectSource |
+            Should -Match '<WindowsAppSDKSelfContained Condition="[^"]*_MauiReplicationUnpackaged[^"]*">true</WindowsAppSDKSelfContained>'
         $script:TrustedAppiumSource |
             Should -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
         $script:TrustedAppiumSource |

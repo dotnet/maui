@@ -394,12 +394,16 @@ if ($Platform -eq "android") {
     # Hosted Windows agents do not reliably have the matching Windows App
     # Runtime registered. Bundle it beside the unpackaged Sandbox executable
     # so launch does not depend on machine-wide DeploymentManager activation.
+    # Do not pass WindowsAppSDKSelfContained on the command line because global
+    # properties propagate to library project references that have no Windows
+    # architecture. The Sandbox project scopes that property to its Windows app.
     $buildArgs = @(
         $ProjectPath,
         "-f", $TargetFramework,
         "-c", $Configuration,
+        "-p:RuntimeIdentifierOverride=win-x64",
         "-p:WindowsPackageType=None",
-        "-p:WindowsAppSDKSelfContained=true"
+        "-p:_MauiReplicationUnpackaged=true"
     ) + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
