@@ -27,6 +27,13 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'PARAM_ISSUE_NUMBER: \$\{\{ parameters\.IssueNumber \}\}'
     }
 
+    It 'gives feedback and replication runs distinct Azure titles' {
+        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?displayName: 'Set Replication Pipeline Run Title'"
+        $script:Pipeline | Should -Match 'build\.updatebuildnumber\]Feedback snapshot'
+        $script:Pipeline | Should -Match 'build\.updatebuildnumber\]Replicate issue \$\{PARAM_ISSUE_NUMBER\} \$\{PARAM_PLATFORM\}'
+        $script:Pipeline | Should -Match 'build\.updatebuildnumber\]Review PR \$\{PARAM_PR_NUMBER\} \$\{PARAM_PLATFORM\}'
+    }
+
     It 'keeps PR-specific jobs and stages review-only' {
         $script:Pipeline | Should -Match "(?s)name: RunSetup.*?condition: and\(succeeded\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)\)"
         $script:Pipeline | Should -Match "(?s)name: RunGate.*?condition: and\(succeeded\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)\)"

@@ -102,6 +102,18 @@ stages:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 45
         steps:
+          - bash: |
+              if [ "${PARAM_MODE}" = "feedback" ]; then
+                echo "##vso[build.updatebuildnumber]Feedback snapshot"
+              else
+                echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${PARAM_PLATFORM}"
+              fi
+            displayName: 'Set Replication Pipeline Run Title'
+            env:
+              PARAM_MODE: ${{ parameters.Mode }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+
           - checkout: self
             fetchDepth: 1
             persistCredentials: false
@@ -360,15 +372,18 @@ stages:
 
           - bash: |
               if [ "${PARAM_MODE}" = "review" ]; then
-                echo "##vso[build.updatebuildnumber]Review PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
+                echo "##vso[build.updatebuildnumber]Review PR ${PARAM_PR_NUMBER} ${PARAM_PLATFORM}"
+              elif [ "${PARAM_MODE}" = "replicate" ]; then
+                echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${PARAM_PLATFORM}"
               else
-                echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${{ parameters.Platform }}"
+                echo "##vso[build.updatebuildnumber]Feedback snapshot"
               fi
             displayName: 'Set Pipeline Run Title'
             env:
               PARAM_MODE: ${{ parameters.Mode }}
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # Capture trusted test infrastructure exactly once while the worktree
           # is still at $(Build.SourceVersion). Keep this outside the retried
