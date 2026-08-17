@@ -118,6 +118,36 @@ VERIFY_FAILURE_ONLY_FILES = {
 }.freeze
 
 FIXTURES = {
+  "code-review" => {
+    "eval.inline-findings.vally.yaml" => [
+      {
+        marker: "regression-writes-inline-findings-to-disk",
+        fallback_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
+        source_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
+        message: "Sanitized gradient inline-findings fixture"
+      }
+    ],
+    "eval.vally.yaml" => [
+      {
+        marker: "gradient-alpha-forced-opaque",
+        fallback_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
+        source_ref: "48c7d8711d6d6befd0297336c6fb8958cfcfc3bd",
+        message: "Sanitized gradient regression fixture"
+      },
+      {
+        marker: "native-collection-null-overlays",
+        fallback_ref: "dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9",
+        source_ref: "dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9",
+        message: "Sanitized map overlay regression fixture"
+      },
+      {
+        marker: "navigatedto-latch-suppresses-reentry",
+        fallback_ref: "8ee24cfe4c38038cec62e09dacc182815310c97d",
+        source_ref: "8ee24cfe4c38038cec62e09dacc182815310c97d",
+        message: "Sanitized navigation lifecycle regression fixture"
+      }
+    ]
+  },
   "try-fix" => {
     "eval.restore.vally.yaml" => [
       {
@@ -736,6 +766,73 @@ def create_fixture_commit(repo_root, fixture, parent_ref: BASE_REF)
   end
 end
 
+def create_sanitized_tree(repo_root, source_ref, trusted_control_ref)
+  Dir.mktmpdir("vally-sanitized-tree-") do |temp_root|
+    index_path = File.join(temp_root, "index")
+    index_env = { "GIT_INDEX_FILE" => index_path }
+    run_git(repo_root, "read-tree", source_ref, env: index_env)
+
+    trusted_entries = repository_control_entries(repo_root, trusted_control_ref)
+    source_entries = repository_control_entries(repo_root, source_ref)
+    (trusted_entries.keys | source_entries.keys).sort.each do |path|
+      metadata = trusted_entries[path]
+      if metadata
+        mode, type, object = metadata.split
+        raise "Trusted repository control #{path} is not a blob" unless type == "blob"
+
+        run_git(
+          repo_root,
+          "update-index", "--add", "--cacheinfo", mode, object, path,
+          env: index_env
+        )
+      else
+        run_git(repo_root, "update-index", "--force-remove", "--", path, env: index_env)
+      end
+    end
+
+    run_git(repo_root, "write-tree", env: index_env)
+  end
+end
+
+def create_sanitized_history_fixture_commit(repo_root, fixture, trusted_control_ref)
+  source_ref = fixture.fetch(:source_ref)
+  resolved_source = run_git(repo_root, "rev-parse", "--verify", "#{source_ref}^{commit}")
+  raise "Fixture #{fixture[:marker]} source ref did not resolve exactly" unless resolved_source == source_ref
+
+  source_parent = run_git(repo_root, "rev-parse", "#{source_ref}^")
+  sanitized_parent_tree = create_sanitized_tree(repo_root, source_parent, trusted_control_ref)
+  sanitized_parent = run_git(
+    repo_root,
+    "-c", "user.name=Vally Fixture",
+    "-c", "user.email=vally-fixture@example.invalid",
+    "commit-tree", sanitized_parent_tree, "-p", trusted_control_ref,
+    "-m", "#{fixture[:message]} parent",
+    env: FIXTURE_COMMIT_ENV
+  )
+
+  sanitized_tree = create_sanitized_tree(repo_root, source_ref, trusted_control_ref)
+  head = run_git(
+    repo_root,
+    "-c", "user.name=Vally Fixture",
+    "-c", "user.email=vally-fixture@example.invalid",
+    "commit-tree", sanitized_tree, "-p", sanitized_parent,
+    "-m", fixture[:message],
+    env: FIXTURE_COMMIT_ENV
+  )
+
+  expected = run_git(repo_root, "diff", "--name-only", source_parent, source_ref).split("\n").sort
+  changed = run_git(repo_root, "diff", "--name-only", "#{head}^", head).split("\n").sort
+  raise "Fixture #{fixture[:marker]} changed #{changed.inspect}, expected #{expected.inspect}" unless changed == expected
+
+  validate_repository_controls!(
+    repo_root,
+    head,
+    trusted_control_ref,
+    "generated fixture #{fixture[:marker]}"
+  )
+  head
+end
+
 def patch_fixture_ref!(spec_path, fixture, fixture_head)
   marker = fixture.fetch(:marker)
   fallback_ref = fixture.fetch(:fallback_ref)
@@ -773,6 +870,7 @@ def main(argv = ARGV)
   fail!("tests path escapes .github/skills") unless inside?(tests_path, skills_root)
   skill_name = tests_match[1]
   skill_root = File.realpath(File.join(skills_root, skill_name))
+  skill_fixtures = FIXTURES[File.basename(skill_root)]
   trusted_control_ref = trusted_repository_control_ref(
     repo_root,
     allow_missing: allow_missing_trusted_control_ref
@@ -791,7 +889,7 @@ def main(argv = ARGV)
       relative_spec_path,
       skill_root,
       repo_root,
-      inspect_git_refs: !validate_only,
+      inspect_git_refs: !validate_only && !skill_fixtures,
       trusted_control_ref: trusted_control_ref
     )
     [spec_path, document]
@@ -821,7 +919,6 @@ def main(argv = ARGV)
     return
   end
 
-  skill_fixtures = FIXTURES[File.basename(skill_root)]
   if !validate_only && skill_fixtures
     fixture_parent = if File.basename(skill_root) == "verify-tests-fail-without-fix"
                        scripts_root = Pathname.new(File.join(skill_root, "scripts"))
@@ -841,7 +938,15 @@ def main(argv = ARGV)
       fail!("missing fixture spec #{spec_path}") unless File.file?(spec_path)
 
       fixtures.each do |fixture|
-        fixture_head = create_fixture_commit(repo_root, fixture, parent_ref: fixture_parent)
+        fixture_head = if fixture[:source_ref]
+                         create_sanitized_history_fixture_commit(
+                           repo_root,
+                           fixture,
+                           trusted_control_ref
+                         )
+                       else
+                         create_fixture_commit(repo_root, fixture, parent_ref: fixture_parent)
+                       end
         patch_fixture_ref!(spec_path, fixture, fixture_head)
         puts "Prepared #{fixture[:marker]} at #{fixture_head}"
       end

@@ -875,6 +875,39 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s): .github/copilot/settings.json"
   end
 
+  def test_sanitized_history_fixture_preserves_source_diff_and_trusted_controls
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":true}\n")
+    write_repo_file("src/Example.cs", "class Example { }\n")
+    trusted = commit_all("trusted")
+
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":false}\n")
+    commit_all("historical controls")
+    write_repo_file("src/Example.cs", "class Example { public bool Broken => true; }\n")
+    source = commit_all("historical regression")
+
+    fixture = {
+      marker: "historical-regression",
+      source_ref: source,
+      message: "Sanitized historical regression"
+    }
+    head = create_sanitized_history_fixture_commit(@repo_root, fixture, trusted)
+
+    assert_equal ["src/Example.cs"], git("diff", "--name-only", "#{head}^", head).lines.map(&:strip)
+    assert_equal(
+      "{\"disableAllHooks\":true}\n",
+      git("show", "#{head}:.github/copilot/settings.json", strip: false)
+    )
+    assert_equal(
+      "{\"disableAllHooks\":true}\n",
+      git("show", "#{head}^:.github/copilot/settings.json", strip: false)
+    )
+    assert_equal(
+      "class Example { public bool Broken => true; }\n",
+      git("show", "#{head}:src/Example.cs", strip: false)
+    )
+  end
+
   def test_requires_trusted_repository_control_ref
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -1381,6 +1414,17 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'sudo -n install -d -o root -g root -m 555'
     assert_includes content, '"$trusted_copilot_home/installed-plugins"'
     refute_includes content, '"$trusted_copilot_home/hooks"'
+  end
+
+  def test_runtime_setup_grants_only_read_only_workspace_access
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, "missing_packages+=(acl)"
+    assert_includes content, 'sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"'
+    assert_includes content, 'sudo -n setfacl -m "u:$eval_user:r-x" "$GITHUB_WORKSPACE"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -r "$GITHUB_WORKSPACE/.git/HEAD"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
   end
 
   def test_token_selector_skips_pat_with_an_invalid_model_probe_response

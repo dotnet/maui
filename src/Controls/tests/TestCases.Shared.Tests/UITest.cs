@@ -694,8 +694,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			var y = windowBounds.Y;
 			var width = windowBounds.Width;
 			var height = windowBounds.Height;
-			var logicalWidth = (int)Math.Round(width);
-			var logicalHeight = (int)Math.Round(height);
+			var logicalWidth = width;
+			var logicalHeight = height;
 			const int cornerRadius = 12;
 
 			// Take the screenshot
