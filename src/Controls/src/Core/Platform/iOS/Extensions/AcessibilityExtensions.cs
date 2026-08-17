@@ -24,7 +24,7 @@ internal static class AcessibilityExtensions
             return;
         }
 
-        var accessibilityTarget = FindAccessibilityElement(cell.ContentView.Subviews[0], 0);
+        var accessibilityTarget = FindAccessibilityElement(cell.ContentView.Subviews[0]);
 
         // Preserve the accessibility role of native controls.
         if (accessibilityTarget is null || accessibilityTarget is UIControl)
@@ -42,7 +42,7 @@ internal static class AcessibilityExtensions
         }
     }
 
-    static UIView? FindAccessibilityElement(UIView view, int depth)
+    static UIView? FindAccessibilityElement(UIView view)
     {
         // Do not change the role of native controls such as
         // UIButton, UITextField, UISwitch, etc.
@@ -60,7 +60,7 @@ internal static class AcessibilityExtensions
 
         foreach (var subview in view.Subviews)
         {
-            var accessibilityElement = FindAccessibilityElement(subview, depth + 1);
+            var accessibilityElement = FindAccessibilityElement(subview);
 
             if (accessibilityElement is not null)
             {
