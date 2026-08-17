@@ -745,6 +745,11 @@ exit 0
         $script:Source | Should -Match 'sentinel outside the passing domain'
         $script:Source | Should -Match 'replacing a real orientation change with WidthRequest or Arrange'
         $script:Source | Should -Match 'substitutes Arrange for a real device orientation change'
+        $script:Source | Should -Match 'reportedTrigger and testTrigger must each be a single line of at most 2000 characters'
+        ([regex]::Matches(
+            $script:Source,
+            '(?s)-Description ''(?:Reported issue trigger|Automated test trigger)''\s*`\s*-MaximumLength 2000'
+        )).Count | Should -Be 3
     }
 
     It 'rejects synthetic Arrange as a device-orientation trigger' {
@@ -951,6 +956,42 @@ public void ReproducesIssue()
                 -Path 'src/Controls/tests/DeviceTests/Issue35516.iOS.cs' `
                 -Platform 'catalyst'
         } | Should -Not -Throw
+    }
+
+    It 'allows platform APIs in shared HostApp files only under matching compile guards' {
+        $guardedUIKitSource = @'
+void CaptureNativeView()
+{
+#if IOS
+    if (Handler?.PlatformView is UIKit.UIView view)
+        _ = view.Handle;
+#endif
+}
+
+#if IOS
+static UIKit.UIImageView FindImageView(UIKit.UIView view) => null;
+#endif
+'@
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content $guardedUIKitSource `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue34538.xaml.cs' `
+                -Platform 'ios'
+        } | Should -Not -Throw
+
+        $unguardedElseSource = @'
+#if IOS
+static object FindView() => null;
+#else
+static UIKit.UIView FindView() => null;
+#endif
+'@
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content $unguardedElseSource `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue34538.xaml.cs' `
+                -Platform 'ios'
+        } | Should -Throw '*without a matching platform-specific path*'
     }
 
     It 'rejects test lifecycle code that can run before the guard' {

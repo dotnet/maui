@@ -72,28 +72,92 @@ function Assert-ReplicationPlatformSourceSafety {
             Name = 'UIKit'
             Pattern = '(?i)\b(?:UIKit|Foundation|CoreGraphics)\b'
             PathPattern = '(?i)\.iOS\.cs$|/(?:iOS|MacCatalyst)/'
+            GuardPattern = '(?i)^(?:IOS|MACCATALYST)(?:\s*\|\|\s*(?:IOS|MACCATALYST))*$'
         },
         [pscustomobject]@{
             Name = 'Android'
             Pattern = '(?i)\b(?:Android|AndroidX)\s*\.'
             PathPattern = '(?i)\.Android\.cs$|/Android/'
+            GuardPattern = '(?i)^ANDROID$'
         },
         [pscustomobject]@{
             Name = 'Windows'
             Pattern = '(?i)\b(?:Microsoft\s*\.\s*UI|Windows\s*\.\s*UI)\b'
             PathPattern = '(?i)\.Windows\.cs$|/Windows/'
+            GuardPattern = '(?i)^WINDOWS$'
         }
     )
 
     foreach ($rule in $platformNamespaceRules) {
-        if ($Content -match $rule.Pattern -and $normalizedPath -notmatch $rule.PathPattern) {
+        $unscopedContent = Get-ReplicationUnscopedPlatformContent `
+            -Content $Content `
+            -GuardPattern $rule.GuardPattern
+        if ($unscopedContent -match $rule.Pattern -and $normalizedPath -notmatch $rule.PathPattern) {
             throw "Candidate source '$Path' uses $($rule.Name) APIs without a matching platform-specific path."
         }
     }
 
-    if ($Platform -ceq 'catalyst' -and $Content -match '(?i)\bUIKit\b' -and $normalizedPath -notmatch '(?i)\.iOS\.cs$|/(?:iOS|MacCatalyst)/') {
+    $unscopedUIKitContent = Get-ReplicationUnscopedPlatformContent `
+        -Content $Content `
+        -GuardPattern '(?i)^(?:IOS|MACCATALYST)(?:\s*\|\|\s*(?:IOS|MACCATALYST))*$'
+    if ($Platform -ceq 'catalyst' -and $unscopedUIKitContent -match '(?i)\bUIKit\b' -and $normalizedPath -notmatch '(?i)\.iOS\.cs$|/(?:iOS|MacCatalyst)/') {
         throw "Catalyst candidate source '$Path' must place UIKit code in an .iOS.cs file or existing Apple-platform directory."
     }
+}
+
+function Get-ReplicationUnscopedPlatformContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$GuardPattern
+    )
+
+    $frames = [System.Collections.Generic.List[object]]::new()
+    $result = [System.Text.StringBuilder]::new()
+    $isProtected = $false
+
+    foreach ($line in $Content.Replace("`r`n", "`n").Split("`n")) {
+        if ($line -match '^\s*#if\s+(?<expression>.+?)\s*$') {
+            $parentProtected = $isProtected
+            $guardedBranch = $Matches['expression'].Trim() -match $GuardPattern
+            $frames.Add([pscustomobject]@{
+                ParentProtected = $parentProtected
+                GuardedBranch = $guardedBranch
+            })
+            $isProtected = $parentProtected -or $guardedBranch
+            continue
+        }
+        if ($line -match '^\s*#elif\s+(?<expression>.+?)\s*$') {
+            if ($frames.Count -gt 0) {
+                $frame = $frames[$frames.Count - 1]
+                $frame.GuardedBranch = $Matches['expression'].Trim() -match $GuardPattern
+                $isProtected = $frame.ParentProtected -or $frame.GuardedBranch
+            }
+            continue
+        }
+        if ($line -match '^\s*#else\b') {
+            if ($frames.Count -gt 0) {
+                $frame = $frames[$frames.Count - 1]
+                $frame.GuardedBranch = $false
+                $isProtected = $frame.ParentProtected
+            }
+            continue
+        }
+        if ($line -match '^\s*#endif\b') {
+            if ($frames.Count -gt 0) {
+                $frame = $frames[$frames.Count - 1]
+                $frames.RemoveAt($frames.Count - 1)
+                $isProtected = $frame.ParentProtected
+            }
+            continue
+        }
+
+        if (-not $isProtected) {
+            $null = $result.AppendLine($line)
+        }
+    }
+
+    return $result.ToString()
 }
 
 function Assert-ReplicationTestLifecycleSafety {

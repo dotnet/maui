@@ -904,11 +904,11 @@ function Read-SandboxProposal {
     $null = ConvertTo-BoundedAgentLine `
         -Value $proposal.reportedTrigger `
         -Description 'Reported issue trigger' `
-        -MaximumLength 1000
+        -MaximumLength 2000
     $null = ConvertTo-BoundedAgentLine `
         -Value $proposal.sandboxTrigger `
         -Description 'Sandbox reproduction trigger' `
-        -MaximumLength 1000
+        -MaximumLength 2000
     if (@($proposal.scenarioDifferences).Count -ne 0) {
         throw 'The Sandbox trigger must be semantically equivalent to the reported issue trigger; scenarioDifferences must be empty.'
     }
@@ -1056,11 +1056,11 @@ function Read-TestProposal {
     $null = ConvertTo-BoundedAgentLine `
         -Value $proposal.reportedTrigger `
         -Description 'Reported issue trigger' `
-        -MaximumLength 1000
+        -MaximumLength 2000
     $null = ConvertTo-BoundedAgentLine `
         -Value $proposal.testTrigger `
         -Description 'Automated test trigger' `
-        -MaximumLength 1000
+        -MaximumLength 2000
     if (
         $PSBoundParameters.ContainsKey('ActualFiles') -and
         "$($proposal.reportedTrigger) $($proposal.testTrigger)" -match '(?i)\b(?:orientation|portrait|landscape|rotation)\b'
@@ -1300,7 +1300,7 @@ Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxAr
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last.
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
-reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
+reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
 If the issue requests a new public event, property, method, or other API that does not exist on the baseline, do not reinterpret it as a requirement for an existing event or state to change. A test may cover an existing documented contract that is broken, but a pure new-API/feature request is not an empirically reproducible baseline defect and must be rejected rather than assigned a substitute oracle.
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
