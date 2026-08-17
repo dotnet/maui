@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using Android.Content;
 using Android.OS;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Platform
 	public class NavigationRootManager
 	{
 		const int MaxFragmentManagerBusyRetries = 8;
+		const int MaxRootRequestsPerDrain = 8;
 		const long InitialFragmentManagerBusyRetryDelay = 16;
 		const long MaxFragmentManagerBusyRetryDelay = 256;
 
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Platform
 		bool _quiescingFragmentManagers;
 		IToolbarElement? _toolbarElementBeingQuiesced;
 		RootRequest? _queuedRequest;
-		Action<RootRequestOutcome, AView?>? _disconnectCompletion;
+		Stack<Action<RootRequestOutcome, AView?>>? _disconnectCompletions;
 
 		internal Func<FragmentManager?, Context, bool>? TryExecutePendingTransactionsOverride { get; set; }
 
@@ -104,8 +106,9 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		public virtual void Disconnect()
 		{
-			var completion = _disconnectCompletion;
-			_disconnectCompletion = null;
+			var completion = _disconnectCompletions is { Count: > 0 }
+				? _disconnectCompletions.Pop()
+				: null;
 			SubmitRootRequest(new RootRequest(
 				disconnect: true,
 				view: null,
@@ -118,16 +121,18 @@ namespace Microsoft.Maui.Platform
 
 		internal void Disconnect(Action<RootRequestOutcome, AView?> completion)
 		{
-			_disconnectCompletion = completion;
+			_disconnectCompletions ??= new();
+			_disconnectCompletions.Push(completion);
 			try
 			{
 				Disconnect();
 			}
 			finally
 			{
-				if (ReferenceEquals(_disconnectCompletion, completion))
+				if (_disconnectCompletions.Count > 0 &&
+					ReferenceEquals(_disconnectCompletions.Peek(), completion))
 				{
-					_disconnectCompletion = null;
+					_disconnectCompletions.Pop();
 					completion(RootRequestOutcome.Cancelled, _rootView);
 				}
 			}
@@ -171,11 +176,13 @@ namespace Microsoft.Maui.Platform
 			Exception? firstException = null;
 			var submittedRequest = request;
 			var submittedRequestApplied = false;
+			var processedRequestCount = 0;
 			_swapInFlight = true;
 			try
 			{
 				while (true)
 				{
+					processedRequestCount++;
 					try
 					{
 						var applied = request.Disconnect
@@ -221,11 +228,6 @@ namespace Microsoft.Maui.Platform
 							"Cancelled an Android navigation root swap after {RetryCount} retries because fragment transactions remained busy.",
 							MaxFragmentManagerBusyRetries);
 					}
-					catch (RootSwapUnavailableException ex)
-					{
-						CompleteRequest(request, RootRequestOutcome.Cancelled, ref firstException);
-						_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(ex.Message);
-					}
 					catch (Exception ex)
 					{
 						RecordException(ex, ref firstException);
@@ -234,6 +236,15 @@ namespace Microsoft.Maui.Platform
 
 					if (_queuedRequest is null)
 						break;
+
+					if (processedRequestCount >= MaxRootRequestsPerDrain)
+					{
+						ScheduleQueuedRootSwap(InitialFragmentManagerBusyRetryDelay);
+						_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(
+							"Deferred an Android navigation root request after {RequestCount} reentrant swaps to yield the main thread.",
+							MaxRootRequestsPerDrain);
+						break;
+					}
 
 					request = TakeQueuedRootRequest();
 				}
@@ -579,13 +590,7 @@ namespace Microsoft.Maui.Platform
 				return true;
 
 			if (outgoingRootView.Parent is null)
-			{
-				if (_viewFragment is not null)
-					throw new RootSwapUnavailableException(
-						"The outgoing Android navigation root was detached while its content fragment was still active.");
-
 				return true;
-			}
 
 			_quiescingFragmentManagers = true;
 			_toolbarElementBeingQuiesced = _toolbarElement;
@@ -757,14 +762,6 @@ namespace Microsoft.Maui.Platform
 
 		sealed class FragmentManagerBusyException : Exception
 		{
-		}
-
-		sealed class RootSwapUnavailableException : Exception
-		{
-			public RootSwapUnavailableException(string message)
-				: base(message)
-			{
-			}
 		}
 
 		IDisposable? _pendingFragment;

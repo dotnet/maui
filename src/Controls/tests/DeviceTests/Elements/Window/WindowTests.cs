@@ -627,14 +627,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Detached Root With Active Fragment Cancels Replacement And Allows Recovery")]
-		public async Task DetachedRootWithActiveFragmentCancelsReplacementAndAllowsRecovery()
+		[Fact(DisplayName = "Detached Root With Active Fragment Can Be Replaced")]
+		public async Task DetachedRootWithActiveFragmentCanBeReplaced()
 		{
 			SetupBuilder();
 
 			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
 			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
-			var recoveredPage = new ContentPage { Content = new Label { Text = "Recovered page" } };
 			var window = new Window(initialPage);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
@@ -642,29 +641,43 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(initialPage);
 
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
-				var toolbarElement = new ToolbarElementStub(new Toolbar(window));
-				rootManager.SetToolbarElement(toolbarElement);
 				var outgoingRoot = rootManager.RootView;
 				var activityRoot = Assert.IsType<FakeActivityRootView>(handler.PlatformViewUnderTest.Parent);
 				handler.PlatformViewUnderTest.RemoveFromParent();
 
-				NavigationRootManager.RootRequestOutcome? outcome = null;
-				var applied = rootManager.Connect(
-					replacementPage,
-					completion: (result, _) => outcome = result);
-
-				Assert.False(applied);
-				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, outcome);
-				Assert.Same(outgoingRoot, rootManager.RootView);
-				Assert.Same(toolbarElement, rootManager.ToolbarElement);
-
-				activityRoot.AddView(handler.PlatformViewUnderTest, 0);
-				applied = handler.ConnectContent(recoveredPage);
+				var applied = handler.ConnectContent(replacementPage);
 
 				Assert.True(applied);
-				await OnLoadedAsync(recoveredPage);
+				await OnLoadedAsync(replacementPage);
+				Assert.NotSame(outgoingRoot, rootManager.RootView);
 				Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
-				AssertPageAttachedToRoot(recoveredPage, rootManager);
+				Assert.Same(activityRoot, handler.PlatformViewUnderTest.Parent);
+				AssertPageAttachedToRoot(replacementPage, rootManager);
+			});
+		}
+
+		[Fact(DisplayName = "Detached Root With Active Fragment Can Be Disconnected")]
+		public async Task DetachedRootWithActiveFragmentCanBeDisconnected()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				handler.PlatformViewUnderTest.RemoveFromParent();
+				NavigationRootManager.RootRequestOutcome? outcome = null;
+
+				rootManager.Disconnect((result, _) => outcome = result);
+				handler.MauiContext.GetFragmentManager().ExecutePendingTransactions();
+
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Applied, outcome);
+				Assert.Null(rootManager.RootView);
+				Assert.Null(rootManager.ToolbarElement);
 			});
 		}
 
@@ -799,6 +812,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Reentrant Root Requests Yield Before Continuing")]
+		public async Task ReentrantRootRequestsYieldBeforeContinuing()
+		{
+			SetupBuilder();
+
+			var pages = Enumerable.Range(1, 12)
+				.Select(index => new ContentPage { Content = new Label { Text = $"Page {index}" } })
+				.ToArray();
+			var window = new Window(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var nextPage = 1;
+				Action queueNextPage = null;
+				queueNextPage = () =>
+				{
+					if (nextPage < pages.Length)
+						handler.ConnectContent(pages[nextPage++], queueNextPage);
+				};
+
+				Assert.False(handler.ConnectContent(pages[0], queueNextPage));
+				Assert.True(nextPage < pages.Length);
+				Assert.True(HasRootSwapRetryInfrastructure(handler.MauiContext.GetNavigationRootManager()));
+
+				await OnLoadedAsync(pages[^1]);
+				Assert.Equal(pages.Length, nextPage);
+				AssertPageAttachedToRoot(pages[^1], handler.MauiContext.GetNavigationRootManager());
+				Assert.False(HasRootSwapRetryInfrastructure(handler.MauiContext.GetNavigationRootManager()));
+			});
+		}
+
+		[Fact(DisplayName = "Nested Virtual Disconnects Preserve Every Completion")]
+		public async Task NestedVirtualDisconnectsPreserveEveryCompletion()
+		{
+			SetupBuilder();
+
+			var window = new Window(new ContentPage());
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, handler =>
+			{
+				var rootManager = new NestedDisconnectNavigationRootManager(handler.MauiContext);
+				NavigationRootManager.RootRequestOutcome? outerOutcome = null;
+
+				rootManager.Disconnect((outcome, _) => outerOutcome = outcome);
+
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Applied, outerOutcome);
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Applied, rootManager.NestedOutcome);
+			});
+		}
+
 		sealed class ToolbarElementStub : IToolbarElement
 		{
 			public ToolbarElementStub(IToolbar toolbar)
@@ -830,6 +892,29 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				_onCreateView();
 				return new global::Android.Views.View(inflater.Context);
+			}
+		}
+
+		sealed class NestedDisconnectNavigationRootManager : NavigationRootManager
+		{
+			bool _nestedDisconnectStarted;
+
+			public NestedDisconnectNavigationRootManager(IMauiContext mauiContext)
+				: base(mauiContext)
+			{
+			}
+
+			public RootRequestOutcome? NestedOutcome { get; private set; }
+
+			public override void Disconnect()
+			{
+				if (!_nestedDisconnectStarted)
+				{
+					_nestedDisconnectStarted = true;
+					Disconnect((outcome, _) => NestedOutcome = outcome);
+				}
+
+				base.Disconnect();
 			}
 		}
 
