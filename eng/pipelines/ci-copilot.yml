@@ -2644,6 +2644,17 @@ stages:
               $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
               New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
               $candidatePath = Join-Path $artifactRoot "candidate.json"
+              if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'missing'
+                  validationPassed = $false
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath (Join-Path $outputRoot "validated-candidate.json") -Encoding utf8NoBOM
+                Write-Host "No replication candidate manifest was produced; nothing to validate."
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
+                exit 0
+              }
               $candidate = Get-Content -LiteralPath $candidatePath -Raw |
                 ConvertFrom-Json -Depth 20
               if ([string]$candidate.status -ne 'reproduced') {
