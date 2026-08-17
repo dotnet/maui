@@ -155,6 +155,72 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationAttemptFailureKind {
+    <#
+        .SYNOPSIS
+        Classifies why a single device attempt failed.
+
+        .DESCRIPTION
+        Only an attempt that ran the scenario through and observed no defect is
+        evidence that the issue does not reproduce. An attempt lost to a build
+        break, a missing element, or the app closing proves nothing.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$FailureSummary
+    )
+
+    $text = [string]$FailureSummary
+    if ($text -match '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed') {
+        return 'app-terminated'
+    }
+    if ($text -match '(?i)compiler diagnostics|Preparing the Sandbox app failed|error CS\d+') {
+        return 'build-failed'
+    }
+    if ($text -match '(?i)REPLICATION_NOT_REPRODUCED') {
+        return 'not-reproduced'
+    }
+    if ($text -match '(?i)Element was not visible|no such element|ElementNotFound') {
+        return 'element-missing'
+    }
+    if ($text -match '(?i)must locate a stable result element|Generated Appium step') {
+        return 'plan-rejected'
+    }
+    return 'other'
+}
+
+function Test-ReplicationNonReproductionIsConclusive {
+    <#
+        .SYNOPSIS
+        Decides whether the attempts actually answered the reproduction question.
+
+        .DESCRIPTION
+        Build 14997689 declared verified regression 37418 non-reproducible after
+        alternating between a CS0246 build break and a scenario that observed no
+        defect, then told the reporter publicly to try the latest version. A
+        non-reproduction is only conclusive when every attempt reached the device
+        and observed no defect.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[string]]$AttemptKinds
+    )
+
+    if ($AttemptKinds.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($kind in $AttemptKinds) {
+        if ($kind -ne 'not-reproduced') {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Get-ReplicationFailureSignature {
     <#
         .SYNOPSIS
@@ -2562,6 +2628,7 @@ try {
     }
     $sandboxFailureSummary = ''
     $sandboxFailureHistory = [ordered]@{}
+    $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0
     $MaxInfrastructureRetries = 3
@@ -2708,6 +2775,7 @@ $sandboxFailureSummary
 "@
                 }
             }
+            $sandboxAttemptKinds.Add((Get-ReplicationAttemptFailureKind $sandboxFailureSummary))
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
             if ($sandboxFailureSummary -match
                 '^(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') {
@@ -2719,6 +2787,9 @@ $sandboxFailureSummary
                     Write-Host ("Sandbox attempt {0} hit device infrastructure flakiness; retrying without consuming a semantic attempt ({1}/{2})." -f
                         $attempt, $infrastructureRetries, $MaxInfrastructureRetries)
                     $sandboxFailureSummary = ''
+                    if ($sandboxAttemptKinds.Count -gt 0) {
+                        $sandboxAttemptKinds.RemoveAt($sandboxAttemptKinds.Count - 1)
+                    }
                     $attempt--
                     Start-Sleep -Seconds (30 * $infrastructureRetries)
                     Restore-TransientSandbox
@@ -2984,7 +3055,8 @@ catch {
         [StringComparison]::Ordinal)) {
         'copilot_service_unavailable'
     } elseif ($stage -eq 'sandbox' -and
-        $rawReason.Contains('REPLICATION_NOT_REPRODUCED', [StringComparison]::Ordinal)) {
+        $rawReason.Contains('REPLICATION_NOT_REPRODUCED', [StringComparison]::Ordinal) -and
+        (Test-ReplicationNonReproductionIsConclusive $sandboxAttemptKinds)) {
         'sandbox_not_reproduced'
     } elseif ($stage -eq 'sandbox') {
         'sandbox_inconclusive'

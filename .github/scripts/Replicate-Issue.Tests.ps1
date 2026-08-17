@@ -61,6 +61,8 @@ BeforeAll {
         'Get-ReplicationCompilerDiagnostics',
         'Get-ReplicationElementInventory',
         'Get-ReplicationFailureSignature',
+        'Get-ReplicationAttemptFailureKind',
+        'Test-ReplicationNonReproductionIsConclusive',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationExistingIssueTestPaths',
@@ -1083,6 +1085,46 @@ public class Issue35516
         $script:TrustedAppiumSource.Contains(
             'string.Equals(step.Action, "assertAppClosed"') | Should -BeTrue
         $script:Source.Contains('The app under test closed or crashed during the recorded steps') |
+            Should -BeTrue
+    }
+
+    It 'classifies why each device attempt failed' {
+        Get-ReplicationAttemptFailureKind 'REPLICATION_NOT_REPRODUCED actual=NO BUG' |
+            Should -BeExactly 'not-reproduced'
+        Get-ReplicationAttemptFailureKind (
+            "The Sandbox build failed with these compiler diagnostics: CS0246") |
+            Should -BeExactly 'build-failed'
+        Get-ReplicationAttemptFailureKind 'Element was not visible: automationId=Foo.' |
+            Should -BeExactly 'element-missing'
+        Get-ReplicationAttemptFailureKind "REPLICATION_APP_TERMINATED step=4" |
+            Should -BeExactly 'app-terminated'
+    }
+
+    It 'only concludes a non-reproduction when every attempt observed no defect' {
+        # Build 14997689 declared verified regression 37418 non-reproducible
+        # after alternating between a CS0246 build break and a clean run, then
+        # publicly told the reporter to try the latest version.
+        $mixed = [System.Collections.Generic.List[string]]::new()
+        $mixed.Add('not-reproduced')
+        $mixed.Add('build-failed')
+        $mixed.Add('not-reproduced')
+        Test-ReplicationNonReproductionIsConclusive $mixed | Should -BeFalse
+
+        $clean = [System.Collections.Generic.List[string]]::new()
+        $clean.Add('not-reproduced')
+        $clean.Add('not-reproduced')
+        Test-ReplicationNonReproductionIsConclusive $clean | Should -BeTrue
+
+        $none = [System.Collections.Generic.List[string]]::new()
+        Test-ReplicationNonReproductionIsConclusive $none | Should -BeFalse
+    }
+
+    It 'gates the conclusive classification on the attempt kinds' {
+        $script:Source.Contains(
+            '(Test-ReplicationNonReproductionIsConclusive $sandboxAttemptKinds)') |
+            Should -BeTrue
+        # An attempt retried for infrastructure flakiness is not evidence either.
+        $script:Source.Contains('$sandboxAttemptKinds.RemoveAt($sandboxAttemptKinds.Count - 1)') |
             Should -BeTrue
     }
 
