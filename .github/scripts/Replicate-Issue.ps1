@@ -1691,6 +1691,15 @@ function Invoke-BoundedProcess {
     }
 }
 
+function Get-ReplicationPwshArguments {
+    param(
+        [Parameter(Mandatory = $true)][string]$ScriptPath,
+        [Parameter(Mandatory = $true)][object[]]$Arguments
+    )
+
+    @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments
+}
+
 function Invoke-LoggedChildProcess {
     param(
         [Parameter(Mandatory = $true)][string]$ScriptPath,
@@ -1705,7 +1714,7 @@ function Invoke-LoggedChildProcess {
     $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
         Invoke-BoundedProcess `
             -FilePath 'pwsh' `
-            -Arguments @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments `
+            -Arguments (Get-ReplicationPwshArguments -ScriptPath $ScriptPath -Arguments $Arguments) `
             -TimeoutSeconds $TimeoutSeconds
     }
     $output = @($runResult.Output)

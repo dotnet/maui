@@ -61,7 +61,8 @@ BeforeAll {
         'Get-ReplicationTargetTestDeclarations',
         'Resolve-ReplicationVerifierMetadata',
         'Assert-GeneratedTestContent',
-        'Invoke-BoundedProcess'
+        'Invoke-BoundedProcess',
+        'Get-ReplicationPwshArguments'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -88,8 +89,26 @@ Describe 'Replication orchestrator security boundary' {
         ([DateTimeOffset]::UtcNow - $started).TotalSeconds | Should -BeLessThan 10
     }
 
+    It 'passes child script arguments as one bounded process argument array' {
+        $echoArguments = Join-Path $TestDrive 'echo-arguments.ps1'
+        'param([string]$Value) $Value' |
+            Set-Content -LiteralPath $echoArguments -Encoding utf8NoBOM
+
+        $result = Invoke-BoundedProcess `
+            -FilePath 'pwsh' `
+            -Arguments (Get-ReplicationPwshArguments `
+                -ScriptPath $echoArguments `
+                -Arguments @('-Value', 'expected')) `
+            -TimeoutSeconds 10
+
+        $result.TimedOut | Should -BeFalse
+        $result.ExitCode | Should -Be 0
+        $result.Output | Should -Contain 'expected'
+    }
+
     It 'bounds every external replication phase below the job timeout' {
         $script:Source | Should -Match 'CopilotTimeoutMinutes = 20'
+        $script:Source | Should -Match '-Arguments \(Get-ReplicationPwshArguments'
         $script:Source | Should -Match "-Description 'Preparing the Sandbox app'\s+``\s+-TimeoutSeconds 1800"
         $script:Source | Should -Match "-Description 'Launching the Sandbox before evidence recording'\s+``\s+-TimeoutSeconds 300"
         $script:Source | Should -Match "-Description 'Recording the on-device reproduction'\s+``\s+-TimeoutSeconds 300"
