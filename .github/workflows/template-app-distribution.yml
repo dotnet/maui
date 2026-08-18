@@ -81,6 +81,7 @@ jobs:
   script-tests:
     name: Validate distribution scripts
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
@@ -112,6 +113,7 @@ jobs:
     name: Prepare matrix
     needs: script-tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       dotnet_sdk: ${{ steps.sdk.outputs.dotnet_sdk }}
@@ -210,6 +212,7 @@ jobs:
     if: ${{ inputs.publish == false }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
     env:
       APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
       APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
@@ -413,7 +416,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
+          name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
           path: |
             ${{ steps.build.outputs.sideload_package_path }}
             ${{ steps.build.outputs.additional_package_path }}
@@ -425,6 +428,7 @@ jobs:
     if: ${{ inputs.publish }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
     environment: template-app-distribution
     env:
       APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
@@ -753,7 +757,7 @@ jobs:
         if: ${{ always() && steps.build.outputs.sideload_package_path != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
+          name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
           path: ${{ steps.build.outputs.sideload_package_path }}
           retention-days: 14
 
@@ -761,7 +765,7 @@ jobs:
         if: ${{ always() && steps.build.outputs.binlog_path != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: template-app-publish-binlog-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
+          name: template-app-publish-binlog-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
           path: |
             ${{ steps.build.outputs.binlog_path }}
             ${{ steps.build.outputs.store_binlog_path }}

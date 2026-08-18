@@ -210,6 +210,10 @@ function Get-NotarizationTimeoutSeconds {
     return $timeoutSeconds
 }
 
+function Get-NotaryTimestamp {
+    return [DateTimeOffset]::UtcNow
+}
+
 function Wait-NotarySubmission(
     [string]$SubmissionId,
     [string[]]$CredentialArguments,
@@ -220,9 +224,9 @@ function Wait-NotarySubmission(
         throw "Notarization timeout and poll interval must both be positive."
     }
 
-    $pollAttempts = [Math]::Max(1, [int][Math]::Ceiling($TimeoutSeconds / [double]$PollIntervalSeconds))
+    $deadline = (Get-NotaryTimestamp).AddSeconds($TimeoutSeconds)
     $lastStatus = "Unknown"
-    for ($attempt = 1; $attempt -le $pollAttempts; $attempt++) {
+    while ($true) {
         try {
             $info = Invoke-NotaryToolJson `
                 -Arguments (@("info", $SubmissionId) + $CredentialArguments) `
@@ -247,9 +251,16 @@ function Wait-NotarySubmission(
             throw "Notarization submission '$SubmissionId' failed with status '$lastStatus'."
         }
 
-        if ($attempt -lt $pollAttempts) {
-            Start-Sleep -Seconds $PollIntervalSeconds
+        $remainingSeconds = ($deadline - (Get-NotaryTimestamp)).TotalSeconds
+        if ($remainingSeconds -le 0) {
+            break
         }
+
+        $sleepSeconds = [Math]::Min(
+            $PollIntervalSeconds,
+            [Math]::Max(1, [int][Math]::Ceiling($remainingSeconds))
+        )
+        Start-Sleep -Seconds $sleepSeconds
     }
 
     Write-NotarySubmissionDiagnostics $SubmissionId $CredentialArguments
