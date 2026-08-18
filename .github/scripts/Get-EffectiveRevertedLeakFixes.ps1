@@ -11,15 +11,20 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
-$fixNumbers = @(
+$fixPullRequests = @(
     Get-Content -LiteralPath $MergedFixTsvPath |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
         ForEach-Object {
-            $fields = $_ -split "`t", 3
-            if ($fields.Count -lt 2 -or $fields[1] -notmatch '^[1-9][0-9]*$') {
+            $fields = $_ -split "`t", 4
+            if ($fields.Count -lt 3 -or
+                $fields[1] -notmatch '^[1-9][0-9]*$' -or
+                [string]::IsNullOrWhiteSpace($fields[2])) {
                 throw "Malformed merged-fix TSV row: $_"
             }
-            [int]$fields[1]
+            [pscustomobject]@{
+                number = [int]$fields[1]
+                baseRefName = $fields[2]
+            }
         }
 )
 
@@ -32,7 +37,7 @@ $reverts = @(
 $effectiveReverted = @(
     Get-EffectiveRevertedPullRequestNumbers `
         -Repository $Repository `
-        -FixPullRequestNumbers $fixNumbers `
+        -FixPullRequests $fixPullRequests `
         -MergedRevertPullRequests $reverts
 )
 

@@ -67,6 +67,14 @@ tools:
 checkout:
   fetch-depth: 50
 
+# gh-aw computes the built-in safe_outputs permissions from mutation handlers, but the trusted
+# final gate also performs read-only PR metadata queries. Add only that missing read scope to
+# the generated job; the compiler merges it with contents:read + issues:write.
+jobs:
+  safe_outputs:
+    permissions:
+      pull-requests: read
+
 # Deterministic pre-pass (runs BEFORE the agent/MCP gateway starts, same job/runner, so its
 # /tmp/gh-aw writes are visible to the agent's later bash calls — /tmp/gh-aw is bind-mounted
 # read-write into the agent's sandbox container). This is a GENUINE job-enforced gate: `set -e`
@@ -150,7 +158,7 @@ pre-agent-steps:
       # reverts combine by parity. Drop only effectively reverted fixes from the
       # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
       gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-        --search '"Revert" in:title' --json number,title,body,mergedAt \
+        --search '"Revert" in:title' --json number,title,body,baseRefName,mergedAt \
         > /tmp/gh-aw/agent/revert-prs-raw.json
       REVERT_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/revert-prs-raw.json)
       if test "$REVERT_RAW_COUNT" -ge 1000; then
@@ -160,8 +168,9 @@ pre-agent-steps:
       jq '[.[] | select(.mergedAt != null)]' /tmp/gh-aw/agent/revert-prs-raw.json \
         > /tmp/gh-aw/agent/merged-revert-prs.json
       # Resolve the EFFECTIVE state recursively, not just one hop. A merged revert toggles
-      # its target only while that revert itself remains active; reverting the revert
-      # reinstates the original fix. Multiple active reverts are combined by parity.
+      # its target only while that revert itself remains active on the SAME base branch;
+      # reverting the revert reinstates the original fix. Multiple active same-branch
+      # reverts are combined by parity; servicing-branch reverts cannot alter main/inflight.
       pwsh .github/scripts/Get-EffectiveRevertedLeakFixes.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
@@ -189,8 +198,10 @@ safe-outputs:
   # The pre-agent snapshot keeps the agent from wasting work on known leaks, but a fix can
   # merge during the up-to-90-minute hunt. Re-fetch authoritative live metadata in the
   # generated safe-output job immediately before Process Safe Outputs so a late merge/open
-  # issue blocks mutation. Restore the gate from the read-only default branch rather than
-  # executing workflow-dispatch-selected repository code with the write-capable job token.
+  # issue blocks mutation unless the emitted issue carries a bounded structured comparison
+  # proving the same API uses a distinct retention mechanism. Restore the gate from the
+  # read-only default branch rather than executing workflow-dispatch-selected repository code
+  # with the write-capable job token.
   steps:
     - name: Checkout trusted leak-hunter de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
@@ -263,10 +274,11 @@ Never push, never open a PR, never comment, never edit product or test code in t
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
 5. **De-dup against open scanner issues AND merged fixes.** Before testing or filing, skip a
    leak already covered by this workflow's open `[leak-scan]` issue (same rooting API /
-   retention path), or by an exact `[leak-fix]` PR already merged to `main` or
-   `inflight/current`. Do NOT suppress a candidate merely because AdamEssenmacher (or anyone
-   else) has a repro/issue for it — duplicating those is fine. A candidate whose only prior
-   scanner issue is CLOSED may be re-filed only when no supported-branch merged fix exists.
+   retention path), or by an exact `[leak-fix]` PR for the same API/retention path already
+   merged to `main` or `inflight/current`. Do NOT suppress a candidate merely because
+   AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine. A
+   candidate whose only prior scanner issue is CLOSED may be re-filed only when no equivalent
+   supported-branch merged fix exists.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
    `[ActiveIssue]`/skip/mute existing tests, never push.
@@ -310,15 +322,17 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
 - `already-merged-fix-apis.tsv` / `.txt` — `Type.Member <TAB> PR# <TAB> baseRefName <TAB> URL
   <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
   `.txt` is just the first column, deduplicated). Effective revert state is resolved
-  recursively from GitHub's standard `Reverts <owner>/<repo>#<N>` body line: one active
-  revert excludes the fix, a revert-of-that-revert reinstates it, and deeper/multiple chains
-  are combined by parity. Only an effectively reverted fix is treated as re-filable rather
-  than permanent proof the fix is still active.
+  recursively and per base branch from GitHub's standard
+  `Reverts <owner>/<repo>#<N>` body line: one active same-branch revert excludes the fix, a
+  same-branch revert-of-that-revert reinstates it, and deeper/multiple chains are combined by
+  parity. A servicing-branch revert cannot toggle a main/inflight fix. Only an effectively
+  reverted fix is treated as re-filable rather than permanent proof the fix is still active.
 
-- A candidate is **OUT** if its rooting `Type.Member` (e.g. `SwipeItemView.Command`,
-  `Picker.ItemsSource`) is already in `already-filed-apis.txt`, OR an open `[leak-scan]` issue
-  otherwise covers the same rooting API / retention path, OR it appears in
-  `already-merged-fix-apis.txt`. **Check this for EVERY candidate before you write its test.**
+- A candidate is **OUT** if an open `[leak-scan]` issue or active merged `[leak-fix]` PR covers
+  the same rooting API **and retention mechanism**. API identity alone is not leak identity:
+  distinct retention paths can legitimately share one `Type.Member`. Use
+  `already-filed-apis.txt` / `already-merged-fix-apis.txt` as fast match signals, then inspect
+  the matching issue/PR before deciding. **Check this for EVERY candidate before its test.**
 - Normalize each candidate with the same last-`Type.Member` extraction convention (LAST dotted
   `Type.Member` pair of the first identifier chain in the title/name — e.g. a fully-qualified
   `Microsoft.Maui.Controls.Picker.ItemsSource` yields `Picker.ItemsSource`), then use
@@ -326,17 +340,21 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
   matching.
 - For a merged-fix match, print the matching row(s) from
   `already-merged-fix-apis.tsv` and record
-  `skipped: equivalent fix already merged via #<PR> to <baseRefName>`.
-- Re-filing a leak this scanner already has open or that already has a merged fix (even with
-  different issue wording/number) is the primary failure mode, so be strict about the
-  canonical `Type.Member`.
+  `skipped: equivalent fix already merged via #<PR> to <baseRefName>` only when the retention
+  path is equivalent. If the mechanism differs, proceed and include the structured PR
+  comparison line required below.
+- For an open issue match, skip only when its retention path is equivalent. If the mechanism
+  differs, proceed and include the structured issue comparison line required below.
+- Re-filing the same retention mechanism under different wording/number is the primary failure
+  mode, so be strict about both the canonical `Type.Member` and the root-to-transient path.
 - Immediately before issue mutation, a trusted safe-output step independently re-fetches open
-  scanner issues, merged fixes, and effective revert state. A late issue or fix that appears
-  during this run blocks all matching `create-issue` output fail-closed; do not treat the
-  pre-agent snapshot as the final authority.
+  scanner issues, merged fixes, and branch-scoped effective revert state. A late same-API
+  issue/fix blocks matching `create-issue` output unless the emitted body contains exactly one
+  bounded, human-visible different-mechanism comparison for it; do not treat the pre-agent
+  snapshot as the final authority.
 
-A candidate whose only prior scanner issue is CLOSED may be re-filed only when its API is
-absent from `already-merged-fix-apis.txt`.
+A candidate whose only prior scanner issue is CLOSED may be re-filed when no active merged fix
+covers the same API and retention mechanism.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -460,9 +478,17 @@ no MAUI source build, no emulator.
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
 issue per distinct leak. De-dup each against open `[leak-scan]` issues, supported-branch merged
 `[leak-fix]` PRs, AND the other issues you're filing this run (no two issues for the same
-rooting API). A trusted final gate repeats the live de-dup immediately before mutation and
-rejects the batch if a matching issue or active merged fix appeared after the pre-agent
-snapshot. Each title MUST be of the form **`[leak-scan] <Type>.<Member> — <short
+rooting API **and retention mechanism**; distinct mechanisms on one API are separate leaks).
+A trusted final gate repeats the live de-dup immediately before mutation. For
+every live same-API match that uses a genuinely different retention mechanism, the issue body
+must include exactly one applicable bounded line (12–500 character single-line basis, no `|`):
+
+`Same-API issue comparison: <owner>/<repo>#<issue> | Different mechanism: <specific basis>`
+
+`Same-API comparison: <owner>/<repo>#<PR> | Different mechanism: <specific basis>`
+
+The gate blocks missing/malformed comparisons; omit these lines when there is no same-API match.
+Each title MUST be of the form **`[leak-scan] <Type>.<Member> — <short
 mechanism>`** — it MUST **lead with the canonical rooting `Type.Member`** immediately after the
 tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak ICommand.CanExecuteChanged retains the
 control`). De-dup (Step 2) matches on that leading `Type.Member`, so keep it stable and

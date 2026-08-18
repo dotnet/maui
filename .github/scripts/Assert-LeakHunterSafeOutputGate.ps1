@@ -30,21 +30,25 @@ function Read-RegularJsonFile {
     }
 }
 
-function Invoke-GhJson {
-    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+function Assert-SameApiDisclosure {
+    param(
+        [Parameter(Mandatory = $true)][string]$Body,
+        [Parameter(Mandatory = $true)][ValidateSet('issue', 'pull-request')][string]$Kind,
+        [Parameter(Mandatory = $true)][int]$Number,
+        [Parameter(Mandatory = $true)][string]$Repository
+    )
 
-    $output = & gh @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "'gh $($Arguments -join ' ')' failed with exit code $LASTEXITCODE`: $output"
+    $repo = [regex]::Escape($Repository)
+    $label = if ($Kind -eq 'issue') {
+        'Same-API issue comparison'
+    } else {
+        'Same-API comparison'
     }
-    $raw = ($output -join [Environment]::NewLine)
-    if ([string]::IsNullOrWhiteSpace($raw)) {
-        throw "'gh $($Arguments -join ' ')' returned an empty response."
-    }
-    try {
-        return $raw | ConvertFrom-Json
-    } catch {
-        throw "'gh $($Arguments -join ' ')' returned invalid JSON: $($_.Exception.Message)"
+    $labelPattern = [regex]::Escape($label)
+    $pattern = "(?m)^[ `t]*${labelPattern}:[ `t]*$repo#$Number[ `t]*\|[ `t]*Different mechanism:[ `t]*(?<basis>[^|`r`n]{12,500}?)[ `t]*$"
+    $matches = [regex]::Matches($Body, $pattern)
+    if ($matches.Count -ne 1) {
+        throw "Final leak-hunter de-dup gate requires exactly one structured $Kind override for same-API $Repository#${Number}: '$label`: $Repository#$Number | Different mechanism: <specific comparison basis>'."
     }
 }
 
@@ -62,7 +66,8 @@ if ($createItems.Count -gt 8) {
     throw "Expected at most eight create_issue items, found $($createItems.Count)."
 }
 
-$requestedApis = [System.Collections.Generic.Dictionary[string, string]]::new(
+$requestedItems = [System.Collections.Generic.List[object]]::new()
+$requestedTitles = [System.Collections.Generic.HashSet[string]]::new(
     [StringComparer]::Ordinal
 )
 foreach ($item in $createItems) {
@@ -74,14 +79,17 @@ foreach ($item in $createItems) {
     if ([string]::IsNullOrWhiteSpace($api)) {
         throw "Could not derive a canonical Type.Member from create-issue title '$title'."
     }
-    if ($requestedApis.ContainsKey($api)) {
-        throw "Multiple create-issue outputs target the same canonical API '$api'."
+    if (-not $requestedTitles.Add($title)) {
+        throw "Multiple create-issue outputs use the same exact title '$title'."
     }
-    $requestedApis.Add($api, $title)
+    $requestedItems.Add([pscustomobject]@{
+            Api = $api
+            Item = $item
+        })
 }
 
 $openIssues = @(
-    Invoke-GhJson -Arguments @(
+    Invoke-LeakGhJson -Arguments @(
         'issue', 'list',
         '--repo', $Repository,
         '--search', '"[leak-scan]" in:title',
@@ -96,7 +104,7 @@ if ($openIssues.Count -ge 1000) {
 }
 
 $merged = @(
-    Invoke-GhJson -Arguments @(
+    Invoke-LeakGhJson -Arguments @(
         'pr', 'list',
         '--repo', $Repository,
         '--state', 'merged',
@@ -110,13 +118,13 @@ if ($merged.Count -ge 1000) {
 }
 
 $mergedReverts = @(
-    Invoke-GhJson -Arguments @(
+    Invoke-LeakGhJson -Arguments @(
         'pr', 'list',
         '--repo', $Repository,
         '--state', 'merged',
         '--limit', '1000',
         '--search', '"Revert" in:title',
-        '--json', 'number,title,body,mergedAt'
+        '--json', 'number,title,body,baseRefName,mergedAt'
     )
 )
 if ($mergedReverts.Count -ge 1000) {
@@ -131,7 +139,7 @@ $eligibleMerged = @($merged | Where-Object {
 $effectivelyReverted = @(
     Get-EffectiveRevertedPullRequestNumbers `
         -Repository $Repository `
-        -FixPullRequestNumbers @($eligibleMerged | ForEach-Object { [int]$_.number }) `
+        -FixPullRequests $eligibleMerged `
         -MergedRevertPullRequests $mergedReverts
 )
 $reverted = [System.Collections.Generic.HashSet[int]]::new()
@@ -142,28 +150,33 @@ $eligibleMerged = @($eligibleMerged | Where-Object {
         -not $reverted.Contains([int]$_.number)
     })
 
-$openApiMatches = @($openIssues | Where-Object {
-        $title = [string]$_.title
-        $api = Get-CanonicalLeakApi -Title $title
-        $title.StartsWith('[leak-scan] ', [StringComparison]::Ordinal) -and
-        -not [string]::IsNullOrWhiteSpace($api) -and
-        $requestedApis.ContainsKey($api)
-    })
-$mergedApiMatches = @($eligibleMerged | Where-Object {
-        $api = Get-CanonicalLeakApi -Title ([string]$_.title)
-        -not [string]::IsNullOrWhiteSpace($api) -and
-        $requestedApis.ContainsKey($api)
-    })
+foreach ($requested in $requestedItems) {
+    $api = [string]$requested.Api
+    $body = [string]$requested.Item.body
+    $openApiMatches = @($openIssues | Where-Object {
+            $issueTitle = [string]$_.title
+            $issueTitle.StartsWith('[leak-scan] ', [StringComparison]::Ordinal) -and
+            (Get-CanonicalLeakApi -Title $issueTitle) -ceq $api
+        })
+    foreach ($match in $openApiMatches) {
+        Assert-SameApiDisclosure `
+            -Body $body `
+            -Kind issue `
+            -Number ([int]$match.number) `
+            -Repository $Repository
+    }
 
-if ($openApiMatches.Count -gt 0 -or $mergedApiMatches.Count -gt 0) {
-    $reasons = @()
-    if ($openApiMatches.Count -gt 0) {
-        $reasons += "open [leak-scan] issue match: $($openApiMatches.number -join ', ')"
+    $mergedApiMatches = @($eligibleMerged | Where-Object {
+            (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $api
+        })
+    foreach ($match in $mergedApiMatches) {
+        Assert-SameApiDisclosure `
+            -Body $body `
+            -Kind pull-request `
+            -Number ([int]$match.number) `
+            -Repository $Repository
     }
-    if ($mergedApiMatches.Count -gt 0) {
-        $reasons += "active merged [leak-fix] PR match: $($mergedApiMatches.number -join ', ')"
-    }
-    throw "Final leak-hunter de-dup gate blocked issue creation: $($reasons -join '; ')."
 }
 
-Write-Host "Final leak-hunter de-dup gate passed for APIs: $($requestedApis.Keys -join ', ')."
+$apis = @($requestedItems | ForEach-Object { $_.Api } | Sort-Object -Unique)
+Write-Host "Final leak-hunter de-dup gate passed for APIs: $($apis -join ', ')."

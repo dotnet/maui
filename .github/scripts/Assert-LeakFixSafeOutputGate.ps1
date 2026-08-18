@@ -31,24 +31,6 @@ function Read-RegularJsonFile {
     }
 }
 
-function Invoke-GhJson {
-    param([Parameter(Mandatory = $true)][string[]]$Arguments)
-
-    $output = & gh @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "'gh $($Arguments -join ' ')' failed with exit code $LASTEXITCODE`: $output"
-    }
-    $raw = ($output -join [Environment]::NewLine)
-    if ([string]::IsNullOrWhiteSpace($raw)) {
-        throw "'gh $($Arguments -join ' ')' returned an empty response."
-    }
-    try {
-        return $raw | ConvertFrom-Json
-    } catch {
-        throw "'gh $($Arguments -join ' ')' returned invalid JSON: $($_.Exception.Message)"
-    }
-}
-
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'
 }
@@ -104,7 +86,7 @@ $approved = @(
 )
 
 $merged = @(
-    Invoke-GhJson -Arguments @(
+    Invoke-LeakGhJson -Arguments @(
         'pr', 'list',
         '--repo', $Repository,
         '--state', 'merged',
@@ -118,13 +100,13 @@ if ($merged.Count -ge 1000) {
 }
 
 $mergedReverts = @(
-    Invoke-GhJson -Arguments @(
+    Invoke-LeakGhJson -Arguments @(
         'pr', 'list',
         '--repo', $Repository,
         '--state', 'merged',
         '--limit', '1000',
         '--search', '"Revert" in:title',
-        '--json', 'number,title,body,mergedAt'
+        '--json', 'number,title,body,baseRefName,mergedAt'
     )
 )
 if ($mergedReverts.Count -ge 1000) {
@@ -132,7 +114,7 @@ if ($mergedReverts.Count -ge 1000) {
 }
 
 $open = @(
-    Invoke-GhJson -Arguments @(
+    Invoke-LeakGhJson -Arguments @(
         'pr', 'list',
         '--repo', $Repository,
         '--state', 'open',

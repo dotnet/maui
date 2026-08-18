@@ -464,7 +464,7 @@ jq '[.[] |
     select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
   /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.json
-jq -r '.[] | ["_", .number, .title] | @tsv' \
+jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.tsv
 
@@ -484,10 +484,11 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
 
 # A merged fix is not authoritative if it was later effectively reverted. Resolve recursive
-# revert chains before either the direct issue-reference or same-API merged gate consumes it.
+# same-base revert chains before either the direct issue-reference or same-API merged gate
+# consumes it. A servicing-branch revert cannot toggle a main/inflight fix.
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
   --search '"Revert" in:title' \
-  --json number,title,body,mergedAt \
+  --json number,title,body,baseRefName,mergedAt \
   > /tmp/gh-aw/agent/merged-revert-prs-raw.json; then
   echo "ERROR: merged Revert search failed — aborting because effective fix state is unknown." >&2
   exit 1
@@ -855,7 +856,7 @@ jq '[.[] |
 
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
   --search '"Revert" in:title' \
-  --json number,title,body,mergedAt \
+  --json number,title,body,baseRefName,mergedAt \
   > /tmp/gh-aw/agent/final-merged-revert-prs-raw.json; then
   echo "ERROR: final merged Revert search failed — aborting because effective fix state is unknown." >&2
   exit 1
@@ -868,7 +869,7 @@ fi
 jq '[.[] | select(.mergedAt != null)]' \
   /tmp/gh-aw/agent/final-merged-revert-prs-raw.json \
   > /tmp/gh-aw/agent/final-merged-revert-prs.json
-jq -r '.[] | ["_", .number, .title] | @tsv' \
+jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/final-merged-leak-fix-prs.tsv
 pwsh .github/scripts/Get-EffectiveRevertedLeakFixes.ps1 \

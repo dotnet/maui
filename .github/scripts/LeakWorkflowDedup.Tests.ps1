@@ -184,27 +184,31 @@ Describe 'mechanism-aware final duplicate gate' {
 
 Describe 'effective recursive revert state' {
     It 'keeps an unreverted fix active' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
+
         @(
             Get-EffectiveRevertedPullRequestNumbers `
                 -Repository 'dotnet/maui' `
-                -FixPullRequestNumbers @(100) `
+                -FixPullRequests @($fix) `
                 -MergedRevertPullRequests @()
         ).Count | Should -Be 0
     }
 
     It 'excludes a fix after one active revert' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert leak fix' -Body 'Reverts dotnet/maui#100'
         )
 
         Get-EffectiveRevertedPullRequestNumbers `
             -Repository 'dotnet/maui' `
-            -FixPullRequestNumbers @(100) `
+            -FixPullRequests @($fix) `
             -MergedRevertPullRequests $reverts |
             Should -Be @(100)
     }
 
     It 'reinstates a fix after its revert is itself reverted' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert leak fix' -Body 'Reverts dotnet/maui#100'
             New-LeakPr -Number 300 -Title 'Revert the revert' -Body 'Reverts dotnet/maui#200'
@@ -213,12 +217,13 @@ Describe 'effective recursive revert state' {
         @(
             Get-EffectiveRevertedPullRequestNumbers `
                 -Repository 'dotnet/maui' `
-                -FixPullRequestNumbers @(100) `
+                -FixPullRequests @($fix) `
                 -MergedRevertPullRequests $reverts
         ).Count | Should -Be 0
     }
 
     It 'handles a deeper odd effective chain' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
             New-LeakPr -Number 300 -Title 'Revert A again' -Body 'Reverts dotnet/maui#200'
@@ -227,12 +232,13 @@ Describe 'effective recursive revert state' {
 
         Get-EffectiveRevertedPullRequestNumbers `
             -Repository 'dotnet/maui' `
-            -FixPullRequestNumbers @(100) `
+            -FixPullRequests @($fix) `
             -MergedRevertPullRequests $reverts |
             Should -Be @(100)
     }
 
     It 'combines multiple active sibling reverts by parity' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
             New-LeakPr -Number 201 -Title 'Revert B' -Body 'Reverts dotnet/maui#100'
@@ -241,9 +247,62 @@ Describe 'effective recursive revert state' {
         @(
             Get-EffectiveRevertedPullRequestNumbers `
                 -Repository 'dotnet/maui' `
-                -FixPullRequestNumbers @(100) `
+                -FixPullRequests @($fix) `
                 -MergedRevertPullRequests $reverts
         ).Count | Should -Be 0
+    }
+
+    It 'ignores a servicing-branch revert of a main fix' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak' `
+            -Base main
+        $releaseRevert = New-LeakPr `
+            -Number 200 `
+            -Title 'Revert leak fix for servicing' `
+            -Body 'Reverts dotnet/maui#100' `
+            -Base 'release/10.0.1xx-sr9'
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests @($releaseRevert)
+        ).Count | Should -Be 0
+    }
+
+    It 'scopes main and inflight revert chains independently' {
+        $mainFix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak' `
+            -Base main
+        $inflightFix = New-LeakPr `
+            -Number 110 `
+            -Title '[leak-fix] Fix ListView.RefreshCommand leak' `
+            -Base 'inflight/current'
+        $reverts = @(
+            New-LeakPr `
+                -Number 200 `
+                -Title 'Revert main fix' `
+                -Body 'Reverts dotnet/maui#100' `
+                -Base main
+            New-LeakPr `
+                -Number 210 `
+                -Title 'Unrelated main revert of inflight PR number' `
+                -Body 'Reverts dotnet/maui#110' `
+                -Base main
+            New-LeakPr `
+                -Number 220 `
+                -Title 'Revert inflight fix' `
+                -Body 'Reverts dotnet/maui#110' `
+                -Base 'inflight/current'
+        )
+
+        Get-EffectiveRevertedPullRequestNumbers `
+            -Repository 'dotnet/maui' `
+            -FixPullRequests @($mainFix, $inflightFix) `
+            -MergedRevertPullRequests $reverts |
+            Should -Be @(100, 110)
     }
 }
 
@@ -297,13 +356,16 @@ Describe 'workflow enforcement boundary' {
 
     It 'wires a trusted final live refresh into the hunter safe-output boundary' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
+        $lock = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.lock.yml') -Raw
 
         $workflow | Should -Match '(?s)safe-outputs:.*steps:.*Assert-LeakHunterSafeOutputGate\.ps1.*create-issue:'
+        $workflow | Should -Match '(?s)jobs:\s+safe_outputs:\s+permissions:\s+pull-requests: read'
         $workflow | Should -Match 'github\.event\.repository\.default_branch'
         $workflow | Should -Match 'GITHUB_WORKSPACE.*trusted-leak-hunter'
         $workflow | Should -Match 'persist-credentials: false'
         $workflow | Should -Not -Match 'run: \.github/scripts/Assert-LeakHunterSafeOutputGate\.ps1'
         $workflow | Should -Match "contains\(needs\.agent\.outputs\.output_types, 'create_issue'\)"
+        $lock | Should -Match '(?ms)^  safe_outputs:.*?^    permissions:.*?^      pull-requests: read$'
     }
 
     Context 'safe-output gate script' {
@@ -333,9 +395,13 @@ Describe 'workflow enforcement boundary' {
             $global:mockReverts = @()
             $global:mockOpen = @()
             $global:mockGhExitCode = 0
+            $global:mockGhStderr = ''
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockGhExitCode
+                if (-not [string]::IsNullOrWhiteSpace($global:mockGhStderr)) {
+                    Write-Error $global:mockGhStderr -ErrorAction Continue
+                }
                 if ($global:mockGhExitCode -ne 0) {
                     Write-Output 'mock gh failure'
                     return
@@ -358,7 +424,8 @@ Describe 'workflow enforcement boundary' {
 
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
-            Remove-Variable mockMerged, mockReverts, mockOpen, mockGhExitCode -Scope Global -ErrorAction SilentlyContinue
+            Remove-Variable mockMerged, mockReverts, mockOpen, mockGhExitCode, mockGhStderr `
+                -Scope Global -ErrorAction SilentlyContinue
         }
 
         It 'rejects an untagged create-pull-request title' {
@@ -414,13 +481,32 @@ Describe 'workflow enforcement boundary' {
 
         It 'fails closed when the final GitHub fetch fails' {
             $global:mockGhExitCode = 1
+            $global:mockGhStderr = "auth warning`n$([char]27)[31mred"
+
+            $message = try {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+                throw 'Expected the gh failure to stop the gate.'
+            } catch {
+                $_.Exception.Message
+            }
+
+            $message | Should -Match 'failed with exit code 1'
+            $message | Should -Match 'Output: auth warning'
+            $message | Should -Not -Match "[`r`n$([char]27)]"
+        }
+
+        It 'parses successful JSON without mixing benign gh stderr into stdout' {
+            $global:mockGhStderr = 'benign gh warning'
 
             {
                 & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*failed with exit code 1*'
+            } | Should -Not -Throw
         }
 
         It 'rejects a live same-API decision that is absent from the PR body' {
@@ -582,9 +668,13 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
             $global:mockHunterMerged = @()
             $global:mockHunterReverts = @()
             $global:mockHunterGhExitCode = 0
+            $global:mockHunterGhStderr = ''
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockHunterGhExitCode
+                if (-not [string]::IsNullOrWhiteSpace($global:mockHunterGhStderr)) {
+                    Write-Error $global:mockHunterGhStderr -ErrorAction Continue
+                }
                 if ($global:mockHunterGhExitCode -ne 0) {
                     Write-Output 'mock gh failure'
                     return
@@ -605,11 +695,29 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
 
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
-            Remove-Variable mockHunterOpenIssues, mockHunterMerged, mockHunterReverts, mockHunterGhExitCode `
+            Remove-Variable mockHunterOpenIssues, mockHunterMerged, mockHunterReverts, `
+                mockHunterGhExitCode, mockHunterGhStderr `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
         It 'accepts issue emission when the final live refresh has no match' {
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'allows distinct mechanisms on the same API in one output batch' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items += [pscustomobject]@{
+                type = 'create_issue'
+                title = '[leak-scan] GradientBrush.GradientStops — detach teardown leak'
+                body = 'Second AI-generated leak report'
+            }
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
             {
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
@@ -628,7 +736,68 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*blocked issue creation*active merged*701*'
+            } | Should -Throw '*structured pull-request override*#701*'
+        }
+
+        It 'allows a distinct same-API mechanism with bounded human-visible evidence' {
+            $basis = 'Existing PR fixes detach teardown; this issue proves Reset unsubscription.'
+            $global:mockHunterMerged = @(
+                New-LeakPr `
+                    -Number 701 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak'
+            )
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items[0].body = @"
+AI-generated leak report
+
+## Same-API comparisons
+Same-API comparison: dotnet/maui#701 | Different mechanism: $basis
+"@
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'requires a separate structured comparison for a same-API open issue' {
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 702
+                    title = '[leak-scan] GradientBrush.GradientStops — teardown leak'
+                    body = 'Existing scanner issue'
+                    url = 'https://github.com/dotnet/maui/issues/702'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*structured issue override*#702*'
+        }
+
+        It 'parses successful hunter JSON without mixing benign gh stderr into stdout' {
+            $global:mockHunterGhStderr = 'benign gh warning'
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'fails closed when a hunter gh query fails' {
+            $global:mockHunterGhExitCode = 1
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*failed with exit code 1*'
         }
     }
 }

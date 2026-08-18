@@ -32,6 +32,43 @@ function Test-LeakPrReferencesIssue {
         $text -match "(?m)^[ `t]*Refs:[ `t]*$repo#$IssueNumber\b"
 }
 
+function Invoke-LeakGhJson {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+
+    $output = & gh @Arguments 2>&1
+    $exitCode = $LASTEXITCODE
+
+    $stdout = (@($output | Where-Object {
+                $_ -isnot [System.Management.Automation.ErrorRecord]
+            }) | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $stderr = (@($output | Where-Object {
+                $_ -is [System.Management.Automation.ErrorRecord]
+            }) | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+
+    if ($exitCode -ne 0) {
+        $detail = (@($stderr, $stdout) |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ' '
+        $detail = ($detail -replace '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '?' `
+                -replace '[\r\n]+', ' ').Trim()
+        if ($detail.Length -gt 2000) {
+            $detail = "$($detail.Substring(0, 2000))..."
+        }
+        $message = "'gh $($Arguments -join ' ')' failed with exit code $exitCode."
+        if (-not [string]::IsNullOrWhiteSpace($detail)) {
+            $message = "$message Output: $detail"
+        }
+        throw $message
+    }
+    if ([string]::IsNullOrWhiteSpace($stdout)) {
+        throw "'gh $($Arguments -join ' ')' returned an empty response."
+    }
+    try {
+        return $stdout | ConvertFrom-Json
+    } catch {
+        throw "'gh $($Arguments -join ' ')' returned invalid JSON: $($_.Exception.Message)"
+    }
+}
+
 function Assert-LeakDedupState {
     param(
         [Parameter(Mandatory = $true)]$State,
@@ -102,7 +139,7 @@ function Get-LeakFixFinalDedupResult {
     $effectivelyReverted = @(
         Get-EffectiveRevertedPullRequestNumbers `
             -Repository $Repository `
-            -FixPullRequestNumbers @($eligibleMerged | ForEach-Object { [int]$_.number }) `
+            -FixPullRequests $eligibleMerged `
             -MergedRevertPullRequests $MergedRevertPullRequests
     )
     $reverted = [System.Collections.Generic.HashSet[int]]::new()
@@ -156,18 +193,58 @@ function Get-LeakFixFinalDedupResult {
 function Get-EffectiveRevertedPullRequestNumbers {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
-        [Parameter(Mandatory = $true)][AllowEmptyCollection()][int[]]$FixPullRequestNumbers,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$FixPullRequests,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedRevertPullRequests
     )
 
     $revertersByTarget = @{}
+    $branchByNumber = @{}
+    $fixNumbers = [System.Collections.Generic.List[int]]::new()
     $repo = [regex]::Escape($Repository)
     $pattern = "(?m)^[ `t]*Reverts[ `t]+$repo#(?<number>[1-9][0-9]*)\b"
 
+    foreach ($fix in $FixPullRequests) {
+        $number = 0
+        if (-not [int]::TryParse([string]$fix.number, [ref]$number) -or $number -le 0) {
+            throw "Invalid merged-fix PR number '$($fix.number)'."
+        }
+        $base = [string]$fix.baseRefName
+        if ([string]::IsNullOrWhiteSpace($base)) {
+            throw "Merged-fix PR #$number is missing baseRefName."
+        }
+        if ($branchByNumber.ContainsKey($number) -and
+            $branchByNumber[$number] -cne $base) {
+            throw "PR #$number has conflicting base branches."
+        }
+        $branchByNumber[$number] = $base
+        $fixNumbers.Add($number)
+    }
+
     foreach ($revert in $MergedRevertPullRequests) {
         $reverter = [int]$revert.number
+        if ($reverter -le 0) {
+            throw "Invalid merged-revert PR number '$($revert.number)'."
+        }
+        $base = [string]$revert.baseRefName
+        if ([string]::IsNullOrWhiteSpace($base)) {
+            throw "Merged-revert PR #$reverter is missing baseRefName."
+        }
+        if ($branchByNumber.ContainsKey($reverter) -and
+            $branchByNumber[$reverter] -cne $base) {
+            throw "PR #$reverter has conflicting base branches."
+        }
+        $branchByNumber[$reverter] = $base
+    }
+
+    foreach ($revert in $MergedRevertPullRequests) {
+        $reverter = [int]$revert.number
+        $reverterBase = [string]$revert.baseRefName
         foreach ($match in [regex]::Matches(([string]$revert.body), $pattern)) {
             $target = [int]$match.Groups['number'].Value
+            if (-not $branchByNumber.ContainsKey($target) -or
+                $branchByNumber[$target] -cne $reverterBase) {
+                continue
+            }
             if (-not $revertersByTarget.ContainsKey($target)) {
                 $revertersByTarget[$target] = [System.Collections.Generic.List[int]]::new()
             }
@@ -205,7 +282,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
         return $active
     }
 
-    return @($FixPullRequestNumbers |
+    return @($fixNumbers |
         Where-Object { -not (Test-EffectActive -PullRequestNumber $_) } |
         Sort-Object -Unique)
 }
@@ -213,6 +290,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
 Export-ModuleMember -Function `
     Get-CanonicalLeakApi, `
     Test-LeakPrReferencesIssue, `
+    Invoke-LeakGhJson, `
     Assert-LeakDedupState, `
     Get-LeakFixFinalDedupResult, `
     Get-EffectiveRevertedPullRequestNumbers
