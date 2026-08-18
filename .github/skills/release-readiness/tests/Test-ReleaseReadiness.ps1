@@ -9249,6 +9249,16 @@ Assert-Eq -Label "installability: confirmed version is resolved from an addition
     -Expected 'installable' -Actual $iiInternalExact.Status
 Assert-Eq -Label "installability: additional source carrying the confirmed workload set is retained" `
     -Expected $true -Actual (@($iiInternalExact.RequiredSources.Name) -contains 'internal_preview6')
+[xml]$iiInternalExactConfig = $iiInternalExact.NuGetConfig
+$iiInternalExactPatterns = @(
+    @($iiInternalExactConfig.configuration.packageSourceMapping.packageSource |
+        Where-Object { $_.key -eq 'internal_preview6' })[0].package |
+        ForEach-Object { [string]$_.pattern }
+)
+Assert-Eq -Label "installability: selected additional source is mapped for workload-set packages" `
+    -Expected $true -Actual ($iiInternalExactPatterns -contains 'Microsoft.NET.Workloads.*')
+Assert-Eq -Label "installability: selected additional source remains mapped for component packages" `
+    -Expected $true -Actual ($iiInternalExactPatterns -contains '*')
 
 $iiInternalDiscoveryFetcher = {
     param($Url, $Source)

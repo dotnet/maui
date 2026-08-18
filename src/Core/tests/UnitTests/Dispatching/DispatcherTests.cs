@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Xunit;
@@ -10,29 +12,22 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	// Technically these tests are useless because they cannot test shipping code as they are
 	// none of the platforms. However, they sort of do test the test dispatcher...
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
-	// DispatcherTests mutates the static DispatcherProvider.Current. Other test
-	// classes that build a MauiApp capture that singleton via DI (see
-	// AppHostBuilderExtensions.ConfigureDispatching's IDispatcherProvider factory)
-	// and the MainThreadBridgeInitializer / ApplicationDispatcherInitializer call
-	// IDispatcher resolution at MauiApp.Build() time. If DispatcherTests' Dispose
-	// runs concurrently and disposes its DispatcherProviderStub's ThreadLocal,
-	// those bystander tests throw ObjectDisposedException. Serialize via the
-	// shared MainThreadStaticState collection.
-	[Collection("MainThreadStaticState")]
+	// Serialize mutations of DispatcherProvider.Current with other tests that
+	// modify process-wide dispatcher/MainThread state.
+	[Collection(MainThreadStaticStateCollection.Name)]
 	public class DispatcherTests : IDisposable
 	{
-		DispatcherProviderStub _dispatcherProvider;
-
 		public DispatcherTests()
 		{
-			_dispatcherProvider = new DispatcherProviderStub();
-			DispatcherProvider.SetCurrent(_dispatcherProvider);
+			DispatcherProvider.SetCurrent(new NonDisposableDispatcherProviderStub());
 		}
 
 		public void Dispose()
 		{
+			// MauiApp service providers created by parallel tests may have captured this
+			// provider through DI. Clear the process-wide reference, but leave captured
+			// instances usable until their owning service providers are collected.
 			DispatcherProvider.SetCurrent(null);
-			_dispatcherProvider.Dispose();
 		}
 
 		// just a check to make sure the test dispatcher is working
@@ -85,6 +80,8 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 					{
 						DispatcherProviderStubOptions.SkipDispatcherCreation = false;
 					}
+
+					Assert.NotNull(Dispatcher.GetForCurrentThread());
 				});
 			});
 
@@ -209,5 +206,36 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 				// If it's repeating, ticks will be greater than 1
 				Assert.True(ticks > 1);
 			});
+
+#nullable enable
+		sealed class NonDisposableDispatcherProviderStub : IDispatcherProvider
+		{
+			readonly ConditionalWeakTable<Thread, DispatcherHolder> _dispatchers = new();
+
+			public IDispatcher? GetForCurrentThread()
+			{
+				if (DispatcherProviderStubOptions.SkipDispatcherCreation)
+					return null;
+
+				return _dispatchers.GetValue(
+					Thread.CurrentThread,
+					_ => new DispatcherHolder(
+						new DispatcherStub(
+							DispatcherProviderStubOptions.IsInvokeRequired,
+							DispatcherProviderStubOptions.InvokeOnMainThread)))
+					.Dispatcher;
+			}
+
+			sealed class DispatcherHolder
+			{
+				public DispatcherHolder(IDispatcher? dispatcher)
+				{
+					Dispatcher = dispatcher;
+				}
+
+				public IDispatcher? Dispatcher { get; }
+			}
+		}
+#nullable restore
 	}
 }

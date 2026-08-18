@@ -213,8 +213,10 @@ public static class Passkeys
 	/// Provides the default implementation for static usage of this API.
 	/// </summary>
 	public static IPasskeys Default =>
-		defaultImplementation ??= new PasskeysImplementation();
+		EssentialsImplementation.GetOrCreate(
+			ref defaultImplementation,
+			static () => new PasskeysImplementation());
 
 	internal static void SetDefault(IPasskeys? implementation) =>
-		defaultImplementation = implementation;
+		EssentialsImplementation.Set(ref defaultImplementation, implementation);
 }

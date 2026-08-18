@@ -89,10 +89,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IShare Default =>
-			defaultImplementation ??= new ShareImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ShareImplementation());
 
 		internal static void SetDefault(IShare? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 

@@ -1814,6 +1814,7 @@ function New-PreviewInstallabilityFallback {
         $Summary
     }
     return [PSCustomObject]@{
+        PublicEvidence        = $PublicSafe
         Status               = 'unknown'
         Summary              = $publicSummary
         SdkVersion           = $null
