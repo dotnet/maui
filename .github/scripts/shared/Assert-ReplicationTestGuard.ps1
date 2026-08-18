@@ -361,6 +361,140 @@ function Assert-ReplicationOracleIsFalsifiable {
     }
 }
 
+function Assert-ReplicationConditionalCompilationBalance {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ([System.IO.Path]::GetExtension($Path) -ine '.cs') {
+        return
+    }
+
+    # A candidate must compile in every target framework of the project it joins,
+    # not only the one it was written for. If a conditional branch opens or closes
+    # more braces than its siblings, the file is well-formed in one configuration
+    # and unparseable in the others, which breaks the whole test assembly.
+    $text = $Content.Replace("`r`n", "`n")
+    $length = $text.Length
+    $frames = [System.Collections.Generic.Stack[object]]::new()
+    $current = [pscustomobject]@{
+        Delta = 0
+        Branches = [System.Collections.Generic.List[int]]::new()
+        Directive = ''
+        Line = 0
+    }
+    $line = 1
+    $atLineStart = $true
+    $index = 0
+
+    while ($index -lt $length) {
+        $char = $text[$index]
+        $next = if ($index + 1 -lt $length) { $text[$index + 1] } else { [char]0 }
+
+        if ($char -eq "`n") {
+            $line++
+            $atLineStart = $true
+            $index++
+            continue
+        }
+        if ($atLineStart -and ($char -eq ' ' -or $char -eq "`t")) {
+            $index++
+            continue
+        }
+
+        if ($atLineStart -and $char -eq '#') {
+            $lineEnd = $text.IndexOf("`n", $index)
+            if ($lineEnd -lt 0) { $lineEnd = $length }
+            $directive = $text.Substring($index, $lineEnd - $index)
+            if ($directive -match '^#\s*if\b') {
+                $frames.Push($current)
+                $current = [pscustomobject]@{
+                    Delta = 0
+                    Branches = [System.Collections.Generic.List[int]]::new()
+                    Directive = $directive.Trim()
+                    Line = $line
+                }
+            }
+            elseif ($directive -match '^#\s*(?:elif|else)\b') {
+                if ($frames.Count -gt 0) {
+                    $current.Branches.Add($current.Delta)
+                    $current.Delta = 0
+                }
+            }
+            elseif ($directive -match '^#\s*endif\b') {
+                if ($frames.Count -gt 0) {
+                    $current.Branches.Add($current.Delta)
+                    $hadElse = $current.Branches.Count -gt 1
+                    if (-not $hadElse) {
+                        # The omitted branch contributes nothing, so the written
+                        # one must contribute nothing either.
+                        $current.Branches.Add(0)
+                    }
+                    $distinct = @($current.Branches | Sort-Object -Unique)
+                    if ($distinct.Count -gt 1) {
+                        throw ("Candidate source '$Path' has a conditional-compilation block starting at line $($current.Line) (`"$($current.Directive)`") whose branches do not close the same braces. " +
+                            'The file parses in one target framework and not in the others, which breaks every other framework in the project. ' +
+                            'Keep each #if/#else branch brace-balanced, or guard the whole member instead of part of its body.')
+                    }
+                    $closedDelta = $distinct[0]
+                    $current = $frames.Pop()
+                    $current.Delta += $closedDelta
+                }
+            }
+            $index = $lineEnd
+            $atLineStart = $false
+            continue
+        }
+
+        $atLineStart = $false
+
+        if ($char -eq '/' -and $next -eq '/') {
+            $end = $text.IndexOf("`n", $index)
+            $index = if ($end -lt 0) { $length } else { $end }
+            continue
+        }
+        if ($char -eq '/' -and $next -eq '*') {
+            $end = $text.IndexOf('*/', $index + 2)
+            $stop = if ($end -lt 0) { $length } else { $end + 2 }
+            for ($scan = $index; $scan -lt $stop; $scan++) {
+                if ($text[$scan] -eq "`n") { $line++ }
+            }
+            $index = $stop
+            continue
+        }
+        if ($char -eq '@' -and $next -eq '"') {
+            $index += 2
+            while ($index -lt $length) {
+                if ($text[$index] -eq "`n") { $line++ }
+                if ($text[$index] -eq '"') {
+                    if ($index + 1 -lt $length -and $text[$index + 1] -eq '"') { $index += 2; continue }
+                    $index++
+                    break
+                }
+                $index++
+            }
+            continue
+        }
+        if ($char -eq '"' -or $char -eq "'") {
+            $quote = $char
+            $index++
+            while ($index -lt $length) {
+                if ($text[$index] -eq '\') { $index += 2; continue }
+                if ($text[$index] -eq $quote) { $index++; break }
+                if ($text[$index] -eq "`n") { break }
+                $index++
+            }
+            continue
+        }
+
+        if ($char -eq '{') { $current.Delta++ }
+        elseif ($char -eq '}') { $current.Delta-- }
+        $index++
+    }
+}
+
 function Assert-ReplicationLeakTestMethodology {
     [CmdletBinding()]
     param(

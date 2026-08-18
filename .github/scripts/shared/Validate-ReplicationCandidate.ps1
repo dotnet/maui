@@ -1569,6 +1569,7 @@ function Assert-SourceTextIsSafe {
             -TestType ([string]$Manifest.TestType)
     }
 
+    Assert-ReplicationConditionalCompilationBalance -Content $normalized -Path $Path
     Assert-ReplicationGeneratedSourceSafety -Content $normalized -Path $Path
     Assert-ReplicationPlatformSourceSafety `
         -Content $normalized `

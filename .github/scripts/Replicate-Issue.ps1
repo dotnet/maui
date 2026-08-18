@@ -1743,6 +1743,9 @@ function Assert-GeneratedTestContent {
             -Path $file `
             -Platform $TargetPlatform
         if ($file.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content $content `
+                -Path $file
             $normalizedPath = $file.Replace('\', '/')
             if ($normalizedPath -cnotmatch '^src/Controls/tests/TestCases\.HostApp/') {
                 Assert-ReplicationTestLifecycleSafety `

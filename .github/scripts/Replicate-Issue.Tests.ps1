@@ -3523,3 +3523,125 @@ Assert.False(reference.IsAlive);
         } | Should -Throw '*canonical collection helper*'
     }
 }
+
+Describe 'A candidate must parse in every target framework, not just its own' {
+    It 'rejects a conditional that opens a brace it does not close' {
+        # A reviewer blocked a reproduction for exactly this: the guarded region
+        # opened a block whose closing brace sat outside the #endif, so the file
+        # was well-formed on Android and unparseable on every other framework in
+        # the same project, breaking the whole test assembly.
+        $source = @'
+public class Issue37000
+{
+    public void Repro()
+    {
+#if ANDROID
+        if (condition)
+        {
+            Assert.True(false);
+#endif
+    }
+}
+'@
+        {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue37000.cs'
+        } | Should -Throw '*do not close the same braces*'
+    }
+
+    It 'accepts branches that close what they open' {
+        $source = @'
+public class Issue37000
+{
+    public void Repro()
+    {
+#if ANDROID
+        Assert.True(false);
+#else
+        Assert.True(true);
+#endif
+    }
+}
+'@
+        {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue37000.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'accepts guarding a whole member, which is the recommended shape' {
+        $source = @'
+public class Issue37000
+{
+#if ANDROID
+    [Fact]
+    public void Repro()
+    {
+        Assert.True(false);
+    }
+#endif
+}
+'@
+        {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue37000.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'handles nesting, so an inner imbalance is still found' {
+        $source = @'
+public class Issue37000
+{
+#if ANDROID
+    public void Repro()
+    {
+#if DEBUG
+        if (x)
+        {
+#endif
+    }
+#endif
+}
+'@
+        {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue37000.cs'
+        } | Should -Throw '*do not close the same braces*'
+    }
+
+    It 'does not count braces inside strings, chars or comments' {
+        $source = @'
+public class Issue37000
+{
+    public void Repro()
+    {
+#if ANDROID
+        var s = "{{{";
+        var v = @"}}}";
+        var c = '{';
+        // }}}}
+        /* {{{{ */
+        Assert.True(false);
+#endif
+    }
+}
+'@
+        {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue37000.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores non-C# candidates' {
+        {
+            Assert-ReplicationConditionalCompilationBalance `
+                -Content '<ContentPage>' `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue37000.xaml'
+        } | Should -Not -Throw
+    }
+}
