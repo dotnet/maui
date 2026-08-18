@@ -254,7 +254,7 @@ Describe 'effective recursive revert state' {
             Should -Be @(100)
     }
 
-    It 'combines multiple active sibling reverts by parity' {
+    It 'keeps a fix reverted when multiple independent sibling reverts remain active' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
@@ -266,7 +266,22 @@ Describe 'effective recursive revert state' {
                 -Repository 'dotnet/maui' `
                 -FixPullRequests @($fix) `
                 -MergedRevertPullRequests $reverts
-        ).Count | Should -Be 0
+        ) | Should -Be @(100)
+    }
+
+    It 'keeps a fix reverted while any independent sibling revert remains active' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $reverts = @(
+            New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
+            New-LeakPr -Number 201 -Title 'Revert B' -Body 'Reverts dotnet/maui#100'
+            New-LeakPr -Number 300 -Title 'Restore only A' -Body 'Reverts dotnet/maui#200'
+        )
+
+        Get-EffectiveRevertedPullRequestNumbers `
+            -Repository 'dotnet/maui' `
+            -FixPullRequests @($fix) `
+            -MergedRevertPullRequests $reverts |
+            Should -Be @(100)
     }
 
     It 'ignores a servicing-branch revert of a main fix' {

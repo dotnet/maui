@@ -269,17 +269,17 @@ function Get-EffectiveRevertedPullRequestNumbers {
             throw "Cycle detected while resolving revert chain at PR #$PullRequestNumber."
         }
 
-        $activeRevertCount = 0
+        $activeReverterCount = 0
         if ($revertersByTarget.ContainsKey($PullRequestNumber)) {
             foreach ($reverter in $revertersByTarget[$PullRequestNumber]) {
                 if (Test-EffectActive -PullRequestNumber $reverter) {
-                    $activeRevertCount++
+                    $activeReverterCount++
                 }
             }
         }
 
         [void]$visiting.Remove($PullRequestNumber)
-        $active = ($activeRevertCount % 2) -eq 0
+        $active = $activeReverterCount -eq 0
         $memo[$PullRequestNumber] = $active
         return $active
     }
