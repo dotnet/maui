@@ -331,3 +331,23 @@ Describe 'Replication issue outcome publication boundary' {
         $missingUrl | Should -BeGreaterThan $duplicate
     }
 }
+
+Describe 'The publisher validates with the scripts the run was queued with' {
+    It 'pins the publisher checkout before staging trusted scripts' {
+        # A replicate run spends up to an hour on a device. When the pipeline
+        # ref moved in the meantime the publisher checked out the newer tip and
+        # rejected a live run for a manifest field that existed in neither
+        # script at the commit the run was queued from.
+        $stageIndex = $script:Pipeline.IndexOf('Stage trusted replication publisher')
+        $stageIndex | Should -BeGreaterThan -1
+
+        $publisherBlock = $script:Pipeline.Substring(0, $stageIndex)
+        $pinIndex = $publisherBlock.LastIndexOf('checkout --force --detach $pinned')
+        $pinIndex | Should -BeGreaterThan -1
+
+        $copyIndex = $script:Pipeline.IndexOf('trusted-replication-publisher')
+        $pinIndex | Should -BeLessThan $copyIndex
+        $script:Pipeline | Should -Match "\`$pinned = '\`$\(Build\.SourceVersion\)'"
+        $script:Pipeline | Should -Match 'Publisher checkout is at \$actual but the run was queued at \$pinned'
+    }
+}

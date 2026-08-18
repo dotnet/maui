@@ -2691,6 +2691,31 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
+              # A replicate run can spend an hour on a device before this job
+              # starts. When the pipeline ref moves in the meantime, the
+              # checkout lands on the newer tip and this job validates artifacts
+              # from one commit with scripts from another. A live run was
+              # rejected for a manifest field that did not exist in either
+              # script at the commit the run was queued from. Pin to the same
+              # commit the replicate stage captured its trusted scripts at.
+              $pinned = '$(Build.SourceVersion)'
+              if ($pinned -notmatch '^[0-9a-f]{40}$') {
+                  throw "Build.SourceVersion is not a commit SHA: $pinned"
+              }
+              git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned 2>$null
+              if ($LASTEXITCODE -ne 0) {
+                  git -C "$(Build.SourcesDirectory)" fetch --no-tags origin $pinned
+                  git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned
+              }
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Unable to pin the publisher checkout to $pinned."
+              }
+              $actual = (git -C "$(Build.SourcesDirectory)" rev-parse HEAD).Trim()
+              if ($actual -ne $pinned) {
+                  throw "Publisher checkout is at $actual but the run was queued at $pinned."
+              }
+              Write-Host "Publisher pinned to $actual"
+
               $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
               Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
