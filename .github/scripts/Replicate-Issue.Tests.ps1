@@ -580,6 +580,78 @@ Describe 'Replication orchestrator security boundary' {
             Should -Throw "*uses unsupported action 'assertNotExists'*"
     }
 
+    It 'accepts a bounded multi-segment drag and rejects malformed paths' {
+        # Issue 37089 was abandoned as unsupported because a single cardinal
+        # swipe cannot keep one pointer down while it changes direction.
+        $IssueNumber = 37089
+        $Platform = 'ios'
+        $appiumPlanPath = Join-Path $TestDrive 'drag-plan.json'
+        @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 37089,
+  "steps": [
+    {
+      "action": "waitFor",
+      "description": "Prove the reported row is ready",
+      "locator": { "strategy": "accessibilityId", "value": "SwipeRow" },
+      "value": null,
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "dragPath",
+      "description": "Open the swipe item, leave the row, and return before release",
+      "locator": { "strategy": "accessibilityId", "value": "SwipeRow" },
+      "value": "0.4,0;0,0.2;-0.35,0",
+      "timeoutSeconds": 20
+    },
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the reported incorrect result",
+      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
+      "value": "BUG REPRODUCED: Incorrect",
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $appiumPlanPath
+
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+
+        $Platform = 'windows'
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*uses dragPath outside Android or iOS*'
+        $Platform = 'ios'
+
+        $plan = Get-Content -LiteralPath $appiumPlanPath -Raw | ConvertFrom-Json -Depth 10
+        $plan.steps[1].value = '0.4,0'
+        $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*needs two to four segments*'
+
+        $plan.steps[1].value = '0.4,0;0,0.2;-0.35,0;0,0.1;0.2,0'
+        $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*needs two to four segments*'
+
+        $plan.steps[1].value = '0.4,0;2.0,0'
+        $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*dragPath segment*is invalid*'
+
+        $plan.steps[1].value = '0.4,0;$(rm -rf /),0'
+        $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*dragPath segment*is invalid*'
+
+        # A drag needs the element it presses on.
+        $plan.steps[1].value = '0.4,0;0,0.2'
+        $plan.steps[1].locator = $null
+        $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*requires a locator*'
+    }
+
     It 'accepts trusted Windows process closure only as the final crash assertion' {
         $IssueNumber = 36652
         $Platform = 'windows'

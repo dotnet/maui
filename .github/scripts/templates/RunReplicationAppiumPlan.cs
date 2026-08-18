@@ -17,6 +17,7 @@ using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 
 const string planFileName = "appium-plan.json";
@@ -381,6 +382,13 @@ static void ExecuteStep(
             break;
         case "swipe":
             Swipe(driver, platform, step.Value!);
+            break;
+        case "dragPath":
+            DragPath(
+                driver,
+                platform,
+                WaitForElement(driver, platform, step.Locator!, timeout),
+                step.Value!);
             break;
         case "setOrientation":
             driver.Orientation = step.Value switch
@@ -881,6 +889,85 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
             ["direction"] = direction,
             ["percent"] = 0.75
         });
+}
+
+static void DragPath(
+    AppiumDriver driver,
+    string platform,
+    IWebElement element,
+    string path)
+{
+    // A SwipeView, pan, or drag defect is triggered by one pointer that stays
+    // down while it changes direction, which a single cardinal swipe cannot
+    // express. Issue 37089 was abandoned for exactly that reason.
+    if (platform is "windows" or "catalyst")
+    {
+        throw new InvalidOperationException(
+            $"dragPath is not supported by the {platform} adapter.");
+    }
+
+    var segments = ParseDragSegments(path);
+    var size = driver.Manage().Window.Size;
+    var origin = element.Location;
+    var extent = element.Size;
+    var x = origin.X + (extent.Width / 2);
+    var y = origin.Y + (extent.Height / 2);
+
+    var finger = new PointerInputDevice(PointerKind.Touch, "finger");
+    var sequence = new ActionSequence(finger);
+    sequence.AddAction(finger.CreatePointerMove(
+        CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
+    sequence.AddAction(finger.CreatePointerDown(MouseButton.Touch));
+    sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(250)));
+
+    foreach (var (dx, dy) in segments)
+    {
+        x = Math.Clamp(x + (int)Math.Round(dx * size.Width), 1, size.Width - 2);
+        y = Math.Clamp(y + (int)Math.Round(dy * size.Height), 1, size.Height - 2);
+        sequence.AddAction(finger.CreatePointerMove(
+            CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(320)));
+        sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(140)));
+    }
+
+    sequence.AddAction(finger.CreatePointerUp(MouseButton.Touch));
+    driver.PerformActions(new List<ActionSequence> { sequence });
+}
+
+static List<(double Dx, double Dy)> ParseDragSegments(string path)
+{
+    var segments = new List<(double, double)>();
+    foreach (var raw in path.Split(';', StringSplitOptions.RemoveEmptyEntries))
+    {
+        var parts = raw.Split(',');
+        if (parts.Length != 2 ||
+            !double.TryParse(
+                parts[0],
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var dx) ||
+            !double.TryParse(
+                parts[1],
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var dy))
+        {
+            throw new InvalidOperationException($"Invalid dragPath segment '{raw}'.");
+        }
+        if (Math.Abs(dx) > 1 || Math.Abs(dy) > 1)
+        {
+            throw new InvalidOperationException(
+                $"dragPath segment '{raw}' moves further than the screen.");
+        }
+        segments.Add((dx, dy));
+    }
+
+    if (segments.Count is < 2 or > 4)
+    {
+        throw new InvalidOperationException(
+            "dragPath requires between two and four movement segments.");
+    }
+
+    return segments;
 }
 
 static void ValidatePlan(ReplicationPlan plan, string platform)
