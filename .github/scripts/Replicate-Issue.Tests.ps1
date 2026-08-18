@@ -2956,6 +2956,7 @@ PS-STEP-FAILED: step 3 did not find its target
             'Run trusted reproduction script failed with exit'
             'OperationStopped: /a/scripts/shared/Record-Reproduction.ps1:1297'
             'Line |'
+            '1297 |              throw "reproduction aborted"'
             '     |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
             '     | code 134. Output: MacCatalyst Sandbox app aborted during launch'
             '+ CategoryInfo          : OperationStopped: (:) [], RuntimeException'
@@ -2969,6 +2970,10 @@ PS-STEP-FAILED: step 3 did not find its target
         $details | Should -Not -Match 'CategoryInfo'
         $details | Should -Not -Match 'FullyQualifiedErrorId'
         $details | Should -Not -Match '~~~'
+        $details | Should -Not -Match '1297\s*\|'
+        # The bare header and footer are what this layer newly removes; the
+        # numbered gutter was already handled.
+        $details | Should -Not -Match '(?m)^Line \|$'
     }
 
     It 'names the properties a rejected proposal got wrong' {

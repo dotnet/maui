@@ -970,6 +970,7 @@ Describe 'Select-ReproductionDiagnosticLines native backtraces' {
         $rendered = @(
             'Run trusted reproduction script failed with exit'
             'Line |'
+            '1297 |              throw "reproduction aborted"'
             '     | code 134. Output: MacCatalyst Sandbox app aborted during launch'
             '+ CategoryInfo          : OperationStopped: (:) [], RuntimeException'
         ) -join "`n"
@@ -979,5 +980,8 @@ Describe 'Select-ReproductionDiagnosticLines native backtraces' {
         $selected | Should -Match 'code 134'
         $selected | Should -Match 'aborted during launch'
         $selected | Should -Not -Match 'CategoryInfo'
+        # A line-number gutter is the discriminator: the " | " this function
+        # joins with cannot produce "1297 |".
+        $selected | Should -Not -Match '1297\s*\|'
     }
 }
