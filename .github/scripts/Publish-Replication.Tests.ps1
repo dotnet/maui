@@ -94,6 +94,7 @@ Describe 'Trusted replication evidence publishing' {
             testFilter = 'Issue12345'
             expectedFailureSignature = 'Issue12345'
             actualFailureMessage = 'Xunit failure: expected red but was blue'
+            verificationRunCount = 2
         } |
             ConvertTo-Json |
             Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
@@ -135,6 +136,7 @@ Describe 'Trusted replication pull request publishing' {
             testFilter = 'Issue37440'
             expectedFailureSignature = 'Expected: 1; Actual: 0'
             actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
+            verificationRunCount = 2
             reproductionSteps = @('Launch the scenario', 'Tap the action button')
         }
         $evidence = [pscustomobject]@{
@@ -176,6 +178,7 @@ Describe 'Trusted replication pull request publishing' {
             testFilter = 'Issue35624'
             expectedFailureSignature = 'Kern=8'
             actualFailureMessage = 'Expected Kern=8 but was Kern=NaN'
+            verificationRunCount = 2
             reproductionSteps = @('Focus the search handler')
         }
         $evidence = [pscustomobject]@{
@@ -210,6 +213,7 @@ Describe 'Trusted replication pull request publishing' {
             testFilter = 'Issue37440'
             expectedFailureSignature = 'Expected: 1; Actual: 0'
             actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
+            verificationRunCount = 2
             reproductionSteps = @('Launch the scenario')
         }
         $evidence = [pscustomobject]@{
@@ -243,6 +247,7 @@ Describe 'Trusted replication pull request publishing' {
             testFilter = 'Issue12345'
             expectedFailureSignature = 'Issue12345'
             actualFailureMessage = 'Xunit failure: expected red but was blue'
+            verificationRunCount = 2
             reproductionSteps = @('Run the test')
         }
         $evidence = [pscustomobject]@{

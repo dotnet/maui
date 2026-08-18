@@ -260,7 +260,20 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source | Should -Match "-Description 'Preparing the Sandbox app'\s+``\s+-TimeoutSeconds 1800"
         $script:Source | Should -Match "-Description 'Launching the Sandbox before evidence recording'\s+``\s+-TimeoutSeconds 300"
         $script:Source | Should -Match "-Description 'Recording the on-device reproduction'\s+``\s+-TimeoutSeconds 300"
-        $script:Source | Should -Match "-Description 'Verifying the targeted reproduction test'\s+``\s+-TimeoutSeconds 5400"
+        $script:Source |
+            Should -Match ([regex]::Escape(
+                "-TimeoutSeconds (5400 + (1800 * (" + '$VerificationRunCount' + " - 1)))"))
+
+        # The repeated verification must still finish inside the 180-minute
+        # replicate step, otherwise proving determinism costs the whole run.
+        $maximumRunCount = 3
+        $worstCaseSeconds = 5400 + (1800 * ($maximumRunCount - 1))
+        $worstCaseSeconds | Should -BeLessThan (180 * 60)
+    }
+
+    It 'verifies the targeted test more than once by default' {
+        $script:Source | Should -Match ([regex]::Escape('[int]$VerificationRunCount = 2'))
+        $script:Source | Should -Match ([regex]::Escape("'-RunCount', [string]" + '$VerificationRunCount'))
     }
 
     It 'retries Android deployment only for recognized transient device failures' {

@@ -42,7 +42,12 @@ param(
     [string]$VerifierPath,
 
     [Parameter(Mandatory = $true)]
-    [string]$OutputDirectory
+    [string]$OutputDirectory,
+
+    # Reviewers reject a reproduction proved by a single execution, so the same
+    # targeted test is run repeatedly and every run has to fail identically.
+    [ValidateRange(1, 3)]
+    [int]$RunCount = 1
 )
 
 $ErrorActionPreference = 'Stop'
@@ -133,114 +138,166 @@ if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
 }
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
-$consoleLog = Join-Path $OutputDirectory 'verification-console.log'
 $resultPath = Join-Path $OutputDirectory 'verification-result.json'
 $machineResultPath = Join-Path $OutputDirectory 'verifier-machine-result.json'
-
+$repositoryRoot = git rev-parse --show-toplevel
+$verificationRoot = Join-Path $repositoryRoot "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/gate/verify-tests-fail"
 $secretNames = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')
-$savedSecrets = @{}
-try {
-    foreach ($name in $secretNames) {
-        $savedSecrets[$name] = [Environment]::GetEnvironmentVariable($name)
-        [Environment]::SetEnvironmentVariable($name, $null)
-    }
-    $arguments = @(
-        '-NoProfile',
-        '-File', $VerifierPath,
-        '-Platform', $Platform,
-        '-TestType', $TestType,
-        '-TestFilter', $TestFilter,
-        '-TestClass', $TestClass,
-        '-TestMethod', $TestMethod,
-        '-MachineResultPath', $machineResultPath,
-        '-PRNumber', [string]$IssueNumber
+
+function Invoke-SingleVerificationRun {
+    param(
+        [Parameter(Mandatory = $true)][int]$Run,
+        [Parameter(Mandatory = $true)][string]$ConsoleLog
     )
-    if (-not [string]::IsNullOrWhiteSpace($TestProject)) {
-        $arguments += @('-TestProject', $TestProject)
-    }
-    if (-not [string]::IsNullOrWhiteSpace($TestProjectPath)) {
-        $arguments += @('-TestProjectPath', $TestProjectPath)
-    }
-    if ($TestType -eq 'DeviceTest') {
-        $trustedSkillsRoot = Split-Path -Parent (
-            Split-Path -Parent (
-                Split-Path -Parent $VerifierPath))
-        $deviceTestScriptPath = Join-Path `
-            $trustedSkillsRoot `
-            'run-device-tests/scripts/Run-DeviceTests.ps1'
-        if (-not (Test-Path -LiteralPath $deviceTestScriptPath -PathType Leaf)) {
-            throw "Trusted device-test runner was not found: $deviceTestScriptPath"
-        }
-        $arguments += @('-DeviceTestScriptPath', $deviceTestScriptPath)
-    }
 
-    $output = @(& pwsh @arguments 2>&1)
-    $exitCode = $LASTEXITCODE
-    $outputText = ($output | ForEach-Object { [string]$_ }) -join [Environment]::NewLine
-    $outputText | Set-Content -LiteralPath $consoleLog -Encoding utf8NoBOM
-    Write-Host (ConvertTo-AzdoSafeReplicationOutput -Value $outputText)
-}
-finally {
-    foreach ($name in $secretNames) {
-        [Environment]::SetEnvironmentVariable($name, $savedSecrets[$name])
-    }
-}
-
-$candidateLogs = @($consoleLog)
-$verificationRoot = Join-Path (git rev-parse --show-toplevel) "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/gate/verify-tests-fail"
-if (Test-Path -LiteralPath $verificationRoot) {
-    $candidateLogs += @(Get-ChildItem -LiteralPath $verificationRoot -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -in @('verification-log.txt', 'test-without-fix.log', 'verification-report.md') } |
-        ForEach-Object FullName)
-}
-
-$combined = ($candidateLogs | Sort-Object -Unique | ForEach-Object {
-    if (Test-Path -LiteralPath $_ -PathType Leaf) {
-        Get-Content -LiteralPath $_ -Raw -ErrorAction SilentlyContinue
-    }
-}) -join [Environment]::NewLine
-
-$verifierPassed = $exitCode -eq 0 -and $combined -match 'VERIFICATION PASSED'
-$actualFailureMessage = ''
-$expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
-    "FullyQualifiedName=$TestClass.$TestMethod"
-} else {
-    $TestFilter
-}
-if (Test-Path -LiteralPath $machineResultPath -PathType Leaf) {
+    $savedSecrets = @{}
     try {
-        $machineResultFile = Get-Item -LiteralPath $machineResultPath
-        if ($machineResultFile.Length -gt 64KB) {
-            throw 'Verifier machine result exceeds the trusted size limit.'
+        foreach ($name in $secretNames) {
+            $savedSecrets[$name] = [Environment]::GetEnvironmentVariable($name)
+            [Environment]::SetEnvironmentVariable($name, $null)
         }
-        $machineResult = Get-Content -LiteralPath $machineResultPath -Raw |
-            ConvertFrom-Json -ErrorAction Stop
-        if (
-            [int]$machineResult.schemaVersion -eq 1 -and
-            $machineResult.failed -eq $true -and
-            ([string]$machineResult.testType) -ceq $TestType -and
-            ([string]$machineResult.testFilter) -ceq $expectedMachineFilter -and
-            ([string]$machineResult.testProject) -ceq $TestProject -and
-            ([string]$machineResult.testProjectPath) -ceq $TestProjectPath -and
-            ([string]$machineResult.testClass) -ceq $TestClass -and
-            ([string]$machineResult.testMethod) -ceq $TestMethod -and
-            ([string]$machineResult.actualFailureMessage).Length -le 10000
-        ) {
-            $actualFailureMessage = [string]$machineResult.actualFailureMessage
+        $arguments = @(
+            '-NoProfile',
+            '-File', $VerifierPath,
+            '-Platform', $Platform,
+            '-TestType', $TestType,
+            '-TestFilter', $TestFilter,
+            '-TestClass', $TestClass,
+            '-TestMethod', $TestMethod,
+            '-MachineResultPath', $machineResultPath,
+            '-PRNumber', [string]$IssueNumber
+        )
+        if (-not [string]::IsNullOrWhiteSpace($TestProject)) {
+            $arguments += @('-TestProject', $TestProject)
         }
-    } catch {
-        $actualFailureMessage = ''
+        if (-not [string]::IsNullOrWhiteSpace($TestProjectPath)) {
+            $arguments += @('-TestProjectPath', $TestProjectPath)
+        }
+        if ($TestType -eq 'DeviceTest') {
+            $trustedSkillsRoot = Split-Path -Parent (
+                Split-Path -Parent (
+                    Split-Path -Parent $VerifierPath))
+            $deviceTestScriptPath = Join-Path `
+                $trustedSkillsRoot `
+                'run-device-tests/scripts/Run-DeviceTests.ps1'
+            if (-not (Test-Path -LiteralPath $deviceTestScriptPath -PathType Leaf)) {
+                throw "Trusted device-test runner was not found: $deviceTestScriptPath"
+            }
+            $arguments += @('-DeviceTestScriptPath', $deviceTestScriptPath)
+        }
+
+        $output = @(& pwsh @arguments 2>&1)
+        $exitCode = $LASTEXITCODE
+        $outputText = ($output | ForEach-Object { [string]$_ }) -join [Environment]::NewLine
+        $outputText | Set-Content -LiteralPath $ConsoleLog -Encoding utf8NoBOM
+        Write-Host ("--- targeted test execution $Run of $RunCount ---")
+        Write-Host (ConvertTo-AzdoSafeReplicationOutput -Value $outputText)
     }
-    Remove-Item -LiteralPath $machineResultPath -Force
+    finally {
+        foreach ($name in $secretNames) {
+            [Environment]::SetEnvironmentVariable($name, $savedSecrets[$name])
+        }
+    }
+
+    $runLogs = @($ConsoleLog)
+    if (Test-Path -LiteralPath $verificationRoot) {
+        $runLogs += @(Get-ChildItem -LiteralPath $verificationRoot -Recurse -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -in @('verification-log.txt', 'test-without-fix.log', 'verification-report.md') } |
+            ForEach-Object FullName)
+    }
+
+    $combined = ($runLogs | Sort-Object -Unique | ForEach-Object {
+        if (Test-Path -LiteralPath $_ -PathType Leaf) {
+            Get-Content -LiteralPath $_ -Raw -ErrorAction SilentlyContinue
+        }
+    }) -join [Environment]::NewLine
+
+    $verifierPassed = $exitCode -eq 0 -and $combined -match 'VERIFICATION PASSED'
+    $actualFailureMessage = ''
+    $expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
+        "FullyQualifiedName=$TestClass.$TestMethod"
+    } else {
+        $TestFilter
+    }
+    if (Test-Path -LiteralPath $machineResultPath -PathType Leaf) {
+        try {
+            $machineResultFile = Get-Item -LiteralPath $machineResultPath
+            if ($machineResultFile.Length -gt 64KB) {
+                throw 'Verifier machine result exceeds the trusted size limit.'
+            }
+            $machineResult = Get-Content -LiteralPath $machineResultPath -Raw |
+                ConvertFrom-Json -ErrorAction Stop
+            if (
+                [int]$machineResult.schemaVersion -eq 1 -and
+                $machineResult.failed -eq $true -and
+                ([string]$machineResult.testType) -ceq $TestType -and
+                ([string]$machineResult.testFilter) -ceq $expectedMachineFilter -and
+                ([string]$machineResult.testProject) -ceq $TestProject -and
+                ([string]$machineResult.testProjectPath) -ceq $TestProjectPath -and
+                ([string]$machineResult.testClass) -ceq $TestClass -and
+                ([string]$machineResult.testMethod) -ceq $TestMethod -and
+                ([string]$machineResult.actualFailureMessage).Length -le 10000
+            ) {
+                $actualFailureMessage = [string]$machineResult.actualFailureMessage
+            }
+        } catch {
+            $actualFailureMessage = ''
+        }
+        Remove-Item -LiteralPath $machineResultPath -Force
+    }
+
+    $signatureMatched = Test-ReplicationExpectedFailureSignature `
+        -Content $actualFailureMessage `
+        -Signature $ExpectedFailureSignature
+    $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
+
+    return [pscustomobject]@{
+        Run = $Run
+        ExitCode = $exitCode
+        VerifierPassed = $verifierPassed
+        SignatureMatched = $signatureMatched
+        InfrastructureFailure = $infrastructureFailure
+        ActualFailureMessage = $actualFailureMessage
+        Passed = $verifierPassed -and $signatureMatched -and -not $infrastructureFailure
+        LogFiles = @($runLogs | Sort-Object -Unique)
+    }
 }
-$signatureMatched = Test-ReplicationExpectedFailureSignature `
-    -Content $actualFailureMessage `
-    -Signature $ExpectedFailureSignature
+
+$runOutcomes = New-Object 'System.Collections.Generic.List[object]'
+for ($run = 1; $run -le $RunCount; $run++) {
+    $consoleLog = if ($run -eq 1) {
+        Join-Path $OutputDirectory 'verification-console.log'
+    } else {
+        Join-Path $OutputDirectory "verification-console-run-$run.log"
+    }
+    $outcome = Invoke-SingleVerificationRun -Run $run -ConsoleLog $consoleLog
+    $runOutcomes.Add($outcome)
+    if (-not $outcome.Passed) {
+        # Repeating a run that already failed only wastes device time; the
+        # orchestrator repairs the test and verifies again from scratch.
+        break
+    }
+}
+
+$firstOutcome = $runOutcomes[0]
+$completedRuns = $runOutcomes.Count
+$failedOutcomes = @($runOutcomes | Where-Object { -not $_.Passed })
+$consistentRuns = $completedRuns -eq $RunCount -and $failedOutcomes.Count -eq 0
+$verifierPassed = @($runOutcomes | Where-Object { -not $_.VerifierPassed }).Count -eq 0
+$signatureMatched = @($runOutcomes | Where-Object { -not $_.SignatureMatched }).Count -eq 0
+$infrastructureFailure = @($runOutcomes | Where-Object { $_.InfrastructureFailure }).Count -gt 0
+$nonZeroExitCodes = @($runOutcomes | Where-Object { $_.ExitCode -ne 0 })
+$exitCode = if ($nonZeroExitCodes.Count -gt 0) { [int]$nonZeroExitCodes[0].ExitCode } else { 0 }
+$actualFailureMessage = [string]$firstOutcome.ActualFailureMessage
+$candidateLogs = @($runOutcomes | ForEach-Object { $_.LogFiles } | Sort-Object -Unique)
+
 $boundedFailureMessage = ConvertTo-BoundedVerificationFailureMessage `
     -Content $actualFailureMessage `
     -Signature $ExpectedFailureSignature
-$infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
-$verificationPassed = $verifierPassed -and $signatureMatched -and -not $infrastructureFailure
+$verificationPassed = $verifierPassed -and
+    $signatureMatched -and
+    -not $infrastructureFailure -and
+    $consistentRuns
 
 $result = [ordered]@{
     schemaVersion = 1
@@ -259,13 +316,19 @@ $result = [ordered]@{
     signatureMatched = $signatureMatched
     infrastructureFailure = $infrastructureFailure
     verificationPassed = $verificationPassed
-    logFiles = @($candidateLogs | Sort-Object -Unique)
+    requestedRunCount = $RunCount
+    completedRunCount = $completedRuns
+    consistentRuns = $consistentRuns
+    logFiles = @($candidateLogs)
 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8NoBOM
 
 if (-not $verificationPassed) {
-    throw "Replication test verification failed (verifierPassed=$verifierPassed, signatureMatched=$signatureMatched, infrastructureFailure=$infrastructureFailure)."
+    throw ("Replication test verification failed (verifierPassed=$verifierPassed, " +
+        "signatureMatched=$signatureMatched, infrastructureFailure=$infrastructureFailure, " +
+        "consistentRuns=$consistentRuns, completedRuns=$completedRuns/$RunCount).")
 }
 
 Write-Host 'REPLICATION TEST VERIFICATION PASSED'
+Write-Host ("The targeted test failed at the expected assertion in $completedRuns of $RunCount independent executions.")
 Write-Host "Verification result: $resultPath"

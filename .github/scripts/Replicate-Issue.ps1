@@ -43,6 +43,11 @@ param(
     [ValidateRange(1, 8)]
     [int]$MaxTestAttempts = 5,
 
+    # A reproduction proved by a single execution is not evidence of a
+    # deterministic defect, so the verified test is executed more than once.
+    [ValidateRange(1, 3)]
+    [int]$VerificationRunCount = 2,
+
     [ValidateRange(5, 45)]
     [int]$CopilotTimeoutMinutes = 20,
 
@@ -2942,7 +2947,8 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                     '-TestMethod', $verifierMetadata.MethodName,
                     '-ExpectedFailureSignature', [string]$testProposal.expectedFailureSignature,
                     '-VerifierPath', (Join-Path $trustedSkills 'verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'),
-                    '-OutputDirectory', $verificationDir
+                    '-OutputDirectory', $verificationDir,
+                    '-RunCount', [string]$VerificationRunCount
                 )
                 if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.Project)) {
                     $verificationArgs += @('-TestProject', $verifierMetadata.Project)
@@ -2955,7 +2961,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                     -Arguments $verificationArgs `
                     -LogPath (Join-Path $sandboxArtifactDir "verification-wrapper-attempt-$attempt.log") `
                     -Description 'Verifying the targeted reproduction test' `
-                    -TimeoutSeconds 5400
+                    -TimeoutSeconds (5400 + (1800 * ($VerificationRunCount - 1)))
                 break
             }
             catch {

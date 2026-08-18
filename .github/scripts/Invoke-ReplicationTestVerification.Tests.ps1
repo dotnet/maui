@@ -46,6 +46,14 @@ param(
     [string]`$PRNumber
 )
 if (-not [string]::IsNullOrWhiteSpace(`$DeviceTestScriptPath)) { Set-Content -LiteralPath (`$MachineResultPath + '.device-runner-path') -Value `$DeviceTestScriptPath -Encoding utf8NoBOM }
+Add-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt') -Value 'run' -Encoding utf8NoBOM
+if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'fail-after-first.flag')) {
+    if ((Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count -gt 1) {
+        Write-Host 'VERIFY FAILURE ONLY MODE'
+        Write-Host 'VERIFICATION FAILED'
+        exit 1
+    }
+}
 `$message = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$encodedMessage'))
 [ordered]@{
     schemaVersion = 1
@@ -129,6 +137,69 @@ Describe 'Replication failure-only verification' {
         $script:Source | Should -Match "& pwsh @arguments"
         $script:Source | Should -Match "signatureMatched"
         $script:Source | Should -Match "infrastructureFailure"
+    }
+
+    It 'executes the targeted test once for every requested run' {
+        $verifier = Join-Path $TestDrive 'repeat-verifier.ps1'
+        $output = Join-Path $TestDrive 'repeat'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Assert.Equal() Failure: Issue12345 expected red but was blue'
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output `
+            -RunCount 2 *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        @(Get-Content -LiteralPath (Join-Path $output 'invocations.txt')).Count | Should -Be 2
+        Test-Path -LiteralPath (Join-Path $output 'verification-console.log') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $output 'verification-console-run-2.log') | Should -BeTrue
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.requestedRunCount | Should -Be 2
+        $result.completedRunCount | Should -Be 2
+        $result.consistentRuns | Should -BeTrue
+        $result.verificationPassed | Should -BeTrue
+    }
+
+    It 'fails when a later run does not reproduce the same failure' {
+        $verifier = Join-Path $TestDrive 'flaky-verifier.ps1'
+        $output = Join-Path $TestDrive 'flaky'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Assert.Equal() Failure: Issue12345 expected red but was blue'
+        New-Item -ItemType Directory -Path $output -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $output 'fail-after-first.flag') -Value 'x'
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output `
+            -RunCount 2 *> $null
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.consistentRuns | Should -BeFalse
+        $result.verificationPassed | Should -BeFalse
     }
 
     It 'persists and matches only the verifier machine result failure message' {

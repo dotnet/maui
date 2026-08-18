@@ -42,6 +42,9 @@ $script:CandidateFileMaxBytes = 256KB
 $script:CandidateTotalMaxBytes = 1MB
 $script:CandidateFileMaxCount = 24
 $script:VerificationArtifactMaxBytes = 2MB
+# Reviewers repeatedly rejected reproductions proved by one execution, so a
+# candidate has to show the same failure in more than one independent run.
+$script:VerificationMinimumRunCount = 2
 $script:VideoMaxBytes = 100MB
 $script:PreviewMaxBytes = 20MB
 
@@ -1680,7 +1683,8 @@ function Get-ReplicationEvidenceInventory {
             $verificationRoot -ceq $mediaRoot -and
             (
                 $item.Name -cin $allowedVerificationNames -or
-                $item.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$'
+                $item.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -or
+                $item.Name -cmatch '^verification-console-run-[2-3]\.log$'
             )
         )
         if ($item.PSIsContainer) {
@@ -1732,7 +1736,8 @@ function Get-ReplicationEvidenceInventory {
         }
         if (
             $item.Name -cnotin $allowedVerificationNames -and
-            $item.Name -cnotmatch '^test-failure-[A-Za-z0-9_.-]+\.log$'
+            $item.Name -cnotmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -and
+            $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$'
         ) {
             throw 'Verification directory contains an unexpected artifact.'
         }
@@ -1749,7 +1754,8 @@ function Get-ReplicationEvidenceInventory {
         -PathType Leaf
     if ($hasMachineResult) {
         foreach ($item in $verificationItems) {
-            if ($item.Name -cnotin @('verification-console.log', 'verification-result.json')) {
+            if ($item.Name -cnotin @('verification-console.log', 'verification-result.json') -and
+                $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$') {
                 throw 'Machine-readable verification directory contains an unexpected artifact.'
             }
         }
@@ -2293,6 +2299,9 @@ function Assert-ReplicationVerificationEvidence {
                 'signatureMatched',
                 'infrastructureFailure',
                 'verificationPassed',
+                'requestedRunCount',
+                'completedRunCount',
+                'consistentRuns',
                 'logFiles'
             ) `
             -Context 'Verification result'
@@ -2391,6 +2400,7 @@ function Assert-ReplicationVerificationEvidence {
             signatureMatched = $true
             infrastructureFailure = $false
             verificationPassed = $true
+            consistentRuns = $true
         }
         foreach ($entry in $expectedBooleans.GetEnumerator()) {
             $property = Find-AliasedProperty `
@@ -2401,6 +2411,30 @@ function Assert-ReplicationVerificationEvidence {
             if ($property.Value -isnot [bool] -or $property.Value -ne $entry.Value) {
                 throw "Verification result '$($entry.Key)' does not prove a valid failure-only run."
             }
+        }
+        $requestedRunCount = ConvertTo-PositiveInteger `
+            -Value (Find-AliasedProperty `
+                -Object $result `
+                -Names @('requestedRunCount') `
+                -Context 'Verification result' `
+                -Required).Value `
+            -Context 'Verification requested run count'
+        $completedRunCount = ConvertTo-PositiveInteger `
+            -Value (Find-AliasedProperty `
+                -Object $result `
+                -Names @('completedRunCount') `
+                -Context 'Verification result' `
+                -Required).Value `
+            -Context 'Verification completed run count'
+        if ($requestedRunCount -gt 3 -or $completedRunCount -gt 3) {
+            throw 'Verification result reports an implausible number of runs.'
+        }
+        if ($completedRunCount -ne $requestedRunCount) {
+            throw 'Verification result did not complete every requested run.'
+        }
+        if ($completedRunCount -lt $script:VerificationMinimumRunCount) {
+            throw ('The targeted test must fail in at least ' +
+                "$script:VerificationMinimumRunCount independent runs to prove the defect is deterministic.")
         }
         $logFilesProperty = Find-AliasedProperty `
             -Object $result `
@@ -2419,39 +2453,52 @@ function Assert-ReplicationVerificationEvidence {
             }
         }
 
-        $console = Read-BoundedUtf8File `
-            -Path (Join-Path $Inventory.VerificationRoot 'verification-console.log') `
-            -MaximumBytes $script:VerificationArtifactMaxBytes `
-            -Root $Inventory.VerificationRoot `
-            -Context 'Verification console log'
-        $disqualifier = Get-DisqualifyingFailureCode -Text $console
-        if ($disqualifier) {
-            throw "Verification evidence is disqualified by '$disqualifier' failure evidence."
+        # Every independent execution has to carry the same proof, otherwise a
+        # candidate could pass by failing once and being ignored afterwards.
+        $consoleNames = @('verification-console.log')
+        for ($runIndex = 2; $runIndex -le $completedRunCount; $runIndex++) {
+            $consoleNames += "verification-console-run-$runIndex.log"
         }
-        if (
-            $console -match '(?im)\bVERIFICATION (?:FAILED|INCONCLUSIVE)\b' -or
-            $console -match '(?im)\bFULL VERIFICATION MODE\b|\bTests WITH fix\b|\bPASS with fix\b'
-        ) {
-            throw 'Verification evidence is conflicting, spoofed, or not failure-only.'
-        }
-        if (
-            $console -notmatch '(?i)\bVERIFICATION PASSED\b' -or
-            $console -notmatch '(?i)\bVERIFY FAILURE ONLY MODE\b|\bFailure Only Mode\b'
-        ) {
-            throw 'Verification console does not prove VERIFICATION PASSED in failure-only mode.'
-        }
-        if (
-            $console -notmatch (
-                '(?im)\[' +
-                [regex]::Escape($Manifest.TestType) +
-                '\]\s+' +
-                [regex]::Escape($Manifest.TestName) +
-                '.*FAILED'
-            )
-        ) {
-            throw 'Verification console does not prove the named test failed as expected.'
+        foreach ($consoleName in $consoleNames) {
+            $consolePath = Join-Path $Inventory.VerificationRoot $consoleName
+            if (-not (Test-Path -LiteralPath $consolePath -PathType Leaf)) {
+                throw "Verification evidence is missing the console log for every completed run: $consoleName."
+            }
+            $console = Read-BoundedUtf8File `
+                -Path $consolePath `
+                -MaximumBytes $script:VerificationArtifactMaxBytes `
+                -Root $Inventory.VerificationRoot `
+                -Context 'Verification console log'
+            $disqualifier = Get-DisqualifyingFailureCode -Text $console
+            if ($disqualifier) {
+                throw "Verification evidence is disqualified by '$disqualifier' failure evidence."
+            }
+            if (
+                $console -match '(?im)\bVERIFICATION (?:FAILED|INCONCLUSIVE)\b' -or
+                $console -match '(?im)\bFULL VERIFICATION MODE\b|\bTests WITH fix\b|\bPASS with fix\b'
+            ) {
+                throw 'Verification evidence is conflicting, spoofed, or not failure-only.'
+            }
+            if (
+                $console -notmatch '(?i)\bVERIFICATION PASSED\b' -or
+                $console -notmatch '(?i)\bVERIFY FAILURE ONLY MODE\b|\bFailure Only Mode\b'
+            ) {
+                throw 'Verification console does not prove VERIFICATION PASSED in failure-only mode.'
+            }
+            if (
+                $console -notmatch (
+                    '(?im)\[' +
+                    [regex]::Escape($Manifest.TestType) +
+                    '\]\s+' +
+                    [regex]::Escape($Manifest.TestName) +
+                    '.*FAILED'
+                )
+            ) {
+                throw 'Verification console does not prove the named test failed as expected.'
+            }
         }
 
+        Add-Member -InputObject $result -NotePropertyName 'validatedRunCount' -NotePropertyValue $completedRunCount -Force
         return $result
     }
 
@@ -2990,6 +3037,11 @@ function Invoke-ReplicationCandidateValidation {
                 [string]$verificationResult.actualFailureMessage
             } else {
                 $null
+            }
+            verificationRunCount = if ($verificationResult) {
+                [int]$verificationResult.validatedRunCount
+            } else {
+                0
             }
             reproductionMarker = $manifest.ReproductionMarker
             files = @($manifest.ProposedFiles)

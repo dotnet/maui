@@ -443,6 +443,9 @@ public class $TestName
         Write-TestText `
             -Path (Join-Path $verificationRoot 'verification-console.log') `
             -Value $console
+        Write-TestText `
+            -Path (Join-Path $verificationRoot 'verification-console-run-2.log') `
+            -Value $console
         $verificationResult = [ordered]@{
             schemaVersion = 1
             issueNumber = $Fixture.IssueNumber
@@ -456,7 +459,10 @@ public class $TestName
             signatureMatched = $true
             infrastructureFailure = $false
             verificationPassed = $true
-            logFiles = @('verification-console.log')
+            requestedRunCount = 2
+            completedRunCount = 2
+            consistentRuns = $true
+            logFiles = @('verification-console.log', 'verification-console-run-2.log')
         }
         Write-TestJson `
             -Path (Join-Path $verificationRoot 'verification-result.json') `
@@ -1106,6 +1112,68 @@ Describe 'Validate-ReplicationCandidate verification boundary' {
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*disqualified*'
+    }
+
+    It 'rejects a reproduction proved by a single execution' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.requestedRunCount = 1
+        $verificationResult.completedRunCount = 1
+        $verificationResult.logFiles = @('verification-console.log')
+        Write-TestJson -Path $resultPath -Value $verificationResult
+        Remove-Item -LiteralPath (
+            Join-Path $fixture.EvidenceDir 'verification/verification-console-run-2.log') -Force
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*independent runs*'
+    }
+
+    It 'rejects a candidate that abandoned a requested repeat run' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.requestedRunCount = 3
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*every requested run*'
+    }
+
+    It 'rejects repeated runs that were not consistent' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.consistentRuns = $false
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*consistentRuns*'
+    }
+
+    It 'rejects a repeat run whose console log does not prove the failure' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        Write-TestText `
+            -Path (Join-Path $fixture.EvidenceDir 'verification/verification-console-run-2.log') `
+            -Value 'VERIFY FAILURE ONLY MODE
+VERIFICATION FAILED'
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*conflicting, spoofed, or not failure-only*'
+    }
+
+    It 'rejects a candidate whose repeat console log is missing' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        Remove-Item -LiteralPath (
+            Join-Path $fixture.EvidenceDir 'verification/verification-console-run-2.log') -Force
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*console log for every completed run*'
     }
 
     It 'rejects a machine-readable verifier result with a spoofed signature match' {

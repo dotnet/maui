@@ -156,6 +156,16 @@ function New-ReplicationPullRequestBody {
             [StringComparison]::Ordinal)) {
         throw 'Validated candidate targeted failure message does not contain the expected failure signature.'
     }
+    $verificationRunCount = 0
+    $runCountProperty = $Candidate.PSObject.Properties['verificationRunCount']
+    if ($runCountProperty) {
+        $verificationRunCount = [int]$runCountProperty.Value
+    }
+    if ($verificationRunCount -lt 2) {
+        throw 'Validated candidate does not prove the test failed in repeated independent runs.'
+    }
+    $determinismLine = "- Determinism: the exact test above was executed **$verificationRunCount " +
+        'independent times** on this baseline and failed at the same assertion every time'
     $failureSignature = ConvertTo-ReplicationInlineCode -Value $rawFailureSignature
     $baseSha = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.baseSha
     )
@@ -193,6 +203,7 @@ $marker
 - Exact test: ``$exactTestName``
 - Targeted filter: ``$testFilter`` — an issue-keyed class token; use the exact test above when a runner needs a precise selector
 - Expected failing assertion: ``$failureSignature``
+$determinismLine
 $buildLine
 
 ## Recorded evidence ($recordingSurface)
@@ -213,7 +224,7 @@ $($steps -join [Environment]::NewLine)
 
 - The pipeline reconstructed the scenario from issue text, inline snippets, and allowed raster screenshots.
 - No linked repository, archive, binary, script, package, or arbitrary external file was downloaded.
-- A trusted runner reproduced the behavior on the $recordingSurface and matched the expected targeted test failure.
+- A trusted runner reproduced the behavior on the $recordingSurface and matched the expected targeted test failure in $verificationRunCount consecutive executions.
 - The published patch is add-only and restricted to approved MAUI test locations.
 "@
 }
