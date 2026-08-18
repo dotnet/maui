@@ -434,7 +434,8 @@ namespace Microsoft.Maui.Platform
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (LayoutOwner is not { } layoutOwner ||
-				availableSize.Width * availableSize.Height == 0)
+				availableSize.Width == 0 ||
+				availableSize.Height == 0)
 			{
 				return base.MeasureOverride(availableSize);
 			}

@@ -484,6 +484,41 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Nested layouts reuse unchanged bounds clip geometry - Issue 17523")]
+		public async Task NestedLayoutsReuseUnchangedBoundsClipGeometry()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = new TestLayoutPanel { ClipsToBounds = true };
+				var initialSize = new global::Windows.Foundation.Size(100, 100);
+				platformView.ArrangeForTest(initialSize);
+				var initialClip = Assert.IsType<Microsoft.UI.Xaml.Media.RectangleGeometry>(platformView.Clip);
+
+				var updatedSize = new global::Windows.Foundation.Size(120, 80);
+				platformView.ArrangeForTest(updatedSize);
+
+				Assert.Same(initialClip, platformView.Clip);
+				Assert.Equal(new global::Windows.Foundation.Rect(0, 0, 120, 80), initialClip.Rect);
+			});
+		}
+
+		[Fact(DisplayName = "Border skips cross-platform measure when one constraint is zero - Issue 17523")]
+		public async Task BorderSkipsCrossPlatformMeasureWhenOneConstraintIsZero()
+		{
+			var border = new MeasureCountingBorder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = new TestContentPanel { CrossPlatformLayout = border };
+				platformView.EnableContentClip();
+
+				platformView.MeasureForTest(new global::Windows.Foundation.Size(0, double.PositiveInfinity));
+				platformView.MeasureForTest(new global::Windows.Foundation.Size(double.PositiveInfinity, 0));
+
+				Assert.Equal(0, border.MeasureCount);
+			});
+		}
+
 		[Fact(DisplayName = "Border ignores late measure invalidation after handler disconnect - Issue 17523")]
 		public async Task BorderIgnoresLateMeasureInvalidationAfterHandlerDisconnect()
 		{
@@ -789,6 +824,12 @@ namespace Microsoft.Maui.DeviceTests
 			public global::Windows.Foundation.Size MeasureForTest(global::Windows.Foundation.Size availableSize) =>
 				base.MeasureOverride(availableSize);
 
+			public global::Windows.Foundation.Size ArrangeForTest(global::Windows.Foundation.Size finalSize) =>
+				base.ArrangeOverride(finalSize);
+		}
+
+		sealed class TestLayoutPanel : LayoutPanel
+		{
 			public global::Windows.Foundation.Size ArrangeForTest(global::Windows.Foundation.Size finalSize) =>
 				base.ArrangeOverride(finalSize);
 		}
