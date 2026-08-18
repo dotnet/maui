@@ -472,6 +472,55 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ManualValueSetDuringDynamicResourceChangeWins()
+		{
+			var label = new Label { Text = "Manual" };
+			var updateFromCallback = true;
+
+			label.PropertyChanging += (_, args) =>
+			{
+				if (args.PropertyName == nameof(Label.Text) && updateFromCallback)
+				{
+					updateFromCallback = false;
+					label.Text = "FromCallback";
+				}
+			};
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResource" } };
+
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+
+			Assert.Equal("FromCallback", label.Text);
+		}
+
+		[Fact]
+		public void UnresolvedDynamicResourceRetainsLocalValueUntilResourceIsAvailable()
+		{
+			var label = new Label { Text = "Manual" };
+
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+
+			Assert.Equal("Manual", label.Text);
+
+			label.Resources["textKey"] = "FromResource";
+
+			Assert.Equal("FromResource", label.Text);
+		}
+
+		[Fact]
+		public void UnresolvedDynamicResourceDoesNotOverrideNewerManualValue()
+		{
+			var label = new Label { Text = "Manual" };
+
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			label.Text = "ManualAgain";
+
+			label.Resources["textKey"] = "FromResource";
+
+			Assert.Equal("ManualAgain", label.Text);
+		}
+
+		[Fact]
 		public void DynamicResourceReplacesLocalValue()
 		{
 			var label = new Label

@@ -858,7 +858,10 @@ namespace Microsoft.Maui.Controls
 			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 <= specificity)
 				DynamicResources[property] = (key, specificity);
 			if (this.TryGetResource(key, out var value))
-				OnResourceChanged(property, value, specificity);
+				OnResourceChanged(property, value, specificity, specificity == SetterSpecificity.DynamicResourceSetter);
+			else if (specificity == SetterSpecificity.DynamicResourceSetter)
+				SetValueCore(property, GetValue(property), SetValueFlags.None,
+					SetValuePrivateFlags.Silent | SetValuePrivateFlags.ReplaceManualValue, specificity);
 		}
 
 		internal event EventHandler ParentSet;
@@ -987,8 +990,9 @@ namespace Microsoft.Maui.Controls
 			RealParent?.OnDescendantRemoved(child);
 		}
 
-		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
-			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings, SetValuePrivateFlags.Default, specificity);
+		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity, bool replaceManualValue = false)
+			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings,
+				replaceManualValue ? SetValuePrivateFlags.ReplaceManualValue : SetValuePrivateFlags.Default, specificity);
 
 		/// <summary>Raised whenever the element's starts to change.</summary>
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;

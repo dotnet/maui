@@ -492,19 +492,7 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
-			// An explicit dynamic-resource assignment (SetterSpecificity.DynamicResourceSetter) must still take
-			// effect even if the property already has a manually-set local value (e.g. set previously in XAML
-			// or code), the same way an explicit SetValue call already overrides a prior Binding/DynamicResource.
-			// We only clear the stale ManualValueSetter entry here -- we do NOT raise the new value's own
-			// specificity -- so the resource stays correctly tracked at DynamicResourceSetter specificity for
-			// any future ambient resource-dictionary updates (see https://github.com/dotnet/maui/issues/37540).
-			// This lives at the shared entry point so it applies uniformly whether SetDynamicResource is called
-			// explicitly in code, via Element's public wrapper, or via the IDynamicResourceHandler interface
-			// used by XAML-compiled {DynamicResource} markup.
 			OnSetDynamicResource(property, key, specificity);
-
-			if (specificity == SetterSpecificity.DynamicResourceSetter)
-				ClearValue(property, SetterSpecificity.ManualValueSetter);
 		}
 
 		/// <summary>
@@ -619,13 +607,15 @@ namespace Microsoft.Maui.Controls
 				if (delayQueue == null)
 					context.DelayedSetters = delayQueue = new Queue<SetValueArgs>();
 
-				delayQueue.Enqueue(new SetValueArgs(property, context, value, currentlyApplying, attributes, specificity));
+				delayQueue.Enqueue(new SetValueArgs(property, context, value, currentlyApplying, attributes, specificity,
+					(privateAttributes & SetValuePrivateFlags.ReplaceManualValue) != 0));
 			}
 			else
 			{
 				var silent = (privateAttributes & SetValuePrivateFlags.Silent) != 0;
 				context.Attributes |= BindableContextAttributes.IsBeingSet;
-				SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent);
+				SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent,
+					(privateAttributes & SetValuePrivateFlags.ReplaceManualValue) != 0);
 
 				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
 				if (delayQueue != null)
@@ -634,7 +624,7 @@ namespace Microsoft.Maui.Controls
 					{
 						SetValueArgs s = delayQueue.Dequeue();
 						if (s != null)
-							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
+							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent, s.ReplaceManualValue);
 					}
 
 					context.DelayedSetters = null;
@@ -644,11 +634,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void SetValueActual(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool silent = false)
+		void SetValueActual(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool silent = false, bool replaceManualValue = false)
 		{
 			var specificityAndValue = context.Values.GetSpecificityAndValue();
 			var original = specificityAndValue.Value;
 			var originalSpecificity = specificityAndValue.Key;
+
+			if (replaceManualValue)
+			{
+				context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				originalSpecificity = context.Values.GetSpecificity();
+			}
 
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
@@ -907,6 +903,7 @@ namespace Microsoft.Maui.Controls
 			Silent = 1 << 1,
 			FromStyle = 1 << 3,
 			Converted = 1 << 4,
+			ReplaceManualValue = 1 << 5,
 			Default = None
 		}
 
@@ -916,10 +913,11 @@ namespace Microsoft.Maui.Controls
 			public readonly BindablePropertyContext Context;
 			public readonly bool CurrentlyApplying;
 			public readonly BindableProperty Property;
+			public readonly bool ReplaceManualValue;
 			public readonly object Value;
 			public readonly SetterSpecificity Specificity;
 
-			public SetValueArgs(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity)
+			public SetValueArgs(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool replaceManualValue = false)
 			{
 				Property = property;
 				Context = context;
@@ -927,6 +925,7 @@ namespace Microsoft.Maui.Controls
 				CurrentlyApplying = currentlyApplying;
 				Attributes = attributes;
 				Specificity = specificity;
+				ReplaceManualValue = replaceManualValue;
 			}
 		}
 	}
