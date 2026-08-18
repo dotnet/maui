@@ -46,14 +46,16 @@ namespace Microsoft.Maui.Controls
 		// A parked element request lives exactly as long as the task the caller is awaiting.
 		// It leaves the park in one of two ways, and no other: the arrange arrives and the
 		// request is replayed against real geometry (the task completes with the scroll),
-		// or the view's lifecycle ends — its handler goes away or it is removed from the
-		// tree — and the request is dropped (the task completes without a scroll). Nothing
-		// releases the task while the request is still parked, so a completed await never
-		// scrolls later; and nothing but a lifecycle end drops the request, so a view that is
-		// merely hidden (a collapsed branch, an unselected tab) still scrolls to the element
-		// when it is eventually arranged. A view that stays attached and is never arranged
-		// keeps the task pending — that is the contract, not a leak: the task completes when
-		// the scroll happens or the view is torn down.
+		// or there is nothing left that could ever satisfy it and the request is dropped
+		// (the task completes without a scroll). The latter happens when the view's
+		// lifecycle ends — its handler goes away or it is removed from the tree — and when
+		// the target is orphaned from this ScrollView's content (see IsElementTargetOrphaned).
+		// Nothing releases the task while the request is still parked, so a completed await
+		// never scrolls later; and nothing but one of those terminal conditions drops the
+		// request, so a view that is merely hidden (a collapsed branch, an unselected tab)
+		// still scrolls to the element when it is eventually arranged. A view that stays
+		// attached and is never arranged keeps the task pending — that is the contract, not
+		// a leak: the task completes when the scroll happens or nothing can make it happen.
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
@@ -73,9 +75,16 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnParentChangedCore();
 
-			// Removed from the tree: no arrange will come from a parent that no longer
-			// exists, and the handler is not necessarily disconnected by the removal, so
-			// this is the other lifecycle end that drops a parked request
+			// Removed from the tree — the handler is not necessarily disconnected by the
+			// removal, so this is the other lifecycle end that drops a parked request. This
+			// includes the transient removal of a reparent: a request made against a tree
+			// position that no longer exists is cancelled and its task completes at the
+			// removal, and it is not carried over to the new parent (its arrange does not
+			// replay it). The drop is deliberately not deferred to "see whether a re-add
+			// follows": that would put a window between the drop and the completion, in
+			// which a newer request could be released in the old one's place. A caller that
+			// moves a ScrollView with a pending element scroll re-requests it in the new
+			// location.
 			if (RealParent is null)
 			{
 				DropPendingScrollToRequest();
@@ -112,7 +121,17 @@ namespace Microsoft.Maui.Controls
 
 			if (pending.Mode == ScrollToMode.Element)
 			{
-				if (!IsElementTargetGeometryReady())
+				if (IsElementTargetOrphaned(pending.Element))
+				{
+					// The target no longer hangs off this ScrollView's content (the content
+					// was replaced or removed under a parked request), so no arrange can ever
+					// give it a position: nothing is left to wait for. Terminal, like a
+					// lifecycle end.
+					DropPendingScrollToRequest();
+					return;
+				}
+
+				if (!IsElementTargetGeometryReady(pending.Element))
 				{
 					// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
 					return;
@@ -130,17 +149,31 @@ namespace Microsoft.Maui.Controls
 			SendPendingScrollToRequest();
 		}
 
-		// An element target is resolved against this ScrollView's geometry and the element's
-		// position inside the arranged content. Before the first layout pass Width/Height are
-		// still -1 (the never-arranged sentinel, for the content too), so a target computed
-		// then is garbage. The content check must be "not yet arranged" rather than "arranged
-		// to nothing": content can legitimately arrange to a zero size (a collapsed container),
-		// and that raises no further callbacks — gating on the size would hang the caller's
-		// task forever, while dispatching just clamps the target to the origin. No content at
-		// all is different again: there is nothing to resolve the element against, so the
-		// request keeps waiting (for content to be set and arranged, or a lifecycle end).
-		bool IsElementTargetGeometryReady() =>
-			Width >= 0 && Height >= 0 && Content is { Width: >= 0, Height: >= 0 };
+		// An element target is resolved against the geometry it actually depends on. Before
+		// the first layout pass Width/Height are still -1 (the never-arranged sentinel), so a
+		// target computed then is garbage. The ScrollView itself is a valid target and needs
+		// only its own geometry; any other target sits inside the content, so its position
+		// is meaningful only once the content has been arranged too. That content check must
+		// be "not yet arranged" rather than "arranged to nothing": content can legitimately
+		// arrange to a zero size (a collapsed container), and that raises no further
+		// callbacks — gating on the size would hang the caller's task forever, while
+		// dispatching just clamps the target to the origin.
+		bool IsElementTargetGeometryReady(Element target)
+		{
+			if (Width < 0 || Height < 0)
+			{
+				return false;
+			}
+
+			return target == this || Content is { Width: >= 0, Height: >= 0 };
+		}
+
+		// A target validated at request time as belonging to this ScrollView can stop
+		// belonging to it while parked: the content it hung off was replaced or removed. Its
+		// coordinates then no longer relate to this ScrollView and no arrange of this
+		// ScrollView can change that, so waiting would be waiting for nothing.
+		bool IsElementTargetOrphaned(Element target) =>
+			target != this && !CheckElementBelongsToScrollViewer(target);
 
 		void SendPendingScrollToRequest()
 		{
@@ -320,6 +353,11 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanged();
 				Handler?.UpdateValue(nameof(Content));
+
+				// A parked element request may have just been orphaned (its target hung off
+				// the old content) — resolve that now rather than at the next arrange, which
+				// may not come if this ScrollView is already laid out
+				DispatchPendingScrollToRequest();
 			}
 		}
 
@@ -568,7 +606,7 @@ namespace Microsoft.Maui.Controls
 				_pendingScrollToRequested = e;
 				_replayPendingScrollToRequestedEvent = true;
 			}
-			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
+			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady(e.Element))
 			{
 				// The handler exists but layout has not run yet (e.g. ScrollToAsync from
 				// OnAppearing): resolving the element target now would compute against the -1

@@ -769,7 +769,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ParkedElementRequestWithContentRemovedWaitsThenCompletesOnLifecycleEnd()
+		public void ParkedElementRequestWhoseTargetIsOrphanedByContentRemovalIsDroppedAndCompleted()
 		{
 			var item = new View();
 			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
@@ -777,17 +777,98 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			scrollView.Handler = handler;
 
 			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task.IsCompleted);
 
-			// With no content there is no geometry to resolve against, so the request must
-			// keep waiting rather than dispatch a target computed from nothing
+			// Removing the content orphans the target: it no longer hangs off this ScrollView,
+			// so no arrange of this ScrollView can ever give it a position. There is nothing
+			// left to wait for — the request is dropped and the caller released at that
+			// moment (not at some later arrange that may never come), and no target computed
+			// against nothing is dispatched
 			scrollView.Content = null;
+			Assert.True(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// A later arrange has nothing to replay
 			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			Assert.Empty(handler.ScrollToRequests);
+		}
+
+		[Fact]
+		public void ParkedElementRequestWhoseTargetIsOrphanedByContentReplacementIsDroppedAndCompleted()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task.IsCompleted);
+
+			// Replacing the content with a layout that does not contain the target orphans it
+			// just as removal does: dropped and completed at the replacement. (Replacement
+			// with content that still contains the target instead keeps waiting for that
+			// content's arrange — see ParkedElementRequestSurvivesContentReplacement...)
+			var unrelated = new StackLayout();
+			scrollView.Content = unrelated;
+			Assert.True(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			unrelated.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			Assert.Empty(handler.ScrollToRequests);
+		}
+
+		[Fact]
+		public void SelfTargetOnAContentlessScrollViewNeedsOnlyItsOwnGeometry()
+		{
+			// ScrollToAsync(scrollView, ...) is a valid request that resolves to the origin
+			// without touching Content, so a ScrollView with no content must not park it
+			// forever waiting for content that may never come
+			var scrollView = new ScrollView();
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var task = scrollView.ScrollToAsync(scrollView, ScrollToPosition.Start, false);
+
+			// Waits only for the ScrollView's own arrange...
 			Assert.False(task.IsCompleted);
 			Assert.Empty(handler.ScrollToRequests);
 
-			// It is still bound to the view's lifecycle: a detach releases it
-			scrollView.Handler = null;
+			// ...then dispatches against its own geometry
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(0, request.VerticalOffset);
+
+			scrollView.SendScrollFinished();
 			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void ReparentingCancelsAPendingElementScroll()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			var parent1 = new StackLayout { Children = { scrollView } };
+			var parent2 = new StackLayout();
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task.IsCompleted);
+
+			// Moving the ScrollView passes through a removal. A request made against a tree
+			// position that no longer exists is cancelled at that removal: the task completes
+			// (without a scroll) and the request is not carried into the new parent — a
+			// caller that moves a ScrollView with a pending scroll re-requests it there
+			parent1.Children.Remove(scrollView);
+			Assert.True(task.IsCompleted);
+			parent2.Children.Add(scrollView);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			Assert.Empty(handler.ScrollToRequests);
 		}
 
 		[Fact]
