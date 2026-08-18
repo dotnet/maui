@@ -452,5 +452,13 @@ Context 'scanner decline checkpoint' {
             $labelHelper | Should -Match ([regex]::Escape($value))
         }
     }
+
+    It 'documents the autonomous queue as the rerun-label source' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+
+        $scanner | Should -Match 'daily PR Review Queue workflow applies this label autonomously'
+        $scanner | Should -Match 'The `/review rerun` comment command is intentionally unsupported'
+        ([regex]::Matches($scanner, '/review rerun')).Count | Should -Be 1
+    }
 }
 }
