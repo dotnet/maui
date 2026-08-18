@@ -454,6 +454,22 @@ Describe 'custom template variant validation' {
         Reset-BuildTestEnvironment
     }
 
+    It 'accepts a custom variant with a safe path-segment name' {
+        $env:TEMPLATE_APP_VARIANTS_JSON = @{
+            'Custom_Variant-2' = @{
+                displayName = 'Custom App'
+                projectName = 'CustomApp'
+                template = 'maui'
+                androidApplicationId = 'com.example.custom'
+            }
+        } | ConvertTo-Json -Compress
+
+        $result = Invoke-PrepareMatrix 'custom_variant-2' 'android'
+
+        $result.ExitCode | Should -Be 0
+        $result.Output | Should -Match '"variant":"custom_variant-2"'
+    }
+
     It 'rejects a custom variant without a template' {
         $env:TEMPLATE_APP_VARIANTS_JSON = @{
             custom = @{
@@ -482,6 +498,29 @@ Describe 'custom template variant validation' {
 
         $result.ExitCode | Should -Not -Be 0
         $result.Output | Should -Match "Variant 'custom' does not define required field 'projectName'"
+    }
+
+    It 'rejects an unsafe custom variant name <Name>' -ForEach @(
+        @{ Name = '../escape' }
+        @{ Name = 'nested/name' }
+        @{ Name = 'nested\name' }
+        @{ Name = 'custom.variant' }
+    ) {
+        param($Name)
+
+        $customDefinitions = @{}
+        $customDefinitions[$Name] = @{
+            displayName = 'Custom App'
+            projectName = 'CustomApp'
+            template = 'maui'
+            androidApplicationId = 'com.example.custom'
+        }
+        $env:TEMPLATE_APP_VARIANTS_JSON = $customDefinitions | ConvertTo-Json -Compress
+
+        $result = Invoke-PrepareMatrix 'all' 'android'
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'Invalid custom template app variant name'
     }
 }
 
