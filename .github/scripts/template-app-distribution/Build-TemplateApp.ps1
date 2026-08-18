@@ -89,14 +89,20 @@ function Repair-AppleAdhocSignature([string]$AppBundlePath) {
     # a Mac tester clears quarantine / uses "Open Anyway". The notarized Developer ID path
     # (secret-gated, below) is the seamless option for a direct-download macOS launch.
     if (-not (Get-Command codesign -ErrorAction SilentlyContinue)) {
-        Write-Warning "codesign not available; skipping ad-hoc re-sign of '$AppBundlePath'."
-        return
+        throw "codesign is required to create a launchable ad-hoc signed artifact for '$AppBundlePath'."
     }
-    Get-ChildItem -Path $AppBundlePath -Recurse -Include *.dylib, *.so -File -ErrorAction SilentlyContinue |
-        ForEach-Object { & codesign --force --sign - $_.FullName 2>$null }
+
+    $nestedLibraries = Get-ChildItem -Path $AppBundlePath -Recurse -Include *.dylib, *.so -File -ErrorAction SilentlyContinue
+    foreach ($library in $nestedLibraries) {
+        & codesign --force --sign - $library.FullName
+        if ($LASTEXITCODE -ne 0) {
+            throw "Ad-hoc re-sign of nested library '$($library.FullName)' failed with exit code $LASTEXITCODE."
+        }
+    }
+
     & codesign --force --deep --sign - $AppBundlePath
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Ad-hoc re-sign of '$AppBundlePath' failed (exit $LASTEXITCODE); the app may not launch until it is signed."
+        throw "Ad-hoc re-sign of '$AppBundlePath' failed with exit code $LASTEXITCODE."
     }
 }
 
@@ -591,10 +597,22 @@ switch ($Platform) {
             Write-Host "Building iOS package for $($projectFile.FullName)"
             Invoke-DotNetPublish $arguments "iOS publish"
 
-            $package = Get-NewestBuildOutput $ProjectPath "*.ipa"
-            if (-not $package) {
-                $package = Get-NewestBuildOutput $OutputPath "*.ipa"
+            $storeIpa = Get-NewestBuildOutput $ProjectPath "*.ipa"
+            if (-not $storeIpa) {
+                $storeIpa = Get-NewestBuildOutput $OutputPath "*.ipa"
             }
+            if (-not $storeIpa) {
+                throw "iOS publish completed but did not produce an App Store IPA."
+            }
+
+            # The ad-hoc publish below uses the same project/TFM/configuration/RID and can
+            # replace the IPA in the project output tree. Preserve the App Store package in
+            # a dedicated directory before starting that second publish.
+            $storeOutput = Join-Path $OutputPath "store"
+            New-Item -ItemType Directory -Path $storeOutput -Force | Out-Null
+            $storeIpaPath = Join-Path $storeOutput $storeIpa.Name
+            Copy-Item -Path $storeIpa.FullName -Destination $storeIpaPath -Force
+            $package = Get-Item $storeIpaPath
 
             $sideloadPackage = New-IosAdHocSideload `
                 -ProjectFile $projectFile `

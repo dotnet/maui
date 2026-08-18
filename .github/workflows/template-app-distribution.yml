@@ -168,11 +168,13 @@ jobs:
       - name: Resolve app version
         id: version
         shell: pwsh
+        env:
+          DOTNET_TFM: ${{ steps.sdk.outputs.dotnet_tfm }}
         run: |
           $epoch = [DateTimeOffset]::Parse("2020-01-01T00:00:00Z")
           $now = [DateTimeOffset]::UtcNow
           $buildNumber = [int][Math]::Floor(($now - $epoch).TotalSeconds)
-          $displayVersion = "${{ steps.sdk.outputs.dotnet_tfm }}" -replace '^net', ''
+          $displayVersion = $env:DOTNET_TFM -replace '^net', ''
 
           "App display version: $displayVersion"
           "App build number: $buildNumber"
@@ -193,11 +195,12 @@ jobs:
           TEMPLATE_APP_SAMPLE_MACCATALYST_BUNDLE_ID: ${{ vars.TEMPLATE_APP_SAMPLE_MACCATALYST_BUNDLE_ID }}
           TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID }}
           TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID }}
+          DOTNET_TFM: ${{ steps.sdk.outputs.dotnet_tfm }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Prepare-Matrix.ps1" `
             -Variants "all" `
             -Platforms "all" `
-            -DotNetTfm "${{ steps.sdk.outputs.dotnet_tfm }}"
+            -DotNetTfm "$env:DOTNET_TFM"
 
   dry-run-build:
     name: Dry-run builds
@@ -207,6 +210,8 @@ jobs:
     env:
       APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
       APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
+      DOTNET_SDK: ${{ needs.prepare.outputs.dotnet_sdk }}
+      DOTNET_TFM: ${{ needs.prepare.outputs.dotnet_tfm }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
@@ -372,11 +377,11 @@ jobs:
             -ProjectName "$env:MATRIX_PROJECT_NAME" `
             -Template "$env:MATRIX_TEMPLATE" `
             -TemplateArgsJson $env:TEMPLATE_ARGS_JSON `
-            -DotNetTfm "${{ needs.prepare.outputs.dotnet_tfm }}" `
+            -DotNetTfm "$env:DOTNET_TFM" `
             -TargetFramework "$env:MATRIX_TARGET_FRAMEWORK" `
             -ApplicationId "$env:MATRIX_APPLICATION_ID" `
             -DisplayName "$env:MATRIX_DISPLAY_NAME" `
-            -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
+            -DotNetSdk "$env:DOTNET_SDK" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
             -NuGetConfigPath "${{ github.workspace }}/source/NuGet.config"
@@ -420,6 +425,8 @@ jobs:
     env:
       APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
       APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
+      DOTNET_SDK: ${{ needs.prepare.outputs.dotnet_sdk }}
+      DOTNET_TFM: ${{ needs.prepare.outputs.dotnet_tfm }}
       TEMPLATE_APP_PLAY_TRACK: ${{ vars.TEMPLATE_APP_PLAY_TRACK || 'internal' }}
       TEMPLATE_APP_PLAY_RELEASE_STATUS: ${{ vars.TEMPLATE_APP_PLAY_RELEASE_STATUS || 'completed' }}
       TEMPLATE_APP_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_GROUPS }}
@@ -678,11 +685,11 @@ jobs:
             -ProjectName "$env:MATRIX_PROJECT_NAME" `
             -Template "$env:MATRIX_TEMPLATE" `
             -TemplateArgsJson $env:TEMPLATE_ARGS_JSON `
-            -DotNetTfm "${{ needs.prepare.outputs.dotnet_tfm }}" `
+            -DotNetTfm "$env:DOTNET_TFM" `
             -TargetFramework "$env:MATRIX_TARGET_FRAMEWORK" `
             -ApplicationId "$env:MATRIX_APPLICATION_ID" `
             -DisplayName "$env:MATRIX_DISPLAY_NAME" `
-            -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
+            -DotNetSdk "$env:DOTNET_SDK" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
             -NuGetConfigPath "${{ github.workspace }}/source/NuGet.config"
