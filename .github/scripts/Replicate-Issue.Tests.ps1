@@ -1622,6 +1622,26 @@ public class Issue35516
         $assertBody | Should -Match 'string\.IsNullOrWhiteSpace\(actual\)'
     }
 
+    It 'requires a reproduction to repeat before it is believed' {
+        # A non-reproduction already needed two clean observations, so accepting
+        # a reproduction from one run made the pipeline readier to publish a
+        # bug than to deny one. The recorded plan is replayed against the app
+        # that is still deployed.
+        $script:Source | Should -Match 'Confirming the on-device reproduction repeats'
+        $confirmIndex = $script:Source.IndexOf('Confirming the on-device reproduction repeats')
+        $confirmIndex | Should -BeGreaterThan 0
+        $resultIndex = $script:Source.IndexOf('$reproductionResultPath -Encoding utf8NoBOM')
+        # The confirmation has to gate the success manifest, not follow it.
+        $confirmIndex | Should -BeLessThan $resultIndex
+        $script:Source | Should -Match 'confirmedRuns = 2'
+        $script:Source | Should -Match 'confirm-attempt-\$attempt\.log'
+
+        # A flaky reproduction must be explained as flakiness, not as a generic
+        # step failure the agent cannot act on.
+        $script:Source | Should -Match 'did not appear when the identical plan ran again'
+        $script:Source | Should -Match 'not reliable enough to publish'
+    }
+
     It 'reports the elements the app exposed when a locator times out' {
         # Issue 37429 on Android burned every attempt because the agent was told
         # only which locator failed, so it re-guessed names such as 'Group 1'

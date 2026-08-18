@@ -478,6 +478,7 @@ public class $TestName
                 baseSha = $baseSha
                 attempt = 1
                 succeeded = $true
+                confirmedRuns = 2
                 device = $deviceId
                 evidenceManifest = 'evidence/evidence.json'
             })
@@ -1114,6 +1115,21 @@ Describe 'Validate-ReplicationCandidate verification boundary' {
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*disqualified*'
+    }
+
+    It 'rejects an on-device reproduction that was never replayed' {
+        # The orchestrator replays the plan before claiming a reproduction. If
+        # that ever stops happening, a single lucky observation must still not
+        # reach a pull request.
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'reproduction-result.json'
+        $reproduction = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $reproduction.confirmedRuns = 1
+        Write-TestJson -Path $resultPath -Value $reproduction
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*two confirmed reproduction runs*'
     }
 
     It 'rejects a reproduction proved by a single execution' {

@@ -2591,7 +2591,7 @@ function Get-ReplicationPwshArguments {
 function Invoke-LoggedChildProcess {
     param(
         [Parameter(Mandatory = $true)][string]$ScriptPath,
-        [Parameter(Mandatory = $true)][object[]]$Arguments,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$LogPath,
         [Parameter(Mandatory = $true)][string]$Description,
         [Parameter(Mandatory = $true)]
@@ -3029,6 +3029,19 @@ try {
                 -TimeoutSeconds 300
 
             Copy-SandboxEvidence
+            # A non-reproduction already needs two clean observations before it
+            # is believed. Accepting a reproduction from a single run was the
+            # weaker half of that bargain: a one-off caused by animation timing
+            # or first-launch state would have been published as confirmed, with
+            # video that looks exactly like a real defect. Replay the same plan
+            # against the app that is still deployed and require it again.
+            Invoke-LoggedChildProcess `
+                -ScriptPath $wrapperPath `
+                -Arguments @() `
+                -LogPath (Join-Path $sandboxArtifactDir "confirm-attempt-$attempt.log") `
+                -Description 'Confirming the on-device reproduction repeats' `
+                -TimeoutSeconds 300
+            Write-Host 'The reported behavior reproduced twice on this device.'
             [ordered]@{
                 schemaVersion = 1
                 issueNumber = $IssueNumber
@@ -3036,6 +3049,7 @@ try {
                 baseSha = $BaseSha.ToLowerInvariant()
                 attempt = $attempt
                 succeeded = $true
+                confirmedRuns = 2
                 device = $selectedDeviceId
                 evidenceManifest = 'evidence/evidence.json'
             } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $reproductionResultPath -Encoding utf8NoBOM
@@ -3044,7 +3058,15 @@ try {
         }
         catch {
             $sandboxFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
-            if ($sandboxFailureSummary -match '(?i)Preparing the Sandbox app failed') {
+            if ($sandboxFailureSummary -match '(?i)Confirming the on-device reproduction repeats') {
+                $sandboxFailureSummary = @"
+The reported behavior appeared on the first run of your plan and then did not appear when the identical plan ran again on the same device, so the reproduction is not reliable enough to publish. Something in the plan depends on state that only holds the first time, such as an animation still settling, a first-launch layout pass or a control that keeps the value set by the previous run.
+Make the plan produce the same verdict every time: reset the scenario at the start of the plan instead of relying on a freshly launched app, wait for the event that reports the change rather than for the app to settle, and read the value from a control the app updates rather than from a transient visual state.
+
+$sandboxFailureSummary
+"@
+            }
+            elseif ($sandboxFailureSummary -match '(?i)Preparing the Sandbox app failed') {
                 $prepareDiagnostics = Get-ReplicationCompilerDiagnostics -LogPath $prepareLog
                 if ($prepareDiagnostics) {
                     $sandboxFailureSummary = @"

@@ -1819,6 +1819,7 @@ function Assert-ReplicationExecutionResult {
             'baseSha',
             'attempt',
             'succeeded',
+            'confirmedRuns',
             'device',
             'evidenceManifest'
         ) `
@@ -1887,6 +1888,19 @@ function Assert-ReplicationExecutionResult {
         -Required).Value
     if ($succeeded -isnot [bool] -or $succeeded -ne $true) {
         throw 'Replication execution result does not prove a successful trusted run.'
+    }
+    # The orchestrator replays the plan before it claims a reproduction. Check
+    # the count here too, so a single lucky observation cannot reach a PR even
+    # if the orchestrator stops enforcing it.
+    $confirmedRuns = ConvertTo-PositiveInteger `
+        -Value (Find-AliasedProperty `
+            -Object $result `
+            -Names @('confirmedRuns') `
+            -Context 'Replication execution result' `
+            -Required).Value `
+        -Context 'Replication execution confirmed run count'
+    if ($confirmedRuns -lt 2) {
+        throw 'Replication execution result must record at least two confirmed reproduction runs.'
     }
     $device = ConvertTo-BoundedSingleLine `
         -Value (Find-AliasedProperty `
