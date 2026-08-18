@@ -18,6 +18,11 @@ BeforeAll {
         'Test-IsNet11OrLater',
         'Add-NativeAotArguments',
         'Get-BinlogConfiguration',
+        'Invoke-NotaryTool',
+        'Invoke-NotaryToolJson',
+        'Write-NotarySubmissionDiagnostics',
+        'Get-NotarizationTimeoutSeconds',
+        'Wait-NotarySubmission',
         'Invoke-MacNotarization',
         'New-MacCatalystDeveloperIdSideload',
         'New-IosAdHocSideload'
@@ -90,6 +95,7 @@ BeforeAll {
         'IOS_CODESIGN_PROVISION',
         'APPLE_DEVELOPERID_CODESIGN_KEY',
         'APPLE_DEVELOPERID_CODESIGN_PROVISION',
+        'TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS',
         'GH_TOKEN',
         'GITHUB_TOKEN',
         'COPILOT_GITHUB_TOKEN'
@@ -506,6 +512,85 @@ Describe 'ad-hoc signature repair' {
     }
 }
 
+Describe 'bounded Mac notarization polling' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+        Mock Start-Sleep {}
+        Mock Write-NotarySubmissionDiagnostics {}
+    }
+
+    It 'uses a workflow-controlled timeout with a bounded default' {
+        Get-NotarizationTimeoutSeconds | Should -Be 1800
+
+        $env:TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS = '90'
+        Get-NotarizationTimeoutSeconds | Should -Be 90
+
+        $env:TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS = '7201'
+        { Get-NotarizationTimeoutSeconds } | Should -Throw '*integer from 1 through 7200*'
+    }
+
+    It 'polls until Apple accepts the submission' {
+        $script:notaryPollCount = 0
+        Mock Invoke-NotaryToolJson {
+            $script:notaryPollCount++
+            [pscustomobject]@{
+                status = if ($script:notaryPollCount -eq 1) { 'In Progress' } else { 'Accepted' }
+            }
+        }
+
+        Wait-NotarySubmission `
+            -SubmissionId 'submission-accepted' `
+            -CredentialArguments @('--key', 'private-key-path') `
+            -TimeoutSeconds 30 `
+            -PollIntervalSeconds 15
+
+        Should -Invoke Invoke-NotaryToolJson -Times 2 -Exactly
+        Should -Invoke Start-Sleep -Times 1 -Exactly
+        Should -Invoke Write-NotarySubmissionDiagnostics -Times 0 -Exactly
+    }
+
+    It 'reports the submission log when Apple rejects the submission' {
+        Mock Invoke-NotaryToolJson {
+            [pscustomobject]@{ status = 'Invalid' }
+        }
+
+        {
+            Wait-NotarySubmission `
+                -SubmissionId 'submission-invalid' `
+                -CredentialArguments @('--key', 'private-key-path') `
+                -TimeoutSeconds 30 `
+                -PollIntervalSeconds 15
+        } | Should -Throw "*failed with status 'Invalid'*"
+
+        Should -Invoke Write-NotarySubmissionDiagnostics -Times 1 -Exactly `
+            -ParameterFilter { $SubmissionId -eq 'submission-invalid' }
+    }
+
+    It 'reports the last status and submission log at the deadline' {
+        Mock Invoke-NotaryToolJson {
+            [pscustomobject]@{ status = 'In Progress' }
+        }
+
+        {
+            Wait-NotarySubmission `
+                -SubmissionId 'submission-timeout' `
+                -CredentialArguments @('--key', 'private-key-path') `
+                -TimeoutSeconds 30 `
+                -PollIntervalSeconds 15
+        } | Should -Throw "*did not complete within 30 seconds*Last status: 'In Progress'*"
+
+        Should -Invoke Invoke-NotaryToolJson -Times 2 -Exactly
+        Should -Invoke Start-Sleep -Times 1 -Exactly
+        Should -Invoke Write-NotarySubmissionDiagnostics -Times 1 -Exactly `
+            -ParameterFilter { $SubmissionId -eq 'submission-timeout' }
+    }
+
+    It 'submits without the unbounded notarytool wait option' {
+        (Get-Command Invoke-MacNotarization).Definition | Should -Not -Match '--wait'
+        (Get-Command Invoke-MacNotarization).Definition | Should -Match 'Wait-NotarySubmission'
+    }
+}
+
 Describe 'optional Apple sideload signing' {
     BeforeEach {
         Reset-BuildTestEnvironment
@@ -644,11 +729,16 @@ Describe 'custom template variant validation' {
         Reset-BuildTestEnvironment
     }
 
-    It 'accepts a custom variant with a safe path-segment name' {
+    It 'accepts a custom variant with safe project name <ProjectName>' -ForEach @(
+        @{ ProjectName = 'CustomApp' }
+        @{ ProjectName = 'Custom.App_2-Preview' }
+    ) {
+        param($ProjectName)
+
         $env:TEMPLATE_APP_VARIANTS_JSON = @{
             'Custom_Variant-2' = @{
                 displayName = 'Custom App'
-                projectName = 'CustomApp'
+                projectName = $ProjectName
                 template = 'maui'
                 androidApplicationId = 'com.example.custom'
             }
@@ -658,6 +748,7 @@ Describe 'custom template variant validation' {
 
         $result.ExitCode | Should -Be 0
         $result.Output | Should -Match '"variant":"custom_variant-2"'
+        $result.Output | Should -Match ([regex]::Escape("""projectName"":""$ProjectName"""))
     }
 
     It 'rejects a custom variant without a template' {
@@ -688,6 +779,30 @@ Describe 'custom template variant validation' {
 
         $result.ExitCode | Should -Not -Be 0
         $result.Output | Should -Match "Variant 'custom' does not define required field 'projectName'"
+    }
+
+    It 'rejects unsafe project name <Case>' -ForEach @(
+        @{ Case = 'parent path escape'; ProjectName = '../escape' }
+        @{ Case = 'forward-slash path'; ProjectName = 'nested/name' }
+        @{ Case = 'backslash path'; ProjectName = 'nested\name' }
+        @{ Case = 'quote injection'; ProjectName = 'Bad"Name' }
+        @{ Case = 'newline injection'; ProjectName = "Bad`nName" }
+    ) {
+        param($ProjectName)
+
+        $env:TEMPLATE_APP_VARIANTS_JSON = @{
+            custom = @{
+                displayName = 'Custom App'
+                projectName = $ProjectName
+                template = 'maui'
+                androidApplicationId = 'com.example.custom'
+            }
+        } | ConvertTo-Json -Compress
+
+        $result = Invoke-PrepareMatrix 'custom' 'android'
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'Invalid project name'
     }
 
     It 'rejects an unsafe custom variant name <Name>' -ForEach @(
@@ -963,6 +1078,23 @@ Describe 'workflow test gate' {
             Should -Be 2
         [regex]::Matches($script:workflowText, '-DotNetTfm "\$env:DOTNET_TFM"').Count |
             Should -Be 3
+    }
+
+    It 'passes generated project paths to PowerShell through environment variables' {
+        $script:workflowText | Should -Not -Match (
+            '-ProjectPath\s+"\$\{\{\s*steps\.app\.outputs\.project_path\s*\}\}"')
+        [regex]::Matches(
+            $script:workflowText,
+            'PROJECT_PATH:\s*\$\{\{\s*steps\.app\.outputs\.project_path\s*\}\}').Count |
+            Should -Be 2
+        [regex]::Matches($script:workflowText, '-ProjectPath "\$env:PROJECT_PATH"').Count |
+            Should -Be 2
+    }
+
+    It 'serializes publish runs across source refs while preserving dry-run concurrency' {
+        $expectedGroup = "group: `${{ github.workflow }}-`${{ inputs.publish && 'publish' || format('dry-run-{0}', inputs.source_ref) }}"
+        $script:workflowText | Should -Match ([regex]::Escape($expectedGroup))
+        $script:workflowText | Should -Match 'TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS:.*1800'
     }
 }
 
