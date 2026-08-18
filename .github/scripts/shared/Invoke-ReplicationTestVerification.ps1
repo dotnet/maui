@@ -506,6 +506,10 @@ $result = [ordered]@{
     completedRunCount = $completedRuns
     consistentRuns = $consistentRuns
     stableFailureMessage = $stableFailureMessage
+    observedFailureMessages = @($runOutcomes |
+        ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
+        Where-Object { $_ } |
+        Sort-Object -Unique)
     logFiles = @($candidateLogs)
 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8NoBOM

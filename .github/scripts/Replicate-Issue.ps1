@@ -482,6 +482,21 @@ function Get-ReplicationVerificationFailureSummary {
     if ($result.signatureMatched -ne $true) {
         return "The test failed, but with '$actual' instead of the declared expectedFailureSignature '$expected'. A failure such as a null or setup assertion does not prove the reported bug. Either assert the reported behavior directly so the declared signature is the failure, or declare the signature that the reproduction actually produces."
     }
+    if ($result.PSObject.Properties['stableFailureMessage'] -and
+        $result.stableFailureMessage -eq $false) {
+        # A red that reports a different value each run cannot be attributed to
+        # the reported defect, and reviewers rejected that class repeatedly.
+        $observed = @($result.PSObject.Properties['observedFailureMessages'] |
+            ForEach-Object { $_.Value } |
+            ForEach-Object { ConvertTo-ReplicationSafeLog ([string]$_) 200 } |
+            Where-Object { $_ })
+        $rendered = if ($observed.Count -gt 0) {
+            ($observed | ForEach-Object { "'$_'" }) -join ' and '
+        } else {
+            "different messages"
+        }
+        return "The test failed every run but reported $rendered, so the reproduction is not deterministic. Assert a value the reported defect determines exactly, such as a state flag, an event count or an exact coordinate the fix changes, rather than one that drifts between runs."
+    }
 
     return ''
 }

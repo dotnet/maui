@@ -479,6 +479,46 @@ Describe 'Replication orchestrator security boundary' {
         $summary | Should -Match 'does not prove the reported bug'
     }
 
+    It 'diagnoses a verification rejected for a red that moves between runs' {
+        $dir = Join-Path $TestDrive 'verification-unstable'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $true
+            infrastructureFailure = $false
+            stableFailureMessage = $false
+            expectedFailureSignature = 'Top inset was not applied'
+            actualFailureMessage = 'Top inset was not applied: expected 0 but was 47'
+            observedFailureMessages = @(
+                'Top inset was not applied: expected 0 but was 47',
+                'Top inset was not applied: expected 0 but was 51')
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match 'not deterministic'
+        $summary | Should -Match ([regex]::Escape('but was 47'))
+        $summary | Should -Match ([regex]::Escape('but was 51'))
+        # The agent must be told what to do, not merely that it failed.
+        $summary | Should -Match 'rather than one that drifts between runs'
+    }
+
+    It 'stays silent when repeated runs agree' {
+        $dir = Join-Path $TestDrive 'verification-stable'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $true
+            infrastructureFailure = $false
+            stableFailureMessage = $true
+            expectedFailureSignature = 'Top inset was not applied'
+            actualFailureMessage = 'Top inset was not applied: expected 0 but was 47'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir |
+            Should -BeNullOrEmpty
+    }
+
     It 'distinguishes a passing test and an infrastructure failure' {
         $dir = Join-Path $TestDrive 'verification-passing'
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
