@@ -67,6 +67,12 @@ function Merge-VariantDefinition($Definitions, [string]$Name, $Definition) {
     }
 }
 
+function Assert-SafeProjectName([string]$VariantName, [string]$ProjectName) {
+    if ($ProjectName -notmatch '\A[A-Za-z0-9][A-Za-z0-9._-]{0,127}\z' -or $ProjectName.EndsWith('.')) {
+        throw "Invalid project name '$ProjectName' for variant '$VariantName'. Project names must be a single path segment containing only letters, numbers, periods, hyphens, and underscores."
+    }
+}
+
 $identifierPrefix = Get-DefaultIdentifierPrefix
 $blankDefaultIdentifier = "$identifierPrefix.blank"
 $blankIosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_IOS_BUNDLE_ID" $blankDefaultIdentifier
@@ -166,6 +172,8 @@ foreach ($variantName in $selectedVariants) {
             throw "Variant '$variantName' does not define required field '$requiredField'."
         }
     }
+    $projectName = [string]$variant.projectName
+    Assert-SafeProjectName $variantName $projectName
 
     foreach ($platformName in $selectedPlatforms) {
         if (-not $platformDefinitions.Contains($platformName)) {
@@ -222,7 +230,7 @@ foreach ($variantName in $selectedVariants) {
             targetFramework = $platform.targetFramework
             runtimeIdentifier = $platform.runtimeIdentifier
             displayName = [string]$variant.displayName
-            projectName = [string]$variant.projectName
+            projectName = $projectName
             template = [string]$variant.template
             templateArgsJson = $templateArgsJson
             applicationId = [string]$applicationId

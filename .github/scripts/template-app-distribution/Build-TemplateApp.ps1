@@ -165,6 +165,97 @@ function Get-BinlogConfiguration {
     }
 }
 
+function Invoke-NotaryTool([string[]]$Arguments) {
+    $output = @(& xcrun notarytool @Arguments 2>&1)
+    return [pscustomobject]@{
+        ExitCode = $LASTEXITCODE
+        Output = ($output | Out-String).Trim()
+    }
+}
+
+function Invoke-NotaryToolJson([string[]]$Arguments, [string]$Description) {
+    $result = Invoke-NotaryTool ($Arguments + @("--output-format", "json"))
+    if ($result.ExitCode -ne 0) {
+        throw "$Description failed with exit code $($result.ExitCode). $($result.Output)"
+    }
+
+    try {
+        return $result.Output | ConvertFrom-Json
+    }
+    catch {
+        throw "$Description returned invalid JSON. $($result.Output)"
+    }
+}
+
+function Write-NotarySubmissionDiagnostics([string]$SubmissionId, [string[]]$CredentialArguments) {
+    $result = Invoke-NotaryTool (@("log", $SubmissionId) + $CredentialArguments)
+    if ($result.ExitCode -eq 0) {
+        Write-Host "Notarization log for submission '$SubmissionId':`n$($result.Output)"
+    } else {
+        Write-Warning "Unable to retrieve the notarization log for submission '$SubmissionId' (exit code $($result.ExitCode)). $($result.Output)"
+    }
+}
+
+function Get-NotarizationTimeoutSeconds {
+    $timeoutValue = [Environment]::GetEnvironmentVariable("TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS")
+    if ([string]::IsNullOrWhiteSpace($timeoutValue)) {
+        return 1800
+    }
+
+    $timeoutSeconds = 0
+    if (-not [int]::TryParse($timeoutValue, [ref]$timeoutSeconds) -or $timeoutSeconds -lt 1 -or $timeoutSeconds -gt 7200) {
+        throw "TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS must be an integer from 1 through 7200."
+    }
+
+    return $timeoutSeconds
+}
+
+function Wait-NotarySubmission(
+    [string]$SubmissionId,
+    [string[]]$CredentialArguments,
+    [int]$TimeoutSeconds,
+    [int]$PollIntervalSeconds = 15
+) {
+    if ($TimeoutSeconds -lt 1 -or $PollIntervalSeconds -lt 1) {
+        throw "Notarization timeout and poll interval must both be positive."
+    }
+
+    $pollAttempts = [Math]::Max(1, [int][Math]::Ceiling($TimeoutSeconds / [double]$PollIntervalSeconds))
+    $lastStatus = "Unknown"
+    for ($attempt = 1; $attempt -le $pollAttempts; $attempt++) {
+        try {
+            $info = Invoke-NotaryToolJson `
+                -Arguments (@("info", $SubmissionId) + $CredentialArguments) `
+                -Description "notarytool info for submission '$SubmissionId'"
+        }
+        catch {
+            Write-NotarySubmissionDiagnostics $SubmissionId $CredentialArguments
+            throw
+        }
+
+        $lastStatus = [string]$info.status
+        if ([string]::IsNullOrWhiteSpace($lastStatus)) {
+            $lastStatus = "Unknown"
+        }
+        Write-Host "Notarization submission '$SubmissionId' status: $lastStatus"
+
+        if ($lastStatus -eq "Accepted") {
+            return
+        }
+        if ($lastStatus -in @("Invalid", "Rejected")) {
+            Write-NotarySubmissionDiagnostics $SubmissionId $CredentialArguments
+            throw "Notarization submission '$SubmissionId' failed with status '$lastStatus'."
+        }
+
+        if ($attempt -lt $pollAttempts) {
+            Start-Sleep -Seconds $PollIntervalSeconds
+        }
+    }
+
+    Write-NotarySubmissionDiagnostics $SubmissionId $CredentialArguments
+    throw "Notarization submission '$SubmissionId' did not complete within $TimeoutSeconds seconds. Last status: '$lastStatus'."
+}
+
 function Invoke-MacNotarization([string]$AppBundlePath) {
     # Notarize + staple a Developer ID-signed .app so Gatekeeper lets it launch on other Macs.
     # Reuses the App Store Connect API key already configured for TestFlight publishing.
@@ -188,14 +279,29 @@ function Invoke-MacNotarization([string]$AppBundlePath) {
     & ditto -c -k --keepParent $AppBundlePath $notarizeZip
     if ($LASTEXITCODE -ne 0) { throw "Failed to create the notarization upload archive." }
 
-    Write-Host "Submitting '$AppBundlePath' to the Apple notary service (this can take a few minutes)..."
-    & xcrun notarytool submit $notarizeZip --key $keyPath --key-id $keyId --issuer $issuerId --wait
-    if ($LASTEXITCODE -ne 0) { throw "notarytool submit failed." }
+    $timeoutSeconds = Get-NotarizationTimeoutSeconds
+    $credentialArguments = @("--key", $keyPath, "--key-id", $keyId, "--issuer", $issuerId)
+    try {
+        Write-Host "Submitting '$AppBundlePath' to the Apple notary service..."
+        $submission = Invoke-NotaryToolJson `
+            -Arguments (@("submit", $notarizeZip) + $credentialArguments) `
+            -Description "notarytool submit"
+        $submissionId = [string]$submission.id
+        if ([string]::IsNullOrWhiteSpace($submissionId)) {
+            throw "notarytool submit did not return a submission id."
+        }
 
-    & xcrun stapler staple $AppBundlePath
-    if ($LASTEXITCODE -ne 0) { throw "stapler staple failed." }
+        Wait-NotarySubmission `
+            -SubmissionId $submissionId `
+            -CredentialArguments $credentialArguments `
+            -TimeoutSeconds $timeoutSeconds
 
-    Remove-Item -Path $notarizeZip -Force -ErrorAction SilentlyContinue
+        & xcrun stapler staple $AppBundlePath
+        if ($LASTEXITCODE -ne 0) { throw "stapler staple failed." }
+    }
+    finally {
+        Remove-Item -Path $notarizeZip -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function New-MacCatalystDeveloperIdSideload {
