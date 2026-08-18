@@ -194,7 +194,18 @@ namespace Microsoft.Maui.Controls
 			if (_replayPendingScrollToRequestedEvent)
 			{
 				_replayPendingScrollToRequestedEvent = false;
+
+				// A subscriber may issue a new ScrollToAsync from inside the event (a
+				// compatibility renderer scrolling, say). That newer request wins: it has
+				// already been sent, and sending the stale replay after it would land the
+				// scroll on the old target. Every request creates a fresh completion source,
+				// so a changed source is the exact signal that one was made.
+				var replayed = _scrollCompletionSource;
 				ScrollToRequested?.Invoke(this, pending);
+				if (!ReferenceEquals(_scrollCompletionSource, replayed))
+				{
+					return;
+				}
 			}
 
 			Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());

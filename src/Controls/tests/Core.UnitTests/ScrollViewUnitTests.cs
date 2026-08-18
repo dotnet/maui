@@ -872,6 +872,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReentrantRequestFromTheDropContinuationParksCleanly()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			var parent = new StackLayout { Children = { scrollView } };
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// The caller re-requests from its own continuation, which the inline drop runs
+			// synchronously in the middle of the removal. The mechanism must already have
+			// cleared its state by then, so the re-entrant request parks as a fresh T2
+			// instead of being dropped by the same removal, double-completed, or lost.
+			Task task2 = null;
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			task1.ContinueWith(_ => task2 = scrollView.ScrollToAsync(item, ScrollToPosition.End, false),
+				TaskContinuationOptions.ExecuteSynchronously);
+
+			parent.Children.Remove(scrollView);
+			Assert.True(task1.IsCompleted);
+			Assert.NotNull(task2);
+			Assert.False(task2.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// T2 belongs to the new lifecycle: re-attached and arranged, it scrolls
+			parent.Children.Add(scrollView);
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(400, request.VerticalOffset);
+		}
+
+		[Fact]
+		public void ReentrantRequestFromTheReplayedEventSupersedesTheReplay()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			// Parked before the handler exists, so the attach replays ScrollToRequested
+			_ = scrollView.ScrollToAsync(0, 100, false);
+
+			// A subscriber (as a compatibility renderer would be) that issues a new request
+			// from inside the replayed event. The replay has already cleared the pending
+			// request before raising, so the re-entrant request is not clobbered — and it
+			// must win: the replay must not send the stale request to the handler on top of it.
+			Task reentrant = null;
+			var reentered = false;
+			((IScrollViewController)scrollView).ScrollToRequested += (_, _) =>
+			{
+				if (reentered) return;
+				reentered = true;
+				reentrant = scrollView.ScrollToAsync(0, 250, false);
+			};
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			Assert.NotNull(reentrant);
+			// Latest request wins; exactly what was sent, in order: the re-entrant one first
+			// (sent immediately, handler present) — the stale replay must not follow it
+			Assert.Equal(new[] { 250d }, handler.ScrollToRequests.ConvertAll(r => r.VerticalOffset));
+		}
+
+		[Fact]
 		public void DeferredRequestReplaysEventForSubscribersAttachedWithTheHandler()
 		{
 			var scrollView = new ScrollView();
