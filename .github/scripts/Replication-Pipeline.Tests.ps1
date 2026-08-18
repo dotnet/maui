@@ -159,6 +159,20 @@ Describe 'Replication issue outcome publication boundary' {
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationOutcome.ps1') -Raw
     }
 
+    It 'gives the publisher media validator room to install' {
+        # Build 14999448 produced a publishable candidate and then lost it
+        # because this install exhausted a ten-minute budget.
+        $script:Pipeline |
+            Should -Match "(?s)Install publisher media validator'\s+timeoutInMinutes: 25"
+        $installs = [regex]::Matches(
+            $script:Pipeline,
+            'apt-get install -y -qq(?<flags>[^\r\n]*)ffmpeg')
+        $installs.Count | Should -BeGreaterThan 0
+        foreach ($install in $installs) {
+            $install.Groups['flags'].Value | Should -Match '--no-install-recommends'
+        }
+    }
+
     It 'keeps commenting on the public issue tracker opt-in' {
         # Build 14997672 commented on dotnet/maui#36694 and applied
         # s/try-latest-version, which notified the reporter, while the flow was

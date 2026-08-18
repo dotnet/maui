@@ -523,8 +523,16 @@ stages:
               if ($IsMacOS) {
                 brew install ffmpeg
               } elseif ($IsLinux) {
-                sudo apt-get update -qq
-                sudo apt-get install -y -qq ffmpeg
+                $env:DEBIAN_FRONTEND = 'noninteractive'
+                for ($attempt = 1; $attempt -le 3; $attempt++) {
+                  sudo apt-get update -qq
+                  sudo apt-get install -y -qq --no-install-recommends ffmpeg
+                  if ($LASTEXITCODE -eq 0) {
+                    break
+                  }
+                  Write-Host "ffmpeg install attempt $attempt did not succeed; retrying."
+                  Start-Sleep -Seconds ($attempt * 15)
+                }
               } elseif ($IsWindows) {
                 $installed = $false
                 for ($attempt = 1; $attempt -le 3; $attempt++) {
@@ -2612,14 +2620,26 @@ stages:
               REPLICATION_BASE_SHA: $(replicationBaseSha)
 
           - bash: |
-              set -e
-              if ! command -v ffprobe >/dev/null 2>&1; then
-                sudo apt-get update -qq
-                sudo apt-get install -y -qq ffmpeg
+              set -euo pipefail
+              if command -v ffprobe >/dev/null 2>&1; then
+                ffprobe -version | head -1
+                exit 0
               fi
+              export DEBIAN_FRONTEND=noninteractive
+              # Build 14999448 reached a publishable candidate and then lost it
+              # here: recommended packages add hundreds of megabytes the media
+              # checks never use, and a slow mirror exhausted the timeout.
+              for attempt in 1 2 3; do
+                if sudo apt-get update -qq && \
+                   sudo apt-get install -y -qq --no-install-recommends ffmpeg; then
+                  break
+                fi
+                echo "Media validator install attempt ${attempt} did not succeed; retrying."
+                sleep $((attempt * 15))
+              done
               ffprobe -version | head -1
             displayName: 'Install publisher media validator'
-            timeoutInMinutes: 10
+            timeoutInMinutes: 25
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
