@@ -165,6 +165,75 @@ Describe 'Trusted replication pull request publishing' {
         $body | Should -Match 'applied directly onto the current tip of the pull request base branch'
     }
 
+    It 'names the simulator or emulator instead of claiming an on-device run' {
+        # The review of kubaflo/maui#180 rejected the media partly because it
+        # "describes simulator-shaped evidence as on-device".
+        $candidate = [pscustomobject]@{
+            issueNumber = 35624
+            platform = 'ios'
+            baseSha = 'abc123'
+            testType = 'ui'
+            testFilter = 'Issue35624'
+            expectedFailureSignature = 'Kern=8'
+            actualFailureMessage = 'Expected Kern=8 but was Kern=NaN'
+            reproductionSteps = @('Focus the search handler')
+        }
+        $evidence = [pscustomobject]@{
+            device = '63836186-6767-400C-A56D-25093A72BE13'
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence $evidence `
+            -IssueTitle 'Reported behavior' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://dev.azure.com/example/build/1'
+
+        $body | Should -Match 'iOS Simulator'
+        $body | Should -Match '63836186-6767-400C-A56D-25093A72BE13'
+        $body | Should -Not -Match 'on-device'
+        $body | Should -Not -Match 'device or emulator'
+    }
+
+    It 'names the Android emulator for an android run' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Expected: 1; Actual: 0'
+            actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
+            reproductionSteps = @('Launch the scenario')
+        }
+        $evidence = [pscustomobject]@{
+            device = 'emulator-5554'
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence $evidence `
+            -IssueTitle 'Reported behavior' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://dev.azure.com/example/build/1'
+
+        $body | Should -Match 'Android emulator'
+        $body | Should -Match 'emulator-5554'
+        $body | Should -Not -Match 'on-device'
+    }
+
     It 'rejects publication when the expected signature is absent from the failure message' {
         $candidate = [pscustomobject]@{
             issueNumber = 12345

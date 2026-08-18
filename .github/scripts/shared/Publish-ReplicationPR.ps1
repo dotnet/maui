@@ -121,13 +121,31 @@ function New-ReplicationPullRequestBody {
         $testFilter
     }
 
+    # Reviewers rejected evidence that called a simulator or emulator run
+    # "on-device". Name the surface that actually ran the reproduction.
+    $recordingSurface = switch ([string]$Candidate.platform) {
+        'android' { 'Android emulator' }
+        'ios' { 'iOS Simulator' }
+        'windows' { 'Windows host' }
+        'catalyst' { 'Mac Catalyst host' }
+        default { "$platform host" }
+    }
+    $recordedDevice = if ($Evidence.PSObject.Properties['device']) {
+        ConvertTo-ReplicationSingleLine -Value ([string]$Evidence.device) -MaximumLength 80
+    } else {
+        ''
+    }
+    if ($recordedDevice) {
+        $recordingSurface = "$recordingSurface ``$recordedDevice``"
+    }
+
     # Reviewers repeatedly read the platform above as a claim that the committed
-    # test ran on that device. Unit and XAML tests execute on the build host, so
-    # the recording is device evidence of the issue rather than of the test.
+    # test ran on that surface. Unit and XAML tests execute on the build host, so
+    # the recording is evidence of the issue rather than of the test.
     $testHostDescription = switch ([string]$Candidate.testType) {
-        'UnitTest' { "the **build host**, not the $platform device. The recording below is on-device evidence of the reported issue, not of this test executing." }
-        'XamlUnitTest' { "the **build host**, not the $platform device. The recording below is on-device evidence of the reported issue, not of this test executing." }
-        default { "the **$platform** device or emulator used for the run above." }
+        'UnitTest' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
+        'XamlUnitTest' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
+        default { "the **$recordingSurface** used for the run above." }
     }
     $rawFailureSignature = [string]$Candidate.expectedFailureSignature
     $actualFailureMessage = [string]$Candidate.actualFailureMessage
@@ -177,7 +195,7 @@ $marker
 - Expected failing assertion: ``$failureSignature``
 $buildLine
 
-## Device evidence
+## Recorded evidence ($recordingSurface)
 
 [![Reproduction preview]($($Evidence.blobs.preview))]($($Evidence.blobs.video))
 
@@ -185,7 +203,7 @@ $buildLine
 
 The authoritative proof is the trusted targeted test failing with the expected assertion above. The recording corroborates that; for defects with no visible symptom it may show only the app-reported verdict rather than the defect itself.
 
-This recording is of the trusted Sandbox reproduction app that established the behavior on-device, not of the committed test executing. Its on-screen text therefore comes from that Sandbox app and will not match the assertion payload emitted by the committed test. Treat it as corroboration of the symptom, not as exact-head evidence for the commit in this pull request.
+This recording is of the trusted Sandbox reproduction app that established the behavior on the $recordingSurface, not of the committed test executing. Its on-screen text therefore comes from that Sandbox app and will not match the assertion payload emitted by the committed test. Treat it as corroboration of the symptom, not as exact-head evidence for the commit in this pull request.
 
 ## Reproduction steps
 
@@ -195,7 +213,7 @@ $($steps -join [Environment]::NewLine)
 
 - The pipeline reconstructed the scenario from issue text, inline snippets, and allowed raster screenshots.
 - No linked repository, archive, binary, script, package, or arbitrary external file was downloaded.
-- A trusted runner reproduced the behavior on-device and matched the expected targeted test failure.
+- A trusted runner reproduced the behavior on the $recordingSurface and matched the expected targeted test failure.
 - The published patch is add-only and restricted to approved MAUI test locations.
 "@
 }
