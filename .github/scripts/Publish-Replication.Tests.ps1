@@ -308,6 +308,77 @@ Describe 'Trusted replication pull request publishing' {
         $body | Should -Not -Match 'on-device'
     }
 
+    It 'refuses to claim a platform-neutral test proved the recorded platform behavior' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 33333
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'UnitTest'
+            testFilter = 'Issue33333'
+            expectedFailureSignature = 'Expected: 1; Actual: 0'
+            actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
+            verificationRunCount = 3
+            reproductionSteps = @('Launch the scenario')
+        }
+        $evidence = [pscustomobject]@{
+            device = 'emulator-5554'
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence $evidence `
+            -IssueTitle 'Reported behavior' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://dev.azure.com/example/build/1'
+
+        # The reviewer rejected an earlier PR because one sentence covered both
+        # the recording and a platform-invariant test, implying the test proved
+        # the Android behavior. Both facts must stay separately attributed.
+        $body | Should -Match 'platform-neutral'
+        $body | Should -Match 'ran on the build host'
+        $body | Should -Not -Match `
+            'reproduced the behavior on the Android emulator [^.]*and matched the expected targeted test failure'
+    }
+
+    It 'still claims a single surface for a test that runs where the recording happened' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 33334
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'DeviceTest'
+            testFilter = 'Issue33334'
+            expectedFailureSignature = 'Expected: 1; Actual: 0'
+            actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
+            verificationRunCount = 3
+            reproductionSteps = @('Launch the scenario')
+        }
+        $evidence = [pscustomobject]@{
+            device = 'emulator-5554'
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence $evidence `
+            -IssueTitle 'Reported behavior' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://dev.azure.com/example/build/1'
+
+        $body | Should -Match 'matched the expected targeted test failure'
+        $body | Should -Not -Match 'platform-neutral'
+    }
+
     It 'rejects publication when the expected signature is absent from the failure message' {
         $candidate = [pscustomobject]@{
             issueNumber = 12345

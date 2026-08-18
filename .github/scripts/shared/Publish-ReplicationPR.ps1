@@ -197,6 +197,16 @@ function New-ReplicationPullRequestBody {
     if ($verificationRunCount -lt 2) {
         throw 'Validated candidate does not prove the test failed in repeated independent runs.'
     }
+    # Reviewers read a single sentence covering both the recording and the test
+    # as a claim that the committed test ran on the recorded surface. A test in
+    # a non-platform target framework would behave identically on a machine with
+    # no platform SDK installed, so say which surface established which fact.
+    $platformNeutralTestTypes = @('UnitTest', 'XamlUnitTest')
+    $reproductionClaim = if ($platformNeutralTestTypes -contains [string]$Candidate.testType) {
+        "- A trusted runner reproduced the behavior on the $recordingSurface. The committed test is platform-neutral: it ran on the build host and failed in $verificationRunCount consecutive executions, so it corroborates the same defect in cross-platform code rather than proving the $recordingSurface behavior itself."
+    } else {
+        "- A trusted runner reproduced the behavior on the $recordingSurface and matched the expected targeted test failure in $verificationRunCount consecutive executions."
+    }
     $determinismLine = "- Determinism: the exact test above was executed **$verificationRunCount " +
         'independent times** on this baseline and failed at the same assertion every time'
     $failureSignature = ConvertTo-ReplicationInlineCode -Value $rawFailureSignature
@@ -257,7 +267,7 @@ $($steps -join [Environment]::NewLine)
 
 - The pipeline reconstructed the scenario from issue text, inline snippets, and allowed raster screenshots.
 - No linked repository, archive, binary, script, package, or arbitrary external file was downloaded.
-- A trusted runner reproduced the behavior on the $recordingSurface and matched the expected targeted test failure in $verificationRunCount consecutive executions.
+$reproductionClaim
 - The published patch is add-only and restricted to approved MAUI test locations.
 "@
 }
