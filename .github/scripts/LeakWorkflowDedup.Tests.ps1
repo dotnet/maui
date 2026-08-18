@@ -400,6 +400,14 @@ Describe 'workflow enforcement boundary' {
         $lock | Should -Match '(?ms)^  safe_outputs:.*?^    permissions:.*?^      pull-requests: read$'
     }
 
+    It 'documents recursive any-active-reverter semantics' {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
+
+        $workflow | Should -Match 'any active same-branch direct reverter exists'
+        $workflow | Should -Match 'independent sibling reverts\s+never cancel each other'
+        $workflow | Should -Not -Match 'combined by parity|combine by parity'
+    }
+
     Context 'safe-output gate script' {
         BeforeEach {
             $script:agentOutput = Join-Path $TestDrive 'agent_output.json'
@@ -740,7 +748,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
             } | Should -Not -Throw
         }
 
-        It 'allows distinct mechanisms on the same API in one output batch' {
+        It 'rejects differently titled issues for the same canonical API in one output batch' {
             $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
             $output.items += [pscustomobject]@{
                 type = 'create_issue'
@@ -754,7 +762,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Not -Throw
+            } | Should -Throw "*same canonical API 'GradientBrush.GradientStops'*"
         }
 
         It 'blocks issue emission when a matching fix merged after the pre-agent snapshot' {

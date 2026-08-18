@@ -153,9 +153,10 @@ pre-agent-steps:
       # have been reverted (e.g. it broke something else), in which case the shipped package
       # will still reproduce the ORIGINAL leak and skipping the API forever would be wrong.
       # GitHub's "Revert" button creates a PR whose body contains an exact
-      # "Reverts <owner>/<repo>#<N>" line. Resolve those links recursively: a live revert
-      # removes its target's effect, a revert-of-that-revert restores it, and multiple live
-      # reverts combine by parity. Drop only effectively reverted fixes from the
+      # "Reverts <owner>/<repo>#<N>" line. Resolve those links recursively: a target remains
+      # reverted while any active same-branch direct reverter exists. Reverting a reverter can
+      # deactivate that reverter, but independent sibling reverts never cancel each other.
+      # Drop only effectively reverted fixes from the
       # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
       gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
         --search '"Revert" in:title' --json number,title,body,baseRefName,mergedAt \
@@ -168,9 +169,10 @@ pre-agent-steps:
       jq '[.[] | select(.mergedAt != null)]' /tmp/gh-aw/agent/revert-prs-raw.json \
         > /tmp/gh-aw/agent/merged-revert-prs.json
       # Resolve the EFFECTIVE state recursively, not just one hop. A merged revert toggles
-      # its target only while that revert itself remains active on the SAME base branch;
-      # reverting the revert reinstates the original fix. Multiple active same-branch
-      # reverts are combined by parity; servicing-branch reverts cannot alter main/inflight.
+      # its target only while that revert itself remains active on the SAME base branch.
+      # A revert is active only when none of its own same-branch direct reverters is active;
+      # any active direct reverter keeps its target reverted. Servicing-branch reverts cannot
+      # alter main/inflight.
       pwsh .github/scripts/Get-EffectiveRevertedLeakFixes.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
@@ -323,9 +325,9 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
   <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
   `.txt` is just the first column, deduplicated). Effective revert state is resolved
   recursively and per base branch from GitHub's standard
-  `Reverts <owner>/<repo>#<N>` body line: one active same-branch revert excludes the fix, a
-  same-branch revert-of-that-revert reinstates it, and deeper/multiple chains are combined by
-  parity. A servicing-branch revert cannot toggle a main/inflight fix. Only an effectively
+  `Reverts <owner>/<repo>#<N>` body line: any active same-branch direct reverter excludes its
+  target. Reverting a reverter can deactivate that reverter, but independent sibling reverts
+  never cancel each other. A servicing-branch revert cannot toggle a main/inflight fix. Only an effectively
   reverted fix is treated as re-filable rather than permanent proof the fix is still active.
 
 - A candidate is **OUT** if an open `[leak-scan]` issue or active merged `[leak-fix]` PR covers

@@ -70,6 +70,9 @@ $requestedItems = [System.Collections.Generic.List[object]]::new()
 $requestedTitles = [System.Collections.Generic.HashSet[string]]::new(
     [StringComparer]::Ordinal
 )
+$requestedApis = [System.Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::Ordinal
+)
 foreach ($item in $createItems) {
     $title = [string]$item.title
     if (-not $title.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
@@ -81,6 +84,9 @@ foreach ($item in $createItems) {
     }
     if (-not $requestedTitles.Add($title)) {
         throw "Multiple create-issue outputs use the same exact title '$title'."
+    }
+    if (-not $requestedApis.Add($api)) {
+        throw "Multiple create-issue outputs use the same canonical API '$api'. Emit at most one issue per canonical API in each safe-output batch."
     }
     $requestedItems.Add([pscustomobject]@{
             Api = $api
