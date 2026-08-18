@@ -2797,6 +2797,14 @@ public void ReproducesIssue()
         }
     }
 
+    It 'requires a silent interaction to be proved to have landed' {
+        # PR 196 failed 5/5 with the right assertion shape and was still
+        # rejected: the tap landed 17pt past the link, so the silence it
+        # measured was its own miss rather than the defect.
+        $script:Source | Should -Match 'prove the interaction reached its target'
+        $script:Source | Should -Match 'produces exactly the same\s+"?silence'
+    }
+
     It 'tells the agent the test is executed three times and must stay economical' {
         # Run 15009967 spent every attempt shrinking a 40-cycle leak test that
         # kept exhausting the device-test harness timeout.
