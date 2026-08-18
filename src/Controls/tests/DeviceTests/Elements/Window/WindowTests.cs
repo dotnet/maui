@@ -683,6 +683,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(rootManager.RootView);
 				Assert.Null(rootManager.ToolbarElement);
 				Assert.DoesNotContain(outgoingFragment!, fragmentManager.Fragments);
+				Assert.Null(fragmentManager.FindFragmentById(Resource.Id.navigationlayout_content));
 			});
 		}
 
