@@ -501,10 +501,10 @@ namespace Microsoft.Maui.Controls
 			// This lives at the shared entry point so it applies uniformly whether SetDynamicResource is called
 			// explicitly in code, via Element's public wrapper, or via the IDynamicResourceHandler interface
 			// used by XAML-compiled {DynamicResource} markup.
+			OnSetDynamicResource(property, key, specificity);
+
 			if (specificity == SetterSpecificity.DynamicResourceSetter)
 				ClearValue(property, SetterSpecificity.ManualValueSetter);
-
-			OnSetDynamicResource(property, key, specificity);
 		}
 
 		/// <summary>

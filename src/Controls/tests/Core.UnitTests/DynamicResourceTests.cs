@@ -455,6 +455,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SetDynamicResourceDoesNotExposeIntermediateDefaultValue()
+		{
+			var label = new Label { Text = "Manual" };
+			var observedValues = new List<string>();
+			label.PropertyChanged += (_, args) =>
+			{
+				if (args.PropertyName == nameof(Label.Text))
+					observedValues.Add(label.Text);
+			};
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResource" } };
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+
+			Assert.Equal(new[] { "FromResource" }, observedValues);
+		}
+
+		[Fact]
 		public void DynamicResourceReplacesLocalValue()
 		{
 			var label = new Label
