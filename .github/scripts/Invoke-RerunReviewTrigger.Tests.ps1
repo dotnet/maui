@@ -29,7 +29,8 @@ BeforeAll {
             [string]$HeadSha = 'abc123def',
             [string]$Platform = 'android',
             [string]$PipelineRef = 'main',
-            [Int64]$RerunCommentId = 9001
+            [Int64]$RerunCommentId = 9001,
+            [Int64]$ActivityCheckpoint = 1787000000000
         )
 
         [pscustomobject]@{
@@ -38,6 +39,7 @@ BeforeAll {
             platform       = $Platform
             pipelineRef    = $PipelineRef
             rerunCommentId = $RerunCommentId
+            activityCheckpoint = $ActivityCheckpoint
         }
     }
 
@@ -243,6 +245,7 @@ Describe 'Get-RerunActions' {
         $result.Actions[0].platform | Should -Be 'ios'
         $result.Actions[0].pipelineRef | Should -Be 'main'
         $result.Actions[0].rerunCommentId | Should -Be 4242
+        $result.Actions[0].activityCheckpoint | Should -Be 1787000000000
     }
 
     It 'produces an action for a valid skip decision even without a rerun comment id' {
@@ -255,6 +258,18 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 1
         $result.Actions[0].decision | Should -Be 'skip'
         $result.Actions[0].rerunCommentId | Should -Be 0
+        $result.Actions[0].activityCheckpoint | Should -Be 1787000000000
+    }
+
+    It 'rejects a candidate without a scan-time activity checkpoint' {
+        $items = @(New-TestDecision -PRNumber '50' -Decision 'skip' -ExpectedHeadSha 'sha50')
+        $candidate = New-TestCandidate -PRNumber 50 -HeadSha 'sha50'
+        $candidate.activityCheckpoint = $null
+
+        $result = Get-RerunActions -Items $items -Candidates @($candidate)
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
     }
 
     It 'normalizes the pipeline ref and resolves an invalid candidate platform to android' {

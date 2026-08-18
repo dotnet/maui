@@ -204,6 +204,11 @@ function Get-RerunActions {
             if ([string]$candidate.headSha -ne $expectedHeadSha) {
                 throw "PR #$prNumber decision head SHA does not match candidate head SHA."
             }
+            $activityCheckpointRaw = ConvertTo-TrimmedString $candidate.activityCheckpoint
+            if ($activityCheckpointRaw -notmatch '^[1-9]\d*$') {
+                throw "Candidate for PR #$prNumber has no valid activity checkpoint."
+            }
+            $activityCheckpoint = [Int64]$activityCheckpointRaw
 
             # Operational values come from the deterministic candidate set, not the
             # agent's emission (its platform / pipeline_ref / rerun_comment_id are advisory).
@@ -225,6 +230,7 @@ function Get-RerunActions {
                 pipelineRef    = $pipelineRef
                 rerunCommentId = $rerunCommentId
                 headSha        = [string]$candidate.headSha
+                activityCheckpoint = $activityCheckpoint
             })
             Write-Host "Validated PR #$prNumber decision=$decision platform=$platform pipelineRef=$pipelineRef rerunCommentId=$rerunCommentId"
         } catch {

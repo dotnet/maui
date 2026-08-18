@@ -94,5 +94,6 @@ Describe 'Query-RerunReadyPRs' {
         $result.candidates.Count | Should -Be 1
         $result.candidates[0].reviewCommandId | Should -Be 200
         $result.candidates[0].rerunCommentId | Should -Be 0
+        $result.candidates[0].activityCheckpoint | Should -BeGreaterThan 0
     }
 }

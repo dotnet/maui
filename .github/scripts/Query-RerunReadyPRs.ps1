@@ -86,6 +86,10 @@ $searchResult = $searchJson | ConvertFrom-Json
 $candidates = @()
 foreach ($pr in @($searchResult)) {
     $number = [int]$pr.number
+    # Capture this before reading activity. If new author activity races the
+    # later scanner decision, a decline marker retains this earlier checkpoint
+    # instead of swallowing the unseen activity at action time.
+    $activityCheckpoint = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
     $labels = @(Get-IssueLabels -Number $number)
     if ($labels -notcontains $ReadyForRerunLabel) {
         continue
@@ -114,6 +118,7 @@ foreach ($pr in @($searchResult)) {
         reviewCommandId = $reviewOptions.CommentId
         reviewCommand   = $reviewOptions.Body
         labels          = $labels
+        activityCheckpoint = $activityCheckpoint
         # The ready label does not encode whether this queue cycle came from a
         # specific command or the autonomous labeler. Never reuse a historical
         # /review rerun comment as this cycle's reaction target.

@@ -89,9 +89,8 @@ function Get-IssueCommentsForPR {
 function Get-ReviewActivityForPR {
     param([int]$Number)
 
-    # Fetch review history only after an issue comment proves this PR has an AI
-    # Summary. Most open PRs have never been AI-reviewed, so this avoids three
-    # paginated API families for every ineligible PR.
+    # AI Summary is posted as a pull-request review, not an issue comment. Fetch
+    # review activity before deciding whether the PR has ever been AI-reviewed.
     $reviewsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100" --paginate --jq '.[]'
     if ($LASTEXITCODE -ne 0) { throw "Failed to fetch reviews for #$Number (gh api exited $LASTEXITCODE)." }
     $reviewCommentsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100" --paginate --jq '.[]'
@@ -115,10 +114,10 @@ function Get-CommitsForPR {
 function Get-LatestScannerDecline {
     param([object[]]$Comments)
 
-    # The scanner records the exact head it declined in a minimized bot comment.
-    # The SHA identity, not just the marker timestamp, closes the TOCTOU window
-    # between the safe-output job's live-head read and its subsequent writes.
-    $markerPattern = '<!--\s*agent-rerun-declined:([0-9a-fA-F]{40})\s*-->'
+    # New markers retain the scan-time activity checkpoint as Unix milliseconds.
+    # This keeps activity that races the later decline write newer than the
+    # checkpoint. Legacy head-only markers fall back to their creation time.
+    $markerPattern = '<!--\s*agent-rerun-declined:([0-9a-fA-F]{40})(?::([0-9]{10,16}))?\s*-->'
     $markers = @($Comments | Where-Object {
         $_.kind -eq 'issue-comment' -and
         $_.user -and
@@ -126,9 +125,20 @@ function Get-LatestScannerDecline {
         ([string]$_.body) -match $markerPattern
     } | ForEach-Object {
         $match = [regex]::Match([string]$_.body, $markerPattern)
+        $declinedAt = Get-ObjectDate $_ 'created_at'
+        if ($match.Groups[2].Success) {
+            $checkpointMilliseconds = [Int64]0
+            if ([Int64]::TryParse($match.Groups[2].Value, [ref]$checkpointMilliseconds)) {
+                try {
+                    $declinedAt = [DateTimeOffset]::FromUnixTimeMilliseconds($checkpointMilliseconds)
+                } catch {
+                    # Preserve compatibility by using the marker creation time.
+                }
+            }
+        }
         [pscustomobject]@{
             CommentId  = [Int64]$_.id
-            DeclinedAt = Get-ObjectDate $_ 'created_at'
+            DeclinedAt = $declinedAt
             HeadSha    = $match.Groups[1].Value.ToLowerInvariant()
         }
     } | Sort-Object @{ Expression = { $_.DeclinedAt }; Descending = $true }, @{ Expression = { $_.CommentId }; Descending = $true })
@@ -200,11 +210,10 @@ function Invoke-AutoRerunCandidateScan {
             }
 
             $issueComments = @(Get-IssueCommentsForPR -Number $number)
-            $activity = @($issueComments)
+            $reviewActivity = @(Get-ReviewActivityForPR -Number $number)
+            $activity = @($issueComments + $reviewActivity)
             $commits = @()
-            if (Get-LatestAISummaryComment -Comments $issueComments) {
-                $reviewActivity = @(Get-ReviewActivityForPR -Number $number)
-                $activity = @($issueComments + $reviewActivity)
+            if (Get-LatestAISummaryComment -Comments $activity) {
                 $commits = @(Get-CommitsForPR -Number $number)
             }
             $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }

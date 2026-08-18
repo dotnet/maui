@@ -230,15 +230,18 @@ safe-outputs:
                 }
               }
 
-              async function markDeclined(prNumber, headSha) {
-                if (dryRun) { core.info(`[dry-run] Would record ${declinedLabel.name} for PR #${prNumber} at ${headSha}`); return; }
+              async function markDeclined(prNumber, headSha, activityCheckpoint) {
+                if (!Number.isSafeInteger(activityCheckpoint) || activityCheckpoint <= 0) {
+                  throw new Error(`Missing valid scan-time activity checkpoint for PR #${prNumber}`);
+                }
+                if (dryRun) { core.info(`[dry-run] Would record ${declinedLabel.name} for PR #${prNumber} at ${headSha}, checkpoint=${activityCheckpoint}`); return; }
                 await ensureDeclinedLabel();
                 const issue = await github.rest.issues.get({ owner, repo, issue_number: prNumber });
                 const alreadyLabelled = issue.data.labels.some(
                   label => (typeof label === 'string' ? label : label.name) === declinedLabel.name,
                 );
 
-                const markerText = `<!-- agent-rerun-declined:${headSha} -->`;
+                const markerText = `<!-- agent-rerun-declined:${headSha}:${activityCheckpoint} -->`;
                 const existing = await github.graphql(
                   `query($owner:String!,$repo:String!,$number:Int!){
                     repository(owner:$owner,name:$repo){
@@ -348,9 +351,10 @@ safe-outputs:
                     } else if (a.headSha && liveHeadSha !== a.headSha) {
                       core.info(`Skip: PR #${prNumber} head advanced ${a.headSha} -> ${liveHeadSha} since the scan; leaving ${readyLabel} for re-evaluation.`);
                     } else {
-                      // Persist an explicit semantic-skip checkpoint before consuming
-                      // the queue label. Generic ready-label removals are not declines.
-                      await markDeclined(prNumber, liveHeadSha);
+                      // Persist the scan-time activity checkpoint before consuming
+                      // the queue label. Activity that arrives after collection but
+                      // before this action remains newer than the decline checkpoint.
+                      await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint);
                       await react(a.rerunCommentId, '-1');
                       await removeReadyLabel(prNumber);
                     }

@@ -41,12 +41,14 @@ BeforeAll {
             [int64]$Id,
             [string]$CreatedAt,
             [string]$HeadSha,
+            [Int64]$ActivityCheckpoint = 0,
             [string]$Login = 'github-actions[bot]'
         )
 
+        $checkpointSuffix = if ($ActivityCheckpoint -gt 0) { ":$ActivityCheckpoint" } else { '' }
         [pscustomobject]@{
             id = $Id
-            body = "<!-- agent-rerun-declined:$HeadSha -->"
+            body = "<!-- agent-rerun-declined:$HeadSha$checkpointSuffix -->"
             created_at = $CreatedAt
             updated_at = $CreatedAt
             user = [pscustomobject]@{ login = $Login; type = 'Bot' }
@@ -142,7 +144,7 @@ Context 'bounded scan metadata' {
 }
 
 Context 'API request bounding' {
-    It 'does not fetch review or commit history for a PR without an AI Summary' {
+    It 'checks PR reviews before classifying a PR without an AI Summary' {
         $script:prList = @(New-TestPR -Number 10)
 
         Invoke-TestScan
@@ -150,7 +152,30 @@ Context 'API request bounding' {
         $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
         $summary.decisions[0].reason | Should -Be 'no-ai-summary'
         @($script:ghCalls | Where-Object { $_ -match '/issues/10/comments' }).Count | Should -Be 1
-        @($script:ghCalls | Where-Object { $_ -match '/pulls/10/(reviews|comments|commits)' }).Count | Should -Be 0
+        @($script:ghCalls | Where-Object { $_ -match '/pulls/10/reviews' }).Count | Should -Be 1
+        @($script:ghCalls | Where-Object { $_ -match '/pulls/10/comments' }).Count | Should -Be 1
+        @($script:ghCalls | Where-Object { $_ -match '/pulls/10/commits' }).Count | Should -Be 0
+    }
+
+    It 'finds the producer AI Summary in a mocked PR review and fetches commits' {
+        $script:prList = @(New-TestPR -Number 11 -HeadSha '2222222abcdef')
+        $script:reviews = @(
+            [pscustomobject]@{
+                id = 100
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                submitted_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            }
+        )
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].eligible | Should -BeTrue
+        $summary.decisions[0].reason | Should -Be 'new-head-commit'
+        @($script:ghCalls | Where-Object { $_ -match '/pulls/11/reviews' }).Count | Should -Be 1
+        @($script:ghCalls | Where-Object { $_ -match '/pulls/11/commits' }).Count | Should -Be 1
     }
 }
 
@@ -295,9 +320,45 @@ Context 'scanner decline checkpoint' {
         $summary.decisions[0].reason | Should -Be 'new-head-commit'
     }
 
+    It 'keeps a comment-only activity race newer than the scan-time decline checkpoint' {
+        $script:prList = @(
+            New-TestPR -Number 9 -Labels @('s/agent-rerun-declined') -HeadSha '2222222222222222222222222222222222222222'
+        )
+        $script:reviews = @(
+            [pscustomobject]@{
+                id = 1
+                body = "<!-- AI Summary -->`n<!-- SESSION:2222222 START -->"
+                submitted_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            }
+        )
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 2
+                body = 'Follow-up posted while the scanner was deciding.'
+                created_at = '2026-05-31T09:45:00Z'
+                updated_at = '2026-05-31T09:45:00Z'
+                user = [pscustomobject]@{ login = 'dev-user'; type = 'User' }
+                author_association = 'CONTRIBUTOR'
+            },
+            (New-DeclineMarkerComment `
+                -Id 3 `
+                -CreatedAt '2026-05-31T10:00:00Z' `
+                -HeadSha '2222222222222222222222222222222222222222' `
+                -ActivityCheckpoint 1780219800000)
+        )
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].eligible | Should -BeTrue
+        $summary.decisions[0].reason | Should -Be 'new-author-comment-after-ai-summary'
+    }
+
     It 'persists skip markers before consuming ready labels and clears them before trigger dispatch' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
-        $scanner.IndexOf('await markDeclined(prNumber, liveHeadSha);') |
+        $scanner.IndexOf('await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint);') |
             Should -BeLessThan $scanner.IndexOf("await react(a.rerunCommentId, '-1');")
         $scanner.IndexOf("await react(a.rerunCommentId, '-1');") |
             Should -BeLessThan $scanner.IndexOf('await removeReadyLabel(prNumber);')
@@ -309,9 +370,10 @@ Context 'scanner decline checkpoint' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
         $markDeclined = [regex]::Match(
             $scanner,
-            '(?s)async function markDeclined\(prNumber, headSha\).*?async function clearDeclined'
+            '(?s)async function markDeclined\(prNumber, headSha, activityCheckpoint\).*?async function clearDeclined'
         ).Value
 
+        $markDeclined | Should -Match 'agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\}'
         $markDeclined.IndexOf('if (alreadyLabelled && existingMarker)') |
             Should -BeLessThan $markDeclined.IndexOf('issues.createComment({')
         $markDeclined.IndexOf('if (existingMarker)') |
