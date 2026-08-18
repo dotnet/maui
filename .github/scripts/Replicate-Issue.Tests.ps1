@@ -2841,6 +2841,38 @@ PS-STEP-FAILED: step 3 did not find its target
             Should -Match '/session/'
     }
 
+    It 'refuses a precondition as the expected failure signature' {
+        # PR 213 correctly pins the lane it needs (iOS 26, portrait, light,
+        # VoiceOver off). Nominating one of those guards as the reproduction's
+        # expected failure would report a wrong simulator as a reproduction.
+        foreach ($precondition in @(
+                'Issue35889 requires iOS 26 or later.',
+                'Issue35889 requires portrait window geometry.',
+                'Issue35889 requires a physical device.',
+                'Test requires internet connection')) {
+            {
+                Assert-ReplicationOracleIsFalsifiable `
+                    -ExpectedFailureSignature $precondition `
+                    -TestFilter 'Issue35889'
+            } | Should -Throw '*non-falsifiable oracle*'
+        }
+
+        # The measured symptom oracles from the same file stay acceptable.
+        foreach ($symptom in @(
+                'Empty iOS CollectionView native height must be 0 (+/-1 pt); observed 44.00',
+                'After-label top must equal before-label bottom (+/-1 pt); before bottom=120.00')) {
+            {
+                Assert-ReplicationOracleIsFalsifiable `
+                    -ExpectedFailureSignature $symptom `
+                    -TestFilter 'Issue35889'
+            } | Should -Not -Throw
+        }
+    }
+
+    It 'tells the agent not to nominate a precondition' {
+        $script:Source | Should -Match 'never nominate one of those preconditions'
+    }
+
     It 'escalates from the signature to the oracle after repeated mismatches' {
         # Run 15009971 produced a failing test three attempts running and never
         # matched its declared signature, because the oracle it kept adjusting

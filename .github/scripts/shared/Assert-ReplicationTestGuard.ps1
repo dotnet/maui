@@ -349,6 +349,18 @@ function Get-ReplicationNonAttributiveOracles {
         [pscustomobject]@{
             Pattern = '(?i)\bSessionNotCreatedException\b'
             Reason = 'an automation session that never started, which is an infrastructure failure rather than a product defect'
+        },
+        [pscustomobject]@{
+            # A good reproduction pins the environment it needs, and PR 213 does
+            # exactly that. The danger is nominating one of those guards as the
+            # expected failure: the test then turns red on an iOS 25 simulator or
+            # a landscape window and reports a reproduction, when all it observed
+            # was a lane it was never meant to run in. Scanning 11,012 files this
+            # phrasing appears once, in "Test requires internet connection" --
+            # itself a precondition -- and it does not match either measured
+            # oracle in PR 213.
+            Pattern = '(?i)\brequires\b.{0,60}?\b(?:or (?:later|newer|higher)|version \d|simulator|emulator|physical device|a display|network|internet|geometry|orientation|accessibility state|default accessibility)\b'
+            Reason = 'a precondition on the environment rather than the reported behavior, so the red it predicts is a lane the test was never meant to run in'
         }
     )
 }
