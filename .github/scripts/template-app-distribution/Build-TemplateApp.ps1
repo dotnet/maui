@@ -625,13 +625,13 @@ switch ($Platform) {
                 $env:ANDROID_KEY_PASSWORD
             }
 
-            $keyAlias = Assert-EnvironmentValue "ANDROID_KEY_ALIAS"
+            $env:ANDROID_SIGNING_KEY_ALIAS = Assert-EnvironmentValue "ANDROID_KEY_ALIAS"
             $keystoreType = [Environment]::GetEnvironmentVariable("ANDROID_KEYSTORE_TYPE")
 
             $signingArgs = @(
                 "-p:AndroidKeyStore=true",
                 "-p:AndroidSigningKeyStore=$keystorePath",
-                "-p:AndroidSigningKeyAlias=$keyAlias",
+                "-p:AndroidSigningKeyAlias=env:ANDROID_SIGNING_KEY_ALIAS",
                 "-p:AndroidSigningStorePass=env:ANDROID_SIGNING_STORE_PASS",
                 "-p:AndroidSigningKeyPass=env:ANDROID_SIGNING_KEY_PASS"
             )
