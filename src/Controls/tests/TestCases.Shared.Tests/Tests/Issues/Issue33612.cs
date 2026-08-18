@@ -17,12 +17,11 @@ public class Issue33612 : _IssuesUITest
 	{
 		App.WaitForElement("SuggestionsContainer");
 
-		// Each item must still be individually reachable by automation/accessibility tooling —
-		// before the fix, a Description/Hint on the outer container collapsed the whole subtree
-		// into a single opaque element, hiding these nested items entirely.
-		App.WaitForElement("First item");
-		App.WaitForElement("Second item");
-		App.WaitForElement("Third item");
+		// AutomationIds are intentionally distinct from the visible text so this can't be satisfied
+		// by the inner Label alone — it proves the Border itself is reachable.
+		App.WaitForElement("Item1");
+		App.WaitForElement("Item2");
+		App.WaitForElement("Item3");
 	}
 
 	[Test]
@@ -30,7 +29,7 @@ public class Issue33612 : _IssuesUITest
 	public void TappingSuggestionItemStillInvokesItsOwnGesture()
 	{
 		App.WaitForElement("SuggestionsContainer");
-		var firstItem = App.WaitForElement("First item");
+		var firstItem = App.WaitForElement("Item1");
 
 		if (Device == TestDevice.Mac)
 		{
@@ -39,7 +38,7 @@ public class Issue33612 : _IssuesUITest
 		}
 		else
 		{
-			App.Tap("First item");
+			App.Tap("Item1");
 		}
 
 		App.WaitForElement("OK");

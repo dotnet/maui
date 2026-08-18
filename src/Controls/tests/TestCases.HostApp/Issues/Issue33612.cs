@@ -5,11 +5,11 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 33612, "Inconsistent Accessibility Behavior Across Platforms - a container with SemanticProperties.Description/Hint should not collapse its independently-accessible children", PlatformAffected.All)]
 public class Issue33612 : ContentPage
 {
-	public ObservableCollection<string> Items { get; } = new()
+	public ObservableCollection<SuggestionItem> Items { get; } = new()
 	{
-		"First item",
-		"Second item",
-		"Third item"
+		new SuggestionItem("Item1", "First item"),
+		new SuggestionItem("Item2", "Second item"),
+		new SuggestionItem("Item3", "Third item"),
 	};
 
 	Label _tappedItemLabel;
@@ -55,7 +55,7 @@ public class Issue33612 : ContentPage
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
-			label.SetBinding(Label.TextProperty, new Binding("."));
+			label.SetBinding(Label.TextProperty, new Binding(nameof(SuggestionItem.Text)));
 
 			// Each item is its own actionable unit: it owns a gesture recognizer, so it should
 			// remain a normal leaf accessibility element carrying its own Description/Hint,
@@ -66,8 +66,10 @@ public class Issue33612 : ContentPage
 				Margin = 6,
 				Content = label
 			};
-			border.SetBinding(AutomationIdProperty, new Binding("."));
-			border.SetBinding(SemanticProperties.DescriptionProperty, new Binding("."));
+			// AutomationId is intentionally distinct from the visible text so tests can locate the
+			// Border unambiguously without matching the inner Label or a phantom accessibility element.
+			border.SetBinding(AutomationIdProperty, new Binding(nameof(SuggestionItem.AutomationId)));
+			border.SetBinding(SemanticProperties.DescriptionProperty, new Binding(nameof(SuggestionItem.Text)));
 			SemanticProperties.SetHint(border, "Double tap to activate");
 
 			var tapGestureRecognizer = new TapGestureRecognizer();
@@ -80,11 +82,13 @@ public class Issue33612 : ContentPage
 
 	async void OnSuggestionTapped(object sender, TappedEventArgs e)
 	{
-		if (sender is Border tappedBorder && tappedBorder.BindingContext is string item)
+		if (sender is Border tappedBorder && tappedBorder.BindingContext is SuggestionItem item)
 		{
-			_tappedItemLabel.Text = item;
+			_tappedItemLabel.Text = item.Text;
 		}
 
 		await DisplayAlert("Suggestion Selected", "is a suggestion tap event", "OK");
 	}
+
+	public record SuggestionItem(string AutomationId, string Text);
 }
