@@ -417,4 +417,24 @@ Describe 'Trusted replication PR migration' {
         $body | Should -Match 'not as exact-head evidence'
         $body.Contains('- Baseline commit: ``$baseSha``') | Should -BeFalse
     }
+
+    It 'reports an issue already covered instead of failing the build' {
+        # Build 15001510 reproduced issue 37151 and authored its test while an
+        # earlier run published the same issue and platform. Being second is
+        # redundant, not broken, so the run says what already covers it.
+        $script:PrSource | Should -Not -Match 'throw "An open reproduction pull request already exists'
+        $script:PrSource | Should -Match 'already covers this issue and platform'
+        $script:PrSource | Should -Match '\$plan\.duplicateOf = \[string\]\$duplicate\.url'
+    }
+
+    It 'still writes a publication manifest when it publishes nothing' {
+        # The caller always reads the manifest, so exiting early without one
+        # would trade a clear duplicate report for a missing-file error.
+        $duplicateIndex = $script:PrSource.IndexOf('$plan.duplicateOf = [string]$duplicate.url')
+        $duplicateIndex | Should -BeGreaterThan 0
+
+        $earlyExit = $script:PrSource.Substring($duplicateIndex, 400)
+        $earlyExit | Should -Match 'Write-ReplicationPublicationManifest -Plan \$plan'
+        $earlyExit | Should -Match 'exit 0'
+    }
 }

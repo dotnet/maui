@@ -2917,10 +2917,15 @@ stages:
 
                 $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw |
                   ConvertFrom-Json
-                if ([string]::IsNullOrWhiteSpace([string]$result.url)) {
+                if (-not [string]::IsNullOrWhiteSpace([string]$result.duplicateOf)) {
+                  Write-Host "This issue and platform are already covered by $($result.duplicateOf); nothing further to publish."
+                }
+                elseif ([string]::IsNullOrWhiteSpace([string]$result.url)) {
                   throw "Replication publisher did not return a pull request URL."
                 }
-                Write-Host "##vso[task.setvariable variable=replicationPrUrl;isOutput=true]$($result.url)"
+                else {
+                  Write-Host "##vso[task.setvariable variable=replicationPrUrl;isOutput=true]$($result.url)"
+                }
               }
               finally {
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue

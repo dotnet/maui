@@ -411,6 +411,20 @@ $prBody = New-ReplicationPullRequestBody `
     -IssueRepository $IssueRepository `
     -BuildUrl $BuildUrl
 
+function Write-ReplicationPublicationManifest {
+    param([Parameter(Mandatory)]$Plan)
+
+    if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+        $script:OutputPath = Join-Path (Split-Path -Parent $PublishedEvidencePath) 'published-pr.json'
+    }
+    $directory = Split-Path -Parent $OutputPath
+    if ($directory) {
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    }
+    $Plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
+    Write-Host "Replication pull request publication manifest: $OutputPath"
+}
+
 $plan = [ordered]@{
     issueNumber = $issueNumber
     platform = $platform
@@ -420,6 +434,7 @@ $plan = [ordered]@{
     marker = $marker
     files = @(Get-ValidatedCandidateFiles -Candidate $candidate)
     url = $null
+    duplicateOf = $null
 }
 
 if (-not $DryRun) {
@@ -457,7 +472,16 @@ if (-not $DryRun) {
             [string]$_.body -like "*$marker*"
         } | Select-Object -First 1
         if ($duplicate) {
-            throw "An open reproduction pull request already exists for this issue/platform: $($duplicate.url)"
+            # Build 15001510 reproduced issue 37151 and authored its test while
+            # an earlier run was publishing the same issue and platform. The
+            # second run is redundant, not broken, so it reports what already
+            # covers the issue instead of failing the build.
+            $plan.duplicateOf = [string]$duplicate.url
+            Write-Host ("An open reproduction pull request already covers this issue and platform: " +
+                "$($duplicate.url)")
+            Write-ReplicationPublicationManifest -Plan $plan
+            Pop-Location
+            exit 0
         }
 
         # Reviewers verify the reproduction against the pull request's first
@@ -562,12 +586,4 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($OutputPath)) {
-    $OutputPath = Join-Path (Split-Path -Parent $PublishedEvidencePath) 'published-pr.json'
-}
-$outputDirectory = Split-Path -Parent $OutputPath
-if ($outputDirectory) {
-    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
-}
-$plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
-Write-Host "Replication pull request publication manifest: $OutputPath"
+Write-ReplicationPublicationManifest -Plan $plan

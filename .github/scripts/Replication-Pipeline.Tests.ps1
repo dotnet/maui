@@ -319,4 +319,15 @@ Describe 'Replication issue outcome publication boundary' {
             "ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true')") |
             Should -BeTrue
     }
+
+    It 'accepts a publication that reports an already-covered issue' {
+        # The publisher now reports a duplicate instead of throwing, so the
+        # caller must not treat the absent pull request URL as a defect.
+        $script:Pipeline.Contains('$result.duplicateOf') | Should -BeTrue
+
+        $duplicate = $script:Pipeline.IndexOf('$result.duplicateOf')
+        $missingUrl = $script:Pipeline.IndexOf('Replication publisher did not return a pull request URL')
+        $duplicate | Should -BeGreaterThan 0
+        $missingUrl | Should -BeGreaterThan $duplicate
+    }
 }
