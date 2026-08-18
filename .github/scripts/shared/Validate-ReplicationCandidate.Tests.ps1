@@ -1268,6 +1268,34 @@ VERIFICATION FAILED'
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*targeted test failure message*'
     }
+    It 'refuses to spend a credential on a reproduction whose red is the harness, not the defect' {
+        # Defense in depth for the orchestrator-side oracle guard: even if a
+        # proposal slipped through, the message the run actually produced is
+        # what reviewers read, so a harness teardown assertion must not publish.
+        $fixture = New-ValidationFixture `
+            -FailurePattern 'The app was expected to be running still'
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*non-falsifiable oracle*'
+    }
+
+    It 'rejects a clean-looking signature quoted from inside a harness failure' {
+        # The nominated fragment passes inspection on its own, but the message
+        # the run produced is the teardown assertion. Publishing this would
+        # advertise an attributable red that the harness, not the defect, caused.
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.actualFailureMessage =
+            'The app was expected to be running still, investigate as possible crash. ' +
+            $verificationResult.expectedFailureSignature
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*non-falsifiable oracle*'
+    }
 }
 
 Describe 'Validate-ReplicationCandidate media and file safety boundary' {

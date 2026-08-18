@@ -312,6 +312,55 @@ function Get-ReplicationUnscopedPlatformContent {
     return $result.ToString()
 }
 
+function Get-ReplicationNonAttributiveOracles {
+    # A reproduction is only evidence if its nominated failure is caused by the
+    # defect. These messages are emitted by the harness itself, for many
+    # unrelated causes, so a test that nominates one of them stays red on a
+    # fully fixed product and proves nothing about the reported issue.
+    return @(
+        [pscustomobject]@{
+            Pattern = '(?i)the app was expected to be running still'
+            Reason = "the harness teardown assertion in UITestBase, which fires identically for a crash, a clean exit, and an automation session that merely lost its window handle"
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)app became unresponsive, force-closing'
+            Reason = 'the harness unresponsive-app teardown path, which reports that the run was abandoned rather than what the product did'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bNoSuchWindowException\b'
+            Reason = 'the automation session losing the window it was rooted in, which reports that the driver stopped observing rather than that the product misbehaved'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bInvalidSessionIdException\b'
+            Reason = 'a destroyed automation session, which reports that the driver stopped observing rather than that the product misbehaved'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bSessionNotCreatedException\b'
+            Reason = 'an automation session that never started, which is an infrastructure failure rather than a product defect'
+        }
+    )
+}
+
+function Assert-ReplicationOracleIsFalsifiable {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ExpectedFailureSignature,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestFilter
+    )
+
+    $signature = ([regex]::Replace([string]$ExpectedFailureSignature, '\s+', ' ')).Trim()
+    if ([string]::IsNullOrWhiteSpace($signature)) {
+        throw 'The reproduction nominates no expected failure signature, so its red cannot be attributed to the reported defect.'
+    }
+
+    foreach ($oracle in Get-ReplicationNonAttributiveOracles) {
+        if ([regex]::IsMatch($signature, $oracle.Pattern)) {
+            throw ("The reproduction '$TestFilter' nominates a non-falsifiable oracle: its expected failure is $($oracle.Reason). " +
+                'Assert the reported behavior directly, so that a product fix turns this exact test green.')
+        }
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

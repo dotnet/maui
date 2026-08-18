@@ -1837,6 +1837,9 @@ function Read-TestProposal {
     if ($signature.Length -lt 3) {
         throw 'Test proposal has an invalid expected failure signature.'
     }
+    Assert-ReplicationOracleIsFalsifiable `
+        -ExpectedFailureSignature $signature `
+        -TestFilter ([string]$proposal.testFilter)
 
     $proposedFiles = @(Get-ProposedTestFiles `
         -Proposal $proposal `
@@ -2181,6 +2184,7 @@ List 1-10 exact new repository-relative .cs or .xaml files. Every filename must 
 $approvedRoots
 $existingIssueGuidance
 The expectedFailureSignature must be a trimmed single-line string of 3-1000 characters with no newline, control character, URL, or Azure logging directive. Use one literal assertion-message fragment, not an Expected/Actual multi-line rendering.
+The signature must be produced by the defect, not by the scenario. A reproduction is rejected if its expected failure is a harness message that fires for many unrelated causes - for example UITestBase's "The app was expected to be running still, investigate as possible crash", its unresponsive-app teardown, or a NoSuchWindow/InvalidSessionId/SessionNotCreated automation-session error. Those stay red on a fully fixed product. Assert the reported behavior directly so that fixing the product turns this exact test green.
 "@
         }
         'test' {

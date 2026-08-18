@@ -3347,3 +3347,54 @@ Describe 'Test plan rules out benign explanations' {
     }
 }
 
+
+Describe 'A reproduction must nominate a falsifiable oracle' {
+    It 'rejects the harness teardown assertion that fires for unrelated causes' {
+        # A reviewer rejected a Windows reproduction whose nominated failure was
+        # this string. UITestBase emits it whenever the app is not Running, so a
+        # crash, a clean exit, and an automation session that merely lost its
+        # window handle are indistinguishable, and the test stays red after a fix.
+        {
+            Assert-ReplicationOracleIsFalsifiable `
+                -ExpectedFailureSignature 'The app was expected to be running still, investigate as possible crash' `
+                -TestFilter 'Issue37280'
+        } | Should -Throw '*non-falsifiable oracle*'
+    }
+
+    It 'rejects automation-session errors that report a lost driver, not a defect' {
+        foreach ($signature in @(
+            'OpenQA.Selenium.NoSuchWindowException: no such window',
+            'InvalidSessionIdException: A session is either terminated or not started',
+            'SessionNotCreatedException: Could not create a new session')) {
+            {
+                Assert-ReplicationOracleIsFalsifiable `
+                    -ExpectedFailureSignature $signature `
+                    -TestFilter 'Issue37280'
+            } | Should -Throw '*non-falsifiable oracle*'
+        }
+    }
+
+    It 'rejects a reproduction that nominates no signature at all' {
+        {
+            Assert-ReplicationOracleIsFalsifiable `
+                -ExpectedFailureSignature '   ' `
+                -TestFilter 'Issue37280'
+        } | Should -Throw '*cannot be attributed*'
+    }
+
+    It 'still accepts an absent element, which is a real product defect' {
+        # Deliberate boundary: a timeout waiting for an element the product was
+        # supposed to render is attributable, so it must not be swept up with
+        # the session-loss errors above.
+        foreach ($signature in @(
+            'Timed out after 20 seconds waiting for element AccessibilityId=ResultLabel',
+            'Expected element text to equal ''Loaded'', actual ''''',
+            'Expected: 1; Actual: 0')) {
+            {
+                Assert-ReplicationOracleIsFalsifiable `
+                    -ExpectedFailureSignature $signature `
+                    -TestFilter 'Issue37440'
+            } | Should -Not -Throw
+        }
+    }
+}

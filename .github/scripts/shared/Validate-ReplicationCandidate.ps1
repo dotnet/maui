@@ -2418,6 +2418,15 @@ function Assert-ReplicationVerificationEvidence {
             [StringComparison]::Ordinal)) {
             throw 'The targeted test failure message does not contain the published failure signature.'
         }
+        # Defense in depth: the orchestrator rejects a non-attributive oracle at
+        # proposal time, but the message the run actually produced is the one
+        # reviewers will read, so re-check both before any credential is used.
+        Assert-ReplicationOracleIsFalsifiable `
+            -ExpectedFailureSignature $effectiveSignature `
+            -TestFilter $resultFilter
+        Assert-ReplicationOracleIsFalsifiable `
+            -ExpectedFailureSignature $actualFailureMessage `
+            -TestFilter $resultFilter
         $exitCodeProperty = Find-AliasedProperty `
             -Object $result `
             -Names @('verifierExitCode') `
