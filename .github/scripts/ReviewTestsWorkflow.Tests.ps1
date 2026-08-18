@@ -21,12 +21,12 @@ Describe '/review tests compiled trust boundary' {
             @{
                 Source = '.github/docs/maui-ci-facts.md'
                 Destination = '${trusted}/maui-ci-facts.md'
-            },
-            @{
-                Source = '.github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1'
-                Destination = '${trusted}/Merge-TestVisualsIntoComment.ps1'
             }
         )
+        $script:visualMerger = @{
+            Source = '.github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1'
+            Destination = '${trusted}/Merge-TestVisualsIntoComment.ps1'
+        }
         $script:optionalFiles = @(
             @{
                 Source = '${CONTEXT_DIRECTORY}/context.json'
@@ -120,8 +120,15 @@ Describe '/review tests compiled trust boundary' {
             )
         }
 
-        $mandatoryCommands | Should -BeExactly (
-            $expectedMandatoryLines -join "`n")
+        $searchFrom = 0
+        foreach ($line in $expectedMandatoryLines) {
+            $lineIndex = $mandatoryCommands.IndexOf(
+                $line,
+                $searchFrom,
+                [StringComparison]::Ordinal)
+            $lineIndex | Should -BeGreaterOrEqual 0
+            $searchFrom = $lineIndex + $line.Length
+        }
 
         foreach ($file in $script:optionalFiles) {
             $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
@@ -135,6 +142,19 @@ Describe '/review tests compiled trust boundary' {
             'sudo chmod 0555 "\$\{trusted\}"')
     }
 
+    It 'continues when only the optional visual merger cannot be sealed' {
+        $script:source | Should -Match (
+            '(?s)if sudo install -o root -g root -m 0444 .*?' +
+            [regex]::Escape($script:visualMerger.Source) +
+            '.*?' +
+            [regex]::Escape($script:visualMerger.Destination) +
+            '"; then.*?else.*?ordinary analysis will continue without visual panels.*?fi')
+        $script:source | Should -Match (
+            'if \[ ! -f "\$\{agent_output\}" \] \|\| ' +
+            '\[ ! -f "\$\{trusted\}/context\.json" \] \|\| ' +
+            '\[ ! -f "\$\{trusted\}/Merge-TestVisualsIntoComment\.ps1" \]; then')
+    }
+
     It 'removes every sealed trusted input during cleanup' {
         $cleanup = [regex]::Match(
             $script:source,
@@ -142,7 +162,7 @@ Describe '/review tests compiled trust boundary' {
         $cleanup.Success | Should -BeTrue
 
         $cleanupBody = $cleanup.Groups['body'].Value
-        foreach ($file in @($script:mandatoryFiles + $script:optionalFiles)) {
+        foreach ($file in @($script:mandatoryFiles + $script:visualMerger + $script:optionalFiles)) {
             $cleanupBody | Should -Match (
                 [regex]::Escape('"' + $file.Destination + '"'))
         }
@@ -245,6 +265,8 @@ Describe '/review tests compiled trust boundary' {
             'there is no `add_comment` recovery path')
         $prompt | Should -Match (
             'If `context\.json` or `context\.md` is missing, post the intended short')
+        $prompt | Should -Match (
+            'If both context files are present after the pre-flight check, read them')
         $prompt | Should -Not -Match (
             'If `SKILL\.md` or `maui-ci-facts\.md` is missing, post')
         $prompt | Should -Not -Match (

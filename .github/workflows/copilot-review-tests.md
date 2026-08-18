@@ -314,9 +314,14 @@ steps:
       sudo install -o root -g root -m 0444 \
         .github/docs/maui-ci-facts.md \
         "${trusted}/maui-ci-facts.md"
-      sudo install -o root -g root -m 0444 \
+      if sudo install -o root -g root -m 0444 \
         .github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1 \
-        "${trusted}/Merge-TestVisualsIntoComment.ps1"
+        "${trusted}/Merge-TestVisualsIntoComment.ps1"; then
+        echo "Trusted visual merger sealed."
+      else
+        echo "::warning::Could not seal the optional visual merger; the ordinary analysis will continue without visual panels."
+        sudo rm -f -- "${trusted}/Merge-TestVisualsIntoComment.ps1" 2>/dev/null || true
+      fi
       if [ -f "${CONTEXT_DIRECTORY}/context.json" ]; then
         sudo install -o root -g root -m 0444 \
           "${CONTEXT_DIRECTORY}/context.json" \
@@ -342,8 +347,8 @@ post-steps:
       trusted="/tmp/review-tests-trusted-${GITHUB_RUN_ID}"
       trap 'sudo rm -f -- "${trusted}/SKILL.md" "${trusted}/maui-ci-facts.md" "${trusted}/Merge-TestVisualsIntoComment.ps1" "${trusted}/context.json" "${trusted}/context.md"; if ! sudo rmdir -- "${trusted}"; then echo "::warning::Failed to remove trusted review directory ${trusted}."; fi' EXIT
       agent_output="/tmp/gh-aw/agent_output.json"
-      if [ ! -f "${agent_output}" ] || [ ! -f "${trusted}/context.json" ]; then
-        echo "No agent comment payload or trusted visual context was available; leaving the ordinary analysis unchanged."
+      if [ ! -f "${agent_output}" ] || [ ! -f "${trusted}/context.json" ] || [ ! -f "${trusted}/Merge-TestVisualsIntoComment.ps1" ]; then
+        echo "No agent comment payload or complete trusted visual inputs were available; leaving the ordinary analysis unchanged."
         exit 0
       fi
       unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN GH_AW_GITHUB_TOKEN GH_AW_GITHUB_MCP_SERVER_TOKEN GITHUB_MCP_SERVER_TOKEN
@@ -397,9 +402,10 @@ checking out the PR branch:
 - `/review-tests-trusted/context.json`
 - `/review-tests-trusted/context.md`
 
-Read both files before classifying failures. `visualAssets` may describe trusted,
-immutable visual images, but do not reproduce its URLs or render visual panels yourself.
-A deterministic post-step inserts a bounded visual section into your one comment payload.
+If both context files are present after the pre-flight check, read them before
+classifying failures. `visualAssets` may describe trusted, immutable visual images,
+but do not reproduce its URLs or render visual panels yourself. A deterministic
+post-step inserts a bounded visual section into your one comment payload.
 
 ## Pre-flight check
 
