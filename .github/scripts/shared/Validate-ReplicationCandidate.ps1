@@ -2319,6 +2319,8 @@ function Assert-ReplicationVerificationEvidence {
                 'requestedRunCount',
                 'completedRunCount',
                 'consistentRuns',
+                'stableFailureMessage',
+                'observedFailureMessages',
                 'logFiles'
             ) `
             -Context 'Verification result'

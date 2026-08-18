@@ -1497,3 +1497,47 @@ public class $TypeName : _IssuesUITest
         } | Should -Throw '*named test from the exact filter*'
     }
 }
+
+Describe 'The publisher accepts every field the verifier actually writes' {
+    It 'allows each key of the verification result manifest' {
+        # A live catalyst run reached the publisher and was rejected with
+        # "Verification result contains unexpected property 'stableFailureMessage'"
+        # because a field was added to the verifier without being registered
+        # here. The allow-list is strict, so that omission silently blocks every
+        # candidate. Compare the two sources directly rather than trusting a
+        # fixture, which would have been updated alongside the writer and missed it.
+        $scriptRoot = Split-Path -Parent $PSCommandPath
+
+        $verifierPath = Join-Path $scriptRoot 'Invoke-ReplicationTestVerification.ps1'
+        $verifierAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $verifierPath, [ref]$null, [ref]$null)
+        $resultAssignment = $verifierAst.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $node.Left.Extent.Text -eq '$result' -and
+            $node.Right.Extent.Text.Contains('[ordered]@{')
+        }, $true)
+        $resultAssignment | Should -Not -BeNullOrEmpty
+        $hashtable = $resultAssignment.Right.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.HashtableAst]
+        }, $true)
+        $writtenKeys = @($hashtable.KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'", '"') })
+        $writtenKeys.Count | Should -BeGreaterThan 10
+
+        $validatorPath = Join-Path $scriptRoot 'Validate-ReplicationCandidate.ps1'
+        $validatorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $validatorPath, [ref]$null, [ref]$null)
+        $allowList = $validatorAst.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.ArrayLiteralAst] -and
+            $node.Extent.Text -like "*'verifierExitCode'*" -and
+            $node.Extent.Text -like "*'schemaVersion'*"
+        }, $true) | Select-Object -First 1
+        $allowList | Should -Not -BeNullOrEmpty
+        $allowedNames = @($allowList.Elements | ForEach-Object { $_.Extent.Text.Trim("'", '"') })
+
+        $unregistered = @($writtenKeys | Where-Object { $allowedNames -notcontains $_ })
+        $unregistered -join ', ' | Should -BeExactly ''
+    }
+}
