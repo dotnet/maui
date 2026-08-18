@@ -328,6 +328,41 @@ Describe 'workflow enforcement boundary' {
             Remove-Variable mockMerged, mockReverts, mockOpen, mockGhExitCode -Scope Global -ErrorAction SilentlyContinue
         }
 
+        It 'rejects an untagged create-pull-request title' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title = 'Fix GradientBrush.GradientStops reset leak'
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*must start with the literal*prefix*'
+        }
+
+        It 'accepts a tagged create-pull-request title' {
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'accepts an additional exact-repository Refs citation for an API-match PR' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].body = "Fixes #20`nRefs: dotnet/maui#20`nRefs: dotnet/maui#501"
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
         It 'fails closed before mutation when live metadata has a direct issue match' {
             $global:mockMerged = @(
                 New-LeakPr `

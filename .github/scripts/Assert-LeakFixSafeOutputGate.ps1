@@ -67,23 +67,30 @@ if ($createItems.Count -ne 1) {
 }
 
 $item = $createItems[0]
-$api = Get-CanonicalLeakApi -Title ([string]$item.title)
+$title = [string]$item.title
+if (-not $title.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
+    throw "The create-pull-request title must start with the literal '[leak-fix] ' prefix."
+}
+
+$api = Get-CanonicalLeakApi -Title $title
 if ([string]::IsNullOrWhiteSpace($api)) {
-    throw "Could not derive a canonical Type.Member from create-pull-request title '$($item.title)'."
+    throw "Could not derive a canonical Type.Member from create-pull-request title '$title'."
 }
 
 $fixMatches = [regex]::Matches(([string]$item.body), '(?m)^[ \t]*Fixes #(?<number>[1-9][0-9]*)\b')
-$repo = [regex]::Escape($Repository)
-$refsMatches = [regex]::Matches(
-    ([string]$item.body),
-    "(?m)^[ \t]*Refs:[ \t]*$repo#(?<number>[1-9][0-9]*)\b"
-)
-if ($fixMatches.Count -ne 1 -or $refsMatches.Count -ne 1) {
-    throw 'The PR body must contain exactly one canonical Fixes line and one exact-repository Refs line.'
+if ($fixMatches.Count -ne 1) {
+    throw 'The PR body must contain exactly one canonical Fixes line.'
 }
+
 $issueNumber = [int]$fixMatches[0].Groups['number'].Value
-if ([int]$refsMatches[0].Groups['number'].Value -ne $issueNumber) {
-    throw 'The PR body Fixes and Refs lines identify different issues.'
+$repo = [regex]::Escape($Repository)
+$issue = [regex]::Escape([string]$issueNumber)
+$targetRefsMatches = [regex]::Matches(
+    ([string]$item.body),
+    "(?m)^[ \t]*Refs:[ \t]*$repo#$issue\b"
+)
+if ($targetRefsMatches.Count -ne 1) {
+    throw "The PR body must contain exactly one exact-repository Refs line for issue #$issueNumber."
 }
 
 $statePath = Join-Path $StateDirectory 'dedup-state.json'
