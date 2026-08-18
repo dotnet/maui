@@ -364,7 +364,9 @@ Context 'scanner decline checkpoint' {
 
     It 'persists skip markers before consuming ready labels and clears them before trigger dispatch' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
-        $scanner.IndexOf('await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint, a.activityKey);') |
+        $scanner.IndexOf('const declineRecorded = await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint, a.activityKey);') |
+            Should -BeLessThan $scanner.IndexOf('if (!declineRecorded) { continue; }')
+        $scanner.IndexOf('if (!declineRecorded) { continue; }') |
             Should -BeLessThan $scanner.IndexOf("await react(a.rerunCommentId, '-1');")
         $scanner.IndexOf("await react(a.rerunCommentId, '-1');") |
             Should -BeLessThan $scanner.IndexOf('await removeReadyLabel(prNumber);')
@@ -384,7 +386,9 @@ Context 'scanner decline checkpoint' {
         $markDeclined | Should -Match '\.includes\(cycleMarker\)'
         $markDeclined | Should -Match 'comments\(last:100,before:\$before\)'
         $markDeclined | Should -Match 'pageInfo\{hasPreviousPage startCursor\}'
-        $markDeclined | Should -Match '\} while \(!existingMarker && commentsBefore\);'
+        $markDeclined | Should -Match 'const maxMarkerPages = 5;'
+        $markDeclined | Should -Match 'markerPage < maxMarkerPages'
+        $markDeclined | Should -Match 'a duplicate checkpoint is safer than an unbounded history walk'
 
         $headSha = '2222222222222222222222222222222222222222'
         $priorActivityKey = 'a' * 64
@@ -400,6 +404,37 @@ Context 'scanner decline checkpoint' {
         $markDeclined.IndexOf('if (existingMarker)') |
             Should -BeLessThan $markDeclined.IndexOf('issues.createComment({')
         $markDeclined | Should -Match 'rest\.issues\.addLabels'
+    }
+
+    It 'revalidates queue and in-progress labels immediately before decline side effects' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $markDeclined = [regex]::Match(
+            $scanner,
+            '(?s)async function markDeclined\(prNumber, headSha, activityCheckpoint, activityKey\).*?async function clearDeclined'
+        ).Value
+
+        ([regex]::Matches($markDeclined, 'await getCurrentLabelNames\(prNumber\)')).Count |
+            Should -BeGreaterOrEqual 2
+        $finalLabelRead = $markDeclined.LastIndexOf('await getCurrentLabelNames(prNumber)')
+        $markerLookup = $markDeclined.IndexOf('const maxMarkerPages = 5;')
+        $createMarker = $markDeclined.IndexOf('issues.createComment({')
+        $applyDeclined = $markDeclined.IndexOf('rest.issues.addLabels')
+
+        $finalLabelRead | Should -BeGreaterThan $markerLookup
+        $finalLabelRead | Should -BeLessThan $createMarker
+        $markDeclined | Should -Match '!currentLabels\.has\(readyLabel\)'
+        $markDeclined | Should -Match "currentLabels\.has\('s/agent-review-in-progress'\)"
+        $applyDeclined | Should -BeGreaterThan $finalLabelRead
+        $scanner | Should -Match 'if \(!declineRecorded\) \{ continue; \}'
+    }
+
+    It 'keeps PR-authored narrative out of the agent decision prompt' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+
+        $scanner | Should -Match 'fixed-schema candidates'
+        $scanner | Should -Match 'PR-authored titles,\s+comments, command bodies, commit messages'
+        $scanner | Should -Match 'must not be fetched or inspected'
+        $scanner | Should -Not -Match 'safe and useful enough'
     }
 
     It 'recovers when concurrent decline-label creation returns 422' {

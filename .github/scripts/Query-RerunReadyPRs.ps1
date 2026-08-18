@@ -59,6 +59,33 @@ function Get-PlatformFromLabels {
     return 'android'
 }
 
+function Get-RerunDecisionMetadata {
+    param(
+        [Parameter(Mandatory = $true)][string]$ContextMarkdown,
+        [bool]$HasTrustedReviewOptions
+    )
+
+    $headChanged = [regex]::Match(
+        $ContextMarkdown,
+        '(?m)^- Current head differs from latest reviewed SHA: (?<value>true|false)\s*$')
+    $newComments = [regex]::Match(
+        $ContextMarkdown,
+        '(?m)^- New non-command author comments: (?<value>\d+)\s*$')
+    $newCommits = [regex]::Match(
+        $ContextMarkdown,
+        '(?m)^- New commits: (?<value>\d+)\s*$')
+    if (-not $headChanged.Success -or -not $newComments.Success -or -not $newCommits.Success) {
+        throw 'Deterministic rerun context is missing required decision metadata.'
+    }
+
+    return [pscustomobject]@{
+        headChanged = [bool]::Parse($headChanged.Groups['value'].Value)
+        newAuthorCommentCount = [int]$newComments.Groups['value'].Value
+        newCommitCount = [int]$newCommits.Groups['value'].Value
+        hasTrustedReviewOptions = $HasTrustedReviewOptions
+    }
+}
+
 function Invoke-RerunReadyPRQuery {
     param(
         [int]$QueryMaxPRs = $MaxPRs,
@@ -77,7 +104,7 @@ $searchJson = gh pr list `
     --state open `
     --label $ReadyForRerunLabel `
     --limit $MaxPRs `
-    --json number,title,url,headRefOid,isDraft,labels,author
+    --json number,headRefOid,isDraft,author
 if ($LASTEXITCODE -ne 0) {
     throw "Failed to list open PRs labeled '$ReadyForRerunLabel' (gh pr list exited with code $LASTEXITCODE)."
 }
@@ -107,28 +134,25 @@ foreach ($pr in @($searchResult)) {
     $activityKey = [Convert]::ToHexString(
         [System.Security.Cryptography.SHA256]::HashData($activityKeyBytes)
     ).ToLowerInvariant()
+    $decisionMetadata = Get-RerunDecisionMetadata `
+        -ContextMarkdown $contextMarkdown `
+        -HasTrustedReviewOptions ([bool]$reviewOptions.Found)
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }
 
     $candidates += [pscustomobject]@{
         prNumber        = $number
-        title           = [string]$pr.title
-        url             = [string]$pr.url
-        authorLogin     = $authorLogin
         isDraft         = [bool]$pr.isDraft
         headSha         = [string]$pr.headRefOid
         platform        = $platform
         pipelineRef     = $pipelineRef
-        reviewCommandId = $reviewOptions.CommentId
-        reviewCommand   = $reviewOptions.Body
-        labels          = $labels
         activityCheckpoint = $activityCheckpoint
         activityKey     = $activityKey
+        activity        = $decisionMetadata
         # The ready label does not encode whether this queue cycle came from a
         # specific command or the autonomous labeler. Never reuse a historical
         # /review rerun comment as this cycle's reaction target.
         rerunCommentId  = [Int64]0
-        contextMarkdown = $contextMarkdown
     }
 }
 
