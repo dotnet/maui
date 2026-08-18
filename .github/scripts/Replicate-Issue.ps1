@@ -1546,11 +1546,19 @@ function Resolve-MisplacedAgentOutput {
     }
 
     $fileName = Split-Path -Leaf $CanonicalPath
-    $searchRoots = @(Split-Path -Parent $CanonicalPath)
+    $canonicalParent = Split-Path -Parent $CanonicalPath
+    # The plan belongs in CustomAgentLogsTmp/Sandbox, and the directory just
+    # above it is where an agent that half-remembers the path tends to write.
+    $searchRoots = @($canonicalParent, (Split-Path -Parent $canonicalParent))
     foreach ($name in @('agentDir', 'ArtifactRoot', 'sandboxAppiumDir', 'sandboxDir', 'repoRoot')) {
         $variable = Get-Variable -Name $name -ErrorAction SilentlyContinue
-        if ($variable -and $variable.Value -is [string]) {
-            $searchRoots += $variable.Value
+        if (-not $variable -or $variable.Value -isnot [string]) {
+            continue
+        }
+
+        $searchRoots += $variable.Value
+        if ($name -eq 'sandboxAppiumDir') {
+            $searchRoots += Split-Path -Parent $variable.Value
         }
     }
 

@@ -980,6 +980,12 @@ public partial class MainPage : ContentPage
         Test-Path -LiteralPath $sandboxProposalPath | Should -BeTrue
         Test-Path -LiteralPath $misplaced | Should -BeFalse
 
+        # The directory one level above the canonical one is the likeliest slip.
+        Move-Item -LiteralPath $sandboxProposalPath `
+            -Destination (Join-Path (Split-Path -Parent $sandboxAppiumDir) 'sandbox-proposal.json')
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+        Test-Path -LiteralPath $sandboxProposalPath | Should -BeTrue
+
         Remove-Item -LiteralPath $sandboxProposalPath -Force
         { Read-SandboxProposal | Out-Null } |
             Should -Throw '*did not write sandbox-proposal.json*'
