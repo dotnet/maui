@@ -1,6 +1,6 @@
 ---
 name: release-readiness
-description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews. Surveys CI pipelines, computes what's actually NEW in the branch (commits + source PRs with revert detection), and cross-references open `regressed-in-*` issues against branch contents to identify port candidates, rejected backports, and unresolved regressions. Supports both in-flight and pre-cut (candidate) modes for SR and Preview branches.
+description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews — and produces public-safe, copy-ready release handoffs or Loop-page drafts from the resulting evidence. Use for readiness verdicts, release blockers, Preview/SR status, release handoff pages, manual validation instructions, or "make the SR10/Preview N release page." Surveys CI and release delta, classifies regressions, and keeps Preview and servicing semantics distinct.
 metadata:
   author: dotnet-maui
   version: "2.0"
@@ -29,7 +29,7 @@ This skill **reports**. It does **not** execute release operations against dotne
 
 ## Architecture
 
-This skill has **three** PowerShell entry points, one Preview helper, and one workflow:
+This skill has **four** PowerShell entry points, one Preview helper, and one workflow:
 
 | Script | Branch type | Purpose |
 |--------|-------------|---------|
@@ -37,6 +37,7 @@ This skill has **three** PowerShell entry points, one Preview helper, and one wo
 | [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight, `-Candidate`, or `-Shipped`). `-Shipped` surveys the same branch with post-ship verdict, carry-forward, and hotfix-vs-next-SR guidance semantics. |
 | [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`), including consumer-installability evidence. |
 | [`PreviewInstallability.ps1`](scripts/PreviewInstallability.ps1) | Preview helper | Resolves the workload-set package, validates branch-pin coherence, probes manifest and representative pack availability, extracts platform prerequisites, and emits an isolated NuGet configuration for local validation. |
+| [`New-ReleaseHandoff.ps1`](scripts/New-ReleaseHandoff.ps1) | both | Projects existing readiness JSON plus separately verified public release evidence into copy-ready Markdown and normalized JSON. Missing facts remain `TBD`; it never selects builds or mutates release state. |
 | [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Three-hourly daytime UTC schedule + event-driven refreshes + manual dispatch + PR validation. Non-PR triggers run `Find-Trackers -AllActiveMajors`, fan out a matrix job per tracker, and write idempotent `[Release Readiness]` issues; PR triggers validate outputs only. |
 
 Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
@@ -120,6 +121,26 @@ The unattended public survey does not know the release-owner-confirmed workload-
 version or private shipping source. It therefore keeps **Consumer installability**
 `UNKNOWN` rather than guessing that the newest coherent package is the blessed one.
 Complete the local gate below before declaring a Preview ready.
+
+### Copy-ready release handoff / Loop draft
+
+Generate the appropriate Preview or SR readiness JSON first. Then follow
+[`references/release-handoff.md`](references/release-handoff.md) to gather
+separately verified public build, test, assessment, rollback, and workload-set
+evidence and render it:
+
+```bash
+pwsh .github/skills/release-readiness/scripts/New-ReleaseHandoff.ps1 \
+  -ReadinessJson ./release-readiness.json \
+  -EvidenceJson ./release-evidence.json \
+  -OutputDir ./release-handoff
+```
+
+This is a deterministic projection of the readiness report, not a second survey.
+It supports Preview and SR (including SR10) through one editorial renderer while
+preserving their different readiness semantics. It does not read or write Loop
+or SharePoint. Do not copy private source-page content into the evidence file;
+unknown fields must remain `TBD`.
 
 ### Preview: authoritative blessed-build source (.NET Release Tracker)
 
