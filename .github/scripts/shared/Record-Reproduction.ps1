@@ -106,6 +106,38 @@ function ConvertTo-SafeLogText {
     return $text.Trim()
 }
 
+function Get-ReproductionExitCodeMeaning {
+    <#
+        .SYNOPSIS
+        Names what an abnormal exit code means, in words.
+
+        .DESCRIPTION
+        iOS run 15011154 failed five times with "exit code 134" and nothing
+        else survived the summary. 134 is SIGABRT: the reproduction process
+        aborted rather than reporting a result, which calls for a different
+        response than a step that simply did not find its element.
+    #>
+    param([int]$ExitCode)
+
+    $meanings = @{
+        132 = 'SIGILL: the process executed an illegal instruction'
+        133 = 'SIGTRAP: the process hit a debugger trap'
+        134 = 'SIGABRT: the process aborted itself, which on a device runner usually means a native assertion or an unhandled platform exception rather than a failed assertion in the plan'
+        136 = 'SIGFPE: the process hit an arithmetic fault'
+        137 = 'SIGKILL: the operating system killed the process, usually for memory pressure or a hard timeout'
+        139 = 'SIGSEGV: the process crashed with a segmentation fault'
+        143 = 'SIGTERM: the process was asked to terminate'
+        -532462766 = 'an unhandled .NET exception terminated the process'
+        -1073741819 = 'an access violation terminated the process'
+        -1073741571 = 'a stack overflow terminated the process'
+    }
+
+    if ($meanings.ContainsKey($ExitCode)) {
+        return $meanings[$ExitCode]
+    }
+    return ''
+}
+
 function Select-ReproductionDiagnosticLines {
     <#
         .SYNOPSIS
@@ -481,7 +513,9 @@ function Invoke-RequiredCommand {
         if ($timedOut) {
             throw "$Purpose timed out after $TimeoutSeconds seconds.$suffix"
         }
-        throw "$Purpose failed with exit code $exitCode.$suffix"
+        $meaning = Get-ReproductionExitCodeMeaning -ExitCode $exitCode
+        $explained = if ($meaning) { " That code is $meaning." } else { '' }
+        throw "$Purpose failed with exit code $exitCode.$explained$suffix"
     }
 
     return $result

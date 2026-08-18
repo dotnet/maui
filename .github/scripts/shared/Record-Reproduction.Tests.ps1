@@ -39,6 +39,7 @@ BeforeAll {
             FinalVideoBytes    = $FinalVideoBytes
             FailCommandPurpose = $FailCommandPurpose
             FailureOutput      = $FailureOutput
+            FailExitCode       = 0
             FailStop           = $FailStop.IsPresent
             RecorderExitsEarly = $RecorderExitsEarly.IsPresent
             StopExitCode       = $StopExitCode
@@ -54,7 +55,7 @@ BeforeAll {
             if (-not [string]::IsNullOrWhiteSpace($state.FailCommandPurpose) -and
                 $request.Purpose -eq $state.FailCommandPurpose) {
                 return [pscustomobject]@{
-                    ExitCode = 23
+                    ExitCode = $(if ($state.PSObject.Properties.Name -contains 'FailExitCode' -and $state.FailExitCode) { $state.FailExitCode } else { 23 })
                     StdOut   = ''
                     StdErr   = $state.FailureOutput
                     TimedOut = $false
@@ -817,6 +818,31 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         # The whole 24s recording has to land inside the 6s preview budget.
         (24.0 / $speedUp) | Should -BeLessOrEqual 6.0001
         (24.0 / $speedUp) | Should -BeGreaterThan 5.9
+    }
+
+    It 'names an abnormal exit code instead of only numbering it' {
+        # iOS run 15011154 failed five times on "exit code 134" with no other
+        # surviving text. 134 is SIGABRT, which calls for a different response
+        # than a step that merely failed to find its element.
+        $harness = New-RecordingHarness `
+            -FailCommandPurpose 'Normalize recording' `
+            -FailureOutput 'boom'
+        $harness.State.FailExitCode = 134
+        $caught = $null
+
+        try {
+            Invoke-TestRecording `
+                -Harness $harness `
+                -Platform android `
+                -DeviceUdid 'emulator-5554' `
+                -EvidenceDir (Join-Path $TestDrive 'sigabrt') | Out-Null
+        } catch {
+            $caught = $_
+        }
+
+        $caught | Should -Not -BeNullOrEmpty
+        $caught.Exception.Message | Should -Match 'SIGABRT'
+        $caught.Exception.Message | Should -Match 'aborted itself'
     }
 
     It 'surfaces the failing step instead of the banner and stack frames' {
