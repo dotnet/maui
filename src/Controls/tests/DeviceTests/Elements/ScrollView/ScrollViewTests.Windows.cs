@@ -158,10 +158,12 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
 			{
 				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
-				await WaitAssert(() => platformScrollView.IsTabStop);
-				await Task.Delay(100);
+				await WaitAssert(() =>
+					ReferenceEquals(
+						WDependencyProperty.UnsetValue,
+						platformScrollView.ReadLocalValue(WControl.IsTabStopProperty)));
 
-				Assert.Same(WDependencyProperty.UnsetValue, platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+				Assert.True(platformScrollView.IsTabStop);
 				Assert.False(entry.IsFocused);
 			});
 		}
