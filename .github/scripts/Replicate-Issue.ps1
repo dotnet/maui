@@ -563,13 +563,18 @@ function Get-ReplicationFailureDetails {
     # crowded out the real message in Android run 15009985.
     $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$)'
     $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
-    $bannerPattern = '^\s*[\u2500-\u257F]'
-    $quietLines = @($safeLines | Where-Object {
-        $_ -notmatch $wireNoisePattern -and
-        $_ -notmatch $stackFramePattern -and
-        $_ -notmatch $progressPattern -and
-        $_ -notmatch $bannerPattern
-    })
+    # The verification harness prints its verdict inside a drawn box, so a rule
+    # that dropped every line starting with a box character would also drop
+    # "test(s) PASSED but should FAIL" -- the text the non-reproduction
+    # classifier reads. Strip the drawing, keep whatever it framed.
+    $quietLines = @($safeLines |
+        ForEach-Object { ($_ -replace '[\u2500-\u257F]', ' ').Trim() } |
+        Where-Object { $_ } |
+        Where-Object {
+            $_ -notmatch $wireNoisePattern -and
+            $_ -notmatch $stackFramePattern -and
+            $_ -notmatch $progressPattern
+        })
     if ($quietLines.Count -gt 0) {
         $safeLines = $quietLines
     }

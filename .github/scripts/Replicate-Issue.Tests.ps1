@@ -2859,6 +2859,32 @@ PS-STEP-FAILED: step 3 did not find its target
         }
     }
 
+    It 'keeps the verdict the harness prints inside a drawn box' {
+        # verify-tests-fail.ps1 prints every non-reproduction verdict framed by
+        # box-drawing characters. A rule that dropped lines starting with a box
+        # character would drop the verdict itself, and the run would burn its
+        # remaining attempts instead of concluding "did not reproduce".
+        $v = [char]0x2551   # box vertical
+        $h = [char]0x2550   # box horizontal
+        $harnessOutput = @(
+            '[HTTP] --> POST /session/aaaabbbb/element'
+            "$([char]0x2554)$h$h$h$([char]0x2557)"
+            "$v              VERIFICATION FAILED $([char]0x274C)              $v"
+            "$v  1/1 test(s) PASSED but should FAIL!                 $v"
+            "$v  Those tests don't reproduce the bug. Revise them!   $v"
+            "$([char]0x255A)$h$h$h$([char]0x255D)"
+        ) -join "`n"
+
+        $details = Get-ReplicationFailureDetails -Output @($harnessOutput)
+
+        Test-ReplicationTestDidNotReproduce -FailureSummary $details |
+            Should -BeTrue
+        $details | Should -Match 'VERIFICATION FAILED'
+        # The drawing itself is still not worth an agent's attention.
+        $details | Should -Not -Match ([string]$h * 3)
+        $details | Should -Not -Match '/session/'
+    }
+
     It 'still reports driver noise when the child produced nothing else' {
         $noise = "[HTTP] --> POST /session/aaaabbbb/element"
         (Get-ReplicationFailureDetails -Output @($noise)) |

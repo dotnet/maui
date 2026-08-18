@@ -173,16 +173,20 @@ function Select-ReproductionDiagnosticLines {
     # stopped; a success marker cannot explain a failure either. Warning and
     # failure markers are kept.
     $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
-    $bannerPattern = '^\s*[\u2500-\u257F]'
     $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|Caused by:\s)'
     $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|Logcat|Simulator|simctl)|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
 
-    $quiet = @($lines | Where-Object {
-        $_ -notmatch $progressPattern -and
-        $_ -notmatch $bannerPattern -and
-        $_ -notmatch $stackFramePattern -and
-        $_ -notmatch $wireNoisePattern
-    })
+    # The verification harness prints its verdict inside a drawn box, so the
+    # drawing is stripped rather than used to discard the line: dropping every
+    # boxed line would also drop "test(s) PASSED but should FAIL".
+    $quiet = @($lines |
+        ForEach-Object { ($_ -replace '[\u2500-\u257F]', ' ').Trim() } |
+        Where-Object { $_ } |
+        Where-Object {
+            $_ -notmatch $progressPattern -and
+            $_ -notmatch $stackFramePattern -and
+            $_ -notmatch $wireNoisePattern
+        })
     if ($quiet.Count -gt 0) {
         $lines = $quiet
     }
