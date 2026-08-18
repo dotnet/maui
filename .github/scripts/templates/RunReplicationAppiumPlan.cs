@@ -38,9 +38,17 @@ Process? launchedWindowsApp = null;
 try
 {
     using var driver = CreateDriver(platform, udid, out launchedWindowsApp);
+    // Frames are only captured while a recording is in progress. The
+    // confirmation replay runs the same plan without recording, so an absent
+    // directory means "do not capture", exactly as it does on every other
+    // platform, rather than a fatal misconfiguration.
     var catalystFramesDirectory = platform == "catalyst"
-        ? RequireEnvironmentValue("MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY")
+        ? Environment.GetEnvironmentVariable("MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY")
         : null;
+    if (string.IsNullOrWhiteSpace(catalystFramesDirectory))
+    {
+        catalystFramesDirectory = null;
+    }
     var catalystFrameIndex = 0;
     CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
     WriteRecordingStartMarker();

@@ -60,6 +60,7 @@ BeforeAll {
         'Get-ReplicationFailureDetails',
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
+        'Test-ReplicationReplayHarnessFault',
         'Get-ReplicationElementInventory',
         'Get-ReplicationFailureSignature',
         'Get-ReplicationAttemptFailureKind',
@@ -4077,5 +4078,48 @@ public class Issue36298 : _IssuesUITest
                 -Path 'src/Controls/tests/DeviceTests/Elements/Issue1.cs' `
                 -Platform 'android'
         } | Should -Throw '*ios, catalyst, windows*'
+    }
+}
+
+Describe 'The confirmation replay runs on Catalyst without a recorder' {
+    It 'treats the Catalyst frame directory as optional' {
+        # Run 15008728 aborted with SIGABRT on every confirmation attempt:
+        # the replay does not record, so the directory is absent, and demanding
+        # it made a repeatable Catalyst reproduction impossible to confirm.
+        $script:TrustedAppiumSource |
+            Should -Not -Match 'RequireEnvironmentValue\("MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY"\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'GetEnvironmentVariable\(\s*"MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY"\)'
+    }
+
+    It 'still refuses a frame directory that is present but unusable' {
+        $script:TrustedAppiumSource |
+            Should -Match 'Trusted Catalyst frame directory is missing or not fully qualified'
+    }
+
+    It 'keeps requiring the values that every run genuinely needs' {
+        $script:TrustedAppiumSource | Should -Match 'RequireEnvironmentValue\("REPLICATION_PLATFORM"\)'
+        $script:TrustedAppiumSource | Should -Match 'RequireEnvironmentValue\("DEVICE_UDID"\)'
+    }
+}
+
+Describe 'A broken replay harness is not a flaky reproduction' {
+    It 'recognises the runner failing to configure itself' {
+        $text = "Confirming the on-device reproduction repeats failed with exit code 134. " +
+            "Unhandled exception. System.InvalidOperationException: Required environment " +
+            "value 'MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY' is missing."
+        Test-ReplicationReplayHarnessFault -Text $text | Should -BeTrue
+    }
+
+    It 'leaves a genuine non-repeat alone' {
+        $text = 'Confirming the on-device reproduction repeats failed with exit code 1. ' +
+            'STEP 3/3: assert label text REPLICATION_ACTIONS_COMPLETED issue=35775 ' +
+            'Expected marker was not present.'
+        Test-ReplicationReplayHarnessFault -Text $text | Should -BeFalse
+    }
+
+    It 'tells the agent the reproduction is unreliable only when it really is' {
+        $script:Source |
+            Should -Match 'not \(Test-ReplicationReplayHarnessFault -Text \$sandboxFailureSummary\)'
     }
 }

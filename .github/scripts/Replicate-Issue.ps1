@@ -376,6 +376,23 @@ function Get-ReplicationElementInventory {
     return ConvertTo-ReplicationSafeLog $inventory $MaximumLength
 }
 
+function Test-ReplicationReplayHarnessFault {
+    <#
+    .SYNOPSIS
+        True when the confirmation replay failed because the trusted plan runner
+        could not configure itself, rather than because the reported behaviour
+        stopped happening. Blaming the reproduction for these is how run 15008728
+        spent five attempts rewriting a plan that was never at fault.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text)
+
+    return $Text -match "(?i)Required environment value '[^']+' is missing\.|" +
+        'Trusted Catalyst frame directory is missing or not fully qualified|' +
+        'Recording start marker path must be fully qualified|' +
+        'must be fully qualified\.\s*$'
+}
+
 function Get-ReplicationCompilerDiagnostics {
     <#
         .SYNOPSIS
@@ -3106,7 +3123,10 @@ try {
         }
         catch {
             $sandboxFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
-            if ($sandboxFailureSummary -match '(?i)Confirming the on-device reproduction repeats') {
+            if (
+                $sandboxFailureSummary -match '(?i)Confirming the on-device reproduction repeats' -and
+                -not (Test-ReplicationReplayHarnessFault -Text $sandboxFailureSummary)
+            ) {
                 $sandboxFailureSummary = @"
 The reported behavior appeared on the first run of your plan and then did not appear when the identical plan ran again on the same device, so the reproduction is not reliable enough to publish. Something in the plan depends on state that only holds the first time, such as an animation still settling, a first-launch layout pass or a control that keeps the value set by the previous run.
 Make the plan produce the same verdict every time: reset the scenario at the start of the plan instead of relying on a freshly launched app, wait for the event that reports the change rather than for the app to settle, and read the value from a control the app updates rather than from a transient visual state.
