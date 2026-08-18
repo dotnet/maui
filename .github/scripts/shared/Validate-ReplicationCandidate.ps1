@@ -45,6 +45,7 @@ $script:VerificationArtifactMaxBytes = 2MB
 # Reviewers repeatedly rejected reproductions proved by one execution, so a
 # candidate has to show the same failure in more than one independent run.
 $script:VerificationMinimumRunCount = 2
+$script:ValidatedEffectiveFailureSignature = ''
 $script:VideoMaxBytes = 100MB
 $script:PreviewMaxBytes = 20MB
 
@@ -2297,6 +2298,8 @@ function Assert-ReplicationVerificationEvidence {
                 'verifierExitCode',
                 'verifierPassed',
                 'signatureMatched',
+                'signatureEquivalent',
+                'effectiveFailureSignature',
                 'infrastructureFailure',
                 'verificationPassed',
                 'requestedRunCount',
@@ -2382,10 +2385,24 @@ function Assert-ReplicationVerificationEvidence {
             $actualFailureMessage.Contains([char]0)) {
             throw 'Verification result actual failure message is missing or invalid.'
         }
-        if (-not $actualFailureMessage.Contains(
-            $resultSignature,
+        $effectiveSignature = ConvertTo-BoundedSingleLine `
+            -Value (Find-AliasedProperty `
+                -Object $result `
+                -Names @('effectiveFailureSignature') `
+                -Context 'Verification result' `
+                -Required).Value `
+            -Context 'Verification effective failure signature' `
+            -MinimumLength 3 `
+            -MaximumLength 1000
+        # The published signature must be words the targeted test actually
+        # produced, whatever the agent predicted beforehand. Verifier output
+        # re-wraps long assertions, so compare with runs of whitespace collapsed.
+        $normalizedActual = ([regex]::Replace($actualFailureMessage, '\s+', ' ')).Trim()
+        $normalizedEffective = ([regex]::Replace($effectiveSignature, '\s+', ' ')).Trim()
+        if (-not $normalizedActual.Contains(
+            $normalizedEffective,
             [StringComparison]::Ordinal)) {
-            throw 'The targeted test failure message does not contain the expected failure signature.'
+            throw 'The targeted test failure message does not contain the published failure signature.'
         }
         $exitCodeProperty = Find-AliasedProperty `
             -Object $result `
@@ -2397,10 +2414,23 @@ function Assert-ReplicationVerificationEvidence {
         }
         $expectedBooleans = @{
             verifierPassed = $true
-            signatureMatched = $true
+            signatureEquivalent = $true
             infrastructureFailure = $false
             verificationPassed = $true
             consistentRuns = $true
+        }
+        $signatureMatchedProperty = Find-AliasedProperty `
+            -Object $result `
+            -Names @('signatureMatched') `
+            -Context 'Verification result' `
+            -Required
+        if ($signatureMatchedProperty.Value -isnot [bool]) {
+            throw "Verification result 'signatureMatched' must be a boolean."
+        }
+        $script:ValidatedEffectiveFailureSignature = $effectiveSignature
+        if ($signatureMatchedProperty.Value -and
+            $effectiveSignature -cne $resultSignature) {
+            throw 'An exactly matched signature must be published unchanged.'
         }
         foreach ($entry in $expectedBooleans.GetEnumerator()) {
             $property = Find-AliasedProperty `
@@ -3034,6 +3064,7 @@ function Invoke-ReplicationCandidateValidation {
             testMethodName = $manifest.TestMethodName
             testFilter = $manifest.TestFilter
             expectedFailureSignature = $manifest.ExpectedFailurePattern
+            observedFailureSignature = $script:ValidatedEffectiveFailureSignature
             expectedFailurePattern = $manifest.ExpectedFailurePattern
             actualFailureMessage = if ($verificationResult) {
                 [string]$verificationResult.actualFailureMessage

@@ -12,6 +12,9 @@ BeforeAll {
     }
 
     foreach ($name in @(
+        'ConvertTo-NormalizedReplicationSignature',
+        'Get-ReplicationSignatureTokens',
+        'Test-ReplicationSignatureEquivalent',
         'Test-ReplicationExpectedFailureSignature',
         'Test-ReplicationInfrastructureFailure',
         'ConvertTo-AzdoSafeReplicationOutput',
@@ -88,6 +91,43 @@ Describe 'Replication failure-only verification' {
         Test-ReplicationExpectedFailureSignature `
             -Content 'Expected: ab; Actual: aab' `
             -Signature 'Expected: [a+b]; Actual: [aab]' |
+            Should -BeFalse
+    }
+
+    It 'accepts a re-wrapped assertion that reports the same failure' {
+        # Verifier output re-indents long messages, so build 14999429 rejected a
+        # test that had genuinely failed at its intended assertion.
+        Test-ReplicationExpectedFailureSignature `
+            -Content "Assert.Equal() Failure`n  Expected:   UIColor red`n  Actual:     UIColor blue" `
+            -Signature 'Expected: UIColor red Actual: UIColor blue' |
+            Should -BeTrue
+
+        Test-ReplicationExpectedFailureSignature `
+            -Content 'Expected: UIColor red; Actual: UIColor green' `
+            -Signature 'Expected: UIColor red; Actual: UIColor blue' |
+            Should -BeFalse
+    }
+
+    It 'treats a differently worded report of the same defect as equivalent' {
+        # Issue 36697: the test failed at its intended assertion but the message
+        # named the attributed title, so an exact match discarded a working
+        # reproduction and the repair round then broke it.
+        Test-ReplicationSignatureEquivalent `
+            -Declared 'CurrentAttributedTitle foreground stayed UIColor blue after CharacterSpacing changed' `
+            -Observed ('Assert.Equal() Failure: attributed title foreground for ' +
+                'CurrentAttributedTitle stayed blue once CharacterSpacing changed at runtime') |
+            Should -BeTrue
+
+        # A different defect must still be rejected.
+        Test-ReplicationSignatureEquivalent `
+            -Declared 'CurrentAttributedTitle foreground stayed UIColor blue after CharacterSpacing changed' `
+            -Observed 'Assert.True() Failure: ScrollView content offset was 44 instead of 0' |
+            Should -BeFalse
+
+        # Boilerplate alone can never establish equivalence.
+        Test-ReplicationSignatureEquivalent `
+            -Declared 'Expected true but was false' `
+            -Observed 'Expected true but was false for something entirely different' |
             Should -BeFalse
     }
 

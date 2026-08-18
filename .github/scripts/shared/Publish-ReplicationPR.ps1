@@ -171,12 +171,21 @@ function New-ReplicationPullRequestBody {
         'XamlUnitTest' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
         default { "the **$recordingSurface** used for the run above." }
     }
-    $rawFailureSignature = [string]$Candidate.expectedFailureSignature
+    # Publish what the test actually reported rather than what the agent
+    # predicted; the validator already proved the two describe one defect.
+    $rawFailureSignature = Get-ReplicationCandidateText `
+        -Candidate $Candidate `
+        -Name 'observedFailureSignature'
+    if ([string]::IsNullOrWhiteSpace($rawFailureSignature)) {
+        $rawFailureSignature = [string]$Candidate.expectedFailureSignature
+    }
     $actualFailureMessage = [string]$Candidate.actualFailureMessage
-    if ([string]::IsNullOrWhiteSpace($rawFailureSignature) -or
-        [string]::IsNullOrWhiteSpace($actualFailureMessage) -or
-        -not $actualFailureMessage.Contains(
-            $rawFailureSignature,
+    $normalizedActualMessage = ([regex]::Replace($actualFailureMessage, '\s+', ' ')).Trim()
+    $normalizedSignature = ([regex]::Replace($rawFailureSignature, '\s+', ' ')).Trim()
+    if ([string]::IsNullOrWhiteSpace($normalizedSignature) -or
+        [string]::IsNullOrWhiteSpace($normalizedActualMessage) -or
+        -not $normalizedActualMessage.Contains(
+            $normalizedSignature,
             [StringComparison]::Ordinal)) {
         throw 'Validated candidate targeted failure message does not contain the expected failure signature.'
     }

@@ -63,7 +63,104 @@ function Test-ReplicationExpectedFailureSignature {
         return $false
     }
 
-    return $Content.Contains($Signature, [StringComparison]::Ordinal)
+    if ($Content.Contains($Signature, [StringComparison]::Ordinal)) {
+        return $true
+    }
+
+    # Verifier output wraps and re-indents long assertion messages, so an exact
+    # ordinal match rejects signatures that describe the very same failure.
+    $normalizedContent = ConvertTo-NormalizedReplicationSignature -Value $Content
+    $normalizedSignature = ConvertTo-NormalizedReplicationSignature -Value $Signature
+    if ([string]::IsNullOrWhiteSpace($normalizedSignature)) {
+        return $false
+    }
+
+    return $normalizedContent.Contains($normalizedSignature, [StringComparison]::OrdinalIgnoreCase)
+}
+
+function ConvertTo-NormalizedReplicationSignature {
+    param([AllowEmptyString()][string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    return ([regex]::Replace($Value, '\s+', ' ')).Trim()
+}
+
+function Get-ReplicationSignatureTokens {
+    <#
+        .SYNOPSIS
+        Reduces a failure message to the words that identify the defect.
+
+        .DESCRIPTION
+        Assertion boilerplate is shared by every failing test, so it cannot say
+        whether two messages describe the same failure. Only the remaining
+        words carry that meaning.
+    #>
+    param([AllowEmptyString()][string]$Value)
+
+    $tokens = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal)
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return , $tokens
+    }
+
+    $boilerplate = @(
+        'assert', 'asserted', 'assertion', 'actual', 'equal', 'equals',
+        'error', 'exception', 'expected', 'failed', 'failure', 'false',
+        'from', 'given', 'have', 'message', 'must', 'null', 'result',
+        'should', 'string', 'test', 'that', 'this', 'true', 'value',
+        'values', 'were', 'when', 'with', 'without')
+
+    foreach ($match in [regex]::Matches($Value.ToLowerInvariant(), '[a-z][a-z0-9_.]{3,}')) {
+        $token = $match.Value.Trim('.')
+        if ($token.Length -ge 4 -and $token -notin $boilerplate) {
+            [void]$tokens.Add($token)
+        }
+    }
+
+    # The comma keeps PowerShell from unrolling the set into loose strings.
+    return , $tokens
+}
+
+function Test-ReplicationSignatureEquivalent {
+    <#
+        .SYNOPSIS
+        Decides whether a real failure is the failure the test predicted.
+
+        .DESCRIPTION
+        The trusted verifier already proved the named test failed and the
+        message came from a validated machine-readable result, so a purely
+        textual mismatch is a wording difference rather than a different
+        defect. Rejecting it discards a working reproduction and invites the
+        agent to rewrite a test that was already correct.
+    #>
+    param(
+        [AllowEmptyString()][string]$Declared,
+        [AllowEmptyString()][string]$Observed,
+        [ValidateRange(0.5, 1.0)][double]$MinimumOverlap = 0.6
+    )
+
+    $declaredTokens = Get-ReplicationSignatureTokens -Value $Declared
+    if ($declaredTokens.Count -lt 3) {
+        # Too little meaning to compare; demand the exact declared text.
+        return $false
+    }
+
+    $observedTokens = Get-ReplicationSignatureTokens -Value $Observed
+    if ($observedTokens.Count -eq 0) {
+        return $false
+    }
+
+    $shared = 0
+    foreach ($token in $declaredTokens) {
+        if ($observedTokens.Contains($token)) {
+            $shared++
+        }
+    }
+
+    return ($shared / $declaredTokens.Count) -ge $MinimumOverlap
 }
 
 function Test-ReplicationInfrastructureFailure {
@@ -249,6 +346,16 @@ function Invoke-SingleVerificationRun {
     $signatureMatched = Test-ReplicationExpectedFailureSignature `
         -Content $actualFailureMessage `
         -Signature $ExpectedFailureSignature
+    $signatureEquivalent = $signatureMatched
+    if (-not $signatureMatched -and $verifierPassed) {
+        $signatureEquivalent = Test-ReplicationSignatureEquivalent `
+            -Declared $ExpectedFailureSignature `
+            -Observed $actualFailureMessage
+        if ($signatureEquivalent) {
+            Write-Host ('The targeted test failed with the predicted defect but ' +
+                'different wording, so the observed assertion is authoritative.')
+        }
+    }
     $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
 
     return [pscustomobject]@{
@@ -256,9 +363,10 @@ function Invoke-SingleVerificationRun {
         ExitCode = $exitCode
         VerifierPassed = $verifierPassed
         SignatureMatched = $signatureMatched
+        SignatureEquivalent = $signatureEquivalent
         InfrastructureFailure = $infrastructureFailure
         ActualFailureMessage = $actualFailureMessage
-        Passed = $verifierPassed -and $signatureMatched -and -not $infrastructureFailure
+        Passed = $verifierPassed -and $signatureEquivalent -and -not $infrastructureFailure
         LogFiles = @($runLogs | Sort-Object -Unique)
     }
 }
@@ -285,6 +393,7 @@ $failedOutcomes = @($runOutcomes | Where-Object { -not $_.Passed })
 $consistentRuns = $completedRuns -eq $RunCount -and $failedOutcomes.Count -eq 0
 $verifierPassed = @($runOutcomes | Where-Object { -not $_.VerifierPassed }).Count -eq 0
 $signatureMatched = @($runOutcomes | Where-Object { -not $_.SignatureMatched }).Count -eq 0
+$signatureEquivalent = @($runOutcomes | Where-Object { -not $_.SignatureEquivalent }).Count -eq 0
 $infrastructureFailure = @($runOutcomes | Where-Object { $_.InfrastructureFailure }).Count -gt 0
 $nonZeroExitCodes = @($runOutcomes | Where-Object { $_.ExitCode -ne 0 })
 $exitCode = if ($nonZeroExitCodes.Count -gt 0) { [int]$nonZeroExitCodes[0].ExitCode } else { 0 }
@@ -295,9 +404,21 @@ $boundedFailureMessage = ConvertTo-BoundedVerificationFailureMessage `
     -Content $actualFailureMessage `
     -Signature $ExpectedFailureSignature
 $verificationPassed = $verifierPassed -and
-    $signatureMatched -and
+    $signatureEquivalent -and
     -not $infrastructureFailure -and
     $consistentRuns
+
+# The declared signature is the agent's prediction; the observed message came
+# from a validated machine-readable verifier result. Publish what actually
+# happened whenever the two differ but describe the same defect.
+$effectiveFailureSignature = if ($signatureMatched) {
+    $ExpectedFailureSignature
+} else {
+    ConvertTo-NormalizedReplicationSignature -Value $actualFailureMessage
+}
+if ($effectiveFailureSignature.Length -gt 400) {
+    $effectiveFailureSignature = $effectiveFailureSignature.Substring(0, 400)
+}
 
 $result = [ordered]@{
     schemaVersion = 1
@@ -314,6 +435,8 @@ $result = [ordered]@{
     verifierExitCode = $exitCode
     verifierPassed = $verifierPassed
     signatureMatched = $signatureMatched
+    signatureEquivalent = $signatureEquivalent
+    effectiveFailureSignature = $effectiveFailureSignature
     infrastructureFailure = $infrastructureFailure
     verificationPassed = $verificationPassed
     requestedRunCount = $RunCount
@@ -325,7 +448,8 @@ $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encod
 
 if (-not $verificationPassed) {
     throw ("Replication test verification failed (verifierPassed=$verifierPassed, " +
-        "signatureMatched=$signatureMatched, infrastructureFailure=$infrastructureFailure, " +
+        "signatureMatched=$signatureMatched, signatureEquivalent=$signatureEquivalent, " +
+        "infrastructureFailure=$infrastructureFailure, " +
         "consistentRuns=$consistentRuns, completedRuns=$completedRuns/$RunCount).")
 }
 

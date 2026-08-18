@@ -457,6 +457,8 @@ public class $TestName
             verifierExitCode = 0
             verifierPassed = $true
             signatureMatched = $true
+            signatureEquivalent = $true
+            effectiveFailureSignature = $Fixture.FailurePattern
             infrastructureFailure = $false
             verificationPassed = $true
             requestedRunCount = 2
@@ -1181,11 +1183,56 @@ VERIFICATION FAILED'
         $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
         $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
         $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
-        $verificationResult.signatureMatched = $false
+        $verificationResult.signatureEquivalent = $false
         Write-TestJson -Path $resultPath -Value $verificationResult
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*signatureMatched*'
+            Should -Throw '*signatureEquivalent*'
+    }
+
+    It 'publishes the wording the test produced when the prediction differed' {
+        # Build 14999429 discarded a reproduction that had failed at its intended
+        # assertion because the predicted wording was not an exact substring.
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $observed = 'attributed title foreground stayed blue after the runtime change'
+        $verificationResult.actualFailureMessage = "Xunit.Sdk.XunitException: $observed"
+        $verificationResult.signatureMatched = $false
+        $verificationResult.effectiveFailureSignature = $observed
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        $document = Invoke-FixtureValidation -Fixture $fixture
+        $document.observedFailureSignature | Should -BeExactly $observed
+    }
+
+    It 'refuses to publish a signature the test never produced' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.signatureMatched = $false
+        $verificationResult.effectiveFailureSignature =
+            'a failure the targeted test never reported'
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*does not contain the published failure signature*'
+    }
+
+    It 'refuses to rewrite a signature that already matched exactly' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.actualFailureMessage =
+            "Xunit.Sdk.XunitException: $($verificationResult.expectedFailureSignature) tail"
+        $verificationResult.effectiveFailureSignature = 'tail'
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*must be published unchanged*'
     }
 
     It 'rejects a signature found only in machine-result metadata, not the failure message' {
@@ -1199,6 +1246,7 @@ VERIFICATION FAILED'
         $verificationResult.actualFailureMessage =
             'Xunit.Sdk.EqualException: expected red but was blue'
         $verificationResult.signatureMatched = $true
+        $verificationResult.effectiveFailureSignature = 'Issue12345'
         Write-TestJson -Path $resultPath -Value $verificationResult
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
