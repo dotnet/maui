@@ -893,6 +893,174 @@ function Assert-ReplicationTestPlatformScope {
     }
 }
 
+function Get-ReplicationPlatformViewRoot {
+    <#
+        .SYNOPSIS
+        Names the element whose platform view an expression reads, if any.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Expression,
+
+        [Parameter(Mandatory)]
+        [AllowNull()]
+        [hashtable] $CapturedRoots
+    )
+
+    $trimmed = $Expression.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) {
+        return $null
+    }
+
+    # A direct read: someElement.Handler.PlatformView or someElement.ToPlatform().
+    $direct = [regex]::Match(
+        $trimmed,
+        '(?<root>[A-Za-z_][A-Za-z0-9_]*)\s*(?:\.\s*[A-Za-z_][A-Za-z0-9_]*\s*)*?\.\s*(?:Handler\s*(?:\!\s*)?\.\s*PlatformView|ToPlatform\s*\()')
+    if ($direct.Success) {
+        return $direct.Groups['root'].Value
+    }
+
+    # A local that was assigned from such a read earlier in the test.
+    $identifier = [regex]::Match($trimmed, '^(?<name>[A-Za-z_][A-Za-z0-9_]*)$')
+    if ($identifier.Success -and $null -ne $CapturedRoots) {
+        $name = $identifier.Groups['name'].Value
+        if ($CapturedRoots.ContainsKey($name)) {
+            return $CapturedRoots[$name]
+        }
+    }
+
+    return $null
+}
+
+function Split-ReplicationAssertionArguments {
+    <#
+        .SYNOPSIS
+        Splits an argument list on commas that are not nested.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Arguments
+    )
+
+    $parts = [System.Collections.Generic.List[string]]::new()
+    $current = [System.Text.StringBuilder]::new()
+    $depth = 0
+    foreach ($character in $Arguments.ToCharArray()) {
+        switch ($character) {
+            '(' { $depth++; [void]$current.Append($character); continue }
+            '[' { $depth++; [void]$current.Append($character); continue }
+            ')' { $depth--; [void]$current.Append($character); continue }
+            ']' { $depth--; [void]$current.Append($character); continue }
+            ',' {
+                if ($depth -eq 0) {
+                    [void]$parts.Add($current.ToString())
+                    [void]$current.Clear()
+                    continue
+                }
+                [void]$current.Append($character)
+                continue
+            }
+            default { [void]$current.Append($character); continue }
+        }
+    }
+
+    [void]$parts.Add($current.ToString())
+    return $parts.ToArray()
+}
+
+function Assert-ReplicationPlatformViewIdentity {
+    <#
+        .SYNOPSIS
+        Refuses a test whose verdict is that a native view instance did or
+        did not survive the reported trigger.
+
+        .DESCRIPTION
+        A reproduction that asserts the platform view is the same object it
+        was before the trigger stays red after a correct fix that recreates
+        the view, and a reproduction that asserts it is a different object
+        stays red after a correct fix that reuses it. Either way the test
+        pins an implementation detail the issue never reported, so it can
+        never turn green. Comparing a platform view with a container or a
+        sibling is unaffected; only comparing an element's platform view
+        with its own platform view is refused.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Content,
+
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return
+    }
+
+    $scanned = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $capturedRoots = @{}
+
+    foreach ($capture in [regex]::Matches(
+        $scanned,
+        '(?:var|[A-Za-z_][A-Za-z0-9_\.\<\>\[\]\?]*)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?<value>[^;]{1,400});')) {
+        $root = Get-ReplicationPlatformViewRoot `
+            -Expression $capture.Groups['value'].Value `
+            -CapturedRoots $null
+        if ($root) {
+            $capturedRoots[$capture.Groups['name'].Value] = $root
+        }
+    }
+
+    $comparisons = [System.Collections.Generic.List[string[]]]::new()
+
+    foreach ($call in [regex]::Matches(
+        $scanned,
+        '(?:Assert\s*\.\s*(?:Same|NotSame|AreSame|AreNotSame)|Object\s*\.\s*ReferenceEquals|ReferenceEquals)\s*\((?<args>[^;]{1,400})\)')) {
+        $arguments = Split-ReplicationAssertionArguments -Arguments $call.Groups['args'].Value
+        if ($arguments.Count -eq 2) {
+            [void]$comparisons.Add([string[]]@($arguments[0], $arguments[1]))
+        }
+    }
+
+    foreach ($fluent in [regex]::Matches(
+        $scanned,
+        '(?<subject>[A-Za-z_][A-Za-z0-9_\!\?]*(?:\s*\.\s*[A-Za-z_][A-Za-z0-9_\!\?]*(?:\s*\(\s*\))?){0,6})\s*\.\s*Should\s*\(\s*\)\s*\.\s*(?:Be|NotBe)SameAs\s*\(\s*(?<other>[^;\)]{1,200})\)')) {
+        [void]$comparisons.Add([string[]]@(
+            $fluent.Groups['subject'].Value,
+            $fluent.Groups['other'].Value))
+    }
+
+    foreach ($comparison in $comparisons) {
+        $left = Get-ReplicationPlatformViewRoot -Expression $comparison[0] -CapturedRoots $capturedRoots
+        if (-not $left) {
+            continue
+        }
+
+        $right = Get-ReplicationPlatformViewRoot -Expression $comparison[1] -CapturedRoots $capturedRoots
+        if (-not $right) {
+            continue
+        }
+
+        if ($left -cne $right) {
+            continue
+        }
+
+        throw (
+            "Candidate source '$Path' decides the issue by comparing the platform view of '$left' " +
+            'with its own platform view. Whether a handler reuses or recreates its native view is an ' +
+            'implementation detail the report does not describe, so this test stays red no matter how ' +
+            'the product is fixed. Assert the behaviour the reporter actually observed instead - the ' +
+            'text, the size, the position, the visibility, or the state that was wrong on screen.')
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

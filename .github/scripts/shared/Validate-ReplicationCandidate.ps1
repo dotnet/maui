@@ -1572,6 +1572,9 @@ function Assert-SourceTextIsSafe {
             -Content $normalized `
             -Path $Path `
             -Platform ([string]$Manifest.Platform)
+        Assert-ReplicationPlatformViewIdentity `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {

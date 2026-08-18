@@ -2753,6 +2753,147 @@ public void ReproducesIssue()
         } | Should -Throw "*prohibited 'framework-behavior-switch'*"
     }
 
+    It 'keeps Appium request logging out of the agent feedback' {
+        # Taken from run 15009980, where five attempts were spent on feedback
+        # that consisted of the driver's own HTTP traffic.
+        $output = @(
+            '[df4511aa][HTTP] <-- GET /session/df4511aa-74ec-45e5/element/15000000-0000/text 200 31 ms - 70'
+            '[debug] [XCUITest] Matched 1 element'
+            '[DevCon Factory] Found cached connections'
+            'Step 4 (assertTextEquals) failed: expected "BUG REPRODUCED:" but the element read "NO BUG:".'
+            '[df4511aa][HTTP] --> POST /session/df4511aa/element'
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $output
+        $details | Should -Match 'assertTextEquals'
+        $details | Should -Not -Match '/session/'
+        $details | Should -Not -Match '\[HTTP\]'
+        $details | Should -Not -Match 'DevCon Factory'
+    }
+
+    It 'still reports something when the driver log is all there is' {
+        $details = Get-ReplicationFailureDetails -Output @(
+            '[df4511aa][HTTP] <-- GET /session/abc/element 500 5 ms')
+        $details | Should -Not -BeNullOrEmpty
+    }
+
+    It 'names the rule a rejected manifest line broke' {
+        $cases = @{
+            ('x' * 400)                  = 'is 400 characters and the limit is 300'
+            '  padded  '                 = 'leading or trailing whitespace'
+            "line`nbreak"                = 'control character'
+            'see https://example.com/a'  = 'contains a URL'
+            'a ##vso[task.setvariable]b' = 'pipeline logging command'
+            ''                           = 'empty or only whitespace'
+        }
+
+        foreach ($case in $cases.GetEnumerator()) {
+            {
+                ConvertTo-BoundedAgentLine `
+                    -Value $case.Key `
+                    -Description 'Test reproduction step 3' `
+                    -MaximumLength 300
+            } | Should -Throw "*$($case.Value)*"
+        }
+    }
+
+    It 'tells the agent which reproduction step it must fix' {
+        # Without the index the agent cannot tell which of up to ten steps
+        # broke the rule, which is how run 15009967 ran out of attempts.
+        $script:Source | Should -Match 'Test reproduction step \$\(\$stepIndex \+ 1\)'
+    }
+
+    It 'neutralises a logging command it echoes back to the agent' {
+        $message = { ConvertTo-BoundedAgentLine `
+                -Value 'a ##vso[task.setvariable variable=x]y' `
+                -Description 'Test reproduction step 1' } |
+            Should -Throw -PassThru
+
+        [string]$message | Should -Not -Match '##vso\['
+    }
+
+    It 'runs every generated-source guard against every generated file' {
+        # A guard that is written but never called protects nothing, so the
+        # call block itself is asserted rather than only the guards.
+        $callBlock = [regex]::Match(
+            $script:Source,
+            'function Assert-GeneratedTestContent \{.*?\n\}',
+            [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        $callBlock.Success | Should -BeTrue
+
+        $required = @(
+            'Assert-ReplicationGeneratedSourceSafety',
+            'Assert-ReplicationPlatformSourceSafety',
+            'Assert-ReplicationConditionalCompilationBalance',
+            'Assert-ReplicationLeakTestMethodology',
+            'Assert-ReplicationGestureTravel',
+            'Assert-ReplicationHandlerRegistrationIsNotTautological',
+            'Assert-ReplicationWaitResultIsUsed',
+            'Assert-ReplicationTestPlatformScope',
+            'Assert-ReplicationPlatformViewIdentity'
+        )
+
+        foreach ($guard in $required) {
+            $callBlock.Value | Should -Match ([regex]::Escape($guard))
+        }
+    }
+
+    It 'refuses a verdict that rests on native view instance identity' {
+        $captured = @'
+[Test]
+public void Reproduces()
+{
+    var before = entry.Handler.PlatformView;
+    Trigger();
+    Assert.Same(before, entry.Handler.PlatformView);
+}
+'@
+
+        {
+            Assert-ReplicationPlatformViewIdentity -Content $captured -Path 'Issue1.cs'
+        } | Should -Throw '*platform view of*'
+
+        $fluent = @'
+    var before = label.ToPlatform();
+    Trigger();
+    label.ToPlatform().Should().NotBeSameAs(before);
+'@
+
+        {
+            Assert-ReplicationPlatformViewIdentity -Content $fluent -Path 'Issue1.cs'
+        } | Should -Throw '*platform view of*'
+
+        $referenceEquals = @'
+    var before = view.Handler.PlatformView;
+    Assert.True(ReferenceEquals(before, view.Handler.PlatformView));
+'@
+
+        {
+            Assert-ReplicationPlatformViewIdentity -Content $referenceEquals -Path 'Issue1.cs'
+        } | Should -Throw '*platform view of*'
+    }
+
+    It 'still allows comparing a platform view with its container or a sibling' {
+        # Both shapes are used by the repository's own handler tests.
+        {
+            Assert-ReplicationPlatformViewIdentity `
+                -Content 'Assert.Same(slider.Handler.PlatformView, children[0]);' `
+                -Path 'Issue1.cs'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationPlatformViewIdentity `
+                -Content 'Assert.Same(parent, handler.PlatformView.Parent);' `
+                -Path 'Issue1.cs'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationPlatformViewIdentity `
+                -Content 'Assert.NotSame(button.ToPlatform(), label.ToPlatform());' `
+                -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
     It 'refuses a reproduction that swallows the crash it is supposed to prove' {
         # AppDomain is already refused as reflection, so it is asserted
         # against the code that actually rejects it.

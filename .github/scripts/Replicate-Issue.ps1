@@ -545,6 +545,16 @@ function Get-ReplicationFailureDetails {
         Where-Object { $_ -notmatch '^\s*\d+\s*\|' } |
         ForEach-Object { ($_ -replace '^\s*\|\s?', '').TrimEnd() } |
         Where-Object { $_ -and $_ -notmatch '^\s*\+?\s*~+\s*$' })
+    # An Appium server logs every HTTP request the driver makes, and those
+    # lines both match the signal pattern and dominate the tail, so the agent
+    # was being handed request URLs instead of the reason a step failed. The
+    # runner prints its own diagnostics outside that stream, so prefer lines
+    # the wire protocol did not produce and fall back only if there are none.
+    $wireNoisePattern = '(?i)(?:^\s*\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|DevCon Factory|Support|Logcat|Simulator|simctl)|^\s*\[[0-9a-f]{8}\]|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
+    $quietLines = @($safeLines | Where-Object { $_ -notmatch $wireNoisePattern })
+    if ($quietLines.Count -gt 0) {
+        $safeLines = $quietLines
+    }
     $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|\bMSB\d+\b|\bCS\d+\b)'
     $candidateLines = @(
         $safeLines |
@@ -1476,13 +1486,30 @@ function ConvertTo-BoundedAgentLine {
         throw "$Description must be a string."
     }
     $line = [string]$Value
-    if ([string]::IsNullOrWhiteSpace($line) -or
-        $line.Length -gt $MaximumLength -or
-        $line -cne $line.Trim() -or
-        $line -match '[\x00-\x1F\x7F]' -or
-        $line -match '(?i)\b(?:https?|ftps?|wss?)://' -or
-        $line -match '##vso\[|##\[') {
-        throw "$Description is empty, untrimmed, unsafe, or exceeds its length limit."
+    # "empty, untrimmed, unsafe, or exceeds its length limit" told the agent
+    # nothing it could act on, so whole attempts were spent guessing which
+    # rule a single line had broken. Name the rule and show the line.
+    $reason = if ([string]::IsNullOrWhiteSpace($line)) {
+        'it is empty or only whitespace'
+    } elseif ($line.Length -gt $MaximumLength) {
+        "it is $($line.Length) characters and the limit is $MaximumLength"
+    } elseif ($line -cne $line.Trim()) {
+        'it has leading or trailing whitespace'
+    } elseif ($line -match '[\x00-\x1F\x7F]') {
+        'it contains a line break or another control character, and it must be a single line'
+    } elseif ($line -match '(?i)\b(?:https?|ftps?|wss?)://') {
+        'it contains a URL, and links are not allowed'
+    } elseif ($line -match '##vso\[|##\[') {
+        'it contains a pipeline logging command'
+    } else {
+        $null
+    }
+    if ($reason) {
+        $preview = ($line -replace '[\x00-\x1F\x7F]', ' ') -replace '##', '# #'
+        if ($preview.Length -gt 120) {
+            $preview = $preview.Substring(0, 120) + '...'
+        }
+        throw "$Description is invalid because $reason. The value was: $preview"
     }
     return $line
 }
@@ -1787,6 +1814,9 @@ function Assert-GeneratedTestContent {
                     -Content $content `
                     -Path $file `
                     -Platform $TargetPlatform
+                Assert-ReplicationPlatformViewIdentity `
+                    -Content $content `
+                    -Path $file
             }
             $testAttributeMatches = @([regex]::Matches(
                 $content,
@@ -1894,8 +1924,11 @@ function Read-TestProposal {
     if ($steps.Count -lt 1 -or $steps.Count -gt 10) {
         throw 'The test proposal must contain 1-10 reproduction steps.'
     }
-    foreach ($step in $steps) {
-        $null = ConvertTo-BoundedAgentLine -Value $step -Description 'Test reproduction step' -MaximumLength 300
+    for ($stepIndex = 0; $stepIndex -lt $steps.Count; $stepIndex++) {
+        $null = ConvertTo-BoundedAgentLine `
+            -Value $steps[$stepIndex] `
+            -Description "Test reproduction step $($stepIndex + 1)" `
+            -MaximumLength 300
     }
     $null = ConvertTo-BoundedAgentLine -Value $proposal.expectedBehavior -Description 'Test expected behavior'
     $null = ConvertTo-BoundedAgentLine -Value $proposal.observedBehavior -Description 'Test observed behavior'
@@ -2184,7 +2217,7 @@ The bounded XAML contract allows only the default MAUI namespace, the x namespac
 When the reported defect only becomes observable after the framework has settled, do not wait on the clock inside the app. Subscribe to the event that reports the change (Loaded, SizeChanged, PropertyChanged, or the control's own event) and publish the verdict from its handler; or post the measurement with Dispatcher.Dispatch(() => ...), which runs after the pending layout pass; or give the page a separate check control and let the plan tap trigger, wait, then tap check. Task.Delay, Thread.Sleep, DispatchDelayed, and timers are rejected before they reach the device.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Do not resolve services through DependencyService, ServiceProvider, GetService, or MauiContext.Services. For a reported custom-handler scenario, direct handler wiring with SetMauiContext(Handler.MauiContext) is allowed when it does not access Services.
-When the issue reports a crash identified by a specific managed exception type, prefer proving that exact exception over process termination: wrap only the reported trigger in a try/catch for that exact type, set the semantic result element to `BUG REPRODUCED:` in the catch, and leave the plan's final step as the assertTextEquals result check instead of assertAppClosed. Reference the exception by its fully qualified name, such as System.Runtime.InteropServices.COMException, rather than adding a using directive for the interop namespace. Never catch a broad exception type such as Exception, and never let an unrelated failure satisfy the catch. Reserve assertAppClosed for reports that describe process exit without naming a managed exception type. Never install a global unhandled-exception handler and never mark such an exception handled: that changes the app away from the behaviour users see, and the runner already observes termination on every platform without the app reporting on itself.
+When the issue reports a crash identified by a specific managed exception type, prefer proving that exact exception over process termination: wrap only the reported trigger in a try/catch for that exact type, set the semantic result element to `BUG REPRODUCED:` in the catch, and leave the plan's final step as the assertTextEquals result check instead of assertAppClosed. Reference the exception by its fully qualified name, such as System.Runtime.InteropServices.COMException, rather than adding a using directive for the interop namespace. Never catch a broad exception type such as Exception, and never let an unrelated failure satisfy the catch. Reserve assertAppClosed for reports that describe process exit without naming a managed exception type. Never decide the issue by comparing a platform view with its own platform view, whether with Assert.Same, Assert.NotSame, ReferenceEquals, or BeSameAs: whether a handler reuses or recreates its native view is an implementation detail the report does not describe, so such a test stays red however the product is fixed. Assert the behaviour the reporter observed - the text, size, position, visibility, or state that was wrong on screen. Never install a global unhandled-exception handler and never mark such an exception handled: that changes the app away from the behaviour users see, and the runner already observes termination on every platform without the app reporting on itself.
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 Sandbox XAML supports only x:Class on the root element plus x:Name, x:Key, and x:DataType. Do not use x:FactoryMethod, x:Arguments, x:Static, x:Type, x:Reference, or any other x: directive. Assign any value that needs a factory method or constructor arguments from code-behind instead, for example setting Keyboard with Keyboard.Create in the page constructor.

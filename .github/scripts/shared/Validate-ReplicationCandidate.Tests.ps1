@@ -1687,6 +1687,18 @@ Describe 'The publisher refuses a test that asserts its own handler registration
 }
 
 Describe 'The publisher refuses a test that throws away its own verdict' {
+    It 'rejects a native identity verdict at publish time' {
+        $source = @'
+    var before = entry.Handler.PlatformView;
+    Trigger();
+    Assert.Same(before, entry.Handler.PlatformView);
+'@
+
+        {
+            Assert-ReplicationPlatformViewIdentity -Content $source -Path 'Issue36298.cs'
+        } | Should -Throw '*platform view of*'
+    }
+
     It 'rejects a swallowed crash at publish time' {
         {
             Assert-ReplicationGeneratedSourceSafety `
