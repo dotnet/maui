@@ -24,6 +24,19 @@ BeforeAll {
     }
 }
 
+Describe 'native gh invocation' {
+    It 'pins native-command errors to the structured exit-code path' {
+        $module = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1')
+        $helper = [regex]::Match(
+            $module,
+            '(?s)function Invoke-LeakGhJson \{.*?\n\}'
+        ).Value
+
+        $helper.IndexOf('$PSNativeCommandUseErrorActionPreference = $false') |
+            Should -BeLessThan $helper.IndexOf('$output = & gh @Arguments 2>&1')
+    }
+}
+
 Describe 'fresh-shell de-dup state' {
     It 'fails closed when persisted identity does not match the requested PR' {
         $state = [pscustomobject]@{

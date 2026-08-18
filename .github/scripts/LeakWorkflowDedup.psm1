@@ -35,6 +35,8 @@ function Test-LeakPrReferencesIssue {
 function Invoke-LeakGhJson {
     param([Parameter(Mandatory = $true)][string[]]$Arguments)
 
+    # Preserve structured exit-code handling if a future host flips the native-command default.
+    $PSNativeCommandUseErrorActionPreference = $false
     $output = & gh @Arguments 2>&1
     $exitCode = $LASTEXITCODE
 
