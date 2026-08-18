@@ -2835,6 +2835,30 @@ PS-STEP-FAILED: step 3 did not find its target
         $details | Should -Not -Match 'at OpenQA.Selenium.Appium.AppiumDriver.FindElement'
     }
 
+    It 'keeps the markers the outcome classifiers depend on' {
+        # The noise filters decide what the agent is told, and the same text
+        # decides whether an attempt counts as "ran but did not reproduce".
+        # A filter that swallowed one of these markers would silently turn a
+        # conclusive non-reproduction into an inconclusive one.
+        $markers = @(
+            "REPLICATION_NOT_REPRODUCED actual='NOT REPRODUCED'"
+            '1 test(s) PASSED but should FAIL'
+            'PASSED - (should fail)'
+            "$([char]0x274C) 1 test(s) PASSED but should FAIL"
+        )
+        foreach ($marker in $markers) {
+            $blob = @(
+                "$([char]0x2554)$([char]0x2550)$([char]0x2557)"
+                "$([char]0xD83D)$([char]0xDD39) Running Appium test..."
+                "$([char]0x2705) Appium server started"
+                '[HTTP] --> POST /session/aaaa/element'
+                $marker
+            ) -join "`n"
+            (Get-ReplicationFailureDetails -Output @($blob)) |
+                Should -BeLike "*$marker*"
+        }
+    }
+
     It 'still reports driver noise when the child produced nothing else' {
         $noise = "[HTTP] --> POST /session/aaaabbbb/element"
         (Get-ReplicationFailureDetails -Output @($noise)) |
