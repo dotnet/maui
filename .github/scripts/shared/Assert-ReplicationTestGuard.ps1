@@ -624,6 +624,33 @@ function Assert-ReplicationHandlerRegistrationIsNotTautological {
     }
 }
 
+function Assert-ReplicationWaitResultIsUsed {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    # A reviewer found `_ = Wait(a, 5s) || Wait(b, 5s);`. The verdict is thrown
+    # away and `||` short-circuits, so a transient first condition sends the
+    # test straight past the check that was supposed to catch the defect and it
+    # passes while the defect is happening. Discarding a wait that throws on
+    # timeout is fine and common here; discarding a combined boolean is not.
+    foreach ($discard in [regex]::Matches(
+            $code,
+            '(?m)^\s*_\s*=\s*(?<expression>[^;]*(?:\|\||&&)[^;]*);')) {
+        $expression = $discard.Groups['expression'].Value.Trim()
+        if ($expression -notmatch '(?i)wait|assert|poll|retry|until') {
+            continue
+        }
+        throw ("Candidate test source '$Path' discards the result of '$expression'. " +
+            'A short-circuiting condition whose verdict is thrown away lets the test continue as though it succeeded, so it can pass while the reported defect is happening. ' +
+            'Evaluate each wait separately and assert its result.')
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

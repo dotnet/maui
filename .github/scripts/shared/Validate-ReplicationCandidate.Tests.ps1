@@ -1666,3 +1666,13 @@ Describe 'The publisher refuses a test that asserts its own handler registration
         } | Should -Throw '*can only confirm the test setup*'
     }
 }
+
+Describe 'The publisher refuses a test that throws away its own verdict' {
+    It 'rejects a discarded short-circuit at publish time' {
+        {
+            Assert-ReplicationWaitResultIsUsed `
+                -Content '    _ = Wait("a", 5000) || Wait("b", 5000);' `
+                -Path 'Issue36298.cs'
+        } | Should -Throw '*thrown away*'
+    }
+}

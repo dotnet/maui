@@ -1565,6 +1565,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationHandlerRegistrationIsNotTautological `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationWaitResultIsUsed `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {

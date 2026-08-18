@@ -3843,3 +3843,41 @@ Describe 'A test may not assert the handler it registered itself' {
         } | Should -Not -Throw
     }
 }
+
+Describe 'A wait whose verdict decides the test may not be thrown away' {
+    It 'rejects the discarded short-circuit a reviewer found' {
+        # PR 201: a transient first condition short-circuits past the check
+        # that was meant to catch the defect, so the test passes while the
+        # defect is happening.
+        $source = @'
+    _ = Wait("View 1 reattached", 5000) || Wait("ArgumentException", 5000);
+    var text = label.Text;
+'@
+        {
+            Assert-ReplicationWaitResultIsUsed -Content $source -Path 'Issue36298.cs'
+        } | Should -Throw '*thrown away*'
+    }
+
+    It 'allows discarding a wait that throws when it times out' {
+        # 33 files in the repository do exactly this; WaitForElement throws, so
+        # the wait is the assertion.
+        $source = '    _ = App.WaitForElement("image");'
+        {
+            Assert-ReplicationWaitResultIsUsed -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'allows a combined condition whose result is actually asserted' {
+        $source = '    Assert.That(Wait("a", 5000) || Wait("b", 5000), Is.True);'
+        {
+            Assert-ReplicationWaitResultIsUsed -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a discarded combination with nothing to do with waiting' {
+        $source = '    _ = isVisible || isEnabled;'
+        {
+            Assert-ReplicationWaitResultIsUsed -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+}
