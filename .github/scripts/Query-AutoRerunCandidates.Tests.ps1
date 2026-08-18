@@ -364,7 +364,7 @@ Context 'scanner decline checkpoint' {
 
     It 'persists skip markers before consuming ready labels and clears them before trigger dispatch' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
-        $scanner.IndexOf('await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint);') |
+        $scanner.IndexOf('await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint, a.activityKey);') |
             Should -BeLessThan $scanner.IndexOf("await react(a.rerunCommentId, '-1');")
         $scanner.IndexOf("await react(a.rerunCommentId, '-1');") |
             Should -BeLessThan $scanner.IndexOf('await removeReadyLabel(prNumber);')
@@ -376,22 +376,22 @@ Context 'scanner decline checkpoint' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
         $markDeclined = [regex]::Match(
             $scanner,
-            '(?s)async function markDeclined\(prNumber, headSha, activityCheckpoint\).*?async function clearDeclined'
+            '(?s)async function markDeclined\(prNumber, headSha, activityCheckpoint, activityKey\).*?async function clearDeclined'
         ).Value
 
-        $markDeclined | Should -Match 'const markerText = `<!-- agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\} -->`;'
-        $markDeclined | Should -Match 'const markerPrefix = `<!-- agent-rerun-declined:\$\{headSha\}`;'
-        $markDeclined | Should -Match 'body\.includes\(`\$\{markerPrefix\}:`\)'
-        $markDeclined | Should -Match 'body\.includes\(`\$\{markerPrefix\} -->`\)'
-        $markDeclined | Should -Not -Match 'comment => comment\.body\.includes\(markerText\)'
+        $markDeclined | Should -Match 'const cycleMarker = `<!-- agent-rerun-declined-cycle:\$\{headSha\}:\$\{activityKey\} -->`;'
+        $markDeclined | Should -Match 'const markerText = `<!-- agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\} -->\\n\$\{cycleMarker\}`;'
+        $markDeclined | Should -Match '\.includes\(cycleMarker\)'
 
         $headSha = '2222222222222222222222222222222222222222'
-        $priorMarker = "<!-- agent-rerun-declined:${headSha}:1787000000000 -->"
-        $retryMarker = "<!-- agent-rerun-declined:${headSha}:1787003600000 -->"
-        $headMarkerPrefix = "<!-- agent-rerun-declined:${headSha}"
+        $priorActivityKey = 'a' * 64
+        $newActivityKey = 'b' * 64
+        $priorCycleMarker = "<!-- agent-rerun-declined-cycle:${headSha}:${priorActivityKey} -->"
+        $retryCycleMarker = "<!-- agent-rerun-declined-cycle:${headSha}:${priorActivityKey} -->"
+        $newActivityCycleMarker = "<!-- agent-rerun-declined-cycle:${headSha}:${newActivityKey} -->"
 
-        $priorMarker.Contains($retryMarker) | Should -BeFalse
-        $priorMarker.Contains("${headMarkerPrefix}:") | Should -BeTrue
+        $retryCycleMarker | Should -Be $priorCycleMarker
+        $newActivityCycleMarker | Should -Not -Be $priorCycleMarker
         $markDeclined.IndexOf('if (alreadyLabelled && existingMarker)') |
             Should -BeLessThan $markDeclined.IndexOf('issues.createComment({')
         $markDeclined.IndexOf('if (existingMarker)') |

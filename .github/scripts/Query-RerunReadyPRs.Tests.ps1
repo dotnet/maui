@@ -95,5 +95,42 @@ Describe 'Query-RerunReadyPRs' {
         $result.candidates[0].reviewCommandId | Should -Be 200
         $result.candidates[0].rerunCommentId | Should -Be 0
         $result.candidates[0].activityCheckpoint | Should -BeGreaterThan 0
+        $result.candidates[0].activityKey | Should -Match '^[0-9a-f]{64}$'
+    }
+
+    It 'keeps the activity key stable for retries and changes it for new same-head activity' {
+        Invoke-RerunReadyPRQuery `
+            -QueryMaxPRs 5 `
+            -QueryOwner 'test-owner' `
+            -QueryRepo 'test-repo' `
+            -QueryOutputPath $script:OutputPath | Out-Null
+        $first = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+
+        $retryOutputPath = Join-Path $outputDir "$([Guid]::NewGuid().ToString('N')).json"
+        Invoke-RerunReadyPRQuery `
+            -QueryMaxPRs 5 `
+            -QueryOwner 'test-owner' `
+            -QueryRepo 'test-repo' `
+            -QueryOutputPath $retryOutputPath | Out-Null
+        $retry = Get-Content -Raw -LiteralPath $retryOutputPath | ConvertFrom-Json
+
+        $script:issueComments += [pscustomobject]@{
+            id = 300
+            body = 'New same-head author activity'
+            created_at = '2026-05-31T10:05:00Z'
+            updated_at = '2026-05-31T10:05:00Z'
+            user = [pscustomobject]@{ login = 'dev-user'; type = 'User' }
+            author_association = 'CONTRIBUTOR'
+        }
+        $newActivityOutputPath = Join-Path $outputDir "$([Guid]::NewGuid().ToString('N')).json"
+        Invoke-RerunReadyPRQuery `
+            -QueryMaxPRs 5 `
+            -QueryOwner 'test-owner' `
+            -QueryRepo 'test-repo' `
+            -QueryOutputPath $newActivityOutputPath | Out-Null
+        $newActivity = Get-Content -Raw -LiteralPath $newActivityOutputPath | ConvertFrom-Json
+
+        $retry.candidates[0].activityKey | Should -Be $first.candidates[0].activityKey
+        $newActivity.candidates[0].activityKey | Should -Not -Be $first.candidates[0].activityKey
     }
 }

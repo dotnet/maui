@@ -103,6 +103,10 @@ foreach ($pr in @($searchResult)) {
     $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
     $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
     $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -PRAuthorLogin $authorLogin -CurrentLabels $labels
+    $activityKeyBytes = [System.Text.Encoding]::UTF8.GetBytes("$($pr.headRefOid)`n$contextMarkdown")
+    $activityKey = [Convert]::ToHexString(
+        [System.Security.Cryptography.SHA256]::HashData($activityKeyBytes)
+    ).ToLowerInvariant()
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }
 
@@ -119,6 +123,7 @@ foreach ($pr in @($searchResult)) {
         reviewCommand   = $reviewOptions.Body
         labels          = $labels
         activityCheckpoint = $activityCheckpoint
+        activityKey     = $activityKey
         # The ready label does not encode whether this queue cycle came from a
         # specific command or the autonomous labeler. Never reuse a historical
         # /review rerun comment as this cycle's reaction target.

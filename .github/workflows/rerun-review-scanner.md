@@ -230,19 +230,22 @@ safe-outputs:
                 }
               }
 
-              async function markDeclined(prNumber, headSha, activityCheckpoint) {
+              async function markDeclined(prNumber, headSha, activityCheckpoint, activityKey) {
                 if (!Number.isSafeInteger(activityCheckpoint) || activityCheckpoint <= 0) {
                   throw new Error(`Missing valid scan-time activity checkpoint for PR #${prNumber}`);
                 }
-                if (dryRun) { core.info(`[dry-run] Would record ${declinedLabel.name} for PR #${prNumber} at ${headSha}, checkpoint=${activityCheckpoint}`); return; }
+                if (!/^[0-9a-f]{64}$/.test(activityKey)) {
+                  throw new Error(`Missing valid activity key for PR #${prNumber}`);
+                }
+                if (dryRun) { core.info(`[dry-run] Would record ${declinedLabel.name} for PR #${prNumber} at ${headSha}, checkpoint=${activityCheckpoint}, activity=${activityKey}`); return; }
                 await ensureDeclinedLabel();
                 const issue = await github.rest.issues.get({ owner, repo, issue_number: prNumber });
                 const alreadyLabelled = issue.data.labels.some(
                   label => (typeof label === 'string' ? label : label.name) === declinedLabel.name,
                 );
 
-                const markerText = `<!-- agent-rerun-declined:${headSha}:${activityCheckpoint} -->`;
-                const markerPrefix = `<!-- agent-rerun-declined:${headSha}`;
+                const cycleMarker = `<!-- agent-rerun-declined-cycle:${headSha}:${activityKey} -->`;
+                const markerText = `<!-- agent-rerun-declined:${headSha}:${activityCheckpoint} -->\n${cycleMarker}`;
                 const existing = await github.graphql(
                   `query($owner:String!,$repo:String!,$number:Int!){
                     repository(owner:$owner,name:$repo){
@@ -253,12 +256,11 @@ safe-outputs:
                   }`,
                   { owner, repo, number: prNumber },
                 );
-                // Match the immutable head independently of the scan checkpoint so
-                // retries after a label-removal failure reuse the prior marker.
-                const existingMarker = existing.repository.pullRequest.comments.nodes.find(comment => {
-                  const body = comment.body || '';
-                  return body.includes(`${markerPrefix}:`) || body.includes(`${markerPrefix} -->`);
-                });
+                // The cycle key stays stable across a retry but changes when new
+                // same-head activity enters the deterministic candidate context.
+                const existingMarker = existing.repository.pullRequest.comments.nodes.find(
+                  comment => (comment.body || '').includes(cycleMarker),
+                );
 
                 if (alreadyLabelled && existingMarker) {
                   core.info(`${declinedLabel.name} already records unchanged head ${headSha} for PR #${prNumber}`);
@@ -358,7 +360,7 @@ safe-outputs:
                       // Persist the scan-time activity checkpoint before consuming
                       // the queue label. Activity that arrives after collection but
                       // before this action remains newer than the decline checkpoint.
-                      await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint);
+                      await markDeclined(prNumber, liveHeadSha, a.activityCheckpoint, a.activityKey);
                       await react(a.rerunCommentId, '-1');
                       await removeReadyLabel(prNumber);
                     }
@@ -434,12 +436,15 @@ such limit. Volume is instead bounded structurally:
    > posting a fresh AI Summary, but a `skip` decision does not. Before consuming
    > `s/agent-ready-for-rerun`, the safe-output job applies the explicit
    > `s/agent-rerun-declined` marker and writes a minimized bot comment containing the
-   > exact head SHA that was declined. `Query-AutoRerunCandidates.ps1` passes both that
-   > SHA and the comment timestamp to `Resolve-AutonomousRerunEligibility`. Re-labelling
-   > then requires genuinely new activity after the semantic skip, while any different
-   > current head always re-qualifies even if a push raced the marker write. Trigger-path
-   > and manual removals of the ready label are not decline checkpoints. Every successful
-   > review entrypoint clears the visible decline label.
+   > exact head SHA, scan-time checkpoint, and a hash of the deterministic activity
+   > context that was declined. A retry of the same activity cycle reuses that marker
+   > even when its new scan-time checkpoint differs; genuinely new same-head activity
+   > changes the hash and records a fresh checkpoint. `Query-AutoRerunCandidates.ps1`
+   > passes the declined SHA and comment timestamp to
+   > `Resolve-AutonomousRerunEligibility`. Any different current head always
+   > re-qualifies even if a push raced the marker write. Trigger-path and manual
+   > removals of the ready label are not decline checkpoints. Every successful review
+   > entrypoint clears the visible decline label.
 3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
 
 This is an accepted, documented cost trade-off: it matches manual `/review`

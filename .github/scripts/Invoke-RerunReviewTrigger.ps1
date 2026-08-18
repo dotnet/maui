@@ -209,6 +209,10 @@ function Get-RerunActions {
                 throw "Candidate for PR #$prNumber has no valid activity checkpoint."
             }
             $activityCheckpoint = [Int64]$activityCheckpointRaw
+            $activityKey = (ConvertTo-TrimmedString $candidate.activityKey).ToLowerInvariant()
+            if ($activityKey -notmatch '^[0-9a-f]{64}$') {
+                throw "Candidate for PR #$prNumber has no valid activity key."
+            }
 
             # Operational values come from the deterministic candidate set, not the
             # agent's emission (its platform / pipeline_ref / rerun_comment_id are advisory).
@@ -231,6 +235,7 @@ function Get-RerunActions {
                 rerunCommentId = $rerunCommentId
                 headSha        = [string]$candidate.headSha
                 activityCheckpoint = $activityCheckpoint
+                activityKey    = $activityKey
             })
             Write-Host "Validated PR #$prNumber decision=$decision platform=$platform pipelineRef=$pipelineRef rerunCommentId=$rerunCommentId"
         } catch {
