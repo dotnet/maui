@@ -382,6 +382,9 @@ Context 'scanner decline checkpoint' {
         $markDeclined | Should -Match 'const cycleMarker = `<!-- agent-rerun-declined-cycle:\$\{headSha\}:\$\{activityKey\} -->`;'
         $markDeclined | Should -Match 'const markerText = `<!-- agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\} -->\\n\$\{cycleMarker\}`;'
         $markDeclined | Should -Match '\.includes\(cycleMarker\)'
+        $markDeclined | Should -Match 'comments\(last:100,before:\$before\)'
+        $markDeclined | Should -Match 'pageInfo\{hasPreviousPage startCursor\}'
+        $markDeclined | Should -Match '\} while \(!existingMarker && commentsBefore\);'
 
         $headSha = '2222222222222222222222222222222222222222'
         $priorActivityKey = 'a' * 64

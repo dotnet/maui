@@ -246,21 +246,32 @@ safe-outputs:
 
                 const cycleMarker = `<!-- agent-rerun-declined-cycle:${headSha}:${activityKey} -->`;
                 const markerText = `<!-- agent-rerun-declined:${headSha}:${activityCheckpoint} -->\n${cycleMarker}`;
-                const existing = await github.graphql(
-                  `query($owner:String!,$repo:String!,$number:Int!){
-                    repository(owner:$owner,name:$repo){
-                      pullRequest(number:$number){
-                        comments(last:100){nodes{id body}}
+                let commentsBefore = null;
+                let existingMarker = null;
+                do {
+                  const existing = await github.graphql(
+                    `query($owner:String!,$repo:String!,$number:Int!,$before:String){
+                      repository(owner:$owner,name:$repo){
+                        pullRequest(number:$number){
+                          comments(last:100,before:$before){
+                            nodes{id body}
+                            pageInfo{hasPreviousPage startCursor}
+                          }
+                        }
                       }
-                    }
-                  }`,
-                  { owner, repo, number: prNumber },
-                );
-                // The cycle key stays stable across a retry but changes when new
-                // same-head activity enters the deterministic candidate context.
-                const existingMarker = existing.repository.pullRequest.comments.nodes.find(
-                  comment => (comment.body || '').includes(cycleMarker),
-                );
+                    }`,
+                    { owner, repo, number: prNumber, before: commentsBefore },
+                  );
+                  const comments = existing.repository.pullRequest.comments;
+                  // The cycle key stays stable across a retry but changes when new
+                  // same-head activity enters the deterministic candidate context.
+                  existingMarker = comments.nodes.find(
+                    comment => (comment.body || '').includes(cycleMarker),
+                  );
+                  commentsBefore = comments.pageInfo.hasPreviousPage
+                    ? comments.pageInfo.startCursor
+                    : null;
+                } while (!existingMarker && commentsBefore);
 
                 if (alreadyLabelled && existingMarker) {
                   core.info(`${declinedLabel.name} already records unchanged head ${headSha} for PR #${prNumber}`);
