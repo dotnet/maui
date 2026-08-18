@@ -208,6 +208,88 @@ Describe 'Memory leak workflow provenance and safety' {
 
             return $match.Groups['json'].Value | ConvertFrom-Json
         }
+
+        function Get-FriendlyScheduleHours {
+            param([Parameter(Mandatory)][string] $Path)
+
+            $frontmatter = (Get-WorkflowParts -Path $Path).Frontmatter
+            $lines = $frontmatter -split "`n"
+            $onIndent = $null
+            foreach ($line in $lines) {
+                $trimmed = $line.Trim()
+                $indent = $line.Length - $line.TrimStart().Length
+                if ($null -eq $onIndent) {
+                    if ($trimmed -eq 'on:') {
+                        $onIndent = $indent
+                    }
+                    continue
+                }
+
+                if ($indent -le $onIndent -and $trimmed) {
+                    break
+                }
+
+                if ($trimmed -match '^schedule:\s*(?<value>.+)$') {
+                    $schedule = $Matches.value.Trim()
+                    if ($schedule -notmatch '^every\s+(?<hours>[1-9][0-9]*)h$') {
+                        throw "Unsupported friendly schedule '$schedule' in $Path"
+                    }
+                    return [int]$Matches.hours
+                }
+            }
+
+            throw "No friendly schedule found in $Path"
+        }
+
+        function Get-CompiledCronIntervalHours {
+            param([Parameter(Mandatory)][string] $Lock)
+
+            $cronMatch = [Regex]::Match(
+                $Lock,
+                '(?ms)^on:\s*$.*?^\s+schedule:\s*$.*?^\s+-\s+cron:\s+["'']?(?<cron>[^"'']+?)["'']?\s*(?:#.*)?$')
+            if (-not $cronMatch.Success) {
+                throw 'Compiled lock has no scheduled cron trigger'
+            }
+
+            $parts = $cronMatch.Groups['cron'].Value.Trim() -split '\s+'
+            if ($parts.Count -ne 5) {
+                throw "Unsupported cron '$($cronMatch.Groups['cron'].Value)'"
+            }
+
+            $minute, $hour, $day, $month, $dayOfWeek = $parts
+            if ($minute -notmatch '^(?:[0-5]?[0-9])$' -or
+                $day -ne '*' -or $month -ne '*' -or $dayOfWeek -ne '*') {
+                throw "Cron '$($parts -join ' ')' is not a fixed-minute hourly cadence"
+            }
+
+            if ($hour -match '^\*/(?<step>[1-9][0-9]*)$') {
+                $step = [int]$Matches.step
+                if (24 % $step -ne 0) {
+                    throw "Cron hour step '$hour' does not divide a day evenly"
+                }
+                $hours = @(for ($value = 0; $value -lt 24; $value += $step) { $value })
+            }
+            elseif ($hour -match '^[0-9]+(?:,[0-9]+)+$') {
+                $hours = @($hour.Split(',') | ForEach-Object { [int]$_ } | Sort-Object -Unique)
+                if ($hours[0] -lt 0 -or $hours[-1] -gt 23) {
+                    throw "Cron hour list '$hour' is outside 0-23"
+                }
+            }
+            else {
+                throw "Unsupported cron hour field '$hour'"
+            }
+
+            $gaps = for ($index = 0; $index -lt $hours.Count; $index++) {
+                $next = if ($index -eq $hours.Count - 1) { $hours[0] + 24 } else { $hours[$index + 1] }
+                $next - $hours[$index]
+            }
+            $distinctGaps = @($gaps | Sort-Object -Unique)
+            if ($distinctGaps.Count -ne 1) {
+                throw "Cron hour field '$hour' is not a uniform cadence"
+            }
+
+            return [int]$distinctGaps[0]
+        }
     }
 
     It 'runs provenance fixtures through the production jq parser' -Skip:(-not $script:jqAvailable) -ForEach @(
@@ -509,5 +591,12 @@ prefix <!-- leak-scan-key: Picker.ItemsSource|inline-decoy -->
         $fixerMetadata.body_hash | Should -Be (Get-WorkflowBodyHash -Path $fixerPath)
         $hunterMetadata.body_hash | Should -Be (Get-WorkflowBodyHash -Path $hunterPath)
         $hunterLock | Should -Not -Match 'fixed-on-main-apis\.txt'
+    }
+
+    It 'keeps friendly source schedules aligned with compiled cron cadences' {
+        Get-CompiledCronIntervalHours -Lock $fixerLock |
+            Should -Be (Get-FriendlyScheduleHours -Path $fixerPath)
+        Get-CompiledCronIntervalHours -Lock $hunterLock |
+            Should -Be (Get-FriendlyScheduleHours -Path $hunterPath)
     }
 }
