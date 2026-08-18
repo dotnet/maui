@@ -408,6 +408,14 @@ Describe 'workflow enforcement boundary' {
         $workflow | Should -Not -Match 'combined by parity|combine by parity'
     }
 
+    It 'keeps hunter batch instructions aligned with the canonical-API gate' {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
+
+        $workflow | Should -Match 'at most\s+one output per canonical rooting API in the current batch'
+        $workflow | Should -Match 'defer the others to a later run'
+        $workflow | Should -Not -Match 'distinct mechanisms on one API are separate leaks'
+    }
+
     Context 'safe-output gate script' {
         BeforeEach {
             $script:agentOutput = Join-Path $TestDrive 'agent_output.json'

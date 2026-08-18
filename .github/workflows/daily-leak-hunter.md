@@ -477,10 +477,12 @@ no MAUI source build, no emulator.
 
 ## Step 6 — File the issues (Pass A — one per confirmed leak)
 
-For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
-issue per distinct leak. De-dup each against open `[leak-scan]` issues, supported-branch merged
-`[leak-fix]` PRs, AND the other issues you're filing this run (no two issues for the same
-rooting API **and retention mechanism**; distinct mechanisms on one API are separate leaks).
+For **every** leak Step 5 confirmed whose canonical API has not already been selected this run,
+emit a `create-issue` safe-output (up to the 8 cap) — one issue per distinct leak, with at most
+one output per canonical rooting API in the current batch. If multiple confirmed retention
+mechanisms share one API, emit the strongest report and defer the others to a later run rather
+than producing same-API siblings together. De-dup each selected leak against open `[leak-scan]`
+issues, supported-branch merged `[leak-fix]` PRs, AND the other issues you're filing this run.
 A trusted final gate repeats the live de-dup immediately before mutation. For
 every live same-API match that uses a genuinely different retention mechanism, the issue body
 must include exactly one applicable bounded line (12–500 character single-line basis, no `|`):
