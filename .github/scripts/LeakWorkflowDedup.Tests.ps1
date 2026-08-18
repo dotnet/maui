@@ -32,8 +32,12 @@ Describe 'native gh invocation' {
             '(?s)function Invoke-LeakGhJson \{.*?\n\}'
         ).Value
 
-        $helper.IndexOf('$PSNativeCommandUseErrorActionPreference = $false') |
-            Should -BeLessThan $helper.IndexOf('$output = & gh @Arguments 2>&1')
+        $preferenceIndex = $helper.IndexOf('$PSNativeCommandUseErrorActionPreference = $false')
+        $invokeIndex = $helper.IndexOf('$output = & gh @Arguments 2>&1')
+
+        $preferenceIndex | Should -BeGreaterOrEqual 0
+        $invokeIndex | Should -BeGreaterOrEqual 0
+        $preferenceIndex | Should -BeLessThan $invokeIndex
     }
 }
 
