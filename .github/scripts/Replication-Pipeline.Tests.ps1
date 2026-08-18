@@ -166,6 +166,15 @@ Describe 'Replication issue outcome publication boundary' {
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationOutcome.ps1') -Raw
     }
 
+    It 'publishes build logs only when the directory exists' {
+        # Runs 15000192, 15000196, and 15000200 finished their replication work
+        # and then went red publishing a directory replicate mode never writes.
+        $script:Pipeline | Should -Match "displayName: 'Detect build log directory'"
+        $script:Pipeline | Should -Match "(?s)displayName: 'Publish Build Logs'.*?condition: and\(succeededOrFailed\(\), eq\(variables\['logDirectoryPresent'\], 'true'\)\)"
+        $script:Pipeline |
+            Should -Not -Match "ne\(variables\['LogDirectory'\], ''\)"
+    }
+
     It 'gives the publisher media validator room to install' {
         # Build 14999448 produced a publishable candidate and then lost it
         # because this install exhausted a ten-minute budget.

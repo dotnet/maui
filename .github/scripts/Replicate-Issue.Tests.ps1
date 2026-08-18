@@ -581,6 +581,16 @@ Describe 'Replication orchestrator security boundary' {
             Should -Throw "*uses unsupported action 'assertNotExists'*"
     }
 
+    It 'offers a legal way to observe a defect that needs a settle' {
+        # Runs 15000187 and 15000205 burned most of their attempts on
+        # Task.Delay rejections and on retries that dropped the proposal file.
+        $source = $script:Source
+        $source | Should -Match 'trigger control and a separate check control'
+        $source | Should -Match 'Sleeping, posting, dispatching, or timing work inside the Sandbox is rejected'
+        $source | Should -Match 'Write every required output again even when only one of them caused the failure'
+        $source | Should -Match 'discarded before it reaches the device'
+    }
+
     It 'requires an app-closure assertion once a reported crash actually happened' {
         # Build 14999437 detected the reported ArgumentException crash of 36298
         # on four attempts and still ended every plan asserting text against a

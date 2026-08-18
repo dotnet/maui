@@ -2348,13 +2348,24 @@ stages:
             condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
 
           # Publish build logs if they exist
+          - pwsh: |
+              # A named log directory is not the same as an existing one. In
+              # replicate mode nothing writes it, and publishing a missing path
+              # failed several runs that had otherwise completed their work.
+              $present = -not [string]::IsNullOrWhiteSpace('$(LogDirectory)') -and
+                (Test-Path -LiteralPath '$(LogDirectory)' -PathType Container)
+              Write-Host "##vso[task.setvariable variable=logDirectoryPresent]$($present.ToString().ToLowerInvariant())"
+              Write-Host "Build log directory present: $present"
+            displayName: 'Detect build log directory'
+            condition: succeededOrFailed()
+
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Build Logs'
             inputs:
               targetPath: '$(LogDirectory)'
               artifact: 'BuildLogs'
               publishLocation: 'pipeline'
-            condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
+            condition: and(succeededOrFailed(), eq(variables['logDirectoryPresent'], 'true'))
 
           # Fail the pipeline if any phase failed.
           # NOTE: CopilotFailed / GateFailed are output variables set only on the
