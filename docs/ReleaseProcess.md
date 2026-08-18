@@ -68,7 +68,7 @@ An internal Azure Artifacts feed proves task mechanics but not the exact externa
 
 If publishing partially succeeds, rerun with the same commit and selection filters. The availability step removes packages that are already visible on NuGet.org. For packages accepted by the previous invocation but still undergoing NuGet.org validation, set the affected stage's `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` from the package names in the prior task log, leaving the other recovery parameter at `skip`. The task receives only the remaining packages, and post-publish verification checks the complete expected set. Do not release from a different BAR drop.
 
-Published package contents cannot be replaced. If an incorrect version is published, follow the NuGet.org unlist process.
+Published package contents cannot be replaced. If an incorrect version is published, follow NuGet.org's process to remove it from package search results.
 
 ## Build environment
 

@@ -29,4 +29,14 @@ Describe 'ci-official-release.yml' {
     $gatherCommands[0].Value | Should -Not -Match '--continue-on-error'
     $pipeline | Should -Match '(?s)& \$darc gather-drop.*?if \(\$LASTEXITCODE -ne 0\) \{\s*throw'
   }
+
+  It 'rejects duplicate package file names before copying release artifacts' {
+    $duplicateCheck = [regex]::Match(
+      $pipeline,
+      '(?s)\$fileNameDuplicates = @\(\$identities \| Group-Object fileName.*?' +
+      'throw "[^"]*duplicate package file names.*?' +
+      '\$packageSet\.Packages \| Copy-Item')
+
+    $duplicateCheck.Success | Should -BeTrue
+  }
 }

@@ -269,6 +269,11 @@ extends:
                   @{ Name = 'Workload manifests'; Packages = $manifestPackages; Path = $manifestsPath }
                 )) {
                   $identities = @($packageSet.Packages | ForEach-Object { Get-PackageIdentity $_ })
+                  $fileNameDuplicates = @($identities | Group-Object fileName | Where-Object Count -gt 1)
+                  if ($fileNameDuplicates.Count -gt 0) {
+                    throw "$($packageSet.Name) contains duplicate package file names: $($fileNameDuplicates.Name -join ', ')."
+                  }
+
                   $duplicates = @($identities | Group-Object id, version | Where-Object Count -gt 1)
                   if ($duplicates.Count -gt 0) {
                     throw "$($packageSet.Name) contains duplicate package identities: $($duplicates.Name -join ', ')."
