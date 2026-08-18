@@ -368,74 +368,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("FOO", label.Text);
 		}
 
-		[Fact]
-		public void SetDynamicResourceOverridesPriorManualValue()
-		{
-			// https://github.com/dotnet/maui/issues/37540
-			var page = new ContentPage
-			{
-				Resources = new ResourceDictionary { { "LabelTextColor", Colors.Red } }
-			};
-			var label = new Label { Background = Brush.Transparent };
-			page.Content = label;
-
-			label.SetDynamicResource(VisualElement.BackgroundProperty, "LabelTextColor");
-
-			Assert.Equal(Colors.Red, ((SolidColorBrush)label.Background).Color);
-		}
-
-		[Fact]
-		public void SetDynamicResourceOverridesPriorManualValueForAnyProperty()
-		{
-			// https://github.com/dotnet/maui/issues/37540
-			var page = new ContentPage
-			{
-				Resources = new ResourceDictionary { { "SomeText", "FOO" } }
-			};
-			var label = new Label { Text = "Manual" };
-			page.Content = label;
-
-			label.SetDynamicResource(Label.TextProperty, "SomeText");
-
-			Assert.Equal("FOO", label.Text);
-		}
-
-		[Fact]
-		public void SetDynamicResourceWithoutPriorManualValueStillApplies()
-		{
-			// https://github.com/dotnet/maui/issues/37540
-			var page = new ContentPage
-			{
-				Resources = new ResourceDictionary { { "LabelTextColor", Colors.Red } }
-			};
-			var label = new Label();
-			page.Content = label;
-
-			label.SetDynamicResource(VisualElement.BackgroundProperty, "LabelTextColor");
-
-			Assert.Equal(Colors.Red, ((SolidColorBrush)label.Background).Color);
-		}
-
-		[Fact]
-		public void ManualValueSetAfterSetDynamicResourceStillOverridesIt()
-		{
-			// https://github.com/dotnet/maui/issues/37540
-			// Ensures the fix implements "most recent explicit action wins" semantics,
-			// not "DynamicResource unconditionally wins".
-			var page = new ContentPage
-			{
-				Resources = new ResourceDictionary { { "LabelTextColor", Colors.Red } }
-			};
-			var label = new Label();
-			page.Content = label;
-
-			label.SetDynamicResource(VisualElement.BackgroundProperty, "LabelTextColor");
-			Assert.Equal(Colors.Red, ((SolidColorBrush)label.Background).Color);
-
-			label.Background = Brush.Transparent;
-			Assert.Equal(Brush.Transparent, label.Background);
-		}
-
 		class DynamicResourceOrderView : View
 		{
 			public static readonly BindableProperty FirstProperty = BindableProperty.Create(nameof(First), typeof(string), typeof(DynamicResourceOrderView), default(string),
@@ -456,6 +388,96 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public static readonly BindableProperty ResourceProperty = BindableProperty.Create(nameof(Resource), typeof(object), typeof(BindableResourceView));
 
 			public object Resource => GetValue(ResourceProperty);
+		}
+
+		// Regression tests for https://github.com/dotnet/maui/issues/37540
+		// SetDynamicResource did not update a property that already had a manually-set local value.
+
+		[Fact]
+		public void SetDynamicResourceOverridesPriorManualValue()
+		{
+			var label = new Label();
+			label.Text = "Manual"; // manual value set first
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResource" } };
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+
+			Assert.Equal("FromResource", label.Text);
+		}
+
+		[Fact]
+		public void SetDynamicResourceViaIDynamicResourceHandlerOverridesPriorManualValue()
+		{
+			// Exercises the same path used by XAML-compiled {DynamicResource} markup extensions.
+			var label = new Label();
+			label.Text = "Manual"; // manual value set first
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResource" } };
+			((IDynamicResourceHandler)label).SetDynamicResource(Label.TextProperty, "textKey");
+
+			Assert.Equal("FromResource", label.Text);
+		}
+
+		[Fact]
+		public void SetDynamicResourceKeepsDynamicResourceSpecificityAfterOverridingManualValue()
+		{
+			// After SetDynamicResource wins over a stale manual value, a later manual SetValue
+			// must still be able to override it (i.e. the resolved value must not be permanently
+			// re-tagged as a manual value with equal priority to future manual assignments).
+			var label = new Label();
+			label.Text = "Manual";
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResource" } };
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			Assert.Equal("FromResource", label.Text);
+
+			label.Text = "ManualAgain";
+			Assert.Equal("ManualAgain", label.Text);
+		}
+
+		[Fact]
+		public void AmbientResourceChangeDoesNotOverrideLaterManualValueAfterSetDynamicResource()
+		{
+			// A subsequent ambient ResourceDictionary change for the same key must not clobber a
+			// manual value that was set *after* SetDynamicResource ran.
+			var label = new Label();
+			label.Text = "Manual";
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResource" } };
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			Assert.Equal("FromResource", label.Text);
+
+			label.Text = "ManualAgain";
+			Assert.Equal("ManualAgain", label.Text);
+
+			Application.Current.Resources = new ResourceDictionary { { "textKey", "FromResourceUpdated" } };
+			Assert.Equal("ManualAgain", label.Text);
+		}
+
+		[Fact]
+		public void DynamicResourceReplacesLocalValue()
+		{
+			var label = new Label
+			{
+				Text = "LOCAL",
+				Resources = new ResourceDictionary
+				{
+					{ "foo", "RESOURCE" }
+				}
+			};
+
+			// The dynamic resource should replace the old local value.
+			label.SetDynamicResource(Label.TextProperty, "foo");
+
+			Assert.Equal("RESOURCE", label.Text);
+
+			// A newer local value should replace the dynamic resource.
+			label.Text = "NEW LOCAL";
+
+			// Updating the resource must not replace that newer local value.
+			label.Resources["foo"] = "UPDATED RESOURCE";
+
+			Assert.Equal("NEW LOCAL", label.Text);
 		}
 	}
 }

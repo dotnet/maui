@@ -492,6 +492,18 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
+			// An explicit dynamic-resource assignment (SetterSpecificity.DynamicResourceSetter) must still take
+			// effect even if the property already has a manually-set local value (e.g. set previously in XAML
+			// or code), the same way an explicit SetValue call already overrides a prior Binding/DynamicResource.
+			// We only clear the stale ManualValueSetter entry here -- we do NOT raise the new value's own
+			// specificity -- so the resource stays correctly tracked at DynamicResourceSetter specificity for
+			// any future ambient resource-dictionary updates (see https://github.com/dotnet/maui/issues/37540).
+			// This lives at the shared entry point so it applies uniformly whether SetDynamicResource is called
+			// explicitly in code, via Element's public wrapper, or via the IDynamicResourceHandler interface
+			// used by XAML-compiled {DynamicResource} markup.
+			if (specificity == SetterSpecificity.DynamicResourceSetter)
+				ClearValue(property, SetterSpecificity.ManualValueSetter);
+
 			OnSetDynamicResource(property, key, specificity);
 		}
 

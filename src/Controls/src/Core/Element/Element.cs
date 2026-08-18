@@ -617,9 +617,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="key">The key for the requested resource.</param>
 		public new void SetDynamicResource(BindableProperty property, string key)
 		{
-			// An explicit call to SetDynamicResource should override a prior manual value,
-			// similar to how an explicit SetValue overrides a prior binding.
-			base.SetDynamicResource(property, key, SetterSpecificity.ManualValueSetter);
+			base.SetDynamicResource(property, key);
 		}
 
 		/// <inheritdoc/>
