@@ -171,6 +171,13 @@ function Test-ReplicationInfrastructureFailure {
     }
 
     $patterns = @(
+        # The verification harness states its own verdict. When it says it could
+        # not run the test, believe that instead of re-deriving it from symptoms:
+        # a run whose Appium session never started was reported as a genuine
+        # verification failure, which blames a test that was never executed.
+        '(?im)VERIFICATION INCONCLUSIVE',
+        '(?im)\bENV ERROR\b',
+        '(?im)\bEnvironment error persisted after\b',
         '(?im)^\s*Build FAILED\.?\s*$',
         '(?im)\berror (?:CS|MSB|NETSDK|XLS|APT|XA)\d{3,}\b',
         '(?im)\bNo test matches\b',

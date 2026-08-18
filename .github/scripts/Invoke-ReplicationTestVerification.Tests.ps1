@@ -491,3 +491,34 @@ Describe 'Replication test verification determinism enforcement' {
         $result.verificationPassed | Should -BeTrue
     }
 }
+
+Describe 'The harness verdict decides whether a test was actually verified' {
+    It 'treats an Appium session that never started as infrastructure, not a failed test' {
+        # Live run 15006864 reported infrastructureFailure=False for this exact
+        # output, so a UI test that never ran was returned to the agent as a
+        # test that verified wrongly.
+        $output = @'
+  ⚠️ Environment error (attempt 1/3): Appium app/session did not initialize (InitialSetup/OneTimeSetup failed — test agent could not start the Appium session) — retrying in 30s...
+  ⚠️ Environment error persisted after 3 attempts: Appium app/session did not initialize
+  🖥️ [UITest] Issue36422: ⚠️ ENV ERROR — Appium app/session did not initialize
+║              VERIFICATION INCONCLUSIVE ⚠️                  ║
+║  Could not verify the test(s) — env/build/parse error.    ║
+'@
+        Test-ReplicationInfrastructureFailure -Content $output | Should -BeTrue
+    }
+
+    It 'recognises the harness inconclusive banner on its own' {
+        Test-ReplicationInfrastructureFailure `
+            -Content 'VERIFICATION INCONCLUSIVE' | Should -BeTrue
+    }
+
+    It 'still calls a genuine assertion failure a real result' {
+        $output = @'
+  Failed Issue36422_TitleIsVisible [412 ms]
+  Error Message:
+   Expected: True
+  But was:  False
+'@
+        Test-ReplicationInfrastructureFailure -Content $output | Should -BeFalse
+    }
+}
