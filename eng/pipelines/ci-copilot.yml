@@ -501,9 +501,19 @@ stages:
 
           - bash: |
               set -euo pipefail
-              git fetch --no-tags --depth=1 origin main
-              git checkout --detach origin/main
+              # Reviewers verify a reproduction against the first parent of the
+              # published commit, so the baseline must be the commit the pull
+              # request will actually be parented on rather than whatever the
+              # upstream default branch happens to be at this moment.
+              git fetch --no-tags --depth=1 \
+                https://github.com/kubaflo/maui.git main
+              git checkout --detach FETCH_HEAD
               BASE_SHA=$(git rev-parse HEAD)
+              git fetch --no-tags origin main
+              if ! git merge-base --is-ancestor "${BASE_SHA}" origin/main; then
+                echo "##vso[task.logissue type=error]The publication base is not an ancestor of dotnet/maui main."
+                exit 1
+              fi
               echo "Replication baseline: ${BASE_SHA}"
               echo "##vso[task.setvariable variable=REPLICATION_BASE_SHA]${BASE_SHA}"
               echo "##vso[task.setvariable variable=replicationBaseSha;isOutput=true]${BASE_SHA}"

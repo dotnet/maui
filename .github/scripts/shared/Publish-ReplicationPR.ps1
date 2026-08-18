@@ -230,7 +230,7 @@ $marker
 - Issue: [$IssueOwner/$IssueRepository#$issueNumber — $safeTitle]($issueUrl)
 - Platform: **$platform**
 - Validated on baseline commit: ``$baseSha`` — the trusted device reproduction and the failing-test verification both ran against this commit
-- Base branch: the reproduction commit is applied directly onto the current tip of the pull request base branch, so this diff contains only the added reproduction test. That tip, not the baseline above, is the parent of the commit in this pull request.
+- Base branch: the reproduction commit sits directly on the baseline above, so the first parent of the commit in this pull request is exactly the commit the device reproduction and the failing-test verification ran against, and this diff contains only the added reproduction test.
 - Test type: **$testType**
 - Test execution host: $testHostDescription
 - Exact test: ``$exactTestName``
@@ -460,13 +460,23 @@ if (-not $DryRun) {
             throw "An open reproduction pull request already exists for this issue/platform: $($duplicate.url)"
         }
 
-        # The target repository's default branch is not the validated baseline,
-        # so committing the patch onto the baseline makes the pull request diff
-        # include every unrelated commit between them. Build the branch on the
-        # actual pull request base instead, which leaves the diff equal to the
-        # add-only patch. MauiBot cannot push a base branch into the target
-        # repository, so the base branch itself must stay untouched; the
-        # validated baseline remains recorded in the pull request body.
+        # Reviewers verify the reproduction against the pull request's first
+        # parent. Opening against a moving branch made that parent a different
+        # commit from the one the device run and the failing test were verified
+        # on, and three independent reviews reported it as a provenance defect.
+        # Commit onto the verified baseline itself so the first parent is
+        # exactly the commit the evidence describes. That keeps the diff equal
+        # to the add-only patch only while the baseline is an ancestor of the
+        # base branch, so prove that rather than assume it.
+        $baselineSha = [string]$Candidate.baseSha
+        if ($baselineSha -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'Validated candidate baseline commit is not a full lowercase SHA.'
+        }
+        & git cat-file -e "$baselineSha^{commit}" 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            throw 'The validated baseline commit is missing from the publisher checkout.'
+        }
+
         $targetRemote = 'replication-target'
         & git remote remove $targetRemote 2>$null
         Invoke-ReplicationExternalCommand `
@@ -475,10 +485,15 @@ if (-not $DryRun) {
             -Description 'Configuring reproduction target'
         Invoke-ReplicationExternalCommand `
             -FilePath 'git' `
-            -Arguments @('fetch', '--no-tags', '--depth', '1', $targetRemote, $BaseBranch) `
+            -Arguments @('fetch', '--no-tags', $targetRemote, $BaseBranch) `
             -Description 'Fetching the pull request base branch'
+        & git merge-base --is-ancestor $baselineSha FETCH_HEAD
+        if ($LASTEXITCODE -ne 0) {
+            throw ('The validated baseline is not contained in the pull request ' +
+                'base branch, so the reproduction diff would carry unrelated commits.')
+        }
 
-        Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('checkout', '--detach', 'FETCH_HEAD') -Description 'Checking out the pull request base'
+        Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('checkout', '--detach', $baselineSha) -Description 'Checking out the verified baseline'
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('switch', '-c', $branchName) -Description 'Creating reproduction branch'
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('apply', '--index', '--whitespace=nowarn', $PatchPath) -Description 'Applying validated reproduction patch'
 

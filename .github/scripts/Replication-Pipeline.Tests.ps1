@@ -63,7 +63,14 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish Replication Feedback Snapshot'.*?condition: and\(succeededOrFailed\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)\)"
         $script:Pipeline | Should -Match "artifact: 'ReplicationFeedback'"
         $script:Pipeline | Should -Match "(?s)- job: CopilotReview.*?condition: or\(eq\('\$\{\{ parameters\.Mode \}\}', 'review'\), eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)\)"
-        $script:Pipeline | Should -Match 'git checkout --detach origin/main'
+        # Reviews of kubaflo/maui#189, #193, and #194 each rejected the declared
+        # baseline because it was not the published commit's first parent. The
+        # baseline must be the commit the pull request will be parented on.
+        $script:Pipeline | Should -Match 'https://github\.com/kubaflo/maui\.git main'
+        $script:Pipeline |
+            Should -Match 'merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
+        $script:Pipeline |
+            Should -Match 'The publication base is not an ancestor of dotnet/maui main'
         $restoreIndex = $script:Pipeline.IndexOf("displayName: 'Restore clean replication baseline'")
         $replicateIndex = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")
         $restoreIndex | Should -BeGreaterThan -1

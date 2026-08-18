@@ -234,7 +234,7 @@ Describe 'Trusted replication pull request publishing' {
         # probative; state its evidentiary role explicitly instead.
         $body | Should -Match 'authoritative proof is the trusted targeted test'
         $body | Should -Match 'only the app-reported verdict rather than the defect itself'
-        $body | Should -Match 'applied directly onto the current tip of the pull request base branch'
+        $body | Should -Match 'reproduction commit sits directly on the baseline above'
     }
 
     It 'names the simulator or emulator instead of claiming an on-device run' {
@@ -358,18 +358,25 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
     }
 
-    It 'builds the reproduction branch on the pull request base so the diff is only the patch' {
-        # PR kubaflo/maui#177 committed the patch onto the validated baseline
-        # while basing the PR on the target default branch, so its diff listed
-        # nine unrelated files. MauiBot cannot push into the target repository,
-        # so the branch must start from the base rather than moving the base.
+    It 'opens the reproduction against the exact commit it was verified on' {
+        # Reviews of kubaflo/maui#189, #193, and #194 each reported that the
+        # pull request's first parent was not the verified baseline. PR #177
+        # showed the opposite failure: committing onto the baseline while
+        # basing on a moving branch listed nine unrelated files in the diff.
+        # Pinning the base to the baseline satisfies both at once.
         $script:PrSource | Should -Match "'replication-target'"
-        $script:PrSource.Contains("@('fetch', '--no-tags', '--depth', '1', `$targetRemote, `$BaseBranch)") |
+        $script:PrSource.Contains('@(''checkout'', ''--detach'', $baselineSha)') |
             Should -BeTrue
-        $script:PrSource.Contains("@('checkout', '--detach', 'FETCH_HEAD')") | Should -BeTrue
         $script:PrSource | Should -Match '--base \$BaseBranch'
-        $script:PrSource.Contains("refs/heads/`$baseBranchName") | Should -BeFalse
-        $script:PrSource.Contains("'checkout', '--detach', [string]`$candidate.baseSha") | Should -BeFalse
+        # A baseline the publisher cannot verify must never be committed onto.
+        $script:PrSource.Contains('$baselineSha -cnotmatch ''^[0-9a-f]{40}$''') |
+            Should -BeTrue
+        # Committing onto a baseline outside the base branch would drag
+        # unrelated commits into the diff, as kubaflo/maui#177 did.
+        $script:PrSource.Contains(
+            'git merge-base --is-ancestor $baselineSha FETCH_HEAD') | Should -BeTrue
+        $script:PrSource | Should -Match 'would carry unrelated commits'
+        $script:PrSource.Contains("@('checkout', '--detach', 'FETCH_HEAD')") | Should -BeFalse
     }
 }
 
@@ -404,7 +411,8 @@ Describe 'Trusted replication PR migration' {
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
 
         $body | Should -Match 'Validated on baseline commit'
-        $body | Should -Match 'That tip, not the baseline above, is the parent'
+        $body | Should -Match 'first parent of the commit in this pull request is exactly the commit'
+        $body | Should -Match 'this diff contains only the added reproduction test'
         $body | Should -Match 'not of the committed test executing'
         $body | Should -Match 'not as exact-head evidence'
         $body.Contains('- Baseline commit: ``$baseSha``') | Should -BeFalse
