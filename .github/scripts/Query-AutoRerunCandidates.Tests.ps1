@@ -373,7 +373,19 @@ Context 'scanner decline checkpoint' {
             '(?s)async function markDeclined\(prNumber, headSha, activityCheckpoint\).*?async function clearDeclined'
         ).Value
 
-        $markDeclined | Should -Match 'agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\}'
+        $markDeclined | Should -Match 'const markerText = `<!-- agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\} -->`;'
+        $markDeclined | Should -Match 'const markerPrefix = `<!-- agent-rerun-declined:\$\{headSha\}`;'
+        $markDeclined | Should -Match 'body\.includes\(`\$\{markerPrefix\}:`\)'
+        $markDeclined | Should -Match 'body\.includes\(`\$\{markerPrefix\} -->`\)'
+        $markDeclined | Should -Not -Match 'comment => comment\.body\.includes\(markerText\)'
+
+        $headSha = '2222222222222222222222222222222222222222'
+        $priorMarker = "<!-- agent-rerun-declined:${headSha}:1787000000000 -->"
+        $retryMarker = "<!-- agent-rerun-declined:${headSha}:1787003600000 -->"
+        $headMarkerPrefix = "<!-- agent-rerun-declined:${headSha}"
+
+        $priorMarker.Contains($retryMarker) | Should -BeFalse
+        $priorMarker.Contains("${headMarkerPrefix}:") | Should -BeTrue
         $markDeclined.IndexOf('if (alreadyLabelled && existingMarker)') |
             Should -BeLessThan $markDeclined.IndexOf('issues.createComment({')
         $markDeclined.IndexOf('if (existingMarker)') |

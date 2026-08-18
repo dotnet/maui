@@ -242,6 +242,7 @@ safe-outputs:
                 );
 
                 const markerText = `<!-- agent-rerun-declined:${headSha}:${activityCheckpoint} -->`;
+                const markerPrefix = `<!-- agent-rerun-declined:${headSha}`;
                 const existing = await github.graphql(
                   `query($owner:String!,$repo:String!,$number:Int!){
                     repository(owner:$owner,name:$repo){
@@ -252,9 +253,12 @@ safe-outputs:
                   }`,
                   { owner, repo, number: prNumber },
                 );
-                const existingMarker = existing.repository.pullRequest.comments.nodes.find(
-                  comment => comment.body.includes(markerText),
-                );
+                // Match the immutable head independently of the scan checkpoint so
+                // retries after a label-removal failure reuse the prior marker.
+                const existingMarker = existing.repository.pullRequest.comments.nodes.find(comment => {
+                  const body = comment.body || '';
+                  return body.includes(`${markerPrefix}:`) || body.includes(`${markerPrefix} -->`);
+                });
 
                 if (alreadyLabelled && existingMarker) {
                   core.info(`${declinedLabel.name} already records unchanged head ${headSha} for PR #${prNumber}`);
