@@ -98,39 +98,16 @@ namespace UITest.Appium
 
 		CommandResponse ClickElement(AppiumElement element, Func<IUIElement>? refreshElement)
 		{
-			return ClickElement(
-				element,
-				_appiumApp.Driver is MacDriver,
-				appiumElement => appiumElement.TagName,
-				appiumElement => appiumElement.Click(),
-				refreshElement is null ? null : () => GetAppiumElement(refreshElement()),
-				tagName => (AppiumElement?)_appiumApp.FindElement(tagName),
-				ElementToClickablePoint,
-				(x, y) => ClickCoordinates(x, y));
-		}
-
-		internal static CommandResponse ClickElement<TElement>(
-			TElement element,
-			bool isMacDriver,
-			Func<TElement, string> getTagName,
-			Action<TElement> clickElement,
-			Func<TElement?>? refreshElement,
-			Func<string, TElement?> findElement,
-			Func<TElement, PointF> elementToClickablePoint,
-			Action<float, float> clickCoordinates)
-			where TElement : class
-		{
-			TElement? currentElement = element;
 			string tagName = string.Empty;
 
 			// Callers with a locator can re-query only if the click fails. Preserve the existing
 			// tag-name fallback for element-only calls that cannot provide a locator.
-			if (isMacDriver && refreshElement is null)
-				tagName = getTagName(currentElement);
+			if (_appiumApp.Driver is MacDriver && refreshElement is null)
+				tagName = element.TagName;
 
 			try
 			{
-				clickElement(currentElement);
+				element.Click();
 				return CommandResponse.SuccessEmptyResponse;
 			}
 			catch (InvalidOperationException ioe)
@@ -149,26 +126,11 @@ namespace UITest.Appium
 				// Appium elements will sometimes become stale
 				// Which appears to happen if click fails, so, we retrieve it here
 				if (refreshElement is not null)
-				{
-					try
-					{
-						currentElement = refreshElement();
-					}
-					catch (InvalidOperationException ioe)
-					{
-						Console.WriteLine($"WebDriverException while refreshing element: {ioe}");
-						currentElement = null;
-					}
-					catch (WebDriverException we)
-					{
-						Console.WriteLine($"WebDriverException while refreshing element: {we}");
-						currentElement = null;
-					}
-				}
+					element = GetAppiumElement(refreshElement()) ?? element;
 				else if (!String.IsNullOrWhiteSpace(tagName))
-					currentElement = findElement(tagName);
+					element = (AppiumElement)_appiumApp.FindElement(tagName);
 
-				if (currentElement is null)
+				if (element is null)
 				{
 					return CommandResponse.FailedEmptyResponse;
 				}
@@ -177,8 +139,8 @@ namespace UITest.Appium
 				// with content in it; if the content is just a TextBlock, we'll end up here)
 
 				// All is not lost; we can figure out the location of the element in in the application window and Tap in that spot
-				PointF p = elementToClickablePoint(currentElement);
-				clickCoordinates(p.X, p.Y);
+				PointF p = ElementToClickablePoint(element);
+				ClickCoordinates(p.X, p.Y);
 				return CommandResponse.SuccessEmptyResponse;
 			}
 		}

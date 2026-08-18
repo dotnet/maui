@@ -14,8 +14,4 @@
     <ProjectReference Include="..\UITest.Core\UITest.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="UITest.Appium.Tests" />
-  </ItemGroup>
-
 </Project>
