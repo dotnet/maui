@@ -157,19 +157,25 @@ namespace Microsoft.Maui.Controls
 				return scrollView;
 
 			if (view.Handler?.PlatformView is UIView platformView)
-				return FindNativeScrollView(platformView);
+			{
+				return FindNativeScrollView(platformView, verticallyScrollableOnly: true) ??
+					FindNativeScrollView(platformView, verticallyScrollableOnly: false);
+			}
 
 			return null;
 		}
 
-		static UIScrollView FindNativeScrollView(UIView view)
+		static UIScrollView FindNativeScrollView(UIView view, bool verticallyScrollableOnly)
 		{
 			foreach (var child in view.Subviews)
 			{
-				if (child is UIScrollView scrollView)
+				if (child is UIScrollView scrollView &&
+					(!verticallyScrollableOnly || IsVerticallyScrollable(scrollView)))
+				{
 					return scrollView;
+				}
 
-				if (FindNativeScrollView(child) is UIScrollView nestedScrollView)
+				if (FindNativeScrollView(child, verticallyScrollableOnly) is UIScrollView nestedScrollView)
 					return nestedScrollView;
 			}
 
@@ -227,6 +233,14 @@ namespace Microsoft.Maui.Controls
 				return view;
 			}
 
+			if (view is not Microsoft.Maui.Controls.Layout &&
+				view is not IContentView &&
+				ResolveNativeScrollView(view) is UIScrollView nativeScrollView &&
+				IsVerticallyScrollable(nativeScrollView))
+			{
+				return view;
+			}
+
 			if (view is not IVisualTreeElement visualElement)
 				return null;
 
@@ -243,6 +257,18 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return visibleChild is null ? null : FindVerticalScrollContent(visibleChild);
+		}
+
+		static bool IsVerticallyScrollable(UIScrollView scrollView)
+		{
+			if (scrollView is UITableView)
+				return true;
+
+			if (scrollView is UICollectionView { CollectionViewLayout: UICollectionViewFlowLayout flowLayout })
+				return flowLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical;
+
+			return scrollView.AlwaysBounceVertical ||
+				(!scrollView.AlwaysBounceHorizontal && scrollView.ContentSize.Height > scrollView.Bounds.Height);
 		}
 
 		/// <summary>

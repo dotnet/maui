@@ -1,4 +1,8 @@
 using Microsoft.Maui.Layouts;
+#if IOS
+using Microsoft.Maui.Handlers;
+using UIKit;
+#endif
 using ControlsPage = Microsoft.Maui.Controls.Page;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 
@@ -39,6 +43,9 @@ public class Issue33037NonShellRootPage : ContentPage
 				CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
 				CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
 				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage()),
+#if IOS
+				CreateButton("Issue33037NativeTableViewButton", "Custom control backed by native UITableView", () => new Issue33037NativeTableViewPage()),
+#endif
 				CreateButton("Issue33037TableViewButton", "Grid wrapping TableView", () => new Issue33037NonShellTableViewPage()),
 				CreateButton("Issue33037WebViewButton", "Grid wrapping WebView", () => new Issue33037NonShellWebViewPage()),
 				CreateButton("Issue33037CandidateSelectionButton", "Hidden and horizontal scrollers before vertical content", () => new Issue33037NonShellCandidateSelectionPage()),
@@ -329,6 +336,76 @@ class Issue33037NonShellCollectionViewPage : Issue33037NonShellScenarioPage
 		};
 	}
 }
+
+#if IOS
+class Issue33037NativeTableViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NativeTableViewPage() : base("Issue33037 Native")
+	{
+		Content = new Issue33037NativeTableView
+		{
+			AutomationId = "Issue33037NativeTableViewScroller"
+		};
+	}
+}
+
+public class Issue33037NativeTableView : View
+{
+}
+
+public class Issue33037NativeTableViewHandler : ViewHandler<Issue33037NativeTableView, UITableView>
+{
+	readonly Issue33037NativeTableViewSource _source = new();
+
+	public static readonly IPropertyMapper<Issue33037NativeTableView, Issue33037NativeTableViewHandler> Mapper =
+		new PropertyMapper<Issue33037NativeTableView, Issue33037NativeTableViewHandler>(ViewHandler.ViewMapper);
+
+	public Issue33037NativeTableViewHandler() : base(Mapper)
+	{
+	}
+
+	protected override UITableView CreatePlatformView()
+	{
+		return new UITableView
+		{
+			AlwaysBounceVertical = true,
+			RowHeight = 50,
+			SeparatorInset = new UIEdgeInsets(0, 16, 0, 0),
+			Source = _source
+		};
+	}
+}
+
+class Issue33037NativeTableViewSource : UITableViewSource
+{
+	const string ReuseIdentifier = "Issue33037NativeCell";
+
+	public override nint RowsInSection(UITableView tableview, nint section) => 60;
+
+	public override UITableViewCell GetCell(UITableView tableView, Foundation.NSIndexPath indexPath)
+	{
+		var cell = tableView.DequeueReusableCell(ReuseIdentifier) ??
+			new UITableViewCell(UITableViewCellStyle.Default, ReuseIdentifier);
+		var label = cell.ContentView.ViewWithTag(1) as UILabel;
+		if (label is null)
+		{
+			label = new UILabel(new CoreGraphics.CGRect(
+				16,
+				0,
+				Math.Max(0, cell.ContentView.Bounds.Width - 32),
+				cell.ContentView.Bounds.Height))
+			{
+				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+				Tag = 1
+			};
+			cell.ContentView.AddSubview(label);
+		}
+
+		label.Text = $"Item {indexPath.Row}";
+		return cell;
+	}
+}
+#endif
 
 class Issue33037NonShellTableViewPage : Issue33037NonShellScenarioPage
 {

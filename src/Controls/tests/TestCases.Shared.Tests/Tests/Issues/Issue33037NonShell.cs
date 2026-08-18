@@ -21,6 +21,7 @@ public class Issue33037NonShell : _IssuesUITest
 	[TestCase("Issue33037DynamicContentViewGridScrollViewButton", "Issue33037DynamicContentViewGridScrollViewScroller", "Issue33037 Dynamic", "Item 40", "DynamicContentViewGridScrollView", null)]
 	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List", "Item 40", "ListView", null)]
 	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection", "Item 40", "CollectionView", null)]
+	[TestCase("Issue33037NativeTableViewButton", "Issue33037NativeTableViewScroller", "Issue33037 Native", "Item 40", null, null)]
 	[TestCase("Issue33037TableViewButton", "Issue33037TableViewScroller", "Issue33037 Table", "Item 40", null, null)]
 	[TestCase("Issue33037CandidateSelectionButton", "Issue33037CandidateSelectionScroller", "Issue33037 Candidates", "Item 40", null, null)]
 	[TestCase("Issue33037FixedHeaderCollectionViewButton", "Issue33037FixedHeaderCollectionViewScroller", "Issue33037 Fixed Header", "Item 40", "FixedHeaderCollectionView", "Issue33037FixedHeader")]
