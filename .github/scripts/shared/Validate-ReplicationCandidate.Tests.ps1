@@ -1687,6 +1687,14 @@ Describe 'The publisher refuses a test that asserts its own handler registration
 }
 
 Describe 'The publisher refuses a test that throws away its own verdict' {
+    It 'rejects a swallowed crash at publish time' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'void Wire() { AndroidEnvironment.UnhandledExceptionRaiser += OnCrash; }' `
+                -Path 'Issue36298.cs'
+        } | Should -Throw '*global-exception-suppression*'
+    }
+
     It 'rejects a discarded short-circuit at publish time' {
         {
             Assert-ReplicationWaitResultIsUsed `

@@ -865,9 +865,10 @@ Describe 'Replication orchestrator security boundary' {
 
         { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
 
-        $Platform = 'ios'
-        { Read-GeneratedAppiumPlan | Out-Null } |
-            Should -Throw '*uses assertAppClosed outside Windows*'
+        foreach ($otherPlatform in @('ios', 'android', 'catalyst')) {
+            $Platform = $otherPlatform
+            { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+        }
 
         $Platform = 'windows'
         $invalid = Get-Content -LiteralPath $appiumPlanPath -Raw |
@@ -2050,6 +2051,9 @@ InitializeComponent();
         $script:TrustedAppiumSource | Should -Match 'driver\.TerminateApp\(appId\)'
         $script:TrustedAppiumSource | Should -Match 'driver\.ActivateApp\(appId\)'
         $script:TrustedAppiumSource | Should -Match 'case "assertAppClosed"'
+        $script:TrustedAppiumSource | Should -Match '"android" => \("mobile: queryAppState", "appId"\)'
+        $script:TrustedAppiumSource | Should -Match '"ios" => \("mobile: queryAppState", "bundleId"\)'
+        $script:TrustedAppiumSource | Should -Match '"catalyst" => \("macos: queryAppState", "bundleId"\)'
         $script:TrustedAppiumSource | Should -Match 'launchedWindowsApp\.HasExited'
         $script:TrustedAppiumSource | Should -Not -Match 'launchedWindowsApp\.ExitCode'
         $script:TrustedAppiumSource | Should -Match 'Windows Sandbox process .* exited after the reported trigger'
@@ -2371,7 +2375,7 @@ exit 0
         $script:Source |
             Should -Match 'Do not use assertNotExists or any intermediate assertion'
         $script:Source |
-            Should -Match 'assertAppClosed is available only on Windows'
+            Should -Match 'assertAppClosed is available on every platform'
         $script:Source |
             Should -Match 'rather than moving the control when the report moves the pointer'
         $script:Source |
@@ -2747,6 +2751,51 @@ public void ReproducesIssue()
                 -Content $source `
                 -Path 'Issue20722.cs'
         } | Should -Throw "*prohibited 'framework-behavior-switch'*"
+    }
+
+    It 'refuses a reproduction that swallows the crash it is supposed to prove' {
+        # AppDomain is already refused as reflection, so it is asserted
+        # against the code that actually rejects it.
+        $handlers = @{
+            'AppDomain.CurrentDomain.UnhandledException += OnCrash;'   = 'reflection'
+            'Application.Current.UnhandledException += OnCrash;'       = 'global-exception-suppression'
+            'AndroidEnvironment.UnhandledExceptionRaiser += OnCrash;'  = 'global-exception-suppression'
+            'TaskScheduler.UnobservedTaskException += OnCrash;'        = 'global-exception-suppression'
+            'ObjCRuntime.Runtime.MarshalManagedException += OnCrash;'  = 'global-exception-suppression'
+        }
+
+        foreach ($handler in $handlers.GetEnumerator()) {
+            {
+                Assert-ReplicationGeneratedSourceSafety `
+                    -Content "public class Issue1 : ContentPage { void Wire() { $($handler.Key) } }" `
+                    -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs'
+            } | Should -Throw "*$($handler.Value)*"
+        }
+    }
+
+    It 'still allows a narrow try/catch for the exact reported exception type' {
+        $source = @'
+public class Issue1 : ContentPage
+{
+    void Trigger()
+    {
+        try
+        {
+            Reported();
+        }
+        catch (System.ArgumentException)
+        {
+            Result.Text = "BUG REPRODUCED:";
+        }
+    }
+}
+'@
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $source `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs'
+        } | Should -Not -Throw
     }
 
     It 'rejects unsafe MacCatalyst filenames and mismatched platform APIs' {

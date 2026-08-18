@@ -372,7 +372,7 @@ static void ExecuteStep(
                 isFinalStep);
             break;
         case "assertAppClosed":
-            AssertAppClosed(platform, launchedWindowsApp, timeout);
+            AssertAppClosed(driver, platform, launchedWindowsApp, timeout);
             break;
         case "back":
             driver.Navigate().Back();
@@ -476,32 +476,76 @@ static bool IndicatesLostAppWindow(Exception exception)
 }
 
 static void AssertAppClosed(
+    AppiumDriver driver,
     string platform,
     Process? launchedWindowsApp,
     TimeSpan timeout)
 {
-    if (platform != "windows" || launchedWindowsApp is null)
+    if (platform == "windows")
     {
-        throw new InvalidOperationException(
-            "assertAppClosed is supported only for the trusted Windows Sandbox process.");
+        if (launchedWindowsApp is null)
+        {
+            throw new InvalidOperationException(
+                "assertAppClosed needs the trusted Windows Sandbox process.");
+        }
+
+        var processId = launchedWindowsApp.Id;
+        var windowsDeadline = Stopwatch.StartNew();
+        while (windowsDeadline.Elapsed < timeout)
+        {
+            launchedWindowsApp.Refresh();
+            if (launchedWindowsApp.HasExited)
+            {
+                Console.WriteLine(
+                    $"BUG REPRODUCED: Windows Sandbox process {processId} exited after the reported trigger.");
+                return;
+            }
+            System.Threading.Thread.Sleep(200);
+        }
+
+        throw new TimeoutException(
+            "Windows Sandbox process remained open after the reported crash trigger.");
     }
 
-    var processId = launchedWindowsApp.Id;
+    // A crash is the reported symptom for a whole class of issues, and it is
+    // the one observation the harness can make without the app reporting on
+    // itself. Every platform can answer whether the Sandbox is still running.
     var deadline = Stopwatch.StartNew();
     while (deadline.Elapsed < timeout)
     {
-        launchedWindowsApp.Refresh();
-        if (launchedWindowsApp.HasExited)
+        if (!IsSandboxRunning(driver, platform))
         {
             Console.WriteLine(
-                $"BUG REPRODUCED: Windows Sandbox process {processId} exited after the reported trigger.");
+                $"BUG REPRODUCED: the {platform} Sandbox stopped running after the reported trigger.");
             return;
         }
         System.Threading.Thread.Sleep(200);
     }
 
     throw new TimeoutException(
-        "Windows Sandbox process remained open after the reported crash trigger.");
+        $"The {platform} Sandbox kept running after the reported crash trigger.");
+}
+
+static bool IsSandboxRunning(AppiumDriver driver, string platform)
+{
+    const string sandboxAppId = "com.microsoft.maui.sandbox";
+    // Each driver spells the query differently: UiAutomator2 takes appId,
+    // XCUITest takes bundleId, and Mac2 namespaces the command as macos:.
+    var (command, parameterName) = platform switch
+    {
+        "android" => ("mobile: queryAppState", "appId"),
+        "ios" => ("mobile: queryAppState", "bundleId"),
+        "catalyst" => ("macos: queryAppState", "bundleId"),
+        _ => throw new InvalidOperationException(
+            $"assertAppClosed is unsupported on replication platform '{platform}'.")
+    };
+
+    var queried = driver.ExecuteScript(
+        command,
+        new Dictionary<string, object> { [parameterName] = sandboxAppId });
+
+    // 0 not installed, 1 not running, 2 suspended, 3 background, 4 foreground.
+    return Convert.ToInt64(queried, System.Globalization.CultureInfo.InvariantCulture) >= 2;
 }
 
 static IWebElement WaitForElement(
