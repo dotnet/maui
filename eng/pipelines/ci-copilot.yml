@@ -560,7 +560,7 @@ stages:
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $timeoutMin = 40
-              $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              $buildCommand = "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
               # A recurring android failure is a CORRUPT local .dotnet: the shared
               # Microsoft.NETCore.App pack ships a System.IO.Pipes.dll the build can't
               # LOAD (MSB6003 "could not be run"), so DotNet.csproj's Exec 'sh' dies and
@@ -606,13 +606,13 @@ stages:
               }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'pwsh'
-                foreach ($a in $buildArgs) { [void]$psi.ArgumentList.Add($a) }
+                $psi.FileName = 'bash'
+                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
                 $psi.UseShellExecute = $false
                 $proc = [System.Diagnostics.Process]::Start($psi)
               } catch {
-                Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
-                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
+                & bash -o pipefail -c $buildCommand
                 if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $LASTEXITCODE }
                 exit $LASTEXITCODE
               }
@@ -1325,7 +1325,7 @@ stages:
                   echo "iOS runtime availability (before restart/enroll):"
                   xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "  (could not read runtimes)"
                   xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  [image] \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null)"' 2>/dev/null || echo "  (could not read images)"
-                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
                   sleep 8
                   xcrun simctl list runtimes >/dev/null 2>&1 || true
                   sleep 4
@@ -2500,7 +2500,7 @@ stages:
                 echo "iOS runtimes: newest enrolled(available)=$NEWEST_AVAIL_RT newest ready(on-disk)=$NEWEST_READY_RT"
                 if [ "$NEWEST_READY_RT" != "$NEWEST_AVAIL_RT" ] && [ "$(printf '%s\n%s\n' "$NEWEST_AVAIL_RT" "$NEWEST_READY_RT" | sort -V | tail -1)" = "$NEWEST_READY_RT" ]; then
                   echo "Ready iOS runtime $NEWEST_READY_RT is newer than newest enrolled $NEWEST_AVAIL_RT — restarting CoreSimulatorService to enroll…"
-                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
                   sleep 8
                   xcrun simctl list runtimes >/dev/null 2>&1 || true   # relaunch daemon + re-scan Ready images
                   sleep 4
@@ -2741,7 +2741,7 @@ stages:
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $timeoutMin = 40
-              $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              $buildCommand = "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
               # Retry wipes ./.dotnet to recover from a corrupt local SDK (unloadable
               # System.IO.Pipes.dll); marker persists across retryCountOnTaskFailure.
               # See the gate-stage copy of this step for the full rationale.
@@ -2756,13 +2756,13 @@ stages:
               }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'pwsh'
-                foreach ($a in $buildArgs) { [void]$psi.ArgumentList.Add($a) }
+                $psi.FileName = 'bash'
+                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
                 $psi.UseShellExecute = $false
                 $proc = [System.Diagnostics.Process]::Start($psi)
               } catch {
-                Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
-                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
+                & bash -o pipefail -c $buildCommand
                 if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
                 exit $LASTEXITCODE
               }

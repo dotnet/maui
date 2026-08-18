@@ -888,6 +888,25 @@ Describe 'Get-DotNetTestResults (console-scrape fallback)' {
     }
 }
 
+Describe 'Pipeline pre-trusted command safety' {
+    It 'sanitizes both streams from every watchdog build while preserving the build exit code' {
+        $sanitizer = "2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
+
+        ([regex]::Matches($pipelineContent, [regex]::Escape($sanitizer))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = 'bash'"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in @('-o','pipefail','-c',`$buildCommand))"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape('& bash -o pipefail -c $buildCommand'))).Count | Should -Be 2
+        $pipelineContent | Should -Not -Match ([regex]::Escape("`$psi.FileName = 'pwsh'"))
+    }
+
+    It 'uses non-interactive sudo for CoreSimulator recovery before falling back' {
+        $safeKill = 'sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true'
+
+        ([regex]::Matches($pipelineContent, [regex]::Escape($safeKill))).Count | Should -Be 2
+        $pipelineContent | Should -Not -Match '(?m)^\s*sudo killall -9 com\.apple\.CoreSimulator\.CoreSimulatorService'
+    }
+}
+
 Describe 'ConvertTo-AzdoSafeConsole' {
     It 'defangs ##vso[ and ##[ logging-command prefixes' {
         ConvertTo-AzdoSafeConsole '##vso[task.setvariable variable=x]y' | Should -Be '## vso[task.setvariable variable=x]y'
