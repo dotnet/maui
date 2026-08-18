@@ -40,8 +40,11 @@ if [ "$serviceLabelStatus" -ne 0 ] ||
 fi
 
 serviceTarget="$serviceDomain/$serviceLabel"
-diagnosticLog=$(mktemp "${TMPDIR:-/tmp}/maui-notification-center-enable.XXXXXX")
-if [ -z "$diagnosticLog" ]; then
+diagnosticLog=$(mktemp "${TMPDIR:-/tmp}/maui-notification-center-enable.XXXXXX" 2>/dev/null)
+diagnosticLogStatus=$?
+if [ "$diagnosticLogStatus" -ne 0 ] ||
+    [ -z "$diagnosticLog" ] ||
+    [ ! -f "$diagnosticLog" ]; then
   echo "##vso[task.logissue type=warning]Could not create a Notification Center diagnostics file; continuing without changing host state."
   exit 0
 fi

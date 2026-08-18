@@ -1,6 +1,11 @@
 #!/bin/sh
 
 run_as_console_user() {
+  if [ "$#" -lt 3 ]; then
+    echo "run_as_console_user requires a user, uid, and command." >&2
+    return 64
+  fi
+
   target_user=$1
   target_uid=$2
   shift 2
