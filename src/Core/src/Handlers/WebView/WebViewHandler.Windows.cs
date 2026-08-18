@@ -104,7 +104,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.PlatformView.CanGoBack && handler is WebViewHandler w)
+			// Use CoreWebView2.CanGoBack rather than the WebView2 control's CanGoBack,
+			// which can be stale (see UpdateCanGoBackForward).
+			if ((handler.PlatformView.CoreWebView2?.CanGoBack ?? handler.PlatformView.CanGoBack) && handler is WebViewHandler w)
 				w.CurrentNavigationEvent = WebNavigationEvent.Back;
 
 			handler.PlatformView?.UpdateGoBack(webView);
@@ -112,7 +114,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (handler.PlatformView.CanGoForward && handler is WebViewHandler w)
+			// Use CoreWebView2.CanGoForward rather than the WebView2 control's CanGoForward,
+			// which can be stale (see UpdateCanGoBackForward).
+			if ((handler.PlatformView.CoreWebView2?.CanGoForward ?? handler.PlatformView.CanGoForward) && handler is WebViewHandler w)
 				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
 
 			handler.PlatformView?.UpdateGoForward(webView);

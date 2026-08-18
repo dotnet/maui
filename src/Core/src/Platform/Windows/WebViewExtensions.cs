@@ -101,8 +101,19 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateCanGoBackForward(this WebView2 platformWebView, IWebView webView)
 		{
-			webView.CanGoBack = platformWebView.CanGoBack;
-			webView.CanGoForward = platformWebView.CanGoForward;
+			// The WebView2 XAML control's CanGoBack/CanGoForward properties can become stale
+			// (e.g. remain true even when no history is left), so prefer CoreWebView2's values,
+			// which reflect the current navigation state synchronously.
+			if (platformWebView.CoreWebView2 is CoreWebView2 coreWebView2)
+			{
+				webView.CanGoBack = coreWebView2.CanGoBack;
+				webView.CanGoForward = coreWebView2.CanGoForward;
+			}
+			else
+			{
+				webView.CanGoBack = platformWebView.CanGoBack;
+				webView.CanGoForward = platformWebView.CanGoForward;
+			}
 		}
 
 		public static void Eval(this WebView2 platformWebView, IWebView webView, string script)

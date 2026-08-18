@@ -89,6 +89,71 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "CanGoBack Is False After Navigating Back To The First Page (Issue #37534)")]
+		public async Task CanGoBackIsFalseAfterReturningToFirstPage()
+		{
+			var pageLoadTimeout = TimeSpan.FromSeconds(5);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var webView = new WebViewStub()
+				{
+					Width = 100,
+					Height = 100,
+					Source = new HtmlWebViewSourceStub { Html = "<h1>Page 1</h1>" }
+				};
+
+				var handler = CreateHandler(webView);
+
+				var platformView = handler.PlatformView;
+
+				// Setup the view to be displayed/parented and run our tests on it
+				await AttachAndRun(webView, async (handler) =>
+				{
+					async Task WaitForNavigationAsync(Action navigate)
+					{
+						var tcsNavigated = new TaskCompletionSource<bool>();
+						using var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
+						ctsTimeout.Token.Register(() => tcsNavigated.TrySetException(new TimeoutException("Failed to navigate")));
+
+						webView.NavigatedDelegate = (evnt, url, result) =>
+						{
+							if (result == WebNavigationResult.Success)
+								tcsNavigated.TrySetResult(true);
+						};
+
+						navigate();
+
+						Assert.True(await tcsNavigated.Task);
+					}
+
+					// Wait for the first page to finish loading
+					await WaitForNavigationAsync(() => { });
+
+					// Navigate to a second page, creating back history
+					await WaitForNavigationAsync(() =>
+					{
+						webView.Source = new HtmlWebViewSourceStub { Html = "<h1>Page 2</h1>" };
+						handler.UpdateValue(nameof(IWebView.Source));
+					});
+
+					Assert.True(webView.CanGoBack, "CanGoBack should be true after navigating to a second page.");
+
+					// Navigate back to the first page
+					await WaitForNavigationAsync(() =>
+					{
+						handler.Invoke(nameof(IWebView.GoBack), null);
+					});
+
+					// Regression test for https://github.com/dotnet/maui/issues/37534:
+					// CanGoBack should become false once there is no more back history left,
+					// instead of remaining stale as true (which caused GoBack() to repeatedly
+					// reload the same page instead of falling back to app-level navigation).
+					Assert.False(webView.CanGoBack, "CanGoBack should be false once there is no more back history.");
+				});
+			});
+		}
+
 		WebView2 GetNativeWebView(WebViewHandler webViewHandler) =>
 			webViewHandler.PlatformView;
 
