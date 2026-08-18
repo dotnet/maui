@@ -533,14 +533,23 @@ stages:
               if ($IsMacOS) {
                 brew install ffmpeg
               } elseif ($IsLinux) {
-                # One attempt per task try. retryCountOnTaskFailure restarts the
-                # step with a fresh timeout, which apt needs far more than it
-                # needs a second attempt inside an already-exhausted budget.
+                # Builds 15000542 and 15000902 sat here for the whole timeout
+                # and printed nothing, because -qq hides apt waiting on the
+                # dpkg lock that unattended-upgrades holds after boot. Stop
+                # that service, bound every apt call so a stuck one fails long
+                # before the step does, and let the task retry restart it.
                 $env:DEBIAN_FRONTEND = 'noninteractive'
-                sudo apt-get update -qq
-                sudo apt-get install -y -qq --no-install-recommends ffmpeg
+                sudo systemctl stop unattended-upgrades.service 2>&1 | Out-Host
+                sudo systemctl stop apt-daily.service apt-daily-upgrade.service 2>&1 | Out-Host
+
+                sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
                 if ($LASTEXITCODE -ne 0) {
-                  throw "apt-get failed to install ffmpeg."
+                  throw "apt-get update failed or timed out with exit code $LASTEXITCODE."
+                }
+
+                sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
+                if ($LASTEXITCODE -ne 0) {
+                  throw "apt-get failed to install ffmpeg with exit code $LASTEXITCODE."
                 }
               } elseif ($IsWindows) {
                 $installed = $false
@@ -2655,10 +2664,12 @@ stages:
               # Build 14999448 reached a publishable candidate and then lost it
               # here: recommended packages add hundreds of megabytes the media
               # checks never use, and a slow mirror exhausted the timeout.
-              # One attempt per task try. Stacking attempts inside a single
-              # timeout is what turned build 15000542 red rather than slow.
-              sudo apt-get update -qq
-              sudo apt-get install -y -qq --no-install-recommends ffmpeg
+              # Bound every apt call so a held dpkg lock fails fast and the
+              # task retry gets a fresh start, rather than burning the timeout.
+              sudo systemctl stop unattended-upgrades.service || true
+              sudo systemctl stop apt-daily.service apt-daily-upgrade.service || true
+              sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
+              sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
               ffprobe -version | head -1
             displayName: 'Install publisher media validator'
             timeoutInMinutes: 25

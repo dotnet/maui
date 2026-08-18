@@ -181,6 +181,22 @@ Describe 'Replication issue outcome publication boundary' {
         $recorder.Value | Should -Match 'retryCountOnTaskFailure: 2'
     }
 
+    It 'never lets apt wait longer than the step that runs it' {
+        # Builds 15000542 and 15000902 spent the whole timeout inside a silent
+        # apt call that was waiting for the unattended-upgrades dpkg lock.
+        $pipeline = $script:Pipeline
+        $pipeline | Should -Not -Match 'apt-get update -qq'
+        $pipeline | Should -Not -Match 'apt-get install -y -qq'
+        ([regex]::Matches($pipeline, 'timeout \d+ apt-get update')).Count |
+            Should -BeGreaterOrEqual 2
+        ([regex]::Matches($pipeline, 'timeout \d+ apt-get install')).Count |
+            Should -BeGreaterOrEqual 2
+        ([regex]::Matches($pipeline, 'DPkg::Lock::Timeout=120')).Count |
+            Should -BeGreaterOrEqual 4
+        ([regex]::Matches($pipeline, 'stop unattended-upgrades\.service')).Count |
+            Should -BeGreaterOrEqual 2
+    }
+
     It 'stages issue context without depending on a step that may not have run' {
         # The same build then failed a second time because the staging step
         # inlined a pipeline variable that the skipped setup never defined.
@@ -206,7 +222,7 @@ Describe 'Replication issue outcome publication boundary' {
             Should -Match "(?s)Install publisher media validator'\s+timeoutInMinutes: 25"
         $installs = [regex]::Matches(
             $script:Pipeline,
-            'apt-get install -y -qq(?<flags>[^\r\n]*)ffmpeg')
+            'apt-get install -y -q(?<flags>[^\r\n]*)ffmpeg')
         $installs.Count | Should -BeGreaterThan 0
         foreach ($install in $installs) {
             $install.Groups['flags'].Value | Should -Match '--no-install-recommends'
