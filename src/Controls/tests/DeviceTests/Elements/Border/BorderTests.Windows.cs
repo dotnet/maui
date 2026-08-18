@@ -451,34 +451,38 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Border reuses unchanged content clip geometry - Issue 17523")]
 		public async Task BorderReusesUnchangedContentClipGeometry()
 		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, TestContentPanelBorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
 			var border = new Border
 			{
+				Content = new Label { Text = "Content" },
 				StrokeShape = new Ellipse(),
 				StrokeThickness = 4,
+				HeightRequest = 100,
+				WidthRequest = 100,
 			};
 
-			await InvokeOnMainThreadAsync(() =>
+			await AttachAndRun(border, (TestContentPanelBorderHandler handler) =>
 			{
-				var platformView = new TestContentPanel
-				{
-					Content = new Microsoft.UI.Xaml.Controls.Grid(),
-					CrossPlatformLayout = border,
-				};
-				platformView.EnableContentClip();
-				platformView.UpdateStrokeShape(border);
-				platformView.UpdateStrokeThickness(border);
-
-				var finalSize = new global::Windows.Foundation.Size(100, 100);
-				platformView.ArrangeForTest(finalSize);
+				var platformView = handler.TestPlatformView;
 				var clipHost = Assert.IsType<ContentPanelClipHost>(platformView.ContentClipHost);
 				var visual = ElementCompositionPreview.GetElementVisual(clipHost);
 				var initialClip = visual.Clip;
+				Assert.NotNull(initialClip);
 
+				var finalSize = new global::Windows.Foundation.Size(platformView.ActualWidth, platformView.ActualHeight);
 				platformView.ArrangeForTest(finalSize);
 				Assert.Same(initialClip, visual.Clip);
 
 				border.StrokeThickness = 8;
-				platformView.UpdateStrokeThickness(border);
+				handler.UpdateValue(nameof(IBorderView.StrokeThickness));
 				platformView.ArrangeForTest(finalSize);
 				Assert.NotSame(initialClip, visual.Clip);
 			});
@@ -516,6 +520,45 @@ namespace Microsoft.Maui.DeviceTests
 				platformView.MeasureForTest(new global::Windows.Foundation.Size(double.PositiveInfinity, 0));
 
 				Assert.Equal(0, border.MeasureCount);
+			});
+		}
+
+		[Fact(DisplayName = "Border returns its cross-platform arranged size - Issue 17523")]
+		public async Task BorderReturnsItsCrossPlatformArrangedSize()
+		{
+			var arrangedSize = new Size(80, 70);
+			var border = new ArrangeSizeBorder(arrangedSize)
+			{
+				Content = new Label { Text = "Content" },
+				HeightRequest = 100,
+				WidthRequest = 100,
+			};
+
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ArrangeSizeBorder, TestContentPanelBorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			await AttachAndRun(border, (TestContentPanelBorderHandler handler) =>
+			{
+				var finalSize = new global::Windows.Foundation.Size(100, 100);
+				var actual = handler.TestPlatformView.ArrangeForTest(finalSize);
+
+				Assert.Equal(arrangedSize.ToPlatform(), actual);
+
+				handler.TestPlatformView.CrossPlatformLayout = null;
+				actual = handler.TestPlatformView.ArrangeForTest(finalSize);
+
+				Assert.Equal(finalSize, actual);
+
+				handler.TestPlatformView.CrossPlatformLayout = border;
+				actual = handler.TestPlatformView.ArrangeForTest(finalSize);
+
+				Assert.Equal(arrangedSize.ToPlatform(), actual);
 			});
 		}
 
@@ -819,6 +862,14 @@ namespace Microsoft.Maui.DeviceTests
 				new() { CrossPlatformLayout = VirtualView };
 		}
 
+		sealed class TestContentPanelBorderHandler : BorderHandler
+		{
+			public TestContentPanel TestPlatformView => (TestContentPanel)PlatformView;
+
+			protected override ContentPanel CreatePlatformView() =>
+				new TestContentPanel { CrossPlatformLayout = VirtualView };
+		}
+
 		sealed class TestContentPanel : ContentPanel
 		{
 			public global::Windows.Foundation.Size MeasureForTest(global::Windows.Foundation.Size availableSize) =>
@@ -846,6 +897,22 @@ namespace Microsoft.Maui.DeviceTests
 
 			public new Size CrossPlatformArrange(Rect bounds) =>
 				base.CrossPlatformArrange(bounds);
+		}
+
+		sealed class ArrangeSizeBorder : Border, ICrossPlatformLayout
+		{
+			readonly Size _arrangedSize;
+
+			public ArrangeSizeBorder(Size arrangedSize)
+			{
+				_arrangedSize = arrangedSize;
+			}
+
+			public new Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
+				_arrangedSize;
+
+			public new Size CrossPlatformArrange(Rect bounds) =>
+				_arrangedSize;
 		}
 
 	}

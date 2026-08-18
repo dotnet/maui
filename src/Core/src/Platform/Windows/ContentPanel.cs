@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_contentClipHost.UpdateLayoutOwner();
 				_contentClipHost.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
-				actual = finalSize;
+				actual = _contentClipHost.LayoutOwner is null ? finalSize : _contentClipHost.ArrangedSize;
 			}
 			else
 			{
@@ -404,6 +404,7 @@ namespace Microsoft.Maui.Platform
 		bool _layoutOwnerInitialized;
 		WeakReference<ICrossPlatformLayout>? _layoutOwner;
 
+		internal global::Windows.Foundation.Size ArrangedSize { get; private set; }
 		internal ICrossPlatformLayout? LayoutOwner => _owner.CrossPlatformLayout;
 
 		internal ContentPanelClipHost(ContentPanel owner)
@@ -451,10 +452,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (LayoutOwner is not { } layoutOwner)
 			{
-				return base.ArrangeOverride(finalSize);
+				return ArrangedSize = base.ArrangeOverride(finalSize);
 			}
 
-			return layoutOwner.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+			return ArrangedSize = layoutOwner.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
 		}
 	}
 }
