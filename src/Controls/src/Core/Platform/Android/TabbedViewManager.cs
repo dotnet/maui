@@ -235,6 +235,10 @@ internal class TabbedViewManager
             Element.TabsChanged -= OnTabsCollectionChanged;
             RemoveTabs();
 
+            // SetTabLayout normally unsubscribes after RootViewChanged fires, but teardown
+            // can happen first and would otherwise leave this manager rooted.
+            _context.GetNavigationRootManager().RootViewChanged -= RootViewChanged;
+
             if (_currentBarBackground is GradientBrush currentGradientBrush)
             {
                 if (ReferenceEquals(currentGradientBrush.Parent, Element.Owner))
@@ -263,7 +267,19 @@ internal class TabbedViewManager
             if (_managesViewPager)
             {
                 _viewPager.UnregisterOnPageChangeCallback(_listeners);
-                _viewPager.Adapter = null;
+
+                if (_viewPager.Adapter is MultiPageFragmentStateAdapter<Page> oldAdapter)
+                {
+                    // Begin teardown before detaching so pending RecyclerView layout work sees
+                    // an empty adapter; disposing then releases its lifecycle observer and page.
+                    oldAdapter.BeginTeardown();
+                    _viewPager.Adapter = null;
+                    oldAdapter.Dispose();
+                }
+                else
+                {
+                    _viewPager.Adapter = null;
+                }
             }
         }
 

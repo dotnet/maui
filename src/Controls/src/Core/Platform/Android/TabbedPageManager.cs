@@ -79,6 +79,9 @@ public class TabbedPageManager
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
 			ViewPager.LayoutChange -= OnLayoutChanged;
+
+			// Clear so this doesn't keep the old CurrentPage/TabbedPage reachable unnecessarily.
+			previousPage = null;
 		}
 
 		_bottomBadgePages.Clear();
