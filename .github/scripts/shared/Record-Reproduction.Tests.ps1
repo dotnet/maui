@@ -940,3 +940,29 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $secondIndex | Should -BeLessThan $forcedIndex
     }
 }
+
+Describe 'Select-ReproductionDiagnosticLines native backtraces' {
+    BeforeAll {
+        # The recorder declares mandatory parameters, so it cannot be
+        # dot-sourced; lift just the function under test out of its AST.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        $fn = $ast.FindAll({ param($x)
+            $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $x.Name -eq 'Select-ReproductionDiagnosticLines' }, $true) | Select-Object -First 1
+        . ([scriptblock]::Create($fn.Extent.Text))
+    }
+
+    It 'drops native frames and keeps the cause across escaped newlines' {
+        $blob = 'Run trusted reproduction script failed with exit code 134.\n' +
+            'PS-STEP-FAILED: step 2 could not find the AutomationId "TargetLabel"\n' +
+            "`t1 WebDriverAgentLib   0x0000000103f14ccc +[FBFindElementCommands handleFindElement:] + 400\n" +
+            "`t3   WebDriverAgentLib 0x0000000103f4b274 -[RoutingHTTPServer handleRoute:] + 168"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $blob -MaximumTailLines 20
+
+        $selected | Should -Match 'PS-STEP-FAILED: step 2'
+        $selected | Should -Match 'exit code 134'
+        $selected | Should -Not -Match 'WebDriverAgentLib'
+    }
+}

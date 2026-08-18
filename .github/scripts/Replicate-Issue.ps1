@@ -537,7 +537,9 @@ function Get-ReplicationFailureDetails {
     # diagnosis out of the middle. Split into real lines before sanitising.
     $safeLines = @($Output | ForEach-Object {
         $value = if ($null -eq $_) { '' } else { [string]$_ }
-        $value -split '\r?\n'
+        # A nested failure arrives with its newlines already escaped, so the
+        # two-character sequences are line breaks too.
+        $value -split '\r?\n|\\r\\n|\\n'
     } | ForEach-Object {
         $line = ConvertTo-ReplicationSafeLog $_ 500
         if ($line -and $line.Trim()) {
@@ -561,7 +563,8 @@ function Get-ReplicationFailureDetails {
     # A driver error arrives as a Java stack trace and the runner prints a
     # decorative preamble; neither says why a step failed, and together they
     # crowded out the real message in Android run 15009985.
-    $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$)'
+    # Native backtraces (WebDriverAgent, Mac2, CoreFoundation) are frames too.
+    $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|^\s*\d+\s+\S+\s+0x[0-9a-fA-F]{6,}\s)'
     $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
     # The verification harness prints its verdict inside a drawn box, so a rule
     # that dropped every line starting with a box character would also drop
@@ -1805,6 +1808,7 @@ function Assert-GeneratedTestContent {
     )
 
     $targetTestFound = $false
+    $deviceTestIsSelectable = $false
     foreach ($file in $Files) {
         $content = Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
         Assert-ReplicationGeneratedSourceSafety -Content $content -Path $file
@@ -1840,6 +1844,13 @@ function Assert-GeneratedTestContent {
                 Assert-ReplicationPlatformViewIdentity `
                     -Content $content `
                     -Path $file
+                if ($TestType -ceq 'DeviceTest' -and (
+                        Assert-ReplicationDeviceTestIsSelectable `
+                            -Content $content `
+                            -Path $file `
+                            -Issue $Issue)) {
+                    $deviceTestIsSelectable = $true
+                }
             }
             $testAttributeMatches = @([regex]::Matches(
                 $content,
@@ -1874,6 +1885,14 @@ function Assert-GeneratedTestContent {
 
     if (-not $targetTestFound) {
         throw 'Generated files do not contain a test method in the expected test project.'
+    }
+
+    if ($TestType -ceq 'DeviceTest' -and -not $deviceTestIsSelectable) {
+        throw (
+            'The generated device test cannot be selected on device: no file declares ' +
+            "[Category(`"Issue$Issue`")]. The stock runner honours only Category= and " +
+            'SkipCategories=, so a bare class token runs the whole suite instead of the ' +
+            'reproduction.')
     }
 }
 
@@ -2279,6 +2298,7 @@ If the reported behaviour only occurs under an opt-in feature switch such as Use
 If the test drags or swipes with a hand-built pointer sequence, scale the travel by the window size, never by the matched element's rect, and make it travel well past the platform touch slop, which is around 22 px on a typical Android emulator. A drag scaled from an element that resolves to a small label never crosses slop, so the platform performs no gesture at all and the assertion fails identically whether the product is fixed or broken.
 If the issue requests a new public event, property, method, or other API that does not exist on the baseline, do not reinterpret it as a requirement for an existing event or state to change. A test may cover an existing documented contract that is broken, but a pure new-API/feature request is not an empirically reproducible baseline defect and must be rejected rather than assigned a substitute oracle.
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
+A device test must also declare [Category("Issue$IssueNumber")] on its test class, in addition to any conventional TestCategory it already carries. CategoryAttribute takes params string[] and allows multiples, so this adds a category without editing the shared TestCategory file. The stock device-test runner honours only "Category=X" and "SkipCategories=X,Y", so without this category the published selector cannot isolate the reproduction and the whole suite runs instead.
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
 $existingIssueGuidance

@@ -145,6 +145,18 @@ function New-ReplicationPullRequestBody {
         $testFilter
     }
 
+    # The stock device-test runner honours only "Category=X" and
+    # "SkipCategories=X,Y" (DeviceTestSharedHelpers.GetExcludedTestCategories);
+    # every other filter value returns no exclusions, so a bare class token
+    # runs the whole suite. Reviewers measured exactly that on device --
+    # "538 of 538 declarations WOULD RUN" -- so a device reproduction publishes
+    # the selector the runner actually honours instead of one that looks exact.
+    $deviceSelectorLine = if ([string]$Candidate.testType -ceq 'device') {
+        '- Device runner selector: ``TestFilter=Category=Issue{0}`` — the stock device-test runner filters by category only, so use this form on device; the class token above selects nothing there' -f $issueNumber
+    } else {
+        ''
+    }
+
     # Reviewers rejected evidence that called a simulator or emulator run
     # "on-device". Name the surface that actually ran the reproduction.
     $recordingSurface = switch ([string]$Candidate.platform) {
@@ -245,6 +257,7 @@ $marker
 - Test execution host: $testHostDescription
 - Exact test: ``$exactTestName``
 - Targeted filter: ``$testFilter`` — an issue-keyed class token; use the exact test above when a runner needs a precise selector
+$deviceSelectorLine
 - Expected failing assertion: ``$failureSignature``
 $determinismLine
 $buildLine

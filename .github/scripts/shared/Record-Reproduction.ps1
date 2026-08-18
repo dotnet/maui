@@ -162,7 +162,10 @@ function Select-ReproductionDiagnosticLines {
         return ''
     }
 
-    $lines = @($Text -split '\r?\n' |
+    # A nested failure arrives with its newlines already escaped, so the
+    # two-character sequences are line breaks too. Splitting only on real
+    # newlines leaves one long line that no line filter can reduce.
+    $lines = @($Text -split '\r?\n|\\r\\n|\\n' |
         ForEach-Object { $_.TrimEnd() } |
         Where-Object { $_ -and $_.Trim() })
     if ($lines.Count -eq 0) {
@@ -173,7 +176,9 @@ function Select-ReproductionDiagnosticLines {
     # stopped; a success marker cannot explain a failure either. Warning and
     # failure markers are kept.
     $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
-    $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|Caused by:\s)'
+    # Native backtraces (WebDriverAgent, Mac2, CoreFoundation) are frames too:
+    #   "  3   WebDriverAgentLib  0x000000010... -[FBRoute mount:] + 168"
+    $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|Caused by:\s|^\s*\d+\s+\S+\s+0x[0-9a-fA-F]{6,}\s)'
     $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|Logcat|Simulator|simctl)|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
 
     # The verification harness prints its verdict inside a drawn box, so the

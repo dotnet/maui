@@ -1073,6 +1073,48 @@ function Assert-ReplicationPlatformViewIdentity {
     }
 }
 
+function Assert-ReplicationDeviceTestIsSelectable {
+    <#
+        .SYNOPSIS
+        Requires a generated device test to carry an issue-keyed category.
+
+        .DESCRIPTION
+        The stock device-test runner understands exactly two filter forms.
+        DeviceTestSharedHelpers.GetExcludedTestCategories accepts
+        "Category=X" and "SkipCategories=X,Y" and returns no exclusions for
+        anything else, so advertising a bare class token such as "Issue37275"
+        selects nothing -- it runs the entire suite. Reviewers measured that
+        on device for PRs 202, 204, 206 and 208: "538 of 538 declarations
+        WOULD RUN", and one had to build a bespoke exact-FQN runner to isolate
+        the test at all.
+
+        CategoryAttribute takes params string[] and allows multiples, so an
+        issue-keyed category sits alongside the conventional
+        [Category(TestCategory.Entry)] without touching TestCategory -- which
+        matters, because editing that shared file is not add-only.
+
+        With [Category("Issue<N>")] present, TestFilter=Category=Issue<N>
+        excludes every other known category and leaves the reproduction
+        running, so the selector published in the pull request is one the
+        stock runner actually honours.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][int]$Issue
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return $false
+    }
+
+    $token = "Issue$Issue"
+    # [Category("Issue37275")] or [Category(TestCategory.Entry, "Issue37275")]
+    $pattern = '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*Category\s*\([^)]*"' +
+        [regex]::Escape($token) + '"'
+    return [bool]([regex]::IsMatch($Content, $pattern))
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

@@ -2669,6 +2669,7 @@ public class Issue14305
 #if ANDROID
 using Xunit;
 
+[Category("Issue37440")]
 public class Issue37440Tests
 {
     [Fact]
@@ -2686,6 +2687,39 @@ public class Issue37440Tests
                 -Issue 37440 `
                 -TestType DeviceTest
         } | Should -Not -Throw
+    }
+
+    It 'rejects a device reproduction test that no device selector can isolate' {
+        # Without an issue-keyed category the stock runner ignores the filter
+        # and runs the entire suite, so the selector published in the pull
+        # request would not identify the reproduction at all.
+        $repoRoot = $TestDrive
+        $relativePath = 'src/Controls/tests/DeviceTests/Issues/Issue37441Tests.cs'
+        $path = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($path)) -Force |
+            Out-Null
+        @'
+#if ANDROID
+using Xunit;
+
+[Category(TestCategory.Entry)]
+public class Issue37441Tests
+{
+    [Fact]
+    public void ReproducesIssue()
+    {
+        Assert.True(false, "Expected failure");
+    }
+}
+#endif
+'@ | Set-Content -LiteralPath $path
+
+        {
+            Assert-GeneratedTestContent `
+                -Files @($relativePath) `
+                -Issue 37441 `
+                -TestType DeviceTest
+        } | Should -Throw -ExpectedMessage '*cannot be selected on device*'
     }
 
     It 'rejects an opt-in device reproduction guard before verification' {
@@ -2889,6 +2923,66 @@ PS-STEP-FAILED: step 3 did not find its target
         $noise = "[HTTP] --> POST /session/aaaabbbb/element"
         (Get-ReplicationFailureDetails -Output @($noise)) |
             Should -Match '/session/'
+    }
+
+    It 'reduces an escaped-newline native backtrace to its cause' {
+        # Catalyst run 15011913 fed its agent a WebDriverAgent backtrace whose
+        # newlines were already escaped, so splitting on real newlines left one
+        # line and the middle-eliding cap ate the sentence naming the step.
+        $blob = 'Run trusted reproduction script failed with exit code 134.\n' +
+            'PS-STEP-FAILED: step 2 could not find the AutomationId "TargetLabel"\n' +
+            'org.openqa.selenium.NoSuchElementException: element not located\n' +
+            "`t1 WebDriverAgentLib   0x0000000103f14ccc +[FBFindElementCommands handleFindElement:] + 400\n" +
+            "`t3   WebDriverAgentLib 0x0000000103f4b274 -[RoutingHTTPServer handleRoute:] + 168\n" +
+            '[HTTP] <-- POST /session/abcdabcd/element 404'
+
+        $details = Get-ReplicationFailureDetails -Output @($blob)
+
+        $details | Should -Match 'PS-STEP-FAILED: step 2'
+        $details | Should -Match 'NoSuchElementException'
+        $details | Should -Match 'exit code 134'
+        $details | Should -Not -Match 'WebDriverAgentLib'
+        $details | Should -Not -Match '/session/'
+    }
+
+    It 'requires a device test to carry an issue-keyed category' {
+        # DeviceTestSharedHelpers.GetExcludedTestCategories honours only
+        # "Category=X" and "SkipCategories=X,Y"; every other filter value
+        # returns no exclusions, so a bare class token runs the whole suite.
+        # Reviewers measured that on device for PRs 202, 204, 206 and 208.
+        $accepted = @(
+            '[Category("Issue37275")]'
+            '[Category(TestCategory.Entry)]
+	[Category("Issue37275")]'
+            '[Category(TestCategory.Entry, "Issue37275")]'
+            '[Microsoft.Maui.Category("Issue37275")]'
+        )
+        foreach ($attribute in $accepted) {
+            $source = "public class T`n{`n`t$attribute`n`tpublic void M() { }`n}"
+            Assert-ReplicationDeviceTestIsSelectable `
+                -Content $source -Path 'a.cs' -Issue 37275 | Should -BeTrue
+        }
+
+        $rejected = @(
+            '[Category(TestCategory.Entry)]'   # conventional only: inert selector
+            '[Fact]'                           # no category at all
+            '[Category("Issue12345")]'         # a different issue
+            '// [Category("Issue37275")]'      # commented out
+        )
+        foreach ($attribute in $rejected) {
+            $source = "public class T`n{`n`t$attribute`n`tpublic void M() { }`n}"
+            Assert-ReplicationDeviceTestIsSelectable `
+                -Content $source -Path 'a.cs' -Issue 37275 | Should -BeFalse
+        }
+    }
+
+    It 'publishes the device selector the stock runner honours' {
+        $publisher = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
+        $publisher | Should -Match 'TestFilter=Category=Issue\{0\}'
+        $publisher | Should -Match '\$deviceSelectorLine'
+        # Only device runs need it; VSTest selects unit/XAML/UI tests by class.
+        $publisher | Should -Match "\[string\]\`$Candidate\.testType -ceq 'device'"
     }
 
     It 'refuses a precondition as the expected failure signature' {
