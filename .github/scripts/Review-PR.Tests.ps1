@@ -224,31 +224,17 @@ Describe 'Reviewer pipeline timeout containment' {
         $regressionBlock | Should -Not -Match ([regex]::Escape('$deviceTestRunner = Join-Path $SkillsDir'))
     }
 
-    It 'applies PR metadata only from the trusted Stage 3 checkout credential' {
+    It 'never uses CopilotLogs to mutate credentialed PR metadata' {
         $runPostStart = $pipelineContent.IndexOf("displayName: 'Task 4: Post (comments + labels)'")
         $runPostBlock = $pipelineContent.Substring($runPostStart, [Math]::Min(800, $pipelineContent.Length - $runPostStart))
-        $applyName = "displayName: 'Apply PR title/description'"
-        $applyNameIndex = $pipelineContent.IndexOf($applyName)
-        $applyStart = $pipelineContent.LastIndexOf("- pwsh:", $applyNameIndex)
-        $applyEnd = $pipelineContent.IndexOf("- task: DownloadPipelineArtifact@2", $applyNameIndex)
         $downloadLogs = $pipelineContent.IndexOf("displayName: 'Download CopilotLogs'", $pipelineContent.IndexOf("- stage: UpdateAISummaryComment"))
 
         $runPostStart | Should -BeGreaterThan -1
         $runPostBlock | Should -Match ([regex]::Escape('SKIP_PR_FINALIZE_APPLY: "true"'))
-        $applyNameIndex | Should -BeGreaterThan $downloadLogs
-        $applyStart | Should -BeGreaterThan -1
-        $applyEnd | Should -BeGreaterThan $applyStart
-
-        $applyBlock = $pipelineContent.Substring($applyStart, $applyEnd - $applyStart)
-        $applyBlock | Should -Match ([regex]::Escape("git config --get-regexp 'http\..*\.extraheader'"))
-        $applyBlock | Should -Match ([regex]::Escape('./.github/scripts/apply-pr-finalize.ps1'))
-        $applyBlock | Should -Match ([regex]::Escape('$winnerFile = Join-Path $prAgentDir ''winner.json'''))
-        $applyBlock | Should -Match ([regex]::Escape('-WinnerFile $winnerFile'))
-        $applyBlock | Should -Match ([regex]::Escape('Remove-Item Env:GH_TOKEN'))
-        $applyBlock | Should -Match 'timeoutInMinutes: 5'
-        $applyBlock | Should -Match 'continueOnError: true'
-        $applyBlock | Should -Not -Match ([regex]::Escape('$(GH_COMMENT_TOKEN)'))
-        $applyBlock | Should -Not -Match 'COPILOT_GITHUB_TOKEN'
+        $downloadLogs | Should -BeGreaterThan -1
+        $pipelineContent | Should -Not -Match ([regex]::Escape("displayName: 'Apply PR title/description'"))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('./.github/scripts/apply-pr-finalize.ps1'))
+        $pipelineContent | Should -Match '(?s)CopilotLogs.*must never drive a credentialed PR title/body mutation'
     }
 
     It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
@@ -904,6 +890,23 @@ Describe 'Pipeline pre-trusted command safety' {
 
         ([regex]::Matches($pipelineContent, [regex]::Escape($safeKill))).Count | Should -Be 2
         $pipelineContent | Should -Not -Match '(?m)^\s*sudo killall -9 com\.apple\.CoreSimulator\.CoreSimulatorService'
+    }
+
+    It 'freezes the buildtasks failure state before merging PR code' {
+        $freezeIndex = $pipelineContent.IndexOf("displayName: 'Freeze pre-merge buildtasks state'")
+        $setupIndex = $pipelineContent.IndexOf("displayName: 'Task 1: Setup (branch + merge)'")
+        $gateNameIndex = $pipelineContent.IndexOf("displayName: 'Task 2: Gate (test verification)'")
+        $gateStart = $pipelineContent.LastIndexOf('- bash: |', $gateNameIndex)
+        $gateEnd = $pipelineContent.IndexOf('#  Task 3 — COPILOT REVIEW', $gateNameIndex)
+
+        $freezeIndex | Should -BeGreaterThan -1
+        $freezeIndex | Should -BeLessThan $setupIndex
+        $pipelineContent | Should -Match ([regex]::Escape('variable=baseBuildTasksFailed;isOutput=true;isReadOnly=true'))
+        $pipelineContent | Should -Match ([regex]::Escape('BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)'))
+
+        $gateBlock = $pipelineContent.Substring($gateStart, $gateEnd - $gateStart)
+        $gateBlock | Should -Match ([regex]::Escape('if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then'))
+        $gateBlock | Should -Not -Match 'buildtasks-failed\.marker'
     }
 }
 

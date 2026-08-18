@@ -1516,6 +1516,20 @@ stages:
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
+          # Freeze the pre-merge buildtasks result before Setup introduces PR-controlled
+          # code. Gate receives this output through its task environment, so merged PR
+          # execution cannot forge a marker after a genuine test failure.
+          - bash: |
+              BASE_BUILDTASKS_FAILED=false
+              if [ -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker" ]; then
+                BASE_BUILDTASKS_FAILED=true
+              fi
+              echo "Frozen pre-merge buildtasks failure state: $BASE_BUILDTASKS_FAILED"
+              echo "##vso[task.setvariable variable=baseBuildTasksFailed;isOutput=true;isReadOnly=true]$BASE_BUILDTASKS_FAILED"
+              rm -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker"
+            name: FreezeBuildTasksState
+            displayName: 'Freeze pre-merge buildtasks state'
+
           # ─────────────────────────────────────────────────────────
           #  Task 1 — SETUP: symlink copilot, git config, env prep,
           #  copy trusted scripts, invoke Review-PR.ps1 -Phase Setup
@@ -1692,13 +1706,9 @@ stages:
                   GATE_VERDICT="INCONCLUSIVE"
                 fi
               fi
-              # BASE-BRANCH BUILD BREAK override. If "Build MSBuild Tasks" failed (marker
-              # dropped by that step, now continueOnError), the PR's TARGET branch doesn't
-              # compile — the A/B gate can't build either side, so any FAILED here reflects
-              # the broken base, not the PR. Force INCONCLUSIVE so "Check Review Result"
-              # doesn't red-X the stage, while the Copilot expert review still posts an AI
-              # Summary. (Merge conflicts are handled separately above via the sentinel.)
-              if [ -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker" ]; then
+              # BASE-BRANCH BUILD BREAK override. FreezeBuildTasksState captured this
+              # value before Setup merged the PR, so Gate execution cannot forge it.
+              if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then
                 echo "##vso[task.logissue type=warning]Gate: target branch failed to build MSBuild tasks (base-branch break, not this PR) — classifying gate as INCONCLUSIVE."
                 GATE_VERDICT="INCONCLUSIVE"
               fi
@@ -1739,6 +1749,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
@@ -3464,65 +3475,9 @@ stages:
             # the DEFERRED fallback can still post deep test results alone.
             continueOnError: true
 
-          # GH_COMMENT_TOKEN can create reviews and labels but cannot update PR
-          # title/body (GitHub returns 404). This trusted job already persists the
-          # GitHub service-connection credential for snapshot-asset publication.
-          # Scope that credential to the conservative apply-pr-finalize helper only;
-          # no PR-controlled code runs in this job and the token is cleared afterward.
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              $prNumber = $env:PARAM_PR_NUMBER
-              $contentFile = Get-ChildItem -Path "$(Pipeline.Workspace)/CopilotLogs" -Recurse -File -Filter 'content.md' -ErrorAction SilentlyContinue |
-                Where-Object {
-                  $_.FullName -match "[\\/]PRState[\\/]$([regex]::Escape($prNumber))[\\/]PRAgent[\\/]pr-finalize[\\/]content\.md$"
-                } |
-                Select-Object -First 1
-
-              if (-not $contentFile) {
-                Write-Host "No pr-finalize recommendation was published — leaving PR metadata unchanged."
-                exit 0
-              }
-
-              $prAgentDir = Split-Path -Parent (Split-Path -Parent $contentFile.FullName)
-              $winnerFile = Join-Path $prAgentDir 'winner.json'
-
-              $checkoutToken = $null
-              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                if ($line -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') {
-                  $decoded = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1]))
-                  $checkoutToken = ($decoded -split ':', 2)[-1]
-                  break
-                }
-                if ($line -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') {
-                  $checkoutToken = $matches[1]
-                  break
-                }
-              }
-
-              if ([string]::IsNullOrWhiteSpace($checkoutToken)) {
-                Write-Host "##vso[task.logissue type=warning]Trusted checkout credential unavailable; the PR metadata recommendation remains in the AI summary."
-                exit 0
-              }
-
-              try {
-                $env:GH_TOKEN = $checkoutToken
-                & pwsh -NoProfile -File ./.github/scripts/apply-pr-finalize.ps1 `
-                  -PRNumber $prNumber `
-                  -ContentFile $contentFile.FullName `
-                  -WinnerFile $winnerFile `
-                  -ExpectedHeadSha "$(reviewedPrHeadSha)"
-                if ($LASTEXITCODE -ne 0) {
-                  throw "apply-pr-finalize.ps1 exited with code $LASTEXITCODE."
-                }
-              } finally {
-                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
-                $checkoutToken = $null
-              }
-            displayName: 'Apply PR title/description'
-            timeoutInMinutes: 5
-            continueOnError: true
-            env:
-              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+          # CopilotLogs is produced after merged PR code executes and is therefore
+          # untrusted cross-job data. It may be rendered into the sanitized AI summary,
+          # but it must never drive a credentialed PR title/body mutation.
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download drop-deep-uitests'
