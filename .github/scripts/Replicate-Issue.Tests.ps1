@@ -93,6 +93,7 @@ BeforeAll {
         'Get-ReplicationPwshArguments',
         'Test-TransientCopilotServiceFailure',
         'Test-TransientReproductionInfrastructureFailure',
+        'Test-ReplicationSandboxBuildFailure',
         'Get-UnsupportedReplicationCapability',
         'Resolve-ReplicationCopilotExecutable',
         'Assert-ReplicationPromptIsDeliverable'
@@ -3396,5 +3397,52 @@ Describe 'A reproduction must nominate a falsifiable oracle' {
                     -TestFilter 'Issue37440'
             } | Should -Not -Throw
         }
+    }
+}
+
+Describe 'A Sandbox that does not compile is not a reproduction verdict' {
+    It 'recognizes the orchestrator build-failure summary' {
+        $summary = @'
+The Sandbox build failed with these compiler diagnostics: CS0104: 'VisualElement' is an ambiguous reference between 'Microsoft.Maui.Controls.VisualElement' and 'Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement'
+Fix the authored Sandbox source so it compiles.
+'@
+        Test-ReplicationSandboxBuildFailure $summary | Should -BeTrue
+    }
+
+    It 'does not hand back an attempt for a diagnostic quoted inside a real verdict' {
+        # The scenario built and ran; the app simply behaved correctly. Treating
+        # this as a build failure would grant unlimited genuine attempts.
+        $summary = 'REPLICATION_NOT_REPRODUCED actual=''NO BUG:''. An earlier attempt had reported CS0104: ambiguous reference.'
+        Test-ReplicationSandboxBuildFailure $summary | Should -BeFalse
+    }
+
+    It 'does not confuse a device infrastructure failure with a build failure' {
+        $summary = 'Error executing adbExec. Original error: Command failed'
+        Test-ReplicationSandboxBuildFailure $summary | Should -BeFalse
+        Test-TransientReproductionInfrastructureFailure $summary | Should -BeTrue
+    }
+
+    It 'treats an empty summary as neither' {
+        Test-ReplicationSandboxBuildFailure '' | Should -BeFalse
+    }
+
+    It 'names the platform-specific namespaces that cause the recurring ambiguity' {
+        # Two of run 15006831's five attempts were lost to CS0104 and CS0117
+        # against PlatformConfiguration types, so the guidance must be specific
+        # enough for the agent to fix it without another device round trip.
+        $source = Get-Content -Raw -LiteralPath (
+            Join-Path (Split-Path -Parent $PSCommandPath) 'Replicate-Issue.ps1')
+        $source | Should -Match 'PlatformConfiguration\.iOSSpecific'
+        $source | Should -Match 'AndroidSpecific'
+        $source | Should -Match 'CS0104'
+    }
+
+    It 'gives compile failures their own bounded budget separate from semantic attempts' {
+        $source = Get-Content -Raw -LiteralPath (
+            Join-Path (Split-Path -Parent $PSCommandPath) 'Replicate-Issue.ps1')
+        $source | Should -Match '\$MaxCompileRetries\s*=\s*\d+'
+        $source | Should -Match 'if \(\$compileRetries -lt \$MaxCompileRetries\)'
+        # The budget must be finite, or a permanently broken scenario would loop.
+        $source | Should -Match "Compile retries exhausted"
     }
 }

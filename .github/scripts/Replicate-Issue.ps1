@@ -2256,6 +2256,18 @@ function Test-TransientCopilotServiceFailure {
     )
 }
 
+function Test-ReplicationSandboxBuildFailure {
+    param(
+        [AllowEmptyString()]
+        [string]$Output
+    )
+
+    # Only the trusted orchestrator's own build-failure summary counts. Matching
+    # a bare "CS0104" anywhere would also catch a diagnostic quoted inside a
+    # genuine non-reproduction report and hand back a free attempt for it.
+    return ($Output -match '(?im)^The Sandbox build failed with these compiler diagnostics:')
+}
+
 function Test-TransientReproductionInfrastructureFailure {
     param(
         [AllowEmptyString()]
@@ -2939,6 +2951,8 @@ try {
     $MaxInfrastructureRetries = 3
     $clericalRetries = 0
     $MaxClericalRetries = 3
+    $compileRetries = 0
+    $MaxCompileRetries = 3
     $sandboxSucceeded = $false
     for ($attempt = 1; $attempt -le $MaxSandboxAttempts; $attempt++) {
         $sandboxAttempts = $attempt
@@ -3076,6 +3090,7 @@ $sandboxFailureSummary
                     $sandboxFailureSummary = @"
 The Sandbox build failed with these compiler diagnostics: $prepareDiagnostics
 Fix the authored Sandbox source so it compiles. This repository builds with warnings as errors. Resolve ambiguous type references such as ILayout by fully qualifying the intended type, match the exact overload signature of the API you call, and give collection expressions a constructible target type.
+A CS0104 ambiguity on VisualElement, Page, Application, Entry or similar usually means the file imports Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific, AndroidSpecific or WindowsSpecific, each of which declares its own static class with that name. Drop the platform-specific using and call the platform helper through its full namespace instead. Do not guess at member names on those helpers; use only members you have confirmed in this repository's source.
 
 $sandboxFailureSummary
 "@
@@ -3141,6 +3156,26 @@ $sandboxFailureSummary
             if ($sandboxFailureSummary -match
                 '^(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') {
                 throw
+            }
+            # A Sandbox that does not compile says nothing about whether the
+            # issue reproduces, and the agent receives the exact diagnostics, so
+            # the next attempt is a mechanical correction rather than a new
+            # hypothesis. Run 15006831 spent two of its five attempts on CS0104
+            # and CS0117 and reached the device only twice.
+            if (Test-ReplicationSandboxBuildFailure $sandboxFailureSummary) {
+                if ($compileRetries -lt $MaxCompileRetries) {
+                    $compileRetries++
+                    Write-Host ("Sandbox attempt {0} failed to compile; retrying without consuming a semantic attempt ({1}/{2})." -f
+                        $attempt, $compileRetries, $MaxCompileRetries)
+                    if ($sandboxAttemptKinds.Count -gt 0) {
+                        $sandboxAttemptKinds.RemoveAt($sandboxAttemptKinds.Count - 1)
+                    }
+                    $attempt--
+                    Restore-TransientSandbox
+                    continue
+                }
+
+                Write-Host 'Compile retries exhausted; treating the build failure as a semantic attempt.'
             }
             if (Test-TransientReproductionInfrastructureFailure $sandboxFailureSummary) {
                 if ($infrastructureRetries -lt $MaxInfrastructureRetries) {
