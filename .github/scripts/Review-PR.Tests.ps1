@@ -59,6 +59,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
+    . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
 }
 
 Describe 'Phase worktree requirements' {
@@ -67,6 +68,20 @@ Describe 'Phase worktree requirements' {
         Test-PhaseRequiresReviewWorktree -PhaseName 'Gate' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'CopilotReview' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'Post' | Should -BeFalse
+    }
+}
+
+Describe 'Setup PR metadata lookup' {
+    It 'uses the retrying REST helper and reserves not-found for HTTP 404' {
+        $content | Should -Match ([regex]::Escape(
+            'Invoke-GhCommandWithRetry `'))
+        $content | Should -Match ([regex]::Escape(
+            '-Arguments @(''api'', "repos/dotnet/maui/pulls/$PRNumber")'))
+        $content | Should -Match 'PR #\$PRNumber not found \(GitHub returned HTTP 404\)'
+        $content | Should -Not -Match ([regex]::Escape(
+            '$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json'))
+        $content | Should -Match ([regex]::Escape(
+            '$baseRefName = [string]$prInfo.base.ref'))
     }
 }
 
@@ -124,6 +139,16 @@ Describe 'Copilot reviewer configuration' {
         $pipelineContent | Should -Match '(?s)IsNullOrWhiteSpace\(\$gateResult\).*?\$gateResult = ''TIMEDOUT'''
         $pipelineContent | Should -Match ([regex]::Escape("variable=effectiveTrustedGateResult]`$gateResult"))
         $pipelineContent | Should -Match ([regex]::Escape('-TrustedGateResult "$(effectiveTrustedGateResult)"'))
+    }
+
+    It 'extends Copilot startup retries for confirmed GitHub 429 and 5xx failures' {
+        $content | Should -Match ([regex]::Escape('$maxCopilotAuthAttempts = 5'))
+        $content | Should -Match ([regex]::Escape('$maxNonServiceAuthAttempts = 3'))
+        $content | Should -Match ([regex]::Escape('Test-GhCommandFailureIsTransient -Detail $line'))
+        $content | Should -Match ([regex]::Escape('$copilotAuthRetryBaseDelaySec * [Math]::Pow(2, $copilotAttempt - 1)'))
+        $content | Should -Match ([regex]::Escape('[Math]::Min('))
+        $content | Should -Match 'transient GitHub auth-validation service failure'
+        $content | Should -Not -Match 'transient auth-validation 401'
     }
 
     It 'defaults the local test reviewer to GPT-5.6 Sol with long context' {
@@ -199,31 +224,17 @@ Describe 'Reviewer pipeline timeout containment' {
         $regressionBlock | Should -Not -Match ([regex]::Escape('$deviceTestRunner = Join-Path $SkillsDir'))
     }
 
-    It 'applies PR metadata only from the trusted Stage 3 checkout credential' {
+    It 'never uses CopilotLogs to mutate credentialed PR metadata' {
         $runPostStart = $pipelineContent.IndexOf("displayName: 'Task 4: Post (comments + labels)'")
         $runPostBlock = $pipelineContent.Substring($runPostStart, [Math]::Min(800, $pipelineContent.Length - $runPostStart))
-        $applyName = "displayName: 'Apply PR title/description'"
-        $applyNameIndex = $pipelineContent.IndexOf($applyName)
-        $applyStart = $pipelineContent.LastIndexOf("- pwsh:", $applyNameIndex)
-        $applyEnd = $pipelineContent.IndexOf("- task: DownloadPipelineArtifact@2", $applyNameIndex)
         $downloadLogs = $pipelineContent.IndexOf("displayName: 'Download CopilotLogs'", $pipelineContent.IndexOf("- stage: UpdateAISummaryComment"))
 
         $runPostStart | Should -BeGreaterThan -1
         $runPostBlock | Should -Match ([regex]::Escape('SKIP_PR_FINALIZE_APPLY: "true"'))
-        $applyNameIndex | Should -BeGreaterThan $downloadLogs
-        $applyStart | Should -BeGreaterThan -1
-        $applyEnd | Should -BeGreaterThan $applyStart
-
-        $applyBlock = $pipelineContent.Substring($applyStart, $applyEnd - $applyStart)
-        $applyBlock | Should -Match ([regex]::Escape("git config --get-regexp 'http\..*\.extraheader'"))
-        $applyBlock | Should -Match ([regex]::Escape('./.github/scripts/apply-pr-finalize.ps1'))
-        $applyBlock | Should -Match ([regex]::Escape('$winnerFile = Join-Path $prAgentDir ''winner.json'''))
-        $applyBlock | Should -Match ([regex]::Escape('-WinnerFile $winnerFile'))
-        $applyBlock | Should -Match ([regex]::Escape('Remove-Item Env:GH_TOKEN'))
-        $applyBlock | Should -Match 'timeoutInMinutes: 5'
-        $applyBlock | Should -Match 'continueOnError: true'
-        $applyBlock | Should -Not -Match ([regex]::Escape('$(GH_COMMENT_TOKEN)'))
-        $applyBlock | Should -Not -Match 'COPILOT_GITHUB_TOKEN'
+        $downloadLogs | Should -BeGreaterThan -1
+        $pipelineContent | Should -Not -Match ([regex]::Escape("displayName: 'Apply PR title/description'"))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('./.github/scripts/apply-pr-finalize.ps1'))
+        $pipelineContent | Should -Match '(?s)CopilotLogs.*must never drive a credentialed PR title/body mutation'
     }
 
     It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
@@ -411,6 +422,23 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('elseif ($tSkip -gt 0) { "$tPass/$tCount ($tSkip skipped) ✓" }'))
         $pipelineContent | Should -Match ([regex]::Escape('$regularFailed failed$skippedSummary across $categoryText'))
         $pipelineContent | Should -Match ([regex]::Escape('$totalPassed + $totalFailed + $totalSkipped'))
+    }
+
+    It 'retries the deferred review-incomplete notice without misreporting a merge conflict' {
+        $fallbackStart = $pipelineContent.IndexOf('No PRAgent content and no deep results')
+        $fallbackEnd = $pipelineContent.IndexOf('# Replace in-process results with deep results', $fallbackStart)
+
+        $fallbackStart | Should -BeGreaterThan -1
+        $fallbackEnd | Should -BeGreaterThan $fallbackStart
+        $fallbackBlock = $pipelineContent.Substring($fallbackStart, $fallbackEnd - $fallbackStart)
+
+        $pipelineContent | Should -Match ([regex]::Escape(
+            '. $ghRetryHelper'))
+        $fallbackBlock | Should -Match 'Invoke-GhCommandWithRetry'
+        $fallbackBlock | Should -Match 'post the review-incomplete notice'
+        $fallbackBlock | Should -Match 'transient GitHub/CI API failure'
+        $fallbackBlock | Should -Match 'does \*\*not\*\* identify a merge conflict'
+        $fallbackBlock | Should -Not -Match 'gh pr comment \$prNumber'
     }
 
     It 'bounds and deduplicates deep UI diagnostics without duplicating canonical snapshots' {
@@ -843,6 +871,42 @@ Describe 'Get-DotNetTestResults (console-scrape fallback)' {
 
     It 'returns an empty array for empty input' {
         (Get-DotNetTestResults -Lines @()).Count | Should -Be 0
+    }
+}
+
+Describe 'Pipeline pre-trusted command safety' {
+    It 'sanitizes both streams from every watchdog build while preserving the build exit code' {
+        $sanitizer = "2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
+
+        ([regex]::Matches($pipelineContent, [regex]::Escape($sanitizer))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = 'bash'"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in @('-o','pipefail','-c',`$buildCommand))"))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape('& bash -o pipefail -c $buildCommand'))).Count | Should -Be 2
+        $pipelineContent | Should -Not -Match ([regex]::Escape("`$psi.FileName = 'pwsh'"))
+    }
+
+    It 'uses non-interactive sudo for CoreSimulator recovery before falling back' {
+        $safeKill = 'sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true'
+
+        ([regex]::Matches($pipelineContent, [regex]::Escape($safeKill))).Count | Should -Be 2
+        $pipelineContent | Should -Not -Match '(?m)^\s*sudo killall -9 com\.apple\.CoreSimulator\.CoreSimulatorService'
+    }
+
+    It 'freezes the buildtasks failure state before merging PR code' {
+        $freezeIndex = $pipelineContent.IndexOf("displayName: 'Freeze pre-merge buildtasks state'")
+        $setupIndex = $pipelineContent.IndexOf("displayName: 'Task 1: Setup (branch + merge)'")
+        $gateNameIndex = $pipelineContent.IndexOf("displayName: 'Task 2: Gate (test verification)'")
+        $gateStart = $pipelineContent.LastIndexOf('- bash: |', $gateNameIndex)
+        $gateEnd = $pipelineContent.IndexOf('#  Task 3 — COPILOT REVIEW', $gateNameIndex)
+
+        $freezeIndex | Should -BeGreaterThan -1
+        $freezeIndex | Should -BeLessThan $setupIndex
+        $pipelineContent | Should -Match ([regex]::Escape('variable=baseBuildTasksFailed;isOutput=true;isReadOnly=true'))
+        $pipelineContent | Should -Match ([regex]::Escape('BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)'))
+
+        $gateBlock = $pipelineContent.Substring($gateStart, $gateEnd - $gateStart)
+        $gateBlock | Should -Match ([regex]::Escape('if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then'))
+        $gateBlock | Should -Not -Match 'buildtasks-failed\.marker'
     }
 }
 

@@ -61,7 +61,8 @@
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
 
 .PARAMETER BaseBranch
-    Branch to revert files from. Auto-detected from PR if not specified.
+    Branch or full commit SHA to revert files from. Auto-detected from PR if not specified.
+    A full commit SHA also selects frozen-fixture test detection from the local diff.
 
 .PARAMETER RequireFullVerification
     If set, the script will fail if it cannot run full verification mode
@@ -315,6 +316,7 @@ Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
+$ExplicitBaseBranch = $BaseBranch
 . $BaselineScript
 
 # Import the shared test detection script
@@ -475,6 +477,14 @@ function Invoke-TestRun {
         [string]$LogFile
     )
 
+    $hostOnlyTargetFrameworkArgs = @(
+        "-p:IncludeAndroidTargetFrameworks=false",
+        "-p:IncludeIosTargetFrameworks=false",
+        "-p:IncludeMacCatalystTargetFrameworks=false",
+        "-p:IncludeWindowsTargetFrameworks=false",
+        "-p:IncludeTizenTargetFrameworks=false"
+    )
+
     # Boot device/simulator once for test types that need a platform.
     # Both BuildAndRunHostApp.ps1 and Run-DeviceTests.ps1 use Start-Emulator.ps1
     # internally, but we pre-boot here to ensure a consistent UDID is shared
@@ -573,7 +583,7 @@ function Invoke-TestRun {
                 "--configuration", "Debug",
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
-            )
+            ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -615,7 +625,7 @@ function Invoke-TestRun {
                 "--configuration", "Debug",
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
-            )
+            ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }

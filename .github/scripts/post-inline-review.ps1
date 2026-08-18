@@ -61,6 +61,51 @@ if (-not (Get-Command ConvertTo-AzdoSafeConsole -CommandType Function -ErrorActi
     }
 }
 
+function New-InlineReviewMarker {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReviewedHead,
+
+        [Parameter(Mandatory = $true)]
+        [object[]]$Comments
+    )
+
+    $normalized = @($Comments | ForEach-Object {
+        [pscustomobject][ordered]@{
+            path = [string]$_.path
+            line = [int]$_.line
+            body = [string]$_.body
+        }
+    } | Sort-Object path, line, body)
+    $canonicalJson = $normalized | ConvertTo-Json -Depth 5 -Compress
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try {
+        $hashBytes = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonicalJson))
+    } finally {
+        $sha256.Dispose()
+    }
+    $findingsHash = ($hashBytes | ForEach-Object { $_.ToString('x2') }) -join ''
+    return "<!-- maui-copilot-inline-review:$($ReviewedHead.ToLowerInvariant()):$findingsHash -->"
+}
+
+function Test-InlineReviewMarkerExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$ReviewBodies,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Marker
+    )
+
+    foreach ($body in $ReviewBodies) {
+        if (-not [string]::IsNullOrEmpty($body) -and
+            $body.IndexOf($Marker, [StringComparison]::Ordinal) -ge 0) {
+            return $true
+        }
+    }
+    return $false
+}
+
 # ============================================================================
 # RESOLVE FILE PATHS
 # ============================================================================
@@ -291,9 +336,10 @@ if ($comments.Count -eq 0) {
     exit 0
 }
 
+$reviewMarker = New-InlineReviewMarker -ReviewedHead $commitSha -Comments $comments
 $reviewPayload = @{
     commit_id = $commitSha
-    body      = $summaryBody
+    body      = "$reviewMarker`n$summaryBody"
     event     = "COMMENT"  # Never APPROVE or REQUEST_CHANGES — that's a human decision
     comments  = $comments
 }
@@ -330,6 +376,38 @@ if ($DryRun) {
 # ============================================================================
 
 Write-Host "Posting review with $($comments.Count) inline comments..." -ForegroundColor Cyan
+
+$viewerLogin = [string](gh api user --jq '.login' 2>$null)
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($viewerLogin)) {
+    throw "Could not resolve the authenticated GitHub identity before checking inline-review idempotency."
+}
+
+$existingReviewsJson = gh api --paginate --slurp "repos/dotnet/maui/pulls/$PRNumber/reviews?per_page=100" 2>&1
+if ($LASTEXITCODE -ne 0) {
+    $reviewsError = ($existingReviewsJson | Out-String).Trim()
+    throw "Could not query existing inline reviews before posting: $(ConvertTo-AzdoSafeConsole $reviewsError)"
+}
+
+try {
+    $reviewPages = $existingReviewsJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    throw "Could not parse existing inline reviews before posting: $($_.Exception.Message)"
+}
+
+$reviewBodies = @()
+foreach ($page in @($reviewPages)) {
+    foreach ($review in @($page)) {
+        $reviewAuthor = if ($review.user -and $review.user.login) { [string]$review.user.login } else { '' }
+        if ($reviewAuthor.Equals($viewerLogin, [StringComparison]::OrdinalIgnoreCase) -and
+            $review.PSObject.Properties.Match('body').Count -gt 0) {
+            $reviewBodies += [string]$review.body
+        }
+    }
+}
+if (Test-InlineReviewMarkerExists -ReviewBodies $reviewBodies -Marker $reviewMarker) {
+    Write-Host "Inline review already posted for reviewed head and findings hash; skipping duplicate." -ForegroundColor Green
+    return
+}
 
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {

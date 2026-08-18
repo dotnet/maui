@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_gridItemsLayout = gridItemsLayout;
 			_recyclerView = recyclerView;
+
+			SpanIndexCacheEnabled = true;
+			SpanGroupIndexCacheEnabled = true;
 		}
 
 		public override int GetSpanSize(int position)

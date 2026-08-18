@@ -24,7 +24,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -32,6 +32,20 @@ BeforeAll {
         if (-not $fn) { throw "Function '$fnName' not found" }
         Invoke-Expression $fn.Extent.Text
     }
+
+    $autoDetectionFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-AutoDetectedTests'
+    }, $true)
+    if (-not $autoDetectionFunction) { throw "Function 'Get-AutoDetectedTests' not found" }
+    Invoke-Expression $autoDetectionFunction.Extent.Text
+
+    $invokeTestRunFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Invoke-TestRun'
+    }, $true)
+    if (-not $invokeTestRunFunction) { throw "Function 'Invoke-TestRun' not found" }
+    $script:invokeTestRunText = $invokeTestRunFunction.Extent.Text
 
     function New-LogFile {
         param([string]$Content)
@@ -253,6 +267,22 @@ Total tests: 2
 
         Remove-Item -LiteralPath $log -Force
         Remove-Item -LiteralPath $RepoRoot -Recurse -Force
+    }
+}
+
+Describe 'Invoke-TestRun — host-only target frameworks' {
+    It 'applies the shared platform exclusions to unit and XAML unit tests' {
+        ([regex]::Matches($script:invokeTestRunText, '\+\s*\$hostOnlyTargetFrameworkArgs')).Count | Should -Be 2
+        ([regex]::Matches($script:invokeTestRunText, '-p:TreatWarningsAsErrors=false')).Count | Should -Be 2
+        foreach ($property in @(
+            'IncludeAndroidTargetFrameworks',
+            'IncludeIosTargetFrameworks',
+            'IncludeMacCatalystTargetFrameworks',
+            'IncludeWindowsTargetFrameworks',
+            'IncludeTizenTargetFrameworks'
+        )) {
+            $script:invokeTestRunText | Should -Match "-p:$property=false"
+        }
     }
 }
 
@@ -1543,5 +1573,76 @@ Describe 'Baseline mutation window — guaranteed restoration' {
         # without-fix baseline build.
         $script:GateSource | Should -Match 'WARNING: git rm failed for \$file'
         $script:GateSource | Should -Match 'ERROR: Failed to remove PR-added file \$file for the baseline'
+    }
+}
+
+Describe 'Get-AutoDetectedTests — frozen worktree isolation' {
+    It 'prefers the immutable explicit-base local diff over PR metadata' {
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
+        $detector = Join-Path $repo 'detect.ps1'
+        try {
+            New-Item -ItemType Directory -Path $repo | Out-Null
+            git -C $repo init --quiet
+            'base' | Set-Content -LiteralPath (Join-Path $repo 'README.md')
+            git -C $repo add README.md
+            git -C $repo -c user.name='Vally Test' -c user.email='vally-test@example.invalid' commit --quiet -m base
+            $base = git -C $repo rev-parse HEAD
+
+            $testPath = 'src/Controls/tests/Core.UnitTests/VallyFixtureTests.cs'
+            New-Item -ItemType Directory -Path (Split-Path (Join-Path $repo $testPath)) -Force | Out-Null
+            'fixture' | Set-Content -LiteralPath (Join-Path $repo $testPath)
+            git -C $repo add $testPath
+            git -C $repo -c user.name='Vally Test' -c user.email='vally-test@example.invalid' commit --quiet -m fixture
+
+            @(
+                'param([string]$PRNumber, [string[]]$ChangedFiles, [string]$DiffBase)'
+                '[pscustomobject]@{'
+                '    PRNumber = $PRNumber'
+                '    ChangedFiles = @($ChangedFiles)'
+                '    DiffBase = $DiffBase'
+                '}'
+            ) | Set-Content -LiteralPath $detector
+
+            $script:PRNumber = '33134'
+            $script:ExplicitBaseBranch = $base
+            $script:DetectTestsScript = $detector
+            Push-Location $repo
+            try {
+                $result = Get-AutoDetectedTests -MergeBase $base
+            } finally {
+                Pop-Location
+            }
+
+            $result.PRNumber | Should -BeNullOrEmpty
+            @($result.ChangedFiles) | Should -Contain $testPath
+            $result.DiffBase | Should -Be $base
+        } finally {
+            Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+Describe 'Get-AutoDetectedTests — PR metadata fallback' {
+    It 'uses PR metadata when no committed snapshot is available' {
+        $detector = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-" + [Guid]::NewGuid().ToString('N') + ".ps1")
+        try {
+            @(
+                'param([string]$PRNumber, [string[]]$ChangedFiles)'
+                '[pscustomobject]@{'
+                '    PRNumber = $PRNumber'
+                '    ChangedFiles = @($ChangedFiles)'
+                '}'
+            ) | Set-Content -LiteralPath $detector
+            $script:PRNumber = '33134'
+            $script:PRNumber = '33134'
+            $script:DetectTestsScript = $detector
+
+            $result = Get-AutoDetectedTests -MergeBase $null
+
+            $result.PRNumber | Should -Be '33134'
+            @($result.ChangedFiles) | Should -BeNullOrEmpty
+        } finally {
+            Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
+        }
     }
 }

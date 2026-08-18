@@ -123,6 +123,8 @@ Describe '/review trigger setup' {
         $script:TriggerReviewJob | Should -Match 'name: Download trusted label helper'
         $script:TriggerReviewJob | Should -Match ([regex]::Escape(
             'contents/.github/scripts/shared/Update-AgentLabels.ps1?ref=${GITHUB_SHA}'))
+        $script:TriggerReviewJob | Should -Match ([regex]::Escape(
+            'contents/.github/scripts/shared/Invoke-GhCommandWithRetry.ps1?ref=${GITHUB_SHA}'))
         $script:TriggerReviewJob | Should -Match 'timeout-minutes: 2'
         $script:TriggerReviewJob | Should -Match 'for attempt in 1 2 3'
     }
@@ -151,8 +153,10 @@ Describe 'review trigger hardening' {
         $script:MatchJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \|\| inputs\.source_comment_id \}\}'
         $script:MatchJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \|\| inputs\.source_comment_node_id \}\}'
         $script:MatchJob | Should -Match 'REPO: \$\{\{ github\.repository \}\}'
-        $script:MatchJob | Should -Match 'Permission lookup failed.*treating the caller as unauthorized'
-        $script:MatchJob | Should -Match 'PERMISSION="none"'
+        $script:MatchJob | Should -Match 'Permission lookup failed.*after 4 attempts.*scheduled recovery'
+        $script:MatchJob | Should -Match '(?m)^          for attempt in 1 2 3 4; do$'
+        $script:MatchJob | Should -Match 'HTTP 404\\b'
+        $script:MatchJob | Should -Not -Match 'treating the caller as unauthorized'
         $script:TriggerJob | Should -Match "(?m)^    if: needs\.match\.outputs\.proceed == 'true'$"
         $script:TriggerJob | Should -Not -Match '(?m)^        id: auth$'
     }
@@ -190,6 +194,23 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Match "(?m)^        if: steps\.review_lock\.outputs\.locked != 'true'$"
     }
 
+    It 'keeps a transient recovery re-check failure unacknowledged for retry' {
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=recheck-failed" >> $env:GITHUB_OUTPUT'))
+        $script:TriggerJob | Should -Match 'leaving it unacknowledged so recovery retries it'
+        $script:TriggerJob | Should -Match ([regex]::Escape("steps.review_lock.outputs.state != 'recheck-failed'"))
+
+        $recheckFailure = $script:TriggerJob.IndexOf('"state=recheck-failed" >> $env:GITHUB_OUTPUT')
+        $acknowledgeStep = $script:TriggerJob.IndexOf('- name: Acknowledge and hide the /review command comment')
+        $recheckFailure | Should -BeGreaterThan -1
+        $acknowledgeStep | Should -BeGreaterThan $recheckFailure
+    }
+
+    It 'distinguishes handled lock outcomes from a transient re-check failure' {
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=already-acknowledged" >> $env:GITHUB_OUTPUT'))
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=already-running" >> $env:GITHUB_OUTPUT'))
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=acquired" >> $env:GITHUB_OUTPUT'))
+    }
+
     It 'stops trigger-review extraction at the next top-level job' {
         $workflowWithFutureJob = $script:Workflow.TrimEnd() + @'
 
@@ -220,7 +241,7 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Match 'unset AZDO_TOKEN'
     }
 
-    It 'only hides commands after the pre-flight authorization gate succeeded' {
+    It 'acknowledges only commands that were handled or failed deterministically' {
         $script:TriggerJob | Should -Not -Match 'steps\.auth'
         $script:Workflow | Should -Match '(?m)^      source_comment_id:$'
         $script:Workflow | Should -Match '(?m)^      source_comment_node_id:$'
@@ -236,6 +257,21 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Match 'is_recoverable_review_command'
         $script:TriggerJob | Should -Match 'jq -Rrs'
         $script:TriggerJob | Should -Match 'ascii_downcase'
+        $script:TriggerJob | Should -Match "steps\.trigger_azdo\.outcome == 'success'"
+        $script:TriggerJob | Should -Match "steps\.review_lock\.outputs\.locked == 'true'"
+        $script:TriggerJob | Should -Match "steps\.trigger_azdo\.outputs\.fail_reason == 'branch-missing'"
+        $script:TriggerJob | Should -Match 'left unacknowledged so scheduled recovery can retry'
+    }
+
+    It 'retries critical GitHub reads and distinguishes a missing branch from API failure' {
+        $script:TriggerJob | Should -Match 'GitHub API did not return valid metadata for PR'
+        $script:TriggerJob | Should -Match 'Could not read PR #\$\{PR_NUMBER\} labels after 4 attempts'
+        $script:TriggerJob | Should -Match 'BRANCH_HTTP="000"'
+        $script:TriggerJob | Should -Match 'BRANCH_HTTP.*= "404"'
+        $script:TriggerJob | Should -Match 'fail_reason=branch-missing'
+        $script:TriggerJob | Should -Match 'Could not validate pipeline branch.*after 4 attempts'
+        $script:TriggerJob | Should -Match 'fail_reason=api-error'
+        $script:TriggerJob | Should -Match 'name: Report trigger setup failure to the PR'
     }
 
     It 'validates recovery commands with whole-body trim and case-insensitive matching' -TestCases @(

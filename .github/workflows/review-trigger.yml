@@ -182,9 +182,33 @@ jobs:
             exit 0
           fi
 
-          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null); then
-            echo "::warning::Permission lookup failed for ${ACTOR}; treating the caller as unauthorized."
-            PERMISSION="none"
+          PERMISSION=""
+          PERMISSION_READ=false
+          PERMISSION_ERROR_FILE=$(mktemp)
+          trap 'rm -f "${PERMISSION_ERROR_FILE}"' EXIT
+          for attempt in 1 2 3 4; do
+            : > "${PERMISSION_ERROR_FILE}"
+            if PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>"${PERMISSION_ERROR_FILE}"); then
+              case "${PERMISSION}" in
+                admin|maintain|write|triage|read|none)
+                  PERMISSION_READ=true
+                  break
+                  ;;
+              esac
+            elif grep -Eq 'HTTP 404\b' "${PERMISSION_ERROR_FILE}"; then
+              PERMISSION="none"
+              PERMISSION_READ=true
+              break
+            fi
+
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${PERMISSION_READ}" != "true" ]; then
+            echo "::warning::Permission lookup failed for ${ACTOR} after 4 attempts; leaving the /review command unacknowledged so scheduled recovery can retry it."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           echo "User ${ACTOR} has permission: ${PERMISSION}"
           # write, maintain, and admin can all trigger /review
@@ -329,7 +353,31 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
-          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          PR_JSON=""
+          PR_READ=false
+          PR_ERROR_FILE=$(mktemp)
+          trap 'rm -f "${PR_ERROR_FILE}"' EXIT
+          for attempt in 1 2 3 4; do
+            : > "${PR_ERROR_FILE}"
+            if PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" 2>"${PR_ERROR_FILE}") &&
+               echo "${PR_JSON}" | jq -e '.state and .title' >/dev/null; then
+              PR_READ=true
+              break
+            fi
+
+            if grep -Eq 'HTTP 404\b' "${PR_ERROR_FILE}"; then
+              echo "::error::PR #${PR_NUMBER} was not found (GitHub returned HTTP 404)."
+              exit 1
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${PR_READ}" != "true" ]; then
+            echo "::error::GitHub API did not return valid metadata for PR #${PR_NUMBER} after 4 attempts."
+            exit 1
+          fi
+
           PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
           if [ "${PR_STATE}" != "open" ]; then
             echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
@@ -340,8 +388,8 @@ jobs:
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
 
-      # The trigger only needs one trusted helper from the workflow revision. Cloning the entire
-      # MAUI repository just for this file occasionally hangs in `git fetch` until the job's
+      # The trigger only needs two trusted helpers from the workflow revision. Cloning the entire
+      # MAUI repository just for these files occasionally hangs in `git fetch` until the job's
       # 10-minute timeout, silently losing the /review command. Fetch the immutable file directly
       # from GitHub instead and retry transient API failures.
       - name: Download trusted label helper
@@ -350,41 +398,31 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HELPER_PATH: ${{ runner.temp }}/Update-AgentLabels.ps1
+          RETRY_HELPER_PATH: ${{ runner.temp }}/Invoke-GhCommandWithRetry.ps1
         run: |
           for attempt in 1 2 3; do
             if gh api \
               -H "Accept: application/vnd.github.raw+json" \
               "repos/${{ github.repository }}/contents/.github/scripts/shared/Update-AgentLabels.ps1?ref=${GITHUB_SHA}" \
               > "${HELPER_PATH}" &&
-              grep -q '^function Set-AgentReviewInProgress' "${HELPER_PATH}"; then
+              gh api \
+                -H "Accept: application/vnd.github.raw+json" \
+                "repos/${{ github.repository }}/contents/.github/scripts/shared/Invoke-GhCommandWithRetry.ps1?ref=${GITHUB_SHA}" \
+                > "${RETRY_HELPER_PATH}" &&
+              grep -q '^function Set-AgentReviewInProgress' "${HELPER_PATH}" &&
+              grep -q '^function Invoke-GhCommandWithRetry' "${RETRY_HELPER_PATH}"; then
               echo "path=${HELPER_PATH}" >> "$GITHUB_OUTPUT"
               exit 0
             fi
 
-            rm -f "${HELPER_PATH}"
+            rm -f "${HELPER_PATH}" "${RETRY_HELPER_PATH}"
             if [ "${attempt}" -lt 3 ]; then
               sleep $((attempt * 5))
             fi
           done
 
-          echo "::error::Could not download the trusted review-label helper from ${GITHUB_SHA}."
+          echo "::error::Could not download the trusted review-label helpers from ${GITHUB_SHA}."
           exit 1
-
-      # Never let trigger setup fail SILENTLY: if the helper download or another early step fails
-      # before the pipeline can be queued, tell the commenter to retry. Uses gh + the event
-      # payload directly, so it does not depend on the helper that may have failed to download.
-      # Skipped once the pipeline actually queued (trigger_azdo succeeded) and on the normal
-      # lock-skip path. The pre-flight `match`/`gate` jobs already authorized the actor before
-      # this job could even start, so there is no separate auth-outcome check here.
-      - name: Report trigger infra failure so it is never silent
-        if: (cancelled() || failure()) && github.event_name == 'issue_comment' && steps.trigger_azdo.outcome != 'success'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "> [!WARNING]
-          > Your \`/review\` couldn't start due to a transient CI infrastructure issue (the trigger job couldn't finish setup). This is **not** a problem with your PR. Please comment \`/review\` again to retry." || echo "notice post best-effort failed"
 
       - name: Set review in-progress lock
         id: review_lock
@@ -438,12 +476,14 @@ jobs:
 
             if (-not $reactionsRead -or -not $minimizedRead) {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=recheck-failed" >> $env:GITHUB_OUTPUT
               "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
-              "Could not safely re-check acknowledgement for source comment $($env:COMMENT_ID)." >> $env:GITHUB_STEP_SUMMARY
+              "Could not safely re-check acknowledgement for source comment $($env:COMMENT_ID); leaving it unacknowledged so recovery retries it." >> $env:GITHUB_STEP_SUMMARY
               exit 0
             }
             if ($hasRecoveryMarker -or $isMinimized) {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-acknowledged" >> $env:GITHUB_OUTPUT
               "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
               "Source comment $($env:COMMENT_ID) was already acknowledged by an earlier serialized run." >> $env:GITHUB_STEP_SUMMARY
               exit 0
@@ -456,6 +496,7 @@ jobs:
               Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
             } else {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-running" >> $env:GITHUB_OUTPUT
               "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
 
@@ -514,6 +555,7 @@ jobs:
             }
           }
           "locked=false" >> $env:GITHUB_OUTPUT
+          "state=acquired" >> $env:GITHUB_OUTPUT
 
       - name: Infer platform
         if: steps.review_lock.outputs.locked != 'true'
@@ -534,8 +576,24 @@ jobs:
           echo "No platform specified — inferring from PR #${PR_NUMBER} labels..."
           echo "(File-based detection is handled by the agentic-labeler.md workflow on PR open/reopen.)"
 
-          # Check PR labels applied by agentic-labeler.md or manually
-          LABELS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
+          # Check PR labels applied by agentic-labeler.md or manually. Do not
+          # silently default to Android when GitHub is temporarily unavailable.
+          LABELS=""
+          LABELS_READ=false
+          for attempt in 1 2 3 4; do
+            if LABELS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null); then
+              LABELS_READ=true
+              break
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${LABELS_READ}" != "true" ]; then
+            echo "::error::Could not read PR #${PR_NUMBER} labels after 4 attempts; refusing to infer the wrong platform."
+            exit 1
+          fi
+
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
 
@@ -613,12 +671,29 @@ jobs:
           # AzDO otherwise returns an opaque error and the /review fails SILENTLY on the PR —
           # the commenter gets no feedback. Validate the branch exists first and record a
           # specific reason so the failure-feedback step can tell them exactly what to fix.
-          BRANCH_HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
+          BRANCH_HTTP="000"
+          for attempt in 1 2 3 4; do
+            BRANCH_HTTP=$(curl -sS -o /dev/null -w "%{http_code}" \
             -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${GH_REPO}/branches/${PIPELINE_REF}")
-          if [ "${BRANCH_HTTP}" != "200" ]; then
+              "https://api.github.com/repos/${GH_REPO}/branches/${PIPELINE_REF}" || true)
+            if [ -z "${BRANCH_HTTP}" ]; then
+              BRANCH_HTTP="000"
+            fi
+            if [ "${BRANCH_HTTP}" = "200" ] || [ "${BRANCH_HTTP}" = "404" ]; then
+              break
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${BRANCH_HTTP}" = "404" ]; then
             echo "fail_reason=branch-missing" >> "$GITHUB_OUTPUT"
             echo "::error::Pipeline branch '${PIPELINE_REF}' does not exist in ${GH_REPO} (HTTP ${BRANCH_HTTP})."
+            unset AZDO_TOKEN
+            exit 1
+          elif [ "${BRANCH_HTTP}" != "200" ]; then
+            echo "fail_reason=api-error" >> "$GITHUB_OUTPUT"
+            echo "::error::Could not validate pipeline branch '${PIPELINE_REF}' after 4 attempts (HTTP ${BRANCH_HTTP})."
             unset AZDO_TOKEN
             exit 1
           fi
@@ -714,9 +789,17 @@ jobs:
           > Your \`/review\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Use \`--branch improved-reviewer\` (the current reviewer branch), or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`/review android --branch improved-reviewer\`)."
           else
             BODY="> [!WARNING]
-          > Your \`/review\` couldn't start due to a transient error triggering the pipeline. Please comment \`/review\` again in a minute."
+          > Your \`/review\` couldn't start due to a transient error triggering the pipeline. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again in a minute."
           fi
-          gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"
+          for attempt in 1 2 3 4; do
+            if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          echo "::warning::Could not post the /review trigger failure notice after 4 attempts."
 
       - name: Clear review lock on trigger failure
         if: always() && steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome != 'success'
@@ -729,8 +812,30 @@ jobs:
           . $env:LABEL_HELPER_PATH
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
+      # Catch failures before the AzDO trigger step (PR metadata, helper download,
+      # lock acquisition, or platform inference). Keep the command unacknowledged
+      # so Review Trigger Recovery can safely replay it.
+      - name: Report trigger setup failure to the PR
+        if: always() && failure() && github.event_name == 'issue_comment' && steps.review_lock.outputs.locked != 'true' && steps.trigger_azdo.outcome != 'failure' && steps.trigger_azdo.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          BODY="> [!WARNING]
+          > Your \`/review\` couldn't start because the trusted trigger setup hit a transient infrastructure failure. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again."
+          for attempt in 1 2 3 4; do
+            if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          echo "::warning::Could not post the trigger setup failure notice after 4 attempts."
+
       - name: Acknowledge and hide the /review command comment
-        if: ${{ !cancelled() && (github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && inputs.source_comment_id != '' && inputs.source_comment_node_id != '')) }}
+        if: ${{ !cancelled() && steps.review_lock.outputs.state != 'recheck-failed' && (github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && inputs.source_comment_id != '' && inputs.source_comment_node_id != '')) && (steps.trigger_azdo.outcome == 'success' || steps.review_lock.outputs.locked == 'true' || steps.trigger_azdo.outputs.fail_reason == 'branch-missing') }}
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_ID: ${{ github.event.comment.id || inputs.source_comment_id }}
@@ -739,9 +844,11 @@ jobs:
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
           # This job only runs after the pre-flight authorization gate succeeds, so
-          # collapse the recognized command no matter the trigger outcome, including
-          # a lock-skip (locked == 'true') or a failed AzDO trigger. Unauthorized
-          # commenters never enter this job, leaving their comments fully visible.
+          # collapse the recognized command only after the review was queued, a
+          # lock-skip handled it, or the requested branch was deterministically
+          # missing. Transient failures stay visible and unacknowledged so the
+          # scheduled recovery workflow can retry them. Unauthorized commenters
+          # never enter this job, leaving their comments fully visible.
           #
           # We MINIMIZE (hide as resolved) rather than delete so the command — and its
           # --branch/--platform options — survives in the REST comment history that the rerun

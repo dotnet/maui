@@ -172,6 +172,12 @@ $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts
 $SkillsDir     = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' }      else { Join-Path $PSScriptRoot '../skills' }
 $EngScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'eng-scripts' } else { Join-Path $PSScriptRoot '../../eng/scripts' }
 
+$ghRetryHelper = Join-Path $ScriptsDir 'shared/Invoke-GhCommandWithRetry.ps1'
+if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
+    throw "Required GitHub retry helper not found: $ghRetryHelper"
+}
+. $ghRetryHelper
+
 function Get-SetupOutcomePath {
     $outcomeDir = if ($TrustedScriptsDir) {
         Split-Path $TrustedScriptsDir -Parent
@@ -274,8 +280,18 @@ $copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
 if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
 Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
-$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json
-if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
+$prInfoJson = Invoke-GhCommandWithRetry `
+    -Arguments @('api', "repos/dotnet/maui/pulls/$PRNumber") `
+    -Description "read PR #$PRNumber metadata" `
+    -AllowNotFound `
+    -RequireOutput
+if ($null -eq $prInfoJson) { Write-Error "PR #$PRNumber not found (GitHub returned HTTP 404)"; exit 1 }
+try {
+    $prInfo = $prInfoJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    Write-Error "GitHub returned invalid metadata for PR #$PRNumber after a successful API call: $($_.Exception.Message)"
+    exit 1
+}
 Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -326,11 +342,8 @@ if ($DryRun) {
     # pipeline branch produces false conflicts / build breaks. For those we test the
     # PR head branch AS-IS instead of merging it onto the pipeline base. PRs targeting
     # main or a netN.0 feature branch keep the squash-merge-onto-pipeline behavior.
-    $baseRefName = $null
-    try {
-        $baseRefName = (gh pr view $PRNumber --json baseRefName --jq '.baseRefName' 2>$null)
-        if ($baseRefName) { $baseRefName = $baseRefName.Trim() }
-    } catch { $baseRefName = $null }
+    $baseRefName = [string]$prInfo.base.ref
+    if ($baseRefName) { $baseRefName = $baseRefName.Trim() }
     $inflightTargets = @('inflight/current', 'inflight/candidate')
     $isInflightTarget = $baseRefName -and ($inflightTargets -contains $baseRefName)
     if ($isInflightTarget) {
@@ -389,14 +402,18 @@ if ($DryRun) {
     if ($LASTEXITCODE -ne 0) {
         # Fork PR — get fork info
         Write-Host "  📥 Fetching from fork..." -ForegroundColor Cyan
-        $forkInfo = gh pr view $PRNumber --json headRepositoryOwner,headRefName,headRepository 2>$null | ConvertFrom-Json
-        if (-not $forkInfo -or -not $forkInfo.headRepositoryOwner) {
-            Write-Error "Failed to fetch PR #$PRNumber (not found on origin or fork)"
+        $forkOwner = [string]$prInfo.head.repo.owner.login
+        $forkRepo = [string]$prInfo.head.repo.name
+        $forkRef = [string]$prInfo.head.ref
+        if ([string]::IsNullOrWhiteSpace($forkOwner) -or
+            [string]::IsNullOrWhiteSpace($forkRepo) -or
+            [string]::IsNullOrWhiteSpace($forkRef)) {
+            Write-Error "Failed to fetch PR #${PRNumber}: GitHub did not return usable fork metadata."
             git checkout $originalBranch 2>$null
             exit 1
         }
-        $forkUrl = "https://github.com/$($forkInfo.headRepositoryOwner.login)/$($forkInfo.headRepository.name).git"
-        $fetchOutput = git fetch $forkUrl "$($forkInfo.headRefName):$tempBranch" 2>&1
+        $forkUrl = "https://github.com/$forkOwner/$forkRepo.git"
+        $fetchOutput = git fetch $forkUrl "${forkRef}:$tempBranch" 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to fetch from fork: $forkUrl`n$fetchOutput"
             git checkout $originalBranch 2>$null
@@ -1379,23 +1396,39 @@ function Invoke-CopilotStep {
             $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = 'false'
         }
 
-        # The copilot CLI validates COPILOT_GITHUB_TOKEN at startup via a GitHub API
-        # call that intermittently returns a transient 401 ("could not be validated" /
-        # "Bad credentials"), which kills the step in seconds and drops the ENTIRE
-        # expert-review + try-fix output — leaving a summary missing those sections
-        # (observed on #37100 build 14871140). The token is almost always still valid,
-        # so retry a few times on that specific transient startup failure.
-        $maxCopilotAuthRetries = 3
-        $copilotAuthRetryDelaySec = 20
-        for ($copilotAttempt = 1; $copilotAttempt -le $maxCopilotAuthRetries; $copilotAttempt++) {
+        # Copilot validates COPILOT_GITHUB_TOKEN through GitHub at startup. Both
+        # transient 401 responses and GitHub service/rate-limit failures can kill
+        # the process before it writes any review artifacts. Keep the historical
+        # three-attempt bound for ordinary auth failures, but allow a longer,
+        # exponentially backed-off window for confirmed 429/5xx/network failures.
+        $maxCopilotAuthAttempts = 5
+        $maxNonServiceAuthAttempts = 3
+        $copilotAuthRetryBaseDelaySec = 20
+        $copilotRetryReason = 'GitHub auth-validation failure'
+        $copilotRetryLimitForDisplay = $maxCopilotAuthAttempts
+        for ($copilotAttempt = 1; $copilotAttempt -le $maxCopilotAuthAttempts; $copilotAttempt++) {
         $authValidationFailed = $false
+        $transientAuthServiceFailure = $false
+        $authValidationStatus = ''
         if ($copilotAttempt -gt 1) {
-            Write-Host "  🔄 Retrying Copilot (attempt $copilotAttempt/$maxCopilotAuthRetries) after a transient auth-validation 401..." -ForegroundColor Yellow
+            Write-Host "  🔄 Retrying Copilot (attempt $copilotAttempt/$copilotRetryLimitForDisplay) after $copilotRetryReason..." -ForegroundColor Yellow
         }
 
         & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --context long_context --effort max --max-ai-credits $MaxAiCredits --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
             $line = $_.ToString()
-            if ($line -match '(?i)could not be validated|Bad credentials|Failed to fetch PAT user login \(401\)') { $authValidationFailed = $true }
+            if ($line -match '(?i)could not be validated|Bad credentials|Failed to fetch PAT user login') {
+                $authValidationFailed = $true
+            }
+            if ($line -match '(?i)Failed to fetch PAT user login \((\d{3})\)' -or
+                $line -match '(?i)\bHTTP\s+(\d{3})\b') {
+                $authValidationStatus = "HTTP $($matches[1])"
+            }
+            if (Test-GhCommandFailureIsTransient -Detail $line) {
+                $transientAuthServiceFailure = $true
+            }
+            if ($authValidationStatus -match '^HTTP (408|429|500|502|503|504)$') {
+                $transientAuthServiceFailure = $true
+            }
             try {
                 $event = $line | ConvertFrom-Json -ErrorAction Stop
                 switch ($event.type) {
@@ -1542,8 +1575,25 @@ function Invoke-CopilotStep {
             }
         }
         $copilotAttemptExit = $LASTEXITCODE
-        if ($copilotAttemptExit -eq 0 -or -not $authValidationFailed -or $copilotAttempt -ge $maxCopilotAuthRetries) { break }
-        Write-Host "  ⚠️ Copilot exited $copilotAttemptExit after a transient auth-validation 401; retrying in ${copilotAuthRetryDelaySec}s..." -ForegroundColor Yellow
+        $copilotAttemptLimit = if ($transientAuthServiceFailure) {
+            $maxCopilotAuthAttempts
+        } else {
+            $maxNonServiceAuthAttempts
+        }
+        $copilotRetryLimitForDisplay = $copilotAttemptLimit
+        if ($copilotAttemptExit -eq 0 -or -not $authValidationFailed -or $copilotAttempt -ge $copilotAttemptLimit) { break }
+
+        $statusSuffix = if ($authValidationStatus) { " ($authValidationStatus)" } else { '' }
+        $copilotRetryReason = if ($transientAuthServiceFailure) {
+            "a transient GitHub auth-validation service failure$statusSuffix"
+        } else {
+            "a GitHub auth-validation failure$statusSuffix"
+        }
+        $copilotAuthRetryDelaySec = [Math]::Min(
+            120,
+            $copilotAuthRetryBaseDelaySec * [Math]::Pow(2, $copilotAttempt - 1)
+        )
+        Write-Host "  ⚠️ Copilot exited $copilotAttemptExit after $copilotRetryReason; retrying in ${copilotAuthRetryDelaySec}s..." -ForegroundColor Yellow
         Start-Sleep -Seconds $copilotAuthRetryDelaySec
         } # end transient-auth retry loop
     } finally {

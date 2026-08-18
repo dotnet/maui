@@ -12,6 +12,8 @@
 #>
 
 BeforeAll {
+    . (Join-Path $PSScriptRoot 'Invoke-GhCommandWithRetry.ps1')
+
     $scriptPath = Join-Path $PSScriptRoot 'Update-AgentLabels.ps1'
     $tokens = $null
     $parseErrors = $null
@@ -69,6 +71,34 @@ BeforeAll {
         if ($PSBoundParameters.ContainsKey('CodeReviewMd'))  { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'pre-flight') | Out-Null; $CodeReviewMd | Set-Content (Join-Path $agentDir 'pre-flight/code-review.md') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('ExpertReviewMd')) { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'expert-pr-eval') | Out-Null; $ExpertReviewMd | Set-Content (Join-Path $agentDir 'expert-pr-eval/content.md') -Encoding UTF8 }
         return $root
+    }
+}
+
+Describe 'Agent label GitHub retries' {
+    BeforeEach {
+        $script:ghAttempts = 0
+        Mock Start-Sleep {}
+    }
+
+    It 'retries a transient HTTP 503 while applying the review lock label' {
+        Mock gh {
+            $script:ghAttempts++
+            if ($script:ghAttempts -eq 1) {
+                $global:LASTEXITCODE = 1
+                return 'gh: HTTP 503: No server is currently available'
+            }
+
+            $global:LASTEXITCODE = 0
+            return '{"labels":[{"name":"s/agent-review-in-progress"}]}'
+        }
+
+        Add-Label `
+            -PRNumber '1' `
+            -LabelName 's/agent-review-in-progress' |
+            Should -BeTrue
+
+        Should -Invoke gh -Times 2 -Exactly
+        Should -Invoke Start-Sleep -Times 1 -Exactly
     }
 }
 

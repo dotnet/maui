@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
@@ -200,12 +201,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitle()
 		{
-			if (!ToolbarReady() || NavigationItem is null || _context?.Shell?.Toolbar is null)
+
+			if (NavigationItem is null)
 			{
 				return;
 			}
 
-			NavigationItem.Title = _context.Shell.Toolbar.Title;
+			if (ToolbarReady() && _context?.Shell?.Toolbar is not null)
+			{
+				NavigationItem.Title = _context.Shell.Toolbar.Title;
+				return;
+			}
+
+			// Update back-stack pages so iOS back button/history menu reflects title changes
+			NavigationItem.Title = Page?.Title;
 		}
 
 
@@ -369,6 +378,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			return new TitleViewContainer(titleView);
+		}
+
+		/// <summary>
+		/// Re-applies the navigation bar frame to the current TitleView container.
+		/// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame
+		/// (see <see cref="CreateTitleViewContainer"/>), so the frame is not automatically recomputed
+		/// when the navigation bar resizes during rotation or window size changes. This explicitly
+		/// resizes the container to match the navigation bar's new dimensions.
+		/// </summary>
+		internal void UpdateTitleViewFrameForOrientation()
+		{
+			if (NavigationItem?.TitleView is not TitleViewContainer titleViewContainer)
+			{
+				return;
+			}
+
+			var navigationBarFrame = ViewController?.NavigationController?.NavigationBar.Frame;
+			if (navigationBarFrame.HasValue)
+			{
+				titleViewContainer.Frame = new CGRect(0, 0, navigationBarFrame.Value.Width, navigationBarFrame.Value.Height);
+				titleViewContainer.Height = navigationBarFrame.Value.Height;
+				titleViewContainer.LayoutIfNeeded();
+			}
 		}
 
 		void OnTitleViewParentSet(object? sender, EventArgs e)
@@ -588,7 +620,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
-						
+
 					// For iOS 26+, explicitly set the tint color on the bar button item
 					// because the navigation bar's tint color is not automatically inherited
 					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
@@ -696,7 +728,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				_context?.Shell?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
+				_context?.Shell?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
 			}
 		}
 
@@ -915,6 +947,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(SearchHandler.AutomationIdProperty))
 			{
 				UpdateAutomationId();
+			}
+			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.QueryIcon, UISearchBarIcon.Search);
+			}
+			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearIcon, UISearchBarIcon.Clear);
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearPlaceholderIcon, UISearchBarIcon.Bookmark);
 			}
 		}
 
@@ -1147,8 +1191,57 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+
+					// iOS caches the clear button image once it has been shown. After the button
+					// has appeared (user typed text), SetImageforSearchBarIcon alone won't refresh
+					// it. Directly update the button subview so dynamic changes are reflected.
+					if (icon is UISearchBarIcon.Clear)
+					{
+						UpdateClearButtonImage(searchBar, newResult);
+					}
 				}
 			});
+		}
+
+		// Directly updates the clear button (X) inside UISearchBar's UITextField subview.
+		// This is required because iOS does not re-apply SetImageforSearchBarIcon to a
+		// clear button that is already visible on screen.
+		//
+		// NOTE: "searchField" and "clearButton" are private UIKit KVC keys. Apple does not
+		// expose these as public API. They have been stable across iOS versions and are a
+		// well-established pattern in Xamarin/MAUI, but could break in a future OS release.
+		static void UpdateClearButtonImage(UISearchBar searchBar, UIImage? image)
+		{
+			if (searchBar.ValueForKey(new NSString("searchField")) is UITextField textField &&
+				textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
+			{
+				clearButton.SetImage(image, UIControlState.Normal);
+				clearButton.SetImage(image, UIControlState.Highlighted);
+			}
+		}
+
+		void UpdateSearchBarIcon(UISearchBar searchBar, ImageSource? source, UISearchBarIcon icon)
+		{
+			if (source is not null)
+			{
+				SetSearchBarIcon(searchBar, source, icon);
+			}
+			else
+			{
+				// Reset to default system icon by clearing the custom image
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Normal);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Highlighted);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Selected);
+
+				if (icon is UISearchBarIcon.Clear)
+				{
+					// UIKit caches the clear button image once it is on-screen, so
+					// SetImageforSearchBarIcon(null, ...) alone will not update the visible
+					// button. Restore the system default SF Symbol so the button shows the
+					// standard 'X' instead of becoming imageless.
+					UpdateClearButtonImage(searchBar, UIImage.GetSystemImage("multiply.circle.fill"));
+				}
+			}
 		}
 
 		void OnPageLoaded(object? sender, EventArgs e)
@@ -1268,6 +1361,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var currentFrame = ViewController.View.Frame;
+
+			// Skip frame adjustment for transparent Shell nav bar where Y=0 is intentional (content extends behind bar).
+			if (navBar.Translucent && currentFrame.Y == 0)
+				return;
+
 			var navBarBottom = navBar.Frame.Bottom;
 
 			if (currentFrame.Y == 0 && navBarBottom > 0 &&

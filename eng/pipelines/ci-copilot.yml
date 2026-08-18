@@ -938,7 +938,7 @@ stages:
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $timeoutMin = 40
-              $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              $buildCommand = "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
               # A recurring android failure is a CORRUPT local .dotnet: the shared
               # Microsoft.NETCore.App pack ships a System.IO.Pipes.dll the build can't
               # LOAD (MSB6003 "could not be run"), so DotNet.csproj's Exec 'sh' dies and
@@ -984,13 +984,13 @@ stages:
               }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'pwsh'
-                foreach ($a in $buildArgs) { [void]$psi.ArgumentList.Add($a) }
+                $psi.FileName = 'bash'
+                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
                 $psi.UseShellExecute = $false
                 $proc = [System.Diagnostics.Process]::Start($psi)
               } catch {
-                Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
-                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
+                & bash -o pipefail -c $buildCommand
                 if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $LASTEXITCODE }
                 exit $LASTEXITCODE
               }
@@ -1716,7 +1716,7 @@ stages:
                   echo "iOS runtime availability (before restart/enroll):"
                   xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "  (could not read runtimes)"
                   xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  [image] \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null)"' 2>/dev/null || echo "  (could not read images)"
-                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
                   sleep 8
                   xcrun simctl list runtimes >/dev/null 2>&1 || true
                   sleep 4
@@ -2098,6 +2098,20 @@ stages:
             condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
             continueOnError: true
 
+          # Freeze the pre-merge buildtasks result before Setup introduces PR-controlled
+          # code. Gate receives this output through its task environment, so merged PR
+          # execution cannot forge a marker after a genuine test failure.
+          - bash: |
+              BASE_BUILDTASKS_FAILED=false
+              if [ -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker" ]; then
+                BASE_BUILDTASKS_FAILED=true
+              fi
+              echo "Frozen pre-merge buildtasks failure state: $BASE_BUILDTASKS_FAILED"
+              echo "##vso[task.setvariable variable=baseBuildTasksFailed;isOutput=true;isReadOnly=true]$BASE_BUILDTASKS_FAILED"
+              rm -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker"
+            name: FreezeBuildTasksState
+            displayName: 'Freeze pre-merge buildtasks state'
+
           # ─────────────────────────────────────────────────────────
           #  Task 1 — SETUP: symlink copilot, git config, env prep,
           #  copy trusted scripts, invoke Review-PR.ps1 -Phase Setup
@@ -2275,13 +2289,9 @@ stages:
                   GATE_VERDICT="INCONCLUSIVE"
                 fi
               fi
-              # BASE-BRANCH BUILD BREAK override. If "Build MSBuild Tasks" failed (marker
-              # dropped by that step, now continueOnError), the PR's TARGET branch doesn't
-              # compile — the A/B gate can't build either side, so any FAILED here reflects
-              # the broken base, not the PR. Force INCONCLUSIVE so "Check Review Result"
-              # doesn't red-X the stage, while the Copilot expert review still posts an AI
-              # Summary. (Merge conflicts are handled separately above via the sentinel.)
-              if [ -f "$(Build.ArtifactStagingDirectory)/buildtasks-failed.marker" ]; then
+              # BASE-BRANCH BUILD BREAK override. FreezeBuildTasksState captured this
+              # value before Setup merged the PR, so Gate execution cannot forge it.
+              if [ "$BASE_BUILDTASKS_FAILED" = "true" ]; then
                 echo "##vso[task.logissue type=warning]Gate: target branch failed to build MSBuild tasks (base-branch break, not this PR) — classifying gate as INCONCLUSIVE."
                 GATE_VERDICT="INCONCLUSIVE"
               fi
@@ -2323,6 +2333,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
@@ -3390,7 +3401,7 @@ stages:
                 echo "iOS runtimes: newest enrolled(available)=$NEWEST_AVAIL_RT newest ready(on-disk)=$NEWEST_READY_RT"
                 if [ "$NEWEST_READY_RT" != "$NEWEST_AVAIL_RT" ] && [ "$(printf '%s\n%s\n' "$NEWEST_AVAIL_RT" "$NEWEST_READY_RT" | sort -V | tail -1)" = "$NEWEST_READY_RT" ]; then
                   echo "Ready iOS runtime $NEWEST_READY_RT is newer than newest enrolled $NEWEST_AVAIL_RT — restarting CoreSimulatorService to enroll…"
-                  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+                  sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
                   sleep 8
                   xcrun simctl list runtimes >/dev/null 2>&1 || true   # relaunch daemon + re-scan Ready images
                   sleep 4
@@ -3631,7 +3642,7 @@ stages:
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $timeoutMin = 40
-              $buildArgs = @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic')
+              $buildCommand = "pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=diagnostic 2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
               # Retry wipes ./.dotnet to recover from a corrupt local SDK (unloadable
               # System.IO.Pipes.dll); marker persists across retryCountOnTaskFailure.
               # See the gate-stage copy of this step for the full rationale.
@@ -3646,13 +3657,13 @@ stages:
               }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'pwsh'
-                foreach ($a in $buildArgs) { [void]$psi.ArgumentList.Add($a) }
+                $psi.FileName = 'bash'
+                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
                 $psi.UseShellExecute = $false
                 $proc = [System.Diagnostics.Process]::Start($psi)
               } catch {
-                Write-Host "Watchdog could not launch child pwsh ($($_.Exception.Message)); running build directly (no wall-clock bound)."
-                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
+                & bash -o pipefail -c $buildCommand
                 if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
                 exit $LASTEXITCODE
               }
@@ -4354,65 +4365,9 @@ stages:
             # the DEFERRED fallback can still post deep test results alone.
             continueOnError: true
 
-          # GH_COMMENT_TOKEN can create reviews and labels but cannot update PR
-          # title/body (GitHub returns 404). This trusted job already persists the
-          # GitHub service-connection credential for snapshot-asset publication.
-          # Scope that credential to the conservative apply-pr-finalize helper only;
-          # no PR-controlled code runs in this job and the token is cleared afterward.
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              $prNumber = $env:PARAM_PR_NUMBER
-              $contentFile = Get-ChildItem -Path "$(Pipeline.Workspace)/CopilotLogs" -Recurse -File -Filter 'content.md' -ErrorAction SilentlyContinue |
-                Where-Object {
-                  $_.FullName -match "[\\/]PRState[\\/]$([regex]::Escape($prNumber))[\\/]PRAgent[\\/]pr-finalize[\\/]content\.md$"
-                } |
-                Select-Object -First 1
-
-              if (-not $contentFile) {
-                Write-Host "No pr-finalize recommendation was published — leaving PR metadata unchanged."
-                exit 0
-              }
-
-              $prAgentDir = Split-Path -Parent (Split-Path -Parent $contentFile.FullName)
-              $winnerFile = Join-Path $prAgentDir 'winner.json'
-
-              $checkoutToken = $null
-              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                if ($line -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') {
-                  $decoded = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1]))
-                  $checkoutToken = ($decoded -split ':', 2)[-1]
-                  break
-                }
-                if ($line -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') {
-                  $checkoutToken = $matches[1]
-                  break
-                }
-              }
-
-              if ([string]::IsNullOrWhiteSpace($checkoutToken)) {
-                Write-Host "##vso[task.logissue type=warning]Trusted checkout credential unavailable; the PR metadata recommendation remains in the AI summary."
-                exit 0
-              }
-
-              try {
-                $env:GH_TOKEN = $checkoutToken
-                & pwsh -NoProfile -File ./.github/scripts/apply-pr-finalize.ps1 `
-                  -PRNumber $prNumber `
-                  -ContentFile $contentFile.FullName `
-                  -WinnerFile $winnerFile `
-                  -ExpectedHeadSha "$(reviewedPrHeadSha)"
-                if ($LASTEXITCODE -ne 0) {
-                  throw "apply-pr-finalize.ps1 exited with code $LASTEXITCODE."
-                }
-              } finally {
-                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
-                $checkoutToken = $null
-              }
-            displayName: 'Apply PR title/description'
-            timeoutInMinutes: 5
-            continueOnError: true
-            env:
-              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+          # CopilotLogs is produced after merged PR code executes and is therefore
+          # untrusted cross-job data. It may be rendered into the sanitized AI summary,
+          # but it must never drive a credentialed PR title/body mutation.
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download drop-deep-uitests'
@@ -4506,6 +4461,11 @@ stages:
               # (see PARAM_PR_NUMBER) and read them as env:NAME. Runtime macros $(var)
               # are fine. (This comment deliberately avoids the literal brace syntax.)
               $ErrorActionPreference = 'Continue'
+              $ghRetryHelper = ".github/scripts/shared/Invoke-GhCommandWithRetry.ps1"
+              if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
+                throw "Required GitHub retry helper not found: $ghRetryHelper"
+              }
+              . $ghRetryHelper
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "$env:PARAM_PR_NUMBER"
@@ -5587,18 +5547,22 @@ stages:
                         "> [!WARNING]"
                         "> ### 🔍 Automated review could not complete"
                         ">"
-                        "> A stage of the reviewer pipeline could not finish, so **no review summary was produced** for this run — most often the PR's target branch failing to build. This is usually a transient **infrastructure** issue or a pre-existing break on the base branch, **not** a problem with your change."
+                        "> A trusted setup or review stage could not finish before producing review artifacts. Common causes include a transient GitHub/CI API failure, a CI-agent failure, or a pre-existing break on the target branch; this notice does **not** identify a merge conflict in your change."
                         ">"
                         "> Please re-comment ``/review`` to retry on a fresh agent."
                         ">"
                         "> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline · <a href=`"$buildUrl`">build log</a></sub>"
                       ) -join [Environment]::NewLine
                       $riTmp = New-TemporaryFile
-                      $riBody | Set-Content $riTmp.FullName -Encoding UTF8
-                      gh pr comment $prNumber --repo dotnet/maui --body-file $riTmp.FullName | Out-Null
-                      if ($LASTEXITCODE -eq 0) { Write-Host "✅ Review-incomplete notice posted (Stage 3 fallback)" }
-                      else { Write-Host "⚠️ Review-incomplete notice POST returned non-zero" }
-                      Remove-Item $riTmp.FullName -ErrorAction SilentlyContinue
+                      try {
+                        $riBody | Set-Content $riTmp.FullName -Encoding UTF8
+                        Invoke-GhCommandWithRetry `
+                          -Arguments @('pr', 'comment', $prNumber, '--repo', 'dotnet/maui', '--body-file', $riTmp.FullName) `
+                          -Description "post the review-incomplete notice for PR #$prNumber" | Out-Null
+                        Write-Host "✅ Review-incomplete notice posted (Stage 3 fallback)"
+                      } finally {
+                        Remove-Item $riTmp.FullName -ErrorAction SilentlyContinue
+                      }
                     } catch {
                       Write-Host "⚠️ Review-incomplete notice posting failed (non-fatal): $_"
                     }

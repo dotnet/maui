@@ -20,6 +20,26 @@ BeforeAll {
     $script:RetryScriptPath = Join-Path $PSScriptRoot 'Invoke-UITestWithRetry.ps1'
     $script:RetryScriptSource = Get-Content -Raw -LiteralPath $script:RetryScriptPath
 
+    function Get-FunctionBody {
+        param([string]$ScriptText, [string]$FunctionName)
+        $start = $ScriptText.IndexOf("function $FunctionName")
+        if ($start -lt 0) { throw "Function '$FunctionName' not found" }
+        $i = $ScriptText.IndexOf('{', $start)
+        $depth = 0
+        for (; $i -lt $ScriptText.Length; $i++) {
+            if ($ScriptText[$i] -eq '{') { $depth++ }
+            elseif ($ScriptText[$i] -eq '}') {
+                $depth--
+                if ($depth -eq 0) {
+                    return $ScriptText.Substring($start, $i - $start + 1)
+                }
+            }
+        }
+        throw "Function '$FunctionName' has no closing brace"
+    }
+
+    Invoke-Expression (Get-FunctionBody -ScriptText $script:RetryScriptSource -FunctionName 'ConvertTo-AzdoSafeConsole')
+
     # Mirrors the decision made in the Invoke-UITestWithRetry.ps1 retry loop: an ambiguous
     # startup signature that already appeared in this category's history has survived the
     # device reboot + rebuild recovery, so it is deterministic (a real failure), not infra.
@@ -89,5 +109,13 @@ Describe 'Invoke-UITestWithRetry wiring' {
     It 'clears EnvErrorHit on a confirmed deterministic startup failure so callers see a real failure' {
         $script:RetryScriptSource | Should -Match '\$ambiguousStartupPatterns\s*-contains\s*\$envHit'
         $script:RetryScriptSource | Should -Match '\$envErrorHistory\s*-contains\s*\$envHit'
+    }
+
+    It 'defangs directive-shaped captured output before Write-Host' {
+        ConvertTo-AzdoSafeConsole "safe`r`n##vso[task.setvariable variable=GateFailed]false" |
+            Should -Be 'safe ## vso[task.setvariable variable=GateFailed]false'
+        ConvertTo-AzdoSafeConsole '##[error]spoof' | Should -Be '## [error]spoof'
+        $script:RetryScriptSource | Should -Match ([regex]::Escape('Write-Host (ConvertTo-AzdoSafeConsole $l)'))
+        $script:RetryScriptSource | Should -Not -Match 'foreach \(\$l in \$lines\) \{ Write-Host \$l \}'
     }
 }

@@ -93,6 +93,15 @@ param(
 
 $ErrorActionPreference = 'Continue'
 
+function ConvertTo-AzdoSafeConsole {
+    param([string]$Text)
+
+    # Captured build/test output is PR-controlled. Collapse line separators so an
+    # embedded directive cannot create a new column-zero command, then defang both
+    # Azure logging-command prefixes before writing the text back to the pipeline log.
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
 if (-not $RepoRoot) {
     $RepoRoot = git rev-parse --show-toplevel 2>$null
     if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
@@ -191,7 +200,7 @@ function Write-CapturedFailureOutput {
         Write-Host "  … $omitted earlier line(s) omitted — see the published deep-uitests log for the full output …"
         $lines = $lines[-$TailLines..-1]
     }
-    foreach ($l in $lines) { Write-Host $l }
+    foreach ($l in $lines) { Write-Host (ConvertTo-AzdoSafeConsole $l) }
     Write-Host "##[endgroup]"
 }
 
