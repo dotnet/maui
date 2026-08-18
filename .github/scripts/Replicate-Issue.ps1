@@ -1481,6 +1481,61 @@ function Assert-ReplicationScenarioNotBlocked {
     }
 }
 
+function Write-ReplicationAgentDiagnostic {
+    param(
+        [Parameter(Mandatory)][string] $PhaseName,
+        [Parameter(Mandatory)][int] $Attempt
+    )
+
+    $logPath = Join-Path $agentDir "copilot-$PhaseName-attempt-$Attempt.jsonl"
+    if (-not (Test-Path -LiteralPath $logPath -PathType Leaf)) {
+        Write-Host "No Copilot transcript was written for $PhaseName attempt $Attempt."
+        return
+    }
+
+    $texts = [Collections.Generic.List[string]]::new()
+    foreach ($line in @(Get-Content -LiteralPath $logPath -ErrorAction SilentlyContinue)) {
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            continue
+        }
+
+        $text = $null
+        try {
+            $event = ([string]$line) | ConvertFrom-Json -Depth 30 -ErrorAction Stop
+            foreach ($property in @('message', 'text', 'error', 'reason')) {
+                if ($event.PSObject.Properties[$property]) {
+                    $text = [string]$event.$property
+                    break
+                }
+            }
+            if (-not $text -and $event.PSObject.Properties['type']) {
+                $text = "event: $([string]$event.type)"
+            }
+        } catch {
+            $text = [string]$line
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($text)) {
+            $texts.Add($text)
+        }
+    }
+
+    if ($texts.Count -eq 0) {
+        Write-Host "The Copilot transcript for $PhaseName attempt $Attempt contained no readable text."
+        return
+    }
+
+    Write-Host "Last Copilot transcript entries for $PhaseName attempt ${Attempt}:"
+    foreach ($text in @($texts | Select-Object -Last 12)) {
+        $bounded = $text -replace '[\x00-\x08\x0B\x0C\x0E-\x1F]', ' '
+        if ($bounded.Length -gt 300) {
+            $bounded = $bounded.Substring(0, 300) + '...'
+        }
+
+        Write-Host "  | $bounded"
+    }
+}
+
 function Resolve-MisplacedAgentOutput {
     param(
         [Parameter(Mandatory)][string] $CanonicalPath
@@ -2913,6 +2968,9 @@ $sandboxFailureSummary
             }
             $sandboxAttemptKinds.Add((Get-ReplicationAttemptFailureKind $sandboxFailureSummary))
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
+            if ($sandboxFailureSummary -match '(?i)did not create/update required path|did not write sandbox-proposal') {
+                Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt $attempt
+            }
             if ($sandboxFailureSummary -match
                 '^(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') {
                 throw

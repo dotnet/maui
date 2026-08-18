@@ -78,6 +78,7 @@ BeforeAll {
         'Test-CrashReportingIssueContext',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
+        'Write-ReplicationAgentDiagnostic',
         'Resolve-MisplacedAgentOutput',
         'Read-SandboxProposal',
         'Assert-LighterTestRejections',
@@ -913,6 +914,28 @@ public partial class MainPage : ContentPage
             'Text="PASS: Incorrect result not observed"') |
             Set-Content -LiteralPath $sandboxXamlPath
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
+    }
+
+    It 'shows the agent transcript when a required output never appeared' {
+        # Run 15000213 failed five identical attempts on Windows and printed
+        # nothing the agent said, so the cause could not be read from the log.
+        $agentDir = Join-Path $TestDrive 'diag'
+        New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
+        $logPath = Join-Path $agentDir 'copilot-sandbox-attempt-1.jsonl'
+        @(
+            '{"type":"assistant.message","message":"I could not locate the Sandbox project."}'
+            'not json at all'
+        ) | Set-Content -LiteralPath $logPath
+
+        $output = Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt 1 6>&1 |
+            ForEach-Object { [string]$_ }
+        ($output -join "`n") | Should -Match 'could not locate the Sandbox project'
+        ($output -join "`n") | Should -Match 'not json at all'
+
+        Remove-Item -LiteralPath $logPath -Force
+        $missing = Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt 1 6>&1 |
+            ForEach-Object { [string]$_ }
+        ($missing -join "`n") | Should -Match 'No Copilot transcript was written'
     }
 
     It 'tells the agent how to wait once it is told not to sleep' {
