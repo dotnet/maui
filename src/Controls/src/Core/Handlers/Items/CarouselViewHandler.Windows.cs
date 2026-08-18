@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _recenteringAttemptCount;
 		bool _isScrollingForward;
 		int _centerItemIndexFromScroll = -1;
+		int _centerRequestVersion;
 		int _gotoPosition = -1;
 		bool _isCollectionChanged;
 		bool _isCollectionChangeScrollPending;
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ResetRecenteringState();
 			_isScrollingForward = false;
 			_centerItemIndexFromScroll = -1;
+			_centerRequestVersion++;
 			_gotoPosition = -1;
 			_isCollectionChanged = false;
 			_isCollectionChangeScrollPending = false;
@@ -251,6 +253,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override async Task ScrollTo(ScrollToRequestEventArgs args)
 		{
+			_centerRequestVersion++;
+
 			if (args.IsAnimated && args.Mode == ScrollToMode.Position)
 			{
 				_gotoPosition = args.Index;
@@ -671,6 +675,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView.ItemsSource is null)
 				return;
 
+			_centerRequestVersion++;
 			if (!_isRecentering)
 				_recenteringAttemptCount = 0;
 			ItemsView.SetIsDragging(true);
@@ -725,12 +730,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_failedRecenteringTarget = null;
 			}
 
-			CenterCarouselItem(centerItemIndexFromScroll);
+			QueueCenterCarouselItem(centerItemIndexFromScroll);
 		}
 
 		static bool AreClose(Point first, Point second) =>
 			Math.Abs(first.X - second.X) <= 1
 				&& Math.Abs(first.Y - second.Y) <= 1;
+
+		void QueueCenterCarouselItem(int centerItemIndexFromScroll)
+		{
+			var dispatcherQueue = ListViewBase?.DispatcherQueue;
+			if (dispatcherQueue is null)
+			{
+				CenterCarouselItem(centerItemIndexFromScroll);
+				return;
+			}
+
+			var centerRequestVersion = ++_centerRequestVersion;
+			if (!dispatcherQueue.TryEnqueue(
+				Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+				() =>
+				{
+					if (centerRequestVersion == _centerRequestVersion)
+						CenterCarouselItem(centerItemIndexFromScroll);
+				}))
+			{
+				CenterCarouselItem(centerItemIndexFromScroll);
+			}
+		}
 
 		void CenterCarouselItem(int centerItemIndexFromScroll)
 		{
@@ -848,6 +875,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			_centerRequestVersion++;
+
 			// Set flag to disable animation during collection changes
 			_isInternalPositionUpdate = true;
 

@@ -215,7 +215,9 @@ namespace Microsoft.Maui.DeviceTests
 				targetOffset += itemWidth * 0.5 + 1;
 				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset);
 
-				Assert.Equal(0, carouselView.Position);
+				Assert.True(
+					carouselView.Position == 0,
+					GetScrollState(handler, scrollViewer, targetOffset, positionChanges, scrollToRequests: scrollToRequests));
 				Assert.Same(items[0], carouselView.CurrentItem);
 				Assert.Equal(1, positionChanges);
 				Assert.Equal(0, scrollToRequests);
@@ -424,21 +426,30 @@ namespace Microsoft.Maui.DeviceTests
 
 				int terminalEvents = 0;
 				int coercions = 0;
-				void CoerceRecentering(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangedEventArgs args)
+				int lastCoercedAttempt = 0;
+				void CountTerminalEvents(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangedEventArgs args)
 				{
-					if (args.IsIntermediate)
-						return;
+					if (!args.IsIntermediate)
+						terminalEvents++;
+				}
 
-					terminalEvents++;
-					if (coercions >= 2 || !GetPrivateField<bool>(handler, "_isRecentering"))
+				void CoerceRecentering(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangingEventArgs args)
+				{
+					var attempt = GetPrivateField<int>(handler, "_recenteringAttemptCount");
+					if (!GetPrivateField<bool>(handler, "_isRecentering")
+						|| attempt <= lastCoercedAttempt)
+					{
 						return;
+					}
 
-					var coercedOffset = conflictingOffset + (coercions == 0 ? -20 : 20);
+					lastCoercedAttempt = attempt;
+					var coercedOffset = conflictingOffset + (attempt == 1 ? -20 : 20);
 					coercions++;
 					Assert.True(scrollViewer.ChangeView(coercedOffset, null, null, true));
 				}
 
-				scrollViewer.ViewChanged += CoerceRecentering;
+				scrollViewer.ViewChanged += CountTerminalEvents;
+				scrollViewer.ViewChanging += CoerceRecentering;
 				try
 				{
 					await ChangeViewAndWaitForSettleAsync(
@@ -447,7 +458,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					scrollViewer.ViewChanged -= CoerceRecentering;
+					scrollViewer.ViewChanged -= CountTerminalEvents;
+					scrollViewer.ViewChanging -= CoerceRecentering;
 				}
 
 				var recenteringAttemptCount = GetPrivateField<int>(handler, "_recenteringAttemptCount");
@@ -481,6 +493,7 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_recenteringAttemptCount", 2);
 				SetPrivateField(handler, "_isScrollingForward", true);
 				SetPrivateField(handler, "_centerItemIndexFromScroll", 1);
+				SetPrivateField(handler, "_centerRequestVersion", 1);
 				SetPrivateField(handler, "_gotoPosition", 1);
 				SetPrivateField(handler, "_isCollectionChanged", true);
 				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
@@ -498,6 +511,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, GetPrivateField<int>(handler, "_recenteringAttemptCount"));
 				Assert.False(GetPrivateField<bool>(handler, "_isScrollingForward"));
 				Assert.Equal(-1, GetPrivateField<int>(handler, "_centerItemIndexFromScroll"));
+				Assert.Equal(2, GetPrivateField<int>(handler, "_centerRequestVersion"));
 				Assert.Equal(-1, GetPrivateField<int>(handler, "_gotoPosition"));
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChanged"));
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
@@ -587,6 +601,7 @@ namespace Microsoft.Maui.DeviceTests
 			async Task CompleteAfterQuietPeriodAsync(int observedVersion)
 			{
 				await Task.Delay(100);
+				await DrainDispatcherQueueAsync(scrollViewer);
 				if (observedVersion == terminalViewChangedVersion)
 					settled.TrySetResult(true);
 			}
