@@ -83,6 +83,7 @@ BeforeAll {
         'APPLE_DEVELOPERID_PROVISIONING_PROFILE_BASE64',
         'IOS_ADHOC_CODESIGN_PROVISION',
         'IOS_CODESIGN_KEY',
+        'IOS_CODESIGN_PROVISION',
         'APPLE_DEVELOPERID_CODESIGN_KEY',
         'APPLE_DEVELOPERID_CODESIGN_PROVISION',
         'GH_TOKEN',
@@ -677,8 +678,13 @@ Describe 'publish binlogs' {
 
 Describe 'workflow test gate' {
     It 'runs the behavioral suite before matrix preparation' {
-        $script:workflowText | Should -Match (
-            '(?ms)^  script-tests:.*?Invoke-Pester.*?-CI')
+        $scriptTestsJob = [regex]::Match(
+            $script:workflowText,
+            '(?ms)^  script-tests:[ \t]*\r?\n.*?(?=^  [A-Za-z0-9_-]+:[ \t]*\r?$|\z)'
+        )
+
+        $scriptTestsJob.Success | Should -BeTrue
+        $scriptTestsJob.Value | Should -Match '(?s)Invoke-Pester.*?-CI'
         $script:workflowText | Should -Match (
             '(?ms)^  prepare:.*?^\s{4}needs: script-tests\s*$')
         $script:workflowText | Should -Not -Match (
