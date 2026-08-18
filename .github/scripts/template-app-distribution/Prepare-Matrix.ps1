@@ -101,7 +101,12 @@ $variantDefinitions = [ordered]@{
 if (-not [string]::IsNullOrWhiteSpace($env:TEMPLATE_APP_VARIANTS_JSON)) {
     $customDefinitions = $env:TEMPLATE_APP_VARIANTS_JSON | ConvertFrom-Json
     foreach ($property in $customDefinitions.PSObject.Properties) {
-        Merge-VariantDefinition $variantDefinitions $property.Name.ToLowerInvariant() $property.Value
+        $variantName = $property.Name.ToLowerInvariant()
+        if ($variantName -notmatch '^[a-z0-9][a-z0-9_-]*$') {
+            throw "Invalid custom template app variant name '$($property.Name)'. Variant names may contain only letters, numbers, hyphens, and underscores."
+        }
+
+        Merge-VariantDefinition $variantDefinitions $variantName $property.Value
     }
 }
 
