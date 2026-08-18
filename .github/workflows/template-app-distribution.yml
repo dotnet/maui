@@ -37,6 +37,9 @@
 # - TEMPLATE_APP_BLANK_MACCATALYST_DEVELOPERID_PROVISIONING_PROFILE_BASE64 / TEMPLATE_APP_SAMPLE_MACCATALYST_DEVELOPERID_PROVISIONING_PROFILE_BASE64 (secrets):
 #     Developer ID Mac Catalyst provisioning profiles. Notarization reuses TEMPLATE_APPSTORE_CONNECT_* above.
 # - TEMPLATE_APP_ANDROID_KEYSTORE_TYPE (variable): optional keystore type, for example pkcs12.
+# - TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES (repository variable): comma- or newline-separated
+#   exact additional protected branch names allowed as publish sources. The default branch is
+#   always trusted; wildcards are rejected.
 # - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
 # - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
 # - TEMPLATE_APP_TESTFLIGHT_GROUPS (variable): defaults to no explicit group distribution.
@@ -152,6 +155,7 @@ jobs:
           SOURCE_REF: ${{ inputs.source_ref }}
           WORKFLOW_REF: ${{ github.ref }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          TRUSTED_PUBLISH_BRANCHES: ${{ vars.TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES }}
           PUBLISH: ${{ inputs.publish }}
         run: |
           $publish = [System.Boolean]::Parse($env:PUBLISH)
@@ -160,6 +164,7 @@ jobs:
             -SourceRef "$env:SOURCE_REF" `
             -WorkflowRef "$env:WORKFLOW_REF" `
             -DefaultBranch "$env:DEFAULT_BRANCH" `
+            -TrustedPublishBranches "$env:TRUSTED_PUBLISH_BRANCHES" `
             -Publish $publish
 
       - name: Resolve .NET SDK
@@ -750,7 +755,6 @@ jobs:
             -OutputPath "${{ runner.temp }}/template-app-output/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
-            -CreateBinlog `
             -Publish
 
       - name: Upload artifact copy
@@ -759,17 +763,6 @@ jobs:
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
           path: ${{ steps.build.outputs.sideload_package_path }}
-          retention-days: 14
-
-      - name: Upload publish binlog
-        if: ${{ always() && steps.build.outputs.binlog_path != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: template-app-publish-binlog-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
-          path: |
-            ${{ steps.build.outputs.binlog_path }}
-            ${{ steps.build.outputs.store_binlog_path }}
-            ${{ steps.build.outputs.sideload_binlog_path }}
           retention-days: 14
 
       - name: Write Google Play credentials

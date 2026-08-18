@@ -5,8 +5,10 @@ either (a) uploads the results as GitHub artifacts (`publish=false`, a **dry run
 (b) signs and publishes them to Google Play / TestFlight (`publish=true`).
 
 The workflow lives in `.github/workflows/template-app-distribution.yml`. Trigger it from the
-**Actions** tab with *Run workflow* and pick the source branch (`main`, `net10.0`, `net11.0`
-or a `release/*` branch) plus whether to publish.
+**Actions** tab with *Run workflow* and pick the source branch plus whether to publish.
+Dry runs accept any safe ref. Publishing always accepts the default branch and accepts
+additional exact protected branches only when an administrator lists them in the repository
+variable `TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES`; wildcard branch conventions are not trusted.
 
 ## What you get, per platform
 
@@ -96,6 +98,12 @@ keystore, the Google Play service account JSON, the Apple distribution certifica
 **none** of these — it produces the installable Android APK and self-contained Windows zip
 immediately.
 
+**Optional publish-source policy:**
+
+- `TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES` — repository variable containing comma- or
+  newline-separated exact additional protected branch names that may be used with
+  `publish=true`. The default branch is always trusted; wildcards are rejected.
+
 **Optional — enable the sideloadable iOS / macOS artifacts:**
 
 - `TEMPLATE_APP_{BLANK,SAMPLE}_IOS_ADHOC_PROVISIONING_PROFILE_BASE64` — ad-hoc distribution
@@ -115,7 +123,7 @@ the Android and Windows fixes. If optional Apple signing is configured but its p
 or notarization step fails, the build fails instead of silently uploading the non-installable
 store package as though it were a sideload artifact.
 
-The workflow runs the behavioral Pester suite before preparing the build matrix. Publish builds
-upload MSBuild binlogs even on failure. Android publishes include separate binlogs for the
-installable APK and the store-critical AAB; optional iOS ad-hoc and Mac Catalyst Developer ID
-publishes each emit their own sideload binlog so signing failures remain diagnosable.
+The workflow runs the behavioral Pester suite before preparing the build matrix. Dry-run builds
+upload MSBuild binlogs for diagnostics because they have no publishing credentials. Publish jobs
+do not create or upload binlogs: MSBuild can capture environment-derived signing and store
+credentials in structured logs, so publish diagnostics remain in the ordinary masked job log.
