@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Handlers
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollViewer>, ICrossPlatformLayout
 	{
 		const string ContentPanelTag = "MAUIScrollViewContentPanel";
+		object? _isTabStopLocalValue;
+		bool _isTabStopValue;
+		ScrollViewer? _tabStopPlatformView;
+		int _tabStopGeneration;
+		bool _isTabStopTemporary;
 
 		// Stores a scroll request that arrived before the content was laid out.
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
@@ -21,6 +26,14 @@ namespace Microsoft.Maui.Handlers
 		protected override ScrollViewer CreatePlatformView()
 		{
 			return new ScrollViewer();
+		}
+
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			if (!PlatformView.IsLoaded)
+				BeginTemporaryTabStop(PlatformView);
 		}
 
 		internal static void MapInvalidateMeasure(IScrollViewHandler handler, IView view, object? args)
@@ -36,11 +49,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);
-			// Give WinUI's initial focus pass a non-content target, then restore the native default after loading.
-			platformView.IsTabStop = true;
 			platformView.Loaded += OnPlatformViewLoaded;
 			platformView.Unloaded += OnPlatformViewUnloaded;
 			platformView.ViewChanged += ViewChanged;
+			_tabStopPlatformView = platformView;
 		}
 
 		protected override void DisconnectHandler(ScrollViewer platformView)
@@ -51,11 +63,13 @@ namespace Microsoft.Maui.Handlers
 			// causing a WinUI COM exception "Element already has a parent" (Issue #35277).
 			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
 			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
-			base.DisconnectHandler(platformView);
 			platformView.Loaded -= OnPlatformViewLoaded;
 			platformView.Unloaded -= OnPlatformViewUnloaded;
 			platformView.ViewChanged -= ViewChanged;
-			platformView.IsTabStop = false;
+			_tabStopPlatformView = null;
+			_tabStopGeneration++;
+			RestoreIsTabStop(platformView);
+			base.DisconnectHandler(platformView);
 
 			if (PendingScrollToRequest is not null)
 			{
@@ -69,19 +83,68 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
+		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
 		{
 			var scrollViewer = (ScrollViewer)sender;
-			scrollViewer.DispatcherQueue.TryEnqueue(() =>
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer) || !_isTabStopTemporary)
+				return;
+
+			var generation = ++_tabStopGeneration;
+			if (scrollViewer.DispatcherQueue?.TryEnqueue(() =>
 			{
-				if (scrollViewer.IsLoaded)
-					scrollViewer.IsTabStop = false;
-			});
+				if (generation == _tabStopGeneration &&
+					ReferenceEquals(_tabStopPlatformView, scrollViewer) &&
+					scrollViewer.IsLoaded)
+				{
+					RestoreIsTabStop(scrollViewer);
+				}
+			}) != true)
+			{
+				RestoreIsTabStop(scrollViewer);
+			}
 		}
 
-		static void OnPlatformViewUnloaded(object sender, RoutedEventArgs e)
+		void OnPlatformViewUnloaded(object sender, RoutedEventArgs e)
 		{
-			((ScrollViewer)sender).IsTabStop = true;
+			var scrollViewer = (ScrollViewer)sender;
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer))
+				return;
+
+			_tabStopGeneration++;
+			RestoreIsTabStop(scrollViewer);
+			BeginTemporaryTabStop(scrollViewer);
+		}
+
+		void BeginTemporaryTabStop(ScrollViewer scrollViewer)
+		{
+			if (_isTabStopTemporary)
+				return;
+
+			// Handler mappings have already run, so preserve any custom local value before
+			// giving WinUI's next load focus pass a non-content target.
+			_isTabStopLocalValue = scrollViewer.ReadLocalValue(Control.IsTabStopProperty);
+			_isTabStopValue = scrollViewer.IsTabStop;
+			_isTabStopTemporary = true;
+			scrollViewer.IsTabStop = true;
+		}
+
+		void RestoreIsTabStop(ScrollViewer scrollViewer)
+		{
+			if (!_isTabStopTemporary)
+				return;
+
+			if (ReferenceEquals(_isTabStopLocalValue, DependencyProperty.UnsetValue))
+			{
+				// Restore the effective value before clearing the temporary local value.
+				// Clearing directly while focused makes WinUI re-route focus into the content.
+				scrollViewer.IsTabStop = _isTabStopValue;
+				scrollViewer.ClearValue(Control.IsTabStopProperty);
+			}
+			else
+				scrollViewer.SetValue(Control.IsTabStopProperty, _isTabStopLocalValue);
+
+			_isTabStopLocalValue = null;
+			_isTabStopTemporary = false;
 		}
 
 		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
