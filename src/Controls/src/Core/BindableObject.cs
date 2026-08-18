@@ -492,6 +492,16 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
+			var context = GetOrCreateContext(property);
+			var currentSpecificity = context.Values.GetSpecificity();
+			if (specificity == SetterSpecificity.DynamicResourceSetter && currentSpecificity == SetterSpecificity.ManualValueSetter)
+			{
+				var currentValue = context.Values.GetValue();
+
+				context.Values.Remove(currentSpecificity);
+				context.Values[SetterSpecificity.DynamicResourceSetter] = currentValue;
+			}
+
 			OnSetDynamicResource(property, key, specificity);
 		}
 
@@ -607,15 +617,13 @@ namespace Microsoft.Maui.Controls
 				if (delayQueue == null)
 					context.DelayedSetters = delayQueue = new Queue<SetValueArgs>();
 
-				delayQueue.Enqueue(new SetValueArgs(property, context, value, currentlyApplying, attributes, specificity,
-					(privateAttributes & SetValuePrivateFlags.ReplaceManualValue) != 0));
+				delayQueue.Enqueue(new SetValueArgs(property, context, value, currentlyApplying, attributes, specificity));
 			}
 			else
 			{
 				var silent = (privateAttributes & SetValuePrivateFlags.Silent) != 0;
 				context.Attributes |= BindableContextAttributes.IsBeingSet;
-				SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent,
-					(privateAttributes & SetValuePrivateFlags.ReplaceManualValue) != 0);
+				SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent);
 
 				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
 				if (delayQueue != null)
@@ -624,7 +632,7 @@ namespace Microsoft.Maui.Controls
 					{
 						SetValueArgs s = delayQueue.Dequeue();
 						if (s != null)
-							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent, s.ReplaceManualValue);
+							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
 					}
 
 					context.DelayedSetters = null;
@@ -634,17 +642,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void SetValueActual(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool silent = false, bool replaceManualValue = false)
+		void SetValueActual(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool silent = false)
 		{
 			var specificityAndValue = context.Values.GetSpecificityAndValue();
 			var original = specificityAndValue.Value;
 			var originalSpecificity = specificityAndValue.Key;
-
-			if (replaceManualValue)
-			{
-				context.Values.Remove(SetterSpecificity.ManualValueSetter);
-				originalSpecificity = context.Values.GetSpecificity();
-			}
 
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
@@ -903,7 +905,6 @@ namespace Microsoft.Maui.Controls
 			Silent = 1 << 1,
 			FromStyle = 1 << 3,
 			Converted = 1 << 4,
-			ReplaceManualValue = 1 << 5,
 			Default = None
 		}
 
@@ -913,11 +914,10 @@ namespace Microsoft.Maui.Controls
 			public readonly BindablePropertyContext Context;
 			public readonly bool CurrentlyApplying;
 			public readonly BindableProperty Property;
-			public readonly bool ReplaceManualValue;
 			public readonly object Value;
 			public readonly SetterSpecificity Specificity;
 
-			public SetValueArgs(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool replaceManualValue = false)
+			public SetValueArgs(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity)
 			{
 				Property = property;
 				Context = context;
@@ -925,7 +925,6 @@ namespace Microsoft.Maui.Controls
 				CurrentlyApplying = currentlyApplying;
 				Attributes = attributes;
 				Specificity = specificity;
-				ReplaceManualValue = replaceManualValue;
 			}
 		}
 	}
