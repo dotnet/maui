@@ -882,6 +882,20 @@ function Invoke-WindowsDeviceTestApp {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
                 if ($IncludeClasses) {
+                    if (Test-Path -LiteralPath $categoryResultFile) {
+                        try {
+                            $completedSummary = Get-DeviceTestResultSummary -ResultFiles @($categoryResultFile)
+                            if ($completedSummary.Total -le 0) {
+                                throw "The result file contained no tests."
+                            }
+                            $resultFiles += $categoryResultFile
+                            Write-Warning "Windows device test category '$category' exceeded ${categoryRunTimeoutSeconds}s after writing complete results; using the completed file and validating the requested target after all categories."
+                            continue
+                        } catch {
+                            $resultEvidenceError = $_.Exception.Message
+                            Write-Warning "Timed-out Windows category process did not leave complete results: $resultEvidenceError"
+                        }
+                    }
                     $methodScope = if ($IncludeMethods) { " and method(s) '$IncludeMethods'" } else { "" }
                     throw "$WindowsDeviceTargetTimeoutMarker Windows device test category '$category' did not exit within ${categoryRunTimeoutSeconds}s while running requested class(es) '$IncludeClasses'$methodScope."
                 }

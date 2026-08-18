@@ -478,6 +478,54 @@ EOF
         }
     }
 
+    It 'trusts complete scoped category XML when only Windows process teardown times out' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-controls-teardown-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $app = Join-Path $tempRoot 'device-tests.sh'
+            @'
+#!/bin/sh
+if [ "$2" = "-1" ]; then
+    printf '%s\n' 'Window' > "$(dirname "$1")/devicetestcategories.txt"
+    exit 0
+fi
+result="${1%.xml}_Window.xml"
+cat > "$result" <<'EOF'
+<assemblies>
+  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+    <collection>
+      <test type="Microsoft.Maui.Controls.DeviceTests.ButtonTests" method="TargetMethod" name="TargetMethod" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+EOF
+exec sleep 30
+'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
+            & chmod +x $app
+
+            $script:WindowsDeviceTestPackageIds = @{
+                Controls = 'com.microsoft.maui.controls.devicetests'
+            }
+
+            $exitCode = Invoke-WindowsDeviceTestApp `
+                -AppPath $app `
+                -Project 'Controls' `
+                -AppName 'Controls.DeviceTests' `
+                -OutputDirectory (Join-Path $tempRoot 'results') `
+                -TestFilter 'Category=Window' `
+                -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' `
+                -IncludeMethods 'TargetMethod' `
+                -Timeout '00:00:01'
+
+            $exitCode | Should -Be 0
+            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
+            $script:WindowsDeviceTestSummary.Failed | Should -Be 0
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'trusts complete scoped XML when only Windows process teardown times out' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
         $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-teardown-$([guid]::NewGuid())"
         New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
