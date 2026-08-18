@@ -2797,6 +2797,14 @@ public void ReproducesIssue()
         }
     }
 
+    It 'tells the agent the test is executed three times and must stay economical' {
+        # Run 15009967 spent every attempt shrinking a 40-cycle leak test that
+        # kept exhausting the device-test harness timeout.
+        $script:Source | Should -Match 'executed three separate times'
+        $script:Source | Should -Match 'exhausts the device-test harness timeout'
+        $script:Source | Should -Match "repository's WaitForGC helper"
+    }
+
     It 'requires a measurement oracle to be relative to a captured healthy value' {
         # 98.2% of the geometry assertions in the repository's own issue tests
         # compare two measured quantities; PR 211 was rejected for asserting an
