@@ -27,6 +27,16 @@ Describe '/review tests compiled trust boundary' {
                 Destination = '${trusted}/Merge-TestVisualsIntoComment.ps1'
             }
         )
+        $script:optionalFiles = @(
+            @{
+                Source = '${CONTEXT_DIRECTORY}/context.json'
+                Destination = '${trusted}/context.json'
+            },
+            @{
+                Source = '${CONTEXT_DIRECTORY}/context.md'
+                Destination = '${trusted}/context.md'
+            }
+        )
     }
 
     It 'runs for changes to every protected review workflow input' {
@@ -113,18 +123,7 @@ Describe '/review tests compiled trust boundary' {
         $mandatoryCommands | Should -BeExactly (
             $expectedMandatoryLines -join "`n")
 
-        $optionalFiles = @(
-            @{
-                Source = '${CONTEXT_DIRECTORY}/context.json'
-                Destination = '${trusted}/context.json'
-            },
-            @{
-                Source = '${CONTEXT_DIRECTORY}/context.md'
-                Destination = '${trusted}/context.md'
-            }
-        )
-
-        foreach ($file in $optionalFiles) {
+        foreach ($file in $script:optionalFiles) {
             $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
                 '(?:(?!sudo install).)*?' + [regex]::Escape($file.Source) +
                 '(?:(?!sudo install).)*?' +
@@ -134,6 +133,19 @@ Describe '/review tests compiled trust boundary' {
 
         $runBody | Should -Match (
             'sudo chmod 0555 "\$\{trusted\}"')
+    }
+
+    It 'removes every sealed trusted input during cleanup' {
+        $cleanup = [regex]::Match(
+            $script:source,
+            '(?m)^\s*trap ''(?<body>sudo rm -f -- .*?)'' EXIT$')
+        $cleanup.Success | Should -BeTrue
+
+        $cleanupBody = $cleanup.Groups['body'].Value
+        foreach ($file in @($script:mandatoryFiles + $script:optionalFiles)) {
+            $cleanupBody | Should -Match (
+                [regex]::Escape('"' + $file.Destination + '"'))
+        }
     }
 
     It 'protects host post-processing inputs from runner-side replacement' {
