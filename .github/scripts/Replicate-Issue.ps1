@@ -46,7 +46,7 @@ param(
     # A reproduction proved by a single execution is not evidence of a
     # deterministic defect, so the verified test is executed more than once.
     [ValidateRange(1, 3)]
-    [int]$VerificationRunCount = 2,
+    [int]$VerificationRunCount = 3,
 
     [ValidateRange(5, 45)]
     [int]$CopilotTimeoutMinutes = 20,
@@ -3062,7 +3062,8 @@ This issue reports a crash and the app did terminate, so the termination is the 
                     }
                 }
             }
-            elseif ($sandboxFailureSummary -match '(?i)Element was not visible|no such element|ElementNotFound') {
+            elseif ($sandboxFailureSummary -match
+                '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException|The element was never found') {
                 $inventory = Get-ReplicationElementInventory `
                     -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
                 if ($inventory) {

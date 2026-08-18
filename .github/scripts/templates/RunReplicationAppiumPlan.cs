@@ -504,37 +504,62 @@ static IWebElement WaitForElement(
 {
     var candidates = CreateLocatorCandidates(locator, platform);
     var wait = new WebDriverWait(driver, timeout);
-    return wait.Until(current =>
+    IWebElement? found = null;
+    try
     {
-        foreach (var by in candidates)
+        found = wait.Until(current =>
         {
-            try
+            foreach (var by in candidates)
             {
-                var element = current.FindElement(by);
-                if (element.Displayed)
+                try
                 {
-                    return element;
+                    var element = current.FindElement(by);
+                    if (element.Displayed)
+                    {
+                        return element;
+                    }
+                }
+                catch (NoSuchElementException)
+                {
+                }
+                catch (StaleElementReferenceException)
+                {
+                }
+                catch (InvalidSelectorException)
+                {
                 }
             }
-            catch (NoSuchElementException)
-            {
-            }
-            catch (StaleElementReferenceException)
-            {
-            }
-            catch (InvalidSelectorException)
-            {
-            }
-        }
 
-        return null;
-    }) ?? throw new WebDriverTimeoutException(
+            return null;
+        });
+    }
+    catch (WebDriverTimeoutException timedOut)
+    {
+        // WebDriverWait raises its own timeout, so a throw placed after the wait
+        // never runs. Without this catch the inventory below never reached the
+        // agent and every retry re-guessed the same absent identifier.
+        throw new WebDriverTimeoutException(
+            DescribeMissingElement(driver, platform, locator, candidates),
+            timedOut);
+    }
+
+    return found ?? throw new WebDriverTimeoutException(
+        DescribeMissingElement(driver, platform, locator, candidates));
+}
+
+static string DescribeMissingElement(
+    AppiumDriver driver,
+    string platform,
+    ReplicationLocator locator,
+    IReadOnlyList<By> candidates)
+{
+    return
         $"Element was not visible: {locator.Strategy}={locator.Value}. " +
         $"Tried {candidates.Count} equivalent locator(s) on {platform}: " +
         string.Join(" | ", candidates.Select(by => by.ToString())) +
         ". Confirm the element sets AutomationId and is accessibility-visible." +
         Environment.NewLine +
-        DescribeAddressableElements(driver));
+        DescribeAddressableElements(driver);
 }
 
 // A locator timeout otherwise reports only what was searched for, which leaves
@@ -793,8 +818,18 @@ static void AssertElementText(
             throw new InvalidOperationException(sentinel, exception);
         }
         var comparison = contains ? "contain" : "equal";
+        // An empty reading means the element itself was never found, so naming
+        // only the expected text leaves the next attempt guessing at the same
+        // absent identifier. Report what the app actually exposed instead.
+        var inventory = string.IsNullOrWhiteSpace(actual)
+            ? Environment.NewLine +
+              $"The element was never found. Tried {candidates.Count} equivalent locator(s) on {platform}: " +
+              string.Join(" | ", candidates.Select(by => by.ToString())) + "." +
+              Environment.NewLine +
+              DescribeAddressableElements(driver)
+            : string.Empty;
         throw new InvalidOperationException(
-            $"Expected element text to {comparison} '{expected}', actual '{actual}'.",
+            $"Expected element text to {comparison} '{expected}', actual '{actual}'." + inventory,
             exception);
     }
 }

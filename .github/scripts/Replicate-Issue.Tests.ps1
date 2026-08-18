@@ -276,7 +276,7 @@ Describe 'Replication orchestrator security boundary' {
     }
 
     It 'verifies the targeted test more than once by default' {
-        $script:Source | Should -Match ([regex]::Escape('[int]$VerificationRunCount = 2'))
+        $script:Source | Should -Match ([regex]::Escape('[int]$VerificationRunCount = 3'))
         $script:Source | Should -Match ([regex]::Escape("'-RunCount', [string]" + '$VerificationRunCount'))
     }
 
@@ -1553,6 +1553,35 @@ public class Issue35516
             Should -BeTrue
     }
 
+    It 'reaches the element inventory on the timeout the wait actually raises' {
+        # WebDriverWait throws WebDriverTimeoutException itself, so a throw
+        # placed after the wait is unreachable. Wave 17 lost four iOS runs to
+        # this: every attempt saw only 'Timed out after N seconds'.
+        $waitStart = $script:TrustedAppiumSource.IndexOf('static IWebElement WaitForElement(')
+        $waitStart | Should -BeGreaterThan 0
+        $waitBody = $script:TrustedAppiumSource.Substring($waitStart, 1800)
+        $waitBody | Should -Match 'catch \(WebDriverTimeoutException timedOut\)'
+        $waitBody | Should -Match 'DescribeMissingElement\(driver, platform, locator, candidates\)'
+
+        $script:TrustedAppiumSource |
+            Should -Match 'static string DescribeMissingElement\('
+        $describeStart = $script:TrustedAppiumSource.IndexOf('static string DescribeMissingElement(')
+        $script:TrustedAppiumSource.Substring($describeStart, 600) |
+            Should -Match 'DescribeAddressableElements\(driver\)'
+    }
+
+    It 'names the exposed elements when an asserted text never appears' {
+        # An empty reading means the element was never found, and reporting only
+        # the expected text sent every retry back to the same absent locator.
+        $assertStart = $script:TrustedAppiumSource.IndexOf('static void AssertElementText(')
+        $assertStart | Should -BeGreaterThan 0
+        $assertBody = $script:TrustedAppiumSource.Substring($assertStart, 3600)
+        $assertBody | Should -Match 'The element was never found'
+        $assertBody | Should -Match 'DescribeAddressableElements\(driver\)'
+        # A real reading must not be buried under an inventory dump.
+        $assertBody | Should -Match 'string\.IsNullOrWhiteSpace\(actual\)'
+    }
+
     It 'reports the elements the app exposed when a locator times out' {
         # Issue 37429 on Android burned every attempt because the agent was told
         # only which locator failed, so it re-guessed names such as 'Group 1'
@@ -1578,6 +1607,10 @@ public class Issue35516
         # The orchestrator must actually route locator failures through it.
         $script:Source | Should -Match 'Element was not visible\|no such element\|ElementNotFound'
         $script:Source | Should -Match 'Do not re-guess a name that is absent from the inventory'
+        # WebDriverWait reports its own timeout wording, and wave 17 lost every
+        # iOS attempt because that wording never matched the inventory branch.
+        $script:Source | Should -Match 'WebDriverTimeoutException'
+        $script:Source | Should -Match 'The element was never found'
     }
 
     It 'demands measurable, tolerant, and causal assertions' {

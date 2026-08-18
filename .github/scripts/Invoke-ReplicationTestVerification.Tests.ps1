@@ -18,7 +18,9 @@ BeforeAll {
         'Test-ReplicationExpectedFailureSignature',
         'Test-ReplicationInfrastructureFailure',
         'ConvertTo-AzdoSafeReplicationOutput',
-        'ConvertTo-BoundedVerificationFailureMessage'
+        'ConvertTo-BoundedVerificationFailureMessage',
+        'Get-ReplicationVolatileFreeMessage',
+        'Test-ReplicationFailureMessagesAreStable'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -30,11 +32,19 @@ BeforeAll {
     function New-ReplicationVerifierStub {
         param(
             [Parameter(Mandatory = $true)][string]$Path,
-            [Parameter(Mandatory = $true)][string]$ActualFailureMessage
+            [Parameter(Mandatory = $true)][string]$ActualFailureMessage,
+            [string[]]$PerRunFailureMessages
         )
 
         $encodedMessage = [Convert]::ToBase64String(
             [Text.Encoding]::UTF8.GetBytes($ActualFailureMessage))
+        $encodedPerRun = if ($PerRunFailureMessages) {
+            ($PerRunFailureMessages | ForEach-Object {
+                "'" + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($_)) + "'"
+            }) -join ','
+        } else {
+            ''
+        }
         @"
 param(
     [string]`$Platform,
@@ -58,6 +68,12 @@ if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) '
     }
 }
 `$message = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$encodedMessage'))
+`$perRun = @($encodedPerRun)
+if (`$perRun.Count -gt 0) {
+    `$invocationCount = @(Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count
+    `$index = [Math]::Min(`$invocationCount - 1, `$perRun.Count - 1)
+    `$message = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(`$perRun[`$index]))
+}
 [ordered]@{
     schemaVersion = 1
     testType = `$TestType
@@ -373,5 +389,105 @@ Describe 'Replication failure-only verification' {
         $capturedPath = Get-Content -LiteralPath (
             Join-Path $output 'verifier-machine-result.json.device-runner-path') -Raw
         $capturedPath.Trim() | Should -BeExactly $deviceRunner
+    }
+}
+
+Describe 'Replication failure message determinism' {
+    It 'ignores values that change between identical runs' {
+        $first = 'Assert.Equal() Failure: expected 40 but was 0 at 0x7ffd1a2b after 132 ms'
+        $second = 'Assert.Equal() Failure: expected 40 but was 0 at 0x00ab99cd after 87 ms'
+        (Get-ReplicationVolatileFreeMessage -Value $first) |
+            Should -BeExactly (Get-ReplicationVolatileFreeMessage -Value $second)
+    }
+
+    It 'keeps the measured values the assertion reports' {
+        (Get-ReplicationVolatileFreeMessage -Value 'expected 40 but was 0') |
+            Should -Not -BeExactly (Get-ReplicationVolatileFreeMessage -Value 'expected 40 but was 12')
+    }
+
+    It 'accepts a single run because there is nothing to compare' {
+        Test-ReplicationFailureMessagesAreStable -Outcomes @(
+            [pscustomobject]@{ ActualFailureMessage = 'expected 40 but was 0' }) |
+            Should -BeTrue
+    }
+
+    It 'accepts runs that differ only in volatile detail' {
+        Test-ReplicationFailureMessagesAreStable -Outcomes @(
+            [pscustomobject]@{ ActualFailureMessage = 'expected 40 but was 0 in 12 ms' },
+            [pscustomobject]@{ ActualFailureMessage = 'expected 40 but was 0 in 900 ms' }) |
+            Should -BeTrue
+    }
+
+    It 'rejects runs whose measured values drift' {
+        Test-ReplicationFailureMessagesAreStable -Outcomes @(
+            [pscustomobject]@{ ActualFailureMessage = 'expected 40 but was 0' },
+            [pscustomobject]@{ ActualFailureMessage = 'expected 40 but was 7' }) |
+            Should -BeFalse
+    }
+}
+
+Describe 'Replication test verification determinism enforcement' {
+    It 'fails when every run is red but the reported value drifts' {
+        $verifier = Join-Path $TestDrive 'drift-verifier.ps1'
+        $output = Join-Path $TestDrive 'drift'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Issue12345 expected 40 but was 0' `
+            -PerRunFailureMessages @(
+                'Issue12345 expected 40 but was 0',
+                'Issue12345 expected 40 but was 7')
+
+        $stderr = & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -RunCount 2 `
+            -OutputDirectory $output 2>&1
+
+        $LASTEXITCODE | Should -Not -Be 0
+        ($stderr | Out-String) | Should -Match 'not\s+deterministic'
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.stableFailureMessage | Should -BeFalse
+        $result.verifierPassed | Should -BeTrue
+        $result.verificationPassed | Should -BeFalse
+    }
+
+    It 'passes when repeated runs report the same measured value' {
+        $verifier = Join-Path $TestDrive 'stable-verifier.ps1'
+        $output = Join-Path $TestDrive 'stable'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Issue12345 expected 40 but was 0' `
+            -PerRunFailureMessages @(
+                'Issue12345 expected 40 but was 0 after 12 ms',
+                'Issue12345 expected 40 but was 0 after 480 ms')
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -RunCount 2 `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.stableFailureMessage | Should -BeTrue
+        $result.verificationPassed | Should -BeTrue
     }
 }

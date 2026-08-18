@@ -371,6 +371,67 @@ function Invoke-SingleVerificationRun {
     }
 }
 
+function Get-ReplicationVolatileFreeMessage {
+    <#
+        .SYNOPSIS
+        Removes the parts of a failure message that differ between identical runs.
+
+        .DESCRIPTION
+        Durations, hex object addresses, process and thread identifiers, and
+        absolute paths change on every execution without saying anything about
+        the defect, so comparing raw messages would call every reproduction
+        unstable. Everything else, including the measured values the assertion
+        reports, is the evidence being compared.
+    #>
+    param([AllowEmptyString()][string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    $text = $Value
+    $text = [regex]::Replace($text, '(?i)0x[0-9a-f]{4,}', '<address>')
+    $text = [regex]::Replace($text, '(?i)\b\d+(\.\d+)?\s*(ms|milliseconds|s|seconds)\b', '<duration>')
+    $text = [regex]::Replace($text, '(?i)\b(emulator|device|udid|pid|tid)[-_ ]?[0-9a-f-]{2,}\b', '<device>')
+    $text = [regex]::Replace($text, '(?i)[a-z]:\\[^\s"'']+|/(?:Users|home|private|var|tmp)/[^\s"'']+', '<path>')
+    $text = [regex]::Replace($text, '(?i)\b\d{4}-\d{2}-\d{2}[t ]\d{2}:\d{2}:\d{2}\S*', '<timestamp>')
+
+    return ConvertTo-NormalizedReplicationSignature -Value $text
+}
+
+function Test-ReplicationFailureMessagesAreStable {
+    <#
+        .SYNOPSIS
+        Requires every run to fail with the same message, not merely a similar one.
+
+        .DESCRIPTION
+        Matching the declared signature only proves each run failed for the
+        predicted reason somewhere. A reproduction whose reported values move
+        between runs is measuring something noisy, and reviewers rejected that
+        class repeatedly: a red that varies cannot be attributed confidently to
+        the reported defect. Requiring one identical message across independent
+        executions is what makes the evidence deterministic.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [object[]]$Outcomes
+    )
+
+    if ($null -eq $Outcomes -or $Outcomes.Count -le 1) {
+        return $true
+    }
+
+    $distinct = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($outcome in $Outcomes) {
+        [void]$distinct.Add(
+            (Get-ReplicationVolatileFreeMessage -Value ([string]$outcome.ActualFailureMessage)))
+    }
+
+    return $distinct.Count -eq 1
+}
+
 $runOutcomes = New-Object 'System.Collections.Generic.List[object]'
 for ($run = 1; $run -le $RunCount; $run++) {
     $consoleLog = if ($run -eq 1) {
@@ -403,10 +464,12 @@ $candidateLogs = @($runOutcomes | ForEach-Object { $_.LogFiles } | Sort-Object -
 $boundedFailureMessage = ConvertTo-BoundedVerificationFailureMessage `
     -Content $actualFailureMessage `
     -Signature $ExpectedFailureSignature
+$stableFailureMessage = Test-ReplicationFailureMessagesAreStable -Outcomes $runOutcomes.ToArray()
 $verificationPassed = $verifierPassed -and
     $signatureEquivalent -and
     -not $infrastructureFailure -and
-    $consistentRuns
+    $consistentRuns -and
+    $stableFailureMessage
 
 # The declared signature is the agent's prediction; the observed message came
 # from a validated machine-readable verifier result. Publish what actually
@@ -442,15 +505,26 @@ $result = [ordered]@{
     requestedRunCount = $RunCount
     completedRunCount = $completedRuns
     consistentRuns = $consistentRuns
+    stableFailureMessage = $stableFailureMessage
     logFiles = @($candidateLogs)
 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8NoBOM
 
 if (-not $verificationPassed) {
+    if (-not $stableFailureMessage -and $verifierPassed -and $consistentRuns) {
+        $observed = @($runOutcomes |
+            ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
+            Sort-Object -Unique)
+        throw ("The test failed every run but not with the same message, so the reproduction is not " +
+            "deterministic. Independent executions reported: " +
+            (($observed | ForEach-Object { "'$_'" }) -join ' and ') +
+            ". Assert on a value the defect fixes exactly rather than one that drifts between runs.")
+    }
     throw ("Replication test verification failed (verifierPassed=$verifierPassed, " +
         "signatureMatched=$signatureMatched, signatureEquivalent=$signatureEquivalent, " +
         "infrastructureFailure=$infrastructureFailure, " +
-        "consistentRuns=$consistentRuns, completedRuns=$completedRuns/$RunCount).")
+        "consistentRuns=$consistentRuns, completedRuns=$completedRuns/$RunCount, " +
+        "stableFailureMessage=$stableFailureMessage).")
 }
 
 Write-Host 'REPLICATION TEST VERIFICATION PASSED'
