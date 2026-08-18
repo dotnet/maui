@@ -649,14 +649,49 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_appliesSafeAreaAdjustments)
 			{
-				bounds = AdjustForSafeArea(bounds);
+				var safeBounds = AdjustForSafeArea(bounds);
+
+				if (CrossPlatformLayout is ISafeAreaLayout safeAreaLayout)
+				{
+					safeAreaLayout.CrossPlatformArrange(
+						bounds.ToRectangle(),
+						new Thickness(_safeArea.Left, _safeArea.Top, _safeArea.Right, _safeArea.Bottom),
+						ShouldDelegateTopSafeAreaToScrollContent());
+					return;
+				}
+
+				bounds = safeBounds;
 			}
-			else if (!CellSafeAreaOverride.IsEmpty)
+			else
 			{
-				bounds = CellSafeAreaOverride.InsetRect(bounds);
+				if (CrossPlatformLayout is ISafeAreaLayout safeAreaLayout)
+					safeAreaLayout.DisconnectSafeArea();
+
+				if (!CellSafeAreaOverride.IsEmpty)
+					bounds = CellSafeAreaOverride.InsetRect(bounds);
 			}
 
 			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
+		}
+
+		bool ShouldDelegateTopSafeAreaToScrollContent()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
+				_safeArea.Top <= 0 ||
+				View is not ISafeAreaView2 { HasExplicitSafeAreaEdges: false } safeAreaView)
+				return false;
+
+			if (safeAreaView.GetSafeAreaRegionsForEdge(1) != SafeAreaRegions.Container)
+				return false;
+
+			var controller = this.FindResponder<UIViewController>();
+			var navigationController = controller?.NavigationController;
+			var navigationBar = navigationController?.NavigationBar;
+
+			return navigationBar?.Hidden == false &&
+				navigationBar.Translucent &&
+				navigationBar.PrefersLargeTitles &&
+				controller?.NavigationItem.LargeTitleDisplayMode != UINavigationItemLargeTitleDisplayMode.Never;
 		}
 
 		/// <summary>

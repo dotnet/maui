@@ -257,7 +257,7 @@ class Issue33037NonShellModalListViewPage : ContentPage
 		var listView = new ListView
 		{
 			AutomationId = "Issue33037ModalListViewScroller",
-			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(18),
+			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(60),
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label
@@ -405,6 +405,7 @@ class Issue33037NonShellWebViewPage : Issue33037NonShellScenarioPage
 			{
 				new HorizontalStackLayout
 				{
+					ZIndex = 1,
 					Children =
 					{
 						scrollButton,
@@ -425,6 +426,7 @@ class Issue33037NonShellCandidateSelectionPage : Issue33037NonShellScenarioPage
 		{
 			AutomationId = "Issue33037HorizontalCollectionView",
 			HeightRequest = 80,
+			ZIndex = 1,
 			ItemsSource = CreateItems(10),
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 			ItemTemplate = new DataTemplate(() =>
@@ -488,7 +490,8 @@ class Issue33037NonShellFixedHeaderCollectionViewPage : Issue33037NonShellScenar
 			Text = "Fixed header must remain below the navigation bar",
 			BackgroundColor = Colors.LightBlue,
 			FontAttributes = FontAttributes.Bold,
-			Padding = 12
+			Padding = 12,
+			ZIndex = 1
 		};
 
 		var collectionView = new CollectionView
@@ -534,7 +537,8 @@ class Issue33037NonShellShortFixedHeaderCollectionViewPage : Issue33037NonShellS
 			Text = "Short content must still collapse the title",
 			BackgroundColor = Colors.LightBlue,
 			FontAttributes = FontAttributes.Bold,
-			Padding = 12
+			Padding = 12,
+			ZIndex = 1
 		};
 
 		var collectionView = new CollectionView
@@ -594,7 +598,8 @@ class Issue33037NonShellProgrammaticCollectionViewPage : Issue33037NonShellScena
 		var scrollButton = new Button
 		{
 			AutomationId = "Issue33037ProgrammaticScrollButton",
-			Text = "Scroll to item 50"
+			Text = "Scroll to item 50",
+			ZIndex = 1
 		};
 		scrollButton.Clicked += (_, _) => collectionView.ScrollTo(50, position: ScrollToPosition.Start, animate: false);
 

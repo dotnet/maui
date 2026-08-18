@@ -585,7 +585,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 			{
 				UpdateUseLargeTitles();
-				UpdateCurrentPageContentScrollView();
 			}
 			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
@@ -686,11 +685,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateUseLargeTitles()
 		{
 			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
-		}
-
-		void UpdateCurrentPageContentScrollView()
-		{
-			(TopViewController as ParentingViewController)?.UpdateLargeTitleContentScrollView();
 		}
 
 		void UpdateTranslucent()
@@ -1428,7 +1422,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (child is not null)
 					{
-						ResetLargeTitleContentScrollView();
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1534,7 +1527,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidLayoutSubviews();
 				UpdateFrames();
-				UpdateLargeTitleContentScrollView();
 			}
 
 			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Toolbar tracker CollectionChanged is removed in Disconnect.")]
@@ -1598,8 +1590,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
-
-				ResetLargeTitleContentScrollView();
 
 				if (Child is Page child)
 				{
@@ -1678,7 +1668,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
 				{
 					UpdateNavigationBarVisibility(true);
-					UpdateLargeTitleContentScrollView();
 				}
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
 					NavigationItem.Title = Child.Title;
@@ -1689,7 +1678,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
 				{
 					UpdateLargeTitles();
-					UpdateLargeTitleContentScrollView();
 				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
@@ -1698,178 +1686,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
-				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
-					UpdateLargeTitleContentScrollView();
-			}
-
-			bool NeedsLargeTitleContentScrollView()
-			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(26) || Child is null)
-					return false;
-
-				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
-					return false;
-
-				if (navigationRenderer.NavigationBarHidden || !NavigationPage.GetHasNavigationBar(Child))
-					return false;
-
-				if (!navigationRenderer.NavigationBar.Translucent || !navigationRenderer.NavigationBar.PrefersLargeTitles)
-					return false;
-
-				if (NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
-					return false;
-
-				return true;
-			}
-
-			internal void UpdateLargeTitleContentScrollView()
-			{
-				if (!OperatingSystem.IsIOSVersionAtLeast(26))
-					return;
-
-				if (!NeedsLargeTitleContentScrollView() || !IsViewLoaded)
-				{
-					ResetLargeTitleContentScrollView();
-					return;
-				}
-
-				var presentedContent = (Child as IContentView)?.PresentedContent;
-				if (presentedContent is null)
-				{
-					ResetLargeTitleContentScrollView();
-					return;
-				}
-
-				var scrollView = FindPrimaryScrollableDescendant(presentedContent, View);
-				if (scrollView is null)
-				{
-					ResetLargeTitleContentScrollView();
-					return;
-				}
-
-				SetContentScrollView(scrollView, NSDirectionalRectEdge.Top);
-			}
-
-			void ResetLargeTitleContentScrollView()
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(26))
-					SetContentScrollView(null, NSDirectionalRectEdge.Top);
-			}
-
-			static UIScrollView FindPrimaryScrollableDescendant(IView view, UIView container)
-			{
-				var candidates = new List<IView>();
-				CollectScrollableDescendants(view, candidates);
-
-				UIScrollView primaryScrollView = null;
-				nfloat primaryTop = nfloat.MaxValue;
-
-				for (int i = 0; i < candidates.Count; i++)
-				{
-					var candidateScrollView = ResolvePlatformScrollView(candidates[i]);
-					if (!IsEligiblePlatformScrollView(candidateScrollView))
-						continue;
-
-					var frame = candidateScrollView.ConvertRectToView(candidateScrollView.Bounds, container);
-					if (frame.GetMinY() >= primaryTop)
-						continue;
-
-					primaryScrollView = candidateScrollView;
-					primaryTop = frame.GetMinY();
-				}
-
-				return primaryScrollView;
-			}
-
-			static void CollectScrollableDescendants(IView view, List<IView> candidates)
-			{
-				if (view is null ||
-					view.Visibility != Visibility.Visible ||
-					view.Opacity <= 0.01)
-				{
-					return;
-				}
-
-				if (IsScrollableView(view) && CanScrollVertically(view))
-					candidates.Add(view);
-
-				if (view is IContentView contentView && contentView.PresentedContent is IView content)
-					CollectScrollableDescendants(content, candidates);
-
-				if (view is Microsoft.Maui.Controls.Layout layout)
-				{
-					for (int i = 0; i < layout.Count; i++)
-						CollectScrollableDescendants(layout[i], candidates);
-				}
-			}
-
-			static UIScrollView ResolvePlatformScrollView(IView view)
-			{
-				if (view is WebView &&
-					view.Handler?.PlatformView is WKWebView webView)
-				{
-					return webView.ScrollView;
-				}
-
-				if (view?.Handler?.PlatformView is UIScrollView scrollView)
-					return scrollView;
-
-				if (view?.Handler?.PlatformView is UIView platformView)
-					return FindPlatformScrollView(platformView);
-
-				return null;
-			}
-
-			static UIScrollView FindPlatformScrollView(UIView view)
-			{
-				var subviews = view.Subviews;
-				for (int i = 0; i < subviews.Length; i++)
-				{
-					if (subviews[i] is UIScrollView scrollView)
-						return scrollView;
-
-					var nestedScrollView = FindPlatformScrollView(subviews[i]);
-					if (nestedScrollView is not null)
-						return nestedScrollView;
-				}
-
-				return null;
-			}
-
-			static bool IsEligiblePlatformScrollView(UIScrollView scrollView)
-			{
-				if (scrollView is null ||
-					scrollView.Hidden ||
-					scrollView.Alpha <= 0.01)
-				{
-					return false;
-				}
-
-				return true;
-			}
-
-			static bool CanScrollVertically(IView view)
-			{
-				if (view is ScrollView scrollView)
-					return scrollView.Orientation is ScrollOrientation.Vertical or ScrollOrientation.Both;
-
-				if (view is CarouselView carouselView)
-					return carouselView.ItemsLayout?.Orientation == ItemsLayoutOrientation.Vertical;
-
-				if (view is StructuredItemsView structuredItemsView)
-				{
-					return structuredItemsView.ItemsLayout is not ItemsLayout itemsLayout ||
-						itemsLayout.Orientation != ItemsLayoutOrientation.Horizontal;
-				}
-
-				return true;
-			}
-
-			static bool IsScrollableView(IView view)
-			{
-#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
-				return view is ScrollView or ListView or ItemsView or TableView or WebView;
-#pragma warning restore CS0618
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()

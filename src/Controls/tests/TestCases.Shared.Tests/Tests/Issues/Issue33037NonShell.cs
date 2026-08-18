@@ -91,12 +91,13 @@ public class Issue33037NonShell : _IssuesUITest
 		try
 		{
 			var expandedTitleRect = App.WaitForElement("Issue33037 Modal List").GetRect();
-			App.WaitForElement("Issue33037ModalListViewScroller");
+			var expandedListRect = App.WaitForElement("Issue33037ModalListViewScroller").GetRect();
 
 			App.ScrollDown("Issue33037ModalListViewScroller", swipePercentage: 0.8);
 			App.WaitForElement("Item 17");
 
 			var collapsedTitleRect = App.WaitForElement("Issue33037 Modal List").GetRect();
+			var collapsedListRect = App.WaitForElement("Issue33037ModalListViewScroller").GetRect();
 			Assert.That(collapsedTitleRect.Height, Is.GreaterThan(0),
 				"The modal navigation title should remain visible after collapsing.");
 			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
@@ -105,6 +106,13 @@ public class Issue33037NonShell : _IssuesUITest
 				"The modal navigation title should use the collapsed standard-title size.");
 			Assert.That(collapsedTitleRect.Y, Is.LessThan(130),
 				"The modal navigation title should remain in the navigation bar after collapsing.");
+			Assert.That(collapsedTitleRect.X + collapsedTitleRect.Width / 2,
+				Is.EqualTo(collapsedListRect.X + collapsedListRect.Width / 2).Within(10),
+				"The collapsed title should be centered in the navigation bar.");
+			Assert.That(collapsedListRect.Y, Is.EqualTo(expandedListRect.Y).Within(2),
+				"The scroll host must remain edge-to-edge while the navigation bar collapses.");
+			Assert.That(collapsedListRect.Height, Is.EqualTo(expandedListRect.Height).Within(2),
+				"The scroll host height must remain stable while the navigation bar collapses.");
 
 			App.ScrollUp("Issue33037ModalListViewScroller", swipePercentage: 0.8);
 			App.WaitForElement("Item 0");

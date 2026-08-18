@@ -1,10 +1,250 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
+using CoreGraphics;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Layout
+	public partial class Layout : ISafeAreaLayout
 	{
+		UIScrollView _delegatedNativeScrollView;
+		UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
+		nfloat _delegatedTopInset;
+		nfloat _delegatedScrollIndicatorTopInset;
+
+		Size ISafeAreaLayout.CrossPlatformArrange(Rect bounds, Thickness safeArea, bool delegateTopInset)
+		{
+			var safeBounds = new Rect(
+				bounds.X + safeArea.Left,
+				bounds.Y + safeArea.Top,
+				bounds.Width - safeArea.HorizontalThickness,
+				bounds.Height - safeArea.VerticalThickness);
+
+			var arranged = CrossPlatformArrange(safeBounds);
+
+			if (!delegateTopInset || safeArea.Top <= 0)
+			{
+				ResetNativeScrollInsetOwnership();
+				return arranged;
+			}
+
+			const double tolerance = 1;
+			var candidates = new List<(IView Host, IView ScrollContent, double ContentTopInset)>();
+
+			foreach (var child in this)
+			{
+				if (child.Visibility != Visibility.Visible ||
+					child.Opacity <= 0.01 ||
+					FindVerticalScrollContent(child) is not IView foundScrollContent)
+					continue;
+
+				var frame = child.Frame;
+				var occupiesMostOfSafeHeight = frame.Height >= safeBounds.Height / 2;
+				var beginsWithinSafeBounds = frame.Top >= safeBounds.Top - tolerance;
+				var fixedTopSiblingsAreOverlays = FixedTopSiblingsAreOverlays(child, frame, safeBounds, tolerance);
+
+				if (beginsWithinSafeBounds && occupiesMostOfSafeHeight && fixedTopSiblingsAreOverlays)
+					candidates.Add((child, foundScrollContent, frame.Top - bounds.Top));
+			}
+
+			if (candidates.Count != 1)
+			{
+				ResetNativeScrollInsetOwnership();
+				return arranged;
+			}
+
+			var (scrollHost, scrollContent, contentTopInset) = candidates[0];
+			var nativeScrollView = ResolveNativeScrollView(scrollContent);
+			if (nativeScrollView is null)
+			{
+				ResetNativeScrollInsetOwnership();
+				return arranged;
+			}
+
+			var scrollFrame = scrollHost.Frame;
+			scrollHost.Arrange(new Rect(
+				scrollFrame.X,
+				bounds.Top,
+				scrollFrame.Width,
+				scrollFrame.Bottom - bounds.Top));
+
+			TransferNativeScrollInsetOwnership(nativeScrollView, contentTopInset);
+			return arranged;
+		}
+
+		void ISafeAreaLayout.DisconnectSafeArea() => ResetNativeScrollInsetOwnership();
+
+		void TransferNativeScrollInsetOwnership(UIScrollView nativeScrollView, double topInset)
+		{
+			if (_delegatedNativeScrollView != nativeScrollView)
+			{
+				ResetNativeScrollInsetOwnership();
+				_delegatedNativeScrollView = nativeScrollView;
+				_previousInsetAdjustmentBehavior = nativeScrollView.ContentInsetAdjustmentBehavior;
+			}
+
+			var distanceFromTop = nativeScrollView.ContentOffset.Y + nativeScrollView.AdjustedContentInset.Top;
+			var contentInset = nativeScrollView.ContentInset;
+			var indicatorInsets = nativeScrollView.VerticalScrollIndicatorInsets;
+			var baseContentTop = contentInset.Top - _delegatedTopInset;
+			var baseIndicatorTop = indicatorInsets.Top - _delegatedScrollIndicatorTopInset;
+
+			_delegatedTopInset = (nfloat)topInset;
+			_delegatedScrollIndicatorTopInset = (nfloat)topInset;
+			nativeScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+			nativeScrollView.ContentInset = new UIEdgeInsets(
+				baseContentTop + _delegatedTopInset,
+				contentInset.Left,
+				contentInset.Bottom,
+				contentInset.Right);
+			nativeScrollView.VerticalScrollIndicatorInsets = new UIEdgeInsets(
+				baseIndicatorTop + _delegatedScrollIndicatorTopInset,
+				indicatorInsets.Left,
+				indicatorInsets.Bottom,
+				indicatorInsets.Right);
+
+			if (!nativeScrollView.Dragging && !nativeScrollView.Decelerating)
+			{
+				nativeScrollView.ContentOffset = new CGPoint(
+					nativeScrollView.ContentOffset.X,
+					distanceFromTop - nativeScrollView.AdjustedContentInset.Top);
+			}
+		}
+
+		void ResetNativeScrollInsetOwnership()
+		{
+			if (_delegatedNativeScrollView is null)
+				return;
+
+			if (_delegatedNativeScrollView.Handle != IntPtr.Zero)
+			{
+				var distanceFromTop = _delegatedNativeScrollView.ContentOffset.Y +
+					_delegatedNativeScrollView.AdjustedContentInset.Top;
+				var contentInset = _delegatedNativeScrollView.ContentInset;
+				var indicatorInsets = _delegatedNativeScrollView.VerticalScrollIndicatorInsets;
+
+				_delegatedNativeScrollView.ContentInset = new UIEdgeInsets(
+					contentInset.Top - _delegatedTopInset,
+					contentInset.Left,
+					contentInset.Bottom,
+					contentInset.Right);
+				_delegatedNativeScrollView.VerticalScrollIndicatorInsets = new UIEdgeInsets(
+					indicatorInsets.Top - _delegatedScrollIndicatorTopInset,
+					indicatorInsets.Left,
+					indicatorInsets.Bottom,
+					indicatorInsets.Right);
+				_delegatedNativeScrollView.ContentInsetAdjustmentBehavior = _previousInsetAdjustmentBehavior;
+
+				if (!_delegatedNativeScrollView.Dragging && !_delegatedNativeScrollView.Decelerating)
+				{
+					_delegatedNativeScrollView.ContentOffset = new CGPoint(
+						_delegatedNativeScrollView.ContentOffset.X,
+						distanceFromTop - _delegatedNativeScrollView.AdjustedContentInset.Top);
+				}
+			}
+
+			_delegatedNativeScrollView = null;
+			_delegatedTopInset = 0;
+			_delegatedScrollIndicatorTopInset = 0;
+		}
+
+		static UIScrollView ResolveNativeScrollView(IView view)
+		{
+			if (view.Handler?.PlatformView is UIScrollView scrollView)
+				return scrollView;
+
+			if (view.Handler?.PlatformView is UIView platformView)
+				return FindNativeScrollView(platformView);
+
+			return null;
+		}
+
+		static UIScrollView FindNativeScrollView(UIView view)
+		{
+			foreach (var child in view.Subviews)
+			{
+				if (child is UIScrollView scrollView)
+					return scrollView;
+
+				if (FindNativeScrollView(child) is UIScrollView nestedScrollView)
+					return nestedScrollView;
+			}
+
+			return null;
+		}
+
+		bool FixedTopSiblingsAreOverlays(IView scrollHost, Rect scrollFrame, Rect safeBounds, double tolerance)
+		{
+			foreach (var sibling in this)
+			{
+				if (ReferenceEquals(sibling, scrollHost) ||
+					sibling.Visibility != Visibility.Visible ||
+					sibling.Opacity <= 0.01)
+					continue;
+
+				var siblingFrame = sibling.Frame;
+				var isFixedAboveScrollHost =
+					siblingFrame.Top >= safeBounds.Top - tolerance &&
+					siblingFrame.Bottom <= scrollFrame.Top + tolerance;
+
+				if (isFixedAboveScrollHost && sibling.ZIndex <= scrollHost.ZIndex)
+					return false;
+			}
+
+			return true;
+		}
+
+		static IView FindVerticalScrollContent(IView view)
+		{
+			if (view.Visibility != Visibility.Visible || view.Opacity <= 0.01)
+				return null;
+
+			if (view is ISafeAreaView2 { HasExplicitSafeAreaEdges: true })
+				return null;
+
+#pragma warning disable CS0618 // ListView and TableView remain supported compatibility controls.
+			if (view is ScrollView { Orientation: ScrollOrientation.Vertical or ScrollOrientation.Both } or
+				ListView or
+				TableView or
+				WebView)
+#pragma warning restore CS0618
+			{
+				return view;
+			}
+
+			if (view is CollectionView collectionView &&
+				collectionView.ItemsLayout is not ItemsLayout { Orientation: ItemsLayoutOrientation.Horizontal })
+			{
+				return view;
+			}
+
+			if (view is CarouselView carouselView &&
+				carouselView.ItemsLayout is ItemsLayout { Orientation: ItemsLayoutOrientation.Vertical })
+			{
+				return view;
+			}
+
+			if (view is not IVisualTreeElement visualElement)
+				return null;
+
+			IView visibleChild = null;
+			foreach (var child in visualElement.GetVisualChildren())
+			{
+				if (child is not IView { Visibility: Visibility.Visible, Opacity: > 0.01 } childView)
+					continue;
+
+				if (visibleChild is not null)
+					return null;
+
+				visibleChild = childView;
+			}
+
+			return visibleChild is null ? null : FindVerticalScrollContent(visibleChild);
+		}
+
 		/// <summary>
 		/// Maps the abstract InputTransparent property to the platform-specific implementations.
 		/// </summary>
