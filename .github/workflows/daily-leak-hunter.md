@@ -186,6 +186,36 @@ network:
     - "*.blob.core.windows.net"
 
 safe-outputs:
+  # The pre-agent snapshot keeps the agent from wasting work on known leaks, but a fix can
+  # merge during the up-to-90-minute hunt. Re-fetch authoritative live metadata in the
+  # generated safe-output job immediately before Process Safe Outputs so a late merge/open
+  # issue blocks mutation. Restore the gate from the read-only default branch rather than
+  # executing workflow-dispatch-selected repository code with the write-capable job token.
+  steps:
+    - name: Checkout trusted leak-hunter de-dup gate
+      if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
+      uses: actions/checkout@v7.0.1
+      with:
+        ref: ${{ github.event.repository.default_branch }}
+        path: trusted-leak-hunter
+        sparse-checkout: .github/scripts
+        persist-credentials: false
+    - name: Protect trusted leak-hunter de-dup gate
+      if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        TRUSTED_DIR="$GITHUB_WORKSPACE/trusted-leak-hunter/.github/scripts"
+        test -f "$TRUSTED_DIR/Assert-LeakHunterSafeOutputGate.ps1"
+        test -f "$TRUSTED_DIR/LeakWorkflowDedup.psm1"
+        chmod -R a-w "$TRUSTED_DIR"
+    - name: Enforce final leak-hunter de-dup gate
+      if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_AW_AGENT_OUTPUT: /tmp/gh-aw/agent_output.json
+      run: '& (Join-Path $env:GITHUB_WORKSPACE "trusted-leak-hunter/.github/scripts/Assert-LeakHunterSafeOutputGate.ps1")'
   create-issue:
     # No auto title-prefix: the agent writes the FULL title, starting with the mode tag —
     # The agent writes the FULL title, starting with the tag "[leak-scan] ". Up to `max`
@@ -300,6 +330,10 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
 - Re-filing a leak this scanner already has open or that already has a merged fix (even with
   different issue wording/number) is the primary failure mode, so be strict about the
   canonical `Type.Member`.
+- Immediately before issue mutation, a trusted safe-output step independently re-fetches open
+  scanner issues, merged fixes, and effective revert state. A late issue or fix that appears
+  during this run blocks all matching `create-issue` output fail-closed; do not treat the
+  pre-agent snapshot as the final authority.
 
 A candidate whose only prior scanner issue is CLOSED may be re-filed only when its API is
 absent from `already-merged-fix-apis.txt`.
@@ -426,7 +460,9 @@ no MAUI source build, no emulator.
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
 issue per distinct leak. De-dup each against open `[leak-scan]` issues, supported-branch merged
 `[leak-fix]` PRs, AND the other issues you're filing this run (no two issues for the same
-rooting API). Each title MUST be of the form **`[leak-scan] <Type>.<Member> — <short
+rooting API). A trusted final gate repeats the live de-dup immediately before mutation and
+rejects the batch if a matching issue or active merged fix appeared after the pre-agent
+snapshot. Each title MUST be of the form **`[leak-scan] <Type>.<Member> — <short
 mechanism>`** — it MUST **lead with the canonical rooting `Type.Member`** immediately after the
 tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak ICommand.CanExecuteChanged retains the
 control`). De-dup (Step 2) matches on that leading `Type.Member`, so keep it stable and

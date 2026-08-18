@@ -158,4 +158,25 @@ if ($result.Blocked) {
     throw "Final leak-fix de-dup gate blocked PR creation: $($result.Reason)."
 }
 
+$body = [string]$item.body
+foreach ($match in $result.ApiMatches) {
+    $number = [int]$match.number
+    $decisions = @($state.different_mechanism_prs | Where-Object {
+            [int]$_.number -eq $number
+        })
+    if ($decisions.Count -ne 1) {
+        throw "Final leak-fix de-dup gate could not find exactly one mechanism decision for live same-API PR #$number."
+    }
+
+    $basis = [string]$decisions[0].basis
+    $disclosurePattern = "(?m)^[ `t]*Same-API comparison:[ `t]*$repo#$number[ `t]*\|[ `t]*Different mechanism:[ `t]*(?<basis>[^|`r`n]{12,500}?)[ `t]*$"
+    $disclosures = [regex]::Matches($body, $disclosurePattern)
+    if ($disclosures.Count -ne 1) {
+        throw "The PR body must contain exactly one structured same-API disclosure for live PR #${number}: 'Same-API comparison: $Repository#$number | Different mechanism: <persisted comparison basis>'."
+    }
+    if ($disclosures[0].Groups['basis'].Value.Trim() -cne $basis) {
+        throw "The PR body same-API disclosure basis for PR #$number does not match the persisted comparison basis."
+    }
+}
+
 Write-Host "Final leak-fix de-dup gate passed for issue #$issueNumber ($api): $($result.Reason)."

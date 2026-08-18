@@ -60,6 +60,28 @@ Describe 'fresh-shell de-dup state' {
                 -Repository 'dotnet/maui'
         } | Should -Throw '*lacks a specific basis*'
     }
+
+    It 'rejects a comparison basis that cannot fit the structured body disclosure' {
+        $state = [pscustomobject]@{
+            issue_number = 42
+            api = 'Picker.ItemsSource'
+            repository = 'dotnet/maui'
+            different_mechanism_prs = @(
+                [pscustomobject]@{
+                    number = 100
+                    basis = "Existing teardown path|different reset path"
+                }
+            )
+        }
+
+        {
+            Assert-LeakDedupState `
+                -State $state `
+                -IssueNumber 42 `
+                -Api 'Picker.ItemsSource' `
+                -Repository 'dotnet/maui'
+        } | Should -Throw '*invalid basis format*'
+    }
 }
 
 Describe 'mechanism-aware final duplicate gate' {
@@ -273,6 +295,17 @@ Describe 'workflow enforcement boundary' {
         )).Count | Should -BeGreaterOrEqual 3
     }
 
+    It 'wires a trusted final live refresh into the hunter safe-output boundary' {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
+
+        $workflow | Should -Match '(?s)safe-outputs:.*steps:.*Assert-LeakHunterSafeOutputGate\.ps1.*create-issue:'
+        $workflow | Should -Match 'github\.event\.repository\.default_branch'
+        $workflow | Should -Match 'GITHUB_WORKSPACE.*trusted-leak-hunter'
+        $workflow | Should -Match 'persist-credentials: false'
+        $workflow | Should -Not -Match 'run: \.github/scripts/Assert-LeakHunterSafeOutputGate\.ps1'
+        $workflow | Should -Match "contains\(needs\.agent\.outputs\.output_types, 'create_issue'\)"
+    }
+
     Context 'safe-output gate script' {
         BeforeEach {
             $script:agentOutput = Join-Path $TestDrive 'agent_output.json'
@@ -390,7 +423,7 @@ Describe 'workflow enforcement boundary' {
             } | Should -Throw '*failed with exit code 1*'
         }
 
-        It 'allows a live same-API match only after a persisted mechanism decision' {
+        It 'rejects a live same-API decision that is absent from the PR body' {
             $global:mockMerged = @(
                 New-LeakPr `
                     -Number 501 `
@@ -415,7 +448,80 @@ Describe 'workflow enforcement boundary' {
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
+            } | Should -Throw '*structured same-API disclosure*#501*'
+        }
+
+        It 'allows a live same-API match when the body discloses the exact persisted basis' {
+            $basis = 'Existing PR fixes detach teardown; this issue fixes Reset unsubscription.'
+            $global:mockMerged = @(
+                New-LeakPr `
+                    -Number 501 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10'
+            )
+            @{
+                issue_number = 20
+                api = 'GradientBrush.GradientStops'
+                repository = 'dotnet/maui'
+                different_mechanism_prs = @(
+                    @{
+                        number = 501
+                        basis = $basis
+                    }
+                )
+            } | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath (Join-Path $script:stateDirectory 'dedup-state.json')
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].body = @"
+Fixes #20
+Refs: dotnet/maui#20
+
+## Same-API comparisons
+Same-API comparison: dotnet/maui#501 | Different mechanism: $basis
+"@
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+
+        It 'rejects a same-API disclosure whose basis differs from persisted state' {
+            $global:mockMerged = @(
+                New-LeakPr `
+                    -Number 501 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10'
+            )
+            @{
+                issue_number = 20
+                api = 'GradientBrush.GradientStops'
+                repository = 'dotnet/maui'
+                different_mechanism_prs = @(
+                    @{
+                        number = 501
+                        basis = 'Existing PR fixes detach teardown; this issue fixes Reset unsubscription.'
+                    }
+                )
+            } | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath (Join-Path $script:stateDirectory 'dedup-state.json')
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].body = @'
+Fixes #20
+Refs: dotnet/maui#20
+Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are definitely unrelated.
+'@
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*does not match the persisted comparison basis*'
         }
 
         It 'allows a release-only open PR even when it directly references the issue' {
@@ -456,6 +562,73 @@ Describe 'workflow enforcement boundary' {
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+    }
+
+    Context 'hunter safe-output gate script' {
+        BeforeEach {
+            $script:hunterAgentOutput = Join-Path $TestDrive 'hunter_agent_output.json'
+            @{
+                items = @(
+                    @{
+                        type = 'create_issue'
+                        title = '[leak-scan] GradientBrush.GradientStops — reset leak'
+                        body = 'AI-generated leak report'
+                    }
+                )
+            } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:hunterAgentOutput
+
+            $global:mockHunterOpenIssues = @()
+            $global:mockHunterMerged = @()
+            $global:mockHunterReverts = @()
+            $global:mockHunterGhExitCode = 0
+            function global:gh {
+                param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+                $global:LASTEXITCODE = $global:mockHunterGhExitCode
+                if ($global:mockHunterGhExitCode -ne 0) {
+                    Write-Output 'mock gh failure'
+                    return
+                }
+                if ($GhArgs[0] -eq 'issue') {
+                    Write-Output (ConvertTo-Json -InputObject @($global:mockHunterOpenIssues) -Depth 5)
+                    return
+                }
+                $searchIndex = [Array]::IndexOf($GhArgs, '--search')
+                $search = $GhArgs[$searchIndex + 1]
+                if ($search -eq '"Revert" in:title') {
+                    Write-Output (ConvertTo-Json -InputObject @($global:mockHunterReverts) -Depth 5)
+                } else {
+                    Write-Output (ConvertTo-Json -InputObject @($global:mockHunterMerged) -Depth 5)
+                }
+            }
+        }
+
+        AfterAll {
+            Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+            Remove-Variable mockHunterOpenIssues, mockHunterMerged, mockHunterReverts, mockHunterGhExitCode `
+                -Scope Global -ErrorAction SilentlyContinue
+        }
+
+        It 'accepts issue emission when the final live refresh has no match' {
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'blocks issue emission when a matching fix merged after the pre-agent snapshot' {
+            $global:mockHunterMerged = @(
+                New-LeakPr `
+                    -Number 701 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak'
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*blocked issue creation*active merged*701*'
         }
     }
 }

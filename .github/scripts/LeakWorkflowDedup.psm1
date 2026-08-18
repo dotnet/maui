@@ -67,6 +67,12 @@ function Assert-LeakDedupState {
             ([string]$decision.basis).Length -lt 12) {
             throw "Different-mechanism decision for PR #$number lacks a specific basis."
         }
+        $basis = [string]$decision.basis
+        if ($basis -cne $basis.Trim() -or
+            $basis.Length -gt 500 -or
+            $basis -match "[|`r`n]") {
+            throw "Different-mechanism decision for PR #$number has an invalid basis format."
+        }
     }
 
     return @($seen | Sort-Object)

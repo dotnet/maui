@@ -104,7 +104,8 @@ safe-outputs:
   # safe-output job immediately before Process Safe Outputs and fails the job before any PR
   # mutation when live metadata or the persisted mechanism decisions are incomplete/stale.
   # The boundary validates live match coverage and decision structure; the retention-mechanism
-  # comparison itself remains an agent-authored semantic judgment for human review.
+  # comparison itself remains an agent-authored semantic judgment, but every relied-on decision
+  # must also appear in a bounded structured PR-body line for human review.
   steps:
     - name: Restore trusted leak-fix de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_pull_request') }}
@@ -647,10 +648,12 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
   (a) or (c), append one object to the `different_mechanism_prs` array in
   `/tmp/gh-aw/agent/dedup-state.json`:
   `{"number": <PR>, "basis": "<specific comparison of the two retention paths>"}`.
-  Keep the `basis` concise but specific (at least 12 characters), do not copy untrusted PR text
-  verbatim, and preserve the other state fields. Use `jq` plus a `.next.json` file and `cat`
-  back over the state file. The safe-output gate rejects missing, duplicate, malformed, or
-  identity-mismatched decisions.
+  Keep the `basis` concise but specific (12–500 characters), single-line, with no `|`; do not
+  copy untrusted PR text verbatim, and preserve the other state fields. Use `jq` plus a
+  `.next.json` file and `cat` back over the state file. The safe-output gate rejects missing,
+  duplicate, malformed, or identity-mismatched decisions. It also requires the emitted PR body
+  to contain exactly one matching human-visible line for every live approved PR:
+  `Same-API comparison: <owner>/<repo>#<PR> | Different mechanism: <exact persisted basis>`.
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
 
@@ -815,7 +818,8 @@ gate. The generated safe-output job independently re-fetches live metadata and r
 `create_pull_request` immediately before Process Safe Outputs unless every current API-only
 match has a structurally valid different-mechanism decision and no direct issue-reference
 match exists. The gate does not claim to independently prove the semantic comparison in each
-decision; that agent-authored basis remains visible for human review.
+decision; it requires the exact persisted basis to be disclosed in the structured PR-body form
+so that the agent-authored judgment remains visible for human review.
 
 ```bash
 set -euo pipefail
@@ -955,6 +959,10 @@ echo "API-only matches without a persisted mechanism decision:"; cat /tmp/gh-aw/
   `{"number": <PR>, "basis": "<specific retention-path comparison>"}`
   to `dedup-state.json.different_mechanism_prs` with the same atomic `jq`/`.next.json`/`cat`
   pattern as Step 3.
+- For every live different-mechanism decision, include exactly one body line using the basis
+  byte-for-byte from state:
+  `Same-API comparison: <owner>/<repo>#<PR> | Different mechanism: <exact persisted basis>`.
+  The mutation-boundary gate rejects missing, duplicated, or mismatched disclosure lines.
 - Do not rely on `exit 1` here as enforcement. Even if you route around a failed tool call or
   forget a decision, the safe-output mutation-boundary step independently re-fetches both
   lists and blocks creation fail-closed.
@@ -1007,6 +1015,11 @@ control is collected.
 ## Scope
 Managed cross-platform change → all platforms. No public API change (or: list the
 PublicAPI.Unshipped.txt entries added).
+
+## Same-API comparisons
+<!-- Omit this section when there are no live same-API matches. Otherwise add exactly one
+bounded line per persisted decision, using the exact basis string from dedup-state.json. -->
+Same-API comparison: <owner>/<repo>#<PR> | Different mechanism: <exact persisted basis>
 ```
 
 Before emitting, re-read your body and confirm the `Target branch:` line says `main` and a
