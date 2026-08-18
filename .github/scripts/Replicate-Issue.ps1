@@ -1121,6 +1121,10 @@ function Assert-SandboxChanges {
         "CustomAgentLogsTmp/IssueReplication/Issue$IssueNumber/"
     )
 
+    # Recover before reading git status so a plan the agent saved one directory
+    # too high is not reported as an unauthorized change instead.
+    Resolve-MisplacedAgentOutput -CanonicalPath $appiumPlanPath | Out-Null
+
     foreach ($entry in Get-ReplicationGitStatus) {
         if ($allowed -contains $entry.Path) {
             continue
@@ -1477,8 +1481,54 @@ function Assert-ReplicationScenarioNotBlocked {
     }
 }
 
+function Resolve-MisplacedAgentOutput {
+    param(
+        [Parameter(Mandatory)][string] $CanonicalPath
+    )
+
+    if (Test-Path -LiteralPath $CanonicalPath -PathType Leaf) {
+        return $true
+    }
+
+    $fileName = Split-Path -Leaf $CanonicalPath
+    $searchRoots = @(Split-Path -Parent $CanonicalPath)
+    foreach ($name in @('agentDir', 'ArtifactRoot', 'sandboxAppiumDir', 'sandboxDir', 'repoRoot')) {
+        $variable = Get-Variable -Name $name -ErrorAction SilentlyContinue
+        if ($variable -and $variable.Value -is [string]) {
+            $searchRoots += $variable.Value
+        }
+    }
+
+    foreach ($root in $searchRoots) {
+        if ([string]::IsNullOrWhiteSpace($root) -or -not (Test-Path -LiteralPath $root -PathType Container)) {
+            continue
+        }
+
+        $found = Get-ChildItem -LiteralPath $root -Filter $fileName -File -Force -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if (-not $found) {
+            continue
+        }
+
+        if ($found.FullName -eq $CanonicalPath) {
+            return $true
+        }
+
+        $parent = Split-Path -Parent $CanonicalPath
+        if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+            New-Item -ItemType Directory -Path $parent -Force | Out-Null
+        }
+
+        Move-Item -LiteralPath $found.FullName -Destination $CanonicalPath -Force
+        Write-Host "Recovered '$fileName' that the agent wrote to '$($found.DirectoryName)' instead of '$parent'."
+        return $true
+    }
+
+    return $false
+}
+
 function Read-SandboxProposal {
-    if (-not (Test-Path -LiteralPath $sandboxProposalPath -PathType Leaf)) {
+    if (-not (Resolve-MisplacedAgentOutput -CanonicalPath $sandboxProposalPath)) {
         throw 'The Sandbox agent did not write sandbox-proposal.json.'
     }
     $item = Get-Item -LiteralPath $sandboxProposalPath -Force
@@ -1608,7 +1658,7 @@ function Read-TestProposal {
         [switch]$ValidateNewTargets
     )
 
-    if (-not (Test-Path -LiteralPath $testProposalPath -PathType Leaf)) {
+    if (-not (Resolve-MisplacedAgentOutput -CanonicalPath $testProposalPath)) {
         throw 'The test agent did not write test-proposal.json.'
     }
     $item = Get-Item -LiteralPath $testProposalPath -Force
@@ -1963,7 +2013,7 @@ When the issue reports a crash identified by a specific managed exception type, 
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 Sandbox XAML supports only x:Class on the root element plus x:Name, x:Key, and x:DataType. Do not use x:FactoryMethod, x:Arguments, x:Static, x:Type, x:Reference, or any other x: directive. Assign any value that needs a factory method or constructor arguments from code-behind instead, for example setting Keyboard with Keyboard.Create in the page constructor.
-5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
+5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps, and set files to exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json). That list describes the files you edited inside the repository; the proposal itself is a fourth required output and lives outside the repository at the absolute path above. Writing the three repository files without also writing the proposal fails the attempt before the device is ever touched.
 Do not create an automated test yet and do not claim reproduction succeeded.
 If the reported defect genuinely cannot occur inside this bounded Sandbox, because it requires a host, packaging model, project type, or environment the Sandbox cannot be, write "$sandboxBlockedPath" as JSON with exactly a reason field naming that specific structural impossibility. Never use it for a scenario that is merely difficult, for an element you could not locate, or for a behavior that simply did not reproduce; those must be attempted properly instead. It is ignored before attempt 3.
 $retryGuidance

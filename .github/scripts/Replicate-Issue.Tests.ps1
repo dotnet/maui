@@ -78,6 +78,7 @@ BeforeAll {
         'Test-CrashReportingIssueContext',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
+        'Resolve-MisplacedAgentOutput',
         'Read-SandboxProposal',
         'Assert-LighterTestRejections',
         'Get-ProposedTestFiles',
@@ -581,6 +582,19 @@ Describe 'Replication orchestrator security boundary' {
             Should -Throw "*uses unsupported action 'assertNotExists'*"
     }
 
+    It 'recovers an agent output written to the wrong directory' {
+        # Run 15000194 lost all five attempts because the agent wrote the
+        # Sandbox files and the Appium plan but left the proposal elsewhere.
+        $source = $script:Source
+        $source | Should -Match 'function Resolve-MisplacedAgentOutput'
+        $source | Should -Match 'Resolve-MisplacedAgentOutput -CanonicalPath \$sandboxProposalPath'
+        $source | Should -Match 'Resolve-MisplacedAgentOutput -CanonicalPath \$testProposalPath'
+        $source | Should -Match 'Resolve-MisplacedAgentOutput -CanonicalPath \$appiumPlanPath'
+        $source | Should -Match 'the proposal itself is a fourth required output'
+        # It must never silently accept a missing file.
+        $source | Should -Match "throw 'The Sandbox agent did not write sandbox-proposal\.json\.'"
+    }
+
     It 'offers a legal way to observe a defect that needs a settle' {
         # Runs 15000187 and 15000205 burned most of their attempts on
         # Task.Delay rejections and on retries that dropped the proposal file.
@@ -899,6 +913,53 @@ public partial class MainPage : ContentPage
             'Text="PASS: Incorrect result not observed"') |
             Set-Content -LiteralPath $sandboxXamlPath
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
+    }
+
+    It 'tells the agent how to wait once it is told not to sleep' {
+        # Five wave-9 runs died on Task.Delay because the rejection named the
+        # banned construct but never named a permitted alternative.
+        $entry = Get-ReplicationUnsafeSourcePatterns |
+            Where-Object { $_.Code -eq 'delays-or-background-work' }
+        $entry.Remedy | Should -Match 'timeoutSeconds'
+        $entry.Remedy | Should -Match 'trigger control and a separate check control'
+
+        $code = 'public partial class MainPage { async void Go() { await Task.Delay(750); } }'
+        { Assert-ReplicationGeneratedSourceSafety -Path 'MainPage.xaml.cs' -Content $code } |
+            Should -Throw '*prohibited*delays-or-background-work*timeoutSeconds*'
+    }
+
+    It 'reads a proposal the agent saved beside the Appium plan' {
+        # Run 15000194 burned all five attempts this way: the agent wrote the
+        # repository files and the plan, but saved the proposal next to them.
+        $agentDir = Join-Path $TestDrive 'recover/agent'
+        $sandboxAppiumDir = Join-Path $TestDrive 'recover/repo/CustomAgentLogsTmp/Sandbox'
+        New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
+        New-Item -ItemType Directory -Path $sandboxAppiumDir -Force | Out-Null
+        $sandboxProposalPath = Join-Path $agentDir 'sandbox-proposal.json'
+        $misplaced = Join-Path $sandboxAppiumDir 'sandbox-proposal.json'
+        @'
+{
+  "reproductionSteps": ["Move the pointer outside the stationary SwipeView item."],
+  "expectedBehavior": "The active gesture continues tracking.",
+  "observedBehaviorCheck": "The semantic result reports tracking stopped.",
+  "reportedTrigger": "A pointer leaves the bounds of a stationary SwipeView item during an active gesture.",
+  "sandboxTrigger": "A pointer leaves the bounds of a stationary SwipeView item during an active gesture.",
+  "scenarioDifferences": [],
+  "files": [
+    "src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml",
+    "src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs",
+    "CustomAgentLogsTmp/Sandbox/appium-plan.json"
+  ]
+}
+'@ | Set-Content -LiteralPath $misplaced
+
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+        Test-Path -LiteralPath $sandboxProposalPath | Should -BeTrue
+        Test-Path -LiteralPath $misplaced | Should -BeFalse
+
+        Remove-Item -LiteralPath $sandboxProposalPath -Force
+        { Read-SandboxProposal | Out-Null } |
+            Should -Throw '*did not write sandbox-proposal.json*'
     }
 
     It 'requires exact semantic trigger equivalence in the Sandbox proposal' {
