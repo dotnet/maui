@@ -11,7 +11,8 @@ description: |
   3. Builds + runs that test and confirms it **FAILS** on the unpatched source — proving
      the test actually catches the leak. (If it already passes on unpatched source, the agent
      opens NO PR — but a single green run is **not** proof the leak is fixed, so it does **not**
-     close the scan issue; closure happens only via a merged fix PR — see Step 3 / gate (d).)
+     close the scan issue. An immutable merged fix PR suppresses redundant rebuilds, but automatic
+     issue closure is disabled — see Step 3 / gate (d).)
   4. Implements the product fix (weak subscription / `WeakEventManager` / teardown on the
      missing path), rebuilds, and confirms the **same test now PASSES** with no regression
      in its neighbours.
@@ -102,11 +103,11 @@ safe-outputs:
   # Job-enforced dry-run: when `dry_run` is true, gh-aw stages every task safe-output below
   # (only logs/records what WOULD have been emitted) regardless of what the agent does.
   # The per-step "Dry-run gate" prompt text further down is a courtesy for a clean run log, but
-  # it is NOT what makes dry_run safe — an agent that emits close-issue/create-pull-request/etc.
+  # it is NOT what makes dry_run safe — an agent that emits a mutating safe-output anyway
   # anyway (ignoring the prompt) must still produce NO write. Making this an emitted-tool-call
   # decision inside the prompt (as it was before) leaves the actual guarantee entirely up to
   # model compliance; `staged` moves the task-output guarantee into the generated jobs, so a
-  # manual preview run (`dry_run: true`) cannot close an issue, open/push a PR, or add a comment.
+  # manual preview run (`dry_run: true`) cannot open/push a PR or add a comment.
   # gh-aw's separate conclusion job may still report framework diagnostics when a run is
   # incomplete or fails. Keep this identical to the pattern already used by
   # ci-status-main.md / ci-status-net11.md.
@@ -154,22 +155,6 @@ safe-outputs:
     target: "*"                     # agent supplies the leak PR number
     required-title-prefix: "[leak-fix]"  # Track C only comments on this workflow's own [leak-fix] PRs
     max: 1
-  # Close an ORPHANED [leak-scan] issue whose leak is ALREADY FIXED on main by a MERGED
-  # [leak-fix] PR (Step 3 gate (d)) so it isn't re-picked and rebuilt from source every run.
-  # The agent supplies the issue number + a closing comment linking the merged fix. Write
-  # access lives ONLY in the isolated safe-outputs/conclusion jobs — the agent itself stays
-  # read-only. Deterministic guards: the safe-output validator will ONLY close an issue whose
-  # title starts with "[leak-scan] " AND that carries BOTH of this workflow's labels
-  # (`agentic-workflows` and `perf/memory-leak 💦` — the exact pair the hunter stamps, and locks
-  # via allowed-labels, on every [leak-scan] issue it creates). `agentic-workflows` alone is
-  # shared by other agentic workflows, so requiring the memory-leak label too prevents a
-  # hallucinated/injected number pointing at an unrelated agentic issue from being closed
-  # (rejected outright, not merely bounded by max:1).
-  close-issue:
-    target: "*"
-    required-title-prefix: "[leak-scan] "
-    required-labels: [agentic-workflows, "perf/memory-leak 💦"]
-    max: 1
   # Most 6h runs are idle (every open leak already has a [leak-fix] PR). Without this,
   # gh-aw's auto-injected default (noop: report-as-issue: true) files a "no action taken"
   # issue every idle run. Mirror the hunter, which already opts out.
@@ -196,7 +181,7 @@ You produce **only `[leak-fix]` PRs for empirically-proven leaks** — there is 
 The PR base is always `main`. You build MAUI **from source** to validate. All scratch state goes
 under `/tmp/gh-aw/agent/` (each bash call is a fresh subshell; persist what you need). Your only
 writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch`, `add-comment`,
-`close-issue`) — never push with raw git, never edit anything outside the fix/test.
+and `noop`) — never push with raw git, never edit anything outside the fix/test.
 
 ## Hard rules — non-negotiable
 
@@ -207,11 +192,11 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
    - **Track C (review response):** any code you push must keep the PR's tests valid — re-run the
      affected test so Track A stays red→green. Never push a change that breaks the PR's own test
      just to satisfy a review.
-2. **If a Track A leak is already fixed on `main`, open NO PR.** Close the scan issue **only**
-   when a merged `[leak-fix]` PR on `main` explicitly carries the exact same-repo
-   `Fixes #<N>` provenance (Step 3 gate (d)). A `Refs` line or Type.Member match can never
-   authorize closure. Emit `close-issue` with an AI-attributed comment linking that exact fix and
-   record `skipped: already fixed on main`. If a different scan issue describes the same
+2. **If a Track A leak is already fixed on `main`, open NO PR.** Treat it as proven only when
+   a merged `[leak-fix]` PR on `main` carries immutable exact same-repo `Fixes #<N>`
+   provenance (Step 3 gate (d)). A `Refs` line or Type.Member match can never prove this.
+   Emit `noop` with `skipped: already fixed on main (scan issue left open; automatic closure
+   disabled)` and stop. If a different scan issue describes the same
    leak-scan-key/retention path, skip rebuilding but leave this issue open for manual
    reconciliation. If instead your freshly-authored regression test merely passes on unpatched
    source (Step 6) with no exact merged fix PR, that is NOT proof the leak is gone — do NOT close
@@ -228,8 +213,8 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
    `WeakNotifyPropertyChangedProxy` / `WeakEventManager` — all already used in the codebase), or
    add the missing `-=` / teardown on the unload path. Prefer the minimal, idiomatic change that
    matches how the surrounding code already hardens similar subscriptions.
-6. **One action per run.** Either respond to ONE PR's review (Track C) OR open ONE new draft PR
-   (Track A/B) OR close ONE already-fixed `[leak-scan]` issue (Step 3 gate (d)) — never two.
+6. **One action per run.** Either respond to ONE PR's review (Track C), open ONE new draft PR
+   (Track A/B), or emit ONE `noop` for already-fixed work (Step 3 gate (d)) — never two.
    Honour the de-dup / attempt-cap / already-addressed gates so you never repeat yourself.
 7. **AI attribution.** Every PR body and every comment must clearly state it was generated by
    this workflow.
@@ -424,12 +409,12 @@ fi
 # MERGED [leak-fix] PRs — Step 3 first filters this raw set, then ancestry-checks only matches.
 # --limit 1000 = the GitHub SEARCH API's hard result ceiling (pagination cannot exceed it). If
 # the merged [leak-fix] set ever hits 1000, older fixes are TRUNCATED and this gate could miss a
-# valid merged fix. Gate (d) stays fail-safe (it only CLOSES on a positive match, so a miss
-# under-closes rather than wrongly closing), but close-coverage would be incomplete, so warn.
+# valid merged fix. Gate (d) stays fail-safe (a miss rebuilds rather than suppressing a real leak),
+# but de-dup coverage would be incomplete, so warn.
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 1000 \
-  --json number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
+  --json id,number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-raw.json)" -ge 1000 ]; then
-  echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Exact-close remains fail-safe (under-closes) but coverage is incomplete — switch to date-windowed enumeration."
+  echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. De-dup remains fail-safe (may rebuild) but coverage is incomplete — switch to date-windowed enumeration."
 fi
 ```
 
@@ -441,9 +426,9 @@ Step 3 and re-apply its filters and targeted ancestry checks to the cached files
 ## Step 3 — De-dup + attempt cap (per-candidate filters against the Step 2.5 cache)
 
 A fix PR carries `Fixes #<N>` in its body (where `<N>` is the `[leak-scan]` issue) — that is the
-sole scan-issue join and the ONLY key allowed to drive automatic closure. An optional
-`Refs: <owner>/<repo>#<UPSTREAM>` line points at a separate issue and can never authorize closing
-`#<N>`. Duplicate scan issues may still describe the same leak, so API matching is retained only
+sole scan-issue join and the ONLY key allowed to prove an exact already-fixed match. An optional
+`Refs: <owner>/<repo>#<UPSTREAM>` line points at a separate issue and can never prove that
+`#<N>` was fixed. Duplicate scan issues may still describe the same leak, so API matching is retained only
 as a cheap prefilter. Before skipping work for a different issue number, compare its
 `leak-scan-key` or full retention path; the Type.Member alone is not a leak identity.
 
@@ -508,13 +493,36 @@ jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg apiplain "$API" --a
     /tmp/gh-aw/agent/merged-leakfix-raw.json \
   > /tmp/gh-aw/agent/merged-fix-candidates.json
 
-# A merged PR is usable only when its merge commit is actually contained in main. Compare only
-# the candidate subset above, not the entire up-to-1000-entry history. A failed compare omits the
-# entry (fail open: rebuild rather than close/skip on unverified ancestry).
+# A merged PR is usable only when its current body is proven to be its merge-time body and its
+# merge commit is actually contained in main. PullRequest.lastEditedAt is available through
+# GraphQL (including userContentEdits history); gh pr list does not expose it. A post-merge edit
+# or unavailable/malformed edit metadata fails closed for provenance, so a later `Fixes` line
+# cannot suppress work. Compare only the verified candidate subset, not the entire history.
 printf '' > /tmp/gh-aw/agent/merged-onmain-candidates.ndjson
 jq -c '.[]' /tmp/gh-aw/agent/merged-fix-candidates.json | while IFS= read -r pr; do
+  node_id=$(jq -r '.id // empty' <<<"$pr")
   sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
+  [ -z "$node_id" ] && continue
   [ -z "$sha" ] && continue
+  edit_meta=$(gh api graphql -f id="$node_id" -f query='
+    query($id: ID!) {
+      node(id: $id) {
+        ... on PullRequest {
+          mergedAt
+          lastEditedAt
+        }
+      }
+    }' 2>/dev/null) || edit_meta=""
+  [ -z "$edit_meta" ] && continue
+  provenance_guard=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -c '
+    include "leak-workflow-provenance";
+    .data.node | leak_merge_provenance_guard' <<<"$edit_meta" 2>/dev/null) || provenance_guard=""
+  if [ -z "$provenance_guard" ] ||
+     [ "$(jq -r '.verified' <<<"$provenance_guard")" != "true" ] ||
+     [ "$(jq -r '.block_provenance' <<<"$provenance_guard")" = "true" ]; then
+    echo "WARNING: merged PR provenance is mutable or unverified; ignoring PR #$(jq -r '.number' <<<"$pr")"
+    continue
+  fi
   ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || ahead=""
   if [ "$ahead" = "0" ]; then
     printf '%s\n' "$pr" >> /tmp/gh-aw/agent/merged-onmain-candidates.ndjson
@@ -526,8 +534,9 @@ else
   echo '[]' > /tmp/gh-aw/agent/merged-onmain-candidates.json
 fi
 
-# (d-exact) ONLY an exact same-repo Fixes #N match may drive close-issue. A same Type.Member with a
-# different issue number is not provenance for this retention path and remains non-destructive.
+# (d-exact) ONLY an exact immutable same-repo Fixes #N match may prove this selected scan issue is
+# already fixed. A same Type.Member with a different issue number is not provenance for this
+# retention path. This gate suppresses rebuilding only; automatic issue closure is disabled.
 jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg repo "$REPO_RE" \
     'include "leak-workflow-provenance";
      [.[] | select(leak_has_exact_fixes($repo; $n))]' \
@@ -583,79 +592,19 @@ else
   echo '[]' > /tmp/gh-aw/agent/same-api-merged-fixes.json
 fi
 
-# Candidate-keyed sentinel: no shared path can leak state from an earlier candidate. `rm` is not
-# in this workflow's shell allowlist, so initialize with allowlisted printf and test with `-s`.
-REOPEN_OVERRIDE_FILE="/tmp/gh-aw/agent/reopen-override-${N}.txt"
-printf '' > "$REOPEN_OVERRIDE_FILE"
-# (d-override) MAINTAINER RE-OPEN GUARD: if this [leak-scan] issue was RE-OPENED *after* the
-#   newest matched merged [leak-fix] PR merged, a maintainer deliberately overrode the auto-close
-#   (the merged fix was incomplete / another retention edge remains). This workflow NEVER re-opens
-#   issues, so any 'reopened' event is an external human action. Respect it: never re-close (which
-#   would reverse the human decision every 6h and post a false "already fixed" comment) and never
-#   rebuild. Emit `skipped: scan issue re-opened after merged fix (maintainer override)` and stop.
-if [ "$(jq 'length' /tmp/gh-aw/agent/merged-exact-fix-prs.json)" -ge 1 ]; then
-  FIX_MERGED_AT=$(jq -r '[.[].mergedAt] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/merged-exact-fix-prs.json)
-  # Fail CLOSED on this DESTRUCTIVE path: auto-closing a possibly maintainer-reopened issue must
-  # never happen on an unverified timeline. If the timeline cannot be fetched AND parsed as a JSON
-  # array, we cannot rule out a maintainer re-open, so write the override sentinel (skip close/
-  # rebuild, leave the issue open) instead of treating a failed lookup as an empty timeline.
-  if gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate --slurp -H "Accept: application/vnd.github+json" \
-       > /tmp/gh-aw/agent/issue-timeline-pages.json 2>/dev/null; then
-    # --slurp collects paginated arrays into one array-of-arrays. The shared
-    # helper validates that shape, flattens every page, and compares the newest
-    # re-open timestamp with the newest merged fix timestamp.
-    REOPEN_GUARD=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -c --arg m "$FIX_MERGED_AT" '
-      include "leak-workflow-provenance";
-      leak_reopen_guard($m)' /tmp/gh-aw/agent/issue-timeline-pages.json 2>/dev/null) || REOPEN_GUARD=""
-    if [ -z "$REOPEN_GUARD" ] || [ "$(jq -r '.verified' <<<"$REOPEN_GUARD")" != "true" ]; then
-      echo "REOPEN GUARD UNVERIFIED: timeline lookup for #$N returned malformed pagination data — failing closed; will NOT close or rebuild (cannot rule out a maintainer re-open)." \
-        > "$REOPEN_OVERRIDE_FILE"
-      cat "$REOPEN_OVERRIDE_FILE"
-    elif [ "$(jq -r '.block_close' <<<"$REOPEN_GUARD")" = "true" ]; then
-      REOPENED_AT=$(jq -r '.reopened_at' <<<"$REOPEN_GUARD")
-      echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
-        > "$REOPEN_OVERRIDE_FILE"
-      cat "$REOPEN_OVERRIDE_FILE"
-    fi
-  else
-    echo "REOPEN GUARD UNVERIFIED: timeline lookup for #$N failed or returned non-array JSON — failing closed; will NOT close or rebuild (cannot rule out a maintainer re-open)." \
-      > "$REOPEN_OVERRIDE_FILE"
-    cat "$REOPEN_OVERRIDE_FILE"
-  fi
-fi
-if test -s "$REOPEN_OVERRIDE_FILE"; then
-  echo "re-open override active for candidate #$N"
-else
-  echo "no re-open override for candidate #$N"
-fi
 ```
 
-- **Re-open override (takes precedence over gate (d) and any rebuild):** if
-  `/tmp/gh-aw/agent/reopen-override-<N>.txt` is **non-empty** — either THIS `[leak-scan]` issue was **re-opened
-  after** the newest matched merged `[leak-fix]` PR merged (a maintainer deliberately overrode the
-  auto-close), **or** the issue timeline could **not be fetched/parsed** so the re-open guard
-  failed closed — do NOT emit `close-issue` and do NOT rebuild. Read the sentinel and emit the
-  matching skip: `skipped: scan issue re-opened after merged fix (maintainer override)` for a real
-  re-open, or `skipped: re-open guard unverified (timeline lookup failed)` when the lookup failed;
-  then stop. Never reverse a deliberate human re-open, and never close on an unverified timeline
-  (either would re-close the issue every 6h and post a false "already fixed" comment).
-- If an **exact** merged `[leak-fix]` PR in `merged-exact-fix-prs.json` carries this same-repo
-  `Fixes #<N>` line **and the re-open override above did NOT fire** → this scan issue's fix is
-  already on `main`. Do NOT create a branch or rebuild.
-  Emit exactly one `close-issue` safe-output on THIS `[leak-scan]` issue `#<N>` with a closing
-  comment (AI-attributed, linking the merged PR), e.g.:
-  > 🔍 **AI-generated action** (Memory Leak Fixer) — this leak is already fixed on `main` by
-  > #<merged-PR> (`<merged title>`), whose body explicitly carries `Fixes #<N>`. Closing this
-  > still-open `[leak-scan]` issue to stop the rebuild loop. Note: it may still reproduce in the
-  > shipped NuGet package until the fix ships in a release.
+- If an **exact immutable** merged `[leak-fix]` PR in `merged-exact-fix-prs.json` carries this
+  same-repo `Fixes #<N>` line, the scan issue's fix is already on `main`. Do NOT create a branch
+  or rebuild. Emit exactly one `noop` with:
+  `skipped: already fixed on main (scan issue left open; automatic closure disabled)`, include
+  the merged PR number/title in the noop message, and stop.
 
-  **Dry-run gate** (control text — NOT part of the close comment above): if `dry_run == "true"`,
-  do NOT emit — print `DRY RUN — would close #<N>` and the closing comment to the run log
-  instead, then stop. (Enforced job-side too: `safe-outputs.staged` stages, and does not
-  execute, `close-issue` when `dry_run` is true, so a manual preview run can never actually close
-  this issue even if a `close-issue` call is emitted.)
-
-  This is the run's single action — stop after emitting `close-issue`.
+  The workflow deliberately has no `close-issue` safe-output. In pinned gh-aw v0.85.4 the
+  close handler re-fetches title/labels/state, then posts a comment and PATCHes the issue closed;
+  it has no atomic timeline/version precondition. A maintainer can re-open between any check and
+  that deferred PATCH. Leaving the issue open while suppressing the redundant rebuild is the only
+  race-free way to preserve maintainer state with the available GitHub mutation APIs.
 - If an **open** fix PR already refs this exact issue (a) → `skipped: leak already being fixed`
   and stop (or, if `issue_number` was explicit, just stop).
 - For `same-api-open-fixes.json` and `same-api-merged-fixes.json`, API equality is only a

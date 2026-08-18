@@ -38,14 +38,16 @@ def leak_exact_fixes_numbers($repo_re):
   [(.body // "")
    | leak_without_inert_markdown
    # Provenance is a dedicated contract line. Anchoring the full line means
-   # inline-code delimiters or surrounding prose can never authorize closure.
-   | scan("(?im)^[ \t]*Fixes\\b:?[ \t]*(?:" + $repo_re + "#|#)([0-9]+)\\b[ \t]*\\r?$")
+   # inline-code delimiters, indented code, tabs, or surrounding prose cannot
+   # become provenance. CommonMark permits at most three leading spaces before
+   # a rendered contract line; four spaces or a tab starts an inert code block.
+   | scan("(?im)^[ ]{0,3}Fixes\\b:?[ ]*(?:" + $repo_re + "#|#)([0-9]+)\\b[ ]*\\r?$")
    | .[0]];
 
 def leak_issue_reference_numbers($repo_re):
   [(.body // "")
    | leak_without_inert_markdown
-   | scan("(?im)^[ \t]*(?:Fixes|Refs)\\b:?[ \t]*(?:" + $repo_re + "#|#)([0-9]+)\\b[ \t]*\\r?$")
+   | scan("(?im)^[ ]{0,3}(?:Fixes|Refs)\\b:?[ ]*(?:" + $repo_re + "#|#)([0-9]+)\\b[ ]*\\r?$")
    | .[0]];
 
 def leak_first_exact_fixes_number($repo_re):
@@ -64,22 +66,42 @@ def leak_scan_key:
    | try capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key catch null]
   | .[0] // null;
 
-# Input is the `gh api --paginate --slurp` result: an array of page arrays.
-# Invalid shapes and missing merge timestamps block closure (fail closed).
-def leak_reopen_guard($fix_merged_at):
-  if (type != "array") or any(.[]; type != "array") or
-     (($fix_merged_at | type) != "string") or ($fix_merged_at == "") then
-    { verified: false, block_close: true, reopened_at: null }
-  else
-    (add // []) as $events
-    | ([$events[]
-        | select(.event == "reopened")
-        | .created_at
-        | select(type == "string" and . != "")]
-       | max // null) as $reopened_at
-    | {
-        verified: true,
-        block_close: ($reopened_at != null and $reopened_at > $fix_merged_at),
-        reopened_at: $reopened_at
+# GitHub exposes PullRequest.lastEditedAt and the complete edit history via
+# GraphQL. Current PR bodies are safe as merge-time provenance only when the
+# latest body edit was no later than the merge. Missing or malformed metadata
+# fails closed so a post-merge `Fixes` edit cannot affect later automation.
+def leak_merge_provenance_guard:
+  . as $pr
+  | (try ($pr.mergedAt | fromdateiso8601) catch null) as $merged_at
+  | if $merged_at == null then
+      {
+        verified: false,
+        block_provenance: true,
+        merged_at: ($pr.mergedAt // null),
+        last_edited_at: ($pr.lastEditedAt // null)
       }
+    elif $pr.lastEditedAt == null then
+      {
+        verified: true,
+        block_provenance: false,
+        merged_at: $pr.mergedAt,
+        last_edited_at: null
+      }
+  else
+    (try ($pr.lastEditedAt | fromdateiso8601) catch null) as $last_edited_at
+    | if $last_edited_at == null then
+        {
+          verified: false,
+          block_provenance: true,
+          merged_at: $pr.mergedAt,
+          last_edited_at: $pr.lastEditedAt
+        }
+      else
+        {
+          verified: true,
+          block_provenance: ($last_edited_at > $merged_at),
+          merged_at: $pr.mergedAt,
+          last_edited_at: $pr.lastEditedAt
+        }
+      end
   end;

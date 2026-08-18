@@ -187,30 +187,47 @@ SHIPPED_MAUI_VERSION=10.0.0
 printf '%s\n' "$SHIPPED_MAUI_VERSION" > /tmp/gh-aw/agent/shipped-maui-version.txt
 REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows base:main' \
-  --limit 1000 --json number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
+  --limit 1000 --json id,number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-raw.json)" -ge 1000 ]; then
   echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older unshipped fixes may be TRUNCATED and re-filed once — switch to date-windowed enumeration."
 fi
 
-SHIPPED_MAUI_COMMIT_DATE=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHIPPED_MAUI_VERSION" -q '.commit.committer.date' 2>/dev/null) || SHIPPED_MAUI_COMMIT_DATE=""
-if [ -z "$SHIPPED_MAUI_COMMIT_DATE" ]; then
-  echo "WARNING: shipped release tag \"$SHIPPED_MAUI_VERSION\" could not be resolved — unshipped-fix suppression is degraded for this run."
-  echo '[]' > /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json
-else
-  # A main-targeting PR merged before the shipped tag's commit cannot be an unshipped fix.
-  # Apply this cheap exact cutoff before spending compare-API calls on recent candidates.
-  jq --arg cutoff "$SHIPPED_MAUI_COMMIT_DATE" \
-    '[.[] | select((.mergedAt // "") > $cutoff)]' \
-    /tmp/gh-aw/agent/merged-leakfix-raw.json \
-    > /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json
-fi
+# A tag timestamp does not prove ancestry: a release-branch tag can be newer than an unrelated
+# main merge while excluding it. Retain every merged PR with current exact Fixes provenance until
+# GraphQL edit verification and both compare APIs establish containment.
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg repo "$REPO_RE" '
+  include "leak-workflow-provenance";
+  [.[] | select((leak_exact_fixes_numbers($repo) | length) > 0)]' \
+  /tmp/gh-aw/agent/merged-leakfix-raw.json \
+  > /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json
 
 printf '' > /tmp/gh-aw/agent/unshipped-main-fixes.ndjson
 printf '' > /tmp/gh-aw/agent/merged-leakfix-compare-failures.txt
+printf '' > /tmp/gh-aw/agent/merged-leakfix-provenance-failures.txt
 COMPARE_CANDIDATE_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json)
 jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json | while IFS= read -r pr; do
+  node_id=$(jq -r '.id // empty' <<<"$pr")
   sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
+  [ -z "$node_id" ] && continue
   [ -z "$sha" ] && continue
+  edit_meta=$(gh api graphql -f id="$node_id" -f query='
+    query($id: ID!) {
+      node(id: $id) {
+        ... on PullRequest {
+          mergedAt
+          lastEditedAt
+        }
+      }
+    }' 2>/dev/null) || edit_meta=""
+  provenance_guard=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -c '
+    include "leak-workflow-provenance";
+    .data.node | leak_merge_provenance_guard' <<<"$edit_meta" 2>/dev/null) || provenance_guard=""
+  if [ -z "$provenance_guard" ] ||
+     [ "$(jq -r '.verified' <<<"$provenance_guard")" != "true" ] ||
+     [ "$(jq -r '.block_provenance' <<<"$provenance_guard")" = "true" ]; then
+    printf '%s\n' "$(jq -r '.number' <<<"$pr")" >> /tmp/gh-aw/agent/merged-leakfix-provenance-failures.txt
+    continue
+  fi
   # Only workflow PRs with an exact SAME-REPO Fixes reference have scan provenance. A Refs line
   # points at a separate upstream issue and an arbitrary cross-repo #N must never become a join.
   scan_n=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -r --arg repo "$REPO_RE" '
@@ -247,6 +264,10 @@ jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json | while IF
       leak_scan_key:($key | if . == "" then null else . end)}' \
     >> /tmp/gh-aw/agent/unshipped-main-fixes.ndjson
 done
+PROVENANCE_FAILURE_COUNT=$(wc -l < /tmp/gh-aw/agent/merged-leakfix-provenance-failures.txt | tr -d ' ')
+if [ "$PROVENANCE_FAILURE_COUNT" -gt 0 ]; then
+  echo "WARNING: merge-time body provenance was mutable or unverified for $PROVENANCE_FAILURE_COUNT merged fixes — those fixes cannot suppress scans."
+fi
 COMPARE_FAILURE_COUNT=$(wc -l < /tmp/gh-aw/agent/merged-leakfix-compare-failures.txt | tr -d ' ')
 if [ "$COMPARE_FAILURE_COUNT" -gt 0 ]; then
   echo "WARNING: ancestry compare failed for $COMPARE_FAILURE_COUNT/$COMPARE_CANDIDATE_COUNT prefiltered merged fixes (tag \"$SHIPPED_MAUI_VERSION\" resolvable?) — unshipped-fix suppression is degraded."

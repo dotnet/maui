@@ -62,22 +62,19 @@ Describe 'Memory leak workflow provenance and safety' {
             return $null
         }
 
-        function Get-ProductionReopenGuard {
+        function Get-ProductionMergeProvenanceGuard {
             param(
                 [Parameter(Mandatory)]
-                [object] $TimelinePages,
-
-                [Parameter(Mandatory)]
-                [string] $FixMergedAt
+                [object] $PullRequest
             )
 
-            $inputJson = ConvertTo-Json -InputObject $TimelinePages -Depth 10 -Compress
+            $inputJson = ConvertTo-Json -InputObject $PullRequest -Depth 10 -Compress
             $output = $inputJson |
-                & jq -L $script:provenanceModuleRoot -c --arg m $FixMergedAt '
+                & jq -L $script:provenanceModuleRoot -c '
                     include "leak-workflow-provenance";
-                    leak_reopen_guard($m)'
+                    leak_merge_provenance_guard'
             if ($LASTEXITCODE -ne 0) {
-                throw "Production jq re-open guard failed with exit code $LASTEXITCODE"
+                throw "Production jq merge provenance guard failed with exit code $LASTEXITCODE"
             }
 
             return $output | ConvertFrom-Json
@@ -239,6 +236,10 @@ Describe 'Memory leak workflow provenance and safety' {
         @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #146' + [Environment]::NewLine + '````' + [Environment]::NewLine + 'Fixes #147'); Expected = '147' }
         @{ Body = '<!-- unclosed comment' + [Environment]::NewLine + 'Fixes #144'; Expected = $null }
         @{ Body = ('```text' + [Environment]::NewLine + 'Fixes #148' + [Environment]::NewLine + '```' + [Environment]::NewLine + 'Fixes #149'); Expected = '149' }
+        @{ Body = '   Fixes #150'; Expected = '150' }
+        @{ Body = '    Fixes #151'; Expected = $null }
+        @{ Body = ("`tFixes #152"); Expected = $null }
+        @{ Body = ("Fixes`t#153"); Expected = $null }
         @{ Body = 'Closes #139'; Expected = $null }
         @{ Body = 'Resolved #140'; Expected = $null }
     ) {
@@ -267,6 +268,8 @@ Describe 'Memory leak workflow provenance and safety' {
             @{ number = 12; body = ('```text' + [Environment]::NewLine + '`' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```') }
             @{ number = 13; body = ('```text' + [Environment]::NewLine + 'Fixes #500') }
             @{ number = 14; body = '<!-- Fixes #500' }
+            @{ number = 15; body = '    Fixes #500' }
+            @{ number = 16; body = ("`tFixes #500") }
         ) | ConvertTo-Json -Compress
 
         $result = $inputJson |
@@ -300,6 +303,9 @@ Describe 'Memory leak workflow provenance and safety' {
             @{ number = 3; body = ('```text' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```') }
             @{ number = 4; body = '<!-- Refs #500 -->' }
             @{ number = 5; body = ('````text' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```' + [Environment]::NewLine + 'Refs #500') }
+            @{ number = 6; body = '   Refs #500' }
+            @{ number = 7; body = '    Refs #500' }
+            @{ number = 8; body = ("`tRefs #500") }
         ) | ConvertTo-Json -Compress
 
         $result = $inputJson |
@@ -309,7 +315,7 @@ Describe 'Memory leak workflow provenance and safety' {
             ConvertFrom-Json
 
         $LASTEXITCODE | Should -Be 0
-        @($result) | Should -Be @(1, 2)
+        @($result) | Should -Be @(1, 2, 6)
     }
 
     It 'keeps two mechanisms on the same API as distinct leak identities' {
@@ -344,48 +350,50 @@ Describe 'Memory leak workflow provenance and safety' {
             "jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while"))
     }
 
-    It 'limits destructive closure to exact Fixes provenance' {
-        $fixer | Should -Match 'ONLY an exact same-repo Fixes #N match may drive close-issue'
+    It 'uses exact immutable Fixes provenance only to skip already-fixed scan work' {
+        $fixer | Should -Match 'ONLY an exact immutable same-repo Fixes #N match'
         $fixer | Should -Match 'merged-exact-fix-prs\.json'
-        $fixer | Should -Match 'A `Refs` line or Type\.Member match can never\s+authorize closure'
-        $fixer | Should -Not -Match 'already fixes this issue number OR the same rooting'
+        $fixer | Should -Match 'A `Refs` line or Type\.Member match can never\s+prove'
+        $fixer | Should -Match 'automatic issue closure is disabled'
+        (Get-WorkflowParts -Path $fixerPath).Frontmatter |
+            Should -Not -Match '(?m)^\s+close-issue:'
     }
 
-    It 'uses a candidate-keyed non-empty sentinel without adding rm' {
-        $fixer | Should -Match 'REOPEN_OVERRIDE_FILE="/tmp/gh-aw/agent/reopen-override-\$\{N\}\.txt"'
-        $fixer | Should -Match 'if test -s "\$REOPEN_OVERRIDE_FILE"'
-        $fixer | Should -Not -Match 'rm -f /tmp/gh-aw/agent/reopen-override'
-        $fixer | Should -Not -Match '/tmp/gh-aw/agent/reopen-override\.txt'
-    }
+    It 'fails closed when current merged PR provenance may have changed after merge' -Skip:(-not $script:jqAvailable) {
+        $neverEdited = Get-ProductionMergeProvenanceGuard -PullRequest ([pscustomobject]@{
+            mergedAt = '2026-08-01T10:00:00Z'
+            lastEditedAt = $null
+        })
+        $neverEdited.verified | Should -BeTrue
+        $neverEdited.block_provenance | Should -BeFalse
 
-    It 'behaviorally fails closed on re-open races and malformed paginated timelines' -Skip:(-not $script:jqAvailable) {
-        $mergedAt = '2026-08-01T10:00:00Z'
+        $editedBeforeMerge = Get-ProductionMergeProvenanceGuard -PullRequest ([pscustomobject]@{
+            mergedAt = '2026-08-01T10:00:00Z'
+            lastEditedAt = '2026-08-01T09:59:59Z'
+        })
+        $editedBeforeMerge.verified | Should -BeTrue
+        $editedBeforeMerge.block_provenance | Should -BeFalse
 
-        $afterMerge = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages @(
-            @([pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T09:00:00Z' }),
-            @([pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T11:00:00Z' })
-        )
-        $afterMerge.verified | Should -BeTrue
-        $afterMerge.block_close | Should -BeTrue
-        [DateTimeOffset]$afterMerge.reopened_at |
-            Should -Be ([DateTimeOffset]'2026-08-01T11:00:00Z')
+        $editedAfterMerge = Get-ProductionMergeProvenanceGuard -PullRequest ([pscustomobject]@{
+            mergedAt = '2026-08-01T10:00:00Z'
+            lastEditedAt = '2026-08-01T10:00:01Z'
+        })
+        $editedAfterMerge.verified | Should -BeTrue
+        $editedAfterMerge.block_provenance | Should -BeTrue
 
-        $beforeMerge = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages (, @(
-            [pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T09:59:59Z' }
-        ))
-        $beforeMerge.verified | Should -BeTrue
-        $beforeMerge.block_close | Should -BeFalse
+        $missingMerge = Get-ProductionMergeProvenanceGuard -PullRequest ([pscustomobject]@{
+            mergedAt = $null
+            lastEditedAt = '2026-08-01T09:00:00Z'
+        })
+        $missingMerge.verified | Should -BeFalse
+        $missingMerge.block_provenance | Should -BeTrue
 
-        $nonArray = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages ([pscustomobject]@{ message = 'API failure' })
-        $nonArray.verified | Should -BeFalse
-        $nonArray.block_close | Should -BeTrue
-
-        $malformedPage = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages @(
-            @([pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T09:00:00Z' }),
-            [pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T11:00:00Z' }
-        )
-        $malformedPage.verified | Should -BeFalse
-        $malformedPage.block_close | Should -BeTrue
+        $malformedEdit = Get-ProductionMergeProvenanceGuard -PullRequest ([pscustomobject]@{
+            mergedAt = '2026-08-01T10:00:00Z'
+            lastEditedAt = 'not-a-timestamp'
+        })
+        $malformedEdit.verified | Should -BeFalse
+        $malformedEdit.block_provenance | Should -BeTrue
     }
 
     It 'bounds hunter suppression to fixes absent from the shipped release' {
@@ -398,10 +406,14 @@ Describe 'Memory leak workflow provenance and safety' {
         $packageMatch.Success | Should -BeTrue
         $versionMatch.Groups['version'].Value | Should -Be $packageMatch.Groups['version'].Value
         $hunter | Should -Match 'compare/\$SHIPPED_MAUI_VERSION\.\.\.\$sha'
-        $hunter | Should -Match 'WARNING: shipped release tag'
+        $hunter | Should -Match 'merge-time body provenance was mutable or unverified'
         $hunter | Should -Match 'WARNING: ancestry compare failed'
+        $hunter | Should -Match 'lastEditedAt'
+        $hunter | Should -Match 'select\(\(leak_exact_fixes_numbers\(\$repo\) \| length\) > 0\)'
         $hunter | Should -Match 'open-leakscan-provenance\.json'
         $hunter | Should -Match 'unshipped-main-fixes\.json'
+        $hunter | Should -Not -Match 'SHIPPED_MAUI_COMMIT_DATE'
+        $hunter | Should -Not -Match 'select\(\(\.mergedAt // ""\) > \$cutoff\)'
         $hunter | Should -Not -Match 'already-filed-apis\.txt'
         $hunter | Should -Not -Match 'fixed-on-main-apis\.txt'
         $hunter | Should -Not -Match '"title:"'
