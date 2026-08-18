@@ -2771,6 +2771,18 @@ public void ReproducesIssue()
         $details | Should -Not -Match 'DevCon Factory'
     }
 
+    It 'filters driver logging that a timestamp prefix has shifted off the margin' {
+        $details = Get-ReplicationFailureDetails -Output @(
+            '2026-08-18T20:49:58.0254930Z [df4511aa][HTTP] <-- GET /session/df4/element/15 200 31 ms'
+            '2026-08-18T20:49:58.0254930Z [debug] [XCUITest] Matched 1 element'
+            '2026-08-18T20:49:58.0254930Z Step 4 (assertTextEquals) failed: read "NO BUG:".'
+        )
+
+        $details | Should -Match 'assertTextEquals'
+        $details | Should -Not -Match '/session/'
+        $details | Should -Not -Match 'XCUITest'
+    }
+
     It 'still reports something when the driver log is all there is' {
         $details = Get-ReplicationFailureDetails -Output @(
             '[df4511aa][HTTP] <-- GET /session/abc/element 500 5 ms')

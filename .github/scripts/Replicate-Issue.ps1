@@ -550,7 +550,7 @@ function Get-ReplicationFailureDetails {
     # was being handed request URLs instead of the reason a step failed. The
     # runner prints its own diagnostics outside that stream, so prefer lines
     # the wire protocol did not produce and fall back only if there are none.
-    $wireNoisePattern = '(?i)(?:^\s*\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|DevCon Factory|Support|Logcat|Simulator|simctl)|^\s*\[[0-9a-f]{8}\]|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
+    $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|DevCon Factory|Support|Logcat|Simulator|simctl)|(?:^|\s)\[[0-9a-f]{8}\]|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
     $quietLines = @($safeLines | Where-Object { $_ -notmatch $wireNoisePattern })
     if ($quietLines.Count -gt 0) {
         $safeLines = $quietLines
