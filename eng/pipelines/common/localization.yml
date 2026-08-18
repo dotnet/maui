@@ -22,7 +22,7 @@ stages:
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
-              locProj: 'eng/automation/LocProject.json'
+              locProj: 'eng/Localize/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
               patVariable: ${{ parameters.CeapexPat }}
