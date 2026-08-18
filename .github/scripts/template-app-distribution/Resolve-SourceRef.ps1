@@ -13,6 +13,8 @@ param(
     [Parameter(Mandatory)]
     [string]$DefaultBranch,
 
+    [string]$TrustedPublishBranches = "",
+
     [Parameter(Mandatory)]
     [bool]$Publish
 )
@@ -53,10 +55,28 @@ function Test-SafePublishSourceRef([string]$Value) {
     return -not ($ref.Contains("..") -or $ref.Contains("//") -or $ref.Contains("@{") -or $ref.EndsWith("/") -or $ref.EndsWith("."))
 }
 
-function Test-TrustedBranchName([string]$BranchName, [string]$DefaultBranchName) {
-    return $BranchName -eq $DefaultBranchName -or
-        $BranchName -match "^net\d+\.0$" -or
-        $BranchName -match "^release/.+"
+function Get-TrustedPublishBranchNames(
+    [string]$DefaultBranchName,
+    [string]$ConfiguredBranches
+) {
+    $branches = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    foreach ($candidate in @($DefaultBranchName) + @($ConfiguredBranches -split "[,`r`n]+")) {
+        $branchName = ([string]$candidate).Trim()
+        if ([string]::IsNullOrWhiteSpace($branchName)) {
+            continue
+        }
+
+        $branchName = $branchName -replace "^refs/heads/", "" -replace "^origin/", ""
+        if (-not (Test-GitSuccess -Arguments @("check-ref-format", "--branch", $branchName))) {
+            throw "Trusted publish branch '$candidate' is not a valid exact branch name. Configure TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES with comma- or newline-separated branch names and no wildcards."
+        }
+
+        [void]$branches.Add($branchName)
+    }
+
+    return @($branches)
 }
 
 Push-Location $RepositoryPath
@@ -68,19 +88,25 @@ try {
         throw "Publishing source_ref '$SourceRef' contains characters or ref syntax that are not allowed for protected publishing. Use a trusted branch name, tag name, or full commit SHA."
     }
 
+    $trustedBranchNames = @(
+        Get-TrustedPublishBranchNames `
+            -DefaultBranchName $DefaultBranch `
+            -ConfiguredBranches $TrustedPublishBranches
+    )
     $trustedBranches = @(
-        Invoke-Git -Arguments @("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin") |
-            Where-Object {
-                $branchName = $_ -replace "^origin/", ""
-                Test-TrustedBranchName $branchName $DefaultBranch
+        foreach ($branchName in $trustedBranchNames) {
+            $branchRef = "origin/$branchName"
+            if (Test-GitSuccess -Arguments @("rev-parse", "--verify", $branchRef)) {
+                $branchRef
             }
+        }
     )
 
     $isTrusted = $false
     $trustedReason = ""
 
     $sourceBranchName = $normalizedSourceRef -replace "^refs/heads/", "" -replace "^origin/", ""
-    if (Test-TrustedBranchName $sourceBranchName $DefaultBranch) {
+    if ($trustedBranchNames -ccontains $sourceBranchName) {
         $branchRef = "origin/$sourceBranchName"
         if (Test-GitSuccess -Arguments @("rev-parse", "--verify", $branchRef)) {
             $branchSha = (Invoke-Git -Arguments @("rev-parse", $branchRef)).Trim()
@@ -117,7 +143,7 @@ try {
         }
 
         if (-not $isTrusted) {
-            throw "Publishing requires a trusted source_ref. '$SourceRef' resolved to '$sourceSha', which is not a trusted branch/tag or reachable from a trusted branch. Rerun with publish=false for a dry run."
+            throw "Publishing requires a trusted source_ref. '$SourceRef' resolved to '$sourceSha', which is not the default branch, an exact TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES entry, or a tag/commit reachable from one. Rerun with publish=false for a dry run."
         }
     }
 

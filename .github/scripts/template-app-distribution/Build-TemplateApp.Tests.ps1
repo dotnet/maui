@@ -355,7 +355,10 @@ end
         )
     }
 
-    function New-SourceRefTestRepository([switch]$UntrustedHead) {
+    function New-SourceRefTestRepository(
+        [switch]$UntrustedHead,
+        [string]$HeadBranchName = 'feature/untrusted'
+    ) {
         $repositoryPath = Join-Path $testRoot ([guid]::NewGuid().ToString("N"))
         New-Item -ItemType Directory -Path $repositoryPath -Force | Out-Null
 
@@ -370,9 +373,11 @@ end
         & git -C $repositoryPath update-ref refs/remotes/origin/main $trustedSha
 
         if ($UntrustedHead) {
-            & git -C $repositoryPath switch --quiet -c feature/untrusted
+            & git -C $repositoryPath switch --quiet -c $HeadBranchName
             Set-Content -Path (Join-Path $repositoryPath 'source.txt') -Value 'untrusted'
             & git -C $repositoryPath commit --quiet -am 'untrusted source'
+            $headSha = (& git -C $repositoryPath rev-parse HEAD).Trim()
+            & git -C $repositoryPath update-ref "refs/remotes/origin/$HeadBranchName" $headSha
         }
 
         if ($LASTEXITCODE -ne 0) {
@@ -385,15 +390,21 @@ end
     function Invoke-ResolveSourceRef(
         [string]$RepositoryPath,
         [string]$SourceRef,
-        [bool]$Publish
+        [bool]$Publish,
+        [string]$TrustedPublishBranches = ''
     ) {
-        return Invoke-ExternalPowerShell $script:resolveSourceRefScriptPath @(
+        $arguments = @(
             '-RepositoryPath', $RepositoryPath,
             '-SourceRef', $SourceRef,
             '-WorkflowRef', 'refs/heads/main',
             '-DefaultBranch', 'main',
             "-Publish:$($Publish.ToString().ToLowerInvariant())"
         )
+        if (-not [string]::IsNullOrWhiteSpace($TrustedPublishBranches)) {
+            $arguments += @('-TrustedPublishBranches', $TrustedPublishBranches)
+        }
+
+        return Invoke-ExternalPowerShell $script:resolveSourceRefScriptPath $arguments
     }
 
     function Invoke-FastfileHarness {
@@ -497,6 +508,55 @@ Describe 'source ref trust resolution' {
 
         $result.ExitCode | Should -Not -Be 0
         $result.Output | Should -Match 'Publishing requires a trusted source_ref'
+        Test-Path $env:GITHUB_OUTPUT | Should -BeFalse
+    }
+
+    It 'rejects a release-shaped branch that is absent from the controlled allowlist' {
+        $branch = 'release/11.0.1xx-preview7'
+        $repositoryPath = New-SourceRefTestRepository `
+            -UntrustedHead `
+            -HeadBranchName $branch
+        $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+
+        $result = Invoke-ResolveSourceRef `
+            -RepositoryPath $repositoryPath `
+            -SourceRef $branch `
+            -Publish $true
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'exact TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES entry'
+        Test-Path $env:GITHUB_OUTPUT | Should -BeFalse
+    }
+
+    It 'allows an exact administrator-configured publish branch' {
+        $branch = 'release/11.0.1xx-preview7'
+        $repositoryPath = New-SourceRefTestRepository `
+            -UntrustedHead `
+            -HeadBranchName $branch
+        $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+
+        $result = Invoke-ResolveSourceRef `
+            -RepositoryPath $repositoryPath `
+            -SourceRef $branch `
+            -Publish $true `
+            -TrustedPublishBranches $branch
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        Get-Content -Path $env:GITHUB_OUTPUT | Should -Contain 'trusted=true'
+    }
+
+    It 'rejects wildcard entries in the controlled publish branch allowlist' {
+        $repositoryPath = New-SourceRefTestRepository
+        $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+
+        $result = Invoke-ResolveSourceRef `
+            -RepositoryPath $repositoryPath `
+            -SourceRef 'main' `
+            -Publish $true `
+            -TrustedPublishBranches 'release/*'
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'valid exact branch name'
         Test-Path $env:GITHUB_OUTPUT | Should -BeFalse
     }
 }
@@ -1159,6 +1219,13 @@ Describe 'workflow test gate' {
             Should -Be 3
     }
 
+    It 'passes the administrator-controlled publish branch allowlist to the trust gate' {
+        $script:workflowText | Should -Match (
+            'TRUSTED_PUBLISH_BRANCHES:\s*\$\{\{\s*vars\.TEMPLATE_APP_TRUSTED_PUBLISH_BRANCHES\s*\}\}')
+        $script:workflowText | Should -Match (
+            '-TrustedPublishBranches "\$env:TRUSTED_PUBLISH_BRANCHES"')
+    }
+
     It 'passes generated project paths to PowerShell through environment variables' {
         $script:workflowText | Should -Not -Match (
             '-ProjectPath\s+"\$\{\{\s*steps\.app\.outputs\.project_path\s*\}\}"')
@@ -1201,11 +1268,30 @@ Describe 'workflow test gate' {
             '(?m)^\s+name:\s+(template-app-(?:dryrun|publish)[^\r\n]+)$'
         )
 
-        $artifactNames.Count | Should -Be 3
+        $artifactNames.Count | Should -Be 2
         foreach ($artifactName in $artifactNames) {
             $artifactName.Groups[1].Value | Should -Match (
                 '\$\{\{\s*github\.run_attempt\s*\}\}')
         }
+    }
+
+    It 'does not create or upload binlogs from secret-bearing publish jobs' {
+        $publishJob = [regex]::Match(
+            $script:workflowText,
+            '(?ms)^  publish:\s*\r?\n.*?(?=^  [A-Za-z0-9_-]+:\s*\r?$|\z)'
+        )
+        $dryRunJob = [regex]::Match(
+            $script:workflowText,
+            '(?ms)^  dry-run-build:\s*\r?\n.*?(?=^  [A-Za-z0-9_-]+:\s*\r?$|\z)'
+        )
+
+        $publishJob.Success | Should -BeTrue
+        $dryRunJob.Success | Should -BeTrue
+        $publishJob.Value | Should -Not -Match '(?m)^\s+-CreateBinlog'
+        $publishJob.Value | Should -Not -Match 'template-app-publish-binlog'
+        $publishJob.Value | Should -Not -Match 'steps\.build\.outputs\.(?:binlog_path|store_binlog_path|sideload_binlog_path)'
+        $dryRunJob.Value | Should -Match '(?m)^\s+-CreateBinlog'
+        $dryRunJob.Value | Should -Match 'steps\.build\.outputs\.binlog_path'
     }
 }
 
