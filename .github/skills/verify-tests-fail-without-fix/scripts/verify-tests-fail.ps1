@@ -1233,6 +1233,18 @@ function Get-TestResultFromOutput {
         }
     }
 
+    # Count-less BuildAndRunHostApp output does not contain the device runner's
+    # "Passed:/Failed:" block, but it does emit one summary per selected UITest:
+    #   [UITest] Category: Passed=False Failed=N [...]
+    # Use those summaries as the authoritative failure count for the snapshot
+    # fallbacks below. A marker appearing anywhere in a multi-test log is not enough:
+    # every reported failure must be accounted for by an allowed snapshot condition,
+    # otherwise a sibling assertion or pixel diff must remain a genuine failure.
+    $uiTestFailureCount = 0
+    foreach ($match in [regex]::Matches($content, '(?im)^\s*\[UITest\][^\r\n]*:\s*Passed=False\s+Failed=(\d+)\b')) {
+        $uiTestFailureCount += [int]$match.Groups[1].Value
+    }
+
     # ── New snapshot/visual UI test with no committed baseline ──
     # A brand-new VerifyScreenshot test has no baseline PNG in the repo yet — maintainers
     # add the baseline in a follow-up commit after visually confirming it — so VisualTestUtils
@@ -1244,10 +1256,11 @@ function Get-TestResultFromOutput {
     # IMPORTANT: this matches a MISSING baseline only. A real pixel DIFF against an EXISTING
     # baseline (VisualTestFailedException without "not yet created") is a genuine failure and
     # must still be counted — it can be a real visual regression.
-    if ($content -match '(?i)Baseline snapshot not yet created') {
+    $baselineMissingCount = ([regex]::Matches($content, '(?i)Baseline snapshot not yet created')).Count
+    if ($uiTestFailureCount -gt 0 -and $baselineMissingCount -ge $uiTestFailureCount) {
         return @{
             Passed = $false; EnvError = $true; SnapshotBaselineMissing = $true
-            Error = "New snapshot test — baseline image not yet created; the gate cannot validate a brand-new VerifyScreenshot test (the baseline PNG is added separately by a maintainer)"
+            Error = "New snapshot test(s) — baseline image not yet created for all $uiTestFailureCount reported failure(s); the gate cannot validate brand-new VerifyScreenshot tests (baseline PNGs are added separately by a maintainer)"
             FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }
@@ -1264,10 +1277,13 @@ function Get-TestResultFromOutput {
     # UITest path (NUnit "Passed=False", no "Passed:/Failed:" counts). (build 14850018, PR #37032:
     # ChangingItemSpacingDoesNotShiftFirstItemOutOfView.png baseline 1206x2472 vs gate 1124x2286 —
     # identical size mismatch in both legs, wrongly reported FAILED.)
-    if ($content -match '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?') {
+    $sizeMismatchCount = ([regex]::Matches($content, '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?')).Count
+    if ($uiTestFailureCount -gt 0 -and
+        $sizeMismatchCount -gt 0 -and
+        ($sizeMismatchCount + $baselineMissingCount) -ge $uiTestFailureCount) {
         return @{
             Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
-            Error = "Snapshot size mismatch: the committed baseline PNG dimensions differ from the gate simulator's screenshot size — the baseline was captured on a different-sized device. A PR code fix cannot change screenshot dimensions, so the gate cannot A/B verify this test; the baseline needs regenerating on the current device."
+            Error = "Snapshot size mismatch for $sizeMismatchCount reported failure(s): the committed baseline PNG dimensions differ from the gate simulator's screenshot size — the baseline was captured on a different-sized device. Every count-less UITest failure was accounted for by a size mismatch or missing baseline, so the gate cannot A/B verify these tests; the baselines need regenerating on the current device."
             FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }

@@ -264,10 +264,26 @@ Some later flake mentioned the app did not recover after crash-recovery attempts
     }
 
     It 'flags a brand-new snapshot with no committed baseline as env/SnapshotBaselineMissing' {
-        $log = New-LogFile "VisualTestFailedException : Baseline snapshot not yet created for MyNewTest"
+        $log = New-LogFile @'
+VisualTestFailedException : Baseline snapshot not yet created for MyNewTest
+[UITest] SnapshotCategory: Passed=False Failed=1 [12s]
+'@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeTrue
         $r.SnapshotBaselineMissing | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let one missing baseline mask a sibling count-less assertion failure' {
+        $log = New-LogFile @'
+VisualTestFailedException : Baseline snapshot not yet created for MyNewTest
+AssertionException: Expected: 42 But was: 17
+[UITest] SnapshotCategory: Passed=False Failed=2 [12s]
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.SnapshotBaselineMissing | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1264,6 +1280,57 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         $r = Get-TestResultFromOutput -LogFile $log
         $r.SnapshotSizeMismatch | Should -Not -BeTrue
         $r.EnvError | Should -Not -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let one size mismatch mask a sibling count-less assertion failure' {
+        $log = New-LogFile -Content @"
+  Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  AssertionException: Expected: 42 But was: 17
+  [UITest] MixedCategory: Passed=False Failed=2 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let one size mismatch mask a sibling count-less pixel diff' {
+        $log = New-LogFile -Content @"
+  Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  Snapshot different than baseline: RealRegression.png (17.08% difference)
+  [UITest] MixedVisualCategory: Passed=False Failed=2 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps a count-less run benign when every failure is a missing baseline or size mismatch' {
+        $log = New-LogFile -Content @"
+  VisualTestFailedException : Baseline snapshot not yet created for NewSnapshot.png
+  Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  [UITest] MixedBenignSnapshots: Passed=False Failed=2 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Failed | Should -Be 0
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'fails closed when a size marker has no count-less UITest failure summary' {
+        $log = New-LogFile -Content @"
+  Snapshot different than baseline: Unknown.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
     }
 }
 
