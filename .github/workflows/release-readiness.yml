@@ -903,6 +903,7 @@ jobs:
         run: |
           set -euo pipefail
           pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseHandoff.ps1
 
       - name: Run Find-Trackers (no issue side-effects)
         env:
