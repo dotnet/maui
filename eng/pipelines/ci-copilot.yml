@@ -644,6 +644,47 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
 
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # Build 15001358 provisioned a simulator, reproduced issue 37407
+              # and authored a test over forty minutes, only for publication to
+              # refuse it because PR 152 already covers this issue and platform.
+              # The publisher is still the authority; asking the same public
+              # question first only stops the device work from being wasted.
+              # This runs in the untrusted agent job, so it reads the public
+              # fork with the ordinary comment token and never sees the
+              # publishing credential.
+              $marker = "<!-- MAUI_COPILOT_REPLICATION issue=${{ parameters.IssueNumber }} platform=${{ parameters.Platform }} -->"
+              $existing = $null
+              try {
+                $openPulls = & gh pr list `
+                  --repo "kubaflo/maui" `
+                  --state open `
+                  --limit 200 `
+                  --json 'body,url'
+                if ($LASTEXITCODE -eq 0) {
+                  $existing = @($openPulls | ConvertFrom-Json) |
+                    Where-Object { [string]$_.body -like "*$marker*" } |
+                    Select-Object -First 1
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not check for an existing reproduction pull request: $($_.Exception.Message)"
+              }
+
+              if ($existing) {
+                Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
+                Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
+                Write-Host "ISSUE REPLICATION SKIPPED: an open reproduction pull request already covers this issue and platform: $($existing.url)"
+              } else {
+                Write-Host "No open reproduction pull request covers this issue and platform yet."
+              }
+            name: ReplicationDuplicateCheck
+            displayName: 'Check for an existing reproduction pull request'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 5
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
             - template: common/enable-kvm.yml
@@ -1976,7 +2017,7 @@ stages:
               }
             name: RunReplication
             displayName: 'Replicate issue and author failing test'
-            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), ne(variables['replicationAlreadyPublished'], 'true'))
             timeoutInMinutes: 210
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
@@ -2618,7 +2659,7 @@ stages:
   - stage: PublishReplication
     displayName: 'Validate and publish issue replication'
     dependsOn: ReviewPR
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
     jobs:
       - job: PublishReplication
         displayName: 'Publish validated reproduction'

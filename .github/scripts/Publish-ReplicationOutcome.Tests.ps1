@@ -102,4 +102,24 @@ Describe 'Trusted replication issue outcome publishing' {
             "`$failureText -match '(?im)\bHTTP\s*(?:429|50[234])\b'"))
         $script:OutcomeSource | Should -Match 'GitHub service unavailable while validating MauiBot authentication'
     }
+
+    It 'stays quiet when the run never produced a candidate' {
+        # Build 15001512 failed early because the requested number was a pull
+        # request, then failed a second time here on the missing candidate,
+        # hiding the real cause behind a file-not-found error.
+        $missing = Join-Path $TestDrive 'absent-candidate.json'
+        Test-Path -LiteralPath $missing | Should -BeFalse
+
+        $result = & $script:OutcomeScript `
+            -CandidatePath $missing `
+            -IssueNumber 12345 `
+            -Platform ios `
+            -BuildId 14980000 `
+            -BuildUrl 'https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=14980000' `
+            -Repository 'dotnet/maui' `
+            -DryRun
+
+        $result.handled | Should -BeFalse
+        $result.reason | Should -BeExactly 'no-candidate'
+    }
 }

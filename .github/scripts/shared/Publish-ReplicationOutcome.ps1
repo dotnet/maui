@@ -42,6 +42,15 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
+# A run can fail before the agent ever produces a candidate, as build 15001512
+# did when the requested number turned out to be a pull request. There is no
+# outcome to report in that case, and failing here would replace the real cause
+# with a missing-file error.
+if (-not (Test-Path -LiteralPath $CandidatePath -PathType Leaf)) {
+    Write-Host 'No replication candidate was produced, so there is no issue outcome to publish.'
+    return [pscustomobject]@{ handled = $false; reason = 'no-candidate' }
+}
+
 $candidate = Get-Content -LiteralPath $CandidatePath -Raw |
     ConvertFrom-Json -Depth 20
 if ([int]$candidate.issueNumber -ne $IssueNumber -or

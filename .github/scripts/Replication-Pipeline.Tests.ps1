@@ -101,7 +101,7 @@ Describe 'MAUI Copilot mode routing' {
         $validationIndex | Should -BeLessThan $credentialIndex
         $credentialIndex | Should -BeLessThan $evidenceIndex
         $evidenceIndex | Should -BeLessThan $publicationIndex
-        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\)\)"
+        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\)\)"
         $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
@@ -284,5 +284,39 @@ Describe 'Replication issue outcome publication boundary' {
         $telemetry = $script:Pipeline.Substring($start, $end - $start)
         $telemetry.Contains('No Copilot telemetry was produced') | Should -BeTrue
         $telemetry.Contains('exit 0') | Should -BeTrue
+    }
+
+    It 'checks for a duplicate reproduction pull request before any device work' {
+        # Build 15001358 spent over forty minutes reproducing issue 37407 and
+        # authoring a test, only for the publisher to reject the result because
+        # PR 152 already covered it. The same question is now asked up front.
+        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $replicate = $script:Pipeline.IndexOf('Replicate issue and author failing test')
+        $check | Should -BeGreaterThan 0
+        $replicate | Should -BeGreaterThan $check
+
+        $step = $script:Pipeline.Substring($check - 2000, 2000)
+        $step.Contains('MAUI_COPILOT_REPLICATION issue=') | Should -BeTrue
+        $step.Contains('variable=replicationAlreadyPublished') | Should -BeTrue
+    }
+
+    It 'reads the public fork without ever handling the publishing credential' {
+        # The duplicate check runs in the untrusted agent job, so it must not
+        # widen that job's credential surface to reach the publisher's token.
+        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check | Should -BeGreaterThan 0
+
+        $step = $script:Pipeline.Substring($check, 400)
+        $step.Contains('GH_TOKEN: $(GH_COMMENT_TOKEN)') | Should -BeTrue
+        $step.Contains('GH_REPLICATION_TOKEN') | Should -BeFalse
+    }
+
+    It 'skips the device run and the publisher when a duplicate already exists' {
+        $script:Pipeline.Contains(
+            "ne(variables['replicationAlreadyPublished'], 'true')") |
+            Should -BeTrue
+        $script:Pipeline.Contains(
+            "ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true')") |
+            Should -BeTrue
     }
 }
