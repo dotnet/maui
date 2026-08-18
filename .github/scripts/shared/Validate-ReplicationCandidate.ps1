@@ -3030,6 +3030,8 @@ function Invoke-ReplicationCandidateValidation {
             testType = $manifest.PublishedTestType
             verificationTestType = $manifest.TestType
             testName = $manifest.TestName
+            testClassName = $manifest.TestClassName
+            testMethodName = $manifest.TestMethodName
             testFilter = $manifest.TestFilter
             expectedFailureSignature = $manifest.ExpectedFailurePattern
             expectedFailurePattern = $manifest.ExpectedFailurePattern

@@ -44,6 +44,7 @@ BeforeAll {
         'ConvertTo-ReplicationInlineCode',
         'Get-ReplicationPullRequestMarker',
         'New-ReplicationBranchName',
+        'Get-ReplicationCandidateText',
         'New-ReplicationPullRequestBody',
         'Resolve-ReplicationSourceRepository'
     )) {
@@ -125,6 +126,75 @@ Describe 'Trusted replication pull request publishing' {
     It 'strips Azure logging directives and newlines from single-line values' {
         ConvertTo-ReplicationSingleLine -Value "Title`n##vso[task.setvariable variable=X]bad" |
             Should -BeExactly 'Title bad'
+    }
+
+    It 'builds a body from a validated document deserialised from JSON' {
+        # Build 14999470 produced a ready candidate and then failed the whole
+        # publication because the real validated document is a PSCustomObject
+        # from ConvertFrom-Json, and reading a property it does not carry
+        # throws under StrictMode. Hashtable fixtures never proved this, so the
+        # publisher's own strict mode has to be in force here.
+        Set-StrictMode -Version 3.0
+        $validated = [ordered]@{
+            schemaVersion = 1
+            status = 'validated'
+            validationPassed = $true
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue37440'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Issue12345'
+            expectedFailurePattern = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: Issue12345 expected red but was blue'
+            verificationRunCount = 2
+            reproductionMarker = 'BUG REPRODUCED:'
+            files = @('src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue37440.cs')
+            reproductionSteps = @('Open the page', 'Tap the control')
+            evidence = [ordered]@{
+                video = 'repro.mp4'
+                preview = 'preview.gif'
+                thumbnail = 'thumbnail.png'
+            }
+        } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $validated `
+            -Evidence $evidence `
+            -IssueTitle 'Something is broken' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://example.com/build/1'
+
+        # Without the class and method the body degrades to the filter rather
+        # than failing publication.
+        $body | Should -Match 'Exact test'
+        $body | Should -Match '2 independent times'
+
+        $withNames = $validated | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+        $withNames | Add-Member -NotePropertyName testClassName `
+            -NotePropertyValue 'Microsoft.Maui.TestCases.Tests.Issues.Issue37440'
+        $withNames | Add-Member -NotePropertyName testMethodName `
+            -NotePropertyValue 'ReproducesIssue37440'
+        $namedBody = New-ReplicationPullRequestBody `
+            -Candidate $withNames `
+            -Evidence $evidence `
+            -IssueTitle 'Something is broken' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://example.com/build/1'
+        $namedBody |
+            Should -Match 'Microsoft\.Maui\.TestCases\.Tests\.Issues\.Issue37440\.ReproducesIssue37440'
     }
 
     It 'generates a draft body with video evidence, unconditional failure semantics, and safety statement' {

@@ -100,6 +100,24 @@ function New-ReplicationBranchName {
     return "copilot/reproduce-$IssueNumber-$safePlatform-$safeBuildId"
 }
 
+function Get-ReplicationCandidateText {
+    <#
+        .SYNOPSIS
+        Reads an optional validated-candidate property without tripping StrictMode.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Candidate,
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    $property = $Candidate.PSObject.Properties[$Name]
+    if (-not $property -or $null -eq $property.Value) {
+        return ''
+    }
+
+    return [string]$property.Value
+}
+
 function New-ReplicationPullRequestBody {
     param(
         [Parameter(Mandatory = $true)]$Candidate,
@@ -114,9 +132,15 @@ function New-ReplicationPullRequestBody {
     $platform = ConvertTo-ReplicationSingleLine -Value ([string]$Candidate.platform) -MaximumLength 40
     $testType = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testType)
     $testFilter = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testFilter)
-    $exactTestName = if ([string]$Candidate.testClassName -and [string]$Candidate.testMethodName) {
+    # A validated document deserialised from JSON is a PSCustomObject, and
+    # reading a property it does not carry throws under StrictMode. Build
+    # 14999470 produced a ready candidate and then failed the whole publication
+    # on exactly that, so these descriptive names are read defensively.
+    $candidateTestClass = Get-ReplicationCandidateText -Candidate $Candidate -Name 'testClassName'
+    $candidateTestMethod = Get-ReplicationCandidateText -Candidate $Candidate -Name 'testMethodName'
+    $exactTestName = if ($candidateTestClass -and $candidateTestMethod) {
         ConvertTo-ReplicationInlineCode `
-            -Value ("{0}.{1}" -f [string]$Candidate.testClassName, [string]$Candidate.testMethodName)
+            -Value ("{0}.{1}" -f $candidateTestClass, $candidateTestMethod)
     } else {
         $testFilter
     }
