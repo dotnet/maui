@@ -231,5 +231,44 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Contains(handler.PlatformView, container.CachedChildren);
 			});
 		}
+
+		[Fact]
+		public async Task FormattedTextDoesNotHangOrCrashWhenLabelIsShownAfterBeingSetWhileHidden()
+		{
+			SetupBuilder();
+
+			var label = new Label
+			{
+				IsVisible = false,
+				WidthRequest = 30,
+				HorizontalOptions = LayoutOptions.Start,
+				LineBreakMode = LineBreakMode.WordWrap,
+			};
+
+			var layout = new VerticalStackLayout { label };
+
+			await AttachAndRun(layout, async (handler) =>
+			{
+				label.FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "Aa Bb Cc" },
+						new Span { Text = "\n" },
+					}
+				};
+
+				await Task.Delay(50);
+
+				// Showing the label triggers a real arrange pass, which calls
+				// RecalculateSpanPositions(). Before the fix, this would hang the UI thread and
+				// eventually crash with an OutOfMemoryException because the label wraps to 3
+				// lines ("Aa", "Bb", "Cc") at this width. Simply completing (instead of hanging or
+				// throwing) proves the fix works.
+				label.IsVisible = true;
+
+				await Task.Delay(250);
+			});
+		}
 	}
 }

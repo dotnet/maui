@@ -33,6 +33,7 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
 					fonts.AddFont("Montserrat-Bold.otf", "MontserratBold");
+					fonts.AddFont("MyCustomFont.ttf", "MyCustomFont");
 				})
 				.RenderingPerformanceAddMappers()
 				.Issue21109AddMappers()
@@ -57,6 +58,7 @@ namespace Maui.Controls.Sample
 #endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
+				handlers.AddHandler(typeof(Issue36749Button), typeof(Issue36749ButtonHandler));
 #endif
 #if IOS || MACCATALYST || ANDROID
 				handlers.AddHandler(typeof(UITestEditor), typeof(UITestEditorHandler));

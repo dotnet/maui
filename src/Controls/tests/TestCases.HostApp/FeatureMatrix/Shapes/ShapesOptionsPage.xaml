@@ -11,440 +11,461 @@
                            Clicked="ApplyButton_Clicked"
                            AutomationId="Apply"/>
        </ContentPage.ToolbarItems>
-       <VerticalStackLayout Padding="15"
-                            Spacing="5">
-              <!-- Shape Type Selection -->
-              <Border Padding="1"
-                      Stroke="Gray"
-                      StrokeThickness="1">
-                     <StackLayout Spacing="1">
-
-                            <Label Text="Select Shape Type:"
-                                   FontAttributes="Bold"
-                                   FontSize="14"/>
-                            <HorizontalStackLayout Spacing="1">
-                                   <RadioButton Content="Rectangle"
-                                                GroupName="ShapeType"
-                                                IsChecked="True"
-                                                CheckedChanged="OnShapeTypeChanged"
-                                                AutomationId="RectangleRadioButton"/>
-                                   <RadioButton Content="Ellipse"
-                                                GroupName="ShapeType"
-                                                CheckedChanged="OnShapeTypeChanged"
-                                                AutomationId="EllipseRadioButton"/>
-                                   <RadioButton Content="Line"
-                                                GroupName="ShapeType"
-                                                CheckedChanged="OnShapeTypeChanged"
-                                                AutomationId="LineRadioButton"/>
-                            </HorizontalStackLayout>
-                            <HorizontalStackLayout Spacing="1">
-                                   <RadioButton Content="Polygon"
-                                                GroupName="ShapeType"
-                                                CheckedChanged="OnShapeTypeChanged"
-                                                AutomationId="PolygonRadioButton"/>
-                                   <RadioButton Content="Polyline"
-                                                GroupName="ShapeType"
-                                                CheckedChanged="OnShapeTypeChanged"
-                                                AutomationId="PolyLineRadioButton"/>
-                                   <RadioButton Content="Path"
-                                                GroupName="ShapeType"
-                                                CheckedChanged="OnShapeTypeChanged"
-                                                AutomationId="PathRadioButton"/>
-                            </HorizontalStackLayout>
-                     </StackLayout>
-              </Border>
-
-              <!-- Common Properties -->
-              <Border  Padding="1"
-                       Stroke="Gray"
-                       StrokeThickness="1">
-                     <StackLayout Spacing="1">
-                            <Label Text="Common Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="14"/>
-
-                            <!-- Fill Color -->
-                            <Label Text="Fill Color:"
-                                   FontAttributes="Bold"/>
-                            <HorizontalStackLayout Spacing="1">
-                                   <RadioButton Content="None"
-                                                GroupName="FillColor"
-                                                IsChecked="True"
-                                                CheckedChanged="OnFillColorChanged"
-                                                AutomationId="FillColorNoneRadioButton"/>
-                                   <RadioButton Content="Blue"
-                                                GroupName="FillColor"
-                                                CheckedChanged="OnFillColorChanged"
-                                                AutomationId="FillColorBlueRadioButton"/>
-                                   <RadioButton Content="Green"
-                                                GroupName="FillColor"
-                                                CheckedChanged="OnFillColorChanged"
-                                                AutomationId="FillColorGreenRadioButton"/>
-                            </HorizontalStackLayout>
-
-                            <!-- Stroke Color -->
-                            <Label Text="Stroke Color:"
-                                   FontAttributes="Bold"/>
-                            <HorizontalStackLayout Spacing="1">
-                                   <RadioButton Content="Black"
-                                                GroupName="StrokeColor"
-                                                IsChecked="True"
-                                                CheckedChanged="OnStrokeColorChanged"
-                                                AutomationId="StrokeColorBlackRadioButton"/>
-                                   <RadioButton Content="Red"
-                                                GroupName="StrokeColor"
-                                                CheckedChanged="OnStrokeColorChanged"
-                                                AutomationId="StrokeColorRedRadioButton"/>
-                            </HorizontalStackLayout>
-
-                            <HorizontalStackLayout Spacing="10">
-                                   <CheckBox
-                                          IsChecked="{Binding HasShadow}"
-                                          AutomationId="ShadowCheckBox"/>
-                                   <Label Text="Has Shadow"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                            </HorizontalStackLayout>
-
-                            <!-- Stroke Properties Grid -->
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto,Auto,Auto"
-                                  ColumnSpacing="1"
-                                  RowSpacing="1">
-
-                                   <!-- Stroke Thickness -->
-                                   <Label Grid.Row="0"
-                                                 Grid.Column="0"
-                                          Text="Stroke Thickness:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0"
-                                                 Grid.Column="1"
-                                          Text="{Binding StrokeThickness, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter thickness (1-10)"
-                                          WidthRequest="200"
-                                          AutomationId="StrokeThicknessEntry"/>
-
-                                   <!-- Stroke Dash Array -->
-                                   <Label Grid.Row="1"
-                                                 Grid.Column="0"
-                                          Text="Stroke Dash Array:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="1"
-                                                 Grid.Column="1"
-                                          Text="{Binding StrokeDashArray, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="e.g., 5,5 or 10,3,2,3"
-                                          WidthRequest="200"
-                                          AutomationId="StrokeDashArrayEntry"/>
-
-                                   <!-- Stroke Dash Offset -->
-                                   <Label Grid.Row="2"
-                                                 Grid.Column="0"
-                                          Text="Stroke Dash Offset:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="2"
-                                                 Grid.Column="1"
-                                          Text="{Binding StrokeDashOffset, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter offset (0-50)"
-                                          WidthRequest="200"
-                                          AutomationId="StrokeDashOffsetEntry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
-
-              <!-- Rectangle Properties -->
-              <Border  Padding="1"
-                       Stroke="Gray"
-                       StrokeThickness="1"
-                       x:Name="RectanglePropertiesSection">
-                     <StackLayout Spacing="1">
-                            <Label Text="Rectangle Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="16"/>
-
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="1"
-                                  RowSpacing="1">
-
-                                   <!-- RadiusX -->
-                                   <Label Grid.Row="0"
-                                                 Grid.Column="0"
-                                          Text="RadiusX:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0"
-                                                 Grid.Column="1"
-                                          Text="{Binding RadiusX, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter RadiusX (0-100)"
-                                          WidthRequest="200"
-                                          AutomationId="RadiusXEntry"/>
-
-                                   <!-- RadiusY -->
-                                   <Label Grid.Row="1"
-                                                 Grid.Column="0"
-                                          Text="RadiusY:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="1"
-                                                 Grid.Column="1"
-                                          Text="{Binding RadiusY, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter RadiusY (0-100)"
-                                          WidthRequest="200"
-                                          AutomationId="RadiusYEntry"/>
-
-                                   <!-- Width -->
-                                   <Label Grid.Row="2"
-                                                 Grid.Column="0"
-                                          Text="Width:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="2"
-                                                 Grid.Column="1"
-                                          Text="{Binding Width, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter width"
-                                          WidthRequest="200"
-                                          AutomationId="RectangleWidthEntry"/>
-
-                                   <!-- Height -->
-                                   <Label Grid.Row="3"
-                                                 Grid.Column="0"
-                                          Text="Height:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="3"
-                                                 Grid.Column="1"
-                                          Text="{Binding Height, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter height"
-                                          WidthRequest="200"
-                                          AutomationId="RectangleHeightEntry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
-
-              <!-- Ellipse Properties -->
-              <Border  Padding="1"
-                       Stroke="Gray"
-                       StrokeThickness="1"
-                       x:Name="EllipsePropertiesSection">
-                     <StackLayout Spacing="1">
-                            <Label Text="Ellipse Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="16"/>
-
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto,Auto"
-                                  ColumnSpacing="1"
-                                  RowSpacing="8">
-
-                                   <!-- Width -->
-                                   <Label Grid.Row="0"
-                                                 Grid.Column="0"
-                                          Text="Width:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0"
-                                                 Grid.Column="1"
-                                          Text="{Binding Width, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter width"
-                                          WidthRequest="200"
-                                          AutomationId="EllipseWidthEntry"/>
-
-                                   <!-- Height -->
-                                   <Label Grid.Row="1"
-                                                 Grid.Column="0"
-                                          Text="Height:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="1"
-                                                 Grid.Column="1"
-                                          Text="{Binding Height, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter height"
-                                          WidthRequest="200"
-                                          AutomationId="EllipseHeightEntry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
-
-              <!-- Line Properties -->
-              <Border Padding="1"
-                      Stroke="Gray"
-                      StrokeThickness="1"
-                      x:Name="LinePropertiesSection">
-                     <StackLayout Spacing="1">
-                            <Label Text="Line Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="16"/>
-
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="1"
-                                  RowSpacing="1">
-
-                                   <!-- X1 -->
-                                   <Label Grid.Row="0"
-                                                 Grid.Column="0"
-                                          Text="X1:"
+       <ScrollView>
+              <VerticalStackLayout Padding="15"
+                                   Spacing="5">
+                     <!-- Shape Type Selection -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Select Shape Type:"
                                           FontAttributes="Bold"
-                                          VerticalOptions="Center"/>
-                                   <Entry Grid.Row="0"
-                                                 Grid.Column="1"
-                                          Text="{Binding X1, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter X1 coordinate"
-                                          WidthRequest="200"
-                                          AutomationId="X1Entry"/>
+                                          FontSize="14"/>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="Rectangle"
+                                                       GroupName="ShapeType"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="RectangleRadioButton"/>
 
-                                   <!-- Y1 -->
-                                   <Label Grid.Row="1"
-                                                 Grid.Column="0"
-                                          Text="Y1:"
+                                          <RadioButton Content="RoundRectangle"
+                                                       GroupName="ShapeType"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="RoundRectangleRadioButton"/>
+                                          <RadioButton Content="Ellipse"
+                                                       GroupName="ShapeType"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="EllipseRadioButton"/>
+                                   </HorizontalStackLayout>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="Line"
+                                                       GroupName="ShapeType"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="LineRadioButton"/>
+                                          <RadioButton Content="Polygon"
+                                                       GroupName="ShapeType"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="PolygonRadioButton"/>
+                                          <RadioButton Content="Polyline"
+                                                       GroupName="ShapeType"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="PolylineRadioButton"/>
+                                          <RadioButton Content="Path"
+                                                       GroupName="ShapeType"
+                                                       CheckedChanged="OnShapeTypeChanged"
+                                                       AutomationId="PathRadioButton"/>
+                                   </HorizontalStackLayout>
+                            </StackLayout>
+                     </Border>
+
+                     <!-- Common Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Common Properties"
                                           FontAttributes="Bold"
-                                          VerticalOptions="Center"/>
-                                   <Entry Grid.Row="1"
-                                                 Grid.Column="1"
-                                          Text="{Binding Y1, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter Y1 coordinate"
-                                          WidthRequest="200"
-                                          AutomationId="Y1Entry"/>
+                                          FontSize="14"/>
 
-                                   <!-- X2 -->
-                                   <Label Grid.Row="2"
-                                                 Grid.Column="0"
-                                          Text="X2:"
+                                   <!-- Fill Color and Stroke Color side by side -->
+                                   <Grid ColumnDefinitions="*,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="10">
+                                          <VerticalStackLayout Grid.Column="0"
+                                                               Spacing="1">
+                                                 <Label Text="Fill Color:"
+                                                        FontAttributes="Bold"/>
+                                                 <RadioButton Content="None"
+                                                              GroupName="FillColor"
+                                                              IsChecked="True"
+                                                              CheckedChanged="OnFillColorChanged"
+                                                              AutomationId="FillColorNoneRadioButton"/>
+                                                 <HorizontalStackLayout>
+                                                        <RadioButton Content="Blue"
+                                                                     GroupName="FillColor"
+                                                                     CheckedChanged="OnFillColorChanged"
+                                                                     AutomationId="FillColorBlueRadioButton"/>
+                                                        <RadioButton Content="Green"
+                                                                     GroupName="FillColor"
+                                                                     CheckedChanged="OnFillColorChanged"
+                                                                     AutomationId="FillColorGreenRadioButton"/>
+                                                 </HorizontalStackLayout>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="1"
+                                                               Spacing="1">
+                                                 <Label Text="Stroke Color:"
+                                                        FontAttributes="Bold"/>
+                                                 <RadioButton Content="Black"
+                                                              GroupName="StrokeColor"
+                                                              IsChecked="True"
+                                                              CheckedChanged="OnStrokeColorChanged"
+                                                              AutomationId="StrokeColorBlackRadioButton"/>
+                                                 <RadioButton Content="Red"
+                                                              GroupName="StrokeColor"
+                                                              CheckedChanged="OnStrokeColorChanged"
+                                                              AutomationId="StrokeColorRedRadioButton"/>
+                                          </VerticalStackLayout>
+                                   </Grid>
+
+                                   <!-- Aspect (Stretch) -->
+                                   <Label Text="Aspect (Stretch):"
+                                          FontAttributes="Bold"/>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="None"
+                                                       GroupName="Aspect"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnAspectChanged"
+                                                       AutomationId="AspectNoneRadioButton"/>
+                                          <RadioButton Content="Fill"
+                                                       GroupName="Aspect"
+                                                       CheckedChanged="OnAspectChanged"
+                                                       AutomationId="AspectFillRadioButton"/>
+                                          <RadioButton Content="Uniform"
+                                                       GroupName="Aspect"
+                                                       CheckedChanged="OnAspectChanged"
+                                                       AutomationId="AspectUniformRadioButton"/>
+                                          <RadioButton Content="UniformToFill"
+                                                       GroupName="Aspect"
+                                                       CheckedChanged="OnAspectChanged"
+                                                       AutomationId="AspectUniformToFillRadioButton"/>
+                                   </HorizontalStackLayout>
+
+                                   <!-- StrokeLineCap -->
+                                   <Label Text="Stroke Line Cap:"
+                                          FontAttributes="Bold"/>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="Flat"
+                                                       GroupName="StrokeLineCap"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnStrokeLineCapChanged"
+                                                       AutomationId="StrokeLineCapFlatRadioButton"/>
+                                          <RadioButton Content="Square"
+                                                       GroupName="StrokeLineCap"
+                                                       CheckedChanged="OnStrokeLineCapChanged"
+                                                       AutomationId="StrokeLineCapSquareRadioButton"/>
+                                          <RadioButton Content="Round"
+                                                       GroupName="StrokeLineCap"
+                                                       CheckedChanged="OnStrokeLineCapChanged"
+                                                       AutomationId="StrokeLineCapRoundRadioButton"/>
+                                   </HorizontalStackLayout>
+
+                                   <!-- StrokeLineJoin -->
+                                   <Label Text="Stroke Line Join:"
+                                          FontAttributes="Bold"/>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="Miter"
+                                                       GroupName="StrokeLineJoin"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnStrokeLineJoinChanged"
+                                                       AutomationId="StrokeLineJoinMiterRadioButton"/>
+                                          <RadioButton Content="Bevel"
+                                                       GroupName="StrokeLineJoin"
+                                                       CheckedChanged="OnStrokeLineJoinChanged"
+                                                       AutomationId="StrokeLineJoinBevelRadioButton"/>
+                                          <RadioButton Content="Round"
+                                                       GroupName="StrokeLineJoin"
+                                                       CheckedChanged="OnStrokeLineJoinChanged"
+                                                       AutomationId="StrokeLineJoinRoundRadioButton"/>
+                                   </HorizontalStackLayout>
+
+                                   <!-- FillRule -->
+                                   <Label Text="Fill Rule:"
+                                          FontAttributes="Bold"/>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="EvenOdd"
+                                                       GroupName="FillRule"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnFillRuleChanged"
+                                                       AutomationId="FillRuleEvenOddRadioButton"/>
+                                          <RadioButton Content="Nonzero"
+                                                       GroupName="FillRule"
+                                                       CheckedChanged="OnFillRuleChanged"
+                                                       AutomationId="FillRuleNonzeroRadioButton"/>
+                                   </HorizontalStackLayout>
+
+                                   <!-- Shadow -->
+                                   <HorizontalStackLayout Spacing="10">
+                                          <CheckBox IsChecked="{Binding HasShadow}"
+                                                    AutomationId="ShadowCheckBox"/>
+                                          <Label Text="Has Shadow"
+                                                 VerticalOptions="Center"
+                                                 FontAttributes="Bold"/>
+                                   </HorizontalStackLayout>
+
+                                   <!-- Stroke Thickness / DashArray / DashOffset -->
+                                   <Grid ColumnDefinitions="*,*,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="5">
+                                          <VerticalStackLayout Grid.Column="0">
+                                                 <Label Text="Stroke Thickness:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding StrokeThickness, Mode=TwoWay}"
+                                                        Placeholder="1-10"
+                                                        AutomationId="StrokeThicknessEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="1">
+                                                 <Label Text="Dash Array:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding StrokeDashArray, Mode=TwoWay}"
+                                                        Placeholder="e.g., 5,5"
+                                                        AutomationId="StrokeDashArrayEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="2">
+                                                 <Label Text="Dash Offset:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding StrokeDashOffset, Mode=TwoWay}"
+                                                        Placeholder="0-50"
+                                                        AutomationId="StrokeDashOffsetEntry"/>
+                                          </VerticalStackLayout>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
+
+                     <!-- Rectangle Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="RectanglePropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Rectangle Properties"
                                           FontAttributes="Bold"
-                                          VerticalOptions="Center"/>
-                                   <Entry Grid.Row="2"
-                                                 Grid.Column="1"
-                                          Text="{Binding X2, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter X2 coordinate"
-                                          WidthRequest="200"
-                                          AutomationId="X2Entry"/>
+                                          FontSize="14"/>
+                                   <Grid ColumnDefinitions="*,*,*,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="5">
+                                          <VerticalStackLayout Grid.Column="0">
+                                                 <Label Text="RadiusX:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding RadiusX, Mode=TwoWay}"
+                                                        Placeholder="0-100"
+                                                        AutomationId="RadiusXEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="1">
+                                                 <Label Text="RadiusY:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding RadiusY, Mode=TwoWay}"
+                                                        Placeholder="0-100"
+                                                        AutomationId="RadiusYEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="2">
+                                                 <Label Text="Width:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Width, Mode=TwoWay}"
+                                                        Placeholder="Enter width"
+                                                        AutomationId="RectangleWidthEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="3">
+                                                 <Label Text="Height:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Height, Mode=TwoWay}"
+                                                        Placeholder="Enter height"
+                                                        AutomationId="RectangleHeightEntry"/>
+                                          </VerticalStackLayout>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
 
-                                   <!-- Y2 -->
-                                   <Label Grid.Row="3"
-                                                 Grid.Column="0"
-                                          Text="Y2:"
+                     <!-- RoundRectangle Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="RoundRectanglePropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="RoundRectangle Properties"
                                           FontAttributes="Bold"
-                                          VerticalOptions="Center"/>
-                                   <Entry Grid.Row="3"
-                                                 Grid.Column="1"
-                                          Text="{Binding Y2, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter Y2 coordinate"
-                                          WidthRequest="200"
-                                          AutomationId="Y2Entry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
+                                          FontSize="14"/>
+                                   <Grid ColumnDefinitions="*,*,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="5">
+                                          <VerticalStackLayout Grid.Column="0">
+                                                 <Label Text="Corner Radius:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding CornerRadius, Mode=TwoWay}"
+                                                        Placeholder="0-100"
+                                                        AutomationId="CornerRadiusEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="1">
+                                                 <Label Text="Width:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Width, Mode=TwoWay}"
+                                                        Placeholder="Enter width"
+                                                        AutomationId="RoundRectangleWidthEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="2">
+                                                 <Label Text="Height:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Height, Mode=TwoWay}"
+                                                        Placeholder="Enter height"
+                                                        AutomationId="RoundRectangleHeightEntry"/>
+                                          </VerticalStackLayout>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
 
-              <!-- Polygon Properties -->
-              <Border Padding="1"
-                      Stroke="Gray"
-                      StrokeThickness="1"
-                      x:Name="PolygonPropertiesSection">
-                     <StackLayout Spacing="1">
-                            <Label Text="Polygon Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="16"/>
+                     <!-- Ellipse Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="EllipsePropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Ellipse Properties"
+                                          FontAttributes="Bold"
+                                          FontSize="14"/>
+                                   <Grid ColumnDefinitions="*,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="10"
+                                         RowSpacing="1">
+                                          <VerticalStackLayout Grid.Row="0"
+                                                               Grid.Column="0">
+                                                 <Label Text="Width:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Width, Mode=TwoWay}"
+                                                        Placeholder="Enter width"
+                                                        AutomationId="EllipseWidthEntry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Row="0"
+                                                               Grid.Column="1">
+                                                 <Label Text="Height:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Height, Mode=TwoWay}"
+                                                        Placeholder="Enter height"
+                                                        AutomationId="EllipseHeightEntry"/>
+                                          </VerticalStackLayout>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
 
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto"
-                                  ColumnSpacing="10"
-                                  RowSpacing="8">
+                     <!-- Line Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="LinePropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Line Properties"
+                                          FontAttributes="Bold"
+                                          FontSize="14"/>
+                                   <Grid ColumnDefinitions="*,*,*,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="5">
+                                          <VerticalStackLayout Grid.Column="0">
+                                                 <Label Text="X1:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding X1, Mode=TwoWay}"
+                                                        Placeholder="X1"
+                                                        AutomationId="X1Entry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="1">
+                                                 <Label Text="Y1:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Y1, Mode=TwoWay}"
+                                                        Placeholder="Y1"
+                                                        AutomationId="Y1Entry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="2">
+                                                 <Label Text="X2:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding X2, Mode=TwoWay}"
+                                                        Placeholder="X2"
+                                                        AutomationId="X2Entry"/>
+                                          </VerticalStackLayout>
+                                          <VerticalStackLayout Grid.Column="3">
+                                                 <Label Text="Y2:"
+                                                        FontAttributes="Bold"/>
+                                                 <Entry Text="{Binding Y2, Mode=TwoWay}"
+                                                        Placeholder="Y2"
+                                                        AutomationId="Y2Entry"/>
+                                          </VerticalStackLayout>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
 
-                                   <!-- Points -->
-                                   <Label Grid.Row="0"
+                     <!-- Polygon Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="PolygonPropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Polygon Properties"
+                                          FontAttributes="Bold"
+                                          FontSize="16"/>
+                                   <Grid ColumnDefinitions="Auto,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="10"
+                                         RowSpacing="8">
+                                          <Label Grid.Row="0"
                                                  Grid.Column="0"
-                                          Text="Points:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0"
+                                                 Text="Points:"
+                                                 VerticalOptions="Center"
+                                                 FontAttributes="Bold"/>
+                                          <Entry Grid.Row="0"
                                                  Grid.Column="1"
-                                          Text="{Binding Points, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter points (e.g., 100,50 150,100 100,150 50,100)"
-                                          WidthRequest="200"
-                                          AutomationId="PolygonPointsEntry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
+                                                 Text="{Binding Points, Mode=TwoWay}"
+                                                 VerticalOptions="Center"
+                                                 Placeholder="Enter points (e.g., 100,50 150,100 100,150 50,100)"
+                                                 WidthRequest="200"
+                                                 AutomationId="PolygonPointsEntry"/>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
 
-              <!-- Polyline Properties -->
-              <Border  Padding="1"
-                       Stroke="Gray"
-                       StrokeThickness="1"
-                       x:Name="PolylinePropertiesSection">
-                     <StackLayout Spacing="1">
-                            <Label Text="Polyline Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="16"/>
-
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto"
-                                  ColumnSpacing="10"
-                                  RowSpacing="8">
-
-                                   <!-- Points -->
-                                   <Label Grid.Row="0"
+                     <!-- Polyline Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="PolylinePropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Polyline Properties"
+                                          FontAttributes="Bold"
+                                          FontSize="16"/>
+                                   <Grid ColumnDefinitions="Auto,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="10"
+                                         RowSpacing="8">
+                                          <Label Grid.Row="0"
                                                  Grid.Column="0"
-                                          Text="Points:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0"
+                                                 Text="Points:"
+                                                 VerticalOptions="Center"
+                                                 FontAttributes="Bold"/>
+                                          <Entry Grid.Row="0"
                                                  Grid.Column="1"
-                                          Text="{Binding PolylinePoints, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter points (e.g., 50,100 100,50 150,100 200,50 250,100)"
-                                          WidthRequest="200"
-                                          AutomationId="PolyLinePointsEntry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
+                                                 Text="{Binding PolylinePoints, Mode=TwoWay}"
+                                                 VerticalOptions="Center"
+                                                 Placeholder="Enter points (e.g., 50,100 100,50 150,100 200,50 250,100)"
+                                                 WidthRequest="200"
+                                                 AutomationId="PolylinePointsEntry"/>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
 
-              <!-- Path Properties -->
-              <Border  Padding="1"
-                       Stroke="Gray"
-                       StrokeThickness="1"
-                       x:Name="PathPropertiesSection">
-                     <StackLayout Spacing="1">
-                            <Label Text="Path Properties"
-                                   FontAttributes="Bold"
-                                   FontSize="16"/>
-
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowDefinitions="Auto"
-                                  ColumnSpacing="10"
-                                  RowSpacing="1">
-
-                                   <!-- Path Data -->
-                                   <Label Grid.Row="0"
+                     <!-- Path Properties -->
+                     <Border Padding="1"
+                             Stroke="Gray"
+                             StrokeThickness="1"
+                             x:Name="PathPropertiesSection">
+                            <StackLayout Spacing="1">
+                                   <Label Text="Path Properties"
+                                          FontAttributes="Bold"
+                                          FontSize="16"/>
+                                   <Grid ColumnDefinitions="Auto,*"
+                                         RowDefinitions="Auto"
+                                         ColumnSpacing="10"
+                                         RowSpacing="1">
+                                          <Label Grid.Row="0"
                                                  Grid.Column="0"
-                                          Text="Path Data:"
-                                          VerticalOptions="Center"
-                                          FontAttributes="Bold"/>
-                                   <Entry Grid.Row="0"
+                                                 Text="Path Data:"
+                                                 VerticalOptions="Center"
+                                                 FontAttributes="Bold"/>
+                                          <Entry Grid.Row="0"
                                                  Grid.Column="1"
-                                          Text="{Binding PathData, Mode=TwoWay}"
-                                          VerticalOptions="Center"
-                                          Placeholder="Enter path data (e.g., M 10,100 C 10,300 300,-160 300,100)"
-                                          WidthRequest="200"
-                                          AutomationId="PathDataEntry"/>
-                            </Grid>
-                     </StackLayout>
-              </Border>
-       </VerticalStackLayout>
+                                                 Text="{Binding PathData, Mode=TwoWay}"
+                                                 VerticalOptions="Center"
+                                                 Placeholder="Enter path data (e.g., M 10,100 C 10,300 300,-160 300,100)"
+                                                 WidthRequest="200"
+                                                 AutomationId="PathDataEntry"/>
+                                   </Grid>
+                            </StackLayout>
+                     </Border>
+              </VerticalStackLayout>
+       </ScrollView>
 </ContentPage>
