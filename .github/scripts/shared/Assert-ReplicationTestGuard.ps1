@@ -527,6 +527,74 @@ function Assert-ReplicationLeakTestMethodology {
     }
 }
 
+function Assert-ReplicationGestureTravel {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    # Only hand-rolled pointer sequences are at risk. Tests that drag through
+    # the harness helpers get a travel the harness already sized correctly.
+    if ($code -notmatch '\bCreatePointerDown\s*\(') {
+        return
+    }
+
+    # A reviewer measured a committed drag at 16 px against a device touch slop
+    # of 22 px, so the gesture was never recognised and the assertion failed
+    # identically on fixed and on two independently reverted product states.
+    # The travel had been scaled from the matched element's rect, which
+    # resolved to a 52 px label rather than the 220 dp list it was aimed at.
+    $rectScaling = [regex]::Matches(
+        $code,
+        '(?<operand>[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\.(?:Height|Width)\s*\*\s*(?<factor>0?\.\d+)')
+    foreach ($match in $rectScaling) {
+        $operand = $match.Groups['operand'].Value
+        if ($operand -match '(?i)window|screen|display|viewport') {
+            continue
+        }
+        # The window size is often held in a plainly named local, so treat an
+        # operand the file assigns from the window as a window measurement.
+        $leaf = ($operand -split '\.')[-1]
+        $assignment = "(?:var|[A-Za-z_][A-Za-z0-9_<>,\[\] ]*)\s+" +
+            [regex]::Escape($leaf) +
+            '\s*=[^;]*Window\.Size'
+        if ($code -match $assignment) {
+            continue
+        }
+        throw ("Candidate test source '$Path' scales its drag distance by $($match.Groups['factor'].Value) of '$operand', which is an element rect. " +
+            'A rect that resolves to a small label produces a drag below the platform touch slop, so no gesture happens and the test fails the same way on a fixed build. ' +
+            'Scale the drag by the window size instead.')
+    }
+
+    # A drag written with literal coordinates is checkable directly. Android
+    # touch slop is 8 dp, which is 22 px at the density the reviewer measured,
+    # and a drag only a little above slop was shown to flip green on an
+    # unchanged build. Require travel that clears it with room to spare.
+    $literalMoves = [regex]::Matches(
+        $code,
+        'CreatePointerMove\s*\(\s*CoordinateOrigin\.\w+\s*,\s*(?<x>-?\d+)\s*,\s*(?<y>-?\d+)\s*,')
+    if ($literalMoves.Count -ge 2) {
+        $longest = 0
+        for ($index = 1; $index -lt $literalMoves.Count; $index++) {
+            $dx = [Math]::Abs(
+                [int]$literalMoves[$index].Groups['x'].Value -
+                [int]$literalMoves[$index - 1].Groups['x'].Value)
+            $dy = [Math]::Abs(
+                [int]$literalMoves[$index].Groups['y'].Value -
+                [int]$literalMoves[$index - 1].Groups['y'].Value)
+            $longest = [Math]::Max($longest, [Math]::Max($dx, $dy))
+        }
+        if ($longest -lt 50) {
+            throw ("Candidate test source '$Path' drags at most $longest px between pointer positions. " +
+                'Android touch slop alone is around 22 px, so a drag this small is not recognised as a gesture and the test fails the same way whether the product is fixed or broken. ' +
+                'Drag far enough to clear the platform touch slop.')
+        }
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

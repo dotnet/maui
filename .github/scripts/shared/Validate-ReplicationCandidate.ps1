@@ -1559,6 +1559,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationLeakTestMethodology `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationGestureTravel `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {

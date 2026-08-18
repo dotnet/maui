@@ -1628,3 +1628,28 @@ Describe 'The reproduction result the orchestrator writes matches what the publi
         $unwritten -join ', ' | Should -BeExactly ''
     }
 }
+
+Describe 'The publisher refuses a drag the platform would never recognise' {
+    It 'rejects an element-rect-scaled drag at publish time' {
+        {
+            Assert-ReplicationGestureTravel `
+                -Content @'
+    var segment = Math.Max(1, (int)Math.Round(itemBounds.Height * 0.15));
+    sequence.AddAction(touch.CreatePointerDown(PointerButton.TouchContact));
+'@ `
+                -Path 'Issue35770.cs'
+        } | Should -Throw '*element rect*'
+    }
+
+    It 'accepts a window-scaled drag at publish time' {
+        {
+            Assert-ReplicationGestureTravel `
+                -Content @'
+    var windowSize = app.Driver.Manage().Window.Size;
+    var segment = (int)Math.Round(windowSize.Height * 0.15);
+    sequence.AddAction(touch.CreatePointerDown(PointerButton.TouchContact));
+'@ `
+                -Path 'Issue35770.cs'
+        } | Should -Not -Throw
+    }
+}

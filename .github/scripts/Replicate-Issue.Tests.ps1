@@ -3694,3 +3694,97 @@ Describe 'Replaying a plan that takes no arguments' {
         $arguments[-1] | Should -BeExactly 'android'
     }
 }
+
+Describe 'A drag has to be big enough for the platform to notice it' {
+    It 'rejects the drag a reviewer measured below the device touch slop' {
+        # Verbatim shape from PR 209. itemBounds resolved to a 52 px label, so
+        # 2 x round(52 * 0.15) = 16 px against a 22 px slop: nothing moved, and
+        # the same red appeared on two independently reverted product states.
+        $source = @'
+static void DragUpTwiceWhileHeld(AppiumApp app, System.Drawing.Rectangle itemBounds)
+{
+    var dragSequence = new ActionSequence(touchDevice, 0);
+    var startY = itemBounds.Y + (itemBounds.Height / 2);
+    var segment = Math.Max(1, (int)Math.Round(itemBounds.Height * 0.15));
+    dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, startY, TimeSpan.Zero));
+    dragSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, startY - segment, TimeSpan.FromMilliseconds(250)));
+    dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, startY - (segment * 2), TimeSpan.FromMilliseconds(250)));
+    dragSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+}
+'@
+        {
+            Assert-ReplicationGestureTravel -Content $source -Path 'Issue35770.cs'
+        } | Should -Throw '*element rect*'
+    }
+
+    It 'accepts the same drag scaled by the window instead' {
+        $source = @'
+static void DragUpTwiceWhileHeld(AppiumApp app)
+{
+    var windowSize = app.Driver.Manage().Window.Size;
+    var segment = (int)Math.Round(windowSize.Height * 0.15);
+    dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, startY, TimeSpan.Zero));
+    dragSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, startY - segment, TimeSpan.FromMilliseconds(250)));
+    dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, startY - (segment * 2), TimeSpan.FromMilliseconds(250)));
+    dragSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+}
+'@
+        {
+            Assert-ReplicationGestureTravel -Content $source -Path 'Issue35770.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects a literal drag too small to clear touch slop' {
+        $source = @'
+    sequence.AddAction(touch.CreatePointerMove(CoordinateOrigin.Viewport, 540, 729, TimeSpan.Zero));
+    sequence.AddAction(touch.CreatePointerDown(PointerButton.TouchContact));
+    sequence.AddAction(touch.CreatePointerMove(CoordinateOrigin.Viewport, 540, 721, TimeSpan.FromMilliseconds(250)));
+    sequence.AddAction(touch.CreatePointerMove(CoordinateOrigin.Viewport, 540, 713, TimeSpan.FromMilliseconds(250)));
+    sequence.AddAction(touch.CreatePointerUp(PointerButton.TouchContact));
+'@
+        {
+            Assert-ReplicationGestureTravel -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*touch slop*'
+    }
+
+    It 'accepts the literal drag distance MAUI ships in its own scroll test' {
+        # KeyboardScrolling.cs drags y 300 -> 650 in one move. A single large
+        # move while the pointer is down is a real drag; requiring several
+        # would have rejected the repository's own working tests.
+        $source = @'
+    sequence.AddAction(touch.CreatePointerMove(CoordinateOrigin.Viewport, 5, 300, TimeSpan.Zero));
+    sequence.AddAction(touch.CreatePointerDown(PointerButton.TouchContact));
+    sequence.AddAction(touch.CreatePointerMove(CoordinateOrigin.Viewport, 5, 650, TimeSpan.FromMilliseconds(250)));
+    sequence.AddAction(touch.CreatePointerUp(PointerButton.TouchContact));
+'@
+        {
+            Assert-ReplicationGestureTravel -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'treats a plainly named local assigned from the window as the window' {
+        # The harness writes: var size = element is not null ? element.Size
+        # : driver.Manage().Window.Size;
+        $source = @'
+    var size = element is not null ? element.Size : driver.Manage().Window.Size;
+    sequence.AddAction(touch.CreatePointerDown(PointerButton.TouchContact));
+    int startX = (int)(position.X + (size.Width * 0.05));
+'@
+        {
+            Assert-ReplicationGestureTravel -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'leaves tests that drag through the harness helpers alone' {
+        $source = @'
+    app.ScrollTo("InnerList", ScrollDirection.Up);
+    var bounds = item.GetRect();
+    var offset = bounds.Height * 0.15;
+'@
+        {
+            Assert-ReplicationGestureTravel -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+}
