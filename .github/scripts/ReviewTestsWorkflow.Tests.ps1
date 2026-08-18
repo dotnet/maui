@@ -240,7 +240,13 @@ Describe '/review tests compiled trust boundary' {
         $prompt | Should -Match (
             'handled failure-report path, never a reason to read a PR-controlled fallback')
         $prompt | Should -Match (
+            'seal step fails the host job before this agent starts')
+        $prompt | Should -Match (
+            'there is no `add_comment` recovery path')
+        $prompt | Should -Match (
             'If `context\.json` or `context\.md` is missing, post the intended short')
+        $prompt | Should -Not -Match (
+            'If `SKILL\.md` or `maui-ci-facts\.md` is missing, post')
         $prompt | Should -Not -Match (
             '\.github/skills/review-test-failures/(?:SKILL\.md|scripts/)')
         $prompt | Should -Not -Match (

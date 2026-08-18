@@ -421,8 +421,11 @@ done
 Visual asset publication is optional. Its absence must not block the ordinary
 test-failure report or change the deterministic verdict ceiling.
 
-- If `SKILL.md` or `maui-ci-facts.md` is missing, post a short trusted-input
-  setup failure with `add_comment` unless dry-run mode is active, then stop.
+- `SKILL.md` and `maui-ci-facts.md` are mandatory. The preceding
+  `set -euo pipefail` seal step fails the host job before this agent starts if
+  either install fails; there is no `add_comment` recovery path for that setup
+  failure. If either file is unexpectedly absent here, stop without reading any
+  fallback.
 - If `context.json` or `context.md` is missing, post the intended short
   context-unavailable failure report with `add_comment` unless dry-run mode is
   active, then stop.
