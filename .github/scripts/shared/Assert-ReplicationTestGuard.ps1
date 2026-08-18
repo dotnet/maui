@@ -361,6 +361,38 @@ function Assert-ReplicationOracleIsFalsifiable {
     }
 }
 
+function Assert-ReplicationLeakTestMethodology {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    if ($code -notmatch '\bWeakReference\b') {
+        return
+    }
+
+    $usesCanonicalHelper = $code -match '\bWaitFor(?:GC|Collect)\s*\('
+    if ($usesCanonicalHelper) {
+        return
+    }
+
+    # A reviewer proved this class of test is a false positive: a one-shot GC
+    # burst issued inside the frame that created the object observes it as still
+    # alive, because the local stays rooted in that frame. The canonical helper
+    # retries up to 40 times with a yield between passes, and it reported the
+    # same scenario collected on every one of 13 runs.
+    $observesLiveness = $code -match '\bGC\.Collect\s*\(' -or
+        $code -match '\.IsAlive\b' -or
+        $code -match '\.TryGetTarget\s*\('
+    if ($observesLiveness) {
+        throw ("Candidate test source '$Path' judges a WeakReference without the canonical collection helper. " +
+            'A GC burst issued inside the frame that created the object sees it still rooted there and reports a leak that does not exist. ' +
+            'Await AssertionExtensions.WaitForGC instead, which retries with a yield between passes.')
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

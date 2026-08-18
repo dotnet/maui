@@ -1556,6 +1556,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationTestLifecycleSafety `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationLeakTestMethodology `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {

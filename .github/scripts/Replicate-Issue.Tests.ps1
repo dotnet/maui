@@ -3446,3 +3446,80 @@ Fix the authored Sandbox source so it compiles.
         $source | Should -Match "Compile retries exhausted"
     }
 }
+
+Describe 'A leak reproduction must use the canonical collection helper' {
+    It 'rejects a one-shot GC burst issued in the creating frame' {
+        # A reviewer ran this exact methodology against the canonical helper:
+        # the burst reported a leak, WaitForGC reported the object collected on
+        # all 13 runs. The reproduction was a false positive.
+        $source = @'
+[Fact]
+public void IndicatorViewLeaks()
+{
+    var reference = new WeakReference(new IndicatorView());
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
+    GC.Collect();
+    Assert.False(reference.IsAlive);
+}
+'@
+        {
+            Assert-ReplicationLeakTestMethodology `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue35775.cs'
+        } | Should -Throw '*canonical collection helper*'
+    }
+
+    It 'rejects judging liveness with no collection attempt at all' {
+        $source = @'
+var reference = new WeakReference(target);
+Assert.False(reference.IsAlive);
+'@
+        {
+            Assert-ReplicationLeakTestMethodology `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue35775.cs'
+        } | Should -Throw '*canonical collection helper*'
+    }
+
+    It 'accepts the canonical helper' {
+        $source = @'
+var reference = new WeakReference(new IndicatorView());
+await AssertionExtensions.WaitForGC(reference);
+'@
+        {
+            Assert-ReplicationLeakTestMethodology `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue35775.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a test that never weighs a WeakReference' {
+        $source = @'
+[Fact]
+public void ReproducesIssue()
+{
+    Assert.Equal(1, layout.Children.Count);
+}
+'@
+        {
+            Assert-ReplicationLeakTestMethodology `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue35775.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'does not count the helper name when it appears only in a comment' {
+        $source = @'
+// Consider using WaitForGC(reference) here.
+var reference = new WeakReference(target);
+GC.Collect();
+Assert.False(reference.IsAlive);
+'@
+        {
+            Assert-ReplicationLeakTestMethodology `
+                -Content $source `
+                -Path 'src/Controls/tests/DeviceTests/Issue35775.cs'
+        } | Should -Throw '*canonical collection helper*'
+    }
+}

@@ -1748,6 +1748,9 @@ function Assert-GeneratedTestContent {
                 Assert-ReplicationTestLifecycleSafety `
                     -Content $content `
                     -Path $file
+                Assert-ReplicationLeakTestMethodology `
+                    -Content $content `
+                    -Path $file
             }
             $testAttributeMatches = @([regex]::Matches(
                 $content,
@@ -2185,6 +2188,7 @@ $approvedRoots
 $existingIssueGuidance
 The expectedFailureSignature must be a trimmed single-line string of 3-1000 characters with no newline, control character, URL, or Azure logging directive. Use one literal assertion-message fragment, not an Expected/Actual multi-line rendering.
 The signature must be produced by the defect, not by the scenario. A reproduction is rejected if its expected failure is a harness message that fires for many unrelated causes - for example UITestBase's "The app was expected to be running still, investigate as possible crash", its unresponsive-app teardown, or a NoSuchWindow/InvalidSessionId/SessionNotCreated automation-session error. Those stay red on a fully fixed product. Assert the reported behavior directly so that fixing the product turns this exact test green.
+If the issue is a leak, judge the WeakReference with "await AssertionExtensions.WaitForGC(...)". A GC.Collect burst issued inside the frame that created the object sees it still rooted there and reports a leak that does not exist; that reproduction is rejected.
 "@
         }
         'test' {
