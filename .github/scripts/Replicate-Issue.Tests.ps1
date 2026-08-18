@@ -600,10 +600,11 @@ Describe 'Replication orchestrator security boundary' {
         # Runs 15000187 and 15000205 burned most of their attempts on
         # Task.Delay rejections and on retries that dropped the proposal file.
         $source = $script:Source
-        $source | Should -Match 'trigger control and a separate check control'
-        $source | Should -Match 'Sleeping, posting, dispatching, or timing work inside the Sandbox is rejected'
+        $source | Should -Match 'separate check control and let the plan tap trigger'
+        $source | Should -Match 'Task\.Delay, Thread\.Sleep, DispatchDelayed, and timers are rejected'
+        $source | Should -Match 'Dispatcher\.Dispatch\(\(\) => \.\.\.\)'
         $source | Should -Match 'Write every required output again even when only one of them caused the failure'
-        $source | Should -Match 'discarded before it reaches the device'
+        $source | Should -Match 'the same rejection will consume the next attempt too'
     }
 
     It 'requires an app-closure assertion once a reported crash actually happened' {
@@ -943,12 +944,29 @@ public partial class MainPage : ContentPage
         # banned construct but never named a permitted alternative.
         $entry = Get-ReplicationUnsafeSourcePatterns |
             Where-Object { $_.Code -eq 'delays-or-background-work' }
-        $entry.Remedy | Should -Match 'timeoutSeconds'
-        $entry.Remedy | Should -Match 'trigger control and a separate check control'
+        # Naming the ban was not enough: run 15000532 re-sent Task.Delay on all
+        # five attempts while being told only what it could not do.
+        $entry.Remedy | Should -Match 'Dispatcher\.Dispatch'
+        $entry.Remedy | Should -Match 'SizeChanged'
+        $entry.Remedy | Should -Match 'separate check control'
+
+        # The permitted alternatives must actually pass the guard.
+        foreach ($allowed in @(
+            'void OnGo() { Dispatcher.Dispatch(() => Check()); }'
+            'void Wire() { view.SizeChanged += OnSizeChanged; }'
+        )) {
+            { Assert-ReplicationGeneratedSourceSafety -Path 'MainPage.xaml.cs' -Content $allowed } |
+                Should -Not -Throw
+        }
+
+        # A delayed dispatch is a clock wait wearing a different name.
+        { Assert-ReplicationGeneratedSourceSafety -Path 'MainPage.xaml.cs' `
+            -Content 'void Go() { Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(1), Check); }' } |
+            Should -Throw '*delays-or-background-work*'
 
         $code = 'public partial class MainPage { async void Go() { await Task.Delay(750); } }'
         { Assert-ReplicationGeneratedSourceSafety -Path 'MainPage.xaml.cs' -Content $code } |
-            Should -Throw '*prohibited*delays-or-background-work*timeoutSeconds*'
+            Should -Throw '*prohibited*delays-or-background-work*Dispatcher.Dispatch*'
     }
 
     It 'reads a proposal the agent saved beside the Appium plan' {
