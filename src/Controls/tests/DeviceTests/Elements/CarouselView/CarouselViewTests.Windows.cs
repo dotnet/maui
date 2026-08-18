@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
@@ -83,6 +84,100 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, currentItemChanges);
 				Assert.Equal(0, scrollToRequests);
 				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition), 0, 1);
+			});
+		}
+
+		[Fact]
+		public async Task VerticalNativeScrollUpdatesSelectionWithoutProgrammaticFeedbackAndSettlesCentered()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(
+				items,
+				SnapPointsType.MandatorySingle,
+				loop: false,
+				ItemsLayoutOrientation.Vertical);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
+				scrollViewer.VerticalSnapPointsType = WSnapPointsType.None;
+				var (targetOffset, itemHeight) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+				scrollViewer.VerticalSnapPointsType = WSnapPointsType.None;
+
+				int positionChanges = 0;
+				int scrollToRequests = 0;
+				carouselView.PositionChanged += (_, _) => positionChanges++;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				targetOffset += itemHeight * 0.5 + 1;
+				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset, ItemsLayoutOrientation.Vertical);
+
+				Assert.True(
+					carouselView.Position == 1,
+					GetScrollState(
+						handler,
+						scrollViewer,
+						targetOffset,
+						positionChanges,
+						scrollToRequests: scrollToRequests));
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.Equal(1, positionChanges);
+				Assert.Equal(0, scrollToRequests);
+				Assert.InRange(
+					GetCenterError(handler, scrollViewer, initialPhysicalPosition + 1, ItemsLayoutOrientation.Vertical),
+					0,
+					1);
+			});
+		}
+
+		[Fact]
+		public async Task DefaultNativeSnapUpdatesSelectionWithoutProgrammaticFeedback()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var (targetOffset, itemWidth) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+				scrollViewer.HorizontalSnapPointsAlignment = WSnapPointsAlignment.Center;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.MandatorySingle;
+
+				int positionChanges = 0;
+				int scrollToRequests = 0;
+				carouselView.PositionChanged += (_, _) => positionChanges++;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				await ChangeViewAndWaitForSettleAsync(
+					scrollViewer,
+					targetOffset + itemWidth,
+					disableAnimation: false);
+
+				Assert.True(
+					carouselView.Position == 1,
+					GetScrollState(
+						handler,
+						scrollViewer,
+						targetOffset + itemWidth,
+						positionChanges,
+						scrollToRequests: scrollToRequests));
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.Equal(1, positionChanges);
+				Assert.Equal(0, scrollToRequests);
+				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
+				Assert.Equal(WSnapPointsType.MandatorySingle, scrollViewer.HorizontalSnapPointsType);
+				Assert.Equal(WSnapPointsAlignment.Center, scrollViewer.HorizontalSnapPointsAlignment);
 			});
 		}
 
@@ -224,17 +319,88 @@ namespace Microsoft.Maui.DeviceTests
 				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
 				await WaitForInitialPositionAsync(handler, scrollViewer);
 
-				items.Insert(0, new object());
+				var positionChanged = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				var layoutUpdated = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				int positionChanges = 0;
+				int scrollToRequests = 0;
+				carouselView.PositionChanged += (_, _) =>
+				{
+					positionChanges++;
+					if (carouselView.Position == 1)
+						positionChanged.TrySetResult(true);
+				};
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
 
-				await AssertEventually(
-					() => carouselView.Position == 1 && ReferenceEquals(carouselView.CurrentItem, originalItem),
-					timeout: 3000,
-					message: "KeepScrollOffset did not preserve the current item after inserting before it.");
-				await Task.Delay(250);
+				void OnLayoutUpdated(object sender, object args) => layoutUpdated.TrySetResult(true);
+
+				scrollViewer.LayoutUpdated += OnLayoutUpdated;
+				try
+				{
+					items.Insert(0, new object());
+					await Task.WhenAll(positionChanged.Task, layoutUpdated.Task).WaitAsync(TimeSpan.FromSeconds(3));
+					await DrainDispatcherQueueAsync(scrollViewer);
+				}
+				finally
+				{
+					scrollViewer.LayoutUpdated -= OnLayoutUpdated;
+				}
 
 				Assert.Equal(1, carouselView.Position);
 				Assert.Same(originalItem, carouselView.CurrentItem);
+				Assert.Equal(1, positionChanges);
+				Assert.Equal(0, scrollToRequests);
 			});
+		}
+
+		[Fact]
+		public async Task TerminalCenterIndexUpdatesSelectionWhenGeometryIsUnavailable()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				int scrollToRequests = 0;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				SetPrivateField<WScrollViewer>(handler, "_scrollViewer", null);
+				try
+				{
+					InvokePrivateMethod(handler, "CenterCarouselItem", 1);
+				}
+				finally
+				{
+					SetPrivateField(handler, "_scrollViewer", scrollViewer);
+				}
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.Equal(0, scrollToRequests);
+			});
+		}
+
+		[Fact]
+		public void ForwardTieBreakDoesNotCompoundAcrossCandidates()
+		{
+			var distances = new[] { 0d, 0.9d, 1.8d, 2.7d };
+			var closestDistance = double.MaxValue;
+			int selectedIndex = -1;
+
+			for (int index = 0; index < distances.Length; index++)
+			{
+				var arguments = new object[] { distances[index], closestDistance, true };
+				if ((bool)InvokePrivateStaticMethod("TrySelectCandidate", arguments))
+					selectedIndex = index;
+
+				closestDistance = (double)arguments[1];
+			}
+
+			Assert.Equal(1, selectedIndex);
+			Assert.Equal(0, closestDistance);
 		}
 
 		[Fact]
@@ -248,49 +414,113 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
 				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
-				var itemWidth = GetItemContainer(handler, initialPhysicalPosition).ActualWidth;
 
-				// Keep the MAUI layout centered while forcing WinUI to coerce corrections to
-				// near-aligned snap points. The handler must stop retrying an identical target.
-				scrollViewer.HorizontalSnapPointsAlignment = WSnapPointsAlignment.Near;
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var (targetOffset, itemWidth) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var conflictingOffset = targetOffset + itemWidth * 0.5 + 1;
 
 				int terminalEvents = 0;
-				void CountTerminalEvents(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangedEventArgs args)
+				int coercions = 0;
+				void CoerceRecentering(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangedEventArgs args)
 				{
-					if (!args.IsIntermediate && ++terminalEvents == 20)
-						scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+					if (args.IsIntermediate)
+						return;
+
+					terminalEvents++;
+					if (coercions >= 2 || !GetPrivateField<bool>(handler, "_isRecentering"))
+						return;
+
+					var coercedOffset = conflictingOffset + (coercions == 0 ? -20 : 20);
+					coercions++;
+					Assert.True(scrollViewer.ChangeView(coercedOffset, null, null, true));
 				}
 
-				scrollViewer.ViewChanged += CountTerminalEvents;
+				scrollViewer.ViewChanged += CoerceRecentering;
 				try
 				{
-					Assert.True(scrollViewer.ChangeView(
-						scrollViewer.HorizontalOffset + itemWidth * 0.75,
-						null,
-						null,
-						true));
-					await Task.Delay(750);
+					await ChangeViewAndWaitForSettleAsync(
+						scrollViewer,
+						conflictingOffset);
 				}
 				finally
 				{
-					scrollViewer.ViewChanged -= CountTerminalEvents;
+					scrollViewer.ViewChanged -= CoerceRecentering;
 				}
 
-				Assert.InRange(terminalEvents, 1, 6);
+				var recenteringAttemptCount = GetPrivateField<int>(handler, "_recenteringAttemptCount");
+				Assert.True(
+					recenteringAttemptCount == 2,
+					$"Expected two bounded recenter attempts. Attempts={recenteringAttemptCount}, " +
+					$"TerminalEvents={terminalEvents}, HorizontalOffset={scrollViewer.HorizontalOffset}, " +
+					$"TargetOffset={targetOffset}, ItemWidth={itemWidth}, " +
+					$"CenterError={GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition)}.");
+				Assert.Equal(2, coercions);
+				Assert.InRange(terminalEvents, 3, 6);
+			});
+		}
+
+		[Fact]
+		public async Task DisconnectClearsTransientScrollState()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, handler =>
+			{
+				SetPrivateField(handler, "_positionUpdateFromScroll", 1);
+				SetPrivateField(handler, "_hasCurrentItemUpdateFromScroll", true);
+				SetPrivateField(handler, "_currentItemUpdateFromScroll", new object());
+				SetPrivateField(handler, "_isRecentering", true);
+				SetPrivateField(handler, "_recenteringHorizontalOffset", 10d);
+				SetPrivateField(handler, "_recenteringVerticalOffset", 20d);
+				SetPrivateField(handler, "_failedRecenteringOffset", (WPoint?)new WPoint(1, 2));
+				SetPrivateField(handler, "_failedRecenteringTarget", (WPoint?)new WPoint(3, 4));
+				SetPrivateField(handler, "_recenteringAttemptCount", 2);
+				SetPrivateField(handler, "_isScrollingForward", true);
+				SetPrivateField(handler, "_centerItemIndexFromScroll", 1);
+				SetPrivateField(handler, "_gotoPosition", 1);
+				SetPrivateField(handler, "_isCollectionChanged", true);
+				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Equal(-1, GetPrivateField<int>(handler, "_positionUpdateFromScroll"));
+				Assert.False(GetPrivateField<bool>(handler, "_hasCurrentItemUpdateFromScroll"));
+				Assert.Null(GetPrivateField<object>(handler, "_currentItemUpdateFromScroll"));
+				Assert.False(GetPrivateField<bool>(handler, "_isRecentering"));
+				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringHorizontalOffset"));
+				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringVerticalOffset"));
+				Assert.Null(GetPrivateField<WPoint?>(handler, "_failedRecenteringOffset"));
+				Assert.Null(GetPrivateField<WPoint?>(handler, "_failedRecenteringTarget"));
+				Assert.Equal(0, GetPrivateField<int>(handler, "_recenteringAttemptCount"));
+				Assert.False(GetPrivateField<bool>(handler, "_isScrollingForward"));
+				Assert.Equal(-1, GetPrivateField<int>(handler, "_centerItemIndexFromScroll"));
+				Assert.Equal(-1, GetPrivateField<int>(handler, "_gotoPosition"));
+				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChanged"));
+				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+
+				return Task.CompletedTask;
 			});
 		}
 
 		static object[] CreateItems() =>
 			[new object(), new object(), new object(), new object(), new object()];
 
-		static CarouselView CreateCarouselView(IEnumerable items, SnapPointsType snapPointsType, bool loop)
+		static CarouselView CreateCarouselView(
+			IEnumerable items,
+			SnapPointsType snapPointsType,
+			bool loop,
+			ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Horizontal)
 		{
 			return new CarouselView
 			{
 				HeightRequest = 200,
 				IsScrollAnimated = true,
 				ItemTemplate = new DataTemplate(() => new Grid { new Label() }),
-				ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+				ItemsLayout = new LinearItemsLayout(orientation)
 				{
 					SnapPointsAlignment = SnapPointsAlignment.Center,
 					SnapPointsType = snapPointsType,
@@ -309,8 +539,9 @@ namespace Microsoft.Maui.DeviceTests
 			WScrollViewer scrollViewer,
 			int logicalPosition)
 		{
+			var orientation = handler.VirtualView.ItemsLayout.Orientation;
 			bool isReady = await Wait(
-				() => scrollViewer.ViewportWidth > 0
+				() => GetViewportLength(scrollViewer, orientation) > 0
 					&& GetCenteredPhysicalPosition(handler, scrollViewer, logicalPosition) >= 0,
 				timeout: 3000);
 
@@ -318,14 +549,28 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(
 				isReady,
 				$"CarouselView did not finish its initial layout and centering. " +
-				$"ViewportWidth={scrollViewer.ViewportWidth}, ScrollableWidth={scrollViewer.ScrollableWidth}, " +
-				$"HorizontalOffset={scrollViewer.HorizontalOffset}, " +
+				$"ViewportLength={GetViewportLength(scrollViewer, orientation)}, " +
+				$"ScrollableLength={GetScrollableLength(scrollViewer, orientation)}, " +
+				$"Offset={GetOffset(scrollViewer, orientation)}, " +
 				$"Position={handler.VirtualView.Position}, PhysicalPosition={physicalPosition}.");
 
 			return physicalPosition;
 		}
 
-		static async Task ChangeViewAndWaitForSettleAsync(WScrollViewer scrollViewer, double horizontalOffset)
+		static Task ChangeViewAndWaitForSettleAsync(
+			WScrollViewer scrollViewer,
+			double offset,
+			ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Horizontal,
+			bool disableAnimation = true)
+		{
+			return WaitForSettleAsync(
+				scrollViewer,
+				() => Assert.True(
+					ChangeView(scrollViewer, offset, orientation, disableAnimation),
+					"Native ScrollViewer rejected the requested offset."));
+		}
+
+		static async Task WaitForSettleAsync(WScrollViewer scrollViewer, Action action)
 		{
 			var settled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			int terminalViewChangedVersion = 0;
@@ -349,10 +594,7 @@ namespace Microsoft.Maui.DeviceTests
 			scrollViewer.ViewChanged += OnViewChanged;
 			try
 			{
-				Assert.True(
-					scrollViewer.ChangeView(horizontalOffset, null, null, true),
-					"Native ScrollViewer rejected the requested offset.");
-
+				action();
 				await settled.Task.WaitAsync(TimeSpan.FromSeconds(3));
 			}
 			finally
@@ -366,21 +608,22 @@ namespace Microsoft.Maui.DeviceTests
 			WScrollViewer scrollViewer,
 			int initialPhysicalPosition)
 		{
-			var itemWidth = GetItemContainer(handler, initialPhysicalPosition).ActualWidth;
-			var targetOffset = scrollViewer.HorizontalOffset + itemWidth * 0.25;
+			var orientation = handler.VirtualView.ItemsLayout.Orientation;
+			var itemLength = GetItemLength(GetItemContainer(handler, initialPhysicalPosition), orientation);
+			var targetOffset = GetOffset(scrollViewer, orientation) + itemLength * 0.25;
 			Assert.True(
-				scrollViewer.ChangeView(targetOffset, null, null, true),
+				ChangeView(scrollViewer, targetOffset, orientation),
 				"Native ScrollViewer rejected the initial wheel-equivalent offset.");
 
 			await AssertEventually(
-				() => Math.Abs(scrollViewer.HorizontalOffset - targetOffset) <= 1
+				() => Math.Abs(GetOffset(scrollViewer, orientation) - targetOffset) <= 1
 					&& handler.PlatformView.ItemsPanelRoot is Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel
 					&& itemsPanel.FirstVisibleIndex <= initialPhysicalPosition
 					&& itemsPanel.LastVisibleIndex >= initialPhysicalPosition + 1,
 				timeout: 3000,
 				message: "CarouselView did not realize the adjacent item after the native scroll.");
 
-			return (targetOffset, itemWidth);
+			return (targetOffset, itemLength);
 		}
 
 		static int GetCenteredPhysicalPosition(
@@ -391,13 +634,16 @@ namespace Microsoft.Maui.DeviceTests
 			if (handler.PlatformView.ItemsPanelRoot is not Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel)
 				return -1;
 
+			var itemCount = handler.VirtualView.ItemsSource.Cast<object>().Count();
+			var orientation = handler.VirtualView.ItemsLayout.Orientation;
 			for (int index = itemsPanel.FirstVisibleIndex; index <= itemsPanel.LastVisibleIndex; index++)
 			{
 				if (index >= 0
-					&& index % 5 == logicalPosition
+					&& itemCount > 0
+					&& index % itemCount == logicalPosition
 					&& handler.PlatformView.ContainerFromIndex(index) is WFrameworkElement container
-					&& container.ActualWidth > 0
-					&& GetHorizontalCenterError(handler, scrollViewer, index) <= 1)
+					&& GetItemLength(container, orientation) > 0
+					&& GetCenterError(handler, scrollViewer, index, orientation) <= 1)
 				{
 					return index;
 				}
@@ -409,15 +655,88 @@ namespace Microsoft.Maui.DeviceTests
 		static WFrameworkElement GetItemContainer(CarouselViewHandler handler, int index) =>
 			Assert.IsType<Microsoft.UI.Xaml.Controls.ListViewItem>(handler.PlatformView.ContainerFromIndex(index));
 
-		static double GetCenteredHorizontalOffset(CarouselViewHandler handler, WScrollViewer scrollViewer, int index)
+		static double GetItemLength(WFrameworkElement container, ItemsLayoutOrientation orientation) =>
+			orientation == ItemsLayoutOrientation.Horizontal ? container.ActualWidth : container.ActualHeight;
+
+		static double GetViewportLength(WScrollViewer scrollViewer, ItemsLayoutOrientation orientation) =>
+			orientation == ItemsLayoutOrientation.Horizontal ? scrollViewer.ViewportWidth : scrollViewer.ViewportHeight;
+
+		static double GetScrollableLength(WScrollViewer scrollViewer, ItemsLayoutOrientation orientation) =>
+			orientation == ItemsLayoutOrientation.Horizontal ? scrollViewer.ScrollableWidth : scrollViewer.ScrollableHeight;
+
+		static double GetOffset(WScrollViewer scrollViewer, ItemsLayoutOrientation orientation) =>
+			orientation == ItemsLayoutOrientation.Horizontal ? scrollViewer.HorizontalOffset : scrollViewer.VerticalOffset;
+
+		static bool ChangeView(
+			WScrollViewer scrollViewer,
+			double offset,
+			ItemsLayoutOrientation orientation,
+			bool disableAnimation = true) =>
+			scrollViewer.ChangeView(
+				orientation == ItemsLayoutOrientation.Horizontal ? offset : null,
+				orientation == ItemsLayoutOrientation.Vertical ? offset : null,
+				null,
+				disableAnimation);
+
+		static double GetCenteredOffset(
+			CarouselViewHandler handler,
+			WScrollViewer scrollViewer,
+			int index,
+			ItemsLayoutOrientation orientation)
 		{
 			var container = GetItemContainer(handler, index);
 			var position = container.TransformToVisual((WUIElement)scrollViewer.Content).TransformPoint(new WPoint());
-			return position.X - ((scrollViewer.ViewportWidth - container.ActualWidth) / 2);
+			return orientation == ItemsLayoutOrientation.Horizontal
+				? position.X - ((scrollViewer.ViewportWidth - container.ActualWidth) / 2)
+				: position.Y - ((scrollViewer.ViewportHeight - container.ActualHeight) / 2);
 		}
 
 		static double GetHorizontalCenterError(CarouselViewHandler handler, WScrollViewer scrollViewer, int index) =>
-			Math.Abs(scrollViewer.HorizontalOffset - GetCenteredHorizontalOffset(handler, scrollViewer, index));
+			GetCenterError(handler, scrollViewer, index, ItemsLayoutOrientation.Horizontal);
+
+		static double GetCenterError(
+			CarouselViewHandler handler,
+			WScrollViewer scrollViewer,
+			int index,
+			ItemsLayoutOrientation orientation) =>
+			Math.Abs(GetOffset(scrollViewer, orientation) - GetCenteredOffset(handler, scrollViewer, index, orientation));
+
+		static T GetPrivateField<T>(CarouselViewHandler handler, string fieldName)
+		{
+			var field = typeof(CarouselViewHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			return (T)field.GetValue(handler);
+		}
+
+		static void SetPrivateField<T>(CarouselViewHandler handler, string fieldName, T value)
+		{
+			var field = typeof(CarouselViewHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			field.SetValue(handler, value);
+		}
+
+		static object InvokePrivateMethod(CarouselViewHandler handler, string methodName, params object[] arguments)
+		{
+			var method = typeof(CarouselViewHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(method);
+			return method.Invoke(handler, arguments);
+		}
+
+		static object InvokePrivateStaticMethod(string methodName, params object[] arguments)
+		{
+			var method = typeof(CarouselViewHandler).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
+			Assert.NotNull(method);
+			return method.Invoke(null, arguments);
+		}
+
+		static async Task DrainDispatcherQueueAsync(WUIElement element)
+		{
+			var drained = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			Assert.True(element.DispatcherQueue.TryEnqueue(
+				Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+				() => drained.TrySetResult(true)));
+			await drained.Task.WaitAsync(TimeSpan.FromSeconds(3));
+		}
 
 		static string GetScrollState(
 			CarouselViewHandler handler,
