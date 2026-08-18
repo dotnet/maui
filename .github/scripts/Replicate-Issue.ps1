@@ -203,7 +203,7 @@ function Get-ReplicationAttemptFailureKind {
     if ($text -match '(?i)REPLICATION_NOT_REPRODUCED') {
         return 'not-reproduced'
     }
-    if ($text -match '(?i)Element was not visible|no such element|ElementNotFound') {
+    if ($text -match '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException|Timed out after \d+ seconds') {
         return 'element-missing'
     }
     if ($text -match '(?i)must locate a stable result element|Generated Appium step') {
@@ -220,9 +220,15 @@ function Test-ReplicationNonReproductionIsConclusive {
         .DESCRIPTION
         Build 14997689 declared verified regression 37418 non-reproducible after
         alternating between a CS0246 build break and a scenario that observed no
-        defect, then told the reporter publicly to try the latest version. A
-        non-reproduction is only conclusive when every attempt reached the device
-        and observed no defect.
+        defect, then told the reporter publicly to try the latest version. An
+        attempt lost to a build break or to the app dying proves nothing, so any
+        of those makes the answer inconclusive.
+
+        Requiring every attempt to observe no defect was too strict: build
+        14999466 spent five attempts on 37263, cleanly observed no defect twice,
+        and failed the whole run red because one attempt never rendered its
+        result element. Repeated clean observations, with nothing lost to the
+        toolchain, are a real empirical answer.
     #>
     param(
         [Parameter(Mandatory)]
@@ -235,13 +241,17 @@ function Test-ReplicationNonReproductionIsConclusive {
         return $false
     }
 
+    $cleanObservations = 0
     foreach ($kind in $AttemptKinds) {
-        if ($kind -ne 'not-reproduced') {
+        if ($kind -in @('build-failed', 'app-terminated')) {
             return $false
+        }
+        if ($kind -eq 'not-reproduced') {
+            $cleanObservations++
         }
     }
 
-    return $true
+    return $cleanObservations -ge 2
 }
 
 function Get-ReplicationFailureSignature {

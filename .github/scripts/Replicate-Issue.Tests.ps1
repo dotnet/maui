@@ -1157,6 +1157,46 @@ public class Issue35516
 
         $none = [System.Collections.Generic.List[string]]::new()
         Test-ReplicationNonReproductionIsConclusive $none | Should -BeFalse
+
+        # Build 14999466 spent five attempts on 37263, cleanly observed no
+        # defect twice, and still failed red because one attempt never rendered
+        # its result element. Nothing was lost to the toolchain there.
+        $repeatedCleanObservations = [System.Collections.Generic.List[string]]::new()
+        $repeatedCleanObservations.Add('not-reproduced')
+        $repeatedCleanObservations.Add('element-missing')
+        $repeatedCleanObservations.Add('not-reproduced')
+        Test-ReplicationNonReproductionIsConclusive $repeatedCleanObservations |
+            Should -BeTrue
+
+        # A single clean observation next to attempts that never observed
+        # anything is still not an answer.
+        $singleObservation = [System.Collections.Generic.List[string]]::new()
+        $singleObservation.Add('element-missing')
+        $singleObservation.Add('not-reproduced')
+        $singleObservation.Add('plan-rejected')
+        Test-ReplicationNonReproductionIsConclusive $singleObservation | Should -BeFalse
+
+        # The app dying is never evidence that the reported defect is absent.
+        $terminated = [System.Collections.Generic.List[string]]::new()
+        $terminated.Add('not-reproduced')
+        $terminated.Add('not-reproduced')
+        $terminated.Add('app-terminated')
+        Test-ReplicationNonReproductionIsConclusive $terminated | Should -BeFalse
+    }
+
+    It 'treats a locator timeout as an attempt that observed nothing' {
+        # Build 14999466 classified 'waiting for semantic result to be visible'
+        # as an unknown failure, so it could never be reasoned about.
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'OpenQA.Selenium.WebDriverTimeoutException: Timed out after 20 seconds' |
+            Should -BeExactly 'element-missing'
+
+        # A clean no-defect observation also carries a timeout in its inner
+        # exception, and must keep its own classification.
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary ('REPLICATION_NOT_REPRODUCED actual=NO BUG ---> ' +
+                'OpenQA.Selenium.WebDriverTimeoutException: Timed out after 20 seconds') |
+            Should -BeExactly 'not-reproduced'
     }
 
     It 'gates the conclusive classification on the attempt kinds' {
