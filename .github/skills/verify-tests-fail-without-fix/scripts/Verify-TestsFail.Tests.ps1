@@ -16,6 +16,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'verify-tests-fail.ps1'
+    $script:verifyScriptText = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -23,7 +24,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -111,15 +112,33 @@ Describe 'Invoke-TestRun — host-only target frameworks' {
     It 'applies the shared platform exclusions to unit and XAML unit tests' {
         ([regex]::Matches($script:invokeTestRunText, '\+\s*\$hostOnlyTargetFrameworkArgs')).Count | Should -Be 2
         ([regex]::Matches($script:invokeTestRunText, '-p:TreatWarningsAsErrors=false')).Count | Should -Be 2
-        foreach ($property in @(
-            'IncludeAndroidTargetFrameworks',
-            'IncludeIosTargetFrameworks',
-            'IncludeMacCatalystTargetFrameworks',
-            'IncludeWindowsTargetFrameworks',
-            'IncludeTizenTargetFrameworks'
-        )) {
-            $script:invokeTestRunText | Should -Match "-p:$property=false"
-        }
+        @(Get-HostOnlyTargetFrameworkArgs) | Should -Be @(
+            '-p:IncludeAndroidTargetFrameworks=false',
+            '-p:IncludeIosTargetFrameworks=false',
+            '-p:IncludeMacCatalystTargetFrameworks=false',
+            '-p:IncludeWindowsTargetFrameworks=false',
+            '-p:IncludeTizenTargetFrameworks=false'
+        )
+    }
+
+    It 'applies the same platform exclusions to both clean-rebuild retry commands' {
+        $retryStart = $script:verifyScriptText.IndexOf(
+            '# ── Clean-rebuild retry for with-fix-only build errors')
+        $retryEnd = $script:verifyScriptText.IndexOf(
+            '# Combine into a single summary for backward compatibility',
+            $retryStart)
+        $retryStart | Should -BeGreaterOrEqual 0
+        $retryEnd | Should -BeGreaterThan $retryStart
+        $retryText = $script:verifyScriptText.Substring(
+            $retryStart,
+            $retryEnd - $retryStart)
+
+        ([regex]::Matches(
+            $retryText,
+            '\+\s*\$hostOnlyTargetFrameworkArgs')).Count |
+            Should -Be 2
+        $retryText | Should -Match (
+            '\$hostOnlyTargetFrameworkArgs\s*=\s*Get-HostOnlyTargetFrameworkArgs')
     }
 }
 

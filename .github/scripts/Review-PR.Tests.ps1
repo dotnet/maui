@@ -258,21 +258,28 @@ Describe 'Reviewer pipeline timeout containment' {
     }
 
     It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
+        $postReviewJobStart = $pipelineContent.IndexOf("      - job: PostReview")
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
         $cleanupStart = $pipelineContent.IndexOf("- stage: CleanupReviewLock")
         $analyzeStart = $pipelineContent.IndexOf("- stage: AnalyzeCopilotTokenUsage")
 
-        $deepStart | Should -BeGreaterThan -1
+        $postReviewJobStart | Should -BeGreaterThan -1
+        $deepStart | Should -BeGreaterThan $postReviewJobStart
         $postStart | Should -BeGreaterThan $deepStart
         $cleanupStart | Should -BeGreaterThan $postStart
         $analyzeStart | Should -BeGreaterThan $cleanupStart
 
+        $postReviewJobBlock = $pipelineContent.Substring(
+            $postReviewJobStart,
+            $deepStart - $postReviewJobStart)
         $deepBlock = $pipelineContent.Substring($deepStart, $postStart - $deepStart)
         $postBlock = $pipelineContent.Substring($postStart, $cleanupStart - $postStart)
         $cleanupBlock = $pipelineContent.Substring($cleanupStart, $analyzeStart - $cleanupStart)
         $analyzeBlock = $pipelineContent.Substring($analyzeStart)
 
+        $postReviewJobBlock | Should -Match (
+            "condition: in\(dependencies\.CopilotReview\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'\)")
         $deepBlock | Should -Match 'not\(canceled\(\)\)'
         $deepBlock | Should -Not -Match "'Canceled'"
         $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
@@ -401,6 +408,36 @@ Describe 'Reviewer pipeline timeout containment' {
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
         $resolveBlock | Should -Not -Match 'source-overrides'
+    }
+
+    It 'keeps credential-bearing setup on the protected base branch' {
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $resolveStart = $pipelineContent.LastIndexOf(
+            "- bash:",
+            $pipelineContent.IndexOf($resolveName))
+        $resolveEnd = $pipelineContent.IndexOf(
+            "- template: common/enable-kvm.yml",
+            $resolveStart)
+        $resolveBlock = $pipelineContent.Substring(
+            $resolveStart,
+            $resolveEnd - $resolveStart)
+        $installWorkloads = $pipelineContent.IndexOf(
+            "displayName: 'Install .NET and workloads'",
+            $resolveEnd)
+        $buildTasks = $pipelineContent.IndexOf(
+            "displayName: 'Build MSBuild Tasks'",
+            $installWorkloads)
+        $setup = $pipelineContent.IndexOf(
+            'echo "═══ TASK 1: SETUP ═══"',
+            $buildTasks)
+
+        $resolveBlock | Should -Match (
+            [regex]::Escape('git checkout --detach "origin/${BASE_REF}"'))
+        $resolveBlock | Should -Not -Match 'pull/\$\{PARAM_PR_NUMBER\}/head'
+        $resolveBlock | Should -Not -Match 'git checkout --detach FETCH_HEAD'
+        $installWorkloads | Should -BeGreaterThan $resolveEnd
+        $buildTasks | Should -BeGreaterThan $installWorkloads
+        $setup | Should -BeGreaterThan $buildTasks
     }
 
     It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {

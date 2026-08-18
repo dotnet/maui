@@ -268,38 +268,13 @@ stages:
               fi
               echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
 
-              # Switch the worktree to the PR's base branch (detached, to avoid
-              # 'branch already checked out in another worktree' conflicts).
-              # EXCEPTION — inflight/* targets: the inflight release branches carry
-              # release-specific code that has diverged from main, and we review those
-              # PRs on the PR head AS-IS (see Review-PR.ps1 Setup). Build/workload-resolve
-              # the PR head here too, so Build MSBuild Tasks compiles the PR's actual code
-              # (on its inflight base) rather than the base tip — otherwise a broken base
-              # would fail the review before Setup even runs, and a PR that FIXES the base
-              # could never be validated. 'pull/N/head' resolves for fork PRs too.
-              if [[ "${BASE_REF}" == inflight/* ]]; then
-                git fetch origin "pull/${PARAM_PR_NUMBER}/head" --no-tags
-                git checkout --detach FETCH_HEAD
-                # Merge the CURRENT inflight base so the review builds the PR on top of the
-                # LATEST base — picking up base-branch fixes that landed AFTER the PR branched
-                # (e.g. #36787 fixed the inflight/current build breaks after #36776 was cut).
-                # Without this, a stale PR head rebuilds the old broken base and the gate + UI
-                # tests never run. Best-effort here: on conflict, keep the PR head as-is (Build
-                # MSBuild Tasks is continueOnError, and Setup re-runs the merge and reports the
-                # real conflict). A PR that FIXES the base still builds because its fix is on HEAD.
-                git fetch origin "${BASE_REF}" --no-tags
-                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/${BASE_REF}"; then
-                  echo "Merged latest origin/${BASE_REF} into PR head for an up-to-date base build"
-                else
-                  echo "##vso[task.logissue type=warning]Could not merge origin/${BASE_REF} into PR #${PARAM_PR_NUMBER} head (conflict) — building PR head as-is; Setup will report the merge conflict."
-                  git merge --abort 2>/dev/null || true
-                fi
-                echo "Worktree now at $(git rev-parse --short HEAD) (PR #${PARAM_PR_NUMBER} head + ${BASE_REF}) for workloads + build"
-              else
-                git fetch origin "${BASE_REF}" --no-tags
-                git checkout --detach "origin/${BASE_REF}"
-                echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
-              fi
+              # Always keep the worktree on the protected target branch while the
+              # credential-bearing workload and build-task steps run. The trusted
+              # Setup phase merges the immutable PR head later, after DOTNET_TOKEN is
+              # out of scope, including for inflight/* targets.
+              git fetch origin "${BASE_REF}" --no-tags
+              git checkout --detach "origin/${BASE_REF}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
             name: ResolveBaseBranch
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
@@ -1910,7 +1885,7 @@ stages:
       - job: PostReview
         displayName: 'Post review results'
         dependsOn: CopilotReview
-        condition: in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed')
+        condition: in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04

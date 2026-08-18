@@ -341,6 +341,29 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 2 -Exactly
     }
 
+    It 'continues after one candidate metadata check fails' {
+        $olderComment = New-RecoveryTestComment `
+            -Id 5209319530 `
+            -Body '/review windows' `
+            -CreatedAt '2026-08-06T21:29:00Z'
+        Mock Get-RecentIssueComments { @($script:Comment, $olderComment) }
+        Mock Test-ReviewCommentIsMinimized {
+            param([string]$NodeId)
+            if ($NodeId -eq 'IC_5209319530') {
+                throw 'GraphQL node was deleted'
+            }
+            return $false
+        }
+
+        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
+
+        $result.Recovered.Count | Should -Be 1
+        $result.Recovered[0].CommentId | Should -Be 5209319531
+        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
+            $CommentId -eq 5209319531
+        }
+    }
+
     It 'does not acknowledge in the scanner before the serialized trigger workflow runs' {
         $scriptText = Get-Content -Raw -LiteralPath $script:RecoverScriptPath
         $scriptText | Should -Not -Match 'function Add-ReviewRecoveryMarker'

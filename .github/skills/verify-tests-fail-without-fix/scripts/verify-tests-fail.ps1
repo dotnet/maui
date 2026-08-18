@@ -399,6 +399,16 @@ function Get-TestTypeFromFiles {
 # ============================================================
 # Run tests based on detected type
 # ============================================================
+function Get-HostOnlyTargetFrameworkArgs {
+    return @(
+        "-p:IncludeAndroidTargetFrameworks=false",
+        "-p:IncludeIosTargetFrameworks=false",
+        "-p:IncludeMacCatalystTargetFrameworks=false",
+        "-p:IncludeWindowsTargetFrameworks=false",
+        "-p:IncludeTizenTargetFrameworks=false"
+    )
+}
+
 function Invoke-TestRun {
     <#
     .SYNOPSIS
@@ -420,13 +430,7 @@ function Invoke-TestRun {
         [string]$LogFile
     )
 
-    $hostOnlyTargetFrameworkArgs = @(
-        "-p:IncludeAndroidTargetFrameworks=false",
-        "-p:IncludeIosTargetFrameworks=false",
-        "-p:IncludeMacCatalystTargetFrameworks=false",
-        "-p:IncludeWindowsTargetFrameworks=false",
-        "-p:IncludeTizenTargetFrameworks=false"
-    )
+    $hostOnlyTargetFrameworkArgs = Get-HostOnlyTargetFrameworkArgs
 
     # Boot device/simulator once for test types that need a platform.
     # Both BuildAndRunHostApp.ps1 and Run-DeviceTests.ps1 use Start-Emulator.ps1
@@ -3386,6 +3390,7 @@ foreach ($testEntry in $AllDetectedTests) {
 # graph) before trusting the failure. This can ONLY correct a false FAILED into the
 # true verdict: a genuine PR compile break still fails the clean rebuild (stays
 # FAILED), and a clean compile whose tests genuinely fail is preserved as FAILED.
+$hostOnlyTargetFrameworkArgs = Get-HostOnlyTargetFrameworkArgs
 for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
     $wr = $withFixResults[$ri]
     if (-not $wr.BuildError) { continue }
@@ -3404,11 +3409,23 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
     $rsan = ($retryEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_'); if ($rsan.Length -gt 60) { $rsan = $rsan.Substring(0, 60) }
     $cleanLog = Join-Path $OutputPath "test-with-fix-cleanrebuild-$rsan.log"
     $rsw = [System.Diagnostics.Stopwatch]::StartNew()
-    $buildOut = Invoke-WithoutGhTokens { & dotnet build $projFull -c Debug -t:Rebuild -p:TreatWarningsAsErrors=false 2>&1 }
+    $buildArgs = @(
+        "build", $projFull,
+        "-c", "Debug",
+        "-t:Rebuild",
+        "-p:TreatWarningsAsErrors=false"
+    ) + $hostOnlyTargetFrameworkArgs
+    $buildOut = Invoke-WithoutGhTokens { & dotnet @buildArgs 2>&1 }
     $buildExit = $LASTEXITCODE
     $combined = @($buildOut)
     if ($buildExit -eq 0) {
-        $testOut = Invoke-WithoutGhTokens { & dotnet test $projFull -c Debug --logger "console;verbosity=normal" -p:TreatWarningsAsErrors=false --filter $retryEntry.Filter 2>&1 }
+        $testArgs = @(
+            "test", $projFull,
+            "-c", "Debug",
+            "--logger", "console;verbosity=normal",
+            "-p:TreatWarningsAsErrors=false"
+        ) + $hostOnlyTargetFrameworkArgs + @("--filter", $retryEntry.Filter)
+        $testOut = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
         $combined += @($testOut)
     }
     $combined | Out-File -FilePath $cleanLog -Force -Encoding utf8
