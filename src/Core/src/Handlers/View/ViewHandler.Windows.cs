@@ -3,7 +3,6 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
@@ -48,18 +47,6 @@ public partial class ViewHandler
 			ReferenceEquals(wrapper.Child, PlatformView))
 		{
 			return;
-		}
-
-#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
-		var oldParentChildren = PlatformView.Parent is MauiPanel mauiPanel
-			? mauiPanel.CachedChildren
-			: (PlatformView.Parent as Panel)?.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-
-		var oldIndex = oldParentChildren?.IndexOf(PlatformView);
-		if (oldIndex is int oldIdx && oldIdx >= 0)
-		{
-			oldParentChildren?.RemoveAt(oldIdx);
 		}
 
 		wrapper.Child = PlatformView;

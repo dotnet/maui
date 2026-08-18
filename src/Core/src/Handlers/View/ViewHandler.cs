@@ -533,13 +533,8 @@ namespace Microsoft.Maui.Handlers
 			{
 #if WINDOWS
 				// Reusing a disconnected handler creates a new platform view; preserve the wrapper's visual-tree slot.
-				if (hasContainerOldValue &&
-					handler.ContainerView is WrapperView wrapper &&
-					handler.PlatformView is PlatformView platformView &&
-					!ReferenceEquals(wrapper.Child, platformView))
-				{
+				if (hasContainerOldValue)
 					viewHandler.ReconnectContainer();
-				}
 #endif
 
 				handler.HasContainer = viewHandler.NeedsContainer;
@@ -644,7 +639,9 @@ namespace Microsoft.Maui.Handlers
 		static void MapInputTransparentToContainer(IViewHandler handler, IView view)
 		{
 #if WINDOWS
-			// LayoutPanel handles input transparency without disabling its child tree.
+			// LayoutPanel has a specialized mapper that makes the panel transparent to input without
+			// disabling its child tree. Other handlers disable their platform view and its subtree, so
+			// propagating the same value to their wrapper preserves their existing behavior.
 			if (handler is ILayoutHandler)
 				return;
 #endif

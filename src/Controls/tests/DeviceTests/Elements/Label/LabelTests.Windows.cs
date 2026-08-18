@@ -11,20 +11,16 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelTests
 	{
-		sealed class PreParentedPlatformViewLabelHandler : LabelHandler
+		sealed class PlatformViewParentTrackingLabelHandler : LabelHandler
 		{
-			public Panel TemporaryParent { get; set; }
+			public int ConnectedPlatformViewCount { get; private set; }
+			public bool ConnectedPlatformViewsWereUnparented { get; private set; } = true;
 
-			protected override TextBlock CreatePlatformView()
+			protected override void ConnectHandler(TextBlock platformView)
 			{
-				var platformView = base.CreatePlatformView();
-#pragma warning disable RS0030 // Do not use banned APIs; MauiPanel might not be used everywhere.
-				var children = TemporaryParent is MauiPanel mauiPanel
-					? mauiPanel.CachedChildren
-					: TemporaryParent?.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-				children?.Add(platformView);
-				return platformView;
+				base.ConnectHandler(platformView);
+				ConnectedPlatformViewCount++;
+				ConnectedPlatformViewsWereUnparented &= platformView.Parent is null;
 			}
 		}
 
@@ -141,7 +137,7 @@ namespace Microsoft.Maui.DeviceTests
 				VerticalTextAlignment = TextAlignment.Center
 			};
 
-			await AttachAndRun(label, (LabelHandler handler) =>
+			await AttachAndRun<PlatformViewParentTrackingLabelHandler>(label, handler =>
 			{
 				var oldPlatformView = handler.PlatformView;
 				var container = Assert.IsType<WrapperView>(handler.ContainerView);
@@ -159,11 +155,13 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(handler.PlatformView.IsHitTestVisible);
 				Assert.True(double.IsNaN(handler.PlatformView.Height));
 				Assert.Equal(Microsoft.UI.Xaml.VerticalAlignment.Center, handler.PlatformView.VerticalAlignment);
+				Assert.Equal(2, handler.ConnectedPlatformViewCount);
+				Assert.True(handler.ConnectedPlatformViewsWereUnparented);
 			});
 		}
 
 		[Fact]
-		public async Task ReconnectingContainerDetachesNewPlatformViewFromTemporaryParent()
+		public async Task ReconnectingContainerPreservesWrapperInDifferentPanel()
 		{
 			var label = new Label
 			{
@@ -171,24 +169,66 @@ namespace Microsoft.Maui.DeviceTests
 				InputTransparent = true
 			};
 
-			await AttachAndRun<PreParentedPlatformViewLabelHandler>(label, handler =>
+			await AttachAndRun(label, (LabelHandler handler) =>
 			{
 				var container = Assert.IsType<WrapperView>(handler.ContainerView);
-				var temporaryParent = Assert.IsAssignableFrom<Panel>(container.Parent);
-				handler.TemporaryParent = temporaryParent;
+				var originalParent = Assert.IsAssignableFrom<Panel>(container.Parent);
+				var newParent = new Microsoft.UI.Xaml.Controls.Grid();
+
+#pragma warning disable RS0030 // Do not use banned APIs; MauiPanel might not be used everywhere.
+				var originalChildren = originalParent is MauiPanel mauiPanel
+					? mauiPanel.CachedChildren
+					: originalParent.Children;
+				var newParentChildren = newParent.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
+				var originalIndex = originalChildren.IndexOf(container);
+				Assert.InRange(originalIndex, 0, originalChildren.Count - 1);
+				originalChildren.RemoveAt(originalIndex);
+				originalChildren.Insert(originalIndex, newParent);
+				newParentChildren.Add(container);
+				Assert.Same(newParent, container.Parent);
 
 				((IElementHandler)handler).DisconnectHandler();
 				handler.SetVirtualView(label);
 
-#pragma warning disable RS0030 // Do not use banned APIs; MauiPanel might not be used everywhere.
-				var children = temporaryParent is MauiPanel mauiPanel
-					? mauiPanel.CachedChildren
-					: temporaryParent.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-				Assert.DoesNotContain(handler.PlatformView, children);
 				Assert.Same(container, handler.ContainerView);
+				Assert.Same(newParent, container.Parent);
 				Assert.Same(handler.PlatformView, container.Child);
 				Assert.Same(container, handler.PlatformView.Parent);
+			});
+		}
+
+		[Fact]
+		public async Task ReconnectingContainerPreservesDetachedWrapper()
+		{
+			var label = new Label
+			{
+				BackgroundColor = Colors.Transparent,
+				InputTransparent = true
+			};
+
+			await AttachAndRun(label, (LabelHandler handler) =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var parent = Assert.IsAssignableFrom<Panel>(container.Parent);
+
+#pragma warning disable RS0030 // Do not use banned APIs; MauiPanel might not be used everywhere.
+				var children = parent is MauiPanel mauiPanel
+					? mauiPanel.CachedChildren
+					: parent.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
+				children.Remove(container);
+				Assert.Null(container.Parent);
+
+				((IElementHandler)handler).DisconnectHandler();
+				handler.SetVirtualView(label);
+
+				Assert.Same(container, handler.ContainerView);
+				Assert.Null(container.Parent);
+				Assert.Same(handler.PlatformView, container.Child);
+				Assert.Contains(handler.PlatformView, container.CachedChildren);
 			});
 		}
 	}

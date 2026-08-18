@@ -16,6 +16,9 @@ public class Issue21384 : _IssuesUITest
 	[Category(UITestCategories.InputTransparent)]
 	public void InputTransparentLabelAllowsButtonClick()
 	{
+		if (Device == TestDevice.Mac)
+			Assert.Ignore("Issue #21384 and its fix are Windows-specific.");
+
 		App.WaitForElement("CounterButton");
 		App.Tap("CounterButton");
 
