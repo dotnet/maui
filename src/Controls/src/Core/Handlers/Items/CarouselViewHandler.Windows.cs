@@ -798,6 +798,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var currentHorizontalOffset = _scrollViewer.HorizontalOffset;
 			var currentVerticalOffset = _scrollViewer.VerticalOffset;
+			var orientation = CarouselItemsLayout.Orientation;
 			horizontalOffset = currentHorizontalOffset;
 			verticalOffset = currentVerticalOffset;
 			var closestDistance = double.MaxValue;
@@ -805,14 +806,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			for (int index = firstVisibleIndex; index <= lastVisibleIndex; index++)
 			{
 				if (ListViewBase.ContainerFromIndex(index) is not FrameworkElement container
-					|| container.ActualWidth <= 0
-					|| container.ActualHeight <= 0)
+					|| (orientation == ItemsLayoutOrientation.Horizontal
+						? container.ActualWidth <= 0
+						: container.ActualHeight <= 0))
 					continue;
 
 				var position = container.TransformToVisual(content).TransformPoint(new Point());
 				var candidateHorizontalOffset = currentHorizontalOffset;
 				var candidateVerticalOffset = currentVerticalOffset;
-				if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+				if (orientation == ItemsLayoutOrientation.Horizontal)
 					candidateHorizontalOffset = position.X - ((_scrollViewer.ViewportWidth - container.ActualWidth) / 2);
 				else
 					candidateVerticalOffset = position.Y - ((_scrollViewer.ViewportHeight - container.ActualHeight) / 2);
