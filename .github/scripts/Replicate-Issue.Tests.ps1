@@ -3241,3 +3241,16 @@ Describe 'Recorded evidence proves a transition' {
             Should -BeTrue
     }
 }
+
+Describe 'Test plan rules out benign explanations' {
+    It 'requires the oracle preconditions to be asserted separately' {
+        # Review of PR 178 accepted the test but noted that a setup defect in
+        # the attributed title would fail at the same colour assertion, and
+        # PR 181 raised the same class of doubt.
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $source.Contains('separately assert every precondition the oracle depends on') |
+            Should -BeTrue
+        $source.Contains('reaches the same failing assertion') | Should -BeTrue
+    }
+}
+
