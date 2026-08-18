@@ -23,6 +23,11 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly Path? _borderPath;
 		ContentPanelClipHost? _contentClipHost;
+		bool _contentClipDirty = true;
+		IShape? _contentClipShape;
+		double _contentClipWidth;
+		double _contentClipHeight;
+		float _contentClipStrokeThickness;
 		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
 
@@ -73,7 +78,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentClipHost is not null)
 			{
-				SynchronizeContentClipHostLayout();
+				_contentClipHost.UpdateLayoutOwner();
 				_contentClipHost.Measure(availableSize);
 				measured = _contentClipHost.DesiredSize;
 			}
@@ -116,11 +121,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentClipHost is not null)
 			{
-				if (SynchronizeContentClipHostLayout())
-				{
-					_contentClipHost.Measure(finalSize);
-				}
-
+				_contentClipHost.UpdateLayoutOwner();
 				_contentClipHost.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 				actual = finalSize;
 			}
@@ -206,15 +207,13 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_contentClipHost is not null)
 			{
-				_contentClipHost.CrossPlatformLayout = CrossPlatformLayout;
+				_contentClipHost.UpdateLayoutOwner();
 				return;
 			}
 
-			_contentClipHost = new ContentPanelClipHost(this)
-			{
-				CrossPlatformLayout = CrossPlatformLayout,
-			};
+			_contentClipHost = new ContentPanelClipHost(this);
 			CachedChildren.Add(_contentClipHost);
+			InvalidateContentClip();
 
 			if (_content is not null && CachedChildren.Contains(_content))
 			{
@@ -228,31 +227,23 @@ namespace Microsoft.Maui.Platform
 			var layoutChanged = !ReferenceEquals(CrossPlatformLayout, crossPlatformLayout);
 			CrossPlatformLayout = crossPlatformLayout;
 
-			if (_contentClipHost is not null)
-			{
-				_contentClipHost.CrossPlatformLayout = crossPlatformLayout;
-			}
-
 			if (layoutChanged)
 			{
 				InvalidateMeasure();
-				_contentClipHost?.InvalidateMeasure();
+				_contentClipHost?.UpdateLayoutOwner();
 			}
 		}
 
-		bool SynchronizeContentClipHostLayout()
+		internal void DisconnectContent()
 		{
-			if (_contentClipHost is null ||
-				ReferenceEquals(_contentClipHost.CrossPlatformLayout, CrossPlatformLayout))
-			{
-				return false;
-			}
+			UpdateCrossPlatformLayout(null);
+			Content = null;
+			_borderStroke = null;
+		}
 
-			_contentClipHost.CrossPlatformLayout = CrossPlatformLayout;
-			_contentClipHost.InvalidateMeasure();
-			_contentClipHost.InvalidateArrange();
-
-			return true;
+		internal void InvalidateContentClip()
+		{
+			_contentClipDirty = true;
 		}
 
 		static void OnBackgroundPropertyChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
@@ -312,6 +303,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			InvalidateContentClip();
 			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
 
 			var width = ActualWidth;
@@ -351,6 +343,16 @@ namespace Microsoft.Maui.Platform
 
 			PathF? clipPath;
 			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+
+			if (!_contentClipDirty &&
+				ReferenceEquals(_contentClipShape, clipGeometry) &&
+				_contentClipWidth == width &&
+				_contentClipHeight == height &&
+				_contentClipStrokeThickness == strokeThickness)
+			{
+				return;
+			}
+
 			// The path size should consider the space taken by the border (top and bottom, left and right)
 			var pathSize = new Rect(0, 0, width - strokeThickness * 2, height - strokeThickness * 2);
 
@@ -374,6 +376,11 @@ namespace Microsoft.Maui.Platform
 			geometricClip.Offset = new Vector2(strokeThickness, strokeThickness);
 
 			visual.Clip = geometricClip;
+			_contentClipShape = clipGeometry;
+			_contentClipWidth = width;
+			_contentClipHeight = height;
+			_contentClipStrokeThickness = strokeThickness;
+			_contentClipDirty = false;
 		}
 
 		void ClearContentClip()
@@ -382,19 +389,71 @@ namespace Microsoft.Maui.Platform
 			{
 				ElementCompositionPreview.GetElementVisual(_contentClipHost).Clip = null;
 			}
+
+			_contentClipShape = null;
+			_contentClipWidth = 0;
+			_contentClipHeight = 0;
+			_contentClipStrokeThickness = 0;
+			InvalidateContentClip();
 		}
 	}
 
 	sealed partial class ContentPanelClipHost : MauiPanel
 	{
 		readonly ContentPanel _owner;
+		bool _layoutOwnerInitialized;
+		WeakReference<ICrossPlatformLayout>? _layoutOwner;
+
+		internal ICrossPlatformLayout? LayoutOwner => _owner.CrossPlatformLayout;
 
 		internal ContentPanelClipHost(ContentPanel owner)
 		{
 			_owner = owner;
 		}
 
-		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize) =>
-			_owner.ConstrainMeasureToExplicitBorderSize(base.MeasureOverride(availableSize));
+		internal void UpdateLayoutOwner()
+		{
+			var layoutOwner = LayoutOwner;
+
+			if (_layoutOwnerInitialized &&
+				(layoutOwner is null
+					? _layoutOwner is null
+					: _layoutOwner is not null &&
+						_layoutOwner.TryGetTarget(out var previousLayoutOwner) &&
+						ReferenceEquals(previousLayoutOwner, layoutOwner)))
+			{
+				return;
+			}
+
+			_layoutOwnerInitialized = true;
+			_layoutOwner = layoutOwner is null ? null : new(layoutOwner);
+			InvalidateMeasure();
+			InvalidateArrange();
+		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			if (LayoutOwner is not { } layoutOwner ||
+				availableSize.Width * availableSize.Height == 0)
+			{
+				return base.MeasureOverride(availableSize);
+			}
+
+			var measured = layoutOwner.CrossPlatformMeasure(availableSize.Width, availableSize.Height);
+			measured.Width = Math.Max(measured.Width, 0);
+			measured.Height = Math.Max(measured.Height, 0);
+
+			return _owner.ConstrainMeasureToExplicitBorderSize(measured.ToPlatform());
+		}
+
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		{
+			if (LayoutOwner is not { } layoutOwner)
+			{
+				return base.ArrangeOverride(finalSize);
+			}
+
+			return layoutOwner.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+		}
 	}
 }

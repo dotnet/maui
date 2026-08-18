@@ -416,8 +416,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Border only remeasures clip host after a cross-platform invalidation - Issue 17523")]
-		public async Task BorderOnlyRemeasuresClipHostAfterCrossPlatformInvalidation()
+		[Fact(DisplayName = "Border reuses cached clip host measure until cross-platform invalidation - Issue 17523")]
+		public async Task BorderReusesCachedClipHostMeasureUntilCrossPlatformInvalidation()
 		{
 			SetupBuilder();
 
@@ -437,12 +437,50 @@ namespace Microsoft.Maui.DeviceTests
 				platformView.InvalidateMeasure();
 				platformView.Measure(availableSize);
 
+				// Invalidating only the outer native panel preserves WinUI's cached child measure.
+				// A MAUI measure invalidation is routed through the handler and invalidates both layers.
 				Assert.Equal(initialMeasureCount, border.MeasureCount);
 
 				handler.Invoke(nameof(IView.InvalidateMeasure), null);
 				platformView.Measure(availableSize);
 
 				Assert.Equal(initialMeasureCount + 1, border.MeasureCount);
+			});
+		}
+
+		[Fact(DisplayName = "Border reuses unchanged content clip geometry - Issue 17523")]
+		public async Task BorderReusesUnchangedContentClipGeometry()
+		{
+			var border = new Border
+			{
+				StrokeShape = new Ellipse(),
+				StrokeThickness = 4,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = new TestContentPanel
+				{
+					Content = new Microsoft.UI.Xaml.Controls.Grid(),
+					CrossPlatformLayout = border,
+				};
+				platformView.EnableContentClip();
+				platformView.UpdateStrokeShape(border);
+				platformView.UpdateStrokeThickness(border);
+
+				var finalSize = new global::Windows.Foundation.Size(100, 100);
+				platformView.ArrangeForTest(finalSize);
+				var clipHost = Assert.IsType<ContentPanelClipHost>(platformView.ContentClipHost);
+				var visual = ElementCompositionPreview.GetElementVisual(clipHost);
+				var initialClip = visual.Clip;
+
+				platformView.ArrangeForTest(finalSize);
+				Assert.Same(initialClip, visual.Clip);
+
+				border.StrokeThickness = 8;
+				platformView.UpdateStrokeThickness(border);
+				platformView.ArrangeForTest(finalSize);
+				Assert.NotSame(initialClip, visual.Clip);
 			});
 		}
 
@@ -456,8 +494,22 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
+				var platformView = handler.PlatformView;
+				var clipHost = Assert.IsType<ContentPanelClipHost>(platformView.ContentClipHost);
+
 				((IElementHandler)handler).DisconnectHandler();
 				BorderHandler.MapInvalidateMeasure(handler, border, null);
+
+				Assert.Null(platformView.CrossPlatformLayout);
+				Assert.Null(platformView.BorderStroke);
+				Assert.Null(clipHost.LayoutOwner);
+				Assert.Empty(clipHost.CachedChildren);
+
+				var availableSize = new global::Windows.Foundation.Size(100, 100);
+				platformView.Measure(availableSize);
+				platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, 100, 100));
+				platformView.Measure(availableSize);
+				platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, 100, 100));
 			});
 		}
 
@@ -486,12 +538,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(firstMeasureCount, firstBorder.MeasureCount);
 				Assert.Equal(1, secondBorder.MeasureCount);
-				Assert.Same(secondBorder, platformView.ContentClipHost?.CrossPlatformLayout);
+				Assert.Same(secondBorder, platformView.ContentClipHost?.LayoutOwner);
 
 				platformView.CrossPlatformLayout = thirdBorder;
 				platformView.ArrangeForTest(new global::Windows.Foundation.Size(101, 100));
 
-				Assert.Same(thirdBorder, platformView.ContentClipHost?.CrossPlatformLayout);
+				Assert.Same(thirdBorder, platformView.ContentClipHost?.LayoutOwner);
 			});
 		}
 
@@ -516,7 +568,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var clipHost = Assert.IsType<ContentPanelClipHost>(handler.PlatformView.ContentClipHost);
 			Assert.Same(secondBorder, handler.PlatformView.CrossPlatformLayout);
-			Assert.Same(secondBorder, clipHost.CrossPlatformLayout);
+			Assert.Same(secondBorder, clipHost.LayoutOwner);
 			Assert.Equal(1, secondBorder.MeasureCount);
 		}
 
