@@ -166,6 +166,30 @@ Describe 'Replication issue outcome publication boundary' {
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationOutcome.ps1') -Raw
     }
 
+    It 'gives each media-tool install attempt a fresh timeout' {
+        # Build 15000542 timed out because three apt attempts shared one
+        # 15-minute budget, which lost a run that had nothing else wrong.
+        $pipeline = $script:Pipeline
+        $pipeline | Should -Not -Match 'ffmpeg install attempt \$attempt did not succeed'
+        $pipeline | Should -Not -Match 'Media validator install attempt'
+
+        $recorder = [regex]::Match(
+            $pipeline,
+            "(?s)Install reproduction recording tools.{0,400}")
+        $recorder.Success | Should -BeTrue
+        $recorder.Value | Should -Match 'timeoutInMinutes: 25'
+        $recorder.Value | Should -Match 'retryCountOnTaskFailure: 2'
+    }
+
+    It 'stages issue context without depending on a step that may not have run' {
+        # The same build then failed a second time because the staging step
+        # inlined a pipeline variable that the skipped setup never defined.
+        $pipeline = $script:Pipeline
+        $pipeline | Should -Not -Match '\$\(REPLICATION_PRIVATE_CONTEXT_ROOT\)'
+        $pipeline | Should -Match '\$env:REPLICATION_PRIVATE_CONTEXT_ROOT'
+        $pipeline | Should -Match 'Sanitized issue context was never prepared'
+    }
+
     It 'publishes build logs only when the directory exists' {
         # Runs 15000192, 15000196, and 15000200 finished their replication work
         # and then went red publishing a directory replicate mode never writes.

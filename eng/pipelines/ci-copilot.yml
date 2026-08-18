@@ -533,15 +533,14 @@ stages:
               if ($IsMacOS) {
                 brew install ffmpeg
               } elseif ($IsLinux) {
+                # One attempt per task try. retryCountOnTaskFailure restarts the
+                # step with a fresh timeout, which apt needs far more than it
+                # needs a second attempt inside an already-exhausted budget.
                 $env:DEBIAN_FRONTEND = 'noninteractive'
-                for ($attempt = 1; $attempt -le 3; $attempt++) {
-                  sudo apt-get update -qq
-                  sudo apt-get install -y -qq --no-install-recommends ffmpeg
-                  if ($LASTEXITCODE -eq 0) {
-                    break
-                  }
-                  Write-Host "ffmpeg install attempt $attempt did not succeed; retrying."
-                  Start-Sleep -Seconds ($attempt * 15)
+                sudo apt-get update -qq
+                sudo apt-get install -y -qq --no-install-recommends ffmpeg
+                if ($LASTEXITCODE -ne 0) {
+                  throw "apt-get failed to install ffmpeg."
                 }
               } elseif ($IsWindows) {
                 $installed = $false
@@ -576,7 +575,7 @@ stages:
               }
             displayName: 'Install reproduction recording tools'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
-            timeoutInMinutes: 15
+            timeoutInMinutes: 25
             retryCountOnTaskFailure: 2
 
           - bash: |
@@ -1971,8 +1970,14 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $privateContextDir = "$(REPLICATION_PRIVATE_CONTEXT_ROOT)"
-              $contextDir = Join-Path "$(REPLICATION_ARTIFACT_ROOT)" "context"
+              $privateContextDir = $env:REPLICATION_PRIVATE_CONTEXT_ROOT
+              $artifactRoot = $env:REPLICATION_ARTIFACT_ROOT
+              if ([string]::IsNullOrWhiteSpace($privateContextDir) -or
+                  [string]::IsNullOrWhiteSpace($artifactRoot)) {
+                Write-Host "Sanitized issue context was never prepared, so there is nothing to stage."
+                exit 0
+              }
+              $contextDir = Join-Path $artifactRoot "context"
               foreach ($name in @('issue-context.json', 'issue-context.md')) {
                 $source = Join-Path $privateContextDir $name
                 if (Test-Path -LiteralPath $source -PathType Leaf) {
@@ -2650,17 +2655,14 @@ stages:
               # Build 14999448 reached a publishable candidate and then lost it
               # here: recommended packages add hundreds of megabytes the media
               # checks never use, and a slow mirror exhausted the timeout.
-              for attempt in 1 2 3; do
-                if sudo apt-get update -qq && \
-                   sudo apt-get install -y -qq --no-install-recommends ffmpeg; then
-                  break
-                fi
-                echo "Media validator install attempt ${attempt} did not succeed; retrying."
-                sleep $((attempt * 15))
-              done
+              # One attempt per task try. Stacking attempts inside a single
+              # timeout is what turned build 15000542 red rather than slow.
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq --no-install-recommends ffmpeg
               ffprobe -version | head -1
             displayName: 'Install publisher media validator'
             timeoutInMinutes: 25
+            retryCountOnTaskFailure: 2
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
