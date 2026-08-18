@@ -2797,6 +2797,16 @@ public void ReproducesIssue()
         }
     }
 
+    It 'requires a measurement oracle to be relative to a captured healthy value' {
+        # 98.2% of the geometry assertions in the repository's own issue tests
+        # compare two measured quantities; PR 211 was rejected for asserting an
+        # invariant the Windows Editor never satisfies.
+        $prompt = $script:Source
+        $prompt | Should -Match 'measurement oracle must assert the change the report describes'
+        $prompt | Should -Match 'captured before the trigger'
+        $prompt | Should -Match 'Vary only what the report varies'
+    }
+
     It 'tells the agent which reproduction step it must fix' {
         # Without the index the agent cannot tell which of up to ten steps
         # broke the rule, which is how run 15009967 ran out of attempts.
