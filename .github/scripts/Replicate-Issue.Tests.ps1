@@ -75,6 +75,7 @@ BeforeAll {
         'Assert-GeneratedSandboxSources',
         'Assert-NoDuplicateJsonProperties',
         'Test-TimingSensitiveIssueContext',
+        'Test-CrashReportingIssueContext',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
         'Read-SandboxProposal',
@@ -578,6 +579,61 @@ Describe 'Replication orchestrator security boundary' {
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw "*uses unsupported action 'assertNotExists'*"
+    }
+
+    It 'requires an app-closure assertion once a reported crash actually happened' {
+        # Build 14999437 detected the reported ArgumentException crash of 36298
+        # on four attempts and still ended every plan asserting text against a
+        # window that no longer existed.
+        $IssueNumber = 36298
+        $Platform = 'windows'
+        $issueAgentContextPath = Join-Path $TestDrive 'crash-context.md'
+        'The application crashes with an unhandled ArgumentException.' |
+            Set-Content -LiteralPath $issueAgentContextPath
+        Test-CrashReportingIssueContext | Should -BeTrue
+
+        'The label renders with the wrong colour.' |
+            Set-Content -LiteralPath $issueAgentContextPath
+        Test-CrashReportingIssueContext | Should -BeFalse
+
+        $appiumPlanPath = Join-Path $TestDrive 'crash-required-plan.json'
+        @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 36298,
+  "steps": [
+    {
+      "action": "tap",
+      "description": "Trigger the reported pointer path",
+      "locator": { "strategy": "accessibilityId", "value": "TriggerButton" },
+      "value": null,
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the reported incorrect result",
+      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
+      "value": "BUG REPRODUCED: Crashed",
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $appiumPlanPath
+
+        $script:RequireAppClosedAssertion = $false
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+
+        $script:RequireAppClosedAssertion = $true
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*must end with assertAppClosed*'
+
+        $plan = Get-Content -LiteralPath $appiumPlanPath -Raw | ConvertFrom-Json -Depth 10
+        $plan.steps[-1].action = 'assertAppClosed'
+        $plan.steps[-1].locator = $null
+        $plan.steps[-1].value = $null
+        $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+        $script:RequireAppClosedAssertion = $false
     }
 
     It 'accepts a bounded multi-segment drag and rejects malformed paths' {

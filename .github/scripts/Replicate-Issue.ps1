@@ -862,6 +862,19 @@ function Test-TimingSensitiveIssueContext {
     return $context -match '(?i)\b(?:timing[- ]sensitive|race|intermittent|flaky|multiple attempts|couple of attempts|several attempts|may take [^.]{0,80}attempts?)\b'
 }
 
+function Test-CrashReportingIssueContext {
+    <#
+        .SYNOPSIS
+        Detects an issue whose reported symptom is the app dying.
+    #>
+    if (-not (Test-Path -LiteralPath $issueAgentContextPath -PathType Leaf)) {
+        return $false
+    }
+
+    $context = Get-Content -LiteralPath $issueAgentContextPath -Raw
+    return $context -match '(?i)\b(?:crash(?:es|ed|ing)?|unhandled exception|app (?:closes|closed|quits|terminates)|force close[sd]?|hard crash)\b'
+}
+
 function Read-GeneratedAppiumPlan {
     Assert-BoundedGeneratedFile `
         -Path $appiumPlanPath `
@@ -1039,6 +1052,14 @@ function Read-GeneratedAppiumPlan {
     $finalAction = [string]$steps[-1].action
     if ($finalAction -cnotin @('assertTextEquals', 'assertAppClosed')) {
         throw 'Generated Appium plan must end with an exact semantic text assertion or trusted Windows app-closure assertion.'
+    }
+    $requiresAppClosed = [bool](Get-Variable `
+        -Name 'RequireAppClosedAssertion' `
+        -Scope Script `
+        -ValueOnly `
+        -ErrorAction SilentlyContinue)
+    if ($requiresAppClosed -and $finalAction -cne 'assertAppClosed') {
+        throw 'The app already crashed on a previous attempt for an issue that reports a crash, so the plan must end with assertAppClosed.'
     }
     if (Test-TimingSensitiveIssueContext) {
         $repeatableActions = @(
@@ -2679,6 +2700,7 @@ try {
     $sandboxFailureSummary = ''
     $sandboxFailureHistory = [ordered]@{}
     $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
+    $script:RequireAppClosedAssertion = $false
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0
     $MaxInfrastructureRetries = 3
@@ -2811,6 +2833,17 @@ The app under test closed or crashed during the recorded steps: $termination
 
 $sandboxFailureSummary
 "@
+                    if ($Platform -ceq 'windows' -and (Test-CrashReportingIssueContext)) {
+                        # Issue 36298 crashed on every attempt with the reported
+                        # ArgumentException, and every attempt still ended with a
+                        # text assertion against a window that no longer existed.
+                        $script:RequireAppClosedAssertion = $true
+                        $sandboxFailureSummary = @"
+$sandboxFailureSummary
+
+This issue reports a crash and the app did terminate, so the termination is the reproduction. Your next Appium plan MUST end with an assertAppClosed step instead of asserting text on a window that no longer exists; a plan that ends with any other action will be rejected before it runs.
+"@
+                    }
                 }
             }
             elseif ($sandboxFailureSummary -match '(?i)Element was not visible|no such element|ElementNotFound') {
