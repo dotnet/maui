@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool TryGetSource([MaybeNullWhen(false)] out TSource source)
 		{
-			if (_source is not null && _source.TryGetTarget(out source))
+			var sourceReference = _source;
+			if (sourceReference is not null && sourceReference.TryGetTarget(out source))
 			{
 				return source is not null;
 			}
@@ -35,7 +36,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool TryGetHandler([MaybeNullWhen(false)] out TEventHandler handler)
 		{
-			if (_handler is not null && _handler.TryGetTarget(out handler))
+			var handlerReference = _handler;
+			if (handlerReference is not null && handlerReference.TryGetTarget(out handler))
 			{
 				return handler is not null;
 			}
