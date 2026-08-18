@@ -538,9 +538,22 @@ Describe 'Replication orchestrator security boundary' {
   "issueNumber": 37440,
   "steps": [
     {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
       "action": "tap",
       "description": "Tap the reproduction button",
-      "locator": { "strategy": "accessibilityId", "value": "ReproduceButton" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ReproduceButton"
+      },
       "value": null,
       "timeoutSeconds": 10
     },
@@ -554,7 +567,10 @@ Describe 'Replication orchestrator security boundary' {
     {
       "action": "assertTextEquals",
       "description": "Verify the reported incorrect result",
-      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
       "value": "BUG REPRODUCED: Incorrect",
       "timeoutSeconds": 10
     }
@@ -630,16 +646,32 @@ Describe 'Replication orchestrator security boundary' {
   "issueNumber": 36298,
   "steps": [
     {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
       "action": "tap",
       "description": "Trigger the reported pointer path",
-      "locator": { "strategy": "accessibilityId", "value": "TriggerButton" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "TriggerButton"
+      },
       "value": null,
       "timeoutSeconds": 10
     },
     {
       "action": "assertTextEquals",
       "description": "Verify the reported incorrect result",
-      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
       "value": "BUG REPRODUCED: Crashed",
       "timeoutSeconds": 10
     }
@@ -675,23 +707,42 @@ Describe 'Replication orchestrator security boundary' {
   "issueNumber": 37089,
   "steps": [
     {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
       "action": "waitFor",
       "description": "Prove the reported row is ready",
-      "locator": { "strategy": "accessibilityId", "value": "SwipeRow" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "SwipeRow"
+      },
       "value": null,
       "timeoutSeconds": 10
     },
     {
       "action": "dragPath",
       "description": "Open the swipe item, leave the row, and return before release",
-      "locator": { "strategy": "accessibilityId", "value": "SwipeRow" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "SwipeRow"
+      },
       "value": "0.4,0;0,0.2;-0.35,0",
       "timeoutSeconds": 20
     },
     {
       "action": "assertTextEquals",
       "description": "Verify the reported incorrect result",
-      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
       "value": "BUG REPRODUCED: Incorrect",
       "timeoutSeconds": 10
     }
@@ -707,29 +758,29 @@ Describe 'Replication orchestrator security boundary' {
         $Platform = 'ios'
 
         $plan = Get-Content -LiteralPath $appiumPlanPath -Raw | ConvertFrom-Json -Depth 10
-        $plan.steps[1].value = '0.4,0'
+        $plan.steps[2].value = '0.4,0'
         $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*needs two to four segments*'
 
-        $plan.steps[1].value = '0.4,0;0,0.2;-0.35,0;0,0.1;0.2,0'
+        $plan.steps[2].value = '0.4,0;0,0.2;-0.35,0;0,0.1;0.2,0'
         $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*needs two to four segments*'
 
-        $plan.steps[1].value = '0.4,0;2.0,0'
+        $plan.steps[2].value = '0.4,0;2.0,0'
         $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*dragPath segment*is invalid*'
 
-        $plan.steps[1].value = '0.4,0;$(rm -rf /),0'
+        $plan.steps[2].value = '0.4,0;$(rm -rf /),0'
         $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*dragPath segment*is invalid*'
 
         # A drag needs the element it presses on.
-        $plan.steps[1].value = '0.4,0;0,0.2'
-        $plan.steps[1].locator = $null
+        $plan.steps[2].value = '0.4,0;0,0.2'
+        $plan.steps[2].locator = $null
         $plan | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*requires a locator*'
@@ -798,16 +849,32 @@ Describe 'Replication orchestrator security boundary' {
   "issueNumber": 37425,
   "steps": [
     {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "RaceResult"
+      },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
       "action": "tap",
       "description": "Trigger the reported navigation race",
-      "locator": { "strategy": "androidText", "value": "Other" },
+      "locator": {
+        "strategy": "androidText",
+        "value": "Other"
+      },
       "value": null,
       "timeoutSeconds": 10
     },
     {
       "action": "assertTextEquals",
       "description": "Verify the exact race result",
-      "locator": { "strategy": "accessibilityId", "value": "RaceResult" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "RaceResult"
+      },
       "value": "BUG REPRODUCED: SearchBar handler race",
       "timeoutSeconds": 10
     }
@@ -820,7 +887,7 @@ Describe 'Replication orchestrator security boundary' {
 
         $plan = Get-Content -LiteralPath $appiumPlanPath -Raw |
             ConvertFrom-Json -Depth 10
-        $plan.steps = @($plan.steps[0], $plan.steps[0], $plan.steps[1])
+        $plan.steps = @($plan.steps[0], $plan.steps[1], $plan.steps[1], $plan.steps[2])
         $plan | ConvertTo-Json -Depth 10 |
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
@@ -837,16 +904,32 @@ Describe 'Replication orchestrator security boundary' {
   "issueNumber": 37440,
   "steps": [
     {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
       "action": "tap",
       "description": "Tap the visible Android trigger",
-      "locator": { "strategy": "androidText", "value": "Reproduce" },
+      "locator": {
+        "strategy": "androidText",
+        "value": "Reproduce"
+      },
       "value": null,
       "timeoutSeconds": 30
     },
     {
       "action": "assertTextEquals",
       "description": "Verify the native Android result",
-      "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
       "value": "BUG REPRODUCED: Native Android result",
       "timeoutSeconds": 30
     }
@@ -876,7 +959,7 @@ Describe 'Replication orchestrator security boundary' {
             strategy = 'accessibilityId'
             value = 'ResultLabel'
         }
-        $invalid.steps[0].locator.value = 'new UiSelector().text("BUG REPRODUCED")'
+        $invalid.steps[1].locator.value = 'new UiSelector().text("BUG REPRODUCED")'
         $invalid | ConvertTo-Json -Depth 10 |
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
@@ -3066,5 +3149,95 @@ Describe 'Agent prompt deliverability' {
 
         $invocation.Success | Should -BeTrue
         $invocation.Value.Contains('Assert-ReplicationPromptIsDeliverable') | Should -BeTrue
+    }
+}
+
+Describe 'Recorded evidence proves a transition' {
+    BeforeEach {
+        $script:IssueNumber = 37440
+        $script:PlanPath = Join-Path $TestDrive 'transition-plan.json'
+    }
+
+    function script:Set-TransitionPlan {
+        param([object[]]$Steps)
+        [pscustomobject]@{
+            schemaVersion = 1
+            issueNumber = 37440
+            steps = $Steps
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $script:PlanPath
+    }
+
+    function script:New-PlanStep {
+        param($Action, $Strategy, $Locator, $Value)
+        [pscustomobject]@{
+            action = $Action
+            description = "$Action step"
+            locator = if ($Strategy) {
+                [pscustomobject]@{ strategy = $Strategy; value = $Locator }
+            } else {
+                $null
+            }
+            value = $Value
+            timeoutSeconds = 10
+        }
+    }
+
+    It 'rejects a plan whose verdict could have latched before recording started' {
+        # PR 178's media was rejected in review because its caption read
+        # BUG REPRODUCED: from the first frame, so nothing showed the defect
+        # happening. The plan that produced it ended on the right assertion
+        # while never reading the initialized value.
+        $IssueNumber = 37440
+        $appiumPlanPath = $script:PlanPath
+        Set-TransitionPlan -Steps @(
+            (New-PlanStep -Action 'tap' -Strategy 'accessibilityId' -Locator 'Trigger' -Value $null),
+            (New-PlanStep -Action 'assertTextEquals' -Strategy 'accessibilityId' -Locator 'ResultLabel' -Value 'BUG REPRODUCED: wrong colour')
+        )
+
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*initialized*PASS: or NO BUG: value before the trigger*'
+    }
+
+    It 'accepts a plan that reads the initialized negative value first' {
+        $IssueNumber = 37440
+        $appiumPlanPath = $script:PlanPath
+        Set-TransitionPlan -Steps @(
+            (New-PlanStep -Action 'assertTextEquals' -Strategy 'accessibilityId' -Locator 'ResultLabel' -Value 'NO BUG: not yet triggered'),
+            (New-PlanStep -Action 'tap' -Strategy 'accessibilityId' -Locator 'Trigger' -Value $null),
+            (New-PlanStep -Action 'assertTextEquals' -Strategy 'accessibilityId' -Locator 'ResultLabel' -Value 'BUG REPRODUCED: wrong colour')
+        )
+
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+    }
+
+    It 'does not accept a negative reading taken from a different element' {
+        $IssueNumber = 37440
+        $appiumPlanPath = $script:PlanPath
+        Set-TransitionPlan -Steps @(
+            (New-PlanStep -Action 'assertTextEquals' -Strategy 'accessibilityId' -Locator 'OtherLabel' -Value 'NO BUG: not yet triggered'),
+            (New-PlanStep -Action 'tap' -Strategy 'accessibilityId' -Locator 'Trigger' -Value $null),
+            (New-PlanStep -Action 'assertTextEquals' -Strategy 'accessibilityId' -Locator 'ResultLabel' -Value 'BUG REPRODUCED: wrong colour')
+        )
+
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*before the trigger*'
+    }
+
+    It 'allows a relaunch to stand in for a defect that can only latch during launch' {
+        $IssueNumber = 37440
+        $Platform = 'android'
+        $appiumPlanPath = $script:PlanPath
+        Set-TransitionPlan -Steps @(
+            (New-PlanStep -Action 'restartApp' -Strategy $null -Locator $null -Value $null),
+            (New-PlanStep -Action 'assertTextEquals' -Strategy 'accessibilityId' -Locator 'ResultLabel' -Value 'BUG REPRODUCED: wrong colour')
+        )
+
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+    }
+
+    It 'tells the agent the requirement before it spends an attempt discovering it' {
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $source.Contains('MUST assert that same result element still holds its initialized') |
+            Should -BeTrue
     }
 }
