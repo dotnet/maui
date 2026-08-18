@@ -1753,7 +1753,10 @@ function Read-SandboxProposal {
     )
     $actualProperties = @($proposal.PSObject.Properties.Name | Sort-Object)
     if (($actualProperties -join "`n") -cne (($expectedProperties | Sort-Object) -join "`n")) {
-        throw 'The Sandbox proposal does not match the exact trusted schema.'
+        throw (
+            'The Sandbox proposal does not match the exact trusted schema (' +
+            (Get-ReplicationSchemaMismatchDetail `
+                -Expected $expectedProperties -Actual $actualProperties) + ').')
     }
 
     $steps = @($proposal.reproductionSteps)
@@ -1794,6 +1797,39 @@ function Read-SandboxProposal {
         throw 'The Sandbox proposal files do not match the exact authored paths.'
     }
     return $proposal
+}
+
+function Get-ReplicationSchemaMismatchDetail {
+    <#
+        .SYNOPSIS
+        Names the properties that differ between a proposal and its schema.
+
+        .DESCRIPTION
+        "does not match the exact trusted schema" tells an agent that it was
+        wrong but not what to change, so the next attempt is a guess. Catalyst
+        run 15011919 spent an attempt on exactly that. Naming the missing and
+        unexpected properties turns a repair into a single edit.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Expected,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Actual
+    )
+
+    $missing = @($Expected | Where-Object { $_ -cnotin $Actual } | Sort-Object)
+    $unexpected = @($Actual | Where-Object { $_ -cnotin $Expected } | Sort-Object)
+
+    $parts = @()
+    if ($missing.Count -gt 0) {
+        $parts += "missing: $($missing -join ', ')"
+    }
+    if ($unexpected.Count -gt 0) {
+        $parts += "unexpected: $($unexpected -join ', ')"
+    }
+    if ($parts.Count -eq 0) {
+        # Same names, so the difference is only in ordering or casing.
+        $parts += "property casing or order differs from: $($Expected -join ', ')"
+    }
+    return ($parts -join '; ')
 }
 
 function Assert-GeneratedTestContent {
@@ -1925,7 +1961,10 @@ function Read-TestProposal {
     )
     $actualProperties = @($proposal.PSObject.Properties.Name | Sort-Object)
     if (($actualProperties -join "`n") -cne (($expectedProperties | Sort-Object) -join "`n")) {
-        throw 'The test proposal does not match the exact trusted schema.'
+        throw (
+            'The test proposal does not match the exact trusted schema (' +
+            (Get-ReplicationSchemaMismatchDetail `
+                -Expected $expectedProperties -Actual $actualProperties) + ').')
     }
     $allowedTypes = @('unit', 'xaml', 'device', 'ui')
     if ([string]$proposal.testType -notin $allowedTypes) {

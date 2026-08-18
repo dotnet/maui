@@ -58,6 +58,7 @@ BeforeAll {
         'ConvertTo-ReplicationSafeLog',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationFailureDetails',
+        'Get-ReplicationSchemaMismatchDetail',
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
         'Test-ReplicationReplayHarnessFault',
@@ -2943,6 +2944,33 @@ PS-STEP-FAILED: step 3 did not find its target
         $details | Should -Match 'exit code 134'
         $details | Should -Not -Match 'WebDriverAgentLib'
         $details | Should -Not -Match '/session/'
+    }
+
+    It 'names the properties a rejected proposal got wrong' {
+        # Catalyst run 15011919 was told only that its proposal "does not match
+        # the exact trusted schema", which does not say what to change, so the
+        # next attempt is a guess.
+        Get-ReplicationSchemaMismatchDetail -Expected @('a', 'b', 'c') -Actual @('a', 'b') |
+            Should -Be 'missing: c'
+        Get-ReplicationSchemaMismatchDetail -Expected @('a', 'b') -Actual @('a', 'b', 'z') |
+            Should -Be 'unexpected: z'
+        Get-ReplicationSchemaMismatchDetail -Expected @('a', 'b') -Actual @('a', 'z') |
+            Should -Be 'missing: b; unexpected: z'
+        # Same names: the difference can only be ordering or casing.
+        Get-ReplicationSchemaMismatchDetail -Expected @('a', 'B') -Actual @('B', 'a') |
+            Should -Match 'casing or order'
+    }
+
+    It 'reports the schema difference in both proposal validators' {
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        # Neither validator may throw the bare message any more.
+        ([regex]::Matches(
+            $orchestrator,
+            "does not match the exact trusted schema\.'")).Count | Should -Be 0
+        ([regex]::Matches(
+            $orchestrator,
+            'Get-ReplicationSchemaMismatchDetail `')).Count | Should -Be 2
     }
 
     It 'requires a device test to carry an issue-keyed category' {
