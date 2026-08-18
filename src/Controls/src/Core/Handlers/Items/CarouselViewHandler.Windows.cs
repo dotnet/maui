@@ -739,6 +739,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void QueueCenterCarouselItem(int centerItemIndexFromScroll)
 		{
+			if (!ShouldCenterCarouselItem())
+				return;
+
 			var dispatcherQueue = ListViewBase?.DispatcherQueue;
 			if (dispatcherQueue is null)
 			{
