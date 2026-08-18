@@ -97,6 +97,10 @@ namespace Microsoft.Maui.Controls
 		/// Executes the associated command and raises the <see cref="DropCompleted"/> event for an active drag operation.
 		/// </summary>
 		/// <param name="args">The event arguments that describe the completed drop operation.</param>
+		/// <remarks>
+		/// This infrastructure method is intended for gesture platform managers. A completion is dispatched only once for an active
+		/// drag operation started by <see cref="SendDragStarting"/>.
+		/// </remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDropCompleted(DropCompletedEventArgs args)
 		{
@@ -122,9 +126,16 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the drag position relative to a specified element.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the drag operation.</param>
 		/// <returns>The event arguments populated by the command and event handlers.</returns>
+		/// <remarks>
+		/// This infrastructure method is intended for gesture platform managers. If the returned event arguments indicate that the
+		/// operation was canceled or handled, the drag is not marked active and <see cref="SendDropCompleted"/> will not dispatch a completion.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="element"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
 		{
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+
 			var args = new DragStartingEventArgs(getPosition, platformArgs);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
@@ -146,7 +157,7 @@ namespace Microsoft.Maui.Controls
 				args.Data.Image = ie.Source;
 
 			if (String.IsNullOrWhiteSpace(args.Data.Text))
-				args.Data.Text = element?.GetStringValue();
+				args.Data.Text = element.GetStringValue();
 
 			return args;
 		}

@@ -46,6 +46,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SendDragStartingThrowsForNullElement()
+		{
+			var dragRec = new DragGestureRecognizer();
+
+			Assert.Throws<ArgumentNullException>(() => dragRec.SendDragStarting(null));
+		}
+
+		[Fact]
 		public void UserSpecifiedTextIsntOverwritten()
 		{
 			var dragRec = new DragGestureRecognizer();
