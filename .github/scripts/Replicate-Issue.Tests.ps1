@@ -94,7 +94,8 @@ BeforeAll {
         'Test-TransientCopilotServiceFailure',
         'Test-TransientReproductionInfrastructureFailure',
         'Get-UnsupportedReplicationCapability',
-        'Resolve-ReplicationCopilotExecutable'
+        'Resolve-ReplicationCopilotExecutable',
+        'Assert-ReplicationPromptIsDeliverable'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -2982,3 +2983,88 @@ public class $className
     }
 }
 
+
+Describe 'Agent prompt deliverability' {
+    It 'rejects a prompt whose instructions a NUL would silently discard' {
+        $prompt = "Write the plan." + [string][char]0 + "Then write sandbox-proposal.json."
+
+        {
+            Assert-ReplicationPromptIsDeliverable -Prompt $prompt -PhaseName 'sandbox'
+        } | Should -Throw '*U+0000*'
+    }
+
+    It 'names the phase, the offset, and the text before the truncation point' {
+        $prompt = 'for example ' + [string][char]0 + '0.4,0 swipes right'
+
+        $message = $null
+        try {
+            Assert-ReplicationPromptIsDeliverable -Prompt $prompt -PhaseName 'test-plan'
+        } catch {
+            $message = $_.Exception.Message
+        }
+
+        $message | Should -Not -BeNullOrEmpty
+        $message.Contains('test-plan') | Should -BeTrue
+        $message.Contains('offset 12') | Should -BeTrue
+        $message.Contains('for example ') | Should -BeTrue
+        $message.Contains('silently dropped') | Should -BeTrue
+    }
+
+    It 'rejects other control characters that corrupt the delivered prompt' {
+        $prompt = 'ring the bell' + [string][char]7
+
+        {
+            Assert-ReplicationPromptIsDeliverable -Prompt $prompt -PhaseName 'sandbox'
+        } | Should -Throw '*U+0007*'
+    }
+
+    It 'accepts newlines, carriage returns, and tabs that real prompts rely on' {
+        $prompt = "1. Read the context.`r`n2. Write the plan.`n`tIndented detail."
+
+        {
+            Assert-ReplicationPromptIsDeliverable -Prompt $prompt -PhaseName 'sandbox'
+        } | Should -Not -Throw
+    }
+
+    It 'leaves no control character in any string literal of the orchestrator' {
+        # A stray PowerShell escape such as `0 inside an expandable string is
+        # indistinguishable from ordinary prose in review, so assert the whole
+        # class over the parsed source rather than trusting a spot check.
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $scriptPath, [ref]$null, [ref]$errors)
+
+        $literals = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.StringConstantExpressionAst] -or
+                $args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst]
+            }, $true)
+
+        $offenders = foreach ($literal in $literals) {
+            $value = [string]$literal.Value
+            foreach ($character in $value.ToCharArray()) {
+                if ($character -eq "`n" -or $character -eq "`r" -or $character -eq "`t") {
+                    continue
+                }
+
+                if ([char]::IsControl($character)) {
+                    '{0}: line {1} contains U+{2:X4}' -f
+                        (Split-Path -Leaf $scriptPath), $literal.Extent.StartLineNumber, [int]$character
+                    break
+                }
+            }
+        }
+
+        @($offenders) -join '; ' | Should -BeNullOrEmpty
+    }
+
+    It 'guards every agent invocation before the prompt reaches the process' {
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $invocation = [regex]::Match(
+            $source,
+            'function Invoke-ReplicationCopilot \{.*?\$arguments = @\(',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+
+        $invocation.Success | Should -BeTrue
+        $invocation.Value.Contains('Assert-ReplicationPromptIsDeliverable') | Should -BeTrue
+    }
+}
