@@ -194,6 +194,23 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Match "(?m)^        if: steps\.review_lock\.outputs\.locked != 'true'$"
     }
 
+    It 'keeps a transient recovery re-check failure unacknowledged for retry' {
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=recheck-failed" >> $env:GITHUB_OUTPUT'))
+        $script:TriggerJob | Should -Match 'leaving it unacknowledged so recovery retries it'
+        $script:TriggerJob | Should -Match ([regex]::Escape("steps.review_lock.outputs.state != 'recheck-failed'"))
+
+        $recheckFailure = $script:TriggerJob.IndexOf('"state=recheck-failed" >> $env:GITHUB_OUTPUT')
+        $acknowledgeStep = $script:TriggerJob.IndexOf('- name: Acknowledge and hide the /review command comment')
+        $recheckFailure | Should -BeGreaterThan -1
+        $acknowledgeStep | Should -BeGreaterThan $recheckFailure
+    }
+
+    It 'distinguishes handled lock outcomes from a transient re-check failure' {
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=already-acknowledged" >> $env:GITHUB_OUTPUT'))
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=already-running" >> $env:GITHUB_OUTPUT'))
+        $script:TriggerJob | Should -Match ([regex]::Escape('"state=acquired" >> $env:GITHUB_OUTPUT'))
+    }
+
     It 'stops trigger-review extraction at the next top-level job' {
         $workflowWithFutureJob = $script:Workflow.TrimEnd() + @'
 

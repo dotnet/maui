@@ -476,12 +476,14 @@ jobs:
 
             if (-not $reactionsRead -or -not $minimizedRead) {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=recheck-failed" >> $env:GITHUB_OUTPUT
               "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
-              "Could not safely re-check acknowledgement for source comment $($env:COMMENT_ID)." >> $env:GITHUB_STEP_SUMMARY
+              "Could not safely re-check acknowledgement for source comment $($env:COMMENT_ID); leaving it unacknowledged so recovery retries it." >> $env:GITHUB_STEP_SUMMARY
               exit 0
             }
             if ($hasRecoveryMarker -or $isMinimized) {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-acknowledged" >> $env:GITHUB_OUTPUT
               "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
               "Source comment $($env:COMMENT_ID) was already acknowledged by an earlier serialized run." >> $env:GITHUB_STEP_SUMMARY
               exit 0
@@ -494,6 +496,7 @@ jobs:
               Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
             } else {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-running" >> $env:GITHUB_OUTPUT
               "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
 
@@ -552,6 +555,7 @@ jobs:
             }
           }
           "locked=false" >> $env:GITHUB_OUTPUT
+          "state=acquired" >> $env:GITHUB_OUTPUT
 
       - name: Infer platform
         if: steps.review_lock.outputs.locked != 'true'
@@ -831,7 +835,7 @@ jobs:
           echo "::warning::Could not post the trigger setup failure notice after 4 attempts."
 
       - name: Acknowledge and hide the /review command comment
-        if: ${{ !cancelled() && (github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && inputs.source_comment_id != '' && inputs.source_comment_node_id != '')) && (steps.trigger_azdo.outcome == 'success' || steps.review_lock.outputs.locked == 'true' || steps.trigger_azdo.outputs.fail_reason == 'branch-missing') }}
+        if: ${{ !cancelled() && steps.review_lock.outputs.state != 'recheck-failed' && (github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && inputs.source_comment_id != '' && inputs.source_comment_node_id != '')) && (steps.trigger_azdo.outcome == 'success' || steps.review_lock.outputs.locked == 'true' || steps.trigger_azdo.outputs.fail_reason == 'branch-missing') }}
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_ID: ${{ github.event.comment.id || inputs.source_comment_id }}
