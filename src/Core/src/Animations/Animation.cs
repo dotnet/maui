@@ -347,7 +347,6 @@ namespace Microsoft.Maui.Animations
 		{
 			AnimationManagerDisposed?.Invoke();
 			AnimationManagerDisposed = null;
-			animationManger = null;
 		}
 
 		/// <summary>
