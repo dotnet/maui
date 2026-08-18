@@ -245,4 +245,44 @@ Describe 'Replication issue outcome publication boundary' {
         $script:OutcomeSource | Should -Match '(?s)Parameter\(Mandatory = \$true\)\][\r\n\s]*\[ValidatePattern[^\r\n]*\][\r\n\s]*\[string\]\$Repository,'
         $script:PipelineYaml | Should -Match '-Repository "dotnet/maui"'
     }
+
+    It 'treats refreshing the package index as advisory' {
+        # Build 15001363 could not reach azure.archive.ubuntu.com, spent the
+        # whole update budget retrying it and threw, even though another mirror
+        # answered and ffmpeg was installable. Only the install decides whether
+        # the recorder can run.
+        $update = [regex]::Match(
+            $script:Pipeline,
+            'apt-get update[^\n]*\n(?<next>(?:[^\n]*\n){3})')
+
+        $update.Success | Should -BeTrue
+        $update.Groups['next'].Value.Contains('Write-Warning') | Should -BeTrue
+        $update.Groups['next'].Value.Contains('throw') | Should -BeFalse
+    }
+
+    It 'never publishes a replication artifact root that was never defined' {
+        # Azure leaves an undefined macro literal, so build 15001363 tried to
+        # publish a directory whose name was the unexpanded variable reference.
+        $script:Pipeline.Contains('variable=replicationArtifactRootPresent') |
+            Should -BeTrue
+        $script:Pipeline.Contains(
+            "eq(variables['replicationArtifactRootPresent'], 'true')") |
+            Should -BeTrue
+
+        $gate = $script:Pipeline.IndexOf('Detect replication artifact root')
+        $publish = $script:Pipeline.IndexOf('Publish Replication Artifacts')
+        $gate | Should -BeGreaterThan 0
+        $publish | Should -BeGreaterThan $gate
+    }
+
+    It 'reports missing Copilot telemetry instead of failing the job again' {
+        $start = $script:Pipeline.IndexOf('$logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"')
+        $end = $script:Pipeline.IndexOf('Stage replication Copilot telemetry')
+        $start | Should -BeGreaterThan 0
+        $end | Should -BeGreaterThan $start
+
+        $telemetry = $script:Pipeline.Substring($start, $end - $start)
+        $telemetry.Contains('No Copilot telemetry was produced') | Should -BeTrue
+        $telemetry.Contains('exit 0') | Should -BeTrue
+    }
 }

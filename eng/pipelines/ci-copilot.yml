@@ -542,9 +542,15 @@ stages:
                 sudo systemctl stop unattended-upgrades.service 2>&1 | Out-Host
                 sudo systemctl stop apt-daily.service apt-daily-upgrade.service 2>&1 | Out-Host
 
-                sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
+                # Build 15001363 spent its whole update budget retrying
+                # azure.archive.ubuntu.com, which the agent could not reach,
+                # even though archive.ubuntu.com answered and the cache was
+                # usable. Refreshing the index is advisory: only the install
+                # decides whether the recorder can run, so a failed or timed
+                # out update is reported and stepped over rather than thrown.
+                sudo timeout 420 apt-get update -q -o DPkg::Lock::Timeout=120
                 if ($LASTEXITCODE -ne 0) {
-                  throw "apt-get update failed or timed out with exit code $LASTEXITCODE."
+                  Write-Warning "apt-get update failed or timed out with exit code $LASTEXITCODE; installing from the existing package index."
                 }
 
                 sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
@@ -1998,19 +2004,43 @@ stages:
             displayName: 'Stage trusted issue context for publication'
             condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
 
+          - pwsh: |
+              # Publishing is gated on succeededOrFailed(), so it also runs when
+              # the context preparation that defines REPLICATION_ARTIFACT_ROOT
+              # never ran. Azure leaves an undefined $(macro) literal, and build
+              # 15001363 tried to publish a directory called
+              # "$(REPLICATION_ARTIFACT_ROOT)". Decide here, from the
+              # environment, whether there is anything to publish.
+              $root = $env:REPLICATION_ARTIFACT_ROOT
+              $present = -not [string]::IsNullOrWhiteSpace($root) -and
+                (Test-Path -LiteralPath $root -PathType Container)
+              Write-Host "##vso[task.setvariable variable=replicationArtifactRootPresent]$($present.ToString().ToLowerInvariant())"
+              Write-Host "Replication artifact root present: $present"
+            displayName: 'Detect replication artifact root'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Replication Artifacts'
             inputs:
               targetPath: '$(REPLICATION_ARTIFACT_ROOT)'
               artifact: 'ReplicationArtifacts'
               publishLocation: 'pipeline'
-            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq(variables['replicationArtifactRootPresent'], 'true'))
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               $source = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
               $logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"
               $target = Join-Path $logsDir "copilot-token-usage"
+
+              # The directory is created by the context preparation step, so an
+              # earlier failure leaves nothing to stage. Reporting that is
+              # correct; failing the job a second time for it is not, and it
+              # hides the real cause behind a copy error.
+              if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+                Write-Host "No Copilot telemetry was produced, so there is nothing to stage."
+                exit 0
+              }
 
               New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
               Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction SilentlyContinue
