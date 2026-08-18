@@ -389,8 +389,10 @@ Describe 'Replication orchestrator security boundary' {
         $details |
             Should -Match ([regex]::Escape(
                 'System.TimeoutException: Expected REPRODUCED but actual text was NOT REPRODUCED.'))
-        $details | Should -Match 'at Example\.Stack\.Frame40\(\)'
         $details | Should -Match 'final cleanup line'
+        # Frames name where the throw happened, never why the step failed, so
+        # they are dropped outright rather than merely pushed out of the tail.
+        $details | Should -Not -Match 'at Example\.Stack\.Frame40\(\)'
         $details | Should -Not -Match 'at Example\.Stack\.Frame1\(\)'
     }
 
@@ -2807,6 +2809,36 @@ public void ReproducesIssue()
                     -MaximumLength 300
             } | Should -Throw "*$($case.Value)*"
         }
+    }
+
+    It 'keeps the diagnosis when a child arrives as one multi-line blob' {
+        # Android run 15009985 burned all five attempts on this: the runner's
+        # whole output arrived as a single string, so newline collapsing left
+        # one line the filters could not reduce, and the length cap elided the
+        # only sentence that named the failing step.
+        $blob = @"
+$([char]0x2554)$([char]0x2550)$([char]0x2550)$([char]0x2557)
+$([char]0xD83D)$([char]0xDD39) Running Appium test...
+$([char]0x2705) Appium server started (Job ID: 1)
+[HTTP] --> POST /session/1f2e3d4c-aaaa-bbbb/element
+OpenQA.Selenium.NoSuchElementException: no such element accessibility id=CollapseButton
+   at OpenQA.Selenium.Appium.AppiumDriver.FindElement(String by, String value)
+PS-STEP-FAILED: step 3 did not find its target
+"@
+        $details = Get-ReplicationFailureDetails -Output @($blob)
+        $details | Should -Match 'NoSuchElementException'
+        $details | Should -Match 'PS-STEP-FAILED: step 3'
+        $details | Should -Not -Match 'characters omitted'
+        $details | Should -Not -Match 'Running Appium test'
+        $details | Should -Not -Match 'Appium server started'
+        $details | Should -Not -Match '/session/'
+        $details | Should -Not -Match 'at OpenQA.Selenium.Appium.AppiumDriver.FindElement'
+    }
+
+    It 'still reports driver noise when the child produced nothing else' {
+        $noise = "[HTTP] --> POST /session/aaaabbbb/element"
+        (Get-ReplicationFailureDetails -Output @($noise)) |
+            Should -Match '/session/'
     }
 
     It 'escalates from the signature to the oracle after repeated mismatches' {

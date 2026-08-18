@@ -531,9 +531,16 @@ function Get-ReplicationFailureDetails {
         [int]$MaximumTailLines = 20
     )
 
+    # A child process often arrives as one string holding its whole output.
+    # Sanitising that first collapses every newline, so the line filters below
+    # see a single line, cannot drop anything, and the length cap elides the
+    # diagnosis out of the middle. Split into real lines before sanitising.
     $safeLines = @($Output | ForEach-Object {
+        $value = if ($null -eq $_) { '' } else { [string]$_ }
+        $value -split '\r?\n'
+    } | ForEach-Object {
         $line = ConvertTo-ReplicationSafeLog $_ 500
-        if ($line) {
+        if ($line -and $line.Trim()) {
             $line
         }
     })
@@ -551,7 +558,18 @@ function Get-ReplicationFailureDetails {
     # runner prints its own diagnostics outside that stream, so prefer lines
     # the wire protocol did not produce and fall back only if there are none.
     $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|DevCon Factory|Support|Logcat|Simulator|simctl)|(?:^|\s)\[[0-9a-f]{8}\]|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
-    $quietLines = @($safeLines | Where-Object { $_ -notmatch $wireNoisePattern })
+    # A driver error arrives as a Java stack trace and the runner prints a
+    # decorative preamble; neither says why a step failed, and together they
+    # crowded out the real message in Android run 15009985.
+    $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$)'
+    $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
+    $bannerPattern = '^\s*[\u2500-\u257F]'
+    $quietLines = @($safeLines | Where-Object {
+        $_ -notmatch $wireNoisePattern -and
+        $_ -notmatch $stackFramePattern -and
+        $_ -notmatch $progressPattern -and
+        $_ -notmatch $bannerPattern
+    })
     if ($quietLines.Count -gt 0) {
         $safeLines = $quietLines
     }

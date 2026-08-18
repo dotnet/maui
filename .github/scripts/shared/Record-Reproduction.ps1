@@ -106,6 +106,65 @@ function ConvertTo-SafeLogText {
     return $text.Trim()
 }
 
+function Select-ReproductionDiagnosticLines {
+    <#
+        .SYNOPSIS
+        Reduces child-process output to the lines that explain a failure.
+
+        .DESCRIPTION
+        The reproduction runner prints a long decorative preamble, the Appium
+        server logs every request it serves, and a driver error arrives as a
+        Java stack trace. Collapsing all of that into one string and eliding
+        its middle -- which is what a bare length cap does -- keeps the banner
+        and the stack frames and throws away the one line that names the step
+        that failed. Android run 15009985 burned all five attempts that way.
+        Select lines first, so the cap applies to what is worth keeping.
+    #>
+    param(
+        [AllowNull()][string]$Text,
+        [int]$MaximumSignalLines = 12,
+        [int]$MaximumTailLines = 20
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return ''
+    }
+
+    $lines = @($Text -split '\r?\n' |
+        ForEach-Object { $_.TrimEnd() } |
+        Where-Object { $_ -and $_.Trim() })
+    if ($lines.Count -eq 0) {
+        return ''
+    }
+
+    # Progress markers report what the runner was about to do, never why it
+    # stopped; a success marker cannot explain a failure either. Warning and
+    # failure markers are kept.
+    $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
+    $bannerPattern = '^\s*[\u2500-\u257F]'
+    $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|Caused by:\s)'
+    $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|Logcat|Simulator|simctl)|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
+
+    $quiet = @($lines | Where-Object {
+        $_ -notmatch $progressPattern -and
+        $_ -notmatch $bannerPattern -and
+        $_ -notmatch $stackFramePattern -and
+        $_ -notmatch $wireNoisePattern
+    })
+    if ($quiet.Count -gt 0) {
+        $lines = $quiet
+    }
+
+    $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|no such element|\bMSB\d+\b|\bCS\d+\b)'
+    $candidates = @(
+        $lines | Where-Object { $_ -match $signalPattern } |
+            Select-Object -First $MaximumSignalLines
+        $lines | Select-Object -Last $MaximumTailLines
+    )
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    return (@($candidates | Where-Object { $seen.Add($_) }) -join ' | ')
+}
+
 function Get-ObjectPropertyValue {
     param(
         [AllowNull()]
@@ -408,8 +467,10 @@ function Invoke-RequiredCommand {
     $exitCode = [int](Get-ObjectPropertyValue $result 'ExitCode' -1)
     if ($timedOut -or $exitCode -ne 0) {
         $output = @(
-            Get-ObjectPropertyValue $result 'StdErr' ''
-            Get-ObjectPropertyValue $result 'StdOut' ''
+            Select-ReproductionDiagnosticLines (
+                Get-ObjectPropertyValue $result 'StdErr' '')
+            Select-ReproductionDiagnosticLines (
+                Get-ObjectPropertyValue $result 'StdOut' '')
         ) -join ' '
         $safeOutput = ConvertTo-SafeLogText $output
         $suffix = if ([string]::IsNullOrWhiteSpace($safeOutput)) {

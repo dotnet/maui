@@ -819,6 +819,47 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         (24.0 / $speedUp) | Should -BeGreaterThan 5.9
     }
 
+    It 'surfaces the failing step instead of the banner and stack frames' {
+        # Android run 15009985 repeated one attempt five times because every
+        # summary it received was the runner's preamble plus Appium's Java
+        # stack trace, with the sentence naming the failing step elided.
+        $noise = @(
+            "$([char]0x2554)$([char]0x2550)$([char]0x2550)$([char]0x2557)"
+            "$([char]0xD83D)$([char]0xDD39) Running Appium test..."
+            "$([char]0x2705) Appium server started (Job ID: 1)"
+            '[HTTP] --> POST /session/1f2e3d4c-aaaa-bbbb/element'
+            'OpenQA.Selenium.NoSuchElementException: no such element CollapseButton'
+            '   at OpenQA.Selenium.Appium.AppiumDriver.FindElement(String by, String value)'
+            "`tat io.appium.uiautomator2.handler.request.SafeRequestHandler.handle(SafeRequestHandler.java:59)"
+            '... 31 more'
+            'PS-STEP-FAILED: step 3 did not find its target'
+        ) -join "`n"
+        $harness = New-RecordingHarness `
+            -FailCommandPurpose 'Normalize recording' `
+            -FailureOutput $noise
+        $caught = $null
+
+        try {
+            Invoke-TestRecording `
+                -Harness $harness `
+                -Platform android `
+                -DeviceUdid 'emulator-5554' `
+                -EvidenceDir (Join-Path $TestDrive 'diagnose') | Out-Null
+        } catch {
+            $caught = $_
+        }
+
+        $caught | Should -Not -BeNullOrEmpty
+        $message = $caught.Exception.Message
+        $message | Should -Match 'NoSuchElementException'
+        $message | Should -Match 'PS-STEP-FAILED: step 3'
+        $message | Should -Not -Match 'Running Appium test'
+        $message | Should -Not -Match 'Appium server started'
+        $message | Should -Not -Match '/session/'
+        $message | Should -Not -Match 'SafeRequestHandler'
+        $message | Should -Not -Match 'at OpenQA.Selenium.Appium.AppiumDriver'
+    }
+
     It 'sanitizes subprocess output before surfacing a command failure' {
         $harness = New-RecordingHarness `
             -FailCommandPurpose 'Normalize recording' `
