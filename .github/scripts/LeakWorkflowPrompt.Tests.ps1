@@ -53,13 +53,34 @@ Describe 'Memory leak workflow provenance and safety' {
 
             $match = [Regex]::Match(
                 $Body,
-                '(?i)<!--\s*leak-scan-key:\s*(?<key>[^>]+?)\s*-->')
+                '(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->')
 
             if ($match.Success) {
                 return $match.Groups['key'].Value.Trim()
             }
 
             return $null
+        }
+
+        function Get-ProductionReopenGuard {
+            param(
+                [Parameter(Mandatory)]
+                [object] $TimelinePages,
+
+                [Parameter(Mandatory)]
+                [string] $FixMergedAt
+            )
+
+            $inputJson = ConvertTo-Json -InputObject $TimelinePages -Depth 10 -Compress
+            $output = $inputJson |
+                & jq -L $script:provenanceModuleRoot -c --arg m $FixMergedAt '
+                    include "leak-workflow-provenance";
+                    leak_reopen_guard($m)'
+            if ($LASTEXITCODE -ne 0) {
+                throw "Production jq re-open guard failed with exit code $LASTEXITCODE"
+            }
+
+            return $output | ConvertFrom-Json
         }
 
         function Get-WorkflowParts {
@@ -211,6 +232,13 @@ Describe 'Memory leak workflow provenance and safety' {
         @{ Body = ('```text' + [Environment]::NewLine + 'Fixes #137' + [Environment]::NewLine + '```'); Expected = $null }
         @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #137' + [Environment]::NewLine + '````'); Expected = $null }
         @{ Body = ('~~~text' + [Environment]::NewLine + 'Fixes #138' + [Environment]::NewLine + '~~~'); Expected = $null }
+        @{ Body = ('```text' + [Environment]::NewLine + '` stray tick' + [Environment]::NewLine + 'Fixes #141' + [Environment]::NewLine + '```'); Expected = $null }
+        @{ Body = ('```text' + [Environment]::NewLine + 'Fixes #142'); Expected = $null }
+        @{ Body = ('~~~text' + [Environment]::NewLine + 'Fixes #143'); Expected = $null }
+        @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #144' + [Environment]::NewLine + '```' + [Environment]::NewLine + 'Fixes #145'); Expected = $null }
+        @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #146' + [Environment]::NewLine + '````' + [Environment]::NewLine + 'Fixes #147'); Expected = '147' }
+        @{ Body = '<!-- unclosed comment' + [Environment]::NewLine + 'Fixes #144'; Expected = $null }
+        @{ Body = ('```text' + [Environment]::NewLine + 'Fixes #148' + [Environment]::NewLine + '```' + [Environment]::NewLine + 'Fixes #149'); Expected = '149' }
         @{ Body = 'Closes #139'; Expected = $null }
         @{ Body = 'Resolved #140'; Expected = $null }
     ) {
@@ -236,6 +264,9 @@ Describe 'Memory leak workflow provenance and safety' {
             @{ number = 9; body = '<!-- Fixes #500 -->' }
             @{ number = 10; body = ('```text' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```') }
             @{ number = 11; body = '``Fixes #500``' }
+            @{ number = 12; body = ('```text' + [Environment]::NewLine + '`' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```') }
+            @{ number = 13; body = ('```text' + [Environment]::NewLine + 'Fixes #500') }
+            @{ number = 14; body = '<!-- Fixes #500' }
         ) | ConvertTo-Json -Compress
 
         $result = $inputJson |
@@ -249,11 +280,36 @@ Describe 'Memory leak workflow provenance and safety' {
     }
 
     It 'keeps the exact Fixes regex in one production module consumed by both workflows' {
-        $provenanceModule | Should -Match ([Regex]::Escape('\\bFixes\\b'))
+        $provenanceModule | Should -Match ([Regex]::Escape('Fixes\\b'))
         $fixer | Should -Match 'include "leak-workflow-provenance"'
         $hunter | Should -Match 'include "leak-workflow-provenance"'
         $fixer | Should -Not -Match 'scan\("\(\?i\)\\\\bFixes'
         $hunter | Should -Not -Match 'scan\("\(\?i\)\\\\bFixes'
+    }
+
+    It 'routes open and closed attempt gates through the Markdown-aware helper' {
+        ([Regex]::Matches($fixer, 'leak_has_issue_reference\(\$repo; \$n\)')).Count |
+            Should -Be 2
+        $fixer | Should -Not -Match 'test\("\(\?i\)\\\\b\(Fixes\|Refs\)'
+    }
+
+    It 'filters gate references through production Markdown handling' -Skip:(-not $script:jqAvailable) {
+        $inputJson = @(
+            @{ number = 1; body = 'Fixes #500' }
+            @{ number = 2; body = 'Refs: dotnet/maui#500' }
+            @{ number = 3; body = ('```text' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```') }
+            @{ number = 4; body = '<!-- Refs #500 -->' }
+            @{ number = 5; body = ('````text' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```' + [Environment]::NewLine + 'Refs #500') }
+        ) | ConvertTo-Json -Compress
+
+        $result = $inputJson |
+            & jq -L $provenanceModuleRoot --arg repo 'dotnet/maui' --arg n '500' '
+                include "leak-workflow-provenance";
+                [.[] | select(leak_has_issue_reference($repo; $n)) | .number]' |
+            ConvertFrom-Json
+
+        $LASTEXITCODE | Should -Be 0
+        @($result) | Should -Be @(1, 2)
     }
 
     It 'keeps two mechanisms on the same API as distinct leak identities' {
@@ -264,6 +320,8 @@ Describe 'Memory leak workflow provenance and safety' {
         $selectionLeak | Should -Be 'Picker.ItemsSource|selectedindexchanged-handler-retains-picker'
         $collectionLeak | Should -Not -Be $selectionLeak
         Get-LeakScanKey 'legacy issue without a marker' | Should -BeNullOrEmpty
+        Get-LeakScanKey "<!--`tleak-scan-key: tabbed -->" | Should -BeNullOrEmpty
+        Get-LeakScanKey "<!--`nleak-scan-key: newline -->" | Should -BeNullOrEmpty
     }
 
     It 'filters merged history before making compare API calls' {
@@ -298,6 +356,36 @@ Describe 'Memory leak workflow provenance and safety' {
         $fixer | Should -Match 'if test -s "\$REOPEN_OVERRIDE_FILE"'
         $fixer | Should -Not -Match 'rm -f /tmp/gh-aw/agent/reopen-override'
         $fixer | Should -Not -Match '/tmp/gh-aw/agent/reopen-override\.txt'
+    }
+
+    It 'behaviorally fails closed on re-open races and malformed paginated timelines' -Skip:(-not $script:jqAvailable) {
+        $mergedAt = '2026-08-01T10:00:00Z'
+
+        $afterMerge = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages @(
+            @([pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T09:00:00Z' }),
+            @([pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T11:00:00Z' })
+        )
+        $afterMerge.verified | Should -BeTrue
+        $afterMerge.block_close | Should -BeTrue
+        [DateTimeOffset]$afterMerge.reopened_at |
+            Should -Be ([DateTimeOffset]'2026-08-01T11:00:00Z')
+
+        $beforeMerge = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages (, @(
+            [pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T09:59:59Z' }
+        ))
+        $beforeMerge.verified | Should -BeTrue
+        $beforeMerge.block_close | Should -BeFalse
+
+        $nonArray = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages ([pscustomobject]@{ message = 'API failure' })
+        $nonArray.verified | Should -BeFalse
+        $nonArray.block_close | Should -BeTrue
+
+        $malformedPage = Get-ProductionReopenGuard -FixMergedAt $mergedAt -TimelinePages @(
+            @([pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T09:00:00Z' }),
+            [pscustomobject]@{ event = 'reopened'; created_at = '2026-08-01T11:00:00Z' }
+        )
+        $malformedPage.verified | Should -BeFalse
+        $malformedPage.block_close | Should -BeTrue
     }
 
     It 'bounds hunter suppression to fixes absent from the shipped release' {

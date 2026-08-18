@@ -457,7 +457,9 @@ gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json number,title,body,state \
 API=$(jq -r '.title // ""' /tmp/gh-aw/agent/target-scan-issue.json \
   | sed -E 's/^\[leak-scan\] *//' \
   | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
-TARGET_LEAK_KEY=$(jq -r '(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key // empty' \
+TARGET_LEAK_KEY=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -r '
+  include "leak-workflow-provenance";
+  leak_scan_key // empty' \
   /tmp/gh-aw/agent/target-scan-issue.json)
 echo "target rooting API: $API"
 echo "target leak key: ${TARGET_LEAK_KEY:-<legacy — compare retention path>}"
@@ -468,7 +470,9 @@ echo "target leak key: ${TARGET_LEAK_KEY:-<legacy — compare retention path>}"
 REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Open [leak-fix] PR already addressing THIS issue number? Filters the Step 2.5 cache — no
 #     new gh pr list call for this (or any later) candidate.
-jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))]' \
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg repo "$REPO_RE" '
+    include "leak-workflow-provenance";
+    [.[] | select(leak_has_issue_reference($repo; $n))]' \
     /tmp/gh-aw/agent/open-leakfix-all.json \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
@@ -477,14 +481,17 @@ jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 #     same last-dotted-pair extraction used for $API. This is only a cheap prefilter: Step (b)
 #     below resolves each PR's exact Fixes scan issue and compares leak-scan-key / retention path
 #     before deciding to skip. API equality alone is never enough.
-jq --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" '
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" '
+    include "leak-workflow-provenance";
     def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
-    def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
+    def bodykey: leak_scan_key;
     [.[] | select((((.title // "") | titleapi) == $apiplain) or (($targetkey != "") and (bodykey == $targetkey)))]' \
     /tmp/gh-aw/agent/open-leakfix-all.json \
   > /tmp/gh-aw/agent/same-api-open-candidates.json
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3). Filters the Step 2.5 cache.
-jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg repo "$REPO_RE" '
+    include "leak-workflow-provenance";
+    [.[] | select(leak_has_issue_reference($repo; $n) and (.mergedAt == null))]' \
     /tmp/gh-aw/agent/closed-leakfix-all.json \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
@@ -494,7 +501,7 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
     'include "leak-workflow-provenance";
      def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
-     def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
+     def bodykey: leak_scan_key;
      [.[] | select(leak_has_exact_fixes($repo; $n)
        or (((.title // "") | titleapi) == $apiplain)
        or (($targetkey != "") and (bodykey == $targetkey)))]' \
@@ -544,7 +551,9 @@ enrich_scan_provenance () {
     [ -z "$scan_n" ] && continue
     issue=$(gh issue view "$scan_n" --repo "$GITHUB_REPOSITORY" --json number,title,body,state 2>/dev/null) || issue=""
     [ -z "$issue" ] && continue
-    key=$(jq -r '(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key // empty' <<<"$issue")
+    key=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -r '
+      include "leak-workflow-provenance";
+      leak_scan_key // empty' <<<"$issue")
     jq -n --argjson pr "$pr" --argjson issue "$issue" --arg key "$key" \
       '{pull_request:$pr, scan_issue:$issue,
         leak_scan_key:($key | if . == "" then null else . end)}' >> "$output"
@@ -560,7 +569,7 @@ fi
 jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
     'include "leak-workflow-provenance";
      def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
-     def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
+     def bodykey: leak_scan_key;
      [.[] | select((leak_has_exact_fixes($repo; $n) | not)
        and ((((.title // "") | titleapi) == $apiplain)
          or (($targetkey != "") and (bodykey == $targetkey))))]' \
@@ -591,15 +600,19 @@ if [ "$(jq 'length' /tmp/gh-aw/agent/merged-exact-fix-prs.json)" -ge 1 ]; then
   # array, we cannot rule out a maintainer re-open, so write the override sentinel (skip close/
   # rebuild, leave the issue open) instead of treating a failed lookup as an empty timeline.
   if gh api "repos/$GITHUB_REPOSITORY/issues/$N/timeline" --paginate --slurp -H "Accept: application/vnd.github+json" \
-       > /tmp/gh-aw/agent/issue-timeline-pages.json 2>/dev/null \
-     && jq -e 'type == "array"' /tmp/gh-aw/agent/issue-timeline-pages.json >/dev/null 2>&1; then
-    # `gh api --paginate` writes each page as a SEPARATE JSON array; without --slurp a multi-page
-    # timeline emits concatenated arrays ([..][..]) and every jq read below would run once PER page,
-    # so REOPENED_AT could become multi-valued and the string comparison would misfire. --slurp
-    # collects the pages into one array-of-arrays; `add` flattens them into a single event stream.
-    jq 'add // []' /tmp/gh-aw/agent/issue-timeline-pages.json > /tmp/gh-aw/agent/issue-timeline.json
-    REOPENED_AT=$(jq -r '[.[] | select(.event=="reopened") | .created_at] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/issue-timeline.json)
-    if [ "$(jq -n --arg r "$REOPENED_AT" --arg m "$FIX_MERGED_AT" '($r != "") and ($m != "") and ($r > $m)')" = "true" ]; then
+       > /tmp/gh-aw/agent/issue-timeline-pages.json 2>/dev/null; then
+    # --slurp collects paginated arrays into one array-of-arrays. The shared
+    # helper validates that shape, flattens every page, and compares the newest
+    # re-open timestamp with the newest merged fix timestamp.
+    REOPEN_GUARD=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -c --arg m "$FIX_MERGED_AT" '
+      include "leak-workflow-provenance";
+      leak_reopen_guard($m)' /tmp/gh-aw/agent/issue-timeline-pages.json 2>/dev/null) || REOPEN_GUARD=""
+    if [ -z "$REOPEN_GUARD" ] || [ "$(jq -r '.verified' <<<"$REOPEN_GUARD")" != "true" ]; then
+      echo "REOPEN GUARD UNVERIFIED: timeline lookup for #$N returned malformed pagination data — failing closed; will NOT close or rebuild (cannot rule out a maintainer re-open)." \
+        > "$REOPEN_OVERRIDE_FILE"
+      cat "$REOPEN_OVERRIDE_FILE"
+    elif [ "$(jq -r '.block_close' <<<"$REOPEN_GUARD")" = "true" ]; then
+      REOPENED_AT=$(jq -r '.reopened_at' <<<"$REOPEN_GUARD")
       echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
         > "$REOPEN_OVERRIDE_FILE"
       cat "$REOPEN_OVERRIDE_FILE"
