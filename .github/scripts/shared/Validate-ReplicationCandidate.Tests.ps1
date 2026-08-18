@@ -1653,3 +1653,16 @@ Describe 'The publisher refuses a drag the platform would never recognise' {
         } | Should -Not -Throw
     }
 }
+
+Describe 'The publisher refuses a test that asserts its own handler registration' {
+    It 'rejects the self-fulfilling registration at publish time' {
+        {
+            Assert-ReplicationHandlerRegistrationIsNotTautological `
+                -Content @'
+    handlers.AddHandler<Entry, EntryHandler2>();
+    Assert.IsType<EntryHandler2>(entry.Handler);
+'@ `
+                -Path 'Issue37275.Android.cs'
+        } | Should -Throw '*can only confirm the test setup*'
+    }
+}

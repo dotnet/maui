@@ -3788,3 +3788,58 @@ static void DragUpTwiceWhileHeld(AppiumApp app)
         } | Should -Not -Throw
     }
 }
+
+Describe 'A test may not assert the handler it registered itself' {
+    It 'rejects the self-fulfilling registration a reviewer proved fix-insensitive' {
+        # PR 204: the product registers EntryHandler2 only behind the Material3
+        # switch. The test hand-registered it with the switch off, so a real
+        # gated fix never executed and the test stayed red 3/3 with an
+        # identical message - it would report a genuine fix as "not fixed".
+        $source = @'
+    builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<Entry, EntryHandler2>());
+    var handler = entry.Handler;
+    Assert.IsType<EntryHandler2>(handler);
+'@
+        {
+            Assert-ReplicationHandlerRegistrationIsNotTautological `
+                -Content $source -Path 'Issue37275.Android.cs'
+        } | Should -Throw '*can only confirm the test setup*'
+    }
+
+    It 'allows registering a handler and asserting something the product decides' {
+        $source = @'
+    builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<Entry, EntryHandler2>());
+    Assert.True(RuntimeFeature.IsMaterial3Enabled);
+    Assert.Equal(1, mapperCallbackCount);
+'@
+        {
+            Assert-ReplicationHandlerRegistrationIsNotTautological `
+                -Content $source -Path 'Issue37275.Android.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'allows asserting a different type than the one registered' {
+        # Registering EntryHandler2 and asserting the platform view type is not
+        # self-fulfilling in the same way; only re-asserting the registered
+        # handler is.
+        $source = @'
+    builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<Entry, EntryHandler2>());
+    Assert.IsType<MauiMaterialTextInputLayout>(entry.Handler.PlatformView);
+'@
+        {
+            Assert-ReplicationHandlerRegistrationIsNotTautological `
+                -Content $source -Path 'Issue37275.Android.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores an assertion about a handler the test never registered' {
+        $source = @'
+    var handler = entry.Handler;
+    Assert.IsType<EntryHandler>(handler);
+'@
+        {
+            Assert-ReplicationHandlerRegistrationIsNotTautological `
+                -Content $source -Path 'Issue37275.Android.cs'
+        } | Should -Not -Throw
+    }
+}

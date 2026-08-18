@@ -595,6 +595,35 @@ function Assert-ReplicationGestureTravel {
     }
 }
 
+function Assert-ReplicationHandlerRegistrationIsNotTautological {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    foreach ($registration in [regex]::Matches(
+            $code,
+            'AddHandler\s*<\s*[^,>]+,\s*(?<handler>[A-Za-z_][A-Za-z0-9_]*)\s*>')) {
+        $handler = $registration.Groups['handler'].Value
+        $assertsOwnRegistration = 'Assert\.(?:IsType|IsAssignableFrom)\s*<\s*' +
+            [regex]::Escape($handler) +
+            '\s*>'
+        if ($code -match $assertsOwnRegistration) {
+            # A reviewer proved this shape reports a genuine fix as unfixed. The
+            # product registers the handler only behind a runtime feature switch;
+            # the test registered it by hand with the switch off, so the gated
+            # fix never ran and the test stayed red with an identical message.
+            # Asserting the resolved handler then only confirms the test's own
+            # setup, and cannot tell a fixed product from a broken one.
+            throw ("Candidate test source '$Path' registers '$handler' itself and then asserts the resolved handler is '$handler'. " +
+                'That assertion can only confirm the test setup. If the product registers this type behind a runtime feature switch, arrange the switch and let the product resolve the handler, so a gated fix can turn the test green.')
+        }
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

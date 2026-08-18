@@ -1562,6 +1562,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationGestureTravel `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationHandlerRegistrationIsNotTautological `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {
