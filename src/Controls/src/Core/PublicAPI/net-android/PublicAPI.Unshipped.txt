@@ -294,3 +294,9 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedConte
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarAppearanceTracker.SetColors(AndroidX.AppCompat.Widget.Toolbar toolbar, Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker toolbarTracker, Microsoft.Maui.Graphics.Color foreground, Microsoft.Maui.Controls.Brush background, Microsoft.Maui.Graphics.Color title) -> void
+~Microsoft.Maui.Controls.SwipeItem.IconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SwipeItem.IconColor.set -> void
+~static readonly Microsoft.Maui.Controls.SwipeItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.SwipeItem.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SwipeItem.TextColor.set -> void
+~static readonly Microsoft.Maui.Controls.SwipeItem.TextColorProperty -> Microsoft.Maui.Controls.BindableProperty
