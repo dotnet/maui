@@ -125,12 +125,13 @@ namespace UITest.Appium
 			{
 				// Appium elements will sometimes become stale
 				// Which appears to happen if click fails, so, we retrieve it here
+				AppiumElement? recoveryElement = element;
 				if (refreshElement is not null)
-					element = GetAppiumElement(refreshElement()) ?? element;
+					recoveryElement = GetAppiumElement(refreshElement());
 				else if (!String.IsNullOrWhiteSpace(tagName))
-					element = (AppiumElement)_appiumApp.FindElement(tagName);
+					recoveryElement = (AppiumElement)_appiumApp.FindElement(tagName);
 
-				if (element is null)
+				if (recoveryElement is null)
 				{
 					return CommandResponse.FailedEmptyResponse;
 				}
@@ -139,7 +140,7 @@ namespace UITest.Appium
 				// with content in it; if the content is just a TextBlock, we'll end up here)
 
 				// All is not lost; we can figure out the location of the element in in the application window and Tap in that spot
-				PointF p = ElementToClickablePoint(element);
+				PointF p = ElementToClickablePoint(recoveryElement);
 				ClickCoordinates(p.X, p.Y);
 				return CommandResponse.SuccessEmptyResponse;
 			}
