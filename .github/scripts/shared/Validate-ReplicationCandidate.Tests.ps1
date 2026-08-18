@@ -1541,3 +1541,90 @@ Describe 'The publisher accepts every field the verifier actually writes' {
         $unregistered -join ', ' | Should -BeExactly ''
     }
 }
+
+Describe 'The reproduction result the orchestrator writes matches what the publisher demands' {
+    BeforeAll {
+        $scriptRoot = Split-Path -Parent $PSCommandPath
+        $orchestratorPath = Join-Path (Split-Path -Parent $scriptRoot) 'Replicate-Issue.ps1'
+        $orchestratorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $orchestratorPath, [ref]$null, [ref]$null)
+
+        # The orchestrator pipes the manifest straight into the reproduction
+        # result file, so find the hashtable whose pipeline names that path.
+        $writerPipeline = $orchestratorAst.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.PipelineAst] -and
+            $node.Extent.Text.Contains('$reproductionResultPath') -and
+            $node.Extent.Text.Contains('[ordered]@{')
+        }, $true) | Select-Object -First 1
+        $writerHashtable = $writerPipeline.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.HashtableAst]
+        }, $true)
+        $script:ReproductionWrittenKeys = @(
+            $writerHashtable.KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'", '"') })
+
+        $validatorPath = Join-Path $scriptRoot 'Validate-ReplicationCandidate.ps1'
+        $script:ValidatorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $validatorPath, [ref]$null, [ref]$null)
+        # Anchor on the guard call for this manifest rather than on the shape
+        # of its array, so the test keeps pointing at the right allow-list when
+        # fields are added or removed.
+        $allowListCall = $script:ValidatorAst.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'Assert-KnownProperties' -and
+            $node.Extent.Text -like "*'Replication execution result'*"
+        }, $true) | Select-Object -First 1
+        $allowListCall | Should -Not -BeNullOrEmpty
+        $allowList = $allowListCall.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.ArrayLiteralAst]
+        }, $true)
+        $script:ReproductionAllowedNames = @(
+            $allowList.Elements | ForEach-Object { $_.Extent.Text.Trim("'", '"') })
+    }
+
+    It 'allows every field the orchestrator writes' {
+        $script:ReproductionWrittenKeys.Count | Should -BeGreaterThan 5
+        $unregistered = @(
+            $script:ReproductionWrittenKeys |
+                Where-Object { $script:ReproductionAllowedNames -notcontains $_ })
+        $unregistered -join ', ' | Should -BeExactly ''
+    }
+
+    It 'demands no field the orchestrator never writes' {
+        # Live run 15006827 was rejected with "Replication execution result is
+        # missing required property 'confirmedRuns'". Checking only that the
+        # writer stays inside the allow-list misses this opposite direction: a
+        # field the publisher requires but nothing produces rejects every
+        # candidate just as completely.
+        $requiredNames = @(
+            $script:ValidatorAst.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.CommandAst] -and
+                $node.GetCommandName() -eq 'Find-AliasedProperty' -and
+                $node.Extent.Text -like "*'Replication execution result'*" -and
+                $node.Extent.Text -like '*-Required*'
+            }, $true) | ForEach-Object {
+                # A single-element @('x') parses as an array expression, not an
+                # array literal, so match the enclosing @() and read the string
+                # constants inside it.
+                $namesArgument = $_.Find({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.ArrayExpressionAst]
+                }, $true)
+                if ($namesArgument) {
+                    $namesArgument.FindAll({
+                        param($node)
+                        $node -is [System.Management.Automation.Language.StringConstantExpressionAst]
+                    }, $true) | ForEach-Object { $_.Value }
+                }
+            } | Select-Object -Unique)
+
+        $requiredNames.Count | Should -BeGreaterThan 3
+        $unwritten = @(
+            $requiredNames | Where-Object { $script:ReproductionWrittenKeys -notcontains $_ })
+        $unwritten -join ', ' | Should -BeExactly ''
+    }
+}
