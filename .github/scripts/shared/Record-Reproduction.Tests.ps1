@@ -965,4 +965,19 @@ Describe 'Select-ReproductionDiagnosticLines native backtraces' {
         $selected | Should -Match 'exit code 134'
         $selected | Should -Not -Match 'WebDriverAgentLib'
     }
+
+    It 'recovers a cause PowerShell rendered into an error gutter' {
+        $rendered = @(
+            'Run trusted reproduction script failed with exit'
+            'Line |'
+            '     | code 134. Output: MacCatalyst Sandbox app aborted during launch'
+            '+ CategoryInfo          : OperationStopped: (:) [], RuntimeException'
+        ) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $rendered -MaximumTailLines 20
+
+        $selected | Should -Match 'code 134'
+        $selected | Should -Match 'aborted during launch'
+        $selected | Should -Not -Match 'CategoryInfo'
+    }
 }

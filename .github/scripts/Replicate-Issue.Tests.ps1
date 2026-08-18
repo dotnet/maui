@@ -2946,6 +2946,31 @@ PS-STEP-FAILED: step 3 did not find its target
         $details | Should -Not -Match '/session/'
     }
 
+    It 'recovers a cause that PowerShell rendered into an error gutter' {
+        # Catalyst run 15011181 reported "failed with exit OperationStopped:
+        # ...ps1:1297 Line | code 134" -- PowerShell's console rendering of a
+        # nested failure split the one sentence that mattered, because the
+        # message continues after the gutter. Catalyst had never published a
+        # reproduction, and every one of its runs failed this way.
+        $rendered = @(
+            'Run trusted reproduction script failed with exit'
+            'OperationStopped: /a/scripts/shared/Record-Reproduction.ps1:1297'
+            'Line |'
+            '     |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+            '     | code 134. Output: MacCatalyst Sandbox app aborted during launch'
+            '+ CategoryInfo          : OperationStopped: (:) [], RuntimeException'
+            '+ FullyQualifiedErrorId : RuntimeException'
+        ) -join "`n"
+
+        $details = Get-ReplicationFailureDetails -Output @($rendered)
+
+        $details | Should -Match 'code 134'
+        $details | Should -Match 'aborted during launch'
+        $details | Should -Not -Match 'CategoryInfo'
+        $details | Should -Not -Match 'FullyQualifiedErrorId'
+        $details | Should -Not -Match '~~~'
+    }
+
     It 'names the properties a rejected proposal got wrong' {
         # Catalyst run 15011919 was told only that its proposal "does not match
         # the exact trusted schema", which does not say what to change, so the

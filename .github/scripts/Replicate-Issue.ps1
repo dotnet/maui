@@ -566,16 +566,25 @@ function Get-ReplicationFailureDetails {
     # Native backtraces (WebDriverAgent, Mac2, CoreFoundation) are frames too.
     $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|^\s*\d+\s+\S+\s+0x[0-9a-fA-F]{6,}\s)'
     $progressPattern = '^\s*(?:[\u2500-\u257F]+\s*)?(?:\uD83D\uDD39|\u2139\uFE0F?|\u2705)'
+    # PowerShell renders a nested failure as a console display -- an
+    # "OperationStopped:" header, a "Line |" gutter, a squiggle and a
+    # CategoryInfo footer -- and the real message continues *after* the
+    # gutter. Catalyst run 15011181 therefore reported "failed with exit
+    # OperationStopped: ...ps1:1297 Line | code 134", splitting the one
+    # sentence that mattered. Strip the rendering, keep what it framed.
+    $errorRenderNoise = '^\s*(?:Line\s*\|\s*$|~+\s*$|\+\s*(?:CategoryInfo|FullyQualifiedErrorId)\b)'
+    $errorGutter = '^\s*\d*\s*\|\s?'
     # The verification harness prints its verdict inside a drawn box, so a rule
     # that dropped every line starting with a box character would also drop
     # "test(s) PASSED but should FAIL" -- the text the non-reproduction
     # classifier reads. Strip the drawing, keep whatever it framed.
     $quietLines = @($safeLines |
-        ForEach-Object { ($_ -replace '[\u2500-\u257F]', ' ').Trim() } |
+        ForEach-Object { (($_ -replace '[\u2500-\u257F]', ' ') -replace $errorGutter, '').Trim() } |
         Where-Object { $_ } |
         Where-Object {
             $_ -notmatch $wireNoisePattern -and
             $_ -notmatch $stackFramePattern -and
+            $_ -notmatch $errorRenderNoise -and
             $_ -notmatch $progressPattern
         })
     if ($quietLines.Count -gt 0) {
