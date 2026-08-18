@@ -26,11 +26,11 @@ if ($DotNetSdk -eq "global-json") {
     }
 }
 
-if ($DotNetSdk -notmatch "^(\d+)\.(\d+)") {
-    throw "Unable to derive a target framework from dotnet SDK version '$DotNetSdk'."
+if ($DotNetSdk -notmatch "\A(?<Major>0|[1-9]\d*)\.(?<Minor>0|[1-9]\d*)\.(?<Patch>0|[1-9]\d*)(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?\z") {
+    throw "Dotnet SDK version '$DotNetSdk' must be a complete SDK version such as '11.0.100' or '11.0.100-preview.1.25120.13'."
 }
 
-$dotNetTfm = "net$($Matches[1]).$($Matches[2])"
+$dotNetTfm = "net$($Matches.Major).$($Matches.Minor)"
 
 Write-Host "Resolved .NET SDK: $DotNetSdk"
 Write-Host "Resolved .NET TFM: $dotNetTfm"

@@ -13,6 +13,7 @@ BeforeAll {
     foreach ($functionName in @(
         'Assert-EnvironmentValue',
         'Get-NewestBuildOutput',
+        'Repair-AppleAdhocSignature',
         'Invoke-DotNetPublish',
         'Test-IsNet11OrLater',
         'Add-NativeAotArguments',
@@ -61,6 +62,8 @@ BeforeAll {
     Invoke-Expression $pairedEnvironmentFunction.Extent.Text
 
     $script:prepareMatrixScriptPath = Join-Path $PSScriptRoot 'Prepare-Matrix.ps1'
+    $script:resolveDotNetSdkScriptPath = Join-Path $PSScriptRoot 'Resolve-DotNetSdk.ps1'
+    $script:resolveSourceRefScriptPath = Join-Path $PSScriptRoot 'Resolve-SourceRef.ps1'
     $script:fastfilePath = Join-Path $PSScriptRoot 'fastlane/Fastfile'
     $script:workflowPath = Join-Path $PSScriptRoot '../../workflows/template-app-distribution.yml'
     $script:workflowText = Get-Content -Path $script:workflowPath -Raw
@@ -69,6 +72,7 @@ BeforeAll {
     $script:originalPath = $env:PATH
     $script:testEnvironmentNames = @(
         'FAKE_DOTNET_MODE',
+        'FAKE_CODESIGN_MODE',
         'FAKE_TESTFLIGHT_ERROR',
         'FAKE_TESTFLIGHT_GROUPS',
         'FASTFILE_PATH',
@@ -140,6 +144,17 @@ switch ($env:FAKE_DOTNET_MODE) {
         New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
         New-Item -ItemType File -Path (Join-Path $outputPath "TestApp.ipa") -Force | Out-Null
     }
+    "ios-store-overwrite" {
+        $projectDirectory = Split-Path $projectPath -Parent
+        $projectIpa = Join-Path $projectDirectory "bin/$runtimeIdentifier/TestApp.ipa"
+        New-Item -ItemType Directory -Path (Split-Path $projectIpa -Parent), $outputPath -Force | Out-Null
+        if ($argumentText -match "CodesignProvision=Ad Hoc Profile") {
+            Set-Content -Path $projectIpa -Value "ad-hoc"
+            Set-Content -Path (Join-Path $outputPath "TestApp.ipa") -Value "ad-hoc"
+        } else {
+            Set-Content -Path $projectIpa -Value "app-store"
+        }
+    }
     "ios-adhoc-failure" {
         New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
         if ($argumentText -match "CodesignProvision=Ad Hoc Profile") {
@@ -164,6 +179,32 @@ exit /b %ERRORLEVEL%
 exec pwsh -NoLogo -NoProfile -File "$fakeDotNetScriptPath" "`$@"
 "@ | Set-Content -Path (Join-Path $script:fakeCommandDirectory 'dotnet') -Encoding utf8NoBOM
         & chmod +x (Join-Path $script:fakeCommandDirectory 'dotnet')
+    }
+
+    $fakeCodesignScriptPath = Join-Path $script:fakeCommandDirectory 'fake-codesign.ps1'
+    @'
+$target = $args[-1]
+if ($env:FAKE_CODESIGN_MODE -eq "nested-failure" -and $target -match "\.(dylib|so)$") {
+    exit 17
+}
+if ($env:FAKE_CODESIGN_MODE -eq "bundle-failure" -and (Test-Path -Path $target -PathType Container)) {
+    exit 19
+}
+exit 0
+'@ | Set-Content -Path $fakeCodesignScriptPath -Encoding utf8
+
+    if ($IsWindows) {
+        @"
+@echo off
+pwsh -NoLogo -NoProfile -File "$fakeCodesignScriptPath" %*
+exit /b %ERRORLEVEL%
+"@ | Set-Content -Path (Join-Path $script:fakeCommandDirectory 'codesign.cmd') -Encoding ascii
+    } else {
+        @"
+#!/bin/sh
+exec pwsh -NoLogo -NoProfile -File "$fakeCodesignScriptPath" "`$@"
+"@ | Set-Content -Path (Join-Path $script:fakeCommandDirectory 'codesign') -Encoding utf8NoBOM
+        & chmod +x (Join-Path $script:fakeCommandDirectory 'codesign')
     }
 
     $pathSeparator = [System.IO.Path]::PathSeparator
@@ -292,6 +333,47 @@ end
         )
     }
 
+    function New-SourceRefTestRepository([switch]$UntrustedHead) {
+        $repositoryPath = Join-Path $testRoot ([guid]::NewGuid().ToString("N"))
+        New-Item -ItemType Directory -Path $repositoryPath -Force | Out-Null
+
+        & git -C $repositoryPath init --quiet --initial-branch=main
+        & git -C $repositoryPath config user.name 'Template App Tests'
+        & git -C $repositoryPath config user.email 'template-app-tests@example.invalid'
+        & git -C $repositoryPath config commit.gpgsign false
+        Set-Content -Path (Join-Path $repositoryPath 'source.txt') -Value 'trusted'
+        & git -C $repositoryPath add source.txt
+        & git -C $repositoryPath commit --quiet -m 'trusted source'
+        $trustedSha = (& git -C $repositoryPath rev-parse HEAD).Trim()
+        & git -C $repositoryPath update-ref refs/remotes/origin/main $trustedSha
+
+        if ($UntrustedHead) {
+            & git -C $repositoryPath switch --quiet -c feature/untrusted
+            Set-Content -Path (Join-Path $repositoryPath 'source.txt') -Value 'untrusted'
+            & git -C $repositoryPath commit --quiet -am 'untrusted source'
+        }
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to create source-ref test repository."
+        }
+
+        return $repositoryPath
+    }
+
+    function Invoke-ResolveSourceRef(
+        [string]$RepositoryPath,
+        [string]$SourceRef,
+        [bool]$Publish
+    ) {
+        return Invoke-ExternalPowerShell $script:resolveSourceRefScriptPath @(
+            '-RepositoryPath', $RepositoryPath,
+            '-SourceRef', $SourceRef,
+            '-WorkflowRef', 'refs/heads/main',
+            '-DefaultBranch', 'main',
+            "-Publish:$($Publish.ToString().ToLowerInvariant())"
+        )
+    }
+
     function Invoke-FastfileHarness {
         $output = @(& $script:rubyPath $script:fastfileHarnessPath 2>&1)
         return [pscustomobject]@{
@@ -314,6 +396,114 @@ AfterAll {
         [Environment]::SetEnvironmentVariable($name, $script:originalEnvironment[$name])
     }
     Remove-Item -Path $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Describe 'dotnet SDK resolution' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'emits a complete SDK version and derived target framework from global.json' {
+        $case = New-BuildTestCase
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        @{
+            tools = @{
+                dotnet = '11.0.100-preview.1.25120.13'
+            }
+        } | ConvertTo-Json -Depth 3 | Set-Content -Path (Join-Path $case.Root 'global.json')
+
+        $result = Invoke-ExternalPowerShell $script:resolveDotNetSdkScriptPath @(
+            '-RepositoryPath', $case.Root,
+            '-DotNetSdk', 'global-json'
+        )
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        Get-Content -Path $case.GitHubOutput | Should -Contain 'dotnet_sdk=11.0.100-preview.1.25120.13'
+        Get-Content -Path $case.GitHubOutput | Should -Contain 'dotnet_tfm=net11.0'
+    }
+
+    It 'rejects malformed source-derived SDK version <SdkVersion>' -ForEach @(
+        @{ SdkVersion = '11.0' }
+        @{ SdkVersion = '11.0.100"; Write-Host compromised; "' }
+        @{ SdkVersion = "11.0.100`nforged_output=true" }
+    ) {
+        $case = New-BuildTestCase
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        @{
+            sdk = @{
+                version = $SdkVersion
+            }
+        } | ConvertTo-Json -Depth 3 | Set-Content -Path (Join-Path $case.Root 'global.json')
+
+        $result = Invoke-ExternalPowerShell $script:resolveDotNetSdkScriptPath @(
+            '-RepositoryPath', $case.Root,
+            '-DotNetSdk', 'global-json'
+        )
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'complete SDK'
+        Test-Path $case.GitHubOutput | Should -BeFalse
+    }
+}
+
+Describe 'source ref trust resolution' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'allows a trusted branch at the protected workflow ref' {
+        $repositoryPath = New-SourceRefTestRepository
+        $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+
+        $result = Invoke-ResolveSourceRef `
+            -RepositoryPath $repositoryPath `
+            -SourceRef 'main' `
+            -Publish $true
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        Get-Content -Path $env:GITHUB_OUTPUT | Should -Contain 'trusted=true'
+    }
+
+    It 'rejects an untrusted branch for protected publishing' {
+        $repositoryPath = New-SourceRefTestRepository -UntrustedHead
+        $env:GITHUB_OUTPUT = Join-Path $repositoryPath 'github-output.txt'
+
+        $result = Invoke-ResolveSourceRef `
+            -RepositoryPath $repositoryPath `
+            -SourceRef 'feature/untrusted' `
+            -Publish $true
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'Publishing requires a trusted source_ref'
+        Test-Path $env:GITHUB_OUTPUT | Should -BeFalse
+    }
+}
+
+Describe 'ad-hoc signature repair' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'fails closed when a nested library cannot be signed' {
+        $appBundle = Join-Path $testRoot ([guid]::NewGuid().ToString('N') + '.app')
+        New-Item -ItemType Directory -Path $appBundle -Force | Out-Null
+        New-Item -ItemType File -Path (Join-Path $appBundle 'libbroken.dylib') -Force | Out-Null
+        $env:FAKE_CODESIGN_MODE = 'nested-failure'
+
+        {
+            Repair-AppleAdhocSignature $appBundle
+        } | Should -Throw '*nested library*failed with exit code 17*'
+    }
+
+    It 'fails closed when the final bundle signature fails' {
+        $appBundle = Join-Path $testRoot ([guid]::NewGuid().ToString('N') + '.app')
+        New-Item -ItemType Directory -Path $appBundle -Force | Out-Null
+        $env:FAKE_CODESIGN_MODE = 'bundle-failure'
+
+        {
+            Repair-AppleAdhocSignature $appBundle
+        } | Should -Throw '*failed with exit code 19*'
+    }
 }
 
 Describe 'optional Apple sideload signing' {
@@ -685,6 +875,35 @@ Describe 'publish binlogs' {
         Test-Path $outputValues.sideload_binlog_path | Should -BeTrue
     }
 
+    It 'preserves the App Store IPA before the ad-hoc publish can overwrite project outputs' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'ios-store-overwrite'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:RUNNER_TEMP = $case.RunnerTemp
+        $env:IOS_CODESIGN_KEY = 'Apple Distribution'
+        $env:IOS_CODESIGN_PROVISION = 'App Store Profile'
+        $env:IOS_ADHOC_CODESIGN_PROVISION = 'Ad Hoc Profile'
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'ios' `
+            -TargetFramework 'net11.0-ios' `
+            -RuntimeIdentifier 'ios-arm64' `
+            -Publish
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $outputValues = @{}
+        foreach ($line in Get-Content -Path $case.GitHubOutput) {
+            $name, $value = $line -split '=', 2
+            $outputValues[$name] = $value
+        }
+
+        $outputValues.package_path | Should -Be (Join-Path $case.OutputRoot 'store/TestApp.ipa')
+        Get-Content -Path $outputValues.package_path -Raw | Should -Match '^app-store'
+        Get-Content -Path (Join-Path $case.ProjectRoot 'bin/ios-arm64/TestApp.ipa') -Raw | Should -Match '^ad-hoc'
+        Get-Content -Path $outputValues.sideload_package_path -Raw | Should -Match '^ad-hoc'
+    }
+
     It 'preserves the ad-hoc binlog output when the secondary publish fails' {
         $case = New-BuildTestCase
         $env:FAKE_DOTNET_MODE = 'ios-adhoc-failure'
@@ -733,6 +952,17 @@ Describe 'workflow test gate' {
             $script:workflowText,
             'ref:\s*\$\{\{\s*github\.sha\s*\}\}').Count |
             Should -Be 4
+    }
+
+    It 'passes source-derived SDK outputs to PowerShell through environment variables' {
+        $script:workflowText | Should -Not -Match (
+            '-DotNet(?:Sdk|Tfm)\s+"\$\{\{\s*(?:steps\.sdk|needs\.prepare)\.outputs\.dotnet_')
+        $script:workflowText | Should -Not -Match (
+            '\$displayVersion\s*=\s*"\$\{\{\s*steps\.sdk\.outputs\.dotnet_tfm')
+        [regex]::Matches($script:workflowText, '-DotNetSdk "\$env:DOTNET_SDK"').Count |
+            Should -Be 2
+        [regex]::Matches($script:workflowText, '-DotNetTfm "\$env:DOTNET_TFM"').Count |
+            Should -Be 3
     }
 }
 
