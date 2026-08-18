@@ -237,8 +237,15 @@ Describe 'Record-Reproduction recorder adapters' {
             1,
             $start.ArgumentList[5].Length - 2)
         $remoteCommand | Should -Match 'exec screenrecord'
-        $remoteCommand | Should -Match '--size 1280x720'
-        $remoteCommand | Should -Match '--bit-rate 4000000'
+        # A forced landscape capture squeezed a portrait phone below the
+        # resolution reviewers need to judge a pixel claim, so every scaler
+        # must bound a square box and let the device choose the orientation.
+        $remoteCommand | Should -Not -Match '--size'
+        foreach ($match in [regex]::Matches(
+            $script:recordScriptContent, 'scale=(\d+):(\d+)')) {
+            $match.Groups[1].Value | Should -BeExactly $match.Groups[2].Value
+        }
+        $remoteCommand | Should -Match '--bit-rate 8000000'
         $remoteCommand | Should -Match '--time-limit 12'
         $remoteCommand |
             Should -Match 'printf "%s" "\$\$" > /sdcard/maui-reproduction-[0-9a-f]{32}\.mp4\.pid'
@@ -368,7 +375,7 @@ Describe 'Record-Reproduction recorder adapters' {
         $start.ArgumentList | Should -Contain '-an'
         $start.ArgumentList | Should -Contain '-t'
         ($start.ArgumentList -join ' ') | Should -Match 'fps=15'
-        ($start.ArgumentList -join ' ') | Should -Match 'scale=1280:720'
+        ($start.ArgumentList -join ' ') | Should -Match 'scale=1280:1280'
         $result.device | Should -BeExactly 'windows-host'
         (Get-Content -LiteralPath (Join-Path $evidenceDir 'evidence.json') -Raw |
             ConvertFrom-Json).device | Should -BeExactly 'windows-host'
@@ -604,7 +611,16 @@ Describe 'Record-Reproduction media validation' {
                 HasVideo = $true; HasAudio = $false; Decodable = $true
                 DurationSeconds = 3; Width = 1920; Height = 1080; FrameRate = 15
             }
-            Message = '*dimension limit*'
+            Message = '*long-edge limit*'
+        }
+        @{
+            # A tall portrait capture must be accepted at the same long edge.
+            Name = 'portrait long edge'
+            Media = [pscustomobject]@{
+                HasVideo = $true; HasAudio = $false; Decodable = $true
+                DurationSeconds = 3; Width = 720; Height = 1281; FrameRate = 15
+            }
+            Message = '*long-edge limit*'
         }
     ) {
         $harness = New-RecordingHarness -MediaInfo $Media

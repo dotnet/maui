@@ -66,8 +66,11 @@ $ErrorActionPreference = 'Stop'
 $scriptParameterSetName = $PSCmdlet.ParameterSetName
 
 $maxFrameRate = 15.0
-$maxWidth = 1280
-$maxHeight = 720
+# Reviews of kubaflo/maui#181, #189, #193, and #194 rejected the submitted
+# media as too coarse to support a pixel claim. A fixed landscape box squeezed
+# a portrait phone into 324 pixels of width, so bound the long edge instead and
+# let the short edge follow the device.
+$maxLongEdge = 1280
 $previewMaxSeconds = 6.0
 $previewMaxBytes = 16MB
 
@@ -838,8 +841,8 @@ function Get-ValidatedMediaInfo {
     $request = [pscustomobject]@{
         Path               = $Path
         MaxDurationSeconds = $MaxDurationSeconds
-        MaxWidth           = $maxWidth
-        MaxHeight          = $maxHeight
+        MaxWidth           = $maxLongEdge
+        MaxHeight          = $maxLongEdge
         MaxFrameRate       = $maxFrameRate
     }
     $probe = if ($null -ne $MediaProbe) {
@@ -877,8 +880,8 @@ function Get-ValidatedMediaInfo {
     if ($width -le 0 -or $height -le 0) {
         throw "Recorded MP4 has invalid dimensions: ${width}x${height}."
     }
-    if ($width -gt $maxWidth -or $height -gt $maxHeight) {
-        throw "Recorded MP4 exceeds the ${maxWidth}x${maxHeight} dimension limit (actual: ${width}x${height})."
+    if ([Math]::Max($width, $height) -gt $maxLongEdge) {
+        throw "Recorded MP4 exceeds the $maxLongEdge-pixel long-edge limit (actual: ${width}x${height})."
     }
     if ($frameRate -gt ($maxFrameRate + 0.01)) {
         throw "Recorded MP4 exceeds the $maxFrameRate-fps limit (actual: $frameRate)."
@@ -1004,7 +1007,7 @@ foreach ($knownPath in $knownEvidencePaths) {
 }
 
 $durationArgument = ConvertTo-InvariantArgument $MaxDurationSeconds
-$boundedVideoFilter = "fps=$maxFrameRate,scale=${maxWidth}:${maxHeight}:force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1"
+$boundedVideoFilter = "fps=$maxFrameRate,scale=${maxLongEdge}:${maxLongEdge}:force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1"
 $normalizationVideoFilter = if ($Platform -eq 'ios') {
     "$boundedVideoFilter,tpad=stop_mode=clone:stop_duration=2"
 } else {
@@ -1028,8 +1031,9 @@ switch ($Platform) {
         $remoteRecordCommand = (
             'printf "%s" "$$" > ' + $remoteAndroidPidPath +
             '; exec screenrecord' +
-            " --size ${maxWidth}x${maxHeight}" +
-            ' --bit-rate 4000000' +
+            # screenrecord keeps the device aspect ratio on its own, and the
+            # trimming pass below bounds the long edge.
+            ' --bit-rate 8000000' +
             " --time-limit $MaxDurationSeconds" +
             " $remoteAndroidPath"
         )
@@ -1420,7 +1424,7 @@ try {
             '-ss', $thumbnailTime,
             '-i', $videoPath,
             '-frames:v', '1',
-            '-vf', 'scale=640:360:force_original_aspect_ratio=decrease:force_divisible_by=2',
+            '-vf', 'scale=640:640:force_original_aspect_ratio=decrease:force_divisible_by=2',
             $thumbnailPath
         ) `
         -TimeoutSeconds 30 `
@@ -1447,7 +1451,7 @@ try {
     }
     $gifFilter = (
         $previewTimeFilter +
-        'fps=8,scale=480:270:force_original_aspect_ratio=decrease:' +
+        'fps=8,scale=480:480:force_original_aspect_ratio=decrease:' +
         'force_divisible_by=2,split[s0][s1];' +
         '[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer'
     )
