@@ -2611,7 +2611,7 @@ function Invoke-BoundedProcess {
 function Get-ReplicationPwshArguments {
     param(
         [Parameter(Mandatory = $true)][string]$ScriptPath,
-        [Parameter(Mandatory = $true)][object[]]$Arguments
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Arguments
     )
 
     @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments

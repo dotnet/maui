@@ -56,6 +56,7 @@ BeforeAll {
 
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
+        'Get-ReplicationPwshArguments',
         'Get-ReplicationFailureDetails',
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
@@ -3669,5 +3670,27 @@ Describe 'Truncated tool output must keep the diagnosis' {
         $safe = ConvertTo-ReplicationSafeLog ('x' * 50000) 2000
         $safe.Length | Should -BeLessThan 2100
         $safe.Length | Should -BeGreaterThan 2000
+    }
+}
+
+Describe 'Replaying a plan that takes no arguments' {
+    It 'builds a command line when the caller passes no arguments' {
+        # The confirmation replay invokes the reproduction wrapper with no
+        # arguments. Live run 15007907 recorded a successful reproduction and
+        # then died on "Cannot bind argument to parameter 'Arguments' because it
+        # is an empty array", so no reproduction could ever be confirmed.
+        $arguments = Get-ReplicationPwshArguments -ScriptPath '/tmp/wrapper.ps1' -Arguments @()
+
+        $arguments[-1] | Should -BeExactly '/tmp/wrapper.ps1'
+        $arguments | Should -Contain '-NonInteractive'
+    }
+
+    It 'still appends arguments when the caller supplies them' {
+        $arguments = Get-ReplicationPwshArguments `
+            -ScriptPath '/tmp/wrapper.ps1' `
+            -Arguments @('-Platform', 'android')
+
+        $arguments[-2] | Should -BeExactly '-Platform'
+        $arguments[-1] | Should -BeExactly 'android'
     }
 }
