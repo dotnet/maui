@@ -10,7 +10,7 @@
     Label categories:
     - Outcome labels (mutually exclusive): agent-approved, agent-changes-requested, agent-review-incomplete
     - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-pr-picked
-    - Manual / queue labels: agent-fix-implemented, agent-ready-for-rerun, agent-review-in-progress
+    - Manual / queue labels: agent-fix-implemented, agent-ready-for-rerun, agent-rerun-declined, agent-review-in-progress
     - Tracking label: agent-reviewed (always applied on completed run)
 
 .NOTES
@@ -176,8 +176,22 @@ function Remove-Label {
     }
 
     $message = ($output | Out-String).Trim()
-    if ($message -match '(?i)\bHTTP\s+404\b|\bstatus(?:\s+code)?\s*:?\s*404\b|\blabel does not exist\b') {
-        return $true
+    $verificationOutput = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>&1
+    $verificationExitCode = $LASTEXITCODE
+    if ($verificationExitCode -eq 0) {
+        $currentLabels = @($verificationOutput | ForEach-Object { ([string]$_).Trim() } | Where-Object {
+                -not [string]::IsNullOrWhiteSpace($_)
+            })
+        if ($currentLabels -notcontains $LabelName) {
+            return $true
+        }
+        $message = "$message Verification showed that the label is still present."
+    } else {
+        $verificationMessage = ($verificationOutput | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($verificationMessage)) {
+            $verificationMessage = "gh api exited with code $verificationExitCode."
+        }
+        $message = "$message Verification failed: $verificationMessage"
     }
 
     if ([string]::IsNullOrWhiteSpace($message)) {

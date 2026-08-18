@@ -130,9 +130,15 @@ Context 'bounded scan metadata' {
         @($script:ghCalls | Where-Object { $_ -match '^pr list .*--limit 6' }).Count | Should -Be 1
     }
 
-    It 'pins pull-request dry-run validation to Limit 5' {
+    It 'keeps pull-request validation tokenless and test-only' {
         $workflow = Get-Content -Raw -LiteralPath $workflowPath
-        $workflow | Should -Match '(?s)Validate auto-rerun labeler \(dry-run\).*?-DryRun\s+\\\s*\r?\n\s*-Limit 5\s+\\'
+        $validateJob = [regex]::Match($workflow, '(?s)^  validate:.*\z', 'Multiline').Value
+
+        $validateJob | Should -Match 'Validate queue scripts without GitHub credentials'
+        $validateJob | Should -Match 'Query-AutoRerunCandidates\.Tests\.ps1'
+        $validateJob | Should -Match 'Update-AgentLabels\.Tests\.ps1'
+        $validateJob | Should -Not -Match 'GH_TOKEN|github\.token'
+        $validateJob | Should -Not -Match 'pull-requests:\s+read|issues:\s+read'
     }
 
     It 'keeps the scheduled queue job at pull-request read permission' {

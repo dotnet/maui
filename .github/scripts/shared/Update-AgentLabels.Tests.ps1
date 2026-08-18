@@ -74,14 +74,50 @@ Describe 'Remove-Label' {
         }
     }
 
-    It 'treats an already-absent label as a successful idempotent removal' {
+    It 'verifies an already-absent label before treating removal as successful' {
+        $script:ghCall = 0
         Mock gh {
-            $global:LASTEXITCODE = 1
-            'gh: Label does not exist (HTTP 404)'
+            $script:ghCall++
+            if ($script:ghCall -eq 1) {
+                $global:LASTEXITCODE = 1
+                'gh: Not Found (HTTP 404)'
+            } else {
+                $global:LASTEXITCODE = 0
+                's/agent-ready-for-rerun'
+            }
         }
 
         Invoke-RemoveLabelUnderTest -PRNumber 1 -LabelName 's/agent-rerun-declined' |
             Should -BeTrue
+        Should -Invoke gh -Times 2
+    }
+
+    It 'does not treat an unverified 404 as a successful removal' {
+        Mock gh {
+            $global:LASTEXITCODE = 1
+            'gh: Not Found (HTTP 404)'
+        }
+
+        Invoke-RemoveLabelUnderTest -PRNumber 999999 -LabelName 's/agent-rerun-declined' |
+            Should -BeFalse
+        Should -Invoke gh -Times 2
+    }
+
+    It 'reports failure when the label remains after a failed delete' {
+        $script:ghCall = 0
+        Mock gh {
+            $script:ghCall++
+            if ($script:ghCall -eq 1) {
+                $global:LASTEXITCODE = 1
+                'gh: Not Found (HTTP 404)'
+            } else {
+                $global:LASTEXITCODE = 0
+                's/agent-rerun-declined'
+            }
+        }
+
+        Invoke-RemoveLabelUnderTest -PRNumber 1 -LabelName 's/agent-rerun-declined' |
+            Should -BeFalse
     }
 
     It 'reports a non-404 API failure' {

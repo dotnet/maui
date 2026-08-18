@@ -119,68 +119,64 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  # Dry-run on PRs: validate the script works without creating issues
+  # Validate PR-controlled scripts without exposing a workflow token to them.
   validate:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'dotnet' && github.event_name == 'pull_request'
     permissions:
       contents: read
-      pull-requests: read
-      issues: read  # Query-AutoRerunCandidates reads issue labels (gh api repos/.../issues/N/labels)
     steps:
       - uses: actions/checkout@v4
         with:
-          # This job runs on pull_request (untrusted PR code); it only reads and dry-runs the
-          # scripts, so it never needs the workflow token in .git/config. Match review-trigger.yml.
           persist-credentials: false
 
-      - name: Validate PR review queue script
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Install Pester
+        shell: pwsh
         run: |
-          set +e
-          pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 \
-            -Category all \
-            -OutputFormat markdown \
-            > pr-review-queue-raw.md 2>pr-query-errors.txt
-          rc=$?
-          set -e
+          $ErrorActionPreference = 'Stop'
+          Install-Module -Name Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
 
-          if [ $rc -ne 0 ]; then
-            echo "::error::Query script failed"
-            cat pr-query-errors.txt
-            exit 1
-          fi
-
-          sed -n '/^<!-- PR_REVIEW_QUEUE_BEGIN -->/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
-
-          if [ ! -s pr-review-queue-body.md ]; then
-            echo "::error::Query produced empty output"
-            cat pr-query-errors.txt
-            exit 1
-          fi
-
-          echo "✅ Validation passed — report preview:"
-          cat pr-review-queue-body.md
-
-      - name: Validate auto-rerun labeler (dry-run)
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO_OWNER: ${{ github.repository_owner }}
-          REPO_NAME: ${{ github.event.repository.name }}
+      - name: Validate queue scripts without GitHub credentials
+        shell: pwsh
         run: |
-          set +e
-          pwsh .github/scripts/Query-AutoRerunCandidates.ps1 \
-            -Owner "$REPO_OWNER" \
-            -Repo "$REPO_NAME" \
-            -DryRun \
-            -Limit 5 \
-            -OutputPath auto-rerun-decisions.json
-          rc=$?
-          set -e
-          if [ $rc -ne 0 ]; then
-            echo "::error::Auto-rerun labeler dry-run failed"
-            exit 1
-          fi
-          echo "✅ Auto-rerun labeler dry-run passed:"
-          cat auto-rerun-decisions.json
+          $ErrorActionPreference = 'Stop'
+
+          $parseTargets = @(
+            '.github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1'
+            '.github/scripts/Query-AutoRerunCandidates.ps1'
+            '.github/scripts/Query-RerunReadyPRs.ps1'
+            '.github/scripts/Resolve-RerunEligibility.ps1'
+            '.github/scripts/shared/Update-AgentLabels.ps1'
+          )
+          foreach ($path in $parseTargets) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            )
+            if ($errors.Count -gt 0) {
+              throw "PowerShell parse failed for ${path}: $($errors.Message -join '; ')"
+            }
+          }
+
+          Import-Module Pester -RequiredVersion 5.9.0
+          $config = New-PesterConfiguration
+          $config.Run.Path = @(
+            '.github/scripts/Invoke-RerunReviewTrigger.Tests.ps1'
+            '.github/scripts/Query-AutoRerunCandidates.Tests.ps1'
+            '.github/scripts/Query-RerunReadyPRs.Tests.ps1'
+            '.github/scripts/Resolve-RerunEligibility.Tests.ps1'
+            '.github/scripts/shared/Update-AgentLabels.Tests.ps1'
+          )
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            throw "Pester reported $($result.FailedCount) failing test(s)."
+          }
+          if ($result.TotalCount -lt 1) {
+            throw 'Pester discovered no queue validation tests.'
+          }
