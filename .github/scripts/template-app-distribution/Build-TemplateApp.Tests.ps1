@@ -89,6 +89,10 @@ BeforeAll {
         'ANDROID_KEYSTORE_PASSWORD',
         'ANDROID_KEY_PASSWORD',
         'ANDROID_KEY_ALIAS',
+        'ANDROID_SIGNING_KEY_ALIAS',
+        'ANDROID_SIGNING_STORE_PASS',
+        'ANDROID_SIGNING_KEY_PASS',
+        'FAKE_ANDROID_SIGNING_ENV_LOG',
         'APPLE_DEVELOPERID_CERTIFICATE_BASE64',
         'APPLE_DEVELOPERID_PROVISIONING_PROFILE_BASE64',
         'IOS_ADHOC_CODESIGN_PROVISION',
@@ -114,6 +118,7 @@ $ErrorActionPreference = "Stop"
 
 $outputPath = $null
 $runtimeIdentifier = $null
+$binlogPaths = @()
 $projectPath = $args | Where-Object { $_ -like "*.csproj" } | Select-Object -First 1
 for ($index = 0; $index -lt $args.Count; $index++) {
     if ($args[$index] -eq "-o" -and $index + 1 -lt $args.Count) {
@@ -125,10 +130,20 @@ for ($index = 0; $index -lt $args.Count; $index++) {
     if ($args[$index].StartsWith("/bl:")) {
         $binlogPath = $args[$index].Substring(4)
         New-Item -ItemType Directory -Path (Split-Path $binlogPath -Parent) -Force | Out-Null
-        Set-Content -Path $binlogPath -Value "fake binlog"
+        $binlogPaths += $binlogPath
     }
 }
 $argumentText = $args -join "`n"
+foreach ($binlogPath in $binlogPaths) {
+    Set-Content -Path $binlogPath -Value $argumentText
+}
+if (-not [string]::IsNullOrWhiteSpace($env:FAKE_ANDROID_SIGNING_ENV_LOG)) {
+    @(
+        "alias=$env:ANDROID_SIGNING_KEY_ALIAS",
+        "storePass=$env:ANDROID_SIGNING_STORE_PASS",
+        "keyPass=$env:ANDROID_SIGNING_KEY_PASS"
+    ) -join "`n" | Add-Content -Path $env:FAKE_ANDROID_SIGNING_ENV_LOG
+}
 
 switch ($env:FAKE_DOTNET_MODE) {
     "android-success" {
@@ -911,6 +926,46 @@ Describe 'Android artifact safety' {
         Test-Path $outputValues.sideload_package_path | Should -BeTrue
         Test-Path $outputValues.binlog_path | Should -BeTrue
         Test-Path $outputValues.store_binlog_path | Should -BeTrue
+    }
+
+    It 'keeps every configured Android signing secret out of APK and AAB binlog command lines' {
+        $case = New-BuildTestCase
+        $keystorePath = Join-Path $case.Root 'test.keystore'
+        $signingEnvironmentLog = Join-Path $case.Root 'signing-environment.log'
+        Set-Content -Path $keystorePath -Value 'fake keystore'
+        $env:FAKE_DOTNET_MODE = 'android-success'
+        $env:FAKE_ANDROID_SIGNING_ENV_LOG = $signingEnvironmentLog
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:RUNNER_TEMP = $case.RunnerTemp
+        $env:ANDROID_KEYSTORE_PATH = $keystorePath
+        $env:ANDROID_KEYSTORE_PASSWORD = 'store-password-secret'
+        $env:ANDROID_KEY_PASSWORD = 'key-password-secret'
+        $env:ANDROID_KEY_ALIAS = 'signing-alias-secret'
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'android' `
+            -TargetFramework 'net11.0-android' `
+            -RuntimeIdentifier 'android-arm64' `
+            -Publish `
+            -CreateBinlog
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $binlogCommandLines = @(
+            Get-Content -Path (Join-Path $case.OutputRoot 'build.binlog') -Raw
+            Get-Content -Path (Join-Path $case.OutputRoot 'store-build.binlog') -Raw
+        )
+        foreach ($commandLine in $binlogCommandLines) {
+            $commandLine | Should -Match '(?s)-p\s+AndroidSigningKeyAlias=env:ANDROID_SIGNING_KEY_ALIAS'
+            $commandLine | Should -Match '(?s)-p\s+AndroidSigningStorePass=env:ANDROID_SIGNING_STORE_PASS'
+            $commandLine | Should -Match '(?s)-p\s+AndroidSigningKeyPass=env:ANDROID_SIGNING_KEY_PASS'
+            $commandLine | Should -Not -Match 'signing-alias-secret|store-password-secret|key-password-secret'
+        }
+
+        $signingEnvironment = Get-Content -Path $signingEnvironmentLog -Raw
+        $signingEnvironment | Should -Match 'alias=signing-alias-secret'
+        $signingEnvironment | Should -Match 'storePass=store-password-secret'
+        $signingEnvironment | Should -Match 'keyPass=key-password-secret'
     }
 }
 
