@@ -101,7 +101,7 @@ Describe 'MAUI Copilot mode routing' {
         $validationIndex | Should -BeLessThan $credentialIndex
         $credentialIndex | Should -BeLessThan $evidenceIndex
         $evidenceIndex | Should -BeLessThan $publicationIndex
-        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\)\)"
+        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationIssueIneligible'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\)\)"
         $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
@@ -295,7 +295,7 @@ Describe 'Replication issue outcome publication boundary' {
         $check | Should -BeGreaterThan 0
         $replicate | Should -BeGreaterThan $check
 
-        $step = $script:Pipeline.Substring($check - 2000, 2000)
+        $step = $script:Pipeline.Substring($check - 3600, 3600)
         $step.Contains('MAUI_COPILOT_REPLICATION issue=') | Should -BeTrue
         $step.Contains('variable=replicationAlreadyPublished') | Should -BeTrue
     }
@@ -317,6 +317,27 @@ Describe 'Replication issue outcome publication boundary' {
             Should -BeTrue
         $script:Pipeline.Contains(
             "ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true')") |
+            Should -BeTrue
+    }
+
+    It 'skips the device run and the publisher when the issue is not open' {
+        # PR 199 spent a full run reproducing dotnet/maui#37243 and published a
+        # draft before anyone noticed the issue was already closed as
+        # not_planned. Ask GitHub before spending the device.
+        $check = $script:Pipeline.IndexOf(
+            'Check for an existing reproduction pull request')
+        $check | Should -BeGreaterThan 0
+        $step = $script:Pipeline.Substring($check - 3600, 3600)
+        $step.Contains('repos/dotnet/maui/issues/') | Should -BeTrue
+        $step.Contains('.state_reason') | Should -BeTrue
+        $step.Contains('variable=replicationIssueIneligible') | Should -BeTrue
+        $step.Contains('isOutput=true]true') | Should -BeTrue
+
+        $script:Pipeline.Contains(
+            "ne(variables['replicationIssueIneligible'], 'true')") |
+            Should -BeTrue
+        $script:Pipeline.Contains(
+            "ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true')") |
             Should -BeTrue
     }
 

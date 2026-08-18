@@ -678,6 +678,34 @@ stages:
               } else {
                 Write-Host "No open reproduction pull request covers this issue and platform yet."
               }
+
+              # PR 199 reproduced dotnet/maui#37243 on a full device run and
+              # published a draft, and only the reviewer noticed the issue had
+              # already been closed as not_planned. A reproduction only means
+              # something while the report is open: closed as completed says the
+              # behaviour is fixed, so reproducing it is either a wrong test or
+              # a regression report, and neither may be filed as a reproduction
+              # of an open bug. Ask before spending the device.
+              try {
+                $issueState = & gh api "repos/dotnet/maui/issues/${{ parameters.IssueNumber }}" `
+                  --jq '[.state, (.state_reason // "none")] | @tsv'
+                if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($issueState)) {
+                  $parts = ([string]$issueState).Trim() -split "`t"
+                  $state = $parts[0]
+                  $stateReason = if ($parts.Count -gt 1) { $parts[1] } else { 'none' }
+                  if ($state -ne 'open') {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: dotnet/maui#${{ parameters.IssueNumber }} is $state ($stateReason), so a reproduction of it cannot be filed against an open report."
+                  } else {
+                    Write-Host "Issue dotnet/maui#${{ parameters.IssueNumber }} is open."
+                  }
+                } else {
+                  Write-Host "##vso[task.logissue type=warning]Could not read the issue state; continuing."
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not read the issue state: $($_.Exception.Message)"
+              }
             name: ReplicationDuplicateCheck
             displayName: 'Check for an existing reproduction pull request'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
@@ -2017,7 +2045,7 @@ stages:
               }
             name: RunReplication
             displayName: 'Replicate issue and author failing test'
-            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), ne(variables['replicationAlreadyPublished'], 'true'))
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))
             timeoutInMinutes: 210
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
@@ -2670,7 +2698,7 @@ stages:
   - stage: PublishReplication
     displayName: 'Validate and publish issue replication'
     dependsOn: ReviewPR
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
     jobs:
       - job: PublishReplication
         displayName: 'Publish validated reproduction'
