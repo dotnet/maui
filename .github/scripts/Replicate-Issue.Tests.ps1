@@ -2659,6 +2659,7 @@ public class Issue14305
         New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($path)) -Force |
             Out-Null
         @'
+#if ANDROID
 using Xunit;
 
 public class Issue37440Tests
@@ -2669,6 +2670,7 @@ public class Issue37440Tests
         Assert.True(false, "Expected failure");
     }
 }
+#endif
 '@ | Set-Content -LiteralPath $path
 
         {
@@ -2996,6 +2998,7 @@ public static class Issue37440Bootstrap
                 Out-Null
         }
         @'
+#if ANDROID
 using NUnit.Framework;
 
 public class Issue37440Tests
@@ -3006,6 +3009,7 @@ public class Issue37440Tests
         Assert.Fail("Issue37440");
     }
 }
+#endif
 '@ | Set-Content -LiteralPath (Join-Path $repoRoot $testFile)
         @'
 public partial class Issue37440Page : ContentPage
@@ -3948,5 +3952,130 @@ Describe 'Displayed captions are data, not API usage' {
         {
             Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml'
         } | Should -Throw '*remote-url*'
+    }
+}
+
+Describe 'A reproduction may only claim the platform it was observed on' {
+    BeforeAll {
+        $script:unscoped = @'
+using NUnit.Framework;
+
+public class Issue36298 : _IssuesUITest
+{
+    [Test]
+    public void RetainedRefreshViewContentCanBeReattached()
+    {
+        App.WaitForElement("target");
+    }
+}
+'@
+    }
+
+    It 'rejects a shared UI test that also runs on the three unproven lanes' {
+        # PR 201: TestCases.Shared.Tests link-compiles into all four platform
+        # assemblies, so a Windows-only defect was scheduled on Android, iOS
+        # and MacCatalyst too.
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:unscoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36298.cs' `
+                -Platform 'windows'
+        } | Should -Throw '*android, ios, catalyst*'
+    }
+
+    It 'names the directive that fixes it' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:unscoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36298.cs' `
+                -Platform 'catalyst'
+        } | Should -Throw '*#if MACCATALYST*'
+    }
+
+    It 'accepts the test once it is scoped to the observed platform' {
+        $scoped = "#if WINDOWS`n$($script:unscoped)`n#endif"
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $scoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36298.cs' `
+                -Platform 'windows'
+        } | Should -Not -Throw
+    }
+
+    It "accepts the repository's own TEST_FAILS_ON exclusion spelling" {
+        $scoped = "#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST`n$($script:unscoped)`n#endif"
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $scoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
+                -Platform 'windows'
+        } | Should -Not -Throw
+    }
+
+    It 'reads the trailing comment the repository puts on those directives' {
+        $scoped = "#if IOS // only reproduces on iOS`n$($script:unscoped)`n#endif"
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $scoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
+                -Platform 'ios'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects a scope that excludes the platform that produced the evidence' {
+        $scoped = "#if ANDROID`n$($script:unscoped)`n#endif"
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $scoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
+                -Platform 'ios'
+        } | Should -Throw '*only platform where the reproduction was observed*'
+    }
+
+    It 'rejects a scope that is wider than one platform' {
+        $scoped = "#if ANDROID || IOS`n$($script:unscoped)`n#endif"
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $scoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
+                -Platform 'android'
+        } | Should -Throw '*also run on ios*'
+    }
+
+    It 'reads an else branch' {
+        $scoped = "#if ANDROID`n// nothing`n#else`n$($script:unscoped)`n#endif"
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $scoped `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
+                -Platform 'ios'
+        } | Should -Throw '*also run on catalyst, windows*'
+    }
+
+    It 'leaves the HostApp page alone, because it is the app and not a test' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:unscoped `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue36298.cs' `
+                -Platform 'windows'
+        } | Should -Not -Throw
+    }
+
+    It 'leaves single-target unit tests alone, which have no platform lanes' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:unscoped `
+                -Path 'src/Controls/tests/Core.UnitTests/Issue1.cs' `
+                -Platform 'windows'
+        } | Should -Not -Throw
+    }
+
+    It 'covers shared device tests, which multi-target the same way' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content ($script:unscoped -replace '\[Test\]', '[Fact]') `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Issue1.cs' `
+                -Platform 'android'
+        } | Should -Throw '*ios, catalyst, windows*'
     }
 }

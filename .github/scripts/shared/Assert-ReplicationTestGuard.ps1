@@ -662,6 +662,236 @@ function Assert-ReplicationWaitResultIsUsed {
     }
 }
 
+function Get-ReplicationPlatformCompilationSymbols {
+    <#
+    .SYNOPSIS
+        The symbols each platform test project defines, copied from the four
+        DefineConstants lines in src/Controls/tests/TestCases.<Platform>.Tests.
+        Every project defines its own platform symbol plus TEST_FAILS_ON_ for
+        each of the other three, which is why TEST_FAILS_ON_WINDOWS means
+        "compile everywhere except Windows".
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform
+    )
+
+    $own = @{
+        android  = @('ANDROID')
+        ios      = @('IOS', 'IOSUITEST')
+        catalyst = @('MACCATALYST', 'MACUITEST')
+        windows  = @('WINDOWS', 'WINTEST')
+    }
+    $exclusion = @{
+        android  = 'TEST_FAILS_ON_ANDROID'
+        ios      = 'TEST_FAILS_ON_IOS'
+        catalyst = 'TEST_FAILS_ON_CATALYST'
+        windows  = 'TEST_FAILS_ON_WINDOWS'
+    }
+
+    $symbols = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($symbol in $own[$Platform]) { $null = $symbols.Add($symbol) }
+    foreach ($other in $exclusion.Keys) {
+        if ($other -ne $Platform) { $null = $symbols.Add($exclusion[$other]) }
+    }
+    return $symbols
+}
+
+function Test-ReplicationPreprocessorExpression {
+    <#
+    .SYNOPSIS
+        Evaluates a C# #if/#elif expression against a symbol set. Supports the
+        operators the repository actually uses: !, &&, ||, parentheses and the
+        true/false literals. An expression it cannot parse evaluates to true,
+        so an unreadable condition is treated as "this compiles here" and the
+        caller reports an unscoped test rather than silently approving one.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Expression,
+        [Parameter(Mandatory = $true)][object]$Symbols
+    )
+
+    $tokens = @([regex]::Matches($Expression, '[A-Za-z_]\w*|\|\||&&|[!()]') |
+        ForEach-Object { $_.Value })
+    if ($tokens.Count -eq 0) { return $true }
+
+    # A scriptblock invoked with & runs in a child scope, so a plain $position
+    # counter would never advance for the caller. Carry it on an object instead.
+    $state = [pscustomobject]@{ Position = 0 }
+    $parseOr = $null
+    $parsePrimary = {
+        if ($state.Position -ge $tokens.Count) { throw 'unterminated' }
+        $token = $tokens[$state.Position]
+        if ($token -eq '!') {
+            $state.Position++
+            return -not (& $parsePrimary)
+        }
+        if ($token -eq '(') {
+            $state.Position++
+            $value = & $parseOr
+            if ($state.Position -ge $tokens.Count -or $tokens[$state.Position] -ne ')') { throw 'unbalanced' }
+            $state.Position++
+            return $value
+        }
+        if ($token -eq ')' -or $token -eq '&&' -or $token -eq '||') { throw 'unexpected' }
+        $state.Position++
+        if ($token -ceq 'true') { return $true }
+        if ($token -ceq 'false') { return $false }
+        return $Symbols.Contains($token)
+    }
+    $parseAnd = {
+        $value = & $parsePrimary
+        while ($state.Position -lt $tokens.Count -and $tokens[$state.Position] -eq '&&') {
+            $state.Position++
+            $right = & $parsePrimary
+            $value = $value -and $right
+        }
+        return $value
+    }
+    $parseOr = {
+        $value = & $parseAnd
+        while ($state.Position -lt $tokens.Count -and $tokens[$state.Position] -eq '||') {
+            $state.Position++
+            $right = & $parseAnd
+            $value = $value -or $right
+        }
+        return $value
+    }
+
+    try {
+        $result = & $parseOr
+        if ($state.Position -ne $tokens.Count) { return $true }
+        return [bool]$result
+    } catch {
+        return $true
+    }
+}
+
+function Get-ReplicationCompiledLineMap {
+    <#
+    .SYNOPSIS
+        Returns one boolean per line saying whether that line survives the
+        preprocessor for the given symbol set.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][object]$Symbols
+    )
+
+    # A byte order mark sits in front of the first #if in real repository
+    # files and is not whitespace, so strip it before reading directives.
+    $lines = @($Content.Replace("`r`n", "`n").Replace([string][char]0xFEFF, '') -split "`n")
+    $map = New-Object 'bool[]' $lines.Count
+    $stack = [System.Collections.Generic.List[object]]::new()
+
+    $isActive = {
+        foreach ($frame in $stack) { if (-not $frame.Taken) { return $false } }
+        return $true
+    }
+
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        if ($line -match '^\s*#\s*(?<directive>if|elif|else|endif)\b\s*(?<expression>.*)$') {
+            $directive = $Matches['directive']
+            # Nearly every scoped file in the repository explains itself in a
+            # trailing comment, which is not part of the condition.
+            $expression = $Matches['expression'] -replace '/\*.*?\*/', ' ' -replace '//.*$', ''
+            switch ($directive) {
+                'if' {
+                    $taken = Test-ReplicationPreprocessorExpression -Expression $expression -Symbols $Symbols
+                    $stack.Add([pscustomobject]@{ Taken = $taken; AnyTaken = $taken })
+                }
+                'elif' {
+                    if ($stack.Count -gt 0) {
+                        $frame = $stack[$stack.Count - 1]
+                        $taken = (-not $frame.AnyTaken) -and
+                            (Test-ReplicationPreprocessorExpression -Expression $expression -Symbols $Symbols)
+                        $frame.Taken = $taken
+                        $frame.AnyTaken = $frame.AnyTaken -or $taken
+                    }
+                }
+                'else' {
+                    if ($stack.Count -gt 0) {
+                        $frame = $stack[$stack.Count - 1]
+                        $frame.Taken = -not $frame.AnyTaken
+                        $frame.AnyTaken = $true
+                    }
+                }
+                'endif' {
+                    if ($stack.Count -gt 0) { $stack.RemoveAt($stack.Count - 1) }
+                }
+            }
+            $map[$i] = $false
+            continue
+        }
+        $map[$i] = & $isActive
+    }
+
+    return $map
+}
+
+function Assert-ReplicationTestPlatformScope {
+    <#
+    .SYNOPSIS
+        A reproduction is observed on exactly one platform, but the shared test
+        projects link-compile into all four platform assemblies. A test left
+        unscoped therefore runs on three lanes that produced no evidence for it.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform
+    )
+
+    $normalizedPath = $Path.Replace('\', '/')
+    $sharedProject = '^src/(?:Controls/tests/(?:TestCases\.Shared\.Tests|DeviceTests)|' +
+        'Core/tests/DeviceTests(?:\.Shared)?|Essentials/test/DeviceTests|' +
+        'Graphics/tests/DeviceTests|BlazorWebView/tests/DeviceTests)/'
+    if ($normalizedPath -cnotmatch $sharedProject) { return }
+
+    $normalized = $Content.Replace("`r`n", "`n").Replace([string][char]0xFEFF, '')
+    $lines = @($normalized -split "`n")
+    $testLines = @()
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        if ($lines[$i] -match '^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*(?:Test|Fact|Theory)\s*[\](]') {
+            $testLines += $i
+        }
+    }
+    if ($testLines.Count -eq 0) { return }
+
+    $names = @{ android = 'ANDROID'; ios = 'IOS'; catalyst = 'MACCATALYST'; windows = 'WINDOWS' }
+    $maps = @{}
+    foreach ($candidate in @('android', 'ios', 'catalyst', 'windows')) {
+        $maps[$candidate] = Get-ReplicationCompiledLineMap `
+            -Content $normalized `
+            -Symbols (Get-ReplicationPlatformCompilationSymbols -Platform $candidate)
+    }
+
+    foreach ($index in $testLines) {
+        $lineNumber = $index + 1
+        if (-not $maps[$Platform][$index]) {
+            throw ("Candidate test source '$Path' excludes its test method on line $lineNumber from " +
+                "$Platform, which is the only platform where the reproduction was observed. The test " +
+                'must compile on the platform that produced the evidence.')
+        }
+        $others = @(@('android', 'ios', 'catalyst', 'windows') |
+            Where-Object { $_ -ne $Platform -and $maps[$_][$index] })
+        if ($others.Count -gt 0) {
+            throw ("Candidate test source '$Path' lets its test method on line $lineNumber also run on " +
+                ($others -join ', ') + ", although the reproduction was only observed on $Platform. " +
+                "Wrap the test in #if $($names[$Platform]) so the lanes that produced no evidence for " +
+                'it are not made red by it.')
+        }
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

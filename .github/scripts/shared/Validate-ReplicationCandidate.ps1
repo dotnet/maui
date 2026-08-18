@@ -1568,6 +1568,10 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationWaitResultIsUsed `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationTestPlatformScope `
+            -Content $normalized `
+            -Path $Path `
+            -Platform ([string]$Manifest.Platform)
     }
 
     if ($RequireGuard) {

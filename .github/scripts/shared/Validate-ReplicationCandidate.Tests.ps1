@@ -76,7 +76,9 @@ BeforeAll {
             [Parameter(Mandatory = $true)][string]$TestType,
             [long]$IssueNumber = 12345,
             [string]$TestName = 'Issue12345',
-            [string]$FailurePattern = 'Expected control to remain visible'
+            [string]$FailurePattern = 'Expected control to remain visible',
+            [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+            [string]$Platform = 'android'
         )
 
         $framework = if ($TestType -ceq 'UITest') { 'NUnit.Framework' } else { 'Xunit' }
@@ -87,7 +89,7 @@ BeforeAll {
             "Assert.True(false, `"$FailurePattern`");"
         }
 
-        return @"
+        $body = @"
 using $framework;
 
 public class $TestName
@@ -99,6 +101,20 @@ public class $TestName
     }
 }
 "@
+
+        # DeviceTests and TestCases.Shared.Tests link-compile into every platform
+        # assembly, so a reproduction there has to name the platform it proved.
+        if ($TestType -cin @('DeviceTest', 'UITest')) {
+            $symbol = @{
+                android  = 'ANDROID'
+                ios      = 'IOS'
+                catalyst = 'MACCATALYST'
+                windows  = 'WINDOWS'
+            }[$Platform]
+            return "#if $symbol`n$body#endif`n"
+        }
+
+        return $body
     }
 
     function New-AddOnlyPatch {
@@ -296,7 +312,8 @@ public class $TestName
                 -TestType $TestType `
                 -IssueNumber $IssueNumber `
                 -TestName $TestName `
-                -FailurePattern $FailurePattern
+                -FailurePattern $FailurePattern `
+                -Platform $Platform
         }
         Write-FixtureManifest -Fixture $fixture
         Write-FixturePatch -Fixture $fixture
@@ -1439,11 +1456,13 @@ Describe 'Replication candidate test-name matching' {
                         Path = $script:uiTestPath
                         Mode = '100644'
                         Content = @"
+#if IOS
 public class $TypeName : _IssuesUITest
 {
     [Test]
     public void LargeTitleCollapsesToVisibleStandardTitle() { }
 }
+#endif
 "@
                     }
                 )
@@ -1674,5 +1693,28 @@ Describe 'The publisher refuses a test that throws away its own verdict' {
                 -Content '    _ = Wait("a", 5000) || Wait("b", 5000);' `
                 -Path 'Issue36298.cs'
         } | Should -Throw '*thrown away*'
+    }
+}
+
+Describe 'The publisher refuses a reproduction that claims unproven platforms' {
+    It 'rejects an unscoped shared UI test at publish time' {
+        $source = @'
+using NUnit.Framework;
+
+public class Issue36298 : _IssuesUITest
+{
+    [Test]
+    public void Reproduces()
+    {
+        App.WaitForElement("target");
+    }
+}
+'@
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $source `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36298.cs' `
+                -Platform 'windows'
+        } | Should -Throw '*android, ios, catalyst*'
     }
 }
