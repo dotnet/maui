@@ -3645,3 +3645,29 @@ public class Issue37000
         } | Should -Not -Throw
     }
 }
+
+Describe 'Truncated tool output must keep the diagnosis' {
+    It 'preserves the end of an over-long message, where tools report failures' {
+        # Catalyst run 15006865 repeated one attempt five times because every
+        # summary it received was the script banner: the app aborted with
+        # SIGABRT and the reason sat past the truncation point.
+        $banner = '=== .NET MAUI Sandbox Build and Test Script === ' * 200
+        $diagnosis = 'Unhandled exception. System.InvalidOperationException: the real reason'
+        $safe = ConvertTo-ReplicationSafeLog ($banner + $diagnosis) 2000
+
+        $safe | Should -Match 'the real reason'
+        $safe | Should -Match 'characters omitted'
+        $safe | Should -Match 'MAUI Sandbox Build'
+    }
+
+    It 'leaves a message that fits completely untouched' {
+        $message = 'Expected: 1; Actual: 0'
+        ConvertTo-ReplicationSafeLog $message 2000 | Should -BeExactly $message
+    }
+
+    It 'never exceeds the caller budget by more than the elision marker' {
+        $safe = ConvertTo-ReplicationSafeLog ('x' * 50000) 2000
+        $safe.Length | Should -BeLessThan 2100
+        $safe.Length | Should -BeGreaterThan 2000
+    }
+}

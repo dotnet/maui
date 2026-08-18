@@ -155,7 +155,13 @@ function ConvertTo-ReplicationSafeLog {
     $safe = $safe -replace '##vso\[[^\]]*\]', ''
     $safe = $safe -replace '##\[[^\]]*\]', ''
     if ($safe.Length -gt $MaximumLength) {
-        $safe = $safe.Substring(0, $MaximumLength) + '...'
+        # The diagnosis is at the end of tool output, not the beginning.
+        $headLength = [Math]::Max(1, [int]($MaximumLength / 4))
+        $tailLength = $MaximumLength - $headLength
+        $omitted = $safe.Length - $MaximumLength
+        $safe = $safe.Substring(0, $headLength) +
+            " ... [$omitted characters omitted] ... " +
+            $safe.Substring($safe.Length - $tailLength)
     }
     return $safe
 }

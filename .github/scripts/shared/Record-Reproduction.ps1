@@ -91,7 +91,16 @@ function ConvertTo-SafeLogText {
     $text = $text -replace '[\r\n]+', ' '
     $text = $text -replace '##(?=\[|vso\[)', '## '
     if ($text.Length -gt $MaxCharacters) {
-        $text = $text.Substring(0, $MaxCharacters) + '...'
+        # Build and test tools print their banner first and their diagnosis last,
+        # so keeping only the head hands the agent the banner. Catalyst run
+        # 15006865 repeated the same attempt five times because every summary it
+        # received ended at "Running Appium test...". Keep both ends.
+        $headLength = [Math]::Max(1, [int]($MaxCharacters / 4))
+        $tailLength = $MaxCharacters - $headLength
+        $omitted = $text.Length - $MaxCharacters
+        $text = $text.Substring(0, $headLength) +
+            " ... [$omitted characters omitted] ... " +
+            $text.Substring($text.Length - $tailLength)
     }
 
     return $text.Trim()
