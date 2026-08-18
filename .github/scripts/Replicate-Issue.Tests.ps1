@@ -917,6 +917,17 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
     }
 
+    It 'does not spend a semantic attempt on a missing output' {
+        # Run 15000674 wrote no proposal twice and then produced one, so the
+        # miss is clerical and must not consume the reproduction budget.
+        $source = $script:Source
+        $source | Should -Match '\$MaxClericalRetries = 3'
+        $source | Should -Match 'produced no usable output; retrying without consuming a semantic attempt'
+        $source | Should -Match 'Output retries exhausted'
+        # The budget must still be finite.
+        $source | Should -Match '\$clericalRetries -lt \$MaxClericalRetries'
+    }
+
     It 'shows the agent transcript when a required output never appeared' {
         # Run 15000213 failed five identical attempts on Windows and printed
         # nothing the agent said, so the cause could not be read from the log.
@@ -924,14 +935,18 @@ public partial class MainPage : ContentPage
         New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
         $logPath = Join-Path $agentDir 'copilot-sandbox-attempt-1.jsonl'
         @(
-            '{"type":"assistant.message","message":"I could not locate the Sandbox project."}'
+            '{"type":"assistant.message","data":{"content":"I could not locate the Sandbox project."}}'
+            '{"type":"assistant.message_delta","data":{}}'
             'not json at all'
         ) | Set-Content -LiteralPath $logPath
 
         $output = Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt 1 6>&1 |
             ForEach-Object { [string]$_ }
-        ($output -join "`n") | Should -Match 'could not locate the Sandbox project'
-        ($output -join "`n") | Should -Match 'not json at all'
+        $joined = $output -join "`n"
+        $joined | Should -Match 'could not locate the Sandbox project'
+        $joined | Should -Match 'not json at all'
+        # Contentless envelopes crowded out the real text in the first version.
+        $joined | Should -Not -Match 'assistant\.message_delta'
 
         Remove-Item -LiteralPath $logPath -Force
         $missing = Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt 1 6>&1 |

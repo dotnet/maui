@@ -1502,14 +1502,24 @@ function Write-ReplicationAgentDiagnostic {
         $text = $null
         try {
             $event = ([string]$line) | ConvertFrom-Json -Depth 30 -ErrorAction Stop
-            foreach ($property in @('message', 'text', 'error', 'reason')) {
-                if ($event.PSObject.Properties[$property]) {
-                    $text = [string]$event.$property
-                    break
+            $type = if ($event.PSObject.Properties['type']) { [string]$event.type } else { '' }
+            # The interesting text is nested under data; the envelope only
+            # carries the event name, which is what made the first version of
+            # this diagnostic print twelve identical lines.
+            if ($event.PSObject.Properties['data'] -and $null -ne $event.data) {
+                foreach ($property in @('content', 'message', 'text', 'error', 'reason', 'name')) {
+                    if ($event.data.PSObject.Properties[$property]) {
+                        $value = [string]$event.data.$property
+                        if (-not [string]::IsNullOrWhiteSpace($value)) {
+                            $text = "$type $value".Trim()
+                            break
+                        }
+                    }
                 }
             }
-            if (-not $text -and $event.PSObject.Properties['type']) {
-                $text = "event: $([string]$event.type)"
+
+            if (-not $text -and $type -match '(?i)error|fail|abort|denied|reject') {
+                $text = "event: $type"
             }
         } catch {
             $text = [string]$line
@@ -1525,7 +1535,7 @@ function Write-ReplicationAgentDiagnostic {
         return
     }
 
-    Write-Host "Last Copilot transcript entries for $PhaseName attempt ${Attempt}:"
+    Write-Host "Last Copilot transcript entries for $PhaseName attempt ${Attempt} (of $($texts.Count) readable):"
     foreach ($text in @($texts | Select-Object -Last 12)) {
         $bounded = $text -replace '[\x00-\x08\x0B\x0C\x0E-\x1F]', ' '
         if ($bounded.Length -gt 300) {
@@ -2820,6 +2830,8 @@ try {
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0
     $MaxInfrastructureRetries = 3
+    $clericalRetries = 0
+    $MaxClericalRetries = 3
     $sandboxSucceeded = $false
     for ($attempt = 1; $attempt -le $MaxSandboxAttempts; $attempt++) {
         $sandboxAttempts = $attempt
@@ -2976,8 +2988,25 @@ $sandboxFailureSummary
             }
             $sandboxAttemptKinds.Add((Get-ReplicationAttemptFailureKind $sandboxFailureSummary))
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
-            if ($sandboxFailureSummary -match '(?i)did not create/update required path|did not write sandbox-proposal') {
+            # A missing output says nothing about whether the issue reproduces,
+            # and run 15000674 produced it on the attempt after two misses. Do
+            # not spend the semantic budget on a filing error.
+            if ($sandboxFailureSummary -match '(?i)did not create/update required path|did not write sandbox-proposal\.json') {
                 Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt $attempt
+                if ($clericalRetries -lt $MaxClericalRetries) {
+                    $clericalRetries++
+                    Write-Host ("Sandbox attempt {0} produced no usable output; retrying without consuming a semantic attempt ({1}/{2})." -f
+                        $attempt, $clericalRetries, $MaxClericalRetries)
+                    $sandboxFailureSummary = 'The previous attempt wrote no usable output. Write every required file this time, including the proposal outside the repository.'
+                    if ($sandboxAttemptKinds.Count -gt 0) {
+                        $sandboxAttemptKinds.RemoveAt($sandboxAttemptKinds.Count - 1)
+                    }
+                    $attempt--
+                    Restore-TransientSandbox
+                    continue
+                }
+
+                Write-Host 'Output retries exhausted; treating the missing output as a semantic attempt.'
             }
             if ($sandboxFailureSummary -match
                 '^(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') {
