@@ -1359,9 +1359,12 @@ try {
         }
         $actionStartedAt = [DateTimeOffset]::FromUnixTimeMilliseconds(
             $markerMilliseconds)
+        # Proving a change needs the state before the first interaction. A
+        # quarter-second lead-in made clips appear to start mid-gesture, which
+        # reviewers rejected as missing the "before" state.
         $trimStartSeconds = [Math]::Max(
             0.0,
-            ($actionStartedAt - $recordingStartedAt).TotalSeconds - 0.25)
+            ($actionStartedAt - $recordingStartedAt).TotalSeconds - 1.5)
         $trimStartSeconds = [Math]::Min(
             $trimStartSeconds,
             [Math]::Max(0.0, $MaxDurationSeconds - 2.0))

@@ -743,6 +743,34 @@ Describe 'Record-Reproduction safe inputs and evidence' {
             Should -BeTrue
     }
 
+    It 'keeps a lead-in showing the state before the first interaction' {
+        # The review of kubaflo/maui#180 rejected a clip that "starts after
+        # focus/tap", so the trim keeps enough lead-in to show the before state.
+        $harness = New-RecordingHarness
+        $evidenceDir = Join-Path $TestDrive 'evidence-leadin'
+        $null = Invoke-TestRecording `
+            -Harness $harness `
+            -Platform android `
+            -EvidenceDir $evidenceDir `
+            -DeviceUdid 'emulator-5554' `
+            -MaxDurationSeconds 30 `
+            -ReproductionScriptBlock {
+                # The first Appium action happened 5s after recording started.
+                $markerPath = $env:MAUI_REPLICATION_RECORDING_START_MARKER
+                $actionAt = [DateTimeOffset]::UtcNow.AddSeconds(5).ToUnixTimeMilliseconds()
+                Set-Content -LiteralPath $markerPath -Value $actionAt -Encoding utf8NoBOM
+            }
+
+        $normalizeCommand = @($harness.State.Commands |
+            Where-Object { $_.ArgumentList -contains '-ss' })[0]
+        $normalizeCommand | Should -Not -BeNullOrEmpty
+        $trimIndex = [array]::IndexOf($normalizeCommand.ArgumentList, '-ss')
+        $trim = [double]$normalizeCommand.ArgumentList[$trimIndex + 1]
+        # 5s until the first action, minus a 1.5s lead-in.
+        $trim | Should -BeGreaterThan 3.0
+        $trim | Should -BeLessThan 3.9
+    }
+
     It 'compresses a long recording into the preview instead of trimming its end' {
         # PR 155 reported a preview that stopped before the defect appeared,
         # because the preview kept only the opening seconds while the reported
