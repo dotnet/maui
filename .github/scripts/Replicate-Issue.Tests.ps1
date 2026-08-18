@@ -3881,3 +3881,72 @@ Describe 'A wait whose verdict decides the test may not be thrown away' {
         } | Should -Not -Throw
     }
 }
+
+Describe 'A WebView showing local HTML is not external access' {
+    It 'accepts a WebView driven by an inline HtmlWebViewSource' {
+        # Run 15008715 burned an hour on issue 36064 because the control itself
+        # was banned, although nothing left the device.
+        $source = @'
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+    <WebView AutomationId="target" HeightRequest="200">
+        <WebView.Source>
+            <HtmlWebViewSource Html="&lt;p&gt;hello&lt;/p&gt;" />
+        </WebView.Source>
+    </WebView>
+</ContentPage>
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml'
+        } | Should -Not -Throw
+    }
+
+    It 'still refuses a WebView pointed at a remote address' {
+        $source = '<WebView Source="https://example.com/page" />'
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml'
+        } | Should -Throw '*remote-url*'
+    }
+
+    It 'still refuses a UrlWebViewSource' {
+        $source = 'view.Source = new UrlWebViewSource();'
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml.cs'
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'still refuses a HybridWebView' {
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content '<HybridWebView />' -Path 'MainPage.xaml'
+        } | Should -Throw '*device-external-access*'
+    }
+}
+
+Describe 'Displayed captions are data, not API usage' {
+    It 'ignores an API name inside a plain XAML attribute value' {
+        $source = '<Label Text="Sizing Demo. Tap to open Browser. Then check Clipboard." />'
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml'
+        } | Should -Not -Throw
+    }
+
+    It 'still reads a markup extension, which resolves to real members' {
+        $source = '<Label Text="{Binding Source={x:Static local:X.Clipboard.Value}}" />'
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml'
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'still reads an element outside attribute values' {
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content '<BlazorWebView Title="demo" />' -Path 'MainPage.xaml'
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'still applies raw rules to attribute values' {
+        $source = '<Label Text="see https://example.com" />'
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'MainPage.xaml'
+        } | Should -Throw '*remote-url*'
+    }
+}
