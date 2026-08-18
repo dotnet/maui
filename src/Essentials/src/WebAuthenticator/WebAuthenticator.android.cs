@@ -129,11 +129,11 @@ namespace Microsoft.Maui.Authentication
 							}
 						});
 					}
-					catch (Exception)
+					catch (Exception ex)
 					{
 						WebAuthenticatorRequestManager.TryFail(
 							request,
-							new InvalidOperationException("Unable to open a browser for web authentication."));
+							new InvalidOperationException("Unable to open a browser for web authentication.", ex));
 					}
 				}
 

@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Authentication
 		{
 			string? absoluteCallbackUrl = null;
 			var wasCanceled = false;
-			var failed = false;
+			Exception? nativeFailure = null;
 			try
 			{
 				absoluteCallbackUrl = callbackUrl?.AbsoluteString;
@@ -233,24 +233,25 @@ namespace Microsoft.Maui.Authentication
 				{
 					wasCanceled = error.Domain == asWebAuthenticationSessionErrorDomain &&
 						error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin;
-					failed = !wasCanceled;
+					if (!wasCanceled)
+						nativeFailure = new NSErrorException(error);
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				failed = true;
+				nativeFailure = ex;
 			}
 
 			// DispatchQueue.DispatchAsync never runs inline, including when the native callback is already on main.
 			DispatchQueue.MainQueue.DispatchAsync(() =>
-				CompleteNativeSession(request, absoluteCallbackUrl, wasCanceled, failed));
+				CompleteNativeSession(request, absoluteCallbackUrl, wasCanceled, nativeFailure));
 		}
 
 		internal static void CompleteNativeSession(
 			WebAuthenticatorRequest request,
 			string? absoluteCallbackUrl,
 			bool wasCanceled,
-			bool failed)
+			Exception? nativeFailure)
 		{
 			if (wasCanceled)
 			{
@@ -258,11 +259,13 @@ namespace Microsoft.Maui.Authentication
 				return;
 			}
 
-			if (failed)
+			if (nativeFailure is not null)
 			{
 				WebAuthenticatorRequestManager.TryFail(
 					request,
-					new InvalidOperationException("The native web authentication session failed."));
+					new InvalidOperationException(
+						"The native web authentication session failed.",
+						nativeFailure));
 				return;
 			}
 

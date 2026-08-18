@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				request,
 				"maui-auth://callback?code=sample-code",
 				wasCanceled: false,
-				failed: false);
+				nativeFailure: null);
 
 			Assert.Equal("sample-code", (await request.Task).Properties["code"]);
 		}
@@ -97,23 +97,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				request,
 				absoluteCallbackUrl: null,
 				wasCanceled: true,
-				failed: false);
+				nativeFailure: null);
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request.Task);
 		}
 
 		[Fact]
-		public async Task NativeFailureFaultsTheBoundRequest()
+		public async Task NativeFailurePreservesNSErrorDetails()
 		{
 			var request = Begin();
+			const string domain = "com.example.WebAuthenticatorTests";
+			using var nativeDomain = new NSString(domain);
+			using var nativeError = NSError.FromDomain(nativeDomain, (nint)42);
 
-			WebAuthenticatorImplementation.CompleteNativeSession(
-				request,
-				absoluteCallbackUrl: null,
-				wasCanceled: false,
-				failed: true);
+			WebAuthenticatorImplementation.PostNativeCompletion(request, callbackUrl: null, error: nativeError);
 
-			await Assert.ThrowsAsync<InvalidOperationException>(() => request.Task);
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => request.Task);
+			Assert.Equal("The native web authentication session failed.", exception.Message);
+			var nativeException = Assert.IsType<NSErrorException>(exception.InnerException);
+			Assert.Equal(domain, nativeException.Domain);
+			Assert.Equal((nint)42, nativeException.Code);
 		}
 
 		[Fact]
@@ -132,7 +135,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				request,
 				callback,
 				wasCanceled: false,
-				failed: false);
+				nativeFailure: null);
 
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => request.Task);
 			Assert.Contains(expectedMessage, exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -142,7 +145,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task LateNativeCallbackCannotCompleteASuccessor()
 		{
 			var first = Begin();
-			WebAuthenticatorImplementation.CompleteNativeSession(first, null, wasCanceled: true, failed: false);
+			WebAuthenticatorImplementation.CompleteNativeSession(first, null, wasCanceled: true, nativeFailure: null);
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => first.Task);
 			Assert.True(WebAuthenticatorRequestManager.End(first));
 
@@ -151,14 +154,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				first,
 				"maui-auth://callback?code=stale",
 				wasCanceled: false,
-				failed: false);
+				nativeFailure: null);
 			Assert.False(successor.Task.IsCompleted);
 
 			WebAuthenticatorImplementation.CompleteNativeSession(
 				successor,
 				"maui-auth://callback?code=current",
 				wasCanceled: false,
-				failed: false);
+				nativeFailure: null);
 			Assert.Equal("current", (await successor.Task).Properties["code"]);
 		}
 

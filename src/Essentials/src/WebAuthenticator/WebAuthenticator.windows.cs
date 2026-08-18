@@ -120,11 +120,11 @@ namespace Microsoft.Maui.Authentication
 								new InvalidOperationException("Failed to launch the browser for authentication."));
 						}
 					}
-					catch (Exception)
+					catch (Exception ex)
 					{
 						WebAuthenticatorRequestManager.TryFail(
 							request,
-							new InvalidOperationException("Failed to launch the browser for authentication."));
+							new InvalidOperationException("Failed to launch the browser for authentication.", ex));
 					}
 				}
 
