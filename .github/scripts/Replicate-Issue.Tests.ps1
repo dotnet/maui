@@ -2809,6 +2809,16 @@ public void ReproducesIssue()
         }
     }
 
+    It 'escalates from the signature to the oracle after repeated mismatches' {
+        # Run 15009971 produced a failing test three attempts running and never
+        # matched its declared signature, because the oracle it kept adjusting
+        # asserted something the Windows Editor never does.
+        $script:Source | Should -Match 'Verification diagnosis for attempt'
+        $script:Source | Should -Match '\$script:SignatureMismatchAttempts\+\+'
+        $script:Source | Should -Match 'Stop adjusting the signature and reconsider the oracle'
+        $script:Source | Should -Match '\$script:SignatureMismatchAttempts = 0'
+    }
+
     It 'requires a silent interaction to be proved to have landed' {
         # PR 196 failed 5/5 with the right assertion shape and was still
         # rejected: the tap landed 17pt past the link, so the silence it

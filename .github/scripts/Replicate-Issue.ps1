@@ -3324,6 +3324,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
     for ($planRound = 1; $planRound -le $maxPlanRounds; $planRound++) {
         $finalPlanRound = ($planRound -eq $maxPlanRounds)
         $nonReproducingAttempts = 0
+        $script:SignatureMismatchAttempts = 0
         $escalateTestTier = $false
         $stage = 'test'
         $testPlanFailureSummary = $tierEscalationSummary
@@ -3424,6 +3425,21 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
                     -VerificationDirectory $verificationDir
                 if ($verificationDiagnosis) {
+                    # Echo what the agent is about to be told. Without this the
+                    # build log records only that verification failed, and a run
+                    # that repeats one mistake looks identical to one that does
+                    # not, which made run 15009971 unreadable after the fact.
+                    Write-Host "Verification diagnosis for attempt ${attempt}: $verificationDiagnosis"
+                    if ($verificationDiagnosis -match 'instead of the declared expectedFailureSignature') {
+                        $script:SignatureMismatchAttempts++
+                        if ($script:SignatureMismatchAttempts -ge 2) {
+                            $verificationDiagnosis = @"
+$verificationDiagnosis
+
+You have now failed to produce the declared failure $($script:SignatureMismatchAttempts) times. Stop adjusting the signature and reconsider the oracle: an assertion that the product never satisfies, such as requiring two independent measurements to be equal or a native subview to fill its parent, fails for a reason that no product fix can remove, and it is rejected even though the test is red. Assert instead the change the report describes, measured against the same quantity captured before the trigger.
+"@
+                        }
+                    }
                     $repairFailureSummary = "$verificationDiagnosis$([Environment]::NewLine)$repairFailureSummary"
                 }
                 if ($intentToAddApplied) {
