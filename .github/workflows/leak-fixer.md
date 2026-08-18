@@ -358,8 +358,10 @@ a response, fall through to Step 2.
 ## Step 2 — Select the target `[leak-scan]` issue
 
 If `issue_number` was provided, use it (it must be a `[leak-scan]` issue → Track A). Otherwise
-auto-pick: list this scanner's open `[leak-scan]` issues (oldest first) and take the first that
-does NOT already have an open fix PR (Step 3 confirms).
+auto-pick: materialize this scanner's open `[leak-scan]` issues as an ordered candidate queue
+(oldest first). Evaluate candidates one at a time through every Step 3 gate until one is
+actionable. Do not make the oldest issue a terminal choice before those gates run: a proven
+merged fix remains open by design and must not starve newer unfixed issues.
 
 ```bash
 # Open [leak-scan] (Track A) issues, oldest first.
@@ -372,7 +374,8 @@ echo "--- [leak-scan] (Track A) ---"; jq -r '.[] | "\(.number)\t\(.title)"' /tmp
 
 (The Daily Memory Leak Hunter files `[leak-scan]` issues with the `agentic-workflows` label.)
 
-Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Extract:
+For the current queue candidate, read the issue's body in full
+(`gh issue view <N> --json title,body`). Extract:
 
 - the **rooting API** (e.g. `IndicatorView.ItemsSource`),
 - the **retention path** `root -> … -> transient` with the cited file:line(s),
@@ -594,19 +597,30 @@ fi
 
 ```
 
+**Gate disposition rule (prevents oldest-fixed starvation):**
+
+- When `issue_number` was explicitly supplied, a no-work gate emits one informative `noop` and
+  stops, because the caller requested that exact issue.
+- During automatic selection, a no-work gate emits **no safe-output**, records the skip in the run
+  log, and immediately continues with the next entry in `leakscan-issues.json`. Never stop the run
+  merely because an auto-selected candidate is already fixed, already being fixed, duplicate,
+  capped, or otherwise ineligible.
+
 - If an **exact immutable** merged `[leak-fix]` PR in `merged-exact-fix-prs.json` carries this
   same-repo `Fixes #<N>` line, the scan issue's fix is already on `main`. Do NOT create a branch
-  or rebuild. Emit exactly one `noop` with:
-  `skipped: already fixed on main (scan issue left open; automatic closure disabled)`, include
-  the merged PR number/title in the noop message, and stop.
+  or rebuild. Record:
+  `skipped: already fixed on main (scan issue left open; automatic closure disabled)`, including
+  the merged PR number/title. If this candidate was auto-selected, continue to the next candidate
+  without emitting `noop`; if `issue_number` was explicit, emit that message as one `noop` and
+  stop.
 
   The workflow deliberately has no `close-issue` safe-output. In pinned gh-aw v0.85.4 the
   close handler re-fetches title/labels/state, then posts a comment and PATCHes the issue closed;
   it has no atomic timeline/version precondition. A maintainer can re-open between any check and
   that deferred PATCH. Leaving the issue open while suppressing the redundant rebuild is the only
   race-free way to preserve maintainer state with the available GitHub mutation APIs.
-- If an **open** fix PR already refs this exact issue (a) → `skipped: leak already being fixed`
-  and stop (or, if `issue_number` was explicit, just stop).
+- If an **open** fix PR already refs this exact issue (a) → record
+  `skipped: leak already being fixed`, then apply the gate disposition rule.
 - For `same-api-open-fixes.json` and `same-api-merged-fixes.json`, API equality is only a
   prefilter. Skip without closing/rebuilding only when the referenced scan issue has the same
   non-empty `leak-scan-key` as `TARGET_LEAK_KEY`, or its title/body describes the same
@@ -614,10 +628,15 @@ fi
   If the Type.Member matches but the mechanism differs, continue normally. A same-leak merged fix
   under a different scan issue number is non-destructive: leave this issue open for manual
   reconciliation rather than claiming it was explicitly fixed.
-- If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
-- An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
+- If **3+ closed-unmerged** attempts exist → record `skipped: attempt cap reached (3)`, then
+  apply the gate disposition rule.
+- An issue that is already CLOSED → record `skipped: issue closed`, then apply the gate
+  disposition rule.
 
-If you auto-selected in Step 2 and the first candidate is gated out, move to the next oldest.
+In automatic mode, keep advancing until a candidate reaches Track A or the ordered queue is
+exhausted. If every candidate is gated out, emit one final `noop` summarizing the skip counts and
+stop. This final queue-exhausted noop is the only safe-output produced by an all-skipped automatic
+run.
 
 Then proceed with **Track A** (`[leak-scan]`) → Steps 4–10.
 

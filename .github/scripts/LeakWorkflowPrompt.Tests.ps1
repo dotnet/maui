@@ -48,18 +48,19 @@ Describe 'Memory leak workflow provenance and safety' {
             return @($output)
         }
 
-        function Get-LeakScanKey {
+        function Get-ProductionLeakScanKey {
             param([string] $Body)
 
-            $match = [Regex]::Match(
-                $Body,
-                '(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->')
-
-            if ($match.Success) {
-                return $match.Groups['key'].Value.Trim()
+            $inputJson = @{ body = $Body } | ConvertTo-Json -Compress
+            $output = $inputJson |
+                & jq -L $script:provenanceModuleRoot -r '
+                    include "leak-workflow-provenance";
+                    leak_scan_key // empty'
+            if ($LASTEXITCODE -ne 0) {
+                throw "Production jq leak-scan-key parser failed with exit code $LASTEXITCODE"
             }
 
-            return $null
+            return @($output)
         }
 
         function Get-ProductionMergeProvenanceGuard {
@@ -318,16 +319,78 @@ Describe 'Memory leak workflow provenance and safety' {
         @($result) | Should -Be @(1, 2, 6)
     }
 
-    It 'keeps two mechanisms on the same API as distinct leak identities' {
-        $collectionLeak = Get-LeakScanKey '<!-- leak-scan-key: Picker.ItemsSource|collectionchanged-retains-picker -->'
-        $selectionLeak = Get-LeakScanKey '<!-- leak-scan-key: Picker.ItemsSource|selectedindexchanged-handler-retains-picker -->'
+    It 'keeps two mechanisms on the same API as distinct leak identities' -Skip:(-not $script:jqAvailable) {
+        $collectionLeak = Get-ProductionLeakScanKey '<!-- leak-scan-key: Picker.ItemsSource|collectionchanged-retains-picker -->'
+        $selectionLeak = Get-ProductionLeakScanKey '<!-- leak-scan-key: Picker.ItemsSource|selectedindexchanged-handler-retains-picker -->'
 
         $collectionLeak | Should -Be 'Picker.ItemsSource|collectionchanged-retains-picker'
         $selectionLeak | Should -Be 'Picker.ItemsSource|selectedindexchanged-handler-retains-picker'
         $collectionLeak | Should -Not -Be $selectionLeak
-        Get-LeakScanKey 'legacy issue without a marker' | Should -BeNullOrEmpty
-        Get-LeakScanKey "<!--`tleak-scan-key: tabbed -->" | Should -BeNullOrEmpty
-        Get-LeakScanKey "<!--`nleak-scan-key: newline -->" | Should -BeNullOrEmpty
+        Get-ProductionLeakScanKey 'legacy issue without a marker' | Should -BeNullOrEmpty
+        Get-ProductionLeakScanKey "<!--`tleak-scan-key: tabbed -->" | Should -BeNullOrEmpty
+        Get-ProductionLeakScanKey "<!--`nleak-scan-key: newline -->" | Should -BeNullOrEmpty
+    }
+
+    It 'ignores fenced and enclosing-comment marker decoys before the real marker' -Skip:(-not $script:jqAvailable) {
+        $backtickFence = @'
+```text
+<!-- leak-scan-key: Picker.ItemsSource|fenced-decoy -->
+```
+<!-- leak-scan-key: Picker.ItemsSource|real-marker -->
+'@
+        Get-ProductionLeakScanKey $backtickFence |
+            Should -Be 'Picker.ItemsSource|real-marker'
+
+        $tildeFence = @'
+~~~text
+<!-- leak-scan-key: Picker.ItemsSource|tilde-decoy -->
+~~~
+<!-- leak-scan-key: Picker.ItemsSource|real-marker -->
+'@
+        Get-ProductionLeakScanKey $tildeFence |
+            Should -Be 'Picker.ItemsSource|real-marker'
+
+        $enclosingComment = @'
+<!-- explanatory text with <!-- leak-scan-key: Picker.ItemsSource|comment-decoy -->
+<!-- leak-scan-key: Picker.ItemsSource|real-marker -->
+'@
+        Get-ProductionLeakScanKey $enclosingComment |
+            Should -Be 'Picker.ItemsSource|real-marker'
+
+        $indentedCode = @'
+    <!-- leak-scan-key: Picker.ItemsSource|indented-decoy -->
+<!-- leak-scan-key: Picker.ItemsSource|real-marker -->
+'@
+        Get-ProductionLeakScanKey $indentedCode |
+            Should -Be 'Picker.ItemsSource|real-marker'
+
+        $inlineComment = @'
+prefix <!-- leak-scan-key: Picker.ItemsSource|inline-decoy -->
+<!-- leak-scan-key: Picker.ItemsSource|real-marker -->
+'@
+        Get-ProductionLeakScanKey $inlineComment |
+            Should -Be 'Picker.ItemsSource|real-marker'
+
+        $fencedOnly = @'
+```text
+<!-- leak-scan-key: Picker.ItemsSource|fenced-only -->
+```
+'@
+        Get-ProductionLeakScanKey $fencedOnly | Should -BeNullOrEmpty
+
+        $unclosedComment = @'
+<!-- explanatory text
+<!-- leak-scan-key: Picker.ItemsSource|consumed-decoy -->
+'@
+        Get-ProductionLeakScanKey $unclosedComment | Should -BeNullOrEmpty
+    }
+
+    It 'routes both workflows through the shared Markdown-aware marker parser' {
+        $fixer | Should -Match 'def bodykey: leak_scan_key'
+        $hunter | Should -Match 'def leakkey: leak_scan_key'
+        $hunter | Should -Match 'leak_scan_key // empty'
+        $fixer | Should -Not -Match 'capture\("\(\?i\)<!-- \*leak-scan-key:'
+        $hunter | Should -Not -Match 'capture\("\(\?i\)<!-- \*leak-scan-key:'
     }
 
     It 'filters merged history before making compare API calls' {
@@ -357,6 +420,16 @@ Describe 'Memory leak workflow provenance and safety' {
         $fixer | Should -Match 'automatic issue closure is disabled'
         (Get-WorkflowParts -Path $fixerPath).Frontmatter |
             Should -Not -Match '(?m)^\s+close-issue:'
+    }
+
+    It 'advances automatic selection past proven merged fixes to newer candidates' {
+        $fixer | Should -Match 'ordered candidate queue'
+        $fixer | Should -Match 'must not starve newer unfixed issues'
+        $fixer | Should -Match 'During automatic selection, a no-work gate emits \*\*no safe-output\*\*'
+        $fixer | Should -Match 'If this candidate was auto-selected, continue to the next candidate\s+without emitting `noop`'
+        $fixer | Should -Match 'if `issue_number` was explicit, emit that message as one `noop` and\s+stop'
+        $fixer | Should -Match 'If every candidate is gated out, emit one final `noop`'
+        $fixer | Should -Not -Match 'Emit exactly one `noop` with:\s+`skipped: already fixed on main'
     }
 
     It 'fails closed when current merged PR provenance may have changed after merge' -Skip:(-not $script:jqAvailable) {

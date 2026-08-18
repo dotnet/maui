@@ -59,11 +59,19 @@ def leak_has_exact_fixes($repo_re; $number):
 def leak_has_issue_reference($repo_re; $number):
   leak_issue_reference_numbers($repo_re) | any(. == ($number | tostring));
 
-# Keep the marker grammar identical to the workflow runtime: literal spaces are
-# accepted around the key, while tabs/newlines are not.
+# A leak-scan marker is itself an HTML comment, so the general inert-markdown
+# remover cannot preserve it. Strip fenced code first, then inspect complete
+# HTML comments one by one and accept only a dedicated contract line with 0–3
+# leading spaces whose entire comment content is the marker. A marker nested
+# inside a larger comment, inline in prose, or indented as code is therefore
+# inert, as is an unclosed comment; tabs/newlines are not accepted.
 def leak_scan_key:
   [(.body // "")
-   | try capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key catch null]
+   | leak_without_fenced_markdown
+   | scan("(?ms)^[ ]{0,3}(<!--.*?-->)[ ]*\\r?$")
+   | .[0]
+   | try capture("(?i)^<!-- *leak-scan-key: *(?<key>[^>\\t\\r\\n]+?) *-->$").key catch null
+   | select(. != null)]
   | .[0] // null;
 
 # GitHub exposes PullRequest.lastEditedAt and the complete edit history via

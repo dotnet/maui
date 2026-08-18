@@ -160,13 +160,12 @@ gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
 # The rooting API is the LAST dotted Type.Member pair of the first identifier chain. Preserve the
 # issue title/body and canonical marker too: API equality is only a prefilter, because two
 # different retention paths can share one property.
-jq '
+jq -L "$GITHUB_WORKSPACE/.github/scripts" '
+  include "leak-workflow-provenance";
   def titleapi:
     [(.title // "") | scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")]
     | if length > 0 then (.[0] | split(".") | .[-2:] | join(".")) else null end;
-  def leakkey:
-    [(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key]
-    | if length > 0 then .[0] else null end;
+  def leakkey: leak_scan_key;
   [.[] | {scan_issue:., rooting_api:titleapi, leak_scan_key:leakkey}]
 ' /tmp/gh-aw/agent/my-open-leakscan.json > /tmp/gh-aw/agent/open-leakscan-provenance.json
 jq -r '.[] | "open scan #\(.scan_issue.number): API \(.rooting_api // "<off-contract>"), key \(.leak_scan_key // "<legacy>")"' \
@@ -257,7 +256,9 @@ jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json | while IF
   api=$(jq -r '.title // ""' <<<"$issue" \
     | sed -E 's/^\[leak-scan\] *//' \
     | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
-  leak_key=$(jq -r '(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key // empty' <<<"$issue")
+  leak_key=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -r '
+    include "leak-workflow-provenance";
+    leak_scan_key // empty' <<<"$issue")
   jq -n --argjson pr "$pr" --argjson issue "$issue" --arg api "$api" --arg key "$leak_key" \
     '{pull_request:{number:$pr.number,title:$pr.title,mergedAt:$pr.mergedAt,mergeCommit:$pr.mergeCommit},
       scan_issue:$issue, rooting_api:$api,
