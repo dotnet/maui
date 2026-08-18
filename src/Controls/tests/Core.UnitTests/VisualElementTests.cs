@@ -109,6 +109,174 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
+		[Fact]
+		public void VisibilityReflectsHiddenAncestorWithoutChangingIsVisible()
+		{
+			var parent = new Grid { IsVisible = false };
+			var child = new Button();
+
+			parent.Add(child);
+
+			Assert.True(child.IsVisible);
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void VisibilityUpdatesWhenAncestorVisibilityChanges()
+		{
+			var parent = new Grid();
+			var child = new Button();
+			parent.Add(child);
+
+			parent.IsVisible = false;
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+
+			parent.IsVisible = true;
+			Assert.Equal(Visibility.Visible, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void HiddenChildRemainsCollapsedWhenAncestorBecomesVisible()
+		{
+			var parent = new Grid { IsVisible = false };
+			var child = new Button();
+			parent.Add(child);
+
+			child.IsVisible = false;
+			parent.IsVisible = true;
+
+			Assert.False(child.IsVisible);
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void VisibilityReflectsNestedHiddenAncestor()
+		{
+			var root = new Grid { IsVisible = false };
+			var parent = new Grid();
+			var child = new Button();
+			root.Add(parent);
+			parent.Add(child);
+
+			Assert.Equal(Visibility.Collapsed, ((IView)parent).Visibility);
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void VisibilityUpdatesWhenElementIsReparented()
+		{
+			var hiddenParent = new Grid { IsVisible = false };
+			var visibleParent = new Grid();
+			var child = new Button();
+			hiddenParent.Add(child);
+
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+
+			hiddenParent.Remove(child);
+			visibleParent.Add(child);
+
+			Assert.True(child.IsVisible);
+			Assert.Equal(Visibility.Visible, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void VisibilityUpdatesWhenElementIsDetached()
+		{
+			var parent = new Grid { IsVisible = false };
+			var child = new Button();
+			parent.Add(child);
+
+			parent.Remove(child);
+
+			Assert.Null(child.Parent);
+			Assert.Equal(Visibility.Visible, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void VisibilityPropagatesThroughNonLayoutVisualChildren()
+		{
+			var parent = new ContentView { IsVisible = false };
+			var child = new Button();
+
+			parent.Content = child;
+
+			Assert.True(child.IsVisible);
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void AncestorVisibilityDoesNotRaiseChildIsVisiblePropertyChanged()
+		{
+			var parent = new Grid();
+			var child = new Button();
+			var isVisibleChanged = false;
+			parent.Add(child);
+			child.PropertyChanged += (_, args) =>
+			{
+				if (args.PropertyName == nameof(VisualElement.IsVisible))
+					isVisibleChanged = true;
+			};
+
+			parent.IsVisible = false;
+
+			Assert.False(isVisibleChanged);
+			Assert.True(child.IsVisible);
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void AncestorVisibilityPropagatesToChildHandler()
+		{
+			var mapperCalls = 0;
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Visibility)] = (_, _) => mapperCalls++,
+			};
+			var parent = new Grid();
+			var child = new Button { Handler = new HandlerStub(mapper) };
+			parent.Add(child);
+			mapperCalls = 0;
+
+			parent.IsVisible = false;
+			parent.IsVisible = true;
+
+			Assert.Equal(2, mapperCalls);
+		}
+
+		[Fact]
+		public void VisibilityMapperIsNotCalledWhenEffectiveVisibilityDoesNotChange()
+		{
+			var mapperCalls = 0;
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Visibility)] = (_, _) => mapperCalls++,
+			};
+			var parent = new Grid { IsVisible = false };
+			var child = new Button { Handler = new HandlerStub(mapper) };
+			parent.Add(child);
+			mapperCalls = 0;
+
+			child.IsVisible = false;
+			parent.IsVisible = true;
+
+			Assert.Equal(0, mapperCalls);
+			Assert.Equal(Visibility.Collapsed, ((IView)child).Visibility);
+		}
+
+		[Fact]
+		public void AncestorVisibilityInvalidatesChildMeasureOnce()
+		{
+			var parent = new Grid();
+			var child = new Button();
+			var measureInvalidated = 0;
+			parent.Add(child);
+			child.MeasureInvalidated += (_, _) => measureInvalidated++;
+
+			parent.IsVisible = false;
+
+			Assert.Equal(1, measureInvalidated);
+		}
+
 		[Theory, Category(TestCategory.Memory)]
 		[InlineData(typeof(ImmutableBrush), false)]
 		[InlineData(typeof(SolidColorBrush), false)]
