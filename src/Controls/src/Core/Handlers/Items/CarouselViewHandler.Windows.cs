@@ -804,7 +804,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int index = firstVisibleIndex; index <= lastVisibleIndex; index++)
 			{
-				if (ListViewBase.ContainerFromIndex(index) is not FrameworkElement container)
+				if (ListViewBase.ContainerFromIndex(index) is not FrameworkElement container
+					|| container.ActualWidth <= 0
+					|| container.ActualHeight <= 0)
 					continue;
 
 				var position = container.TransformToVisual(content).TransformPoint(new Point());

@@ -747,8 +747,9 @@ namespace Microsoft.Maui.DeviceTests
 			int scrollToRequests = 0)
 		{
 			var itemsPanel = Assert.IsType<Microsoft.UI.Xaml.Controls.ItemsStackPanel>(handler.PlatformView.ItemsPanelRoot);
-			return $"Native scroll did not select item 1. Position={handler.VirtualView.Position}, " +
-				$"HorizontalOffset={scrollViewer.HorizontalOffset}, TargetOffset={targetOffset}, " +
+			return $"Native scroll did not reach the expected state. Position={handler.VirtualView.Position}, " +
+				$"HorizontalOffset={scrollViewer.HorizontalOffset}, VerticalOffset={scrollViewer.VerticalOffset}, " +
+				$"TargetOffset={targetOffset}, " +
 				$"FirstVisibleIndex={itemsPanel.FirstVisibleIndex}, LastVisibleIndex={itemsPanel.LastVisibleIndex}, " +
 				$"PositionChanges={positionChanges}, CurrentItemChanges={currentItemChanges}, " +
 				$"ScrollToRequests={scrollToRequests}.";
