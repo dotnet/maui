@@ -22,6 +22,7 @@ BeforeAll {
         'Invoke-NotaryToolJson',
         'Write-NotarySubmissionDiagnostics',
         'Get-NotarizationTimeoutSeconds',
+        'Get-NotaryTimestamp',
         'Wait-NotarySubmission',
         'Invoke-MacNotarization',
         'New-MacCatalystDeveloperIdSideload',
@@ -529,12 +530,20 @@ Describe 'bounded Mac notarization polling' {
         { Get-NotarizationTimeoutSeconds } | Should -Throw '*integer from 1 through 7200*'
     }
 
-    It 'polls until Apple accepts the submission' {
+    It 'performs a final poll at the configured deadline' {
+        $origin = [DateTimeOffset]::Parse('2026-01-01T00:00:00Z')
+        $script:notaryTimestamps = @($origin, $origin, $origin.AddSeconds(15))
+        $script:notaryTimestampIndex = 0
+        Mock Get-NotaryTimestamp {
+            $timestamp = $script:notaryTimestamps[$script:notaryTimestampIndex]
+            $script:notaryTimestampIndex++
+            return $timestamp
+        }
         $script:notaryPollCount = 0
         Mock Invoke-NotaryToolJson {
             $script:notaryPollCount++
             [pscustomobject]@{
-                status = if ($script:notaryPollCount -eq 1) { 'In Progress' } else { 'Accepted' }
+                status = if ($script:notaryPollCount -lt 3) { 'In Progress' } else { 'Accepted' }
             }
         }
 
@@ -544,8 +553,9 @@ Describe 'bounded Mac notarization polling' {
             -TimeoutSeconds 30 `
             -PollIntervalSeconds 15
 
-        Should -Invoke Invoke-NotaryToolJson -Times 2 -Exactly
-        Should -Invoke Start-Sleep -Times 1 -Exactly
+        Should -Invoke Invoke-NotaryToolJson -Times 3 -Exactly
+        Should -Invoke Start-Sleep -Times 2 -Exactly `
+            -ParameterFilter { $Seconds -eq 15 }
         Should -Invoke Write-NotarySubmissionDiagnostics -Times 0 -Exactly
     }
 
@@ -567,6 +577,19 @@ Describe 'bounded Mac notarization polling' {
     }
 
     It 'reports the last status and submission log at the deadline' {
+        $origin = [DateTimeOffset]::Parse('2026-01-01T00:00:00Z')
+        $script:notaryTimestamps = @(
+            $origin,
+            $origin,
+            $origin.AddSeconds(15),
+            $origin.AddSeconds(30)
+        )
+        $script:notaryTimestampIndex = 0
+        Mock Get-NotaryTimestamp {
+            $timestamp = $script:notaryTimestamps[$script:notaryTimestampIndex]
+            $script:notaryTimestampIndex++
+            return $timestamp
+        }
         Mock Invoke-NotaryToolJson {
             [pscustomobject]@{ status = 'In Progress' }
         }
@@ -579,8 +602,9 @@ Describe 'bounded Mac notarization polling' {
                 -PollIntervalSeconds 15
         } | Should -Throw "*did not complete within 30 seconds*Last status: 'In Progress'*"
 
-        Should -Invoke Invoke-NotaryToolJson -Times 2 -Exactly
-        Should -Invoke Start-Sleep -Times 1 -Exactly
+        Should -Invoke Invoke-NotaryToolJson -Times 3 -Exactly
+        Should -Invoke Start-Sleep -Times 2 -Exactly `
+            -ParameterFilter { $Seconds -eq 15 }
         Should -Invoke Write-NotarySubmissionDiagnostics -Times 1 -Exactly `
             -ParameterFilter { $SubmissionId -eq 'submission-timeout' }
     }
@@ -1095,6 +1119,38 @@ Describe 'workflow test gate' {
         $expectedGroup = "group: `${{ github.workflow }}-`${{ inputs.publish && 'publish' || format('dry-run-{0}', inputs.source_ref) }}"
         $script:workflowText | Should -Match ([regex]::Escape($expectedGroup))
         $script:workflowText | Should -Match 'TEMPLATE_APP_NOTARIZATION_TIMEOUT_SECONDS:.*1800'
+    }
+
+    It 'sets realistic deterministic timeouts for every job' {
+        $expectedTimeouts = [ordered]@{
+            'script-tests' = 15
+            'prepare' = 30
+            'dry-run-build' = 120
+            'publish' = 180
+        }
+
+        foreach ($jobName in $expectedTimeouts.Keys) {
+            $jobBlock = [regex]::Match(
+                $script:workflowText,
+                "(?ms)^  $([regex]::Escape($jobName)):\s*\r?\n.*?(?=^  [A-Za-z0-9_-]+:\s*\r?$|\z)"
+            )
+            $jobBlock.Success | Should -BeTrue -Because "job '$jobName' must exist"
+            $jobBlock.Value | Should -Match (
+                "(?m)^\s{4}timeout-minutes:\s+$($expectedTimeouts[$jobName])\s*$")
+        }
+    }
+
+    It 'includes the workflow attempt in every uploaded artifact name' {
+        $artifactNames = [regex]::Matches(
+            $script:workflowText,
+            '(?m)^\s+name:\s+(template-app-(?:dryrun|publish)[^\r\n]+)$'
+        )
+
+        $artifactNames.Count | Should -Be 3
+        foreach ($artifactName in $artifactNames) {
+            $artifactName.Groups[1].Value | Should -Match (
+                '\$\{\{\s*github\.run_attempt\s*\}\}')
+        }
     }
 }
 
