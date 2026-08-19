@@ -183,6 +183,17 @@ function Test-ReplicationFailureAlreadySeen {
     return $History.Contains($Signature)
 }
 
+function Get-ReplicationAppTerminationPattern {
+    # A SIGABRT is the app dying, and on a crash issue it is very likely the
+    # reproduction itself. The runner aborts with it before it can write
+    # REPLICATION_APP_TERMINATED, so keying only on that marker made a hard
+    # native crash the one termination the pipeline could not see: wave 27 runs
+    # classified five such attempts as 'other' and never offered the crash
+    # advice. Both the classifier and the crash-steer read this one pattern so
+    # they cannot disagree about what a termination is.
+    return '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed|\bSIGABRT\b|exit code 134\b|the process aborted itself'
+}
+
 function Get-ReplicationAttemptFailureKind {
     <#
         .SYNOPSIS
@@ -200,7 +211,7 @@ function Get-ReplicationAttemptFailureKind {
     )
 
     $text = [string]$FailureSummary
-    if ($text -match '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed') {
+    if ($text -match (Get-ReplicationAppTerminationPattern)) {
         return 'app-terminated'
     }
     if ($text -match '(?i)compiler diagnostics|Preparing the Sandbox app failed|error CS\d+') {
@@ -367,7 +378,26 @@ function Get-ReplicationAppTermination {
         'REPLICATION_APP_TERMINATED(?<body>.*?)(?:\r?\n\s*(?:at |---)|\z)',
         [Text.RegularExpressions.RegexOptions]::Singleline)
     if (-not $match.Success) {
-        return ''
+        # A process that aborts never reaches the code that writes the marker,
+        # so the clearest crash of all left nothing here to recover. State the
+        # abort plainly instead, and name the native frame when the log kept
+        # one, so the crash advice can still be offered.
+        $abort = [regex]::Match(
+            [string]$content,
+            '(?im)^.*(?:\bSIGABRT\b|exit code 134\b|the process aborted itself).*$')
+        if (-not $abort.Success) {
+            return ''
+        }
+
+        $frame = [regex]::Match(
+            [string]$content,
+            '(?m)^\s*\d+\s+(?<module>\S+)\s+0x[0-9a-fA-F]{6,}\s')
+        $detail = 'the reproduction process aborted (SIGABRT), which on a device runner is a native assertion or an unhandled platform exception rather than a failed assertion in the plan'
+        if ($frame.Success) {
+            $detail += ", with a native frame in $($frame.Groups['module'].Value)"
+        }
+
+        return ConvertTo-ReplicationSafeLog $detail $MaximumLength
     }
 
     $termination = ($match.Groups['body'].Value -replace '\s+', ' ').Trim()
@@ -3332,7 +3362,7 @@ $sandboxFailureSummary
 "@
                 }
             }
-            elseif ($sandboxFailureSummary -match '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed') {
+            elseif ($sandboxFailureSummary -match (Get-ReplicationAppTerminationPattern)) {
                 $termination = Get-ReplicationAppTermination `
                     -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
                 if ($termination) {

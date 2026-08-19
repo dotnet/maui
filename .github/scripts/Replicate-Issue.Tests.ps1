@@ -65,6 +65,7 @@ BeforeAll {
         'Get-ReplicationElementInventory',
         'Get-ReplicationFailureSignature',
         'Get-ReplicationAttemptFailureKind',
+        'Get-ReplicationAppTerminationPattern',
         'Test-ReplicationFailureAlreadySeen',
         'Test-ReplicationNonReproductionIsConclusive',
         'Get-ReplicationBlockedCode',
@@ -4768,5 +4769,35 @@ Describe 'android launch is a cold start' {
 
     It 'leaves the iOS cold start alone' {
         $script:BuildSource.Contains('simctl launch --terminate-running-process') | Should -BeTrue
+    }
+}
+
+Describe 'a native abort is an app termination' {
+    It 'classifies the wave 27 SIGABRT attempts as app-terminated instead of other' {
+        # Exactly the text run 15014893 recorded on five attempts.
+        $summary = 'Recording the on-device reproduction failed with exit code 1. Reproduction failed: ' +
+            'Run trusted reproduction script failed with exit device runner usually means a native ' +
+            'assertion or an unhandled platform exception. Output: SIGABRT: the process aborted itself'
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -BeExactly 'app-terminated'
+    }
+
+    It 'still recognises the explicit marker and the closed window' {
+        Get-ReplicationAttemptFailureKind -FailureSummary 'REPLICATION_APP_TERMINATED app died' |
+            Should -BeExactly 'app-terminated'
+        Get-ReplicationAttemptFailureKind -FailureSummary 'OpenQA NoSuchWindowException' |
+            Should -BeExactly 'app-terminated'
+    }
+
+    It 'does not call an ordinary non-reproduction a termination' {
+        Get-ReplicationAttemptFailureKind -FailureSummary "REPLICATION_NOT_REPRODUCED actual='NO BUG:'" |
+            Should -BeExactly 'not-reproduced'
+    }
+
+    It 'drives the crash steer from the same pattern the classifier uses' {
+        $gate = $script:Source.IndexOf('elseif ($sandboxFailureSummary -match (Get-ReplicationAppTerminationPattern))')
+        $gate | Should -BeGreaterThan 0
+        # The old literal must be gone from both readers, or they can disagree.
+        $script:Source.Contains("-match '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed'") |
+            Should -BeFalse
     }
 }
