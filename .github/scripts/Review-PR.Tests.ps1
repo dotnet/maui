@@ -59,6 +59,8 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
     . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
 }
 
@@ -68,6 +70,61 @@ Describe 'Phase worktree requirements' {
         Test-PhaseRequiresReviewWorktree -PhaseName 'Gate' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'CopilotReview' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'Post' | Should -BeFalse
+    }
+}
+
+Describe 'Inflight target branch fetch' {
+    It 'does not resolve or merge a stale cached ref when fetch fails' {
+        Mock Invoke-ReviewGitCommand {
+            param([string[]]$Arguments)
+            if ($Arguments[0] -eq 'fetch') {
+                return [pscustomobject]@{
+                    ExitCode = 128
+                    Output = 'fatal: unable to access remote'
+                }
+            }
+            throw "The stale cached ref must not be resolved: $($Arguments -join ' ')"
+        }
+
+        {
+            Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName 'inflight/current'
+        } | Should -Throw '*inconclusive due to a retryable environment/infrastructure failure*'
+
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -join ' ' -eq 'fetch origin inflight/current'
+        }
+        Should -Invoke Invoke-ReviewGitCommand -Times 0 -Exactly -ParameterFilter {
+            $Arguments[0] -eq 'rev-parse'
+        }
+    }
+
+    It 'reports a missing ref as a fetch environment failure instead of a merge conflict' {
+        Mock Invoke-ReviewGitCommand {
+            param([string[]]$Arguments)
+            if ($Arguments[0] -eq 'fetch') {
+                return [pscustomobject]@{
+                    ExitCode = 128
+                    Output = "fatal: couldn't find remote ref inflight/candidate"
+                }
+            }
+            throw "A missing cached ref must not be resolved: $($Arguments -join ' ')"
+        }
+
+        $errorMessage = try {
+            Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName 'inflight/candidate'
+            throw 'Expected the failed fetch to terminate branch resolution.'
+        } catch {
+            $_.Exception.Message
+        }
+
+        $errorMessage | Should -Match 'inconclusive due to a retryable environment/infrastructure failure'
+        $errorMessage | Should -Not -Match 'merge conflict'
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -join ' ' -eq 'fetch origin inflight/candidate'
+        }
+        Should -Invoke Invoke-ReviewGitCommand -Times 0 -Exactly -ParameterFilter {
+            $Arguments[0] -eq 'rev-parse'
+        }
     }
 }
 
