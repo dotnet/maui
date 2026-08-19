@@ -1526,6 +1526,203 @@ Describe 'effective recursive revert state' {
     }
 }
 
+Describe 'required GraphQL property shapes' {
+    It 'enumerates zero, one, and two array elements without nesting' {
+        $module = Get-Module LeakWorkflowDedup
+        $sample = @'
+{
+  "empty": [],
+  "one": [{ "number": 1 }],
+  "two": [{ "number": 1 }, { "number": 2 }],
+  "scalar": 42,
+  "object": { "number": 9 }
+}
+'@ | ConvertFrom-Json
+
+        $empty = @(& $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'empty' `
+                    -Context 'Test value' `
+                    -RequireArray
+            } $sample)
+        $one = @(& $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'one' `
+                    -Context 'Test value' `
+                    -RequireArray
+            } $sample)
+        $two = @(& $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'two' `
+                    -Context 'Test value' `
+                    -RequireArray
+            } $sample)
+        $scalar = @(& $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'scalar' `
+                    -Context 'Test value'
+            } $sample)
+        $object = @(& $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'object' `
+                    -Context 'Test value'
+            } $sample)
+
+        $empty.Count | Should -Be 0
+        $one.Count | Should -Be 1
+        $one[0].number | Should -Be 1
+        $two.Count | Should -Be 2
+        $two.number | Should -Be @(1, 2)
+        $scalar.Count | Should -Be 1
+        $scalar[0] | Should -Be 42
+        $object.Count | Should -Be 1
+        $object[0].number | Should -Be 9
+    }
+
+    It 'fails closed for missing, null, and wrong-shaped required properties' {
+        $module = Get-Module LeakWorkflowDedup
+        $sample = @'
+{
+  "nullValue": null,
+  "scalar": { "number": 1 },
+  "array": [{ "number": 1 }],
+  "nested": [[{ "number": 1 }]],
+  "nullElement": [null]
+}
+'@ | ConvertFrom-Json
+
+        {
+            & $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'missing' `
+                    -Context 'Test value'
+            } $sample
+        } | Should -Throw "*is missing 'missing'*"
+        {
+            & $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'nullValue' `
+                    -Context 'Test value'
+            } $sample
+        } | Should -Throw "*has null 'nullValue'*"
+        {
+            & $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'scalar' `
+                    -Context 'Test value' `
+                    -RequireArray
+            } $sample
+        } | Should -Throw "*malformed 'scalar'; expected an array*"
+        {
+            & $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'array' `
+                    -Context 'Test value'
+            } $sample
+        } | Should -Throw "*malformed 'array'; expected a scalar or object*"
+        {
+            & $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'nested' `
+                    -Context 'Test value' `
+                    -RequireArray
+            } $sample
+        } | Should -Throw "*malformed 'nested' at index 0; expected a flat array*"
+        {
+            & $module {
+                param($ValueObject)
+                Get-LeakRequiredPropertyValue `
+                    -Object $ValueObject `
+                    -Name 'nullElement' `
+                    -Context 'Test value' `
+                    -RequireArray
+            } $sample
+        } | Should -Throw "*malformed 'nullElement' at index 0; expected a flat array*"
+    }
+
+    It 'enumerates GraphQL error arrays and rejects scalar errors' {
+        $module = Get-Module LeakWorkflowDedup
+        {
+            & $module {
+                Assert-LeakGraphQlResponse `
+                    -Response ([pscustomobject]@{
+                        data = [pscustomobject]@{}
+                        errors = @()
+                    }) `
+                    -Context 'Test response'
+            }
+        } | Should -Not -Throw
+
+        foreach ($count in 1, 2) {
+            $errors = @(
+                1..$count | ForEach-Object {
+                    [pscustomobject]@{ message = "error-$_" }
+                }
+            )
+            $failure = $null
+            try {
+                & $module {
+                    param($Response)
+                    Assert-LeakGraphQlResponse `
+                        -Response $Response `
+                        -Context 'Test response'
+                } ([pscustomobject]@{
+                        data = [pscustomobject]@{ partial = $true }
+                        errors = $errors
+                    })
+            } catch {
+                $failure = $_.Exception.Message
+            }
+
+            $failure | Should -Match 'returned GraphQL errors'
+            1..$count | ForEach-Object {
+                $failure | Should -Match "error-$_"
+            }
+        }
+
+        {
+            & $module {
+                Assert-LeakGraphQlResponse `
+                    -Response ([pscustomobject]@{
+                        data = [pscustomobject]@{ partial = $true }
+                        errors = [pscustomobject]@{ message = 'scalar error' }
+                    }) `
+                    -Context 'Test response'
+            }
+        } | Should -Throw "*malformed 'errors'; expected an array*"
+        {
+            & $module {
+                Assert-LeakGraphQlResponse `
+                    -Response (
+                        '{"data":{"partial":true},"errors":[null]}' |
+                        ConvertFrom-Json
+                    ) `
+                    -Context 'Test response'
+            }
+        } | Should -Throw "*malformed 'errors' at index 0; expected a flat array*"
+    }
+}
+
 Describe 'complete GraphQL pagination' {
     BeforeEach {
         $global:leakPaginationCalls = [System.Collections.Generic.List[object]]::new()
@@ -1546,6 +1743,94 @@ Describe 'complete GraphQL pagination' {
         Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
         Remove-Variable leakPaginationCalls, leakPaginationResponses `
             -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    It 'reads zero, one, and two node pages through actual property access' {
+        foreach ($count in 0, 1, 2) {
+            $nodes = @()
+            $expectedNumbers = @()
+            if ($count -gt 0) {
+                $expectedNumbers = @(1..$count)
+                $nodes = @(
+                    $expectedNumbers | ForEach-Object {
+                        New-LeakGraphQlPullRequestNode -Number $_
+                    }
+                )
+            }
+            $global:leakPaginationResponses.Enqueue(
+                (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes $nodes `
+                        -TotalCount $count `
+                        -HasNextPage $false)
+            )
+
+            $result = @(
+                Get-CompleteLeakPullRequests `
+                    -Repository 'dotnet/maui' `
+                    -State MERGED `
+                    -BaseRefNames @('main')
+            )
+
+            $result.Count | Should -Be $count
+            @($result | ForEach-Object { $_.number }) |
+                Should -Be $expectedNumbers
+        }
+
+        $global:leakPaginationCalls.Count | Should -Be 3
+    }
+
+    It 'rejects scalar and nested node shapes' {
+        $node = New-LeakGraphQlPullRequestNode -Number 1
+        $global:leakPaginationResponses.Enqueue(
+            (@{
+                    data = @{
+                        repository = @{
+                            pullRequests = @{
+                                totalCount = 1
+                                nodes = $node
+                                pageInfo = @{
+                                    hasNextPage = $false
+                                    endCursor = $null
+                                }
+                            }
+                        }
+                    }
+                } | ConvertTo-Json -Depth 10 -Compress)
+        )
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw "*malformed 'nodes'; expected an array*"
+
+        $nestedNodes = [object[]]::new(1)
+        $nestedNodes[0] = @($node)
+        $global:leakPaginationResponses.Enqueue(
+            (@{
+                    data = @{
+                        repository = @{
+                            pullRequests = @{
+                                totalCount = 1
+                                nodes = $nestedNodes
+                                pageInfo = @{
+                                    hasNextPage = $false
+                                    endCursor = $null
+                                }
+                            }
+                        }
+                    }
+                } | ConvertTo-Json -Depth 10 -Compress)
+        )
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw "*malformed 'nodes' at index 0; expected a flat array*"
+
+        $global:leakPaginationCalls.Count | Should -Be 2
     }
 
     It 'retrieves more than 1000 historical PRs without a Search ceiling' {
@@ -1706,6 +1991,11 @@ Describe 'complete GraphQL pagination' {
                             type = "FORBIDDEN`tTYPE"
                             path = @('repository', 'pullRequests', 0, 'nodes')
                         }
+                        @{
+                            message = 'Second partial-data error'
+                            type = 'RATE_LIMITED'
+                            path = @('repository', 'pullRequests')
+                        }
                     )
                 } | ConvertTo-Json -Depth 10 -Compress)
         )
@@ -1728,6 +2018,8 @@ Describe 'complete GraphQL pagination' {
         $failure | Should -Match 'Permission denied x+'
         $failure | Should -Match '"type":"FORBIDDEN TYPE"'
         $failure | Should -Match '"path":"repository.pullRequests.0.nodes"'
+        $failure | Should -Match 'Second partial-data error'
+        $failure | Should -Match '"type":"RATE_LIMITED"'
         $failure | Should -Not -Match '[\x00-\x1F\x7F]'
         $failure.Length | Should -BeLessThan 1500
         $global:leakPaginationCalls.Count | Should -Be 1
@@ -1964,6 +2256,47 @@ Describe 'merged reverter commit-history pagination' {
         Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
         Remove-Variable leakCommitHistoryCalls, leakCommitHistoryResponses `
             -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    It 'reads zero, one, and two commit nodes as individual records' {
+        foreach ($count in 0, 1, 2) {
+            $candidate = New-LeakPr `
+                -Number (200 + $count) `
+                -Title "Candidate $count"
+            $commits = @()
+            if ($count -gt 0) {
+                $commits = @(
+                    1..$count | ForEach-Object {
+                        @{
+                            oid = '{0:x40}' -f (($count * 10) + $_)
+                            message = "Commit $count.$_"
+                        }
+                    }
+                )
+            }
+            $global:leakCommitHistoryResponses.Enqueue(
+                (New-LeakCommitHistoryGraphQlJson `
+                        -PullRequest $candidate `
+                        -Commits $commits `
+                        -TotalCount $count `
+                        -HasNextPage $false)
+            )
+
+            $result = @(
+                Get-CompleteLeakPullRequestCommitHistories `
+                    -Repository 'dotnet/maui' `
+                    -PullRequests @($candidate)
+            )
+
+            $result.Count | Should -Be 1
+            @($result[0].commits).Count | Should -Be $count
+            @($result[0].commits | ForEach-Object { $_.message }) |
+                Should -Be @(
+                    $commits | ForEach-Object { $_.message }
+                )
+        }
+
+        $global:leakCommitHistoryCalls.Count | Should -Be 3
     }
 
     It 'batches candidates while preserving complete commit metadata' {

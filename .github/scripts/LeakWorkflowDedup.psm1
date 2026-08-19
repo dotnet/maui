@@ -690,20 +690,44 @@ function Get-LeakRequiredPropertyValue {
     param(
         [Parameter(Mandatory = $true)][AllowNull()][object]$Object,
         [Parameter(Mandatory = $true)][string]$Name,
-        [Parameter(Mandatory = $true)][string]$Context
+        [Parameter(Mandatory = $true)][string]$Context,
+        [switch]$AllowNull,
+        [switch]$RequireArray
     )
 
     if ($null -eq $Object) {
         throw "$Context is null."
     }
+    if ($Object -is [System.Array]) {
+        throw "$Context is an array instead of an object."
+    }
     $property = $Object.PSObject.Properties[$Name]
     if ($null -eq $property) {
         throw "$Context is missing '$Name'."
     }
-    if ($property.Value -is [System.Array]) {
-        return ,$property.Value
+    $value = $property.Value
+    if ($null -eq $value) {
+        if ($AllowNull -and -not $RequireArray) {
+            return $null
+        }
+        throw "$Context has null '$Name'."
     }
-    return $property.Value
+    if ($RequireArray) {
+        if ($value -isnot [System.Array]) {
+            throw "$Context has malformed '$Name'; expected an array."
+        }
+        for ($index = 0; $index -lt $value.Count; $index++) {
+            if ($null -eq $value[$index] -or
+                $value[$index] -is [System.Array]) {
+                throw "$Context has malformed '$Name' at index $index; expected a flat array of non-null values."
+            }
+        }
+        return $value
+    }
+    if ($value -is [System.Array]) {
+        throw "$Context has malformed '$Name'; expected a scalar or object."
+    }
+    return $value
 }
 
 function ConvertTo-LeakGraphQlDiagnosticText {
@@ -824,7 +848,13 @@ function Assert-LeakGraphQlResponse {
     $errors = if ($null -eq $errorsProperty) {
         @()
     } else {
-        @($errorsProperty.Value)
+        @(
+            Get-LeakRequiredPropertyValue `
+                -Object $Response `
+                -Name 'errors' `
+                -Context $Context `
+                -RequireArray
+        )
     }
     if ($errors.Count -gt 0) {
         throw (Format-LeakGraphQlErrors -Context $Context -Errors $errors)
@@ -970,14 +1000,13 @@ function Invoke-LeakGraphQlConnection {
                     -Message "$Context totalCount changed from $expectedTotal to $totalCount during pagination.")
         }
 
-        $nodesValue = Get-LeakRequiredPropertyValue `
-            -Object $connection `
-            -Name 'nodes' `
-            -Context "$Context connection"
-        if ($nodesValue -isnot [System.Array]) {
-            throw "$Context returned malformed nodes instead of an array."
-        }
-        $nodes = @($nodesValue)
+        $nodes = @(
+            Get-LeakRequiredPropertyValue `
+                -Object $connection `
+                -Name 'nodes' `
+                -Context "$Context connection" `
+                -RequireArray
+        )
         if ($nodes.Count -gt $PageSize) {
             throw "$Context returned $($nodes.Count) nodes for a $PageSize-node page."
         }
@@ -1016,7 +1045,8 @@ function Invoke-LeakGraphQlConnection {
         $endCursor = Get-LeakRequiredPropertyValue `
             -Object $pageInfo `
             -Name 'endCursor' `
-            -Context "$Context pageInfo"
+            -Context "$Context pageInfo" `
+            -AllowNull
 
         if (-not $hasNextPage) {
             if ($items.Count -ne $expectedTotal) {
@@ -1151,11 +1181,13 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
             $body = Get-LeakRequiredPropertyValue `
                 -Object $node `
                 -Name 'body' `
-                -Context "$context PR #$number"
+                -Context "$context PR #$number" `
+                -AllowNull
             $mergedAt = Get-LeakRequiredPropertyValue `
                 -Object $node `
                 -Name 'mergedAt' `
-                -Context "$context PR #$number"
+                -Context "$context PR #$number" `
+                -AllowNull
             $merged = Get-LeakRequiredPropertyValue `
                 -Object $node `
                 -Name 'merged' `
@@ -1163,7 +1195,8 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
             $mergeCommit = Get-LeakRequiredPropertyValue `
                 -Object $node `
                 -Name 'mergeCommit' `
-                -Context "$context PR #$number"
+                -Context "$context PR #$number" `
+                -AllowNull
             $url = Get-LeakRequiredPropertyValue `
                 -Object $node `
                 -Name 'url' `
@@ -1458,14 +1491,13 @@ $($selections -join "`n")
                         -Message "$context commit totalCount changed from $($state.ExpectedTotal) to $totalCount during pagination.")
             }
 
-            $nodesValue = Get-LeakRequiredPropertyValue `
-                -Object $connection `
-                -Name 'nodes' `
-                -Context "$context commits"
-            if ($nodesValue -isnot [System.Array]) {
-                throw "$context returned malformed commit nodes instead of an array."
-            }
-            $nodes = @($nodesValue)
+            $nodes = @(
+                Get-LeakRequiredPropertyValue `
+                    -Object $connection `
+                    -Name 'nodes' `
+                    -Context "$context commits" `
+                    -RequireArray
+            )
             if ($nodes.Count -gt $PageSize) {
                 throw "$context returned $($nodes.Count) commits for a $PageSize-commit page."
             }
@@ -1521,7 +1553,8 @@ $($selections -join "`n")
             $endCursor = Get-LeakRequiredPropertyValue `
                 -Object $pageInfo `
                 -Name 'endCursor' `
-                -Context "$context commit pageInfo"
+                -Context "$context commit pageInfo" `
+                -AllowNull
 
             if (-not $hasNextPage) {
                 if ($state.Commits.Count -ne $state.ExpectedTotal) {
@@ -1645,7 +1678,8 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
         $body = Get-LeakRequiredPropertyValue `
             -Object $node `
             -Name 'body' `
-            -Context "Open agentic-workflows issue #$number"
+            -Context "Open agentic-workflows issue #$number" `
+            -AllowNull
         $url = Get-LeakRequiredPropertyValue `
             -Object $node `
             -Name 'url' `
@@ -1891,13 +1925,13 @@ function Get-RelevantMergedLeakReverts {
             [string]$candidateReverters[$number].mergeCommitOid) {
             throw "Merged reverter commit history PR #$number has an unexpected mergeCommitOid."
         }
-        $commits = Get-LeakRequiredPropertyValue `
-            -Object $commitHistory `
-            -Name 'commits' `
-            -Context "Merged reverter commit history PR #$number"
-        if ($commits -isnot [System.Array]) {
-            throw "Merged reverter commit history PR #$number has malformed commits."
-        }
+        $commits = @(
+            Get-LeakRequiredPropertyValue `
+                -Object $commitHistory `
+                -Name 'commits' `
+                -Context "Merged reverter commit history PR #$number" `
+                -RequireArray
+        )
 
         $proofOids = [System.Collections.Generic.List[string]]::new()
         $seenCommitOids = [System.Collections.Generic.HashSet[string]]::new(
