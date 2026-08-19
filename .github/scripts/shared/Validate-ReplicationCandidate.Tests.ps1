@@ -1517,6 +1517,99 @@ public class $TypeName : _IssuesUITest
     }
 }
 
+Describe 'The publishing gate checks fonts on the host page too' {
+    BeforeAll {
+        $script:fontRepo = Join-Path ([System.IO.Path]::GetTempPath()) ("fontgate-" + [guid]::NewGuid().ToString('n'))
+        $programDir = Join-Path $script:fontRepo 'src/Controls/tests/TestCases.HostApp'
+        New-Item -ItemType Directory -Path $programDir -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $programDir 'MauiProgram.cs') -Value @'
+fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+'@
+
+        function script:New-FontFixture {
+            param([Parameter(Mandatory = $true)][string]$FontFamily)
+
+            $hostPath = 'src/Controls/tests/TestCases.HostApp/Issues/Issue36505.cs'
+            $testPath = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36505.cs'
+            return @{
+                Manifest = [pscustomobject]@{
+                    TestName      = 'Issue36505'
+                    TestType      = 'UITest'
+                    IssueNumber   = 36505
+                    Platform      = 'ios'
+                    ProposedFiles = @($hostPath, $testPath)
+                }
+                CandidateFiles = @(
+                    [pscustomobject]@{
+                        Path    = $hostPath
+                        Mode    = '100644'
+                        Content = "public class Issue36505 : ContentPage { Label _label = new Label { FontFamily = `"$FontFamily`" }; }"
+                    },
+                    [pscustomobject]@{
+                        Path    = $testPath
+                        Mode    = '100644'
+                        Content = @'
+#if IOS
+public class Issue36505 : _IssuesUITest
+{
+    [Test]
+    public void WrappedTextKeepsItsMeasuredHeight() { }
+}
+#endif
+'@
+                    }
+                )
+            }
+        }
+    }
+
+    AfterAll {
+        if ($script:fontRepo -and (Test-Path -LiteralPath $script:fontRepo)) {
+            Remove-Item -LiteralPath $script:fontRepo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'rejects a host page that asks for a font the repository never registers' {
+        # PR 230: the font was named on the host page, which is exempt from the
+        # test-shape guards, so the gate published a candidate that could only
+        # go red for a missing font.
+        $fixture = script:New-FontFixture -FontFamily 'Segoe UI Bold'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles `
+                -RepositoryRoot $script:fontRepo
+        } | Should -Throw '*Segoe UI Bold*does not register*'
+    }
+
+    It 'accepts a host page that asks for a registered font' {
+        $fixture = script:New-FontFixture -FontFamily 'OpenSansRegular'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles `
+                -RepositoryRoot $script:fontRepo
+        } | Should -Not -Throw
+    }
+
+    It 'skips the font check when no repository is available to read' {
+        $fixture = script:New-FontFixture -FontFamily 'Segoe UI Bold'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Not -Throw
+    }
+
+    It 'passes the checked-out repository from the publishing entry point' {
+        $source = Get-Content -LiteralPath $script:validatorPath -Raw
+        $source | Should -Match 'Assert-ReplicationCandidateSources\s*`\s*\n\s*-Manifest \$manifest `\s*\n\s*-CandidateFiles \$candidateFiles `\s*\n\s*-RepositoryRoot \$repoPath'
+    }
+}
+
 Describe 'The publisher accepts every field the verifier actually writes' {
     It 'allows each key of the verification result manifest' {
         # A live catalyst run reached the publisher and was rejected with

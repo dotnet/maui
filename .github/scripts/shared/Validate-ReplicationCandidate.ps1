@@ -1531,6 +1531,7 @@ function Assert-SourceTextIsSafe {
         [Parameter(Mandatory = $true)][string]$Content,
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)][object]$Manifest,
+        [string]$RepositoryRoot = '',
         [switch]$RequireGuard
     )
 
@@ -1549,6 +1550,15 @@ function Assert-SourceTextIsSafe {
     }
 
     $normalizedPath = $Path.Replace('\', '/')
+    # The font is named on the host page, so this runs for every candidate file
+    # rather than only the test ones. A host file is otherwise exempt from the
+    # test-shape guards below, which is how a missing font once reached review.
+    if ($RepositoryRoot) {
+        Assert-ReplicationFontIsAvailable `
+            -Content $normalized `
+            -Path $Path `
+            -RepositoryRoot $RepositoryRoot
+    }
     if (
         [System.IO.Path]::GetExtension($Path) -ieq '.cs' -and
         $normalizedPath -cnotmatch '^src/Controls/tests/TestCases\.HostApp/'
@@ -1605,7 +1615,8 @@ function Assert-SourceTextIsSafe {
 function Assert-ReplicationCandidateSources {
     param(
         [Parameter(Mandatory = $true)][object]$Manifest,
-        [Parameter(Mandatory = $true)][object[]]$CandidateFiles
+        [Parameter(Mandatory = $true)][object[]]$CandidateFiles,
+        [string]$RepositoryRoot = ''
     )
 
     Assert-ManifestMatchesCandidateFiles -Manifest $Manifest -CandidateFiles $CandidateFiles
@@ -1645,7 +1656,8 @@ function Assert-ReplicationCandidateSources {
         Assert-SourceTextIsSafe `
             -Content $file.Content `
             -Path $file.Path `
-            -Manifest $Manifest
+            -Manifest $Manifest `
+            -RepositoryRoot $RepositoryRoot
     }
 
     # Whether the oracle merely restates what the host page already shows can
@@ -3089,7 +3101,8 @@ function Invoke-ReplicationCandidateValidation {
 
         Assert-ReplicationCandidateSources `
             -Manifest $manifest `
-            -CandidateFiles $candidateFiles
+            -CandidateFiles $candidateFiles `
+            -RepositoryRoot $repoPath
 
         if ($manifest.ArtifactContract) {
             Assert-ReplicationExecutionResult `
