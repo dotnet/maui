@@ -711,7 +711,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 
 			using var image = new MagickImage(bytes);
-			var displayBounds = CGDisplayBounds(CGMainDisplayID());
+			NativeRectangle displayBounds;
+			try
+			{
+				displayBounds = CGDisplayBounds(CGMainDisplayID());
+			}
+			catch (DllNotFoundException ex)
+			{
+				return ReturnUncroppedScreenshot($"CoreGraphics could not be loaded: {ex.Message}");
+			}
+			catch (EntryPointNotFoundException ex)
+			{
+				return ReturnUncroppedScreenshot($"A required CoreGraphics entry point was unavailable: {ex.Message}");
+			}
 
 			if (displayBounds.Size.Width <= 0 || displayBounds.Size.Height <= 0)
 				return ReturnUncroppedScreenshot($"Invalid main display bounds: {displayBounds.Size.Width}x{displayBounds.Size.Height}.");
