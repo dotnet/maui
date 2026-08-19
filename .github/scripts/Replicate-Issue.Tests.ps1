@@ -5250,3 +5250,29 @@ Describe 'Elision keeps the cause rather than the chatter' {
         $safe | Should -Match 'characters omitted'
     }
 }
+
+Describe 'Prompt names the oracles reviewers proved cannot fail honestly' {
+    It 'forbids reconstructing a rendered position from padding arithmetic' {
+        # Pull request 237 was rejected because CompoundPaddingTop already
+        # includes the drawable, so the icon and text centres differed by
+        # construction and no product fix could make them equal.
+        $script:Source | Should -Match 'CompoundPaddingTop already includes'
+        $script:Source | Should -Match 'no product fix can make them equal'
+    }
+
+    It 'requires a negative control before a geometric or pixel assertion' {
+        # Pull request 221 was rejected because the submitted raster mapping
+        # reported 1204 phantom pixels on a static control with no animation.
+        $script:Source | Should -Match 'so the reported defect is absent'
+        $script:Source | Should -Match 'measuring itself, not the product'
+    }
+
+    It 'still parses as PowerShell after the prompt edit' {
+        # A backtick in prompt prose is read as a Unicode escape and breaks
+        # the whole orchestrator, so assert the file still parses.
+        $errors = $null
+        [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref] $null, [ref] $errors) | Out-Null
+        @($errors).Count | Should -Be 0
+    }
+}
