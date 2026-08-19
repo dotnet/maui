@@ -19,6 +19,15 @@ BeforeAll {
 
     $script:RetryScriptPath = Join-Path $PSScriptRoot 'Invoke-UITestWithRetry.ps1'
     $script:RetryScriptSource = Get-Content -Raw -LiteralPath $script:RetryScriptPath
+    $tokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+        $script:RetryScriptPath,
+        [ref]$tokens,
+        [ref]$parseErrors)
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
+    }
 
     function Get-FunctionBody {
         param([string]$ScriptText, [string]$FunctionName)
@@ -39,6 +48,14 @@ BeforeAll {
     }
 
     Invoke-Expression (Get-FunctionBody -ScriptText $script:RetryScriptSource -FunctionName 'ConvertTo-AzdoSafeConsole')
+    $boundedFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Invoke-BuildScriptBounded'
+    }, $true)
+    if (-not $boundedFunction) {
+        throw "Function 'Invoke-BuildScriptBounded' not found"
+    }
+    Invoke-Expression $boundedFunction.Extent.Text
 
     # Mirrors the decision made in the Invoke-UITestWithRetry.ps1 retry loop: an ambiguous
     # startup signature that already appeared in this category's history has survived the
@@ -117,5 +134,26 @@ Describe 'Invoke-UITestWithRetry wiring' {
         ConvertTo-AzdoSafeConsole '##[error]spoof' | Should -Be '## [error]spoof'
         $script:RetryScriptSource | Should -Match ([regex]::Escape('Write-Host (ConvertTo-AzdoSafeConsole $l)'))
         $script:RetryScriptSource | Should -Not -Match 'foreach \(\$l in \$lines\) \{ Write-Host \$l \}'
+    }
+
+    It 'preserves a bounded-path test filter containing spaces as one argument' {
+        $childScript = Join-Path $TestDrive 'capture-filter.ps1'
+        @'
+param([string]$TestFilter)
+Write-Output "filter=$TestFilter"
+if ($TestFilter -ne 'Name = Foo Bar') {
+    exit 17
+}
+'@ | Set-Content -LiteralPath $childScript -Encoding utf8
+
+        $result = Invoke-BuildScriptBounded `
+            -ScriptPath $childScript `
+            -Params @{ TestFilter = 'Name = Foo Bar' } `
+            -TimeoutSeconds 30
+
+        $result.ExitCode | Should -Be 0
+        ($result.Output -join "`n") | Should -Match 'filter=Name = Foo Bar'
+        $script:RetryScriptSource | Should -Match '\.ArgumentList\.Add\(\[string\]\$argument\)'
+        $script:RetryScriptSource | Should -Not -Match 'Start-Process\s+-FilePath\s+\$pwshExe\s+-ArgumentList'
     }
 }

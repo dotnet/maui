@@ -127,6 +127,21 @@ function Test-DeviceTestFileAppliesToPlatform {
     return $true
 }
 
+function Test-DeviceTestPlatformPartial {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $normalizedPath = $Path.Replace('\', '/')
+    if ($normalizedPath -notmatch '(?i)(?:^|/)DeviceTests/') {
+        return $false
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($normalizedPath)
+    return (
+        $fileName -match '(?i)\.(?:android|windows|ios|maccatalyst)\.cs$' -or
+        $normalizedPath -match '(?i)/(?:Platforms?/)?(?:Android|Windows|iOS|MacCatalyst)/'
+    )
+}
+
 # ============================================================
 # Test type classification patterns (ordered by specificity)
 # ============================================================
@@ -407,13 +422,21 @@ foreach ($file in $ChangedFiles) {
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file) -replace '\.(iOS|Android|Windows|MacCatalyst)$', ''
     if ($baseName -in $IgnoredFileNames) { continue }
 
+    $isDeviceTestFile = $file.Replace('\', '/') -match '(?i)(?:^|/)DeviceTests/'
+    if ($isDeviceTestFile -and -not (Test-DeviceTestFileAppliesToPlatform -Path $file -TargetPlatform $Platform)) {
+        continue
+    }
+    $isDeviceTestPlatformPartial = $isDeviceTestFile -and (Test-DeviceTestPlatformPartial -Path $file)
+
     # Skip test-support .cs files that contain NO test methods (helpers, base classes,
     # fixtures, data builders). Detecting e.g. VisualStateTestHelpers.cs as a "test" makes
     # the gate run a filter that matches nothing; that empty run is scored as a failure and
     # drags the whole gate to FAILED even when the PR's real tests pass. HostApp companion
-    # pages and .xaml files legitimately have no test attributes, so exempt them here — they
-    # are matched/merged separately.
-    if ($file -match '\.cs$' -and $file -notmatch 'TestCases\.HostApp') {
+    # pages, .xaml files, and platform partials whose shared DeviceTests class owns the test
+    # methods legitimately have no test attributes, so exempt them here.
+    if ($file -match '\.cs$' -and
+        $file -notmatch 'TestCases\.HostApp' -and
+        -not $isDeviceTestPlatformPartial) {
         if (-not (Test-CsFileHasTestMethods -RelativePath $file)) { continue }
     }
 

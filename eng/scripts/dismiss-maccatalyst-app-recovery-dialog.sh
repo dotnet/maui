@@ -14,7 +14,7 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+scriptDir=$(CDPATH= cd "$(dirname "$0")" && pwd)
 . "$scriptDir/run-as-console-user.sh"
 
 bundleId="com.microsoft.maui.uitests"

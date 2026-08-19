@@ -8,6 +8,7 @@ BeforeAll {
         $disableScript
         $enableScript
         Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'dismiss-apple-account-dialog.sh'
+        Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'dismiss-maccatalyst-app-recovery-dialog.sh'
     )
     $helper = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'run-as-console-user.sh'
     $uiTestsPipeline = Join-Path $PSScriptRoot '..' '..' 'eng' 'pipelines' 'common' 'ui-tests-steps.yml'
@@ -24,6 +25,8 @@ Describe 'Notification Center script safety' {
             $content | Should -Match ([regex]::Escape('. "$scriptDir/run-as-console-user.sh"'))
             $content | Should -Match '\brun_as_console_user\b'
             $content | Should -Not -Match '\blaunchctl\s+asuser\b'
+            $content | Should -Match ([regex]::Escape('scriptDir=$(CDPATH= cd "$(dirname "$0")" && pwd)'))
+            $content | Should -Not -Match '\b(?:cd|dirname)\s+--'
             $content | Should -Not -Match '\bexit\s+1\b'
             $content.TrimEnd() | Should -Match 'exit 0$'
         }

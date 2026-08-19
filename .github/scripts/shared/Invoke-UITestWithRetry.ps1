@@ -254,9 +254,41 @@ function Invoke-BuildScriptBounded {
     $timedOut = $false
     $exit = -1
     $start = Get-Date
+    $proc = $null
+    $outStream = $null
+    $errStream = $null
+    $stdoutCopy = $null
+    $stderrCopy = $null
+    $processStarted = $false
     try {
-        $proc = Start-Process -FilePath $pwshExe -ArgumentList $argList -PassThru -NoNewWindow `
-            -RedirectStandardOutput $outFile -RedirectStandardError $errFile
+        $startInfo = [Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = $pwshExe
+        $startInfo.UseShellExecute = $false
+        $startInfo.CreateNoWindow = $true
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.RedirectStandardError = $true
+        foreach ($argument in $argList) {
+            [void]$startInfo.ArgumentList.Add([string]$argument)
+        }
+
+        $outStream = [IO.File]::Open(
+            $outFile,
+            [IO.FileMode]::Create,
+            [IO.FileAccess]::Write,
+            [IO.FileShare]::ReadWrite)
+        $errStream = [IO.File]::Open(
+            $errFile,
+            [IO.FileMode]::Create,
+            [IO.FileAccess]::Write,
+            [IO.FileShare]::ReadWrite)
+        $proc = [Diagnostics.Process]::new()
+        $proc.StartInfo = $startInfo
+        if (-not $proc.Start()) {
+            throw "Failed to start bounded BuildAndRunHostApp process."
+        }
+        $processStarted = $true
+        $stdoutCopy = $proc.StandardOutput.BaseStream.CopyToAsync($outStream)
+        $stderrCopy = $proc.StandardError.BaseStream.CopyToAsync($errStream)
         $deadline = $start.AddSeconds($TimeoutSeconds)
         $lastBeat = $start
         # Progress tracking: a hung run stops writing to stdout/stderr, whereas a
@@ -357,6 +389,29 @@ function Invoke-BuildScriptBounded {
     } catch {
         Write-Host "⚠️ Bounded BuildAndRunHostApp invocation threw: $_" -ForegroundColor Yellow
         $exit = -1
+        if ($processStarted -and -not $proc.HasExited) {
+            try { Stop-ProcessTree -ProcessId $proc.Id } catch { }
+        }
+    } finally {
+        if ($processStarted -and -not $proc.HasExited) {
+            try { [void]$proc.WaitForExit(5000) } catch { }
+        }
+        if ($processStarted -and $proc.HasExited) {
+            try { $proc.WaitForExit() } catch { }
+            foreach ($copy in @($stdoutCopy, $stderrCopy)) {
+                if ($copy) {
+                    try { $copy.GetAwaiter().GetResult() } catch { }
+                }
+            }
+        }
+        foreach ($stream in @($outStream, $errStream)) {
+            if ($stream) {
+                try { $stream.Dispose() } catch { }
+            }
+        }
+        if ($proc) {
+            try { $proc.Dispose() } catch { }
+        }
     }
     $out = @()
     foreach ($f in @($outFile, $errFile)) {

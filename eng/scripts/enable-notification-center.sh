@@ -2,7 +2,7 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+scriptDir=$(CDPATH= cd "$(dirname "$0")" && pwd)
 . "$scriptDir/run-as-console-user.sh"
 
 currentUser=$(echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }')
