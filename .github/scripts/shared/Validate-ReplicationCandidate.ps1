@@ -1604,6 +1604,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationPlatformViewIdentity `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationVerdictIsNotSelfAnnounced `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {

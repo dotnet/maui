@@ -2184,6 +2184,99 @@ Describe 'A font the operating system already provides needs no registration' {
     }
 }
 
+Describe 'A test may not read back a verdict it announced itself' {
+    # kubaflo/maui#221 set statusLabel.Text = "BUG REPRODUCED:" from an
+    # animation completion callback and then asserted that same string. The
+    # reviewer: "that label is assigned unconditionally when the animation
+    # completes" -- so the assertion proves the animation ran, not that a
+    # single pixel was wrong.
+    It 'rejects the self-announced verdict a reviewer proved vacuous' {
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    pulseAnimation.Commit(page, AnimationName, 16, 3600, Easing.Linear, (_, cancelled) =>
+    {
+        if (!cancelled)
+            statusLabel.Text = "BUG REPRODUCED:";
+    });
+    Assert.Equal("BUG REPRODUCED:", statusLabel.Text);
+'@ `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Path/Issue36761Tests.iOS.cs'
+        } | Should -Throw '*reading back a verdict it announced itself*'
+    }
+
+    It 'leaves the value-precedence idiom the product actually decides alone' {
+        # src/Controls/tests/Core.UnitTests/StyleTests.cs sets a value and
+        # asserts it, to prove a local set outranks a Style. The product
+        # decides that answer, and "bar" announces nothing.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    label.Style = style;
+    Assert.Equal("foo", label.Text);
+    label.Text = "bar";
+    Assert.Equal("bar", label.Text);
+'@ `
+                -Path 'src/Controls/tests/Core.UnitTests/Issue1Tests.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'allows a verdict string the test never assigned' {
+        # Reading a marker the *app* produced is evidence; only reading back
+        # the test's own announcement is not.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content 'Assert.Equal("Reproduced", App.FindElement("status").GetText());' `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'allows the test to assign a verdict string it never asserts' {
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    statusLabel.Text = "BUG REPRODUCED:";
+    Assert.Equal(0, observation.OutsideRedPixels);
+'@ `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Path/Issue1.iOS.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'catches the verdict announcement whatever member carries it' {
+        foreach ($member in @('Text', 'AutomationId', 'ClassId')) {
+            {
+                Assert-ReplicationVerdictIsNotSelfAnnounced `
+                    -Content "marker.$member = `"TEST PASSED`";`nAssert.Equal(`"TEST PASSED`", marker.$member);" `
+                    -Path 'src/Controls/tests/DeviceTests/Issue1.iOS.cs'
+            } | Should -Throw '*verdict it announced itself*'
+        }
+    }
+
+    It 'does not fire across two different objects' {
+        # Setting the virtual view and asserting the platform view is how
+        # every propagation test in the repository is written.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    entry.Text = "FAILED";
+    Assert.Equal("FAILED", platformEntry.Text);
+'@ `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue1.Android.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a verdict that only appears in a comment' {
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    // statusLabel.Text = "BUG REPRODUCED:";
+    Assert.Equal("BUG REPRODUCED:", statusLabel.Text);
+'@ `
+                -Path 'src/Controls/tests/DeviceTests/Issue1.iOS.cs'
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'The publisher refuses a test that throws away its own verdict' {
     It 'rejects a native identity verdict at publish time' {
         $source = @'

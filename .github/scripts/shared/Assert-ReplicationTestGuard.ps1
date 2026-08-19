@@ -1520,6 +1520,99 @@ function Assert-ReplicationPlatformViewIdentity {
     }
 }
 
+function Get-ReplicationVerdictLiteralPattern {
+    # Strings that announce an outcome rather than describe a value. A test
+    # may set one for a human watching the screen; it may not then read its
+    # own announcement back as the proof.
+    return '(?i)\b(?:bug\s+)?(?:not\s+)?reproduc\w*|' +
+        '\b(?:test\s+)?(?:passed|failed|failure|success|succeeded)\b|' +
+        '\bPASS\b|\bFAIL\b|\bOK\b'
+}
+
+function Assert-ReplicationVerdictIsNotSelfAnnounced {
+    <#
+        .SYNOPSIS
+        Refuses a test that proves the issue by reading back a verdict string
+        it assigned itself.
+
+        .DESCRIPTION
+        kubaflo/maui#221 drove a pulse animation, set
+        statusLabel.Text = "BUG REPRODUCED:" from the animation's completion
+        callback, and then asserted statusLabel.Text equalled that string. The
+        reviewer's finding: "that label is assigned unconditionally when the
+        animation completes", so the assertion establishes that the animation
+        ran, not that any pixel was wrong. A product fix cannot change it.
+
+        Setting a value and asserting it is not itself suspect -- StyleTests
+        does exactly that to prove a local set outranks a Style, and the
+        product decides the answer. What makes this different is the literal:
+        a string announcing "BUG REPRODUCED" or "FAILED" is the test's own
+        conclusion, and reading a conclusion back is bookkeeping.
+
+        Scoped to that: an equality assertion against a verdict-announcing
+        literal that the same file assigns to the same member of the same
+        identifier. Across the 5,265 test sources in src/Controls, src/Core
+        and src/Essentials this matches nothing.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Content,
+
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return
+    }
+
+    $scanned = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $verdict = Get-ReplicationVerdictLiteralPattern
+
+    # identifier.Member = "literal"
+    $assigned = @{}
+    foreach ($assignment in [regex]::Matches(
+        $scanned,
+        '(?<![\w.])(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\s*=\s*(?<literal>"(?:[^"\\]|\\.)*")')) {
+        $key = '{0}.{1}={2}' -f
+            $assignment.Groups['target'].Value,
+            $assignment.Groups['member'].Value,
+            $assignment.Groups['literal'].Value
+        $assigned[$key] = $true
+    }
+    if ($assigned.Count -eq 0) {
+        return
+    }
+
+    foreach ($assertion in [regex]::Matches(
+        $scanned,
+        '(?:Assert\s*\.\s*(?:Equal|AreEqual)|ClassicAssert\s*\.\s*AreEqual)\s*\(\s*' +
+        '(?<literal>"(?:[^"\\]|\\.)*")\s*,\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\b')) {
+        $literal = $assertion.Groups['literal'].Value
+        if (-not [regex]::IsMatch($literal, $verdict)) {
+            continue
+        }
+
+        $key = '{0}.{1}={2}' -f
+            $assertion.Groups['target'].Value,
+            $assertion.Groups['member'].Value,
+            $literal
+        if (-not $assigned.ContainsKey($key)) {
+            continue
+        }
+
+        throw (
+            "Candidate source '$Path' decides the issue by reading back a verdict it announced " +
+            "itself: it assigns $($assertion.Groups['target'].Value)." +
+            "$($assertion.Groups['member'].Value) = $literal and then asserts that same value. " +
+            'That establishes only that the assigning code path ran, so the test stays red for a ' +
+            'reason no product fix can change. Assert the quantity the reporter observed - the ' +
+            'text, the size, the position, the visibility, or the colour that was wrong on screen.')
+    }
+}
+
 function Get-ReplicationMeasurementPattern {
     # Reads that come back from the rendered app rather than from the test.
     return '\.(?:GetRect|GetLocationOnScreen|GetBoundingRect|Frame|Bounds|' +

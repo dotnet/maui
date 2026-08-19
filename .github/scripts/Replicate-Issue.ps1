@@ -2270,6 +2270,9 @@ function Assert-GeneratedTestContent {
                 Assert-ReplicationPlatformViewIdentity `
                     -Content $content `
                     -Path $file
+                Assert-ReplicationVerdictIsNotSelfAnnounced `
+                    -Content $content `
+                    -Path $file
                 Assert-ReplicationEnvironmentGateSkips `
                     -Content $content `
                     -Path $file

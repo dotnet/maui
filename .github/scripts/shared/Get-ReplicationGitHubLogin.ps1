@@ -42,7 +42,9 @@ function Invoke-ReplicationGitHubCli {
         $failureText = ($output | ForEach-Object { [string]$_ }) -join "`n"
         if (-not (Test-TransientReplicationGitHubFailure -Output $failureText) -or
             $attempt -eq $MaximumAttempts) {
-            throw "Failed to $Description`: $($failureText.Trim())"
+            throw (New-ReplicationGitHubFailureMessage `
+                -Description $Description `
+                -Detail $failureText)
         }
 
         $delaySeconds = $RetryDelaysSeconds[
@@ -52,6 +54,34 @@ function Invoke-ReplicationGitHubCli {
     }
 
     throw "Failed to $Description."
+}
+
+function New-ReplicationGitHubFailureMessage {
+    <#
+        .SYNOPSIS
+        Turns a raw gh failure into one an operator can act on.
+
+        .DESCRIPTION
+        An expired pipeline credential fails every run on every platform at the
+        first GitHub call, and "Failed to read the authenticated GitHub login:
+        gh: Bad credentials (HTTP 401)" reads like a defect in the replication
+        code. It is not one, and nothing inside the run can repair it, so the
+        message has to name the thing an operator has to replace.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Description,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Detail
+    )
+
+    $trimmed = ([string]$Detail).Trim()
+    if ($trimmed -match '(?i)bad credentials|\b401\b|requires authentication') {
+        return ("Failed to $Description because the pipeline credential is not valid: $trimmed " +
+            'GH_COMMENT_TOKEN has expired or been revoked and has to be rotated in the pipeline; ' +
+            'no retry inside the run can recover from this.')
+    }
+
+    return "Failed to $Description`: $trimmed"
 }
 
 function Get-ReplicationGitHubLogin {
@@ -79,7 +109,9 @@ function Get-ReplicationGitHubLogin {
         $failureText = ($output | ForEach-Object { [string]$_ }) -join "`n"
         if (-not (Test-TransientReplicationGitHubFailure -Output $failureText) -or
             $attempt -eq $MaximumAttempts) {
-            throw "Failed to read the authenticated GitHub login: $($failureText.Trim())"
+            throw (New-ReplicationGitHubFailureMessage `
+                -Description 'read the authenticated GitHub login' `
+                -Detail $failureText)
         }
 
         $delaySeconds = $RetryDelaysSeconds[

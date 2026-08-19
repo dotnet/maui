@@ -89,6 +89,68 @@ Describe 'Replication GitHub login probe' {
         }
     }
 
+    It 'names the credential an operator must rotate, not just the raw error' {
+        # Every run of every platform now dies on this exact message. "Failed
+        # to read the authenticated GitHub login: gh: Bad credentials (HTTP
+        # 401)" reads like a defect in the replication code, and the log has
+        # to answer "why did it fail" on its own.
+        $script:calls = 0
+        function global:gh {
+            $script:calls++
+            $global:LASTEXITCODE = 1
+            return 'gh: Bad credentials (HTTP 401)'
+        }
+
+        try {
+            $thrown = $null
+            try { Get-ReplicationGitHubLogin -MaximumAttempts 3 -RetryDelaysSeconds @(0, 0) }
+            catch { $thrown = $_ }
+
+            $thrown.Exception.Message | Should -Match 'GH_COMMENT_TOKEN'
+            $thrown.Exception.Message | Should -Match 'rotated'
+            $thrown.Exception.Message | Should -Match 'Bad credentials'
+            $script:calls | Should -Be 1
+        }
+        finally {
+            Remove-Item Function:global:gh -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'names the credential from the bounded helper too' {
+        $script:calls = 0
+        function global:gh {
+            $script:calls++
+            $global:LASTEXITCODE = 1
+            return 'gh: HTTP 401: Requires authentication'
+        }
+
+        try {
+            $thrown = $null
+            try {
+                Invoke-ReplicationGitHubCli `
+                    -Arguments @('api', 'user') `
+                    -Description 'inspect repositories available to MauiBot' `
+                    -MaximumAttempts 3 -RetryDelaysSeconds @(0, 0)
+            } catch { $thrown = $_ }
+
+            $thrown.Exception.Message | Should -Match 'GH_COMMENT_TOKEN'
+            $thrown.Exception.Message | Should -Match 'inspect repositories available to MauiBot'
+            $script:calls | Should -Be 1
+        }
+        finally {
+            Remove-Item Function:global:gh -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not blame the credential for a failure it did not cause' {
+        $message = New-ReplicationGitHubFailureMessage `
+            -Description 'read the authenticated GitHub login' `
+            -Detail 'gh: Could not resolve to a Repository with the name.'
+
+        $message | Should -Not -Match 'GH_COMMENT_TOKEN'
+        $message | Should -Match 'Could not resolve to a Repository'
+    }
+
     It 'retries the exact 503 that blocked reproduced runs 14994333 and 14994436' {
         $script:calls = 0
         function global:gh {
