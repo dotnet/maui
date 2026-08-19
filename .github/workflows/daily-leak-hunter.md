@@ -93,14 +93,11 @@ pre-agent-steps:
       mkdir -p /tmp/gh-aw/agent
 
       # This workflow's own open [leak-scan] issues (filed with the agentic-workflows label).
-      gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
-        --state open --label agentic-workflows --limit 1000 --json number,title,body \
-        > /tmp/gh-aw/agent/my-open-leakscan.json
-      OPEN_LEAKSCAN_COUNT=$(jq 'length' /tmp/gh-aw/agent/my-open-leakscan.json)
-      if test "$OPEN_LEAKSCAN_COUNT" -ge 1000; then
-        echo "ERROR: open [leak-scan] search returned $OPEN_LEAKSCAN_COUNT rows — at/above the GitHub Search API's 1000-result ceiling. The issue de-dup history may be truncated, so aborting fail-closed." >&2
-        exit 1
-      fi
+      # The shared GraphQL helper follows every cursor, verifies stable totalCount/pageInfo,
+      # and fails closed on malformed, incomplete, repeated-cursor, or over-budget pagination.
+      pwsh .github/scripts/Get-CompleteLeakIssues.ps1 \
+        -Repository "$GITHUB_REPOSITORY" \
+        -OutputPath /tmp/gh-aw/agent/my-open-leakscan.json
       jq -r '.[].title | gsub("[\r\n]+";" ")' /tmp/gh-aw/agent/my-open-leakscan.json \
         | while IFS= read -r TITLE; do
             pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle
@@ -111,24 +108,16 @@ pre-agent-steps:
       cat /tmp/gh-aw/agent/already-filed-apis.txt
 
       # Exact [leak-fix] PRs already MERGED to main/inflight/current.
-      gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-        --search '"[leak-fix]" in:title' \
-        --json number,title,body,baseRefName,mergedAt,url \
-        > /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json
-      # `gh pr list --search` goes through GitHub's Search API, which caps best-match results
-      # at 1000 regardless of --limit. This scanner is a permanent scheduled guard, so an
-      # exact historical [leak-fix] PR can eventually fall outside a 1000-row result set while
-      # the command still exits 0 with a merely-truncated (not empty) list — the earlier
-      # "did the fetch fail" check can't catch that. Fail closed instead of silently scanning
-      # an incomplete merged-fix history.
-      MERGED_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json)
-      if test "$MERGED_RAW_COUNT" -ge 1000; then
-        echo "ERROR: 'gh pr list --state merged [leak-fix]' returned $MERGED_RAW_COUNT rows — at/above the GitHub Search API's 1000-result ceiling. The merged-fix history may be truncated (an older [leak-fix] PR could be missing from de-dup), so re-filing risk is real — aborting (fail-closed) instead of scanning a possibly-incomplete set. Narrow the query (e.g. partition by merge-date range) before the next run." >&2
-        exit 1
-      fi
+      # Fetch complete non-Search history once per authoritative base. Pagination is bounded by
+      # an explicit query budget rather than a result cutoff; reaching the budget is a visible
+      # fail-closed error, never a silently truncated history.
+      pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+        -Repository "$GITHUB_REPOSITORY" \
+        -State MERGED \
+        -OutputPath /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json
       jq '[.[] |
           select(.mergedAt != null) |
-          select(.title | startswith("[leak-fix] ")) |
+          select(.title | test("^\\[leak-fix\\][ \\t]+")) |
           select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
         /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
         > /tmp/gh-aw/agent/merged-leak-fix-prs.json
@@ -156,18 +145,16 @@ pre-agent-steps:
       # formatting. Resolve those links recursively: any active same-branch direct reverter
       # keeps its target reverted. Reverting a reverter can deactivate that reverter, but
       # independent sibling reverts never cancel each other.
-      # Discover only same-branch merged PRs whose bodies explicitly revert one of the
-      # relevant leak fixes from one bounded closed-PR snapshot per authoritative base branch.
-      # The constant `Reverts in:body` query is limited to two branches, checked against the
-      # 256-character Search API query ceiling, and fails closed at each 1000-result snapshot
-      # ceiling. Snapshot fetches use bounded transient retries, honor capped server-directed
-      # rate-limit delays, and fail closed after exhaustion. Exact repository-local direct
-      # references are indexed once, then recursive reverter chains are traversed locally under
-      # 1000-discovery and 2000-PR aggregate bounds so seed count and depth never multiply
-      # Search API calls.
+      # Reuse the same complete merged-PR history, index only exact repository-local direct
+      # references, and traverse recursive reverter chains locally. The history fetch uses
+      # 100-node GraphQL cursor pages, stable total-count validation, bounded transient retries,
+      # capped server-directed rate-limit delays, and a 1000-query safety budget. Local
+      # traversal keeps the existing 1000-discovery and 2000-PR aggregate bounds, so seed count
+      # never multiplies GitHub queries.
       pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
+        -MergedPullRequestsJsonPath /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
         -OutputPath /tmp/gh-aw/agent/merged-revert-prs.json
       # Resolve the EFFECTIVE state recursively, not just one hop. A merged revert toggles
       # its target only while that revert itself remains active on the SAME base branch.
@@ -310,10 +297,11 @@ active source flow, so filing it again would only create another redundant fix P
 **This de-dup context was already gathered for you, before you started, by a deterministic
 `pre-agent-steps` job step** (not a bash tool call you invoke) — see the workflow frontmatter.
 That step runs on the plain runner (not through your sandbox) with `set -euo pipefail`, so a
-`gh` failure or a Search-API 1000-result truncation fails the GitHub Actions step itself — and
-therefore the whole job, before you are ever started — rather than merely returning an error
-you could choose to route around. Its output already sits under `/tmp/gh-aw/agent/` (that path
-is shared with your sandbox), so you only need to READ it:
+`gh` failure or malformed, incomplete, repeated-cursor, or over-budget GraphQL pagination fails
+the GitHub Actions step itself — and therefore the whole job, before you are ever started —
+rather than merely returning an error you could choose to route around. Its output already
+sits under `/tmp/gh-aw/agent/` (that path is shared with your sandbox), so you only need to
+READ it:
 
 ```bash
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt

@@ -4,6 +4,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$Repository,
     [Parameter(Mandatory = $true)][string]$MergedFixTsvPath,
+    [Parameter(Mandatory = $true)][string]$MergedPullRequestsJsonPath,
     [Parameter(Mandatory = $true)][string]$OutputPath
 )
 
@@ -27,10 +28,16 @@ $fixPullRequests = @(
         }
 )
 
+$mergedPullRequests = @(
+    Read-RegularJsonFile `
+        -Path $MergedPullRequestsJsonPath `
+        -MaximumBytes 128MB
+)
 $reverts = @(
     Get-RelevantMergedLeakReverts `
         -Repository $Repository `
-        -TargetPullRequests $fixPullRequests
+        -TargetPullRequests $fixPullRequests `
+        -MergedPullRequests $mergedPullRequests
 )
 ConvertTo-Json -InputObject @($reverts) -Depth 5 |
     Set-Content -LiteralPath $OutputPath

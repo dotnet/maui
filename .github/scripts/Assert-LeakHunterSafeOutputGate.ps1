@@ -32,8 +32,8 @@ $requestedApis = [System.Collections.Generic.HashSet[string]]::new(
 )
 foreach ($item in $createItems) {
     $title = [string]$item.title
-    if (-not $title.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
-        throw "Every create-issue title must start with the literal '[leak-scan] ' prefix."
+    if (-not (Test-LeakTitlePrefix -Title $title -Kind Scan)) {
+        throw "Every create-issue title must start with '[leak-scan]' followed by a space or tab."
     }
     $api = Get-CanonicalLeakApi -Title $title
     if ([string]::IsNullOrWhiteSpace($api)) {
@@ -52,33 +52,14 @@ foreach ($item in $createItems) {
 }
 
 $openIssues = @(
-    Invoke-LeakGhJson -Arguments @(
-        'issue', 'list',
-        '--repo', $Repository,
-        '--search', '"[leak-scan]" in:title',
-        '--state', 'open',
-        '--label', 'agentic-workflows',
-        '--limit', '1000',
-        '--json', 'number,title,body,url'
-    )
+    Get-CompleteLeakIssues -Repository $Repository
 )
-if ($openIssues.Count -ge 1000) {
-    throw "Open [leak-scan] search returned $($openIssues.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
 
 $merged = @(
-    Invoke-LeakGhJson -Arguments @(
-        'pr', 'list',
-        '--repo', $Repository,
-        '--state', 'merged',
-        '--limit', '1000',
-        '--search', '"[leak-fix]" in:title',
-        '--json', 'number,title,body,baseRefName,mergedAt,url'
-    )
+    Get-CompleteLeakPullRequests `
+        -Repository $Repository `
+        -State MERGED
 )
-if ($merged.Count -ge 1000) {
-    throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
 
 $authoritativeMerged = @(
     Select-LeakAuthoritativePullRequests `
@@ -87,12 +68,13 @@ $authoritativeMerged = @(
 )
 $eligibleMerged = @($authoritativeMerged | Where-Object {
         $null -ne $_.mergedAt -and
-        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal)
+        (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
     })
 $mergedReverts = @(
     Get-RelevantMergedLeakReverts `
         -Repository $Repository `
-        -TargetPullRequests $eligibleMerged
+        -TargetPullRequests $eligibleMerged `
+        -MergedPullRequests $merged
 )
 $effectivelyReverted = @(
     Get-EffectiveRevertedPullRequestNumbers `
@@ -114,7 +96,7 @@ foreach ($requested in $requestedItems) {
     $api = [string]$requested.Api
     $openApiMatches = @($openIssues | Where-Object {
             $issueTitle = [string]$_.title
-            $issueTitle.StartsWith('[leak-scan] ', [StringComparison]::Ordinal) -and
+            (Test-LeakTitlePrefix -Title $issueTitle -Kind Scan) -and
             (Get-CanonicalExistingLeakApi -Title $issueTitle) -ceq $api
         })
     if ($openApiMatches.Count -gt 0) {

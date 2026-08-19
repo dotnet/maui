@@ -18,8 +18,58 @@ BeforeAll {
             title       = $Title
             body        = $Body
             baseRefName = $Base
+            state       = if ($Merged) { 'MERGED' } else { 'CLOSED' }
             mergedAt    = if ($Merged) { '2026-08-10T00:00:00Z' } else { $null }
             url         = "https://github.com/dotnet/maui/pull/$Number"
+        }
+    }
+
+    function New-LeakGraphQlPageJson {
+        param(
+            [Parameter(Mandatory = $true)][string]$ConnectionName,
+            [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Nodes,
+            [Parameter(Mandatory = $true)][long]$TotalCount,
+            [Parameter(Mandatory = $true)][bool]$HasNextPage,
+            [AllowNull()][string]$EndCursor
+        )
+
+        $repository = @{}
+        $repository[$ConnectionName] = @{
+            totalCount = $TotalCount
+            nodes = @($Nodes)
+            pageInfo = @{
+                hasNextPage = $HasNextPage
+                endCursor = $EndCursor
+            }
+        }
+        @{
+            data = @{
+                repository = $repository
+            }
+        } | ConvertTo-Json -Depth 8 -Compress
+    }
+
+    function New-LeakGraphQlPullRequestNode {
+        param(
+            [Parameter(Mandatory = $true)][int]$Number,
+            [string]$Base = 'main',
+            [ValidateSet('OPEN', 'CLOSED', 'MERGED')][string]$State = 'MERGED',
+            [string]$Title = "[leak-fix] Fix Type$Number.Member leak",
+            [string]$Body = ''
+        )
+
+        [pscustomobject]@{
+            number = $Number
+            title = $Title
+            body = $Body
+            baseRefName = $Base
+            state = $State
+            mergedAt = if ($State -ceq 'MERGED') {
+                '2026-08-10T00:00:00Z'
+            } else {
+                $null
+            }
+            url = "https://github.com/dotnet/maui/pull/$Number"
         }
     }
 }
@@ -413,6 +463,57 @@ Describe 'canonical leak API title parsing' {
         Get-CanonicalLeakApi `
             -Title '[leak-fix] Fix Microsoft.Maui.Controls.Picker.ItemsSource memory leak' |
             Should -Be 'Picker.ItemsSource'
+    }
+
+    It 'accepts tabs wherever the title grammar permits prefix whitespace' {
+        Get-CanonicalLeakApi `
+            -Title "[leak-scan]`tMicrosoft.Maui.Controls.Picker.ItemsSource — retention" |
+            Should -Be 'Picker.ItemsSource'
+        Get-CanonicalLeakApi `
+            -Title "[leak-fix]`tFix`tPicker.ItemsSource memory leak" |
+            Should -Be 'Picker.ItemsSource'
+        Get-CanonicalExistingLeakApi `
+            -Title "[leak-fix]`tFix`tShell`tBackButtonBehavior.Command leak" |
+            Should -Be 'BackButtonBehavior.Command'
+    }
+
+    It 'rejects missing-whitespace and near-prefix variants' {
+        @(
+            '[leak-scan]Picker.ItemsSource retention'
+            '[leak-scan]x Picker.ItemsSource retention'
+            '[leak-scanx] Picker.ItemsSource retention'
+            '[leak-fix]Fix Picker.ItemsSource retention'
+            '[leak-fix]x Fix Picker.ItemsSource retention'
+            '[leak-fixx] Fix Picker.ItemsSource retention'
+        ) | ForEach-Object {
+            (Get-CanonicalLeakApi -Title $_) | Should -BeNullOrEmpty
+            (Get-CanonicalExistingLeakApi -Title $_) | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'keeps short canonical-helper inputs safe without changing valid semantics' {
+        $module = Get-Module LeakWorkflowDedup
+
+        (& $module {
+                ConvertTo-CanonicalLeakApi -Api 'Picker'
+            }) | Should -Be 'Picker'
+        (& $module {
+                ConvertTo-CanonicalLeakApi -Api '.'
+            }) | Should -Be '.'
+    }
+
+    It 'returns no API for empty, whitespace-only, or malformed public title inputs' {
+        @(
+            ''
+            '   '
+            '[leak-scan]'
+            '[leak-fix]'
+            '[leak-fix] Fix Picker'
+            '[leak-scan] .ItemsSource'
+        ) | ForEach-Object {
+            (Get-CanonicalLeakApi -Title $_) | Should -BeNullOrEmpty
+            (Get-CanonicalExistingLeakApi -Title $_) | Should -BeNullOrEmpty
+        }
     }
 
     It 'accepts supported punctuation immediately after the anchored API' {
@@ -891,36 +992,241 @@ Describe 'effective recursive revert state' {
     }
 }
 
-Describe 'branch-scoped merged revert discovery' {
+Describe 'complete GraphQL pagination' {
     BeforeEach {
-        $script:discoveryCalls = [System.Collections.Generic.List[object]]::new()
-        $script:discoveryRowsByBase = @{}
+        $global:leakPaginationCalls = [System.Collections.Generic.List[object]]::new()
+        $global:leakPaginationResponses =
+            [System.Collections.Generic.Queue[string]]::new()
         function global:gh {
             param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+            $global:leakPaginationCalls.Add(@($GhArgs))
             $global:LASTEXITCODE = 0
-            $searchIndex = [Array]::IndexOf($GhArgs, '--search')
-            $search = $GhArgs[$searchIndex + 1]
-            $baseIndex = [Array]::IndexOf($GhArgs, '--base')
-            $base = $GhArgs[$baseIndex + 1]
-            $script:discoveryCalls.Add([pscustomobject]@{
-                    Search = $search
-                    Base = $base
-                })
-            $rows = if ($script:discoveryRowsByBase.ContainsKey($base)) {
-                @($script:discoveryRowsByBase[$base])
-            } else {
-                @()
+            if ($global:leakPaginationResponses.Count -eq 0) {
+                throw 'No mock GraphQL response remains.'
             }
-            Write-Output (ConvertTo-Json -InputObject $rows -Depth 5)
+            Write-Output $global:leakPaginationResponses.Dequeue()
         }
     }
 
     AfterAll {
         Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+        Remove-Variable leakPaginationCalls, leakPaginationResponses `
+            -Scope Global -ErrorAction SilentlyContinue
     }
 
+    It 'retrieves more than 1000 historical PRs without a Search ceiling' {
+        $nodes = @(1..1001 | ForEach-Object {
+                New-LeakGraphQlPullRequestNode -Number $_
+            })
+        for ($offset = 0; $offset -lt $nodes.Count; $offset += 100) {
+            $last = [Math]::Min($offset + 99, $nodes.Count - 1)
+            $pageNodes = @($nodes[$offset..$last])
+            $hasNextPage = $last -lt ($nodes.Count - 1)
+            $global:leakPaginationResponses.Enqueue(
+                (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes $pageNodes `
+                        -TotalCount $nodes.Count `
+                        -HasNextPage $hasNextPage `
+                        -EndCursor $(if ($hasNextPage) { "cursor-$last" } else { $null }))
+            )
+        }
+
+        $result = @(
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        )
+
+        $result.Count | Should -Be 1001
+        $result[0].number | Should -Be 1
+        $result[-1].number | Should -Be 1001
+        $global:leakPaginationCalls.Count | Should -Be 11
+        ($global:leakPaginationCalls | ForEach-Object { $_ -join ' ' }) |
+            Should -Not -Match '(?i)\bsearch\b|--limit'
+    }
+
+    It 'follows multiple issue pages and keeps the label scope in the query' {
+        $first = @(
+            [pscustomobject]@{
+                number = 10
+                title = '[leak-scan] First.Api — leak'
+                body = ''
+                url = 'https://github.com/dotnet/maui/issues/10'
+            }
+            [pscustomobject]@{
+                number = 11
+                title = '[leak-scan] Second.Api — leak'
+                body = ''
+                url = 'https://github.com/dotnet/maui/issues/11'
+            }
+        )
+        $second = @(
+            [pscustomobject]@{
+                number = 12
+                title = '[leak-scan] Third.Api — leak'
+                body = ''
+                url = 'https://github.com/dotnet/maui/issues/12'
+            }
+        )
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName issues `
+                    -Nodes $first `
+                    -TotalCount 3 `
+                    -HasNextPage $true `
+                    -EndCursor issue-cursor)
+        )
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName issues `
+                    -Nodes $second `
+                    -TotalCount 3 `
+                    -HasNextPage $false)
+        )
+
+        $result = @(
+            Get-CompleteLeakIssues `
+                -Repository 'dotnet/maui' `
+                -PageSize 2
+        )
+
+        $result.number | Should -Be @(10, 11, 12)
+        $global:leakPaginationCalls.Count | Should -Be 2
+        ($global:leakPaginationCalls[0] -join ' ') |
+            Should -Match 'labels: \["agentic-workflows"\]'
+        ($global:leakPaginationCalls[1] -join ' ') |
+            Should -Match 'after=issue-cursor'
+    }
+
+    It 'fails closed on malformed or incomplete page metadata' {
+        $node = New-LeakGraphQlPullRequestNode -Number 1
+        $global:leakPaginationResponses.Enqueue(
+            (@{
+                    data = @{
+                        repository = @{
+                            pullRequests = @{
+                                totalCount = 1
+                                nodes = @($node)
+                            }
+                        }
+                    }
+                } | ConvertTo-Json -Depth 8 -Compress)
+        )
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw "*connection is missing 'pageInfo'*"
+
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes @($node) `
+                    -TotalCount 2 `
+                    -HasNextPage $false)
+        )
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw '*ended after 1 unique nodes but totalCount is 2*'
+
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes @($node) `
+                    -TotalCount 2 `
+                    -HasNextPage $true)
+        )
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw '*claimed another page without a usable endCursor*'
+    }
+
+    It 'fails closed when pagination changes totalCount or repeats a cursor' {
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes @(
+                        New-LeakGraphQlPullRequestNode -Number 1
+                    ) `
+                    -TotalCount 2 `
+                    -HasNextPage $true `
+                    -EndCursor cursor-1)
+        )
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes @(
+                        New-LeakGraphQlPullRequestNode -Number 2
+                    ) `
+                    -TotalCount 3 `
+                    -HasNextPage $false)
+        )
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw '*totalCount changed from 2 to 3*'
+
+        1..2 | ForEach-Object {
+            $global:leakPaginationResponses.Enqueue(
+                (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes @(
+                            New-LeakGraphQlPullRequestNode -Number (10 + $_)
+                        ) `
+                        -TotalCount 3 `
+                        -HasNextPage $true `
+                        -EndCursor repeated)
+            )
+        }
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main')
+        } | Should -Throw "*repeated endCursor 'repeated'*"
+    }
+
+    It 'enforces the query budget before issuing an unbounded next-page request' {
+        1..2 | ForEach-Object {
+            $global:leakPaginationResponses.Enqueue(
+                (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes @(
+                            New-LeakGraphQlPullRequestNode -Number $_
+                        ) `
+                        -TotalCount 3 `
+                        -HasNextPage $true `
+                        -EndCursor "cursor-$_")
+            )
+        }
+
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main') `
+                -PageSize 1 `
+                -MaximumPageQueries 2
+        } | Should -Throw '*exceeded the 2-query pagination safety budget*'
+
+        $global:leakPaginationCalls.Count | Should -Be 2
+    }
+}
+
+Describe 'merged revert discovery from complete history' {
     It 'recursively discovers only explicit same-branch reverters of the target set' {
-        $script:discoveryRowsByBase['main'] = @(
+        $mergedHistory = @(
             New-LeakPr `
                 -Number 200 `
                 -Title 'Back out cleanup without Revert in the title' `
@@ -949,53 +1255,18 @@ Describe 'branch-scoped merged revert discovery' {
                 -Repository 'dotnet/maui' `
                 -TargetPullRequests @(
                     [pscustomobject]@{ number = 100; baseRefName = 'main' }
-                )
+                ) `
+                -MergedPullRequests $mergedHistory
         )
 
         $result.number | Should -Be @(200, 300)
-        $script:discoveryCalls.Count | Should -Be 1
-        $script:discoveryCalls[0].Search | Should -Be 'Reverts in:body'
-        $script:discoveryCalls[0].Base | Should -Be 'main'
     }
 
-    It 'fails closed when a branch-scoped snapshot reaches its result ceiling' {
-        $script:discoveryRowsByBase['main'] = @(
-            New-LeakPr -Number 200 -Title 'First' -Body 'Reverts #100'
-            New-LeakPr -Number 201 -Title 'Second' -Body 'Reverts #100'
-        )
-
-        {
-            Get-RelevantMergedLeakReverts `
-                -Repository 'dotnet/maui' `
-                -TargetPullRequests @(
-                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
-                ) `
-                -SearchLimit 2
-        } | Should -Throw "*Branch-scoped merged-revert search for 'main'*2-result ceiling*"
-    }
-
-    It 'keeps more than 30 initial seeds to one bounded branch snapshot query' {
-        $targets = @(1000..1030 | ForEach-Object {
-                [pscustomobject]@{ number = $_; baseRefName = 'main' }
-            })
-
-        $result = @(
-            Get-RelevantMergedLeakReverts `
-                -Repository 'dotnet/maui' `
-                -TargetPullRequests $targets `
-                -MaximumSearchQueries 1
-        )
-
-        $result.Count | Should -Be 0
-        $script:discoveryCalls.Count | Should -Be 1
-        $script:discoveryCalls[0].Search.Length | Should -BeLessOrEqual 256
-    }
-
-    It 'keeps more than 100 initial seeds and recursive reverters to one snapshot query' {
+    It 'keeps more than 100 seeds on one shared history scan' {
         $targets = @(1000..1100 | ForEach-Object {
                 [pscustomobject]@{ number = $_; baseRefName = 'main' }
             })
-        $script:discoveryRowsByBase['main'] = @(
+        $mergedHistory = @(
             New-LeakPr -Number 2000 -Title 'Relevant revert' -Body 'Reverts #1000'
             New-LeakPr -Number 2001 -Title 'Recursive revert' -Body 'Reverts #2000'
         )
@@ -1004,47 +1275,14 @@ Describe 'branch-scoped merged revert discovery' {
             Get-RelevantMergedLeakReverts `
                 -Repository 'dotnet/maui' `
                 -TargetPullRequests $targets `
-                -MaximumSearchQueries 1
+                -MergedPullRequests $mergedHistory
         )
 
         $result.number | Should -Be @(2000, 2001)
-        $script:discoveryCalls.Count | Should -Be 1
-    }
-
-    It 'fails closed before searching when distinct branches exceed the query budget' {
-        {
-            Get-RelevantMergedLeakReverts `
-                -Repository 'dotnet/maui' `
-                -TargetPullRequests @(
-                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
-                    [pscustomobject]@{
-                        number = 101
-                        baseRefName = 'inflight/current'
-                    }
-                ) `
-                -MaximumSearchQueries 1
-        } | Should -Throw '*requires 2 branch-scoped searches*1-query safety budget*'
-
-        $script:discoveryCalls.Count | Should -Be 0
-    }
-
-    It 'fails closed before searching when the effective query exceeds its length ceiling' {
-        {
-            Get-RelevantMergedLeakReverts `
-                -Repository 'dotnet/maui' `
-                -TargetPullRequests @(
-                    [pscustomobject]@{
-                        number = 100
-                        baseRefName = ('long-branch-' + ('x' * 220))
-                    }
-                )
-        } | Should -Throw '*exceeds GitHub*s 256-character Search API query ceiling*'
-
-        $script:discoveryCalls.Count | Should -Be 0
     }
 
     It 'fails closed when recursive discovery exhausts the aggregate traversal budget' {
-        $script:discoveryRowsByBase['main'] = @(
+        $mergedHistory = @(
             New-LeakPr -Number 200 -Title 'First revert' -Body 'Reverts #100'
             New-LeakPr -Number 300 -Title 'Second revert' -Body 'Reverts #200'
             New-LeakPr -Number 400 -Title 'Third revert' -Body 'Reverts #300'
@@ -1056,44 +1294,47 @@ Describe 'branch-scoped merged revert discovery' {
                 -TargetPullRequests @(
                     [pscustomobject]@{ number = 100; baseRefName = 'main' }
                 ) `
+                -MergedPullRequests $mergedHistory `
                 -MaximumTraversalPullRequests 3
         } | Should -Throw '*exhausted the 3-PR aggregate traversal safety budget*'
-
-        $script:discoveryCalls.Count | Should -Be 1
     }
 }
 
 Describe 'workflow enforcement boundary' {
-    It 'fails closed when the early merged-fix search reaches the GitHub Search API ceiling' {
+    It 'uses complete non-Search pagination for the early merged-fix history' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
         $stepStart = $workflow.IndexOf('# (a) Exact [leak-fix] PRs already MERGED')
         $stepEnd = $workflow.IndexOf('# Canonicalize every merged PR title', $stepStart)
         $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
 
-        $rawWrite = $step.IndexOf('> /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json')
-        $ceilingCheck = $step.IndexOf('if test "$MERGED_RAW_COUNT" -ge 1000')
+        $fetch = $step.IndexOf('Get-CompleteLeakPullRequests.ps1')
+        $state = $step.IndexOf('-State MERGED', $fetch)
         $filteredWrite = $step.IndexOf('> /tmp/gh-aw/agent/merged-leak-fix-prs.json')
 
-        $step | Should -Match '--state merged --limit 1000'
-        ($rawWrite -ge 0) | Should -BeTrue
-        ($ceilingCheck -gt $rawWrite) | Should -BeTrue
-        ($filteredWrite -gt $ceilingCheck) | Should -BeTrue
+        ($fetch -ge 0) | Should -BeTrue
+        ($state -gt $fetch) | Should -BeTrue
+        ($filteredWrite -gt $state) | Should -BeTrue
+        $step | Should -Match 'complete non-Search history'
+        $step | Should -Not -Match 'gh pr list|--search|--limit 1000'
     }
 
-    It 'uses the full Search API window and fails closed for open leak-scan issue de-dup' {
+    It 'uses complete issue pagination for open leak-scan de-dup' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
         $stepStart = $workflow.IndexOf("# This workflow's own open [leak-scan] issues")
         $stepEnd = $workflow.IndexOf('# Exact [leak-fix] PRs already MERGED', $stepStart)
         $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
 
-        $rawWrite = $step.IndexOf('> /tmp/gh-aw/agent/my-open-leakscan.json')
-        $ceilingCheck = $step.IndexOf('if test "$OPEN_LEAKSCAN_COUNT" -ge 1000')
+        $fetch = $step.IndexOf('Get-CompleteLeakIssues.ps1')
+        $rawWrite = $step.IndexOf(
+            '-OutputPath /tmp/gh-aw/agent/my-open-leakscan.json'
+        )
         $dedupRead = $step.IndexOf("jq -r '.[].title")
 
-        $step | Should -Match '--state open --label agentic-workflows --limit 1000'
-        ($rawWrite -ge 0) | Should -BeTrue
-        ($ceilingCheck -gt $rawWrite) | Should -BeTrue
-        ($dedupRead -gt $ceilingCheck) | Should -BeTrue
+        ($fetch -ge 0) | Should -BeTrue
+        ($rawWrite -gt $fetch) | Should -BeTrue
+        ($dedupRead -gt $rawWrite) | Should -BeTrue
+        $step | Should -Match 'stable totalCount/pageInfo'
+        $step | Should -Not -Match 'gh issue list|--search|--limit 1000'
     }
 
     It 'keeps source and trusted attempt-cap branch scope in parity' {
@@ -1105,8 +1346,8 @@ Describe 'workflow enforcement boundary' {
         $stepEnd = $workflow.IndexOf("`n" + '```', $stepStart)
         $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
 
-        $step | Should -Match '--json number,title,body,baseRefName,mergedAt'
-        $gate | Should -Match "'--json', 'number,title,body,baseRefName,mergedAt'"
+        $step | Should -Match '(?s)Get-CompleteLeakPullRequests\.ps1.*-State CLOSED'
+        $gate | Should -Match '(?s)Get-CompleteLeakPullRequests.*-State CLOSED'
         @($step, $gate) | ForEach-Object {
             $_ | Should -Match 'Select-LeakAuthoritativePullRequests'
             $_ | Should -Match 'one aggregate budget across both authoritative lanes'
@@ -1218,18 +1459,22 @@ Describe 'workflow enforcement boundary' {
             Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
         ) -Raw
 
-        $module | Should -Match '\$MaximumSearchQueries = 2'
+        $module | Should -Match '\$MaximumPageQueries = 1000'
+        $module | Should -Match '\$PageSize = 100'
         $module | Should -Match '\$MaximumTraversalPullRequests = 2000'
         @($wrapper, $fixGate, $hunterGate) | ForEach-Object {
             $_ | Should -Match 'Get-RelevantMergedLeakReverts'
-            $_ | Should -Not -Match 'MaximumSearchQueries'
+            $_ | Should -Not -Match 'MaximumPageQueries'
             $_ | Should -Not -Match 'MaximumTraversalPullRequests'
         }
     }
 
-    It 'uses constant-size branch snapshots with exact local revert verification' {
+    It 'uses complete cursor history with exact local revert verification' {
         $module = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+        $wrapper = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Get-RelevantMergedLeakReverts.ps1'
         ) -Raw
         $fixGate = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
@@ -1244,26 +1489,30 @@ Describe 'workflow enforcement boundary' {
             Join-Path $PSScriptRoot '../workflows/leak-fixer.md'
         ) -Raw
 
-        $module | Should -Match "\`$searchQuery = 'Reverts in:body'"
-        $module | Should -Match "'--base', \`$base"
+        $module | Should -Match 'pullRequests\('
+        $module | Should -Match 'pageInfo'
+        $module | Should -Match 'totalCount'
+        $module | Should -Match 'endCursor'
         $module | Should -Match 'Get-LeakRevertTargets'
-        $module | Should -Not -Match 'Reverts.*#\$\{targetNumber\}.*in:body'
-        $fixGate | Should -Match 'Get-RelevantMergedLeakReverts'
-        $hunterGate | Should -Match 'Get-RelevantMergedLeakReverts'
+        $module | Should -Not -Match "'--search'|gh pr list"
+        $wrapper | Should -Match 'MergedPullRequestsJsonPath'
+        @($fixGate, $hunterGate) | ForEach-Object {
+            $_ | Should -Match 'Get-CompleteLeakPullRequests'
+            $_ | Should -Match 'Get-RelevantMergedLeakReverts'
+            $_ | Should -Match 'MergedPullRequests \$merged'
+        }
         $hunter | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
         $fixer | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
         @($hunter, $fixer) | ForEach-Object {
             $documentation = $_ -replace '\r?\n[ \t]*#[ \t]?', ' '
-            $documentation |
-                Should -Match 'one bounded closed-PR snapshot per authoritative base branch'
-            $documentation | Should -Match 'constant `Reverts in:body` query'
-            $documentation | Should -Match '256-character Search API query ceiling'
-            $documentation | Should -Match '1000-result snapshot ceiling'
+            $documentation | Should -Match 'complete non-Search history'
+            $documentation | Should -Match 'GraphQL'
+            $documentation | Should -Match 'totalCount/pageInfo'
             $documentation | Should -Match 'bounded transient retries'
             $documentation | Should -Match 'capped server-directed rate-limit delays'
-            $documentation | Should -Match '1000-discovery and 2000-PR aggregate bounds'
-            $documentation |
-                Should -Not -Match 'target-scoped quer(?:y|ies)|unique target searches'
+            $documentation | Should -Match '1000-query safety budget'
+            $documentation | Should -Match '1000-discovery and 2000-PR aggregate'
+            $documentation | Should -Not -Match '1000-result|Search API'
         }
     }
 
@@ -1296,6 +1545,7 @@ Describe 'workflow enforcement boundary' {
             $global:mockClosed = @()
             $global:mockGhExitCode = 0
             $global:mockGhStderr = ''
+            $global:mockReturnAllBases = $false
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockGhExitCode
@@ -1306,27 +1556,54 @@ Describe 'workflow enforcement boundary' {
                     Write-Output 'mock gh failure'
                     return
                 }
-                $stateIndex = [Array]::IndexOf($GhArgs, '--state')
-                $state = $GhArgs[$stateIndex + 1]
-                $searchIndex = [Array]::IndexOf($GhArgs, '--search')
-                $search = $GhArgs[$searchIndex + 1]
-                if ($state -eq 'merged') {
-                    if ($search -eq 'Reverts in:body') {
-                        Write-Output (ConvertTo-Json -InputObject @($global:mockReverts) -Depth 5)
-                    } else {
-                        Write-Output (ConvertTo-Json -InputObject @($global:mockMerged) -Depth 5)
-                    }
-                } elseif ($state -eq 'closed') {
-                    Write-Output (ConvertTo-Json -InputObject @($global:mockClosed) -Depth 5)
-                } else {
-                    Write-Output (ConvertTo-Json -InputObject @($global:mockOpen) -Depth 5)
+                $queryArgument = @($GhArgs | Where-Object {
+                        $_.StartsWith('query=', [StringComparison]::Ordinal)
+                    })[0]
+                $baseArgument = @($GhArgs | Where-Object {
+                        $_.StartsWith('base=', [StringComparison]::Ordinal)
+                    })[0]
+                if ($queryArgument -notmatch 'states: \[(?<state>OPEN|CLOSED|MERGED)\]' -or
+                    [string]::IsNullOrWhiteSpace($baseArgument)) {
+                    throw 'Unexpected mock GraphQL request.'
                 }
+                $state = $Matches.state
+                $base = $baseArgument.Substring('base='.Length)
+                $source = switch ($state) {
+                    'MERGED' { @($global:mockMerged) + @($global:mockReverts) }
+                    'CLOSED' { @($global:mockClosed) }
+                    'OPEN' { @($global:mockOpen) }
+                }
+                if (-not $global:mockReturnAllBases) {
+                    $source = @($source | Where-Object {
+                            [string]$_.baseRefName -ceq $base
+                        })
+                }
+                $nodes = @($source | ForEach-Object {
+                        $node = [ordered]@{}
+                        foreach ($name in @(
+                                'number', 'title', 'body', 'baseRefName',
+                                'mergedAt', 'url'
+                            )) {
+                            $property = $_.PSObject.Properties[$name]
+                            if ($null -ne $property) {
+                                $node[$name] = $property.Value
+                            }
+                        }
+                        $node.state = $state
+                        [pscustomobject]$node
+                    })
+                Write-Output (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes $nodes `
+                        -TotalCount $nodes.Count `
+                        -HasNextPage $false)
             }
         }
 
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
-            Remove-Variable mockMerged, mockReverts, mockOpen, mockClosed, mockGhExitCode, mockGhStderr `
+            Remove-Variable mockMerged, mockReverts, mockOpen, mockClosed, mockGhExitCode, `
+                mockGhStderr, mockReturnAllBases `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -1340,7 +1617,7 @@ Describe 'workflow enforcement boundary' {
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*must start with the literal*prefix*'
+            } | Should -Throw '*must start with*followed by a space or tab*'
         }
 
         It 'accepts a tagged create-pull-request title' {
@@ -1350,6 +1627,34 @@ Describe 'workflow enforcement boundary' {
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+
+        It 'accepts tab-separated prefix grammar at the mutation boundary' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                "[leak-fix]`tFix`tGradientBrush.GradientStops reset leak"
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'rejects near-prefix output at the mutation boundary' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-fix]x Fix GradientBrush.GradientStops reset leak'
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*followed by a space or tab*'
         }
 
         It 'accepts supported punctuation after the canonical API' {
@@ -1520,6 +1825,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
         }
 
         It 'fails closed when a closed attempt is missing baseRefName' {
+            $global:mockReturnAllBases = $true
             $global:mockClosed = @(
                 [pscustomobject]@{
                     number = 605
@@ -1538,6 +1844,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
         }
 
         It 'fails closed when a closed attempt has malformed baseRefName' {
+            $global:mockReturnAllBases = $true
             $global:mockClosed = @(
                 New-LeakPr `
                     -Number 606 `
@@ -1614,6 +1921,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             $global:mockHunterReverts = @()
             $global:mockHunterGhExitCode = 0
             $global:mockHunterGhStderr = ''
+            $global:mockHunterReturnAllBases = $false
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockHunterGhExitCode
@@ -1624,24 +1932,67 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     Write-Output 'mock gh failure'
                     return
                 }
-                if ($GhArgs[0] -eq 'issue') {
-                    Write-Output (ConvertTo-Json -InputObject @($global:mockHunterOpenIssues) -Depth 5)
+                $queryArgument = @($GhArgs | Where-Object {
+                        $_.StartsWith('query=', [StringComparison]::Ordinal)
+                    })[0]
+                if ($queryArgument -match '\bissues\(') {
+                    $nodes = @($global:mockHunterOpenIssues | ForEach-Object {
+                            $node = [ordered]@{}
+                            foreach ($name in @('number', 'title', 'body', 'url')) {
+                                $property = $_.PSObject.Properties[$name]
+                                if ($null -ne $property) {
+                                    $node[$name] = $property.Value
+                                }
+                            }
+                            [pscustomobject]$node
+                        })
+                    Write-Output (New-LeakGraphQlPageJson `
+                            -ConnectionName issues `
+                            -Nodes $nodes `
+                            -TotalCount $nodes.Count `
+                            -HasNextPage $false)
                     return
                 }
-                $searchIndex = [Array]::IndexOf($GhArgs, '--search')
-                $search = $GhArgs[$searchIndex + 1]
-                if ($search -eq 'Reverts in:body') {
-                    Write-Output (ConvertTo-Json -InputObject @($global:mockHunterReverts) -Depth 5)
-                } else {
-                    Write-Output (ConvertTo-Json -InputObject @($global:mockHunterMerged) -Depth 5)
+                $baseArgument = @($GhArgs | Where-Object {
+                        $_.StartsWith('base=', [StringComparison]::Ordinal)
+                    })[0]
+                if ($queryArgument -notmatch 'states: \[MERGED\]' -or
+                    [string]::IsNullOrWhiteSpace($baseArgument)) {
+                    throw 'Unexpected mock GraphQL request.'
                 }
+                $base = $baseArgument.Substring('base='.Length)
+                $source = @($global:mockHunterMerged) + @($global:mockHunterReverts)
+                if (-not $global:mockHunterReturnAllBases) {
+                    $source = @($source | Where-Object {
+                            [string]$_.baseRefName -ceq $base
+                        })
+                }
+                $nodes = @($source | ForEach-Object {
+                        $node = [ordered]@{}
+                        foreach ($name in @(
+                                'number', 'title', 'body', 'baseRefName',
+                                'mergedAt', 'url'
+                            )) {
+                            $property = $_.PSObject.Properties[$name]
+                            if ($null -ne $property) {
+                                $node[$name] = $property.Value
+                            }
+                        }
+                        $node.state = 'MERGED'
+                        [pscustomobject]$node
+                    })
+                Write-Output (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes $nodes `
+                        -TotalCount $nodes.Count `
+                        -HasNextPage $false)
             }
         }
 
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
             Remove-Variable mockHunterOpenIssues, mockHunterMerged, mockHunterReverts, `
-                mockHunterGhExitCode, mockHunterGhStderr `
+                mockHunterGhExitCode, mockHunterGhStderr, mockHunterReturnAllBases `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -1651,6 +2002,36 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+
+        It 'accepts tab-separated issue prefix grammar at the mutation boundary' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title =
+                "[leak-scan]`tGradientBrush.GradientStops — reset leak"
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'rejects near-prefix issue output at the mutation boundary' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-scan]x GradientBrush.GradientStops — reset leak'
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*followed by a space or tab*'
         }
 
         It 'rejects a malformed issue title instead of deriving a later API token' {
@@ -1730,6 +2111,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
         }
 
         It 'fails closed before mutation when merged metadata is missing baseRefName' {
+            $global:mockHunterReturnAllBases = $true
             $global:mockHunterMerged = @(
                 [pscustomobject]@{
                     number = 704
@@ -1745,13 +2127,14 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*Final merged leak-fix de-dup search PR #704 is missing baseRefName*'
+            } | Should -Throw "*MERGED pull-request pagination for 'main' PR #704 is missing baseRefName*"
 
             Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
                 Should -BeExactly $before
         }
 
         It 'fails closed before mutation when merged metadata has malformed baseRefName' {
+            $global:mockHunterReturnAllBases = $true
             $global:mockHunterMerged = @(
                 New-LeakPr `
                     -Number 705 `
@@ -1764,7 +2147,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*Final merged leak-fix de-dup search PR #705 has malformed baseRefName*'
+            } | Should -Throw "*MERGED pull-request pagination for 'main' PR #705 has malformed baseRefName*"
 
             Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
                 Should -BeExactly $before

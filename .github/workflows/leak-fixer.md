@@ -442,24 +442,17 @@ jq -n \
     different_mechanism_prs: []
   }' > /tmp/gh-aw/agent/dedup-state.json
 # (a) Exact [leak-fix] PRs already MERGED to main/inflight/current.
-# Fail-closed: a transient fetch error writes nothing, and jq on an empty pipe still emits []
-# with exit 0 — this gate would then wrongly conclude "no merged fix exists" and let leak-fixer
-# create a duplicate PR (the exact outcome this workflow prevents). Split fetch from filter.
-if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title,body,baseRefName,mergedAt,url \
-  > /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json; then
-  echo "ERROR: 'gh pr list --state merged [leak-fix]' failed — aborting to avoid fail-open dedup that would re-create an already-merged fix." >&2
-  exit 1
-fi
-MERGED_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json)
-if test "$MERGED_RAW_COUNT" -ge 1000; then
-  echo "ERROR: 'gh pr list --state merged [leak-fix]' returned $MERGED_RAW_COUNT rows — at/above the GitHub Search API's 1000-result ceiling. The merged-fix history may be truncated, so aborting before build/test work (fail-closed)." >&2
-  exit 1
-fi
+# Fetch complete non-Search history once per authoritative base. The shared helper follows
+# 100-node GraphQL cursor pages, validates stable totalCount/pageInfo, uses bounded transient
+# retries with capped server-directed rate-limit delays, and fails closed on malformed,
+# incomplete, repeated-cursor, or over-budget pagination under a 1000-query safety budget.
+pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+  -Repository "$GITHUB_REPOSITORY" \
+  -State MERGED \
+  -OutputPath /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json
 jq '[.[] |
     select(.mergedAt != null) |
-    select(.title | startswith("[leak-fix] ")) |
+    select(.title | test("^\\[leak-fix\\][ \\t]+")) |
     select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
   /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.json
@@ -480,17 +473,14 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   | sort -u \
   > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
 
-# A merged fix is not authoritative if it was later effectively reverted. Discover reverts from
-# one bounded closed-PR snapshot per authoritative base branch. The constant `Reverts in:body`
-# query is limited to two branches, checked against the 256-character Search API query ceiling,
-# and fails closed at each 1000-result snapshot ceiling. Snapshot fetches use bounded transient
-# retries, honor capped server-directed rate-limit delays, and fail closed after exhaustion.
-# Exact repository-local direct references are indexed once, then recursive reverter chains are
-# traversed locally under 1000-discovery and 2000-PR aggregate bounds so seed count and depth
-# never multiply Search API calls.
+# A merged fix is not authoritative if it was later effectively reverted. Reuse the complete
+# merged-PR history above, index only exact repository-local direct references, and traverse
+# recursive same-branch reverter chains locally under 1000-discovery and 2000-PR aggregate
+# bounds. Seed count never multiplies GitHub queries.
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/merged-leak-fix-prs.tsv \
+  -MergedPullRequestsJsonPath /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
   -OutputPath /tmp/gh-aw/agent/merged-revert-prs.json
 pwsh .github/scripts/Get-EffectiveRevertedLeakFixes.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
@@ -534,16 +524,13 @@ awk -F '\t' '{ print "equivalent API fix already merged: #" $2 " -> " $3 " " $4 
 echo "merged issue-reference matches: $(jq 'length' /tmp/gh-aw/agent/merged-issue-fix-prs.json)"
 echo "merged canonical-API matches: $(wc -l < /tmp/gh-aw/agent/merged-api-fix-prs.tsv | tr -d ' ')"
 # (b) Open [leak-fix] PR already addressing THIS issue number?
-if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title,body,baseRefName \
-  > /tmp/gh-aw/agent/open-fix-prs-raw.json; then
-  echo "ERROR: 'gh pr list --state open [leak-fix]' failed — aborting to avoid fail-open dedup that would re-file over an already-open fix." >&2
-  exit 1
-fi
+pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+  -Repository "$GITHUB_REPOSITORY" \
+  -State OPEN \
+  -OutputPath /tmp/gh-aw/agent/open-fix-prs-raw.json
 jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
     select(.baseRefName == "main" or .baseRefName == "inflight/current") |
-    select(.title | startswith("[leak-fix] ")) |
+    select(.title | test("^\\[leak-fix\\][ \\t]+")) |
     select((.body // "") |
       test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
       test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
@@ -557,18 +544,11 @@ jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 #     Microsoft.Maui.Controls.Picker.ItemsSource memory leak" represents the same
 #     Picker.ItemsSource leak but would not match an anchored "Fix Picker\.ItemsSource" regex,
 #     letting a second concurrent fix PR for the same leak through.
-if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title,baseRefName \
-  > /tmp/gh-aw/agent/same-api-prs-raw.json; then
-  echo "ERROR: 'gh pr list --state open [leak-fix]' (same-API scan) failed — aborting to avoid fail-open dedup." >&2
-  exit 1
-fi
 jq -r '.[] |
     select(.baseRefName == "main" or .baseRefName == "inflight/current") |
-    select(.title | startswith("[leak-fix] ")) |
+    select(.title | test("^\\[leak-fix\\][ \\t]+")) |
     [.number, .title] | @tsv' \
-  /tmp/gh-aw/agent/same-api-prs-raw.json \
+  /tmp/gh-aw/agent/open-fix-prs-raw.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
       if test "$PR_API" = "$API"; then
@@ -579,14 +559,10 @@ jq -r '.[] |
   > /tmp/gh-aw/agent/same-api-prs.json
 jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
 # (d) Closed-unmerged attempts against the attempt cap (3).
-# Fail-closed: a transient fetch error must not read as "0 prior attempts" and reset the cap.
-if ! gh pr list --repo "$GITHUB_REPOSITORY" --state closed --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title,body,baseRefName,mergedAt \
-  > /tmp/gh-aw/agent/closed-fix-prs-raw.json; then
-  echo "ERROR: 'gh pr list --state closed [leak-fix]' failed — aborting so a transient error can't reset the attempt cap to 0 and re-attempt past the limit." >&2
-  exit 1
-fi
+pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+  -Repository "$GITHUB_REPOSITORY" \
+  -State CLOSED \
+  -OutputPath /tmp/gh-aw/agent/closed-fix-prs-raw.json
 # Validate every returned baseRefName before filtering.
 # The cap is one aggregate budget across both authoritative lanes: main and inflight/current.
 # These attempts represent the same canonical leak work; well-formed release/* (and other
@@ -601,7 +577,7 @@ pwsh -NoLogo -NoProfile -Command '
       -Context "Prompt closed leak-fix attempt-cap search")
   ConvertTo-Json -InputObject $authoritative -Depth 10
 ' > /tmp/gh-aw/agent/closed-fix-prs-authoritative.json
-jq '[.[] | select(.title | startswith("[leak-fix] ")) | select(.mergedAt == null)]' \
+jq '[.[] | select(.title | test("^\\[leak-fix\\][ \\t]+")) | select(.mergedAt == null)]' \
   /tmp/gh-aw/agent/closed-fix-prs-authoritative.json \
   > /tmp/gh-aw/agent/closed-unmerged-fix-prs.json
 # Count by BOTH this issue-number reference AND the canonical rooting Type.Member (same
@@ -815,21 +791,13 @@ test "$STATE_REPOSITORY" = "$GITHUB_REPOSITORY"
 REPO_RE=$(printf '%s' "$STATE_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 jq -e '.different_mechanism_prs == []' "$STATE" > /dev/null
 
-if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title,body,baseRefName,mergedAt,url \
-  > /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json; then
-  echo "ERROR: final re-check 'gh pr list --state merged [leak-fix]' failed — aborting rather than risk a duplicate PR (fail-closed)." >&2
-  exit 1
-fi
-FINAL_MERGED_COUNT=$(jq 'length' /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json)
-if test "$FINAL_MERGED_COUNT" -ge 1000; then
-  echo "ERROR: final merged [leak-fix] search reached the 1000-result ceiling — aborting because the de-dup history may be truncated." >&2
-  exit 1
-fi
+pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+  -Repository "$GITHUB_REPOSITORY" \
+  -State MERGED \
+  -OutputPath /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json
 jq '[.[] |
     select(.mergedAt != null) |
-    select(.title | startswith("[leak-fix] ")) |
+    select(.title | test("^\\[leak-fix\\][ \\t]+")) |
     select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json \
   > /tmp/gh-aw/agent/final-merged-leak-fix-prs.json
@@ -841,6 +809,7 @@ jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/final-merged-leak-fix-prs.tsv \
+  -MergedPullRequestsJsonPath /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json \
   -OutputPath /tmp/gh-aw/agent/final-merged-revert-prs.json
 pwsh .github/scripts/Get-EffectiveRevertedLeakFixes.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
@@ -870,21 +839,13 @@ jq -r '.[] | [.number, .title] | @tsv' \
       test "$PR_API" = "$API" && printf 'merged\t%s\t%s\n' "$PR" "$TITLE"
     done > /tmp/gh-aw/agent/final-merged-api-matches.tsv
 
-if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
-  --search '"[leak-fix]" in:title' \
-  --json number,title,body,baseRefName \
-  > /tmp/gh-aw/agent/final-open-fix-prs-raw.json; then
-  echo "ERROR: final re-check 'gh pr list --state open [leak-fix]' failed — aborting rather than risk a duplicate PR (fail-closed)." >&2
-  exit 1
-fi
-FINAL_OPEN_COUNT=$(jq 'length' /tmp/gh-aw/agent/final-open-fix-prs-raw.json)
-if test "$FINAL_OPEN_COUNT" -ge 1000; then
-  echo "ERROR: final open [leak-fix] search reached the 1000-result ceiling — aborting because the de-dup set may be truncated." >&2
-  exit 1
-fi
+pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+  -Repository "$GITHUB_REPOSITORY" \
+  -State OPEN \
+  -OutputPath /tmp/gh-aw/agent/final-open-fix-prs-raw.json
 jq '[.[] |
     select(.baseRefName == "main" or .baseRefName == "inflight/current") |
-    select(.title | startswith("[leak-fix] "))]' \
+    select(.title | test("^\\[leak-fix\\][ \\t]+"))]' \
   /tmp/gh-aw/agent/final-open-fix-prs-raw.json \
   > /tmp/gh-aw/agent/final-open-fix-prs.json
 jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |

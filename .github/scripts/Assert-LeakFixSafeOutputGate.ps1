@@ -29,8 +29,8 @@ if ($createItems.Count -ne 1) {
 
 $item = $createItems[0]
 $title = [string]$item.title
-if (-not $title.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
-    throw "The create-pull-request title must start with the literal '[leak-fix] ' prefix."
+if (-not (Test-LeakTitlePrefix -Title $title -Kind Fix)) {
+    throw "The create-pull-request title must start with '[leak-fix]' followed by a space or tab."
 }
 
 $api = Get-CanonicalLeakApi -Title $title
@@ -63,18 +63,10 @@ Assert-LeakDedupState `
     -Repository $Repository
 
 $merged = @(
-    Invoke-LeakGhJson -Arguments @(
-        'pr', 'list',
-        '--repo', $Repository,
-        '--state', 'merged',
-        '--limit', '1000',
-        '--search', '"[leak-fix]" in:title',
-        '--json', 'number,title,body,baseRefName,mergedAt,url'
-    )
+    Get-CompleteLeakPullRequests `
+        -Repository $Repository `
+        -State MERGED
 )
-if ($merged.Count -ge 1000) {
-    throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
 
 $authoritativeMerged = @(
     Select-LeakAuthoritativePullRequests `
@@ -83,41 +75,26 @@ $authoritativeMerged = @(
 )
 $eligibleMerged = @($authoritativeMerged | Where-Object {
         $null -ne $_.mergedAt -and
-        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal)
+        (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
     })
 $mergedReverts = @(
     Get-RelevantMergedLeakReverts `
         -Repository $Repository `
-        -TargetPullRequests $eligibleMerged
+        -TargetPullRequests $eligibleMerged `
+        -MergedPullRequests $merged
 )
 
 $open = @(
-    Invoke-LeakGhJson -Arguments @(
-        'pr', 'list',
-        '--repo', $Repository,
-        '--state', 'open',
-        '--limit', '1000',
-        '--search', '"[leak-fix]" in:title',
-        '--json', 'number,title,body,baseRefName,mergedAt,url'
-    )
+    Get-CompleteLeakPullRequests `
+        -Repository $Repository `
+        -State OPEN
 )
-if ($open.Count -ge 1000) {
-    throw "Open [leak-fix] search returned $($open.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
 
 $closed = @(
-    Invoke-LeakGhJson -Arguments @(
-        'pr', 'list',
-        '--repo', $Repository,
-        '--state', 'closed',
-        '--limit', '1000',
-        '--search', '"[leak-fix]" in:title',
-        '--json', 'number,title,body,baseRefName,mergedAt'
-    )
+    Get-CompleteLeakPullRequests `
+        -Repository $Repository `
+        -State CLOSED
 )
-if ($closed.Count -ge 1000) {
-    throw "Closed [leak-fix] search returned $($closed.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
 $authoritativeClosed = @(
     Select-LeakAuthoritativePullRequests `
         -PullRequests $closed `
@@ -131,7 +108,7 @@ $closedAttempts = @($authoritativeClosed | Where-Object {
             -IssueNumber $issueNumber `
             -Repository $Repository
         $null -eq $_.mergedAt -and
-        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
+        (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix) -and
         ($referencesIssue -or
             (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) -ceq $api)
     } | Sort-Object number -Unique)

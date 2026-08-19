@@ -2,11 +2,34 @@ function ConvertTo-CanonicalLeakApi {
     param([Parameter(Mandatory = $true)][string]$Api)
 
     $segments = $Api.Split('.')
+    if ($segments.Count -lt 2) {
+        return $Api
+    }
     if ($segments.Count -eq 2 -or
         $Api.StartsWith('Microsoft.Maui.', [StringComparison]::Ordinal)) {
         return "$($segments[-2]).$($segments[-1])"
     }
     return $Api
+}
+
+function Test-LeakTitlePrefix {
+    param(
+        [AllowEmptyString()][string]$Title,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Scan', 'Fix')]
+        [string]$Kind
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Title)) {
+        return $false
+    }
+
+    $prefix = if ($Kind -eq 'Scan') {
+        '\[leak-scan\]'
+    } else {
+        '\[leak-fix\]'
+    }
+    return $Title -cmatch "^$prefix[ `t]+"
 }
 
 function Get-CanonicalLeakApi {
@@ -19,9 +42,9 @@ function Get-CanonicalLeakApi {
     $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
     $identifierChain = '[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+'
     $apiBoundary = '(?=[ \t,:()\-\u2013\u2014]|$|\.(?=[ \t]|$))'
-    $match = if ($normalized.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
+    $match = if (Test-LeakTitlePrefix -Title $normalized -Kind Scan) {
         [regex]::Match($normalized, "^\[leak-scan\][ `t]+(?<api>$identifierChain)$apiBoundary")
-    } elseif ($normalized.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
+    } elseif (Test-LeakTitlePrefix -Title $normalized -Kind Fix) {
         [regex]::Match($normalized, "^\[leak-fix\][ `t]+Fix[ `t]+(?<api>$identifierChain)$apiBoundary")
     } else {
         return $null
@@ -49,12 +72,12 @@ function Get-CanonicalExistingLeakApi {
     $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
     $shortApi = '[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*'
     $apiBoundary = '(?=[ \t,:()\-\u2013\u2014]|$|\.(?=[ \t]|$))'
-    $match = if ($normalized.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
+    $match = if (Test-LeakTitlePrefix -Title $normalized -Kind Scan) {
         [regex]::Match(
             $normalized,
             "^\[leak-scan\][ `t]+Shell[ `t]+(?<api>$shortApi)$apiBoundary"
         )
-    } elseif ($normalized.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
+    } elseif (Test-LeakTitlePrefix -Title $normalized -Kind Fix) {
         [regex]::Match(
             $normalized,
             "^\[leak-fix\][ `t]+Fix[ `t]+Shell[ `t]+(?<api>$shortApi)$apiBoundary"
@@ -70,7 +93,10 @@ function Get-CanonicalExistingLeakApi {
 }
 
 function Read-RegularJsonFile {
-    param([Parameter(Mandatory = $true)][string]$Path)
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [ValidateRange(1, 256MB)][long]$MaximumBytes = 1MB
+    )
 
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         throw "Required JSON file is missing: $Path"
@@ -80,7 +106,7 @@ function Read-RegularJsonFile {
         throw "Refusing symbolic-link JSON file: $Path"
     }
     $raw = Get-Content -LiteralPath $Path -Raw
-    if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Length -gt 1MB) {
+    if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Length -gt $MaximumBytes) {
         throw "JSON file is empty or too large: $Path"
     }
     try {
@@ -293,6 +319,11 @@ function Invoke-LeakGhJson {
 
     # Preserve structured exit-code handling if a future host flips the native-command default.
     $PSNativeCommandUseErrorActionPreference = $false
+    $commandText = (($Arguments -join ' ') `
+            -replace '[\x00-\x20\x7F]', ' ').Trim()
+    if ($commandText.Length -gt 1000) {
+        $commandText = "$($commandText.Substring(0, 1000))..."
+    }
     for ($attempt = 1; $attempt -le $MaximumAttempts; $attempt++) {
         $output = & gh @Arguments 2>&1
         $exitCode = $LASTEXITCODE
@@ -306,12 +337,12 @@ function Invoke-LeakGhJson {
 
         if ($exitCode -eq 0) {
             if ([string]::IsNullOrWhiteSpace($stdout)) {
-                throw "'gh $($Arguments -join ' ')' returned an empty response."
+                throw "'gh $commandText' returned an empty response."
             }
             try {
                 return $stdout | ConvertFrom-Json
             } catch {
-                throw "'gh $($Arguments -join ' ')' returned invalid JSON: $($_.Exception.Message)"
+                throw "'gh $commandText' returned invalid JSON: $($_.Exception.Message)"
             }
         }
 
@@ -322,7 +353,7 @@ function Invoke-LeakGhJson {
         if ($detail.Length -gt 2000) {
             $detail = "$($detail.Substring(0, 2000))..."
         }
-        $message = "'gh $($Arguments -join ' ')' failed with exit code $exitCode after $attempt attempt(s)."
+        $message = "'gh $commandText' failed with exit code $exitCode after $attempt attempt(s)."
         if (-not [string]::IsNullOrWhiteSpace($detail)) {
             $message = "$message Output: $detail"
         }
@@ -361,16 +392,412 @@ function Invoke-LeakGhJson {
         throw $message
     }
 
-    throw "'gh $($Arguments -join ' ')' exhausted its retry budget unexpectedly."
+    throw "'gh $commandText' exhausted its retry budget unexpectedly."
+}
+
+function Get-LeakRequiredPropertyValue {
+    param(
+        [Parameter(Mandatory = $true)][AllowNull()][object]$Object,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    if ($null -eq $Object) {
+        throw "$Context is null."
+    }
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        throw "$Context is missing '$Name'."
+    }
+    if ($property.Value -is [System.Array]) {
+        return ,$property.Value
+    }
+    return $property.Value
+}
+
+function Get-LeakRepositoryCoordinates {
+    param([Parameter(Mandatory = $true)][string]$Repository)
+
+    if ($Repository -notmatch '^(?<owner>[A-Za-z0-9_.-]+)/(?<name>[A-Za-z0-9_.-]+)$' -or
+        $Matches.owner -in @('.', '..') -or
+        $Matches.name -in @('.', '..')) {
+        throw "Repository '$Repository' is not a valid owner/name slug."
+    }
+
+    return [pscustomobject]@{
+        Owner = $Matches.owner
+        Name = $Matches.name
+    }
+}
+
+function Invoke-LeakGraphQlConnection {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][string]$Query,
+        [Parameter(Mandatory = $true)][string]$ConnectionName,
+        [Parameter(Mandatory = $true)][string]$Context,
+        [hashtable]$Variables = @{},
+        [ValidateRange(1, 100)][int]$PageSize = 100,
+        [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000,
+        [Parameter(Mandatory = $true)][hashtable]$QueryBudget
+    )
+
+    $coordinates = Get-LeakRepositoryCoordinates -Repository $Repository
+    $items = [System.Collections.Generic.List[object]]::new()
+    $seenKeys = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    $seenCursors = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    [long]$expectedTotal = -1
+    $cursor = $null
+
+    while ($true) {
+        if ([int]$QueryBudget.Queries -ge $MaximumPageQueries) {
+            throw "$Context exceeded the $MaximumPageQueries-query pagination safety budget before proving the connection complete."
+        }
+        $QueryBudget.Queries = [int]$QueryBudget.Queries + 1
+
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        @(
+            'api', 'graphql',
+            '-f', "query=$Query",
+            '-f', "owner=$($coordinates.Owner)",
+            '-f', "name=$($coordinates.Name)",
+            '-F', "first=$PageSize"
+        ) | ForEach-Object { $arguments.Add($_) }
+        foreach ($key in @($Variables.Keys | Sort-Object)) {
+            $arguments.Add('-f')
+            $arguments.Add("$key=$($Variables[$key])")
+        }
+        if (-not [string]::IsNullOrWhiteSpace($cursor)) {
+            $arguments.Add('-f')
+            $arguments.Add("after=$cursor")
+        }
+
+        $response = Invoke-LeakGhJson -Arguments $arguments.ToArray()
+        $errorsProperty = $response.PSObject.Properties['errors']
+        if ($null -ne $errorsProperty -and @($errorsProperty.Value).Count -gt 0) {
+            throw "$Context returned GraphQL errors."
+        }
+
+        $data = Get-LeakRequiredPropertyValue `
+            -Object $response `
+            -Name 'data' `
+            -Context "$Context response"
+        $repositoryNode = Get-LeakRequiredPropertyValue `
+            -Object $data `
+            -Name 'repository' `
+            -Context "$Context response data"
+        $connection = Get-LeakRequiredPropertyValue `
+            -Object $repositoryNode `
+            -Name $ConnectionName `
+            -Context "$Context repository"
+        $totalValue = Get-LeakRequiredPropertyValue `
+            -Object $connection `
+            -Name 'totalCount' `
+            -Context "$Context connection"
+        if ($totalValue -isnot [int] -and $totalValue -isnot [long]) {
+            throw "$Context returned a malformed totalCount."
+        }
+        [long]$totalCount = $totalValue
+        if ($totalCount -lt 0) {
+            throw "$Context returned a negative totalCount."
+        }
+        if ($expectedTotal -lt 0) {
+            $expectedTotal = $totalCount
+        } elseif ($totalCount -ne $expectedTotal) {
+            throw "$Context totalCount changed from $expectedTotal to $totalCount during pagination."
+        }
+
+        $nodesValue = Get-LeakRequiredPropertyValue `
+            -Object $connection `
+            -Name 'nodes' `
+            -Context "$Context connection"
+        if ($nodesValue -isnot [System.Array]) {
+            throw "$Context returned malformed nodes instead of an array."
+        }
+        $nodes = @($nodesValue)
+        if ($nodes.Count -gt $PageSize) {
+            throw "$Context returned $($nodes.Count) nodes for a $PageSize-node page."
+        }
+
+        foreach ($node in $nodes) {
+            $numberValue = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'number' `
+                -Context "$Context node"
+            $number = 0
+            if (-not [int]::TryParse([string]$numberValue, [ref]$number) -or
+                $number -le 0) {
+                throw "$Context returned an invalid node number '$numberValue'."
+            }
+            if (-not $seenKeys.Add([string]$number)) {
+                throw "$Context returned duplicate node #$number across pages."
+            }
+            $items.Add($node)
+        }
+        if ($items.Count -gt $expectedTotal) {
+            throw "$Context returned more unique nodes than totalCount $expectedTotal."
+        }
+
+        $pageInfo = Get-LeakRequiredPropertyValue `
+            -Object $connection `
+            -Name 'pageInfo' `
+            -Context "$Context connection"
+        $hasNextPage = Get-LeakRequiredPropertyValue `
+            -Object $pageInfo `
+            -Name 'hasNextPage' `
+            -Context "$Context pageInfo"
+        if ($hasNextPage -isnot [bool]) {
+            throw "$Context returned malformed hasNextPage metadata."
+        }
+        $endCursor = Get-LeakRequiredPropertyValue `
+            -Object $pageInfo `
+            -Name 'endCursor' `
+            -Context "$Context pageInfo"
+
+        if (-not $hasNextPage) {
+            if ($items.Count -ne $expectedTotal) {
+                throw "$Context ended after $($items.Count) unique nodes but totalCount is $expectedTotal."
+            }
+            break
+        }
+        if ($nodes.Count -eq 0) {
+            throw "$Context claimed another page after returning an empty page."
+        }
+        if ($items.Count -ge $expectedTotal) {
+            throw "$Context claimed another page after already returning totalCount $expectedTotal."
+        }
+        if ($endCursor -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($endCursor)) {
+            throw "$Context claimed another page without a usable endCursor."
+        }
+        if (-not $seenCursors.Add($endCursor)) {
+            throw "$Context repeated endCursor '$endCursor'."
+        }
+        $cursor = $endCursor
+    }
+
+    return [pscustomobject]@{
+        Items = @($items)
+        QueryCount = [int]$QueryBudget.Queries
+    }
+}
+
+function Get-CompleteLeakPullRequests {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('OPEN', 'CLOSED', 'MERGED')]
+        [string]$State,
+        [string[]]$BaseRefNames = @('main', 'inflight/current'),
+        [ValidateRange(1, 100)][int]$PageSize = 100,
+        [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000
+    )
+
+    if ($BaseRefNames.Count -eq 0) {
+        throw 'At least one baseRefName is required.'
+    }
+
+    $query = @'
+query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(
+      first: $first
+      after: $after
+      baseRefName: $base
+      states: [__STATE__]
+      orderBy: { field: CREATED_AT, direction: ASC }
+    ) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        number
+        title
+        body
+        baseRefName
+        state
+        mergedAt
+        url
+      }
+    }
+  }
+}
+'@.Replace('__STATE__', $State)
+
+    $queryBudget = @{ Queries = 0 }
+    $all = [System.Collections.Generic.List[object]]::new()
+    $seenNumbers = [System.Collections.Generic.HashSet[int]]::new()
+    $seenBases = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    foreach ($baseRefName in $BaseRefNames) {
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest ([pscustomobject]@{ baseRefName = $baseRefName }) `
+            -Context 'Leak pull-request pagination'
+        if (-not $seenBases.Add($base)) {
+            throw "Leak pull-request pagination received duplicate baseRefName '$base'."
+        }
+
+        $context = "$State pull-request pagination for '$base'"
+        $connection = Invoke-LeakGraphQlConnection `
+            -Repository $Repository `
+            -Query $query `
+            -ConnectionName 'pullRequests' `
+            -Context $context `
+            -Variables @{ base = $base } `
+            -PageSize $PageSize `
+            -MaximumPageQueries $MaximumPageQueries `
+            -QueryBudget $queryBudget
+
+        foreach ($node in @($connection.Items)) {
+            $number = [int](Get-LeakRequiredPropertyValue `
+                    -Object $node `
+                    -Name 'number' `
+                    -Context "$context node")
+            if (-not $seenNumbers.Add($number)) {
+                throw "Leak pull-request pagination returned PR #$number under multiple base branches."
+            }
+            $nodeBase = Get-NormalizedLeakBaseRefName `
+                -PullRequest $node `
+                -Context $context
+            if ($nodeBase -cne $base) {
+                throw "$context returned PR #$number for unexpected baseRefName '$nodeBase'."
+            }
+
+            $nodeState = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'state' `
+                -Context "$context PR #$number"
+            if ($nodeState -isnot [string] -or $nodeState -cne $State) {
+                throw "$context returned PR #$number with unexpected state '$nodeState'."
+            }
+            $title = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'title' `
+                -Context "$context PR #$number"
+            $body = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'body' `
+                -Context "$context PR #$number"
+            $mergedAt = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'mergedAt' `
+                -Context "$context PR #$number"
+            $url = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'url' `
+                -Context "$context PR #$number"
+            if ($title -isnot [string] -or $url -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($url) -or
+                ($null -ne $body -and $body -isnot [string])) {
+                throw "$context returned malformed text metadata for PR #$number."
+            }
+            if (($State -ceq 'MERGED' -and $null -eq $mergedAt) -or
+                ($State -cne 'MERGED' -and $null -ne $mergedAt)) {
+                throw "$context returned inconsistent mergedAt metadata for PR #$number."
+            }
+
+            $all.Add([pscustomobject]@{
+                    number = $number
+                    title = $title
+                    body = $body
+                    baseRefName = $nodeBase
+                    mergedAt = $mergedAt
+                    url = $url
+                })
+        }
+    }
+
+    return @($all | Sort-Object number)
+}
+
+function Get-CompleteLeakIssues {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [ValidateRange(1, 100)][int]$PageSize = 100,
+        [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000
+    )
+
+    $query = @'
+query($owner: String!, $name: String!, $first: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    issues(
+      first: $first
+      after: $after
+      states: [OPEN]
+      labels: ["agentic-workflows"]
+      orderBy: { field: CREATED_AT, direction: ASC }
+    ) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        number
+        title
+        body
+        url
+      }
+    }
+  }
+}
+'@
+
+    $connection = Invoke-LeakGraphQlConnection `
+        -Repository $Repository `
+        -Query $query `
+        -ConnectionName 'issues' `
+        -Context 'Open agentic-workflows issue pagination' `
+        -PageSize $PageSize `
+        -MaximumPageQueries $MaximumPageQueries `
+        -QueryBudget @{ Queries = 0 }
+    $issues = [System.Collections.Generic.List[object]]::new()
+    foreach ($node in @($connection.Items)) {
+        $number = [int](Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'number' `
+                -Context 'Open agentic-workflows issue node')
+        $title = Get-LeakRequiredPropertyValue `
+            -Object $node `
+            -Name 'title' `
+            -Context "Open agentic-workflows issue #$number"
+        $body = Get-LeakRequiredPropertyValue `
+            -Object $node `
+            -Name 'body' `
+            -Context "Open agentic-workflows issue #$number"
+        $url = Get-LeakRequiredPropertyValue `
+            -Object $node `
+            -Name 'url' `
+            -Context "Open agentic-workflows issue #$number"
+        if ($title -isnot [string] -or $url -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($url) -or
+            ($null -ne $body -and $body -isnot [string])) {
+            throw "Open agentic-workflows issue pagination returned malformed text metadata for issue #$number."
+        }
+        $issues.Add([pscustomobject]@{
+                number = $number
+                title = $title
+                body = $body
+                url = $url
+            })
+    }
+
+    return @($issues | Sort-Object number)
 }
 
 function Get-RelevantMergedLeakReverts {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$TargetPullRequests,
-        [ValidateRange(1, 1000)][int]$SearchLimit = 1000,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedPullRequests,
         [ValidateRange(1, 1000)][int]$MaximumDiscoveredPullRequests = 1000,
-        [ValidateRange(1, 2)][int]$MaximumSearchQueries = 2,
         [ValidateRange(1, 2000)][int]$MaximumTraversalPullRequests = 2000
     )
 
@@ -405,59 +832,32 @@ function Get-RelevantMergedLeakReverts {
             })
     }
 
-    if ($branches.Count -gt $MaximumSearchQueries) {
-        throw "Relevant merged-revert discovery requires $($branches.Count) branch-scoped searches, exceeding the $MaximumSearchQueries-query safety budget."
-    }
-
-    # One constant-size snapshot per eligible base branch keeps request count independent
-    # of seed count. At 100 results/page, two 1000-result snapshots stay below the normal
-    # 30 authenticated Search API requests/minute limit and fail closed at either ceiling.
-    $searchQuery = 'Reverts in:body'
-    $maximumSearchQueryLength = 256
     $revertersByTarget = @{}
-    foreach ($base in @($branches | Sort-Object)) {
-        $effectiveQuery = "repo:$Repository is:pr is:merged base:$base $searchQuery"
-        if ($effectiveQuery.Length -gt $maximumSearchQueryLength) {
-            throw "Branch-scoped merged-revert query for '$base' exceeds GitHub's $maximumSearchQueryLength-character Search API query ceiling."
+    foreach ($row in $MergedPullRequests) {
+        if ($null -eq $row.mergedAt) {
+            continue
         }
-
-        $rows = @(
-            Invoke-LeakGhJson -Arguments @(
-                'pr', 'list',
-                '--repo', $Repository,
-                '--state', 'merged',
-                '--base', $base,
-                '--limit', [string]$SearchLimit,
-                '--search', $searchQuery,
-                '--json', 'number,title,body,baseRefName,mergedAt'
-            )
-        )
-        if ($rows.Count -ge $SearchLimit) {
-            throw "Branch-scoped merged-revert search for '$base' returned $($rows.Count) rows at its $SearchLimit-result ceiling."
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest $row `
+            -Context 'Complete merged pull-request history'
+        if (-not $branches.Contains($base)) {
+            continue
         }
-
-        foreach ($row in $rows) {
-            if ($null -eq $row.mergedAt -or
-                [string]$row.baseRefName -cne $base) {
-                continue
+        $reverter = 0
+        if (-not [int]::TryParse([string]$row.number, [ref]$reverter) -or
+            $reverter -le 0) {
+            throw "Invalid merged-revert history PR number '$($row.number)'."
+        }
+        foreach ($targetNumber in @(
+                Get-LeakRevertTargets `
+                    -Body ([string]$row.body) `
+                    -Repository $Repository
+            )) {
+            if (-not $revertersByTarget.ContainsKey($targetNumber)) {
+                $revertersByTarget[$targetNumber] =
+                    [System.Collections.Generic.List[object]]::new()
             }
-
-            $reverter = 0
-            if (-not [int]::TryParse([string]$row.number, [ref]$reverter) -or
-                $reverter -le 0) {
-                throw "Invalid merged-revert search result PR number '$($row.number)'."
-            }
-            foreach ($targetNumber in @(
-                    Get-LeakRevertTargets `
-                        -Body ([string]$row.body) `
-                        -Repository $Repository
-                )) {
-                if (-not $revertersByTarget.ContainsKey($targetNumber)) {
-                    $revertersByTarget[$targetNumber] =
-                        [System.Collections.Generic.List[object]]::new()
-                }
-                $revertersByTarget[$targetNumber].Add($row)
-            }
+            $revertersByTarget[$targetNumber].Add($row)
         }
     }
 
@@ -545,7 +945,7 @@ function Get-LeakFixFinalDedupResult {
     )
     $eligibleMerged = @($authoritativeMerged | Where-Object {
             $null -ne $_.mergedAt -and
-            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal)
+            (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
         })
     $effectivelyReverted = @(
         Get-EffectiveRevertedPullRequestNumbers `
@@ -566,7 +966,7 @@ function Get-LeakFixFinalDedupResult {
             -Context 'Open leak-fix de-dup search'
     )
     $eligibleOpen = @($authoritativeOpen | Where-Object {
-            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal)
+            Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix
         })
     $eligible = @($eligibleMerged + $eligibleOpen)
 
@@ -725,6 +1125,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
 }
 
 Export-ModuleMember -Function `
+    Test-LeakTitlePrefix, `
     Get-CanonicalLeakApi, `
     Get-CanonicalExistingLeakApi, `
     Read-RegularJsonFile, `
@@ -732,6 +1133,8 @@ Export-ModuleMember -Function `
     Test-LeakPrReferencesIssue, `
     Get-LeakRevertTargets, `
     Invoke-LeakGhJson, `
+    Get-CompleteLeakPullRequests, `
+    Get-CompleteLeakIssues, `
     Get-RelevantMergedLeakReverts, `
     Assert-LeakDedupState, `
     Get-LeakFixFinalDedupResult, `
