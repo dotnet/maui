@@ -260,6 +260,51 @@ function Test-ReplicationNonReproductionIsConclusive {
     return $cleanObservations -ge 2
 }
 
+function Get-ReplicationBlockedCode {
+    <#
+        .SYNOPSIS
+        Names the outcome a blocked run reached, from what the run recorded.
+
+        .DESCRIPTION
+        Run 15013775 observed 'no defect' cleanly on three of five attempts and
+        still finished red. The non-reproduction arm additionally required the
+        final exception message to still contain REPLICATION_NOT_REPRODUCED,
+        and by the time PowerShell had rendered that message through a nested
+        error view it no longer did.
+
+        That conjunct never added anything: an attempt is recorded as
+        'not-reproduced' precisely because its summary carried the marker, and
+        the conclusiveness test already demands two such attempts. Re-reading a
+        rendered string to confirm what the attempt kinds already prove is the
+        same coupling that previously lost the boxed verdict and the error
+        gutter, so the conclusion is now drawn from the recorded outcomes alone.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$RawReason,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Stage,
+        [Parameter(Mandatory = $true)][AllowNull()][AllowEmptyCollection()]
+        [System.Collections.Generic.List[string]]$AttemptKinds
+    )
+
+    if ($RawReason.StartsWith('Copilot CLI unavailable:', [StringComparison]::Ordinal)) {
+        return 'copilot_cli_unavailable'
+    }
+    if ($RawReason.StartsWith('Unsupported replication scenario:', [StringComparison]::Ordinal)) {
+        return 'unsupported_scenario'
+    }
+    if ($RawReason.StartsWith('Copilot service unavailable during ', [StringComparison]::Ordinal)) {
+        return 'copilot_service_unavailable'
+    }
+    if ($Stage -eq 'sandbox') {
+        if (Test-ReplicationNonReproductionIsConclusive $AttemptKinds) {
+            return 'sandbox_not_reproduced'
+        }
+        return 'sandbox_inconclusive'
+    }
+    return 'verification_inconclusive'
+}
+
 function Get-ReplicationFailureSignature {
     <#
         .SYNOPSIS
@@ -3631,28 +3676,17 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 catch {
     $rawReason = [string]$_.Exception.Message
     $reason = ConvertTo-ReplicationSafeLog $rawReason 500
-    $code = if ($rawReason.StartsWith(
-        'Copilot CLI unavailable:',
-        [StringComparison]::Ordinal)) {
-        'copilot_cli_unavailable'
-    } elseif ($rawReason.StartsWith(
-        'Unsupported replication scenario:',
-        [StringComparison]::Ordinal)) {
-        'unsupported_scenario'
-    } elseif ($rawReason.StartsWith(
-        'Copilot service unavailable during ',
-        [StringComparison]::Ordinal)) {
-        'copilot_service_unavailable'
-    } elseif ($stage -eq 'sandbox' -and
-        $rawReason.Contains('REPLICATION_NOT_REPRODUCED', [StringComparison]::Ordinal) -and
-        (Test-ReplicationNonReproductionIsConclusive $sandboxAttemptKinds)) {
-        'sandbox_not_reproduced'
-    } elseif ($stage -eq 'sandbox') {
-        'sandbox_inconclusive'
-    } else {
-        'verification_inconclusive'
-    }
+    $code = Get-ReplicationBlockedCode `
+        -RawReason $rawReason `
+        -Stage $stage `
+        -AttemptKinds $sandboxAttemptKinds
     Write-BlockedCandidate -Stage $stage -Code $code -Reason $reason
+    # Run 15013775 recorded three clean 'no defect' observations and still
+    # finished red, and nothing in the log said which arm chose the code or
+    # what the attempts were classified as. State both, so a blocked run is
+    # diagnosable from its own output instead of by re-deriving it.
+    Write-Host ("ISSUE REPLICATION BLOCKED: stage={0} code={1} attemptKinds=[{2}]" -f
+        $stage, $code, ($sandboxAttemptKinds -join ', '))
     try {
         Restore-TransientSandbox
     } catch {

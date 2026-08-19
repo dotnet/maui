@@ -67,6 +67,7 @@ BeforeAll {
         'Get-ReplicationAttemptFailureKind',
         'Test-ReplicationFailureAlreadySeen',
         'Test-ReplicationNonReproductionIsConclusive',
+        'Get-ReplicationBlockedCode',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationExistingIssueTestPaths',
@@ -1593,8 +1594,14 @@ public class Issue35516
 
     It 'gates the conclusive classification on the attempt kinds' {
         $script:Source.Contains(
-            '(Test-ReplicationNonReproductionIsConclusive $sandboxAttemptKinds)') |
+            'Test-ReplicationNonReproductionIsConclusive $AttemptKinds') |
             Should -BeTrue
+        # Run 15013775 lost three clean observations because the arm also
+        # re-read the marker out of an exception PowerShell had already
+        # rendered. The recorded kinds are the evidence; the string is not.
+        $script:Source.Contains(
+            "`$rawReason.Contains('REPLICATION_NOT_REPRODUCED'") |
+            Should -BeFalse
         # An attempt retried for infrastructure flakiness is not evidence either.
         $script:Source.Contains('$sandboxAttemptKinds.RemoveAt($sandboxAttemptKinds.Count - 1)') |
             Should -BeTrue
@@ -4684,5 +4691,53 @@ public class Issue35889 : ControlsHandlerTestBase
 '@
         { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue3.cs' } |
             Should -Not -Throw
+    }
+}
+
+Describe 'Get-ReplicationBlockedCode' {
+    It 'concludes non-reproduction from the recorded kinds alone' {
+        # The conclusion must not depend on the marker still being legible in a
+        # message PowerShell has already rendered through a nested error view.
+        $rendered = "Recording the on-device reproduction failed with exit code 1. | System.Invalid | actu | BUG:' | inner exc | ["
+        Get-ReplicationBlockedCode -RawReason $rendered -Stage 'sandbox' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('other','not-reproduced','other','not-reproduced','not-reproduced')) |
+            Should -BeExactly 'sandbox_not_reproduced'
+    }
+
+    It 'still reports inconclusive when a build break cost an attempt' {
+        Get-ReplicationBlockedCode -RawReason 'whatever' -Stage 'sandbox' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('build-failed','not-reproduced','not-reproduced')) |
+            Should -BeExactly 'sandbox_inconclusive'
+    }
+
+    It 'still reports inconclusive on a single clean observation' {
+        Get-ReplicationBlockedCode -RawReason 'whatever' -Stage 'sandbox' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('not-reproduced','other','other')) |
+            Should -BeExactly 'sandbox_inconclusive'
+    }
+
+    It 'keeps the unsupported-scenario prefix ahead of the stage arms' {
+        Get-ReplicationBlockedCode -RawReason 'Unsupported replication scenario: needs Syncfusion' -Stage 'sandbox' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('not-reproduced','not-reproduced')) |
+            Should -BeExactly 'unsupported_scenario'
+    }
+
+    It 'reports verification_inconclusive outside the sandbox stage' {
+        Get-ReplicationBlockedCode -RawReason 'boom' -Stage 'test' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('not-reproduced','not-reproduced')) |
+            Should -BeExactly 'verification_inconclusive'
+    }
+}
+
+Describe 'blocked run diagnosability' {
+    It 'states the stage, the chosen code, and the recorded attempt kinds' {
+        $script:Source.Contains('ISSUE REPLICATION BLOCKED: stage={0} code={1} attemptKinds=[{2}]') |
+            Should -BeTrue
+        # It has to be emitted for every blocked run, not only the ones that
+        # exit 0, because the red ones are the ones that need diagnosing.
+        $blocked = $script:Source.IndexOf('ISSUE REPLICATION BLOCKED:')
+        $conclusive = $script:Source.IndexOf('ISSUE REPLICATION CONCLUDED WITHOUT A CANDIDATE:')
+        $blocked | Should -BeGreaterThan 0
+        $blocked | Should -BeLessThan $conclusive
     }
 }
