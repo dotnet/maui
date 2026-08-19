@@ -883,6 +883,14 @@ function Get-ReplicationOwningProjectTargetFrameworks {
     return $null
 }
 
+function Get-ReplicationPlatformClosureMarker {
+    # The orchestrator escalates the test tier when it sees this, so the
+    # sentence is shared rather than written out twice. A rejection here can
+    # never be repaired in place: no edit to the test makes its project target
+    # another platform.
+    return 'platform code is not present in the tested closure'
+}
+
 function Assert-ReplicationTestRunsOnEvidencePlatform {
     <#
     .SYNOPSIS
@@ -935,7 +943,7 @@ function Assert-ReplicationTestRunsOnEvidencePlatform {
     $projectName = if ($project.ProjectPath) { Split-Path -Leaf $project.ProjectPath } else { 'the owning project' }
     throw ("Candidate test source '$Path' is compiled by $projectName, which declares the single " +
         "non-platform target framework '$value'. There is no $Platform build of that assembly, so the " +
-        "platform code is not present in the tested closure and the test cannot be evidence for a " +
+        (Get-ReplicationPlatformClosureMarker) + " and the test cannot be evidence for a " +
         "reproduction recorded on $Platform. Author the test where it builds for $Platform, such as a " +
         'device test project or the UI test host application.')
 }

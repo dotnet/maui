@@ -80,6 +80,7 @@ BeforeAll {
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationTestPassedDiagnosis',
     'Get-ReplicationDriverElementFailurePattern',
+    'Test-ReplicationTierCannotBuildForPlatform',
         'Get-ReplicationTestAttemptKind',
         'Remove-ReplicationLogNoise',
         'Get-ReplicationExistingIssueTestPaths',
@@ -5351,5 +5352,45 @@ Describe 'Prompt refuses a multi-sample oracle a flat fill would satisfy' {
 
     It 'requires sample points to be in bounds and on the measured surface' {
         $script:Source | Should -Match 'proven in bounds and on the surface being measured'
+    }
+}
+
+Describe 'A tier with no build for the platform escalates instead of stalling' {
+    # Build 15016657 spent all five Windows attempts answering "Blocked: the
+    # locked unit-test path cannot build for Windows", because the repair
+    # prompt forbids changing testType and nothing else could help.
+    It 'recognises the rejection the guard actually throws' {
+        # Round trip through the guard so rewording either side is caught.
+        $repoRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([guid]::NewGuid())
+        $projectDir = Join-Path $repoRoot 'src/Controls/tests/Core.UnitTests'
+        New-Item -ItemType Directory -Path $projectDir -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $projectDir 'Controls.Core.UnitTests.csproj') `
+            -Value '<Project><PropertyGroup><TargetFramework>$(_MauiDotNetTfm)</TargetFramework></PropertyGroup></Project>'
+        $testPath = 'src/Controls/tests/Core.UnitTests/Issue36251Tests.cs'
+        Set-Content -LiteralPath (Join-Path $repoRoot $testPath) -Value '// test'
+        try {
+            $thrown = $null
+            try {
+                Assert-ReplicationTestRunsOnEvidencePlatform `
+                    -Path $testPath -TestType 'UnitTest' -Platform 'windows' -RepositoryRoot $repoRoot
+            } catch { $thrown = $_ }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            Test-ReplicationTierCannotBuildForPlatform $thrown.Exception.Message |
+                Should -BeTrue
+        } finally {
+            Remove-Item -LiteralPath $repoRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not escalate on an ordinary repairable failure' {
+        Test-ReplicationTierCannotBuildForPlatform 'error CS0246: type not found' |
+            Should -BeFalse
+    }
+
+    It 'tells the planner the instruction to keep testType no longer applies' {
+        # The agent refused to change tier because it believed the type and
+        # file list were locked.
+        $script:Source | Should -Match 'You are now expected to change testType and files'
     }
 }

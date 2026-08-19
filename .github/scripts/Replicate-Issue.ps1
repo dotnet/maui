@@ -692,6 +692,26 @@ function Test-ReplicationRefundsTestAttempt {
     return (Test-ReplicationTestBuildFailure $FailureSummary)
 }
 
+function Test-ReplicationTierCannotBuildForPlatform {
+    <#
+        .SYNOPSIS
+        Detects a tier that will never compile for the evidence platform.
+
+        .DESCRIPTION
+        The guard rejects a test whose owning project has no build for the
+        platform the recording was made on. That is not repairable in place,
+        so it is a stronger signal to change tier than a passing test is.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$FailureSummary
+    )
+
+    return [bool]([string]$FailureSummary -match
+        [regex]::Escape((Get-ReplicationPlatformClosureMarker)))
+}
+
 function Get-ReplicationTestPassedDiagnosis {
     <#
         .SYNOPSIS
@@ -3920,8 +3940,18 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                         $escalateTestTier = $true
                     }
                 }
+                if (-not $finalPlanRound -and
+                    (Test-ReplicationTierCannotBuildForPlatform $repairFailureSummary)) {
+                    # No edit to a test makes its project target another
+                    # platform, so there is nothing to repair and no reason to
+                    # wait for a second opinion. Build 15016657 spent all five
+                    # attempts reporting that it was blocked, because the
+                    # repair prompt forbids changing testType and the only
+                    # remedy is a different tier.
+                    $escalateTestTier = $true
+                }
                 if ($escalateTestTier) {
-                    Write-Host ("The {0} tier produced a passing test twice; re-planning at a tier that can observe the recorded reproduction." -f
+                    Write-Host ("The {0} tier cannot prove this reproduction; re-planning at a tier that can observe it." -f
                         $plannedTestProposal.testType)
                 }
                 elseif (Test-ReplicationRefundsTestAttempt `
@@ -3953,7 +3983,8 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
             break
         }
         $tierEscalationSummary = @"
-The previously planned $($plannedTestProposal.testType) test compiled and ran but passed, so that tier cannot observe the defect the recording already proved.
+The previously planned $($plannedTestProposal.testType) tier cannot observe the defect the recording already proved, either because it compiled and ran but passed, or because its project has no build for the platform the recording was made on.
+You are now expected to change testType and files. The instruction to keep them was for repairing a test within a tier, and it no longer applies.
 Plan the test again at a tier that exercises the same path as the recorded reproduction, escalating unit or XAML to device, and device to UI when the recording required real navigation, gesture, or rendering behaviour.
 Explain in lighterTypesRejected why the previous tier could not observe it. Choose different test files; do not re-propose the same paths.
 "@
