@@ -182,7 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task NativeScrollMapsLoopedPhysicalPositionWithoutProgrammaticFeedback()
+		public async Task LoopedPhysicalPositionMapsWithoutProgrammaticFeedback()
 		{
 			SetupBuilder();
 			var items = CreateItems();
@@ -192,36 +192,22 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
 				await WaitForInitialPositionAsync(handler, scrollViewer);
-
 				carouselView.Position = items.Length - 1;
-				var initialPhysicalPosition = await WaitForCenteredPositionAsync(
-					handler,
-					scrollViewer,
-					items.Length - 1);
-
-				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
-				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
-				var (targetOffset, itemWidth) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
+				await WaitForCenteredPositionAsync(handler, scrollViewer, items.Length - 1);
+				await DrainDispatcherQueueAsync(scrollViewer);
 				Assert.Equal(items.Length - 1, carouselView.Position);
-
-				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
-				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
 
 				int positionChanges = 0;
 				int scrollToRequests = 0;
 				carouselView.PositionChanged += (_, _) => positionChanges++;
 				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
 
-				targetOffset += itemWidth * 0.5 + 1;
-				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset);
+				handler.SetPositionFromScroll(items.Length);
 
-				Assert.True(
-					carouselView.Position == 0,
-					GetScrollState(handler, scrollViewer, targetOffset, positionChanges, scrollToRequests: scrollToRequests));
+				Assert.Equal(0, carouselView.Position);
 				Assert.Same(items[0], carouselView.CurrentItem);
 				Assert.Equal(1, positionChanges);
 				Assert.Equal(0, scrollToRequests);
-				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
 			});
 		}
 

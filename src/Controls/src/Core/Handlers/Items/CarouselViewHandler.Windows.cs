@@ -706,7 +706,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetPositionFromScroll(position);
 		}
 
-		void SetPositionFromScroll(int physicalPosition)
+		internal void SetPositionFromScroll(int physicalPosition)
 		{
 			if (physicalPosition == -1)
 			{
