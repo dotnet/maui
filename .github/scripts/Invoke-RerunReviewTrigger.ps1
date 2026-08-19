@@ -133,6 +133,44 @@ function Get-MatchingCandidate {
     return @($Candidates | Where-Object { [int]$_.prNumber -eq $PRNumber } | Select-Object -First 1)
 }
 
+function Get-DeterministicRerunDecision {
+    param([Parameter(Mandatory = $true)]$Candidate)
+
+    $isDraftProperty = $Candidate.PSObject.Properties['isDraft']
+    if (-not $isDraftProperty -or $isDraftProperty.Value -isnot [bool]) {
+        throw "Candidate is missing a boolean isDraft value."
+    }
+
+    $activityProperty = $Candidate.PSObject.Properties['activity']
+    if (-not $activityProperty -or $null -eq $activityProperty.Value) {
+        throw "Candidate is missing deterministic activity metadata."
+    }
+    $activity = $activityProperty.Value
+
+    $headChangedProperty = $activity.PSObject.Properties['headChanged']
+    if (-not $headChangedProperty -or $headChangedProperty.Value -isnot [bool]) {
+        throw "Candidate activity is missing a boolean headChanged value."
+    }
+
+    $counts = @{}
+    foreach ($field in @('newAuthorCommentCount', 'newCommitCount')) {
+        $property = $activity.PSObject.Properties[$field]
+        $raw = if ($property) { ConvertTo-TrimmedString $property.Value } else { '' }
+        if ($raw -notmatch '^\d+$') {
+            throw "Candidate activity is missing a non-negative integer $field value."
+        }
+        $counts[$field] = [Int64]$raw
+    }
+
+    $hasActivity = [bool]$headChangedProperty.Value -or
+        $counts.newAuthorCommentCount -gt 0 -or
+        $counts.newCommitCount -gt 0
+    if ([bool]$isDraftProperty.Value -or -not $hasActivity) {
+        return 'skip'
+    }
+    return 'trigger'
+}
+
 function Get-PlatformFromLabels {
     param([string[]]$Labels, [string]$Fallback)
 
@@ -175,6 +213,21 @@ function Get-RerunActions {
     # normalized, validated decision ready for the github-script I/O step.
     $actions = [System.Collections.Generic.List[object]]::new()
     $hadFailure = $false
+    $duplicatePRNumbers = @($Items |
+        ForEach-Object { ConvertTo-TrimmedString $_.pr_number } |
+        Where-Object { $_ -match '^[1-9]\d*$' } |
+        Group-Object |
+        Where-Object { $_.Count -gt 1 } |
+        ForEach-Object { [int]$_.Name })
+    if ($duplicatePRNumbers.Count -gt 0) {
+        foreach ($duplicatePRNumber in $duplicatePRNumbers) {
+            Write-Host "::error::Duplicate agent decisions were emitted for PR #$duplicatePRNumber."
+        }
+        return @{
+            Actions    = @()
+            HadFailure = $true
+        }
+    }
 
     foreach ($item in $Items) {
         $prNumber = 0
@@ -203,6 +256,10 @@ function Get-RerunActions {
             }
             if ([string]$candidate.headSha -ne $expectedHeadSha) {
                 throw "PR #$prNumber decision head SHA does not match candidate head SHA."
+            }
+            $expectedDecision = Get-DeterministicRerunDecision -Candidate $candidate
+            if ($decision -ne $expectedDecision) {
+                throw "PR #$prNumber decision '$decision' does not match deterministic decision '$expectedDecision'."
             }
             $activityCheckpointRaw = ConvertTo-TrimmedString $candidate.activityCheckpoint
             if ($activityCheckpointRaw -notmatch '^[1-9]\d*$') {

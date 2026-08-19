@@ -384,6 +384,8 @@ Context 'scanner decline checkpoint' {
         $markDeclined | Should -Match 'const cycleMarker = `<!-- agent-rerun-declined-cycle:\$\{headSha\}:\$\{activityKey\} -->`;'
         $markDeclined | Should -Match 'const markerText = `<!-- agent-rerun-declined:\$\{headSha\}:\$\{activityCheckpoint\} -->\\n\$\{cycleMarker\}`;'
         $markDeclined | Should -Match '\.includes\(cycleMarker\)'
+        $markDeclined | Should -Match 'nodes\{id body author\{login\}\}'
+        $markDeclined | Should -Match "comment\.author\?\.login === 'github-actions\[bot\]'"
         $markDeclined | Should -Match 'comments\(last:100,before:\$before\)'
         $markDeclined | Should -Match 'pageInfo\{hasPreviousPage startCursor\}'
         $markDeclined | Should -Match 'const maxMarkerPages = 5;'

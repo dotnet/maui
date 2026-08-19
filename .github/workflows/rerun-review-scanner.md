@@ -268,7 +268,7 @@ safe-outputs:
                       repository(owner:$owner,name:$repo){
                         pullRequest(number:$number){
                           comments(last:100,before:$before){
-                            nodes{id body}
+                            nodes{id body author{login}}
                             pageInfo{hasPreviousPage startCursor}
                           }
                         }
@@ -280,7 +280,9 @@ safe-outputs:
                   // The cycle key stays stable across a retry but changes when new
                   // same-head activity enters the deterministic candidate context.
                   existingMarker = comments.nodes.find(
-                    comment => (comment.body || '').includes(cycleMarker),
+                    comment =>
+                      comment.author?.login === 'github-actions[bot]' &&
+                      (comment.body || '').includes(cycleMarker),
                   );
                   if (!comments.pageInfo.hasPreviousPage) { break; }
                   if (markerPage + 1 >= maxMarkerPages) {

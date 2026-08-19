@@ -698,6 +698,42 @@ Describe 'Resolve-AutonomousRerunEligibility' {
             $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
         }
 
+        It 're-qualifies on a same-second author comment after a millisecond decline checkpoint' {
+            $comments = @(
+                New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+                New-TestComment -Id 2 -Body 'Posted after the checkpoint in the same GitHub timestamp second.' -CreatedAt '2026-05-31T10:00:00Z'
+            )
+
+            $result = Resolve-AutonomousRerunEligibility `
+                -Comments $comments `
+                -Commits @() `
+                -CurrentHeadSha '1111111abcdef' `
+                -PRAuthorLogin 'dev-user' `
+                -LastDeclinedAt '2026-05-31T10:00:00.500Z' `
+                -LastDeclinedHeadSha '1111111abcdef'
+
+            $result.Eligible | Should -BeTrue
+            $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
+        }
+
+        It 'does not re-qualify a comment from the second before the decline checkpoint' {
+            $comments = @(
+                New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+                New-TestComment -Id 2 -Body 'Posted before the checkpoint second.' -CreatedAt '2026-05-31T09:59:59Z'
+            )
+
+            $result = Resolve-AutonomousRerunEligibility `
+                -Comments $comments `
+                -Commits @() `
+                -CurrentHeadSha '1111111abcdef' `
+                -PRAuthorLogin 'dev-user' `
+                -LastDeclinedAt '2026-05-31T10:00:00.500Z' `
+                -LastDeclinedHeadSha '1111111abcdef'
+
+            $result.Eligible | Should -BeFalse
+            $result.Reason | Should -Be 'declined-state-unchanged'
+        }
+
         It 'ignores a decline that predates the latest AI Summary (trigger-path removal superseded by the fresh summary)' {
             $comments = @(
                 New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'

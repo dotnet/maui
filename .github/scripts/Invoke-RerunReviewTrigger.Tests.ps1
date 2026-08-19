@@ -10,7 +10,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($functionName in @('ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels', 'Expand-RerunDecisionItems', 'Get-RerunActions')) {
+    foreach ($functionName in @('ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Get-MatchingCandidate', 'Get-DeterministicRerunDecision', 'Normalize-PipelineRef', 'Get-PlatformFromLabels', 'Expand-RerunDecisionItems', 'Get-RerunActions')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -31,17 +31,27 @@ BeforeAll {
             [string]$PipelineRef = 'main',
             [Int64]$RerunCommentId = 9001,
             [Int64]$ActivityCheckpoint = 1787000000000,
-            [string]$ActivityKey = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+            [string]$ActivityKey = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            [bool]$IsDraft = $false,
+            [bool]$HeadChanged = $true,
+            [int]$NewAuthorCommentCount = 0,
+            [int]$NewCommitCount = 0
         )
 
         [pscustomobject]@{
             prNumber       = $PRNumber
+            isDraft        = $IsDraft
             headSha        = $HeadSha
             platform       = $Platform
             pipelineRef    = $PipelineRef
             rerunCommentId = $RerunCommentId
             activityCheckpoint = $ActivityCheckpoint
             activityKey = $ActivityKey
+            activity = [pscustomobject]@{
+                headChanged = $HeadChanged
+                newAuthorCommentCount = $NewAuthorCommentCount
+                newCommitCount = $NewCommitCount
+            }
         }
     }
 
@@ -253,7 +263,7 @@ Describe 'Get-RerunActions' {
 
     It 'produces an action for a valid skip decision even without a rerun comment id' {
         $items = @(New-TestDecision -PRNumber '50' -Decision 'skip' -ExpectedHeadSha 'sha50')
-        $candidates = @(New-TestCandidate -PRNumber 50 -HeadSha 'sha50' -RerunCommentId 0)
+        $candidates = @(New-TestCandidate -PRNumber 50 -HeadSha 'sha50' -RerunCommentId 0 -HeadChanged $false)
 
         $result = Get-RerunActions -Items $items -Candidates $candidates
 
@@ -267,7 +277,7 @@ Describe 'Get-RerunActions' {
 
     It 'rejects a candidate without a scan-time activity checkpoint' {
         $items = @(New-TestDecision -PRNumber '50' -Decision 'skip' -ExpectedHeadSha 'sha50')
-        $candidate = New-TestCandidate -PRNumber 50 -HeadSha 'sha50'
+        $candidate = New-TestCandidate -PRNumber 50 -HeadSha 'sha50' -HeadChanged $false
         $candidate.activityCheckpoint = $null
 
         $result = Get-RerunActions -Items $items -Candidates @($candidate)
@@ -278,7 +288,7 @@ Describe 'Get-RerunActions' {
 
     It 'rejects a candidate without a valid activity key' {
         $items = @(New-TestDecision -PRNumber '50' -Decision 'skip' -ExpectedHeadSha 'sha50')
-        $candidate = New-TestCandidate -PRNumber 50 -HeadSha 'sha50' -ActivityKey 'not-a-hash'
+        $candidate = New-TestCandidate -PRNumber 50 -HeadSha 'sha50' -ActivityKey 'not-a-hash' -HeadChanged $false
 
         $result = Get-RerunActions -Items $items -Candidates @($candidate)
 
@@ -304,7 +314,7 @@ Describe 'Get-RerunActions' {
         )
         $candidates = @(
             (New-TestCandidate -PRNumber 1 -HeadSha 's1' -RerunCommentId 11),
-            (New-TestCandidate -PRNumber 2 -HeadSha 's2' -RerunCommentId 22)
+            (New-TestCandidate -PRNumber 2 -HeadSha 's2' -RerunCommentId 22 -HeadChanged $false)
         )
 
         $result = Get-RerunActions -Items $items -Candidates $candidates
@@ -375,12 +385,45 @@ Describe 'Get-RerunActions' {
         $result.Actions[0].rerunCommentId | Should -Be 0
     }
 
+    It 'rejects a trigger for a draft candidate' {
+        $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x' -IsDraft $true)
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'rejects a trigger when every deterministic activity signal is empty' {
+        $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x' -HeadChanged $false)
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'rejects duplicate decisions for the same PR as a whole batch' {
+        $items = @(
+            (New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x'),
+            (New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
+        )
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x')
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
     It 'continues processing valid decisions after a failed one' {
         $items = @(
             (New-TestDecision -PRNumber 'bad' -Decision 'trigger' -ExpectedHeadSha 'x'),
             (New-TestDecision -PRNumber '5' -Decision 'skip' -ExpectedHeadSha 's5')
         )
-        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 's5' -RerunCommentId 1)
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 's5' -RerunCommentId 1 -HeadChanged $false)
 
         $result = Get-RerunActions -Items $items -Candidates $candidates
 

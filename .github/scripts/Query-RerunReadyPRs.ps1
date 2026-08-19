@@ -30,22 +30,43 @@ function ConvertTo-ActivityItemFromJson {
 function Get-IssueLabels {
     param([int]$Number)
 
-    return @(gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name' 2>$null)
+    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch labels for #$Number (gh api exited $LASTEXITCODE)."
+    }
+    return @($names)
 }
 
 function Get-ActivityForPR {
     param([int]$Number)
 
-    $issueComments = @(gh api "repos/$Owner/$Repo/issues/$Number/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-ActivityItemFromJson -JsonItem ($_ | ConvertFrom-Json) -Kind 'issue-comment' })
-    $reviews = @(gh api "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-ActivityItemFromJson -JsonItem ($_ | ConvertFrom-Json) -Kind 'review' })
-    $reviewComments = @(gh api "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-ActivityItemFromJson -JsonItem ($_ | ConvertFrom-Json) -Kind 'review-comment' })
+    $issueCommentsRaw = gh api "repos/$Owner/$Repo/issues/$Number/comments?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch issue comments for #$Number (gh api exited $LASTEXITCODE)."
+    }
+    $reviewsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch reviews for #$Number (gh api exited $LASTEXITCODE)."
+    }
+    $reviewCommentsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch review comments for #$Number (gh api exited $LASTEXITCODE)."
+    }
+
+    $issueComments = @($issueCommentsRaw | ForEach-Object { ConvertTo-ActivityItemFromJson -JsonItem ($_ | ConvertFrom-Json) -Kind 'issue-comment' })
+    $reviews = @($reviewsRaw | ForEach-Object { ConvertTo-ActivityItemFromJson -JsonItem ($_ | ConvertFrom-Json) -Kind 'review' })
+    $reviewComments = @($reviewCommentsRaw | ForEach-Object { ConvertTo-ActivityItemFromJson -JsonItem ($_ | ConvertFrom-Json) -Kind 'review-comment' })
     return @($issueComments + $reviews + $reviewComments)
 }
 
 function Get-CommitsForPR {
     param([int]$Number)
 
-    return @(gh api "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
+    $commitsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100" --paginate --jq '.[]'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch commits for #$Number (gh api exited $LASTEXITCODE)."
+    }
+    return @($commitsRaw | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
 function Get-PlatformFromLabels {

@@ -412,12 +412,26 @@ function Test-HasEvidenceCommentAfter {
         [object[]]$Comments,
         [Parameter(Mandatory = $true)][datetimeoffset]$Checkpoint,
         [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
-        [string]$PRAuthorLogin
+        [string]$PRAuthorLogin,
+        [switch]$IncludeCheckpointSecond
     )
 
+    $inclusiveBoundary = if ($IncludeCheckpointSecond) {
+        [DateTimeOffset]::FromUnixTimeSeconds($Checkpoint.ToUnixTimeSeconds())
+    } else {
+        $Checkpoint
+    }
+
     return [bool]@($Comments | Where-Object {
+        $createdAt = Get-ObjectDate $_ 'created_at'
+        $isAfterCheckpoint = if ($IncludeCheckpointSecond) {
+            $createdAt -ge $inclusiveBoundary
+        } else {
+            $createdAt -gt $Checkpoint
+        }
         (Test-CommentIsEvidence -Comment $_ -CurrentCommentId $CurrentCommentId -PRAuthorLogin $PRAuthorLogin) -and
-        (Get-ObjectDate $_ 'created_at') -gt $Checkpoint
+        $createdAt -and
+        $isAfterCheckpoint
     } | Select-Object -First 1)
 }
 
@@ -694,7 +708,12 @@ function Resolve-AutonomousRerunEligibility {
     }
 
     $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
-    $hasNewComment = Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $effectiveCheckpoint -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin
+    $hasNewComment = Test-HasEvidenceCommentAfter `
+        -Comments $Comments `
+        -Checkpoint $effectiveCheckpoint `
+        -CurrentCommentId 0 `
+        -PRAuthorLogin $normalizedPRAuthorLogin `
+        -IncludeCheckpointSecond:$isDeclineGated
     $hasNewCommit = Test-HasCommitAfter -Commits $Commits -Checkpoint $effectiveCheckpoint
     $headDiffers = Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha
 

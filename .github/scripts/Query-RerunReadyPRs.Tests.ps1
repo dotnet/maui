@@ -21,6 +21,7 @@ AfterAll {
 Describe 'Query-RerunReadyPRs' {
     BeforeEach {
         $script:OutputPath = Join-Path $outputDir "$([Guid]::NewGuid().ToString('N')).json"
+        $script:ghFailurePattern = $null
         $script:issueComments = @(
             [pscustomobject]@{
                 id = 100
@@ -58,6 +59,11 @@ Describe 'Query-RerunReadyPRs' {
 
             $command = $GhArgs -join ' '
             $global:LASTEXITCODE = 0
+
+            if ($script:ghFailurePattern -and $command -match $script:ghFailurePattern) {
+                $global:LASTEXITCODE = 1
+                return @()
+            }
 
             if ($command -match '^pr list ') {
                 return ([pscustomobject]@{
@@ -152,5 +158,41 @@ Describe 'Query-RerunReadyPRs' {
 
         $retry.candidates[0].activityKey | Should -Be $first.candidates[0].activityKey
         $newActivity.candidates[0].activityKey | Should -Not -Be $first.candidates[0].activityKey
+    }
+
+    It 'fails loud when the ready-label lookup fails' {
+        $script:ghFailurePattern = '/issues/1/labels'
+
+        {
+            Invoke-RerunReadyPRQuery `
+                -QueryMaxPRs 5 `
+                -QueryOwner 'test-owner' `
+                -QueryRepo 'test-repo' `
+                -QueryOutputPath $script:OutputPath
+        } | Should -Throw '*Failed to fetch labels for #1*'
+    }
+
+    It 'fails loud when activity lookup fails' {
+        $script:ghFailurePattern = '/issues/1/comments'
+
+        {
+            Invoke-RerunReadyPRQuery `
+                -QueryMaxPRs 5 `
+                -QueryOwner 'test-owner' `
+                -QueryRepo 'test-repo' `
+                -QueryOutputPath $script:OutputPath
+        } | Should -Throw '*Failed to fetch issue comments for #1*'
+    }
+
+    It 'fails loud when commit lookup fails' {
+        $script:ghFailurePattern = '/pulls/1/commits'
+
+        {
+            Invoke-RerunReadyPRQuery `
+                -QueryMaxPRs 5 `
+                -QueryOwner 'test-owner' `
+                -QueryRepo 'test-repo' `
+                -QueryOutputPath $script:OutputPath
+        } | Should -Throw '*Failed to fetch commits for #1*'
     }
 }
