@@ -4,6 +4,7 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
     $issueAgentContextPath = Join-Path $PSScriptRoot '__missing-issue-agent-context.md'
+    $script:ScriptPath = $scriptPath
     $script:Source = Get-Content -LiteralPath $scriptPath -Raw
     $script:BuildSandboxPath = Join-Path $PSScriptRoot 'BuildAndRunSandbox.ps1'
     $script:BuildSandboxSource = Get-Content `
@@ -5008,5 +5009,33 @@ Describe 'a near-miss length does not discard completed work' {
 
         { ConvertTo-BoundedAgentLine -Value $value -Description 'Reported issue trigger' -MaximumLength 2000 } |
             Should -Throw -ExpectedMessage '*URL*'
+    }
+}
+
+Describe 'the test prompt names the compile traps runs actually hit' {
+    It 'teaches the W-prefixed WinUI alias that resolves CS0104' {
+        # 329 occurrences in src/ make this the repository's answer to a
+        # Controls/WinUI name clash; run 15014604 lost four attempts to it.
+        $script:Source | Should -Match "CS0104"
+        $script:Source.Contains('using WWindow = Microsoft.UI.Xaml.Window;') |
+            Should -BeTrue
+    }
+
+    It 'tells the agent not to invent APIs it has not read' {
+        $script:Source | Should -Match 'CS1061'
+        $script:Source | Should -Match 'CS0122'
+    }
+}
+
+Describe 'the orchestrator parses' {
+    It 'has no PowerShell syntax error, whatever the prompt prose contains' {
+        # A stray backtick in a prompt here-string reads as a Unicode escape
+        # and breaks the whole script, which surfaced as all 269 tests failing
+        # at once with no indication of the cause. Say it plainly instead.
+        $errors = $null
+        $null = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$null, [ref]$errors)
+
+        @($errors) | ForEach-Object { $_.Message } | Should -BeNullOrEmpty
     }
 }
