@@ -10,7 +10,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($functionName in @('ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Get-MatchingCandidate', 'Get-DeterministicRerunDecision', 'Normalize-PipelineRef', 'Get-PlatformFromLabels', 'Expand-RerunDecisionItems', 'Get-RerunActions')) {
+    foreach ($functionName in @('ConvertTo-SafeLogValue', 'Add-RerunValidationError', 'ConvertTo-TrimmedString', 'Get-MatchingCandidate', 'Get-DeterministicRerunDecision', 'Normalize-PipelineRef', 'Get-PlatformFromLabels', 'Expand-RerunDecisionItems', 'Get-RerunActions')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -251,6 +251,7 @@ Describe 'Get-RerunActions' {
         $result = Get-RerunActions -Items $items -Candidates $candidates -DefaultPipelineRef 'main'
 
         $result.HadFailure | Should -BeFalse
+        @($result.Errors).Count | Should -Be 0
         $result.Actions.Count | Should -Be 1
         $result.Actions[0].prNumber | Should -Be 123
         $result.Actions[0].decision | Should -Be 'trigger'
@@ -323,7 +324,7 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 2
     }
 
-    It 'rejects an incomplete decision batch before returning any actions' {
+    It 'keeps a valid action while flagging a missing candidate decision' {
         $items = @(
             (New-TestDecision -PRNumber '1' -Decision 'trigger' -ExpectedHeadSha 's1')
         )
@@ -335,7 +336,9 @@ Describe 'Get-RerunActions' {
         $result = Get-RerunActions -Items $items -Candidates $candidates
 
         $result.HadFailure | Should -BeTrue
-        $result.Actions.Count | Should -Be 0
+        $result.Actions.Count | Should -Be 1
+        $result.Actions[0].prNumber | Should -Be 1
+        $result.Errors | Should -Contain 'Missing agent decision for deterministic candidate PR #2.'
     }
 
     It 'flags a failure and drops the action when pr_number is not a positive integer' {
@@ -367,14 +370,29 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 0
     }
 
-    It 'rejects a decision for a PR outside the deterministic candidate set' {
-        $items = @(New-TestDecision -PRNumber '999' -Decision 'trigger' -ExpectedHeadSha 'x')
-        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x')
+    It 'keeps valid actions in order while rejecting an unexpected PR decision' {
+        $validSecond = New-TestDecision -PRNumber '2' -Decision 'skip' -ExpectedHeadSha 's2'
+        $validSecond | Add-Member -NotePropertyName activityCheckpoint -NotePropertyValue 1
+        $validSecond | Add-Member -NotePropertyName activityKey -NotePropertyValue ('f' * 64)
+        $unexpected = New-TestDecision -PRNumber '999' -Decision 'trigger' -ExpectedHeadSha 'outside'
+        $unexpected | Add-Member -NotePropertyName activityCheckpoint -NotePropertyValue 2
+        $unexpected | Add-Member -NotePropertyName activityKey -NotePropertyValue ('e' * 64)
+        $validFirst = New-TestDecision -PRNumber '1' -Decision 'trigger' -ExpectedHeadSha 's1'
+        $items = @($validSecond, $unexpected, $validFirst)
+        $candidates = @(
+            (New-TestCandidate -PRNumber 1 -HeadSha 's1' -ActivityCheckpoint 1001 -ActivityKey ('a' * 64)),
+            (New-TestCandidate -PRNumber 2 -HeadSha 's2' -HeadChanged $false -ActivityCheckpoint 2002 -ActivityKey ('b' * 64))
+        )
 
         $result = Get-RerunActions -Items $items -Candidates $candidates
 
         $result.HadFailure | Should -BeTrue
-        $result.Actions.Count | Should -Be 0
+        ($result.Actions.prNumber -join ',') | Should -Be '2,1'
+        $result.Actions[0].activityCheckpoint | Should -Be 2002
+        $result.Actions[0].activityKey | Should -Be ('b' * 64)
+        $result.Actions[1].activityCheckpoint | Should -Be 1001
+        $result.Actions[1].activityKey | Should -Be ('a' * 64)
+        $result.Errors | Should -Contain 'Agent decision for unexpected PR #999 is outside the deterministic candidate set and was rejected.'
     }
 
     It 'rejects a decision whose head SHA does not match the candidate (anti-stale / anti-hallucination)' {
@@ -420,17 +438,25 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 0
     }
 
-    It 'rejects duplicate decisions for the same PR as a whole batch' {
+    It 'keeps ordered unique actions while rejecting every decision for a duplicated PR' {
         $items = @(
-            (New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x'),
-            (New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
+            (New-TestDecision -PRNumber '3' -Decision 'skip' -ExpectedHeadSha 's3'),
+            (New-TestDecision -PRNumber '2' -Decision 'trigger' -ExpectedHeadSha 's2'),
+            (New-TestDecision -PRNumber '1' -Decision 'trigger' -ExpectedHeadSha 's1'),
+            (New-TestDecision -PRNumber '2' -Decision 'trigger' -ExpectedHeadSha 's2')
         )
-        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x')
+        $candidates = @(
+            (New-TestCandidate -PRNumber 1 -HeadSha 's1'),
+            (New-TestCandidate -PRNumber 2 -HeadSha 's2'),
+            (New-TestCandidate -PRNumber 3 -HeadSha 's3' -HeadChanged $false)
+        )
 
         $result = Get-RerunActions -Items $items -Candidates $candidates
 
         $result.HadFailure | Should -BeTrue
-        $result.Actions.Count | Should -Be 0
+        ($result.Actions.prNumber -join ',') | Should -Be '3,1'
+        @($result.Actions | Where-Object prNumber -eq 2).Count | Should -Be 0
+        $result.Errors | Should -Contain 'Duplicate agent decisions were emitted for PR #2; all decisions for that PR were rejected.'
     }
 
     It 'continues processing valid decisions after a failed one' {
@@ -445,5 +471,28 @@ Describe 'Get-RerunActions' {
         $result.HadFailure | Should -BeTrue
         $result.Actions.Count | Should -Be 1
         $result.Actions[0].prNumber | Should -Be 5
+        $result.Errors | Should -Contain 'Failed to validate agent decision: Invalid pr_number; expected positive integer string.'
+    }
+
+    It 'fully fails an all-invalid batch while retaining each actionable diagnostic' {
+        $items = @(
+            (New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 's5'),
+            (New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 's5'),
+            (New-TestDecision -PRNumber '999' -Decision 'trigger' -ExpectedHeadSha 'outside'),
+            [pscustomobject]@{ decision = 'trigger'; expected_head_sha = 'missing-number' }
+        )
+        $candidates = @(
+            (New-TestCandidate -PRNumber 5 -HeadSha 's5'),
+            (New-TestCandidate -PRNumber 6 -HeadSha 's6')
+        )
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+        $result.Errors | Should -Contain 'Duplicate agent decisions were emitted for PR #5; all decisions for that PR were rejected.'
+        $result.Errors | Should -Contain 'Missing agent decision for deterministic candidate PR #6.'
+        $result.Errors | Should -Contain 'Agent decision for unexpected PR #999 is outside the deterministic candidate set and was rejected.'
+        $result.Errors | Should -Contain 'Failed to validate agent decision: Invalid pr_number; expected positive integer string.'
     }
 }

@@ -367,3 +367,41 @@ test('comment-based trigger preserves its authenticated dispatch flow', async ()
   assert.ok(result.events.includes('reaction:42'));
   assert.deepEqual(result.messages.failures, []);
 });
+
+test('consumer dispatches the validator valid subset in emitted order', async () => {
+  const result = await executeGeneratedScanner({
+    actions: [
+      createAction(9, {
+        decision: 'trigger',
+        platform: 'android',
+        pipelineRef: 'main',
+        rerunCommentId: 90,
+      }),
+      createAction(7, {
+        decision: 'trigger',
+        platform: 'ios',
+        pipelineRef: 'main',
+        rerunCommentId: 70,
+      }),
+    ],
+  });
+
+  assert.deepEqual(
+    result.events.filter(event => event.startsWith('dispatch:')),
+    ['dispatch:9', 'dispatch:7'],
+  );
+  assert.deepEqual(result.messages.failures, []);
+});
+
+test('consumer remains enabled when validation reports a partial batch failure', () => {
+  for (const filePath of [workflowPath, workflowLockPath]) {
+    const contents = fs.readFileSync(filePath, 'utf8');
+    const marker = '- name: Dispatch review-trigger.yml for validated decisions';
+    const start = contents.indexOf(marker);
+    assert.notEqual(start, -1, `dispatch step was not found in ${filePath}`);
+    const dispatchStep = contents.slice(start, start + 1800);
+
+    assert.match(dispatchStep, /if:\s+\$\{\{ !cancelled\(\) \}\}/);
+    assert.match(dispatchStep, /RERUN_ACTIONS_PATH/);
+  }
+});

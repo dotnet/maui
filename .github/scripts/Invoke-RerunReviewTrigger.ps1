@@ -58,6 +58,17 @@ function ConvertTo-SafeLogValue {
     return $safe
 }
 
+function Add-RerunValidationError {
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$Errors,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    $safeMessage = ConvertTo-SafeLogValue $Message
+    [void]$Errors.Add($safeMessage)
+    Write-Host "::error::$safeMessage"
+}
+
 function Expand-RerunDecisionItems {
     param([object[]]$Items)
 
@@ -209,10 +220,12 @@ function Get-RerunActions {
         [string]$DefaultPipelineRef = 'main'
     )
 
-    # Returns @{ Actions = <object[]>; HadFailure = <bool> }. Each action is a
-    # normalized, validated decision ready for the github-script I/O step.
+    # Returns @{ Actions = <object[]>; HadFailure = <bool>; Errors = <string[]> }.
+    # Each action is a normalized, validated decision ready for the github-script
+    # I/O step. Invalid batch members are retained as diagnostics without
+    # suppressing independently valid actions.
     $actions = [System.Collections.Generic.List[object]]::new()
-    $hadFailure = $false
+    $errors = [System.Collections.Generic.List[string]]::new()
     $decisionNumberCounts = @{}
     $decisionPRNumberSet = [System.Collections.Generic.HashSet[int]]::new()
     foreach ($item in $Items) {
@@ -231,33 +244,23 @@ function Get-RerunActions {
         Where-Object { $_.Value -gt 1 } |
         ForEach-Object { [int]$_.Key } |
         Sort-Object)
-    if ($duplicatePRNumbers.Count -gt 0) {
-        foreach ($duplicatePRNumber in $duplicatePRNumbers) {
-            Write-Host "::error::Duplicate agent decisions were emitted for PR #$duplicatePRNumber."
-        }
-        return @{
-            Actions    = @()
-            HadFailure = $true
-        }
+    $duplicatePRNumberSet = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($duplicatePRNumber in $duplicatePRNumbers) {
+        [void]$duplicatePRNumberSet.Add($duplicatePRNumber)
+        Add-RerunValidationError -Errors $errors -Message "Duplicate agent decisions were emitted for PR #$duplicatePRNumber; all decisions for that PR were rejected."
     }
 
     $candidatePRNumberSet = [System.Collections.Generic.HashSet[int]]::new()
-    $hasInvalidCandidateNumber = $false
+    $validCandidates = [System.Collections.Generic.List[object]]::new()
     foreach ($candidate in $Candidates) {
         $raw = ConvertTo-TrimmedString $candidate.prNumber
         $parsed = 0
         if ($raw -notmatch '^[1-9]\d*$' -or -not [int]::TryParse($raw, [ref]$parsed)) {
-            Write-Host "::error::A deterministic rerun candidate has an invalid prNumber."
-            $hasInvalidCandidateNumber = $true
+            Add-RerunValidationError -Errors $errors -Message "A deterministic rerun candidate has an invalid prNumber and was rejected."
             continue
         }
         [void]$candidatePRNumberSet.Add($parsed)
-    }
-    if ($hasInvalidCandidateNumber) {
-        return @{
-            Actions    = @()
-            HadFailure = $true
-        }
+        $validCandidates.Add($candidate)
     }
 
     $missingPRNumbers = @($candidatePRNumberSet |
@@ -266,27 +269,26 @@ function Get-RerunActions {
     $unexpectedPRNumbers = @($decisionPRNumberSet |
         Where-Object { -not $candidatePRNumberSet.Contains([int]$_) } |
         Sort-Object)
-    if ($missingPRNumbers.Count -gt 0 -or $unexpectedPRNumbers.Count -gt 0) {
-        foreach ($missingPRNumber in $missingPRNumbers) {
-            Write-Host "::error::Missing agent decision for deterministic candidate PR #$missingPRNumber."
-        }
-        foreach ($unexpectedPRNumber in $unexpectedPRNumbers) {
-            Write-Host "::error::Agent decision for unexpected PR #$unexpectedPRNumber is outside the deterministic candidate set."
-        }
-        return @{
-            Actions    = @()
-            HadFailure = $true
-        }
+    foreach ($missingPRNumber in $missingPRNumbers) {
+        Add-RerunValidationError -Errors $errors -Message "Missing agent decision for deterministic candidate PR #$missingPRNumber."
+    }
+    $unexpectedPRNumberSet = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($unexpectedPRNumber in $unexpectedPRNumbers) {
+        [void]$unexpectedPRNumberSet.Add($unexpectedPRNumber)
+        Add-RerunValidationError -Errors $errors -Message "Agent decision for unexpected PR #$unexpectedPRNumber is outside the deterministic candidate set and was rejected."
     }
 
     foreach ($item in $Items) {
         $prNumber = 0
         try {
             $prNumberRaw = (ConvertTo-TrimmedString $item.pr_number)
-            if ($prNumberRaw -notmatch '^[1-9]\d*$') {
+            if ($prNumberRaw -notmatch '^[1-9]\d*$' -or -not [int]::TryParse($prNumberRaw, [ref]$prNumber)) {
                 throw "Invalid pr_number; expected positive integer string."
             }
-            $prNumber = [int]$prNumberRaw
+            if ($duplicatePRNumberSet.Contains($prNumber) -or $unexpectedPRNumberSet.Contains($prNumber)) {
+                continue
+            }
+
             $decision = (ConvertTo-TrimmedString $item.decision).ToLowerInvariant()
             $expectedHeadSha = ConvertTo-TrimmedString $item.expected_head_sha
 
@@ -297,7 +299,7 @@ function Get-RerunActions {
                 throw "Missing expected head SHA for $decision decision on PR #$prNumber."
             }
 
-            $candidate = Get-MatchingCandidate -Candidates $Candidates -PRNumber $prNumber
+            $candidate = Get-MatchingCandidate -Candidates $validCandidates.ToArray() -PRNumber $prNumber
             if (-not $candidate) {
                 throw "PR #$prNumber was not in the deterministic rerun candidate set."
             }
@@ -347,14 +349,14 @@ function Get-RerunActions {
             Write-Host "Validated PR #$prNumber decision=$decision platform=$platform pipelineRef=$pipelineRef rerunCommentId=$rerunCommentId"
         } catch {
             $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
-            Write-Host "::error::Failed to validate $target`: $(ConvertTo-SafeLogValue ([string]$_))"
-            $hadFailure = $true
+            Add-RerunValidationError -Errors $errors -Message "Failed to validate $target`: $(ConvertTo-SafeLogValue ([string]$_))"
         }
     }
 
     return @{
         Actions    = $actions.ToArray()
-        HadFailure = $hadFailure
+        HadFailure = $errors.Count -gt 0
+        Errors     = $errors.ToArray()
     }
 }
 
