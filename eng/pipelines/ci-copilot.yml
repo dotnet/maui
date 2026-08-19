@@ -101,7 +101,12 @@ stages:
     jobs:
       - job: ValidateReplicationPublisher
         displayName: 'Validate MauiBot replication publisher'
-        condition: or(eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Mode }}', 'feedback'))
+        # Replicate runs no longer pay for this job. It cost a separate agent
+        # and a full dotnet/maui checkout before any replication work started,
+        # and the identity it probes is re-checked by Publish-ReplicationPR
+        # before a pull request is opened, so nothing could be published on a
+        # credential this job would have rejected.
+        condition: eq('${{ parameters.Mode }}', 'feedback')
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -257,6 +262,16 @@ stages:
           pool: ${{ parameters.androidPool }}  # fallback to android pool
         timeoutInMinutes: 360
         steps:
+          # The run title used to be set by the publisher validation job, which
+          # replicate runs no longer schedule.
+          - bash: |
+              echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${PARAM_PLATFORM}"
+            displayName: 'Set Replication Pipeline Run Title'
+            condition: eq('${{ parameters.Mode }}', 'replicate')
+            env:
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+
           - checkout: self
             fetchDepth: 0
             persistCredentials: false

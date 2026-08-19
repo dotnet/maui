@@ -28,7 +28,9 @@ Describe 'MAUI Copilot mode routing' {
     }
 
     It 'gives feedback and replication runs distinct Azure titles' {
-        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?displayName: 'Set Replication Pipeline Run Title'"
+        # The title for a replicate run is set by the job that does the work,
+        # because replicate runs no longer schedule the publisher validation.
+        $script:Pipeline | Should -Match "(?s)job: CopilotReview.*?displayName: 'Set Replication Pipeline Run Title'"
         $script:Pipeline | Should -Match 'build\.updatebuildnumber\]Feedback snapshot'
         $script:Pipeline | Should -Match 'build\.updatebuildnumber\]Replicate issue \$\{PARAM_ISSUE_NUMBER\} \$\{PARAM_PLATFORM\}'
         $script:Pipeline | Should -Match 'build\.updatebuildnumber\]Review PR \$\{PARAM_PR_NUMBER\} \$\{PARAM_PLATFORM\}'
@@ -45,7 +47,7 @@ Describe 'MAUI Copilot mode routing' {
     }
 
     It 'uses a clean main baseline and replication-only recording dependencies' {
-        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?condition: or\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)\)"
+        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)"
         $script:Pipeline | Should -Match "displayName: 'Probe MauiBot identity and writable fork'"
         $script:Pipeline | Should -Match 'Expected at most one writable MauiBot fork of dotnet/maui'
         $script:Pipeline | Should -Match "'api', '-X', 'POST', 'repos/dotnet/maui/forks'"
