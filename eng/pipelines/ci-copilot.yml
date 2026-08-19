@@ -2796,12 +2796,31 @@ stages:
               Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_PUBLISHER_ROOT]$trustedRoot"
             displayName: 'Stage trusted replication publisher'
 
+          # A run that stops before it can produce a candidate, such as one that
+          # fails the credential pre-flight, publishes no replication artifact.
+          # There is then nothing to publish, and every later step in this job
+          # already skips on its own. Failing the download as well would report
+          # the same stopped run as a second red job.
           - task: DownloadPipelineArtifact@2
             displayName: 'Download Replication Artifacts'
+            continueOnError: true
             inputs:
               buildType: 'current'
               artifactName: 'ReplicationArtifacts'
               targetPath: '$(Pipeline.Workspace)/ReplicationArtifacts'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $candidatePath = "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json"
+              $present = Test-Path -LiteralPath $candidatePath -PathType Leaf
+              if ($present) {
+                Write-Host "Replication artifacts are available for publication."
+              } else {
+                Write-Host "The run produced no replication candidate, so there is nothing to publish."
+              }
+              Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_PRESENT]$($present.ToString().ToLowerInvariant())"
+            displayName: 'Check for replication artifacts'
+            condition: succeededOrFailed()
 
           - bash: |
               set -euo pipefail
@@ -2817,6 +2836,9 @@ stages:
               test -z "$(git status --porcelain)"
               echo "Publisher checkout pinned to ${BASE_SHA}"
             displayName: 'Pin clean replication baseline'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
             env:
               REPLICATION_BASE_SHA: $(replicationBaseSha)
 
@@ -2838,6 +2860,9 @@ stages:
               sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
               ffprobe -version | head -1
             displayName: 'Install publisher media validator'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
             timeoutInMinutes: 25
             retryCountOnTaskFailure: 2
 
@@ -2869,6 +2894,9 @@ stages:
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
               }
             displayName: 'Publish MauiBot non-reproduction outcome'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
 

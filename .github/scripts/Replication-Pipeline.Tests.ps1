@@ -221,7 +221,7 @@ Describe 'Replication issue outcome publication boundary' {
         # Build 14999448 produced a publishable candidate and then lost it
         # because this install exhausted a ten-minute budget.
         $script:Pipeline |
-            Should -Match "(?s)Install publisher media validator'\s+timeoutInMinutes: 25"
+            Should -Match "(?s)Install publisher media validator'.{0,300}?timeoutInMinutes: 25"
         $installs = [regex]::Matches(
             $script:Pipeline,
             'apt-get install -y -q(?<flags>[^\r\n]*)ffmpeg')
@@ -374,5 +374,56 @@ Describe 'The publisher validates with the scripts the run was queued with' {
         $pinIndex | Should -BeLessThan $copyIndex
         $script:Pipeline | Should -Match "\`$pinned = '\`$\(Build\.SourceVersion\)'"
         $script:Pipeline | Should -Match 'Publisher checkout is at \$actual but the run was queued at \$pinned'
+    }
+}
+
+Describe 'A run that produced nothing does not fail the publisher too' {
+    It 'tolerates a missing replication artifact' {
+        # A run that stops at the credential pre-flight publishes no artifact.
+        # The download used to fail, reporting the same stopped run as a second
+        # red job on top of the one that actually explained the problem.
+        $index = $script:Pipeline.IndexOf('Download Replication Artifacts')
+        $index | Should -BeGreaterThan -1
+
+        $window = $script:Pipeline.Substring($index, 400)
+        $window | Should -Match 'continueOnError:\s*true'
+    }
+
+    It 'records whether anything was produced before using it' {
+        $downloadIndex = $script:Pipeline.IndexOf('Download Replication Artifacts')
+        $checkIndex = $script:Pipeline.IndexOf('Check for replication artifacts')
+        $checkIndex | Should -BeGreaterThan $downloadIndex
+
+        $window = $script:Pipeline.Substring($checkIndex - 800, 800)
+        $window | Should -Match 'REPLICATION_ARTIFACT_PRESENT'
+        $window | Should -Match 'candidate\.json'
+    }
+
+    It 'skips every step that cannot work without an artifact' {
+        # Each of these reads the artifact or an output variable the stopped run
+        # never set, so without the gate they turn a clean stop back into a
+        # failure.
+        foreach ($step in @(
+            'Pin clean replication baseline',
+            'Install publisher media validator',
+            'Publish MauiBot non-reproduction outcome')) {
+            $index = $script:Pipeline.IndexOf($step)
+            $index | Should -BeGreaterThan -1
+
+            $window = $script:Pipeline.Substring($index, 260)
+            $window | Should -Match "REPLICATION_ARTIFACT_PRESENT'\], 'true'"
+        }
+    }
+
+    It 'still refuses to publish anything without a validated candidate' {
+        foreach ($step in @(
+            'Publish reproduction evidence',
+            'Move existing PRs and create MauiBot testing draft PR')) {
+            $index = $script:Pipeline.IndexOf($step)
+            $index | Should -BeGreaterThan -1
+
+            $window = $script:Pipeline.Substring($index, 260)
+            $window | Should -Match "REPLICATION_CANDIDATE_READY'\], 'true'"
+        }
     }
 }
