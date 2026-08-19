@@ -849,3 +849,151 @@ echo '{"number":1}'
         }
     }
 }
+
+Describe 'Reading a public issue when the credential is dead' {
+    BeforeAll {
+        $contextScript = Join-Path $PSScriptRoot 'Get-ReplicationIssueContext.ps1'
+        $contextAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $contextScript, [ref] $null, [ref] $null)
+        foreach ($definition in $contextAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+                }, $true)) {
+            . ([scriptblock]::Create($definition.Extent.Text))
+        }
+
+        function New-FailingGhShim {
+            param([string]$Reason)
+
+            # A global gh installed by another test file outranks PATH.
+            Remove-Item -LiteralPath 'function:gh' -ErrorAction SilentlyContinue
+
+            $directory = Join-Path ([System.IO.Path]::GetTempPath()) "ghanon-$([guid]::NewGuid())"
+            New-Item -ItemType Directory -Path $directory | Out-Null
+            $counter = Join-Path $directory 'count.txt'
+            Set-Content -LiteralPath $counter -Value '0'
+            $shim = Join-Path $directory 'gh'
+            @"
+#!/bin/bash
+n=`$(cat '$counter'); n=`$((n+1)); echo `$n > '$counter'
+echo '$Reason' >&2
+exit 1
+"@ | Set-Content -LiteralPath $shim
+            chmod +x $shim
+            return [pscustomobject]@{ Directory = $directory; Counter = $counter }
+        }
+    }
+
+    It 'falls back to an anonymous read when the token is rejected' {
+        # dotnet/maui is public, so reproducing, recording, and authoring a
+        # failing test need no credential. Tying the read to the publishing
+        # secret made an expired token block work that never needed it.
+        $shim = New-FailingGhShim -Reason 'gh: Bad credentials (HTTP 401)'
+        $original = $env:PATH
+        $anonCalls = 0
+        try {
+            $env:PATH = "$($shim.Directory):$original"
+            $body = Invoke-GitHubIssueApi -Repository 'dotnet/maui' -IssueNumber 7 `
+                -AllowAnonymousFallback `
+                -AnonymousReader { param($r, $n) $script:anonCalls++; '{"number":7}' } `
+                -WarningAction SilentlyContinue
+            $body | Should -Match '"number":7'
+        } finally {
+            $env:PATH = $original
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not read anonymously unless the caller opts in' {
+        # A run that reads anonymously cannot publish. Degrading by default
+        # would let a run look successful while producing no pull request.
+        $shim = New-FailingGhShim -Reason 'gh: Bad credentials (HTTP 401)'
+        $original = $env:PATH
+        try {
+            $env:PATH = "$($shim.Directory):$original"
+            $used = $false
+            { Invoke-GitHubIssueApi -Repository 'dotnet/maui' -IssueNumber 7 `
+                -AnonymousReader { param($r, $n) $script:used = $true; '{"number":7}' } } |
+                Should -Throw
+            $used | Should -BeFalse
+        } finally {
+            $env:PATH = $original
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not read anonymously when the issue is simply missing' {
+        # On a public repository a 404 means the issue does not exist. Asking
+        # again without a token would report the same thing more slowly.
+        $shim = New-FailingGhShim -Reason 'gh: Not Found (HTTP 404)'
+        $original = $env:PATH
+        try {
+            $env:PATH = "$($shim.Directory):$original"
+            $used = $false
+            { Invoke-GitHubIssueApi -Repository 'dotnet/maui' -IssueNumber 7 `
+                -AllowAnonymousFallback `
+                -AnonymousReader { param($r, $n) $script:used = $true; '{"number":7}' } } |
+                Should -Throw
+            $used | Should -BeFalse
+        } finally {
+            $env:PATH = $original
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'reports both failures when the anonymous retry also fails' {
+        $shim = New-FailingGhShim -Reason 'gh: Bad credentials (HTTP 401)'
+        $original = $env:PATH
+        try {
+            $env:PATH = "$($shim.Directory):$original"
+            $thrown = $null
+            try {
+                Invoke-GitHubIssueApi -Repository 'dotnet/maui' -IssueNumber 7 `
+                    -AllowAnonymousFallback `
+                    -AnonymousReader { param($r, $n) throw 'network unreachable' }
+            } catch { $thrown = $_ }
+
+            $thrown.Exception.Message | Should -Match 'anonymous retry'
+            $thrown.Exception.Message | Should -Match 'network unreachable'
+        } finally {
+            $env:PATH = $original
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'classifies only credential failures as anonymously recoverable' {
+        Test-ReplicationCredentialFailure -Reason 'gh: Bad credentials (HTTP 401)' | Should -BeTrue
+        Test-ReplicationCredentialFailure -Reason 'HTTP 401: requires authentication' | Should -BeTrue
+        Test-ReplicationCredentialFailure -Reason 'HTTP 404: Not Found' | Should -BeFalse
+        Test-ReplicationCredentialFailure -Reason 'HTTP 403: API rate limit exceeded' | Should -BeFalse
+        Test-ReplicationCredentialFailure -Reason '' | Should -BeFalse
+    }
+
+    It 'never sends the rejected token on the anonymous request' {
+        # Replaying the dead credential would turn one rejection into two and
+        # defeat the fallback entirely. Inspect the parsed code rather than the
+        # raw text so the explanatory comment cannot satisfy the check.
+        $contextScript = Join-Path $PSScriptRoot 'Get-ReplicationIssueContext.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $contextScript, [ref] $null, [ref] $null)
+        $function = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq 'Invoke-AnonymousGitHubIssueApi'
+            }, $true)
+        $function.Count | Should -Be 1
+
+        $literals = $function[0].FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.StringConstantExpressionAst]
+            }, $true) | ForEach-Object { $_.Value }
+        $literals | Where-Object { $_ -match '(?i)authorization|bearer|token' } |
+            Should -BeNullOrEmpty
+
+        $variables = $function[0].FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.VariableExpressionAst]
+            }, $true) | ForEach-Object { $_.VariablePath.UserPath }
+        $variables | Where-Object { $_ -match '(?i)token' } | Should -BeNullOrEmpty
+    }
+}

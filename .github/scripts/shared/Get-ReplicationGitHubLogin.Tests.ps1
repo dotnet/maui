@@ -287,3 +287,42 @@ Describe 'Replication GitHub login probe' {
         $pipeline | Should -Match "'Get-ReplicationGitHubLogin\.ps1',"
     }
 }
+
+Describe 'Distinguishing an unprovided secret from an expired one' {
+    BeforeAll { . "$PSScriptRoot/Get-ReplicationGitHubLogin.ps1" }
+    AfterEach { Remove-Item -LiteralPath 'env:GH_TOKEN' -ErrorAction SilentlyContinue }
+
+    It 'says the variable was never substituted rather than blaming the token' {
+        # Azure Pipelines leaves '$(Name)' in place when Name is not defined for
+        # the run. GitHub then answers 401 exactly as it would for a revoked
+        # token, but the remedies are opposite: rotating a healthy secret cannot
+        # fix a secret that is not being delivered to the ref being built.
+        $env:GH_TOKEN = '$(GH_COMMENT_TOKEN)'
+        $message = New-ReplicationGitHubFailureMessage `
+            -Description 'read the authenticated GitHub login' `
+            -Detail 'gh: Bad credentials (HTTP 401)'
+
+        $message | Should -Match 'was not substituted'
+        $message | Should -Match 'not being provided to the ref'
+        $message | Should -Not -Match 'expired or been revoked'
+    }
+
+    It 'still reports a real 401 as a credential that must be rotated' {
+        $env:GH_TOKEN = 'ghp_a_real_looking_token_value'
+        $message = New-ReplicationGitHubFailureMessage `
+            -Description 'read the authenticated GitHub login' `
+            -Detail 'gh: Bad credentials (HTTP 401)'
+
+        $message | Should -Match 'expired or been revoked'
+        $message | Should -Not -Match 'was not substituted'
+    }
+
+    It 'never echoes the credential itself into the message' {
+        $env:GH_TOKEN = 'ghp_supersecretvalue'
+        $message = New-ReplicationGitHubFailureMessage `
+            -Description 'read the authenticated GitHub login' `
+            -Detail 'gh: Bad credentials (HTTP 401)'
+
+        $message | Should -Not -Match 'supersecretvalue'
+    }
+}

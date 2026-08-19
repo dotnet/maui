@@ -229,6 +229,17 @@ Describe 'Replication credential pre-flight wiring' {
                 'eng/pipelines/ci-copilot.yml'
         }
         $script:Pipeline = Get-Content -LiteralPath $script:PipelinePath -Raw
+
+        function Get-CredentialPreflightStep {
+            # Slice the whole step rather than a fixed window, so the tests keep
+            # asserting about the step and not about how long it happens to be.
+            $marker = "displayName: 'Verify the GitHub credential before provisioning'"
+            $end = $script:Pipeline.IndexOf($marker)
+            if ($end -lt 0) { throw 'The credential pre-flight step is missing.' }
+            $start = $script:Pipeline.LastIndexOf('- pwsh:', $end)
+            if ($start -lt 0) { throw 'Could not find the start of the pre-flight step.' }
+            return $script:Pipeline.Substring($start, ($end - $start) + $marker.Length + 200)
+        }
     }
 
     It 'checks the credential before the expensive setup steps' {
@@ -252,20 +263,102 @@ Describe 'Replication credential pre-flight wiring' {
         $window | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
     }
 
-    It 'tags the run so an expired secret is visible on the summary' {
-        # Every mode shares this credential. When it dies the definition fills
-        # with red runs whose cause is only readable by opening a log.
-        $probeIndex = $script:Pipeline.IndexOf('Verify the GitHub credential')
-        $window = $script:Pipeline.Substring($probeIndex - 1400, 1400)
-        $window | Should -Match 'build\.addbuildtag\]credential-expired'
-        $window | Should -Match 'build\.addbuildtag\]github-rate-limited'
+    It 'tells an unprovided secret apart from an expired one' {
+        # Azure Pipelines leaves '$(Name)' in place when Name is not defined for
+        # the run, so the step receives that literal text and GitHub answers 401
+        # exactly as it would for a revoked token. The remedies are opposite:
+        # one needs the secret rotated, the other needs it made available to the
+        # ref being built, so reporting "rotate the token" for an undefined
+        # variable sends whoever reads it to the wrong place entirely.
+        Test-ReplicationUnexpandedVariable -Value '$(GH_COMMENT_TOKEN)' | Should -BeTrue
+        Test-ReplicationUnexpandedVariable -Value '  $(GH_COMMENT_TOKEN)  ' | Should -BeTrue
+        Test-ReplicationUnexpandedVariable -Value 'ghp_realtokenvalue' | Should -BeFalse
+        Test-ReplicationUnexpandedVariable -Value '' | Should -BeFalse
+        Test-ReplicationUnexpandedVariable -Value '$(not a variable)' | Should -BeFalse
+
+        $verdict = Get-ReplicationGitHubCredentialVerdict -Token '$(GH_COMMENT_TOKEN)' -Requester {
+            param($t, $b) throw 'GitHub must not be called for an unsubstituted variable.'
+        }
+        $verdict.Kind | Should -Be 'undefined'
+        $verdict.Usable | Should -BeFalse
+        $verdict.Message | Should -Match 'not being provided to the ref'
+        $verdict.Message | Should -Not -Match 'rotated'
+
+        (Get-ReplicationCredentialDecision -Kind 'undefined').Tag |
+            Should -Be 'credential-not-provided'
     }
 
-    It 'still fails the run after tagging it' {
-        $probeIndex = $script:Pipeline.IndexOf('Verify the GitHub credential')
-        $window = $script:Pipeline.Substring($probeIndex - 1400, 1400)
-        $tagIndex = $window.IndexOf('credential-expired')
-        $throwIndex = $window.LastIndexOf('throw')
-        $throwIndex | Should -BeGreaterThan $tagIndex
+    It 'fails only on the failures a later run could recover from' {
+        # A rate limit resets and an unreachable GitHub comes back, so those are
+        # worth failing on and running again. A wrong login is a
+        # misconfiguration nobody should work around.
+        foreach ($kind in @('ratelimited', 'unreachable', 'wronglogin')) {
+            (Get-ReplicationCredentialDecision -Kind $kind).Action |
+                Should -Be 'fail' -Because "$kind is recoverable or needs a person"
+        }
+    }
+
+    It 'keeps reproducing when only the publishing credential is dead' {
+        # dotnet/maui issues are public. Reproducing on a device, recording the
+        # evidence, and authoring a failing test need no credential, so an
+        # expired publishing secret must not discard all of that work: it is
+        # exactly the evidence that shows whether replication itself is sound.
+        foreach ($kind in @('invalid', 'empty', 'forbidden')) {
+            (Get-ReplicationCredentialDecision -Kind $kind).Action |
+                Should -Be 'degrade' -Because "$kind cannot be fixed by rerunning"
+        }
+
+        (Get-ReplicationCredentialDecision -Kind 'ok').Action | Should -Be 'continue'
+    }
+
+    It 'names every unusable credential on the run summary' {
+        # When it dies the definition fills with runs whose cause is only
+        # readable by opening a log.
+        (Get-ReplicationCredentialDecision -Kind 'invalid').Tag | Should -Be 'credential-expired'
+        (Get-ReplicationCredentialDecision -Kind 'empty').Tag | Should -Be 'credential-missing'
+        (Get-ReplicationCredentialDecision -Kind 'forbidden').Tag | Should -Be 'credential-forbidden'
+        (Get-ReplicationCredentialDecision -Kind 'ratelimited').Tag | Should -Be 'github-rate-limited'
+        (Get-ReplicationCredentialDecision -Kind 'ok').Tag | Should -BeNullOrEmpty
+    }
+
+    It 'never silently continues on a credential it could not classify' {
+        # An unknown kind must not be read as success and publish with a
+        # credential nobody checked.
+        (Get-ReplicationCredentialDecision -Kind 'something-new').Action |
+            Should -Not -Be 'continue'
+    }
+
+    It 'wires the pipeline step to the decision rather than repeating it' {
+        $step = Get-CredentialPreflightStep
+        $step | Should -Match 'Get-ReplicationCredentialDecision'
+        $step | Should -Match 'build\.addbuildtag\]\$\(\$decision\.Tag\)'
+        $step | Should -Match 'throw \$verdict\.Message'
+        $step | Should -Match 'REPLICATION_EVIDENCE_ONLY\]true'
+        $step | Should -Match 'replicationEvidenceOnly;isOutput=true\]true'
+        $step | Should -Match 'build\.addbuildtag\]evidence-only'
+        # An unhandled action must not fall through as success.
+        $step | Should -Match 'Unhandled credential decision'
+    }
+
+    It 'refuses to publish from a run that read the issue anonymously' {
+        # An evidence-only run has no credential that can write, and a draft PR
+        # that silently never appears is worse than one the summary says was
+        # skipped.
+        $script:Pipeline | Should -Match `
+            "ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationCredentialCheck\.replicationEvidenceOnly'\], 'true'\)"
+
+        # The output variable only exists if the step is named.
+        $step = Get-CredentialPreflightStep
+        $step | Should -Match 'name: ReplicationCredentialCheck'
+    }
+
+    It 'only reads anonymously when the run has already given up publishing' {
+        # Reading anonymously is safe; doing it on a run that still intends to
+        # publish would hide a dying credential until the publish step.
+        $contextIndex = $script:Pipeline.IndexOf('Prepare sanitized issue context')
+        $contextIndex | Should -BeGreaterThan 0
+        $window = $script:Pipeline.Substring($contextIndex - 1200, 1200)
+        $window | Should -Match 'AllowAnonymousFallback'
+        $window | Should -Match "REPLICATION_EVIDENCE_ONLY -eq 'true'"
     }
 }

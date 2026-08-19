@@ -161,6 +161,166 @@ function Invoke-ReplicationCredentialRequest {
     }
 }
 
+function Test-ReplicationUnexpandedVariable {
+    <#
+        .SYNOPSIS
+        Detects a pipeline variable reference that was never substituted.
+
+        .DESCRIPTION
+        Azure Pipelines leaves '$(Name)' in place when Name is not defined for
+        the run, so the step receives that literal text instead of a secret.
+        GitHub then answers 401, which is indistinguishable from an expired
+        token unless the shape is checked. The two have opposite remedies:
+        one needs the secret rotated, the other needs it made available to the
+        ref being built, so telling them apart matters more than it looks.
+    #>
+    param([AllowEmptyString()][AllowNull()][string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return $false
+    }
+
+    return [bool]($Value.Trim() -match '^\$\([A-Za-z_][A-Za-z0-9_.]*\)$')
+}
+
+function Get-ReplicationCredentialDecision {
+    <#
+        .SYNOPSIS
+        Decides what a replicate run should do about a credential verdict.
+
+        .DESCRIPTION
+        Keeps the decision out of pipeline YAML, where it can only ever be
+        checked by matching text. Action is 'continue', 'degrade', or 'fail'.
+
+        'fail' is reserved for states a later run could genuinely recover from,
+        or that a person has to correct: a rate limit resets, an unreachable
+        GitHub comes back, and a token authenticating as the wrong account is a
+        misconfiguration nobody should work around.
+
+        Everything else means the credential has to be replaced, which no run
+        can do for itself. dotnet/maui issues are public, so such a run can
+        still reproduce on a device, record the evidence, and author a failing
+        test. Only publishing is impossible, so it degrades instead of throwing
+        away an hour of device work that needed no credential.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Kind
+    )
+
+    $tag = switch ($Kind) {
+        'undefined'   { 'credential-not-provided' }
+        'invalid'     { 'credential-expired' }
+        'empty'       { 'credential-missing' }
+        'forbidden'   { 'credential-forbidden' }
+        'ratelimited' { 'github-rate-limited' }
+        default       { '' }
+    }
+
+    $action = switch ($Kind) {
+        'ok'          { 'continue' }
+        'ratelimited' { 'fail' }
+        'unreachable' { 'fail' }
+        'wronglogin'  { 'fail' }
+        default       { 'degrade' }
+    }
+
+    return @{
+        Action = $action
+        Tag    = $tag
+    }
+}
+
+function Get-ReplicationGitHubCredentialVerdict {
+    <#
+        .SYNOPSIS
+        Reports whether a GitHub credential authenticates, without throwing.
+
+        .DESCRIPTION
+        Reading a public issue needs no credential at all; only publishing does.
+        Callers that can still do useful work without a token therefore need to
+        ask about the credential rather than be terminated by it, so this
+        returns a verdict and leaves the decision to the caller. Kind is one of
+        'ok', 'empty', 'invalid', 'forbidden', 'ratelimited', 'wronglogin', or
+        'unreachable', so a caller can distinguish a credential that has to be
+        rotated from one that is merely unreachable right now.
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowEmptyString()]
+        [AllowNull()]
+        [string]$Token,
+
+        [ValidateNotNullOrEmpty()]
+        [string]$TokenVariableName = 'GH_COMMENT_TOKEN',
+
+        [AllowEmptyString()]
+        [AllowNull()]
+        [string]$ExpectedLogin,
+
+        [ValidateNotNullOrEmpty()]
+        [string]$ApiBase = 'https://api.github.com',
+
+        [ValidateRange(1, 10)]
+        [int]$MaximumAttempts = 3,
+
+        [int[]]$RetryDelaysSeconds = @(5, 15),
+
+        [scriptblock]$Requester
+    )
+
+    if (Test-ReplicationUnexpandedVariable -Value $Token) {
+        return @{
+            Usable  = $false
+            Login   = ''
+            Kind    = 'undefined'
+            Message = ("The pipeline variable '$TokenVariableName' was not " +
+                'substituted for this run, so the step received the literal ' +
+                "text '`$($TokenVariableName)' instead of a secret. The " +
+                'credential is not expired: it is not being provided to the ' +
+                'ref being built. Azure Pipelines withholds secrets from ' +
+                'builds of pull requests raised from forks.')
+        }
+    }
+
+    try {
+        $login = Assert-ReplicationGitHubCredential `
+            -Token $Token `
+            -TokenVariableName $TokenVariableName `
+            -ExpectedLogin $ExpectedLogin `
+            -ApiBase $ApiBase `
+            -MaximumAttempts $MaximumAttempts `
+            -RetryDelaysSeconds $RetryDelaysSeconds `
+            -Requester $Requester
+
+        return @{
+            Usable  = $true
+            Login   = $login
+            Kind    = 'ok'
+            Message = "GitHub credential accepted for '$login'."
+        }
+    } catch {
+        $message = [string]$_.Exception.Message
+        $kind = switch -Regex ($message) {
+            'credential is empty'   { 'empty'; break }
+            'HTTP 401'              { 'invalid'; break }
+            'HTTP 403'              { 'forbidden'; break }
+            'rate limited'          { 'ratelimited'; break }
+            'but this pipeline requires' { 'wronglogin'; break }
+            default                 { 'unreachable' }
+        }
+
+        return @{
+            Usable  = $false
+            Login   = ''
+            Kind    = $kind
+            Message = $message
+        }
+    }
+}
+
 function Assert-ReplicationGitHubCredential {
     <#
         .SYNOPSIS

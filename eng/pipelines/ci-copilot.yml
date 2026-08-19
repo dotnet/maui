@@ -262,26 +262,46 @@ stages:
               $ErrorActionPreference = 'Stop'
               . "$(Build.SourcesDirectory)/.github/scripts/shared/Assert-ReplicationGitHubCredential.ps1"
 
-              try {
-                $login = Assert-ReplicationGitHubCredential `
-                  -Token $env:GH_TOKEN `
-                  -TokenVariableName 'GH_COMMENT_TOKEN'
+              $verdict = Get-ReplicationGitHubCredentialVerdict `
+                -Token $env:GH_TOKEN `
+                -TokenVariableName 'GH_COMMENT_TOKEN'
+              $decision = Get-ReplicationCredentialDecision -Kind $verdict.Kind
 
-                Write-Host "GitHub credential accepted for '$login'."
-              } catch {
-                # Tag the run so an expired secret is visible on the pipeline
+              if ($decision.Tag) {
+                # Tag the run so a dead secret is visible on the pipeline
                 # summary. Every mode shares this credential, so when it dies
-                # the whole definition fills with red runs whose cause is only
+                # the whole definition fills with runs whose cause is only
                 # readable by opening a log.
-                $message = [string]$_.Exception.Message
-                if ($message -match 'rotated') {
-                  Write-Host "##vso[build.addbuildtag]credential-expired"
-                } elseif ($message -match 'rate limited') {
-                  Write-Host "##vso[build.addbuildtag]github-rate-limited"
-                }
-
-                throw
+                Write-Host "##vso[build.addbuildtag]$($decision.Tag)"
               }
+
+              switch ($decision.Action) {
+                'continue' {
+                  Write-Host "GitHub credential accepted for '$($verdict.Login)'."
+                  Write-Host "##vso[task.setvariable variable=REPLICATION_EVIDENCE_ONLY]false"
+                  Write-Host "##vso[task.setvariable variable=replicationEvidenceOnly;isOutput=true]false"
+                }
+                'fail' {
+                  throw $verdict.Message
+                }
+                'degrade' {
+                  # dotnet/maui issues are public, so reproducing on a device,
+                  # recording the evidence, and authoring a failing test need no
+                  # credential at all. Only publishing does. Losing all of that
+                  # work to an expired publishing secret wastes the run and
+                  # hides whether the replication itself is sound, so continue
+                  # and refuse to publish instead.
+                  Write-Host "##vso[task.setvariable variable=REPLICATION_EVIDENCE_ONLY]true"
+                  Write-Host "##vso[task.setvariable variable=replicationEvidenceOnly;isOutput=true]true"
+                  Write-Host "##vso[build.addbuildtag]evidence-only"
+                  Write-Warning ($verdict.Message + ' This run will reproduce, record, and ' +
+                    'verify a failing test, but it will not publish a pull request.')
+                }
+                default {
+                  throw "Unhandled credential decision '$($decision.Action)'."
+                }
+              }
+            name: ReplicationCredentialCheck
             displayName: 'Verify the GitHub credential before provisioning'
             condition: >-
               and(succeeded(),
@@ -585,12 +605,19 @@ stages:
               Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $contextDir 'issue-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_PRIVATE_CONTEXT_ROOT]$privateContextDir"
-              & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") `
-                -IssueNumber ${{ parameters.IssueNumber }} `
-                -Platform "${{ parameters.Platform }}" `
-                -OutputDir $privateContextDir `
-                -Repository "dotnet/maui" `
-                -DownloadScreenshots
+              $contextArgs = @(
+                '-IssueNumber', ${{ parameters.IssueNumber }},
+                '-Platform', "${{ parameters.Platform }}",
+                '-OutputDir', $privateContextDir,
+                '-Repository', 'dotnet/maui',
+                '-DownloadScreenshots'
+              )
+              if ($env:REPLICATION_EVIDENCE_ONLY -eq 'true') {
+                # The publishing credential is dead but the issue is public.
+                $contextArgs += '-AllowAnonymousFallback'
+              }
+
+              & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
               if ($LASTEXITCODE -ne 0) {
                 throw "Preparing the sanitized issue context failed."
               }
@@ -652,7 +679,24 @@ stages:
               try {
                 $issueState = & gh api "repos/dotnet/maui/issues/${{ parameters.IssueNumber }}" `
                   --jq '[.state, (.state_reason // "none")] | @tsv'
-                if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($issueState)) {
+                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($issueState)) {
+                  # The eligibility question is the whole point of this step, and
+                  # dotnet/maui is public, so a dead publishing credential must
+                  # not turn "is this issue still open" into a shrug that spends
+                  # a device reproducing an already-closed report.
+                  $anon = Invoke-RestMethod -Method Get -MaximumRedirection 0 `
+                    -Uri "https://api.github.com/repos/dotnet/maui/issues/${{ parameters.IssueNumber }}" `
+                    -Headers @{
+                      'Accept'               = 'application/vnd.github+json'
+                      'X-GitHub-Api-Version' = '2022-11-28'
+                      'User-Agent'           = 'maui-copilot-replication'
+                    }
+                  $reason = if ($anon.state_reason) { $anon.state_reason } else { 'none' }
+                  $issueState = "$($anon.state)`t$reason"
+                  Write-Host "Read the issue state anonymously because the credential was rejected."
+                }
+
+                if (-not [string]::IsNullOrWhiteSpace($issueState)) {
                   $parts = ([string]$issueState).Trim() -split "`t"
                   $state = $parts[0]
                   $stateReason = if ($parts.Count -gt 1) { $parts[1] } else { 'none' }
@@ -2680,7 +2724,7 @@ stages:
   - stage: PublishReplication
     displayName: 'Validate and publish issue replication'
     dependsOn: ReviewPR
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
     jobs:
       - job: PublishReplication
         displayName: 'Publish validated reproduction'

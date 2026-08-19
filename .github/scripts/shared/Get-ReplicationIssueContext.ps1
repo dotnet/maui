@@ -865,6 +865,64 @@ function Test-TransientGitHubFailure {
         'server error|try again')
 }
 
+function Test-ReplicationCredentialFailure {
+    <#
+        .SYNOPSIS
+        Detects a GitHub failure caused by the credential rather than the issue.
+
+        .DESCRIPTION
+        A rejected token and a missing issue both stop the read, but only one of
+        them can be worked around by asking anonymously. 404 is deliberately not
+        treated as a credential failure: on a public repository it means the
+        issue does not exist, and retrying without a token would report the same
+        thing more slowly.
+    #>
+    param([AllowEmptyString()][AllowNull()][string]$Reason)
+
+    if ([string]::IsNullOrWhiteSpace($Reason)) {
+        return $false
+    }
+
+    return [bool]($Reason -match '(?i)HTTP 401|Bad credentials|requires authentication|' +
+        'authentication token|token has expired|must authenticate')
+}
+
+function Invoke-AnonymousGitHubIssueApi {
+    <#
+        .SYNOPSIS
+        Reads a public issue without any credential.
+
+        .DESCRIPTION
+        dotnet/maui is public, so its issues are readable anonymously. Only
+        publishing needs a token, and tying the read to the same secret means an
+        expired credential blocks reproduction work that needs no credential at
+        all. The request deliberately sends no Authorization header so a dead
+        token cannot turn this into a second rejected call.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Repository,
+
+        [Parameter(Mandatory = $true)]
+        [int] $IssueNumber,
+
+        [string] $ApiBase = 'https://api.github.com'
+    )
+
+    $uri = "$ApiBase/repos/$Repository/issues/$IssueNumber"
+    $headers = @{
+        'Accept'               = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+        'User-Agent'           = 'maui-copilot-replication'
+    }
+
+    $response = Invoke-WebRequest -Uri $uri -Headers $headers -Method Get `
+        -MaximumRedirection 0 -UseBasicParsing -ErrorAction Stop
+
+    return [string]$response.Content
+}
+
 function Invoke-GitHubIssueApi {
     [CmdletBinding()]
     param(
@@ -874,8 +932,24 @@ function Invoke-GitHubIssueApi {
         [Parameter(Mandatory = $true)]
         [int] $IssueNumber,
 
-        [int] $MaxAttempts = 4
+        [int] $MaxAttempts = 4,
+
+        # Off by default. A run that reads anonymously cannot publish, so
+        # degrading silently would let a run look successful while producing no
+        # pull request. The caller has to say it accepts that outcome.
+        [switch] $AllowAnonymousFallback,
+
+        [scriptblock] $AnonymousReader
     )
+
+    if (-not $AnonymousReader) {
+        $AnonymousReader = {
+            param($AnonRepository, $AnonIssueNumber)
+            Invoke-AnonymousGitHubIssueApi `
+                -Repository $AnonRepository `
+                -IssueNumber $AnonIssueNumber
+        }
+    }
 
     $errorPath = Join-Path ([System.IO.Path]::GetTempPath()) ("gh-issue-{0}.err" -f [guid]::NewGuid())
     try {
@@ -890,6 +964,28 @@ function Invoke-GitHubIssueApi {
                 $reason = ConvertTo-SafeIssueSingleLine `
                     -Text ([System.IO.File]::ReadAllText($errorPath)) `
                     -MaxChars 400
+            }
+
+            if ($AllowAnonymousFallback -and (Test-ReplicationCredentialFailure -Reason $reason)) {
+                # The credential is dead, but the issue is public. Reproducing,
+                # recording, and authoring a failing test need no token, so fall
+                # back to an anonymous read and let the run produce evidence.
+                # Publishing is refused separately.
+                try {
+                    $anonymous = [string](& $AnonymousReader $Repository $IssueNumber)
+                    if (-not [string]::IsNullOrWhiteSpace($anonymous)) {
+                        Write-Warning ("The GitHub credential was rejected, so issue " +
+                            "$IssueNumber was read anonymously. This run can reproduce " +
+                            "and record but cannot publish.")
+                        return $anonymous
+                    }
+                } catch {
+                    $anonymousReason = ConvertTo-SafeIssueSingleLine `
+                        -Text ([string]$_.Exception.Message) `
+                        -MaxChars 200
+                    throw ("GitHub rejected the credential and the anonymous retry " +
+                        "also failed: $anonymousReason")
+                }
             }
 
             if ($attempt -lt $MaxAttempts -and (Test-TransientGitHubFailure -Reason $reason)) {
@@ -921,7 +1017,11 @@ function Read-ReplicationIssueJson {
         [int] $IssueNumber,
 
         [AllowNull()]
-        [string] $IssueJsonPath
+        [string] $IssueJsonPath,
+
+        [switch] $AllowAnonymousFallback,
+
+        [scriptblock] $AnonymousReader
     )
 
     if (-not [string]::IsNullOrWhiteSpace($IssueJsonPath)) {
@@ -938,9 +1038,18 @@ function Read-ReplicationIssueJson {
     }
 
     try {
-        return Invoke-GitHubIssueApi `
-            -Repository $Repository `
-            -IssueNumber $IssueNumber
+        $forward = @{
+            Repository  = $Repository
+            IssueNumber = $IssueNumber
+        }
+        if ($AllowAnonymousFallback) {
+            $forward['AllowAnonymousFallback'] = $true
+        }
+        if ($AnonymousReader) {
+            $forward['AnonymousReader'] = $AnonymousReader
+        }
+
+        return Invoke-GitHubIssueApi @forward
     } catch {
         # Reporting only that the issue could not be read left three failed
         # runs with no way to tell a missing issue from a rate limit.
@@ -1801,6 +1910,10 @@ function Invoke-GetReplicationIssueContext {
 
         [switch] $DownloadScreenshots,
 
+        # Set only when the caller has already established that the credential
+        # is unusable and that this run will not publish anything.
+        [switch] $AllowAnonymousFallback,
+
         [ValidateRange(1, 262144)]
         [int] $MaxBodyChars = 50000,
 
@@ -1823,7 +1936,8 @@ function Invoke-GetReplicationIssueContext {
         $rawJson = Read-ReplicationIssueJson `
             -Repository $Repository `
             -IssueNumber $IssueNumber `
-            -IssueJsonPath $IssueJsonPath
+            -IssueJsonPath $IssueJsonPath `
+            -AllowAnonymousFallback:$AllowAnonymousFallback
         $issue = ConvertFrom-ReplicationIssueJson `
             -Json $rawJson `
             -ExpectedIssueNumber $IssueNumber

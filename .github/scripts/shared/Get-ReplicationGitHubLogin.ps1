@@ -76,6 +76,20 @@ function New-ReplicationGitHubFailureMessage {
 
     $trimmed = ([string]$Detail).Trim()
     if ($trimmed -match '(?i)bad credentials|\b401\b|requires authentication') {
+        # Azure Pipelines leaves '$(Name)' in place when Name is not defined for
+        # the run, so the step sends that literal text as the token and GitHub
+        # answers 401 exactly as it would for a revoked one. Telling an operator
+        # to rotate a perfectly good secret sends them somewhere it cannot help.
+        $token = [string]$env:GH_TOKEN
+        if ($token.Trim() -match '^\$\([A-Za-z_][A-Za-z0-9_.]*\)$') {
+            return ("Failed to $Description because the pipeline variable " +
+                "'GH_COMMENT_TOKEN' was not substituted for this run: the step " +
+                'received that variable reference as literal text instead of a ' +
+                'secret. The credential is not expired; it is not being provided ' +
+                'to the ref being built. Azure Pipelines withholds secrets from ' +
+                'builds of pull requests raised from forks.')
+        }
+
         return ("Failed to $Description because the pipeline credential is not valid: $trimmed " +
             'GH_COMMENT_TOKEN has expired or been revoked and has to be rotated in the pipeline; ' +
             'no retry inside the run can recover from this.')
