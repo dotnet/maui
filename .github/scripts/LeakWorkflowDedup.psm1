@@ -5,17 +5,20 @@ function Get-CanonicalLeakApi {
         return $null
     }
 
-    $normalized = $Title -replace "[`r`n]+", ' '
-    $normalized = $normalized -replace '^\[leak-(?:scan|fix)\]\s*', ''
-    $match = [regex]::Match(
-        $normalized,
-        '[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+'
-    )
+    $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
+    $identifierChain = '[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+'
+    $match = if ($normalized.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
+        [regex]::Match($normalized, "^\[leak-scan\][ `t]+(?<api>$identifierChain)(?=[ `t]|$)")
+    } elseif ($normalized.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
+        [regex]::Match($normalized, "^\[leak-fix\][ `t]+Fix[ `t]+(?<api>$identifierChain)(?=[ `t]|$)")
+    } else {
+        return $null
+    }
     if (-not $match.Success) {
         return $null
     }
 
-    $segments = $match.Value.Split('.')
+    $segments = $match.Groups['api'].Value.Split('.')
     return "$($segments[-2]).$($segments[-1])"
 }
 
@@ -203,7 +206,9 @@ function Get-EffectiveRevertedPullRequestNumbers {
     $branchByNumber = @{}
     $fixNumbers = [System.Collections.Generic.List[int]]::new()
     $repo = [regex]::Escape($Repository)
-    $pattern = "(?m)^[ `t]*Reverts[ `t]+$repo#(?<number>[1-9][0-9]*)\b"
+    $markdownPrefix = '(?:>[ \t]*)?(?:[-+*][ \t]+)?(?:\*{1,2}|_{1,2})?'
+    $pattern = "(?m)^[ `t]*$markdownPrefix" +
+        "Reverts[ `t]+(?:$repo#|#)(?<number>[1-9][0-9]*)\b"
 
     foreach ($fix in $FixPullRequests) {
         $number = 0

@@ -102,8 +102,9 @@ pre-agent-steps:
         exit 1
       fi
       jq -r '.[].title | gsub("[\r\n]+";" ")' /tmp/gh-aw/agent/my-open-leakscan.json \
-        | sed -E 's/^\[leak-scan\] *//' \
-        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }' \
+        | while IFS= read -r TITLE; do
+            pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE"
+          done \
         | sort -u \
         > /tmp/gh-aw/agent/already-filed-apis.txt
       echo "already-filed rooting APIs:"
@@ -135,9 +136,7 @@ pre-agent-steps:
       jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
         /tmp/gh-aw/agent/merged-leak-fix-prs.json \
         | while IFS=$'\t' read -r PR TITLE BASE URL; do
-            API=$(printf '%s\n' "$TITLE" \
-              | sed -E 's/^\[leak-fix\] *//' \
-              | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+            API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
             if test -n "$API"; then
               printf '%s\t%s\t%s\t%s\t%s\n' "$API" "$PR" "$BASE" "$URL" "$TITLE"
             fi
@@ -152,10 +151,11 @@ pre-agent-steps:
       # A merged [leak-fix] PR is not permanent proof the fix is still active — it may since
       # have been reverted (e.g. it broke something else), in which case the shipped package
       # will still reproduce the ORIGINAL leak and skipping the API forever would be wrong.
-      # GitHub's "Revert" button creates a PR whose body contains an exact
-      # "Reverts <owner>/<repo>#<N>" line. Resolve those links recursively: a target remains
-      # reverted while any active same-branch direct reverter exists. Reverting a reverter can
-      # deactivate that reverter, but independent sibling reverts never cancel each other.
+      # GitHub revert PRs identify their target with a repository-local "Reverts #<N>" or an
+      # exact "Reverts <owner>/<repo>#<N>" reference, optionally with normal Markdown
+      # formatting. Resolve those links recursively: any active same-branch direct reverter
+      # keeps its target reverted. Reverting a reverter can deactivate that reverter, but
+      # independent sibling reverts never cancel each other.
       # Drop only effectively reverted fixes from the
       # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
       gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
@@ -325,19 +325,22 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
   <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
   `.txt` is just the first column, deduplicated). Effective revert state is resolved
   recursively and per base branch from GitHub's standard
-  `Reverts <owner>/<repo>#<N>` body line: any active same-branch direct reverter excludes its
-  target. Reverting a reverter can deactivate that reverter, but independent sibling reverts
-  never cancel each other. A servicing-branch revert cannot toggle a main/inflight fix. Only an effectively
-  reverted fix is treated as re-filable rather than permanent proof the fix is still active.
+  repository-local `Reverts #<N>` or exact `Reverts <owner>/<repo>#<N>` body reference
+  (normal Markdown formatting is accepted): any active same-branch direct reverter excludes
+  its target. Reverting a reverter can deactivate that reverter, but independent sibling
+  reverts never cancel each other. A servicing-branch revert cannot toggle a main/inflight
+  fix. Only an effectively reverted fix is treated as re-filable rather than permanent proof
+  the fix is still active.
 
 - A candidate is **OUT** if an open `[leak-scan]` issue or active merged `[leak-fix]` PR covers
   the same rooting API **and retention mechanism**. API identity alone is not leak identity:
   distinct retention paths can legitimately share one `Type.Member`. Use
   `already-filed-apis.txt` / `already-merged-fix-apis.txt` as fast match signals, then inspect
   the matching issue/PR before deciding. **Check this for EVERY candidate before its test.**
-- Normalize each candidate with the same last-`Type.Member` extraction convention (LAST dotted
-  `Type.Member` pair of the first identifier chain in the title/name — e.g. a fully-qualified
-  `Microsoft.Maui.Controls.Picker.ItemsSource` yields `Picker.ItemsSource`), then use
+- Normalize each candidate with the same anchored title convention: the API must be the first
+  dotted identifier chain immediately after `[leak-scan] ` (or after `[leak-fix] Fix `), and
+  the last `Type.Member` pair of a fully-qualified chain is the canonical key (for example,
+  `Microsoft.Maui.Controls.Picker.ItemsSource` yields `Picker.ItemsSource`). Then use
   `grep -Fxq "$API" /tmp/gh-aw/agent/already-merged-fix-apis.txt`; do not use substring
   matching.
 - For a merged-fix match, print the matching row(s) from

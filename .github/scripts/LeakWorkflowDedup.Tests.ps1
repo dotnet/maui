@@ -101,6 +101,39 @@ Describe 'fresh-shell de-dup state' {
     }
 }
 
+Describe 'canonical leak API title parsing' {
+    It 'extracts the API only from the anchored leak-scan title position' {
+        Get-CanonicalLeakApi `
+            -Title '[leak-scan] Microsoft.Maui.Controls.Picker.ItemsSource — collection retention' |
+            Should -Be 'Picker.ItemsSource'
+    }
+
+    It 'extracts the API only from the anchored leak-fix title position' {
+        Get-CanonicalLeakApi `
+            -Title '[leak-fix] Fix Microsoft.Maui.Controls.Picker.ItemsSource memory leak' |
+            Should -Be 'Picker.ItemsSource'
+    }
+
+    It 'rejects a URL before an otherwise valid API' {
+        (Get-CanonicalLeakApi `
+                -Title '[leak-fix] Investigate https://github.com/dotnet/maui/issues/123 for Picker.ItemsSource') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'rejects an earlier namespace token in a malformed title' {
+        (Get-CanonicalLeakApi `
+                -Title '[leak-fix] Investigate Microsoft.Maui.Controls before Picker.ItemsSource') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'rejects tagged titles that do not follow the expected title grammar' {
+        (Get-CanonicalLeakApi -Title '[leak-fix] Picker.ItemsSource memory leak') |
+            Should -BeNullOrEmpty
+        (Get-CanonicalLeakApi -Title '[leak-scan] Investigate Picker.ItemsSource retention') |
+            Should -BeNullOrEmpty
+    }
+}
+
 Describe 'mechanism-aware final duplicate gate' {
     It 'preserves an approved same-API different-mechanism exception' {
         $existing = New-LeakPr `
@@ -222,6 +255,46 @@ Describe 'effective recursive revert state' {
             -FixPullRequests @($fix) `
             -MergedRevertPullRequests $reverts |
             Should -Be @(100)
+    }
+
+    It 'accepts a repository-local revert reference' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $reverts = @(
+            New-LeakPr -Number 200 -Title 'Revert leak fix' -Body 'Reverts #100'
+        )
+
+        Get-EffectiveRevertedPullRequestNumbers `
+            -Repository 'dotnet/maui' `
+            -FixPullRequests @($fix) `
+            -MergedRevertPullRequests $reverts |
+            Should -Be @(100)
+    }
+
+    It 'accepts markdown formatting around a repository-local revert reference' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $reverts = @(
+            New-LeakPr -Number 200 -Title 'Revert leak fix' -Body '> - **Reverts #100**'
+        )
+
+        Get-EffectiveRevertedPullRequestNumbers `
+            -Repository 'dotnet/maui' `
+            -FixPullRequests @($fix) `
+            -MergedRevertPullRequests $reverts |
+            Should -Be @(100)
+    }
+
+    It 'rejects a revert reference qualified to another repository' {
+        $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $reverts = @(
+            New-LeakPr -Number 200 -Title 'Revert unrelated fix' -Body 'Reverts dotnet/runtime#100'
+        )
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests $reverts
+        ).Count | Should -Be 0
     }
 
     It 'reinstates a fix after its revert is itself reverted' {
@@ -403,7 +476,7 @@ Describe 'workflow enforcement boundary' {
     It 'documents recursive any-active-reverter semantics' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
 
-        $workflow | Should -Match 'any active same-branch direct reverter exists'
+        $workflow | Should -Match 'any active same-branch direct reverter'
         $workflow | Should -Match 'independent sibling reverts\s+never cancel each other'
         $workflow | Should -Not -Match 'combined by parity|combine by parity'
     }
@@ -414,6 +487,16 @@ Describe 'workflow enforcement boundary' {
         $workflow | Should -Match 'at most\s+one output per canonical rooting API in the current batch'
         $workflow | Should -Match 'defer the others to a later run'
         $workflow | Should -Not -Match 'distinct mechanisms on one API are separate leaks'
+    }
+
+    It 'uses the shared anchored API parser in every workflow parser path' {
+        $hunter = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
+        $fixer = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
+
+        ([regex]::Matches($hunter, 'Get-CanonicalLeakApi\.ps1')).Count | Should -Be 2
+        ([regex]::Matches($fixer, 'Get-CanonicalLeakApi\.ps1')).Count | Should -Be 6
+        $hunter | Should -Not -Match 'awk.*A-Za-z_'
+        $fixer | Should -Not -Match 'awk.*A-Za-z_'
     }
 
     Context 'safe-output gate script' {
@@ -496,6 +579,20 @@ Describe 'workflow enforcement boundary' {
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+
+        It 'rejects a tagged title whose API is not in the expected position' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-fix] Investigate https://github.com/dotnet/maui/issues/20 for GradientBrush.GradientStops'
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*Could not derive a canonical Type.Member*'
         }
 
         It 'accepts an additional exact-repository Refs citation for an API-match PR' {
@@ -754,6 +851,20 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+
+        It 'rejects a malformed issue title instead of deriving a later API token' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-scan] Investigate Microsoft.Maui.Controls before GradientBrush.GradientStops'
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*Could not derive a canonical Type.Member*'
         }
 
         It 'rejects differently titled issues for the same canonical API in one output batch' {

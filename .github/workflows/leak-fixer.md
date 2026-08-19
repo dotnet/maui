@@ -408,8 +408,8 @@ merge.
 ```bash
 N=<issue-number>
 # The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
-# Use the same extraction as daily-leak-hunter.md (last Type.Member pair of the first identifier
-# chain) so off-contract / fully-qualified titles key identically on both sides of the pipeline.
+# Use the shared anchored parser from daily-leak-hunter.md so malformed titles cannot key from
+# a later URL/namespace token and fully-qualified titles normalize identically on both sides.
 # Fetch the title first so a TRANSIENT fetch failure fails closed (empty title => abort) rather than
 # silently yielding an empty $API, which would disable the same-API dedup scan below and let a
 # duplicate [leak-fix] PR be opened under a re-filed leak.
@@ -418,9 +418,7 @@ if test -z "$TITLE"; then
   echo "ERROR: could not read issue #$N title (transient gh failure?) — aborting to avoid fail-open dedup." >&2
   exit 1
 fi
-API=$(printf '%s' "$TITLE" \
-  | sed -E 's/^\[leak-scan\] *//' \
-  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
 echo "target rooting API: $API"
 if test -z "$API"; then
   echo "ERROR: issue #$N title has no canonical Type.Member; refusing unsupported empty-API de-dup before build/test work." >&2
@@ -468,14 +466,12 @@ jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.tsv
 
-# Canonicalize every merged PR title with the same last-Type.Member extraction used for the
-# selected issue. This handles fully-qualified/off-contract wording without substring matches.
+# Canonicalize every merged PR title with the same anchored parser used for the selected issue.
+# This handles fully-qualified titles without accepting off-contract wording or substring matches.
 jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE BASE URL; do
-      PR_API=$(printf '%s\n' "$TITLE" \
-        | sed -E 's/^\[leak-fix\] *//' \
-        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
       if test -n "$PR_API"; then
         printf '%s\t%s\t%s\t%s\t%s\n' "$PR_API" "$PR" "$BASE" "$URL" "$TITLE"
       fi
@@ -560,7 +556,7 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (c) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
-#     Canonicalize each open PR title with the SAME last-Type.Member extraction used for the
+#     Canonicalize each open PR title with the SAME anchored extraction used for the
 #     merged-fix gate (a) and the target issue, then compare canonical keys exactly — do NOT
 #     anchor-match the raw title against $API. A fully-qualified title like "[leak-fix] Fix
 #     Microsoft.Maui.Controls.Picker.ItemsSource memory leak" represents the same
@@ -579,9 +575,7 @@ jq -r '.[] |
     [.number, .title] | @tsv' \
   /tmp/gh-aw/agent/same-api-prs-raw.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(printf '%s\n' "$TITLE" \
-        | sed -E 's/^\[leak-fix\] *//' \
-        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
       if test "$PR_API" = "$API"; then
         jq -n --arg number "$PR" --arg title "$TITLE" '{number: ($number|tonumber), title: $title}'
       fi
@@ -608,9 +602,7 @@ jq '[.[] | select(.title | startswith("[leak-fix] ")) | select(.mergedAt == null
 # still count against any newly duplicate-filed issue for that same API).
 API_MATCH_NUMBERS=$(jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/closed-unmerged-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(printf '%s\n' "$TITLE" \
-        | sed -E 's/^\[leak-fix\] *//' \
-        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
       test -n "$API" && test "$PR_API" = "$API" && echo "$PR"
     done | jq -R 'tonumber' | jq -s '.')
 jq --arg n "$N" --arg repo "$REPO_RE" --argjson apiNums "$API_MATCH_NUMBERS" '[.[] |
@@ -896,9 +888,7 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
 jq -r '.[] | [.number, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(printf '%s\n' "$TITLE" \
-        | sed -E 's/^\[leak-fix\] *//' \
-        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
       test "$PR_API" = "$API" && printf 'merged\t%s\t%s\n' "$PR" "$TITLE"
     done > /tmp/gh-aw/agent/final-merged-api-matches.tsv
 
@@ -927,9 +917,7 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
   > /tmp/gh-aw/agent/final-open-issue-fix-prs.json
 jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-open-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(printf '%s\n' "$TITLE" \
-        | sed -E 's/^\[leak-fix\] *//' \
-        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
       test "$PR_API" = "$API" && printf 'open\t%s\t%s\n' "$PR" "$TITLE"
     done > /tmp/gh-aw/agent/final-open-api-matches.tsv
 
