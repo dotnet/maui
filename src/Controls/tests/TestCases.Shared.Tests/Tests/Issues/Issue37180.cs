@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("BackgroundLabel");
 			VerifyScreenshot("Issue37180_RedBackground");
 			App.Tap("SetBackgroundButton");
-			VerifyScreenshot("NoBackground");
+			VerifyScreenshot("Issue37180_NoBackground");
 		}
 	}
 }
