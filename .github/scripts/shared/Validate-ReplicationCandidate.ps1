@@ -1591,6 +1591,14 @@ function Assert-SourceTextIsSafe {
             -Content $normalized `
             -Path $Path `
             -Platform ([string]$Manifest.Platform)
+        Assert-ReplicationTestRunsOnEvidencePlatform `
+            -Path $Path `
+            -Platform ([string]$Manifest.Platform) `
+            -TestType ([string]$Manifest.TestType) `
+            -RepositoryRoot $RepositoryRoot
+        Assert-ReplicationEnvironmentGateSkips `
+            -Content $normalized `
+            -Path $Path
         Assert-ReplicationPlatformViewIdentity `
             -Content $normalized `
             -Path $Path
@@ -1623,6 +1631,7 @@ function Assert-ReplicationCandidateSources {
 
     $testAttributeFound = $false
     $testNameFound = $false
+    $deviceTestIsSelectable = $false
     $testNameLeaf = @($Manifest.TestName -split '[.+]')[-1]
     # dotnet test --filter matches fully qualified names by substring, so the
     # repository convention of naming the type Issue<number><Scenario> is
@@ -1652,6 +1661,15 @@ function Assert-ReplicationCandidateSources {
             if ($file.Content -match $testNamePattern) {
                 $testNameFound = $true
             }
+            if (
+                $Manifest.TestType -ceq 'DeviceTest' -and
+                (Assert-ReplicationDeviceTestIsSelectable `
+                        -Content $file.Content `
+                        -Path $file.Path `
+                        -Issue ([int]$Manifest.IssueNumber))
+            ) {
+                $deviceTestIsSelectable = $true
+            }
         }
         Assert-SourceTextIsSafe `
             -Content $file.Content `
@@ -1671,6 +1689,13 @@ function Assert-ReplicationCandidateSources {
     }
     if (-not $testNameFound) {
         throw 'Candidate files do not contain the named test from the exact filter.'
+    }
+    if ($Manifest.TestType -ceq 'DeviceTest' -and -not $deviceTestIsSelectable) {
+        throw (
+            'The candidate device test cannot be selected on device: no file declares ' +
+            "[Category(`"Issue$($Manifest.IssueNumber)`")]. The stock runner honours only Category= and " +
+            'SkipCategories=, so a bare class token runs the whole suite instead of the ' +
+            'reproduction.')
     }
 }
 

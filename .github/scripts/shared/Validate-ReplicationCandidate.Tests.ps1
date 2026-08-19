@@ -92,7 +92,7 @@ BeforeAll {
         $body = @"
 using $framework;
 
-public class $TestName
+$(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })public class $TestName
 {
     [$attribute]
     public void ReproducesIssue()
@@ -1607,6 +1607,164 @@ public class Issue36505 : _IssuesUITest
     It 'passes the checked-out repository from the publishing entry point' {
         $source = Get-Content -LiteralPath $script:validatorPath -Raw
         $source | Should -Match 'Assert-ReplicationCandidateSources\s*`\s*\n\s*-Manifest \$manifest `\s*\n\s*-CandidateFiles \$candidateFiles `\s*\n\s*-RepositoryRoot \$repoPath'
+    }
+}
+
+Describe 'The publishing gate runs the guards that were only ever run on device' {
+    BeforeAll {
+        function script:New-WiringFixture {
+            param(
+                [Parameter(Mandatory = $true)][string]$TestType,
+                [Parameter(Mandatory = $true)][string]$Path,
+                [Parameter(Mandatory = $true)][string]$Content
+            )
+
+            return @{
+                Manifest = [pscustomobject]@{
+                    TestName      = 'Issue12345'
+                    TestType      = $TestType
+                    IssueNumber   = 12345
+                    Platform      = 'android'
+                    ProposedFiles = @($Path)
+                }
+                CandidateFiles = @(
+                    [pscustomobject]@{ Path = $Path; Mode = '100644'; Content = $Content }
+                )
+            }
+        }
+    }
+
+    It 'rejects a device test the on-device runner could never select' {
+        # PR 215: the stock Android runner honours only Category= filters, so a
+        # device test without the issue category runs the whole suite.
+        $fixture = script:New-WiringFixture `
+            -TestType 'DeviceTest' `
+            -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue12345.Android.cs' `
+            -Content @'
+#if ANDROID
+public class Issue12345
+{
+    [Fact]
+    public void ReproducesIssue() { }
+}
+#endif
+'@
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Throw '*cannot be selected on device*Category("Issue12345")*'
+    }
+
+    It 'accepts a device test that carries the issue category' {
+        $fixture = script:New-WiringFixture `
+            -TestType 'DeviceTest' `
+            -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue12345.Android.cs' `
+            -Content @'
+#if ANDROID
+[Category("Issue12345")]
+public class Issue12345
+{
+    [Fact]
+    public void ReproducesIssue() { }
+}
+#endif
+'@
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Not -Throw
+    }
+
+    It 'rejects a headless unit test that claims platform runtime evidence' {
+        # PR 226: the test ran as a non-platform net10.0 unit test, so
+        # IsMacCatalyst was false and every handler was null. The platform code
+        # was not merely unexercised, it was absent from the tested closure.
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("wiring-" + [guid]::NewGuid().ToString('n'))
+        $projectDir = Join-Path $repo 'src/Controls/tests/Core.UnitTests'
+        New-Item -ItemType Directory -Path $projectDir -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $projectDir 'Controls.Core.UnitTests.csproj') -Value @'
+<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>
+'@
+        try {
+            $fixture = script:New-WiringFixture `
+                -TestType 'UnitTest' `
+                -Path 'src/Controls/tests/Core.UnitTests/Issue12345Tests.cs' `
+                -Content @'
+public class Issue12345
+{
+    [Fact]
+    public void ReproducesIssue() { }
+}
+'@
+
+            {
+                Assert-ReplicationCandidateSources `
+                    -Manifest $fixture.Manifest `
+                    -CandidateFiles $fixture.CandidateFiles `
+                    -RepositoryRoot $repo
+            } | Should -Throw '*single non-platform target framework*'
+        }
+        finally {
+            Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'rejects a test that asserts an operating system version floor' {
+        # PR 213: the test asserted the iOS version floor, so every device below
+        # it went red before the oracle ran - red for the lane, not the defect,
+        # and still red after a complete product fix.
+        $fixture = script:New-WiringFixture `
+            -TestType 'UITest' `
+            -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue12345.cs' `
+            -Content @'
+#if ANDROID
+public class Issue12345
+{
+    [Test]
+    public void ReproducesIssue()
+    {
+        Assert.True(OperatingSystem.IsIOSVersionAtLeast(26));
+        Assert.Fail("reported defect");
+    }
+}
+#endif
+'@
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Throw '*asserts an environment precondition*'
+    }
+}
+
+Describe 'Every guard that exists is enforced by the publishing gate' {
+    It 'invokes every Assert-Replication guard that is defined' {
+        # The font, platform-closure, environment-gate and device-selectability
+        # guards were each written for a real reviewer rejection, wired into the
+        # on-device script, and never wired into this gate - which is the
+        # authoritative one, because it is what runs before a credential is
+        # exposed. Four guards silently did nothing here. Fail loudly instead of
+        # letting the fifth one slip through.
+        $guardPath = Join-Path $PSScriptRoot 'Assert-ReplicationTestGuard.ps1'
+        $guardSource = Get-Content -LiteralPath $guardPath -Raw
+        $gateSource = Get-Content -LiteralPath $script:validatorPath -Raw
+
+        $defined = @([regex]::Matches($guardSource, '(?m)^function\s+(?<name>Assert-Replication\w+)') |
+            ForEach-Object { $_.Groups['name'].Value } | Sort-Object -Unique)
+        $defined.Count | Should -BeGreaterThan 0
+
+        $invoked = [System.Collections.Generic.HashSet[string]]::new(
+            [string[]]@([regex]::Matches($gateSource, 'Assert-Replication\w+') |
+                ForEach-Object { $_.Value }),
+            [System.StringComparer]::Ordinal)
+
+        $missing = @($defined | Where-Object { -not $invoked.Contains($_) })
+        $missing -join ', ' | Should -BeExactly ''
     }
 }
 
