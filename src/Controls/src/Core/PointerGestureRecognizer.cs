@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -216,9 +217,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// For internal use by the .NET MAUI platform.
+		/// Executes the associated command and raises the <see cref="PointerEntered"/> event.
 		/// </summary>
-		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
+		/// <param name="sender">The view that the pointer entered.</param>
+		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
+		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
+		/// <param name="button">The button associated with the pointer event.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
@@ -229,9 +235,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// For internal use by the .NET MAUI platform.
+		/// Executes the associated command and raises the <see cref="PointerExited"/> event.
 		/// </summary>
-		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
+		/// <param name="sender">The view that the pointer exited.</param>
+		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
+		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
+		/// <param name="button">The button associated with the pointer event.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerExitedCommand;
 			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
@@ -242,9 +253,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// For internal use by the .NET MAUI platform.
+		/// Executes the associated command and raises the <see cref="PointerMoved"/> event.
 		/// </summary>
-		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
+		/// <param name="sender">The view within which the pointer moved.</param>
+		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
+		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
+		/// <param name="button">The button associated with the pointer event.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerMovedCommand;
 			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)
@@ -255,9 +271,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// For internal use by the .NET MAUI platform.
+		/// Executes the associated command and raises the <see cref="PointerPressed"/> event.
 		/// </summary>
-		internal void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
+		/// <param name="sender">The view on which the pointer was pressed.</param>
+		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
+		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
+		/// <param name="button">The button associated with the pointer event.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerPressedCommand;
 			if (cmd?.CanExecute(PointerPressedCommandParameter) == true)
@@ -268,9 +289,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// For internal use by the .NET MAUI platform.
+		/// Executes the associated command and raises the <see cref="PointerReleased"/> event.
 		/// </summary>
-		internal void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
+		/// <param name="sender">The view on which the pointer was released.</param>
+		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
+		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
+		/// <param name="button">The button associated with the pointer event.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
 			ICommand cmd = PointerReleasedCommand;
 			if (cmd?.CanExecute(PointerReleasedCommandParameter) == true)
