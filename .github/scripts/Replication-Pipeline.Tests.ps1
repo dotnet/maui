@@ -431,3 +431,81 @@ Describe 'A run that produced nothing does not fail the publisher too' {
         }
     }
 }
+
+Describe 'MAUI Copilot pipeline splatting' {
+    It 'builds every splatted argument set as a hashtable' {
+        # An array splat passes its elements positionally, so '-IssueNumber'
+        # binds to -IssueNumber as a value and the step dies on a type
+        # conversion that names the parameter it failed to fill. Every splat
+        # site is checked because the mistake is invisible until the step runs.
+        #
+        # Splatting into a native executable is exempt: a process receives a
+        # positional argument vector, so an array is the correct shape there.
+        $nativeCommands = 'pwsh|dotnet|git|gh|adb|node|npm|xcrun|ffmpeg|python3?'
+        $splatNames = [regex]::Matches($script:Pipeline, '(?m)^(?<line>.*?@(?<name>[A-Za-z_][A-Za-z0-9_]*)\b.*)$') |
+            Where-Object {
+                $_.Groups['name'].Value -notin @('parameters', 'variables') -and
+                $_.Groups['line'].Value -notmatch ('&\s*(?:' + $nativeCommands + ')\s+@')
+            } |
+            ForEach-Object { $_.Groups['name'].Value } |
+            Sort-Object -Unique
+
+        $splatNames | Should -Not -BeNullOrEmpty
+
+        foreach ($name in $splatNames) {
+            $assignment = [regex]::Match($script:Pipeline, ('\$' + [regex]::Escape($name) + '\s*=\s*@(?<open>[({])'))
+            if (-not $assignment.Success) { continue }
+
+            $assignment.Groups['open'].Value |
+                Should -BeExactly '{' -Because "`$$name is splatted into a PowerShell command, so it must be a hashtable rather than an array"
+        }
+    }
+
+    It 'passes the issue number to the context script as a named argument' {
+        $script:Pipeline | Should -Match '(?s)\$contextArgs = @\{.*?IssueNumber = '
+        $script:Pipeline | Should -Not -Match "(?s)\`$contextArgs = @\(.*?'-IssueNumber'"
+    }
+
+    It 'adds the anonymous fallback as a hashtable entry rather than an array element' {
+        $script:Pipeline | Should -Match "\`$contextArgs\['AllowAnonymousFallback'\] = \`$true"
+    }
+}
+
+Describe 'MAUI Copilot pipeline argument contracts' {
+    It 'passes only arguments the issue-context script actually declares' {
+        # The pipeline and the script are edited independently, and a parameter
+        # that exists on an inner function but never reached the script's own
+        # param block fails only on the agent, after provisioning.
+        $block = [regex]::Match($script:Pipeline, '(?s)\$contextArgs = @\{(?<body>.*?)\n\s*\}')
+        $block.Success | Should -BeTrue
+
+        $keys = [regex]::Matches($block.Groups['body'].Value, '(?m)^\s*(?<key>[A-Za-z_][A-Za-z0-9_]*)\s*=') |
+            ForEach-Object { $_.Groups['key'].Value }
+        $keys | Should -Not -BeNullOrEmpty
+
+        $conditional = [regex]::Matches($script:Pipeline, "\`$contextArgs\['(?<key>[A-Za-z_][A-Za-z0-9_]*)'\]") |
+            ForEach-Object { $_.Groups['key'].Value }
+
+        $declared = (Get-Command (Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1')).Parameters.Keys
+
+        foreach ($key in (@($keys) + @($conditional) | Sort-Object -Unique)) {
+            $declared | Should -Contain $key -Because "the pipeline passes -$key to Get-ReplicationIssueContext.ps1"
+        }
+    }
+
+    It 'declares the anonymous fallback on the script it is passed to' {
+        $script = Get-Command (Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1')
+
+        $script.Parameters.Keys | Should -Contain 'AllowAnonymousFallback'
+        $script.Parameters['AllowAnonymousFallback'].ParameterType.Name |
+            Should -BeExactly 'SwitchParameter'
+    }
+
+    It 'forwards the anonymous fallback from the entry point to the reader' {
+        $source = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1')
+        $entry = [regex]::Match($source, '(?s)if \(\$MyInvocation\.InvocationName -ne .\..\) \{(?<body>.*)')
+
+        $entry.Success | Should -BeTrue
+        $entry.Groups['body'].Value | Should -Match '-AllowAnonymousFallback:\$AllowAnonymousFallback'
+    }
+}

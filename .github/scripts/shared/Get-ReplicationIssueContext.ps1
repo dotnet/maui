@@ -37,6 +37,11 @@ param(
     [Parameter(Mandatory = $false)]
     [switch] $DownloadScreenshots,
 
+    # Off by default: a silent anonymous fallback would let a run that can
+    # publish nothing still look successful.
+    [Parameter(Mandatory = $false)]
+    [switch] $AllowAnonymousFallback,
+
     [Parameter(Mandatory = $false)]
     [ValidateRange(1, 262144)]
     [int] $MaxBodyChars = 50000,
@@ -2055,6 +2060,7 @@ if ($MyInvocation.InvocationName -ne '.') {
             -Repository $Repository `
             -IssueJsonPath $IssueJsonPath `
             -DownloadScreenshots:$DownloadScreenshots `
+            -AllowAnonymousFallback:$AllowAnonymousFallback `
             -MaxBodyChars $MaxBodyChars `
             -MaxScreenshotBytes $MaxScreenshotBytes)
 

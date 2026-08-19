@@ -2329,3 +2329,127 @@ public class Issue36298 : _IssuesUITest
         } | Should -Throw '*android, ios, catalyst*'
     }
 }
+
+Describe 'Validate-ReplicationCandidate certification' {
+    BeforeAll {
+        $script:ControlBaselineSource = @'
+[Test]
+public void Repro()
+{
+    App.NavigateTo("ShadowedButtonGallery");
+    App.Tap("TriggerButton");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+        $script:ControlVariantSource = @'
+[Test]
+public void Repro_Control()
+{
+    App.NavigateTo("PlainButtonGallery");
+    App.Tap("TriggerButton");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+
+    function Add-NegativeControl {
+        param(
+            $Fixture,
+            [int]$RunCount = 2,
+            [int]$PassCount = 2,
+            [switch]$OmitSources,
+            [string]$VariantSource
+        )
+
+        $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+        $resultPath = Join-Path $verificationRoot 'verification-result.json'
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $result -NotePropertyName 'negativeControl' -NotePropertyValue ([ordered]@{
+                runCount  = $RunCount
+                passCount = $PassCount
+            }) -Force
+        Write-TestJson -Path $resultPath -Value $result
+
+        if (-not $OmitSources) {
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') `
+                -Value $script:ControlBaselineSource
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-variant.cs') `
+                -Value $(if ($VariantSource) { $VariantSource } else { $script:ControlVariantSource })
+        }
+
+        return $Fixture
+    }
+    }
+
+    It 'grades a reproduction without a control as observed rather than certified' {
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'observed-reproduction'
+    }
+
+    It 'certifies a reproduction whose control passes without the trigger' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+    }
+
+    It 'reports the certification matrix for the pull request body' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationSummary | Should -Match 'Trigger removed'
+    }
+
+    It 'refuses to certify when the test stays red without the trigger' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -PassCount 0
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'observed-reproduction'
+    }
+
+    It 'rejects a control reporting more passes than runs' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -RunCount 2 -PassCount 5
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*more passes than runs*'
+    }
+
+    It 'rejects a control that cannot be checked because its sources are missing' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -OmitSources
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*source snapshots*'
+    }
+
+    It 'rejects a control made green by weakening the oracle' {
+        $weakened = $script:ControlVariantSource -replace 'Is\.EqualTo\("Updated"\)', 'Is.Not.Null'
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource $weakened
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*changes the oracle*'
+    }
+
+    It 'rejects a control identical to the reproduction' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource $script:ControlBaselineSource
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*removes nothing*'
+    }
+}

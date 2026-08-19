@@ -1755,7 +1755,10 @@ function Get-ReplicationEvidenceInventory {
         'verification-console.log',
         'verification-result.json',
         'verify-tests-fail.log',
-        'test-without-fix.log'
+        'test-without-fix.log',
+        'negative-control-baseline.cs',
+        'negative-control-variant.cs',
+        'negative-control-console.log'
     )
 
     $mediaItems = @(Get-ChildItem -LiteralPath $mediaRoot -Force)
@@ -1838,7 +1841,12 @@ function Get-ReplicationEvidenceInventory {
         -PathType Leaf
     if ($hasMachineResult) {
         foreach ($item in $verificationItems) {
-            if ($item.Name -cnotin @('verification-console.log', 'verification-result.json') -and
+            if ($item.Name -cnotin @(
+                    'verification-console.log',
+                    'verification-result.json',
+                    'negative-control-baseline.cs',
+                    'negative-control-variant.cs',
+                    'negative-control-console.log') -and
                 $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$') {
                 throw 'Machine-readable verification directory contains an unexpected artifact.'
             }
@@ -2404,6 +2412,7 @@ function Assert-ReplicationVerificationEvidence {
                 'consistentRuns',
                 'stableFailureMessage',
                 'observedFailureMessages',
+                'negativeControl',
                 'logFiles'
             ) `
             -Context 'Verification result'
@@ -3254,6 +3263,16 @@ function Invoke-ReplicationCandidateValidation {
                 [int]$verificationResult.validatedRunCount
             } else {
                 0
+            }
+            certificationLevel = if ($verificationResult) {
+                [string]$verificationResult.certificationLevel
+            } else {
+                'candidate-scenario'
+            }
+            certificationSummary = if ($verificationResult) {
+                [string]$verificationResult.certificationSummary
+            } else {
+                ''
             }
             reproductionMarker = $manifest.ReproductionMarker
             files = @($manifest.ProposedFiles)

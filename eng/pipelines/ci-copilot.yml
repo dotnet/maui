@@ -605,16 +605,18 @@ stages:
               Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $contextDir 'issue-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_PRIVATE_CONTEXT_ROOT]$privateContextDir"
-              $contextArgs = @(
-                '-IssueNumber', ${{ parameters.IssueNumber }},
-                '-Platform', "${{ parameters.Platform }}",
-                '-OutputDir', $privateContextDir,
-                '-Repository', 'dotnet/maui',
-                '-DownloadScreenshots'
-              )
+              # Splatted as a hashtable: an array splat would pass these
+              # positionally and bind the literal '-IssueNumber' to -IssueNumber.
+              $contextArgs = @{
+                IssueNumber = ${{ parameters.IssueNumber }}
+                Platform = "${{ parameters.Platform }}"
+                OutputDir = $privateContextDir
+                Repository = 'dotnet/maui'
+                DownloadScreenshots = $true
+              }
               if ($env:REPLICATION_EVIDENCE_ONLY -eq 'true') {
-                # The publishing credential is dead but the issue is public.
-                $contextArgs += '-AllowAnonymousFallback'
+                # The publishing credential is unavailable but the issue is public.
+                $contextArgs['AllowAnonymousFallback'] = $true
               }
 
               & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
