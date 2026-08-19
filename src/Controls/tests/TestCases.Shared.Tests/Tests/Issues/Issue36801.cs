@@ -66,14 +66,14 @@ public class Issue36801 : _IssuesUITest
 			"Probe label should be fully visible after ScrollToAsync(element, End)");
 	}
 
-	// The reachable ContentInsetAdjustmentBehavior modes bake the safe area into the content
+	// The three ContentInsetAdjustmentBehavior modes bake the safe area into the content
 	// differently, so each is exercised. The page asserts the resolved native behavior, so a
-	// mode that silently drifted fails instead of quietly testing a different branch.
-	// Default on a vertical scroll view resolves to Never since the landscape-notch fix
-	// (#35533); Automatic remains in use only for horizontal scroll views.
+	// mode that silently drifted fails instead of quietly testing a different branch —
+	// exactly what happened when the landscape-notch fix (#35533, since reverted in #36580)
+	// briefly remapped Default to Never.
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	[TestCase("ModeDefaultButton", "Never")]
+	[TestCase("ModeDefaultButton", "Automatic")]
 	[TestCase("ModeNoneButton", "Never")]
 	// Also resolves to Never, but bakes the safe area into the arranged content, which None
 	// does not — so it is the case that actually exercises the measured extent's baked padding
@@ -97,13 +97,13 @@ public class Issue36801 : _IssuesUITest
 	}
 
 	// Element targets resolve against the effective viewport, and each inset mode obscures it
-	// differently: Always through AdjustedContentInset, Default/SafeAreaEdges.All by baking
+	// differently: Automatic/Always through AdjustedContentInset, SafeAreaEdges.All by baking
 	// the safe area into the content where AdjustedContentInset never reports it. The page's
 	// oracle measures the probe's bottom edge against the unobscured viewport bottom in window
 	// coordinates, so the mode where MAUI itself obscures the viewport is proven too.
 	[Test]
 	[Category(UITestCategories.ScrollView)]
-	[TestCase("ModeDefaultButton", "Never")]
+	[TestCase("ModeDefaultButton", "Automatic")]
 	[TestCase("ModeNoneButton", "Never")]
 	// Also resolves to Never, but bakes the safe area into the content — the case where the
 	// viewport shrink comes from MAUI's own arrange instead of a UIKit inset
