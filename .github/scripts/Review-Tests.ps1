@@ -83,6 +83,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+
 $RepoRoot = git rev-parse --show-toplevel 2>$null
 if (-not $RepoRoot) {
     throw "Not in a git repository."
@@ -408,16 +410,6 @@ function Get-EmbeddedTestFailureReport {
     }
 
     return $null
-}
-
-function Escape-Html {
-    param([string]$Value)
-
-    if ($null -eq $Value) {
-        return ""
-    }
-
-    return $Value -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
 }
 
 function Get-ReportVerdict {

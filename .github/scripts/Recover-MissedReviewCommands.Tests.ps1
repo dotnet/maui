@@ -281,6 +281,25 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         $result.Recovered[0].AcknowledgementPending | Should -BeTrue
     }
 
+    It 'dispatches recovered platform aliases using canonical live-trigger values' -TestCases @(
+        @{ Command = '/review macos';           Expected = 'catalyst' }
+        @{ Command = '/review -p maccatalyst';  Expected = 'catalyst' }
+        @{ Command = '/review --platform=mac';  Expected = 'catalyst' }
+        @{ Command = '/review win';             Expected = 'windows' }
+    ) {
+        param($Command, $Expected)
+
+        $script:Comment.body = $Command
+
+        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
+
+        $result.Recovered.Count | Should -Be 1
+        $result.Recovered[0].Platform | Should -Be $Expected
+        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
+            $Platform -eq $Expected
+        }
+    }
+
     It 'does not dispatch minimized commands' {
         Mock Test-ReviewCommentIsMinimized { $true }
 

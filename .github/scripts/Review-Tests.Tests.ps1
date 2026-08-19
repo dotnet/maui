@@ -3,6 +3,8 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Review-Tests.ps1'
+    . (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -15,7 +17,6 @@ BeforeAll {
             'Get-EmbeddedTestFailureReport',
             'Get-EmbeddedTestFailureReportCandidate',
             'Get-MarkdownFenceState',
-            'Escape-Html',
             'Get-ReportVerdict',
             'Get-VerdictColor',
             'New-Badge',

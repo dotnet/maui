@@ -75,6 +75,8 @@ param(
 $ErrorActionPreference = "Stop"
 $MARKER = "<!-- AI Summary -->"
 
+. (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+
 $commentCleanupScript = Join-Path $PSScriptRoot "shared/Remove-StaleMauiBotComments.ps1"
 if (Test-Path $commentCleanupScript) {
     . $commentCleanupScript
@@ -582,6 +584,8 @@ No alternative fix was selected for this run. Review the session findings and CI
     }
 
     $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
+    $safeRationale = Escape-Html $rationale
+    $safeSelected = Escape-Html $selected
 
     if ($selected -eq 'pr-plus-reviewer') {
         return @"
@@ -593,7 +597,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 
 **The reviewer-enhanced candidate won, so the submitted PR still needs those changes.**
 
-**Why:** $rationale
+**Why:** $safeRationale
 
 Apply <code>PRAgent/pr-plus-reviewer/reviewer.patch</code> from the <code>CopilotLogs</code>
 artifact (or follow the report's **Required submitted-PR change**), push the update, and run
@@ -638,18 +642,18 @@ the review again.
 ---
 
 <details>
-<summary><strong>🧭 Next Steps</strong> — alternative fix proposed (<code>$selected</code>)</summary>
+<summary><strong>🧭 Next Steps</strong> — alternative fix proposed (<code>$safeSelected</code>)</summary>
 <br/>
 
 **Automated review — alternative fix proposed**
 
-The expert-reviewer evaluation compared the PR fix against automatically generated candidates and selected <code>$selected</code> as the strongest fix.
+The expert-reviewer evaluation compared the PR fix against automatically generated candidates and selected <code>$safeSelected</code> as the strongest fix.
 
-**Why:** $rationale
+**Why:** $safeRationale
 
 Please consider applying the candidate diff below (or use it as guidance). Once you push an update, this workflow will re-trigger and re-evaluate.
 
-<details><summary>Candidate diff (<code>$selected</code>)</summary>
+<details><summary>Candidate diff (<code>$safeSelected</code>)</summary>
 
 ${fence}diff
 $diff
