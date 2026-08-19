@@ -46,6 +46,84 @@ Describe 'Detect-TestsInDiff device-test filtering' {
         $test.ClassFilter | Should -Be 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
         $test.Methods | Should -BeNullOrEmpty
     }
+
+    It 'keeps an applicable helper-only platform partial mapped to its shared device tests' {
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-tests-" + [Guid]::NewGuid().ToString('N'))
+        $relativeFile = 'src/Controls/tests/DeviceTests/Elements/ContentView/ContentViewTests.Android.cs'
+        $platformFile = Join-Path $root $relativeFile
+        $sharedFile = Join-Path $root 'src/Controls/tests/DeviceTests/Elements/ContentView/ContentViewTests.cs'
+
+        try {
+            New-Item -ItemType Directory -Force -Path (Split-Path $platformFile -Parent) | Out-Null
+            @'
+namespace Microsoft.Maui.DeviceTests;
+
+[Category(TestCategory.ContentView)]
+public partial class ContentViewTests
+{
+    [Fact]
+    public void SharedTestUsesPlatformHelper()
+    {
+        PlatformHelper();
+    }
+}
+'@ | Set-Content $sharedFile -Encoding UTF8
+            @'
+namespace Microsoft.Maui.DeviceTests;
+
+public partial class ContentViewTests
+{
+    void PlatformHelper()
+    {
+    }
+}
+'@ | Set-Content $platformFile -Encoding UTF8
+
+            Push-Location $root
+            try {
+                git init -q
+                git config user.email tests@example.com
+                git config user.name Tests
+                git add .
+                git commit -q -m base
+                $base = (git rev-parse HEAD).Trim()
+
+                @'
+namespace Microsoft.Maui.DeviceTests;
+
+public partial class ContentViewTests
+{
+    void PlatformHelper()
+    {
+        _ = 1;
+    }
+}
+'@ | Set-Content $platformFile -Encoding UTF8
+                git add .
+                git commit -q -m helper-change
+
+                $androidTests = @(& $scriptPath `
+                    -ChangedFiles $relativeFile `
+                    -DiffBase $base `
+                    -Platform android)
+                $windowsTests = @(& $scriptPath `
+                    -ChangedFiles $relativeFile `
+                    -DiffBase $base `
+                    -Platform windows)
+            } finally {
+                Pop-Location
+            }
+
+            $test = $androidTests | Where-Object { $_.Type -eq 'DeviceTest' } | Select-Object -First 1
+            $test | Should -Not -BeNullOrEmpty
+            $test.Filter | Should -Be 'Category=ContentView'
+            $test.ClassFilter | Should -Be 'Microsoft.Maui.DeviceTests.ContentViewTests'
+            $test.Methods | Should -BeNullOrEmpty
+            @($windowsTests | Where-Object { $_.Type -eq 'DeviceTest' }).Count | Should -Be 0
+        } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 Describe 'Detect-TestsInDiff platform-specific methods' {

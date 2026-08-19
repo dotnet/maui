@@ -17,6 +17,7 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'verify-tests-fail.ps1'
     $script:VerifierSource = Get-Content -LiteralPath $scriptPath -Raw
+    $script:verifyScriptText = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -24,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -274,15 +275,33 @@ Describe 'Invoke-TestRun — host-only target frameworks' {
     It 'applies the shared platform exclusions to unit and XAML unit tests' {
         ([regex]::Matches($script:invokeTestRunText, '\+\s*\$hostOnlyTargetFrameworkArgs')).Count | Should -Be 2
         ([regex]::Matches($script:invokeTestRunText, '-p:TreatWarningsAsErrors=false')).Count | Should -Be 2
-        foreach ($property in @(
-            'IncludeAndroidTargetFrameworks',
-            'IncludeIosTargetFrameworks',
-            'IncludeMacCatalystTargetFrameworks',
-            'IncludeWindowsTargetFrameworks',
-            'IncludeTizenTargetFrameworks'
-        )) {
-            $script:invokeTestRunText | Should -Match "-p:$property=false"
-        }
+        @(Get-HostOnlyTargetFrameworkArgs) | Should -Be @(
+            '-p:IncludeAndroidTargetFrameworks=false',
+            '-p:IncludeIosTargetFrameworks=false',
+            '-p:IncludeMacCatalystTargetFrameworks=false',
+            '-p:IncludeWindowsTargetFrameworks=false',
+            '-p:IncludeTizenTargetFrameworks=false'
+        )
+    }
+
+    It 'applies the same platform exclusions to both clean-rebuild retry commands' {
+        $retryStart = $script:verifyScriptText.IndexOf(
+            '# ── Clean-rebuild retry for with-fix-only build errors')
+        $retryEnd = $script:verifyScriptText.IndexOf(
+            '# Combine into a single summary for backward compatibility',
+            $retryStart)
+        $retryStart | Should -BeGreaterOrEqual 0
+        $retryEnd | Should -BeGreaterThan $retryStart
+        $retryText = $script:verifyScriptText.Substring(
+            $retryStart,
+            $retryEnd - $retryStart)
+
+        ([regex]::Matches(
+            $retryText,
+            '\+\s*\$hostOnlyTargetFrameworkArgs')).Count |
+            Should -Be 2
+        $retryText | Should -Match (
+            '\$hostOnlyTargetFrameworkArgs\s*=\s*Get-HostOnlyTargetFrameworkArgs')
     }
 }
 
@@ -427,10 +446,26 @@ Some later flake mentioned the app did not recover after crash-recovery attempts
     }
 
     It 'flags a brand-new snapshot with no committed baseline as env/SnapshotBaselineMissing' {
-        $log = New-LogFile "VisualTestFailedException : Baseline snapshot not yet created for MyNewTest"
+        $log = New-LogFile @'
+VisualTestFailedException : Baseline snapshot not yet created for MyNewTest
+[UITest] SnapshotCategory: Passed=False Failed=1 [12s]
+'@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeTrue
         $r.SnapshotBaselineMissing | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let one missing baseline mask a sibling count-less assertion failure' {
+        $log = New-LogFile @'
+VisualTestFailedException : Baseline snapshot not yet created for MyNewTest
+AssertionException: Expected: 42 But was: 17
+[UITest] SnapshotCategory: Passed=False Failed=2 [12s]
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.SnapshotBaselineMissing | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1427,6 +1462,57 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         $r = Get-TestResultFromOutput -LogFile $log
         $r.SnapshotSizeMismatch | Should -Not -BeTrue
         $r.EnvError | Should -Not -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let one size mismatch mask a sibling count-less assertion failure' {
+        $log = New-LogFile -Content @"
+  Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  AssertionException: Expected: 42 But was: 17
+  [UITest] MixedCategory: Passed=False Failed=2 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let one size mismatch mask a sibling count-less pixel diff' {
+        $log = New-LogFile -Content @"
+  Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  Snapshot different than baseline: RealRegression.png (17.08% difference)
+  [UITest] MixedVisualCategory: Passed=False Failed=2 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps a count-less run benign when every failure is a missing baseline or size mismatch' {
+        $log = New-LogFile -Content @"
+  VisualTestFailedException : Baseline snapshot not yet created for NewSnapshot.png
+  Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  [UITest] MixedBenignSnapshots: Passed=False Failed=2 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Failed | Should -Be 0
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'fails closed when a size marker has no count-less UITest failure summary' {
+        $log = New-LogFile -Content @"
+  Snapshot different than baseline: Unknown.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
     }
 }
 

@@ -459,38 +459,13 @@ stages:
               fi
               echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
 
-              # Switch the worktree to the PR's base branch (detached, to avoid
-              # 'branch already checked out in another worktree' conflicts).
-              # EXCEPTION — inflight/* targets: the inflight release branches carry
-              # release-specific code that has diverged from main, and we review those
-              # PRs on the PR head AS-IS (see Review-PR.ps1 Setup). Build/workload-resolve
-              # the PR head here too, so Build MSBuild Tasks compiles the PR's actual code
-              # (on its inflight base) rather than the base tip — otherwise a broken base
-              # would fail the review before Setup even runs, and a PR that FIXES the base
-              # could never be validated. 'pull/N/head' resolves for fork PRs too.
-              if [[ "${BASE_REF}" == inflight/* ]]; then
-                git fetch origin "pull/${PARAM_PR_NUMBER}/head" --no-tags
-                git checkout --detach FETCH_HEAD
-                # Merge the CURRENT inflight base so the review builds the PR on top of the
-                # LATEST base — picking up base-branch fixes that landed AFTER the PR branched
-                # (e.g. #36787 fixed the inflight/current build breaks after #36776 was cut).
-                # Without this, a stale PR head rebuilds the old broken base and the gate + UI
-                # tests never run. Best-effort here: on conflict, keep the PR head as-is (Build
-                # MSBuild Tasks is continueOnError, and Setup re-runs the merge and reports the
-                # real conflict). A PR that FIXES the base still builds because its fix is on HEAD.
-                git fetch origin "${BASE_REF}" --no-tags
-                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/${BASE_REF}"; then
-                  echo "Merged latest origin/${BASE_REF} into PR head for an up-to-date base build"
-                else
-                  echo "##vso[task.logissue type=warning]Could not merge origin/${BASE_REF} into PR #${PARAM_PR_NUMBER} head (conflict) — building PR head as-is; Setup will report the merge conflict."
-                  git merge --abort 2>/dev/null || true
-                fi
-                echo "Worktree now at $(git rev-parse --short HEAD) (PR #${PARAM_PR_NUMBER} head + ${BASE_REF}) for workloads + build"
-              else
-                git fetch origin "${BASE_REF}" --no-tags
-                git checkout --detach "origin/${BASE_REF}"
-                echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
-              fi
+              # Always keep the worktree on the protected target branch while the
+              # credential-bearing workload and build-task steps run. The trusted
+              # Setup phase merges the immutable PR head later, after DOTNET_TOKEN is
+              # out of scope, including for inflight/* targets.
+              git fetch origin "${BASE_REF}" --no-tags
+              git checkout --detach "origin/${BASE_REF}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
             name: ResolveBaseBranch
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
@@ -2321,15 +2296,14 @@ stages:
               fi
               # The process exit code is authoritative for FAILED (a genuine FAILED gate exits
               # non-zero — PASSED/SKIPPED/INCONCLUSIVE all exit 0), so it overrides the file read.
-              # EXCEPTION: the Gate phase ALSO exits non-zero when it cannot start because the
-              # Setup phase did not complete — e.g. the PR has merge conflicts with its base branch,
-              # so Setup posts a conflict comment and bails BEFORE writing the setup-complete
-              # sentinel (Review-PR.ps1 sentinel check). In that case the A/B verification never
-              # ran, so the correct result is INCONCLUSIVE, not a test FAILED (which would read as
-              # "the fix is broken"). Distinguish the two via the setup-complete sentinel:
-              #   present => Setup ran; a non-zero gate exit is a genuine test-verification FAILED.
-              #   absent  => the gate could not even start (setup incomplete) => INCONCLUSIVE.
-              if [ $GATE_EXIT -ne 0 ]; then
+              # EXCEPTIONS: exit 3 is reserved for a trusted-overlay failure before verification,
+              # and a missing setup-complete sentinel means Setup itself did not finish. Neither
+              # path ran A/B verification, so both are INCONCLUSIVE rather than a failed fix.
+              # Other non-zero exits after completed Setup remain genuine verification failures.
+              if [ $GATE_EXIT -eq 3 ]; then
+                echo "##vso[task.logissue type=warning]Gate could not start because the trusted Catalyst source overlay could not be applied. Classifying gate as INCONCLUSIVE, not FAILED."
+                GATE_VERDICT="INCONCLUSIVE"
+              elif [ $GATE_EXIT -ne 0 ]; then
                 if [ -f "$(Build.ArtifactStagingDirectory)/setup-complete" ]; then
                   GATE_VERDICT="FAILED"
                 else
@@ -2553,7 +2527,7 @@ stages:
       - job: PostReview
         displayName: 'Post review results'
         dependsOn: CopilotReview
-        condition: and(eq('${{ parameters.Mode }}', 'review'), in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+        condition: and(eq('${{ parameters.Mode }}', 'review'), in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'))
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -4417,16 +4391,11 @@ stages:
           - checkout: self
             fetchDepth: 1
             fetchTags: false
-            # persistCredentials:true is an INTENTIONAL exception to the pipeline's
-            # "always false" rule (security rule 2: "...unless the task pushes"). It
-            # lets the snapshot-diff embed below host the PNGs on the PUBLIC
-            # review-tests-assets branch using the GitHub service-connection PAT the
-            # checkout already writes into .git/config — so NO new/separate secret is
-            # needed. SAFE here because this job runs ONLY trusted pipeline-branch code
-            # (downloads artifacts + posts the review); it NEVER merges or builds/runs
-            # the untrusted PR, so the persisted credential is never exposed to
-            # PR-controlled code (the exact threat rule 2 guards against).
-            persistCredentials: true
+            # Prompt-influenced Copilot analysis runs later in this checkout. Never
+            # persist the service-connection PAT while that agent can read .git/config.
+            # A second checkout introduces the publication credential only after the
+            # Copilot step has finished, immediately before the trusted post step.
+            persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -4523,6 +4492,28 @@ stages:
             continueOnError: true
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+
+          # Introduce the GitHub service-connection credential only AFTER all
+          # prompt-influenced Copilot execution has completed. The remaining step is
+          # trusted pipeline-branch PowerShell that publishes snapshot assets and posts
+          # the review; no agent or PR-controlled process runs after this checkout.
+          - checkout: self
+            displayName: 'Enable trusted snapshot asset publication credential'
+            fetchDepth: 1
+            fetchTags: false
+            # Discard any checkout mutation the prompt-influenced agent attempted
+            # before credentials appear. Its intended output lives in Agent.TempDirectory.
+            clean: true
+            persistCredentials: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $persistedHeaders = @(git config --get-regexp '^http\..*\.extraheader$' 2>$null)
+              if ($LASTEXITCODE -ne 0 -or $persistedHeaders.Count -eq 0) {
+                throw "Snapshot asset publication requires the persisted checkout credential, but no Git HTTP authorization header was configured."
+              }
+              Write-Host "Trusted snapshot asset publication credential is configured."
+            displayName: 'Verify snapshot asset publication credential'
 
           - pwsh: |
               # DO NOT add AzDO compile-time template expressions (the double-curly

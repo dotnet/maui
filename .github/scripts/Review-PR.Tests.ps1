@@ -59,6 +59,9 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
+    $script:stopTrustedCatalystOverlayFailureBody = Get-FunctionBody -ScriptText $content -FunctionName 'Stop-TrustedCatalystOverlayFailure'
     . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
 }
 
@@ -68,6 +71,61 @@ Describe 'Phase worktree requirements' {
         Test-PhaseRequiresReviewWorktree -PhaseName 'Gate' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'CopilotReview' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'Post' | Should -BeFalse
+    }
+}
+
+Describe 'Inflight target branch fetch' {
+    It 'does not resolve or merge a stale cached ref when fetch fails' {
+        Mock Invoke-ReviewGitCommand {
+            param([string[]]$Arguments)
+            if ($Arguments[0] -eq 'fetch') {
+                return [pscustomobject]@{
+                    ExitCode = 128
+                    Output = 'fatal: unable to access remote'
+                }
+            }
+            throw "The stale cached ref must not be resolved: $($Arguments -join ' ')"
+        }
+
+        {
+            Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName 'inflight/current'
+        } | Should -Throw '*inconclusive due to a retryable environment/infrastructure failure*'
+
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -join ' ' -eq 'fetch origin inflight/current'
+        }
+        Should -Invoke Invoke-ReviewGitCommand -Times 0 -Exactly -ParameterFilter {
+            $Arguments[0] -eq 'rev-parse'
+        }
+    }
+
+    It 'reports a missing ref as a fetch environment failure instead of a merge conflict' {
+        Mock Invoke-ReviewGitCommand {
+            param([string[]]$Arguments)
+            if ($Arguments[0] -eq 'fetch') {
+                return [pscustomobject]@{
+                    ExitCode = 128
+                    Output = "fatal: couldn't find remote ref inflight/candidate"
+                }
+            }
+            throw "A missing cached ref must not be resolved: $($Arguments -join ' ')"
+        }
+
+        $errorMessage = try {
+            Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName 'inflight/candidate'
+            throw 'Expected the failed fetch to terminate branch resolution.'
+        } catch {
+            $_.Exception.Message
+        }
+
+        $errorMessage | Should -Match 'inconclusive due to a retryable environment/infrastructure failure'
+        $errorMessage | Should -Not -Match 'merge conflict'
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -join ' ' -eq 'fetch origin inflight/candidate'
+        }
+        Should -Invoke Invoke-ReviewGitCommand -Times 0 -Exactly -ParameterFilter {
+            $Arguments[0] -eq 'rev-parse'
+        }
     }
 }
 
@@ -112,6 +170,40 @@ Describe 'Gate retry classification' {
 '@
         Get-GateReportRetryClass -ReportContent $report | Should -Be 'retryable'
         Test-GateReportIsRetryableEnvironmentError -ReportContent $report | Should -BeTrue
+    }
+}
+
+Describe 'Gate trusted overlay failure classification' {
+    It 'keeps a non-applicable Catalyst overlay after setup inconclusive' {
+        $childScript = @"
+$script:stopTrustedCatalystOverlayFailureBody
+`$Phase = 'Gate'
+Stop-TrustedCatalystOverlayFailure -Message 'Trusted Catalyst screenshot override no longer applies cleanly.'
+"@
+        $childOutput = & pwsh -NoProfile -Command $childScript 2>&1
+        $childExitCode = $LASTEXITCODE
+
+        $childExitCode | Should -Be 3
+        ($childOutput -join "`n") | Should -Match 'trusted-overlay failure as infrastructure/inconclusive'
+
+        $restoreStart = $content.IndexOf('function Restore-TrustedScripts')
+        $restoreEnd = $content.IndexOf('# ─── Sentinel check:', $restoreStart)
+        $restoreBlock = $content.Substring($restoreStart, $restoreEnd - $restoreStart)
+        $restoreBlock | Should -Match ([regex]::Escape(
+            'Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."'))
+
+        $gateStart = $pipelineContent.IndexOf('GATE_VERDICT_FILE="$(Build.ArtifactStagingDirectory)/gate-result.txt"')
+        $gateEnd = $pipelineContent.IndexOf('echo "Trusted gate verdict: $GATE_VERDICT"', $gateStart)
+        $gateBlock = $pipelineContent.Substring($gateStart, $gateEnd - $gateStart)
+        $overlayExit = $gateBlock.IndexOf('if [ $GATE_EXIT -eq 3 ]')
+        $setupComplete = $gateBlock.IndexOf('elif [ $GATE_EXIT -ne 0 ]', $overlayExit)
+        $genuineFailure = $gateBlock.IndexOf('GATE_VERDICT="FAILED"', $setupComplete)
+
+        $overlayExit | Should -BeGreaterThan -1
+        $setupComplete | Should -BeGreaterThan $overlayExit
+        $genuineFailure | Should -BeGreaterThan $setupComplete
+        $gateBlock.Substring($overlayExit, $setupComplete - $overlayExit) |
+            Should -Match 'GATE_VERDICT="INCONCLUSIVE"'
     }
 }
 
@@ -237,6 +329,44 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CopilotLogs.*must never drive a credentialed PR title/body mutation'
     }
 
+    It 'runs prompt-influenced UI failure analysis before persisted publication credentials exist' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+
+        $initialCheckout = $stageBlock.IndexOf('- checkout: self')
+        $analysis = $stageBlock.IndexOf("displayName: 'Analyze UI test failures (Copilot)'")
+        $credentialCheckout = $stageBlock.IndexOf("displayName: 'Enable trusted snapshot asset publication credential'")
+        $credentialCheck = $stageBlock.IndexOf("displayName: 'Verify snapshot asset publication credential'")
+        $post = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
+
+        $initialCheckout | Should -BeGreaterThan -1
+        $analysis | Should -BeGreaterThan $initialCheckout
+        $credentialCheckout | Should -BeGreaterThan $analysis
+        $credentialCheck | Should -BeGreaterThan $credentialCheckout
+        $post | Should -BeGreaterThan $credentialCheck
+
+        $initialCheckoutBlock = $stageBlock.Substring($initialCheckout, $analysis - $initialCheckout)
+        $initialCheckoutBlock | Should -Match 'persistCredentials:\s*false'
+        $initialCheckoutBlock | Should -Not -Match 'persistCredentials:\s*true'
+
+        $analysisBlock = $stageBlock.Substring($analysis, $credentialCheckout - $analysis)
+        $analysisBlock | Should -Match 'COPILOT_GITHUB_TOKEN:\s*\$\(COPILOT_TOKEN\)'
+        $analysisBlock | Should -Not -Match '(?m)^\s+GH_TOKEN:'
+        $analysisBlock | Should -Not -Match '(?m)^\s+ASSET_WRITE_TOKEN:'
+
+        $credentialBlock = $stageBlock.Substring($credentialCheckout, $post - $credentialCheckout)
+        $credentialBlock | Should -Match 'clean:\s*true'
+        $credentialBlock | Should -Match 'persistCredentials:\s*true'
+        $credentialBlock | Should -Match ([regex]::Escape(
+            "git config --get-regexp '^http\..*\.extraheader$'"))
+        $credentialBlock | Should -Match 'throw "Snapshot asset publication requires the persisted checkout credential'
+
+        $afterCredential = $stageBlock.Substring($credentialCheckout)
+        $afterCredential | Should -Not -Match 'Analyze-UITestFailures\.ps1'
+        $afterCredential | Should -Not -Match '\bcopilot\s+--allow-all\b'
+    }
+
     It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
         $content | Should -Match ([regex]::Escape('"review-snapshot.json"'))
         $content | Should -Match ([regex]::Escape('prHeadSha = $reviewedPrHeadSha'))
@@ -258,21 +388,28 @@ Describe 'Reviewer pipeline timeout containment' {
     }
 
     It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
+        $postReviewJobStart = $pipelineContent.IndexOf("      - job: PostReview")
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
         $cleanupStart = $pipelineContent.IndexOf("- stage: CleanupReviewLock")
         $analyzeStart = $pipelineContent.IndexOf("- stage: AnalyzeCopilotTokenUsage")
 
-        $deepStart | Should -BeGreaterThan -1
+        $postReviewJobStart | Should -BeGreaterThan -1
+        $deepStart | Should -BeGreaterThan $postReviewJobStart
         $postStart | Should -BeGreaterThan $deepStart
         $cleanupStart | Should -BeGreaterThan $postStart
         $analyzeStart | Should -BeGreaterThan $cleanupStart
 
+        $postReviewJobBlock = $pipelineContent.Substring(
+            $postReviewJobStart,
+            $deepStart - $postReviewJobStart)
         $deepBlock = $pipelineContent.Substring($deepStart, $postStart - $deepStart)
         $postBlock = $pipelineContent.Substring($postStart, $cleanupStart - $postStart)
         $cleanupBlock = $pipelineContent.Substring($cleanupStart, $analyzeStart - $cleanupStart)
         $analyzeBlock = $pipelineContent.Substring($analyzeStart)
 
+        $postReviewJobBlock | Should -Match (
+            "condition: and\(eq\('.+parameters\.Mode.+', 'review'\), in\(dependencies\.CopilotReview\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'\)\)")
         $deepBlock | Should -Match 'not\(canceled\(\)\)'
         $deepBlock | Should -Not -Match "'Canceled'"
         $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
@@ -401,6 +538,37 @@ Describe 'Reviewer pipeline timeout containment' {
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
         $resolveBlock | Should -Not -Match 'source-overrides'
+    }
+
+    It 'keeps credential-bearing setup on the protected base branch' {
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $resolveStart = $pipelineContent.LastIndexOf(
+            "- bash:",
+            $pipelineContent.IndexOf($resolveName))
+        $replicationResolve = $pipelineContent.IndexOf(
+            "displayName: 'Resolve issue replication baseline'",
+            $resolveStart)
+        $resolveEnd = $pipelineContent.LastIndexOf("- bash:", $replicationResolve)
+        $resolveBlock = $pipelineContent.Substring(
+            $resolveStart,
+            $resolveEnd - $resolveStart)
+        $installWorkloads = $pipelineContent.IndexOf(
+            "displayName: 'Install .NET and workloads'",
+            $resolveEnd)
+        $buildTasks = $pipelineContent.IndexOf(
+            "displayName: 'Build MSBuild Tasks'",
+            $installWorkloads)
+        $setup = $pipelineContent.IndexOf(
+            'echo "═══ TASK 1: SETUP ═══"',
+            $buildTasks)
+
+        $resolveBlock | Should -Match (
+            [regex]::Escape('git checkout --detach "origin/${BASE_REF}"'))
+        $resolveBlock | Should -Not -Match 'pull/\$\{PARAM_PR_NUMBER\}/head'
+        $resolveBlock | Should -Not -Match 'git checkout --detach FETCH_HEAD'
+        $installWorkloads | Should -BeGreaterThan $resolveEnd
+        $buildTasks | Should -BeGreaterThan $installWorkloads
+        $setup | Should -BeGreaterThan $buildTasks
     }
 
     It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {

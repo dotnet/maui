@@ -166,6 +166,44 @@ function Test-GateReportIsRetryableEnvironmentError {
     return $ReportContent -match 'ENV ERROR'
 }
 
+function Invoke-ReviewGitCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    $output = git @Arguments 2>&1
+    return [pscustomobject]@{
+        ExitCode = $LASTEXITCODE
+        Output = (@($output) -join [Environment]::NewLine)
+    }
+}
+
+function Get-FetchedRemoteBranchSha {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RemoteName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$BranchName
+    )
+
+    $fetchResult = Invoke-ReviewGitCommand -Arguments @('fetch', $RemoteName, $BranchName)
+    if ($fetchResult.ExitCode -ne 0) {
+        $detail = if ([string]::IsNullOrWhiteSpace($fetchResult.Output)) { '' } else { "`n$($fetchResult.Output)" }
+        throw "Failed to fetch the latest target branch '$BranchName' from '$RemoteName'. Review setup is inconclusive due to a retryable environment/infrastructure failure.$detail"
+    }
+
+    $remoteRef = "$RemoteName/$BranchName"
+    $resolveResult = Invoke-ReviewGitCommand -Arguments @('rev-parse', $remoteRef)
+    $sha = ([string]$resolveResult.Output).Trim()
+    if ($resolveResult.ExitCode -ne 0 -or $sha -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "Fetched target branch '$BranchName', but could not resolve '$remoteRef'. Review setup is inconclusive due to a retryable environment/infrastructure failure."
+    }
+
+    return $sha
+}
+
 # Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
 # otherwise use the repo's own .github/ directory (local dev).
 $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' }     else { $PSScriptRoot }
@@ -441,8 +479,16 @@ if ($DryRun) {
         # Merge the CURRENT inflight base so base-branch fixes that landed AFTER the PR branched
         # are included (e.g. #36787 fixed the inflight/current build breaks after #36776 was cut).
         # Otherwise the gate rebuilds the stale/broken base and the gate + UI tests never run.
-        git fetch origin $baseRefName 2>&1 | Out-Null
-        $reviewedBaseSha = ([string](git rev-parse "origin/$baseRefName" 2>$null)).Trim()
+        try {
+            $reviewedBaseSha = Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName $baseRefName
+        } catch {
+            $fetchError = $_.Exception.Message
+            git checkout $originalBranch 2>$null
+            git branch -D $reviewBranch 2>$null
+            git branch -D $tempBranch 2>$null
+            Write-Error $fetchError
+            exit 1
+        }
         git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/$baseRefName" 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             # Genuine conflict between the PR head and the latest inflight base — the PR must
@@ -618,6 +664,17 @@ if ($Phase -eq 'Setup') {
 # MUST be re-applied after every `git reset --hard`, which would otherwise revert it. Catalyst
 # additionally receives a narrow trusted source patch for the screenshot harness: ordinary
 # reviewer-branch src/ edits are discarded when Setup switches to the PR base. No-op outside CI.
+function Stop-TrustedCatalystOverlayFailure {
+    param([Parameter(Mandatory = $true)][string]$Message)
+
+    if ($Phase -eq 'Gate') {
+        Write-Host "  ⚠️ $Message Gate verification did not start; classifying this trusted-overlay failure as infrastructure/inconclusive." -ForegroundColor Yellow
+        exit 3
+    }
+
+    throw $Message
+}
+
 function Restore-TrustedScripts {
     param([string]$TrustedScriptsDir, [string]$RepoRoot)
     if (-not $TrustedScriptsDir) { return }
@@ -641,7 +698,7 @@ function Restore-TrustedScripts {
     if ($Platform -in @('catalyst', 'maccatalyst')) {
         $sourceOverride = Join-Path $TrustedScriptsDir 'source-overrides/catalyst-retina-screenshot.patch'
         if (-not (Test-Path $sourceOverride -PathType Leaf)) {
-            throw "Trusted Catalyst screenshot override is missing: $sourceOverride"
+            Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override is missing: $sourceOverride"
         }
 
         Push-Location $RepoRoot
@@ -652,12 +709,12 @@ function Restore-TrustedScripts {
             } else {
                 git apply --check --whitespace=nowarn -- $sourceOverride
                 if ($LASTEXITCODE -ne 0) {
-                    throw "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."
+                    Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."
                 }
 
                 git apply --whitespace=nowarn -- $sourceOverride
                 if ($LASTEXITCODE -ne 0) {
-                    throw "Failed to apply trusted Catalyst screenshot override."
+                    Stop-TrustedCatalystOverlayFailure -Message "Failed to apply trusted Catalyst screenshot override."
                 }
                 Write-Host "  🔒 Applied trusted Catalyst Retina screenshot override" -ForegroundColor Cyan
             }

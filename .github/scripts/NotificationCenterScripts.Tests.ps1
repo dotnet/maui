@@ -8,6 +8,7 @@ BeforeAll {
         $disableScript
         $enableScript
         Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'dismiss-apple-account-dialog.sh'
+        Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'dismiss-maccatalyst-app-recovery-dialog.sh'
     )
     $helper = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'run-as-console-user.sh'
     $uiTestsPipeline = Join-Path $PSScriptRoot '..' '..' 'eng' 'pipelines' 'common' 'ui-tests-steps.yml'
@@ -24,6 +25,8 @@ Describe 'Notification Center script safety' {
             $content | Should -Match ([regex]::Escape('. "$scriptDir/run-as-console-user.sh"'))
             $content | Should -Match '\brun_as_console_user\b'
             $content | Should -Not -Match '\blaunchctl\s+asuser\b'
+            $content | Should -Match ([regex]::Escape('scriptDir=$(CDPATH= cd "$(dirname "$0")" && pwd)'))
+            $content | Should -Not -Match '\b(?:cd|dirname)\s+--'
             $content | Should -Not -Match '\bexit\s+1\b'
             $content.TrimEnd() | Should -Match 'exit 0$'
         }
@@ -36,6 +39,12 @@ Describe 'Notification Center script safety' {
     It 'uses modern launchctl controls and verifies the plist-defined service state' {
         $disableContent = Get-Content -Raw -LiteralPath $disableScript
         $enableContent = Get-Content -Raw -LiteralPath $enableScript
+
+        foreach ($content in @($disableContent, $enableContent)) {
+            $content | Should -Match 'diagnosticLogStatus=\$\?'
+            $content | Should -Match '\[ "\$diagnosticLogStatus" -ne 0 \]'
+            $content | Should -Match '\[ ! -f "\$diagnosticLog" \]'
+        }
 
         $disableContent | Should -Match 'PlistBuddy.*Print :Label'
         $disableContent | Should -Match 'PlistBuddy.*Print :Program'
@@ -84,6 +93,14 @@ Describe 'Notification Center script safety' {
         $enableBlock = $pipelineContent.Substring($enableStart, $enableEnd - $enableStart)
 
         $enableBlock | Should -Match 'condition:\s+always\(\)'
+    }
+
+    It 'rejects incomplete console-user invocations before shifting arguments' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $output = & $shell -c '. "$1"; run_as_console_user alice 501' sh $helper 2>&1
+
+        $LASTEXITCODE | Should -Be 64
+        ($output -join "`n") | Should -Match 'requires a user, uid, and command'
+        ($output -join "`n") | Should -Not -Match 'shift'
     }
 
     It 'runs the Pester workflow when any coupled trusted asset changes' {

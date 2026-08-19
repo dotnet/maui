@@ -2,7 +2,7 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+scriptDir=$(CDPATH= cd "$(dirname "$0")" && pwd)
 . "$scriptDir/run-as-console-user.sh"
 
 currentUser=$(echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }')
@@ -40,8 +40,11 @@ if [ "$serviceLabelStatus" -ne 0 ] ||
 fi
 
 serviceTarget="$serviceDomain/$serviceLabel"
-diagnosticLog=$(mktemp "${TMPDIR:-/tmp}/maui-notification-center-disable.XXXXXX")
-if [ -z "$diagnosticLog" ]; then
+diagnosticLog=$(mktemp "${TMPDIR:-/tmp}/maui-notification-center-disable.XXXXXX" 2>/dev/null)
+diagnosticLogStatus=$?
+if [ "$diagnosticLogStatus" -ne 0 ] ||
+    [ -z "$diagnosticLog" ] ||
+    [ ! -f "$diagnosticLog" ]; then
   echo "##vso[task.logissue type=warning]Could not create a Notification Center diagnostics file; continuing without changing host state."
   exit 0
 fi

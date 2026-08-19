@@ -295,7 +295,9 @@ Describe 'Replication issue outcome publication boundary' {
         $check | Should -BeGreaterThan 0
         $replicate | Should -BeGreaterThan $check
 
-        $step = $script:Pipeline.Substring($check - 3600, 3600)
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
+        $stepStart | Should -BeGreaterThan 0
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
         $step.Contains('MAUI_COPILOT_REPLICATION issue=') | Should -BeTrue
         $step.Contains('variable=replicationAlreadyPublished') | Should -BeTrue
     }

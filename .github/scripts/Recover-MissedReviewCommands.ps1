@@ -354,49 +354,54 @@ function Invoke-MissedReviewCommandRecovery {
             break
         }
 
-        if (Test-ReviewCommentIsMinimized -NodeId $candidate.CommentNodeId) {
-            continue
-        }
-        if (Test-ReviewCommentHasRecoveryMarker -Owner $Owner -Repo $Repo -CommentId $candidate.CommentId) {
-            continue
-        }
+        try {
+            if (Test-ReviewCommentIsMinimized -NodeId $candidate.CommentNodeId) {
+                continue
+            }
+            if (Test-ReviewCommentHasRecoveryMarker -Owner $Owner -Repo $Repo -CommentId $candidate.CommentId) {
+                continue
+            }
 
-        $pullRequest = Get-ReviewRecoveryPullRequest -Owner $Owner -Repo $Repo -PRNumber $candidate.PRNumber
-        if (-not $pullRequest -or [string]$pullRequest.state -ne 'open') {
-            continue
-        }
+            $pullRequest = Get-ReviewRecoveryPullRequest -Owner $Owner -Repo $Repo -PRNumber $candidate.PRNumber
+            if (-not $pullRequest -or [string]$pullRequest.state -ne 'open') {
+                continue
+            }
 
-        if (-not (Test-ReviewOptionLoginTrusted `
-            -Login $candidate.AuthorLogin `
-            -Owner $Owner `
-            -Repo $Repo)) {
-            continue
-        }
-
-        $acknowledgementPending = -not $DryRun
-        if ($DryRun) {
-            Write-Host "[dry-run] Would recover comment $($candidate.CommentId) for PR #$($candidate.PRNumber)."
-        } else {
-            Invoke-ReviewWorkflowDispatch `
+            if (-not (Test-ReviewOptionLoginTrusted `
+                -Login $candidate.AuthorLogin `
                 -Owner $Owner `
-                -Repo $Repo `
-                -PRNumber $candidate.PRNumber `
-                -Platform $candidate.Platform `
-                -PipelineRef $candidate.PipelineRef `
-                -CommentId $candidate.CommentId `
-                -CommentNodeId $candidate.CommentNodeId
+                -Repo $Repo)) {
+                continue
+            }
 
-            Write-Host "Dispatched comment $($candidate.CommentId) for PR #$($candidate.PRNumber); the serialized review-trigger workflow will acknowledge it after dedupe."
+            $acknowledgementPending = -not $DryRun
+            if ($DryRun) {
+                Write-Host "[dry-run] Would recover comment $($candidate.CommentId) for PR #$($candidate.PRNumber)."
+            } else {
+                Invoke-ReviewWorkflowDispatch `
+                    -Owner $Owner `
+                    -Repo $Repo `
+                    -PRNumber $candidate.PRNumber `
+                    -Platform $candidate.Platform `
+                    -PipelineRef $candidate.PipelineRef `
+                    -CommentId $candidate.CommentId `
+                    -CommentNodeId $candidate.CommentNodeId
+
+                Write-Host "Dispatched comment $($candidate.CommentId) for PR #$($candidate.PRNumber); the serialized review-trigger workflow will acknowledge it after dedupe."
+            }
+
+            $recovered.Add([pscustomobject]@{
+                CommentId = $candidate.CommentId
+                PRNumber = $candidate.PRNumber
+                Platform = $candidate.Platform
+                PipelineRef = $candidate.PipelineRef
+                AcknowledgementPending = $acknowledgementPending
+                DryRun = [bool]$DryRun
+            })
+        } catch {
+            Write-Warning "Skipping recovery candidate comment $($candidate.CommentId) for PR #$($candidate.PRNumber) after an isolated failure: $($_.Exception.Message)"
+            continue
         }
-
-        $recovered.Add([pscustomobject]@{
-            CommentId = $candidate.CommentId
-            PRNumber = $candidate.PRNumber
-            Platform = $candidate.Platform
-            PipelineRef = $candidate.PipelineRef
-            AcknowledgementPending = $acknowledgementPending
-            DryRun = [bool]$DryRun
-        })
     }
 
     return [pscustomobject]@{
