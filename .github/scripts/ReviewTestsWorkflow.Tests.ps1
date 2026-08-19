@@ -129,11 +129,35 @@ Describe '/review tests compiled trust boundary' {
             '(?m)(?:set\s+\+e|set\s+\+o\s+errexit|trap\s+-\s+ERR)')
 
         foreach ($file in $script:optionalFiles) {
-            $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
-                '(?:(?!sudo install).)*?' + [regex]::Escape($file.Source) +
-                '(?:(?!sudo install).)*?' +
-                [regex]::Escape($file.Destination)
-            $runBody | Should -Match $installPattern
+            $guardStart = 'if [ -f "' + $file.Source + '" ]; then'
+            $guardStartIndex = $runBody.IndexOf(
+                $guardStart,
+                [StringComparison]::Ordinal)
+            $guardStartIndex | Should -BeGreaterOrEqual 0
+
+            $guardEndIndex = $runBody.IndexOf(
+                "`nfi",
+                $guardStartIndex + $guardStart.Length,
+                [StringComparison]::Ordinal)
+            $guardEndIndex | Should -BeGreaterThan $guardStartIndex
+            $guardBlock = $runBody.Substring(
+                $guardStartIndex,
+                $guardEndIndex + 3 - $guardStartIndex)
+
+            $expectedInstall = @(
+                '  sudo install -o root -g root -m 0444 \'
+                '    "' + $file.Source + '" \'
+                '    "' + $file.Destination + '"'
+            ) -join "`n"
+
+            $guardBlock.Contains(
+                $expectedInstall,
+                [StringComparison]::Ordinal) |
+                Should -BeTrue
+            [regex]::Matches(
+                $runBody,
+                [regex]::Escape($file.Destination)).Count |
+                Should -Be 1
         }
 
         $runBody | Should -Match (
