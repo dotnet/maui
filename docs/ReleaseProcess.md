@@ -12,25 +12,67 @@ The .NET MAUI release process uses Arcade and 1ES to build, sign, gather, and pu
 
 The pipeline accepts:
 
-- `commitHash`: the source commit registered in BAR. The default value, `skip`, prevents all preparation, approval, workload-channel, and NuGet publishing jobs.
+- `ghOwner` and `ghRepo`: the GitHub owner and repository name used to resolve
+  the BAR build. Keep `ghOwner: dotnet` and enter `ghRepo: android-libraries`
+  for an Android libraries release.
+- Workload behavior is inferred for `dotnet/android`, `dotnet/macios`, and
+  `dotnet/maui`. Other enabled repositories use the ordinary NuGet package path.
+- `commitHash`: the source commit registered in BAR. It must resolve to exactly
+  one build for the requested repository. The default value, `skip`, prevents
+  all preparation, approval, workload-channel, and NuGet publishing jobs.
 - `pushWorkloadSet`: adds the resolved BAR build to the matching .NET workload release channel.
 - `pushNugetOrg`: enables the NuGet.org release stages.
-- `pushPackages`: when `false`, gathers and publishes release artifacts without running approvals or requesting the production NuGet service connection.
-- `nugetIncludeFilters` and `nugetExcludeFilters`: semicolon-separated wildcard filters applied to package file names. Include filters select workload packs; workload manifests remain selected unless an exclude filter removes them, preserving the previous release behavior.
-- `nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters`: recovery-only wildcard filters for pack or manifest files that a previous task invocation already submitted to NuGet.org. These packages stay in the expected verification set but are withheld from another push while NuGet.org validation is still pending. Use only the parameter for the affected publish stage.
+- `pushPackages`: when `false`, gathers and publishes release artifacts without promoting a workload build, running approvals, or requesting the production NuGet service connection.
+- `nugetIncludeFilters` and `nugetExcludeFilters`: workload-only, semicolon-separated wildcard filters applied to package file names. Include filters select workload packs; workload manifests remain selected unless an exclude filter removes them, preserving the previous release behavior. Non-workload releases reject these parameters rather than silently ignoring them.
+- `nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters`: workload-only recovery filters for pack or manifest files that a previous task invocation already submitted to NuGet.org. These packages stay in the expected verification set but are withheld from another push while NuGet.org validation is still pending. Use only the parameter for the affected publish stage; non-workload releases reject them.
+
+### Non-workload NuGet packages
+
+For repositories outside the inferred workload set, the generic non-workload path validates the
+BAR build against the requested GitHub repository, runs one fail-fast
+`darc gather-drop --id <BAR ID>`, gathers only shipping NuGet packages, rejects
+malformed or duplicate packages, and filters exact ID/version pairs already on
+NuGet.org. All remaining `.nupkg` files form one release set. Workload manifests
+are rejected so a workload build cannot accidentally bypass MAUI's pack-before-
+manifest ordering.
+
+The `NuGetReleaseAudit` artifact records the selected and exact staged package
+lists before manual approval. `pushPackages: false` performs the
+same resolution, gather, validation, filtering, and audit without promotion or
+publishing. A real release uses `1ES.PublishNuget@1` and verifies every selected
+package on NuGet.org afterward.
+
+Repository-specific policy remains at the pipeline boundary. For example,
+`dotnet/android-libraries` must match the public `.NET 10` channel exactly (ID
+`5172`). Its BAR builds contain per-build deltas, not the union of channel
+assets, so release each pending build in commit order.
+Before the first push for any repository, verify that the existing
+`nuget.org (dotnetframework)` service connection owns every package ID in the
+audit artifact.
+
+Example dry-run inputs:
+
+```yaml
+ghOwner: dotnet
+ghRepo: android-libraries
+commitHash: <FULL_COMMIT_SHA>
+pushWorkloadSet: false
+pushNugetOrg: true
+pushPackages: false
+```
 
 ### Preparation
 
-The preparation stage resolves the BAR build once and runs one fail-fast `darc gather-drop`, filtered to BAR NuGet package assets. Symbol and other path-based blob assets are not NuGet.org release inputs and are not downloaded. The stage rejects a failed or incomplete package gather, applies the include and exclude filters, and requires non-empty workload-pack and workload-manifest sets.
+The preparation stage resolves the BAR build once and runs one fail-fast `darc gather-drop`, filtered to BAR NuGet package assets. Symbol and other path-based blob assets are not NuGet.org release inputs and are not downloaded. The stage rejects a failed or incomplete package gather. Workload releases apply the include and exclude filters and require non-empty pack and manifest sets; non-workload releases use the single package set described above.
 
-For every selected package, the stage reads the package ID and version from its nuspec and reports the selected identities and counts. It publishes two 1ES pipeline outputs:
+For every selected package, the stage reads the package ID and version from its nuspec and reports the selected identities and counts. Workload releases publish two 1ES pipeline outputs:
 
 - `MauiPacksForNuGet`
 - `MauiManifestsForNuGet`
 
 These outputs include `expected-packages.json` and the package-availability helper used by the release jobs. They are SBOM-backed by the 1ES pipeline template and are the immutable inputs for publishing and recovery. The preparation stage records the helper's SHA-256 hash, and each production step verifies that hash before executing the artifact copy. A dry run (`pushPackages: false`) produces these artifacts but does not validate service-connection authorization, external NuGet.org authentication, or egress.
 
-### Publishing and ordering
+### Workload publishing and ordering
 
 Workload packs and manifests have separate manual approval points. Their production jobs:
 
@@ -45,7 +87,7 @@ NuGet.org may reserve a package version and return HTTP 409 before that package 
 
 After each publish, the pipeline polls NuGet.org for every expected package ID and normalized version with a 30-minute deadline, then fails with the missing identities if indexing does not complete. The manifest stage depends on successful pack publication and verification, so manifest approval is unavailable until every selected pack is resolvable.
 
-The production service connection must be protected by Azure DevOps Environment and/or service-connection approval checks outside repository YAML. Before production use, release owners must confirm that it owns every selected MAUI package ID and has enough quota for the maximum release payload. If one identity cannot cover the payload, publishing must be split into deterministic sequential batches rather than reintroducing repository API keys.
+The production service connection must be protected by Azure DevOps Environment and/or service-connection approval checks outside repository YAML. Before production use, release owners must confirm that it owns every selected package ID and has enough quota for the maximum release payload. If one identity cannot cover the payload, publishing must be split into deterministic sequential batches rather than reintroducing repository API keys.
 
 ## Required internal validation
 
@@ -66,7 +108,7 @@ An internal Azure Artifacts feed proves task mechanics but not the exact externa
 
 ## Recovery
 
-If publishing partially succeeds, rerun with the same commit and selection filters. The availability step removes packages that are already visible on NuGet.org. For packages accepted by the previous invocation but still undergoing NuGet.org validation, set the affected stage's `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` from the package names in the prior task log, leaving the other recovery parameter at `skip`. The task receives only the remaining packages, and post-publish verification checks the complete expected set. Do not release from a different BAR drop.
+If publishing partially succeeds, rerun with the same commit and selection filters. The availability step removes packages that are already visible on NuGet.org. For workload packages accepted by the previous invocation but still undergoing NuGet.org validation, set the affected stage's `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` from the package names in the prior task log, leaving the other recovery parameter at `skip`. Non-workload releases have no recovery filter; rerun after accepted packages become visible. Post-publish verification checks the complete expected set. Do not release from a different BAR drop.
 
 Published package contents cannot be replaced. If an incorrect version is published, follow NuGet.org's process to remove it from package search results.
 

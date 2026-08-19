@@ -63,6 +63,8 @@ parameters:
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - group: AzureDevOps-Artifact-Feeds-Pats
+- name: isWorkload
+  value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'android', 'macios', 'maui')) }}
 
 resources:
   repositories:
@@ -93,7 +95,7 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-    - ${{ if or(eq(parameters.commitHash, 'skip'), and(eq(parameters.pushWorkloadSet, false), eq(parameters.pushNugetOrg, false))) }}:
+    - ${{ if or(eq(parameters.commitHash, 'skip'), and(eq(parameters.pushNugetOrg, false), or(eq(variables.isWorkload, 'false'), eq(parameters.pushWorkloadSet, false)))) }}:
       - stage: skip_release
         displayName: Skip release
         dependsOn: []
@@ -105,7 +107,7 @@ extends:
           - script: echo No release operations were requested.
             displayName: Skip release
 
-    - ${{ if and(ne(parameters.commitHash, 'skip'), or(eq(parameters.pushWorkloadSet, true), eq(parameters.pushNugetOrg, true))) }}:
+    - ${{ if and(ne(parameters.commitHash, 'skip'), or(and(eq(variables.isWorkload, 'true'), eq(parameters.pushWorkloadSet, true)), eq(parameters.pushNugetOrg, true))) }}:
       - stage: prepare_release
         displayName: Prepare release artifacts
         dependsOn: []
@@ -117,14 +119,24 @@ extends:
             clean: all
           templateContext:
             outputs:
-            - output: pipelineArtifact
-              displayName: Publish workload packs
-              targetPath: '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet'
-              artifactName: MauiPacksForNuGet
-            - output: pipelineArtifact
-              displayName: Publish workload manifests
-              targetPath: '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet'
-              artifactName: MauiManifestsForNuGet
+            - ${{ if eq(variables.isWorkload, 'true') }}:
+              - output: pipelineArtifact
+                displayName: Publish workload packs
+                targetPath: '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet'
+                artifactName: MauiPacksForNuGet
+              - output: pipelineArtifact
+                displayName: Publish workload manifests
+                targetPath: '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet'
+                artifactName: MauiManifestsForNuGet
+            - ${{ else }}:
+              - output: pipelineArtifact
+                displayName: Publish NuGet packages
+                targetPath: '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease'
+                artifactName: NuGetPackagesForRelease
+              - output: pipelineArtifact
+                displayName: Publish NuGet release audit
+                targetPath: '$(Build.ArtifactStagingDirectory)\NuGetReleaseAudit'
+                artifactName: NuGetReleaseAudit
           steps:
           - checkout: self
             clean: true
@@ -139,6 +151,19 @@ extends:
               scriptLocation: inlineScript
               inlineScript: |
                 $ErrorActionPreference = 'Stop'
+                $releaseWorkload = [bool]::Parse($env:IS_WORKLOAD)
+                $sourceRepository = "https://github.com/$env:GH_OWNER/$env:GH_REPO".ToLowerInvariant()
+                $allowedRepositories = @(
+                  'https://github.com/dotnet/maui',
+                  'https://github.com/dotnet/android',
+                  'https://github.com/dotnet/macios',
+                  'https://github.com/dotnet/android-libraries'
+                )
+                if ($sourceRepository -notin $allowedRepositories) {
+                  throw "Repository '$sourceRepository' is not enabled for this release pipeline."
+                }
+                $requiredChannelName = if ($sourceRepository -eq 'https://github.com/dotnet/android-libraries') { '.NET 10' } else { '' }
+                $requiredChannelId = if ($requiredChannelName) { 5172 } else { 0 }
 
                 function Get-Filters([string] $value) {
                   if ([string]::IsNullOrWhiteSpace($value) -or $value -eq 'skip') {
@@ -204,18 +229,36 @@ extends:
                 }
 
                 Add-Type -AssemblyName System.IO.Compression.FileSystem
-                Write-Host "Getting BAR ID for commit: $env:COMMIT_HASH"
                 . $(Build.SourcesDirectory)\eng\common\tools.ps1
                 $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "$env:GH_REPO" --commit "$env:COMMIT_HASH" --output-format json --azdev-pat $(System.AccessToken)
+                $buildJson = & $darc get-build --ci --repo $sourceRepository --commit "$env:COMMIT_HASH" --extended --output-format json --azdev-pat $(System.AccessToken)
                 if ($LASTEXITCODE -ne 0) {
-                  throw "Darc failed to resolve the BAR build for commit '$env:COMMIT_HASH'."
+                  throw "Darc failed to resolve the BAR build."
                 }
 
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty id -First 1
-                if (!$barId) {
-                  throw "Could not find a BAR build for commit '$env:COMMIT_HASH' on repo '$env:GH_REPO'."
+                $builds = @($buildJson | ConvertFrom-Json)
+                if ($builds.Count -ne 1) {
+                  throw "Expected exactly one BAR build for '$sourceRepository', found $($builds.Count)."
                 }
+                $build = $builds[0]
+                $repository = ([Uri] $build.gitHubRepository).GetLeftPart([UriPartial]::Path).TrimEnd('/').ToLowerInvariant()
+                if ($repository.EndsWith('.git')) {
+                  $repository = $repository.Substring(0, $repository.Length - 4)
+                }
+                $repository = $repository.Replace('://www.github.com/', '://github.com/')
+                if ($repository -ne $sourceRepository) {
+                  throw "BAR build '$($build.id)' belongs to '$repository', not '$sourceRepository'."
+                }
+                if ($requiredChannelId -gt 0) {
+                  $channelMatches = @($build.channels | Where-Object {
+                    $_.name -ceq $requiredChannelName -and
+                    [int] $_.id -eq $requiredChannelId
+                  })
+                  if ($channelMatches.Count -ne 1) {
+                    throw "BAR build '$($build.id)' must be assigned to '$requiredChannelName' (channel $requiredChannelId)."
+                  }
+                }
+                $barId = $build.id
 
                 $dropPath = "$(Build.StagingDirectory)\nupkgs"
                 # Darc represents NuGet packages as slash-free asset names. Symbol and other blob
@@ -237,37 +280,55 @@ extends:
                   throw "Darc gather-drop produced no shipping NuGet packages."
                 }
 
-                $includeFilters = @(Get-Filters $env:NUGET_INCLUDE_FILTERS)
-                $excludeFilters = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS)
-                $packPackages = @($allPackages | Where-Object {
-                  $_.Name -notlike '*Manifest*.nupkg' -and
-                  ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
-                  !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
-                })
-                $manifestPackages = @($allPackages | Where-Object {
-                  $_.Name -like '*Manifest*.nupkg' -and
-                  !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
-                })
-                if ($packPackages.Count -eq 0) {
-                  throw "Package filtering selected no workload packs."
-                }
-                if ($manifestPackages.Count -eq 0) {
-                  throw "Package filtering selected no workload manifests."
-                }
-
-                $packsPath = '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet'
-                $manifestsPath = '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet'
                 $packageStatusScript = '$(Build.SourcesDirectory)\eng\scripts\nuget_release_packages.ps1'
                 if (!(Test-Path -LiteralPath $packageStatusScript -PathType Leaf)) {
                   throw "Package status script '$packageStatusScript' was not found."
                 }
                 $packageStatusScriptHash = (Get-FileHash -LiteralPath $packageStatusScript -Algorithm SHA256).Hash
-                New-Item -ItemType Directory -Force -Path $packsPath, $manifestsPath | Out-Null
 
-                foreach ($packageSet in @(
-                  @{ Name = 'Workload packs'; Packages = $packPackages; Path = $packsPath },
-                  @{ Name = 'Workload manifests'; Packages = $manifestPackages; Path = $manifestsPath }
-                )) {
+                if ($releaseWorkload) {
+                  $includeFilters = @(Get-Filters $env:NUGET_INCLUDE_FILTERS)
+                  $excludeFilters = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS)
+                  $packPackages = @($allPackages | Where-Object {
+                    $_.Name -notlike '*Manifest*.nupkg' -and
+                    ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                  })
+                  $manifestPackages = @($allPackages | Where-Object {
+                    $_.Name -like '*Manifest*.nupkg' -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                  })
+                  if ($packPackages.Count -eq 0 -or $manifestPackages.Count -eq 0) {
+                    throw "Package filtering must select workload packs and manifests."
+                  }
+
+                  $packageSets = @(
+                    @{ Name = 'Workload packs'; Packages = $packPackages; Path = '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet' },
+                    @{ Name = 'Workload manifests'; Packages = $manifestPackages; Path = '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet' }
+                  )
+                }
+                else {
+                  $unsupportedFilters = @(
+                    @{ Name = 'nugetIncludeFilters'; Values = @(Get-Filters $env:NUGET_INCLUDE_FILTERS) },
+                    @{ Name = 'nugetExcludeFilters'; Values = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS) },
+                    @{ Name = 'nugetAlreadyAttemptedPackFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_PACK_FILTERS) },
+                    @{ Name = 'nugetAlreadyAttemptedManifestFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS) }
+                  ) | Where-Object { $_.Values.Count -gt 0 }
+                  if ($unsupportedFilters.Count -gt 0) {
+                    throw "Non-workload releases do not support workload package filters: $($unsupportedFilters.Name -join ', ')."
+                  }
+
+                  if (@($allPackages | Where-Object Name -like '*Manifest*.nupkg').Count -gt 0) {
+                    throw "A non-workload release cannot contain workload manifest packages."
+                  }
+                  $packageSets = @(
+                    @{ Name = 'NuGet packages'; Packages = $allPackages; Path = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease' }
+                  )
+                }
+
+                $releaseIdentities = @()
+                foreach ($packageSet in $packageSets) {
+                  New-Item -ItemType Directory -Force -Path $packageSet.Path | Out-Null
                   $identities = @($packageSet.Packages | ForEach-Object { Get-PackageIdentity $_ })
                   $fileNameDuplicates = @($identities | Group-Object fileName | Where-Object Count -gt 1)
                   if ($fileNameDuplicates.Count -gt 0) {
@@ -285,38 +346,66 @@ extends:
                   Copy-Item -LiteralPath $packageStatusScript -Destination $packageSet.Path
                   ConvertTo-Json -InputObject @($identities | Sort-Object id, version) -Depth 3 |
                     Set-Content -Path (Join-Path $packageSet.Path 'expected-packages.json') -Encoding utf8
-                }
-
-                $manifestMajors = @($manifestPackages | ForEach-Object {
-                  if ($_.Name -notmatch '\.Manifest-(?<major>\d+)\.') {
-                    throw "Could not determine the workload band from manifest '$($_.Name)'."
+                  if (!$releaseWorkload) {
+                    $releaseIdentities = $identities
                   }
-                  $Matches.major
-                } | Sort-Object -Unique)
-                if ($manifestMajors.Count -ne 1) {
-                  throw "Expected one workload major version, found: $($manifestMajors -join ', ')."
                 }
 
                 $workloadSetsChannel = ''
                 $workloadSetsFeed = ''
-                if ($manifestMajors[0] -eq '8') {
-                  $workloadSetsChannel = '.NET 8 Workload Release'
-                  $workloadSetsFeed = 'dotnet8-workloads'
+                if ($releaseWorkload) {
+                  $manifestMajors = @($manifestPackages | ForEach-Object {
+                    if ($_.Name -notmatch '\.Manifest-(?<major>\d+)\.') {
+                      throw "Could not determine the workload band from manifest '$($_.Name)'."
+                    }
+                    $Matches.major
+                  } | Sort-Object -Unique)
+                  if ($manifestMajors.Count -ne 1) {
+                    throw "Expected one workload major version, found: $($manifestMajors -join ', ')."
+                  }
+
+                  if ($manifestMajors[0] -eq '8') {
+                    $workloadSetsChannel = '.NET 8 Workload Release'
+                    $workloadSetsFeed = 'dotnet8-workloads'
+                  }
+                  elseif ($manifestMajors[0] -eq '9') {
+                    $workloadSetsChannel = '.NET 9 Workload Release'
+                    $workloadSetsFeed = 'dotnet9-workloads'
+                  }
+                  elseif ($manifestMajors[0] -eq '10') {
+                    $workloadSetsChannel = '.NET 10 Workload Release'
+                    $workloadSetsFeed = 'dotnet10-workloads'
+                  }
+                  elseif ($manifestMajors[0] -eq '11') {
+                    $workloadSetsChannel = '.NET 11 Workload Release'
+                    $workloadSetsFeed = 'dotnet11-workloads'
+                  }
+                  if (!$workloadSetsChannel -or !$workloadSetsFeed) {
+                    throw "No workload set channel is configured for .NET $($manifestMajors[0])."
+                  }
                 }
-                elseif ($manifestMajors[0] -eq '9') {
-                  $workloadSetsChannel = '.NET 9 Workload Release'
-                  $workloadSetsFeed = 'dotnet9-workloads'
-                }
-                elseif ($manifestMajors[0] -eq '10') {
-                  $workloadSetsChannel = '.NET 10 Workload Release'
-                  $workloadSetsFeed = 'dotnet10-workloads'
-                }
-                elseif ($manifestMajors[0] -eq '11') {
-                  $workloadSetsChannel = '.NET 11 Workload Release'
-                  $workloadSetsFeed = 'dotnet11-workloads'
-                }
-                if (!$workloadSetsChannel -or !$workloadSetsFeed) {
-                  throw "No workload set channel is configured for .NET $($manifestMajors[0])."
+                else {
+                  $packagesPath = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease'
+                  & $packageStatusScript `
+                    -Action FilterExisting `
+                    -PackagesPath $packagesPath
+
+                  $staged = @($releaseIdentities | Where-Object {
+                    Test-Path -LiteralPath (Join-Path $packagesPath $_.fileName) -PathType Leaf
+                  })
+                  $auditPath = '$(Build.ArtifactStagingDirectory)\NuGetReleaseAudit'
+                  New-Item -ItemType Directory -Force -Path $auditPath | Out-Null
+                  [ordered]@{
+                    barBuildId = [int] $barId
+                    commit = [string] $build.commit
+                    repository = $repository
+                    selectedPackages = @($releaseIdentities | Sort-Object id, version)
+                    stagedPackages = @($staged | Sort-Object id, version)
+                  } | ConvertTo-Json -Depth 5 |
+                    Set-Content -LiteralPath (Join-Path $auditPath 'release-audit.json') -Encoding utf8
+
+                  $hasPackages = ($staged.Count -gt 0).ToString().ToLowerInvariant()
+                  Write-Host "##vso[task.setvariable variable=HasPackages;isOutput=true]$hasPackages"
                 }
 
                 Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
@@ -325,11 +414,15 @@ extends:
                 Write-Host "##vso[task.setvariable variable=PackageStatusScriptHash;isOutput=true]$packageStatusScriptHash"
             env:
               COMMIT_HASH: ${{ parameters.commitHash }}
+              GH_OWNER: ${{ parameters.ghOwner }}
               GH_REPO: ${{ parameters.ghRepo }}
+              IS_WORKLOAD: $(isWorkload)
               NUGET_INCLUDE_FILTERS: ${{ parameters.nugetIncludeFilters }}
               NUGET_EXCLUDE_FILTERS: ${{ parameters.nugetExcludeFilters }}
+              NUGET_ALREADY_ATTEMPTED_PACK_FILTERS: ${{ parameters.nugetAlreadyAttemptedPackFilters }}
+              NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS: ${{ parameters.nugetAlreadyAttemptedManifestFilters }}
 
-      - ${{ if eq(parameters.pushWorkloadSet, true) }}:
+      - ${{ if and(eq(variables.isWorkload, 'true'), eq(parameters.pushWorkloadSet, true), eq(parameters.pushPackages, true)) }}:
         - stage: publish_maestro
           displayName: Publish to Workload Set channel
           dependsOn: prepare_release
@@ -364,7 +457,7 @@ extends:
                     throw "Darc failed to add BAR build '$(BarId)' to workload set channel '$(WorkloadSetsChannel)'."
                   }
 
-      - ${{ if and(eq(parameters.pushNugetOrg, true), eq(parameters.pushPackages, true)) }}:
+      - ${{ if and(eq(variables.isWorkload, 'true'), eq(parameters.pushNugetOrg, true), eq(parameters.pushPackages, true)) }}:
         - stage: stage_push_packs
           displayName: Release packs
           dependsOn: prepare_release
@@ -517,3 +610,6 @@ extends:
               displayName: Verify workload manifests on NuGet.org
               env:
                 EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+
+    - ${{ if and(eq(variables.isWorkload, 'false'), eq(parameters.pushNugetOrg, true), eq(parameters.pushPackages, true), ne(parameters.commitHash, 'skip')) }}:
+      - template: /eng/pipelines/common/non-workload-publish.yml@self
