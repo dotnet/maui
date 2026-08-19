@@ -1565,6 +1565,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationGestureIsSynchronized `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationGeometryOracleIsPinned `
+            -Content $normalized `
+            -Path $Path
         Assert-ReplicationHandlerRegistrationIsNotTautological `
             -Content $normalized `
             -Path $Path

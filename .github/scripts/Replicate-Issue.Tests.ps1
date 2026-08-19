@@ -4318,6 +4318,85 @@ static void DragUpTwiceWhileHeld(AppiumApp app)
     }
 }
 
+Describe 'A geometry oracle must pin a measurement to an expected value' {
+    It 'rejects the symmetry oracle a reviewer satisfied with uniformly wrong geometry' {
+        # PR 229: the oracle asserted the top and bottom safe-area gaps were
+        # equal. The defect made them 79/62 so it did go red, but it also
+        # passed on 79/79 - just as wrong as 62/62 is right - and it passed
+        # with the SafeAreaEdges assignment removed entirely.
+        $source = @'
+    var top = scrollView.GetRect().Top - container.GetRect().Top;
+    var bottom = container.GetRect().Bottom - scrollView.GetRect().Bottom;
+    Assert.Equal(top, bottom);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*uniformly wrong*'
+    }
+
+    It 'accepts the same oracle once it also pins a gap to its expected value' {
+        $source = @'
+    var top = scrollView.GetRect().Top - container.GetRect().Top;
+    var bottom = container.GetRect().Bottom - scrollView.GetRect().Bottom;
+    Assert.Equal(top, bottom);
+    Assert.Equal(62, scrollView.GetRect().Top - container.GetRect().Top);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'reads Assert.True(a == b) as the relation it is' {
+        $source = @'
+    Assert.True(first.GetRect().Height == second.GetRect().Height);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*uniformly wrong*'
+    }
+
+    It 'leaves an assertion that already compares a measurement with a number alone' {
+        $source = @'
+    Assert.Equal(48, label.GetRect().Height);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'does not read a tolerance as a second measurement' {
+        $source = @'
+    Assert.Equal(62.0, label.GetRect().Top, 1);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'does not accept an unrelated number as pinning the geometry' {
+        # A count assertion says nothing about where anything is, so it must
+        # not license the symmetry-only oracle beside it.
+        $source = @'
+    var top = scrollView.GetRect().Top - container.GetRect().Top;
+    var bottom = container.GetRect().Bottom - scrollView.GetRect().Bottom;
+    Assert.Equal(top, bottom);
+    Assert.Equal(3, items.Count);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*uniformly wrong*'
+    }
+
+    It 'ignores non-geometric equality between two values' {
+        $source = @'
+    Assert.Equal(expectedText, label.Text);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'A gesture burst must wait for the app between gestures' {
     It 'rejects the unsynchronized loop a reviewer proved timing-dependent' {
         # PR 238: ten back-to-back 250 ms drags, then an assertion on the exact

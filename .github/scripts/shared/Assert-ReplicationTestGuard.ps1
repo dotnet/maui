@@ -1279,6 +1279,102 @@ function Assert-ReplicationPlatformViewIdentity {
     }
 }
 
+function Get-ReplicationMeasurementPattern {
+    # Reads that come back from the rendered app rather than from the test.
+    return '\.(?:GetRect|GetLocationOnScreen|GetBoundingRect|Frame|Bounds|' +
+        'X|Y|Left|Top|Right|Bottom|Width|Height|Center[XY])\b'
+}
+
+function Assert-ReplicationGeometryOracleIsPinned {
+    <#
+    .SYNOPSIS
+        Rejects a geometry oracle that only relates two measurements to each
+        other and never pins either to an expected value.
+
+    .DESCRIPTION
+        A reviewer broke a safe-area reproduction whose oracle asserted that
+        the top and bottom gaps were equal. The defect made them 79/62, so the
+        assertion did go red - but it also passed on 79/79, which is just as
+        wrong as 62/62 is right, and it passed with the SafeAreaEdges
+        assignment removed altogether. A relation between two measured values
+        is satisfied by a uniformly wrong layout, so it cannot tell a fixed
+        product from a differently broken one. At least one measurement has to
+        be compared with the value the correct layout produces.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $measurement = Get-ReplicationMeasurementPattern
+
+    # PR 229 read each gap into a local and then asserted on the locals, so an
+    # assertion argument is measured when the local it names was assigned from
+    # a measurement.
+    $measuredLocals = [System.Collections.Generic.HashSet[string]]::new()
+    foreach ($match in [regex]::Matches(
+        $code,
+        '(?:var|int|double|float|nfloat|decimal|long)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?<value>[^;]+);')) {
+        if ($match.Groups['value'].Value -cmatch $measurement) {
+            [void]$measuredLocals.Add($match.Groups['name'].Value)
+        }
+    }
+
+    $isMeasured = {
+        param([string]$Argument)
+        if ($Argument -cmatch $measurement) { return $true }
+        $identifier = [regex]::Match($Argument.Trim(), '^(?<name>[A-Za-z_][A-Za-z0-9_]*)$')
+        return $identifier.Success -and $measuredLocals.Contains($identifier.Groups['name'].Value)
+    }
+
+    $relational = $null
+    foreach ($match in [regex]::Matches(
+        $code,
+        '(?:Assert|ClassicAssert)\s*\.\s*(?:Equal|AreEqual|True|IsTrue)\s*\((?<args>[^;]*?)\)\s*;')) {
+        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value)
+
+        # Assert.True(a == b) carries both operands in a single argument.
+        if ($arguments.Count -eq 1 -and $arguments[0] -match '==|!=') {
+            $arguments = @($arguments[0] -split '==|!=')
+        }
+        if ($arguments.Count -lt 2) { continue }
+
+        $measured = @($arguments | Where-Object { & $isMeasured $_ })
+        if ($measured.Count -lt 2) { continue }
+
+        # A tolerance argument is a constant, not a second measurement, so an
+        # assertion that pins a measurement to a number is already specific.
+        if ($arguments | Where-Object { $_ -match '(?<![A-Za-z0-9_.])\d+(?:\.\d+)?\s*$' -and -not (& $isMeasured $_) }) {
+            continue
+        }
+
+        $relational = $match.Value.Trim()
+        break
+    }
+
+    if ($null -eq $relational) { return }
+
+    # An expected value anywhere in the oracle is enough: the test then fails
+    # on a uniformly wrong layout as well as on an asymmetric one.
+    $pinned = [regex]::Matches(
+        $code,
+        '(?:Assert|ClassicAssert)\s*\.\s*\w+\s*\((?<args>[^;]*?)\)\s*;')
+    foreach ($match in $pinned) {
+        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value)
+        $hasExpected = @($arguments | Where-Object {
+            $_ -match '(?<![A-Za-z0-9_.])\d+(?:\.\d+)?\s*$' -and -not (& $isMeasured $_) }).Count -gt 0
+        $hasMeasured = @($arguments | Where-Object { & $isMeasured $_ }).Count -gt 0
+        if ($hasExpected -and $hasMeasured) { return }
+    }
+
+    throw ("Candidate test source '$Path' compares two measured values with each other and never compares either " +
+        'with the value a correct layout produces. A layout that is uniformly wrong satisfies the relation, so the ' +
+        'assertion passes on a product that is still broken and cannot prove a fix. Assert at least one measurement ' +
+        "against its expected value. The relational assertion is: $relational")
+}
+
 function Assert-ReplicationDeviceTestIsSelectable {
     <#
         .SYNOPSIS
