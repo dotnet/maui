@@ -851,8 +851,44 @@ if ($Platform -eq "android") {
         # (ReviewPR/CopilotReview) has NO such install step, so the gate boot must self-provision
         # here or the iOS gate can never run on a runtime-less agent. Heavy (multi-GB, minutes)
         # but only reached as the final resort before dead-ending — strictly additive, never on
-        # the healthy path. Returns $true if a download was attempted (caller re-scans + retries).
+        # the healthy path. Every xcodebuild download runs in its own bounded process tree so a
+        # stalled Apple download returns control to the Gate's environment-retry path instead of
+        # consuming the 150-minute task watchdog.
+        function Invoke-IosRuntimeDownloadProcess {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string[]]$XcodebuildArguments,
+
+                [switch]$UseSudo,
+
+                [ValidateRange(1, 5400)]
+                [int]$TimeoutSeconds = 1200
+            )
+
+            $filePath = if ($UseSudo) { 'sudo' } else { 'xcodebuild' }
+            $arguments = if ($UseSudo) {
+                @('-n', 'xcodebuild') + $XcodebuildArguments
+            }
+            else {
+                $XcodebuildArguments
+            }
+
+            $result = Invoke-ProcessWithTimeout `
+                -FilePath $filePath `
+                -ArgumentList $arguments `
+                -TimeoutSeconds $TimeoutSeconds
+            foreach ($line in @($result.Output)) {
+                Write-Info "  $line"
+            }
+            return $result
+        }
+
         function Invoke-IosRuntimeDownload {
+            param(
+                [ValidateRange(1, 5400)]
+                [int]$DownloadTimeoutSeconds = 1200
+            )
+
             $attempted = $false
             try {
                 # CoreSimulator/runtime downloads are Xcode-version-specific — select the newest
@@ -872,25 +908,46 @@ if ($Platform -eq "android") {
                 $sdkVer = (& xcrun --sdk iphonesimulator --show-sdk-version 2>$null | Select-Object -First 1)
                 if ($sdkVer) {
                     Write-Info "Download: no iOS runtime on disk - fetching iOS $sdkVer simulator runtime via 'xcodebuild -downloadPlatform iOS -buildVersion $sdkVer' (can take several minutes)..."
-                    & sudo -n xcodebuild -downloadPlatform iOS -buildVersion "$sdkVer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    $downloadResult = Invoke-IosRuntimeDownloadProcess `
+                        -XcodebuildArguments @('-downloadPlatform', 'iOS', '-buildVersion', "$sdkVer") `
+                        -UseSudo `
+                        -TimeoutSeconds $DownloadTimeoutSeconds
                 }
                 else {
                     Write-Info "Download: could not probe iphonesimulator SDK version - fetching generic 'xcodebuild -downloadPlatform iOS' (can take several minutes)..."
-                    & sudo -n xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
-                }
-                # Fall back to the generic (unversioned) download, then to non-sudo, if the
-                # preferred path was refused (sudo -n with no cached credential) or errored.
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Info "Download: retrying generic 'xcodebuild -downloadPlatform iOS'..."
-                    & sudo -n xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Info "Download: sudo path failed - retrying without sudo..."
-                        & xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
-                    }
+                    $downloadResult = Invoke-IosRuntimeDownloadProcess `
+                        -XcodebuildArguments @('-downloadPlatform', 'iOS') `
+                        -UseSudo `
+                        -TimeoutSeconds $DownloadTimeoutSeconds
                 }
                 $attempted = $true
+                if ($downloadResult.TimedOut) {
+                    return [pscustomobject]@{ Attempted = $true; TimedOut = $true }
+                }
+
+                # Fall back to the generic (unversioned) download, then to non-sudo, if the
+                # preferred path was refused (sudo -n with no cached credential) or errored.
+                if ($downloadResult.ExitCode -ne 0) {
+                    Write-Info "Download: retrying generic 'xcodebuild -downloadPlatform iOS'..."
+                    $downloadResult = Invoke-IosRuntimeDownloadProcess `
+                        -XcodebuildArguments @('-downloadPlatform', 'iOS') `
+                        -UseSudo `
+                        -TimeoutSeconds $DownloadTimeoutSeconds
+                    if ($downloadResult.TimedOut) {
+                        return [pscustomobject]@{ Attempted = $true; TimedOut = $true }
+                    }
+                    if ($downloadResult.ExitCode -ne 0) {
+                        Write-Info "Download: sudo path failed - retrying without sudo..."
+                        $downloadResult = Invoke-IosRuntimeDownloadProcess `
+                            -XcodebuildArguments @('-downloadPlatform', 'iOS') `
+                            -TimeoutSeconds $DownloadTimeoutSeconds
+                        if ($downloadResult.TimedOut) {
+                            return [pscustomobject]@{ Attempted = $true; TimedOut = $true }
+                        }
+                    }
+                }
             } catch { Write-Info "Runtime download attempt error: $_" }
-            return $attempted
+            return [pscustomobject]@{ Attempted = $attempted; TimedOut = $false }
         }
 
         if (-not $selectedDevice) {
@@ -949,7 +1006,12 @@ if ($Platform -eq "android") {
                     $readyImgCount = @($imgsNow.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' }).Count
                 } catch { }
                 Write-Info "No bootable iOS simulator after rescue+restart+enroll ($readyImgCount Ready image(s) on disk, all unusable) - attempting a runtime DOWNLOAD before giving up (iOS gate must run)..."
-                if (Invoke-IosRuntimeDownload) {
+                $downloadResult = Invoke-IosRuntimeDownload
+                if ($downloadResult.TimedOut) {
+                    Write-Error "ENV ERROR: iOS runtime download exceeded its 20-minute bound. The exact xcodebuild process tree was terminated; aborting this Gate attempt so the existing retryable environment-failure path can retry on a healthy agent."
+                    exit 1
+                }
+                if ($downloadResult.Attempted) {
                     xcrun simctl list runtimes *> $null
                     Start-Sleep -Seconds 4
                     # A freshly downloaded runtime can land "Ready" but unenrolled — enroll then retry.

@@ -26,6 +26,47 @@ BeforeAll {
         throw "Function 'Get-AddedDeviceTestMethodsFromPatch' not found"
     }
     Invoke-Expression $methodFunction.Extent.Text
+
+    $hasTestMethodsFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Test-CsFileHasTestMethods'
+    }, $true)
+    if (-not $hasTestMethodsFunction) {
+        throw "Function 'Test-CsFileHasTestMethods' not found"
+    }
+    Invoke-Expression $hasTestMethodsFunction.Extent.Text
+}
+
+Describe 'Detect-TestsInDiff source test attributes' {
+    It 'recognizes a fully qualified xUnit attribute' {
+        $testFile = Join-Path $TestDrive 'QualifiedTests.cs'
+        @'
+public class QualifiedTests
+{
+    [Xunit.Fact]
+    public void Runs()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath $testFile -Encoding UTF8
+
+        Test-CsFileHasTestMethods -RelativePath $testFile | Should -BeTrue
+    }
+
+    It 'does not treat a qualified lookalike attribute as a test' {
+        $testFile = Join-Path $TestDrive 'QualifiedHelpers.cs'
+        @'
+public class QualifiedHelpers
+{
+    [Contoso.TestFactory]
+    public void Build()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath $testFile -Encoding UTF8
+
+        Test-CsFileHasTestMethods -RelativePath $testFile | Should -BeFalse
+    }
 }
 
 Describe 'Detect-TestsInDiff device-test filtering' {

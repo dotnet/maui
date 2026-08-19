@@ -349,7 +349,7 @@ function Test-CsFileHasTestMethods {
         if (Test-Path $p) {
             try { $content = Get-Content $p -Raw -ErrorAction Stop } catch { continue }
             # xUnit: [Fact] [Theory]; NUnit: [Test] [TestCase] [TestCaseSource]; MSTest: [TestMethod]
-            return ($content -match '(?m)\[\s*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b')
+            return ($content -match '(?m)\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b')
         }
     }
     # File unreadable (deleted/unresolvable) — don't over-filter; let existing fallbacks handle it.

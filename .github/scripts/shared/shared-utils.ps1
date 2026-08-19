@@ -34,6 +34,131 @@ function Write-Error {
     Write-Host "❌ $Message" -ForegroundColor Red
 }
 
+function Stop-ProcessTree {
+    param([int]$ProcessId)
+
+    if ($ProcessId -le 0) {
+        return $true
+    }
+
+    $stopped = $true
+    try {
+        if ($IsWindows) {
+            $children = Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId" -ErrorAction SilentlyContinue
+            foreach ($child in @($children)) {
+                if (-not (Stop-ProcessTree -ProcessId ([int]$child.ProcessId))) {
+                    $stopped = $false
+                }
+            }
+        }
+        else {
+            foreach ($childIdText in @(& pgrep -P $ProcessId 2>$null)) {
+                $childProcessId = 0
+                if ([int]::TryParse("$childIdText", [ref]$childProcessId) -and
+                    -not (Stop-ProcessTree -ProcessId $childProcessId)) {
+                    $stopped = $false
+                }
+            }
+        }
+    }
+    catch {
+        $stopped = $false
+    }
+
+    Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+    if (-not $IsWindows -and (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) {
+        # sudo-launched xcodebuild descendants can run as root. Use the same non-interactive
+        # elevation mode as the download itself, scoped to the exact PID discovered above.
+        & sudo -n kill -9 $ProcessId 2>$null | Out-Null
+    }
+    for ($attempt = 0; $attempt -lt 10 -and (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue); $attempt++) {
+        Start-Sleep -Milliseconds 100
+    }
+    if (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue) {
+        $stopped = $false
+    }
+
+    return $stopped
+}
+
+function Invoke-ProcessWithTimeout {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+
+        [string[]]$ArgumentList = @(),
+
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, 86400)]
+        [int]$TimeoutSeconds
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FilePath
+    foreach ($argument in $ArgumentList) {
+        $startInfo.ArgumentList.Add($argument)
+    }
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    $stdoutTask = $null
+    $stderrTask = $null
+
+    try {
+        if (-not $process.Start()) {
+            throw "Failed to start process '$FilePath'."
+        }
+
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $timeoutMilliseconds = [int][Math]::Min([int]::MaxValue, [int64]$TimeoutSeconds * 1000)
+        $timedOut = -not $process.WaitForExit($timeoutMilliseconds)
+
+        if ($timedOut) {
+            $treeStopped = Stop-ProcessTree -ProcessId $process.Id
+            if (-not $treeStopped) {
+                try {
+                    $process.Kill($true)
+                }
+                catch {
+                    # The exact-PID tree walk above already attempted elevated termination.
+                }
+            }
+
+            if (-not $process.WaitForExit(10000)) {
+                [void](Stop-ProcessTree -ProcessId $process.Id)
+                if (-not $process.WaitForExit(5000)) {
+                    throw "Timed-out process tree rooted at PID $($process.Id) did not terminate."
+                }
+            }
+        }
+        else {
+            $process.WaitForExit()
+        }
+
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        $output = @()
+        foreach ($text in @($stdout, $stderr)) {
+            if (-not [string]::IsNullOrEmpty($text)) {
+                $output += @($text -split "\r?\n" | Where-Object { $_ -ne '' })
+            }
+        }
+
+        return [pscustomobject]@{
+            Output = $output
+            ExitCode = if ($timedOut) { 124 } else { $process.ExitCode }
+            TimedOut = $timedOut
+        }
+    }
+    finally {
+        $process.Dispose()
+    }
+}
+
 function Get-MauiTfmVersion {
     <#
     .SYNOPSIS
