@@ -128,7 +128,10 @@ foreach ($pr in @($searchResult)) {
         -Commits $commits `
         -CurrentHeadSha $pr.headRefOid `
         -PRAuthorLogin $authorLogin `
-        -CurrentLabels $labels
+        -CurrentLabels $labels `
+        -AuthorizedRerunCheckpointsOnly `
+        -AuthorizationOwner $Owner `
+        -AuthorizationRepo $Repo
     $activityKey = Get-RerunActivityKey -ContextData $contextData
     $decisionMetadata = [pscustomobject]@{
         headChanged             = [bool]$contextData.DecisionMetadata.headChanged

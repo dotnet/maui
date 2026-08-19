@@ -213,15 +213,65 @@ function Get-RerunActions {
     # normalized, validated decision ready for the github-script I/O step.
     $actions = [System.Collections.Generic.List[object]]::new()
     $hadFailure = $false
-    $duplicatePRNumbers = @($Items |
-        ForEach-Object { ConvertTo-TrimmedString $_.pr_number } |
-        Where-Object { $_ -match '^[1-9]\d*$' } |
-        Group-Object |
-        Where-Object { $_.Count -gt 1 } |
-        ForEach-Object { [int]$_.Name })
+    $decisionNumberCounts = @{}
+    $decisionPRNumberSet = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($item in $Items) {
+        $raw = ConvertTo-TrimmedString $item.pr_number
+        $parsed = 0
+        if ($raw -match '^[1-9]\d*$' -and [int]::TryParse($raw, [ref]$parsed)) {
+            [void]$decisionPRNumberSet.Add($parsed)
+            if ($decisionNumberCounts.ContainsKey($parsed)) {
+                $decisionNumberCounts[$parsed]++
+            } else {
+                $decisionNumberCounts[$parsed] = 1
+            }
+        }
+    }
+    $duplicatePRNumbers = @($decisionNumberCounts.GetEnumerator() |
+        Where-Object { $_.Value -gt 1 } |
+        ForEach-Object { [int]$_.Key } |
+        Sort-Object)
     if ($duplicatePRNumbers.Count -gt 0) {
         foreach ($duplicatePRNumber in $duplicatePRNumbers) {
             Write-Host "::error::Duplicate agent decisions were emitted for PR #$duplicatePRNumber."
+        }
+        return @{
+            Actions    = @()
+            HadFailure = $true
+        }
+    }
+
+    $candidatePRNumberSet = [System.Collections.Generic.HashSet[int]]::new()
+    $hasInvalidCandidateNumber = $false
+    foreach ($candidate in $Candidates) {
+        $raw = ConvertTo-TrimmedString $candidate.prNumber
+        $parsed = 0
+        if ($raw -notmatch '^[1-9]\d*$' -or -not [int]::TryParse($raw, [ref]$parsed)) {
+            Write-Host "::error::A deterministic rerun candidate has an invalid prNumber."
+            $hasInvalidCandidateNumber = $true
+            continue
+        }
+        [void]$candidatePRNumberSet.Add($parsed)
+    }
+    if ($hasInvalidCandidateNumber) {
+        return @{
+            Actions    = @()
+            HadFailure = $true
+        }
+    }
+
+    $missingPRNumbers = @($candidatePRNumberSet |
+        Where-Object { -not $decisionPRNumberSet.Contains([int]$_) } |
+        Sort-Object)
+    $unexpectedPRNumbers = @($decisionPRNumberSet |
+        Where-Object { -not $candidatePRNumberSet.Contains([int]$_) } |
+        Sort-Object)
+    if ($missingPRNumbers.Count -gt 0 -or $unexpectedPRNumbers.Count -gt 0) {
+        foreach ($missingPRNumber in $missingPRNumbers) {
+            Write-Host "::error::Missing agent decision for deterministic candidate PR #$missingPRNumber."
+        }
+        foreach ($unexpectedPRNumber in $unexpectedPRNumbers) {
+            Write-Host "::error::Agent decision for unexpected PR #$unexpectedPRNumber is outside the deterministic candidate set."
         }
         return @{
             Actions    = @()

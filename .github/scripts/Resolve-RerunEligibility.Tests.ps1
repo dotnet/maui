@@ -574,6 +574,31 @@ new
 }
 
 Describe 'Resolve-AutonomousRerunEligibility' {
+    BeforeEach {
+        Mock Test-ReviewOptionLoginTrusted {
+            param([string]$Login, [string]$Owner, [string]$Repo)
+            return $Login -eq 'maintainer'
+        }
+    }
+
+    It 'does not let stacked unauthorized rerun comments hide a PR-author comment-only update' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'Author follow-up that should remain eligible.' -CreatedAt '2026-05-31T09:30:00Z'
+            New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'outside-user' -AuthorAssociation 'NONE'
+            New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T11:00:00Z' -Login 'outside-user' -AuthorAssociation 'NONE'
+        )
+
+        $result = Resolve-AutonomousRerunEligibility `
+            -Comments $comments `
+            -Commits @() `
+            -CurrentHeadSha '1111111abcdef' `
+            -PRAuthorLogin 'dev-user'
+
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
+    }
+
     It 'aligns stacked rerun checkpoints with the hourly scanner context' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -Login 'MauiBot' -Type 'User'
@@ -591,7 +616,8 @@ Describe 'Resolve-AutonomousRerunEligibility' {
             -Comments $comments `
             -Commits @() `
             -CurrentHeadSha '1111111abcdef' `
-            -PRAuthorLogin 'dev-user'
+            -PRAuthorLogin 'dev-user' `
+            -AuthorizedRerunCheckpointsOnly
 
         $daily.Eligible | Should -BeFalse
         $daily.Reason | Should -Be 'no-new-comments-or-commits'
@@ -617,7 +643,8 @@ Describe 'Resolve-AutonomousRerunEligibility' {
             -Commits @() `
             -CurrentHeadSha '1111111abcdef' `
             -PRAuthorLogin 'dev-user' `
-            -CurrentLabels @('s/agent-ready-for-rerun')
+            -CurrentLabels @('s/agent-ready-for-rerun') `
+            -AuthorizedRerunCheckpointsOnly
 
         $daily.Eligible | Should -BeTrue
         $daily.Reason | Should -Be 'new-author-comment-after-ai-summary'

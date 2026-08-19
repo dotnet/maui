@@ -323,6 +323,21 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 2
     }
 
+    It 'rejects an incomplete decision batch before returning any actions' {
+        $items = @(
+            (New-TestDecision -PRNumber '1' -Decision 'trigger' -ExpectedHeadSha 's1')
+        )
+        $candidates = @(
+            (New-TestCandidate -PRNumber 1 -HeadSha 's1' -RerunCommentId 11),
+            (New-TestCandidate -PRNumber 2 -HeadSha 's2' -RerunCommentId 22 -HeadChanged $false)
+        )
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
     It 'flags a failure and drops the action when pr_number is not a positive integer' {
         $items = @(New-TestDecision -PRNumber '0' -Decision 'trigger' -ExpectedHeadSha 'x')
 

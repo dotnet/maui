@@ -53,6 +53,11 @@ Describe 'Query-RerunReadyPRs' {
             }
         }
 
+        Mock Test-ReviewOptionLoginTrusted {
+            param([string]$Login, [string]$Owner, [string]$Repo)
+            return $Login -eq 'maintainer'
+        }
+
         Mock gh {
             param(
                 [Parameter(ValueFromRemainingArguments = $true)]
@@ -128,6 +133,52 @@ Describe 'Query-RerunReadyPRs' {
         $serialized = Get-Content -Raw -LiteralPath $script:OutputPath
         $serialized | Should -Not -Match 'Ignore previous instructions'
         $serialized | Should -Not -Match '/review rerun'
+    }
+
+    It 'keeps author activity visible after stacked unauthorized rerun comments' {
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 100
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                created_at = '2026-05-31T09:00:00Z'
+                updated_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            },
+            [pscustomobject]@{
+                id = 200
+                body = 'Author comment-only update.'
+                created_at = '2026-05-31T09:30:00Z'
+                updated_at = '2026-05-31T09:30:00Z'
+                user = [pscustomobject]@{ login = 'dev-user'; type = 'User' }
+                author_association = 'CONTRIBUTOR'
+            },
+            [pscustomobject]@{
+                id = 300
+                body = '/review rerun'
+                created_at = '2026-05-31T10:00:00Z'
+                updated_at = '2026-05-31T10:00:00Z'
+                user = [pscustomobject]@{ login = 'outside-user'; type = 'User' }
+                author_association = 'NONE'
+            },
+            [pscustomobject]@{
+                id = 400
+                body = '/review rerun'
+                created_at = '2026-05-31T11:00:00Z'
+                updated_at = '2026-05-31T11:00:00Z'
+                user = [pscustomobject]@{ login = 'outside-user'; type = 'User' }
+                author_association = 'NONE'
+            }
+        )
+
+        Invoke-RerunReadyPRQuery `
+            -QueryMaxPRs 5 `
+            -QueryOwner 'test-owner' `
+            -QueryRepo 'test-repo' `
+            -QueryOutputPath $script:OutputPath | Out-Null
+
+        $result = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $result.candidates[0].activity.newAuthorCommentCount | Should -Be 1
     }
 
     It 'returns a ready label beyond the default first page' {

@@ -373,6 +373,34 @@ function Normalize-GitHubActorLogin {
     return $trimmed
 }
 
+function Test-RerunCheckpointCommentAuthorized {
+    param(
+        [Parameter(Mandatory = $true)]$Comment,
+        [string]$PRAuthorLogin,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    if (-not (Test-RerunCommand $Comment.body)) {
+        return $false
+    }
+    if (-not $Comment.user -or [string]::IsNullOrWhiteSpace([string]$Comment.user.login)) {
+        return $false
+    }
+    if ($Comment.user.type -eq 'Bot' -or (Test-AISummaryCommentAuthor $Comment)) {
+        return $false
+    }
+
+    $commentLogin = Normalize-GitHubActorLogin ([string]$Comment.user.login)
+    $authorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    if (-not [string]::IsNullOrWhiteSpace($authorLogin) -and
+        $commentLogin.Equals($authorLogin, [StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    return Test-ReviewOptionLoginTrusted -Login $commentLogin -Owner $Owner -Repo $Repo
+}
+
 function Test-CommentIsEvidence {
     param(
         [Parameter(Mandatory = $true)]$Comment,
@@ -526,13 +554,30 @@ function Get-RerunContextData {
         [object[]]$Commits,
         [string]$CurrentHeadSha,
         [string]$PRAuthorLogin,
-        [object[]]$CurrentLabels = @()
+        [object[]]$CurrentLabels = @(),
+        [switch]$AuthorizedRerunCheckpointsOnly,
+        [string]$AuthorizationOwner = 'dotnet',
+        [string]$AuthorizationRepo = 'maui'
     )
 
     $latestSummary = Get-LatestAISummaryComment -Comments $Comments
-    $latestRerun = Get-LatestRerunComment -Comments $Comments
-    $checkpointRerun = if ($latestRerun) { Get-LatestRerunCommentBefore -Comments $Comments -CurrentCommentId ([Int64]$latestRerun.id) } else { $null }
     $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    $rerunCheckpointComments = @($Comments)
+    if ($AuthorizedRerunCheckpointsOnly) {
+        $rerunCheckpointComments = @($Comments | Where-Object {
+            Test-RerunCheckpointCommentAuthorized `
+                -Comment $_ `
+                -PRAuthorLogin $normalizedPRAuthorLogin `
+                -Owner $AuthorizationOwner `
+                -Repo $AuthorizationRepo
+        })
+    }
+    $latestRerun = Get-LatestRerunComment -Comments $rerunCheckpointComments
+    $checkpointRerun = if ($latestRerun) {
+        Get-LatestRerunCommentBefore -Comments $rerunCheckpointComments -CurrentCommentId ([Int64]$latestRerun.id)
+    } else {
+        $null
+    }
     $readyLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
     $inProgressLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0
 
@@ -758,16 +803,19 @@ function Resolve-AutonomousRerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'label-already-present'; Label = $ReadyForRerunLabel }
     }
 
-    # Use the same base checkpoint as the hourly candidate builder. In legacy
-    # histories with stacked rerun commands, both paths therefore exclude
-    # activity that predates the previous rerun instead of labelling it daily
-    # and then having the hourly scanner decline the same state.
+    # Use the same authorized base checkpoint as the hourly candidate builder.
+    # Stacked rerun commands from the PR author or a current write collaborator
+    # still prevent reusing old activity, while outsider comments cannot advance
+    # the checkpoint and hide a legitimate PR-author update.
     $contextData = Get-RerunContextData `
         -Comments $Comments `
         -Commits $Commits `
         -CurrentHeadSha $CurrentHeadSha `
         -PRAuthorLogin $PRAuthorLogin `
-        -CurrentLabels $CurrentLabels
+        -CurrentLabels $CurrentLabels `
+        -AuthorizedRerunCheckpointsOnly `
+        -AuthorizationOwner $Owner `
+        -AuthorizationRepo $Repo
     $latestReviewedSha = [string]$contextData.LatestReviewedSha
     $baseCheckpoint = $contextData.Checkpoint
 
