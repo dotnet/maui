@@ -518,3 +518,93 @@ Android
         $firstAgentMarkdown | Should -Not -Match '(?m)^- URL:'
     }
 }
+
+Describe 'Get-ReplicationPlatformMismatch' {
+    It 'refuses a platform the report excludes by its leading tag' {
+        $result = Get-ReplicationPlatformMismatch `
+            -Title '[Android][Regression] SwipeItem Text is vertically misaligned' `
+            -AffectedPlatforms '' `
+            -SelectedPlatform 'catalyst'
+
+        $result | Should -Match 'declares android'
+        $result | Should -Match 'requested platform is catalyst'
+    }
+
+    It 'allows the platform the report declares' {
+        Get-ReplicationPlatformMismatch `
+            -Title '[Android][Regression] SwipeItem Text is vertically misaligned' `
+            -AffectedPlatforms '' `
+            -SelectedPlatform 'android' | Should -BeNullOrEmpty
+    }
+
+    It 'allows every platform when the report declares none' {
+        foreach ($platform in @('android', 'ios', 'catalyst', 'windows')) {
+            Get-ReplicationPlatformMismatch `
+                -Title 'Activity indicator stays visible after IsRunning is false' `
+                -AffectedPlatforms '' `
+                -SelectedPlatform $platform | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'reads the template answer when the title declares nothing' {
+        # dotnet/maui#36543 wasted a Mac Catalyst run this way: the title says
+        # only "[NET10]" while the template answer says Android.
+        Get-ReplicationPlatformMismatch `
+            -Title '[NET10] I1_RTL_FlowDirection - Rotating a page' `
+            -AffectedPlatforms 'Android' `
+            -SelectedPlatform 'catalyst' | Should -Match 'declares android'
+    }
+
+    It 'prefers the leading tag over platforms named in comparison' {
+        # "Windows: X is inconsistent with Android and iOS" is a Windows report.
+        $title = 'Windows: Shell.Background is inconsistent with Android and iOS'
+
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'windows' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'ios' | Should -Match 'declares windows'
+    }
+
+    It 'ignores platforms named after a bracketed tag' {
+        # A bracketed tag is the whole declaration; platforms named later in the
+        # sentence are comparisons, not claims about where the defect lives.
+        $title = '[Windows] Shell.Background is inconsistent with Android and iOS'
+
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'windows' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'ios' | Should -Match 'declares windows'
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'android' | Should -Match 'declares windows'
+    }
+
+    It 'ignores platforms named after a colon tag' {
+        $title = 'Windows: crash also observed by users on Android'
+
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'android' | Should -Match 'declares windows'
+    }
+
+    It 'allows any platform a multi-platform tag lists' {
+        $title = '[Android, iOS] Top label is not set to edge-to-edge'
+
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'android' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'ios' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -SelectedPlatform 'windows' | Should -Match 'declares'
+    }
+
+    It 'does not read a platform out of ordinary prose' {
+        # "windowSoftInputMode" must not make this a Windows report.
+        Get-ReplicationDeclaredPlatforms `
+            -Title 'Entry is hidden when windowSoftInputMode changes' `
+            -AffectedPlatforms '' | Should -BeNullOrEmpty
+    }
+
+    It 'treats macOS as Mac Catalyst' {
+        Get-ReplicationPlatformMismatch -Title '[macOS] Menu bar item is missing' `
+            -AffectedPlatforms '' -SelectedPlatform 'catalyst' | Should -BeNullOrEmpty
+    }
+}

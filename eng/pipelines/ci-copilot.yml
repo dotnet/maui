@@ -706,6 +706,26 @@ stages:
               } catch {
                 Write-Host "##vso[task.logissue type=warning]Could not read the issue state: $($_.Exception.Message)"
               }
+
+              # A report that names its own platform cannot be answered on a
+              # different one. Runs 15015960 and 15015961 each provisioned a Mac
+              # and spent three device attempts before the agent correctly
+              # refused an Android-only defect. The title said so all along, so
+              # the refusal belongs here rather than forty minutes downstream.
+              try {
+                $contextPath = $env:REPLICATION_CONTEXT_PATH
+                if (-not [string]::IsNullOrWhiteSpace($contextPath) -and (Test-Path -LiteralPath $contextPath)) {
+                  $mismatch = [string](Get-Content -LiteralPath $contextPath -Raw |
+                    ConvertFrom-Json).platformMismatch
+                  if (-not [string]::IsNullOrWhiteSpace($mismatch)) {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: $mismatch"
+                  }
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not read the declared platforms: $($_.Exception.Message)"
+              }
             name: ReplicationDuplicateCheck
             displayName: 'Check for an existing reproduction pull request'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))

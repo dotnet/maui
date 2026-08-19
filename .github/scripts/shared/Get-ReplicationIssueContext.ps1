@@ -1447,6 +1447,82 @@ function ConvertTo-SafeScreenshotPng {
     }
 }
 
+function Get-ReplicationDeclaredPlatforms {
+    <#
+        .SYNOPSIS
+        Lists the platforms a report explicitly names for itself.
+
+        .DESCRIPTION
+        Only an explicit declaration counts: a bracketed or colon-delimited tag
+        at the front of the title, or the template's affected-platforms answer.
+        A platform merely mentioned in passing ("inconsistent with Android and
+        iOS") is not a claim about where the defect lives.
+    #>
+    param(
+        [AllowEmptyString()][string]$Title,
+        [AllowEmptyString()][string]$AffectedPlatforms
+    )
+
+    $found = [Collections.Generic.List[string]]::new()
+    $add = {
+        param($name)
+        if (-not $found.Contains($name)) { [void]$found.Add($name) }
+    }
+
+    $tag = ''
+    $titleText = [string]$Title
+    $leading = [regex]::Match($titleText, '^\s*((?:\[[^\]]{1,40}\]\s*)+)')
+    if ($leading.Success) {
+        $tag = $leading.Groups[1].Value
+    } else {
+        $colon = [regex]::Match($titleText, '^\s*([A-Za-z0-9 /,+]{1,40}):')
+        if ($colon.Success) { $tag = $colon.Groups[1].Value }
+    }
+
+    foreach ($source in @($tag, [string]$AffectedPlatforms)) {
+        if ([string]::IsNullOrWhiteSpace($source)) { continue }
+        $lower = $source.ToLowerInvariant()
+        if ($lower -match 'catalyst|macos|mac os') { & $add 'catalyst' }
+        if ($lower -match 'ios|iphone|ipad') { & $add 'ios' }
+        if ($lower -match 'android') { & $add 'android' }
+        if ($lower -match 'windows|winui') { & $add 'windows' }
+    }
+
+    return @($found)
+}
+
+function Get-ReplicationPlatformMismatch {
+    <#
+        .SYNOPSIS
+        Explains why a selected platform cannot answer the report, if it cannot.
+
+        .DESCRIPTION
+        Runs 15015960 and 15015961 spent three device attempts each before the
+        agent correctly reported that an Android-only defect cannot be shown on
+        Mac Catalyst, and 15015676 the same for an IDE-only Hot Reload issue.
+        The report already said so in its own title, so ask before provisioning
+        a device rather than after.
+    #>
+    param(
+        [AllowEmptyString()][string]$Title,
+        [AllowEmptyString()][string]$AffectedPlatforms,
+        [Parameter(Mandatory)][string]$SelectedPlatform
+    )
+
+    $declared = @(Get-ReplicationDeclaredPlatforms -Title $Title -AffectedPlatforms $AffectedPlatforms)
+    if ($declared.Count -eq 0) {
+        # A report that names no platform is a fair candidate anywhere.
+        return ''
+    }
+    $selected = ([string]$SelectedPlatform).ToLowerInvariant()
+    if ($declared -contains $selected) {
+        return ''
+    }
+
+    return ("The report declares $($declared -join ', ') and the requested platform is $selected, " +
+        'so a reproduction on it would not be evidence for what was reported.')
+}
+
 function Get-ReplicationScreenshotRecords {
     [CmdletBinding()]
     param(
@@ -1694,6 +1770,10 @@ function Invoke-GetReplicationIssueContext {
             selectedPlatform = $selectedPlatform
             sections = $boundedSections
             screenshots = [object[]] $screenshotRecords
+            platformMismatch = (Get-ReplicationPlatformMismatch `
+                -Title $title `
+                -AffectedPlatforms ([string]$boundedSections['affectedPlatforms']) `
+                -SelectedPlatform $selectedPlatform)
         }
         $agentContext = [ordered] @{
             schemaVersion = 1
