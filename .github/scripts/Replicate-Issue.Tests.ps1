@@ -5883,3 +5883,124 @@ Describe 'A tier with no build for the platform escalates instead of stalling' {
         $script:Source | Should -Match 'You are now expected to change testType and files'
     }
 }
+
+Describe 'Assert-ReplicationNegativeControlIsInformative' {
+    BeforeAll {
+        $script:Baseline = @'
+[Test]
+public void Issue12345_LabelUpdates()
+{
+    App.NavigateTo("ShadowedButtonGallery");
+    App.WaitForElement("TriggerButton");
+    App.Tap("TriggerButton");
+    var text = App.FindElement("ResultLabel").GetText();
+    Assert.That(text, Is.EqualTo("Updated"));
+}
+'@
+        # The same measurement, reached without the shadow the issue blames.
+        $script:Control = @'
+[Test]
+public void Issue12345_LabelUpdates_Control()
+{
+    App.NavigateTo("PlainButtonGallery");
+    App.WaitForElement("TriggerButton");
+    App.Tap("TriggerButton");
+    var text = App.FindElement("ResultLabel").GetText();
+    Assert.That(text, Is.EqualTo("Updated"));
+}
+'@
+    }
+
+    It 'accepts a control that removes the trigger and preserves the oracle' {
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $script:Control `
+                -TestFilter 'Issue12345_LabelUpdates' } | Should -Not -Throw
+    }
+
+    It 'rejects a control that was never authored' {
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource '' `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*never actually tried*'
+    }
+
+    It 'rejects a control identical to the reproduction' {
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $script:Baseline `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*removes nothing*'
+    }
+
+    It 'rejects a control made green by deleting the oracle' {
+        $weakened = $script:Control -replace 'Assert\.That\(text, Is\.EqualTo\("Updated"\)\);', ''
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $weakened `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*stopped measuring*'
+    }
+
+    It 'rejects a control made green by weakening the oracle' {
+        $weakened = $script:Control -replace 'Is\.EqualTo\("Updated"\)', 'Is.Not.Null'
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $weakened `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*changes the oracle*'
+    }
+
+    It 'rejects a control made green by not running' {
+        $ignored = '[Ignore("flaky")]' + "`n" + $script:Control
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $ignored `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*did not run*'
+    }
+
+    It 'rejects a control that short-circuits itself' {
+        $shortCircuit = $script:Control -replace 'App\.Tap\("TriggerButton"\);', 'Assert.Pass();'
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $shortCircuit `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*did not run*'
+    }
+
+    It 'rejects a reproduction that has no oracle for a control to preserve' {
+        $oracleless = $script:Baseline -replace 'Assert\.That\(text, Is\.EqualTo\("Updated"\)\);', ''
+        $oraclelessControl = $script:Control -replace 'Assert\.That\(text, Is\.EqualTo\("Updated"\)\);', ''
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $oracleless `
+                -ControlSource $oraclelessControl `
+                -TestFilter 'Issue12345_LabelUpdates' } |
+            Should -Throw -ExpectedMessage '*no assertion*'
+    }
+
+    It 'does not flag an attribute the reproduction itself already carries' {
+        $baseline = '[Ignore("pending")]' + "`n" + $script:Baseline
+        $control = '[Ignore("pending")]' + "`n" + $script:Control
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $baseline `
+                -ControlSource $control `
+                -TestFilter 'Issue12345_LabelUpdates' } | Should -Not -Throw
+    }
+
+    It 'ignores commented-out assertions when comparing oracles' {
+        $commented = $script:Control -replace 'App\.NavigateTo\("PlainButtonGallery"\);', '// Assert.That(false);'
+
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $script:Baseline `
+                -ControlSource $commented `
+                -TestFilter 'Issue12345_LabelUpdates' } | Should -Not -Throw
+    }
+}

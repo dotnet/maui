@@ -35,6 +35,12 @@ if (-not (Test-Path -LiteralPath $guardValidatorPath -PathType Leaf)) {
 }
 . $guardValidatorPath
 
+$certificationPath = Join-Path $PSScriptRoot 'Get-ReplicationCertification.ps1'
+if (-not (Test-Path -LiteralPath $certificationPath -PathType Leaf)) {
+    throw "Trusted replication certification module is missing: $certificationPath"
+}
+. $certificationPath
+
 $script:ManifestMaxBytes = 64KB
 $script:EvidenceJsonMaxBytes = 64KB
 $script:PatchMaxBytes = 2MB
@@ -2631,6 +2637,76 @@ function Assert-ReplicationVerificationEvidence {
         }
 
         Add-Member -InputObject $result -NotePropertyName 'validatedRunCount' -NotePropertyValue $completedRunCount -Force
+
+        # Grade what was actually established. Everything above proves the named
+        # test failed repeatedly and identically; none of it shows the failure is
+        # caused by the reported defect rather than by something incidental to
+        # the scenario. That distinction is what reviewers kept having to make by
+        # hand, so it is computed here and carried into the pull request.
+        $negativeRuns = 0
+        $negativePasses = 0
+        $control = $result.PSObject.Properties['negativeControl']
+        if ($control -and $null -ne $control.Value) {
+            $negativeRuns = ConvertTo-PositiveInteger `
+                -Value (Find-AliasedProperty `
+                    -Object $control.Value `
+                    -Names @('runCount') `
+                    -Context 'Negative control' `
+                    -Required).Value `
+                -Context 'Negative control run count'
+            $negativePasses = [int](Find-AliasedProperty `
+                    -Object $control.Value `
+                    -Names @('passCount') `
+                    -Context 'Negative control' `
+                    -Required).Value
+
+            if ($negativePasses -gt $negativeRuns) {
+                throw 'The negative control reports more passes than runs.'
+            }
+
+            $baselineSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-baseline.cs'
+            $variantSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-variant.cs'
+            foreach ($required in @($baselineSourcePath, $variantSourcePath)) {
+                if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+                    throw ('A negative control was reported without its source snapshots, so its claim that ' +
+                        'removing the trigger turns the test green cannot be checked: ' +
+                        [System.IO.Path]::GetFileName($required) + '.')
+                }
+            }
+
+            Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource (Read-BoundedUtf8File `
+                    -Path $baselineSourcePath `
+                    -MaximumBytes $script:CandidateFileMaxBytes `
+                    -Root $Inventory.VerificationRoot `
+                    -Context 'Negative control baseline source') `
+                -ControlSource (Read-BoundedUtf8File `
+                    -Path $variantSourcePath `
+                    -MaximumBytes $script:CandidateFileMaxBytes `
+                    -Root $Inventory.VerificationRoot `
+                    -Context 'Negative control variant source') `
+                -TestFilter $Manifest.TestName
+        }
+
+        $certification = Get-ReplicationCertification -Evidence @{
+            runtimeAvailable       = $true
+            baselineRuns           = $completedRunCount
+            baselineFailures       = $completedRunCount
+            stableFailureMessage   = $true
+            exactlyOneTestExecuted = $true
+            negativeControlRuns    = $negativeRuns
+            negativeControlPasses  = $negativePasses
+        } -RequiredRuns $script:VerificationMinimumRunCount
+
+        if (-not $certification.Publish) {
+            throw ('The candidate is graded ' + $certification.Level + ' and is not publishable: ' +
+                (@($certification.Reasons) -join ' '))
+        }
+
+        Add-Member -InputObject $result -NotePropertyName 'certificationLevel' `
+            -NotePropertyValue $certification.Level -Force
+        Add-Member -InputObject $result -NotePropertyName 'certificationSummary' `
+            -NotePropertyValue (Get-ReplicationCertificationSummary -Certification $certification) -Force
         return $result
     }
 

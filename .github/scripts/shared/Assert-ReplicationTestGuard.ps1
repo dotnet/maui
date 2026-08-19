@@ -2083,3 +2083,127 @@ function Assert-ReplicationTestLifecycleSafety {
         }
     }
 }
+
+function Get-ReplicationAssertionPattern {
+    # The statements that carry the oracle. An ablation is only informative if
+    # every one of these survives it untouched.
+    return '(?i)(?:^|[^\w.])(?:Assert\.|Assume\.|StringAssert\.|CollectionAssert\.|ClassicAssert\.)|\.Should(?:Be|NotBe|Match|Contain|Have|Throw|Not)|\bVerifyScreenshot\b'
+}
+
+function Get-ReplicationAssertionStatements {
+    <#
+        .SYNOPSIS
+        Returns the normalised assertion statements in a test source file.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Source
+    )
+
+    $pattern = Get-ReplicationAssertionPattern
+    $statements = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in ([string]$Source -split "`r?`n")) {
+        $trimmed = $line.Trim()
+        if ($trimmed -match '^\s*//') { continue }
+        if ([regex]::IsMatch($trimmed, $pattern)) {
+            $statements.Add(([regex]::Replace($trimmed, '\s+', ' ')))
+        }
+    }
+
+    # Emitted unwrapped so that callers wrapping in @() see an empty result as
+    # zero assertions. Returning ,@($statements) would hand them a single empty
+    # element instead, which reads as "one assertion" and defeats the check for
+    # a reproduction that has no oracle at all.
+    return $statements.ToArray()
+}
+
+function Get-ReplicationDisabledTestPatterns {
+    # Ways a control can be made green by never really running. The certification
+    # matrix rewards a passing control, so these are the shapes an agent reaches
+    # for when the ablation is inconvenient.
+    return @(
+        [pscustomobject]@{
+            Pattern = '(?im)^\s*\[\s*(?:Ignore|Explicit)\b'
+            Reason  = 'it is attributed away with [Ignore] or [Explicit]'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bAssert\.(?:Ignore|Inconclusive)\s*\('
+            Reason  = 'it ends itself with Assert.Ignore or Assert.Inconclusive'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bAssert\.Pass\s*\('
+            Reason  = 'it short-circuits with Assert.Pass'
+        },
+        [pscustomobject]@{
+            Pattern = '(?im)^\s*\[\s*Test\s*\([^)]*\bSkip\s*='
+            Reason  = 'it is declared with a Skip reason'
+        }
+    )
+}
+
+function Assert-ReplicationNegativeControlIsInformative {
+    <#
+        .SYNOPSIS
+        Rejects a negative control that cannot distinguish the defect.
+
+        .DESCRIPTION
+        The negative control is the arm that promotes a reproduction to a
+        certified oracle, so it is the arm worth faking. There are exactly two
+        cheap ways to make a control green, and both leave the reproduction
+        unproven:
+
+          - weaken the oracle, so the control passes because it no longer
+            measures anything;
+          - stop the control from running, so it passes vacuously.
+
+        A control is only informative when it removes the reported trigger and
+        changes nothing else. This compares the two sources directly rather than
+        trusting the manifest's description of them.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BaselineSource,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ControlSource,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestFilter
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ControlSource)) {
+        throw "The negative control for '$TestFilter' is empty, so removing the reported trigger was never actually tried."
+    }
+
+    $normalisedBaseline = [regex]::Replace([string]$BaselineSource, '\s+', ' ').Trim()
+    $normalisedControl = [regex]::Replace([string]$ControlSource, '\s+', ' ').Trim()
+    if ($normalisedBaseline -ceq $normalisedControl) {
+        throw ("The negative control for '$TestFilter' is identical to the reproduction, so it removes nothing and " +
+            'cannot show that the failure depends on the reported trigger.')
+    }
+
+    foreach ($disabled in Get-ReplicationDisabledTestPatterns) {
+        if ([regex]::IsMatch($normalisedControl, $disabled.Pattern) -and
+            -not [regex]::IsMatch($normalisedBaseline, $disabled.Pattern)) {
+            throw ("The negative control for '$TestFilter' passes only because $($disabled.Reason), " +
+                'so it proves the control did not run rather than that the trigger causes the failure.')
+        }
+    }
+
+    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $BaselineSource)
+    $controlAssertions = @(Get-ReplicationAssertionStatements -Source $ControlSource)
+
+    if ($baselineAssertions.Count -eq 0) {
+        throw "The reproduction '$TestFilter' contains no assertion, so there is no oracle for a control to preserve."
+    }
+
+    if ($controlAssertions.Count -ne $baselineAssertions.Count) {
+        throw ("The negative control for '$TestFilter' asserts $($controlAssertions.Count) times where the " +
+            "reproduction asserts $($baselineAssertions.Count). A control must remove the reported trigger and " +
+            'leave the oracle untouched, otherwise it passes because it stopped measuring.')
+    }
+
+    for ($index = 0; $index -lt $baselineAssertions.Count; $index++) {
+        if ($baselineAssertions[$index] -cne $controlAssertions[$index]) {
+            throw ("The negative control for '$TestFilter' changes the oracle: the reproduction asserts " +
+                "'$($baselineAssertions[$index])' where the control asserts '$($controlAssertions[$index])'. " +
+                'A control must differ only in the reported trigger.')
+        }
+    }
+}
