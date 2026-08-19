@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform;
 public class MauiMaterialTimePicker : MauiMaterialDateTimePickerBase
 {
     public MauiMaterialTimePicker(Context context)
-        : base(context, Resource.Drawable.ic_clock_black_24dp)
+        : base(MauiMaterialContextThemeWrapper.Create(context), Resource.Drawable.ic_clock_black_24dp)
     {
         SetEndIconContentDescription(Resource.String.maui_time_picker_open);
     }

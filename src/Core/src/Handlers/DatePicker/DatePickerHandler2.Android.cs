@@ -40,7 +40,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     protected override MauiMaterialDatePicker CreatePlatformView()
     {
-        return new MauiMaterialDatePicker(MauiMaterialContextThemeWrapper.Create(Context));
+        return new MauiMaterialDatePicker(Context);
     }
 
     protected override void ConnectHandler(MauiMaterialDatePicker platformView)
@@ -282,11 +282,12 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
             return;
         }
 
-        _dialog.Show(fragmentManager, "MaterialDatePicker");
-
-        // Focus the field so the outlined layout shows its highlighted (focused) state while the
-        // dialog is open. This also covers opens triggered programmatically via IsOpen.
+        // Focus the field before Show() so the outlined layout shows its highlighted (focused) state
+        // and to avoid racing with the dialog window taking focus. This also covers opens triggered
+        // programmatically via IsOpen.
         PlatformView?.RequestInputFocus();
+
+        _dialog.Show(fragmentManager, "MaterialDatePicker");
 
         UpdateIsOpenState(true);
     }

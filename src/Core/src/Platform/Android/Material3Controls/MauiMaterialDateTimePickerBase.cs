@@ -106,16 +106,20 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         _inputEditText.FocusableInTouchMode = true;
     }
 
-    // Clears focus only when the inner edit text currently holds it, then removes its focusability so
-    // Android does not resolve focus onto the read-only field (which could surface another keyboard).
+    // Always resets focusability so Android does not resolve focus onto the read-only field, even
+    // when a prior RequestFocus() failed (e.g. the dialog window stole focus first).
     internal void ClearInputFocus()
     {
-        if (_inputEditText is null || !_inputEditText.IsFocused)
+        if (_inputEditText is null)
         {
             return;
         }
 
-        _inputEditText.ClearFocus();
+        if (_inputEditText.IsFocused)
+        {
+            _inputEditText.ClearFocus();
+        }
+
         _inputEditText.Focusable = false;
         _inputEditText.FocusableInTouchMode = false;
     }

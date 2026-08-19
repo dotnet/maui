@@ -181,11 +181,12 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
             return;
         }
 
-        _dialog.Show(fragmentManager, "MaterialTimePicker");
-
-        // Focus the field so the outlined layout shows its highlighted (focused) state while the
-        // dialog is open. This also covers opens triggered programmatically via IsOpen.
+        // Focus the field before Show() so the outlined layout shows its highlighted (focused) state
+        // and to avoid racing with the dialog window taking focus. This also covers opens triggered
+        // programmatically via IsOpen.
         PlatformView?.RequestInputFocus();
+
+        _dialog.Show(fragmentManager, "MaterialTimePicker");
 
         UpdateIsOpenState(true);
     }
@@ -257,7 +258,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
     protected override MauiMaterialTimePicker CreatePlatformView()
     {
-        return new MauiMaterialTimePicker(MauiMaterialContextThemeWrapper.Create(Context));
+        return new MauiMaterialTimePicker(Context);
     }
 
     internal void UpdateIsOpenState(bool isOpen)
