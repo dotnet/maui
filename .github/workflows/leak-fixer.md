@@ -80,7 +80,7 @@ tools:
     toolsets: [pull_requests, repos, issues, search]
     min-integrity: approved
   edit:
-  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl"]
+  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl", "pwsh"]
 
 checkout:
   fetch-depth: 200
@@ -418,7 +418,7 @@ if test -z "$TITLE"; then
   echo "ERROR: could not read issue #$N title (transient gh failure?) — aborting to avoid fail-open dedup." >&2
   exit 1
 fi
-API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
 echo "target rooting API: $API"
 if test -z "$API"; then
   echo "ERROR: issue #$N title has no canonical Type.Member; refusing unsupported empty-API de-dup before build/test work." >&2
@@ -472,7 +472,7 @@ jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
 jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE BASE URL; do
-      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
       if test -n "$PR_API"; then
         printf '%s\t%s\t%s\t%s\t%s\n' "$PR_API" "$PR" "$BASE" "$URL" "$TITLE"
       fi
@@ -482,7 +482,8 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
 
 # A merged fix is not authoritative if it was later effectively reverted. Discover only
 # same-branch merged PRs with explicit body references to the relevant leak-fix set, recursively.
-# Each target-scoped query fails closed at its own Search API ceiling.
+# Each target-scoped query fails closed at its own Search API ceiling, while the shared helper
+# caps aggregate unique target searches so a deep/wide chain cannot exhaust the job.
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/merged-leak-fix-prs.tsv \
@@ -565,7 +566,7 @@ jq -r '.[] |
     [.number, .title] | @tsv' \
   /tmp/gh-aw/agent/same-api-prs-raw.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
       if test "$PR_API" = "$API"; then
         jq -n --arg number "$PR" --arg title "$TITLE" '{number: ($number|tonumber), title: $title}'
       fi
@@ -592,7 +593,7 @@ jq '[.[] | select(.title | startswith("[leak-fix] ")) | select(.mergedAt == null
 # still count against any newly duplicate-filed issue for that same API).
 API_MATCH_NUMBERS=$(jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/closed-unmerged-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
       test -n "$API" && test "$PR_API" = "$API" && echo "$PR"
     done | jq -R 'tonumber' | jq -s '.')
 jq --arg n "$N" --arg repo "$REPO_RE" --argjson apiNums "$API_MATCH_NUMBERS" '[.[] |
@@ -818,6 +819,7 @@ jq '[.[] |
 jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/final-merged-leak-fix-prs.tsv
+# The shared helper enforces the same aggregate query budget as the earlier discovery pass.
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/final-merged-leak-fix-prs.tsv \
@@ -846,7 +848,7 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
 jq -r '.[] | [.number, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
       test "$PR_API" = "$API" && printf 'merged\t%s\t%s\n' "$PR" "$TITLE"
     done > /tmp/gh-aw/agent/final-merged-api-matches.tsv
 
@@ -875,7 +877,7 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
   > /tmp/gh-aw/agent/final-open-issue-fix-prs.json
 jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-open-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
-      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+      PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
       test "$PR_API" = "$API" && printf 'open\t%s\t%s\n' "$PR" "$TITLE"
     done > /tmp/gh-aw/agent/final-open-api-matches.tsv
 

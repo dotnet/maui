@@ -122,7 +122,7 @@ $closedAttempts = @($closed | Where-Object {
         $null -eq $_.mergedAt -and
         ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
         ($referencesIssue -or
-            (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $api)
+            (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) -ceq $api)
     } | Sort-Object number -Unique)
 if ($closedAttempts.Count -ge 3) {
     throw "Final leak-fix attempt-cap gate blocked PR creation: $($closedAttempts.Count) closed-unmerged attempts already reference issue #$issueNumber or canonical API '$api'."

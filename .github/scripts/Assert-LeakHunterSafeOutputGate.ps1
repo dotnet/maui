@@ -111,14 +111,14 @@ foreach ($requested in $requestedItems) {
     $openApiMatches = @($openIssues | Where-Object {
             $issueTitle = [string]$_.title
             $issueTitle.StartsWith('[leak-scan] ', [StringComparison]::Ordinal) -and
-            (Get-CanonicalLeakApi -Title $issueTitle) -ceq $api
+            (Get-CanonicalExistingLeakApi -Title $issueTitle) -ceq $api
         })
     if ($openApiMatches.Count -gt 0) {
             throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
     }
 
     $mergedApiMatches = @($eligibleMerged | Where-Object {
-            (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $api
+            (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) -ceq $api
         })
     if ($mergedApiMatches.Count -gt 0) {
             throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API merged fix match $($mergedApiMatches.number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."

@@ -103,7 +103,7 @@ pre-agent-steps:
       fi
       jq -r '.[].title | gsub("[\r\n]+";" ")' /tmp/gh-aw/agent/my-open-leakscan.json \
         | while IFS= read -r TITLE; do
-            pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE"
+            pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle
           done \
         | sort -u \
         > /tmp/gh-aw/agent/already-filed-apis.txt
@@ -136,7 +136,7 @@ pre-agent-steps:
       jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
         /tmp/gh-aw/agent/merged-leak-fix-prs.json \
         | while IFS=$'\t' read -r PR TITLE BASE URL; do
-            API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE")
+            API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
             if test -n "$API"; then
               printf '%s\t%s\t%s\t%s\t%s\n' "$API" "$PR" "$BASE" "$URL" "$TITLE"
             fi
@@ -158,7 +158,8 @@ pre-agent-steps:
       # independent sibling reverts never cancel each other.
       # Discover only same-branch merged PRs whose bodies explicitly revert one of the
       # relevant leak fixes (then recursively their reverters). Each target-scoped query has
-      # its own fail-closed Search API ceiling, avoiding an unrelated repository-wide cap.
+      # its own fail-closed Search API ceiling, and the shared helper caps aggregate unique
+      # target searches so the fixed job cannot be exhausted by a deep/wide chain.
       pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \

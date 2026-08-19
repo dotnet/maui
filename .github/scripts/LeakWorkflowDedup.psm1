@@ -1,3 +1,14 @@
+function ConvertTo-CanonicalLeakApi {
+    param([Parameter(Mandatory = $true)][string]$Api)
+
+    $segments = $Api.Split('.')
+    if ($segments.Count -eq 2 -or
+        $Api.StartsWith('Microsoft.Maui.', [StringComparison]::Ordinal)) {
+        return "$($segments[-2]).$($segments[-1])"
+    }
+    return $Api
+}
+
 function Get-CanonicalLeakApi {
     param([AllowEmptyString()][string]$Title)
 
@@ -19,13 +30,43 @@ function Get-CanonicalLeakApi {
         return $null
     }
 
-    $api = $match.Groups['api'].Value
-    $segments = $api.Split('.')
-    if ($segments.Count -eq 2 -or
-        $api.StartsWith('Microsoft.Maui.', [StringComparison]::Ordinal)) {
-        return "$($segments[-2]).$($segments[-1])"
+    return ConvertTo-CanonicalLeakApi -Api $match.Groups['api'].Value
+}
+
+function Get-CanonicalExistingLeakApi {
+    param([AllowEmptyString()][string]$Title)
+
+    $api = Get-CanonicalLeakApi -Title $Title
+    if (-not [string]::IsNullOrWhiteSpace($api)) {
+        return $api
     }
-    return $api
+    if ([string]::IsNullOrWhiteSpace($Title)) {
+        return $null
+    }
+
+    # The original hunter emitted this exact Shell context token before a short API.
+    # Keep compatibility anchored to that known form rather than scanning later tokens.
+    $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
+    $shortApi = '[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*'
+    $apiBoundary = '(?=[ \t,:()\-\u2013\u2014]|$|\.(?=[ \t]|$))'
+    $match = if ($normalized.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
+        [regex]::Match(
+            $normalized,
+            "^\[leak-scan\][ `t]+Shell[ `t]+(?<api>$shortApi)$apiBoundary"
+        )
+    } elseif ($normalized.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
+        [regex]::Match(
+            $normalized,
+            "^\[leak-fix\][ `t]+Fix[ `t]+Shell[ `t]+(?<api>$shortApi)$apiBoundary"
+        )
+    } else {
+        return $null
+    }
+    if (-not $match.Success) {
+        return $null
+    }
+
+    return ConvertTo-CanonicalLeakApi -Api $match.Groups['api'].Value
 }
 
 function Read-RegularJsonFile {
@@ -121,10 +162,12 @@ function Get-RelevantMergedLeakReverts {
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$TargetPullRequests,
         [ValidateRange(1, 1000)][int]$SearchLimit = 1000,
-        [ValidateRange(1, 1000)][int]$MaximumDiscoveredPullRequests = 1000
+        [ValidateRange(1, 1000)][int]$MaximumDiscoveredPullRequests = 1000,
+        [ValidateRange(1, 1000)][int]$MaximumSearchQueries = 100
     )
 
     $queue = [System.Collections.Generic.Queue[object]]::new()
+    $seedNumbers = [System.Collections.Generic.HashSet[int]]::new()
     foreach ($target in $TargetPullRequests) {
         $number = 0
         if (-not [int]::TryParse([string]$target.number, [ref]$number) -or $number -le 0) {
@@ -133,6 +176,10 @@ function Get-RelevantMergedLeakReverts {
         $base = [string]$target.baseRefName
         if ([string]::IsNullOrWhiteSpace($base)) {
             throw "Revert-discovery target PR #$number is missing baseRefName."
+        }
+        if ($seedNumbers.Add($number) -and
+            $seedNumbers.Count -gt $MaximumSearchQueries) {
+            throw "Revert-discovery seed set exceeded the $MaximumSearchQueries-query aggregate safety budget."
         }
         $queue.Enqueue([pscustomobject]@{
                 number = $number
@@ -145,9 +192,13 @@ function Get-RelevantMergedLeakReverts {
     while ($queue.Count -gt 0) {
         $target = $queue.Dequeue()
         $targetNumber = [int]$target.number
-        if (-not $queried.Add($targetNumber)) {
+        if ($queried.Contains($targetNumber)) {
             continue
         }
+        if ($queried.Count -ge $MaximumSearchQueries) {
+            throw "Relevant merged-revert discovery exhausted the $MaximumSearchQueries-query aggregate safety budget."
+        }
+        [void]$queried.Add($targetNumber)
 
         $rows = @(
             Invoke-LeakGhJson -Arguments @(
@@ -263,7 +314,7 @@ function Get-LeakFixFinalDedupResult {
         } | Sort-Object number -Unique)
 
     $apiMatches = @($eligible | Where-Object {
-            (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $Api
+            (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) -ceq $Api
         } | Sort-Object number -Unique)
 
     $blocked = $directMatches.Count -gt 0 -or $apiMatches.Count -gt 0
@@ -411,6 +462,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
 
 Export-ModuleMember -Function `
     Get-CanonicalLeakApi, `
+    Get-CanonicalExistingLeakApi, `
     Read-RegularJsonFile, `
     Test-LeakPrReferencesIssue, `
     Get-LeakRevertTargets, `

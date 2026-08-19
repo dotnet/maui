@@ -202,6 +202,35 @@ Describe 'canonical leak API title parsing' {
         (Get-CanonicalLeakApi -Title '[leak-fix] Fix Picker.ItemsSource/Other retention') |
             Should -BeNullOrEmpty
     }
+
+    It 'keeps legacy compatibility out of strict new-output parsing' {
+        (Get-CanonicalLeakApi `
+                -Title '[leak-scan] Shell BackButtonBehavior.Command leaks via ICommand') |
+            Should -BeNullOrEmpty
+        (Get-CanonicalLeakApi `
+                -Title '[leak-fix] Fix Shell BackButtonBehavior.Command memory leak') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'recognizes the known Shell prefix only for existing issue and fix titles' {
+        Get-CanonicalExistingLeakApi `
+            -Title '[leak-scan] Shell BackButtonBehavior.Command leaks via ICommand' |
+            Should -Be 'BackButtonBehavior.Command'
+        Get-CanonicalExistingLeakApi `
+            -Title '[leak-fix] Fix Shell BackButtonBehavior.Command memory leak' |
+            Should -Be 'BackButtonBehavior.Command'
+    }
+
+    It 'does not scan URLs or arbitrary later identifiers in existing titles' {
+        @(
+            '[leak-scan] Investigate BackButtonBehavior.Command retention'
+            '[leak-scan] Shell investigate BackButtonBehavior.Command retention'
+            '[leak-scan] Shell https://github.com/dotnet/maui/issues/36345 BackButtonBehavior.Command'
+            '[leak-fix] Fix Shell details at https://example.test/BackButtonBehavior.Command'
+        ) | ForEach-Object {
+            (Get-CanonicalExistingLeakApi -Title $_) | Should -BeNullOrEmpty
+        }
+    }
 }
 
 Describe 'trusted final duplicate gate' {
@@ -220,6 +249,22 @@ Describe 'trusted final duplicate gate' {
 
         $result.Blocked | Should -BeTrue
         $result.ApiMatches.number | Should -Be 100
+    }
+
+    It 'blocks the known legacy form when it appears on an existing fix' {
+        $existing = New-LeakPr `
+            -Number 104 `
+            -Title '[leak-fix] Fix Shell BackButtonBehavior.Command memory leak'
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'BackButtonBehavior.Command' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($existing) `
+            -OpenPullRequests @()
+
+        $result.Blocked | Should -BeTrue
+        $result.ApiMatches.number | Should -Be 104
     }
 
     It 'blocks a same-API PR that appeared after Step 3' {
@@ -631,6 +676,44 @@ Describe 'target-scoped merged revert discovery' {
                 -SearchLimit 2
         } | Should -Throw '*Scoped merged-revert search for PR #100*2-result ceiling*'
     }
+
+    It 'fails closed before querying when the seed set exceeds the aggregate budget' {
+        {
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @(
+                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
+                    [pscustomobject]@{ number = 101; baseRefName = 'main' }
+                    [pscustomobject]@{ number = 102; baseRefName = 'main' }
+                ) `
+                -MaximumSearchQueries 2
+        } | Should -Throw '*seed set exceeded the 2-query aggregate safety budget*'
+
+        $script:discoverySearches.Count | Should -Be 0
+    }
+
+    It 'fails closed when recursive discovery exhausts the aggregate query budget' {
+        $script:discoveryRowsByTarget['100'] = @(
+            New-LeakPr -Number 200 -Title 'First revert' -Body 'Reverts #100'
+        )
+        $script:discoveryRowsByTarget['200'] = @(
+            New-LeakPr -Number 300 -Title 'Second revert' -Body 'Reverts #200'
+        )
+
+        {
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @(
+                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
+                ) `
+                -MaximumSearchQueries 2
+        } | Should -Throw '*exhausted the 2-query aggregate safety budget*'
+
+        $script:discoverySearches | Should -Be @(
+            'Reverts "#100" in:body'
+            'Reverts "#200" in:body'
+        )
+    }
 }
 
 Describe 'workflow enforcement boundary' {
@@ -717,8 +800,43 @@ Describe 'workflow enforcement boundary' {
 
         ([regex]::Matches($hunter, 'Get-CanonicalLeakApi\.ps1')).Count | Should -Be 2
         ([regex]::Matches($fixer, 'Get-CanonicalLeakApi\.ps1')).Count | Should -Be 6
+        ([regex]::Matches(
+            $hunter,
+            'Get-CanonicalLeakApi\.ps1 -Title "\$TITLE" -ExistingTitle'
+        )).Count | Should -Be 2
+        ([regex]::Matches(
+            $fixer,
+            'Get-CanonicalLeakApi\.ps1 -Title "\$TITLE" -ExistingTitle'
+        )).Count | Should -Be 6
         $hunter | Should -Not -Match 'awk.*A-Za-z_'
         $fixer | Should -Not -Match 'awk.*A-Za-z_'
+    }
+
+    It 'allows pwsh for fixer agent bash calls' {
+        $fixer = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
+
+        $fixer | Should -Match '(?m)^  bash: \[[^\r\n]*"pwsh"\]$'
+    }
+
+    It 'defines one shared aggregate revert-query budget for every caller' {
+        $module = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+        $wrapper = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Get-RelevantMergedLeakReverts.ps1'
+        ) -Raw
+        $fixGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $hunterGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
+        ) -Raw
+
+        $module | Should -Match '\$MaximumSearchQueries = 100'
+        @($wrapper, $fixGate, $hunterGate) | ForEach-Object {
+            $_ | Should -Match 'Get-RelevantMergedLeakReverts'
+            $_ | Should -Not -Match 'MaximumSearchQueries'
+        }
     }
 
     It 'uses target-scoped recursive revert discovery in both gates and workflows' {
@@ -851,6 +969,20 @@ Describe 'workflow enforcement boundary' {
             $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
             $output.items[0].title =
                 '[leak-fix] Investigate https://github.com/dotnet/maui/issues/20 for GradientBrush.GradientStops'
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*Could not derive a canonical Type.Member*'
+        }
+
+        It 'rejects the legacy form when an agent emits it as new PR output' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-fix] Fix Shell GradientBrush.GradientStops reset leak'
             $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
 
             {
@@ -1096,6 +1228,20 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Throw '*Could not derive a canonical Type.Member*'
         }
 
+        It 'rejects the legacy form when an agent emits it as new output' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-scan] Shell BackButtonBehavior.Command — reset leak'
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*Could not derive a canonical Type.Member*'
+        }
+
         It 'rejects differently titled issues for the same canonical API in one output batch' {
             $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
             $output.items += [pscustomobject]@{
@@ -1165,6 +1311,28 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*702*"
+        }
+
+        It 'blocks a legacy Shell-prefixed same-API open issue' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-scan] BackButtonBehavior.Command — reset leak'
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 36345
+                    title = '[leak-scan] Shell BackButtonBehavior.Command leaks via strong ICommand'
+                    body = 'Existing legacy scanner issue'
+                    url = 'https://github.com/dotnet/maui/issues/36345'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*blocked issue creation for 'BackButtonBehavior.Command'*36345*"
         }
 
         It 'rejects a mixed batch atomically when one item becomes stale' {
