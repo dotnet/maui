@@ -135,18 +135,60 @@ Describe 'Replication GitHub login probe' {
         }
     }
 
-    It 'routes every publisher preflight GitHub call through the bounded helper' {
+    It 'never lets a raw pipeline-inline gh call decide the run on its own' {
+        # The probe this test used to guard is gone: Publish-ReplicationPR
+        # re-checks identity and fork anyway, so the probe only cost an agent
+        # and, once the token expired, blocked feedback collection outright.
+        # The property worth keeping is the general one -- a GitHub call made
+        # inline in the pipeline either goes through the bounded helper, which
+        # retries transient failures, or degrades to a warning. Neither may
+        # end the run on a single unlucky response.
         $pipeline = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml') -Raw
-        $probe = [regex]::Match(
-            $pipeline,
-            "(?s)- pwsh: \|(?<body>.*?)displayName: 'Probe MauiBot identity and writable fork'")
-        $probe.Success | Should -BeTrue
-        $body = $probe.Groups['body'].Value
-        $body | Should -Match 'Get-ReplicationGitHubLogin'
-        $body | Should -Match "Invoke-ReplicationGitHubCli"
-        $body | Should -Not -Match '&\s+gh\s+api\s+graphql'
-        $body | Should -Not -Match '&\s+gh\s+api\s+-X\s+POST'
+
+        $pipeline | Should -Not -Match "Probe MauiBot identity and writable fork"
+
+        $rawCalls = @([regex]::Matches($pipeline, '&\s+gh\s+[a-z]'))
+        # If this drops to zero the assertions below stop testing anything.
+        $rawCalls.Count | Should -BeGreaterThan 0
+
+        foreach ($call in $rawCalls) {
+            $tryStart = $pipeline.LastIndexOf('try {', $call.Index)
+            $tryStart | Should -BeGreaterThan -1 -Because (
+                "the raw gh call at offset $($call.Index) must sit inside a try")
+
+            # Walk to the brace that closes this try, so the catch examined is
+            # the one that actually handles this call and not a later sibling.
+            $depth = 0
+            $tryEnd = -1
+            for ($i = $pipeline.IndexOf('{', $tryStart); $i -lt $pipeline.Length; $i++) {
+                if ($pipeline[$i] -eq '{') { $depth++ }
+                elseif ($pipeline[$i] -eq '}') {
+                    $depth--
+                    if ($depth -eq 0) { $tryEnd = $i; break }
+                }
+            }
+            $tryEnd | Should -BeGreaterThan $call.Index -Because (
+                "the try enclosing offset $($call.Index) must close after it")
+
+            $catchStart = $pipeline.IndexOf('catch', $tryEnd)
+            $catchStart | Should -BeGreaterThan -1
+            $depth = 0
+            $catchEnd = -1
+            for ($i = $pipeline.IndexOf('{', $catchStart); $i -lt $pipeline.Length; $i++) {
+                if ($pipeline[$i] -eq '{') { $depth++ }
+                elseif ($pipeline[$i] -eq '}') {
+                    $depth--
+                    if ($depth -eq 0) { $catchEnd = $i; break }
+                }
+            }
+            $catchBody = $pipeline.Substring($catchStart, $catchEnd - $catchStart + 1)
+
+            $catchBody | Should -Match 'task\.logissue type=warning' -Because (
+                "the raw gh call at offset $($call.Index) must degrade to a warning")
+            $catchBody | Should -Not -Match '(?m)^\s*throw\b' -Because (
+                "the raw gh call at offset $($call.Index) must not end the run")
+        }
     }
 
     It 'stages every shared script the trusted publishers dot-source' {

@@ -47,12 +47,16 @@ Describe 'MAUI Copilot mode routing' {
     }
 
     It 'uses a clean main baseline and replication-only recording dependencies' {
-        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)"
-        $script:Pipeline | Should -Match "displayName: 'Probe MauiBot identity and writable fork'"
-        $script:Pipeline | Should -Match 'Expected at most one writable MauiBot fork of dotnet/maui'
-        $script:Pipeline | Should -Match "'api', '-X', 'POST', 'repos/dotnet/maui/forks'"
-        $script:Pipeline | Should -Match 'newly created MauiBot fork did not become writable within 60 seconds'
-        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
+        # The feedback job no longer preflights the publishing credential.
+        # Publish-ReplicationPR re-checks identity and fork before it opens a
+        # pull request, so the probe only ever cost an agent and, once the
+        # token expired, blocked feedback collection outright.
+        $script:Pipeline | Should -Match "(?s)job: ReplicationFeedback.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)"
+        $script:Pipeline | Should -Not -Match 'ValidateReplicationPublisher'
+        $script:Pipeline | Should -Not -Match "Probe MauiBot identity and writable fork"
+        $script:Pipeline | Should -Not -Match 'Expected at most one writable MauiBot fork of dotnet/maui'
+        $script:Pipeline | Should -Not -Match "'api', '-X', 'POST', 'repos/dotnet/maui/forks'"
+        $script:Pipeline | Should -Match "(?s)job: ReplicationFeedback.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $migrationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing reproduction PRs to testing fork'")
         $copilotJobIndex = $script:Pipeline.IndexOf("- job: CopilotReview")
         $migrationIndex | Should -BeGreaterThan -1

@@ -99,13 +99,14 @@ stages:
   - stage: ReviewPR
     displayName: 'Run Copilot Operation'
     jobs:
-      - job: ValidateReplicationPublisher
-        displayName: 'Validate MauiBot replication publisher'
-        # Replicate runs no longer pay for this job. It cost a separate agent
-        # and a full dotnet/maui checkout before any replication work started,
-        # and the identity it probes is re-checked by Publish-ReplicationPR
-        # before a pull request is opened, so nothing could be published on a
-        # credential this job would have rejected.
+      - job: ReplicationFeedback
+        displayName: 'Collect replication feedback'
+        # This job used to preflight the MauiBot publishing credential for every
+        # replicate run. It cost a separate agent and a full dotnet/maui checkout
+        # before any replication work started, and Publish-ReplicationPR re-checks
+        # the identity and the fork before opening a pull request -- so nothing
+        # could ever be published on a credential this job would have rejected.
+        # All that is left is the feedback snapshot, which is what it now does.
         condition: eq('${{ parameters.Mode }}', 'feedback')
         pool:
           name: Azure Pipelines
@@ -128,71 +129,6 @@ stages:
             fetchDepth: 1
             persistCredentials: false
             sparseCheckoutDirectories: .github/scripts/shared
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              . (Join-Path "$(Build.SourcesDirectory)" '.github/scripts/shared/Get-ReplicationGitHubLogin.ps1')
-              $login = Get-ReplicationGitHubLogin
-              if (-not $login.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
-                throw "GH_COMMENT_TOKEN must authenticate as MauiBot."
-              }
-
-              $query = @'
-              query {
-                viewer {
-                  repositories(first: 100, affiliations: [OWNER, ORGANIZATION_MEMBER]) {
-                    nodes {
-                      nameWithOwner
-                      isFork
-                      viewerPermission
-                      parent { nameWithOwner }
-                    }
-                  }
-                }
-              }
-              '@
-              $response = (Invoke-ReplicationGitHubCli `
-                -Arguments @('api', 'graphql', '-f', "query=$query") `
-                -Description 'inspect repositories available to MauiBot') -join "`n" |
-                ConvertFrom-Json -Depth 20
-              $forks = @($response.data.viewer.repositories.nodes) |
-                Where-Object {
-                  $_.isFork -eq $true -and
-                  [string]$_.parent.nameWithOwner -eq 'dotnet/maui' -and
-                  [string]$_.viewerPermission -in @('WRITE', 'MAINTAIN', 'ADMIN')
-                }
-              if ($forks.Count -gt 1) {
-                throw "Expected at most one writable MauiBot fork of dotnet/maui; found $($forks.Count)."
-              }
-              if ($forks.Count -eq 0) {
-                $createdFork = (Invoke-ReplicationGitHubCli `
-                  -Arguments @('api', '-X', 'POST', 'repos/dotnet/maui/forks') `
-                  -Description 'create a MauiBot fork of dotnet/maui') -join "`n" |
-                  ConvertFrom-Json -Depth 20
-                if ([string]$createdFork.full_name -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$') {
-                  throw 'MauiBot has no writable MAUI fork and creating one failed.'
-                }
-                $forkReady = $false
-                for ($attempt = 1; $attempt -le 12; $attempt++) {
-                  Start-Sleep -Seconds 5
-                  $fork = & gh api "repos/$($createdFork.full_name)" 2>$null |
-                    ConvertFrom-Json -Depth 20
-                  if ($LASTEXITCODE -eq 0 -and
-                      $fork.fork -eq $true -and
-                      [string]$fork.parent.full_name -eq 'dotnet/maui' -and
-                      $fork.permissions.push -eq $true) {
-                    $forkReady = $true
-                    break
-                  }
-                }
-                if (-not $forkReady) {
-                  throw 'The newly created MauiBot fork did not become writable within 60 seconds.'
-                }
-              }
-              Write-Host "MauiBot replication publisher preflight passed."
-            displayName: 'Probe MauiBot identity and writable fork'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
