@@ -451,6 +451,134 @@ Describe 'Trusted replication pull request publishing' {
     }
 }
 
+Describe 'A published UI selector has to select the test' {
+    # Reviewers of kubaflo/maui#212 and #205 independently copied the "exact
+    # test" this body publishes and measured that it selects zero tests:
+    # Controls UI tests derive from the parameterised UITest fixture, so the
+    # runtime name is Issue35760(Android).Method, not Issue35760.Method. A
+    # selector that matches nothing reports the same "no failures" as a test
+    # that passed, so publishing one invites exactly the wrong conclusion.
+    BeforeAll {
+        $script:UiEvidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        function script:New-UiBody {
+            param(
+                [string]$Platform = 'android',
+                [string]$TestType = 'ui',
+                [switch]$OmitNames
+            )
+
+            $candidate = [ordered]@{
+                issueNumber = 37281
+                platform = $Platform
+                baseSha = 'abc123'
+                testType = $TestType
+                testFilter = 'Issue37281'
+                expectedFailureSignature = 'Expected: 0; Actual: 94'
+                actualFailureMessage = 'Assert failure. Expected: 0; Actual: 94'
+                verificationRunCount = 2
+                reproductionSteps = @('Scroll the shadowed content')
+            }
+            if (-not $OmitNames) {
+                $candidate['testClassName'] =
+                    'Microsoft.Maui.TestCases.Tests.Issues.Issue37281'
+                $candidate['testMethodName'] =
+                    'TouchScrollingDoesNotRedrawShadowedContent'
+            }
+
+            New-ReplicationPullRequestBody `
+                -Candidate ($candidate | ConvertTo-Json -Depth 10 | ConvertFrom-Json) `
+                -Evidence $script:UiEvidence `
+                -IssueTitle 'Shadowed content redraws while scrolling' `
+                -IssueOwner 'dotnet' `
+                -IssueRepository 'maui' `
+                -BuildUrl 'https://example.test/build/1'
+        }
+    }
+
+    It 'names a UI test the way the runner reports it' {
+        script:New-UiBody |
+            Should -Match ([regex]::Escape(
+                'Issue37281(Android).TouchScrollingDoesNotRedrawShadowedContent'))
+    }
+
+    It 'never publishes the bare class.method a reviewer would paste into an equality filter' {
+        $exactLine = @((script:New-UiBody) -split "`r?`n" |
+            Where-Object { $_ -match '^- Exact test:' })
+        $exactLine.Count | Should -Be 1
+        $exactLine[0] | Should -Match ([regex]::Escape('Issue37281(Android).'))
+        $exactLine[0] | Should -Not -Match ([regex]::Escape(
+            '`Microsoft.Maui.TestCases.Tests.Issues.Issue37281.TouchScrollingDoesNotRedrawShadowedContent`'))
+    }
+
+    It 'publishes the contains selector reviewers verified on the UI lane' {
+        $body = script:New-UiBody
+        $body | Should -Match ([regex]::Escape('FullyQualifiedName~Issue37281'))
+        $body | Should -Match 'selects no tests'
+        $body | Should -Match 'filter grouping'
+    }
+
+    It 'uses each platform''s own TestDevice argument' {
+        # TestDevice spells iOS with a lowercase i, and the runner reports the
+        # member name verbatim, so this comparison has to be case sensitive.
+        $expected = @{
+            android = 'Android'
+            ios = 'iOS'
+            windows = 'Windows'
+            catalyst = 'Mac'
+        }
+        foreach ($platform in $expected.Keys) {
+            (script:New-UiBody -Platform $platform).Contains(
+                "Issue37281($($expected[$platform])).",
+                [StringComparison]::Ordinal) | Should -BeTrue
+        }
+    }
+
+    It 'leaves a device test''s name and selector alone' {
+        $body = script:New-UiBody -TestType 'device'
+        $body | Should -Not -Match ([regex]::Escape('Issue37281(Android)'))
+        $body | Should -Match ([regex]::Escape(
+            'Microsoft.Maui.TestCases.Tests.Issues.Issue37281.TouchScrollingDoesNotRedrawShadowedContent'))
+        $body | Should -Match 'Device runner selector'
+        $body | Should -Not -Match 'UI runner selector'
+    }
+
+    It 'adds no selector caveat to a unit test' {
+        $body = script:New-UiBody -TestType 'unit'
+        $body | Should -Not -Match 'UI runner selector'
+        $body | Should -Not -Match 'Device runner selector'
+    }
+
+    It 'never emits both selector caveats at once' {
+        foreach ($testType in @('ui', 'device', 'unit', 'xaml')) {
+            $lines = @((script:New-UiBody -TestType $testType) -split "`r?`n" |
+                Where-Object { $_ -match 'runner selector:' })
+            $lines.Count | Should -BeLessOrEqual 1
+        }
+    }
+
+    It 'keeps the surrounding bullets one unbroken list' {
+        # An empty placeholder for each caveat used to leave consecutive blank
+        # lines mid-list, which Markdown renders as two separate loose lists.
+        foreach ($testType in @('ui', 'device', 'unit', 'xaml')) {
+            (script:New-UiBody -TestType $testType) |
+                Should -Not -Match "(?m)^- Targeted filter:.*`r?`n`r?`n`r?`n"
+        }
+    }
+
+    It 'falls back to the filter when the class and method are unknown' {
+        $body = script:New-UiBody -OmitNames
+        $body | Should -Match 'Exact test'
+        $body | Should -Not -Match 'UI runner selector'
+    }
+}
+
 Describe 'Trusted replication PR migration' {
     It 'recognizes and keys only bounded replication markers' {
         $pull = [pscustomobject]@{

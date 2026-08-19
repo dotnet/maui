@@ -138,11 +138,47 @@ function New-ReplicationPullRequestBody {
     # on exactly that, so these descriptive names are read defensively.
     $candidateTestClass = Get-ReplicationCandidateText -Candidate $Candidate -Name 'testClassName'
     $candidateTestMethod = Get-ReplicationCandidateText -Candidate $Candidate -Name 'testMethodName'
+
+    # Controls UI tests derive from the parameterised UITest fixture
+    # (src/Controls/tests/TestCases.Shared.Tests/UITest.cs), so NUnit inserts
+    # the TestDevice argument between the class and the method at run time:
+    # Issue37281(Android).TouchScrollingDoesNotRedrawShadowedContent. Two
+    # reviewers independently copied the plain "Class.Method" this body used to
+    # publish, and both selected zero tests -- which reads as a passing run
+    # rather than a missing one. Publish the name the runner actually reports.
+    $uiFixtureArgument = if ([string]$Candidate.testType -ceq 'ui') {
+        switch ([string]$Candidate.platform) {
+            'android' { 'Android' }
+            'ios' { 'iOS' }
+            'windows' { 'Windows' }
+            'catalyst' { 'Mac' }
+            default { '' }
+        }
+    } else {
+        ''
+    }
+
     $exactTestName = if ($candidateTestClass -and $candidateTestMethod) {
+        $qualifiedClass = if ($uiFixtureArgument) {
+            "{0}({1})" -f $candidateTestClass, $uiFixtureArgument
+        } else {
+            $candidateTestClass
+        }
         ConvertTo-ReplicationInlineCode `
-            -Value ("{0}.{1}" -f $candidateTestClass, $candidateTestMethod)
+            -Value ("{0}.{1}" -f $qualifiedClass, $candidateTestMethod)
     } else {
         $testFilter
+    }
+
+    # Parentheses are grouping operators in the VSTest filter grammar, so the
+    # fixture-qualified name above cannot be pasted into an equality filter
+    # unescaped. The issue-keyed class token is the form reviewers verified
+    # selects exactly this test on every UI lane.
+    $uiSelectorLine = if ($uiFixtureArgument -and $candidateTestClass -and $candidateTestMethod) {
+        '- UI runner selector: ``--filter "FullyQualifiedName~Issue{0}"`` — the exact name above carries the ``({1})`` fixture argument, so an equality filter on ``{2}.{3}`` selects no tests and an unescaped ``(`` is read as filter grouping; use this contains form' -f `
+            $issueNumber, $uiFixtureArgument, $candidateTestClass, $candidateTestMethod
+    } else {
+        ''
     }
 
     # The stock device-test runner honours only "Category=X" and
@@ -156,6 +192,11 @@ function New-ReplicationPullRequestBody {
     } else {
         ''
     }
+
+    # Only one of these ever applies, and an empty placeholder left mid-list
+    # would split the surrounding Markdown bullets into two loose lists.
+    $selectorLines = (@($uiSelectorLine, $deviceSelectorLine) |
+        Where-Object { $_ }) -join [Environment]::NewLine
 
     # Reviewers rejected evidence that called a simulator or emulator run
     # "on-device". Name the surface that actually ran the reproduction.
@@ -257,7 +298,7 @@ $marker
 - Test execution host: $testHostDescription
 - Exact test: ``$exactTestName``
 - Targeted filter: ``$testFilter`` — an issue-keyed class token; use the exact test above when a runner needs a precise selector
-$deviceSelectorLine
+$selectorLines
 - Expected failing assertion: ``$failureSignature``
 $determinismLine
 $buildLine
