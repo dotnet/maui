@@ -80,6 +80,7 @@ BeforeAll {
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationTestPassedDiagnosis',
         'Get-ReplicationTestAttemptKind',
+        'Remove-ReplicationLogNoise',
         'Get-ReplicationExistingIssueTestPaths',
         'Assert-ReplicationScenarioNotBlocked',
         'Test-PathInsideRoot',
@@ -5199,5 +5200,53 @@ Describe 'Platform closure guard spares host-driven UI tests' {
                 -Path 'src/Controls/tests/Core.UnitTests/Issue6456Tests.cs' `
                 -Platform 'catalyst' -TestType 'UnitTest' -RepositoryRoot '.' } |
             Should -Throw -ExpectedMessage '*not present in the tested closure*'
+    }
+}
+
+Describe 'Elision keeps the cause rather than the chatter' {
+    BeforeAll {
+        $script:AbortCause = '*** Terminating app due to uncaught exception NSInvalidArgumentException, reason: unrecognized selector sent to instance'
+        $script:Chatter = @()
+        1..40 | ForEach-Object {
+            $script:Chatter += '2026-08-18 19:22:40.252 Df Maui.Controls.Sample.Sandbox[14660:11970] [com.apple.dt.xctest:Default] XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout'
+            $script:Chatter += 'Removing session f1b288ab-e6ab-4a04-9e90-84ce121cf6d8 from our master E2057D59-FB08-4A15-896C-DE596550510C device on any port number'
+        }
+    }
+
+    It 'keeps a native assertion buried between pages of device chatter' {
+        # Run 15015946 aborted five times and every message it kept read
+        # "SIGABRT ... [1474 characters omitted] ... responsiveness timeout".
+        $text = (@('Run trusted reproduction script failed with exit code 134.', $script:AbortCause) + $script:Chatter) -join ' | '
+        $text.Length | Should -BeGreaterThan 2000
+
+        $safe = ConvertTo-ReplicationSafeLog -Value $text -MaximumLength 2000
+
+        $safe | Should -Match 'unrecognized selector'
+        $safe | Should -Match 'exit code 134'
+        $safe | Should -Not -Match 'XCTPerformOnMainRunLoop'
+    }
+
+    It 'leaves a message that already fits completely alone' {
+        $short = 'Run trusted reproduction script failed with exit code 134. | XCTPerformOnMainRunLoop waiting'
+
+        ConvertTo-ReplicationSafeLog -Value $short -MaximumLength 2000 | Should -BeExactly $short
+    }
+
+    It 'keeps the original text when every segment looks like chatter' {
+        # Dropping everything would replace a poor diagnosis with none at all.
+        $allNoise = ($script:Chatter -join ' | ')
+
+        $kept = Remove-ReplicationLogNoise -Text $allNoise
+
+        $kept | Should -BeExactly $allNoise
+    }
+
+    It 'still elides when the remaining signal is itself too long' {
+        $long = (1..200 | ForEach-Object { "Unhandled exception number $_ in the reproduction run" }) -join ' | '
+
+        $safe = ConvertTo-ReplicationSafeLog -Value $long -MaximumLength 2000
+
+        $safe.Length | Should -BeLessOrEqual 2100
+        $safe | Should -Match 'characters omitted'
     }
 }

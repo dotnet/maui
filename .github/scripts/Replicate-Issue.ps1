@@ -139,6 +139,44 @@ $allSecretNames = @(
 )
 $publisherSecretNames = $allSecretNames | Where-Object { $_ -ne 'COPILOT_GITHUB_TOKEN' }
 
+function Remove-ReplicationLogNoise {
+    <#
+        .SYNOPSIS
+        Drops device-log chatter so an elision keeps the diagnosis instead.
+
+        .DESCRIPTION
+        Run 15015946 aborted five times and every message it kept read
+        "SIGABRT: the process aborted itself ... [1474 characters omitted] ...
+        responsiveness timeout". The head is a generic sentence and the tail is
+        XCTest and Appium session bookkeeping, so the native assertion that
+        explains the abort was the only part discarded.
+
+        Segments are only dropped when the text is too long to keep whole, and
+        a segment is only dropped when it matches known chatter, so nothing
+        that might carry the cause is removed to make room for something that
+        cannot.
+    #>
+    param(
+        [AllowEmptyString()][string]$Text
+    )
+
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+
+    $noise = '(?i)(XCTPerformOnMainRunLoop|responsiveness timeout|' +
+        'Removing session [0-9a-f-]{8,} from our master|' +
+        'device on any port number|^\s*\[?"?[0-9A-F-]{36}:\d+"?\]?\s*$|' +
+        'Df Maui\.Controls\.Sample\.Sandbox\[[0-9:a-f]+\] \[com\.apple|' +
+        '^\s*$)'
+
+    $segments = @($Text -split '\s\|\s')
+    if ($segments.Count -lt 2) { return $Text }
+
+    $kept = @($segments | Where-Object { $_ -notmatch $noise })
+    if ($kept.Count -eq 0) { return $Text }
+
+    return ($kept -join ' | ')
+}
+
 function ConvertTo-ReplicationSafeLog {
     param(
         [AllowNull()][object]$Value,
@@ -155,6 +193,10 @@ function ConvertTo-ReplicationSafeLog {
     $safe = $safe -replace '[\r\n]+', ' '
     $safe = $safe -replace '##vso\[[^\]]*\]', ''
     $safe = $safe -replace '##\[[^\]]*\]', ''
+    if ($safe.Length -gt $MaximumLength) {
+        # Chatter is worth less than the cause, so shed it before eliding.
+        $safe = Remove-ReplicationLogNoise -Text $safe
+    }
     if ($safe.Length -gt $MaximumLength) {
         # The diagnosis is at the end of tool output, not the beginning.
         $headLength = [Math]::Max(1, [int]($MaximumLength / 4))

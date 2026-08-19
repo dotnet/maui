@@ -74,6 +74,40 @@ $maxLongEdge = 1280
 $previewMaxSeconds = 6.0
 $previewMaxBytes = 16MB
 
+function Remove-ReproductionLogNoise {
+    <#
+        .SYNOPSIS
+        Drops device-log chatter so an elision keeps the diagnosis instead.
+
+        .DESCRIPTION
+        Run 15015946 aborted five times and every message it kept read
+        "SIGABRT: the process aborted itself ... [1474 characters omitted] ...
+        responsiveness timeout": a generic head and XCTest and Appium session
+        bookkeeping, with the native assertion that explains the abort as the
+        only part discarded. Segments are dropped only when the text is too
+        long to keep whole, and only when they match known chatter.
+    #>
+    param(
+        [AllowEmptyString()][string]$Text
+    )
+
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+
+    $noise = '(?i)(XCTPerformOnMainRunLoop|responsiveness timeout|' +
+        'Removing session [0-9a-f-]{8,} from our master|' +
+        'device on any port number|^\s*\[?"?[0-9A-F-]{36}:\d+"?\]?\s*$|' +
+        'Df Maui\.Controls\.Sample\.Sandbox\[[0-9:a-f]+\] \[com\.apple|' +
+        '^\s*$)'
+
+    $segments = @($Text -split '\s\|\s')
+    if ($segments.Count -lt 2) { return $Text }
+
+    $kept = @($segments | Where-Object { $_ -notmatch $noise })
+    if ($kept.Count -eq 0) { return $Text }
+
+    return ($kept -join ' | ')
+}
+
 function ConvertTo-SafeLogText {
     param(
         [AllowNull()]
@@ -90,6 +124,10 @@ function ConvertTo-SafeLogText {
     $text = $text -replace '[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]', '?'
     $text = $text -replace '[\r\n]+', ' '
     $text = $text -replace '##(?=\[|vso\[)', '## '
+    if ($text.Length -gt $MaxCharacters) {
+        # Chatter is worth less than the cause, so shed it before eliding.
+        $text = Remove-ReproductionLogNoise -Text $text
+    }
     if ($text.Length -gt $MaxCharacters) {
         # Build and test tools print their banner first and their diagnosis last,
         # so keeping only the head hands the agent the banner. Catalyst run
