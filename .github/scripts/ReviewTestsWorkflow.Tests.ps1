@@ -120,15 +120,13 @@ Describe '/review tests compiled trust boundary' {
             )
         }
 
-        $searchFrom = 0
-        foreach ($line in $expectedMandatoryLines) {
-            $lineIndex = $mandatoryCommands.IndexOf(
-                $line,
-                $searchFrom,
-                [StringComparison]::Ordinal)
-            $lineIndex | Should -BeGreaterOrEqual 0
-            $searchFrom = $lineIndex + $line.Length
-        }
+        $expectedMandatoryPrefix = $expectedMandatoryLines -join "`n"
+        $mandatoryCommands.StartsWith(
+            "$expectedMandatoryPrefix`n",
+            [StringComparison]::Ordinal) |
+            Should -BeTrue
+        $runBody | Should -Not -Match (
+            '(?m)(?:set\s+\+e|set\s+\+o\s+errexit|trap\s+-\s+ERR)')
 
         foreach ($file in $script:optionalFiles) {
             $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
