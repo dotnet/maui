@@ -574,6 +574,57 @@ new
 }
 
 Describe 'Resolve-AutonomousRerunEligibility' {
+    It 'aligns stacked rerun checkpoints with the hourly scanner context' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'Author activity before the legacy rerun checkpoint.' -CreatedAt '2026-05-31T09:30:00Z'
+            New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'maintainer'
+            New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T11:00:00Z' -Login 'maintainer'
+        )
+
+        $daily = Resolve-AutonomousRerunEligibility `
+            -Comments $comments `
+            -Commits @() `
+            -CurrentHeadSha '1111111abcdef' `
+            -PRAuthorLogin 'dev-user'
+        $hourly = Get-RerunContextData `
+            -Comments $comments `
+            -Commits @() `
+            -CurrentHeadSha '1111111abcdef' `
+            -PRAuthorLogin 'dev-user'
+
+        $daily.Eligible | Should -BeFalse
+        $daily.Reason | Should -Be 'no-new-comments-or-commits'
+        $hourly.DecisionMetadata.newAuthorCommentCount | Should -Be 0
+        $hourly.CheckpointReason | Should -Be 'previous /review rerun'
+    }
+
+    It 'keeps valid post-checkpoint author activity visible after daily labelling' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'maintainer'
+            New-TestComment -Id 3 -Body 'Valid author activity after the checkpoint.' -CreatedAt '2026-05-31T10:30:00Z'
+            New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T11:00:00Z' -Login 'maintainer'
+        )
+
+        $daily = Resolve-AutonomousRerunEligibility `
+            -Comments $comments `
+            -Commits @() `
+            -CurrentHeadSha '1111111abcdef' `
+            -PRAuthorLogin 'dev-user'
+        $hourlyAfterLabel = Get-RerunContextData `
+            -Comments $comments `
+            -Commits @() `
+            -CurrentHeadSha '1111111abcdef' `
+            -PRAuthorLogin 'dev-user' `
+            -CurrentLabels @('s/agent-ready-for-rerun')
+
+        $daily.Eligible | Should -BeTrue
+        $daily.Reason | Should -Be 'new-author-comment-after-ai-summary'
+        $hourlyAfterLabel.ReadyLabelPresent | Should -BeTrue
+        $hourlyAfterLabel.DecisionMetadata.newAuthorCommentCount | Should -Be 1
+    }
+
     It 'rejects a PR that was never AI-reviewed (no AI Summary)' {
         $comments = @(
             New-TestComment -Id 1 -Body 'Some author update.' -CreatedAt '2026-05-31T09:00:00Z'

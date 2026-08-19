@@ -758,13 +758,23 @@ function Resolve-AutonomousRerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'label-already-present'; Label = $ReadyForRerunLabel }
     }
 
-    $summaryCreatedAt = Get-ObjectDate $latestSummary 'created_at'
-    $latestReviewedSha = Get-LatestReviewedSha -AISummaryBody $latestSummary.body
+    # Use the same base checkpoint as the hourly candidate builder. In legacy
+    # histories with stacked rerun commands, both paths therefore exclude
+    # activity that predates the previous rerun instead of labelling it daily
+    # and then having the hourly scanner decline the same state.
+    $contextData = Get-RerunContextData `
+        -Comments $Comments `
+        -Commits $Commits `
+        -CurrentHeadSha $CurrentHeadSha `
+        -PRAuthorLogin $PRAuthorLogin `
+        -CurrentLabels $CurrentLabels
+    $latestReviewedSha = [string]$contextData.LatestReviewedSha
+    $baseCheckpoint = $contextData.Checkpoint
 
     # Anti-flap checkpoint: if the scanner explicitly declined this state more recently
-    # than the latest AI Summary, re-labelling requires genuinely NEW activity after
-    # that decline. Trigger-path and manual ready-label removals are not decline markers.
-    $effectiveCheckpoint = $summaryCreatedAt
+    # than the shared base checkpoint, re-labelling requires genuinely NEW activity
+    # after that decline. Trigger-path and manual ready-label removals are not decline markers.
+    $effectiveCheckpoint = $baseCheckpoint
     $declinedAt = $null
     if (-not [string]::IsNullOrWhiteSpace($LastDeclinedAt)) {
         try { $declinedAt = ConvertTo-DateTimeOffset $LastDeclinedAt } catch { $declinedAt = $null }
@@ -772,7 +782,7 @@ function Resolve-AutonomousRerunEligibility {
             $effectiveCheckpoint = $declinedAt
         }
     }
-    $isDeclineGated = [bool]($declinedAt -and $declinedAt -gt $summaryCreatedAt)
+    $isDeclineGated = [bool]($declinedAt -and $declinedAt -gt $baseCheckpoint)
     $headDiffersFromReviewed = Test-HeadDiffersFromReviewedSha `
         -CurrentHeadSha $CurrentHeadSha `
         -LatestReviewedSha $latestReviewedSha
@@ -786,7 +796,7 @@ function Resolve-AutonomousRerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
     }
 
-    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    $normalizedPRAuthorLogin = [string]$contextData.PRAuthorLogin
     $hasNewComment = Test-HasEvidenceCommentAfter `
         -Comments $Comments `
         -Checkpoint $effectiveCheckpoint `

@@ -257,7 +257,7 @@ function Invoke-AutoRerunCandidateScan {
 
             if ($result.Eligible -and -not $alreadyPresent) {
                 if ($DryRun) {
-                    Write-Host "  [dry-run] Would label #$number ($($result.Reason)): $title"
+                    Write-Host "  [dry-run] Would label #$number ($($result.Reason))"
                 } else {
                     if (-not $labelEnsured) {
                         Ensure-LabelExists `
@@ -285,7 +285,7 @@ function Invoke-AutoRerunCandidateScan {
                         if ($hasDeclinedMarker -and -not (Remove-Label -PRNumber $number -LabelName $RerunDeclinedLabel -Owner $Owner -Repo $Repo)) {
                             Write-Host "::warning::Applied $ReadyForRerunLabel to #$number but could not clear $RerunDeclinedLabel."
                         }
-                        Write-Host "  ✅ Applied $ReadyForRerunLabel to #$number ($($result.Reason)): $title" -ForegroundColor Green
+                        Write-Host "  ✅ Applied $ReadyForRerunLabel to #$number ($($result.Reason))" -ForegroundColor Green
                     } else {
                         Write-Host "  ⚠️  Failed to apply $ReadyForRerunLabel to #$number" -ForegroundColor Yellow
                         Write-Host "::warning::Auto-rerun label application failed for PR #$number."

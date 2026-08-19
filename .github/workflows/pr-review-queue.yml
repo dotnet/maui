@@ -8,8 +8,10 @@ on:
     types: [opened, synchronize]
     paths:
       - '.github/workflows/pr-review-queue.yml'
+      - '.github/workflows/rerun-review-scanner.md'
       - '.github/skills/find-reviewable-pr/**'
       - '.github/scripts/Query-AutoRerunCandidates.ps1'
+      - '.github/scripts/RerunReviewScanner.Tests.mjs'
       - '.github/scripts/Resolve-RerunEligibility.ps1'
       - '.github/scripts/shared/Update-AgentLabels.ps1'
 
@@ -175,4 +177,9 @@ jobs:
           }
           if ($result.TotalCount -lt 1) {
             throw 'Pester discovered no queue validation tests.'
+          }
+
+          & node --test '.github/scripts/RerunReviewScanner.Tests.mjs'
+          if ($LASTEXITCODE -ne 0) {
+            throw "Executable rerun scanner tests failed with exit code $LASTEXITCODE."
           }

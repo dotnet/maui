@@ -150,6 +150,7 @@ Context 'bounded scan metadata' {
         $validateJob | Should -Match 'Validate queue scripts without GitHub credentials'
         $validateJob | Should -Match 'Query-ReviewablePRs\.Tests\.ps1'
         $validateJob | Should -Match 'Query-AutoRerunCandidates\.Tests\.ps1'
+        $validateJob | Should -Match 'node --test.*RerunReviewScanner\.Tests\.mjs'
         $validateJob | Should -Match 'Update-AgentLabels\.Tests\.ps1'
         $validateJob | Should -Not -Match 'GH_TOKEN|github\.token'
         $validateJob | Should -Not -Match 'pull-requests:\s+read|issues:\s+read'
@@ -175,6 +176,30 @@ Context 'bounded scan metadata' {
 }
 
 Context 'API request bounding' {
+    It 'does not emit untrusted PR titles to workflow stdout' {
+        $maliciousTitle = "line one`n::error::forged workflow command`n::set-output name=legacy::pwned"
+        $script:prList = @(
+            (New-TestPR -Number 11 -HeadSha '2222222abcdef' | ForEach-Object {
+                $_.title = $maliciousTitle
+                $_
+            })
+        )
+        $script:reviews = @(
+            [pscustomobject]@{
+                id = 100
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                submitted_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            }
+        )
+
+        $messages = Invoke-TestScan 6>&1 | Out-String
+
+        $messages | Should -Match 'Would label #11 \(new-head-commit\)'
+        $messages | Should -Not -Match 'line one|forged workflow command|set-output'
+    }
+
     It 'returns a label beyond the default first page' {
         $script:issueLabels = @(
             @(1..30 | ForEach-Object { "label-$_" })
