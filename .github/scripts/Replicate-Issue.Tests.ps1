@@ -69,6 +69,10 @@ BeforeAll {
         'Test-ReplicationFailureAlreadySeen',
         'Test-ReplicationNonReproductionIsConclusive',
         'Get-ReplicationBlockedCode',
+        'Join-ReplicationWrappedGutterLines',
+        'Get-ReplicationAbortExitPattern',
+        'Get-ReplicationPlanVerdictPattern',
+        'Test-ReplicationAppTerminated',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationExistingIssueTestPaths',
@@ -4793,11 +4797,137 @@ Describe 'a native abort is an app termination' {
             Should -BeExactly 'not-reproduced'
     }
 
-    It 'drives the crash steer from the same pattern the classifier uses' {
-        $gate = $script:Source.IndexOf('elseif ($sandboxFailureSummary -match (Get-ReplicationAppTerminationPattern))')
+    It 'drives the crash steer from the same decision the classifier uses' {
+        # Sharing a regex was never the point; sharing the verdict is. Both
+        # readers now call one predicate, so a plan verdict cannot mean
+        # "not reproduced" to the classifier and "crash" to the steer.
+        $gate = $script:Source.IndexOf('elseif (Test-ReplicationAppTerminated -Text $sandboxFailureSummary)')
         $gate | Should -BeGreaterThan 0
-        # The old literal must be gone from both readers, or they can disagree.
+        $script:Source.IndexOf('if (Test-ReplicationAppTerminated -Text $text)') |
+            Should -BeGreaterThan 0
+        # The old literals must be gone from both readers, or they can disagree.
         $script:Source.Contains("-match '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed'") |
             Should -BeFalse
+        $script:Source.Contains('$sandboxFailureSummary -match (Get-ReplicationAppTerminationPattern)') |
+            Should -BeFalse
+    }
+}
+
+Describe 'wrapped failure text survives selection' {
+    It 'keeps the middle of a sentence PowerShell wrapped across gutter lines' {
+        # The exact rendering iOS run 15014893 produced. The middle line holds
+        # no error word, so per-line signal selection dropped it and spliced
+        # "failed with exit" onto "device runner usually means".
+        $rendered = @(
+            'Exception: /trusted-github/scripts/Replicate-Issue.ps1:2853'
+            'Line |'
+            '2853 |          throw "$Description failed with exit code $exitCode."'
+            '     |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+            '     | Reproduction failed: Run trusted reproduction script failed with exit'
+            '     | code 134. Exit code 134 from the'
+            '     | device runner usually means a native assertion or an unhandled platform'
+            '     | exception rather than a failed assertion in the plan.'
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $rendered
+
+        $details | Should -Match 'failed with exit code 134\. Exit code 134 from the device runner usually means'
+        $details | Should -Not -Match 'failed with exit device runner'
+    }
+
+    It 'keeps a not-reproduced marker that wrapping stranded on a quiet line' {
+        # The marker decides whether an attempt counts as a clean observation.
+        # Wrapped onto a continuation with no error word, it was being dropped
+        # and the attempt fell into the "other" bucket, which blocks any
+        # conclusion at all.
+        $rendered = @(
+            'Exception: /trusted-github/scripts/Replicate-Issue.ps1:2853'
+            '     | The plan finished its steps and the recorded state showed'
+            "     | REPLICATION_NOT_REPRODUCED actual='NO"
+            "     | BUG:' after the final assertion."
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $rendered
+
+        $details | Should -Match "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+    }
+
+    It 'still drops a wire-noise line without condemning the message it interrupts' {
+        # Joining before the noise filters would let one Appium log fragment
+        # remove the whole diagnosis, so the order of the two steps matters.
+        $rendered = @(
+            '     | The step failed because the button never appeared'
+            '     | [HTTP] --> POST /session/0123456789abcdef/element'
+            '     | and the plan could not continue.'
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $rendered
+
+        $details | Should -Match 'The step failed because the button never appeared'
+        $details | Should -Match 'and the plan could not continue'
+        $details | Should -Not -Match '/session/0123456789abcdef'
+    }
+
+    It 'leaves ordinary unwrapped lines untouched' {
+        $rendered = @(
+            'error CS0103: the name does not exist'
+            'Build FAILED.'
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $rendered
+
+        $details | Should -Match 'error CS0103: the name does not exist'
+        $details | Should -Match 'Build FAILED\.'
+    }
+}
+
+Describe 'an abort exit code is not always a crash' {
+    It 'reads a plan verdict as the answer even when the runner exits 134' {
+        # The iOS device runner exits 134 for any failing test, so run 15014893
+        # reported REPLICATION_NOT_REPRODUCED and "exit code 134" together.
+        # Calling that a termination would poison the conclusion and leave iOS
+        # unable ever to report that an issue does not reproduce.
+        $summary = "REPLICATION_NOT_REPRODUCED actual='NO BUG:' | Test failed with exit code 134"
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -Be 'not-reproduced'
+    }
+
+    It 'still reads a bare abort with no verdict as a termination' {
+        $summary = 'Test failed with exit code 134'
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -Be 'app-terminated'
+    }
+
+    It 'trusts an explicit termination marker over any plan verdict' {
+        # The app announcing its own death is not bookkeeping.
+        $summary = 'REPLICATION_APP_TERMINATED the window closed | REPLICATION_NOT_REPRODUCED'
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+    }
+
+    It 'does not report an abort recovery when the log holds a plan verdict' {
+        $log = Join-Path $TestDrive 'record-verdict.log'
+        Set-Content -LiteralPath $log -Value @(
+            'STEP 9/10: assert the label'
+            "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+            'Test failed with exit code 134'
+        )
+
+        Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+    }
+
+    It 'still recovers an abort when the plan left no verdict' {
+        $log = Join-Path $TestDrive 'record-abort.log'
+        Set-Content -LiteralPath $log -Value @(
+            'STEP 3/10: tap the button'
+            'Test failed with exit code 134'
+        )
+
+        Get-ReplicationAppTermination -LogPath $log |
+            Should -Match 'aborted \(SIGABRT\)'
     }
 }

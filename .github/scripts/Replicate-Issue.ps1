@@ -184,14 +184,48 @@ function Test-ReplicationFailureAlreadySeen {
 }
 
 function Get-ReplicationAppTerminationPattern {
+    # Markers that only ever mean the app went away. The runner cannot emit
+    # these while it is still running a plan, so they need no corroboration.
+    return '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed|the process aborted itself'
+}
+
+function Get-ReplicationAbortExitPattern {
     # A SIGABRT is the app dying, and on a crash issue it is very likely the
     # reproduction itself. The runner aborts with it before it can write
     # REPLICATION_APP_TERMINATED, so keying only on that marker made a hard
-    # native crash the one termination the pipeline could not see: wave 27 runs
-    # classified five such attempts as 'other' and never offered the crash
-    # advice. Both the classifier and the crash-steer read this one pattern so
-    # they cannot disagree about what a termination is.
-    return '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed|\bSIGABRT\b|exit code 134\b|the process aborted itself'
+    # native crash the one termination the pipeline could not see.
+    #
+    # It is not proof on its own. The iOS device runner exits 134 for *any*
+    # failing test, including the plan's own deliberate not-reproduced
+    # assertion: run 15014893 reported REPLICATION_NOT_REPRODUCED and exit
+    # code 134 in the same breath. Treating that as a termination would poison
+    # every conclusion and leave iOS permanently unable to report that an
+    # issue does not reproduce, so this pattern only counts when the plan left
+    # no verdict of its own.
+    return '(?i)\bSIGABRT\b|exit code 134\b'
+}
+
+function Get-ReplicationPlanVerdictPattern {
+    # The plan reached its own assertion and said what it saw, so whatever
+    # exit code the runner used to report that is bookkeeping, not a crash.
+    return '(?i)REPLICATION_NOT_REPRODUCED|REPLICATION_REPRODUCED'
+}
+
+function Test-ReplicationAppTerminated {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    $value = [string]$Text
+    if ($value -match (Get-ReplicationAppTerminationPattern)) {
+        return $true
+    }
+    if ($value -match (Get-ReplicationPlanVerdictPattern)) {
+        return $false
+    }
+    return [bool]($value -match (Get-ReplicationAbortExitPattern))
 }
 
 function Get-ReplicationAttemptFailureKind {
@@ -211,7 +245,7 @@ function Get-ReplicationAttemptFailureKind {
     )
 
     $text = [string]$FailureSummary
-    if ($text -match (Get-ReplicationAppTerminationPattern)) {
+    if (Test-ReplicationAppTerminated -Text $text) {
         return 'app-terminated'
     }
     if ($text -match '(?i)compiler diagnostics|Preparing the Sandbox app failed|error CS\d+') {
@@ -386,6 +420,13 @@ function Get-ReplicationAppTermination {
             [string]$content,
             '(?im)^.*(?:\bSIGABRT\b|exit code 134\b|the process aborted itself).*$')
         if (-not $abort.Success) {
+            return ''
+        }
+        # The iOS device runner exits 134 for any failing test, so an abort
+        # line alongside the plan's own verdict is the runner reporting that
+        # verdict, not the app dying. Claiming a crash there would invent a
+        # termination and block a legitimate conclusion.
+        if ([string]$content -match (Get-ReplicationPlanVerdictPattern)) {
             return ''
         }
 
@@ -599,6 +640,47 @@ function Get-ReplicationVerificationFailureSummary {
     return ''
 }
 
+function Join-ReplicationWrappedGutterLines {
+    # PowerShell wraps a single error message across many gutter-prefixed
+    # lines, so a continuation line carries only the middle of a sentence and
+    # frequently holds no error word at all. The signal filter below judges
+    # each physical line on its own, so it dropped those continuations and
+    # spliced the survivors into a sentence that was never written: iOS run
+    # 15014893 reported "Run trusted reproduction script failed with exit
+    # device runner usually means a native assertion", having silently lost
+    # "code 134. Exit code 134 from the". A diagnosis the agent cannot trust
+    # is worse than none, and the same elision can drop the
+    # REPLICATION_NOT_REPRODUCED marker that decides whether an attempt counts
+    # as a clean observation. Rejoin each run of gutter lines into the one
+    # logical line it always was.
+    #
+    # This runs after the noise filters rather than before them, because a
+    # wrapped message often ends with inlined device-log chatter; joining
+    # first would make one noisy fragment condemn the whole diagnosis.
+    param([AllowEmptyCollection()][object[]]$Lines)
+
+    $joined = [Collections.Generic.List[string]]::new()
+    $pending = $null
+    foreach ($entry in @($Lines)) {
+        $text = [string]$entry.Text
+        if ($entry.IsGutter) {
+            # Wrapping breaks at spaces, so a single space restores the
+            # original text exactly.
+            $pending = if ($null -eq $pending) { $text } elseif ($text) { "$pending $text" } else { $pending }
+            continue
+        }
+        if ($null -ne $pending) {
+            $joined.Add($pending)
+            $pending = $null
+        }
+        $joined.Add($text)
+    }
+    if ($null -ne $pending) {
+        $joined.Add($pending)
+    }
+    return @($joined | Where-Object { $_ -and $_.Trim() })
+}
+
 function Get-ReplicationFailureDetails {
     param(
         [AllowEmptyCollection()][object[]]$Output,
@@ -625,10 +707,18 @@ function Get-ReplicationFailureDetails {
     # squiggle underline and gutter-prefixed message lines. The echo and the
     # underline are noise that crowd out the real diagnostic, while the gutter
     # lines hold the message the agent actually needs, so unwrap them.
-    $safeLines = @($safeLines |
+    # Whether a line came from the gutter is carried alongside its text so the
+    # wrapped message can be reassembled once the noise filters have run.
+    $entries = @($safeLines |
         Where-Object { $_ -notmatch '^\s*\d+\s*\|' } |
-        ForEach-Object { ($_ -replace '^\s*\|\s?', '').TrimEnd() } |
-        Where-Object { $_ -and $_ -notmatch '^\s*\+?\s*~+\s*$' })
+        ForEach-Object {
+            $isGutter = $_ -match '^\s*\|\s?'
+            [pscustomobject]@{
+                Text     = ($_ -replace '^\s*\|\s?', '').TrimEnd()
+                IsGutter = [bool]$isGutter
+            }
+        } |
+        Where-Object { $_.Text -and $_.Text -notmatch '^\s*\+?\s*~+\s*$' })
     # An Appium server logs every HTTP request the driver makes, and those
     # lines both match the signal pattern and dominate the tail, so the agent
     # was being handed request URLs instead of the reason a step failed. The
@@ -650,18 +740,26 @@ function Get-ReplicationFailureDetails {
     # that dropped every line starting with a box character would also drop
     # "test(s) PASSED but should FAIL" -- the text the non-reproduction
     # classifier reads. Strip the drawing, keep whatever it framed.
-    $quietLines = @($safeLines |
-        ForEach-Object { ($_ -replace '[\u2500-\u257F]', ' ').Trim() } |
-        Where-Object { $_ } |
+    $quietLines = @($entries |
+        ForEach-Object {
+            [pscustomobject]@{
+                Text     = ($_.Text -replace '[\u2500-\u257F]', ' ').Trim()
+                IsGutter = $_.IsGutter
+            }
+        } |
+        Where-Object { $_.Text } |
         Where-Object {
-            $_ -notmatch $wireNoisePattern -and
-            $_ -notmatch $stackFramePattern -and
-            $_ -notmatch $errorRenderNoise -and
-            $_ -notmatch $progressPattern
+            $_.Text -notmatch $wireNoisePattern -and
+            $_.Text -notmatch $stackFramePattern -and
+            $_.Text -notmatch $errorRenderNoise -and
+            $_.Text -notmatch $progressPattern
         })
     if ($quietLines.Count -gt 0) {
-        $safeLines = $quietLines
+        $entries = $quietLines
     }
+    # Reassemble the wrapped message only now, so noise removal still judges
+    # the physical lines it was written for.
+    $safeLines = @(Join-ReplicationWrappedGutterLines -Lines $entries)
     $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|\bMSB\d+\b|\bCS\d+\b)'
     $candidateLines = @(
         $safeLines |
@@ -3362,7 +3460,7 @@ $sandboxFailureSummary
 "@
                 }
             }
-            elseif ($sandboxFailureSummary -match (Get-ReplicationAppTerminationPattern)) {
+            elseif (Test-ReplicationAppTerminated -Text $sandboxFailureSummary) {
                 $termination = Get-ReplicationAppTermination `
                     -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
                 if ($termination) {
