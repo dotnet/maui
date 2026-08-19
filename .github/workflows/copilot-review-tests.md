@@ -297,7 +297,6 @@ steps:
     # Missing best-effort context remains a handled agent report path; neither path may fall back
     # to PR-controlled copies.
     env:
-      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
       CONTEXT_DIRECTORY: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
     run: |
       set -euo pipefail
