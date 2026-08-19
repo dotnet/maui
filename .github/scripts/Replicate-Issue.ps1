@@ -3268,6 +3268,24 @@ try {
             # or first-launch state would have been published as confirmed, with
             # video that looks exactly like a real defect. Replay the same plan
             # against the app that is still deployed and require it again.
+            # The replay runs against the app the first run left behind. On the
+            # platforms whose launch is a genuine cold start, relaunch first:
+            # run 15014891 failed its replay on "Expected element text to equal
+            # 'NO BUG:', actual 'BUG REPRODUCED:'" -- the plan's own check that
+            # the verdict was not already latched, defeated by the verdict the
+            # first run had latched. That rejected a reproduction for being
+            # unreliable when it had in fact reproduced twice.
+            # Windows is excluded because its launch is a bare Start-Process and
+            # would leave two Sandboxes running; Catalyst already starts a fresh
+            # process for every run.
+            if ($Platform -in @('android', 'ios')) {
+                Invoke-LoggedChildProcess `
+                    -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+                    -Arguments $launchArgs `
+                    -LogPath (Join-Path $sandboxArtifactDir "relaunch-attempt-$attempt.log") `
+                    -Description 'Relaunching the Sandbox before the confirmation replay' `
+                    -TimeoutSeconds 300
+            }
             Invoke-LoggedChildProcess `
                 -ScriptPath $wrapperPath `
                 -Arguments @() `

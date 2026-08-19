@@ -4741,3 +4741,32 @@ Describe 'blocked run diagnosability' {
         $blocked | Should -BeLessThan $conclusive
     }
 }
+
+Describe 'confirmation replay starts from a clean app' {
+    It 'relaunches before the replay on the platforms whose launch is a cold start' {
+        $relaunch = $script:Source.IndexOf('Relaunching the Sandbox before the confirmation replay')
+        $confirm = $script:Source.IndexOf('Confirming the on-device reproduction repeats')
+        $relaunch | Should -BeGreaterThan 0
+        # Ordering is the whole point: relaunching after the replay resets
+        # nothing that the replay depended on.
+        $relaunch | Should -BeLessThan $confirm
+        $script:Source.Contains("if (`$Platform -in @('android', 'ios')) {") | Should -BeTrue
+    }
+}
+
+Describe 'android launch is a cold start' {
+    BeforeAll {
+        $script:BuildSource = Get-Content (Join-Path $PSScriptRoot 'BuildAndRunSandbox.ps1') -Raw
+    }
+
+    It 'force-stops the Sandbox before am start so no run inherits the last verdict' {
+        $stop = $script:BuildSource.IndexOf('am force-stop com.microsoft.maui.sandbox')
+        $start = $script:BuildSource.IndexOf('am start -W')
+        $stop | Should -BeGreaterThan 0
+        $stop | Should -BeLessThan $start
+    }
+
+    It 'leaves the iOS cold start alone' {
+        $script:BuildSource.Contains('simctl launch --terminate-running-process') | Should -BeTrue
+    }
+}

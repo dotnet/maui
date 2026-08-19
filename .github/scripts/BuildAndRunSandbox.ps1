@@ -296,6 +296,10 @@ if ($LaunchOnly) {
     Write-Step "Launching the prepared Sandbox before evidence recording..."
     switch ($Platform) {
         "android" {
+            # `am start` on a running task resumes it, so the Sandbox would keep
+            # the state the previous run left behind -- including a result label
+            # already reading BUG REPRODUCED:. Force a cold start.
+            & adb -s $DeviceUdid shell am force-stop com.microsoft.maui.sandbox | Out-Null
             & adb -s $DeviceUdid shell am start -W `
                 -n "com.microsoft.maui.sandbox/com.microsoft.maui.sandbox.MainActivity"
             if ($LASTEXITCODE -ne 0) {
