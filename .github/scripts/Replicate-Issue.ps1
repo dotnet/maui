@@ -229,7 +229,14 @@ function Test-ReplicationFailureAlreadySeen {
 function Get-ReplicationAppTerminationPattern {
     # Markers that only ever mean the app went away. The runner cannot emit
     # these while it is still running a plan, so they need no corroboration.
-    return '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed|the process aborted itself'
+    #
+    # "the process aborted itself" is deliberately not here. The recorder
+    # writes that sentence from a table keyed by exit code, so it accompanies
+    # every 134 and is the same inference as the exit code rather than an
+    # independent witness. Listing it here made it outrank both corroboration
+    # checks below, including the plan-verdict one written to stop exactly
+    # that, and the inferential pattern already matches its SIGABRT prefix.
+    return '(?i)REPLICATION_APP_TERMINATED|NoSuchWindowException|window has been closed'
 }
 
 function Get-ReplicationAbortExitPattern {
@@ -254,6 +261,18 @@ function Get-ReplicationPlanVerdictPattern {
     return '(?i)REPLICATION_NOT_REPRODUCED|REPLICATION_REPRODUCED'
 }
 
+function Get-ReplicationDriverElementFailurePattern {
+    # The driver could not find an element it was told to act on. That throws
+    # out of the Appium script, and an unhandled exception in a .NET console
+    # app leaves exit code 134 behind, which is indistinguishable from a real
+    # SIGABRT by exit code alone.
+    #
+    # Build 15016645 spent all five attempts on this. Every attempt was
+    # reported as the app aborting, so the agent kept rewriting a scenario
+    # that was fine and never corrected the locator that was actually wrong.
+    return '(?i)no such element|An element could not be located|NoSuchElementException|g__WaitForElement|g__AssertElementText'
+}
+
 function Test-ReplicationAppTerminated {
     param(
         [Parameter(Mandatory)]
@@ -266,6 +285,12 @@ function Test-ReplicationAppTerminated {
         return $true
     }
     if ($value -match (Get-ReplicationPlanVerdictPattern)) {
+        return $false
+    }
+    # An unhandled driver exception fully explains the exit code, and none of
+    # the markers that only ever mean the app went away are present, so this
+    # is a locator to correct rather than a scenario to rewrite.
+    if ($value -match (Get-ReplicationDriverElementFailurePattern)) {
         return $false
     }
     return [bool]($value -match (Get-ReplicationAbortExitPattern))

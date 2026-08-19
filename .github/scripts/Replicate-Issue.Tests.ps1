@@ -79,6 +79,7 @@ BeforeAll {
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationTestPassedDiagnosis',
+    'Get-ReplicationDriverElementFailurePattern',
         'Get-ReplicationTestAttemptKind',
         'Remove-ReplicationLogNoise',
         'Get-ReplicationExistingIssueTestPaths',
@@ -5274,5 +5275,68 @@ Describe 'Prompt names the oracles reviewers proved cannot fail honestly' {
         [System.Management.Automation.Language.Parser]::ParseFile(
             $script:ScriptPath, [ref] $null, [ref] $errors) | Out-Null
         @($errors).Count | Should -Be 0
+    }
+}
+
+Describe 'A locator the driver could not find is not the app crashing' {
+    # Build 15016645 burned all five Android attempts, and every one of them
+    # was reported as the app aborting. The logs show the app stayed up and
+    # the Appium script threw because an element was missing.
+    BeforeAll {
+        $script:DriverFailure = @(
+            'Run trusted reproduction script failed with exit code 134. That code is SIGABRT:'
+            'the process aborted itself. Output: Got response with status 404:'
+            '{"error":"no such element","message":"An element could not be located on the page'
+            'using the given search parameters"} at Program.g__WaitForElement|0_11('
+            'AppiumDriver driver, String platform) in /_/Sandbox/RunWithAppiumTest.cs:line 562'
+        ) -join ' '
+
+        # Record-Reproduction maps exit code 134 to a sentence, so the
+        # sentence rides along with every abort and is not independent
+        # evidence of anything.
+        $script:AbortGloss = 'Run trusted reproduction script failed with exit code 134. ' +
+            'SIGABRT: the process aborted itself, which on a device runner usually means ' +
+            'a native assertion or an unhandled platform exception rather than a failed ' +
+            'assertion in the plan.'
+    }
+
+    It 'does not call a missing element a termination' {
+        Test-ReplicationAppTerminated -Text $script:DriverFailure | Should -BeFalse
+    }
+
+    It 'classifies it as the locator problem it is' {
+        Get-ReplicationAttemptFailureKind -FailureSummary $script:DriverFailure |
+            Should -BeExactly 'element-missing'
+    }
+
+    It 'still reports a termination the runner actually witnessed' {
+        # A marker that only ever means the app went away outranks the
+        # element failure that follows it, because findElement failing after
+        # the app dies is a consequence, not the cause.
+        $realCrash = 'REPLICATION_APP_TERMINATED exit code 134 ... no such element'
+        Test-ReplicationAppTerminated -Text $realCrash | Should -BeTrue
+        Get-ReplicationAttemptFailureKind -FailureSummary $realCrash |
+            Should -BeExactly 'app-terminated'
+    }
+
+    It 'still reports a termination when the window closed under the driver' {
+        $windowGone = 'exit code 134 NoSuchWindowException no such element'
+        Test-ReplicationAppTerminated -Text $windowGone | Should -BeTrue
+    }
+
+    It 'still treats a bare abort with no driver explanation as a termination' {
+        Test-ReplicationAppTerminated -Text 'failed with exit code 134' |
+            Should -BeTrue
+    }
+
+    It 'lets a plan verdict win over the recorder gloss' {
+        # The iOS runner exits 134 for any failing test, including the plan's
+        # own deliberate not-reproduced assertion.
+        Test-ReplicationAppTerminated -Text "$script:AbortGloss REPLICATION_NOT_REPRODUCED" |
+            Should -BeFalse
+    }
+
+    It 'still calls the bare recorder gloss a termination' {
+        Test-ReplicationAppTerminated -Text $script:AbortGloss | Should -BeTrue
     }
 }
