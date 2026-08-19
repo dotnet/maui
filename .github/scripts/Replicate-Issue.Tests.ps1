@@ -4318,6 +4318,61 @@ static void DragUpTwiceWhileHeld(AppiumApp app)
     }
 }
 
+Describe 'A candidate may not ask for a font the repository does not ship' {
+    BeforeAll {
+        $script:FontRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("fontrepo-" + [guid]::NewGuid())
+        $programDirectory = Join-Path $script:FontRoot 'src/Controls/tests/TestCases.HostApp'
+        New-Item -ItemType Directory -Path $programDirectory -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $programDirectory 'MauiProgram.cs') -Value @'
+    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+    fonts.AddFont("Montserrat-Bold.otf", "MontserratBold");
+'@
+    }
+
+    AfterAll {
+        Remove-Item -LiteralPath $script:FontRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'rejects the missing font dependency a reviewer called a wrong-reason failure' {
+        # PR 230: the text-metrics oracle needed a font with STAT tables that
+        # the repository does not contain, so the red it produced was a missing
+        # dependency and tracked a wrapped-tail coordinate instead.
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'new Label { FontFamily = "SourceSans3VF" }' `
+                -Path 'Issue1.cs' `
+                -RepositoryRoot $script:FontRoot
+        } | Should -Throw '*does not register*'
+    }
+
+    It 'accepts a font the host application already registers' {
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'new Label { FontFamily = "OpenSansRegular" }' `
+                -Path 'Issue1.cs' `
+                -RepositoryRoot $script:FontRoot
+        } | Should -Not -Throw
+    }
+
+    It 'accepts the registered file name as well as the alias' {
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'new Label { FontFamily = "Montserrat-Bold.otf" }' `
+                -Path 'Issue1.cs' `
+                -RepositoryRoot $script:FontRoot
+        } | Should -Not -Throw
+    }
+
+    It 'says nothing about a candidate that names no font' {
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'new Label { Text = "hello" }' `
+                -Path 'Issue1.cs' `
+                -RepositoryRoot $script:FontRoot
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'An oracle may not be the state the page started in' {
     BeforeAll {
         $script:HostApp = @'

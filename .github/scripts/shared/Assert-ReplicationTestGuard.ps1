@@ -1487,6 +1487,54 @@ function Assert-ReplicationOracleIsNotInitialState {
     }
 }
 
+function Assert-ReplicationFontIsAvailable {
+    <#
+    .SYNOPSIS
+        Rejects a candidate that asks for a font the repository does not ship.
+
+    .DESCRIPTION
+        A reviewer rejected a text-metrics reproduction as a wrong-reason
+        failure: the font it needed was not present, so the test went red for a
+        missing dependency rather than for the reported defect, and the failure
+        it did produce tracked a wrapped-tail coordinate instead. A candidate
+        is add-only and cannot ship a font binary, so a font alias the host
+        application never registers can only fail for the wrong reason.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot
+    )
+
+    $requested = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($match in [regex]::Matches($Content, 'FontFamily\s*=\s*"(?<name>[^"]+)"')) {
+        [void]$requested.Add($match.Groups['name'].Value)
+    }
+    if ($requested.Count -eq 0) { return }
+
+    $program = Join-Path $RepositoryRoot 'src/Controls/tests/TestCases.HostApp/MauiProgram.cs'
+    if (-not (Test-Path -LiteralPath $program -PathType Leaf)) { return }
+
+    $registered = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($match in [regex]::Matches(
+        [System.IO.File]::ReadAllText($program),
+        'AddFont\s*\(\s*"(?<file>[^"]+)"\s*(?:,\s*"(?<alias>[^"]+)"\s*)?\)')) {
+        [void]$registered.Add($match.Groups['file'].Value)
+        if ($match.Groups['alias'].Success) {
+            [void]$registered.Add($match.Groups['alias'].Value)
+        }
+    }
+
+    foreach ($name in $requested) {
+        if ($registered.Contains($name)) { continue }
+        throw ("Candidate test source '$Path' asks for the font '$name', which the test host application does not " +
+            'register. The font cannot be added by an add-only reproduction, so the test would go red because the ' +
+            'font is missing rather than because of the reported defect. Use a font the host application already ' +
+            'registers, or assert something that does not depend on a font the repository does not ship.')
+    }
+}
+
 function Assert-ReplicationDeviceTestIsSelectable {
     <#
         .SYNOPSIS

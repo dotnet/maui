@@ -2220,6 +2220,12 @@ function Assert-GeneratedTestContent {
             -Content $content `
             -Path $file `
             -Platform $TargetPlatform
+        # The font is named on the host page rather than in the test, so this
+        # runs for every candidate file and not only the test ones.
+        Assert-ReplicationFontIsAvailable `
+            -Content $content `
+            -Path $file `
+            -RepositoryRoot $repoRoot
         if ($file.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
             Assert-ReplicationConditionalCompilationBalance `
                 -Content $content `
