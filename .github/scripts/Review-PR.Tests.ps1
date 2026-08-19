@@ -59,6 +59,8 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateRetryBudgetMinutes')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateRetryFitsBudget')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
     $script:stopTrustedCatalystOverlayFailureBody = Get-FunctionBody -ScriptText $content -FunctionName 'Stop-TrustedCatalystOverlayFailure'
@@ -170,6 +172,45 @@ Describe 'Gate retry classification' {
 '@
         Get-GateReportRetryClass -ReportContent $report | Should -Be 'retryable'
         Test-GateReportIsRetryableEnvironmentError -ReportContent $report | Should -BeTrue
+    }
+}
+
+Describe 'Gate retry budget' {
+    It 'derives the default budget from the task timeout with a cleanup margin' {
+        Get-GateRetryBudgetMinutes -TaskTimeoutMinutes 150 -CleanupMarginMinutes 10 |
+            Should -Be 140
+    }
+
+    It 'allows a retry whose predicted completion remains just inside the task budget' {
+        Test-GateRetryFitsBudget `
+            -ElapsedMinutes 93.3 `
+            -AverageAttemptMinutes 46.6 `
+            -RetryBudgetMinutes 140 |
+            Should -BeTrue
+    }
+
+    It 'stops at the cleanup-margin boundary instead of risking task termination' {
+        Test-GateRetryFitsBudget `
+            -ElapsedMinutes 93.4 `
+            -AverageAttemptMinutes 46.6 `
+            -RetryBudgetMinutes 140 |
+            Should -BeFalse
+    }
+
+    It 'uses one pipeline timeout value for both the task and retry-budget derivation' {
+        $pipelineContent | Should -Match '(?s)- name: GateTaskTimeoutMinutes\s+value: 150'
+        $pipelineContent | Should -Match 'timeoutInMinutes: \$\{\{ variables\.GateTaskTimeoutMinutes \}\}'
+        $pipelineContent | Should -Match 'GATE_TASK_TIMEOUT_MINUTES: \$\{\{ variables\.GateTaskTimeoutMinutes \}\}'
+        $content | Should -Match 'Get-GateRetryBudgetMinutes -TaskTimeoutMinutes \$gateTaskTimeoutMin'
+        $content | Should -Not -Match 'else \{ 95 \}'
+    }
+}
+
+Describe 'Deep timeout history classification' {
+    It 'uses the verified crash/startup predicate instead of treating every env error as a crash' {
+        $pipelineContent | Should -Match ([regex]::Escape('. .github/scripts/shared/Get-EnvErrorPatterns.ps1'))
+        $pipelineContent | Should -Match 'Test-EnvErrorHistoryHasVerifiedCrashStartup -EnvErrorHistory \$histTokens'
+        $pipelineContent | Should -Not -Match '\$histTokens\.Count\s+-gt\s+0'
     }
 }
 

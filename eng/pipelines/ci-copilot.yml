@@ -74,6 +74,8 @@ variables:
     value: $(System.DefaultWorkingDirectory)/.appium/
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
+  - name: GateTaskTimeoutMinutes
+    value: 150
 
 stages:
   - stage: ReviewPR
@@ -1707,7 +1709,7 @@ stages:
             # killed-on-timeout case, turning it into a non-blocking succeededWithIssues so the
             # deep tests + expert review still deliver a summary (gate reported INCONCLUSIVE).
             continueOnError: true
-            # timeoutInMinutes: 150 — SAFETY NET. The gate runs UI tests via
+            # GateTaskTimeoutMinutes — SAFETY NET. The gate runs UI tests via
             # BuildAndRunHostApp.ps1 which has no internal overall timeout, and the
             # env-error retry loop only triggers when a run RETURNS an error — a run
             # that HANGS (emulator boot / Appium / dotnet test never returns) is
@@ -1716,14 +1718,15 @@ stages:
             # the number of expensive device/UI tests it verifies per run
             # (Limit-ExpensiveGateTests, default 2 device + 2 UI) so a PR touching
             # many device-test files can no longer explode into a 120-min timeout
-            # (observed: build 14676353 / PR #36109, 11 device tests). 150m gives
-            # the capped A/B set headroom (each device test builds+runs TWICE)
+            # (observed: build 14676353 / PR #36109, 11 device tests). The configured
+            # cap gives the bounded A/B set headroom (each device test builds+runs TWICE)
             # while still catching true hangs ~3.5h earlier than the job cap.
-            timeoutInMinutes: 150
+            timeoutInMinutes: ${{ variables.GateTaskTimeoutMinutes }}
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
+              GATE_TASK_TIMEOUT_MINUTES: ${{ variables.GateTaskTimeoutMinutes }}
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
@@ -3616,6 +3619,7 @@ stages:
               . .github/scripts/shared/Get-TrxResults.ps1
               . .github/scripts/shared/Get-CategoryFromArtifactName.ps1
               . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
+              . .github/scripts/shared/Get-EnvErrorPatterns.ps1
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
 
               # Detect categories whose HostApp failed to COMPILE. A compile
@@ -3656,15 +3660,19 @@ stages:
                       #      (e.g. "did not recover after crash-recovery attempts"),
                       #      each attempt burned its whole slice, and the last one
                       #      hit the deadline — raising the budget just lets it spin
-                      #      longer. Distinguish via EnvErrorHistory: if ANY attempt
-                      #      failed with a non-'timeout' env error, it is crash-driven
-                      #      (observed on PR #36521's Brush: 2 crash-recovery failures
-                      #      then a final timeout, exit 124).
+                      #      longer. Distinguish via EnvErrorHistory, but only when a
+                      #      prior attempt matched a verified app-crash/startup signature.
+                      #      General infrastructure history (install, connectivity, etc.)
+                      #      followed by timeout remains a genuine timeout.
                       $histLine = ''
                       $hm = [regex]::Match($statusText, '(?im)^EnvErrorHistory=(.*)$')
                       if ($hm.Success) { $histLine = $hm.Groups[1].Value.Trim() }
-                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne 'timeout' })
-                      if ($histTokens.Count -gt 0) { $crashTimedOutCats += $cat } else { $timedOutCats += $cat }
+                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+                      if (Test-EnvErrorHistoryHasVerifiedCrashStartup -EnvErrorHistory $histTokens) {
+                        $crashTimedOutCats += $cat
+                      } else {
+                        $timedOutCats += $cat
+                      }
                       continue
                     }
                   }

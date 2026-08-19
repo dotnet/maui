@@ -65,3 +65,43 @@ function Get-AmbiguousStartupPatterns {
         'Timed out waiting for Go To Test button'
     )
 }
+
+function Get-VerifiedCrashStartupEnvErrorPatterns {
+    <#
+    .SYNOPSIS
+        Retry-history patterns that specifically prove an app crash or startup failure.
+    .DESCRIPTION
+        EnvErrorHistory contains every matched retryable infrastructure pattern, including
+        package-install, device-connectivity, and Appium failures. Only this strict subset
+        is safe to use when deciding that a final timeout was crash-driven.
+    #>
+    $patterns = @(
+        'Application test run crashed',
+        'SIGABRT.*load_aot_module',
+        'Failed to launch the application'
+    )
+
+    return @($patterns + @(Get-AmbiguousStartupPatterns))
+}
+
+function Test-EnvErrorHistoryHasVerifiedCrashStartup {
+    param(
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [string[]] $EnvErrorHistory
+    )
+
+    $verifiedPatterns = @(Get-VerifiedCrashStartupEnvErrorPatterns)
+    foreach ($entry in @($EnvErrorHistory)) {
+        if ([string]::IsNullOrWhiteSpace($entry)) {
+            continue
+        }
+
+        $pattern = $entry.Trim()
+        if ($pattern -ne 'timeout' -and $verifiedPatterns -contains $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
