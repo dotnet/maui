@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		object _currentItemUpdateFromScroll;
 		bool _hasCurrentItemUpdateFromCollection;
 		object _currentItemUpdateFromCollection;
+		object _collectionCurrentItemOverride;
+		IList _collectionItemsSource;
 		bool _isRecentering;
 		double _recenteringHorizontalOffset;
 		double _recenteringVerticalOffset;
@@ -98,6 +100,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_currentItemUpdateFromScroll = null;
 			_hasCurrentItemUpdateFromCollection = false;
 			_currentItemUpdateFromCollection = null;
+			_collectionCurrentItemOverride = null;
+			_collectionItemsSource = null;
 			ResetRecenteringState();
 			_isScrollingForward = false;
 			_centerItemIndexFromScroll = -1;
@@ -390,20 +394,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool IsValidPosition(int position)
 		{
-			if (ItemCount == 0)
+			var itemCount = GetItemsSourceCount();
+			if (itemCount == 0)
 				return false;
 
-			if (position < 0 || position >= ItemCount)
+			if (position < 0 || position >= itemCount)
 				return false;
 
 			return true;
 		}
 
+		int GetItemsSourceCount()
+		{
+			if (_collectionItemsSource is not null)
+				return _collectionItemsSource.Count;
+
+			return ItemCount;
+		}
+
 		void SetCarouselViewPosition(int position)
 		{
-			if (ItemCount == 0)
-				return;
-
 			if (!IsValidPosition(position))
 				return;
 
@@ -418,7 +428,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!IsValidPosition(carouselPosition))
 				return;
 
-			if (!(GetItem(carouselPosition) is ItemTemplateContext itemTemplateContext))
+			if (!(GetItemAtPosition(carouselPosition) is ItemTemplateContext itemTemplateContext))
 				throw new InvalidOperationException("Visible item not found");
 
 			var item = itemTemplateContext.Item;
@@ -460,9 +470,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GetItemPositionInCarousel(object item)
 		{
-			for (int n = 0; n < ItemCount; n++)
+			var itemCount = _collectionItemsSource?.Count ?? ItemCount;
+			for (int n = 0; n < itemCount; n++)
 			{
-				if (GetItem(n) is ItemTemplateContext pair)
+				if (GetItemAtPosition(n) is ItemTemplateContext pair)
 				{
 					if (pair.Item == item)
 					{
@@ -473,6 +484,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return -1;
 		}
+
+		object GetItemAtPosition(int position) =>
+			_collectionItemsSource is null ? GetItem(position) : _collectionItemsSource[position];
 
 		void UpdateInitialPosition()
 		{
@@ -505,6 +519,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (CollectionViewSource == null)
 				return;
 
+			if (_collectionCurrentItemOverride is not null)
+			{
+				if (ReferenceEquals(_collectionCurrentItemOverride, ItemsView.CurrentItem))
+					return;
+
+				if (_hasCurrentItemUpdateFromScroll)
+					return;
+
+				_collectionCurrentItemOverride = null;
+			}
+
 			if (_hasCurrentItemUpdateFromScroll
 				&& _positionUpdateFromScroll == ItemsView.Position
 				&& ReferenceEquals(_currentItemUpdateFromScroll, ItemsView.CurrentItem))
@@ -518,9 +543,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			if (_isInternalPositionUpdate)
+			{
+				return;
+			}
+
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
-			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
+			if (!IsValidPosition(currentItemPosition))
 			{
 				return;
 			}
@@ -914,14 +944,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_centerRequestVersion++;
 
 			// Set flag to disable animation during collection changes
+			var wasInternalPositionUpdate = _isInternalPositionUpdate;
+			var previousCollectionItemsSource = _collectionItemsSource;
 			_isInternalPositionUpdate = true;
+			_collectionItemsSource = (IList)sender;
 			var collectionChangeVersion = ++_collectionChangeVersion;
 
 			try
 			{
 				var carouselPosition = ItemsView.Position;
 				var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
-				var count = (sender as IList).Count;
+				var count = _collectionItemsSource.Count;
+				bool currentItemOverridden = false;
 
 				bool removingCurrentElement = currentItemPosition == -1;
 				bool removingLastElement = e.OldStartingIndex == count;
@@ -961,7 +995,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				object collectionCurrentItem = null;
 				if (IsValidPosition(carouselPosition)
-					&& GetItem(carouselPosition) is ItemTemplateContext itemTemplateContext)
+					&& GetItemAtPosition(carouselPosition) is ItemTemplateContext itemTemplateContext)
 				{
 					collectionCurrentItem = itemTemplateContext.Item;
 				}
@@ -971,10 +1005,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					var overriddenCurrentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 					if (overriddenCurrentItemPosition != -1)
+					{
 						carouselPosition = overriddenCurrentItemPosition;
+						currentItemOverridden = true;
+					}
 				}
 
 				SetCarouselViewPosition(carouselPosition);
+				if (currentItemOverridden)
+				{
+					_collectionCurrentItemOverride = ItemsView.CurrentItem;
+					QueueCollectionCurrentItemOverrideScroll(
+						_collectionCurrentItemOverride,
+						carouselPosition,
+						collectionChangeVersion);
+				}
+				else
+				{
+					_collectionCurrentItemOverride = null;
+				}
 			}
 			finally
 			{
@@ -982,8 +1031,76 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					QueueCollectionChangeReset(collectionChangeVersion);
 
 				// Reset flag after collection operations complete
-				_isInternalPositionUpdate = false;
+				_collectionItemsSource = previousCollectionItemsSource;
+				_isInternalPositionUpdate = wasInternalPositionUpdate;
 			}
+		}
+
+		void QueueCollectionCurrentItemOverrideScroll(
+			object currentItem,
+			int position,
+			int collectionChangeVersion,
+			int attemptsRemaining = 2)
+		{
+			var dispatcherQueue = ListViewBase?.DispatcherQueue;
+			if (dispatcherQueue is null
+				|| !dispatcherQueue.TryEnqueue(
+					Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+					() => CompleteCollectionCurrentItemOverrideScroll(
+						currentItem,
+						position,
+						collectionChangeVersion,
+						attemptsRemaining)))
+			{
+				CompleteCollectionCurrentItemOverrideScroll(
+					currentItem,
+					position,
+					collectionChangeVersion,
+					attemptsRemaining: 0);
+			}
+		}
+
+		void CompleteCollectionCurrentItemOverrideScroll(
+			object currentItem,
+			int position,
+			int collectionChangeVersion,
+			int attemptsRemaining)
+		{
+			if (collectionChangeVersion != _collectionChangeVersion
+				|| !ReferenceEquals(_collectionCurrentItemOverride, currentItem))
+			{
+				return;
+			}
+
+			if (!ReferenceEquals(ItemsView?.CurrentItem, currentItem)
+				|| ItemsView.Position != position)
+			{
+				_collectionCurrentItemOverride = null;
+				return;
+			}
+
+			if (position < 0
+				|| position >= ItemCount
+				|| GetItem(position) is not ItemTemplateContext itemTemplateContext
+				|| !ReferenceEquals(itemTemplateContext.Item, currentItem))
+			{
+				if (attemptsRemaining > 0)
+				{
+					QueueCollectionCurrentItemOverrideScroll(
+						currentItem,
+						position,
+						collectionChangeVersion,
+						attemptsRemaining - 1);
+				}
+				else
+				{
+					_collectionCurrentItemOverride = null;
+				}
+
+				return;
+			}
+
+			ItemsView.ScrollTo(position, position: ScrollToPosition.Center, animate: false);
 		}
 
 		void QueueCollectionChangeReset(int collectionChangeVersion)

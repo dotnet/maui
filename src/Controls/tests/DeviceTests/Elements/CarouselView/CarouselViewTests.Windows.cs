@@ -434,7 +434,12 @@ namespace Microsoft.Maui.DeviceTests
 				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
 				await WaitForInitialPositionAsync(handler, scrollViewer);
 				int scrollToRequests = 0;
-				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+				ScrollToRequestEventArgs scrollToRequest = null;
+				carouselView.ScrollToRequested += (_, args) =>
+				{
+					scrollToRequests++;
+					scrollToRequest = args;
+				};
 
 				carouselView.CurrentItemChanged += (_, args) =>
 				{
@@ -448,6 +453,63 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, carouselView.Position);
 				Assert.Same(overrideItem, carouselView.CurrentItem);
 				Assert.Equal(1, scrollToRequests);
+				Assert.Equal(ScrollToMode.Position, scrollToRequest.Mode);
+				Assert.Equal(1, scrollToRequest.Index);
+				Assert.Equal(ScrollToPosition.Center, scrollToRequest.ScrollToPosition);
+				Assert.False(scrollToRequest.IsAnimated);
+			});
+		}
+
+		[Fact]
+		public async Task CollectionChangeDefersNewCurrentItemOverrideUntilNativeViewUpdates()
+		{
+			SetupBuilder();
+			var firstItem = new object();
+			var secondItem = new object();
+			var overrideItem = new object();
+			var items = new ObservableCollection<object> { firstItem, secondItem };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepItemsInView;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				carouselView.Position = 1;
+				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 1);
+				await DrainDispatcherQueueAsync(scrollViewer);
+				Assert.Same(secondItem, carouselView.CurrentItem);
+
+				int overrideScrollToRequests = 0;
+				ScrollToRequestEventArgs scrollToRequest = null;
+				carouselView.ScrollToRequested += (_, args) =>
+				{
+					if (args.Mode == ScrollToMode.Position && args.Index == 2)
+					{
+						overrideScrollToRequests++;
+						scrollToRequest = args;
+					}
+				};
+
+				carouselView.CurrentItemChanged += (_, args) =>
+				{
+					if (ReferenceEquals(args.CurrentItem, firstItem))
+					{
+						carouselView.CurrentItem = overrideItem;
+					}
+				};
+
+				items.Add(overrideItem);
+				Assert.Equal(0, overrideScrollToRequests);
+				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 2);
+
+				Assert.Equal(2, carouselView.Position);
+				Assert.Same(overrideItem, carouselView.CurrentItem);
+				Assert.Equal(1, overrideScrollToRequests);
+				Assert.Equal(ScrollToMode.Position, scrollToRequest.Mode);
+				Assert.Equal(2, scrollToRequest.Index);
+				Assert.Equal(ScrollToPosition.Center, scrollToRequest.ScrollToPosition);
+				Assert.False(scrollToRequest.IsAnimated);
 			});
 		}
 
@@ -686,6 +748,8 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_currentItemUpdateFromScroll", new object());
 				SetPrivateField(handler, "_hasCurrentItemUpdateFromCollection", true);
 				SetPrivateField(handler, "_currentItemUpdateFromCollection", new object());
+				SetPrivateField(handler, "_collectionCurrentItemOverride", new object());
+				SetPrivateField(handler, "_collectionItemsSource", new ArrayList());
 				SetPrivateField(handler, "_isRecentering", true);
 				SetPrivateField(handler, "_recenteringHorizontalOffset", 10d);
 				SetPrivateField(handler, "_recenteringVerticalOffset", 20d);
@@ -707,6 +771,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(GetPrivateField<object>(handler, "_currentItemUpdateFromScroll"));
 				Assert.False(GetPrivateField<bool>(handler, "_hasCurrentItemUpdateFromCollection"));
 				Assert.Null(GetPrivateField<object>(handler, "_currentItemUpdateFromCollection"));
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
+				Assert.Null(GetPrivateField<IList>(handler, "_collectionItemsSource"));
 				Assert.False(GetPrivateField<bool>(handler, "_isRecentering"));
 				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringHorizontalOffset"));
 				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringVerticalOffset"));
