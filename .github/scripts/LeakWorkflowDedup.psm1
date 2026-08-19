@@ -307,6 +307,45 @@ function Select-LeakAuthoritativePullRequests {
     }
 }
 
+function Remove-LeakInertMarkdown {
+    param([AllowEmptyString()][string]$Body)
+
+    $normalized = (($Body ?? '') -replace "`r`n", "`n") -replace "`r", "`n"
+    $visibleLines = [Collections.Generic.List[string]]::new()
+    $fenceCharacter = $null
+    $fenceLength = 0
+
+    foreach ($line in [regex]::Split($normalized, '\n')) {
+        if ($fenceLength -eq 0) {
+            $fence = [regex]::Match($line, '^[ ]{0,3}(?<fence>`{3,})[^`]*$')
+            if (-not $fence.Success) {
+                $fence = [regex]::Match($line, '^[ ]{0,3}(?<fence>~{3,}).*$')
+            }
+
+            if ($fence.Success) {
+                $fenceCharacter = $fence.Groups['fence'].Value.Substring(0, 1)
+                $fenceLength = $fence.Groups['fence'].Value.Length
+                continue
+            }
+
+            [void]$visibleLines.Add($line)
+            continue
+        }
+
+        $closingPattern = '^[ ]{{0,3}}{0}{{{1},}}[ \t]*$' -f
+            [regex]::Escape($fenceCharacter), $fenceLength
+        if ($line -match $closingPattern) {
+            $fenceCharacter = $null
+            $fenceLength = 0
+        }
+    }
+
+    return [regex]::Replace(
+        ($visibleLines -join "`n"),
+        '(?s)<!--.*?(?:-->|\z)',
+        '')
+}
+
 function Test-LeakPrReferencesIssue {
     param(
         [AllowEmptyString()][string]$Body,
@@ -314,10 +353,11 @@ function Test-LeakPrReferencesIssue {
         [Parameter(Mandatory = $true)][string]$Repository
     )
 
-    $text = $Body ?? ''
+    $text = Remove-LeakInertMarkdown -Body ($Body ?? '')
     $repo = [regex]::Escape($Repository)
-    return $text -match "(?m)^[ `t]*Fixes #$IssueNumber\b" -or
-        $text -match "(?m)^[ `t]*Refs:[ `t]*$repo#$IssueNumber\b"
+    $number = [regex]::Escape($IssueNumber.ToString([Globalization.CultureInfo]::InvariantCulture))
+    $pattern = "(?im)^[ ]{0,3}(?:Fixes|Refs)\b:?[ ]*(?:$repo#|#)$number\b[ ]*$"
+    return $text -match $pattern
 }
 
 function Get-LeakRevertTargets {

@@ -36,7 +36,7 @@ imports:
 environment: copilot-pat-pool
 
 on:
-  schedule: every 12h
+  schedule: every 6h
   workflow_dispatch:
     inputs:
       issue_number:
@@ -98,6 +98,10 @@ network:
     - "*.blob.core.windows.net"
 
 safe-outputs:
+  # Job-enforced dry-run: stage every task safe-output when a manual dispatch requests a
+  # preview. Prompt-level dry-run instructions keep the log clean, but this setting is the
+  # mutation boundary that prevents an agent mistake from opening, pushing, or commenting.
+  staged: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
   # The final duplicate check must be authoritative at the mutation boundary. A failed
   # in-prompt bash call only reports a tool error to the agent; it cannot prevent the agent
   # from calling create_pull_request afterward. This deterministic step runs in the generated
@@ -179,7 +183,7 @@ safe-outputs:
     target: "*"                     # agent supplies the leak PR number
     required-title-prefix: "[leak-fix]"  # Track C only comments on this workflow's own [leak-fix] PRs
     max: 1
-  # Most 12h runs are idle (every open leak already has a [leak-fix] PR). Without this,
+  # Most 6h runs are idle (every open leak already has a [leak-fix] PR). Without this,
   # gh-aw's auto-injected default (noop: report-as-issue: true) files a "no action taken"
   # issue every idle run. Mirror the hunter, which already opts out.
   noop:
@@ -243,8 +247,10 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
 - `issue_number` (optional): if set, SKIP Track C and target exactly that `[leak-scan]` issue
   (Track A). If blank (e.g. the scheduled run), do Track C first (Step R), then auto-pick a
   `[leak-scan]` target in Step 2.
-- `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no
-  safe-output** — print what you *would* push/comment/open to the run log instead.
+- `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no task
+  safe-output** — print what you *would* push/comment/open to the run log instead. This is
+  enforced by `safe-outputs.staged`; the separate gh-aw conclusion job may still report a
+  framework diagnostic if the run is incomplete or fails.
 
 ```bash
 mkdir -p /tmp/gh-aw/agent
@@ -364,7 +370,8 @@ PUSH BACK), make no commit.
     evidence). Be courteous and specific; it is fine to disagree with a review when you are right.
 
 > **Dry-run gate:** if `dry_run == "true"`, do NOT emit — print what you would push (diff --stat)
-> and the comment body to the run log instead.
+> and the comment body to the run log instead. (`safe-outputs.staged` independently prevents
+> `push-to-pull-request-branch` and `add-comment` from mutating GitHub.)
 
 Track C uses this run's single action. **Stop here — do not also do Track A/B.** If no PR needed
 a response, fall through to Step 2.
@@ -885,7 +892,8 @@ echo "all live same-API matches (all are blocking):"; cat /tmp/gh-aw/agent/final
 
 > **Dry-run gate:** if `dry_run == "true"`, do NOT emit. Print `DRY RUN — would open PR`
 > with base `main`, source branch `leak-fix/issue-<N>`, the title, the full body, and
-> `git --no-pager diff --stat "origin/main..HEAD"`, then stop.
+> `git --no-pager diff --stat "origin/main..HEAD"`, then stop. (`safe-outputs.staged`
+> independently prevents `create-pull-request` from mutating GitHub.)
 
 Emit exactly one `create-pull-request` safe-output. Do NOT set a `base` field (the
 `base-branch: main` config pins it). Source `branch` MUST be `leak-fix/issue-<N>`. Title MUST

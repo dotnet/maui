@@ -588,6 +588,39 @@ Describe 'fresh-shell de-dup state' {
     }
 }
 
+Describe 'leak PR issue reference parsing' {
+    It 'accepts only exact visible same-repository contract lines' -ForEach @(
+        @{ Body = 'Fixes #123'; Expected = $true }
+        @{ Body = 'Fixes: #123'; Expected = $true }
+        @{ Body = 'Fixes dotnet/maui#123'; Expected = $true }
+        @{ Body = 'Refs #123'; Expected = $true }
+        @{ Body = 'Refs: dotnet/maui#123'; Expected = $true }
+        @{ Body = '   Fixes #123'; Expected = $true }
+        @{ Body = 'Fixes dotnet/runtime#123'; Expected = $false }
+        @{ Body = 'Refs: dotnet/runtime#123'; Expected = $false }
+        @{ Body = 'Fixes #123extra'; Expected = $false }
+        @{ Body = 'PrefixFixes #123'; Expected = $false }
+        @{ Body = 'Fixes `#123`'; Expected = $false }
+        @{ Body = '`Fixes #123`'; Expected = $false }
+        @{ Body = '<!-- Fixes #123 -->'; Expected = $false }
+        @{ Body = "<!-- unclosed comment`nFixes #123"; Expected = $false }
+        @{ Body = ('```text' + [Environment]::NewLine + 'Fixes #123' + [Environment]::NewLine + '```'); Expected = $false }
+        @{ Body = "~~~text`nRefs: dotnet/maui#123`n~~~"; Expected = $false }
+        @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #123' + [Environment]::NewLine + '```' + [Environment]::NewLine + 'Fixes #123'); Expected = $false }
+        @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #123' + [Environment]::NewLine + '````' + [Environment]::NewLine + 'Fixes #123'); Expected = $true }
+        @{ Body = '    Fixes #123'; Expected = $false }
+        @{ Body = "`tFixes #123"; Expected = $false }
+        @{ Body = "Fixes`t#123"; Expected = $false }
+        @{ Body = 'Closes #123'; Expected = $false }
+    ) {
+        Test-LeakPrReferencesIssue `
+            -Body $Body `
+            -IssueNumber 123 `
+            -Repository 'dotnet/maui' |
+            Should -Be $Expected
+    }
+}
+
 Describe 'canonical leak API title parsing' {
     It 'extracts the API only from the anchored leak-scan title position' {
         Get-CanonicalLeakApi `
@@ -733,6 +766,96 @@ Describe 'canonical leak API title parsing' {
         ) | ForEach-Object {
             (Get-CanonicalExistingLeakApi -Title $_) | Should -BeNullOrEmpty
         }
+    }
+}
+
+Describe 'memory leak workflow schedule synchronization' {
+    BeforeAll {
+        function Get-FriendlyScheduleHours {
+            param([Parameter(Mandatory = $true)][string]$Path)
+
+            $content = (Get-Content -LiteralPath $Path -Raw) -replace "`r`n", "`n"
+            $frontmatter = [regex]::Match(
+                $content,
+                '(?s)\A---\n(?<value>.*?)\n---(?:\n|\z)')
+            if (-not $frontmatter.Success) {
+                throw "Workflow frontmatter is missing from $Path."
+            }
+
+            $schedule = [regex]::Match(
+                $frontmatter.Groups['value'].Value,
+                '(?m)^[ ]{2}schedule:\s*every\s+(?<hours>[1-9][0-9]*)h\s*$')
+            if (-not $schedule.Success) {
+                throw "Unsupported or missing friendly schedule in $Path."
+            }
+
+            return [int]$schedule.Groups['hours'].Value
+        }
+
+        function Get-CompiledCronIntervalHours {
+            param([Parameter(Mandatory = $true)][string]$Path)
+
+            $lock = Get-Content -LiteralPath $Path -Raw
+            $cron = [regex]::Match(
+                $lock,
+                '(?ms)^on:\s*$.*?^\s+schedule:\s*$.*?^\s+-\s+cron:\s+["'']?(?<value>[^"'']+?)["'']?\s*(?:#.*)?$')
+            if (-not $cron.Success) {
+                throw "Compiled lock $Path has no scheduled cron trigger."
+            }
+
+            $parts = $cron.Groups['value'].Value.Trim() -split '\s+'
+            if ($parts.Count -ne 5) {
+                throw "Unsupported cron '$($cron.Groups['value'].Value)' in $Path."
+            }
+
+            $minute, $hour, $day, $month, $dayOfWeek = $parts
+            if ($minute -notmatch '^(?:[0-5]?[0-9])$' -or
+                $day -ne '*' -or $month -ne '*' -or $dayOfWeek -ne '*') {
+                throw "Cron '$($parts -join ' ')' is not a fixed-minute hourly cadence."
+            }
+
+            if ($hour -match '^\*/(?<step>[1-9][0-9]*)$') {
+                $step = [int]$Matches.step
+                if (24 % $step -ne 0) {
+                    throw "Cron hour step '$hour' does not divide a day evenly."
+                }
+                $hours = @(for ($value = 0; $value -lt 24; $value += $step) { $value })
+            }
+            elseif ($hour -match '^[0-9]+(?:,[0-9]+)+$') {
+                $hours = @($hour.Split(',') | ForEach-Object { [int]$_ } | Sort-Object -Unique)
+                if ($hours[0] -lt 0 -or $hours[-1] -gt 23) {
+                    throw "Cron hour list '$hour' is outside 0-23."
+                }
+            }
+            else {
+                throw "Unsupported cron hour field '$hour'."
+            }
+
+            $gaps = for ($index = 0; $index -lt $hours.Count; $index++) {
+                $next = if ($index -eq $hours.Count - 1) {
+                    $hours[0] + 24
+                }
+                else {
+                    $hours[$index + 1]
+                }
+                $next - $hours[$index]
+            }
+            $distinctGaps = @($gaps | Sort-Object -Unique)
+            if ($distinctGaps.Count -ne 1) {
+                throw "Cron hour field '$hour' is not a uniform cadence."
+            }
+
+            return [int]$distinctGaps[0]
+        }
+    }
+
+    It 'keeps friendly source schedules aligned with compiled cron cadences' -ForEach @(
+        @{ Workflow = 'leak-fixer.md'; Lock = 'leak-fixer.lock.yml' }
+        @{ Workflow = 'daily-leak-hunter.md'; Lock = 'daily-leak-hunter.lock.yml' }
+    ) {
+        $workflowRoot = Join-Path $PSScriptRoot '../workflows'
+        Get-CompiledCronIntervalHours -Path (Join-Path $workflowRoot $Lock) |
+            Should -Be (Get-FriendlyScheduleHours -Path (Join-Path $workflowRoot $Workflow))
     }
 }
 
