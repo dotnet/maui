@@ -157,9 +157,14 @@ pre-agent-steps:
       # keeps its target reverted. Reverting a reverter can deactivate that reverter, but
       # independent sibling reverts never cancel each other.
       # Discover only same-branch merged PRs whose bodies explicitly revert one of the
-      # relevant leak fixes (then recursively their reverters). Each target-scoped query has
-      # its own fail-closed Search API ceiling, and the shared helper caps aggregate unique
-      # target searches so the fixed job cannot be exhausted by a deep/wide chain.
+      # relevant leak fixes from one bounded closed-PR snapshot per authoritative base branch.
+      # The constant `Reverts in:body` query is limited to two branches, checked against the
+      # 256-character Search API query ceiling, and fails closed at each 1000-result snapshot
+      # ceiling. Snapshot fetches use bounded transient retries, honor capped server-directed
+      # rate-limit delays, and fail closed after exhaustion. Exact repository-local direct
+      # references are indexed once, then recursive reverter chains are traversed locally under
+      # 1000-discovery and 2000-PR aggregate bounds so seed count and depth never multiply
+      # Search API calls.
       pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \

@@ -480,10 +480,14 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   | sort -u \
   > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
 
-# A merged fix is not authoritative if it was later effectively reverted. Discover only
-# same-branch merged PRs with explicit body references to the relevant leak-fix set, recursively.
-# Each target-scoped query fails closed at its own Search API ceiling, while the shared helper
-# caps aggregate unique target searches so a deep/wide chain cannot exhaust the job.
+# A merged fix is not authoritative if it was later effectively reverted. Discover reverts from
+# one bounded closed-PR snapshot per authoritative base branch. The constant `Reverts in:body`
+# query is limited to two branches, checked against the 256-character Search API query ceiling,
+# and fails closed at each 1000-result snapshot ceiling. Snapshot fetches use bounded transient
+# retries, honor capped server-directed rate-limit delays, and fail closed after exhaustion.
+# Exact repository-local direct references are indexed once, then recursive reverter chains are
+# traversed locally under 1000-discovery and 2000-PR aggregate bounds so seed count and depth
+# never multiply Search API calls.
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/merged-leak-fix-prs.tsv \

@@ -189,14 +189,106 @@ function Get-LeakRevertTargets {
 function Test-IsTransientLeakGhFailure {
     param([AllowEmptyString()][string]$Detail)
 
-    return [bool]($Detail -match '(?i)(?:\b(?:primary |secondary )?rate limit\b|\bHTTP(?:/[0-9.]+)?[ :]+(?:429|502|503|504)\b|\b(?:Bad Gateway|Service Unavailable|Gateway Timeout)\b|\b(?:i/o |TLS handshake )?timeout\b|\btimed out\b|\bconnection reset(?: by peer)?\b|\bunexpected EOF\b)')
+    return [bool]($Detail -match '(?i)(?:\b(?:primary |secondary )?rate limit\b|\bretry-after\b\s*[:=]|\b(?:x[-_ ]?rate[-_ ]?limit[-_ ]?reset|rate[-_ ]?limit[-_ ]?reset)\b\s*[:=]|\bHTTP(?:/[0-9.]+)?[ :]+(?:429|502|503|504)\b|\b(?:Bad Gateway|Service Unavailable|Gateway Timeout)\b|\b(?:i/o |TLS handshake )?timeout\b|\btimed out\b|\bconnection reset(?: by peer)?\b|\bunexpected EOF\b)')
+}
+
+function Get-LeakServerRetryDelaySeconds {
+    param(
+        [AllowEmptyString()][string]$Detail,
+        [Parameter(Mandatory = $true)][DateTimeOffset]$UtcNow,
+        [ValidateRange(0, 300)][int]$MaximumDelaySeconds
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Detail)) {
+        return $null
+    }
+
+    $delays = [System.Collections.Generic.List[double]]::new()
+    $numberStyles = [Globalization.NumberStyles]::AllowLeadingSign
+    $invariantCulture = [Globalization.CultureInfo]::InvariantCulture
+    $retryAfterNumberPattern =
+        '(?i)\bretry-after\b\s*[:=]\s*["'']?(?<value>[+-]?[0-9]{1,20})["'']?(?=$|[\s,;}])'
+    foreach ($match in [regex]::Matches($Detail, $retryAfterNumberPattern)) {
+        [long]$seconds = 0
+        if ([long]::TryParse(
+                $match.Groups['value'].Value,
+                $numberStyles,
+                $invariantCulture,
+                [ref]$seconds
+            ) -and $seconds -ge 0) {
+            $delays.Add([double]$seconds)
+        }
+    }
+
+    $retryAfterDatePattern =
+        '(?i)\bretry-after\b\s*[:=]\s*["'']?(?<value>[a-z]{3},\s+[0-9]{2}\s+[a-z]{3}\s+[0-9]{4}\s+[0-9]{2}:[0-9]{2}:[0-9]{2}\s+gmt)["'']?(?=$|[\s,;}])'
+    $dateStyles = [Globalization.DateTimeStyles]::AllowWhiteSpaces -bor
+        [Globalization.DateTimeStyles]::AssumeUniversal -bor
+        [Globalization.DateTimeStyles]::AdjustToUniversal
+    foreach ($match in [regex]::Matches($Detail, $retryAfterDatePattern)) {
+        $retryAt = [DateTimeOffset]::MinValue
+        if ([DateTimeOffset]::TryParseExact(
+                $match.Groups['value'].Value,
+                'r',
+                $invariantCulture,
+                $dateStyles,
+                [ref]$retryAt
+            )) {
+            $delays.Add([Math]::Max(
+                    [double]0,
+                    ($retryAt - $UtcNow.ToUniversalTime()).TotalSeconds
+                ))
+        }
+    }
+
+    $rateLimitResetPattern =
+        '(?i)\b(?:x[-_ ]?rate[-_ ]?limit[-_ ]?reset|rate[-_ ]?limit[-_ ]?reset)\b\s*[:=]\s*["'']?(?<value>[+-]?[0-9]{1,20})["'']?(?=$|[\s,;}])'
+    foreach ($match in [regex]::Matches($Detail, $rateLimitResetPattern)) {
+        [long]$resetEpochSeconds = 0
+        if (-not [long]::TryParse(
+                $match.Groups['value'].Value,
+                $numberStyles,
+                $invariantCulture,
+                [ref]$resetEpochSeconds
+            ) -or $resetEpochSeconds -lt 0) {
+            continue
+        }
+
+        try {
+            $resetAt = [DateTimeOffset]::FromUnixTimeSeconds($resetEpochSeconds)
+        } catch {
+            continue
+        }
+        $delays.Add([Math]::Max(
+                [double]0,
+                ($resetAt - $UtcNow.ToUniversalTime()).TotalSeconds
+            ))
+    }
+
+    if ($delays.Count -eq 0) {
+        return $null
+    }
+
+    $serverDelaySeconds = ($delays | Measure-Object -Maximum).Maximum
+    return [int][Math]::Min(
+        [double]$MaximumDelaySeconds,
+        [Math]::Ceiling([Math]::Max([double]0, [double]$serverDelaySeconds))
+    )
 }
 
 function Invoke-LeakGhJson {
     param(
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [ValidateRange(1, 5)][int]$MaximumAttempts = 3,
-        [ValidateRange(0, 60)][int]$RetryBaseDelaySeconds = 2
+        [ValidateRange(0, 60)][int]$RetryBaseDelaySeconds = 2,
+        [ValidateRange(0, 300)][int]$MaximumServerDelaySeconds = 120,
+        [ValidateNotNull()][scriptblock]$DelayAction = {
+            param([int]$Seconds)
+            Start-Sleep -Seconds $Seconds
+        },
+        [ValidateNotNull()][scriptblock]$UtcNowProvider = {
+            [DateTimeOffset]::UtcNow
+        }
     )
 
     # Preserve structured exit-code handling if a future host flips the native-command default.
@@ -237,12 +329,31 @@ function Invoke-LeakGhJson {
 
         if ((Test-IsTransientLeakGhFailure -Detail $detail) -and
             $attempt -lt $MaximumAttempts) {
-            $delaySeconds = [int](
-                $RetryBaseDelaySeconds * [Math]::Pow(2, $attempt - 1)
-            )
-            Write-Warning "$message Retrying in $delaySeconds second(s)."
+            try {
+                $nowValues = @(& $UtcNowProvider)
+                if ($nowValues.Count -ne 1 -or $null -eq $nowValues[0]) {
+                    throw 'The retry clock must return exactly one non-null value.'
+                }
+                $utcNow = [DateTimeOffset]$nowValues[0]
+            } catch {
+                throw "$message Unable to read the retry clock: $($_.Exception.Message)"
+            }
+            $serverDelaySeconds = Get-LeakServerRetryDelaySeconds `
+                -Detail $detail `
+                -UtcNow $utcNow `
+                -MaximumDelaySeconds $MaximumServerDelaySeconds
+            $delaySource = 'server rate-limit metadata'
+            if ($null -eq $serverDelaySeconds) {
+                $delaySource = 'exponential fallback'
+                $delaySeconds = [int](
+                    $RetryBaseDelaySeconds * [Math]::Pow(2, $attempt - 1)
+                )
+            } else {
+                $delaySeconds = [int]$serverDelaySeconds
+            }
+            Write-Warning "$message Retrying in $delaySeconds second(s) using $delaySource."
             if ($delaySeconds -gt 0) {
-                Start-Sleep -Seconds $delaySeconds
+                & $DelayAction $delaySeconds
             }
             continue
         }

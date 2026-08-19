@@ -44,6 +44,8 @@ Describe 'native gh invocation' {
         BeforeEach {
             $global:leakGhAttemptCount = 0
             $global:leakGhResponses = [System.Collections.Generic.Queue[object]]::new()
+            $global:leakGhDelays = [System.Collections.Generic.List[int]]::new()
+            $global:leakGhNow = [DateTimeOffset]::FromUnixTimeSeconds(2000000000)
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:leakGhAttemptCount++
@@ -58,11 +60,11 @@ Describe 'native gh invocation' {
 
         AfterEach {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
-            Remove-Variable leakGhAttemptCount, leakGhResponses `
+            Remove-Variable leakGhAttemptCount, leakGhResponses, leakGhDelays, leakGhNow `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
-        It 'retries a clearly transient failure and returns the later valid JSON' {
+        It 'uses the exponential fallback for transient failures without server timing' {
             $global:leakGhResponses.Enqueue([pscustomobject]@{
                     ExitCode = 1
                     Stderr = 'HTTP 503: Service Unavailable'
@@ -76,10 +78,117 @@ Describe 'native gh invocation' {
 
             $result = Invoke-LeakGhJson `
                 -Arguments @('api', 'test') `
-                -RetryBaseDelaySeconds 0
+                -RetryBaseDelaySeconds 2 `
+                -DelayAction {
+                    param([int]$Seconds)
+                    $global:leakGhDelays.Add($Seconds)
+                } `
+                -UtcNowProvider { $global:leakGhNow }
 
             $result.value | Should -Be 42
             $global:leakGhAttemptCount | Should -Be 2
+            $global:leakGhDelays | Should -Be @(2)
+        }
+
+        It 'honors numeric Retry-After timing case-insensitively' {
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 403: forbidden; rEtRy-AfTeR: 17'
+                    Stdout = ''
+                })
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = '{"value":42}'
+                })
+
+            $result = Invoke-LeakGhJson `
+                -Arguments @('api', 'test') `
+                -DelayAction {
+                    param([int]$Seconds)
+                    $global:leakGhDelays.Add($Seconds)
+                } `
+                -UtcNowProvider { $global:leakGhNow }
+
+            $result.value | Should -Be 42
+            $global:leakGhDelays | Should -Be @(17)
+        }
+
+        It 'honors Retry-After HTTP dates and rate-limit reset timestamps' {
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 403: forbidden; Retry-After: Wed, 18 May 2033 03:33:32 GMT'
+                    Stdout = ''
+                })
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = '{"kind":"date"}'
+                })
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 403: forbidden; X-RaTeLiMiT-ReSeT=2000000013'
+                    Stdout = ''
+                })
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = '{"kind":"reset"}'
+                })
+
+            $dateResult = Invoke-LeakGhJson `
+                -Arguments @('api', 'date') `
+                -DelayAction {
+                    param([int]$Seconds)
+                    $global:leakGhDelays.Add($Seconds)
+                } `
+                -UtcNowProvider { $global:leakGhNow }
+            $resetResult = Invoke-LeakGhJson `
+                -Arguments @('api', 'reset') `
+                -DelayAction {
+                    param([int]$Seconds)
+                    $global:leakGhDelays.Add($Seconds)
+                } `
+                -UtcNowProvider { $global:leakGhNow }
+
+            $dateResult.kind | Should -Be 'date'
+            $resetResult.kind | Should -Be 'reset'
+            $global:leakGhDelays | Should -Be @(12, 13)
+        }
+
+        It 'handles malformed, negative, past, and excessive metadata safely' {
+            @(
+                'HTTP 429 rate limit; Retry-After: later; X-RateLimit-Reset: unknown'
+                'HTTP 429 rate limit; Retry-After: -9; X-RateLimit-Reset: -5'
+                'HTTP 403: forbidden; X-RateLimit-Reset: 1999999995'
+                'HTTP 429 rate limit; Retry-After: 999999; X-RateLimit-Reset: 253402300799'
+            ) | ForEach-Object {
+                $global:leakGhResponses.Enqueue([pscustomobject]@{
+                        ExitCode = 1
+                        Stderr = $_
+                        Stdout = ''
+                    })
+                $global:leakGhResponses.Enqueue([pscustomobject]@{
+                        ExitCode = 0
+                        Stderr = ''
+                        Stdout = '{"value":42}'
+                    })
+            }
+
+            1..4 | ForEach-Object {
+                $result = Invoke-LeakGhJson `
+                    -Arguments @('api', "case-$_") `
+                    -RetryBaseDelaySeconds 2 `
+                    -MaximumServerDelaySeconds 120 `
+                    -DelayAction {
+                        param([int]$Seconds)
+                        $global:leakGhDelays.Add($Seconds)
+                    } `
+                    -UtcNowProvider { $global:leakGhNow }
+                $result.value | Should -Be 42
+            }
+
+            $global:leakGhDelays | Should -Be @(2, 2, 120)
         }
 
         It 'fails closed after exhausting the bounded transient retry budget' {
@@ -95,10 +204,16 @@ Describe 'native gh invocation' {
                 Invoke-LeakGhJson `
                     -Arguments @('api', 'test') `
                     -MaximumAttempts 3 `
-                    -RetryBaseDelaySeconds 0
+                    -RetryBaseDelaySeconds 2 `
+                    -DelayAction {
+                        param([int]$Seconds)
+                        $global:leakGhDelays.Add($Seconds)
+                    } `
+                    -UtcNowProvider { $global:leakGhNow }
             } | Should -Throw '*failed with exit code 1 after 3 attempt(s)*'
 
             $global:leakGhAttemptCount | Should -Be 3
+            $global:leakGhDelays | Should -Be @(2, 4)
         }
 
         It 'does not retry a permanent gh failure' {
@@ -116,7 +231,8 @@ Describe 'native gh invocation' {
             {
                 Invoke-LeakGhJson `
                     -Arguments @('api', 'test') `
-                    -RetryBaseDelaySeconds 0
+                    -RetryBaseDelaySeconds 0 `
+                    -UtcNowProvider { $global:leakGhNow }
             } | Should -Throw '*failed with exit code 1 after 1 attempt(s)*'
 
             $global:leakGhAttemptCount | Should -Be 1
@@ -132,7 +248,8 @@ Describe 'native gh invocation' {
             {
                 Invoke-LeakGhJson `
                     -Arguments @('api', 'empty') `
-                    -RetryBaseDelaySeconds 0
+                    -RetryBaseDelaySeconds 0 `
+                    -UtcNowProvider { $global:leakGhNow }
             } | Should -Throw '*returned an empty response*'
             $global:leakGhAttemptCount | Should -Be 1
 
@@ -144,7 +261,8 @@ Describe 'native gh invocation' {
             {
                 Invoke-LeakGhJson `
                     -Arguments @('api', 'invalid') `
-                    -RetryBaseDelaySeconds 0
+                    -RetryBaseDelaySeconds 0 `
+                    -UtcNowProvider { $global:leakGhNow }
             } | Should -Throw '*returned invalid JSON*'
             $global:leakGhAttemptCount | Should -Be 2
         }
@@ -1112,6 +1230,19 @@ Describe 'workflow enforcement boundary' {
         $hunterGate | Should -Match 'Get-RelevantMergedLeakReverts'
         $hunter | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
         $fixer | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
+        @($hunter, $fixer) | ForEach-Object {
+            $documentation = $_ -replace '\r?\n[ \t]*#[ \t]?', ' '
+            $documentation |
+                Should -Match 'one bounded closed-PR snapshot per authoritative base branch'
+            $documentation | Should -Match 'constant `Reverts in:body` query'
+            $documentation | Should -Match '256-character Search API query ceiling'
+            $documentation | Should -Match '1000-result snapshot ceiling'
+            $documentation | Should -Match 'bounded transient retries'
+            $documentation | Should -Match 'capped server-directed rate-limit delays'
+            $documentation | Should -Match '1000-discovery and 2000-PR aggregate bounds'
+            $documentation |
+                Should -Not -Match 'target-scoped quer(?:y|ies)|unique target searches'
+        }
     }
 
     Context 'safe-output gate script' {
