@@ -4318,6 +4318,82 @@ static void DragUpTwiceWhileHeld(AppiumApp app)
     }
 }
 
+Describe 'An oracle may not be the state the page started in' {
+    BeforeAll {
+        $script:HostApp = @'
+    var status = new Label { AutomationId = "ResultStatus", Text = "NO BUG:" };
+    var run = new Button { AutomationId = "RunButton", Text = "Run" };
+    run.Clicked += (s, e) => status.Text = "BUG FOUND";
+'@
+    }
+
+    It 'rejects the oracle a reviewer showed a missed tap also satisfies' {
+        # PR 238: the oracle reduced to ResultStatus == "NO BUG:", the text the
+        # page starts with, so a tap that was never delivered reproduces the
+        # issue just as convincingly as the defect does.
+        $test = @'
+    App.Tap("RunButton");
+    Assert.Equal("NO BUG:", App.FindElement("ResultStatus").GetText());
+'@
+        {
+            Assert-ReplicationOracleIsNotInitialState -Files @{
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' = $script:HostApp
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' = $test
+            }
+        } | Should -Throw '*before the test does anything*'
+    }
+
+    It 'accepts it once the test proves the interaction landed' {
+        $test = @'
+    App.Tap("RunButton");
+    App.WaitForTextToBePresent("RunButton", "Ran");
+    Assert.Equal("NO BUG:", App.FindElement("ResultStatus").GetText());
+'@
+        {
+            Assert-ReplicationOracleIsNotInitialState -Files @{
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' = $script:HostApp
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'reads a XAML host page the same way' {
+        $hostPage = '<Label AutomationId="ResultStatus" Text="NO BUG:" />'
+        $test = @'
+    Assert.Equal("NO BUG:", App.FindElement("ResultStatus").GetText());
+'@
+        {
+            Assert-ReplicationOracleIsNotInitialState -Files @{
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue1.xaml' = $hostPage
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' = $test
+            }
+        } | Should -Throw '*before the test does anything*'
+    }
+
+    It 'does not read a value the page assigns later as its initial value' {
+        # "BUG FOUND" is what the handler produces, so asserting it is exactly
+        # the acknowledgement this guard asks for.
+        $test = @'
+    App.Tap("RunButton");
+    Assert.Equal("BUG FOUND", App.FindElement("ResultStatus").GetText());
+'@
+        {
+            Assert-ReplicationOracleIsNotInitialState -Files @{
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' = $script:HostApp
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'says nothing when the candidate has no host page' {
+        {
+            Assert-ReplicationOracleIsNotInitialState -Files @{
+                'src/Core/tests/DeviceTests/Issue1.cs' = 'Assert.Equal("NO BUG:", label.Text);'
+            }
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'A geometry oracle must pin a measurement to an expected value' {
     It 'rejects the symmetry oracle a reviewer satisfied with uniformly wrong geometry' {
         # PR 229: the oracle asserted the top and bottom safe-area gaps were

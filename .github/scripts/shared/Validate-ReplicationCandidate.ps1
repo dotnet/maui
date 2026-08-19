@@ -1645,6 +1645,12 @@ function Assert-ReplicationCandidateSources {
             -Manifest $Manifest
     }
 
+    # Whether the oracle merely restates what the host page already shows can
+    # only be decided with both files in hand.
+    $candidateContents = @{}
+    foreach ($file in $CandidateFiles) { $candidateContents[$file.Path] = $file.Content }
+    Assert-ReplicationOracleIsNotInitialState -Files $candidateContents
+
     if (-not $testAttributeFound) {
         throw 'Candidate files do not add a test method in the expected test project.'
     }

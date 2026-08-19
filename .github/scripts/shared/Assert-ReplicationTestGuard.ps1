@@ -1375,6 +1375,118 @@ function Assert-ReplicationGeometryOracleIsPinned {
         "against its expected value. The relational assertion is: $relational")
 }
 
+function Get-ReplicationInitialElementText {
+    <#
+    .SYNOPSIS
+        Maps an automation id to the text its element already shows before the
+        test touches anything, read from the host application page.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content
+    )
+
+    $initial = @{}
+    foreach ($match in [regex]::Matches($Content, 'AutomationId\s*=\s*"(?<id>[^"]+)"')) {
+        $start = [Math]::Max(0, $match.Index - 300)
+        $length = [Math]::Min($Content.Length - $start, ($match.Index - $start) + 300)
+        $window = $Content.Substring($start, $length)
+
+        # Only an initializer or a XAML attribute states what the element shows
+        # to begin with. "status.Text = ..." inside a handler is what the app
+        # does later, which is the opposite of an initial value.
+        $text = [regex]::Match($window, '(?<![.\w])Text\s*=\s*"(?<value>[^"]*)"')
+        if ($text.Success) {
+            $initial[$match.Groups['id'].Value] = $text.Groups['value'].Value
+        }
+    }
+
+    return $initial
+}
+
+function Assert-ReplicationOracleIsNotInitialState {
+    <#
+    .SYNOPSIS
+        Rejects an oracle that asserts the value an element already had, unless
+        the test first proves the interaction actually happened.
+
+    .DESCRIPTION
+        A reviewer showed that a carousel reproduction came down to
+        'ResultStatus == "NO BUG:"', which is the text the page starts with. An
+        oracle like that is satisfied by the defect, but equally by a tap that
+        was never delivered, by an acknowledgement that arrived late, and by
+        the driver simply missing the change. It cannot tell a broken product
+        from a test that did nothing, so it has to be paired with a value the
+        app can only produce after the interaction landed.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Files
+    )
+
+    $initial = @{}
+    foreach ($path in $Files.Keys) {
+        if (($path.Replace('\', '/')) -cnotmatch '(?i)TestCases\.HostApp/') { continue }
+        foreach ($entry in (Get-ReplicationInitialElementText -Content $Files[$path]).GetEnumerator()) {
+            $initial[$entry.Key] = $entry.Value
+        }
+    }
+    if ($initial.Count -eq 0) { return }
+
+    $initialValues = [System.Collections.Generic.HashSet[string]]::new(
+        [string[]]@($initial.Values), [System.StringComparer]::Ordinal)
+
+    foreach ($path in $Files.Keys) {
+        $normalized = $path.Replace('\', '/')
+        if ($normalized -cmatch '(?i)TestCases\.HostApp/') { continue }
+        if ($normalized -cnotmatch '(?i)\.cs$') { continue }
+
+        $code = Get-ReplicationCommentFreeText -Text $Files[$path] -Path $path
+        $statements = @($code -split ';')
+
+        $offending = $null
+        foreach ($statement in $statements) {
+            if ($statement -cnotmatch '(?:Assert|ClassicAssert)\s*\.|WaitForText') { continue }
+            $literals = @([regex]::Matches($statement, '"(?<value>[^"]*)"') |
+                ForEach-Object { $_.Groups['value'].Value })
+            foreach ($id in $literals) {
+                if (-not $initial.ContainsKey($id)) { continue }
+                if ($literals -ccontains $initial[$id]) {
+                    $offending = [pscustomobject]@{ Id = $id; Value = $initial[$id] }
+                    break
+                }
+            }
+            if ($null -ne $offending) { break }
+        }
+        if ($null -eq $offending) { continue }
+
+        # A value the page never shows at startup can only come from the app
+        # reacting, so an assertion on one proves the interaction landed.
+        $acknowledged = $false
+        foreach ($statement in $statements) {
+            if ($statement -cnotmatch '(?:Assert|ClassicAssert)\s*\.|WaitForText') { continue }
+            foreach ($match in [regex]::Matches($statement, '"(?<value>[^"]*)"')) {
+                $literal = $match.Groups['value'].Value
+                if ([string]::IsNullOrWhiteSpace($literal)) { continue }
+                if ($initial.ContainsKey($literal)) { continue }
+                if ($initialValues.Contains($literal)) { continue }
+                $acknowledged = $true
+                break
+            }
+            if ($acknowledged) { break }
+        }
+        if ($acknowledged) { continue }
+
+        throw ("Candidate test source '$path' asserts that '$($offending.Id)' shows " +
+            "'$($offending.Value)', which is the text the host application already shows before the test does " +
+            'anything. That assertion is satisfied by the defect, but equally by an interaction that was never ' +
+            'delivered or that the driver missed, so it cannot tell a broken product from a test that did nothing. ' +
+            'First assert a value the app can only produce once the interaction has landed, then assert the ' +
+            'reported behavior.')
+    }
+}
+
 function Assert-ReplicationDeviceTestIsSelectable {
     <#
         .SYNOPSIS
