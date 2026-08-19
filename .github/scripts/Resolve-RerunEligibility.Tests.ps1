@@ -75,6 +75,31 @@ Describe 'Resolve-RerunEligibility' {
         Normalize-GitHubActorLogin '' | Should -Be ''
     }
 
+    It 'returns labels beyond the default first page for verification' {
+        Mock gh {
+            param(
+                [Parameter(ValueFromRemainingArguments = $true)]
+                [string[]]$GhArgs
+            )
+
+            $global:LASTEXITCODE = 0
+            $command = $GhArgs -join ' '
+            $script:labelLookupCommand = $command
+            $firstPage = @(1..30 | ForEach-Object { "label-$_" })
+            if ($command -match '/labels\?per_page=100 .*--paginate') {
+                return @($firstPage + 's/agent-ready-for-rerun')
+            }
+            return $firstPage
+        }
+
+        $result = Get-RerunIssueLabels -Number 1
+
+        $result.ExitCode | Should -Be 0
+        $result.Names.Count | Should -Be 31
+        $result.Names | Should -Contain 's/agent-ready-for-rerun'
+        $script:labelLookupCommand | Should -Match '/labels\?per_page=100 .*--paginate'
+    }
+
     It 'parses review command branch and platform options for reruns' {
         $parsed = ConvertFrom-ReviewCommand '/review -b feature/regression-check -p ios'
 

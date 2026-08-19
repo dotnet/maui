@@ -176,7 +176,9 @@ function Remove-Label {
     }
 
     $message = ($output | Out-String).Trim()
-    $verificationOutput = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>&1
+    $verificationOutput = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels?per_page=100" `
+        --paginate `
+        --jq '.[].name' 2>&1
     $verificationExitCode = $LASTEXITCODE
     if ($verificationExitCode -eq 0) {
         $currentLabels = @($verificationOutput | ForEach-Object { ([string]$_).Trim() } | Where-Object {

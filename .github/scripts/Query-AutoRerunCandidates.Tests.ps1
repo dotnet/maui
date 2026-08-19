@@ -438,6 +438,24 @@ Context 'scanner decline checkpoint' {
             Should -BeLessThan $scanner.IndexOf('await github.rest.actions.createWorkflowDispatch({')
     }
 
+    It 'isolates ready-label cleanup errors per PR while failing the aggregate scanner job' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $removeReadyLabel = [regex]::Match(
+            $scanner,
+            '(?s)async function removeReadyLabel\(prNumber\).*?async function syncDeclinedLabel'
+        ).Value
+        $actionLoop = [regex]::Match(
+            $scanner,
+            '(?s)for \(const a of actions\).*?if \(hadFailure\) \{\s*core\.setFailed'
+        ).Value
+
+        $removeReadyLabel | Should -Match 'else \{ throw new Error\(`Failed to remove'
+        $actionLoop | Should -Match 'await removeReadyLabel\(prNumber\);'
+        $actionLoop | Should -Match 'catch \(e\) \{\s*core\.error\(`Failed to process PR'
+        $actionLoop | Should -Match 'hadFailure = true;'
+        $actionLoop | Should -Match 'core\.setFailed'
+    }
+
     It 'makes decline marking idempotent across partial failures' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
         $markDeclined = [regex]::Match(

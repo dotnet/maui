@@ -120,6 +120,35 @@ Describe 'Remove-Label' {
             Should -BeFalse
     }
 
+    It 'finds a remaining label beyond the default first page' {
+        $script:ghCall = 0
+        Mock gh {
+            param(
+                [Parameter(ValueFromRemainingArguments = $true)]
+                [string[]]$GhArgs
+            )
+
+            $script:ghCall++
+            if ($script:ghCall -eq 1) {
+                $global:LASTEXITCODE = 1
+                return 'gh: Server Error (HTTP 503)'
+            }
+
+            $global:LASTEXITCODE = 0
+            $command = $GhArgs -join ' '
+            $script:verificationCommand = $command
+            $firstPage = @(1..30 | ForEach-Object { "label-$_" })
+            if ($command -match '/labels\?per_page=100 .*--paginate') {
+                return @($firstPage + 's/agent-rerun-declined')
+            }
+            return $firstPage
+        }
+
+        Invoke-RemoveLabelUnderTest -PRNumber 1 -LabelName 's/agent-rerun-declined' |
+            Should -BeFalse
+        $script:verificationCommand | Should -Match '/labels\?per_page=100 .*--paginate'
+    }
+
     It 'reports a non-404 API failure' {
         Mock gh {
             $global:LASTEXITCODE = 1

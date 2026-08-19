@@ -878,6 +878,25 @@ function Resolve-RerunEligibility {
     return [pscustomobject]@{ Eligible = $false; Reason = 'no-new-comments-or-commits'; Label = $ReadyForRerunLabel }
 }
 
+function Get-RerunIssueLabels {
+    param(
+        [Parameter(Mandatory = $true)][int]$Number,
+        [switch]$SuppressErrors
+    )
+
+    $names = if ($SuppressErrors) {
+        @(gh api "repos/$Owner/$Repo/issues/$Number/labels?per_page=100" --paginate --jq '.[].name' 2>$null)
+    } else {
+        @(gh api "repos/$Owner/$Repo/issues/$Number/labels?per_page=100" --paginate --jq '.[].name')
+    }
+    $exitCode = $LASTEXITCODE
+
+    return [pscustomobject]@{
+        Names    = @($names)
+        ExitCode = [int]$exitCode
+    }
+}
+
 if ($MyInvocation.InvocationName -eq '.') {
     return
 }
@@ -892,7 +911,8 @@ $reviewComments = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/comments?per_page
 $comments = @($issueComments + $reviews + $reviewComments)
 $pr = gh api "repos/$Owner/$Repo/pulls/$PRNumber" | ConvertFrom-Json
 $commits = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
-$labels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null)
+$initialLabelLookup = Get-RerunIssueLabels -Number $PRNumber -SuppressErrors
+$labels = @($initialLabelLookup.Names)
 
 if ($pr.state -ne 'open') {
     throw "PR #$PRNumber is not open (state: $($pr.state))"
@@ -964,13 +984,14 @@ if ($ApplyLabel -and $result.Eligible) {
         # code so a rate-limited/unauthorized/transient verification failure isn't misread as
         # "label absent" — that would throw a misleading "Failed to apply label" even though
         # Add-Label may have succeeded.
-        $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name')
-        $verificationSucceeded = ($LASTEXITCODE -eq 0)
+        $updatedLabelLookup = Get-RerunIssueLabels -Number $PRNumber
+        $updatedLabels = @($updatedLabelLookup.Names)
+        $verificationSucceeded = ($updatedLabelLookup.ExitCode -eq 0)
         $labelIsPresent = $verificationSucceeded -and (@($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0)
         if ($addSucceeded -or $labelIsPresent) {
             Write-Host "  ✅ Applied: $ReadyForRerunLabel" -ForegroundColor Green
         } elseif (-not $verificationSucceeded) {
-            throw "Could not verify label '$ReadyForRerunLabel' after applying it (gh api re-read exited $LASTEXITCODE)."
+            throw "Could not verify label '$ReadyForRerunLabel' after applying it (gh api re-read exited $($updatedLabelLookup.ExitCode))."
         } else {
             throw "Failed to apply label: $ReadyForRerunLabel"
         }
