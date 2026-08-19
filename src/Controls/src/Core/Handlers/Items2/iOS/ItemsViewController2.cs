@@ -370,6 +370,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewDisplayed)
 			{
+				UpdateEmptyViewFlowDirection();
 				AlignEmptyView();
 			}
 
@@ -575,14 +576,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// Keep the empty view inside the collection view so its pan gesture can drive pull-to-refresh.
 			// In RTL, cancel the collection layout's coordinate-system flip; content flow direction is applied below.
-			_emptyUIView.Transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+			var transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
 				? CGAffineTransform.MakeScale(-1, 1)
 				: CGAffineTransform.MakeIdentity();
 
+			if (!_emptyUIView.Transform.Equals(transform))
+			{
+				_emptyUIView.Transform = transform;
+			}
+		}
+
+		void UpdateEmptyViewFlowDirection()
+		{
 			if (_emptyViewFormsElement is not null)
 			{
-				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
-				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
@@ -618,6 +625,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
 
+			UpdateEmptyViewFlowDirection();
 			LayoutEmptyView();
 
 			_emptyViewDisplayed = true;
@@ -668,7 +676,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			_emptyUIView.Frame = frame;
+			if (!_emptyUIView.Frame.Equals(frame))
+			{
+				// UIKit's Frame is undefined under a non-identity transform.
+				_emptyUIView.Transform = CGAffineTransform.MakeIdentity();
+				_emptyUIView.Frame = frame;
+			}
+
 			AlignEmptyView();
 
 			return frame;
