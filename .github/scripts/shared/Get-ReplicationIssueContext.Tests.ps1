@@ -665,3 +665,70 @@ Describe 'A permanent failure that suggests retrying is still permanent' {
             Should -BeFalse
     }
 }
+
+Describe 'The issue read actually retries, not just classifies' {
+    BeforeAll {
+        $contextScript = Join-Path $PSScriptRoot 'Get-ReplicationIssueContext.ps1'
+        $contextAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $contextScript, [ref] $null, [ref] $null)
+        foreach ($definition in $contextAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.FunctionDefinitionAst]
+                }, $true)) {
+            . ([scriptblock]::Create($definition.Extent.Text))
+        }
+
+        function New-GhShim {
+            # A gh that fails with $Reason until attempt $SucceedOnAttempt.
+            param([string]$Reason, [int]$SucceedOnAttempt)
+
+            $directory = Join-Path ([System.IO.Path]::GetTempPath()) "ghshim-$([guid]::NewGuid())"
+            New-Item -ItemType Directory -Path $directory | Out-Null
+            $counter = Join-Path $directory 'count.txt'
+            Set-Content -LiteralPath $counter -Value '0'
+            $shim = Join-Path $directory 'gh'
+            @"
+#!/bin/bash
+n=`$(cat '$counter'); n=`$((n+1)); echo `$n > '$counter'
+if [ "`$n" -lt $SucceedOnAttempt ]; then echo '$Reason' >&2; exit 1; fi
+echo '{"number":1}'
+"@ | Set-Content -LiteralPath $shim
+            chmod +x $shim
+            return [pscustomobject]@{ Directory = $directory; Counter = $counter }
+        }
+    }
+
+    It 'recovers from a burst of rate limits' {
+        # Six runs of waves 34 and 35 lost a provisioned device to this.
+        $shim = New-GhShim -Reason 'HTTP 403: API rate limit exceeded' -SucceedOnAttempt 3
+        $originalPath = $env:PATH
+        try {
+            $env:PATH = "$($shim.Directory):$originalPath"
+            $body = Invoke-GitHubIssueApi -Repository 'dotnet/maui' -IssueNumber 1
+            $body | Should -Match '"number":1'
+            [int](Get-Content -Raw $shim.Counter).Trim() | Should -Be 3
+        } finally {
+            $env:PATH = $originalPath
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'fails immediately on a missing issue and names the reason' {
+        $shim = New-GhShim -Reason 'HTTP 404: Not Found' -SucceedOnAttempt 99
+        $originalPath = $env:PATH
+        try {
+            $env:PATH = "$($shim.Directory):$originalPath"
+            $thrown = $null
+            try {
+                Invoke-GitHubIssueApi -Repository 'dotnet/maui' -IssueNumber 1
+            } catch { $thrown = $_ }
+
+            $thrown.Exception.Message | Should -Match '404'
+            # One attempt only; retrying a missing issue just burns the clock.
+            [int](Get-Content -Raw $shim.Counter).Trim() | Should -Be 1
+        } finally {
+            $env:PATH = $originalPath
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

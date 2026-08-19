@@ -887,8 +887,9 @@ function Invoke-GitHubIssueApi {
 
             $reason = ''
             if (Test-Path -LiteralPath $errorPath) {
-                $reason = ConvertTo-SafeIssueSingleLine (
-                    [System.IO.File]::ReadAllText($errorPath))
+                $reason = ConvertTo-SafeIssueSingleLine `
+                    -Text ([System.IO.File]::ReadAllText($errorPath)) `
+                    -MaxChars 400
             }
 
             if ($attempt -lt $MaxAttempts -and (Test-TransientGitHubFailure -Reason $reason)) {
@@ -944,7 +945,7 @@ function Read-ReplicationIssueJson {
         # Reporting only that the issue could not be read left three failed
         # runs with no way to tell a missing issue from a rate limit.
         throw ("Unable to retrieve the GitHub issue. " +
-            (ConvertTo-SafeIssueSingleLine $_.Exception.Message))
+            (ConvertTo-SafeIssueSingleLine -Text $_.Exception.Message -MaxChars 400))
     }
 }
 
