@@ -484,7 +484,6 @@ namespace Microsoft.Maui.Controls
 		internal void SetDynamicResource(BindableProperty property, string key)
 			=> SetDynamicResource(property, key, SetterSpecificity.DynamicResourceSetter);
 
-		//FIXME, use specificity
 		internal void SetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			if (property == null)
@@ -492,16 +491,8 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
-			var context = GetOrCreateContext(property);
-			var currentSpecificity = context.Values.GetSpecificity();
-			if (specificity == SetterSpecificity.DynamicResourceSetter && currentSpecificity == SetterSpecificity.ManualValueSetter)
-			{
-				var currentValue = context.Values.GetValue();
-
-				context.Values.Remove(currentSpecificity);
-				context.Values[SetterSpecificity.DynamicResourceSetter] = currentValue;
-			}
-
+			BindablePropertyContext context = GetOrCreateContext(property);
+			context.Attributes |= BindableContextAttributes.IsDynamicResource;
 			OnSetDynamicResource(property, key, specificity);
 		}
 
@@ -656,6 +647,13 @@ namespace Microsoft.Maui.Controls
 				originalSpecificity = context.Values.GetSpecificity();
 			}
 
+			if (specificity == SetterSpecificity.DynamicResourceSetter
+				&& (context.Attributes & BindableContextAttributes.IsDynamicResource) != 0)
+			{
+				context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				originalSpecificity = context.Values.GetSpecificity();
+			}
+
 			//We keep setter of lower specificity so we can unapply
 			if (specificity < originalSpecificity)
 			{
@@ -681,7 +679,7 @@ namespace Microsoft.Maui.Controls
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
-			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
+			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources && !currentlyApplying)
 				RemoveDynamicResource(property);
 
 			BindingBase binding = context.Bindings.GetValue();
