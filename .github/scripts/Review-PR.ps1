@@ -664,6 +664,17 @@ if ($Phase -eq 'Setup') {
 # MUST be re-applied after every `git reset --hard`, which would otherwise revert it. Catalyst
 # additionally receives a narrow trusted source patch for the screenshot harness: ordinary
 # reviewer-branch src/ edits are discarded when Setup switches to the PR base. No-op outside CI.
+function Stop-TrustedCatalystOverlayFailure {
+    param([Parameter(Mandatory = $true)][string]$Message)
+
+    if ($Phase -eq 'Gate') {
+        Write-Host "  ⚠️ $Message Gate verification did not start; classifying this trusted-overlay failure as infrastructure/inconclusive." -ForegroundColor Yellow
+        exit 3
+    }
+
+    throw $Message
+}
+
 function Restore-TrustedScripts {
     param([string]$TrustedScriptsDir, [string]$RepoRoot)
     if (-not $TrustedScriptsDir) { return }
@@ -687,7 +698,7 @@ function Restore-TrustedScripts {
     if ($Platform -in @('catalyst', 'maccatalyst')) {
         $sourceOverride = Join-Path $TrustedScriptsDir 'source-overrides/catalyst-retina-screenshot.patch'
         if (-not (Test-Path $sourceOverride -PathType Leaf)) {
-            throw "Trusted Catalyst screenshot override is missing: $sourceOverride"
+            Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override is missing: $sourceOverride"
         }
 
         Push-Location $RepoRoot
@@ -698,12 +709,12 @@ function Restore-TrustedScripts {
             } else {
                 git apply --check --whitespace=nowarn -- $sourceOverride
                 if ($LASTEXITCODE -ne 0) {
-                    throw "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."
+                    Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."
                 }
 
                 git apply --whitespace=nowarn -- $sourceOverride
                 if ($LASTEXITCODE -ne 0) {
-                    throw "Failed to apply trusted Catalyst screenshot override."
+                    Stop-TrustedCatalystOverlayFailure -Message "Failed to apply trusted Catalyst screenshot override."
                 }
                 Write-Host "  🔒 Applied trusted Catalyst Retina screenshot override" -ForegroundColor Cyan
             }

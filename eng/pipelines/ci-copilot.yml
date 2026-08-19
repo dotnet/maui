@@ -1665,15 +1665,14 @@ stages:
               fi
               # The process exit code is authoritative for FAILED (a genuine FAILED gate exits
               # non-zero — PASSED/SKIPPED/INCONCLUSIVE all exit 0), so it overrides the file read.
-              # EXCEPTION: the Gate phase ALSO exits non-zero when it cannot start because the
-              # Setup phase did not complete — e.g. the PR has merge conflicts with its base branch,
-              # so Setup posts a conflict comment and bails BEFORE writing the setup-complete
-              # sentinel (Review-PR.ps1 sentinel check). In that case the A/B verification never
-              # ran, so the correct result is INCONCLUSIVE, not a test FAILED (which would read as
-              # "the fix is broken"). Distinguish the two via the setup-complete sentinel:
-              #   present => Setup ran; a non-zero gate exit is a genuine test-verification FAILED.
-              #   absent  => the gate could not even start (setup incomplete) => INCONCLUSIVE.
-              if [ $GATE_EXIT -ne 0 ]; then
+              # EXCEPTIONS: exit 3 is reserved for a trusted-overlay failure before verification,
+              # and a missing setup-complete sentinel means Setup itself did not finish. Neither
+              # path ran A/B verification, so both are INCONCLUSIVE rather than a failed fix.
+              # Other non-zero exits after completed Setup remain genuine verification failures.
+              if [ $GATE_EXIT -eq 3 ]; then
+                echo "##vso[task.logissue type=warning]Gate could not start because the trusted Catalyst source overlay could not be applied. Classifying gate as INCONCLUSIVE, not FAILED."
+                GATE_VERDICT="INCONCLUSIVE"
+              elif [ $GATE_EXIT -ne 0 ]; then
                 if [ -f "$(Build.ArtifactStagingDirectory)/setup-complete" ]; then
                   GATE_VERDICT="FAILED"
                 else

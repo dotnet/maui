@@ -61,6 +61,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
+    $script:stopTrustedCatalystOverlayFailureBody = Get-FunctionBody -ScriptText $content -FunctionName 'Stop-TrustedCatalystOverlayFailure'
     . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
 }
 
@@ -169,6 +170,40 @@ Describe 'Gate retry classification' {
 '@
         Get-GateReportRetryClass -ReportContent $report | Should -Be 'retryable'
         Test-GateReportIsRetryableEnvironmentError -ReportContent $report | Should -BeTrue
+    }
+}
+
+Describe 'Gate trusted overlay failure classification' {
+    It 'keeps a non-applicable Catalyst overlay after setup inconclusive' {
+        $childScript = @"
+$script:stopTrustedCatalystOverlayFailureBody
+`$Phase = 'Gate'
+Stop-TrustedCatalystOverlayFailure -Message 'Trusted Catalyst screenshot override no longer applies cleanly.'
+"@
+        $childOutput = & pwsh -NoProfile -Command $childScript 2>&1
+        $childExitCode = $LASTEXITCODE
+
+        $childExitCode | Should -Be 3
+        ($childOutput -join "`n") | Should -Match 'trusted-overlay failure as infrastructure/inconclusive'
+
+        $restoreStart = $content.IndexOf('function Restore-TrustedScripts')
+        $restoreEnd = $content.IndexOf('# ─── Sentinel check:', $restoreStart)
+        $restoreBlock = $content.Substring($restoreStart, $restoreEnd - $restoreStart)
+        $restoreBlock | Should -Match ([regex]::Escape(
+            'Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."'))
+
+        $gateStart = $pipelineContent.IndexOf('GATE_VERDICT_FILE="$(Build.ArtifactStagingDirectory)/gate-result.txt"')
+        $gateEnd = $pipelineContent.IndexOf('echo "Trusted gate verdict: $GATE_VERDICT"', $gateStart)
+        $gateBlock = $pipelineContent.Substring($gateStart, $gateEnd - $gateStart)
+        $overlayExit = $gateBlock.IndexOf('if [ $GATE_EXIT -eq 3 ]')
+        $setupComplete = $gateBlock.IndexOf('elif [ $GATE_EXIT -ne 0 ]', $overlayExit)
+        $genuineFailure = $gateBlock.IndexOf('GATE_VERDICT="FAILED"', $setupComplete)
+
+        $overlayExit | Should -BeGreaterThan -1
+        $setupComplete | Should -BeGreaterThan $overlayExit
+        $genuineFailure | Should -BeGreaterThan $setupComplete
+        $gateBlock.Substring($overlayExit, $setupComplete - $overlayExit) |
+            Should -Match 'GATE_VERDICT="INCONCLUSIVE"'
     }
 }
 
