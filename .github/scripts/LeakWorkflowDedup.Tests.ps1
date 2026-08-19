@@ -267,6 +267,38 @@ Describe 'mechanism-aware final duplicate gate' {
         $result.UnapprovedApiMatches.number | Should -Be 100
         $result.EffectivelyReverted | Should -Be @(110)
     }
+
+    It 'honors a definite terminal reverter alongside a cycle-entangled sibling' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak' `
+            -Body 'Fixes #10'
+        $reverts = @(
+            New-LeakPr `
+                -Number 200 `
+                -Title 'Cycle-entangled sibling' `
+                -Body "Reverts #100`nReverts #300"
+            New-LeakPr `
+                -Number 300 `
+                -Title 'Cycle peer' `
+                -Body 'Reverts #200'
+            New-LeakPr `
+                -Number 201 `
+                -Title 'Definite terminal sibling' `
+                -Body 'Reverts #100'
+        )
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'Picker.ItemsSource' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($fix) `
+            -OpenPullRequests @() `
+            -MergedRevertPullRequests $reverts
+
+        $result.Blocked | Should -BeFalse
+        $result.EffectivelyReverted | Should -Be @(100)
+    }
 }
 
 Describe 'effective recursive revert state' {

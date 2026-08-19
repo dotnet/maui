@@ -262,41 +262,45 @@ function Get-EffectiveRevertedPullRequestNumbers {
     }
 
     $memo = @{}
+    $activeState = 'active'
+    $inactiveState = 'inactive'
+    $ambiguousState = 'ambiguous'
 
-    function Test-EffectActive {
+    function Get-EffectState {
         param(
             [int]$PullRequestNumber,
-            [System.Collections.Generic.HashSet[int]]$Visiting,
-            [ref]$CycleDetected
+            [System.Collections.Generic.HashSet[int]]$Visiting
         )
 
         if ($memo.ContainsKey($PullRequestNumber)) {
-            return [bool]$memo[$PullRequestNumber]
+            return [string]$memo[$PullRequestNumber]
         }
         if (-not $Visiting.Add($PullRequestNumber)) {
-            $CycleDetected.Value = $true
-            return $true
+            return $ambiguousState
         }
 
         try {
-            $activeReverterCount = 0
+            $hasAmbiguousReverter = $false
             if ($revertersByTarget.ContainsKey($PullRequestNumber)) {
                 foreach ($reverter in $revertersByTarget[$PullRequestNumber]) {
-                    if (Test-EffectActive `
-                            -PullRequestNumber $reverter `
-                            -Visiting $Visiting `
-                            -CycleDetected $CycleDetected) {
-                        $activeReverterCount++
+                    $reverterState = Get-EffectState `
+                        -PullRequestNumber $reverter `
+                        -Visiting $Visiting
+                    if ($reverterState -eq $activeState) {
+                        $memo[$PullRequestNumber] = $inactiveState
+                        return $inactiveState
                     }
-                    if ($CycleDetected.Value) {
-                        return $true
+                    if ($reverterState -eq $ambiguousState) {
+                        $hasAmbiguousReverter = $true
                     }
                 }
             }
 
-            $active = $activeReverterCount -eq 0
-            $memo[$PullRequestNumber] = $active
-            return $active
+            if ($hasAmbiguousReverter) {
+                return $ambiguousState
+            }
+            $memo[$PullRequestNumber] = $activeState
+            return $activeState
         } finally {
             [void]$Visiting.Remove($PullRequestNumber)
         }
@@ -305,12 +309,10 @@ function Get-EffectiveRevertedPullRequestNumbers {
     $effectivelyReverted = [System.Collections.Generic.List[int]]::new()
     foreach ($number in $fixNumbers) {
         $visiting = [System.Collections.Generic.HashSet[int]]::new()
-        $cycleDetected = $false
-        $active = Test-EffectActive `
+        $state = Get-EffectState `
             -PullRequestNumber $number `
-            -Visiting $visiting `
-            -CycleDetected ([ref]$cycleDetected)
-        if (-not $cycleDetected -and -not $active) {
+            -Visiting $visiting
+        if ($state -eq $inactiveState) {
             $effectivelyReverted.Add($number)
         }
     }
