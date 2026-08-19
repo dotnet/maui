@@ -316,6 +316,28 @@ stages:
               PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
+          # A replicate run cannot do anything without reading its issue, but it
+          # only tries to read it after capturing the trusted infrastructure,
+          # resolving the baseline, installing the recording tools and installing
+          # the GitHub CLI. A rejected credential therefore costs roughly fifteen
+          # minutes of a provisioned device before the run reports it. Ask GitHub
+          # who the token belongs to first; it needs no CLI and takes a second.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . "$(Build.SourcesDirectory)/.github/scripts/shared/Assert-ReplicationGitHubCredential.ps1"
+
+              $login = Assert-ReplicationGitHubCredential `
+                -Token $env:GH_TOKEN `
+                -TokenVariableName 'GH_COMMENT_TOKEN'
+
+              Write-Host "GitHub credential accepted for '$login'."
+            displayName: 'Verify the GitHub credential before provisioning'
+            condition: >-
+              and(succeeded(),
+                  eq('${{ parameters.Mode }}', 'replicate'))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
           # Preserve the one helper needed by the final telemetry stage while
           # the worktree is still the immutable pipeline revision. Publish it
           # before any branch switch or PR-controlled code can run.
