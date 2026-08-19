@@ -259,13 +259,69 @@ OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side err
         # OneTimeSetUp before any assertion ran (Passed=0/Failed=N). This must be EnvError
         # (INCONCLUSIVE), never a plain FAIL — the fix was never actually verified.
         $log = New-LogFile @'
+  Failed Material3CarouselViewFeatureTests.FirstCase [1 s]
+  Error Message:
+   OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+  Failed Material3CarouselViewFeatureTests.SecondCase [1 s]
+  Error Message:
+   OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+Total tests: 2
   Passed: 0
-  Failed: 17
-OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+  Failed: 2
 '@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeTrue
         $r.Passed   | Should -BeFalse
+        $r.Failed   | Should -Be 0
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps a later all-failing device result blocking despite earlier XHarness and incidental Appium markers' {
+        $log = New-LogFile @'
+XHarness exit code: 83
+  Passed: 0
+  Failed: 0
+Incidental diagnostics echoed: Call InitialSetup before accessing the App property
+[FAIL] RealDeviceRegression.First
+[FAIL] RealDeviceRegression.Second
+  Passed: 0
+  Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed   | Should -BeFalse
+        $r.PassCount | Should -Be 0
+        $r.FailCount | Should -Be 2
+        $r.Failed   | Should -Be 2
+        $r.Total    | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps an all-failing Appium OneTimeSetUp result inconclusive when every failed case is setup-only' {
+        $log = New-LogFile @'
+  Failed Issue19752.First [1 s]
+  Error Message:
+   OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : The app representing com.microsoft.maui.uitests could not be found.
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+  Failed Issue19752.Second [1 s]
+  Error Message:
+   OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : The app representing com.microsoft.maui.uitests could not be found.
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+Total tests: 2
+  Passed: 0
+  Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.SetupOnlyFailure | Should -BeTrue
+        $r.Passed | Should -BeFalse
+        $r.Failed | Should -Be 0
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -279,6 +335,8 @@ Some later flake mentioned the app did not recover after crash-recovery attempts
 '@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeFalse
+        $r.PassCount | Should -Be 5
+        $r.FailCount | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -335,6 +393,24 @@ Test Run Failed.
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeTrue
         $r.NativeLibLoadFailure | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps an all-failing native-load result environmental when every failed case is native' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests.FirstImage [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+[xUnit.net 00:00:01.44]     ResizetizeImagesTests.SecondImage [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+  Total tests: 2
+       Passed: 0
+       Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
+        $r.EnvError | Should -BeTrue
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.Passed | Should -BeFalse
+        $r.Failed | Should -Be 0
         Remove-Item -LiteralPath $log -Force
     }
 
