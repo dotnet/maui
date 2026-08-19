@@ -668,6 +668,51 @@ function Get-ReplicationSettlePattern {
         'FindElement|FindElements|QueryUntilPresent)\s*\('
 }
 
+function Get-ReplicationLoopBody {
+    <#
+    .SYNOPSIS
+        Returns the body of a loop, whether or not it is wrapped in braces.
+
+    .DESCRIPTION
+        A single-statement loop body needs no braces, and that is the shortest
+        way to write a burst of gestures, so a scan that only understands
+        braced blocks misses the very shape it exists to catch.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory = $true)][int]$HeaderEndIndex
+    )
+
+    $index = $HeaderEndIndex
+    while ($index -lt $Text.Length -and [char]::IsWhiteSpace($Text[$index])) { $index++ }
+    if ($index -ge $Text.Length) { return $null }
+
+    if ($Text[$index] -eq '{') {
+        return Get-ReplicationBalancedBlock -Text $Text -OpenBraceIndex $index
+    }
+
+    # An unbraced body is exactly one statement, so it ends at the first
+    # semicolon that is not inside a nested call.
+    $depth = 0
+    for ($scan = $index; $scan -lt $Text.Length; $scan++) {
+        $character = $Text[$scan]
+        if ($character -eq '(' -or $character -eq '[') { $depth++ }
+        elseif ($character -eq ')' -or $character -eq ']') { $depth-- }
+        elseif ($character -eq ';' -and $depth -le 0) {
+            return $Text.Substring($index, $scan - $index)
+        }
+    }
+
+    return $null
+}
+
+function Get-ReplicationLoopHeaderPattern {
+    # Matches a loop header and tolerates one level of nested parentheses, so
+    # `for (var i = 0; i < items.Count(); i++)` is still recognised.
+    return '\b(?:for|foreach|while)\s*\((?:[^()]|\([^()]*\))*\)'
+}
+
 function Assert-ReplicationGestureIsSynchronized {
     <#
     .SYNOPSIS
@@ -695,8 +740,8 @@ function Assert-ReplicationGestureIsSynchronized {
 
     # A gesture repeated by a loop whose body never waits is the same burst
     # written shorter, and the trip count hides how many gestures are in flight.
-    foreach ($match in [regex]::Matches($code, '\b(?:for|foreach|while)\s*\([^)]*\)\s*\{')) {
-        $body = Get-ReplicationBalancedBlock -Text $code -OpenBraceIndex ($match.Index + $match.Length - 1)
+    foreach ($match in [regex]::Matches($code, (Get-ReplicationLoopHeaderPattern))) {
+        $body = Get-ReplicationLoopBody -Text $code -HeaderEndIndex ($match.Index + $match.Length)
         if ($null -eq $body) { continue }
         if ($body -cmatch $gesture -and $body -cnotmatch $settle) {
             throw ("Candidate test source '$Path' repeats a gesture in a loop whose body never waits for the app to " +

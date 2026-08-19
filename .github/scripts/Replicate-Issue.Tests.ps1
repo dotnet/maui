@@ -4588,6 +4588,41 @@ Describe 'A gesture burst must wait for the app between gestures' {
         } | Should -Throw '*never waits for the app*'
     }
 
+    It 'sees a gesture burst in a loop body that has no braces' {
+        # This is the exact shape a reviewer rejected on reproduction PR 238:
+        # ten drags fired back to back, written as a single-statement loop body
+        # so there is no block for a brace-only scan to find.
+        $source = @'
+    for (var transition = 0; transition < 10; transition++)
+        App.DragCoordinates(startX, centerY, endX, centerY);
+
+    App.Tap("CheckNavigation");
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*never waits for the app*'
+    }
+
+    It 'accepts an unbraced loop body that waits for the app' {
+        $source = @'
+    for (var i = 0; i < 10; i++)
+        App.WaitForElement("Item" + i);
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'still reads a loop header that calls a method' {
+        $source = @'
+    for (var i = 0; i < items.Count(); i++)
+        App.SwipeRightToLeft();
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*never waits for the app*'
+    }
+
     It 'reads the loop body rather than everything after the loop header' {
         # The wait belongs to the code after the loop, so it must not count as
         # synchronising the gestures inside it.
