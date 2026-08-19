@@ -212,6 +212,40 @@ function Get-LeakRevertTargets {
         Sort-Object -Unique)
 }
 
+function Get-NormalizedLeakMergeCommitOid {
+    param(
+        [Parameter(Mandatory = $true)][AllowNull()][object]$PullRequest,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    if ($null -eq $PullRequest) {
+        throw "$Context is null."
+    }
+    $number = [string]$PullRequest.number
+    $record = if ([string]::IsNullOrWhiteSpace($number)) {
+        'PR record'
+    } else {
+        "PR #$number"
+    }
+    $property = $PullRequest.PSObject.Properties['mergeCommitOid']
+    if ($null -eq $property -or
+        $property.Value -isnot [string] -or
+        $property.Value -cnotmatch '^[0-9A-Fa-f]{40}$') {
+        throw "$Context $record has a missing or malformed mergeCommitOid."
+    }
+
+    return ([string]$property.Value).ToLowerInvariant()
+}
+
+function Get-LeakImmutableRevertCommitOids {
+    param([AllowEmptyString()][string]$Message)
+
+    $pattern =
+        '(?m)^[ \t]*This reverts commit (?<oid>[0-9A-Fa-f]{40})\.[ \t]*$'
+    return @([regex]::Matches(($Message ?? ''), $pattern) |
+        ForEach-Object { $_.Groups['oid'].Value.ToLowerInvariant() })
+}
+
 function Test-IsTransientLeakGhFailure {
     param([AllowEmptyString()][string]$Detail)
 
@@ -622,7 +656,11 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
         body
         baseRefName
         state
+        merged
         mergedAt
+        mergeCommit {
+          oid
+        }
         url
       }
     }
@@ -689,6 +727,14 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
                 -Object $node `
                 -Name 'mergedAt' `
                 -Context "$context PR #$number"
+            $merged = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'merged' `
+                -Context "$context PR #$number"
+            $mergeCommit = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'mergeCommit' `
+                -Context "$context PR #$number"
             $url = Get-LeakRequiredPropertyValue `
                 -Object $node `
                 -Name 'url' `
@@ -702,19 +748,360 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
                 ($State -cne 'MERGED' -and $null -ne $mergedAt)) {
                 throw "$context returned inconsistent mergedAt metadata for PR #$number."
             }
+            if ($merged -isnot [bool] -or
+                $merged -ne ($State -ceq 'MERGED')) {
+                throw "$context returned inconsistent merged metadata for PR #$number."
+            }
+
+            $mergeCommitOid = $null
+            if ($State -ceq 'MERGED') {
+                if ($null -eq $mergeCommit) {
+                    throw "$context returned no mergeCommit for merged PR #$number."
+                }
+                $mergeCommitOidValue = Get-LeakRequiredPropertyValue `
+                    -Object $mergeCommit `
+                    -Name 'oid' `
+                    -Context "$context PR #$number mergeCommit"
+                $mergeCommitOid = Get-NormalizedLeakMergeCommitOid `
+                    -PullRequest ([pscustomobject]@{
+                        number = $number
+                        mergeCommitOid = $mergeCommitOidValue
+                    }) `
+                    -Context $context
+            } elseif ($null -ne $mergeCommit) {
+                throw "$context returned a mergeCommit for unmerged PR #$number."
+            }
 
             $all.Add([pscustomobject]@{
                     number = $number
                     title = $title
                     body = $body
                     baseRefName = $nodeBase
+                    state = $State
+                    merged = [bool]$merged
                     mergedAt = $mergedAt
+                    mergeCommitOid = $mergeCommitOid
                     url = $url
                 })
         }
     }
 
     return @($all | Sort-Object number)
+}
+
+function Get-CompleteLeakPullRequestCommitHistories {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$PullRequests,
+        [ValidateRange(1, 100)][int]$PageSize = 100,
+        [ValidateRange(1, 50)][int]$BatchSize = 10,
+        [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000,
+        [ValidateRange(1, 100000)][int]$MaximumCommitRecords = 20000
+    )
+
+    if ($PullRequests.Count -eq 0) {
+        return @()
+    }
+
+    $coordinates = Get-LeakRepositoryCoordinates -Repository $Repository
+    $states = [System.Collections.Generic.List[object]]::new()
+    $seenNumbers = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($pullRequest in $PullRequests) {
+        $number = 0
+        if (-not [int]::TryParse([string]$pullRequest.number, [ref]$number) -or
+            $number -le 0) {
+            throw "Invalid merged reverter PR number '$($pullRequest.number)'."
+        }
+        if (-not $seenNumbers.Add($number)) {
+            throw "Merged reverter commit-history input contains duplicate PR #$number."
+        }
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest $pullRequest `
+            -Context 'Merged reverter commit-history input'
+        $mergeCommitOid = Get-NormalizedLeakMergeCommitOid `
+            -PullRequest $pullRequest `
+            -Context 'Merged reverter commit-history input'
+
+        $states.Add([pscustomobject]@{
+                Number = $number
+                BaseRefName = $base
+                MergeCommitOid = $mergeCommitOid
+                Cursor = $null
+                ExpectedTotal = [long]-1
+                Complete = $false
+                Commits = [System.Collections.Generic.List[object]]::new()
+                SeenCommitOids = [System.Collections.Generic.HashSet[string]]::new(
+                    [StringComparer]::OrdinalIgnoreCase
+                )
+                SeenCursors = [System.Collections.Generic.HashSet[string]]::new(
+                    [StringComparer]::Ordinal
+                )
+            })
+    }
+
+    $queryCount = 0
+    $commitRecordCount = 0
+    while (@($states | Where-Object { -not $_.Complete }).Count -gt 0) {
+        if ($queryCount -ge $MaximumPageQueries) {
+            throw "Merged reverter commit-history pagination exceeded the $MaximumPageQueries-query safety budget before proving every candidate complete."
+        }
+        $queryCount++
+
+        $batch = @($states |
+            Where-Object { -not $_.Complete } |
+            Select-Object -First $BatchSize)
+        $declarations = [System.Collections.Generic.List[string]]::new()
+        @('$owner: String!', '$name: String!', '$first: Int!') |
+            ForEach-Object { $declarations.Add($_) }
+        $selections = [System.Collections.Generic.List[string]]::new()
+        for ($index = 0; $index -lt $batch.Count; $index++) {
+            $declarations.Add(('$number{0}: Int!' -f $index))
+            $declarations.Add(('$after{0}: String' -f $index))
+            $selections.Add(@"
+    pr$index`: pullRequest(number: `$number$index) {
+      number
+      state
+      merged
+      mergedAt
+      baseRefName
+      mergeCommit {
+        oid
+      }
+      commits(first: `$first, after: `$after$index) {
+        totalCount
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          commit {
+            oid
+            message
+          }
+        }
+      }
+    }
+"@)
+        }
+        $query = @"
+query($($declarations -join ', ')) {
+  repository(owner: `$owner, name: `$name) {
+$($selections -join "`n")
+  }
+}
+"@
+
+        $arguments = [System.Collections.Generic.List[string]]::new()
+        @(
+            'api', 'graphql',
+            '-f', "query=$query",
+            '-f', "owner=$($coordinates.Owner)",
+            '-f', "name=$($coordinates.Name)",
+            '-F', "first=$PageSize"
+        ) | ForEach-Object { $arguments.Add($_) }
+        for ($index = 0; $index -lt $batch.Count; $index++) {
+            $arguments.Add('-F')
+            $arguments.Add("number$index=$($batch[$index].Number)")
+            if (-not [string]::IsNullOrWhiteSpace([string]$batch[$index].Cursor)) {
+                $arguments.Add('-f')
+                $arguments.Add("after$index=$($batch[$index].Cursor)")
+            }
+        }
+
+        $response = Invoke-LeakGhJson -Arguments $arguments.ToArray()
+        $errorsProperty = $response.PSObject.Properties['errors']
+        if ($null -ne $errorsProperty -and @($errorsProperty.Value).Count -gt 0) {
+            throw 'Merged reverter commit-history pagination returned GraphQL errors.'
+        }
+        $data = Get-LeakRequiredPropertyValue `
+            -Object $response `
+            -Name 'data' `
+            -Context 'Merged reverter commit-history response'
+        $repositoryNode = Get-LeakRequiredPropertyValue `
+            -Object $data `
+            -Name 'repository' `
+            -Context 'Merged reverter commit-history response data'
+
+        for ($index = 0; $index -lt $batch.Count; $index++) {
+            $state = $batch[$index]
+            $context = "Merged reverter commit-history PR #$($state.Number)"
+            $node = Get-LeakRequiredPropertyValue `
+                -Object $repositoryNode `
+                -Name "pr$index" `
+                -Context 'Merged reverter commit-history repository'
+            $numberValue = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'number' `
+                -Context $context
+            $number = 0
+            if (-not [int]::TryParse([string]$numberValue, [ref]$number) -or
+                $number -ne $state.Number) {
+                throw "$context returned unexpected PR number '$numberValue'."
+            }
+            $nodeState = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'state' `
+                -Context $context
+            $merged = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'merged' `
+                -Context $context
+            $mergedAt = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'mergedAt' `
+                -Context $context
+            if ($nodeState -isnot [string] -or $nodeState -cne 'MERGED' -or
+                $merged -isnot [bool] -or -not $merged -or
+                $null -eq $mergedAt) {
+                throw "$context is no longer an authoritatively merged PR."
+            }
+            $nodeBase = Get-NormalizedLeakBaseRefName `
+                -PullRequest $node `
+                -Context $context
+            if ($nodeBase -cne $state.BaseRefName) {
+                throw "$context changed baseRefName from '$($state.BaseRefName)' to '$nodeBase'."
+            }
+            $mergeCommit = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'mergeCommit' `
+                -Context $context
+            if ($null -eq $mergeCommit) {
+                throw "$context returned no mergeCommit."
+            }
+            $currentMergeCommitOid = Get-NormalizedLeakMergeCommitOid `
+                -PullRequest ([pscustomobject]@{
+                    number = $state.Number
+                    mergeCommitOid = Get-LeakRequiredPropertyValue `
+                        -Object $mergeCommit `
+                        -Name 'oid' `
+                        -Context "$context mergeCommit"
+                }) `
+                -Context $context
+            if ($currentMergeCommitOid -cne $state.MergeCommitOid) {
+                throw "$context mergeCommitOid changed from '$($state.MergeCommitOid)' to '$currentMergeCommitOid'."
+            }
+
+            $connection = Get-LeakRequiredPropertyValue `
+                -Object $node `
+                -Name 'commits' `
+                -Context $context
+            $totalValue = Get-LeakRequiredPropertyValue `
+                -Object $connection `
+                -Name 'totalCount' `
+                -Context "$context commits"
+            if ($totalValue -isnot [int] -and $totalValue -isnot [long]) {
+                throw "$context returned a malformed commit totalCount."
+            }
+            [long]$totalCount = $totalValue
+            if ($totalCount -lt 0) {
+                throw "$context returned a negative commit totalCount."
+            }
+            if ($state.ExpectedTotal -lt 0) {
+                $state.ExpectedTotal = $totalCount
+            } elseif ($totalCount -ne $state.ExpectedTotal) {
+                throw "$context commit totalCount changed from $($state.ExpectedTotal) to $totalCount during pagination."
+            }
+
+            $nodesValue = Get-LeakRequiredPropertyValue `
+                -Object $connection `
+                -Name 'nodes' `
+                -Context "$context commits"
+            if ($nodesValue -isnot [System.Array]) {
+                throw "$context returned malformed commit nodes instead of an array."
+            }
+            $nodes = @($nodesValue)
+            if ($nodes.Count -gt $PageSize) {
+                throw "$context returned $($nodes.Count) commits for a $PageSize-commit page."
+            }
+            foreach ($commitNode in $nodes) {
+                if ($commitRecordCount -ge $MaximumCommitRecords) {
+                    throw "Merged reverter commit-history pagination exceeded the $MaximumCommitRecords-commit aggregate safety budget."
+                }
+                $commit = Get-LeakRequiredPropertyValue `
+                    -Object $commitNode `
+                    -Name 'commit' `
+                    -Context "$context commit node"
+                $oidValue = Get-LeakRequiredPropertyValue `
+                    -Object $commit `
+                    -Name 'oid' `
+                    -Context "$context commit"
+                if ($oidValue -isnot [string] -or
+                    $oidValue -cnotmatch '^[0-9A-Fa-f]{40}$') {
+                    throw "$context returned a malformed commit oid."
+                }
+                $oid = $oidValue.ToLowerInvariant()
+                if (-not $state.SeenCommitOids.Add($oid)) {
+                    throw "$context returned duplicate commit '$oid' across pages."
+                }
+                $message = Get-LeakRequiredPropertyValue `
+                    -Object $commit `
+                    -Name 'message' `
+                    -Context "$context commit $oid"
+                if ($message -isnot [string]) {
+                    throw "$context commit '$oid' returned a malformed message."
+                }
+                $state.Commits.Add([pscustomobject]@{
+                        oid = $oid
+                        message = $message
+                    })
+                $commitRecordCount++
+            }
+            if ($state.Commits.Count -gt $state.ExpectedTotal) {
+                throw "$context returned more unique commits than totalCount $($state.ExpectedTotal)."
+            }
+
+            $pageInfo = Get-LeakRequiredPropertyValue `
+                -Object $connection `
+                -Name 'pageInfo' `
+                -Context "$context commits"
+            $hasNextPage = Get-LeakRequiredPropertyValue `
+                -Object $pageInfo `
+                -Name 'hasNextPage' `
+                -Context "$context commit pageInfo"
+            if ($hasNextPage -isnot [bool]) {
+                throw "$context returned malformed commit hasNextPage metadata."
+            }
+            $endCursor = Get-LeakRequiredPropertyValue `
+                -Object $pageInfo `
+                -Name 'endCursor' `
+                -Context "$context commit pageInfo"
+
+            if (-not $hasNextPage) {
+                if ($state.Commits.Count -ne $state.ExpectedTotal) {
+                    throw "$context ended after $($state.Commits.Count) unique commits but totalCount is $($state.ExpectedTotal)."
+                }
+                $state.Complete = $true
+                continue
+            }
+            if ($nodes.Count -eq 0) {
+                throw "$context claimed another commit page after returning an empty page."
+            }
+            if ($state.Commits.Count -ge $state.ExpectedTotal) {
+                throw "$context claimed another commit page after already returning totalCount $($state.ExpectedTotal)."
+            }
+            if ($endCursor -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($endCursor)) {
+                throw "$context claimed another commit page without a usable endCursor."
+            }
+            if (-not $state.SeenCursors.Add($endCursor)) {
+                throw "$context repeated commit endCursor '$endCursor'."
+            }
+            $state.Cursor = $endCursor
+        }
+    }
+
+    return @($states | ForEach-Object {
+            [pscustomobject]@{
+                number = $_.Number
+                state = 'MERGED'
+                merged = $true
+                baseRefName = $_.BaseRefName
+                mergeCommitOid = $_.MergeCommitOid
+                commits = @($_.Commits)
+            }
+        } | Sort-Object number)
 }
 
 function Get-CompleteLeakIssues {
@@ -797,9 +1184,70 @@ function Get-RelevantMergedLeakReverts {
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$TargetPullRequests,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedPullRequests,
+        [AllowNull()][AllowEmptyCollection()][object[]]$PullRequestCommitHistories = $null,
         [ValidateRange(1, 1000)][int]$MaximumDiscoveredPullRequests = 1000,
-        [ValidateRange(1, 2000)][int]$MaximumTraversalPullRequests = 2000
+        [ValidateRange(1, 2000)][int]$MaximumTraversalPullRequests = 2000,
+        [ValidateRange(1, 100)][int]$CommitPageSize = 100,
+        [ValidateRange(1, 50)][int]$CommitBatchSize = 10,
+        [ValidateRange(1, 5000)][int]$MaximumCommitPageQueries = 1000,
+        [ValidateRange(1, 100000)][int]$MaximumCommitRecords = 20000
     )
+
+    $historyByNumber = @{}
+    $numbersByMergeCommit = @{}
+    foreach ($row in $MergedPullRequests) {
+        $number = 0
+        if (-not [int]::TryParse([string]$row.number, [ref]$number) -or
+            $number -le 0) {
+            throw "Invalid merged-revert history PR number '$($row.number)'."
+        }
+        if ($historyByNumber.ContainsKey($number)) {
+            throw "Complete merged pull-request history contains duplicate PR #$number."
+        }
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest $row `
+            -Context 'Complete merged pull-request history'
+        $state = Get-LeakRequiredPropertyValue `
+            -Object $row `
+            -Name 'state' `
+            -Context "Complete merged pull-request history PR #$number"
+        $merged = Get-LeakRequiredPropertyValue `
+            -Object $row `
+            -Name 'merged' `
+            -Context "Complete merged pull-request history PR #$number"
+        $mergedAt = Get-LeakRequiredPropertyValue `
+            -Object $row `
+            -Name 'mergedAt' `
+            -Context "Complete merged pull-request history PR #$number"
+        if ($state -isnot [string] -or $state -cne 'MERGED' -or
+            $merged -isnot [bool] -or -not $merged -or
+            $null -eq $mergedAt) {
+            throw "Complete merged pull-request history PR #$number is not authoritatively merged."
+        }
+        $mergeCommitOid = Get-NormalizedLeakMergeCommitOid `
+            -PullRequest $row `
+            -Context 'Complete merged pull-request history'
+
+        $normalized = [pscustomobject]@{
+            number = $number
+            title = [string]$row.title
+            body = [string]$row.body
+            baseRefName = $base
+            state = 'MERGED'
+            merged = $true
+            mergedAt = $mergedAt
+            mergeCommitOid = $mergeCommitOid
+            url = [string]$row.url
+        }
+        $historyByNumber[$number] = $normalized
+
+        $commitIdentity = "$base`0$mergeCommitOid"
+        if (-not $numbersByMergeCommit.ContainsKey($commitIdentity)) {
+            $numbersByMergeCommit[$commitIdentity] =
+                [System.Collections.Generic.List[int]]::new()
+        }
+        $numbersByMergeCommit[$commitIdentity].Add($number)
+    }
 
     $queue = [System.Collections.Generic.Queue[object]]::new()
     $branches = [System.Collections.Generic.HashSet[string]]::new(
@@ -814,6 +1262,18 @@ function Get-RelevantMergedLeakReverts {
         $base = [string]$target.baseRefName
         if ([string]::IsNullOrWhiteSpace($base)) {
             throw "Revert-discovery target PR #$number is missing baseRefName."
+        }
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest ([pscustomobject]@{
+                number = $number
+                baseRefName = $base
+            }) `
+            -Context 'Revert-discovery target'
+        if (-not $historyByNumber.ContainsKey($number)) {
+            throw "Revert-discovery target PR #$number is missing from complete merged history."
+        }
+        if ([string]$historyByNumber[$number].baseRefName -cne $base) {
+            throw "Revert-discovery target PR #$number has a base branch that conflicts with complete merged history."
         }
         if ($branchByNumber.ContainsKey($number)) {
             if ([string]$branchByNumber[$number] -cne $base) {
@@ -832,52 +1292,42 @@ function Get-RelevantMergedLeakReverts {
             })
     }
 
-    $revertersByTarget = @{}
-    foreach ($row in $MergedPullRequests) {
-        if ($null -eq $row.mergedAt) {
-            continue
-        }
-        $base = Get-NormalizedLeakBaseRefName `
-            -PullRequest $row `
-            -Context 'Complete merged pull-request history'
+    $bodyRevertersByTarget = @{}
+    foreach ($row in $historyByNumber.Values) {
+        $base = [string]$row.baseRefName
         if (-not $branches.Contains($base)) {
             continue
-        }
-        $reverter = 0
-        if (-not [int]::TryParse([string]$row.number, [ref]$reverter) -or
-            $reverter -le 0) {
-            throw "Invalid merged-revert history PR number '$($row.number)'."
         }
         foreach ($targetNumber in @(
                 Get-LeakRevertTargets `
                     -Body ([string]$row.body) `
                     -Repository $Repository
             )) {
-            if (-not $revertersByTarget.ContainsKey($targetNumber)) {
-                $revertersByTarget[$targetNumber] =
+            if (-not $bodyRevertersByTarget.ContainsKey($targetNumber)) {
+                $bodyRevertersByTarget[$targetNumber] =
                     [System.Collections.Generic.List[object]]::new()
             }
-            $revertersByTarget[$targetNumber].Add($row)
+            $bodyRevertersByTarget[$targetNumber].Add($row)
         }
     }
 
     $traversed = [System.Collections.Generic.HashSet[int]]::new()
-    $discovered = @{}
+    $candidateReverters = @{}
     while ($queue.Count -gt 0) {
         $target = $queue.Dequeue()
         $targetNumber = [int]$target.number
         if (-not $traversed.Add($targetNumber) -or
-            -not $revertersByTarget.ContainsKey($targetNumber)) {
+            -not $bodyRevertersByTarget.ContainsKey($targetNumber)) {
             continue
         }
-        foreach ($row in $revertersByTarget[$targetNumber]) {
+        foreach ($row in $bodyRevertersByTarget[$targetNumber]) {
             if ([string]$row.baseRefName -cne [string]$target.baseRefName) {
                 continue
             }
 
             $reverter = [int]$row.number
-            if (-not $discovered.ContainsKey($reverter)) {
-                if ($discovered.Count -ge $MaximumDiscoveredPullRequests) {
+            if (-not $candidateReverters.ContainsKey($reverter)) {
+                if ($candidateReverters.Count -ge $MaximumDiscoveredPullRequests) {
                     throw "Relevant merged-revert discovery exceeded the $MaximumDiscoveredPullRequests-PR safety bound."
                 }
                 if (-not $branchByNumber.ContainsKey($reverter)) {
@@ -889,7 +1339,7 @@ function Get-RelevantMergedLeakReverts {
                     [string]$row.baseRefName) {
                     throw "Discovered merged-revert PR #$reverter has conflicting base branches."
                 }
-                $discovered[$reverter] = $row
+                $candidateReverters[$reverter] = $row
                 $queue.Enqueue([pscustomobject]@{
                         number = $reverter
                         baseRefName = [string]$row.baseRefName
@@ -898,7 +1348,195 @@ function Get-RelevantMergedLeakReverts {
         }
     }
 
-    return @($discovered.Values | Sort-Object number)
+    if ($candidateReverters.Count -eq 0) {
+        return @()
+    }
+
+    $commitHistories = if ($null -eq $PullRequestCommitHistories) {
+        @(
+            Get-CompleteLeakPullRequestCommitHistories `
+                -Repository $Repository `
+                -PullRequests @($candidateReverters.Values) `
+                -PageSize $CommitPageSize `
+                -BatchSize $CommitBatchSize `
+                -MaximumPageQueries $MaximumCommitPageQueries `
+                -MaximumCommitRecords $MaximumCommitRecords
+        )
+    } else {
+        @($PullRequestCommitHistories)
+    }
+
+    $commitHistoryByNumber = @{}
+    foreach ($commitHistory in $commitHistories) {
+        $number = 0
+        if (-not [int]::TryParse([string]$commitHistory.number, [ref]$number) -or
+            $number -le 0) {
+            throw "Invalid merged reverter commit-history PR number '$($commitHistory.number)'."
+        }
+        if (-not $candidateReverters.ContainsKey($number)) {
+            throw "Merged reverter commit history unexpectedly contains non-candidate PR #$number."
+        }
+        if ($commitHistoryByNumber.ContainsKey($number)) {
+            throw "Merged reverter commit history contains duplicate PR #$number."
+        }
+        $state = Get-LeakRequiredPropertyValue `
+            -Object $commitHistory `
+            -Name 'state' `
+            -Context "Merged reverter commit history PR #$number"
+        $merged = Get-LeakRequiredPropertyValue `
+            -Object $commitHistory `
+            -Name 'merged' `
+            -Context "Merged reverter commit history PR #$number"
+        if ($state -isnot [string] -or $state -cne 'MERGED' -or
+            $merged -isnot [bool] -or -not $merged) {
+            throw "Merged reverter commit history PR #$number is not authoritatively merged."
+        }
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest $commitHistory `
+            -Context 'Merged reverter commit history'
+        if ($base -cne [string]$candidateReverters[$number].baseRefName) {
+            throw "Merged reverter commit history PR #$number has an unexpected base branch."
+        }
+        $mergeCommitOid = Get-NormalizedLeakMergeCommitOid `
+            -PullRequest $commitHistory `
+            -Context 'Merged reverter commit history'
+        if ($mergeCommitOid -cne
+            [string]$candidateReverters[$number].mergeCommitOid) {
+            throw "Merged reverter commit history PR #$number has an unexpected mergeCommitOid."
+        }
+        $commits = Get-LeakRequiredPropertyValue `
+            -Object $commitHistory `
+            -Name 'commits' `
+            -Context "Merged reverter commit history PR #$number"
+        if ($commits -isnot [System.Array]) {
+            throw "Merged reverter commit history PR #$number has malformed commits."
+        }
+
+        $proofOids = [System.Collections.Generic.List[string]]::new()
+        $seenCommitOids = [System.Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase
+        )
+        foreach ($commit in @($commits)) {
+            $oid = Get-LeakRequiredPropertyValue `
+                -Object $commit `
+                -Name 'oid' `
+                -Context "Merged reverter commit history PR #$number commit"
+            if ($oid -isnot [string] -or
+                $oid -cnotmatch '^[0-9A-Fa-f]{40}$' -or
+                -not $seenCommitOids.Add($oid)) {
+                throw "Merged reverter commit history PR #$number has a malformed or duplicate commit oid."
+            }
+            $message = Get-LeakRequiredPropertyValue `
+                -Object $commit `
+                -Name 'message' `
+                -Context "Merged reverter commit history PR #$number commit"
+            if ($message -isnot [string]) {
+                throw "Merged reverter commit history PR #$number has a malformed commit message."
+            }
+            foreach ($proofOid in @(Get-LeakImmutableRevertCommitOids -Message $message)) {
+                $proofOids.Add($proofOid)
+            }
+        }
+        $commitHistoryByNumber[$number] = [pscustomobject]@{
+            ProofOids = @($proofOids)
+        }
+    }
+    if ($commitHistoryByNumber.Count -ne $candidateReverters.Count) {
+        $missing = @($candidateReverters.Keys |
+            Where-Object { -not $commitHistoryByNumber.ContainsKey([int]$_) } |
+            Sort-Object)
+        throw "Merged reverter commit history is incomplete; missing candidate PRs: $($missing -join ', ')."
+    }
+
+    $verifiedRevertersByTarget = @{}
+    foreach ($row in $candidateReverters.Values) {
+        $number = [int]$row.number
+        $verifiedTargets = [System.Collections.Generic.List[int]]::new()
+        foreach ($targetNumber in @(
+                Get-LeakRevertTargets `
+                    -Body ([string]$row.body) `
+                    -Repository $Repository
+            )) {
+            if (-not $historyByNumber.ContainsKey($targetNumber)) {
+                continue
+            }
+            $target = $historyByNumber[$targetNumber]
+            if ([string]$target.baseRefName -cne [string]$row.baseRefName) {
+                continue
+            }
+
+            $targetMergeCommitOid = [string]$target.mergeCommitOid
+            $commitIdentity =
+                "$($target.baseRefName)`0$targetMergeCommitOid"
+            if ($numbersByMergeCommit[$commitIdentity].Count -ne 1) {
+                continue
+            }
+            $proofCount = @(
+                $commitHistoryByNumber[$number].ProofOids |
+                    Where-Object { $_ -ceq $targetMergeCommitOid }
+            ).Count
+            if ($proofCount -ne 1) {
+                continue
+            }
+            $verifiedTargets.Add($targetNumber)
+        }
+
+        if ($verifiedTargets.Count -eq 0) {
+            continue
+        }
+        $verified = [pscustomobject]@{
+            number = $number
+            title = [string]$row.title
+            body = [string]$row.body
+            baseRefName = [string]$row.baseRefName
+            state = 'MERGED'
+            merged = $true
+            mergedAt = $row.mergedAt
+            mergeCommitOid = [string]$row.mergeCommitOid
+            url = [string]$row.url
+            verifiedRevertTargets = @($verifiedTargets | Sort-Object -Unique)
+        }
+        foreach ($targetNumber in $verified.verifiedRevertTargets) {
+            if (-not $verifiedRevertersByTarget.ContainsKey($targetNumber)) {
+                $verifiedRevertersByTarget[$targetNumber] =
+                    [System.Collections.Generic.List[object]]::new()
+            }
+            $verifiedRevertersByTarget[$targetNumber].Add($verified)
+        }
+    }
+
+    $verifiedQueue = [System.Collections.Generic.Queue[object]]::new()
+    foreach ($target in $TargetPullRequests) {
+        $verifiedQueue.Enqueue([pscustomobject]@{
+                number = [int]$target.number
+                baseRefName = [string]$target.baseRefName
+            })
+    }
+    $verifiedTraversal = [System.Collections.Generic.HashSet[int]]::new()
+    $verifiedDiscovered = @{}
+    while ($verifiedQueue.Count -gt 0) {
+        $target = $verifiedQueue.Dequeue()
+        $targetNumber = [int]$target.number
+        if (-not $verifiedTraversal.Add($targetNumber) -or
+            -not $verifiedRevertersByTarget.ContainsKey($targetNumber)) {
+            continue
+        }
+        foreach ($row in $verifiedRevertersByTarget[$targetNumber]) {
+            if ([string]$row.baseRefName -cne [string]$target.baseRefName) {
+                continue
+            }
+            $reverter = [int]$row.number
+            if (-not $verifiedDiscovered.ContainsKey($reverter)) {
+                $verifiedDiscovered[$reverter] = $row
+                $verifiedQueue.Enqueue([pscustomobject]@{
+                        number = $reverter
+                        baseRefName = [string]$row.baseRefName
+                    })
+            }
+        }
+    }
+
+    return @($verifiedDiscovered.Values | Sort-Object number)
 }
 
 function Assert-LeakDedupState {
@@ -1006,6 +1644,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedRevertPullRequests
     )
 
+    [void](Get-LeakRepositoryCoordinates -Repository $Repository)
     $revertersByTarget = @{}
     $branchByNumber = @{}
     $fixNumbers = [System.Collections.Generic.List[int]]::new()
@@ -1035,6 +1674,26 @@ function Get-EffectiveRevertedPullRequestNumbers {
         if ([string]::IsNullOrWhiteSpace($base)) {
             throw "Merged-revert PR #$reverter is missing baseRefName."
         }
+        $state = Get-LeakRequiredPropertyValue `
+            -Object $revert `
+            -Name 'state' `
+            -Context "Merged-revert PR #$reverter"
+        $merged = Get-LeakRequiredPropertyValue `
+            -Object $revert `
+            -Name 'merged' `
+            -Context "Merged-revert PR #$reverter"
+        $mergedAt = Get-LeakRequiredPropertyValue `
+            -Object $revert `
+            -Name 'mergedAt' `
+            -Context "Merged-revert PR #$reverter"
+        if ($state -isnot [string] -or $state -cne 'MERGED' -or
+            $merged -isnot [bool] -or -not $merged -or
+            $null -eq $mergedAt) {
+            throw "Merged-revert PR #$reverter is not authoritatively merged."
+        }
+        [void](Get-NormalizedLeakMergeCommitOid `
+                -PullRequest $revert `
+                -Context 'Merged-revert history')
         if ($branchByNumber.ContainsKey($reverter) -and
             $branchByNumber[$reverter] -cne $base) {
             throw "PR #$reverter has conflicting base branches."
@@ -1045,11 +1704,22 @@ function Get-EffectiveRevertedPullRequestNumbers {
     foreach ($revert in $MergedRevertPullRequests) {
         $reverter = [int]$revert.number
         $reverterBase = [string]$revert.baseRefName
-        foreach ($target in @(
-                Get-LeakRevertTargets `
-                    -Body ([string]$revert.body) `
-                    -Repository $Repository
-            )) {
+        $verifiedTargetsProperty =
+            $revert.PSObject.Properties['verifiedRevertTargets']
+        if ($null -eq $verifiedTargetsProperty) {
+            continue
+        }
+        if ($verifiedTargetsProperty.Value -isnot [System.Array]) {
+            throw "Merged-revert PR #$reverter has malformed verifiedRevertTargets."
+        }
+        $seenTargets = [System.Collections.Generic.HashSet[int]]::new()
+        foreach ($targetValue in @($verifiedTargetsProperty.Value)) {
+            $target = 0
+            if (-not [int]::TryParse([string]$targetValue, [ref]$target) -or
+                $target -le 0 -or
+                -not $seenTargets.Add($target)) {
+                throw "Merged-revert PR #$reverter has a malformed or duplicate verified target."
+            }
             if (-not $branchByNumber.ContainsKey($target) -or
                 $branchByNumber[$target] -cne $reverterBase) {
                 continue
@@ -1134,6 +1804,7 @@ Export-ModuleMember -Function `
     Get-LeakRevertTargets, `
     Invoke-LeakGhJson, `
     Get-CompleteLeakPullRequests, `
+    Get-CompleteLeakPullRequestCommitHistories, `
     Get-CompleteLeakIssues, `
     Get-RelevantMergedLeakReverts, `
     Assert-LeakDedupState, `

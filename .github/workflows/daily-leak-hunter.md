@@ -140,24 +140,29 @@ pre-agent-steps:
       # A merged [leak-fix] PR is not permanent proof the fix is still active — it may since
       # have been reverted (e.g. it broke something else), in which case the shipped package
       # will still reproduce the ORIGINAL leak and skipping the API forever would be wrong.
-      # GitHub revert PRs identify their target with a repository-local "Reverts #<N>" or an
-      # exact "Reverts <owner>/<repo>#<N>" reference, optionally with normal Markdown
-      # formatting. Resolve those links recursively: any active same-branch direct reverter
-      # keeps its target reverted. Reverting a reverter can deactivate that reverter, but
-      # independent sibling reverts never cancel each other.
-      # Reuse the same complete merged-PR history, index only exact repository-local direct
-      # references, and traverse recursive reverter chains locally. The history fetch uses
-      # 100-node GraphQL cursor pages, stable total-count validation, bounded transient retries,
-      # capped server-directed rate-limit delays, and a 1000-query safety budget. Local
-      # traversal keeps the existing 1000-discovery and 2000-PR aggregate bounds, so seed count
-      # never multiplies GitHub queries.
+      # Repository-local "Reverts #<N>" body references narrow the candidate set but are
+      # editable and never establish revert state themselves. Resolve only independently
+      # verified links recursively: any active same-branch direct reverter keeps its target
+      # reverted. Reverting a reverter can deactivate it, but independent sibling reverts
+      # never cancel each other.
+      # Reuse the same complete merged-PR history, including each original merge/squash commit
+      # OID. Editable `Reverts #N` body lines identify candidates only. The helper batches
+      # candidate PR commit-history queries and accepts an edge only when a complete immutable
+      # commit message contains exactly one full `This reverts commit <40-hex-target-OID>.`
+      # proof. Wrong, abbreviated, duplicate, ambiguous, cross-branch, truncated, or over-budget
+      # evidence leaves the original fix active or fails closed. Both merged-history and commit
+      # pagination use stable totalCount/pageInfo validation, bounded transient retries, capped
+      # server-directed rate-limit delays, and 1000-query safety budgets; commit verification is
+      # batched 10 PRs at a time, pages 100 commits, and caps aggregate records at 20000. Local
+      # traversal keeps the 1000-discovery and 2000-PR aggregate bounds.
       pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
         -MergedPullRequestsJsonPath /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
         -OutputPath /tmp/gh-aw/agent/merged-revert-prs.json
-      # Resolve the EFFECTIVE state recursively, not just one hop. A merged revert toggles
-      # its target only while that revert itself remains active on the SAME base branch.
+      # Resolve the EFFECTIVE state recursively, not just one hop. An immutably verified merged
+      # revert edge toggles its target only while that revert itself remains active on the SAME
+      # base branch; every edge in a revert-of-revert chain must carry its own exact proof.
       # A revert is active only when none of its own same-branch direct reverters is active;
       # any active direct reverter keeps its target reverted. Servicing-branch reverts cannot
       # alter main/inflight.
@@ -313,13 +318,14 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
 - `already-merged-fix-apis.tsv` / `.txt` — `Type.Member <TAB> PR# <TAB> baseRefName <TAB> URL
   <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
   `.txt` is just the first column, deduplicated). Effective revert state is resolved
-  recursively and per base branch from GitHub's standard
-  repository-local `Reverts #<N>` or exact `Reverts <owner>/<repo>#<N>` body reference
-  (normal Markdown formatting is accepted): any active same-branch direct reverter excludes
-  its target. Reverting a reverter can deactivate that reverter, but independent sibling
-  reverts never cancel each other. A servicing-branch revert cannot toggle a main/inflight
-  fix. Only an effectively reverted fix is treated as re-filable rather than permanent proof
-  the fix is still active.
+  recursively and per base branch. Editable repository-local `Reverts #<N>` body references
+  only identify candidates; every edge also requires exactly one full target merge/squash
+  commit OID in an immutable `This reverts commit <40-hex-OID>.` commit-message line from a
+  complete merged candidate history. Any active same-branch verified direct reverter excludes
+  its target. Reverting a reverter can deactivate that reverter only when that next edge is
+  independently verified; sibling reverts never cancel each other. A servicing-branch revert
+  cannot toggle a main/inflight fix. Missing, ambiguous, malformed, truncated, or over-budget
+  evidence retains the original fix as active or blocks the run.
 
 - A candidate is **OUT** if an open `[leak-scan]` issue or active merged `[leak-fix]` PR covers
   the same canonical API. Use `already-filed-apis.txt` / `already-merged-fix-apis.txt` as

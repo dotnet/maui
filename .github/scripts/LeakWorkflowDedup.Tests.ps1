@@ -10,18 +10,33 @@ BeforeAll {
             [string]$Title,
             [string]$Body = '',
             [string]$Base = 'main',
-            [bool]$Merged = $true
+            [bool]$Merged = $true,
+            [string]$MergeCommitOid = '',
+            [int[]]$VerifiedRevertTargets,
+            [string[]]$CommitMessages
         )
 
-        [pscustomobject]@{
+        if ($Merged -and [string]::IsNullOrWhiteSpace($MergeCommitOid)) {
+            $MergeCommitOid = '{0:x40}' -f $Number
+        }
+        $result = [ordered]@{
             number      = $Number
             title       = $Title
             body        = $Body
             baseRefName = $Base
             state       = if ($Merged) { 'MERGED' } else { 'CLOSED' }
+            merged      = $Merged
             mergedAt    = if ($Merged) { '2026-08-10T00:00:00Z' } else { $null }
+            mergeCommitOid = if ($Merged) { $MergeCommitOid } else { $null }
             url         = "https://github.com/dotnet/maui/pull/$Number"
         }
+        if ($PSBoundParameters.ContainsKey('VerifiedRevertTargets')) {
+            $result.verifiedRevertTargets = @($VerifiedRevertTargets)
+        }
+        if ($PSBoundParameters.ContainsKey('CommitMessages')) {
+            $result.commitMessages = @($CommitMessages)
+        }
+        [pscustomobject]$result
     }
 
     function New-LeakGraphQlPageJson {
@@ -64,13 +79,88 @@ BeforeAll {
             body = $Body
             baseRefName = $Base
             state = $State
+            merged = $State -ceq 'MERGED'
             mergedAt = if ($State -ceq 'MERGED') {
                 '2026-08-10T00:00:00Z'
             } else {
                 $null
             }
+            mergeCommit = if ($State -ceq 'MERGED') {
+                @{
+                    oid = '{0:x40}' -f $Number
+                }
+            } else {
+                $null
+            }
             url = "https://github.com/dotnet/maui/pull/$Number"
         }
+    }
+
+    function New-LeakCommitHistory {
+        param(
+            [Parameter(Mandatory = $true)][object]$PullRequest,
+            [AllowEmptyCollection()][string[]]$Messages = @(),
+            [AllowNull()][object[]]$Commits = $null
+        )
+
+        if ($null -eq $Commits) {
+            $commitNumber = 0
+            $Commits = @($Messages | ForEach-Object {
+                    $commitNumber++
+                    [pscustomobject]@{
+                        oid = '{0:x40}' -f (
+                            ([int]$PullRequest.number * 1000) + $commitNumber
+                        )
+                        message = $_
+                    }
+                })
+        }
+        [pscustomobject]@{
+            number = [int]$PullRequest.number
+            state = 'MERGED'
+            merged = $true
+            baseRefName = [string]$PullRequest.baseRefName
+            mergeCommitOid = [string]$PullRequest.mergeCommitOid
+            commits = @($Commits)
+        }
+    }
+
+    function New-LeakCommitHistoryGraphQlJson {
+        param(
+            [Parameter(Mandatory = $true)][object]$PullRequest,
+            [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Commits,
+            [Parameter(Mandatory = $true)][long]$TotalCount,
+            [Parameter(Mandatory = $true)][bool]$HasNextPage,
+            [AllowNull()][string]$EndCursor,
+            [string]$Alias = 'pr0'
+        )
+
+        $repository = @{}
+        $repository[$Alias] = @{
+            number = [int]$PullRequest.number
+            state = 'MERGED'
+            merged = $true
+            mergedAt = [string]$PullRequest.mergedAt
+            baseRefName = [string]$PullRequest.baseRefName
+            mergeCommit = @{
+                oid = [string]$PullRequest.mergeCommitOid
+            }
+            commits = @{
+                totalCount = $TotalCount
+                nodes = @($Commits | ForEach-Object {
+                        @{ commit = $_ }
+                    })
+                pageInfo = @{
+                    hasNextPage = $HasNextPage
+                    endCursor = $EndCursor
+                }
+            }
+        }
+        @{
+            data = @{
+                repository = $repository
+            }
+        } | ConvertTo-Json -Depth 10 -Compress
     }
 }
 
@@ -718,7 +808,8 @@ Describe 'trusted final duplicate gate' {
         $revert = New-LeakPr `
             -Number 200 `
             -Title 'Revert leak fix' `
-            -Body 'Reverts dotnet/maui#100'
+            -Body 'Reverts dotnet/maui#100' `
+            -VerifiedRevertTargets @(100)
 
         $result = Get-LeakFixFinalDedupResult `
             -IssueNumber 20 `
@@ -745,15 +836,18 @@ Describe 'trusted final duplicate gate' {
             New-LeakPr `
                 -Number 200 `
                 -Title 'Revert Picker fix and cyclic peer' `
-                -Body "Reverts #100`nReverts #300"
+                -Body "Reverts #100`nReverts #300" `
+                -VerifiedRevertTargets @(100, 300)
             New-LeakPr `
                 -Number 300 `
                 -Title 'Revert cyclic peer' `
-                -Body 'Reverts #200'
+                -Body 'Reverts #200' `
+                -VerifiedRevertTargets @(200)
             New-LeakPr `
                 -Number 210 `
                 -Title 'Revert unrelated fix' `
-                -Body 'Reverts #110'
+                -Body 'Reverts #110' `
+                -VerifiedRevertTargets @(110)
         )
 
         $result = Get-LeakFixFinalDedupResult `
@@ -778,15 +872,18 @@ Describe 'trusted final duplicate gate' {
             New-LeakPr `
                 -Number 200 `
                 -Title 'Cycle-entangled sibling' `
-                -Body "Reverts #100`nReverts #300"
+                -Body "Reverts #100`nReverts #300" `
+                -VerifiedRevertTargets @(100, 300)
             New-LeakPr `
                 -Number 300 `
                 -Title 'Cycle peer' `
-                -Body 'Reverts #200'
+                -Body 'Reverts #200' `
+                -VerifiedRevertTargets @(200)
             New-LeakPr `
                 -Number 201 `
                 -Title 'Definite terminal sibling' `
-                -Body 'Reverts #100'
+                -Body 'Reverts #100' `
+                -VerifiedRevertTargets @(100)
         )
 
         $result = Get-LeakFixFinalDedupResult `
@@ -828,7 +925,8 @@ Describe 'effective recursive revert state' {
     It 'excludes a fix after one active revert' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
-            New-LeakPr -Number 200 -Title 'Revert leak fix' -Body 'Reverts dotnet/maui#100'
+            New-LeakPr -Number 200 -Title 'Revert leak fix' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
         )
 
         Get-EffectiveRevertedPullRequestNumbers `
@@ -838,30 +936,32 @@ Describe 'effective recursive revert state' {
             Should -Be @(100)
     }
 
-    It 'accepts a repository-local revert reference' {
+    It 'does not trust a repository-local body reference without immutable proof' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert leak fix' -Body 'Reverts #100'
         )
 
-        Get-EffectiveRevertedPullRequestNumbers `
-            -Repository 'dotnet/maui' `
-            -FixPullRequests @($fix) `
-            -MergedRevertPullRequests $reverts |
-            Should -Be @(100)
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests $reverts
+        ).Count | Should -Be 0
     }
 
-    It 'accepts markdown formatting around a repository-local revert reference' {
+    It 'does not trust formatted editable body prose without immutable proof' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
             New-LeakPr -Number 200 -Title 'Revert leak fix' -Body '> - **Reverts #100**'
         )
 
-        Get-EffectiveRevertedPullRequestNumbers `
-            -Repository 'dotnet/maui' `
-            -FixPullRequests @($fix) `
-            -MergedRevertPullRequests $reverts |
-            Should -Be @(100)
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests $reverts
+        ).Count | Should -Be 0
     }
 
     It 'rejects a revert reference qualified to another repository' {
@@ -881,8 +981,10 @@ Describe 'effective recursive revert state' {
     It 'reinstates a fix after its revert is itself reverted' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
-            New-LeakPr -Number 200 -Title 'Revert leak fix' -Body 'Reverts dotnet/maui#100'
-            New-LeakPr -Number 300 -Title 'Revert the revert' -Body 'Reverts dotnet/maui#200'
+            New-LeakPr -Number 200 -Title 'Revert leak fix' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
+            New-LeakPr -Number 300 -Title 'Revert the revert' `
+                -Body 'Reverts dotnet/maui#200' -VerifiedRevertTargets @(200)
         )
 
         @(
@@ -896,9 +998,12 @@ Describe 'effective recursive revert state' {
     It 'handles a deeper odd effective chain' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
-            New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
-            New-LeakPr -Number 300 -Title 'Revert A again' -Body 'Reverts dotnet/maui#200'
-            New-LeakPr -Number 400 -Title 'Revert A re-revert' -Body 'Reverts dotnet/maui#300'
+            New-LeakPr -Number 200 -Title 'Revert A' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
+            New-LeakPr -Number 300 -Title 'Revert A again' `
+                -Body 'Reverts dotnet/maui#200' -VerifiedRevertTargets @(200)
+            New-LeakPr -Number 400 -Title 'Revert A re-revert' `
+                -Body 'Reverts dotnet/maui#300' -VerifiedRevertTargets @(300)
         )
 
         Get-EffectiveRevertedPullRequestNumbers `
@@ -911,8 +1016,10 @@ Describe 'effective recursive revert state' {
     It 'keeps a fix reverted when multiple independent sibling reverts remain active' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
-            New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
-            New-LeakPr -Number 201 -Title 'Revert B' -Body 'Reverts dotnet/maui#100'
+            New-LeakPr -Number 200 -Title 'Revert A' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
+            New-LeakPr -Number 201 -Title 'Revert B' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
         )
 
         @(
@@ -926,9 +1033,12 @@ Describe 'effective recursive revert state' {
     It 'keeps a fix reverted while any independent sibling revert remains active' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $reverts = @(
-            New-LeakPr -Number 200 -Title 'Revert A' -Body 'Reverts dotnet/maui#100'
-            New-LeakPr -Number 201 -Title 'Revert B' -Body 'Reverts dotnet/maui#100'
-            New-LeakPr -Number 300 -Title 'Restore only A' -Body 'Reverts dotnet/maui#200'
+            New-LeakPr -Number 200 -Title 'Revert A' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
+            New-LeakPr -Number 201 -Title 'Revert B' `
+                -Body 'Reverts dotnet/maui#100' -VerifiedRevertTargets @(100)
+            New-LeakPr -Number 300 -Title 'Restore only A' `
+                -Body 'Reverts dotnet/maui#200' -VerifiedRevertTargets @(200)
         )
 
         Get-EffectiveRevertedPullRequestNumbers `
@@ -947,7 +1057,8 @@ Describe 'effective recursive revert state' {
             -Number 200 `
             -Title 'Revert leak fix for servicing' `
             -Body 'Reverts dotnet/maui#100' `
-            -Base 'release/10.0.1xx-sr9'
+            -Base 'release/10.0.1xx-sr9' `
+            -VerifiedRevertTargets @(100)
 
         @(
             Get-EffectiveRevertedPullRequestNumbers `
@@ -971,17 +1082,20 @@ Describe 'effective recursive revert state' {
                 -Number 200 `
                 -Title 'Revert main fix' `
                 -Body 'Reverts dotnet/maui#100' `
-                -Base main
+                -Base main `
+                -VerifiedRevertTargets @(100)
             New-LeakPr `
                 -Number 210 `
                 -Title 'Unrelated main revert of inflight PR number' `
                 -Body 'Reverts dotnet/maui#110' `
-                -Base main
+                -Base main `
+                -VerifiedRevertTargets @(110)
             New-LeakPr `
                 -Number 220 `
                 -Title 'Revert inflight fix' `
                 -Body 'Reverts dotnet/maui#110' `
-                -Base 'inflight/current'
+                -Base 'inflight/current' `
+                -VerifiedRevertTargets @(110)
         )
 
         Get-EffectiveRevertedPullRequestNumbers `
@@ -1224,13 +1338,146 @@ Describe 'complete GraphQL pagination' {
     }
 }
 
+Describe 'merged reverter commit-history pagination' {
+    BeforeEach {
+        $global:leakCommitHistoryCalls =
+            [System.Collections.Generic.List[object]]::new()
+        $global:leakCommitHistoryResponses =
+            [System.Collections.Generic.Queue[string]]::new()
+        function global:gh {
+            param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+            $global:leakCommitHistoryCalls.Add(@($GhArgs))
+            $global:LASTEXITCODE = 0
+            if ($global:leakCommitHistoryResponses.Count -eq 0) {
+                throw 'No mock commit-history GraphQL response remains.'
+            }
+            Write-Output $global:leakCommitHistoryResponses.Dequeue()
+        }
+    }
+
+    AfterAll {
+        Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+        Remove-Variable leakCommitHistoryCalls, leakCommitHistoryResponses `
+            -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    It 'batches candidates while preserving complete commit metadata' {
+        $first = New-LeakPr -Number 200 -Title 'First candidate'
+        $second = New-LeakPr -Number 300 -Title 'Second candidate'
+        $repository = @{}
+        foreach ($entry in @(
+                @{ Alias = 'pr0'; PullRequest = $first; Commit = @{
+                        oid = '1111111111111111111111111111111111111111'
+                        message = 'First immutable message'
+                    } }
+                @{ Alias = 'pr1'; PullRequest = $second; Commit = @{
+                        oid = '2222222222222222222222222222222222222222'
+                        message = 'Second immutable message'
+                    } }
+            )) {
+            $repository[$entry.Alias] = @{
+                number = $entry.PullRequest.number
+                state = 'MERGED'
+                merged = $true
+                mergedAt = $entry.PullRequest.mergedAt
+                baseRefName = $entry.PullRequest.baseRefName
+                mergeCommit = @{ oid = $entry.PullRequest.mergeCommitOid }
+                commits = @{
+                    totalCount = 1
+                    nodes = @(@{ commit = $entry.Commit })
+                    pageInfo = @{
+                        hasNextPage = $false
+                        endCursor = $null
+                    }
+                }
+            }
+        }
+        $global:leakCommitHistoryResponses.Enqueue(
+            (@{ data = @{ repository = $repository } } |
+                ConvertTo-Json -Depth 10 -Compress)
+        )
+
+        $result = @(
+            Get-CompleteLeakPullRequestCommitHistories `
+                -Repository 'dotnet/maui' `
+                -PullRequests @($first, $second) `
+                -BatchSize 2
+        )
+
+        $result.number | Should -Be @(200, 300)
+        $global:leakCommitHistoryCalls.Count | Should -Be 1
+        ($global:leakCommitHistoryCalls[0] -join ' ') |
+            Should -Match 'pr0: pullRequest'
+        ($global:leakCommitHistoryCalls[0] -join ' ') |
+            Should -Match 'pr1: pullRequest'
+    }
+
+    It 'fails closed when commit pagination is truncated' {
+        $candidate = New-LeakPr -Number 200 -Title 'Candidate'
+        $global:leakCommitHistoryResponses.Enqueue(
+            (New-LeakCommitHistoryGraphQlJson `
+                    -PullRequest $candidate `
+                    -Commits @(
+                        @{
+                            oid = '1111111111111111111111111111111111111111'
+                            message = 'Only returned commit'
+                        }
+                    ) `
+                    -TotalCount 2 `
+                    -HasNextPage $false)
+        )
+
+        {
+            Get-CompleteLeakPullRequestCommitHistories `
+                -Repository 'dotnet/maui' `
+                -PullRequests @($candidate)
+        } | Should -Throw '*ended after 1 unique commits but totalCount is 2*'
+    }
+
+    It 'fails closed before exceeding the aggregate commit query budget' {
+        $candidate = New-LeakPr -Number 200 -Title 'Candidate'
+        $global:leakCommitHistoryResponses.Enqueue(
+            (New-LeakCommitHistoryGraphQlJson `
+                    -PullRequest $candidate `
+                    -Commits @(
+                        @{
+                            oid = '1111111111111111111111111111111111111111'
+                            message = 'First commit'
+                        }
+                    ) `
+                    -TotalCount 2 `
+                    -HasNextPage $true `
+                    -EndCursor next-commit-page)
+        )
+
+        {
+            Get-CompleteLeakPullRequestCommitHistories `
+                -Repository 'dotnet/maui' `
+                -PullRequests @($candidate) `
+                -PageSize 1 `
+                -MaximumPageQueries 1
+        } | Should -Throw '*exceeded the 1-query safety budget*'
+
+        $global:leakCommitHistoryCalls.Count | Should -Be 1
+    }
+}
+
 Describe 'merged revert discovery from complete history' {
-    It 'recursively discovers only explicit same-branch reverters of the target set' {
+    It 'recursively discovers only same-branch edges with exact immutable commit proof' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $revert = New-LeakPr `
+            -Number 200 `
+            -Title 'Back out cleanup without Revert in the title' `
+            -Body 'Reverts #100'
+        $restore = New-LeakPr `
+            -Number 300 `
+            -Title 'Restore prior behavior' `
+            -Body 'Reverts dotnet/maui#200'
         $mergedHistory = @(
-            New-LeakPr `
-                -Number 200 `
-                -Title 'Back out cleanup without Revert in the title' `
-                -Body 'Reverts #100'
+            $fix
+            $revert
             New-LeakPr `
                 -Number 201 `
                 -Title 'Unrelated mention' `
@@ -1244,45 +1491,206 @@ Describe 'merged revert discovery from complete history' {
                 -Title 'Wrong branch reference' `
                 -Body 'Reverts #100' `
                 -Base 'release/10.0.1xx-sr9'
-            New-LeakPr `
-                -Number 300 `
-                -Title 'Restore prior behavior' `
-                -Body 'Reverts dotnet/maui#200'
+            $restore
         )
 
         $result = @(
             Get-RelevantMergedLeakReverts `
                 -Repository 'dotnet/maui' `
-                -TargetPullRequests @(
-                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
-                ) `
-                -MergedPullRequests $mergedHistory
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests $mergedHistory `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $revert `
+                        -Messages @(
+                            "Revert cleanup`n`nThis reverts commit $($fix.mergeCommitOid)."
+                        )
+                    New-LeakCommitHistory `
+                        -PullRequest $restore `
+                        -Messages @(
+                            "Restore cleanup`n`nThis reverts commit $($revert.mergeCommitOid)."
+                        )
+                )
         )
 
         $result.number | Should -Be @(200, 300)
+        $result[0].verifiedRevertTargets | Should -Be @(100)
+        $result[1].verifiedRevertTargets | Should -Be @(200)
     }
 
     It 'keeps more than 100 seeds on one shared history scan' {
         $targets = @(1000..1100 | ForEach-Object {
-                [pscustomobject]@{ number = $_; baseRefName = 'main' }
+                New-LeakPr `
+                    -Number $_ `
+                    -Title "[leak-fix] Fix Type$_.Member leak"
             })
-        $mergedHistory = @(
-            New-LeakPr -Number 2000 -Title 'Relevant revert' -Body 'Reverts #1000'
-            New-LeakPr -Number 2001 -Title 'Recursive revert' -Body 'Reverts #2000'
-        )
+        $revert = New-LeakPr `
+            -Number 2000 `
+            -Title 'Relevant revert' `
+            -Body 'Reverts #1000'
+        $restore = New-LeakPr `
+            -Number 2001 `
+            -Title 'Recursive revert' `
+            -Body 'Reverts #2000'
+        $mergedHistory = @($targets) + @($revert, $restore)
 
         $result = @(
             Get-RelevantMergedLeakReverts `
                 -Repository 'dotnet/maui' `
                 -TargetPullRequests $targets `
-                -MergedPullRequests $mergedHistory
+                -MergedPullRequests $mergedHistory `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $revert `
+                        -Messages @(
+                            "Revert`n`nThis reverts commit $($targets[0].mergeCommitOid)."
+                        )
+                    New-LeakCommitHistory `
+                        -PullRequest $restore `
+                        -Messages @(
+                            "Restore`n`nThis reverts commit $($revert.mergeCommitOid)."
+                        )
+                )
         )
 
         $result.number | Should -Be @(2000, 2001)
     }
 
+    It 'retains the original fix when editable body prose has no matching commit proof' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $forged = New-LeakPr `
+            -Number 200 `
+            -Title 'Unrelated merged change' `
+            -Body 'Reverts #100'
+
+        $reverts = @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $forged) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $forged `
+                        -Messages @('Unrelated immutable commit message')
+                )
+        )
+
+        $reverts.Count | Should -Be 0
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests $reverts
+        ).Count | Should -Be 0
+    }
+
+    It 'rejects wrong and abbreviated immutable commit references' -ForEach @(
+        @{ Proof = '1111111111111111111111111111111111111111' }
+        @{ Proof = '000000000000000000000000000000000000006' }
+        @{ Proof = '0000000' }
+    ) {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $candidate = New-LeakPr `
+            -Number 200 `
+            -Title 'Claimed revert' `
+            -Body 'Reverts #100'
+
+        @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $candidate) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $candidate `
+                        -Messages @(
+                            "Claimed revert`n`nThis reverts commit $Proof."
+                        )
+                )
+        ).Count | Should -Be 0
+    }
+
+    It 'ignores a branch-mismatched candidate even with an exact commit reference' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $releaseCandidate = New-LeakPr `
+            -Number 200 `
+            -Title 'Servicing revert' `
+            -Body 'Reverts #100' `
+            -Base 'release/10.0.1xx-sr9'
+
+        @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $releaseCandidate)
+        ).Count | Should -Be 0
+    }
+
+    It 'rejects duplicate immutable proof for one candidate edge as ambiguous' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $candidate = New-LeakPr `
+            -Number 200 `
+            -Title 'Ambiguous revert' `
+            -Body 'Reverts #100'
+        $proof = "This reverts commit $($fix.mergeCommitOid)."
+
+        @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $candidate) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $candidate `
+                        -Messages @("$proof`n$proof")
+                )
+        ).Count | Should -Be 0
+    }
+
+    It 'rejects a merge commit shared by multiple PR identities as ambiguous' {
+        $sharedOid = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak' `
+            -MergeCommitOid $sharedOid
+        $other = New-LeakPr `
+            -Number 101 `
+            -Title 'Another PR with ambiguous commit identity' `
+            -MergeCommitOid $sharedOid
+        $candidate = New-LeakPr `
+            -Number 200 `
+            -Title 'Claimed revert' `
+            -Body 'Reverts #100'
+
+        @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $other, $candidate) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $candidate `
+                        -Messages @(
+                            "Revert`n`nThis reverts commit $sharedOid."
+                        )
+                )
+        ).Count | Should -Be 0
+    }
+
     It 'fails closed when recursive discovery exhausts the aggregate traversal budget' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
         $mergedHistory = @(
+            $fix
             New-LeakPr -Number 200 -Title 'First revert' -Body 'Reverts #100'
             New-LeakPr -Number 300 -Title 'Second revert' -Body 'Reverts #200'
             New-LeakPr -Number 400 -Title 'Third revert' -Body 'Reverts #300'
@@ -1291,9 +1699,7 @@ Describe 'merged revert discovery from complete history' {
         {
             Get-RelevantMergedLeakReverts `
                 -Repository 'dotnet/maui' `
-                -TargetPullRequests @(
-                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
-                ) `
+                -TargetPullRequests @($fix) `
                 -MergedPullRequests $mergedHistory `
                 -MaximumTraversalPullRequests 3
         } | Should -Throw '*exhausted the 3-PR aggregate traversal safety budget*'
@@ -1409,7 +1815,9 @@ Describe 'workflow enforcement boundary' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
 
         $workflow | Should -Match 'any active same-branch direct reverter'
-        $workflow | Should -Match 'independent sibling reverts\s+never cancel each other'
+        $workflow | Should -Match '(?s)independent sibling reverts.*never cancel each other'
+        $workflow | Should -Match 'every edge in a revert-of-revert chain must carry its own exact proof'
+        $workflow | Should -Match '(?s)body references.*never establish revert state'
         $workflow | Should -Not -Match 'combined by parity|combine by parity'
     }
 
@@ -1461,6 +1869,9 @@ Describe 'workflow enforcement boundary' {
 
         $module | Should -Match '\$MaximumPageQueries = 1000'
         $module | Should -Match '\$PageSize = 100'
+        $module | Should -Match '\$CommitBatchSize = 10'
+        $module | Should -Match '\$MaximumCommitPageQueries = 1000'
+        $module | Should -Match '\$MaximumCommitRecords = 20000'
         $module | Should -Match '\$MaximumTraversalPullRequests = 2000'
         @($wrapper, $fixGate, $hunterGate) | ForEach-Object {
             $_ | Should -Match 'Get-RelevantMergedLeakReverts'
@@ -1469,7 +1880,7 @@ Describe 'workflow enforcement boundary' {
         }
     }
 
-    It 'uses complete cursor history with exact local revert verification' {
+    It 'uses complete cursor history with exact immutable revert verification' {
         $module = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
         ) -Raw
@@ -1493,8 +1904,18 @@ Describe 'workflow enforcement boundary' {
         $module | Should -Match 'pageInfo'
         $module | Should -Match 'totalCount'
         $module | Should -Match 'endCursor'
+        $module | Should -Match 'mergeCommitOid'
+        $module | Should -Match 'commits\(first:'
+        $module | Should -Match 'This reverts commit'
+        $module | Should -Match 'verifiedRevertTargets'
         $module | Should -Match 'Get-LeakRevertTargets'
         $module | Should -Not -Match "'--search'|gh pr list"
+        $effectiveResolver = [regex]::Match(
+            $module,
+            '(?s)function Get-EffectiveRevertedPullRequestNumbers \{.*?Export-ModuleMember'
+        ).Value
+        $effectiveResolver | Should -Not -Match 'Get-LeakRevertTargets'
+        $effectiveResolver | Should -Not -Match '\.body'
         $wrapper | Should -Match 'MergedPullRequestsJsonPath'
         @($fixGate, $hunterGate) | ForEach-Object {
             $_ | Should -Match 'Get-CompleteLeakPullRequests'
@@ -1512,6 +1933,9 @@ Describe 'workflow enforcement boundary' {
             $documentation | Should -Match 'capped server-directed rate-limit delays'
             $documentation | Should -Match '1000-query safety budget'
             $documentation | Should -Match '1000-discovery and 2000-PR aggregate'
+            $documentation | Should -Match 'merge/squash commit OID'
+            $documentation | Should -Match 'This reverts commit'
+            $documentation | Should -Match '20000'
             $documentation | Should -Not -Match '1000-result|Search API'
         }
     }
@@ -1559,6 +1983,63 @@ Describe 'workflow enforcement boundary' {
                 $queryArgument = @($GhArgs | Where-Object {
                         $_.StartsWith('query=', [StringComparison]::Ordinal)
                     })[0]
+                if ($queryArgument -match 'commits\(first:') {
+                    $repository = @{}
+                    $source = @($global:mockMerged) + @($global:mockReverts)
+                    foreach ($argument in @($GhArgs | Where-Object {
+                                $_ -match '^number(?<index>[0-9]+)=(?<number>[1-9][0-9]*)$'
+                            })) {
+                        $argument -match '^number(?<index>[0-9]+)=(?<number>[1-9][0-9]*)$' |
+                            Out-Null
+                        $index = [int]$Matches.index
+                        $number = [int]$Matches.number
+                        $pullRequest = @($source | Where-Object {
+                                [int]$_.number -eq $number
+                            })
+                        if ($pullRequest.Count -ne 1) {
+                            throw "Unexpected mock commit-history PR #$number."
+                        }
+                        $messagesProperty =
+                            $pullRequest[0].PSObject.Properties['commitMessages']
+                        $messages = if ($null -eq $messagesProperty) {
+                            @()
+                        } else {
+                            @($messagesProperty.Value)
+                        }
+                        $commitIndex = 0
+                        $repository["pr$index"] = @{
+                            number = $number
+                            state = 'MERGED'
+                            merged = $true
+                            mergedAt = $pullRequest[0].mergedAt
+                            baseRefName = $pullRequest[0].baseRefName
+                            mergeCommit = @{
+                                oid = $pullRequest[0].mergeCommitOid
+                            }
+                            commits = @{
+                                totalCount = $messages.Count
+                                nodes = @($messages | ForEach-Object {
+                                        $commitIndex++
+                                        @{
+                                            commit = @{
+                                                oid = '{0:x40}' -f (
+                                                    ($number * 1000) + $commitIndex
+                                                )
+                                                message = $_
+                                            }
+                                        }
+                                    })
+                                pageInfo = @{
+                                    hasNextPage = $false
+                                    endCursor = $null
+                                }
+                            }
+                        }
+                    }
+                    Write-Output (@{ data = @{ repository = $repository } } |
+                        ConvertTo-Json -Depth 10 -Compress)
+                    return
+                }
                 $baseArgument = @($GhArgs | Where-Object {
                         $_.StartsWith('base=', [StringComparison]::Ordinal)
                     })[0]
@@ -1590,6 +2071,12 @@ Describe 'workflow enforcement boundary' {
                             }
                         }
                         $node.state = $state
+                        $node.merged = $state -ceq 'MERGED'
+                        $node.mergeCommit = if ($state -ceq 'MERGED') {
+                            @{ oid = [string]$_.mergeCommitOid }
+                        } else {
+                            $null
+                        }
                         [pscustomobject]$node
                     })
                 Write-Output (New-LeakGraphQlPageJson `
@@ -1881,17 +2368,19 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
         }
 
         It 'allows a re-file after the matching merged fix was effectively reverted' {
-            $global:mockMerged = @(
-                New-LeakPr `
-                    -Number 503 `
-                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
-                    -Body "Fixes #20`nRefs: dotnet/maui#20"
-            )
+            $fix = New-LeakPr `
+                -Number 503 `
+                -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                -Body "Fixes #20`nRefs: dotnet/maui#20"
+            $global:mockMerged = @($fix)
             $global:mockReverts = @(
                 New-LeakPr `
                     -Number 504 `
                     -Title 'Back out the collection cleanup' `
-                    -Body 'Reverts dotnet/maui#503'
+                    -Body 'Reverts dotnet/maui#503' `
+                    -CommitMessages @(
+                        "Revert cleanup`n`nThis reverts commit $($fix.mergeCommitOid)."
+                    )
             )
 
             {
@@ -1900,6 +2389,28 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+        }
+
+        It 'blocks when editable merged-PR prose claims a revert without commit proof' {
+            $fix = New-LeakPr `
+                -Number 503 `
+                -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                -Body "Fixes #20`nRefs: dotnet/maui#20"
+            $global:mockMerged = @($fix)
+            $global:mockReverts = @(
+                New-LeakPr `
+                    -Number 504 `
+                    -Title 'Unrelated merged change' `
+                    -Body 'Reverts dotnet/maui#503' `
+                    -CommitMessages @('No immutable revert association')
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*blocked PR creation*direct issue-reference match: 503*'
         }
     }
 
@@ -1953,6 +2464,64 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                             -HasNextPage $false)
                     return
                 }
+                if ($queryArgument -match 'commits\(first:') {
+                    $repository = @{}
+                    $source = @($global:mockHunterMerged) +
+                        @($global:mockHunterReverts)
+                    foreach ($argument in @($GhArgs | Where-Object {
+                                $_ -match '^number(?<index>[0-9]+)=(?<number>[1-9][0-9]*)$'
+                            })) {
+                        $argument -match '^number(?<index>[0-9]+)=(?<number>[1-9][0-9]*)$' |
+                            Out-Null
+                        $index = [int]$Matches.index
+                        $number = [int]$Matches.number
+                        $pullRequest = @($source | Where-Object {
+                                [int]$_.number -eq $number
+                            })
+                        if ($pullRequest.Count -ne 1) {
+                            throw "Unexpected hunter mock commit-history PR #$number."
+                        }
+                        $messagesProperty =
+                            $pullRequest[0].PSObject.Properties['commitMessages']
+                        $messages = if ($null -eq $messagesProperty) {
+                            @()
+                        } else {
+                            @($messagesProperty.Value)
+                        }
+                        $commitIndex = 0
+                        $repository["pr$index"] = @{
+                            number = $number
+                            state = 'MERGED'
+                            merged = $true
+                            mergedAt = $pullRequest[0].mergedAt
+                            baseRefName = $pullRequest[0].baseRefName
+                            mergeCommit = @{
+                                oid = $pullRequest[0].mergeCommitOid
+                            }
+                            commits = @{
+                                totalCount = $messages.Count
+                                nodes = @($messages | ForEach-Object {
+                                        $commitIndex++
+                                        @{
+                                            commit = @{
+                                                oid = '{0:x40}' -f (
+                                                    ($number * 1000) + $commitIndex
+                                                )
+                                                message = $_
+                                            }
+                                        }
+                                    })
+                                pageInfo = @{
+                                    hasNextPage = $false
+                                    endCursor = $null
+                                }
+                            }
+                        }
+                    }
+                    Write-Output (@{ data = @{ repository = $repository } } |
+                        ConvertTo-Json -Depth 10 -Compress)
+                    return
+                }
                 $baseArgument = @($GhArgs | Where-Object {
                         $_.StartsWith('base=', [StringComparison]::Ordinal)
                     })[0]
@@ -1979,6 +2548,10 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                             }
                         }
                         $node.state = 'MERGED'
+                        $node.merged = $true
+                        $node.mergeCommit = @{
+                            oid = [string]$_.mergeCommitOid
+                        }
                         [pscustomobject]$node
                     })
                 Write-Output (New-LeakGraphQlPageJson `

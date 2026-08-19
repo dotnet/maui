@@ -473,10 +473,14 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   | sort -u \
   > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
 
-# A merged fix is not authoritative if it was later effectively reverted. Reuse the complete
-# merged-PR history above, index only exact repository-local direct references, and traverse
-# recursive same-branch reverter chains locally under 1000-discovery and 2000-PR aggregate
-# bounds. Seed count never multiplies GitHub queries.
+# A merged fix is not authoritative if it was later effectively reverted. The complete history
+# carries each original merge/squash commit OID. Editable `Reverts #N` body text identifies
+# candidates only; the helper batches complete candidate commit histories (10 PRs/query,
+# 100 commits/page) and accepts an edge only for exactly one full immutable
+# `This reverts commit <40-hex-target-OID>.` proof on the same base. Wrong, abbreviated,
+# duplicate, ambiguous, cross-branch, truncated, or over-budget evidence leaves the fix active
+# or fails closed. Commit verification has a 1000-query and 20000-record budget; recursive
+# traversal retains the 1000-discovery and 2000-PR aggregate bounds.
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/merged-leak-fix-prs.tsv \
@@ -805,7 +809,8 @@ jq '[.[] |
 jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/final-merged-leak-fix-prs.tsv
-# The shared helper enforces the same aggregate query budget as the earlier discovery pass.
+# The shared helper repeats the same complete, batched immutable-proof verification and bounds
+# as the earlier discovery pass.
 pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -MergedFixTsvPath /tmp/gh-aw/agent/final-merged-leak-fix-prs.tsv \
