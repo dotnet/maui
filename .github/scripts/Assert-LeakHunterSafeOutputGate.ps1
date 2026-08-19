@@ -54,6 +54,26 @@ foreach ($item in $createItems) {
 $openIssues = @(
     Get-CompleteLeakIssues -Repository $Repository
 )
+$openIssueApis = @(
+    foreach ($issue in $openIssues) {
+        $issueNumber = [string]$issue.number
+        $context = if ([string]::IsNullOrWhiteSpace($issueNumber)) {
+            'Open issue'
+        } else {
+            "Open issue #$issueNumber"
+        }
+        $issueApi = Get-ValidatedExistingLeakApi `
+            -Title ([string]$issue.title) `
+            -Kind Scan `
+            -Context $context
+        if (-not [string]::IsNullOrWhiteSpace($issueApi)) {
+            [pscustomobject]@{
+                Api = $issueApi
+                Number = $issue.number
+            }
+        }
+    }
+)
 
 $merged = @(
     Get-CompleteLeakPullRequests `
@@ -94,13 +114,11 @@ $eligibleMerged = @($eligibleMerged | Where-Object {
 # boundary: any stale item aborts before Process Safe Outputs, and distinct items retry next run.
 foreach ($requested in $requestedItems) {
     $api = [string]$requested.Api
-    $openApiMatches = @($openIssues | Where-Object {
-            $issueTitle = [string]$_.title
-            (Test-LeakTitlePrefix -Title $issueTitle -Kind Scan) -and
-            (Get-CanonicalExistingLeakApi -Title $issueTitle) -ceq $api
+    $openApiMatches = @($openIssueApis | Where-Object {
+            [string]$_.Api -ceq $api
         })
     if ($openApiMatches.Count -gt 0) {
-            throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
+        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.Number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
     }
 
     $mergedApiMatches = @($eligibleMerged | Where-Object {

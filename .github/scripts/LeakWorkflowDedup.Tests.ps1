@@ -417,15 +417,61 @@ Describe 'shared regular JSON file validation' {
         (Read-RegularJsonFile -Path $path).value | Should -Be 42
     }
 
-    It 'rejects missing, empty, oversized, and invalid JSON files' {
+    It 'accepts valid JSON at the exact byte boundary' {
+        $path = Join-Path $TestDrive 'exact-boundary.json'
+        $content = '{"value":42}'
+        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($content)
+        [System.IO.File]::WriteAllBytes($path, $bytes)
+
+        (Read-RegularJsonFile `
+                -Path $path `
+                -MaximumBytes $bytes.Length).value | Should -Be 42
+    }
+
+    It 'rejects an over-bound file before parsing its content' {
+        $path = Join-Path $TestDrive 'over-bound.json'
+        $content = '{"value":42}'
+        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($content)
+        [System.IO.File]::WriteAllBytes($path, $bytes)
+
+        {
+            Read-RegularJsonFile `
+                -Path $path `
+                -MaximumBytes ($bytes.Length - 1)
+        } | Should -Throw '*empty or too large*'
+    }
+
+    It 'enforces MaximumBytes as bytes for multibyte JSON content' {
+        $path = Join-Path $TestDrive 'multibyte.json'
+        $content = '{"value":"é"}'
+        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($content)
+        [System.IO.File]::WriteAllBytes($path, $bytes)
+
+        {
+            Read-RegularJsonFile `
+                -Path $path `
+                -MaximumBytes $content.Length
+        } | Should -Throw '*empty or too large*'
+        (Read-RegularJsonFile `
+                -Path $path `
+                -MaximumBytes $bytes.Length).value | Should -Be 'é'
+    }
+
+    It 'rejects missing, zero-byte, whitespace-only, oversized, and invalid JSON files' {
         {
             Read-RegularJsonFile -Path (Join-Path $TestDrive 'missing.json')
         } | Should -Throw '*Required JSON file is missing*'
 
         $emptyPath = Join-Path $TestDrive 'empty.json'
-        Set-Content -LiteralPath $emptyPath -Value ''
+        [System.IO.File]::WriteAllBytes($emptyPath, [byte[]]::new(0))
         {
             Read-RegularJsonFile -Path $emptyPath
+        } | Should -Throw '*empty or too large*'
+
+        $whitespacePath = Join-Path $TestDrive 'whitespace.json'
+        Set-Content -LiteralPath $whitespacePath -Value ''
+        {
+            Read-RegularJsonFile -Path $whitespacePath
         } | Should -Throw '*empty or too large*'
 
         $oversizedPath = Join-Path $TestDrive 'oversized.json'
@@ -2779,6 +2825,72 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*702*"
+        }
+
+        It 'accepts space and tab grammar when validating existing open scan titles' {
+            foreach ($separator in @(' ', "`t")) {
+                $global:mockHunterOpenIssues = @(
+                    [pscustomobject]@{
+                        number = 702
+                        title = "[leak-scan]${separator}GradientBrush.GradientStops — teardown leak"
+                        body = 'Existing scanner issue'
+                        url = 'https://github.com/dotnet/maui/issues/702'
+                    }
+                )
+
+                {
+                    & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                        -AgentOutputPath $script:hunterAgentOutput `
+                        -Repository 'dotnet/maui'
+                } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*702*"
+            }
+        }
+
+        It 'fails closed on malformed or ambiguous expected-prefix open titles' -ForEach @(
+            @{ ExistingTitle = '[leak-scan]' }
+            @{ ExistingTitle = '[leak-scan] Investigate GradientBrush.GradientStops' }
+            @{ ExistingTitle = '[leak-scan]x GradientBrush.GradientStops' }
+            @{ ExistingTitle = '[leak-scanx] GradientBrush.GradientStops' }
+            @{ ExistingTitle = '[LEAK-SCAN] GradientBrush.GradientStops' }
+            @{ ExistingTitle = '[leak-scan] [leak-scan] GradientBrush.GradientStops' }
+        ) {
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 704
+                    title = $ExistingTitle
+                    body = 'Malformed scanner issue'
+                    url = 'https://github.com/dotnet/maui/issues/704'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*malformed*leak-scan*'
+        }
+
+        It 'ignores unrelated open issue titles' {
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 705
+                    title = 'Document the [leak-scan] issue format'
+                    body = 'Unrelated issue'
+                    url = 'https://github.com/dotnet/maui/issues/705'
+                }
+                [pscustomobject]@{
+                    number = 706
+                    title = '[leak-fix] Fix GradientBrush.GradientStops reset leak'
+                    body = 'Unrelated issue kind'
+                    url = 'https://github.com/dotnet/maui/issues/706'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
         }
 
         It 'blocks a legacy Shell-prefixed same-API open issue' {

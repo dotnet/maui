@@ -92,21 +92,144 @@ function Get-CanonicalExistingLeakApi {
     return ConvertTo-CanonicalLeakApi -Api $match.Groups['api'].Value
 }
 
+function Get-ValidatedExistingLeakApi {
+    param(
+        [AllowEmptyString()][string]$Title,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Scan', 'Fix')]
+        [string]$Kind,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Title)) {
+        return $null
+    }
+
+    $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
+    $tag = if ($Kind -eq 'Scan') {
+        '[leak-scan]'
+    } else {
+        '[leak-fix]'
+    }
+    $tagStem = $tag.Substring(0, $tag.Length - 1)
+    if (-not $normalized.StartsWith(
+            $tagStem,
+            [System.StringComparison]::OrdinalIgnoreCase
+        )) {
+        return $null
+    }
+
+    if (-not $normalized.StartsWith(
+            $tag,
+            [System.StringComparison]::Ordinal
+        ) -or
+        -not (Test-LeakTitlePrefix -Title $normalized -Kind $Kind)) {
+        throw "$Context has a malformed or ambiguous $tag title prefix: '$Title'."
+    }
+
+    $api = Get-CanonicalExistingLeakApi -Title $normalized
+    if ([string]::IsNullOrWhiteSpace($api)) {
+        throw "$Context has a malformed $tag title without a canonical API: '$Title'."
+    }
+
+    return $api
+}
+
+function Get-RegularJsonFileInfo {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Required JSON file is missing: $Path"
+    }
+
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.LinkType) {
+        throw "Refusing symbolic-link JSON file: $Path"
+    }
+    $hasReparsePoint =
+        ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0
+    if ($hasReparsePoint) {
+        throw "Refusing reparse-point JSON file: $Path"
+    }
+    if ($item.PSIsContainer -or $item -isnot [System.IO.FileInfo]) {
+        throw "Refusing non-regular JSON file: $Path"
+    }
+
+    return $item
+}
+
 function Read-RegularJsonFile {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
         [ValidateRange(1, 256MB)][long]$MaximumBytes = 1MB
     )
 
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-        throw "Required JSON file is missing: $Path"
+    $item = Get-RegularJsonFileInfo -Path $Path
+    $expectedLength = [long]$item.Length
+    if ($expectedLength -eq 0 -or $expectedLength -gt $MaximumBytes) {
+        throw "JSON file is empty or too large: $Path"
     }
-    $item = Get-Item -LiteralPath $Path -Force
-    if ($item.LinkType) {
-        throw "Refusing symbolic-link JSON file: $Path"
+
+    $expectedLastWriteTimeUtc = $item.LastWriteTimeUtc
+    $stream = $null
+    try {
+        $stream = [System.IO.FileStream]::new(
+            $item.FullName,
+            [System.IO.FileMode]::Open,
+            [System.IO.FileAccess]::Read,
+            [System.IO.FileShare]::Read
+        )
+        $openedLength = [long]$stream.Length
+        if ($openedLength -ne $expectedLength -or
+            $openedLength -gt $MaximumBytes) {
+            throw "JSON file changed while being read: $Path"
+        }
+
+        $bytes = [byte[]]::new([int]$openedLength)
+        $offset = 0
+        while ($offset -lt $bytes.Length) {
+            $read = $stream.Read($bytes, $offset, $bytes.Length - $offset)
+            if ($read -eq 0) {
+                break
+            }
+            $offset += $read
+        }
+        if ($offset -ne $bytes.Length -or $stream.ReadByte() -ne -1) {
+            throw "JSON file changed while being read: $Path"
+        }
+
+        $postReadItem = Get-RegularJsonFileInfo -Path $Path
+        if ([long]$postReadItem.Length -ne $expectedLength -or
+            $postReadItem.LastWriteTimeUtc -ne $expectedLastWriteTimeUtc) {
+            throw "JSON file changed while being read: $Path"
+        }
+    } finally {
+        if ($null -ne $stream) {
+            $stream.Dispose()
+        }
     }
-    $raw = Get-Content -LiteralPath $Path -Raw
-    if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Length -gt $MaximumBytes) {
+
+    $memoryStream = $null
+    $reader = $null
+    try {
+        $memoryStream = [System.IO.MemoryStream]::new($bytes, $false)
+        $reader = [System.IO.StreamReader]::new(
+            $memoryStream,
+            [System.Text.UTF8Encoding]::new($false, $true),
+            $true
+        )
+        $raw = $reader.ReadToEnd()
+    } catch {
+        throw "Invalid JSON in '$Path': $($_.Exception.Message)"
+    } finally {
+        if ($null -ne $reader) {
+            $reader.Dispose()
+        } elseif ($null -ne $memoryStream) {
+            $memoryStream.Dispose()
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw)) {
         throw "JSON file is empty or too large: $Path"
     }
     try {
@@ -1798,6 +1921,7 @@ Export-ModuleMember -Function `
     Test-LeakTitlePrefix, `
     Get-CanonicalLeakApi, `
     Get-CanonicalExistingLeakApi, `
+    Get-ValidatedExistingLeakApi, `
     Read-RegularJsonFile, `
     Select-LeakAuthoritativePullRequests, `
     Test-LeakPrReferencesIssue, `
