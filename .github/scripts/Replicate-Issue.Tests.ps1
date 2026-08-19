@@ -4798,6 +4798,12 @@ Describe 'A drag may not be split across separate PerformActions calls' {
 }
 
 Describe 'A test may not assert the handler it registered itself' {
+    # Which handlers are feature-switched is read from the product source, so
+    # every case here needs the real repository.
+    BeforeAll {
+        $script:HandlerRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+    }
+
     It 'rejects the self-fulfilling registration a reviewer proved fix-insensitive' {
         # PR 204: the product registers EntryHandler2 only behind the Material3
         # switch. The test hand-registered it with the switch off, so a real
@@ -4810,7 +4816,8 @@ Describe 'A test may not assert the handler it registered itself' {
 '@
         {
             Assert-ReplicationHandlerRegistrationIsNotTautological `
-                -Content $source -Path 'Issue37275.Android.cs'
+                -Content $source -Path 'Issue37275.Android.cs' `
+                -RepositoryRoot $script:HandlerRepoRoot
         } | Should -Throw '*can only confirm the test setup*'
     }
 
@@ -4822,7 +4829,8 @@ Describe 'A test may not assert the handler it registered itself' {
 '@
         {
             Assert-ReplicationHandlerRegistrationIsNotTautological `
-                -Content $source -Path 'Issue37275.Android.cs'
+                -Content $source -Path 'Issue37275.Android.cs' `
+                -RepositoryRoot $script:HandlerRepoRoot
         } | Should -Not -Throw
     }
 
@@ -4836,7 +4844,8 @@ Describe 'A test may not assert the handler it registered itself' {
 '@
         {
             Assert-ReplicationHandlerRegistrationIsNotTautological `
-                -Content $source -Path 'Issue37275.Android.cs'
+                -Content $source -Path 'Issue37275.Android.cs' `
+                -RepositoryRoot $script:HandlerRepoRoot
         } | Should -Not -Throw
     }
 
@@ -4847,7 +4856,8 @@ Describe 'A test may not assert the handler it registered itself' {
 '@
         {
             Assert-ReplicationHandlerRegistrationIsNotTautological `
-                -Content $source -Path 'Issue37275.Android.cs'
+                -Content $source -Path 'Issue37275.Android.cs' `
+                -RepositoryRoot $script:HandlerRepoRoot
         } | Should -Not -Throw
     }
 }

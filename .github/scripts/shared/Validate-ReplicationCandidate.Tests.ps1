@@ -1924,6 +1924,83 @@ Describe 'The publisher refuses a drag the platform would never recognise' {
     }
 }
 
+Describe 'Reading which handlers the product gates behind a runtime feature' {
+    # These use a fabricated hosting file rather than the real one, so the
+    # brace-walking stays pinned even as src/Controls churns.
+    BeforeAll {
+        $script:HostingRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("hosting-" + [guid]::NewGuid())
+        $script:HostingFile = Join-Path $script:HostingRoot 'src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs'
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $script:HostingFile) | Out-Null
+    }
+
+    AfterAll {
+        Remove-Item -Recurse -Force -LiteralPath $script:HostingRoot -ErrorAction SilentlyContinue
+    }
+
+    It 'collects only the handlers inside the feature-switched block' {
+        Set-Content -LiteralPath $script:HostingFile -Encoding utf8 -Value @'
+	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlers)
+	{
+		handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlers.AddHandler<Entry, EntryHandler2>();
+		}
+		else
+		{
+			handlers.AddHandler<Entry, EntryHandler>();
+		}
+		handlers.AddHandler<Button, ButtonHandler>();
+	}
+'@
+
+        $switched = @(Get-ReplicationFeatureSwitchedHandlers -RepositoryRoot $script:HostingRoot)
+
+        $switched | Should -Contain 'EntryHandler2'
+        $switched | Should -Not -Contain 'EntryHandler'
+        $switched | Should -Not -Contain 'CollectionViewHandler2'
+        $switched | Should -Not -Contain 'ButtonHandler'
+    }
+
+    It 'keeps reading past a nested block instead of stopping at its brace' {
+        Set-Content -LiteralPath $script:HostingFile -Encoding utf8 -Value @'
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(31))
+			{
+				handlers.AddHandler<Label, LabelHandler2>();
+			}
+			handlers.AddHandler<Entry, EntryHandler2>();
+		}
+		handlers.AddHandler<Button, ButtonHandler>();
+'@
+
+        $switched = @(Get-ReplicationFeatureSwitchedHandlers -RepositoryRoot $script:HostingRoot)
+
+        $switched | Should -Contain 'LabelHandler2'
+        $switched | Should -Contain 'EntryHandler2'
+        $switched | Should -Not -Contain 'ButtonHandler'
+    }
+
+    It 'reads nothing rather than guessing when the hosting file is gone' {
+        $empty = Join-Path ([System.IO.Path]::GetTempPath()) ("hosting-none-" + [guid]::NewGuid())
+
+        @(Get-ReplicationFeatureSwitchedHandlers -RepositoryRoot $empty) | Should -BeNullOrEmpty
+        @(Get-ReplicationFeatureSwitchedHandlers -RepositoryRoot '') | Should -BeNullOrEmpty
+    }
+
+    It 'reads the real product source the guard is aimed at' {
+        $switched = @(Get-ReplicationFeatureSwitchedHandlers `
+            -RepositoryRoot (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path)
+
+        # Android registers EntryHandler2 only under RuntimeFeature.IsMaterial3Enabled...
+        $switched | Should -Contain 'EntryHandler2'
+        # ...while iOS registers CollectionViewHandler2 unconditionally.
+        $switched | Should -Not -Contain 'CollectionViewHandler2'
+        $switched | Should -Not -Contain 'EntryHandler'
+    }
+}
+
 Describe 'The publisher refuses a test that asserts its own handler registration' {
     It 'rejects the self-fulfilling registration at publish time' {
         {
@@ -1932,8 +2009,178 @@ Describe 'The publisher refuses a test that asserts its own handler registration
     handlers.AddHandler<Entry, EntryHandler2>();
     Assert.IsType<EntryHandler2>(entry.Handler);
 '@ `
-                -Path 'Issue37275.Android.cs'
+                -Path 'Issue37275.Android.cs' `
+                -RepositoryRoot (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
         } | Should -Throw '*can only confirm the test setup*'
+    }
+
+    It 'leaves the default handler every device test registers alone' {
+        # Reviewers accepted kubaflo/maui#195, #200, #202 and #208, each of
+        # which registers the handler its scenario needs and then reaches
+        # through Assert.IsType to get at PlatformView. Only handlers the
+        # product itself gates behind a runtime feature switch are suspect.
+        {
+            Assert-ReplicationHandlerRegistrationIsNotTautological `
+                -Content @'
+    handlers.AddHandler<Entry, EntryHandler>();
+    var entryHandler = Assert.IsType<EntryHandler>(entry.Handler);
+    Assert.NotNull(entryHandler.PlatformView);
+'@ `
+                -Path 'Issue37151Tests.Android.cs' `
+                -RepositoryRoot (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+        } | Should -Not -Throw
+    }
+}
+
+Describe 'A platform-suffixed file is already scoped to its platform' {
+    # Reviewers accepted kubaflo/maui#195, #200, #202 and #208, whose tests
+    # carry no #if at all: src/MultiTargeting.targets and
+    # Controls.DeviceTests.csproj remove *.Android.cs from every target
+    # framework but Android, so demanding one asked for dead code.
+    BeforeAll {
+        $script:ScopeRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+        $script:UnscopedTest = @'
+namespace Microsoft.Maui.DeviceTests
+{
+    public class Issue37151Tests
+    {
+        [Fact]
+        public async Task EntryReportsItsContentDescription()
+        {
+            await Task.CompletedTask;
+        }
+    }
+}
+'@
+    }
+
+    It 'accepts an Android device test named for Android and carrying no #if' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:UnscopedTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue37151Tests.Android.cs' `
+                -Platform 'android'
+        } | Should -Not -Throw
+    }
+
+    It 'still refuses an unscoped test in a file with no platform in its name' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:UnscopedTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue37151Tests.cs' `
+                -Platform 'android'
+        } | Should -Throw '*also run on*'
+    }
+
+    It 'refuses a file named for a platform that did not produce the evidence' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:UnscopedTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue37151Tests.Windows.cs' `
+                -Platform 'android'
+        } | Should -Throw '*named for a platform it cannot serve*'
+    }
+
+    It 'treats an iOS-named file as serving Mac Catalyst too' {
+        # Controls.DeviceTests.csproj removes *.iOS.cs only when the target
+        # framework is neither -ios nor -maccatalyst.
+        foreach ($platform in @('ios', 'catalyst')) {
+            {
+                Assert-ReplicationTestPlatformScope `
+                    -Content $script:UnscopedTest `
+                    -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue1.iOS.cs' `
+                    -Platform $platform
+            } | Should -Not -Throw
+        }
+    }
+
+    It 'does not read MaciOS as an iOS suffix, nor Mac as either' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:UnscopedTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue1.MaciOS.cs' `
+                -Platform 'catalyst'
+        } | Should -Not -Throw
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:UnscopedTest `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Entry/Issue1.Mac.cs' `
+                -Platform 'ios'
+        } | Should -Throw '*the non-platform one*'
+    }
+
+    It 'reads a platform folder the same way as a platform suffix' {
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $script:UnscopedTest `
+                -Path 'src/Essentials/test/DeviceTests/Tests/Android/Geolocation_Tests.cs' `
+                -Platform 'ios'
+        } | Should -Throw '*named for a platform it cannot serve*'
+    }
+}
+
+Describe 'A font the operating system already provides needs no registration' {
+    BeforeAll {
+        $script:FontRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+    }
+
+    It 'knows the font families each platform ships' {
+        # Named individually so shrinking a list is a test failure rather than
+        # a silent widening of what the guard will accept.
+        $expected = @{
+            windows  = @('Segoe UI', 'Segoe UI Bold', 'Segoe MDL2 Assets', 'Calibri', 'Consolas', 'Arial')
+            android  = @('Roboto', 'sans-serif', 'monospace', 'serif')
+            ios      = @('Helvetica', 'Helvetica Neue', 'Arial')
+            catalyst = @('Helvetica', 'Helvetica Neue', 'Arial')
+        }
+
+        foreach ($platform in $expected.Keys) {
+            $fonts = @(Get-ReplicationSystemFonts -Platform $platform)
+            foreach ($font in $expected[$platform]) {
+                $fonts | Should -Contain $font -Because "$platform ships $font"
+            }
+        }
+
+        @(Get-ReplicationSystemFonts -Platform 'ios') | Should -Not -Contain 'Segoe UI'
+        @(Get-ReplicationSystemFonts -Platform 'android') | Should -Not -Contain 'Segoe UI'
+        @(Get-ReplicationSystemFonts -Platform 'windows') | Should -Not -Contain 'Roboto'
+    }
+
+    It 'accepts Arial on Windows, as reviewers did for kubaflo/maui#232' {
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'searchHandler.FontFamily = "Arial";' `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Shell/Issue36629.Windows.cs' `
+                -RepositoryRoot $script:FontRepoRoot `
+                -Platform 'windows'
+        } | Should -Not -Throw
+    }
+
+    It 'still refuses Segoe UI Bold on iOS, as reviewers did for kubaflo/maui#230' {
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'FontFamily = "Segoe UI Bold",' `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue36505.cs' `
+                -RepositoryRoot $script:FontRepoRoot `
+                -Platform 'ios'
+        } | Should -Throw '*does not provide it as a system font*'
+    }
+
+    It 'does not hand one platform another platform''s fonts' {
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'FontFamily = "Roboto",' `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' `
+                -RepositoryRoot $script:FontRepoRoot `
+                -Platform 'windows'
+        } | Should -Throw '*windows does not provide it*'
+        {
+            Assert-ReplicationFontIsAvailable `
+                -Content 'FontFamily = "Roboto",' `
+                -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' `
+                -RepositoryRoot $script:FontRepoRoot `
+                -Platform 'android'
+        } | Should -Not -Throw
     }
 }
 

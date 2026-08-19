@@ -6,6 +6,13 @@ BeforeAll {
 }
 
 Describe 'Replication GitHub login probe' {
+    # The stubs below are global so the dot-sourced production functions
+    # resolve them. A global function outranks an executable of the same name
+    # on PATH, so leaving one behind silently shadows the real gh for every
+    # test file that runs afterwards in the same Pester session.
+    AfterEach {
+        Remove-Item -LiteralPath 'function:gh' -ErrorAction SilentlyContinue
+    }
     It 'classifies transient GitHub service failures' {
         foreach ($output in @(
             'gh: No server is currently available to service your request. (HTTP 503)',

@@ -770,6 +770,11 @@ Describe 'The issue read actually retries, not just classifies' {
             # A gh that fails with $Reason until attempt $SucceedOnAttempt.
             param([string]$Reason, [int]$SucceedOnAttempt)
 
+            # A global gh function left behind by another test file outranks
+            # anything on PATH, which would silently bypass this shim and make
+            # these tests pass or fail according to file ordering.
+            Remove-Item -LiteralPath 'function:gh' -ErrorAction SilentlyContinue
+
             $directory = Join-Path ([System.IO.Path]::GetTempPath()) "ghshim-$([guid]::NewGuid())"
             New-Item -ItemType Directory -Path $directory | Out-Null
             $counter = Join-Path $directory 'count.txt'

@@ -1557,7 +1557,8 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationFontIsAvailable `
             -Content $normalized `
             -Path $Path `
-            -RepositoryRoot $RepositoryRoot
+            -RepositoryRoot $RepositoryRoot `
+            -Platform ([string]$Manifest.Platform)
     }
     if (
         [System.IO.Path]::GetExtension($Path) -ieq '.cs' -and
@@ -1583,7 +1584,8 @@ function Assert-SourceTextIsSafe {
             -Path $Path
         Assert-ReplicationHandlerRegistrationIsNotTautological `
             -Content $normalized `
-            -Path $Path
+            -Path $Path `
+            -RepositoryRoot $RepositoryRoot
         Assert-ReplicationWaitResultIsUsed `
             -Content $normalized `
             -Path $Path
@@ -1693,9 +1695,9 @@ function Assert-ReplicationCandidateSources {
     if ($Manifest.TestType -ceq 'DeviceTest' -and -not $deviceTestIsSelectable) {
         throw (
             'The candidate device test cannot be selected on device: no file declares ' +
-            "[Category(`"Issue$($Manifest.IssueNumber)`")]. The stock runner honours only Category= and " +
-            'SkipCategories=, so a bare class token runs the whole suite instead of the ' +
-            'reproduction.')
+            "[Category(`"Issue$($Manifest.IssueNumber)`")]. The runner reads the bare filter " +
+            'token as a category name, so with no test declaring it the run selects no ' +
+            'categories and executes nothing.')
     }
 }
 

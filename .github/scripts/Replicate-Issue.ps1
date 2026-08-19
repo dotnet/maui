@@ -2225,7 +2225,8 @@ function Assert-GeneratedTestContent {
         Assert-ReplicationFontIsAvailable `
             -Content $content `
             -Path $file `
-            -RepositoryRoot $repoRoot
+            -RepositoryRoot $repoRoot `
+            -Platform $TargetPlatform
         if ($file.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
             Assert-ReplicationConditionalCompilationBalance `
                 -Content $content `
@@ -2252,7 +2253,8 @@ function Assert-GeneratedTestContent {
                     -Path $file
                 Assert-ReplicationHandlerRegistrationIsNotTautological `
                     -Content $content `
-                    -Path $file
+                    -Path $file `
+                    -RepositoryRoot $repoRoot
                 Assert-ReplicationWaitResultIsUsed `
                     -Content $content `
                     -Path $file
@@ -2323,9 +2325,9 @@ function Assert-GeneratedTestContent {
     if ($TestType -ceq 'DeviceTest' -and -not $deviceTestIsSelectable) {
         throw (
             'The generated device test cannot be selected on device: no file declares ' +
-            "[Category(`"Issue$Issue`")]. The stock runner honours only Category= and " +
-            'SkipCategories=, so a bare class token runs the whole suite instead of the ' +
-            'reproduction.')
+            "[Category(`"Issue$Issue`")]. The runner reads the bare filter token as a " +
+            'category name, so with no test declaring it the run selects no categories ' +
+            'and executes nothing.')
     }
 }
 

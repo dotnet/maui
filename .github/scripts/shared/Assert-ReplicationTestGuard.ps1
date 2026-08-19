@@ -829,12 +829,78 @@ function Assert-ReplicationPointerSequenceIsSelfContained {
     }
 }
 
+function Get-ReplicationFeatureSwitchedHandlers {
+    [CmdletBinding()]
+    param([AllowEmptyString()][string]$RepositoryRoot)
+
+    if (-not $RepositoryRoot) {
+        return @()
+    }
+
+    $hostingPath = Join-Path $RepositoryRoot 'src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs'
+    if (-not (Test-Path -LiteralPath $hostingPath -PathType Leaf)) {
+        return @()
+    }
+
+    $source = Get-Content -LiteralPath $hostingPath -Raw
+    $switched = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal)
+
+    # Walk braces from each runtime-feature test and collect only the handlers
+    # registered inside that block. Handlers registered unconditionally --
+    # CollectionViewHandler2 on iOS, for instance -- are deliberately left out,
+    # because registering one by hand matches what the product already does.
+    foreach ($match in [regex]::Matches(
+            $source,
+            'if\s*\(\s*RuntimeFeature\.[A-Za-z_][A-Za-z0-9_]*\s*\)')) {
+        $index = $match.Index + $match.Length
+        while ($index -lt $source.Length -and $source[$index] -ne '{') {
+            if ($source[$index] -notmatch '\s') { break }
+            $index++
+        }
+        if ($index -ge $source.Length -or $source[$index] -ne '{') { continue }
+
+        $depth = 0
+        $start = $index
+        for (; $index -lt $source.Length; $index++) {
+            if ($source[$index] -eq '{') { $depth++ }
+            elseif ($source[$index] -eq '}') {
+                $depth--
+                if ($depth -eq 0) { break }
+            }
+        }
+        if ($depth -ne 0) { continue }
+
+        $block = $source.Substring($start, $index - $start + 1)
+        foreach ($registration in [regex]::Matches(
+                $block,
+                'AddHandler\s*<\s*[^,>]+,\s*(?<handler>[A-Za-z_][A-Za-z0-9_]*)\s*>')) {
+            [void]$switched.Add($registration.Groups['handler'].Value)
+        }
+    }
+
+    return @($switched)
+}
+
 function Assert-ReplicationHandlerRegistrationIsNotTautological {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][string]$Content,
-        [Parameter(Mandatory = $true)][string]$Path
+        [Parameter(Mandatory = $true)][string]$Path,
+        [AllowEmptyString()][string]$RepositoryRoot = ''
     )
+
+    # Every Controls device test registers the handlers its scenario needs, and
+    # Assert.IsType<THandler> is the ordinary way to reach PlatformView from
+    # there. Reviewers accepted four such tests, so the registration alone says
+    # nothing. What made kubaflo/maui#204 wrong is narrower: EntryHandler2 is
+    # registered by the product only when RuntimeFeature.IsMaterial3Enabled is
+    # on, so hand-registering it runs the switched-off code path and a fix
+    # behind that switch can never turn the test green.
+    $switched = @(Get-ReplicationFeatureSwitchedHandlers -RepositoryRoot $RepositoryRoot)
+    if ($switched.Count -eq 0) {
+        return
+    }
 
     $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
 
@@ -842,6 +908,9 @@ function Assert-ReplicationHandlerRegistrationIsNotTautological {
             $code,
             'AddHandler\s*<\s*[^,>]+,\s*(?<handler>[A-Za-z_][A-Za-z0-9_]*)\s*>')) {
         $handler = $registration.Groups['handler'].Value
+        if ($handler -cnotin $switched) {
+            continue
+        }
         $assertsOwnRegistration = 'Assert\.(?:IsType|IsAssignableFrom)\s*<\s*' +
             [regex]::Escape($handler) +
             '\s*>'
@@ -853,7 +922,8 @@ function Assert-ReplicationHandlerRegistrationIsNotTautological {
             # Asserting the resolved handler then only confirms the test's own
             # setup, and cannot tell a fixed product from a broken one.
             throw ("Candidate test source '$Path' registers '$handler' itself and then asserts the resolved handler is '$handler'. " +
-                'That assertion can only confirm the test setup. If the product registers this type behind a runtime feature switch, arrange the switch and let the product resolve the handler, so a gated fix can turn the test green.')
+                "The product registers '$handler' only behind a runtime feature switch, so registering it by hand runs the switched-off path and that assertion can only confirm the test setup. " +
+                'Arrange the switch and let the product resolve the handler, so a gated fix can turn the test green.')
         }
     }
 }
@@ -1158,6 +1228,57 @@ function Assert-ReplicationTestRunsOnEvidencePlatform {
         'device test project or the UI test host application.')
 }
 
+function Get-ReplicationFilenamePlatformScope {
+    <#
+    .SYNOPSIS
+        The platforms a file compiles for by virtue of its name alone.
+    .DESCRIPTION
+        src/MultiTargeting.targets and Controls.DeviceTests.csproj remove
+        platform-suffixed sources from every target framework but their own, so
+        Issue37151Tests.Android.cs is already Android-only and an #if ANDROID
+        inside it is redundant. Returns $null when the name imposes no scope.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $normalizedPath = $Path.Replace('\', '/')
+    $fileName = [System.IO.Path]::GetFileName($normalizedPath)
+
+    # Ordered longest-first: *.MaciOS.cs must not be read as *.iOS.cs.
+    $suffixes = [ordered]@{
+        '.MacCatalyst.cs' = @('catalyst')
+        '.MaciOS.cs'      = @('ios', 'catalyst')
+        '.Android.cs'     = @('android')
+        '.Windows.cs'     = @('windows')
+        '.iOS.cs'         = @('ios', 'catalyst')
+        '.Mac.cs'         = @()
+        '.Standard.cs'    = @()
+    }
+    foreach ($suffix in $suffixes.Keys) {
+        if ($fileName.EndsWith($suffix, [StringComparison]::OrdinalIgnoreCase)) {
+            return , @($suffixes[$suffix])
+        }
+    }
+
+    $folders = [ordered]@{
+        'MacCatalyst' = @('catalyst')
+        'MaciOS'      = @('ios', 'catalyst')
+        'Android'     = @('android')
+        'Windows'     = @('windows')
+        'iOS'         = @('ios', 'catalyst')
+        'Mac'         = @()
+        'Standard'    = @()
+    }
+    $segments = @($normalizedPath -split '/')
+    foreach ($folder in $folders.Keys) {
+        if ($segments -contains $folder) {
+            return , @($folders[$folder])
+        }
+    }
+
+    return $null
+}
+
 function Assert-ReplicationTestPlatformScope {
     <#
     .SYNOPSIS
@@ -1179,6 +1300,21 @@ function Assert-ReplicationTestPlatformScope {
         'Core/tests/DeviceTests(?:\.Shared)?|Essentials/test/DeviceTests|' +
         'Graphics/tests/DeviceTests|BlazorWebView/tests/DeviceTests)/'
     if ($normalizedPath -cnotmatch $sharedProject) { return }
+
+    # A platform-suffixed name already restricts the build, and reviewers
+    # accepted four device tests written exactly that way. Only the platforms
+    # the file can compile for are still in play.
+    $fileScope = Get-ReplicationFilenamePlatformScope -Path $normalizedPath
+    if ($null -ne $fileScope) {
+        if ($fileScope -notcontains $Platform) {
+            throw ("Candidate test source '$Path' is named for a platform it cannot serve: its name " +
+                'keeps it out of every build except ' +
+                $(if ($fileScope.Count -eq 0) { 'the non-platform one' } else { $fileScope -join ', ' }) +
+                ", but the reproduction was observed on $Platform. The test must compile on the " +
+                'platform that produced the evidence.')
+        }
+        return
+    }
 
     $normalized = $Content.Replace("`r`n", "`n").Replace([string][char]0xFEFF, '')
     $lines = @($normalized -split "`n")
@@ -1592,6 +1728,46 @@ function Assert-ReplicationOracleIsNotInitialState {
     }
 }
 
+function Get-ReplicationSystemFonts {
+    <#
+    .SYNOPSIS
+        Fonts an operating system provides without any registration.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform
+    )
+
+    $shared = @(
+        'Arial', 'Courier New', 'Georgia', 'Times New Roman',
+        'Trebuchet MS', 'Verdana'
+    )
+    switch ($Platform) {
+        'windows' {
+            return @($shared + @(
+                'Segoe UI', 'Segoe UI Bold', 'Segoe UI Semibold', 'Segoe UI Light',
+                'Segoe UI Variable', 'Segoe MDL2 Assets', 'Segoe Fluent Icons',
+                'Calibri', 'Cambria', 'Consolas', 'Tahoma', 'MS Gothic'))
+        }
+        'android' {
+            return @(
+                'Roboto', 'sans-serif', 'sans-serif-medium', 'sans-serif-light',
+                'sans-serif-condensed', 'sans-serif-thin', 'sans-serif-black',
+                'serif', 'monospace', 'casual', 'cursive',
+                'Droid Sans', 'Droid Serif', 'Noto Sans', 'Noto Serif')
+        }
+        default {
+            # iOS and Mac Catalyst share the same system font library.
+            return @($shared + @(
+                'Helvetica', 'Helvetica Neue', 'San Francisco', '.SFUI-Regular',
+                'Avenir', 'Avenir Next', 'Courier', 'Menlo', 'Palatino',
+                'Marker Felt', 'Zapfino', 'Chalkboard SE', 'Baskerville'))
+        }
+    }
+}
+
 function Assert-ReplicationFontIsAvailable {
     <#
     .SYNOPSIS
@@ -1604,12 +1780,20 @@ function Assert-ReplicationFontIsAvailable {
         it did produce tracked a wrapped-tail coordinate instead. A candidate
         is add-only and cannot ship a font binary, so a font alias the host
         application never registers can only fail for the wrong reason.
+
+        The operating system's own fonts are the exception, because nothing has
+        to be registered or shipped to use them. That is the whole difference
+        between the two cases reviewers ruled on: kubaflo/maui#230 asked for
+        "Segoe UI Bold" on iOS, where no such font exists, while #232 asked for
+        "Arial" on Windows, where it always does, and was accepted.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
         [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$RepositoryRoot
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [AllowEmptyString()][string]$Platform = ''
     )
 
     $requested = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -1631,14 +1815,22 @@ function Assert-ReplicationFontIsAvailable {
         }
     }
 
+    if ($Platform) {
+        foreach ($systemFont in (Get-ReplicationSystemFonts -Platform $Platform)) {
+            [void]$registered.Add($systemFont)
+        }
+    }
+
     foreach ($name in $requested) {
         if ($registered.Contains($name)) { continue }
+        $where = if ($Platform) { " and $Platform does not provide it as a system font" } else { '' }
         throw ("Candidate test source '$Path' asks for the font '$name', which the test host application does not " +
-            'register. The font cannot be added by an add-only reproduction, so the test would go red because the ' +
+            "register$where. The font cannot be added by an add-only reproduction, so the test would go red because the " +
             'font is missing rather than because of the reported defect. Use a font the host application already ' +
             'registers, or assert something that does not depend on a font the repository does not ship.')
     }
 }
+
 
 function Assert-ReplicationDeviceTestIsSelectable {
     <#
@@ -1646,23 +1838,27 @@ function Assert-ReplicationDeviceTestIsSelectable {
         Requires a generated device test to carry an issue-keyed category.
 
         .DESCRIPTION
-        The stock device-test runner understands exactly two filter forms.
-        DeviceTestSharedHelpers.GetExcludedTestCategories accepts
-        "Category=X" and "SkipCategories=X,Y" and returns no exclusions for
-        anything else, so advertising a bare class token such as "Issue37275"
-        selects nothing -- it runs the entire suite. Reviewers measured that
-        on device for PRs 202, 204, 206 and 208: "538 of 538 declarations
-        WOULD RUN", and one had to build a bespoke exact-FQN runner to isolate
-        the test at all.
+        The replication verifier hands Run-DeviceTests.ps1 the bare token
+        "Issue<N>" as its -TestFilter. Get-CategoryFiltersFromTestFilter reads
+        a token with no '=' or '~' in it as a *category name*, and
+        Select-DeviceTestCategories then keeps only the discovered categories
+        that match it -- exactly first, then by substring. When no test
+        declares that category, nothing matches and the run executes zero
+        tests, which the verifier reports as an infrastructure failure. The
+        candidate is then thrown away after paying for a full device run.
+
+        -IncludeClasses narrows further *within* the selected categories; it
+        cannot widen an empty selection back out. So the category is what makes
+        the test reachable at all, and the class filter is what keeps a noisy
+        sibling from muddying the verdict.
 
         CategoryAttribute takes params string[] and allows multiples, so an
         issue-keyed category sits alongside the conventional
         [Category(TestCategory.Entry)] without touching TestCategory -- which
         matters, because editing that shared file is not add-only.
 
-        With [Category("Issue<N>")] present, TestFilter=Category=Issue<N>
-        excludes every other known category and leaves the reproduction
-        running, so the selector published in the pull request is one the
+        With [Category("Issue<N>")] present, the token names a real discovered
+        category, so the selector published in the pull request is one the
         stock runner actually honours.
     #>
     param(
