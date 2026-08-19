@@ -159,7 +159,7 @@ jobs:
           Import-Module Pester -RequiredVersion 5.9.0
           $config = New-PesterConfiguration
           $config.Run.Path = @(
-            '.github/skills/find-reviewable-pr/scripts/query-reviewable-prs.Tests.ps1'
+            '.github/scripts/Query-ReviewablePRs.Tests.ps1'
             '.github/scripts/Invoke-RerunReviewTrigger.Tests.ps1'
             '.github/scripts/Query-AutoRerunCandidates.Tests.ps1'
             '.github/scripts/Query-RerunReadyPRs.Tests.ps1'

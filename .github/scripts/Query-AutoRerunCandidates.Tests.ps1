@@ -4,7 +4,7 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Query-AutoRerunCandidates.ps1'
     $workflowPath = Join-Path $PSScriptRoot '../workflows/pr-review-queue.yml'
-    $reviewableQueryTestsPath = Join-Path $PSScriptRoot '../skills/find-reviewable-pr/scripts/query-reviewable-prs.Tests.ps1'
+    $reviewableQueryTestsPath = Join-Path $PSScriptRoot 'Query-ReviewablePRs.Tests.ps1'
     $scannerPath = Join-Path $PSScriptRoot '../workflows/rerun-review-scanner.md'
     $reviewTriggerPath = Join-Path $PSScriptRoot '../workflows/review-trigger.yml'
     $labelHelperPath = Join-Path $PSScriptRoot 'shared/Update-AgentLabels.ps1'
@@ -141,7 +141,7 @@ Context 'bounded scan metadata' {
         $validateJob = [regex]::Match($workflow, '(?s)^  validate:.*\z', 'Multiline').Value
 
         $validateJob | Should -Match 'Validate queue scripts without GitHub credentials'
-        $validateJob | Should -Match 'query-reviewable-prs\.Tests\.ps1'
+        $validateJob | Should -Match 'Query-ReviewablePRs\.Tests\.ps1'
         $validateJob | Should -Match 'Query-AutoRerunCandidates\.Tests\.ps1'
         $validateJob | Should -Match 'Update-AgentLabels\.Tests\.ps1'
         $validateJob | Should -Not -Match 'GH_TOKEN|github\.token'

@@ -2,7 +2,9 @@
 #Requires -Modules Pester
 
 BeforeAll {
-    $scriptPath = Join-Path $PSScriptRoot 'query-reviewable-prs.ps1'
+    # This queue contract test stays outside .github/skills so it does not trigger
+    # the unrelated full Vally skill-validation suite.
+    $scriptPath = Join-Path $PSScriptRoot '../skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1'
 }
 
 AfterAll {
