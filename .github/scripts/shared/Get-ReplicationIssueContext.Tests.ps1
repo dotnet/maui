@@ -608,3 +608,60 @@ Describe 'Get-ReplicationPlatformMismatch' {
             -AffectedPlatforms '' -SelectedPlatform 'catalyst' | Should -BeNullOrEmpty
     }
 }
+
+Describe 'A transient GitHub failure does not throw away a provisioned device' {
+    # Three runs of wave 34 failed on "Unable to retrieve the GitHub issue."
+    # within seconds of each other, on issues that had just been read
+    # successfully. Each cost a whole run.
+    It 'retries a rate limit' {
+        Test-TransientGitHubFailure -Reason 'HTTP 403: API rate limit exceeded' |
+            Should -BeTrue
+    }
+
+    It 'retries a server fault or a dropped connection' {
+        Test-TransientGitHubFailure -Reason 'HTTP 502 Bad Gateway' | Should -BeTrue
+        Test-TransientGitHubFailure -Reason 'read tcp: connection reset by peer' |
+            Should -BeTrue
+        Test-TransientGitHubFailure -Reason 'net/http: TLS handshake timeout' |
+            Should -BeTrue
+    }
+
+    It 'does not retry an issue that will never be there' {
+        # Retrying a missing or private issue only burns the clock.
+        Test-TransientGitHubFailure -Reason 'HTTP 404: Not Found' | Should -BeFalse
+        Test-TransientGitHubFailure -Reason '' | Should -BeFalse
+    }
+
+    It 'keeps the reason in the message' {
+        $source = Get-Content -Raw -LiteralPath (
+            Join-Path $PSScriptRoot 'Get-ReplicationIssueContext.ps1')
+        $source | Should -Match 'GitHub issue lookup failed: \$reason'
+        $source | Should -Match 'Unable to retrieve the GitHub issue\. "'
+        # Discarding stderr is what made the failure unreadable.
+        $source | Should -Not -Match 'gh api "repos/\$Repository/issues/\$IssueNumber" 2>\$null'
+    }
+}
+
+Describe 'A 403 is read by its wording, not its status code' {
+    It 'retries the rate-limited 403' {
+        Test-TransientGitHubFailure -Reason 'HTTP 403: API rate limit exceeded' |
+            Should -BeTrue
+        Test-TransientGitHubFailure -Reason 'HTTP 403: You have exceeded a secondary rate limit' |
+            Should -BeTrue
+    }
+
+    It 'does not retry the forbidden 403' {
+        Test-TransientGitHubFailure -Reason 'HTTP 403: Resource not accessible by integration' |
+            Should -BeFalse
+    }
+}
+
+Describe 'A permanent failure that suggests retrying is still permanent' {
+    It 'does not retry a missing issue whose message says to try again' {
+        # The advice in an error string is not evidence that the condition
+        # will clear, and a missing issue never becomes present.
+        Test-TransientGitHubFailure -Reason (
+            'HTTP 404: Not Found (https://api.github.com/repos/dotnet/maui/issues/1). Try again.') |
+            Should -BeFalse
+    }
+}

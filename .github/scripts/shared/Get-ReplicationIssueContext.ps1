@@ -835,6 +835,36 @@ function Get-AllowedScreenshotUrls {
     }
 }
 
+function Test-TransientGitHubFailure {
+    <#
+        .SYNOPSIS
+        Decides whether a failed GitHub read is worth trying again.
+
+        .DESCRIPTION
+        A rate limit, a server fault or a dropped connection says nothing
+        about the issue and clears on its own. A missing or private issue
+        never will, so it must not be retried.
+    #>
+    param([AllowEmptyString()][string]$Reason)
+
+    $value = [string]$Reason
+
+    # GitHub answers 403 both for a rate limit and for a permission problem,
+    # so the wording decides, not the status code.
+    if ($value -match '(?i)rate limit|abuse detection|secondary rate') {
+        return $true
+    }
+
+    if ($value -match '(?i)HTTP 40[0-9]|Not Found|Must have admin rights') {
+        return $false
+    }
+
+    return [bool]($value -match
+        '(?i)HTTP 5\d\d|HTTP 429|timed out|timeout|connection reset|' +
+        'connection refused|temporary failure|EOF|TLS handshake|no such host|' +
+        'server error|try again')
+}
+
 function Invoke-GitHubIssueApi {
     [CmdletBinding()]
     param(
@@ -842,15 +872,42 @@ function Invoke-GitHubIssueApi {
         [string] $Repository,
 
         [Parameter(Mandatory = $true)]
-        [int] $IssueNumber
+        [int] $IssueNumber,
+
+        [int] $MaxAttempts = 4
     )
 
-    $output = @(& gh api "repos/$Repository/issues/$IssueNumber" 2>$null)
-    if ($LASTEXITCODE -ne 0) {
-        throw 'GitHub issue lookup failed.'
-    }
+    $errorPath = Join-Path ([System.IO.Path]::GetTempPath()) ("gh-issue-{0}.err" -f [guid]::NewGuid())
+    try {
+        for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+            $output = @(& gh api "repos/$Repository/issues/$IssueNumber" 2>$errorPath)
+            if ($LASTEXITCODE -eq 0) {
+                return ($output -join "`n")
+            }
 
-    return ($output -join "`n")
+            $reason = ''
+            if (Test-Path -LiteralPath $errorPath) {
+                $reason = ConvertTo-SafeIssueSingleLine (
+                    [System.IO.File]::ReadAllText($errorPath))
+            }
+
+            if ($attempt -lt $MaxAttempts -and (Test-TransientGitHubFailure -Reason $reason)) {
+                # Three runs of wave 34 died here within seconds of each other
+                # on issues that had just been read successfully, each one
+                # costing a whole provisioned device.
+                Start-Sleep -Seconds ([Math]::Min(30, [Math]::Pow(2, $attempt)))
+                continue
+            }
+
+            if ([string]::IsNullOrWhiteSpace($reason)) {
+                throw 'GitHub issue lookup failed.'
+            }
+
+            throw "GitHub issue lookup failed: $reason"
+        }
+    } finally {
+        Remove-Item -LiteralPath $errorPath -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Read-ReplicationIssueJson {
@@ -884,7 +941,10 @@ function Read-ReplicationIssueJson {
             -Repository $Repository `
             -IssueNumber $IssueNumber
     } catch {
-        throw 'Unable to retrieve the GitHub issue.'
+        # Reporting only that the issue could not be read left three failed
+        # runs with no way to tell a missing issue from a rate limit.
+        throw ("Unable to retrieve the GitHub issue. " +
+            (ConvertTo-SafeIssueSingleLine $_.Exception.Message))
     }
 }
 
