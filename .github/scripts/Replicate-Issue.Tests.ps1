@@ -4651,6 +4651,152 @@ Describe 'A gesture burst must wait for the app between gestures' {
     }
 }
 
+Describe 'A drag may not be split across separate PerformActions calls' {
+    It 'rejects the move-only follow-up sequence a reviewer proved injects nothing' {
+        # PR 203: the pointer was pressed in leaveRowSequence, then two later
+        # sequences moved it. Each PerformActions call ends the input it was
+        # given, so those moves ran with the pointer up and injected no touch
+        # events. The assertion after them measured nothing on any build.
+        $source = @'
+    var leaveRowSequence = new ActionSequence(touchDevice, 0);
+    leaveRowSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, centerX, centerY, TimeSpan.Zero));
+    leaveRowSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    androidApp.Driver.PerformActions([leaveRowSequence]);
+
+    var moveOutsideSequence = new ActionSequence(touchDevice, 0);
+    moveOutsideSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, secondLeftX, belowY, TimeSpan.FromMilliseconds(300)));
+    androidApp.Driver.PerformActions([moveOutsideSequence]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Throw -ExpectedMessage '*moveOutsideSequence*never presses it down*'
+    }
+
+    It 'rejects a follow-up that releases a pointer it never pressed' {
+        $source = @'
+    var press = new ActionSequence(touchDevice, 0);
+    press.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    driver.PerformActions([press]);
+
+    var finishSequence = new ActionSequence(touchDevice, 0);
+    finishSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(300)));
+    finishSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+    driver.PerformActions([finishSequence]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Throw -ExpectedMessage '*finishSequence*'
+    }
+
+    It 'accepts one sequence that presses, moves and releases' {
+        $source = @'
+    var drag = new ActionSequence(touchDevice, 0);
+    drag.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+    drag.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    drag.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, midX, midY, TimeSpan.FromMilliseconds(300)));
+    drag.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(300)));
+    drag.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+    androidApp.Driver.PerformActions([drag]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'accepts two complete drags performed one after the other' {
+        $source = @'
+    var first = new ActionSequence(touchDevice, 0);
+    first.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    first.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x1, y1, TimeSpan.FromMilliseconds(300)));
+    first.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+    driver.PerformActions([first]);
+
+    var second = new ActionSequence(touchDevice, 0);
+    second.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    second.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x2, y2, TimeSpan.FromMilliseconds(300)));
+    second.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+    driver.PerformActions([second]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a mouse gesture that never presses a pointer anywhere' {
+        $source = @'
+    var hover = new ActionSequence(mouseDevice, 0);
+    hover.AddAction(mouseDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(200)));
+    driver.PerformActions([hover]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a sequence that is built but never performed' {
+        $source = @'
+    var unused = new ActionSequence(touchDevice, 0);
+    unused.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
+
+    var drag = new ActionSequence(touchDevice, 0);
+    drag.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    drag.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(300)));
+    drag.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+    driver.PerformActions([drag]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a sequence whose actions are added by a shared helper' {
+        $source = @'
+    var drag = new ActionSequence(touchDevice, 0);
+    AppendCompleteDrag(drag, touchDevice, startX, startY, endX, endY);
+    driver.PerformActions([drag]);
+    var other = new ActionSequence(touchDevice, 0);
+    other.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    driver.PerformActions([other]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'ignores a performed sequence that neither moves nor presses' {
+        # A pointer-up-only cleanup sequence delivers no drag and claims none,
+        # so it is not the defect this guard exists to catch.
+        $source = @'
+    var drag = new ActionSequence(touchDevice, 0);
+    drag.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    drag.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(300)));
+    driver.PerformActions([drag]);
+
+    var release = new ActionSequence(touchDevice, 0);
+    release.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+    driver.PerformActions([release]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'does not read a commented-out sequence' {
+        $source = @'
+    // var stale = new ActionSequence(touchDevice, 0);
+    // stale.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
+    // driver.PerformActions([stale]);
+    var drag = new ActionSequence(touchDevice, 0);
+    drag.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+    drag.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(300)));
+    driver.PerformActions([drag]);
+'@
+        {
+            Assert-ReplicationPointerSequenceIsSelfContained -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'A test may not assert the handler it registered itself' {
     It 'rejects the self-fulfilling registration a reviewer proved fix-insensitive' {
         # PR 204: the product registers EntryHandler2 only behind the Material3

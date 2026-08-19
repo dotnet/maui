@@ -2244,6 +2244,9 @@ function Assert-GeneratedTestContent {
                 Assert-ReplicationGestureIsSynchronized `
                     -Content $content `
                     -Path $file
+                Assert-ReplicationPointerSequenceIsSelfContained `
+                    -Content $content `
+                    -Path $file
                 Assert-ReplicationGeometryOracleIsPinned `
                     -Content $content `
                     -Path $file

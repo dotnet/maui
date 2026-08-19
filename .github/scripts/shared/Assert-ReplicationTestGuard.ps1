@@ -769,6 +769,66 @@ function Assert-ReplicationGestureIsSynchronized {
     }
 }
 
+function Assert-ReplicationPointerSequenceIsSelfContained {
+    <#
+    .SYNOPSIS
+        Rejects a drag that is split across separate PerformActions calls.
+
+    .DESCRIPTION
+        A reviewer found that a SwipeView reproduction pressed the pointer down
+        in one action sequence and then moved it in two later ones. Each
+        PerformActions call ends the input it was given, so the later sequences
+        moved a pointer that was no longer down and injected no touch events at
+        all. The assertion that followed then measured nothing, and it measured
+        nothing just as reliably on a fixed build.
+
+        A drag has to be one sequence that presses, moves and releases.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    # Only touch gestures are in scope. Without a press somewhere this is not a
+    # drag test, and a move-only sequence may be deliberate.
+    if ($code -cnotmatch 'CreatePointerDown') { return }
+
+    $sequences = @{}
+    foreach ($match in [regex]::Matches(
+        $code, '(?<name>\w+)\s*=\s*new\s+ActionSequence\s*\(')) {
+        $sequences[$match.Groups['name'].Value] = [System.Text.StringBuilder]::new()
+    }
+    if ($sequences.Count -eq 0) { return }
+
+    foreach ($name in @($sequences.Keys)) {
+        foreach ($action in [regex]::Matches(
+            $code, ('\b' + [regex]::Escape($name) + '\s*\.\s*AddAction\s*\((?<body>[^;]*)'))) {
+            [void]$sequences[$name].Append($action.Groups['body'].Value)
+        }
+    }
+
+    foreach ($match in [regex]::Matches($code, 'PerformActions\s*\((?<args>[^;]*)\)')) {
+        $arguments = $match.Groups['args'].Value
+        foreach ($name in $sequences.Keys) {
+            if ($arguments -cnotmatch ('\b' + [regex]::Escape($name) + '\b')) { continue }
+
+            $actions = $sequences[$name].ToString()
+            if ([string]::IsNullOrWhiteSpace($actions)) { continue }
+            if ($actions -cnotmatch 'CreatePointerMove') { continue }
+            if ($actions -cmatch 'CreatePointerDown') { continue }
+
+            throw ("Candidate test source '$Path' performs the action sequence '$name', which moves the pointer but " +
+                'never presses it down. Each PerformActions call ends the input it was given, so a sequence that ' +
+                'only moves is delivered with the pointer up and injects no touch events at all. An assertion after ' +
+                'it measures nothing, and measures nothing just as reliably on a fixed build. Build the whole drag ' +
+                'as one sequence that presses, moves and releases.')
+        }
+    }
+}
+
 function Assert-ReplicationHandlerRegistrationIsNotTautological {
     [CmdletBinding()]
     param(
