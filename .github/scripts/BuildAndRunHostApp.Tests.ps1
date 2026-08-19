@@ -111,6 +111,8 @@ Describe 'MacCatalyst Retina screenshot cropping' {
         $uiTestPath = Join-Path $PSScriptRoot '..' '..' 'src' 'Controls' 'tests' 'TestCases.Shared.Tests' 'UITest.cs'
         $script:UiTestContent = Get-Content $uiTestPath -Raw
         $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
+        $script:CatalystPatchPath = Join-Path $script:RepoRoot '.github/patches/catalyst-retina-screenshot.patch'
+        $script:CatalystPatchContent = Get-Content $script:CatalystPatchPath -Raw
     }
 
     It 'maps logical Appium window bounds to physical screenshot pixels' {
@@ -133,14 +135,22 @@ Describe 'MacCatalyst Retina screenshot cropping' {
     }
 
     It 'keeps the trusted post-merge source patch synchronized with the harness' {
-        $patchPath = Join-Path $script:RepoRoot '.github/patches/catalyst-retina-screenshot.patch'
         Push-Location $script:RepoRoot
         try {
-            git apply --reverse --check --whitespace=nowarn -- $patchPath
+            git apply --reverse --check --whitespace=nowarn -- $script:CatalystPatchPath
             $LASTEXITCODE | Should -Be 0
         } finally {
             Pop-Location
         }
+    }
+
+    It 'keeps guarded CoreGraphics fallback handling in the trusted patch' {
+        $script:CatalystPatchContent | Should -Match '(?s)\+#if MACUITEST\s+\+using System\.Runtime\.InteropServices;\s+\+#endif'
+        foreach ($exceptionType in @('DllNotFoundException', 'EntryPointNotFoundException', 'BadImageFormatException')) {
+            $script:UiTestContent | Should -Match "catch \($exceptionType ex\)"
+            $script:CatalystPatchContent | Should -Match "\+.*catch \($exceptionType ex\)"
+        }
+        $script:CatalystPatchContent | Should -Not -Match '\+\s*var displayBounds = CGDisplayBounds'
     }
 }
 

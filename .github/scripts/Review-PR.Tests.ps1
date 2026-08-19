@@ -367,6 +367,19 @@ Describe 'Reviewer pipeline timeout containment' {
         $afterCredential | Should -Not -Match '\bcopilot\s+--allow-all\b'
     }
 
+    It 'does not enumerate or log credential identities and capabilities in Stage 3' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+
+        $stageBlock | Should -Not -Match '\[EMBED-DIAG\]'
+        $stageBlock | Should -Not -Match 'CHECKOUT_PAT'
+        $stageBlock | Should -Not -Match 'Contents:write probe'
+        $stageBlock | Should -Not -Match 'push=\{[0-9]+\}'
+        $stageBlock | Should -Match ([regex]::Escape(
+            'Write-Host "Snapshot asset publication credential verified."'))
+    }
+
     It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
         $content | Should -Match ([regex]::Escape('"review-snapshot.json"'))
         $content | Should -Match ([regex]::Escape('prHeadSha = $reviewedPrHeadSha'))
