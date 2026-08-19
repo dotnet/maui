@@ -4627,3 +4627,62 @@ Describe 'A broken replay harness is not a flaky reproduction' {
             Should -Match 'not \(Test-ReplicationReplayHarnessFault -Text \$sandboxFailureSummary\)'
     }
 }
+
+Describe 'Assert-ReplicationEnvironmentGateSkips' {
+    It 'rejects the asserted OS floor that made every PR 213 run red before its oracle' {
+        $content = @'
+public class Issue35889 : ControlsHandlerTestBase
+{
+	[Fact]
+	public async Task EmptyCollectionViewInAutoRowHasZeroNativeHeight()
+	{
+		Assert.True(OperatingSystem.IsIOSVersionAtLeast(26), "Issue35889 requires iOS 26 or later.");
+		Assert.Equal(0, collectionView.ToPlatform().Frame.Height);
+	}
+}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue35889.iOS.cs' } |
+            Should -Throw -ExpectedMessage '*asserts an environment precondition*'
+    }
+
+    It 'rejects a version gate that throws instead of skipping' {
+        $content = @'
+	[Fact]
+	public async Task Reproduces()
+	{
+		if (!OperatingSystem.IsAndroidVersionAtLeast(34))
+			throw new InvalidOperationException("needs Android 34");
+		Assert.Equal(0, height);
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue1.cs' } |
+            Should -Throw -ExpectedMessage '*fails outright when an environment precondition is unmet*'
+    }
+
+    It 'accepts the early-return gate the repository uses at 49 sites' {
+        $content = @'
+	[Fact]
+	public async Task Reproduces()
+	{
+		if (!OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			return;
+		Assert.Equal(0, height);
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue2.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'ignores a capability call named only inside a comment' {
+        $content = @'
+	[Fact]
+	public async Task Reproduces()
+	{
+		// Assert.True(OperatingSystem.IsIOSVersionAtLeast(26)) would report the lane.
+		Assert.Equal(0, height);
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue3.cs' } |
+            Should -Not -Throw
+    }
+}

@@ -1115,6 +1115,53 @@ function Assert-ReplicationDeviceTestIsSelectable {
     return [bool]([regex]::IsMatch($Content, $pattern))
 }
 
+function Get-ReplicationEnvironmentCapabilityPattern {
+    # Calls that report which lane the test landed in, not what the product did.
+    return '(?:OperatingSystem\.Is[A-Za-z]*VersionAtLeast|UIDevice\.CurrentDevice\.CheckSystemVersion|Build\.VERSION\.SdkInt)'
+}
+
+function Assert-ReplicationEnvironmentGateSkips {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Path
+    )
+
+    # A reproduction pinned to an OS floor is fine; nominating that floor as a
+    # failure is not. PR 213 asserted `OperatingSystem.IsIOSVersionAtLeast(26)`
+    # on line 25 and every one of its five runs died there in 1.8-3.0 ms,
+    # before the oracle it advertised ever executed -- red for the lane, not
+    # for the defect, and still red after a complete product fix. Scanning
+    # 11,012 files, no Assert of any kind names one of these APIs and no
+    # version gate throws, while 49 sites gate with an early return, so this
+    # rejects a shape the repository never uses.
+    $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $capability = Get-ReplicationEnvironmentCapabilityPattern
+    $remedy = ('Gate with the shape this repository uses instead -- ' +
+        '"if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- so an ' +
+        'unsupported lane skips quietly and the only red this test can ' +
+        'produce is the reported defect.')
+
+    $asserted = [regex]::Match($source, "Assert\.[A-Za-z]+\s*\([^;]{0,400}?$capability")
+    if ($asserted.Success) {
+        throw ("The reproduction in '$Path' asserts an environment precondition: " +
+            "'$($asserted.Value.Trim())'. That turns every device below the floor red " +
+            'before the oracle runs, so the failure reports the lane rather than the defect. ' +
+            $remedy)
+    }
+
+    $gatedFailure = [regex]::Match(
+        $source,
+        "if\s*\(\s*!\s*$capability[^;{]{0,200}?\)\s*\{?\s*(?:throw\s+new|Assert\.Fail)"
+    )
+    if ($gatedFailure.Success) {
+        throw ("The reproduction in '$Path' fails outright when an environment " +
+            "precondition is unmet: '$($gatedFailure.Value.Trim())'. That red survives a " +
+            'complete product fix, so it cannot be attributed to the reported defect. ' +
+            $remedy)
+    }
+}
+
 function Assert-ReplicationTestLifecycleSafety {
     [CmdletBinding()]
     param(

@@ -1886,6 +1886,9 @@ function Assert-GeneratedTestContent {
                 Assert-ReplicationPlatformViewIdentity `
                     -Content $content `
                     -Path $file
+                Assert-ReplicationEnvironmentGateSkips `
+                    -Content $content `
+                    -Path $file
                 if ($TestType -ceq 'DeviceTest' -and (
                         Assert-ReplicationDeviceTestIsSelectable `
                             -Content $content `
@@ -2343,6 +2346,8 @@ If the reported behaviour only occurs under an opt-in feature switch such as Use
 If the test drags or swipes with a hand-built pointer sequence, scale the travel by the window size, never by the matched element's rect, and make it travel well past the platform touch slop, which is around 22 px on a typical Android emulator. A drag scaled from an element that resolves to a small label never crosses slop, so the platform performs no gesture at all and the assertion fails identically whether the product is fixed or broken.
 If the issue requests a new public event, property, method, or other API that does not exist on the baseline, do not reinterpret it as a requirement for an existing event or state to change. A test may cover an existing documented contract that is broken, but a pure new-API/feature request is not an empirically reproducible baseline defect and must be rejected rather than assigned a substitute oracle.
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
+Never assert an environment precondition. A test that calls Assert.True(OperatingSystem.IsIOSVersionAtLeast(26), ...) turns red on every device below that floor before its oracle runs, so the failure reports the lane rather than the defect and survives a complete product fix. When the reported behavior needs an OS floor, skip instead: "if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- the shape this repository uses at 49 sites. The same applies to throwing or Assert.Fail from an unmet version gate.
+
 A device test must also declare [Category("Issue$IssueNumber")] on its test class, in addition to any conventional TestCategory it already carries. CategoryAttribute takes params string[] and allows multiples, so this adds a category without editing the shared TestCategory file. The stock device-test runner honours only "Category=X" and "SkipCategories=X,Y", so without this category the published selector cannot isolate the reproduction and the whole suite runs instead.
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
