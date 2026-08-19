@@ -944,8 +944,19 @@ function Read-ReplicationIssueJson {
     } catch {
         # Reporting only that the issue could not be read left three failed
         # runs with no way to tell a missing issue from a rate limit.
-        throw ("Unable to retrieve the GitHub issue. " +
-            (ConvertTo-SafeIssueSingleLine -Text $_.Exception.Message -MaxChars 400))
+        $detail = ConvertTo-SafeIssueSingleLine -Text $_.Exception.Message -MaxChars 400
+
+        # An expired pipeline credential fails every run on every platform at
+        # the first step, which reads as a defect in the replication code. It
+        # is not one, and nothing in the run can repair it, so name the thing
+        # an operator has to replace.
+        if ($detail -match '(?i)bad credentials|401|requires authentication') {
+            throw ("Unable to retrieve the GitHub issue because the pipeline credential is not valid: $detail " +
+                'GH_COMMENT_TOKEN has expired or been revoked and has to be rotated in the pipeline; ' +
+                'no retry inside the run can recover from this.')
+        }
+
+        throw ("Unable to retrieve the GitHub issue. " + $detail)
     }
 }
 

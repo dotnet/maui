@@ -619,6 +619,111 @@ function Assert-ReplicationGestureTravel {
     }
 }
 
+function Get-ReplicationBalancedBlock {
+    <#
+    .SYNOPSIS
+        Returns the text between an opening brace and its matching close, so a
+        loop body is read as the block it is rather than as everything that
+        follows the loop header.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory = $true)][int]$OpenBraceIndex
+    )
+
+    if ($OpenBraceIndex -lt 0 -or $OpenBraceIndex -ge $Text.Length) { return $null }
+    if ($Text[$OpenBraceIndex] -ne '{') { return $null }
+
+    $depth = 0
+    for ($index = $OpenBraceIndex; $index -lt $Text.Length; $index++) {
+        $character = $Text[$index]
+        if ($character -eq '{') { $depth++ }
+        elseif ($character -eq '}') {
+            $depth--
+            if ($depth -eq 0) {
+                return $Text.Substring($OpenBraceIndex + 1, $index - $OpenBraceIndex - 1)
+            }
+        }
+    }
+
+    # An unbalanced block is a truncated or malformed candidate; the balance
+    # guard reports that, so say nothing about it here.
+    return $null
+}
+
+function Get-ReplicationGesturePattern {
+    # Driver calls that hand a gesture to the platform and return before the
+    # platform has finished reacting to it.
+    return '\b(?:Swipe(?:RightToLeft|LeftToRight|UpToDown|DownToUp)|' +
+        'Scroll(?:Up|Down|Left|Right|To)|DragAndDrop|DragCoordinates|' +
+        'TouchAndHold|DoubleTap|PerformActions)\s*\('
+}
+
+function Get-ReplicationSettlePattern {
+    # Calls that block until the app reports the state the gesture was meant to
+    # produce. An unconditional sleep is deliberately absent: it waits for the
+    # clock rather than for the app, so it does not synchronise anything.
+    return '\b(?:WaitFor\w*|WaitUntil\w*|Assert\w*\.\w+|Should\w*\(|' +
+        'FindElement|FindElements|QueryUntilPresent)\s*\('
+}
+
+function Assert-ReplicationGestureIsSynchronized {
+    <#
+    .SYNOPSIS
+        Rejects a burst of gestures that never waits for the app between them.
+
+    .DESCRIPTION
+        A reviewer broke a carousel reproduction that fired ten 250 ms drags
+        back to back and then asserted the exact position trace
+        '4,0,1,2,3,4,0,1,2,3'. Nothing in the test waited for snapping or
+        settling, so the gestures could coalesce, overlap native animation,
+        skip a transition or add one. An exact-sequence inequality then reports
+        driver timing, not the defect, and it reports it identically on a fixed
+        build. Require the test to wait for the state each gesture was supposed
+        to produce before it sends the next one.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $gesture = Get-ReplicationGesturePattern
+    $settle = Get-ReplicationSettlePattern
+
+    # A gesture repeated by a loop whose body never waits is the same burst
+    # written shorter, and the trip count hides how many gestures are in flight.
+    foreach ($match in [regex]::Matches($code, '\b(?:for|foreach|while)\s*\([^)]*\)\s*\{')) {
+        $body = Get-ReplicationBalancedBlock -Text $code -OpenBraceIndex ($match.Index + $match.Length - 1)
+        if ($null -eq $body) { continue }
+        if ($body -cmatch $gesture -and $body -cnotmatch $settle) {
+            throw ("Candidate test source '$Path' repeats a gesture in a loop whose body never waits for the app to " +
+                'react. The gestures can coalesce or overlap the platform animation, so an assertion about what the ' +
+                'gestures produced can fail on timing alone and fails the same way on a fixed build. Wait for the ' +
+                'state each gesture is supposed to produce before sending the next one.')
+        }
+    }
+
+    # Straight-line bursts have the same defect once there are enough of them
+    # for the platform to still be animating when the next gesture lands.
+    $statements = @($code -split ';')
+    $run = 0
+    foreach ($statement in $statements) {
+        if ($statement -cmatch $settle) { $run = 0; continue }
+        if ($statement -cmatch $gesture) {
+            $run++
+            if ($run -ge 3) {
+                throw ("Candidate test source '$Path' sends $run gestures in a row without waiting for the app " +
+                    'between them. The platform is still settling when the next gesture arrives, so an assertion ' +
+                    'about the resulting state reports driver timing rather than the defect. Wait for the state ' +
+                    'each gesture is supposed to produce before sending the next one.')
+            }
+        }
+    }
+}
+
 function Assert-ReplicationHandlerRegistrationIsNotTautological {
     [CmdletBinding()]
     param(

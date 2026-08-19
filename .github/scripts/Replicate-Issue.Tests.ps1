@@ -4318,6 +4318,94 @@ static void DragUpTwiceWhileHeld(AppiumApp app)
     }
 }
 
+Describe 'A gesture burst must wait for the app between gestures' {
+    It 'rejects the unsynchronized loop a reviewer proved timing-dependent' {
+        # PR 238: ten back-to-back 250 ms drags, then an assertion on the exact
+        # position trace 4,0,1,2,3,4,0,1,2,3. Nothing waited for snapping, so
+        # the gestures could coalesce or overlap the native animation and the
+        # inequality reports driver timing on a fixed build too.
+        $source = @'
+    for (int i = 0; i < 10; i++)
+    {
+        App.SwipeRightToLeft();
+    }
+
+    Assert.Equal("4,0,1,2,3,4,0,1,2,3", App.FindElement("Trace").GetText());
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*never waits for the app*'
+    }
+
+    It 'accepts the same loop once it waits for the position each swipe produces' {
+        $source = @'
+    for (int i = 0; i < 10; i++)
+    {
+        App.SwipeRightToLeft();
+        App.WaitForElement($"Position{(i + 1) % 5}");
+    }
+
+    Assert.Equal("4,0,1,2,3,4,0,1,2,3", App.FindElement("Trace").GetText());
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects a straight-line burst of gestures with nothing between them' {
+        $source = @'
+    App.SwipeRightToLeft();
+    App.SwipeRightToLeft();
+    App.SwipeRightToLeft();
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*3 gestures in a row*'
+    }
+
+    It 'does not accept a sleep as waiting for the app' {
+        # An unconditional delay waits for the clock, not for the app, so it
+        # leaves exactly the race the guard exists to reject.
+        $source = @'
+    for (int i = 0; i < 10; i++)
+    {
+        App.SwipeRightToLeft();
+        Thread.Sleep(250);
+    }
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*never waits for the app*'
+    }
+
+    It 'reads the loop body rather than everything after the loop header' {
+        # The wait belongs to the code after the loop, so it must not count as
+        # synchronising the gestures inside it.
+        $source = @'
+    for (int i = 0; i < 10; i++)
+    {
+        App.SwipeRightToLeft();
+    }
+
+    App.WaitForElement("Done");
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*never waits for the app*'
+    }
+
+    It 'leaves a single settled gesture alone' {
+        $source = @'
+    App.SwipeRightToLeft();
+    App.WaitForElement("Page2");
+    Assert.Equal("Page2", App.FindElement("Title").GetText());
+'@
+        {
+            Assert-ReplicationGestureIsSynchronized -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'A test may not assert the handler it registered itself' {
     It 'rejects the self-fulfilling registration a reviewer proved fix-insensitive' {
         # PR 204: the product registers EntryHandler2 only behind the Material3

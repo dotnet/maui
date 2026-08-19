@@ -731,4 +731,28 @@ echo '{"number":1}'
             Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It 'names the pipeline credential when GitHub rejects it' {
+        # Every run of waves 34-36 failed at this step on all four platforms
+        # with only "Unable to retrieve the GitHub issue.", which reads as a
+        # defect in the replication code. The cause was an expired token, and
+        # no retry inside a run can fix that, so the message has to say so.
+        $shim = New-GhShim -Reason 'gh: Bad credentials (HTTP 401)' -SucceedOnAttempt 99
+        $originalPath = $env:PATH
+        try {
+            $env:PATH = "$($shim.Directory):$originalPath"
+            $thrown = $null
+            try {
+                Read-ReplicationIssueJson -Repository 'dotnet/maui' -IssueNumber 1
+            } catch { $thrown = $_ }
+
+            $thrown.Exception.Message | Should -Match 'GH_COMMENT_TOKEN'
+            $thrown.Exception.Message | Should -Match 'rotated'
+            # A dead credential is permanent; retrying it wastes the run.
+            [int](Get-Content -Raw $shim.Counter).Trim() | Should -Be 1
+        } finally {
+            $env:PATH = $originalPath
+            Remove-Item -LiteralPath $shim.Directory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
