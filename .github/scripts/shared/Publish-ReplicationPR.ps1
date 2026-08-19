@@ -268,6 +268,20 @@ function New-ReplicationPullRequestBody {
     $marker = Get-ReplicationPullRequestMarker -IssueNumber $issueNumber -Platform $platform
     $safeTitle = ConvertTo-ReplicationSingleLine -Value $IssueTitle -MaximumLength 180
 
+    # Reviewers had to work out for themselves whether a red test had been shown
+    # to depend on the reported trigger, so state it rather than leaving it to be
+    # inferred from the run count.
+    $certificationLevel = Get-ReplicationCandidateText -Candidate $Candidate -Name 'certificationLevel'
+    $certificationSummary = Get-ReplicationCandidateText -Candidate $Candidate -Name 'certificationSummary'
+    $certificationBlock = if ($certificationSummary) {
+        "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine + $certificationSummary
+    } elseif ($certificationLevel) {
+        "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine +
+        ('**Evidence level: `' + $certificationLevel + '`**')
+    } else {
+        ''
+    }
+
     $steps = @()
     foreach ($step in @($Candidate.reproductionSteps)) {
         $safeStep = ConvertTo-ReplicationSingleLine -Value ([string]$step) -MaximumLength 300
@@ -287,6 +301,8 @@ $marker
 
 > [!IMPORTANT]
 > This is AI-generated **reproduction evidence**, not a merge-ready product fix. The added test intentionally fails on the unfixed baseline. A product fix should make the test pass before this PR is considered for merge.
+
+$certificationBlock
 
 ## Reproduced issue
 

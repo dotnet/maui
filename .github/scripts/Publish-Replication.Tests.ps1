@@ -197,6 +197,100 @@ Describe 'Trusted replication pull request publishing' {
             Should -Match 'Microsoft\.Maui\.TestCases\.Tests\.Issues\.Issue37440\.ReproducesIssue37440'
     }
 
+    It 'states the evidence level so a reviewer need not infer it' {
+        $validated = [ordered]@{
+            schemaVersion = 1
+            status = 'validated'
+            validationPassed = $true
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue37440'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Issue12345'
+            expectedFailurePattern = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: Issue12345 expected red but was blue'
+            verificationRunCount = 2
+            reproductionMarker = 'BUG REPRODUCED:'
+            files = @('src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue37440.cs')
+            reproductionSteps = @('Open the page', 'Tap the control')
+            evidence = [ordered]@{
+                video = 'repro.mp4'
+                preview = 'preview.gif'
+                thumbnail = 'thumbnail.png'
+            }
+            certificationLevel = 'certified-oracle'
+            certificationSummary = "**Evidence level: ``certified-oracle``**`n`n| Control | Expected | Result |`n| --- | --- | --- |`n| Trigger removed | passes | 3/3 |"
+        } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $validated `
+            -Evidence $evidence `
+            -IssueTitle 'Something is broken' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://example.com/build/1'
+
+        $body | Should -Match '## Evidence level'
+        $body | Should -Match 'certified-oracle'
+        $body | Should -Match 'Trigger removed'
+    }
+
+    It 'omits the evidence level section when the gate reported none' {
+        $validated = [ordered]@{
+            schemaVersion = 1
+            status = 'validated'
+            validationPassed = $true
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue37440'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Issue12345'
+            expectedFailurePattern = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: Issue12345 expected red but was blue'
+            verificationRunCount = 2
+            reproductionMarker = 'BUG REPRODUCED:'
+            files = @('src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue37440.cs')
+            reproductionSteps = @('Open the page', 'Tap the control')
+            evidence = [ordered]@{
+                video = 'repro.mp4'
+                preview = 'preview.gif'
+                thumbnail = 'thumbnail.png'
+            }
+        } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $validated `
+            -Evidence $evidence `
+            -IssueTitle 'Something is broken' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://example.com/build/1'
+
+        $body | Should -Not -Match '## Evidence level'
+    }
+
     It 'generates a draft body with video evidence, unconditional failure semantics, and safety statement' {
         $candidate = [pscustomobject]@{
             issueNumber = 37440
