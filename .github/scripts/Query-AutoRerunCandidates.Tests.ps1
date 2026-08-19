@@ -4,6 +4,7 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Query-AutoRerunCandidates.ps1'
     $workflowPath = Join-Path $PSScriptRoot '../workflows/pr-review-queue.yml'
+    $reviewableQueryTestsPath = Join-Path $PSScriptRoot '../skills/find-reviewable-pr/scripts/query-reviewable-prs.Tests.ps1'
     $scannerPath = Join-Path $PSScriptRoot '../workflows/rerun-review-scanner.md'
     $reviewTriggerPath = Join-Path $PSScriptRoot '../workflows/review-trigger.yml'
     $labelHelperPath = Join-Path $PSScriptRoot 'shared/Update-AgentLabels.ps1'
@@ -83,6 +84,7 @@ Describe 'Query-AutoRerunCandidates' {
         $script:reviewComments = @()
         $script:commits = @()
         $script:failedPRs = @()
+        $script:prListFailure = $false
         $script:ghCalls = @()
 
         Mock gh {
@@ -96,6 +98,10 @@ Describe 'Query-AutoRerunCandidates' {
             $global:LASTEXITCODE = 0
 
             if ($command -match '^pr list ') {
+                if ($script:prListFailure) {
+                    $global:LASTEXITCODE = 1
+                    return @()
+                }
                 return ($script:prList | ConvertTo-Json -Depth 10 -Compress)
             }
 
@@ -135,10 +141,12 @@ Context 'bounded scan metadata' {
         $validateJob = [regex]::Match($workflow, '(?s)^  validate:.*\z', 'Multiline').Value
 
         $validateJob | Should -Match 'Validate queue scripts without GitHub credentials'
+        $validateJob | Should -Match 'query-reviewable-prs\.Tests\.ps1'
         $validateJob | Should -Match 'Query-AutoRerunCandidates\.Tests\.ps1'
         $validateJob | Should -Match 'Update-AgentLabels\.Tests\.ps1'
         $validateJob | Should -Not -Match 'GH_TOKEN|github\.token'
         $validateJob | Should -Not -Match 'pull-requests:\s+read|issues:\s+read'
+        Test-Path -LiteralPath $reviewableQueryTestsPath | Should -BeTrue
     }
 
     It 'keeps the scheduled queue job at pull-request read permission' {
@@ -146,6 +154,16 @@ Context 'bounded scan metadata' {
         $generateJob = [regex]::Match($workflow, '(?s)  generate-report:.*?^  validate:', 'Multiline').Value
         $generateJob | Should -Match 'pull-requests:\s+read'
         $generateJob | Should -Not -Match 'pull-requests:\s+write'
+    }
+
+    It 'passes systemic and label-application failures through the workflow boundary' {
+        $workflow = Get-Content -Raw -LiteralPath $workflowPath
+        $autoLabelStep = [regex]::Match(
+            $workflow,
+            '(?s)      - name: Auto-label rerun-ready PRs.*?(?=      - name: Upload auto-rerun decisions)').Value
+
+        $autoLabelStep | Should -Match 'pwsh \.github/scripts/Query-AutoRerunCandidates\.ps1'
+        $autoLabelStep | Should -Not -Match 'set \+e|rc=\$\?|Auto-rerun labeling step failed'
     }
 }
 
@@ -186,6 +204,12 @@ Context 'API request bounding' {
 }
 
 Context 'error aggregation' {
+    It 'fails when the open PR query fails' {
+        $script:prListFailure = $true
+
+        { Invoke-TestScan } | Should -Throw '*Failed to list open PRs*'
+    }
+
     It 'fails a dry-run after writing structured error details' {
         $script:prList = @(1..2 | ForEach-Object { New-TestPR -Number $_ })
         $script:failedPRs = @(1, 2)

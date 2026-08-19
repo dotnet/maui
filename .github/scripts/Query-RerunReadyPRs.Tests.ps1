@@ -124,7 +124,7 @@ Describe 'Query-RerunReadyPRs' {
         $serialized | Should -Not -Match '/review rerun'
     }
 
-    It 'keeps the activity key stable for retries and changes it for new same-head activity' {
+    It 'keys stable activity identities instead of editable prose' {
         Invoke-RerunReadyPRQuery `
             -QueryMaxPRs 5 `
             -QueryOwner 'test-owner' `
@@ -156,8 +156,19 @@ Describe 'Query-RerunReadyPRs' {
             -QueryOutputPath $newActivityOutputPath | Out-Null
         $newActivity = Get-Content -Raw -LiteralPath $newActivityOutputPath | ConvertFrom-Json
 
+        $script:issueComments[-1].body = 'Edited prose for the same activity identity'
+        $script:issueComments[-1].updated_at = '2026-05-31T10:10:00Z'
+        $editedActivityOutputPath = Join-Path $outputDir "$([Guid]::NewGuid().ToString('N')).json"
+        Invoke-RerunReadyPRQuery `
+            -QueryMaxPRs 5 `
+            -QueryOwner 'test-owner' `
+            -QueryRepo 'test-repo' `
+            -QueryOutputPath $editedActivityOutputPath | Out-Null
+        $editedActivity = Get-Content -Raw -LiteralPath $editedActivityOutputPath | ConvertFrom-Json
+
         $retry.candidates[0].activityKey | Should -Be $first.candidates[0].activityKey
         $newActivity.candidates[0].activityKey | Should -Not -Be $first.candidates[0].activityKey
+        $editedActivity.candidates[0].activityKey | Should -Be $newActivity.candidates[0].activityKey
     }
 
     It 'fails loud when the ready-label lookup fails' {

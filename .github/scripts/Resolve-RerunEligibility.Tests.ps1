@@ -515,8 +515,14 @@ new
             New-TestCommit -Sha 'fedcba9876543210' -Date '2026-05-31T09:48:00Z'
         )
 
-        $context = New-RerunContextMarkdown -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210' -PRAuthorLogin 'dev-user' -CurrentLabels @('s/agent-review-in-progress')
+        $contextData = Get-RerunContextData -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210' -PRAuthorLogin 'dev-user' -CurrentLabels @('s/agent-review-in-progress')
+        $context = New-RerunContextMarkdown -ContextData $contextData
 
+        $contextData.DecisionMetadata.headChanged | Should -BeTrue
+        $contextData.DecisionMetadata.newAuthorCommentCount | Should -Be 1
+        $contextData.DecisionMetadata.newCommitCount | Should -Be 1
+        $contextData.NewAuthorComments[0].id | Should -Be 2
+        $contextData.NewCommits[0].sha | Should -Be 'fedcba9876543210'
         $context | Should -Match '# Rerun Context'
         $context | Should -Match 'New non-command author comments: 1'
         $context | Should -Match 'New commits: 1'
@@ -534,7 +540,8 @@ new
             New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
         )
 
-        $context = New-RerunContextMarkdown -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'app/dependabot'
+        $contextData = Get-RerunContextData -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'app/dependabot'
+        $context = New-RerunContextMarkdown -ContextData $contextData
 
         $context | Should -Match 'PR author: dependabot\[bot\]'
         $context | Should -Match 'New non-command author comments: 0'

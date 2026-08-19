@@ -80,33 +80,6 @@ function Get-PlatformFromLabels {
     return 'android'
 }
 
-function Get-RerunDecisionMetadata {
-    param(
-        [Parameter(Mandatory = $true)][string]$ContextMarkdown,
-        [bool]$HasTrustedReviewOptions
-    )
-
-    $headChanged = [regex]::Match(
-        $ContextMarkdown,
-        '(?m)^- Current head differs from latest reviewed SHA: (?<value>true|false)\s*$')
-    $newComments = [regex]::Match(
-        $ContextMarkdown,
-        '(?m)^- New non-command author comments: (?<value>\d+)\s*$')
-    $newCommits = [regex]::Match(
-        $ContextMarkdown,
-        '(?m)^- New commits: (?<value>\d+)\s*$')
-    if (-not $headChanged.Success -or -not $newComments.Success -or -not $newCommits.Success) {
-        throw 'Deterministic rerun context is missing required decision metadata.'
-    }
-
-    return [pscustomobject]@{
-        headChanged = [bool]::Parse($headChanged.Groups['value'].Value)
-        newAuthorCommentCount = [int]$newComments.Groups['value'].Value
-        newCommitCount = [int]$newCommits.Groups['value'].Value
-        hasTrustedReviewOptions = $HasTrustedReviewOptions
-    }
-}
-
 function Invoke-RerunReadyPRQuery {
     param(
         [int]$QueryMaxPRs = $MaxPRs,
@@ -150,14 +123,19 @@ foreach ($pr in @($searchResult)) {
     $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -Owner $Owner -Repo $Repo
     $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
     $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
-    $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -PRAuthorLogin $authorLogin -CurrentLabels $labels
-    $activityKeyBytes = [System.Text.Encoding]::UTF8.GetBytes("$($pr.headRefOid)`n$contextMarkdown")
-    $activityKey = [Convert]::ToHexString(
-        [System.Security.Cryptography.SHA256]::HashData($activityKeyBytes)
-    ).ToLowerInvariant()
-    $decisionMetadata = Get-RerunDecisionMetadata `
-        -ContextMarkdown $contextMarkdown `
-        -HasTrustedReviewOptions ([bool]$reviewOptions.Found)
+    $contextData = Get-RerunContextData `
+        -Comments $activity `
+        -Commits $commits `
+        -CurrentHeadSha $pr.headRefOid `
+        -PRAuthorLogin $authorLogin `
+        -CurrentLabels $labels
+    $activityKey = Get-RerunActivityKey -ContextData $contextData
+    $decisionMetadata = [pscustomobject]@{
+        headChanged             = [bool]$contextData.DecisionMetadata.headChanged
+        newAuthorCommentCount   = [int]$contextData.DecisionMetadata.newAuthorCommentCount
+        newCommitCount          = [int]$contextData.DecisionMetadata.newCommitCount
+        hasTrustedReviewOptions = [bool]$reviewOptions.Found
+    }
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }
 

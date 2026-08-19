@@ -91,24 +91,19 @@ jobs:
       # Autonomously apply s/agent-ready-for-rerun to PRs with genuinely new
       # PR-author activity since their last AI review — the same deterministic
       # signal as a maintainer's `/review rerun`. The hourly rerun-review-scanner
-      # then picks these up and re-reviews them. Failures here are surfaced as a
-      # warning and never block the queue issue that was already created above.
+      # then picks these up and re-reviews them. The script tolerates isolated
+      # per-PR evaluation failures, but systemic/query/label failures fail this
+      # step after the queue issue above has already been created.
       - name: Auto-label rerun-ready PRs
         env:
           GH_TOKEN: ${{ github.token }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          set +e
           pwsh .github/scripts/Query-AutoRerunCandidates.ps1 \
             -Owner "$REPO_OWNER" \
             -Repo "$REPO_NAME" \
             -OutputPath auto-rerun-decisions.json
-          rc=$?
-          set -e
-          if [ $rc -ne 0 ]; then
-            echo "::warning::Auto-rerun labeling step failed (rc=$rc); the queue issue was still created."
-          fi
 
       - name: Upload auto-rerun decisions
         if: always()
@@ -164,6 +159,7 @@ jobs:
           Import-Module Pester -RequiredVersion 5.9.0
           $config = New-PesterConfiguration
           $config.Run.Path = @(
+            '.github/skills/find-reviewable-pr/scripts/query-reviewable-prs.Tests.ps1'
             '.github/scripts/Invoke-RerunReviewTrigger.Tests.ps1'
             '.github/scripts/Query-AutoRerunCandidates.Tests.ps1'
             '.github/scripts/Query-RerunReadyPRs.Tests.ps1'

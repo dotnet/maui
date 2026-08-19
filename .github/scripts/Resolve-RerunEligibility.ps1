@@ -520,7 +520,7 @@ function Format-MarkdownCell {
     return ($singleLine -replace '\|', '\|')
 }
 
-function New-RerunContextMarkdown {
+function Get-RerunContextData {
     param(
         [object[]]$Comments,
         [object[]]$Commits,
@@ -562,10 +562,82 @@ function New-RerunContextMarkdown {
         $newCommits = @($Commits | Where-Object {
             $date = Get-CommitDate $_
             $date -and $date -gt $checkpoint
-        } | Sort-Object @{ Expression = { Get-CommitDate $_ }; Descending = $false })
+        } | Sort-Object `
+            @{ Expression = { Get-CommitDate $_ }; Descending = $false },
+            @{ Expression = { [string]$_.sha }; Descending = $false })
     }
 
     $headDiffers = Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha
+
+    return [pscustomobject]@{
+        LatestSummary          = $latestSummary
+        LatestRerun            = $latestRerun
+        CheckpointRerun        = $checkpointRerun
+        PRAuthorLogin          = $normalizedPRAuthorLogin
+        ReadyLabelPresent      = $readyLabelPresent
+        InProgressLabelPresent = $inProgressLabelPresent
+        LatestReviewedSha      = $latestReviewedSha
+        SummaryCreatedAt       = $summaryCreatedAt
+        Checkpoint             = $checkpoint
+        CheckpointReason       = $checkpointReason
+        CurrentHeadSha         = [string]$CurrentHeadSha
+        NewAuthorComments      = @($evidenceComments)
+        NewCommits             = @($newCommits)
+        DecisionMetadata       = [pscustomobject]@{
+            headChanged          = [bool]$headDiffers
+            newAuthorCommentCount = [int]$evidenceComments.Count
+            newCommitCount       = [int]$newCommits.Count
+        }
+    }
+}
+
+function Get-RerunActivityKey {
+    param(
+        [Parameter(Mandatory = $true)]$ContextData
+    )
+
+    $canonicalActivity = [System.Collections.Generic.List[string]]::new()
+    $canonicalActivity.Add('rerun-activity-v1')
+    $canonicalActivity.Add("head:$(([string]$ContextData.CurrentHeadSha).Trim().ToLowerInvariant())")
+
+    foreach ($comment in @($ContextData.NewAuthorComments)) {
+        $createdAt = Get-ObjectDate $comment 'created_at'
+        $canonicalActivity.Add(
+            "comment:$([string]$comment.kind):$([Int64]$comment.id):$($createdAt.ToUniversalTime().ToString('o'))")
+    }
+
+    foreach ($commit in @($ContextData.NewCommits)) {
+        $date = Get-CommitDate $commit
+        $canonicalActivity.Add(
+            "commit:$(([string]$commit.sha).ToLowerInvariant()):$($date.ToUniversalTime().ToString('o'))")
+    }
+
+    $activityKeyBytes = [System.Text.Encoding]::UTF8.GetBytes($canonicalActivity -join "`n")
+    return [Convert]::ToHexString(
+        [System.Security.Cryptography.SHA256]::HashData($activityKeyBytes)
+    ).ToLowerInvariant()
+}
+
+function New-RerunContextMarkdown {
+    param(
+        [Parameter(Mandatory = $true)]$ContextData
+    )
+
+    $latestSummary = $ContextData.LatestSummary
+    $latestRerun = $ContextData.LatestRerun
+    $checkpointRerun = $ContextData.CheckpointRerun
+    $normalizedPRAuthorLogin = [string]$ContextData.PRAuthorLogin
+    $readyLabelPresent = [bool]$ContextData.ReadyLabelPresent
+    $inProgressLabelPresent = [bool]$ContextData.InProgressLabelPresent
+    $latestReviewedSha = [string]$ContextData.LatestReviewedSha
+    $summaryCreatedAt = $ContextData.SummaryCreatedAt
+    $checkpoint = $ContextData.Checkpoint
+    $checkpointReason = [string]$ContextData.CheckpointReason
+    $CurrentHeadSha = [string]$ContextData.CurrentHeadSha
+    $evidenceComments = @($ContextData.NewAuthorComments)
+    $newCommits = @($ContextData.NewCommits)
+    $headDiffers = [bool]$ContextData.DecisionMetadata.headChanged
+
     $lines = [System.Collections.Generic.List[string]]::new()
     $lines.Add('# Rerun Context')
     $lines.Add('')
@@ -827,12 +899,13 @@ if ($pr.state -ne 'open') {
 }
 
 if ($ContextOutputPath) {
-    $context = New-RerunContextMarkdown `
+    $contextData = Get-RerunContextData `
         -Comments $comments `
         -Commits $commits `
         -CurrentHeadSha $pr.head.sha `
         -PRAuthorLogin $pr.user.login `
         -CurrentLabels $labels
+    $context = New-RerunContextMarkdown -ContextData $contextData
     $contextDir = Split-Path -Parent $ContextOutputPath
     if ($contextDir) {
         New-Item -ItemType Directory -Force -Path $contextDir | Out-Null
