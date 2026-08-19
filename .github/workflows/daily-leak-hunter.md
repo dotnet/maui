@@ -93,8 +93,9 @@ pre-agent-steps:
       mkdir -p /tmp/gh-aw/agent
 
       # This workflow's own open [leak-scan] issues (filed with the agentic-workflows label).
-      # The shared GraphQL helper follows every cursor, verifies stable totalCount/pageInfo,
-      # and fails closed on malformed, incomplete, repeated-cursor, or over-budget pagination.
+      # The shared GraphQL helper follows every cursor and verifies stable totalCount/pageInfo.
+      # Count, duplicate, or cursor churn rebuilds the whole issue snapshot once from scratch;
+      # persistent churn and malformed, incomplete, or over-budget pagination fail closed.
       pwsh .github/scripts/Get-CompleteLeakIssues.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -OutputPath /tmp/gh-aw/agent/my-open-leakscan.json
@@ -151,10 +152,12 @@ pre-agent-steps:
       # commit message contains exactly one full `This reverts commit <40-hex-target-OID>.`
       # proof. Wrong, abbreviated, duplicate, ambiguous, cross-branch, truncated, or over-budget
       # evidence leaves the original fix active or fails closed. Both merged-history and commit
-      # pagination use stable totalCount/pageInfo validation, bounded transient retries, capped
-      # server-directed rate-limit delays, and 1000-query safety budgets; commit verification is
-      # batched 10 PRs at a time, pages 100 commits, and caps aggregate records at 20000. Local
-      # traversal keeps the 1000-discovery and 2000-PR aggregate bounds.
+      # pagination use stable totalCount/pageInfo validation and rebuild the whole snapshot once
+      # on count, duplicate, cursor, or cross-base retarget churn. Persistent churn fails closed.
+      # Native requests use bounded transient retries, capped server-directed rate-limit delays,
+      # and 1000-query safety budgets per snapshot attempt; commit verification is batched 10 PRs
+      # at a time, pages 100 commits, and caps aggregate records at 20000. Local traversal keeps
+      # the 1000-discovery and 2000-PR aggregate bounds.
       pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
@@ -212,8 +215,8 @@ safe-outputs:
       run: |
         set -euo pipefail
         TRUSTED_DIR="$GITHUB_WORKSPACE/trusted-leak-hunter/.github/scripts"
-        test -f "$TRUSTED_DIR/Assert-LeakHunterSafeOutputGate.ps1"
-        test -f "$TRUSTED_DIR/LeakWorkflowDedup.psm1"
+        test -s "$TRUSTED_DIR/Assert-LeakHunterSafeOutputGate.ps1"
+        test -s "$TRUSTED_DIR/LeakWorkflowDedup.psm1"
         chmod -R a-w "$TRUSTED_DIR"
     - name: Enforce final leak-hunter de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}

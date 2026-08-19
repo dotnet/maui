@@ -612,6 +612,176 @@ function Get-LeakRequiredPropertyValue {
     return $property.Value
 }
 
+function ConvertTo-LeakGraphQlDiagnosticText {
+    param(
+        [AllowNull()][object]$Value,
+        [ValidateRange(1, 1024)][int]$MaximumLength
+    )
+
+    if ($null -eq $Value) {
+        return ''
+    }
+
+    $text = [regex]::Replace(
+        [string]$Value,
+        '[\p{Cc}\p{Cf}]',
+        ' '
+    )
+    $text = [regex]::Replace($text, '\s+', ' ').Trim()
+    if ($text.Length -gt $MaximumLength) {
+        return "$($text.Substring(0, $MaximumLength))..."
+    }
+    return $text
+}
+
+function Format-LeakGraphQlErrorPath {
+    param([AllowNull()][object]$Path)
+
+    if ($null -eq $Path) {
+        return ''
+    }
+
+    $segments = @($Path)
+    $parts = [System.Collections.Generic.List[string]]::new()
+    foreach ($segment in @($segments | Select-Object -First 8)) {
+        $text = ConvertTo-LeakGraphQlDiagnosticText `
+            -Value $segment `
+            -MaximumLength 48
+        if ([string]::IsNullOrWhiteSpace($text)) {
+            $text = '<empty>'
+        }
+        $parts.Add($text)
+    }
+    if ($segments.Count -gt 8) {
+        $parts.Add('...')
+    }
+    return $parts -join '.'
+}
+
+function Format-LeakGraphQlErrors {
+    param(
+        [Parameter(Mandatory = $true)][string]$Context,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Errors
+    )
+
+    $details = [System.Collections.Generic.List[string]]::new()
+    foreach ($errorItem in @($Errors | Select-Object -First 3)) {
+        $messageProperty = if ($null -eq $errorItem) {
+            $null
+        } else {
+            $errorItem.PSObject.Properties['message']
+        }
+        $message = if ($null -eq $messageProperty) {
+            '<missing>'
+        } else {
+            ConvertTo-LeakGraphQlDiagnosticText `
+                -Value $messageProperty.Value `
+                -MaximumLength 240
+        }
+        if ([string]::IsNullOrWhiteSpace($message)) {
+            $message = '<empty>'
+        }
+
+        $summary = [ordered]@{ message = $message }
+        if ($null -ne $errorItem) {
+            $typeProperty = $errorItem.PSObject.Properties['type']
+            if ($null -ne $typeProperty) {
+                $type = ConvertTo-LeakGraphQlDiagnosticText `
+                    -Value $typeProperty.Value `
+                    -MaximumLength 80
+                if (-not [string]::IsNullOrWhiteSpace($type)) {
+                    $summary.type = $type
+                }
+            }
+
+            $pathProperty = $errorItem.PSObject.Properties['path']
+            if ($null -ne $pathProperty) {
+                $path = Format-LeakGraphQlErrorPath -Path $pathProperty.Value
+                if (-not [string]::IsNullOrWhiteSpace($path)) {
+                    $summary.path = $path
+                }
+            }
+        }
+        $details.Add(($summary | ConvertTo-Json -Compress))
+    }
+    if ($Errors.Count -gt 3) {
+        $details.Add(
+            (@{ omitted = $Errors.Count - 3 } | ConvertTo-Json -Compress)
+        )
+    }
+
+    $diagnostic = "$Context returned GraphQL errors: $($details -join '; ')"
+    if ($diagnostic.Length -gt 1400) {
+        $diagnostic = "$($diagnostic.Substring(0, 1400))..."
+    }
+    return $diagnostic
+}
+
+function Assert-LeakGraphQlResponse {
+    param(
+        [Parameter(Mandatory = $true)][AllowNull()][object]$Response,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    if ($null -eq $Response) {
+        return
+    }
+    $errorsProperty = $Response.PSObject.Properties['errors']
+    $errors = if ($null -eq $errorsProperty) {
+        @()
+    } else {
+        @($errorsProperty.Value)
+    }
+    if ($errors.Count -gt 0) {
+        throw (Format-LeakGraphQlErrors -Context $Context -Errors $errors)
+    }
+}
+
+function New-LeakSnapshotChurnException {
+    param([Parameter(Mandatory = $true)][string]$Message)
+
+    $exception = [System.InvalidOperationException]::new($Message)
+    $exception.Data['LeakSnapshotChurn'] = $true
+    return $exception
+}
+
+function Test-IsLeakSnapshotChurnException {
+    param([Parameter(Mandatory = $true)][System.Exception]$Exception)
+
+    $current = $Exception
+    while ($null -ne $current) {
+        if ($current.Data['LeakSnapshotChurn'] -eq $true) {
+            return $true
+        }
+        $current = $current.InnerException
+    }
+    return $false
+}
+
+function Invoke-LeakWholeSnapshot {
+    param(
+        [Parameter(Mandatory = $true)][string]$Context,
+        [Parameter(Mandatory = $true)][scriptblock]$Operation,
+        [ValidateRange(1, 3)][int]$MaximumAttempts = 2
+    )
+
+    for ($attempt = 1; $attempt -le $MaximumAttempts; $attempt++) {
+        try {
+            return & $Operation
+        } catch {
+            if (-not (Test-IsLeakSnapshotChurnException -Exception $_.Exception)) {
+                throw
+            }
+            if ($attempt -eq $MaximumAttempts) {
+                throw "$Context remained inconsistent after $MaximumAttempts whole-snapshot attempts. Last inconsistency: $($_.Exception.Message)"
+            }
+            Write-Warning "$Context detected dataset churn on whole-snapshot attempt $attempt of $MaximumAttempts; rebuilding from scratch. $($_.Exception.Message)"
+        }
+    }
+
+    throw "$Context exhausted its whole-snapshot retry budget unexpectedly."
+}
+
 function Get-LeakRepositoryCoordinates {
     param([Parameter(Mandatory = $true)][string]$Repository)
 
@@ -674,10 +844,7 @@ function Invoke-LeakGraphQlConnection {
         }
 
         $response = Invoke-LeakGhJson -Arguments $arguments.ToArray()
-        $errorsProperty = $response.PSObject.Properties['errors']
-        if ($null -ne $errorsProperty -and @($errorsProperty.Value).Count -gt 0) {
-            throw "$Context returned GraphQL errors."
-        }
+        Assert-LeakGraphQlResponse -Response $response -Context $Context
 
         $data = Get-LeakRequiredPropertyValue `
             -Object $response `
@@ -705,7 +872,8 @@ function Invoke-LeakGraphQlConnection {
         if ($expectedTotal -lt 0) {
             $expectedTotal = $totalCount
         } elseif ($totalCount -ne $expectedTotal) {
-            throw "$Context totalCount changed from $expectedTotal to $totalCount during pagination."
+            throw (New-LeakSnapshotChurnException `
+                    -Message "$Context totalCount changed from $expectedTotal to $totalCount during pagination.")
         }
 
         $nodesValue = Get-LeakRequiredPropertyValue `
@@ -731,7 +899,8 @@ function Invoke-LeakGraphQlConnection {
                 throw "$Context returned an invalid node number '$numberValue'."
             }
             if (-not $seenKeys.Add([string]$number)) {
-                throw "$Context returned duplicate node #$number across pages."
+                throw (New-LeakSnapshotChurnException `
+                        -Message "$Context returned duplicate node #$number across pages.")
             }
             $items.Add($node)
         }
@@ -772,7 +941,8 @@ function Invoke-LeakGraphQlConnection {
             throw "$Context claimed another page without a usable endCursor."
         }
         if (-not $seenCursors.Add($endCursor)) {
-            throw "$Context repeated endCursor '$endCursor'."
+            throw (New-LeakSnapshotChurnException `
+                    -Message "$Context repeated endCursor '$endCursor'.")
         }
         $cursor = $endCursor
     }
@@ -783,7 +953,7 @@ function Invoke-LeakGraphQlConnection {
     }
 }
 
-function Get-CompleteLeakPullRequests {
+function Invoke-LeakPullRequestSnapshot {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)]
@@ -862,13 +1032,15 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
                     -Name 'number' `
                     -Context "$context node")
             if (-not $seenNumbers.Add($number)) {
-                throw "Leak pull-request pagination returned PR #$number under multiple base branches."
+                throw (New-LeakSnapshotChurnException `
+                        -Message "Leak pull-request pagination returned PR #$number under multiple base branches.")
             }
             $nodeBase = Get-NormalizedLeakBaseRefName `
                 -PullRequest $node `
                 -Context $context
             if ($nodeBase -cne $base) {
-                throw "$context returned PR #$number for unexpected baseRefName '$nodeBase'."
+                throw (New-LeakSnapshotChurnException `
+                        -Message "$context returned PR #$number for unexpected baseRefName '$nodeBase'.")
             }
 
             $nodeState = Get-LeakRequiredPropertyValue `
@@ -952,7 +1124,32 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
     return @($all | Sort-Object number)
 }
 
-function Get-CompleteLeakPullRequestCommitHistories {
+function Get-CompleteLeakPullRequests {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('OPEN', 'CLOSED', 'MERGED')]
+        [string]$State,
+        [string[]]$BaseRefNames = @('main', 'inflight/current'),
+        [ValidateRange(1, 100)][int]$PageSize = 100,
+        [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000
+    )
+
+    return @(
+        Invoke-LeakWholeSnapshot `
+            -Context "$State pull-request pagination" `
+            -Operation {
+                Invoke-LeakPullRequestSnapshot `
+                    -Repository $Repository `
+                    -State $State `
+                    -BaseRefNames $BaseRefNames `
+                    -PageSize $PageSize `
+                    -MaximumPageQueries $MaximumPageQueries
+            }
+    )
+}
+
+function Invoke-LeakPullRequestCommitHistorySnapshot {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)]
@@ -1074,10 +1271,9 @@ $($selections -join "`n")
         }
 
         $response = Invoke-LeakGhJson -Arguments $arguments.ToArray()
-        $errorsProperty = $response.PSObject.Properties['errors']
-        if ($null -ne $errorsProperty -and @($errorsProperty.Value).Count -gt 0) {
-            throw 'Merged reverter commit-history pagination returned GraphQL errors.'
-        }
+        Assert-LeakGraphQlResponse `
+            -Response $response `
+            -Context 'Merged reverter commit-history pagination'
         $data = Get-LeakRequiredPropertyValue `
             -Object $response `
             -Name 'data' `
@@ -1164,7 +1360,8 @@ $($selections -join "`n")
             if ($state.ExpectedTotal -lt 0) {
                 $state.ExpectedTotal = $totalCount
             } elseif ($totalCount -ne $state.ExpectedTotal) {
-                throw "$context commit totalCount changed from $($state.ExpectedTotal) to $totalCount during pagination."
+                throw (New-LeakSnapshotChurnException `
+                        -Message "$context commit totalCount changed from $($state.ExpectedTotal) to $totalCount during pagination.")
             }
 
             $nodesValue = Get-LeakRequiredPropertyValue `
@@ -1196,7 +1393,8 @@ $($selections -join "`n")
                 }
                 $oid = $oidValue.ToLowerInvariant()
                 if (-not $state.SeenCommitOids.Add($oid)) {
-                    throw "$context returned duplicate commit '$oid' across pages."
+                    throw (New-LeakSnapshotChurnException `
+                            -Message "$context returned duplicate commit '$oid' across pages.")
                 }
                 $message = Get-LeakRequiredPropertyValue `
                     -Object $commit `
@@ -1249,7 +1447,8 @@ $($selections -join "`n")
                 throw "$context claimed another commit page without a usable endCursor."
             }
             if (-not $state.SeenCursors.Add($endCursor)) {
-                throw "$context repeated commit endCursor '$endCursor'."
+                throw (New-LeakSnapshotChurnException `
+                        -Message "$context repeated commit endCursor '$endCursor'.")
             }
             $state.Cursor = $endCursor
         }
@@ -1265,6 +1464,33 @@ $($selections -join "`n")
                 commits = @($_.Commits)
             }
         } | Sort-Object number)
+}
+
+function Get-CompleteLeakPullRequestCommitHistories {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$PullRequests,
+        [ValidateRange(1, 100)][int]$PageSize = 100,
+        [ValidateRange(1, 50)][int]$BatchSize = 10,
+        [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000,
+        [ValidateRange(1, 100000)][int]$MaximumCommitRecords = 20000
+    )
+
+    return @(
+        Invoke-LeakWholeSnapshot `
+            -Context 'Merged reverter commit-history pagination' `
+            -Operation {
+                Invoke-LeakPullRequestCommitHistorySnapshot `
+                    -Repository $Repository `
+                    -PullRequests $PullRequests `
+                    -PageSize $PageSize `
+                    -BatchSize $BatchSize `
+                    -MaximumPageQueries $MaximumPageQueries `
+                    -MaximumCommitRecords $MaximumCommitRecords
+            }
+    )
 }
 
 function Get-CompleteLeakIssues {
@@ -1300,14 +1526,18 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
 }
 '@
 
-    $connection = Invoke-LeakGraphQlConnection `
-        -Repository $Repository `
-        -Query $query `
-        -ConnectionName 'issues' `
+    $connection = Invoke-LeakWholeSnapshot `
         -Context 'Open agentic-workflows issue pagination' `
-        -PageSize $PageSize `
-        -MaximumPageQueries $MaximumPageQueries `
-        -QueryBudget @{ Queries = 0 }
+        -Operation {
+            Invoke-LeakGraphQlConnection `
+                -Repository $Repository `
+                -Query $query `
+                -ConnectionName 'issues' `
+                -Context 'Open agentic-workflows issue pagination' `
+                -PageSize $PageSize `
+                -MaximumPageQueries $MaximumPageQueries `
+                -QueryBudget @{ Queries = 0 }
+        }
     $issues = [System.Collections.Generic.List[object]]::new()
     foreach ($node in @($connection.Items)) {
         $number = [int](Get-LeakRequiredPropertyValue `

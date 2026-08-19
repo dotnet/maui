@@ -512,6 +512,68 @@ Describe 'shared regular JSON file validation' {
     }
 }
 
+Describe 'merged-reverts JSON driver validation' {
+    BeforeAll {
+        $script:effectiveRevertsDriver = Join-Path (
+            $PSScriptRoot
+        ) 'Get-EffectiveRevertedLeakFixes.ps1'
+    }
+
+    It 'uses the shared reader with the 128MB ingress bound' {
+        $driver = Get-Content -LiteralPath $script:effectiveRevertsDriver -Raw
+
+        $driver | Should -Match '(?s)Read-RegularJsonFile\s+`?\s*-Path \$MergedRevertsJsonPath\s+`?\s*-MaximumBytes 128MB'
+        $driver | Should -Not -Match '(?s)Get-Content[^\r\n]*\$MergedRevertsJsonPath'
+        $driver | Should -Not -Match 'ConvertFrom-Json'
+    }
+
+    It 'accepts a regular bounded merged-reverts file' {
+        $fixesPath = Join-Path $TestDrive 'merged-fixes.tsv'
+        $revertsPath = Join-Path $TestDrive 'merged-reverts.json'
+        $outputPath = Join-Path $TestDrive 'effective-reverts.txt'
+        "Type.Member`t100`tmain" | Set-Content -LiteralPath $fixesPath
+        '[]' | Set-Content -LiteralPath $revertsPath
+
+        & $script:effectiveRevertsDriver `
+            -Repository 'dotnet/maui' `
+            -MergedFixTsvPath $fixesPath `
+            -MergedRevertsJsonPath $revertsPath `
+            -OutputPath $outputPath
+
+        Test-Path -LiteralPath $outputPath -PathType Leaf |
+            Should -BeTrue
+        @(Get-Content -LiteralPath $outputPath).Count | Should -Be 0
+    }
+
+    It 'rejects a merged-reverts file above 128MB before parsing' {
+        $fixesPath = Join-Path $TestDrive 'oversized-merged-fixes.tsv'
+        $revertsPath = Join-Path $TestDrive 'oversized-merged-reverts.json'
+        $outputPath = Join-Path $TestDrive 'oversized-effective-reverts.txt'
+        "Type.Member`t100`tmain" | Set-Content -LiteralPath $fixesPath
+
+        $stream = [System.IO.FileStream]::new(
+            $revertsPath,
+            [System.IO.FileMode]::CreateNew,
+            [System.IO.FileAccess]::ReadWrite,
+            [System.IO.FileShare]::None
+        )
+        try {
+            $stream.SetLength(128MB + 1)
+        } finally {
+            $stream.Dispose()
+        }
+
+        {
+            & $script:effectiveRevertsDriver `
+                -Repository 'dotnet/maui' `
+                -MergedFixTsvPath $fixesPath `
+                -MergedRevertsJsonPath $revertsPath `
+                -OutputPath $outputPath
+        } | Should -Throw '*JSON file is empty or too large*'
+        Test-Path -LiteralPath $outputPath | Should -BeFalse
+    }
+}
+
 Describe 'authoritative leak-fix branch scope' {
     It 'selects main and inflight/current as one scope while excluding release branches' {
         $selected = @(
@@ -1433,7 +1495,75 @@ Describe 'complete GraphQL pagination' {
         } | Should -Throw '*claimed another page without a usable endCursor*'
     }
 
-    It 'fails closed when pagination changes totalCount or repeats a cursor' {
+    It 'rejects HTTP-200 pull-request responses with top-level errors and partial data' {
+        $node = New-LeakGraphQlPullRequestNode -Number 1
+        $global:leakPaginationResponses.Enqueue(
+            (@{
+                    data = @{
+                        repository = @{
+                            pullRequests = @{
+                                totalCount = 1
+                                nodes = @($node)
+                                pageInfo = @{
+                                    hasNextPage = $false
+                                    endCursor = $null
+                                }
+                            }
+                        }
+                    }
+                    errors = @(
+                        @{
+                            message = "Permission denied`n$('x' * 1000)`0"
+                            type = "FORBIDDEN`tTYPE"
+                            path = @('repository', 'pullRequests', 0, 'nodes')
+                        }
+                    )
+                } | ConvertTo-Json -Depth 10 -Compress)
+        )
+
+        $result = @()
+        $failure = $null
+        try {
+            $result = @(
+                Get-CompleteLeakPullRequests `
+                    -Repository 'dotnet/maui' `
+                    -State MERGED `
+                    -BaseRefNames @('main')
+            )
+        } catch {
+            $failure = $_.Exception.Message
+        }
+
+        $result.Count | Should -Be 0
+        $failure | Should -Match 'returned GraphQL errors'
+        $failure | Should -Match 'Permission denied x+'
+        $failure | Should -Match '"type":"FORBIDDEN TYPE"'
+        $failure | Should -Match '"path":"repository.pullRequests.0.nodes"'
+        $failure | Should -Not -Match '[\x00-\x1F\x7F]'
+        $failure.Length | Should -BeLessThan 1500
+        $global:leakPaginationCalls.Count | Should -Be 1
+    }
+
+    It 'restarts the whole PR snapshot after count churn and returns only the stable attempt' {
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes @(
+                        New-LeakGraphQlPullRequestNode -Number 91
+                    ) `
+                    -TotalCount 2 `
+                    -HasNextPage $true `
+                    -EndCursor stale-cursor)
+        )
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes @(
+                        New-LeakGraphQlPullRequestNode -Number 92
+                    ) `
+                    -TotalCount 3 `
+                    -HasNextPage $false)
+        )
         $global:leakPaginationResponses.Enqueue(
             (New-LeakGraphQlPageJson `
                     -ConnectionName pullRequests `
@@ -1442,7 +1572,7 @@ Describe 'complete GraphQL pagination' {
                     ) `
                     -TotalCount 2 `
                     -HasNextPage $true `
-                    -EndCursor cursor-1)
+                    -EndCursor stable-cursor)
         )
         $global:leakPaginationResponses.Enqueue(
             (New-LeakGraphQlPageJson `
@@ -1450,34 +1580,151 @@ Describe 'complete GraphQL pagination' {
                     -Nodes @(
                         New-LeakGraphQlPullRequestNode -Number 2
                     ) `
-                    -TotalCount 3 `
+                    -TotalCount 2 `
                     -HasNextPage $false)
         )
-        {
+
+        $result = @(
             Get-CompleteLeakPullRequests `
                 -Repository 'dotnet/maui' `
                 -State MERGED `
-                -BaseRefNames @('main')
-        } | Should -Throw '*totalCount changed from 2 to 3*'
+                -BaseRefNames @('main') `
+                -PageSize 1
+        )
 
+        $result.number | Should -Be @(1, 2)
+        $global:leakPaginationCalls.Count | Should -Be 4
+        ($global:leakPaginationCalls[2] -join ' ') |
+            Should -Not -Match '\bafter='
+        ($global:leakPaginationCalls[3] -join ' ') |
+            Should -Match 'after=stable-cursor'
+    }
+
+    It 'fails closed when count churn persists across the whole-snapshot restart' {
         1..2 | ForEach-Object {
             $global:leakPaginationResponses.Enqueue(
                 (New-LeakGraphQlPageJson `
                         -ConnectionName pullRequests `
                         -Nodes @(
-                            New-LeakGraphQlPullRequestNode -Number (10 + $_)
+                            New-LeakGraphQlPullRequestNode -Number (10 * $_)
+                        ) `
+                        -TotalCount 2 `
+                        -HasNextPage $true `
+                        -EndCursor "count-$($_)-first")
+            )
+            $global:leakPaginationResponses.Enqueue(
+                (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes @(
+                            New-LeakGraphQlPullRequestNode -Number ((10 * $_) + 1)
                         ) `
                         -TotalCount 3 `
-                        -HasNextPage $true `
-                        -EndCursor repeated)
+                        -HasNextPage $false)
             )
         }
+
         {
             Get-CompleteLeakPullRequests `
                 -Repository 'dotnet/maui' `
                 -State MERGED `
-                -BaseRefNames @('main')
-        } | Should -Throw "*repeated endCursor 'repeated'*"
+                -BaseRefNames @('main') `
+                -PageSize 1
+        } | Should -Throw '*remained inconsistent after 2 whole-snapshot attempts*totalCount changed from 2 to 3*'
+
+        $global:leakPaginationCalls.Count | Should -Be 4
+    }
+
+    It 'restarts the whole PR snapshot after cross-base retargeting' {
+        foreach ($entry in @(
+                @{ Number = 10; Base = 'main' }
+                @{ Number = 10; Base = 'inflight/current' }
+                @{ Number = 20; Base = 'main' }
+                @{ Number = 30; Base = 'inflight/current' }
+            )) {
+            $global:leakPaginationResponses.Enqueue(
+                (New-LeakGraphQlPageJson `
+                        -ConnectionName pullRequests `
+                        -Nodes @(
+                            New-LeakGraphQlPullRequestNode `
+                                -Number $entry.Number `
+                                -Base $entry.Base
+                        ) `
+                        -TotalCount 1 `
+                        -HasNextPage $false)
+            )
+        }
+
+        $result = @(
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED
+        )
+
+        $result.number | Should -Be @(20, 30)
+        $global:leakPaginationCalls.Count | Should -Be 4
+        @($global:leakPaginationCalls | ForEach-Object {
+                @($_ | Where-Object { $_ -like 'base=*' })[0]
+            }) |
+            Should -Be @(
+                'base=main'
+                'base=inflight/current'
+                'base=main'
+                'base=inflight/current'
+            ) -Because 'the second attempt must rebuild every authoritative base'
+    }
+
+    It 'fails closed when cross-base retargeting persists across the restart' {
+        1..2 | ForEach-Object {
+            foreach ($base in @('main', 'inflight/current')) {
+                $global:leakPaginationResponses.Enqueue(
+                    (New-LeakGraphQlPageJson `
+                            -ConnectionName pullRequests `
+                            -Nodes @(
+                                New-LeakGraphQlPullRequestNode `
+                                    -Number 10 `
+                                    -Base $base
+                            ) `
+                            -TotalCount 1 `
+                            -HasNextPage $false)
+                )
+            }
+        }
+
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED
+        } | Should -Throw '*remained inconsistent after 2 whole-snapshot attempts*PR #10 under multiple base branches*'
+
+        $global:leakPaginationCalls.Count | Should -Be 4
+    }
+
+    It 'fails closed when cursor inconsistency persists across the restart' {
+        1..2 | ForEach-Object {
+            1..2 | ForEach-Object {
+                $global:leakPaginationResponses.Enqueue(
+                    (New-LeakGraphQlPageJson `
+                            -ConnectionName pullRequests `
+                            -Nodes @(
+                                New-LeakGraphQlPullRequestNode `
+                                    -Number (($global:leakPaginationResponses.Count + 1) * 10)
+                            ) `
+                            -TotalCount 3 `
+                            -HasNextPage $true `
+                            -EndCursor repeated)
+                )
+            }
+        }
+
+        {
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -State MERGED `
+                -BaseRefNames @('main') `
+                -PageSize 1
+        } | Should -Throw "*remained inconsistent after 2 whole-snapshot attempts*repeated endCursor 'repeated'*"
+
+        $global:leakPaginationCalls.Count | Should -Be 4
     }
 
     It 'enforces the query budget before issuing an unbounded next-page request' {
@@ -1579,6 +1826,52 @@ Describe 'merged reverter commit-history pagination' {
             Should -Match 'pr0: pullRequest'
         ($global:leakCommitHistoryCalls[0] -join ' ') |
             Should -Match 'pr1: pullRequest'
+    }
+
+    It 'rejects HTTP-200 commit-history responses with top-level errors and partial data' {
+        $candidate = New-LeakPr -Number 200 -Title 'Candidate'
+        $partial = New-LeakCommitHistoryGraphQlJson `
+            -PullRequest $candidate `
+            -Commits @(
+                @{
+                    oid = '1111111111111111111111111111111111111111'
+                    message = 'Partial commit that must not be accepted'
+                }
+            ) `
+            -TotalCount 1 `
+            -HasNextPage $false |
+            ConvertFrom-Json
+        $partial | Add-Member -NotePropertyName errors -NotePropertyValue @(
+            [pscustomobject]@{
+                message = "Commit history unavailable`r`n$('y' * 1000)`0"
+                type = "SERVICE_UNAVAILABLE`tTYPE"
+                path = @('repository', 'pr0', 'commits', 'nodes')
+            }
+        )
+        $global:leakCommitHistoryResponses.Enqueue(
+            ($partial | ConvertTo-Json -Depth 10 -Compress)
+        )
+
+        $result = @()
+        $failure = $null
+        try {
+            $result = @(
+                Get-CompleteLeakPullRequestCommitHistories `
+                    -Repository 'dotnet/maui' `
+                    -PullRequests @($candidate)
+            )
+        } catch {
+            $failure = $_.Exception.Message
+        }
+
+        $result.Count | Should -Be 0
+        $failure | Should -Match 'returned GraphQL errors'
+        $failure | Should -Match 'Commit history unavailable y+'
+        $failure | Should -Match '"type":"SERVICE_UNAVAILABLE TYPE"'
+        $failure | Should -Match '"path":"repository.pr0.commits.nodes"'
+        $failure | Should -Not -Match '[\x00-\x1F\x7F]'
+        $failure.Length | Should -BeLessThan 1500
+        $global:leakCommitHistoryCalls.Count | Should -Be 1
     }
 
     It 'fails closed when commit pagination is truncated' {
@@ -1978,6 +2271,30 @@ Describe 'workflow enforcement boundary' {
         $workflow | Should -Not -Match 'run: \.github/scripts/Assert-LeakHunterSafeOutputGate\.ps1'
         $workflow | Should -Match "contains\(needs\.agent\.outputs\.output_types, 'create_issue'\)"
         $lock | Should -Match '(?ms)^  safe_outputs:.*?^    permissions:.*?^      pull-requests: read$'
+    }
+
+    It 'requires both trusted gate downloads to be non-empty before execution' {
+        $fixer = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/leak-fixer.md'
+        ) -Raw
+        $fixerLock = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/leak-fixer.lock.yml'
+        ) -Raw
+        $hunter = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md'
+        ) -Raw
+        $hunterLock = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.lock.yml'
+        ) -Raw
+
+        foreach ($content in @($fixer, $fixerLock)) {
+            $content | Should -Match '(?s)Assert-LeakFixSafeOutputGate\.ps1.*LeakWorkflowDedup\.psm1.*test -s "\$TRUSTED_DIR/Assert-LeakFixSafeOutputGate\.ps1".*test -s "\$TRUSTED_DIR/LeakWorkflowDedup\.psm1".*chmod -R a-w'
+            $content | Should -Not -Match 'test -f "\$TRUSTED_DIR/(?:Assert-LeakFixSafeOutputGate\.ps1|LeakWorkflowDedup\.psm1)"'
+        }
+        foreach ($content in @($hunter, $hunterLock)) {
+            $content | Should -Match '(?s)test -s "\$TRUSTED_DIR/Assert-LeakHunterSafeOutputGate\.ps1".*test -s "\$TRUSTED_DIR/LeakWorkflowDedup\.psm1".*chmod -R a-w'
+            $content | Should -Not -Match 'test -f "\$TRUSTED_DIR/(?:Assert-LeakHunterSafeOutputGate\.ps1|LeakWorkflowDedup\.psm1)"'
+        }
     }
 
     It 'documents recursive any-active-reverter semantics' {

@@ -131,6 +131,8 @@ safe-outputs:
           -f ref="$TRUSTED_REF" \
           -H "Accept: application/vnd.github.raw+json" \
           > "$TRUSTED_DIR/LeakWorkflowDedup.psm1"
+        test -s "$TRUSTED_DIR/Assert-LeakFixSafeOutputGate.ps1"
+        test -s "$TRUSTED_DIR/LeakWorkflowDedup.psm1"
         chmod -R a-w "$TRUSTED_DIR"
     - name: Enforce final leak-fix de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_pull_request') }}
@@ -450,9 +452,11 @@ jq -n \
   }' > /tmp/gh-aw/agent/dedup-state.json
 # (a) Exact [leak-fix] PRs already MERGED to main/inflight/current.
 # Fetch complete non-Search history once per authoritative base. The shared helper follows
-# 100-node GraphQL cursor pages, validates stable totalCount/pageInfo, uses bounded transient
-# retries with capped server-directed rate-limit delays, and fails closed on malformed,
-# incomplete, repeated-cursor, or over-budget pagination under a 1000-query safety budget.
+# 100-node GraphQL cursor pages and validates stable totalCount/pageInfo. On count, duplicate,
+# cursor, or cross-base retarget churn it rebuilds the whole snapshot once from scratch, then
+# fails closed if churn persists. Native requests use bounded transient retries with capped
+# server-directed rate-limit delays; malformed, incomplete, and over-budget pagination fails
+# closed under a 1000-query safety budget per whole-snapshot attempt.
 pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -State MERGED \
@@ -575,7 +579,8 @@ pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
   -State CLOSED \
   -OutputPath /tmp/gh-aw/agent/closed-fix-prs-raw.json
 # Validate every returned baseRefName before filtering.
-# The cap is one aggregate budget across both authoritative lanes: main and inflight/current.
+# Each whole-snapshot attempt has one aggregate budget across both authoritative lanes:
+# main and inflight/current.
 # These attempts represent the same canonical leak work; well-formed release/* (and other
 # non-authoritative) lanes do not consume it.
 pwsh -NoLogo -NoProfile -Command '

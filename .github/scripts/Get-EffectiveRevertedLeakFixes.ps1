@@ -28,9 +28,11 @@ $fixPullRequests = @(
         }
 )
 
+$mergedRevertsJson = Read-RegularJsonFile `
+    -Path $MergedRevertsJsonPath `
+    -MaximumBytes 128MB
 $reverts = @(
-    Get-Content -LiteralPath $MergedRevertsJsonPath -Raw |
-        ConvertFrom-Json |
+    $mergedRevertsJson |
         Where-Object { $null -ne $_.mergedAt }
 )
 
