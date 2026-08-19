@@ -41,43 +41,26 @@ public static class TimePickerExtensions
 		picker?.UpdateTime(timePicker);
 
 		var cultureInfo = Culture.CurrentCulture;
-
-		if (string.IsNullOrEmpty(timePicker.Format))
-		{
-			NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
-
-			if (picker is not null)
-			{
-				picker.Locale = locale;
-			}
-		}
-
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
 		mauiTimePicker.Text = time?.ToFormattedString(format, cultureInfo);
 
-		if (format is not null)
+		if (picker is not null)
 		{
-			if (format.Contains('H', StringComparison.Ordinal))
+			if (string.IsNullOrEmpty(format))
+			{
+				picker.Locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
+			}
+			else if (format.Contains('H', StringComparison.Ordinal))
 			{
 				var ci = new CultureInfo("de-DE");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
-
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
+				picker.Locale = new NSLocale(ci.TwoLetterISOLanguageName);
 			}
 			else if (format.Contains('h', StringComparison.Ordinal))
 			{
 				var ci = new CultureInfo("en-US");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
-
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
+				picker.Locale = new NSLocale(ci.TwoLetterISOLanguageName);
 			}
 		}
 

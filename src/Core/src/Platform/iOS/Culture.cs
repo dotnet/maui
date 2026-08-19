@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 				var locale = NSLocale.CurrentLocale;
 				var identifier = locale.LocaleIdentifier;
 
-				if (s_currentCulture == null || s_localeIdentifier != identifier)
+				if (s_currentCulture is null || s_localeIdentifier != identifier)
 				{
 					s_localeIdentifier = identifier;
 
