@@ -157,6 +157,19 @@ Context 'bounded scan metadata' {
         Test-Path -LiteralPath $reviewableQueryTestsPath | Should -BeTrue
     }
 
+    It 'keeps every repository checkout credential-free' {
+        $workflow = Get-Content -Raw -LiteralPath $workflowPath
+        $checkoutSteps = [regex]::Matches(
+            $workflow,
+            '(?m)^      - uses: actions/checkout@[^\r\n]+\r?\n(?<body>(?:        [^\r\n]*\r?\n)*)'
+        )
+
+        $checkoutSteps.Count | Should -Be 2
+        foreach ($checkout in $checkoutSteps) {
+            $checkout.Groups['body'].Value | Should -Match '(?s)with:\s+persist-credentials:\s*false'
+        }
+    }
+
     It 'keeps the scheduled queue job at pull-request read permission' {
         $workflow = Get-Content -Raw -LiteralPath $workflowPath
         $generateJob = [regex]::Match($workflow, '(?s)  generate-report:.*?^  validate:', 'Multiline').Value

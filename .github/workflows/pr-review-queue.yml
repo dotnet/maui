@@ -35,6 +35,8 @@ jobs:
       repository-projects: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Generate PR review queue
         id: generate
