@@ -625,6 +625,23 @@ function Test-ReplicationRefundsTestAttempt {
     return (Test-ReplicationTestBuildFailure $FailureSummary)
 }
 
+function Get-ReplicationTestPassedDiagnosis {
+    <#
+        .SYNOPSIS
+        The one sentence that reports a test which ran but did not fail.
+
+        .DESCRIPTION
+        The tier-escalation detector used to match the verifier's banner
+        ("test(s) PASSED but should FAIL"), which never reaches the repair
+        summary: the summary carries this sentence and the structured
+        verification exception instead. Escalation therefore never fired, and
+        runs 15015663 and 15015728 each spent every attempt repairing a unit
+        test that could not observe the defect. Producer and detector now read
+        the same constant so they cannot drift apart again.
+    #>
+    return 'The test passed, so it does not reproduce the issue. Assert the reported broken behavior so the test fails on current main.'
+}
+
 function Get-ReplicationVerificationFailureSummary {
     <#
         .SYNOPSIS
@@ -662,7 +679,7 @@ function Get-ReplicationVerificationFailureSummary {
         return "The test did not run: it failed for build or infrastructure reasons rather than the reported behavior. Actual failure: '$actual'. Make the test compile and run before asserting the bug."
     }
     if ($result.verifierPassed -ne $true) {
-        return "The test passed, so it does not reproduce the issue. Assert the reported broken behavior so the test fails on current main."
+        return (Get-ReplicationTestPassedDiagnosis)
     }
     if ($result.signatureMatched -ne $true) {
         return "The test failed, but with '$actual' instead of the declared expectedFailureSignature '$expected'. A failure such as a null or setup assertion does not prove the reported bug. Either assert the reported behavior directly so the declared signature is the failure, or declare the signature that the reproduction actually produces."
@@ -1519,8 +1536,34 @@ function Test-ReplicationTestDidNotReproduce {
     return (
         $FailureSummary -match "(?i)PASSED\s*.{0,4}\s*\(should fail" -or
         $FailureSummary -match "(?i)test\(s\) PASSED but should FAIL" -or
-        $FailureSummary -match "(?i)don't reproduce the bug"
+        $FailureSummary -match "(?i)don't reproduce the bug" -or
+        $FailureSummary -match "(?i)test passed,\s*so it does not reproduce"
     )
+}
+
+function Get-ReplicationTestAttemptKind {
+    <#
+        .SYNOPSIS
+        Names why one verification attempt did not produce a proving test.
+
+        .DESCRIPTION
+        A test-stage failure used to report the sandbox attempt list, which is
+        empty whenever the sandbox succeeded, so runs 15015663, 15015728 and
+        15015744 all blocked with "attemptKinds=[]" and said nothing about
+        which of three unrelated causes had consumed the budget.
+    #>
+    param(
+        [AllowEmptyString()]
+        [string]$FailureSummary
+    )
+
+    if (-not $FailureSummary) { return 'other' }
+    if (Test-ReplicationTestBuildFailure -FailureSummary $FailureSummary) { return 'build-failed' }
+    if (Test-ReplicationTestDidNotReproduce $FailureSummary) { return 'test-passed' }
+    if ($FailureSummary -match 'instead of the declared expectedFailureSignature') { return 'wrong-signature' }
+    if ($FailureSummary -match '(?i)reports a different value|stableFailureMessage=False') { return 'unstable-failure' }
+    if (Test-ReplicationAppTerminated -Text $FailureSummary) { return 'app-terminated' }
+    return 'other'
 }
 
 function Clear-ReplicationGeneratedTestFiles {
@@ -3348,6 +3391,7 @@ try {
     $sandboxFailureSummary = ''
     $sandboxFailureHistory = [ordered]@{}
     $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
+    $testAttemptKinds = [System.Collections.Generic.List[string]]::new()
     $script:RequireAppClosedAssertion = $false
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0
@@ -3795,6 +3839,8 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                         throw 'Failed to clear generated-test intent-to-add state after verification.'
                     }
                 }
+                [void]$testAttemptKinds.Add(
+                    (Get-ReplicationTestAttemptKind -FailureSummary $repairFailureSummary))
                 if (-not $finalPlanRound -and
                     (Test-ReplicationTestDidNotReproduce $repairFailureSummary)) {
                     $nonReproducingAttempts++
@@ -3902,13 +3948,20 @@ catch {
         -RawReason $rawReason `
         -Stage $stage `
         -AttemptKinds $sandboxAttemptKinds
+    # Report the attempts belonging to the stage that failed: the sandbox list
+    # is empty once the sandbox has succeeded.
+    $reportedAttemptKinds = if ($stage -eq 'test' -and $testAttemptKinds.Count -gt 0) {
+        $testAttemptKinds
+    } else {
+        $sandboxAttemptKinds
+    }
     Write-BlockedCandidate -Stage $stage -Code $code -Reason $reason
     # Run 15013775 recorded three clean 'no defect' observations and still
     # finished red, and nothing in the log said which arm chose the code or
     # what the attempts were classified as. State both, so a blocked run is
     # diagnosable from its own output instead of by re-deriving it.
     Write-Host ("ISSUE REPLICATION BLOCKED: stage={0} code={1} attemptKinds=[{2}]" -f
-        $stage, $code, ($sandboxAttemptKinds -join ', '))
+        $stage, $code, ($reportedAttemptKinds -join ', '))
     try {
         Restore-TransientSandbox
     } catch {

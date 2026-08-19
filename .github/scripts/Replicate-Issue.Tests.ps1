@@ -78,6 +78,8 @@ BeforeAll {
         'Test-ReplicationRefundsTestAttempt',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
+        'Get-ReplicationTestPassedDiagnosis',
+        'Get-ReplicationTestAttemptKind',
         'Get-ReplicationExistingIssueTestPaths',
         'Assert-ReplicationScenarioNotBlocked',
         'Test-PathInsideRoot',
@@ -5037,5 +5039,60 @@ Describe 'the orchestrator parses' {
             $script:ScriptPath, [ref]$null, [ref]$errors)
 
         @($errors) | ForEach-Object { $_.Message } | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Tier escalation recognises its own diagnosis' {
+    It 'detects the exact sentence the orchestrator emits for a passing test' {
+        # Runs 15015663 and 15015728 spent every attempt repairing a unit test
+        # that could not observe the defect, because the detector matched the
+        # verifier banner while the repair summary carried this sentence.
+        Test-ReplicationTestDidNotReproduce (Get-ReplicationTestPassedDiagnosis) |
+            Should -BeTrue
+    }
+
+    It 'detects it inside the summary shape the loop actually builds' {
+        # The loop prepends the diagnosis to the structured verification
+        # exception, so the detector must find it in that combined text.
+        $summary = @(
+            (Get-ReplicationTestPassedDiagnosis)
+            "Replication test verification failed (verifierPassed=False, signatureMatched=False, infrastructureFailure=False, consistentRuns=False, completedRuns=1/3, stableFailureMessage=True)."
+        ) -join [Environment]::NewLine
+
+        Test-ReplicationTestDidNotReproduce $summary | Should -BeTrue
+    }
+
+    It 'does not mistake a build failure or a wrong signature for a passing test' {
+        Test-ReplicationTestDidNotReproduce 'The test never ran because the build failed. Fix these compiler diagnostics: CS0246.' |
+            Should -BeFalse
+        Test-ReplicationTestDidNotReproduce "The test failed, but with 'System.TimeoutException' instead of the declared expectedFailureSignature." |
+            Should -BeFalse
+    }
+}
+
+Describe 'Get-ReplicationTestAttemptKind' {
+    It 'names the cause of each verification outcome seen in live runs' {
+        Get-ReplicationTestAttemptKind -FailureSummary (Get-ReplicationTestPassedDiagnosis) |
+            Should -Be 'test-passed'
+        Get-ReplicationTestAttemptKind -FailureSummary 'The test never ran because the build failed. Fix these compiler diagnostics: CS0246: The type or namespace name could not be found.' |
+            Should -Be 'build-failed'
+        Get-ReplicationTestAttemptKind -FailureSummary "The test failed, but with 'System.TimeoutException' instead of the declared expectedFailureSignature 'X'." |
+            Should -Be 'wrong-signature'
+    }
+
+    It 'falls back to other rather than guessing' {
+        Get-ReplicationTestAttemptKind -FailureSummary 'Something entirely unfamiliar happened.' |
+            Should -Be 'other'
+        Get-ReplicationTestAttemptKind -FailureSummary '' | Should -Be 'other'
+    }
+
+    It 'reports test-stage attempts instead of the empty sandbox list' {
+        # Runs 15015663, 15015728 and 15015744 all blocked with an empty list
+        # because the sandbox had succeeded, hiding three unrelated causes.
+        $source = Get-Content -LiteralPath $script:ScriptPath -Raw
+
+        $source | Should -Match '\$testAttemptKinds\s*=\s*\[System\.Collections\.Generic\.List\[string\]\]::new\(\)'
+        $source | Should -Match '\$reportedAttemptKinds'
+        $source | Should -Match "\`$stage, \`$code, \(\`$reportedAttemptKinds -join"
     }
 }
