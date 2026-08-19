@@ -208,6 +208,44 @@ Describe 'shared regular JSON file validation' {
     }
 }
 
+Describe 'authoritative leak-fix branch scope' {
+    It 'selects main and inflight/current as one scope while excluding release branches' {
+        $selected = @(
+            Select-LeakAuthoritativePullRequests `
+                -PullRequests @(
+                    (New-LeakPr -Number 41 -Title '[leak-fix] Fix First.Api leak' -Base 'main')
+                    (New-LeakPr -Number 42 -Title '[leak-fix] Fix Second.Api leak' -Base 'inflight/current')
+                    (New-LeakPr -Number 43 -Title '[leak-fix] Fix Third.Api leak' -Base 'release/10.0.1xx-sr9')
+                ) `
+                -Context 'test branch scope'
+        )
+
+        ($selected.number -join ',') | Should -Be '41,42'
+    }
+
+    It 'fails closed when baseRefName is missing or malformed' {
+        $missing = [pscustomobject]@{
+            number = 44
+            title = '[leak-fix] Fix Missing.Api leak'
+        }
+        $malformed = New-LeakPr `
+            -Number 45 `
+            -Title '[leak-fix] Fix Malformed.Api leak' `
+            -Base ' main '
+
+        {
+            Select-LeakAuthoritativePullRequests `
+                -PullRequests @($missing) `
+                -Context 'test branch scope'
+        } | Should -Throw '*missing baseRefName*'
+        {
+            Select-LeakAuthoritativePullRequests `
+                -PullRequests @($malformed) `
+                -Context 'test branch scope'
+        } | Should -Throw '*malformed baseRefName*'
+    }
+}
+
 Describe 'fresh-shell de-dup state' {
     It 'fails closed when persisted identity does not match the requested PR' {
         $state = [pscustomobject]@{
@@ -940,6 +978,23 @@ Describe 'workflow enforcement boundary' {
         ($dedupRead -gt $ceilingCheck) | Should -BeTrue
     }
 
+    It 'keeps source and trusted attempt-cap branch scope in parity' {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $stepStart = $workflow.IndexOf('# (d) Closed-unmerged attempts')
+        $stepEnd = $workflow.IndexOf("`n" + '```', $stepStart)
+        $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
+
+        $step | Should -Match '--json number,title,body,baseRefName,mergedAt'
+        $gate | Should -Match "'--json', 'number,title,body,baseRefName,mergedAt'"
+        @($step, $gate) | ForEach-Object {
+            $_ | Should -Match 'Select-LeakAuthoritativePullRequests'
+            $_ | Should -Match 'one aggregate budget across both authoritative lanes'
+        }
+    }
+
     It 'wires the final check into safe-output steps rather than prompt-only enforcement' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
 
@@ -1292,14 +1347,16 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Throw '*blocked PR creation*same-API match: 501*'
         }
 
-        It 'blocks a fourth closed-unmerged attempt for the same issue or API' {
+        It 'aggregates main and inflight/current attempts while excluding release lanes' {
             $global:mockClosed = @(
                 New-LeakPr -Number 601 -Title '[leak-fix] Fix Other.Api leak' `
                     -Body 'Fixes #20' -Merged $false
                 New-LeakPr -Number 602 -Title '[leak-fix] Fix GradientBrush.GradientStops leak' `
-                    -Body 'Fixes #10' -Merged $false
+                    -Body 'Fixes #10' -Base 'inflight/current' -Merged $false
                 New-LeakPr -Number 603 -Title '[leak-fix] Fix Other.Api leak again' `
                     -Body 'Refs: dotnet/maui#20' -Merged $false
+                New-LeakPr -Number 604 -Title '[leak-fix] Fix GradientBrush.GradientStops release leak' `
+                    -Body 'Fixes #20' -Base 'release/10.0.1xx-sr9' -Merged $false
             )
             {
                 & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
@@ -1307,6 +1364,42 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Throw '*attempt-cap gate blocked PR creation: 3 closed-unmerged attempts*'
+        }
+
+        It 'fails closed when a closed attempt is missing baseRefName' {
+            $global:mockClosed = @(
+                [pscustomobject]@{
+                    number = 605
+                    title = '[leak-fix] Fix GradientBrush.GradientStops leak'
+                    body = 'Fixes #20'
+                    mergedAt = $null
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*missing baseRefName*'
+        }
+
+        It 'fails closed when a closed attempt has malformed baseRefName' {
+            $global:mockClosed = @(
+                New-LeakPr `
+                    -Number 606 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops leak' `
+                    -Body 'Fixes #20' `
+                    -Base ' main ' `
+                    -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*malformed baseRefName*'
         }
 
         It 'allows a release-only open PR even when it directly references the issue' {

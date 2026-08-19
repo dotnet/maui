@@ -76,10 +76,14 @@ if ($merged.Count -ge 1000) {
     throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
-$eligibleMerged = @($merged | Where-Object {
+$authoritativeMerged = @(
+    Select-LeakAuthoritativePullRequests `
+        -PullRequests $merged `
+        -Context 'Final merged leak-fix de-dup search'
+)
+$eligibleMerged = @($authoritativeMerged | Where-Object {
         $null -ne $_.mergedAt -and
-        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
-        [string]$_.baseRefName -in @('main', 'inflight/current')
+        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal)
     })
 $mergedReverts = @(
     Get-RelevantMergedLeakReverts `
@@ -108,13 +112,20 @@ $closed = @(
         '--state', 'closed',
         '--limit', '1000',
         '--search', '"[leak-fix]" in:title',
-        '--json', 'number,title,body,mergedAt'
+        '--json', 'number,title,body,baseRefName,mergedAt'
     )
 )
 if ($closed.Count -ge 1000) {
     throw "Closed [leak-fix] search returned $($closed.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
-$closedAttempts = @($closed | Where-Object {
+$authoritativeClosed = @(
+    Select-LeakAuthoritativePullRequests `
+        -PullRequests $closed `
+        -Context 'Final closed leak-fix attempt-cap search'
+)
+# The cap is one aggregate budget across both authoritative lanes. A fix merged or attempted
+# in main or inflight/current represents the same canonical leak work; release lanes do not.
+$closedAttempts = @($authoritativeClosed | Where-Object {
         $referencesIssue = Test-LeakPrReferencesIssue `
             -Body ([string]$_.body) `
             -IssueNumber $issueNumber `

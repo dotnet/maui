@@ -90,6 +90,74 @@ function Read-RegularJsonFile {
     }
 }
 
+function Get-NormalizedLeakBaseRefName {
+    param(
+        [Parameter(Mandatory = $true)][AllowNull()][object]$PullRequest,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    if ($null -eq $PullRequest) {
+        throw "$Context contains a null PR record with missing baseRefName."
+    }
+
+    $number = [string]$PullRequest.number
+    $record = if ([string]::IsNullOrWhiteSpace($number)) {
+        'PR record'
+    } else {
+        "PR #$number"
+    }
+    $baseProperty = $PullRequest.PSObject.Properties['baseRefName']
+    if ($null -eq $baseProperty) {
+        throw "$Context $record is missing baseRefName."
+    }
+
+    $rawBase = $baseProperty.Value
+    if ($rawBase -isnot [string]) {
+        throw "$Context $record has malformed baseRefName: expected a string."
+    }
+
+    $base = $rawBase.Normalize([System.Text.NormalizationForm]::FormC)
+    $components = @($base.Split('/'))
+    $hasInvalidComponent = @($components | Where-Object {
+            $_.StartsWith('.', [StringComparison]::Ordinal) -or
+            $_.EndsWith('.lock', [StringComparison]::Ordinal)
+        }).Count -gt 0
+    $hasInvalidSyntax =
+        [string]::IsNullOrWhiteSpace($base) -or
+        $base -match '[\x00-\x20\x7f~^:?*\[\\]' -or
+        $base.Contains('..', [StringComparison]::Ordinal) -or
+        $base.Contains('@{', [StringComparison]::Ordinal) -or
+        $base.StartsWith('/', [StringComparison]::Ordinal) -or
+        $base.EndsWith('/', [StringComparison]::Ordinal) -or
+        $base.Contains('//', [StringComparison]::Ordinal) -or
+        $base.EndsWith('.', [StringComparison]::Ordinal) -or
+        $base -ceq '@' -or
+        $hasInvalidComponent
+    if ($hasInvalidSyntax) {
+        throw "$Context $record has malformed baseRefName."
+    }
+
+    return $base
+}
+
+function Select-LeakAuthoritativePullRequests {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$PullRequests,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    foreach ($pullRequest in $PullRequests) {
+        $base = Get-NormalizedLeakBaseRefName `
+            -PullRequest $pullRequest `
+            -Context $Context
+        if ($base -ceq 'main' -or $base -ceq 'inflight/current') {
+            Write-Output $pullRequest
+        }
+    }
+}
+
 function Test-LeakPrReferencesIssue {
     param(
         [AllowEmptyString()][string]$Body,
@@ -359,10 +427,14 @@ function Get-LeakFixFinalDedupResult {
         [AllowEmptyCollection()][object[]]$MergedRevertPullRequests = @()
     )
 
-    $eligibleMerged = @($MergedPullRequests | Where-Object {
+    $authoritativeMerged = @(
+        Select-LeakAuthoritativePullRequests `
+            -PullRequests $MergedPullRequests `
+            -Context 'Merged leak-fix de-dup search'
+    )
+    $eligibleMerged = @($authoritativeMerged | Where-Object {
             $null -ne $_.mergedAt -and
-            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal) -and
-            [string]$_.baseRefName -in @('main', 'inflight/current')
+            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal)
         })
     $effectivelyReverted = @(
         Get-EffectiveRevertedPullRequestNumbers `
@@ -377,9 +449,13 @@ function Get-LeakFixFinalDedupResult {
     $eligibleMerged = @($eligibleMerged | Where-Object {
             -not $reverted.Contains([int]$_.number)
         })
-    $eligibleOpen = @($OpenPullRequests | Where-Object {
-            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal) -and
-            [string]$_.baseRefName -in @('main', 'inflight/current')
+    $authoritativeOpen = @(
+        Select-LeakAuthoritativePullRequests `
+            -PullRequests $OpenPullRequests `
+            -Context 'Open leak-fix de-dup search'
+    )
+    $eligibleOpen = @($authoritativeOpen | Where-Object {
+            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal)
         })
     $eligible = @($eligibleMerged + $eligibleOpen)
 
@@ -541,6 +617,7 @@ Export-ModuleMember -Function `
     Get-CanonicalLeakApi, `
     Get-CanonicalExistingLeakApi, `
     Read-RegularJsonFile, `
+    Select-LeakAuthoritativePullRequests, `
     Test-LeakPrReferencesIssue, `
     Get-LeakRevertTargets, `
     Invoke-LeakGhJson, `

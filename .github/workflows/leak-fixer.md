@@ -578,13 +578,27 @@ jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/sam
 # Fail-closed: a transient fetch error must not read as "0 prior attempts" and reset the cap.
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state closed --limit 1000 \
   --search '"[leak-fix]" in:title' \
-  --json number,title,body,mergedAt \
+  --json number,title,body,baseRefName,mergedAt \
   > /tmp/gh-aw/agent/closed-fix-prs-raw.json; then
   echo "ERROR: 'gh pr list --state closed [leak-fix]' failed — aborting so a transient error can't reset the attempt cap to 0 and re-attempt past the limit." >&2
   exit 1
 fi
+# Validate every returned baseRefName before filtering.
+# The cap is one aggregate budget across both authoritative lanes: main and inflight/current.
+# These attempts represent the same canonical leak work; well-formed release/* (and other
+# non-authoritative) lanes do not consume it.
+pwsh -NoLogo -NoProfile -Command '
+  $ErrorActionPreference = "Stop"
+  Import-Module .github/scripts/LeakWorkflowDedup.psm1 -Force
+  $closed = @(Get-Content -LiteralPath "/tmp/gh-aw/agent/closed-fix-prs-raw.json" -Raw |
+      ConvertFrom-Json)
+  $authoritative = @(Select-LeakAuthoritativePullRequests `
+      -PullRequests $closed `
+      -Context "Prompt closed leak-fix attempt-cap search")
+  ConvertTo-Json -InputObject $authoritative -Depth 10
+' > /tmp/gh-aw/agent/closed-fix-prs-authoritative.json
 jq '[.[] | select(.title | startswith("[leak-fix] ")) | select(.mergedAt == null)]' \
-  /tmp/gh-aw/agent/closed-fix-prs-raw.json \
+  /tmp/gh-aw/agent/closed-fix-prs-authoritative.json \
   > /tmp/gh-aw/agent/closed-unmerged-fix-prs.json
 # Count by BOTH this issue-number reference AND the canonical rooting Type.Member (same
 # extraction as gates (a)/(c)) — otherwise the cap resets to 0 whenever the same leak is
