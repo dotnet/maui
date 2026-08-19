@@ -1113,6 +1113,28 @@ Describe 'workflow enforcement boundary' {
         }
     }
 
+    It 'keeps trusted merged branch validation in parity across both final gates' {
+        $fixGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $hunterGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
+        ) -Raw
+
+        @($fixGate, $hunterGate) | ForEach-Object {
+            $selectorIndex = $_.IndexOf('$authoritativeMerged = @(')
+            $eligibilityIndex = $_.IndexOf(
+                '$eligibleMerged = @($authoritativeMerged | Where-Object'
+            )
+
+            $selectorIndex | Should -BeGreaterOrEqual 0
+            $eligibilityIndex | Should -BeGreaterThan $selectorIndex
+            $_.Substring($selectorIndex, $eligibilityIndex - $selectorIndex) |
+                Should -Match 'Select-LeakAuthoritativePullRequests'
+            $_ | Should -Not -Match '\[string\]\$_\.baseRefName\s+-in'
+        }
+    }
+
     It 'wires the final check into safe-output steps rather than prompt-only enforcement' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
 
@@ -1705,6 +1727,62 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*701*"
+        }
+
+        It 'fails closed before mutation when merged metadata is missing baseRefName' {
+            $global:mockHunterMerged = @(
+                [pscustomobject]@{
+                    number = 704
+                    title = '[leak-fix] Fix GradientBrush.GradientStops reset leak'
+                    body = 'Fixes #20'
+                    mergedAt = '2026-08-10T00:00:00Z'
+                    url = 'https://github.com/dotnet/maui/pull/704'
+                }
+            )
+            $before = Get-Content -LiteralPath $script:hunterAgentOutput -Raw
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*Final merged leak-fix de-dup search PR #704 is missing baseRefName*'
+
+            Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                Should -BeExactly $before
+        }
+
+        It 'fails closed before mutation when merged metadata has malformed baseRefName' {
+            $global:mockHunterMerged = @(
+                New-LeakPr `
+                    -Number 705 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                    -Base ' main '
+            )
+            $before = Get-Content -LiteralPath $script:hunterAgentOutput -Raw
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*Final merged leak-fix de-dup search PR #705 has malformed baseRefName*'
+
+            Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                Should -BeExactly $before
+        }
+
+        It 'continues to exclude release-only merged fixes from hunter de-dup' {
+            $global:mockHunterMerged = @(
+                New-LeakPr `
+                    -Number 706 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                    -Base 'release/10.0.1xx-sr9'
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
         }
 
         It 'blocks agent-authored different-mechanism evidence for a same-API fix' {

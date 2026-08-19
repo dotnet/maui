@@ -80,10 +80,14 @@ if ($merged.Count -ge 1000) {
     throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
-$eligibleMerged = @($merged | Where-Object {
+$authoritativeMerged = @(
+    Select-LeakAuthoritativePullRequests `
+        -PullRequests $merged `
+        -Context 'Final merged leak-fix de-dup search'
+)
+$eligibleMerged = @($authoritativeMerged | Where-Object {
         $null -ne $_.mergedAt -and
-        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
-        [string]$_.baseRefName -in @('main', 'inflight/current')
+        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal)
     })
 $mergedReverts = @(
     Get-RelevantMergedLeakReverts `
