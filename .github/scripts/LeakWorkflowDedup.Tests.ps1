@@ -230,6 +230,43 @@ Describe 'mechanism-aware final duplicate gate' {
         $result.Blocked | Should -BeFalse
         $result.EffectivelyReverted | Should -Be @(100)
     }
+
+    It 'blocks a cyclic fix conservatively while still resolving unrelated candidates' {
+        $cyclicFix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak' `
+            -Body 'Fixes #10'
+        $unrelatedFix = New-LeakPr `
+            -Number 110 `
+            -Title '[leak-fix] Fix ListView.RefreshCommand leak' `
+            -Body 'Fixes #11'
+        $reverts = @(
+            New-LeakPr `
+                -Number 200 `
+                -Title 'Revert Picker fix and cyclic peer' `
+                -Body "Reverts #100`nReverts #300"
+            New-LeakPr `
+                -Number 300 `
+                -Title 'Revert cyclic peer' `
+                -Body 'Reverts #200'
+            New-LeakPr `
+                -Number 210 `
+                -Title 'Revert unrelated fix' `
+                -Body 'Reverts #110'
+        )
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'Picker.ItemsSource' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($cyclicFix, $unrelatedFix) `
+            -OpenPullRequests @() `
+            -MergedRevertPullRequests $reverts
+
+        $result.Blocked | Should -BeTrue
+        $result.UnapprovedApiMatches.number | Should -Be 100
+        $result.EffectivelyReverted | Should -Be @(110)
+    }
 }
 
 Describe 'effective recursive revert state' {

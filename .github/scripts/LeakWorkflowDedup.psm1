@@ -262,36 +262,60 @@ function Get-EffectiveRevertedPullRequestNumbers {
     }
 
     $memo = @{}
-    $visiting = [System.Collections.Generic.HashSet[int]]::new()
 
     function Test-EffectActive {
-        param([int]$PullRequestNumber)
+        param(
+            [int]$PullRequestNumber,
+            [System.Collections.Generic.HashSet[int]]$Visiting,
+            [ref]$CycleDetected
+        )
 
         if ($memo.ContainsKey($PullRequestNumber)) {
             return [bool]$memo[$PullRequestNumber]
         }
-        if (-not $visiting.Add($PullRequestNumber)) {
-            throw "Cycle detected while resolving revert chain at PR #$PullRequestNumber."
+        if (-not $Visiting.Add($PullRequestNumber)) {
+            $CycleDetected.Value = $true
+            return $true
         }
 
-        $activeReverterCount = 0
-        if ($revertersByTarget.ContainsKey($PullRequestNumber)) {
-            foreach ($reverter in $revertersByTarget[$PullRequestNumber]) {
-                if (Test-EffectActive -PullRequestNumber $reverter) {
-                    $activeReverterCount++
+        try {
+            $activeReverterCount = 0
+            if ($revertersByTarget.ContainsKey($PullRequestNumber)) {
+                foreach ($reverter in $revertersByTarget[$PullRequestNumber]) {
+                    if (Test-EffectActive `
+                            -PullRequestNumber $reverter `
+                            -Visiting $Visiting `
+                            -CycleDetected $CycleDetected) {
+                        $activeReverterCount++
+                    }
+                    if ($CycleDetected.Value) {
+                        return $true
+                    }
                 }
             }
-        }
 
-        [void]$visiting.Remove($PullRequestNumber)
-        $active = $activeReverterCount -eq 0
-        $memo[$PullRequestNumber] = $active
-        return $active
+            $active = $activeReverterCount -eq 0
+            $memo[$PullRequestNumber] = $active
+            return $active
+        } finally {
+            [void]$Visiting.Remove($PullRequestNumber)
+        }
     }
 
-    return @($fixNumbers |
-        Where-Object { -not (Test-EffectActive -PullRequestNumber $_) } |
-        Sort-Object -Unique)
+    $effectivelyReverted = [System.Collections.Generic.List[int]]::new()
+    foreach ($number in $fixNumbers) {
+        $visiting = [System.Collections.Generic.HashSet[int]]::new()
+        $cycleDetected = $false
+        $active = Test-EffectActive `
+            -PullRequestNumber $number `
+            -Visiting $visiting `
+            -CycleDetected ([ref]$cycleDetected)
+        if (-not $cycleDetected -and -not $active) {
+            $effectivelyReverted.Add($number)
+        }
+    }
+
+    return @($effectivelyReverted | Sort-Object -Unique)
 }
 
 Export-ModuleMember -Function `
