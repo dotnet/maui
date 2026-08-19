@@ -1167,6 +1167,41 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
             } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*702*"
         }
 
+        It 'rejects a mixed batch atomically when one item becomes stale' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items += [pscustomobject]@{
+                type = 'create_issue'
+                title = '[leak-scan] Button.Clicked — event subscription leak'
+                body = 'Second AI-generated leak report'
+            }
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 703
+                    title = '[leak-scan] Button.Clicked — existing event subscription leak'
+                    body = 'Existing scanner issue'
+                    url = 'https://github.com/dotnet/maui/issues/703'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*blocked issue creation for 'Button.Clicked'*rejected atomically*"
+
+            $unchanged = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            @($unchanged.items).Count | Should -Be 2
+            @($unchanged.items.title) | Should -Contain (
+                '[leak-scan] GradientBrush.GradientStops — reset leak'
+            )
+            @($unchanged.items.title) | Should -Contain (
+                '[leak-scan] Button.Clicked — event subscription leak'
+            )
+        }
+
         It 'parses successful hunter JSON without mixing benign gh stderr into stdout' {
             $global:mockHunterGhStderr = 'benign gh warning'
 

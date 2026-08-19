@@ -104,6 +104,8 @@ $eligibleMerged = @($eligibleMerged | Where-Object {
         -not $reverted.Contains([int]$_.number)
     })
 
+# Validation is intentionally batch-atomic. Do not rewrite agent output at this trusted
+# boundary: any stale item aborts before Process Safe Outputs, and distinct items retry next run.
 foreach ($requested in $requestedItems) {
     $api = [string]$requested.Api
     $openApiMatches = @($openIssues | Where-Object {
@@ -112,14 +114,14 @@ foreach ($requested in $requestedItems) {
             (Get-CanonicalLeakApi -Title $issueTitle) -ceq $api
         })
     if ($openApiMatches.Count -gt 0) {
-        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.number -join ', ')."
+            throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
     }
 
     $mergedApiMatches = @($eligibleMerged | Where-Object {
             (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $api
         })
     if ($mergedApiMatches.Count -gt 0) {
-        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API merged fix match $($mergedApiMatches.number -join ', ')."
+            throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API merged fix match $($mergedApiMatches.number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
     }
 }
 

@@ -194,11 +194,11 @@ network:
 safe-outputs:
   # The pre-agent snapshot keeps the agent from wasting work on known leaks, but a fix can
   # merge during the up-to-90-minute hunt. Re-fetch authoritative live metadata in the
-  # generated safe-output job immediately before Process Safe Outputs so a late merge/open
-  # issue blocks mutation unless the emitted issue carries a bounded structured comparison
-  # proving the same API uses a distinct retention mechanism. Restore the gate from the
-  # read-only default branch rather than executing workflow-dispatch-selected repository code
-  # with the write-capable job token.
+  # generated safe-output job immediately before Process Safe Outputs. A late same-API
+  # issue/fix rejects the entire create-issue batch before mutation; otherwise-distinct items
+  # retry on the next scheduled run. The gate deliberately does not rewrite agent output or
+  # accept agent-authored mechanism overrides. Restore it from the read-only default branch
+  # rather than executing workflow-dispatch-selected code with the write-capable job token.
   steps:
     - name: Checkout trusted leak-hunter de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
@@ -344,8 +344,9 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
 - Re-filing the same canonical API under different wording/number is the primary failure mode.
 - Immediately before issue mutation, a trusted safe-output step independently re-fetches open
   scanner issues, merged fixes, and branch-scoped effective revert state. A late same-API
-  issue/fix unconditionally blocks matching `create-issue` output; do not treat the pre-agent
-  snapshot as the final authority.
+  issue/fix rejects the entire `create-issue` batch before mutation. Otherwise-distinct items
+  remain unchanged and retry on the next scheduled run; do not treat the pre-agent snapshot
+  as the final authority or expect the gate to filter agent output.
 
 A candidate whose only prior scanner issue is CLOSED may be re-filed when no active merged fix
 covers the same canonical API.
@@ -477,7 +478,9 @@ than producing same-API siblings together. De-dup each selected leak against ope
 issues, supported-branch merged `[leak-fix]` PRs, AND the other issues you're filing this run.
 Any same-API match blocks output because the trusted gate has no independent evidence that an
 agent-authored mechanism comparison is correct. A trusted final gate repeats the live de-dup
-immediately before mutation.
+immediately before mutation. It validates the up-to-eight-item batch atomically: one late
+same-API match aborts every issue mutation, and otherwise-distinct reports retry on the next
+scheduled run.
 Each title MUST be of the form **`[leak-scan] <canonical API> — <short mechanism>`** — it MUST
 lead with the anchored canonical API immediately after the tag. Use the stable short
 `Type.Member` for `Microsoft.Maui.*` APIs (for example, `[leak-scan] SwipeItemView.Command —

@@ -102,10 +102,10 @@ safe-outputs:
   # in-prompt bash call only reports a tool error to the agent; it cannot prevent the agent
   # from calling create_pull_request afterward. This deterministic step runs in the generated
   # safe-output job immediately before Process Safe Outputs and fails the job before any PR
-  # mutation when live metadata or the persisted mechanism decisions are incomplete/stale.
-  # The boundary validates live match coverage and decision structure; the retention-mechanism
-  # comparison itself remains an agent-authored semantic judgment, but every relied-on decision
-  # must also appear in a bounded structured PR-body line for human review.
+  # mutation when live metadata or the persisted target identity is incomplete/stale. The
+  # boundary validates that identity and independently re-derives direct issue/API matches,
+  # the closed-attempt cap, and effective revert state. Every same-API match is blocking;
+  # agent-authored mechanism overrides are not accepted.
   steps:
     - name: Restore trusted leak-fix de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_pull_request') }}
@@ -775,15 +775,15 @@ If nothing was committed (count `0`) → `skipped: no commit produced` and stop.
 
 The Step 3 merged/open context was captured before the red/green build+test cycle
 (Steps 4–9), which can run for up to 120 minutes. Another run can merge or open an equivalent
-fix during that window. Refresh the live context here and ensure every current API-only match
-has a persisted retention-mechanism decision. This bash call runs in a fresh shell: it MUST
-reload the persisted target identity and fail closed if the state is missing or malformed.
+fix during that window. Refresh the live context here and stop on every current direct
+issue-reference or API-only match. This bash call runs in a fresh shell: it MUST reload the
+persisted target identity and fail closed if the state is missing or malformed.
 
-This prompt step prepares semantic mechanism decisions; it is not the authoritative mutation
+This prompt step refreshes duplicate identity signals; it is not the authoritative mutation
 gate. The generated safe-output job independently re-fetches live metadata, the closed-attempt
 count, and scoped effective-revert state immediately before Process Safe Outputs. Any direct
-issue-reference or same-API match blocks `create_pull_request`; agent-authored mechanism
-overrides are not accepted.
+issue-reference or same-API match blocks `create_pull_request`; no mechanism decision is
+persisted or accepted as an override.
 
 ```bash
 set -euo pipefail
