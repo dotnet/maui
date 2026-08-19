@@ -7,10 +7,11 @@ function Get-CanonicalLeakApi {
 
     $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
     $identifierChain = '[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+'
+    $apiBoundary = '(?=[ \t,:()\-\u2013\u2014]|$)'
     $match = if ($normalized.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
-        [regex]::Match($normalized, "^\[leak-scan\][ `t]+(?<api>$identifierChain)(?=[ `t]|$)")
+        [regex]::Match($normalized, "^\[leak-scan\][ `t]+(?<api>$identifierChain)$apiBoundary")
     } elseif ($normalized.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
-        [regex]::Match($normalized, "^\[leak-fix\][ `t]+Fix[ `t]+(?<api>$identifierChain)(?=[ `t]|$)")
+        [regex]::Match($normalized, "^\[leak-fix\][ `t]+Fix[ `t]+(?<api>$identifierChain)$apiBoundary")
     } else {
         return $null
     }
@@ -20,6 +21,27 @@ function Get-CanonicalLeakApi {
 
     $segments = $match.Groups['api'].Value.Split('.')
     return "$($segments[-2]).$($segments[-1])"
+}
+
+function Read-RegularJsonFile {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Required JSON file is missing: $Path"
+    }
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.LinkType) {
+        throw "Refusing symbolic-link JSON file: $Path"
+    }
+    $raw = Get-Content -LiteralPath $Path -Raw
+    if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Length -gt 1MB) {
+        throw "JSON file is empty or too large: $Path"
+    }
+    try {
+        return $raw | ConvertFrom-Json
+    } catch {
+        throw "Invalid JSON in '$Path': $($_.Exception.Message)"
+    }
 }
 
 function Test-LeakPrReferencesIssue {
@@ -322,6 +344,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
 
 Export-ModuleMember -Function `
     Get-CanonicalLeakApi, `
+    Read-RegularJsonFile, `
     Test-LeakPrReferencesIssue, `
     Invoke-LeakGhJson, `
     Assert-LeakDedupState, `

@@ -159,11 +159,11 @@ pre-agent-steps:
       # Drop only effectively reverted fixes from the
       # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
       gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-        --search '"Revert" in:title' --json number,title,body,baseRefName,mergedAt \
+        --search 'Reverts in:body' --json number,title,body,baseRefName,mergedAt \
         > /tmp/gh-aw/agent/revert-prs-raw.json
       REVERT_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/revert-prs-raw.json)
       if test "$REVERT_RAW_COUNT" -ge 1000; then
-        echo "ERROR: merged Revert search returned $REVERT_RAW_COUNT rows — at/above the GitHub Search API ceiling. Effective revert chains may be truncated, so aborting fail-closed." >&2
+        echo "ERROR: merged revert-body search returned $REVERT_RAW_COUNT rows — at/above the GitHub Search API ceiling. Effective revert chains may be truncated, so aborting fail-closed." >&2
         exit 1
       fi
       jq '[.[] | select(.mergedAt != null)]' /tmp/gh-aw/agent/revert-prs-raw.json \

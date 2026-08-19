@@ -483,15 +483,15 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
 # same-base revert chains before either the direct issue-reference or same-API merged gate
 # consumes it. A servicing-branch revert cannot toggle a main/inflight fix.
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-  --search '"Revert" in:title' \
+  --search 'Reverts in:body' \
   --json number,title,body,baseRefName,mergedAt \
   > /tmp/gh-aw/agent/merged-revert-prs-raw.json; then
-  echo "ERROR: merged Revert search failed — aborting because effective fix state is unknown." >&2
+  echo "ERROR: merged revert-body search failed — aborting because effective fix state is unknown." >&2
   exit 1
 fi
 MERGED_REVERT_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-revert-prs-raw.json)
 if test "$MERGED_REVERT_COUNT" -ge 1000; then
-  echo "ERROR: merged Revert search reached the 1000-result ceiling — aborting because revert chains may be truncated." >&2
+  echo "ERROR: merged revert-body search reached the 1000-result ceiling — aborting because revert chains may be truncated." >&2
   exit 1
 fi
 jq '[.[] | select(.mergedAt != null)]' \
@@ -847,15 +847,15 @@ jq '[.[] |
   > /tmp/gh-aw/agent/final-merged-leak-fix-prs.json
 
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-  --search '"Revert" in:title' \
+  --search 'Reverts in:body' \
   --json number,title,body,baseRefName,mergedAt \
   > /tmp/gh-aw/agent/final-merged-revert-prs-raw.json; then
-  echo "ERROR: final merged Revert search failed — aborting because effective fix state is unknown." >&2
+  echo "ERROR: final merged revert-body search failed — aborting because effective fix state is unknown." >&2
   exit 1
 fi
 FINAL_REVERT_COUNT=$(jq 'length' /tmp/gh-aw/agent/final-merged-revert-prs-raw.json)
 if test "$FINAL_REVERT_COUNT" -ge 1000; then
-  echo "ERROR: final merged Revert search reached the 1000-result ceiling — aborting because revert chains may be truncated." >&2
+  echo "ERROR: final merged revert-body search reached the 1000-result ceiling — aborting because revert chains may be truncated." >&2
   exit 1
 fi
 jq '[.[] | select(.mergedAt != null)]' \

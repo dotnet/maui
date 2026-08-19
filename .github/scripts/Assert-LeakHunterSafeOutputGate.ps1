@@ -9,27 +9,6 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
-function Read-RegularJsonFile {
-    param([Parameter(Mandatory = $true)][string]$Path)
-
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-        throw "Required JSON file is missing: $Path"
-    }
-    $item = Get-Item -LiteralPath $Path -Force
-    if ($item.LinkType) {
-        throw "Refusing symbolic-link JSON file: $Path"
-    }
-    $raw = Get-Content -LiteralPath $Path -Raw
-    if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Length -gt 1MB) {
-        throw "JSON file is empty or too large: $Path"
-    }
-    try {
-        return $raw | ConvertFrom-Json
-    } catch {
-        throw "Invalid JSON in '$Path': $($_.Exception.Message)"
-    }
-}
-
 function Assert-SameApiDisclosure {
     param(
         [Parameter(Mandatory = $true)][string]$Body,
@@ -129,12 +108,12 @@ $mergedReverts = @(
         '--repo', $Repository,
         '--state', 'merged',
         '--limit', '1000',
-        '--search', '"Revert" in:title',
+        '--search', 'Reverts in:body',
         '--json', 'number,title,body,baseRefName,mergedAt'
     )
 )
 if ($mergedReverts.Count -ge 1000) {
-    throw "Merged Revert search returned $($mergedReverts.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
+    throw "Merged revert-body search returned $($mergedReverts.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
 $eligibleMerged = @($merged | Where-Object {

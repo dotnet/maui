@@ -41,6 +41,63 @@ Describe 'native gh invocation' {
     }
 }
 
+Describe 'shared regular JSON file validation' {
+    It 'reads a regular bounded JSON file' {
+        $path = Join-Path $TestDrive 'valid.json'
+        '{"value":42}' | Set-Content -LiteralPath $path
+
+        (Read-RegularJsonFile -Path $path).value | Should -Be 42
+    }
+
+    It 'rejects missing, empty, oversized, and invalid JSON files' {
+        {
+            Read-RegularJsonFile -Path (Join-Path $TestDrive 'missing.json')
+        } | Should -Throw '*Required JSON file is missing*'
+
+        $emptyPath = Join-Path $TestDrive 'empty.json'
+        Set-Content -LiteralPath $emptyPath -Value ''
+        {
+            Read-RegularJsonFile -Path $emptyPath
+        } | Should -Throw '*empty or too large*'
+
+        $oversizedPath = Join-Path $TestDrive 'oversized.json'
+        Set-Content -LiteralPath $oversizedPath -Value ('x' * (1MB + 1)) -NoNewline
+        {
+            Read-RegularJsonFile -Path $oversizedPath
+        } | Should -Throw '*empty or too large*'
+
+        $invalidPath = Join-Path $TestDrive 'invalid.json'
+        Set-Content -LiteralPath $invalidPath -Value '{'
+        {
+            Read-RegularJsonFile -Path $invalidPath
+        } | Should -Throw '*Invalid JSON*'
+    }
+
+    It 'rejects a symbolic-link JSON file' {
+        $target = Join-Path $TestDrive 'target.json'
+        $link = Join-Path $TestDrive 'link.json'
+        '{"value":42}' | Set-Content -LiteralPath $target
+        New-Item -ItemType SymbolicLink -Path $link -Target $target | Out-Null
+
+        {
+            Read-RegularJsonFile -Path $link
+        } | Should -Throw '*Refusing symbolic-link JSON file*'
+    }
+
+    It 'is defined only by the shared module used by both gates' {
+        $fixGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $hunterGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
+        ) -Raw
+
+        (Get-Command Read-RegularJsonFile).ModuleName | Should -Be 'LeakWorkflowDedup'
+        $fixGate | Should -Not -Match 'function Read-RegularJsonFile'
+        $hunterGate | Should -Not -Match 'function Read-RegularJsonFile'
+    }
+}
+
 Describe 'fresh-shell de-dup state' {
     It 'fails closed when persisted identity does not match the requested PR' {
         $state = [pscustomobject]@{
@@ -114,6 +171,19 @@ Describe 'canonical leak API title parsing' {
             Should -Be 'Picker.ItemsSource'
     }
 
+    It 'accepts supported punctuation immediately after the anchored API' {
+        @(
+            '[leak-fix] Fix Picker.ItemsSource, clear stale subscriptions'
+            '[leak-fix] Fix Picker.ItemsSource: clear stale subscriptions'
+            '[leak-fix] Fix Picker.ItemsSource-clear stale subscriptions'
+            '[leak-fix] Fix Picker.ItemsSource–clear stale subscriptions'
+            '[leak-fix] Fix Picker.ItemsSource—clear stale subscriptions'
+            '[leak-fix] Fix Picker.ItemsSource(clear stale subscriptions)'
+        ) | ForEach-Object {
+            Get-CanonicalLeakApi -Title $_ | Should -Be 'Picker.ItemsSource'
+        }
+    }
+
     It 'rejects a URL before an otherwise valid API' {
         (Get-CanonicalLeakApi `
                 -Title '[leak-fix] Investigate https://github.com/dotnet/maui/issues/123 for Picker.ItemsSource') |
@@ -130,6 +200,8 @@ Describe 'canonical leak API title parsing' {
         (Get-CanonicalLeakApi -Title '[leak-fix] Picker.ItemsSource memory leak') |
             Should -BeNullOrEmpty
         (Get-CanonicalLeakApi -Title '[leak-scan] Investigate Picker.ItemsSource retention') |
+            Should -BeNullOrEmpty
+        (Get-CanonicalLeakApi -Title '[leak-fix] Fix Picker.ItemsSource/Other retention') |
             Should -BeNullOrEmpty
     }
 }
@@ -568,6 +640,21 @@ Describe 'workflow enforcement boundary' {
         $fixer | Should -Not -Match 'awk.*A-Za-z_'
     }
 
+    It 'discovers merged reverter candidates by explicit body-reference text, not title' {
+        $paths = @(
+            'Assert-LeakFixSafeOutputGate.ps1'
+            'Assert-LeakHunterSafeOutputGate.ps1'
+            '../workflows/daily-leak-hunter.md'
+            '../workflows/leak-fixer.md'
+        )
+
+        foreach ($path in $paths) {
+            $content = Get-Content -LiteralPath (Join-Path $PSScriptRoot $path) -Raw
+            $content | Should -Match 'Reverts in:body'
+            $content | Should -Not -Match '"Revert" in:title'
+        }
+    }
+
     Context 'safe-output gate script' {
         BeforeEach {
             $script:agentOutput = Join-Path $TestDrive 'agent_output.json'
@@ -611,7 +698,7 @@ Describe 'workflow enforcement boundary' {
                 $searchIndex = [Array]::IndexOf($GhArgs, '--search')
                 $search = $GhArgs[$searchIndex + 1]
                 if ($state -eq 'merged') {
-                    if ($search -eq '"Revert" in:title') {
+                    if ($search -eq 'Reverts in:body') {
                         Write-Output (ConvertTo-Json -InputObject @($global:mockReverts) -Depth 5)
                     } else {
                         Write-Output (ConvertTo-Json -InputObject @($global:mockMerged) -Depth 5)
@@ -642,6 +729,20 @@ Describe 'workflow enforcement boundary' {
         }
 
         It 'accepts a tagged create-pull-request title' {
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'accepts supported punctuation after the canonical API' {
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-fix] Fix GradientBrush.GradientStops, clear reset subscriptions'
+            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
+
             {
                 & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
                     -AgentOutputPath $script:agentOutput `
@@ -852,7 +953,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
             $global:mockReverts = @(
                 New-LeakPr `
                     -Number 504 `
-                    -Title 'Revert leak fix' `
+                    -Title 'Back out the collection cleanup' `
                     -Body 'Reverts dotnet/maui#503'
             )
 
@@ -899,7 +1000,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
                 }
                 $searchIndex = [Array]::IndexOf($GhArgs, '--search')
                 $search = $GhArgs[$searchIndex + 1]
-                if ($search -eq '"Revert" in:title') {
+                if ($search -eq 'Reverts in:body') {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockHunterReverts) -Depth 5)
                 } else {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockHunterMerged) -Depth 5)
