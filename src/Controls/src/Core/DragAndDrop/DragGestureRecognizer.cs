@@ -101,9 +101,12 @@ namespace Microsoft.Maui.Controls
 		/// This infrastructure method is intended for gesture platform managers. A completion is dispatched only once for an active
 		/// drag operation started by <see cref="SendDragStarting"/>.
 		/// </remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDropCompleted(DropCompletedEventArgs args)
 		{
+			_ = args ?? throw new ArgumentNullException(nameof(args));
+
 			if (!_isDragActive)
 			{
 				// this is mainly relevant for Android
@@ -113,7 +116,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_isDragActive = false;
-			_ = args ?? throw new ArgumentNullException(nameof(args));
 
 			DropCompletedCommand?.Execute(DropCompletedCommandParameter);
 			DropCompleted?.Invoke(Parent ?? this, args);
