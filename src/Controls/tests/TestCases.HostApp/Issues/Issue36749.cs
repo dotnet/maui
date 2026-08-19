@@ -65,8 +65,8 @@ public class Issue36749 : ContentPage
             // immediately rather than timing out on "Checking...".
             _resultLabel.Text = "FAIL";
         }
-    }
 #endif
+    }
 }
 
 // Custom Button subtype used purely to route to Issue36749ButtonHandler.
