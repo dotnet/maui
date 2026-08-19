@@ -118,22 +118,43 @@ function Get-LeakRevertTargets {
         Sort-Object -Unique)
 }
 
+function Test-IsTransientLeakGhFailure {
+    param([AllowEmptyString()][string]$Detail)
+
+    return [bool]($Detail -match '(?i)(?:\b(?:primary |secondary )?rate limit\b|\bHTTP(?:/[0-9.]+)?[ :]+(?:429|502|503|504)\b|\b(?:Bad Gateway|Service Unavailable|Gateway Timeout)\b|\b(?:i/o |TLS handshake )?timeout\b|\btimed out\b|\bconnection reset(?: by peer)?\b|\bunexpected EOF\b)')
+}
+
 function Invoke-LeakGhJson {
-    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [ValidateRange(1, 5)][int]$MaximumAttempts = 3,
+        [ValidateRange(0, 60)][int]$RetryBaseDelaySeconds = 2
+    )
 
     # Preserve structured exit-code handling if a future host flips the native-command default.
     $PSNativeCommandUseErrorActionPreference = $false
-    $output = & gh @Arguments 2>&1
-    $exitCode = $LASTEXITCODE
+    for ($attempt = 1; $attempt -le $MaximumAttempts; $attempt++) {
+        $output = & gh @Arguments 2>&1
+        $exitCode = $LASTEXITCODE
 
-    $stdout = (@($output | Where-Object {
-                $_ -isnot [System.Management.Automation.ErrorRecord]
-            }) | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
-    $stderr = (@($output | Where-Object {
-                $_ -is [System.Management.Automation.ErrorRecord]
-            }) | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+        $stdout = (@($output | Where-Object {
+                    $_ -isnot [System.Management.Automation.ErrorRecord]
+                }) | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+        $stderr = (@($output | Where-Object {
+                    $_ -is [System.Management.Automation.ErrorRecord]
+                }) | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
 
-    if ($exitCode -ne 0) {
+        if ($exitCode -eq 0) {
+            if ([string]::IsNullOrWhiteSpace($stdout)) {
+                throw "'gh $($Arguments -join ' ')' returned an empty response."
+            }
+            try {
+                return $stdout | ConvertFrom-Json
+            } catch {
+                throw "'gh $($Arguments -join ' ')' returned invalid JSON: $($_.Exception.Message)"
+            }
+        }
+
         $detail = (@($stderr, $stdout) |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ' '
         $detail = ($detail -replace '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '?' `
@@ -141,20 +162,27 @@ function Invoke-LeakGhJson {
         if ($detail.Length -gt 2000) {
             $detail = "$($detail.Substring(0, 2000))..."
         }
-        $message = "'gh $($Arguments -join ' ')' failed with exit code $exitCode."
+        $message = "'gh $($Arguments -join ' ')' failed with exit code $exitCode after $attempt attempt(s)."
         if (-not [string]::IsNullOrWhiteSpace($detail)) {
             $message = "$message Output: $detail"
         }
+
+        if ((Test-IsTransientLeakGhFailure -Detail $detail) -and
+            $attempt -lt $MaximumAttempts) {
+            $delaySeconds = [int](
+                $RetryBaseDelaySeconds * [Math]::Pow(2, $attempt - 1)
+            )
+            Write-Warning "$message Retrying in $delaySeconds second(s)."
+            if ($delaySeconds -gt 0) {
+                Start-Sleep -Seconds $delaySeconds
+            }
+            continue
+        }
+
         throw $message
     }
-    if ([string]::IsNullOrWhiteSpace($stdout)) {
-        throw "'gh $($Arguments -join ' ')' returned an empty response."
-    }
-    try {
-        return $stdout | ConvertFrom-Json
-    } catch {
-        throw "'gh $($Arguments -join ' ')' returned invalid JSON: $($_.Exception.Message)"
-    }
+
+    throw "'gh $($Arguments -join ' ')' exhausted its retry budget unexpectedly."
 }
 
 function Get-RelevantMergedLeakReverts {
@@ -163,11 +191,15 @@ function Get-RelevantMergedLeakReverts {
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$TargetPullRequests,
         [ValidateRange(1, 1000)][int]$SearchLimit = 1000,
         [ValidateRange(1, 1000)][int]$MaximumDiscoveredPullRequests = 1000,
-        [ValidateRange(1, 1000)][int]$MaximumSearchQueries = 100
+        [ValidateRange(1, 2)][int]$MaximumSearchQueries = 2,
+        [ValidateRange(1, 2000)][int]$MaximumTraversalPullRequests = 2000
     )
 
     $queue = [System.Collections.Generic.Queue[object]]::new()
-    $seedNumbers = [System.Collections.Generic.HashSet[int]]::new()
+    $branches = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    $branchByNumber = @{}
     foreach ($target in $TargetPullRequests) {
         $number = 0
         if (-not [int]::TryParse([string]$target.number, [ref]$number) -or $number -le 0) {
@@ -177,64 +209,106 @@ function Get-RelevantMergedLeakReverts {
         if ([string]::IsNullOrWhiteSpace($base)) {
             throw "Revert-discovery target PR #$number is missing baseRefName."
         }
-        [void]$seedNumbers.Add($number)
+        if ($branchByNumber.ContainsKey($number)) {
+            if ([string]$branchByNumber[$number] -cne $base) {
+                throw "Revert-discovery target PR #$number has conflicting base branches."
+            }
+            continue
+        }
+        if ($branchByNumber.Count -ge $MaximumTraversalPullRequests) {
+            throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget while loading seeds."
+        }
+        $branchByNumber[$number] = $base
+        [void]$branches.Add($base)
         $queue.Enqueue([pscustomobject]@{
                 number = $number
                 baseRefName = $base
             })
     }
 
-    $queried = [System.Collections.Generic.HashSet[int]]::new()
-    $recursiveQueryCount = 0
-    $discovered = @{}
-    while ($queue.Count -gt 0) {
-        $target = $queue.Dequeue()
-        $targetNumber = [int]$target.number
-        if ($queried.Contains($targetNumber)) {
-            continue
+    if ($branches.Count -gt $MaximumSearchQueries) {
+        throw "Relevant merged-revert discovery requires $($branches.Count) branch-scoped searches, exceeding the $MaximumSearchQueries-query safety budget."
+    }
+
+    # One constant-size snapshot per eligible base branch keeps request count independent
+    # of seed count. At 100 results/page, two 1000-result snapshots stay below the normal
+    # 30 authenticated Search API requests/minute limit and fail closed at either ceiling.
+    $searchQuery = 'Reverts in:body'
+    $maximumSearchQueryLength = 256
+    $revertersByTarget = @{}
+    foreach ($base in @($branches | Sort-Object)) {
+        $effectiveQuery = "repo:$Repository is:pr is:merged base:$base $searchQuery"
+        if ($effectiveQuery.Length -gt $maximumSearchQueryLength) {
+            throw "Branch-scoped merged-revert query for '$base' exceeds GitHub's $maximumSearchQueryLength-character Search API query ceiling."
         }
-        # Initial merged-fix history is bounded by its upstream Search API ceiling.
-        # Reserve this budget for the additional queries introduced by recursive discovery.
-        if (-not $seedNumbers.Contains($targetNumber)) {
-            if ($recursiveQueryCount -ge $MaximumSearchQueries) {
-                throw "Relevant merged-revert discovery exhausted the $MaximumSearchQueries-query recursive safety budget."
-            }
-            $recursiveQueryCount++
-        }
-        [void]$queried.Add($targetNumber)
 
         $rows = @(
             Invoke-LeakGhJson -Arguments @(
                 'pr', 'list',
                 '--repo', $Repository,
                 '--state', 'merged',
+                '--base', $base,
                 '--limit', [string]$SearchLimit,
-                '--search', "Reverts `"#${targetNumber}`" in:body",
+                '--search', $searchQuery,
                 '--json', 'number,title,body,baseRefName,mergedAt'
             )
         )
         if ($rows.Count -ge $SearchLimit) {
-            throw "Scoped merged-revert search for PR #$targetNumber returned $($rows.Count) rows at its $SearchLimit-result ceiling."
+            throw "Branch-scoped merged-revert search for '$base' returned $($rows.Count) rows at its $SearchLimit-result ceiling."
         }
 
         foreach ($row in $rows) {
             if ($null -eq $row.mergedAt -or
-                $targetNumber -notin @(
-                    Get-LeakRevertTargets `
-                        -Body ([string]$row.body) `
-                        -Repository $Repository
-                ) -or
-                [string]$row.baseRefName -cne [string]$target.baseRefName) {
+                [string]$row.baseRefName -cne $base) {
                 continue
             }
 
             $reverter = 0
-            if (-not [int]::TryParse([string]$row.number, [ref]$reverter) -or $reverter -le 0) {
-                throw "Invalid discovered merged-revert PR number '$($row.number)'."
+            if (-not [int]::TryParse([string]$row.number, [ref]$reverter) -or
+                $reverter -le 0) {
+                throw "Invalid merged-revert search result PR number '$($row.number)'."
             }
+            foreach ($targetNumber in @(
+                    Get-LeakRevertTargets `
+                        -Body ([string]$row.body) `
+                        -Repository $Repository
+                )) {
+                if (-not $revertersByTarget.ContainsKey($targetNumber)) {
+                    $revertersByTarget[$targetNumber] =
+                        [System.Collections.Generic.List[object]]::new()
+                }
+                $revertersByTarget[$targetNumber].Add($row)
+            }
+        }
+    }
+
+    $traversed = [System.Collections.Generic.HashSet[int]]::new()
+    $discovered = @{}
+    while ($queue.Count -gt 0) {
+        $target = $queue.Dequeue()
+        $targetNumber = [int]$target.number
+        if (-not $traversed.Add($targetNumber) -or
+            -not $revertersByTarget.ContainsKey($targetNumber)) {
+            continue
+        }
+        foreach ($row in $revertersByTarget[$targetNumber]) {
+            if ([string]$row.baseRefName -cne [string]$target.baseRefName) {
+                continue
+            }
+
+            $reverter = [int]$row.number
             if (-not $discovered.ContainsKey($reverter)) {
                 if ($discovered.Count -ge $MaximumDiscoveredPullRequests) {
                     throw "Relevant merged-revert discovery exceeded the $MaximumDiscoveredPullRequests-PR safety bound."
+                }
+                if (-not $branchByNumber.ContainsKey($reverter)) {
+                    if ($branchByNumber.Count -ge $MaximumTraversalPullRequests) {
+                        throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget."
+                    }
+                    $branchByNumber[$reverter] = [string]$row.baseRefName
+                } elseif ([string]$branchByNumber[$reverter] -cne
+                    [string]$row.baseRefName) {
+                    throw "Discovered merged-revert PR #$reverter has conflicting base branches."
                 }
                 $discovered[$reverter] = $row
                 $queue.Enqueue([pscustomobject]@{

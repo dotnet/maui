@@ -39,6 +39,116 @@ Describe 'native gh invocation' {
         $invokeIndex | Should -BeGreaterOrEqual 0
         $preferenceIndex | Should -BeLessThan $invokeIndex
     }
+
+    Context 'bounded transient retries' {
+        BeforeEach {
+            $global:leakGhAttemptCount = 0
+            $global:leakGhResponses = [System.Collections.Generic.Queue[object]]::new()
+            function global:gh {
+                param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+                $global:leakGhAttemptCount++
+                $response = $global:leakGhResponses.Dequeue()
+                $global:LASTEXITCODE = [int]$response.ExitCode
+                if (-not [string]::IsNullOrWhiteSpace([string]$response.Stderr)) {
+                    Write-Error ([string]$response.Stderr) -ErrorAction Continue
+                }
+                Write-Output ([string]$response.Stdout)
+            }
+        }
+
+        AfterEach {
+            Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+            Remove-Variable leakGhAttemptCount, leakGhResponses `
+                -Scope Global -ErrorAction SilentlyContinue
+        }
+
+        It 'retries a clearly transient failure and returns the later valid JSON' {
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 503: Service Unavailable'
+                    Stdout = ''
+                })
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = '{"value":42}'
+                })
+
+            $result = Invoke-LeakGhJson `
+                -Arguments @('api', 'test') `
+                -RetryBaseDelaySeconds 0
+
+            $result.value | Should -Be 42
+            $global:leakGhAttemptCount | Should -Be 2
+        }
+
+        It 'fails closed after exhausting the bounded transient retry budget' {
+            1..3 | ForEach-Object {
+                $global:leakGhResponses.Enqueue([pscustomobject]@{
+                        ExitCode = 1
+                        Stderr = 'read: connection reset by peer'
+                        Stdout = ''
+                    })
+            }
+
+            {
+                Invoke-LeakGhJson `
+                    -Arguments @('api', 'test') `
+                    -MaximumAttempts 3 `
+                    -RetryBaseDelaySeconds 0
+            } | Should -Throw '*failed with exit code 1 after 3 attempt(s)*'
+
+            $global:leakGhAttemptCount | Should -Be 3
+        }
+
+        It 'does not retry a permanent gh failure' {
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 401: Bad credentials'
+                    Stdout = ''
+                })
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = '{"unexpected":true}'
+                })
+
+            {
+                Invoke-LeakGhJson `
+                    -Arguments @('api', 'test') `
+                    -RetryBaseDelaySeconds 0
+            } | Should -Throw '*failed with exit code 1 after 1 attempt(s)*'
+
+            $global:leakGhAttemptCount | Should -Be 1
+            $global:leakGhResponses.Count | Should -Be 1
+        }
+
+        It 'does not retry successful empty or invalid JSON responses' {
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = ''
+                })
+            {
+                Invoke-LeakGhJson `
+                    -Arguments @('api', 'empty') `
+                    -RetryBaseDelaySeconds 0
+            } | Should -Throw '*returned an empty response*'
+            $global:leakGhAttemptCount | Should -Be 1
+
+            $global:leakGhResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 0
+                    Stderr = ''
+                    Stdout = '{'
+                })
+            {
+                Invoke-LeakGhJson `
+                    -Arguments @('api', 'invalid') `
+                    -RetryBaseDelaySeconds 0
+            } | Should -Throw '*returned invalid JSON*'
+            $global:leakGhAttemptCount | Should -Be 2
+        }
+    }
 }
 
 Describe 'shared regular JSON file validation' {
@@ -249,6 +359,28 @@ Describe 'trusted final duplicate gate' {
 
         $result.Blocked | Should -BeTrue
         $result.ApiMatches.number | Should -Be 100
+    }
+
+    It 'uses ordinal API identity so exact C# casing dedups while casing-only identifiers remain distinct' {
+        $existing = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak'
+
+        $exact = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'GradientBrush.GradientStops' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($existing) `
+            -OpenPullRequests @()
+        $caseVariant = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'GradientBrush.gradientStops' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($existing) `
+            -OpenPullRequests @()
+
+        $exact.Blocked | Should -BeTrue
+        $caseVariant.Blocked | Should -BeFalse
     }
 
     It 'blocks the known legacy form when it appears on an existing fix' {
@@ -603,19 +735,23 @@ Describe 'effective recursive revert state' {
     }
 }
 
-Describe 'target-scoped merged revert discovery' {
+Describe 'branch-scoped merged revert discovery' {
     BeforeEach {
-        $script:discoverySearches = [System.Collections.Generic.List[string]]::new()
-        $script:discoveryRowsByTarget = @{}
+        $script:discoveryCalls = [System.Collections.Generic.List[object]]::new()
+        $script:discoveryRowsByBase = @{}
         function global:gh {
             param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
             $global:LASTEXITCODE = 0
             $searchIndex = [Array]::IndexOf($GhArgs, '--search')
             $search = $GhArgs[$searchIndex + 1]
-            $script:discoverySearches.Add($search)
-            $target = [regex]::Match($search, '#(?<number>[1-9][0-9]*)').Groups['number'].Value
-            $rows = if ($script:discoveryRowsByTarget.ContainsKey($target)) {
-                @($script:discoveryRowsByTarget[$target])
+            $baseIndex = [Array]::IndexOf($GhArgs, '--base')
+            $base = $GhArgs[$baseIndex + 1]
+            $script:discoveryCalls.Add([pscustomobject]@{
+                    Search = $search
+                    Base = $base
+                })
+            $rows = if ($script:discoveryRowsByBase.ContainsKey($base)) {
+                @($script:discoveryRowsByBase[$base])
             } else {
                 @()
             }
@@ -628,7 +764,7 @@ Describe 'target-scoped merged revert discovery' {
     }
 
     It 'recursively discovers only explicit same-branch reverters of the target set' {
-        $script:discoveryRowsByTarget['100'] = @(
+        $script:discoveryRowsByBase['main'] = @(
             New-LeakPr `
                 -Number 200 `
                 -Title 'Back out cleanup without Revert in the title' `
@@ -636,9 +772,16 @@ Describe 'target-scoped merged revert discovery' {
             New-LeakPr `
                 -Number 201 `
                 -Title 'Unrelated mention' `
-                -Body 'Discusses #100 but does not revert it'
-        )
-        $script:discoveryRowsByTarget['200'] = @(
+                -Body 'Reverts were discussed for #100 but not performed'
+            New-LeakPr `
+                -Number 202 `
+                -Title 'Other repository reference' `
+                -Body 'Reverts other/repository#100'
+            New-LeakPr `
+                -Number 203 `
+                -Title 'Wrong branch reference' `
+                -Body 'Reverts #100' `
+                -Base 'release/10.0.1xx-sr9'
             New-LeakPr `
                 -Number 300 `
                 -Title 'Restore prior behavior' `
@@ -654,15 +797,13 @@ Describe 'target-scoped merged revert discovery' {
         )
 
         $result.number | Should -Be @(200, 300)
-        $script:discoverySearches | Should -Be @(
-            'Reverts "#100" in:body'
-            'Reverts "#200" in:body'
-            'Reverts "#300" in:body'
-        )
+        $script:discoveryCalls.Count | Should -Be 1
+        $script:discoveryCalls[0].Search | Should -Be 'Reverts in:body'
+        $script:discoveryCalls[0].Base | Should -Be 'main'
     }
 
-    It 'fails closed when a target-scoped query reaches its result ceiling' {
-        $script:discoveryRowsByTarget['100'] = @(
+    It 'fails closed when a branch-scoped snapshot reaches its result ceiling' {
+        $script:discoveryRowsByBase['main'] = @(
             New-LeakPr -Number 200 -Title 'First' -Body 'Reverts #100'
             New-LeakPr -Number 201 -Title 'Second' -Body 'Reverts #100'
         )
@@ -674,15 +815,33 @@ Describe 'target-scoped merged revert discovery' {
                     [pscustomobject]@{ number = 100; baseRefName = 'main' }
                 ) `
                 -SearchLimit 2
-        } | Should -Throw '*Scoped merged-revert search for PR #100*2-result ceiling*'
+        } | Should -Throw "*Branch-scoped merged-revert search for 'main'*2-result ceiling*"
     }
 
-    It 'accommodates more than 100 initial seeds and charges only recursive queries' {
+    It 'keeps more than 30 initial seeds to one bounded branch snapshot query' {
+        $targets = @(1000..1030 | ForEach-Object {
+                [pscustomobject]@{ number = $_; baseRefName = 'main' }
+            })
+
+        $result = @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests $targets `
+                -MaximumSearchQueries 1
+        )
+
+        $result.Count | Should -Be 0
+        $script:discoveryCalls.Count | Should -Be 1
+        $script:discoveryCalls[0].Search.Length | Should -BeLessOrEqual 256
+    }
+
+    It 'keeps more than 100 initial seeds and recursive reverters to one snapshot query' {
         $targets = @(1000..1100 | ForEach-Object {
                 [pscustomobject]@{ number = $_; baseRefName = 'main' }
             })
-        $script:discoveryRowsByTarget['1000'] = @(
+        $script:discoveryRowsByBase['main'] = @(
             New-LeakPr -Number 2000 -Title 'Relevant revert' -Body 'Reverts #1000'
+            New-LeakPr -Number 2001 -Title 'Recursive revert' -Body 'Reverts #2000'
         )
 
         $result = @(
@@ -692,20 +851,46 @@ Describe 'target-scoped merged revert discovery' {
                 -MaximumSearchQueries 1
         )
 
-        $result.number | Should -Be 2000
-        $script:discoverySearches.Count | Should -Be 102
-        $script:discoverySearches[0] | Should -Be 'Reverts "#1000" in:body'
-        $script:discoverySearches[-1] | Should -Be 'Reverts "#2000" in:body'
+        $result.number | Should -Be @(2000, 2001)
+        $script:discoveryCalls.Count | Should -Be 1
     }
 
-    It 'fails closed when recursive discovery exhausts its query budget' {
-        $script:discoveryRowsByTarget['100'] = @(
+    It 'fails closed before searching when distinct branches exceed the query budget' {
+        {
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @(
+                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
+                    [pscustomobject]@{
+                        number = 101
+                        baseRefName = 'inflight/current'
+                    }
+                ) `
+                -MaximumSearchQueries 1
+        } | Should -Throw '*requires 2 branch-scoped searches*1-query safety budget*'
+
+        $script:discoveryCalls.Count | Should -Be 0
+    }
+
+    It 'fails closed before searching when the effective query exceeds its length ceiling' {
+        {
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @(
+                    [pscustomobject]@{
+                        number = 100
+                        baseRefName = ('long-branch-' + ('x' * 220))
+                    }
+                )
+        } | Should -Throw '*exceeds GitHub*s 256-character Search API query ceiling*'
+
+        $script:discoveryCalls.Count | Should -Be 0
+    }
+
+    It 'fails closed when recursive discovery exhausts the aggregate traversal budget' {
+        $script:discoveryRowsByBase['main'] = @(
             New-LeakPr -Number 200 -Title 'First revert' -Body 'Reverts #100'
-        )
-        $script:discoveryRowsByTarget['200'] = @(
             New-LeakPr -Number 300 -Title 'Second revert' -Body 'Reverts #200'
-        )
-        $script:discoveryRowsByTarget['300'] = @(
             New-LeakPr -Number 400 -Title 'Third revert' -Body 'Reverts #300'
         )
 
@@ -715,14 +900,10 @@ Describe 'target-scoped merged revert discovery' {
                 -TargetPullRequests @(
                     [pscustomobject]@{ number = 100; baseRefName = 'main' }
                 ) `
-                -MaximumSearchQueries 2
-        } | Should -Throw '*exhausted the 2-query recursive safety budget*'
+                -MaximumTraversalPullRequests 3
+        } | Should -Throw '*exhausted the 3-PR aggregate traversal safety budget*'
 
-        $script:discoverySearches | Should -Be @(
-            'Reverts "#100" in:body'
-            'Reverts "#200" in:body'
-            'Reverts "#300" in:body'
-        )
+        $script:discoveryCalls.Count | Should -Be 1
     }
 }
 
@@ -828,7 +1009,7 @@ Describe 'workflow enforcement boundary' {
         $fixer | Should -Match '(?m)^  bash: \[[^\r\n]*"pwsh"\]$'
     }
 
-    It 'defines one shared recursive revert-query budget for every caller' {
+    It 'defines shared rate-aware query and aggregate traversal budgets for every caller' {
         $module = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
         ) -Raw
@@ -842,14 +1023,16 @@ Describe 'workflow enforcement boundary' {
             Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
         ) -Raw
 
-        $module | Should -Match '\$MaximumSearchQueries = 100'
+        $module | Should -Match '\$MaximumSearchQueries = 2'
+        $module | Should -Match '\$MaximumTraversalPullRequests = 2000'
         @($wrapper, $fixGate, $hunterGate) | ForEach-Object {
             $_ | Should -Match 'Get-RelevantMergedLeakReverts'
             $_ | Should -Not -Match 'MaximumSearchQueries'
+            $_ | Should -Not -Match 'MaximumTraversalPullRequests'
         }
     }
 
-    It 'uses target-scoped recursive revert discovery in both gates and workflows' {
+    It 'uses constant-size branch snapshots with exact local revert verification' {
         $module = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
         ) -Raw
@@ -866,14 +1049,14 @@ Describe 'workflow enforcement boundary' {
             Join-Path $PSScriptRoot '../workflows/leak-fixer.md'
         ) -Raw
 
-        $module | Should -Match 'Reverts.*#\$\{targetNumber\}.*in:body'
+        $module | Should -Match "\`$searchQuery = 'Reverts in:body'"
+        $module | Should -Match "'--base', \`$base"
+        $module | Should -Match 'Get-LeakRevertTargets'
+        $module | Should -Not -Match 'Reverts.*#\$\{targetNumber\}.*in:body'
         $fixGate | Should -Match 'Get-RelevantMergedLeakReverts'
         $hunterGate | Should -Match 'Get-RelevantMergedLeakReverts'
         $hunter | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
         $fixer | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
-        @($module, $fixGate, $hunterGate, $hunter, $fixer) | ForEach-Object {
-            $_ | Should -Not -Match "Reverts in:body|'Reverts in:body'"
-        }
     }
 
     Context 'safe-output gate script' {
@@ -920,7 +1103,7 @@ Describe 'workflow enforcement boundary' {
                 $searchIndex = [Array]::IndexOf($GhArgs, '--search')
                 $search = $GhArgs[$searchIndex + 1]
                 if ($state -eq 'merged') {
-                    if ($search -match '^Reverts "#[1-9][0-9]*" in:body$') {
+                    if ($search -eq 'Reverts in:body') {
                         Write-Output (ConvertTo-Json -InputObject @($global:mockReverts) -Depth 5)
                     } else {
                         Write-Output (ConvertTo-Json -InputObject @($global:mockMerged) -Depth 5)
@@ -1201,7 +1384,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 }
                 $searchIndex = [Array]::IndexOf($GhArgs, '--search')
                 $search = $GhArgs[$searchIndex + 1]
-                if ($search -match '^Reverts "#[1-9][0-9]*" in:body$') {
+                if ($search -eq 'Reverts in:body') {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockHunterReverts) -Depth 5)
                 } else {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockHunterMerged) -Depth 5)
@@ -1267,6 +1450,23 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*same canonical API 'GradientBrush.GradientStops'*"
+        }
+
+        It 'keeps casing-only C# APIs distinct while the exact-casing batch contract still dedups' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
+            $output.items += [pscustomobject]@{
+                type = 'create_issue'
+                title = '[leak-scan] GradientBrush.gradientStops — distinct C# API casing'
+                body = 'Second AI-generated leak report'
+            }
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
         }
 
         It 'blocks issue emission when a matching fix merged after the pre-agent snapshot' {
