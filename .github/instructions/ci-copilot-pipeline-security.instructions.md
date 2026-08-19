@@ -17,7 +17,7 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 1. **Per-task `env:` scoping.** Only put tokens in tasks that need them. The Copilot-agent task gets `COPILOT_GITHUB_TOKEN` only — never `GH_TOKEN`. The Post task runs in its own Microsoft-hosted job and receives `GH_COMMENT_TOKEN` only in its posting step. Pass `--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN` to the Copilot CLI.
 
-2. **`persistCredentials: false` on every `checkout: self`** unless the task pushes. Default checkout writes the service-connection PAT into `.git/config` as `extraheader`, readable by any subprocess. The trusted Stage 3 summary job is the explicit exception: it never runs PR-controlled code and scopes that credential to snapshot-asset publication and the conservative PR title/body updater.
+2. **`persistCredentials: false` on every `checkout: self` that precedes agent or PR-influenced execution.** Default checkout writes the service-connection PAT into `.git/config` as `extraheader`, readable by any subprocess. Stage 3 may use a second `persistCredentials: true` checkout only after its prompt-influenced Copilot analysis has finished, immediately before trusted snapshot-asset publication/posting; no agent or PR-controlled process may run afterward.
 
 3. **Trusted-copy scripts before merging the PR.** Setup copies `.github/scripts`, `.github/skills`, and `eng/scripts` to `$(Build.ArtifactStagingDirectory)/trusted-github/` before switching branches or merging the PR. Gate and CopilotReview invoke scripts through `$ScriptsDir`, `$SkillsDir`, and `$EngScriptsDir`, never from the merged worktree. New scripts used by those phases must be added to the Setup copy block.
 
@@ -37,7 +37,8 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 ## Review checklist
 
-- [ ] New `checkout: self` has `persistCredentials: false`.
+- [ ] Every checkout before agent/PR-influenced execution has `persistCredentials: false`.
+- [ ] Any later credentialed checkout is after all Copilot/PR-controlled execution and is followed only by trusted publication/posting steps.
 - [ ] New `env:` block lists only the tokens that task needs; Copilot task has no `GH_TOKEN`.
 - [ ] New Gate or CopilotReview script is invoked through `$ScriptsDir` / `$SkillsDir` / `$EngScriptsDir` and is included in the Setup copy block.
 - [ ] Post runs in its own Microsoft-hosted job from a clean checkout of the pipeline revision.

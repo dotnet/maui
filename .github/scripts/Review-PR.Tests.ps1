@@ -329,6 +329,44 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CopilotLogs.*must never drive a credentialed PR title/body mutation'
     }
 
+    It 'runs prompt-influenced UI failure analysis before persisted publication credentials exist' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+
+        $initialCheckout = $stageBlock.IndexOf('- checkout: self')
+        $analysis = $stageBlock.IndexOf("displayName: 'Analyze UI test failures (Copilot)'")
+        $credentialCheckout = $stageBlock.IndexOf("displayName: 'Enable trusted snapshot asset publication credential'")
+        $credentialCheck = $stageBlock.IndexOf("displayName: 'Verify snapshot asset publication credential'")
+        $post = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
+
+        $initialCheckout | Should -BeGreaterThan -1
+        $analysis | Should -BeGreaterThan $initialCheckout
+        $credentialCheckout | Should -BeGreaterThan $analysis
+        $credentialCheck | Should -BeGreaterThan $credentialCheckout
+        $post | Should -BeGreaterThan $credentialCheck
+
+        $initialCheckoutBlock = $stageBlock.Substring($initialCheckout, $analysis - $initialCheckout)
+        $initialCheckoutBlock | Should -Match 'persistCredentials:\s*false'
+        $initialCheckoutBlock | Should -Not -Match 'persistCredentials:\s*true'
+
+        $analysisBlock = $stageBlock.Substring($analysis, $credentialCheckout - $analysis)
+        $analysisBlock | Should -Match 'COPILOT_GITHUB_TOKEN:\s*\$\(COPILOT_TOKEN\)'
+        $analysisBlock | Should -Not -Match '(?m)^\s+GH_TOKEN:'
+        $analysisBlock | Should -Not -Match '(?m)^\s+ASSET_WRITE_TOKEN:'
+
+        $credentialBlock = $stageBlock.Substring($credentialCheckout, $post - $credentialCheckout)
+        $credentialBlock | Should -Match 'clean:\s*true'
+        $credentialBlock | Should -Match 'persistCredentials:\s*true'
+        $credentialBlock | Should -Match ([regex]::Escape(
+            "git config --get-regexp '^http\..*\.extraheader$'"))
+        $credentialBlock | Should -Match 'throw "Snapshot asset publication requires the persisted checkout credential'
+
+        $afterCredential = $stageBlock.Substring($credentialCheckout)
+        $afterCredential | Should -Not -Match 'Analyze-UITestFailures\.ps1'
+        $afterCredential | Should -Not -Match '\bcopilot\s+--allow-all\b'
+    }
+
     It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
         $content | Should -Match ([regex]::Escape('"review-snapshot.json"'))
         $content | Should -Match ([regex]::Escape('prHeadSha = $reviewedPrHeadSha'))

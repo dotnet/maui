@@ -3428,16 +3428,11 @@ stages:
           - checkout: self
             fetchDepth: 1
             fetchTags: false
-            # persistCredentials:true is an INTENTIONAL exception to the pipeline's
-            # "always false" rule (security rule 2: "...unless the task pushes"). It
-            # lets the snapshot-diff embed below host the PNGs on the PUBLIC
-            # review-tests-assets branch using the GitHub service-connection PAT the
-            # checkout already writes into .git/config — so NO new/separate secret is
-            # needed. SAFE here because this job runs ONLY trusted pipeline-branch code
-            # (downloads artifacts + posts the review); it NEVER merges or builds/runs
-            # the untrusted PR, so the persisted credential is never exposed to
-            # PR-controlled code (the exact threat rule 2 guards against).
-            persistCredentials: true
+            # Prompt-influenced Copilot analysis runs later in this checkout. Never
+            # persist the service-connection PAT while that agent can read .git/config.
+            # A second checkout introduces the publication credential only after the
+            # Copilot step has finished, immediately before the trusted post step.
+            persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -3534,6 +3529,28 @@ stages:
             continueOnError: true
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+
+          # Introduce the GitHub service-connection credential only AFTER all
+          # prompt-influenced Copilot execution has completed. The remaining step is
+          # trusted pipeline-branch PowerShell that publishes snapshot assets and posts
+          # the review; no agent or PR-controlled process runs after this checkout.
+          - checkout: self
+            displayName: 'Enable trusted snapshot asset publication credential'
+            fetchDepth: 1
+            fetchTags: false
+            # Discard any checkout mutation the prompt-influenced agent attempted
+            # before credentials appear. Its intended output lives in Agent.TempDirectory.
+            clean: true
+            persistCredentials: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $persistedHeaders = @(git config --get-regexp '^http\..*\.extraheader$' 2>$null)
+              if ($LASTEXITCODE -ne 0 -or $persistedHeaders.Count -eq 0) {
+                throw "Snapshot asset publication requires the persisted checkout credential, but no Git HTTP authorization header was configured."
+              }
+              Write-Host "Trusted snapshot asset publication credential is configured."
+            displayName: 'Verify snapshot asset publication credential'
 
           - pwsh: |
               # DO NOT add AzDO compile-time template expressions (the double-curly
