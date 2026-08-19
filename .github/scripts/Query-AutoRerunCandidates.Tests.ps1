@@ -85,6 +85,7 @@ Describe 'Query-AutoRerunCandidates' {
         $script:commits = @()
         $script:failedPRs = @()
         $script:prListFailure = $false
+        $script:issueLabels = @()
         $script:ghCalls = @()
 
         Mock gh {
@@ -112,6 +113,12 @@ Describe 'Query-AutoRerunCandidates' {
                 return @()
             }
 
+            if ($command -match '/issues/\d+/labels') {
+                if ($script:issueLabels.Count -gt 30 -and $command -notmatch '/labels\?per_page=100 .*--paginate') {
+                    return @($script:issueLabels | Select-Object -First 30)
+                }
+                return @($script:issueLabels)
+            }
             if ($command -match '/issues/\d+/comments') { return ConvertTo-GhLines $script:issueComments }
             if ($command -match '/pulls/\d+/reviews') { return ConvertTo-GhLines $script:reviews }
             if ($command -match '/pulls/\d+/comments') { return ConvertTo-GhLines $script:reviewComments }
@@ -168,6 +175,27 @@ Context 'bounded scan metadata' {
 }
 
 Context 'API request bounding' {
+    It 'returns a label beyond the default first page' {
+        $script:issueLabels = @(
+            @(1..30 | ForEach-Object { "label-$_" })
+            's/agent-ready-for-rerun'
+        )
+
+        $labels = @(Get-IssueLabels -Number 12)
+
+        $labels.Count | Should -Be 31
+        $labels | Should -Contain 's/agent-ready-for-rerun'
+        @($script:ghCalls | Where-Object {
+            $_ -match '/issues/12/labels\?per_page=100 .*--paginate'
+        }).Count | Should -Be 1
+    }
+
+    It 'fails loud when a paginated label lookup fails' {
+        $script:failedPRs = @(12)
+
+        { Get-IssueLabels -Number 12 } | Should -Throw '*Failed to fetch labels for #12*'
+    }
+
     It 'checks PR reviews before classifying a PR without an AI Summary' {
         $script:prList = @(New-TestPR -Number 10)
 
@@ -388,6 +416,37 @@ Context 'scanner decline checkpoint' {
         $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
         $summary.decisions[0].eligible | Should -BeTrue
         $summary.decisions[0].reason | Should -Be 'new-head-commit'
+    }
+
+    It 'does not relabel an undrafted PR reverted from a declined draft head to the reviewed head' {
+        $reviewedHead = '1111111111111111111111111111111111111111'
+        $declinedDraftHead = '2222222222222222222222222222222222222222'
+        $script:prList = @(
+            New-TestPR `
+                -Number 10 `
+                -Labels @('s/agent-rerun-declined') `
+                -HeadSha $reviewedHead
+        )
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 1
+                body = "<!-- AI Summary -->`n<!-- SESSION:$reviewedHead START -->"
+                created_at = '2026-05-31T09:00:00Z'
+                updated_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            },
+            (New-DeclineMarkerComment `
+                -Id 2 `
+                -CreatedAt '2026-05-31T10:00:00Z' `
+                -HeadSha $declinedDraftHead)
+        )
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].eligible | Should -BeFalse
+        $summary.decisions[0].reason | Should -Be 'declined-state-unchanged'
     }
 
     It 'keeps a comment-only activity race newer than the scan-time decline checkpoint' {

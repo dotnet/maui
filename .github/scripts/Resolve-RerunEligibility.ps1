@@ -739,8 +739,9 @@ function Resolve-AutonomousRerunEligibility {
         # same declined state is not re-labelled on every daily run (anti-flap).
         [string]$LastDeclinedAt,
         # Exact PR head SHA stored by the scanner when it made that skip decision.
-        # A different current head always represents post-decline activity, even
-        # when the push raced the marker write and has an earlier commit timestamp.
+        # A different current head represents post-decline activity only when it
+        # also differs from the latest reviewed SHA. This preserves race recovery
+        # without treating a revert to the reviewed head as new activity.
         [string]$LastDeclinedHeadSha
     )
 
@@ -772,8 +773,14 @@ function Resolve-AutonomousRerunEligibility {
         }
     }
     $isDeclineGated = [bool]($declinedAt -and $declinedAt -gt $summaryCreatedAt)
+    $headDiffersFromReviewed = Test-HeadDiffersFromReviewedSha `
+        -CurrentHeadSha $CurrentHeadSha `
+        -LatestReviewedSha $latestReviewedSha
     $headDiffersFromDeclined = $isDeclineGated -and
-        (Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $LastDeclinedHeadSha)
+        $headDiffersFromReviewed -and
+        (Test-HeadDiffersFromReviewedSha `
+            -CurrentHeadSha $CurrentHeadSha `
+            -LatestReviewedSha $LastDeclinedHeadSha)
 
     if ($headDiffersFromDeclined) {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
@@ -787,7 +794,6 @@ function Resolve-AutonomousRerunEligibility {
         -PRAuthorLogin $normalizedPRAuthorLogin `
         -IncludeCheckpointSecond:$isDeclineGated
     $hasNewCommit = Test-HasCommitAfter -Commits $Commits -Checkpoint $effectiveCheckpoint
-    $headDiffers = Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha
 
     # A head SHA that differs from the last-reviewed SHA only re-qualifies when it is
     # backed by a commit that landed after the checkpoint. Absent a decline this is
@@ -795,7 +801,7 @@ function Resolve-AutonomousRerunEligibility {
     # unchanged; once a decline advances the checkpoint, a head that merely still
     # differs from the summary's SHA (the exact state the scanner declined) no longer
     # counts — only a fresh push after the decline does.
-    if ($headDiffers -and (-not $isDeclineGated -or $hasNewCommit)) {
+    if ($headDiffersFromReviewed -and (-not $isDeclineGated -or $hasNewCommit)) {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
     }
 

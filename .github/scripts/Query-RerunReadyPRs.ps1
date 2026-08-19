@@ -30,7 +30,7 @@ function ConvertTo-ActivityItemFromJson {
 function Get-IssueLabels {
     param([int]$Number)
 
-    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name'
+    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels?per_page=100" --paginate --jq '.[].name'
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to fetch labels for #$Number (gh api exited $LASTEXITCODE)."
     }

@@ -22,6 +22,8 @@ Describe 'Query-RerunReadyPRs' {
     BeforeEach {
         $script:OutputPath = Join-Path $outputDir "$([Guid]::NewGuid().ToString('N')).json"
         $script:ghFailurePattern = $null
+        $script:issueLabels = @('s/agent-ready-for-rerun')
+        $script:labelLookupCommand = ''
         $script:issueComments = @(
             [pscustomobject]@{
                 id = 100
@@ -77,7 +79,11 @@ Describe 'Query-RerunReadyPRs' {
                 } | ConvertTo-Json -Depth 10 -Compress)
             }
             if ($command -match '/issues/1/labels') {
-                return 's/agent-ready-for-rerun'
+                $script:labelLookupCommand = $command
+                if ($script:issueLabels.Count -gt 30 -and $command -notmatch '/labels\?per_page=100 .*--paginate') {
+                    return @($script:issueLabels | Select-Object -First 30)
+                }
+                return @($script:issueLabels)
             }
             if ($command -match '/issues/1/comments') {
                 return ConvertTo-GhLines $script:issueComments
@@ -122,6 +128,19 @@ Describe 'Query-RerunReadyPRs' {
         $serialized = Get-Content -Raw -LiteralPath $script:OutputPath
         $serialized | Should -Not -Match 'Ignore previous instructions'
         $serialized | Should -Not -Match '/review rerun'
+    }
+
+    It 'returns a ready label beyond the default first page' {
+        $script:issueLabels = @(
+            @(1..30 | ForEach-Object { "label-$_" })
+            's/agent-ready-for-rerun'
+        )
+
+        $labels = @(Get-IssueLabels -Number 1)
+
+        $labels.Count | Should -Be 31
+        $labels | Should -Contain 's/agent-ready-for-rerun'
+        $script:labelLookupCommand | Should -Match '/labels\?per_page=100 .*--paginate'
     }
 
     It 'keys stable activity identities instead of editable prose' {

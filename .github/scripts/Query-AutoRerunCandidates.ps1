@@ -71,7 +71,7 @@ function Get-IssueLabels {
     # s/agent-ready-for-rerun / in-progress label and cause a spurious re-label or
     # skip. Surface the failure (including gh's stderr, which we no longer suppress)
     # so the per-PR try/catch records it as an error with actionable detail.
-    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels" --jq '.[].name'
+    $names = gh api "repos/$Owner/$Repo/issues/$Number/labels?per_page=100" --paginate --jq '.[].name'
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to fetch labels for #$Number (gh api exited $LASTEXITCODE)."
     }
