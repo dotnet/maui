@@ -15,13 +15,13 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 ## Rules
 
-1. **Per-task `env:` scoping.** Only put tokens in tasks that need them. The Copilot-agent task gets `COPILOT_GITHUB_TOKEN` only — never `GH_TOKEN`. The Post task runs in its own Microsoft-hosted job and receives `GH_COMMENT_TOKEN` only in its posting step. Pass `--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN` to the Copilot CLI.
+1. **Per-task `env:` scoping.** Only put tokens in tasks that need them. The Copilot-agent task gets `COPILOT_GITHUB_TOKEN` only — never `GH_TOKEN`. Posting tasks run in separate Microsoft-hosted jobs and receive `GH_COMMENT_TOKEN` plus only the explicitly scoped publication token they need. Pass `--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN` to the Copilot CLI.
 
-2. **`persistCredentials: false` on every `checkout: self` that precedes agent or PR-influenced execution.** Default checkout writes the service-connection PAT into `.git/config` as `extraheader`, readable by any subprocess. Stage 3 may use a second `persistCredentials: true` checkout only after its prompt-influenced Copilot analysis has finished, immediately before trusted snapshot-asset publication/posting; no agent or PR-controlled process may run afterward.
+2. **`persistCredentials: false` on every `checkout: self`.** Default checkout writes the service-connection PAT into `.git/config` as `extraheader`, readable by any subprocess. Do not extract or repurpose that checkout credential for API publication; use an explicitly scoped task secret instead.
 
 3. **Trusted-copy scripts before merging the PR.** Setup copies `.github/scripts`, `.github/skills`, and `eng/scripts` to `$(Build.ArtifactStagingDirectory)/trusted-github/` before switching branches or merging the PR. Gate and CopilotReview invoke scripts through `$ScriptsDir`, `$SkillsDir`, and `$EngScriptsDir`, never from the merged worktree. New scripts used by those phases must be added to the Setup copy block.
 
-4. **Run Post from a clean pipeline checkout.** Post runs in a separate Microsoft-hosted job, checks out `$(Build.SourceVersion)` with `clean: true` and `persistCredentials: false`, and executes `.github/scripts`, `.github/skills`, and `eng/scripts` from that checkout. It downloads review results separately and copies only `CustomAgentLogsTmp` into the expected data path. Do not copy artifact content over script directories.
+4. **Run posting from a fresh Microsoft-hosted job.** Post jobs check out `$(Build.SourceVersion)` with `clean: true` and `persistCredentials: false`, then execute `.github/scripts`, `.github/skills`, and `eng/scripts` from that checkout. Prompt-influenced analysis must finish in a different job/agent. Download its result outside the checkout and import only the expected bounded regular file with `Copy-BoundedDiagnosticFile`; never copy artifact content over script directories. A second `clean: true` checkout in the same job is not isolation because `.git` and the agent's global config survive.
 
 5. **Strip tokens before invoking PR-controlled code.** Wrap every `dotnet build|test|run|pack`, `msbuild`, `dotnet cake`, `BuildAndRun*.ps1`, `Run-DeviceTests.ps1`, `Invoke-UITestWithRetry.ps1` in `Invoke-WithoutGhTokens { ... }` (defined in `Review-PR.ps1` and `verify-tests-fail.ps1` — saves/clears/restores `GH_TOKEN`, `GITHUB_TOKEN`, `COPILOT_GITHUB_TOKEN`). **Wrap as close to the subprocess as possible, not at the outer trusted-script boundary** — a trusted script may itself need `gh` for metadata (e.g., `verify-tests-fail.ps1` calls `Detect-TestsInDiff.ps1` which uses `gh api`), so wrapping the whole script breaks its detection path. Wrap only the line that launches the PR-controlled process. Exception: scripts that ONLY call `gh` for PR metadata (`Detect-TestsInDiff.ps1`, `Find-RegressionRisks.ps1`, `detect-ui-test-categories.ps1`) don't need wrapping at all — they keep the token.
 
@@ -37,8 +37,9 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 ## Review checklist
 
-- [ ] Every checkout before agent/PR-influenced execution has `persistCredentials: false`.
-- [ ] Any later credentialed checkout is after all Copilot/PR-controlled execution and is followed only by trusted publication/posting steps.
+- [ ] Every checkout has `persistCredentials: false`; no task extracts the checkout `extraheader`.
+- [ ] Prompt-influenced analysis and credentialed posting run in separate Microsoft-hosted jobs.
+- [ ] The posting job imports only bounded regular data files from prompt-controlled artifacts and runs no Copilot/PR-controlled process.
 - [ ] New `env:` block lists only the tokens that task needs; Copilot task has no `GH_TOKEN`.
 - [ ] New Gate or CopilotReview script is invoked through `$ScriptsDir` / `$SkillsDir` / `$EngScriptsDir` and is included in the Setup copy block.
 - [ ] Post runs in its own Microsoft-hosted job from a clean checkout of the pipeline revision.

@@ -258,6 +258,110 @@ Describe 'Detect-TestsInDiff added device-test methods' {
             Should -Be @('RunsInline', 'RunsWithValueTask')
     }
 
+    It 'keeps multiline Theory and Fact attributes pending through balanced arguments' {
+        $patch = @'
+@@ -0,0 +1,28 @@
++[Theory(
++    Skip = "",
++    DisplayName = "literal ) and ] " + nameof(Format),
++    Timeout = GetTimeout(new[] { ")", "]" })
++)]
++public async Task TheoryWithArguments(string value)
++{
++    await Task.Yield();
++}
++
++[Fact(
++    Skip = @"verbatim text with ""quotes"",
++a closing-looking ] on another line"
++)]
++public void FactWithArguments()
++{
++}
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('TheoryWithArguments', 'FactWithArguments')
+    }
+
+    It 'supports stacked multiline attributes with comments and directives before the method' {
+        $patch = @'
+@@ -0,0 +1,24 @@
++[Theory(
++    Skip = GetReason(
++        "nested call")
++)]
++[Trait(
++    "Category",
++    "Device"
++)]
++
++// The declaration remains associated with the test attributes.
++#if TEST_CONFIGURATION
++public virtual ValueTask StackedAttributes()
++{
++    return ValueTask.CompletedTask;
++}
++#endif
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('StackedAttributes')
+    }
+
+    It 'clears a completed test marker when an unrelated declaration intervenes' {
+        $patch = @'
+@@ -0,0 +1,20 @@
++[Fact(
++    Skip = "temporarily disabled"
++)]
++private const string Reason = "not a method";
++
++public void HelperMustNotInheritFact()
++{
++}
++
++[Theory]
++public Task ActualTest()
++{
++    return Task.CompletedTask;
++}
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('ActualTest')
+    }
+
+    It 'does not leak malformed or unclosed attributes into later methods or hunks' {
+        $patch = @'
+@@ -0,0 +1,12 @@
++[Theory(
++    Skip = "missing the closing bracket"
++public void HiddenInsideMalformedAttribute()
++{
++}
+@@ -40,0 +53,14 @@
++public void MethodInAnotherHunk()
++{
++}
++
++[Fact(
++    Skip = "missing the closing parenthesis"
++]
++public void ClosedButMalformed()
++{
++}
++
++[Fact]
++public void ValidAfterMalformedAttribute()
++{
++}
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('ValidAfterMalformedAttribute')
+    }
+
     It 'returns no methods when the patch adds only helpers' {
         $patch = @'
 @@ -0,0 +1,8 @@

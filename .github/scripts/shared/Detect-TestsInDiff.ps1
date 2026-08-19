@@ -372,22 +372,254 @@ function Get-AddedDeviceTestMethodsFromPatch {
         return @()
     }
 
+    function New-CSharpAttributeState {
+        return @{
+            SquareDepth      = 0
+            ParenthesisDepth = 0
+            BraceDepth       = 0
+            InBlockComment   = $false
+            StringKind       = $null
+            EscapeNext       = $false
+            RawQuoteCount    = 0
+            Invalid          = $false
+            Text             = [System.Text.StringBuilder]::new()
+        }
+    }
+
+    function Read-CSharpAttributeFragment {
+        param(
+            [Parameter(Mandatory = $true)]
+            [hashtable]$State,
+
+            [Parameter(Mandatory = $true)]
+            [string]$Text,
+
+            [Parameter(Mandatory = $true)]
+            [int]$StartIndex
+        )
+
+        if ($State.Text.Length -gt 0) {
+            [void]$State.Text.Append("`n")
+        }
+
+        for ($index = $StartIndex; $index -lt $Text.Length; $index++) {
+            $character = $Text[$index]
+            [void]$State.Text.Append($character)
+
+            if ($State.InBlockComment) {
+                if ($character -eq '*' -and
+                    ($index + 1) -lt $Text.Length -and
+                    $Text[$index + 1] -eq '/') {
+                    [void]$State.Text.Append('/')
+                    $index++
+                    $State.InBlockComment = $false
+                }
+                continue
+            }
+
+            if ($State.StringKind -eq 'Raw') {
+                if ($character -eq '"') {
+                    $quoteCount = 1
+                    while (($index + $quoteCount) -lt $Text.Length -and
+                        $Text[$index + $quoteCount] -eq '"') {
+                        [void]$State.Text.Append('"')
+                        $quoteCount++
+                    }
+                    $index += $quoteCount - 1
+                    if ($quoteCount -ge $State.RawQuoteCount) {
+                        $State.StringKind = $null
+                        $State.RawQuoteCount = 0
+                    }
+                }
+                continue
+            }
+
+            if ($State.StringKind -eq 'Verbatim') {
+                if ($character -eq '"') {
+                    if (($index + 1) -lt $Text.Length -and $Text[$index + 1] -eq '"') {
+                        [void]$State.Text.Append('"')
+                        $index++
+                    } else {
+                        $State.StringKind = $null
+                    }
+                }
+                continue
+            }
+
+            if ($State.StringKind -eq 'Regular' -or $State.StringKind -eq 'Character') {
+                if ($State.EscapeNext) {
+                    $State.EscapeNext = $false
+                    continue
+                }
+                if ($character -eq '\') {
+                    $State.EscapeNext = $true
+                    continue
+                }
+                if (($State.StringKind -eq 'Regular' -and $character -eq '"') -or
+                    ($State.StringKind -eq 'Character' -and $character -eq "'")) {
+                    $State.StringKind = $null
+                }
+                continue
+            }
+
+            if ($character -eq '/' -and ($index + 1) -lt $Text.Length) {
+                if ($Text[$index + 1] -eq '/') {
+                    [void]$State.Text.Append($Text.Substring($index + 1))
+                    break
+                }
+                if ($Text[$index + 1] -eq '*') {
+                    [void]$State.Text.Append('*')
+                    $index++
+                    $State.InBlockComment = $true
+                    continue
+                }
+            }
+
+            if ($character -eq '"') {
+                $quoteCount = 1
+                while (($index + $quoteCount) -lt $Text.Length -and
+                    $Text[$index + $quoteCount] -eq '"') {
+                    [void]$State.Text.Append('"')
+                    $quoteCount++
+                }
+                $index += $quoteCount - 1
+                $prefix = $Text.Substring(0, $index - $quoteCount + 1)
+                $isVerbatim = $prefix -match '@\$*$'
+                if ($isVerbatim) {
+                    # One opening quote plus any doubled embedded quotes. An
+                    # even run also contains the closing quote; an odd run
+                    # leaves the verbatim literal open for following text.
+                    if (($quoteCount % 2) -ne 0) {
+                        $State.StringKind = 'Verbatim'
+                    }
+                } elseif ($quoteCount -ge 3) {
+                    $State.StringKind = 'Raw'
+                    $State.RawQuoteCount = $quoteCount
+                } elseif ($quoteCount -eq 1) {
+                    $State.StringKind = 'Regular'
+                }
+                continue
+            }
+
+            if ($character -eq "'") {
+                $State.StringKind = 'Character'
+                continue
+            }
+
+            switch ($character) {
+                '[' { $State.SquareDepth++ }
+                ']' {
+                    $State.SquareDepth--
+                    if ($State.SquareDepth -lt 0) {
+                        $State.Invalid = $true
+                    }
+                    if ($State.SquareDepth -eq 0) {
+                        if ($State.ParenthesisDepth -ne 0 -or $State.BraceDepth -ne 0) {
+                            $State.Invalid = $true
+                        }
+                        return [pscustomobject]@{
+                            Closed   = $true
+                            EndIndex = $index
+                            Invalid  = [bool]$State.Invalid
+                        }
+                    }
+                }
+                '(' { $State.ParenthesisDepth++ }
+                ')' {
+                    $State.ParenthesisDepth--
+                    if ($State.ParenthesisDepth -lt 0) {
+                        $State.Invalid = $true
+                    }
+                }
+                '{' { $State.BraceDepth++ }
+                '}' {
+                    $State.BraceDepth--
+                    if ($State.BraceDepth -lt 0) {
+                        $State.Invalid = $true
+                    }
+                }
+            }
+        }
+
+        if ($State.StringKind -eq 'Regular' -or $State.StringKind -eq 'Character') {
+            # Regular string and character literals cannot span physical lines.
+            # Keep consuming until the hunk boundary, but never accept the
+            # malformed attribute as a test marker.
+            $State.Invalid = $true
+        }
+
+        return [pscustomobject]@{
+            Closed   = $false
+            EndIndex = $Text.Length
+            Invalid  = [bool]$State.Invalid
+        }
+    }
+
     $methods = [System.Collections.Generic.List[string]]::new()
     $pendingTestAttribute = $false
+    $attributeState = $null
+    $inHunk = $false
+    $testAttributePattern = '(?is)^\s*\[\s*(?:global::)?(?:[A-Za-z_]\w*\s*\.\s*)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)(?:Attribute)?\b'
 
     foreach ($rawLine in ($Patch -split "`n")) {
-        if ($rawLine -notmatch '^\+(?!\+\+)') {
+        if ($rawLine -match '^@@') {
+            # Never carry a pending or malformed attribute into another diff
+            # hunk, where it could incorrectly mark an unrelated added method.
+            $pendingTestAttribute = $false
+            $attributeState = $null
+            $inHunk = $true
+            continue
+        }
+
+        $isAddedLine = $rawLine -match '^\+(?!\+\+)'
+        $isContextLine = $inHunk -and $rawLine.StartsWith(' ')
+        if (-not $isAddedLine -and -not $isContextLine) {
+            # Removed lines are absent from the new file. Diff metadata and the
+            # "\ No newline" marker are not C# source.
             continue
         }
 
         $line = $rawLine.Substring(1).TrimEnd("`r")
-        if ($line -match '\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b') {
-            $pendingTestAttribute = $true
+        $declaration = $line
+
+        while ($true) {
+            if ($null -eq $attributeState) {
+                $attributeStart = [regex]::Match($declaration, '^\s*\[')
+                if (-not $attributeStart.Success) {
+                    break
+                }
+                $attributeState = New-CSharpAttributeState
+                $startIndex = $attributeStart.Index + $attributeStart.Length - 1
+            } else {
+                $startIndex = 0
+            }
+
+            $attributeResult = Read-CSharpAttributeFragment `
+                -State $attributeState `
+                -Text $declaration `
+                -StartIndex $startIndex
+
+            if (-not $attributeResult.Closed) {
+                $declaration = ''
+                break
+            }
+
+            if ($attributeResult.Invalid) {
+                $pendingTestAttribute = $false
+            } elseif ($attributeState.Text.ToString() -match $testAttributePattern) {
+                $pendingTestAttribute = $true
+            }
+
+            $declaration = $declaration.Substring($attributeResult.EndIndex + 1)
+            $attributeState = $null
+        }
+
+        if ($null -ne $attributeState) {
+            continue
         }
 
         # Attribute-only, comment, preprocessor, and blank lines may legitimately
         # sit between the test attribute and method declaration.
-        $declaration = $line -replace '^\s*(?:\[[^\]]+\]\s*)+', ''
         if ([string]::IsNullOrWhiteSpace($declaration) -or
             $declaration -match '^\s*(?://|/\*|\*|#)') {
             continue
@@ -396,7 +628,7 @@ function Get-AddedDeviceTestMethodsFromPatch {
         if ($pendingTestAttribute -and
             $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
             $methodName = $matches[1]
-            if ($methods -notcontains $methodName) {
+            if ($isAddedLine -and $methods -notcontains $methodName) {
                 $methods.Add($methodName)
             }
             $pendingTestAttribute = $false
@@ -405,9 +637,7 @@ function Get-AddedDeviceTestMethodsFromPatch {
 
         # A non-attribute declaration consumed the pending marker without defining
         # a test method; do not let it leak to a later public helper.
-        if ($pendingTestAttribute -and $declaration -notmatch '^\s*\[') {
-            $pendingTestAttribute = $false
-        }
+        $pendingTestAttribute = $false
     }
 
     return @($methods)

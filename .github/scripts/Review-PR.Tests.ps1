@@ -370,42 +370,102 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CopilotLogs.*must never drive a credentialed PR title/body mutation'
     }
 
-    It 'runs prompt-influenced UI failure analysis before persisted publication credentials exist' {
+    It 'isolates prompt-influenced UI failure analysis from posting credentials on a fresh agent' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
         $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
         $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
         $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
 
-        $initialCheckout = $stageBlock.IndexOf('- checkout: self')
+        $analysisJob = $stageBlock.IndexOf('- job: AnalyzeUIFailures')
+        $postJob = $stageBlock.IndexOf('- job: UpdateComment')
         $analysis = $stageBlock.IndexOf("displayName: 'Analyze UI test failures (Copilot)'")
-        $credentialCheckout = $stageBlock.IndexOf("displayName: 'Enable trusted snapshot asset publication credential'")
-        $credentialCheck = $stageBlock.IndexOf("displayName: 'Verify snapshot asset publication credential'")
+        $import = $stageBlock.IndexOf("displayName: 'Import bounded UI failure analysis'")
         $post = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
 
-        $initialCheckout | Should -BeGreaterThan -1
-        $analysis | Should -BeGreaterThan $initialCheckout
-        $credentialCheckout | Should -BeGreaterThan $analysis
-        $credentialCheck | Should -BeGreaterThan $credentialCheckout
-        $post | Should -BeGreaterThan $credentialCheck
+        $analysisJob | Should -BeGreaterThan -1
+        $postJob | Should -BeGreaterThan $analysisJob
+        $analysis | Should -BeGreaterThan $analysisJob
+        $import | Should -BeGreaterThan $postJob
+        $post | Should -BeGreaterThan $import
 
-        $initialCheckoutBlock = $stageBlock.Substring($initialCheckout, $analysis - $initialCheckout)
-        $initialCheckoutBlock | Should -Match 'persistCredentials:\s*false'
-        $initialCheckoutBlock | Should -Not -Match 'persistCredentials:\s*true'
+        $analysisJobBlock = $stageBlock.Substring($analysisJob, $postJob - $analysisJob)
+        $postJobBlock = $stageBlock.Substring($postJob)
+        $copilotStepBlock = $analysisJobBlock.Substring(
+            $analysisJobBlock.IndexOf('# This task holds only the Copilot token'))
 
-        $analysisBlock = $stageBlock.Substring($analysis, $credentialCheckout - $analysis)
-        $analysisBlock | Should -Match 'COPILOT_GITHUB_TOKEN:\s*\$\(COPILOT_TOKEN\)'
-        $analysisBlock | Should -Not -Match '(?m)^\s+GH_TOKEN:'
-        $analysisBlock | Should -Not -Match '(?m)^\s+ASSET_WRITE_TOKEN:'
+        $analysisJobBlock | Should -Match 'vmImage:\s*ubuntu-22\.04'
+        $analysisJobBlock | Should -Match 'clean:\s*true'
+        $analysisJobBlock | Should -Match 'persistCredentials:\s*false'
+        $analysisJobBlock | Should -Match 'artifact:\s*''uifail-analysis'''
+        $copilotStepBlock | Should -Match 'COPILOT_GITHUB_TOKEN:\s*\$\(COPILOT_TOKEN\)'
+        $copilotStepBlock | Should -Not -Match '(?m)^\s+GH_TOKEN:'
+        $copilotStepBlock | Should -Not -Match '(?m)^\s+ASSET_WRITE_TOKEN:'
 
-        $credentialBlock = $stageBlock.Substring($credentialCheckout, $post - $credentialCheckout)
-        $credentialBlock | Should -Match 'clean:\s*true'
-        $credentialBlock | Should -Match 'persistCredentials:\s*true'
-        $credentialBlock | Should -Match ([regex]::Escape(
-            "git config --get-regexp '^http\..*\.extraheader$'"))
-        $credentialBlock | Should -Match 'throw "Snapshot asset publication requires the persisted checkout credential'
+        $postJobBlock | Should -Match 'dependsOn:\s*AnalyzeUIFailures'
+        $postJobBlock | Should -Match 'vmImage:\s*ubuntu-22\.04'
+        $postJobBlock | Should -Match 'clean:\s*true'
+        $postJobBlock | Should -Match 'persistCredentials:\s*false'
+        $postJobBlock | Should -Match ([regex]::Escape(
+            'Copy-BoundedDiagnosticFile -Source $source -Destination $destination -MaxBytes 256KB'))
+        $postJobBlock | Should -Match 'ASSET_WRITE_TOKEN:\s*\$\(SnapshotAssetToken\)'
+        $postJobBlock | Should -Not -Match 'Analyze-UITestFailures\.ps1'
+        $postJobBlock | Should -Not -Match '\bcopilot\s+--allow-all\b'
+        $postJobBlock | Should -Not -Match '(?m)^\s+EMBED_TOKEN_'
+        $stageBlock | Should -Not -Match 'persistCredentials:\s*true'
+        $stageBlock | Should -Not -Match 'checkoutTok|extraheader'
 
-        $afterCredential = $stageBlock.Substring($credentialCheckout)
-        $afterCredential | Should -Not -Match 'Analyze-UITestFailures\.ps1'
-        $afterCredential | Should -Not -Match '\bcopilot\s+--allow-all\b'
+        # Reproduce the old trust-boundary failure deterministically: the same
+        # `git clean` + `git reset` sequence used by a clean checkout removes
+        # worktree changes but preserves local/global Git config and hooks.
+        $origin = Join-Path $TestDrive 'trusted-origin'
+        $analysisRepo = Join-Path $TestDrive 'analysis-workspace'
+        $postRepo = Join-Path $TestDrive 'posting-workspace'
+        git init -q $origin
+        git -C $origin config user.email tests@example.com
+        git -C $origin config user.name Tests
+        'trusted' | Set-Content -LiteralPath (Join-Path $origin 'trusted.txt') -Encoding UTF8
+        git -C $origin add trusted.txt
+        git -C $origin commit -q -m trusted
+        git clone -q $origin $analysisRepo
+
+        $analysisGitDir = Join-Path $analysisRepo ((git -C $analysisRepo rev-parse --git-dir).Trim())
+        $localHooks = Join-Path $analysisGitDir 'attacker-hooks'
+        New-Item -ItemType Directory -Force -Path $localHooks | Out-Null
+        "#!/bin/sh`nexit 0" | Set-Content -LiteralPath (Join-Path $localHooks 'post-checkout') -Encoding UTF8
+        "#!/bin/sh`nexit 0" | Set-Content -LiteralPath (Join-Path $analysisGitDir 'hooks/post-checkout') -Encoding UTF8
+        git -C $analysisRepo config core.hooksPath $localHooks
+        git -C $analysisRepo config credential.helper attacker-local-helper
+
+        $analysisHome = Join-Path $TestDrive 'analysis-home'
+        $analysisGlobalConfig = Join-Path $analysisHome '.gitconfig'
+        $globalHooks = Join-Path $analysisHome 'hooks'
+        New-Item -ItemType Directory -Force -Path $globalHooks | Out-Null
+        "#!/bin/sh`nexit 0" | Set-Content -LiteralPath (Join-Path $globalHooks 'post-checkout') -Encoding UTF8
+        git config --file $analysisGlobalConfig core.hooksPath $globalHooks
+        git config --file $analysisGlobalConfig credential.helper attacker-global-helper
+
+        'mutated' | Set-Content -LiteralPath (Join-Path $analysisRepo 'trusted.txt') -Encoding UTF8
+        'untracked' | Set-Content -LiteralPath (Join-Path $analysisRepo 'untracked.txt') -Encoding UTF8
+        git -C $analysisRepo clean -ffdx
+        git -C $analysisRepo reset --hard -q HEAD
+
+        (git -C $analysisRepo config --local --get core.hooksPath).Trim() | Should -Be $localHooks
+        (git -C $analysisRepo config --local --get credential.helper).Trim() | Should -Be 'attacker-local-helper'
+        Test-Path -LiteralPath (Join-Path $localHooks 'post-checkout') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $analysisGitDir 'hooks/post-checkout') | Should -BeTrue
+        (git config --file $analysisGlobalConfig --get core.hooksPath).Trim() | Should -Be $globalHooks
+        (git config --file $analysisGlobalConfig --get credential.helper).Trim() | Should -Be 'attacker-global-helper'
+
+        # A separate Microsoft-hosted job starts with both a fresh repository
+        # metadata directory and a fresh home/global-config context.
+        git clone -q $origin $postRepo
+        $postGitDir = Join-Path $postRepo ((git -C $postRepo rev-parse --git-dir).Trim())
+        $postLocalHooks = git -C $postRepo config --local --get core.hooksPath 2>$null
+        $postLocalHelper = git -C $postRepo config --local --get credential.helper 2>$null
+        $postLocalHooks | Should -BeNullOrEmpty
+        $postLocalHelper | Should -BeNullOrEmpty
+        Test-Path -LiteralPath (Join-Path $postGitDir 'attacker-hooks') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $postGitDir 'hooks/post-checkout') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $TestDrive 'posting-home/.gitconfig') | Should -BeFalse
     }
 
     It 'does not enumerate or log credential identities and capabilities in Stage 3' {
