@@ -158,15 +158,25 @@ jobs:
           }
 
           Import-Module Pester -RequiredVersion 5.9.0
-          $config = New-PesterConfiguration
-          $config.Run.Path = @(
-            '.github/scripts/Query-ReviewablePRs.Tests.ps1'
-            '.github/scripts/Invoke-RerunReviewTrigger.Tests.ps1'
-            '.github/scripts/Query-AutoRerunCandidates.Tests.ps1'
-            '.github/scripts/Query-RerunReadyPRs.Tests.ps1'
-            '.github/scripts/Resolve-RerunEligibility.Tests.ps1'
+          # Queue validation scope: discover top-level Queue/Rerun/ReviewablePRs
+          # suites, plus the shared agent-label lifecycle contract.
+          $queueTestPatterns = @(
+            '.github/scripts/*Queue*.Tests.ps1'
+            '.github/scripts/*Rerun*.Tests.ps1'
+            '.github/scripts/*ReviewablePRs.Tests.ps1'
             '.github/scripts/shared/Update-AgentLabels.Tests.ps1'
           )
+          $queueTests = @($queueTestPatterns | ForEach-Object {
+            Get-ChildItem -Path $_ -File -ErrorAction SilentlyContinue
+          } | Sort-Object FullName -Unique | ForEach-Object {
+            $_.FullName
+          })
+          if ($queueTests.Count -lt 1) {
+            throw 'Queue test discovery found no Pester suites.'
+          }
+
+          $config = New-PesterConfiguration
+          $config.Run.Path = $queueTests
           $config.Run.PassThru = $true
           $config.Output.Verbosity = 'Detailed'
 

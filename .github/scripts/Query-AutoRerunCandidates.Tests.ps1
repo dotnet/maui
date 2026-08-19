@@ -148,10 +148,10 @@ Context 'bounded scan metadata' {
         $validateJob = [regex]::Match($workflow, '(?s)^  validate:.*\z', 'Multiline').Value
 
         $validateJob | Should -Match 'Validate queue scripts without GitHub credentials'
-        $validateJob | Should -Match 'Query-ReviewablePRs\.Tests\.ps1'
-        $validateJob | Should -Match 'Query-AutoRerunCandidates\.Tests\.ps1'
+        $validateJob | Should -Match '\$queueTestPatterns = @\('
+        $validateJob | Should -Match '\*Rerun\*\.Tests\.ps1'
+        $validateJob | Should -Match '\$config\.Run\.Path = \$queueTests'
         $validateJob | Should -Match 'node --test.*RerunReviewScanner\.Tests\.mjs'
-        $validateJob | Should -Match 'Update-AgentLabels\.Tests\.ps1'
         $validateJob | Should -Not -Match 'GH_TOKEN|github\.token'
         $validateJob | Should -Not -Match 'pull-requests:\s+read|issues:\s+read'
         Test-Path -LiteralPath $reviewableQueryTestsPath | Should -BeTrue
@@ -182,12 +182,24 @@ Context 'bounded scan metadata' {
 
         $validationTargets = [System.Collections.Generic.List[string]]::new()
         foreach ($assignmentPattern in @(
-            '\$parseTargets = @\((?<block>.*?)\)',
-            '\$config\.Run\.Path = @\((?<block>.*?)\)'
+            '\$parseTargets = @\((?<block>.*?)\)'
         )) {
             $block = [regex]::Match($workflow, $assignmentPattern, 'Singleline').Groups['block'].Value
             foreach ($match in [regex]::Matches($block, "'([^']+)'")) {
                 $validationTargets.Add($match.Groups[1].Value)
+            }
+        }
+        $queuePatternBlock = [regex]::Match(
+            $workflow,
+            '\$queueTestPatterns = @\((?<block>.*?)\)',
+            'Singleline'
+        ).Groups['block'].Value
+        $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        foreach ($match in [regex]::Matches($queuePatternBlock, "'([^']+)'")) {
+            $pattern = $match.Groups[1].Value
+            foreach ($testFile in Get-ChildItem -Path (Join-Path $repoRoot $pattern) -File -ErrorAction SilentlyContinue) {
+                $relativePath = [System.IO.Path]::GetRelativePath($repoRoot, $testFile.FullName).Replace('\', '/')
+                $validationTargets.Add($relativePath)
             }
         }
         $nodeTest = [regex]::Match($workflow, "node --test '([^']+)'").Groups[1].Value
@@ -204,6 +216,35 @@ Context 'bounded scan metadata' {
             }).Count -gt 0
             $matched | Should -BeTrue -Because "$target is part of validation and must trigger this workflow"
         }
+    }
+
+    It 'discovers the complete bounded queue Pester scope' {
+        $workflow = Get-Content -Raw -LiteralPath $workflowPath
+        $patternBlock = [regex]::Match(
+            $workflow,
+            '\$queueTestPatterns = @\((?<block>.*?)\)',
+            'Singleline'
+        ).Groups['block'].Value
+        $patterns = @([regex]::Matches($patternBlock, "'([^']+)'") | ForEach-Object {
+            $_.Groups[1].Value
+        })
+        $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        $selected = @($patterns | ForEach-Object {
+            Get-ChildItem -Path (Join-Path $repoRoot $_) -File -ErrorAction SilentlyContinue
+        } | Sort-Object Name -Unique | ForEach-Object { $_.Name })
+
+        foreach ($required in @(
+            'Invoke-RerunReviewTrigger.Tests.ps1',
+            'Query-AutoRerunCandidates.Tests.ps1',
+            'Query-RerunReadyPRs.Tests.ps1',
+            'Query-ReviewablePRs.Tests.ps1',
+            'Resolve-RerunEligibility.Tests.ps1',
+            'Update-AgentLabels.Tests.ps1'
+        )) {
+            $selected | Should -Contain $required
+        }
+        $selected | Should -Not -Contain 'Query-CiFixPRs.Tests.ps1'
+        $workflow | Should -Match '\$config\.Run\.Path = \$queueTests'
     }
 
     It 'keeps the scheduled queue job at pull-request read permission' {
