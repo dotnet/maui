@@ -714,6 +714,55 @@ Describe 'Snapshot diff asset publishing' {
     }
 }
 
+Describe 'Simulator runtime provisioning contract' {
+    It 'normalizes array and object-map JSON before counting Ready runtime images' -Skip:(-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+        $filterMatch = [regex]::Match(
+            $provisionContent,
+            "(?ms)^\s*runtime_image_counts_jq='(?<filter>.*?)^\s*'\s*$")
+
+        $filterMatch.Success | Should -BeTrue
+        $filter = $filterMatch.Groups['filter'].Value
+
+        foreach ($case in @(
+            @{
+                Json = '{"first":{"state":"Ready"},"second":{"state":"Deleting"}}'
+                Expected = "2`t1"
+            },
+            @{
+                Json = '[{"state":"Ready"},{"state":"Deleting"}]'
+                Expected = "2`t1"
+            }
+        )) {
+            $actual = $case.Json | & jq -er $filter
+
+            $LASTEXITCODE | Should -Be 0
+            $actual | Should -Be $case.Expected
+        }
+    }
+
+    It 'rejects wrapper, null, missing-state, and malformed runtime JSON' -Skip:(-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+        $filterMatch = [regex]::Match(
+            $provisionContent,
+            "(?ms)^\s*runtime_image_counts_jq='(?<filter>.*?)^\s*'\s*$")
+        $filterMatch.Success | Should -BeTrue
+        $filter = $filterMatch.Groups['filter'].Value
+
+        foreach ($invalidJson in @(
+            '{"runtimes":[]}',
+            'null',
+            '{"runtime":{}}',
+            '{bad'
+        )) {
+            $null = $invalidJson | & jq -er $filter 2>$null
+
+            $LASTEXITCODE | Should -Not -Be 0
+        }
+
+        $provisionContent | Should -Match 'if ! RUNTIME_COUNTS=\$\(get_runtime_image_counts\); then'
+        $provisionContent | Should -Not -Match 'READY_COUNT=.*\|\| echo 0'
+    }
+}
+
 Describe 'Copilot token usage helpers' {
     It 'normalizes known token fields while preserving raw token field paths' {
         $usage = [pscustomobject]@{

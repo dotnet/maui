@@ -185,6 +185,36 @@ steps:
           DOWNLOAD_ARGS="-downloadPlatform iOS"
         fi
 
+        # `simctl runtime list --json` reports disk images (including stuck
+        # "(Deleting)" images), unlike `simctl list runtimes -j`, which reports
+        # only enrolled runtimes. Xcode 26 returns an object keyed by image UUID;
+        # normalize it to an explicit array while retaining compatibility with
+        # array-shaped output. Reject missing or malformed state data instead of
+        # misreporting a healthy or wedged agent.
+        runtime_image_counts_jq='
+          def runtime_images:
+            if type == "array" then .
+            elif type == "object" then [.[]]
+            else error("unexpected simctl runtime list JSON root")
+            end;
+          runtime_images
+          | if all(.[]; (type == "object") and ((.state? | type) == "string")) then .
+            else error("unexpected simctl runtime list JSON entries")
+            end
+          | [length, map(select(.state == "Ready")) | length]
+          | @tsv
+        '
+        get_runtime_image_counts() {
+          local runtime_json
+          runtime_json=$(xcrun simctl runtime list --json 2>/dev/null) || return 1
+          printf '%s\n' "$runtime_json" | jq -er "$runtime_image_counts_jq"
+        }
+        get_runtime_image_count() {
+          local counts
+          counts=$(get_runtime_image_counts) || return 1
+          printf '%s\n' "${counts%%$'\t'*}"
+        }
+
         RC=0
         sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
         if [[ "$RC" != "0" ]]; then
@@ -255,7 +285,11 @@ steps:
           # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
           for i in $(seq 1 60); do
             sleep 1
-            C=$(xcrun simctl runtime list -j | jq '. | length')
+            if ! C=$(get_runtime_image_count); then
+              C=unknown
+              echo "Unable to parse simulator runtime image JSON; treating the drain as incomplete."
+              break
+            fi
             if [[ $C == 0 ]]; then
               break
             fi
@@ -270,7 +304,11 @@ steps:
             sudo xcrun simctl runtime delete all 2>/dev/null || true
             for i in $(seq 1 30); do
               sleep 1
-              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if ! C=$(get_runtime_image_count); then
+                C=unknown
+                echo "Unable to parse simulator runtime image JSON; treating the drain as incomplete."
+                break
+              fi
               if [[ $C == 0 ]]; then
                 break
               fi
@@ -339,7 +377,11 @@ steps:
             sudo xcrun simctl runtime delete all
             for i in $(seq 1 60); do
               sleep 1
-              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if ! C=$(get_runtime_image_count); then
+                C=unknown
+                echo "Unable to parse simulator runtime image JSON; treating the drain as incomplete."
+                break
+              fi
               if [[ $C == 0 ]]; then
                 break
               fi
@@ -348,7 +390,10 @@ steps:
               force_unmount_sim_runtime_volumes
               sudo xcrun simctl runtime delete all 2>/dev/null || true
               sleep 3
-              C=$(xcrun simctl runtime list -j | jq '. | length' 2>/dev/null || echo 0)
+              if ! C=$(get_runtime_image_count); then
+                C=unknown
+                echo "Unable to parse simulator runtime image JSON; treating the drain as incomplete."
+              fi
             fi
             # From the 2nd attempt on, ALWAYS purge the on-disk image store before re-downloading
             # (not only when the drain fails): a runtime can drain from `runtime list` yet leave
@@ -364,13 +409,16 @@ steps:
         # Verify the simulator runtime was actually installed
         echo "Verifying simulator runtimes..."
         xcrun simctl runtime list
-        RUNTIME_COUNT=$(xcrun simctl runtime list -j | jq '. | length')
+        if ! RUNTIME_COUNTS=$(get_runtime_image_counts); then
+          echo "##vso[task.logissue type=error]Unable to parse simulator runtime image JSON after download attempt"
+          exit 1
+        fi
+        IFS=$'\t' read -r RUNTIME_COUNT READY_COUNT <<< "$RUNTIME_COUNTS"
         # Count only create-usable ("Ready") images. Images stuck in "(Deleting)" (or any
         # non-"Ready" state) are NOT usable — `simctl create` fails "Invalid runtime" on them —
         # so they must not be reported as a successful install. They previously inflated the
         # count to a false "Found N simulator runtime(s)", masking a wedged agent whose iOS sim
         # boot then silently degraded the maui-copilot gate to INCONCLUSIVE (PR #35706 14697148).
-        READY_COUNT=$(xcrun simctl runtime list -j | jq '[.[] | select(.state=="Ready")] | length' 2>/dev/null || echo 0)
         if [[ "$RUNTIME_COUNT" == "0" ]]; then
           echo "##vso[task.logissue type=error]No simulator runtimes installed after download attempt"
           exit 1
