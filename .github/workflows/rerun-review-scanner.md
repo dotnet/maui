@@ -352,6 +352,38 @@ safe-outputs:
                 }
               }
 
+              async function validateCommentlessTrigger(action) {
+                if (action.rerunCommentId && action.rerunCommentId > 0) {
+                  return true;
+                }
+
+                let livePr;
+                try {
+                  const response = await github.rest.pulls.get({
+                    owner,
+                    repo,
+                    pull_number: action.prNumber,
+                  });
+                  livePr = response.data;
+                } catch (e) {
+                  throw new Error(`Failed to revalidate autonomous trigger for PR #${action.prNumber}: ${e.message}`);
+                }
+
+                if (livePr.state !== 'open') {
+                  core.info(`Skip: autonomous trigger PR #${action.prNumber} is no longer open.`);
+                  return false;
+                }
+                if (livePr.draft) {
+                  core.info(`Skip: autonomous trigger PR #${action.prNumber} became draft before dispatch.`);
+                  return false;
+                }
+                if (!livePr.head || livePr.head.sha !== action.headSha) {
+                  core.info(`Skip: autonomous trigger PR #${action.prNumber} head changed before dispatch; leaving ${readyLabel} for re-evaluation.`);
+                  return false;
+                }
+                return true;
+              }
+
               for (const a of actions) {
                 const prNumber = a.prNumber;
                 try {
@@ -359,9 +391,13 @@ safe-outputs:
                     if (dryRun) {
                       core.info(`[dry-run] Would dispatch review-trigger.yml for PR #${prNumber} (platform=${a.platform}, pipeline_ref=${a.pipelineRef})`);
                     } else {
+                      if (!(await validateCommentlessTrigger(a))) { continue; }
                       // A previous semantic skip must not suppress recovery if this
                       // dispatch or the downstream review fails before posting a summary.
                       await clearDeclined(prNumber);
+                      // Re-read again immediately before dispatch so a draft/head
+                      // transition racing the advisory cleanup cannot use stale state.
+                      if (!(await validateCommentlessTrigger(a))) { continue; }
                       await github.rest.actions.createWorkflowDispatch({
                         owner, repo,
                         workflow_id: 'review-trigger.yml',

@@ -8,12 +8,9 @@ on:
     types: [opened, synchronize]
     paths:
       - '.github/workflows/pr-review-queue.yml'
-      - '.github/workflows/rerun-review-scanner.md'
+      - '.github/workflows/rerun-review-scanner.*'
       - '.github/skills/find-reviewable-pr/**'
-      - '.github/scripts/Query-AutoRerunCandidates.ps1'
-      - '.github/scripts/RerunReviewScanner.Tests.mjs'
-      - '.github/scripts/Resolve-RerunEligibility.ps1'
-      - '.github/scripts/shared/Update-AgentLabels.ps1'
+      - '.github/scripts/**'
 
 permissions:
   contents: read

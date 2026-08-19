@@ -170,6 +170,42 @@ Context 'bounded scan metadata' {
         }
     }
 
+    It 'triggers validation for every parsed and executed validation file' {
+        $workflow = Get-Content -Raw -LiteralPath $workflowPath
+        $pathBlock = [regex]::Match(
+            $workflow,
+            '(?s)    paths:\s*(?<block>.*?)(?=\r?\n\r?\npermissions:)'
+        ).Groups['block'].Value
+        $triggerPatterns = @([regex]::Matches($pathBlock, "- '([^']+)'") | ForEach-Object {
+            $_.Groups[1].Value
+        })
+
+        $validationTargets = [System.Collections.Generic.List[string]]::new()
+        foreach ($assignmentPattern in @(
+            '\$parseTargets = @\((?<block>.*?)\)',
+            '\$config\.Run\.Path = @\((?<block>.*?)\)'
+        )) {
+            $block = [regex]::Match($workflow, $assignmentPattern, 'Singleline').Groups['block'].Value
+            foreach ($match in [regex]::Matches($block, "'([^']+)'")) {
+                $validationTargets.Add($match.Groups[1].Value)
+            }
+        }
+        $nodeTest = [regex]::Match($workflow, "node --test '([^']+)'").Groups[1].Value
+        $validationTargets.Add($nodeTest)
+        $validationTargets.Add('.github/workflows/pr-review-queue.yml')
+        $validationTargets.Add('.github/workflows/rerun-review-scanner.md')
+        $validationTargets.Add('.github/workflows/rerun-review-scanner.lock.yml')
+
+        foreach ($target in $validationTargets | Sort-Object -Unique) {
+            $matched = @($triggerPatterns | Where-Object {
+                $escapedPattern = [regex]::Escape($_)
+                $globRegex = '^' + $escapedPattern.Replace('\*\*', '.*').Replace('\*', '[^/]*') + '$'
+                $target -match $globRegex
+            }).Count -gt 0
+            $matched | Should -BeTrue -Because "$target is part of validation and must trigger this workflow"
+        }
+    }
+
     It 'keeps the scheduled queue job at pull-request read permission' {
         $workflow = Get-Content -Raw -LiteralPath $workflowPath
         $generateJob = [regex]::Match($workflow, '(?s)  generate-report:.*?^  validate:', 'Multiline').Value
@@ -637,7 +673,7 @@ Context 'scanner decline checkpoint' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
         $clearDeclined = [regex]::Match(
             $scanner,
-            '(?s)async function clearDeclined\(prNumber\).*?\n\s+for \(const a of actions\)'
+            '(?s)async function clearDeclined\(prNumber\).*?async function validateCommentlessTrigger'
         ).Value
 
         $clearDeclined | Should -Match 'core\.warning'

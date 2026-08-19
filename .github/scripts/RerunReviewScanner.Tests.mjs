@@ -52,7 +52,7 @@ function getGeneratedScannerScript() {
   return generatedScript;
 }
 
-function createAction(prNumber) {
+function createAction(prNumber, overrides = {}) {
   return {
     prNumber,
     decision: 'skip',
@@ -60,6 +60,7 @@ function createAction(prNumber) {
     activityCheckpoint: 1780219800000 + prNumber,
     activityKey: String(prNumber).repeat(64).slice(0, 64),
     rerunCommentId: 0,
+    ...overrides,
   };
 }
 
@@ -189,7 +190,16 @@ async function executeGeneratedScanner({
       pulls: {
         get: async args => {
           events.push(`getPull:${args.pull_number}`);
-          return { data: { head: { sha: headByPR.get(args.pull_number) } } };
+          if (hooks.getPull) {
+            return hooks.getPull(args);
+          }
+          return {
+            data: {
+              state: 'open',
+              draft: false,
+              head: { sha: headByPR.get(args.pull_number) },
+            },
+          };
         },
       },
       reactions: {
@@ -277,4 +287,83 @@ test('markDeclined failures remain visible while unrelated PR actions continue',
   assert.ok(result.events.includes(`removeLabel:4:${readyLabel}`));
   assert.match(result.messages.errors.join('\n'), /Failed to process PR #3/);
   assert.deepEqual(result.messages.failures, ['One or more rerun decisions failed to dispatch.']);
+});
+
+test('comment-less autonomous trigger skips when the PR becomes draft before dispatch', async () => {
+  const action = createAction(5, {
+    decision: 'trigger',
+    platform: 'android',
+    pipelineRef: 'main',
+  });
+  const result = await executeGeneratedScanner({
+    actions: [action],
+    hooks: {
+      getPull: async () => ({
+        data: {
+          state: 'open',
+          draft: true,
+          head: { sha: action.headSha },
+        },
+      }),
+    },
+  });
+
+  assert.ok(result.events.includes('getPull:5'));
+  assert.ok(!result.events.includes('dispatch:5'));
+  assert.ok(!result.events.includes(`removeLabel:5:${declinedLabel.name}`));
+  assert.match(result.messages.info.join('\n'), /became draft before dispatch/);
+  assert.deepEqual(result.messages.failures, []);
+});
+
+test('comment-less autonomous trigger skips when the head changes before dispatch', async () => {
+  const action = createAction(6, {
+    decision: 'trigger',
+    platform: 'android',
+    pipelineRef: 'main',
+  });
+  let liveReads = 0;
+  const result = await executeGeneratedScanner({
+    actions: [action],
+    hooks: {
+      getPull: async () => {
+        liveReads += 1;
+        return {
+          data: {
+            state: 'open',
+            draft: false,
+            head: { sha: liveReads === 1 ? action.headSha : 'f'.repeat(40) },
+          },
+        };
+      },
+    },
+  });
+
+  assert.equal(liveReads, 2);
+  assert.ok(result.events.includes(`removeLabel:6:${declinedLabel.name}`));
+  assert.ok(!result.events.includes('dispatch:6'));
+  assert.match(result.messages.info.join('\n'), /head changed before dispatch/);
+  assert.deepEqual(result.messages.failures, []);
+});
+
+test('comment-based trigger preserves its authenticated dispatch flow', async () => {
+  const action = createAction(7, {
+    decision: 'trigger',
+    platform: 'ios',
+    pipelineRef: 'main',
+    rerunCommentId: 42,
+  });
+  const result = await executeGeneratedScanner({
+    actions: [action],
+    hooks: {
+      getPull: async () => {
+        throw new Error('comment-based triggers must not use autonomous revalidation');
+      },
+    },
+  });
+
+  assert.ok(!result.events.includes('getPull:7'));
+  assert.ok(result.events.includes(`removeLabel:7:${declinedLabel.name}`));
+  assert.ok(result.events.includes('dispatch:7'));
+  assert.ok(result.events.includes('reaction:42'));
+  assert.deepEqual(result.messages.failures, []);
 });
