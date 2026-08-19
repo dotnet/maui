@@ -326,11 +326,26 @@ stages:
               $ErrorActionPreference = 'Stop'
               . "$(Build.SourcesDirectory)/.github/scripts/shared/Assert-ReplicationGitHubCredential.ps1"
 
-              $login = Assert-ReplicationGitHubCredential `
-                -Token $env:GH_TOKEN `
-                -TokenVariableName 'GH_COMMENT_TOKEN'
+              try {
+                $login = Assert-ReplicationGitHubCredential `
+                  -Token $env:GH_TOKEN `
+                  -TokenVariableName 'GH_COMMENT_TOKEN'
 
-              Write-Host "GitHub credential accepted for '$login'."
+                Write-Host "GitHub credential accepted for '$login'."
+              } catch {
+                # Tag the run so an expired secret is visible on the pipeline
+                # summary. Every mode shares this credential, so when it dies
+                # the whole definition fills with red runs whose cause is only
+                # readable by opening a log.
+                $message = [string]$_.Exception.Message
+                if ($message -match 'rotated') {
+                  Write-Host "##vso[build.addbuildtag]credential-expired"
+                } elseif ($message -match 'rate limited') {
+                  Write-Host "##vso[build.addbuildtag]github-rate-limited"
+                }
+
+                throw
+              }
             displayName: 'Verify the GitHub credential before provisioning'
             condition: >-
               and(succeeded(),

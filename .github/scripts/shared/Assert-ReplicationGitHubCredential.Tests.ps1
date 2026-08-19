@@ -251,4 +251,21 @@ Describe 'Replication credential pre-flight wiring' {
         $window = $script:Pipeline.Substring($probeIndex, 700)
         $window | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
     }
+
+    It 'tags the run so an expired secret is visible on the summary' {
+        # Every mode shares this credential. When it dies the definition fills
+        # with red runs whose cause is only readable by opening a log.
+        $probeIndex = $script:Pipeline.IndexOf('Verify the GitHub credential')
+        $window = $script:Pipeline.Substring($probeIndex - 1400, 1400)
+        $window | Should -Match 'build\.addbuildtag\]credential-expired'
+        $window | Should -Match 'build\.addbuildtag\]github-rate-limited'
+    }
+
+    It 'still fails the run after tagging it' {
+        $probeIndex = $script:Pipeline.IndexOf('Verify the GitHub credential')
+        $window = $script:Pipeline.Substring($probeIndex - 1400, 1400)
+        $tagIndex = $window.IndexOf('credential-expired')
+        $throwIndex = $window.LastIndexOf('throw')
+        $throwIndex | Should -BeGreaterThan $tagIndex
+    }
 }
