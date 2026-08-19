@@ -42,6 +42,7 @@ param(
 
     [ValidateRange(1, 8)]
     [int]$MaxTestAttempts = 5,
+    [int]$MaxTestBuildRepairs = 4,
 
     # A reproduction proved by a single execution is not evidence of a
     # deterministic defect, so the verified test is executed more than once.
@@ -577,6 +578,51 @@ function Get-ReplicationCompilerDiagnostics {
     }
 
     return ($diagnostics -join '; ')
+}
+
+function Test-ReplicationTestBuildFailure {
+    <#
+        .SYNOPSIS
+        Reports whether a verification round failed before the test ever ran.
+
+        .DESCRIPTION
+        A test that did not compile observed nothing about the reported issue.
+        Charging it against the verification budget threw away device work that
+        had already reproduced the defect: run 15014606 spent all five attempts
+        on code that never built, and 15014604 spent four of five.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$FailureSummary
+    )
+
+    $text = [string]$FailureSummary
+    if (-not $text) {
+        return $false
+    }
+    return [bool]($text -match '(?i)never ran because the build failed|failed for build or infrastructure reasons|\berror CS\d+\b|\bMSB\d+\b')
+}
+
+function Test-ReplicationRefundsTestAttempt {
+    <#
+        .SYNOPSIS
+        Decides whether a failed verification round should be charged.
+
+        .DESCRIPTION
+        A round that never compiled observed nothing about the reported issue,
+        so it is refunded rather than spending an attempt that completed device
+        work already paid for. The refund is bounded so a test that can never
+        build still terminates the run.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$FailureSummary,
+        [int]$BuildRepairRounds,
+        [int]$MaximumBuildRepairs
+    )
+
+    if ($BuildRepairRounds -ge $MaximumBuildRepairs) {
+        return $false
+    }
+    return (Test-ReplicationTestBuildFailure $FailureSummary)
 }
 
 function Get-ReplicationVerificationFailureSummary {
@@ -1691,6 +1737,18 @@ function ConvertTo-BoundedAgentLine {
         throw "$Description must be a string."
     }
     $line = [string]$Value
+    # Length is a presentation bound, not a correctness rule. Runs 15014917 and
+    # 15014925 threw away completed work because a descriptive field was 15 and
+    # 13 characters over its limit, and every observed overage has been under a
+    # tenth of the bound. Trim a small overage to the limit and let the rules
+    # below judge the result; a large overage still fails, because a field that
+    # far outside its shape is not a near miss.
+    if ($line.Length -gt $MaximumLength -and
+        $line.Length -le [int][Math]::Ceiling($MaximumLength * 1.25)) {
+        $line = $line.Substring(0, $MaximumLength).TrimEnd()
+        Write-Host ("{0} was {1} characters and was trimmed to the {2}-character limit." -f
+            $Description, ([string]$Value).Length, $MaximumLength)
+    }
     # "empty, untrimmed, unsafe, or exceeds its length limit" told the agent
     # nothing it could act on, so whole attempts were spent guessing which
     # rule a single line had broken. Name the rule and show the line.
@@ -3634,7 +3692,10 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
         $repairFailureSummary = ''
 
+        $buildRepairRounds = 0
+        $verificationRound = 0
         for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
+            $verificationRound++
             $testAttempts = $attempt
             $phase = if ($attempt -eq 1) { 'test' } else { 'repair' }
             $failureSummary = $repairFailureSummary
@@ -3699,7 +3760,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 Invoke-LoggedChildProcess `
                     -ScriptPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') `
                     -Arguments $verificationArgs `
-                    -LogPath (Join-Path $sandboxArtifactDir "verification-wrapper-attempt-$attempt.log") `
+                    -LogPath (Join-Path $sandboxArtifactDir "verification-wrapper-attempt-$verificationRound.log") `
                     -Description 'Verifying the targeted reproduction test' `
                     -TimeoutSeconds (5400 + (1800 * ($VerificationRunCount - 1)))
                 break
@@ -3713,7 +3774,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                     # build log records only that verification failed, and a run
                     # that repeats one mistake looks identical to one that does
                     # not, which made run 15009971 unreadable after the fact.
-                    Write-Host "Verification diagnosis for attempt ${attempt}: $verificationDiagnosis"
+                    Write-Host "Verification diagnosis for attempt ${verificationRound}: $verificationDiagnosis"
                     if ($verificationDiagnosis -match 'instead of the declared expectedFailureSignature') {
                         $script:SignatureMismatchAttempts++
                         if ($script:SignatureMismatchAttempts -ge 2) {
@@ -3743,12 +3804,25 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                     Write-Host ("The {0} tier produced a passing test twice; re-planning at a tier that can observe the recorded reproduction." -f
                         $plannedTestProposal.testType)
                 }
+                elseif (Test-ReplicationRefundsTestAttempt `
+                        -FailureSummary $repairFailureSummary `
+                        -BuildRepairRounds $buildRepairRounds `
+                        -MaximumBuildRepairs $MaxTestBuildRepairs) {
+                    # Compiler diagnostics are exact, local and cheap to act
+                    # on, and the round produced no evidence about the issue,
+                    # so it gets its own bounded allowance instead of spending
+                    # a verification attempt that device work already paid for.
+                    $buildRepairRounds++
+                    Write-Host ("Build repair {0}/{1}: attempt {2} did not compile, so it does not consume a verification attempt." -f
+                        $buildRepairRounds, $MaxTestBuildRepairs, $attempt)
+                    $attempt--
+                }
                 elseif ($attempt -eq $MaxTestAttempts) {
                     throw
                 }
             }
             finally {
-                Copy-VerificationDiagnostics -Attempt $attempt
+                Copy-VerificationDiagnostics -Attempt $verificationRound
                 Restore-TrackedVerificationSideEffects -PreservedFiles $generatedFiles
             }
             if ($escalateTestTier) {

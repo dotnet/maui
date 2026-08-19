@@ -73,6 +73,8 @@ BeforeAll {
         'Get-ReplicationAbortExitPattern',
         'Get-ReplicationPlanVerdictPattern',
         'Test-ReplicationAppTerminated',
+        'Test-ReplicationTestBuildFailure',
+        'Test-ReplicationRefundsTestAttempt',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationExistingIssueTestPaths',
@@ -2109,7 +2111,7 @@ InitializeComponent();
 
     It 'stores verifier wrapper logs outside the strict verification contract' {
         $script:Source |
-            Should -Match 'sandboxArtifactDir "verification-wrapper-attempt-\$attempt\.log"'
+            Should -Match 'sandboxArtifactDir "verification-wrapper-attempt-\$verificationRound\.log"'
         $script:Source |
             Should -Not -Match 'verificationDir "wrapper-attempt-\$attempt\.log"'
     }
@@ -2360,7 +2362,7 @@ exit 0
         $script:Source | Should -Match '\$files\.Count -gt 64'
         $script:Source | Should -Match '\$totalBytes -gt 8MB'
         $script:Source |
-            Should -Match 'finally\s*\{\s*Copy-VerificationDiagnostics -Attempt \$attempt\s*Restore-TrackedVerificationSideEffects'
+            Should -Match 'finally\s*\{\s*Copy-VerificationDiagnostics -Attempt \$verificationRound\s*Restore-TrackedVerificationSideEffects'
     }
 
     It 'allows source-safety, host, compile, and empirical repairs within the bounded Sandbox loop' {
@@ -4929,5 +4931,82 @@ Describe 'an abort exit code is not always a crash' {
 
         Get-ReplicationAppTermination -LogPath $log |
             Should -Match 'aborted \(SIGABRT\)'
+    }
+}
+
+Describe 'a test that never compiled is not a verification attempt' {
+    It 'recognises the build failures the verifier actually reports' {
+        # The exact wording seen across runs 15014597, 15014604, 15014606,
+        # 15014607 and 15014610.
+        Test-ReplicationTestBuildFailure 'The test never ran because the build failed. Fix these compiler diagnostics: CS0104:' |
+            Should -BeTrue
+        Test-ReplicationTestBuildFailure 'The test did not run: it failed for build or infrastructure reasons rather than the reported behavior.' |
+            Should -BeTrue
+        Test-ReplicationTestBuildFailure 'error CS8602: Dereference of a possibly null reference' |
+            Should -BeTrue
+    }
+
+    It 'does not treat a real verification verdict as a build failure' {
+        # These rounds did observe the issue, so they must still be charged.
+        Test-ReplicationTestBuildFailure "The test failed, but with 'Assertion timed out' instead of the declared expectedFailureSignature." |
+            Should -BeFalse
+        Test-ReplicationTestBuildFailure 'The test passed, so it does not reproduce the issue.' |
+            Should -BeFalse
+        Test-ReplicationTestBuildFailure '' | Should -BeFalse
+    }
+
+    It 'refunds a non-compiling round so device work is not thrown away' {
+        # Run 15014606 spent all five attempts on code that never built.
+        Test-ReplicationRefundsTestAttempt `
+            -FailureSummary 'The test never ran because the build failed. Fix these compiler diagnostics: CS0104:' `
+            -BuildRepairRounds 0 -MaximumBuildRepairs 4 | Should -BeTrue
+    }
+
+    It 'stops refunding at the bound so a never-building test still ends the run' {
+        Test-ReplicationRefundsTestAttempt `
+            -FailureSummary 'The test never ran because the build failed.' `
+            -BuildRepairRounds 4 -MaximumBuildRepairs 4 | Should -BeFalse
+    }
+
+    It 'always charges a round that actually observed the issue' {
+        Test-ReplicationRefundsTestAttempt `
+            -FailureSummary 'The test passed, so it does not reproduce the issue.' `
+            -BuildRepairRounds 0 -MaximumBuildRepairs 4 | Should -BeFalse
+    }
+
+    It 'wires the refund into the verification loop' {
+        $script:Source.Contains('elseif (Test-ReplicationRefundsTestAttempt `') | Should -BeTrue
+        # The refund is what makes the round free; without it the decision is inert.
+        $script:Source | Should -Match '(?s)MaximumBuildRepairs \$MaxTestBuildRepairs\) \{.{0,700}?\$attempt--'
+        # Artifact names must stay unique even when the attempt number repeats.
+        $script:Source.Contains('"verification-wrapper-attempt-$verificationRound.log"') |
+            Should -BeTrue
+    }
+}
+
+Describe 'a near-miss length does not discard completed work' {
+    It 'trims a small overage instead of failing the run' {
+        # Run 15014917 lost a completed attempt to 2015 characters against a
+        # 2000 limit, and 15014925 to 313 against 300.
+        $value = 'a' * 2015
+
+        $result = ConvertTo-BoundedAgentLine -Value $value -Description 'Reported issue trigger' -MaximumLength 2000
+
+        $result.Length | Should -Be 2000
+    }
+
+    It 'still rejects a value far outside its shape' {
+        $value = 'a' * 4000
+
+        { ConvertTo-BoundedAgentLine -Value $value -Description 'Reported issue trigger' -MaximumLength 2000 } |
+            Should -Throw -ExpectedMessage '*4000 characters and the limit is 2000*'
+    }
+
+    It 'keeps judging every other rule after trimming' {
+        # Trimming must not become a way to smuggle a disallowed value through.
+        $value = 'https://example.com/' + ('a' * 2000)
+
+        { ConvertTo-BoundedAgentLine -Value $value -Description 'Reported issue trigger' -MaximumLength 2000 } |
+            Should -Throw -ExpectedMessage '*URL*'
     }
 }
