@@ -143,7 +143,12 @@ function Get-LatestScannerDecline {
         }
     } | Sort-Object @{ Expression = { $_.DeclinedAt }; Descending = $true }, @{ Expression = { $_.CommentId }; Descending = $true })
 
-    return @($markers | Select-Object -First 1)
+    if ($markers.Count -eq 0) {
+        return $null
+    }
+
+    # Callers dereference DeclinedAt and HeadSha directly.
+    return $markers[0]
 }
 
 function Invoke-AutoRerunCandidateScan {

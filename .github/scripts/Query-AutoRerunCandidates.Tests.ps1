@@ -203,6 +203,46 @@ Context 'API request bounding' {
     }
 }
 
+Context 'scanner decline marker contract' {
+    It 'returns null when no trusted scanner marker exists' {
+        $comments = @(
+            ConvertTo-RerunActivityItem `
+                -Item (New-DeclineMarkerComment `
+                    -Id 1 `
+                    -CreatedAt '2026-05-31T10:00:00Z' `
+                    -HeadSha '1111111111111111111111111111111111111111' `
+                    -Login 'untrusted-user') `
+                -Kind 'issue-comment'
+        )
+
+        Get-LatestScannerDecline -Comments $comments | Should -BeNullOrEmpty
+    }
+
+    It 'returns the newest trusted marker as one scalar object' {
+        $comments = @(
+            ConvertTo-RerunActivityItem `
+                -Item (New-DeclineMarkerComment `
+                    -Id 1 `
+                    -CreatedAt '2026-05-31T09:00:00Z' `
+                    -HeadSha '1111111111111111111111111111111111111111') `
+                -Kind 'issue-comment'
+            ConvertTo-RerunActivityItem `
+                -Item (New-DeclineMarkerComment `
+                    -Id 2 `
+                    -CreatedAt '2026-05-31T10:00:00Z' `
+                    -HeadSha '2222222222222222222222222222222222222222') `
+                -Kind 'issue-comment'
+        )
+
+        $result = Get-LatestScannerDecline -Comments $comments
+
+        $result -is [array] | Should -BeFalse
+        $result.CommentId | Should -Be 2
+        $result.HeadSha | Should -Be '2222222222222222222222222222222222222222'
+        $result.DeclinedAt | Should -Be ([DateTimeOffset]::Parse('2026-05-31T10:00:00Z'))
+    }
+}
+
 Context 'error aggregation' {
     It 'fails when the open PR query fails' {
         $script:prListFailure = $true
