@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
@@ -43,6 +44,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		TabFocusNavigation = KeyboardNavigationMode.Once;
+		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
@@ -273,8 +276,16 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	static void UpdateAutomationSetProperties(ItemsRepeater repeater, UIElement element, int index)
 	{
-		if (index < 0 || index >= repeater.ItemsSourceView.Count ||
-			!IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index)))
+		var isDataItem = index >= 0 && index < repeater.ItemsSourceView.Count &&
+			IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index));
+
+		if (element is ItemContainer container)
+		{
+			container.IsTabStop = isDataItem;
+			container.TabFocusNavigation = KeyboardNavigationMode.Local;
+		}
+
+		if (!isDataItem)
 		{
 			element.ClearValue(WAutomationProperties.PositionInSetProperty);
 			element.ClearValue(WAutomationProperties.SizeOfSetProperty);

@@ -1,0 +1,113 @@
+<ContentPage x:Class="Maui.Controls.Sample.TabNavigationTestPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:TabNavigationTestPage"
+             Title="Tab Navigation">
+
+    <ContentPage.Resources>
+        <DataTemplate x:Key="StandardItemTemplate"
+                      x:DataType="local:TabTestItem">
+            <Grid Padding="14,10"
+                  ColumnDefinitions="Auto,*"
+                  ColumnSpacing="10"
+                  MinimumWidthRequest="140"
+                  SemanticProperties.Description="{Binding Name}">
+                <Border WidthRequest="28"
+                        HeightRequest="28"
+                        StrokeThickness="0"
+                        BackgroundColor="{Binding Color}">
+                    <Label Text="{Binding Number}"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"
+                           TextColor="White" />
+                </Border>
+                <Label Grid.Column="1"
+                       Text="{Binding Name}"
+                       VerticalOptions="Center" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="InteractiveItemTemplate"
+                      x:DataType="local:TabTestItem">
+            <Grid Padding="10,6"
+                  ColumnDefinitions="Auto,*,Auto,Auto"
+                  ColumnSpacing="8">
+                <CheckBox AutomationId="{Binding Number, StringFormat='Item{0}CheckBox'}" />
+                <Entry Grid.Column="1"
+                       AutomationId="{Binding Number, StringFormat='Item{0}Entry'}"
+                       Text="{Binding Name, Mode=OneWay}" />
+                <Button Grid.Column="2"
+                        AutomationId="{Binding Number, StringFormat='Item{0}Button'}"
+                        Text="Action" />
+                <Label Grid.Column="3"
+                       Text="{Binding Number, StringFormat='Row {0}'}"
+                       VerticalOptions="Center" />
+            </Grid>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto"
+          Padding="16"
+          RowSpacing="12">
+        <Grid ColumnDefinitions="2*,Auto,Auto"
+              ColumnSpacing="12">
+            <Picker x:Name="ScenarioPicker"
+                    Title="Scenario"
+                    ItemsSource="{Binding ScenarioNames}"
+                    SelectedIndexChanged="OnScenarioChanged" />
+
+            <VerticalStackLayout Grid.Column="1"
+                                 Spacing="2">
+                <Label Text="Span" />
+                <Stepper x:Name="SpanStepper"
+                         Minimum="1"
+                         Maximum="6"
+                         Increment="1"
+                         Value="2"
+                         ValueChanged="OnSpanChanged" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="2"
+                                 Spacing="2">
+                <Label Text="Sizing" />
+                <Picker x:Name="SizingPicker"
+                        WidthRequest="150"
+                        ItemsSource="{Binding SizingStrategies}"
+                        SelectedIndexChanged="OnSizingChanged" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="12">
+            <Button AutomationId="BeforeCollectionButton"
+                    Text="Before collection" />
+            <Label Grid.Column="1"
+                   Text="{Binding StatusText}"
+                   VerticalOptions="Center" />
+            <Button Grid.Column="2"
+                    AutomationId="ResetButton"
+                    Text="Reset"
+                    Clicked="OnResetClicked" />
+        </Grid>
+
+        <CollectionView x:Name="TestCollection"
+                        Grid.Row="2"
+                        AutomationId="TabNavigationCollection"
+                        ItemTemplate="{StaticResource StandardItemTemplate}"
+                        SelectionChanged="OnSelectionChanged">
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate x:DataType="local:TabTestGroup">
+                    <Label Padding="10,6"
+                           FontAttributes="Bold"
+                           Text="{Binding Name}" />
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="3"
+                AutomationId="AfterCollectionButton"
+                Text="After collection" />
+    </Grid>
+</ContentPage>

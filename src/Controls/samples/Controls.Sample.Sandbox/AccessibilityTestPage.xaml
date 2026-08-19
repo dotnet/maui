@@ -1,0 +1,80 @@
+<ContentPage x:Class="Maui.Controls.Sample.AccessibilityTestPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:AccessibilityTestPage"
+             Title="Accessibility">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto"
+          Padding="16"
+          RowSpacing="12">
+          <Grid ColumnDefinitions="Auto,*"
+                  ColumnSpacing="12">
+                <Label Text="Scenario"
+                         VerticalOptions="Center" />
+                <Picker x:Name="ScenarioPicker"
+                          Grid.Column="1"
+                          AutomationId="AccessibilityScenarioPicker"
+                          ItemsSource="{Binding ScenarioNames}"
+                          SelectedIndexChanged="OnScenarioChanged" />
+          </Grid>
+
+          <Grid Grid.Row="1"
+                  ColumnDefinitions="Auto,Auto,Auto,*"
+              ColumnSpacing="8">
+            <Button AutomationId="AddAccessibilityItem"
+                    Text="Add"
+                    Clicked="OnAddClicked" />
+            <Button Grid.Column="1"
+                    AutomationId="RemoveAccessibilityItem"
+                    Text="Remove selected"
+                    Clicked="OnRemoveClicked" />
+            <Button Grid.Column="2"
+                    AutomationId="MoveAccessibilityItem"
+                    Text="Move selected down"
+                    Clicked="OnMoveClicked" />
+            <Label Grid.Column="3"
+                   Text="{Binding StatusText}"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <CollectionView x:Name="AccessibilityCollection"
+                        Grid.Row="2"
+                        AutomationId="AccessibilityCollection"
+                        SemanticProperties.Description="Accessibility test collection"
+                        SelectionMode="Single"
+                        ItemsSource="{Binding Items}"
+                        SelectionChanged="OnSelectionChanged">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:AccessibilityTestItem">
+                    <Grid Padding="16,12"
+                          ColumnDefinitions="Auto,*"
+                          ColumnSpacing="12"
+                                  MinimumWidthRequest="160"
+                          SemanticProperties.Description="{Binding AccessibleName}">
+                        <BoxView WidthRequest="10"
+                                 HeightRequest="10"
+                                 Color="CornflowerBlue"
+                                 VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{Binding VisibleText}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+                        <CollectionView.GroupHeaderTemplate>
+                                <DataTemplate x:DataType="local:AccessibilityTestGroup">
+                                        <Label Padding="12,8"
+                                                   FontAttributes="Bold"
+                                                   Text="{Binding Name}"
+                                                   SemanticProperties.HeadingLevel="Level2" />
+                                </DataTemplate>
+                        </CollectionView.GroupHeaderTemplate>
+        </CollectionView>
+
+                <Button Grid.Row="3"
+                AutomationId="AccessibilityAfterCollection"
+                Text="After accessibility collection" />
+    </Grid>
+</ContentPage>
