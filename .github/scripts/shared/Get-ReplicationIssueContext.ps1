@@ -1525,20 +1525,43 @@ function Get-ReplicationDeclaredPlatforms {
         Lists the platforms a report explicitly names for itself.
 
         .DESCRIPTION
-        Only an explicit declaration counts: a bracketed or colon-delimited tag
-        at the front of the title, or the template's affected-platforms answer.
-        A platform merely mentioned in passing ("inconsistent with Android and
-        iOS") is not a claim about where the defect lives.
+        Only an explicit declaration counts: a platform label applied during
+        triage, a bracketed or colon-delimited tag at the front of the title, or
+        the template's affected-platforms answer. A platform merely mentioned in
+        passing ("inconsistent with Android and iOS") is not a claim about where
+        the defect lives.
+
+        The labels are the most reliable of the three because a human applied
+        them while triaging. Issue 9567 carries platform/android, s/verified and
+        s/triaged and says nothing about a platform in its title, so reading
+        only the title let an iOS reproduction of an Android defect reach
+        review as pull request 225.
     #>
     param(
         [AllowEmptyString()][string]$Title,
-        [AllowEmptyString()][string]$AffectedPlatforms
+        [AllowEmptyString()][string]$AffectedPlatforms,
+        [string[]]$Labels = @()
     )
 
     $found = [Collections.Generic.List[string]]::new()
     $add = {
         param($name)
         if (-not $found.Contains($name)) { [void]$found.Add($name) }
+    }
+
+    $platformLabels = @{
+        'platform/android'     = 'android'
+        'platform/ios'         = 'ios'
+        'platform/maccatalyst' = 'catalyst'
+        'platform/macos'       = 'catalyst'
+        'platform/windows'     = 'windows'
+    }
+    foreach ($label in $Labels) {
+        # An exact label only. A label that merely contains one of these, such
+        # as an area label, is not a declaration about where the defect lives.
+        # The lookup is case-insensitive because a PowerShell hashtable is.
+        $key = ([string]$label).Trim()
+        if ($platformLabels.ContainsKey($key)) { & $add $platformLabels[$key] }
     }
 
     $tag = ''
@@ -1578,10 +1601,14 @@ function Get-ReplicationPlatformMismatch {
     param(
         [AllowEmptyString()][string]$Title,
         [AllowEmptyString()][string]$AffectedPlatforms,
+        [string[]]$Labels = @(),
         [Parameter(Mandatory)][string]$SelectedPlatform
     )
 
-    $declared = @(Get-ReplicationDeclaredPlatforms -Title $Title -AffectedPlatforms $AffectedPlatforms)
+    $declared = @(Get-ReplicationDeclaredPlatforms `
+            -Title $Title `
+            -AffectedPlatforms $AffectedPlatforms `
+            -Labels $Labels)
     if ($declared.Count -eq 0) {
         # A report that names no platform is a fair candidate anywhere.
         return ''
@@ -1845,6 +1872,7 @@ function Invoke-GetReplicationIssueContext {
             platformMismatch = (Get-ReplicationPlatformMismatch `
                 -Title $title `
                 -AffectedPlatforms ([string]$boundedSections['affectedPlatforms']) `
+                -Labels $labels `
                 -SelectedPlatform $selectedPlatform)
         }
         $agentContext = [ordered] @{

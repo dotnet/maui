@@ -520,6 +520,38 @@ Android
 }
 
 Describe 'Get-ReplicationPlatformMismatch' {
+    It 'records the label mismatch in the context the pipeline reads' {
+        # The pipeline stops a replicate run on context.platformMismatch before
+        # it provisions a device, so the label has to reach that field.
+        $body = @'
+### Description
+
+Selection fires late.
+
+### Steps to Reproduce
+
+Tap the item.
+'@
+        $fixture = Write-TestIssueJson -Body $body -Number 9567 -Title 'Selection fires after removal' -Labels @(
+            [ordered] @{ name = 't/bug' },
+            [ordered] @{ name = 'platform/android' })
+
+        $mismatchedOutput = Join-Path $TestDrive 'label-mismatch'
+        Invoke-GetReplicationIssueContext `
+            -IssueNumber 9567 `
+            -Platform ios `
+            -OutputDir $mismatchedOutput `
+            -IssueJsonPath $fixture | Out-Null
+        (Read-TestContext $mismatchedOutput).platformMismatch | Should -Match 'declares android'
+
+        $matchedOutput = Join-Path $TestDrive 'label-match'
+        Invoke-GetReplicationIssueContext `
+            -IssueNumber 9567 `
+            -Platform android `
+            -OutputDir $matchedOutput `
+            -IssueJsonPath $fixture | Out-Null
+        (Read-TestContext $matchedOutput).platformMismatch | Should -BeNullOrEmpty
+    }
     It 'refuses a platform the report excludes by its leading tag' {
         $result = Get-ReplicationPlatformMismatch `
             -Title '[Android][Regression] SwipeItem Text is vertically misaligned' `
@@ -594,6 +626,62 @@ Describe 'Get-ReplicationPlatformMismatch' {
             -SelectedPlatform 'ios' | Should -BeNullOrEmpty
         Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
             -SelectedPlatform 'windows' | Should -Match 'declares'
+    }
+
+    It 'reads the platform label a maintainer applied while triaging' {
+        # Issue 9567 says nothing about a platform in its title but carries
+        # platform/android, s/verified and s/triaged. Reading only the title let
+        # an iOS reproduction of an Android defect reach review as PR 225.
+        $title = 'CollectionView SelectionChanged fires after the item is removed'
+
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -Labels @('t/bug', 'platform/android', 's/verified') `
+            -SelectedPlatform 'android' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title $title -AffectedPlatforms '' `
+            -Labels @('t/bug', 'platform/android', 's/verified') `
+            -SelectedPlatform 'ios' | Should -Match 'declares android'
+    }
+
+    It 'treats both Mac labels as Mac Catalyst' {
+        foreach ($label in @('platform/maccatalyst', 'platform/macos')) {
+            Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+                -Labels @($label) -SelectedPlatform 'catalyst' | Should -BeNullOrEmpty
+            Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+                -Labels @($label) -SelectedPlatform 'android' | Should -Match 'declares catalyst'
+        }
+    }
+
+    It 'allows any platform among several labels' {
+        $labels = @('platform/android', 'platform/ios')
+
+        Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+            -Labels $labels -SelectedPlatform 'android' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+            -Labels $labels -SelectedPlatform 'ios' | Should -BeNullOrEmpty
+        Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+            -Labels $labels -SelectedPlatform 'windows' | Should -Match 'declares'
+    }
+
+    It 'leaves an unlabelled report a fair candidate anywhere' {
+        foreach ($platform in @('android', 'ios', 'catalyst', 'windows')) {
+            Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+                -Labels @('t/bug', 'area-controls-collectionview') `
+                -SelectedPlatform $platform | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'reads a platform label whatever its case or surrounding space' {
+        Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+            -Labels @(' Platform/Android ') `
+            -SelectedPlatform 'ios' | Should -Match 'declares android'
+    }
+
+    It 'does not read a platform out of a label that merely contains one' {
+        # Only the exact platform/<name> label is a declaration; a label that
+        # embeds one, or uses a different separator, is not.
+        Get-ReplicationPlatformMismatch -Title 'A defect' -AffectedPlatforms '' `
+            -Labels @('area-android-tooling', 'platform-android', 'no-platform/android') `
+            -SelectedPlatform 'ios' | Should -BeNullOrEmpty
     }
 
     It 'does not read a platform out of ordinary prose' {
