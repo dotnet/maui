@@ -683,6 +683,195 @@ Describe 'leak PR issue reference parsing' {
     }
 }
 
+Describe 'leak-fix safe-output provenance parsing' {
+    It 'accepts one visible canonical pair with supported indentation and newlines' -ForEach @(
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123"
+        }
+        @{
+            Body = "   Fixes #123   `n  Refs: dotnet/maui#123 "
+        }
+        @{
+            Body = "Fixes #123`r`nRefs: dotnet/maui#123`r`n"
+        }
+    ) {
+        Get-LeakFixProvenanceIssueNumber `
+            -Body $Body `
+            -Repository 'dotnet/maui' |
+            Should -Be 123
+    }
+
+    It 'ignores hidden duplicates when exactly one canonical pair is visible' {
+        $body = @'
+```markdown
+Fixes #123
+Refs: dotnet/maui#123
+```
+<!--
+Fixes #123
+Refs: dotnet/maui#123
+-->
+Fixes #123
+Refs: dotnet/maui#123
+'@
+
+        Get-LeakFixProvenanceIssueNumber `
+            -Body $body `
+            -Repository 'dotnet/maui' |
+            Should -Be 123
+    }
+
+    It 'does not accept provenance that exists only in inert Markdown' -ForEach @(
+        @{
+            Body = @'
+```powershell
+Fixes #123
+Refs: dotnet/maui#123
+```
+'@
+        }
+        @{
+            Body = @'
+<!--
+Fixes #123
+Refs: dotnet/maui#123
+-->
+'@
+        }
+        @{
+            Body = @'
+~~~markdown
+Fixes #123
+Refs: dotnet/maui#123
+~~~
+'@
+        }
+    ) {
+        {
+            Get-LeakFixProvenanceIssueNumber `
+                -Body $Body `
+                -Repository 'dotnet/maui'
+        } | Should -Throw '*exactly one visible canonical Fixes line*'
+    }
+
+    It 'rejects tab and four-space indentation at either contract line' -ForEach @(
+        @{
+            Body = "`tFixes #123`nRefs: dotnet/maui#123"
+            Message = '*canonical Fixes line*'
+        }
+        @{
+            Body = "    Fixes #123`nRefs: dotnet/maui#123"
+            Message = '*canonical Fixes line*'
+        }
+        @{
+            Body = "Fixes #123`n`tRefs: dotnet/maui#123"
+            Message = '*canonical Refs line*'
+        }
+        @{
+            Body = "Fixes #123`n    Refs: dotnet/maui#123"
+            Message = '*canonical Refs line*'
+        }
+    ) {
+        {
+            Get-LeakFixProvenanceIssueNumber `
+                -Body $Body `
+                -Repository 'dotnet/maui'
+        } | Should -Throw $Message
+    }
+
+    It 'fails closed when fence or HTML comment state is malformed or unclosed' -ForEach @(
+        @{
+            Body = @'
+Fixes #123
+Refs: dotnet/maui#123
+```text
+unfinished
+'@
+            Message = '*unclosed fenced code block*'
+        }
+        @{
+            Body = @'
+Fixes #123
+Refs: dotnet/maui#123
+<!-- unfinished
+'@
+            Message = '*unclosed HTML comment*'
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123`n--> stray closer"
+            Message = '*malformed HTML comment delimiter*'
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123`n<!-- outer <!-- nested -->"
+            Message = '*malformed nested HTML comment*'
+        }
+    ) {
+        {
+            Get-LeakFixProvenanceIssueNumber `
+                -Body $Body `
+                -Repository 'dotnet/maui'
+        } | Should -Throw $Message
+    }
+
+    It 'rejects ambiguous Fixes and mismatched or duplicate target Refs' -ForEach @(
+        @{
+            Body = "Fixes #123`nFixes #124`nRefs: dotnet/maui#123"
+            Message = '*canonical Fixes line*'
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#124"
+            Message = '*canonical Refs line*'
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123`nRefs: dotnet/maui#123"
+            Message = '*canonical Refs line*'
+        }
+        @{
+            Body = "Fixes #123`nRefs:dotnet/maui#123"
+            Message = '*canonical Refs line*'
+        }
+        @{
+            Body = "Fixes #123`nrefs: dotnet/maui#123"
+            Message = '*canonical Refs line*'
+        }
+        @{
+            Body = "Fixes #123`nRefs: DotNet/Maui#123"
+            Message = '*canonical Refs line*'
+        }
+        @{
+            Body = "fixes #123`nRefs: dotnet/maui#123"
+            Message = '*canonical Fixes line*'
+        }
+        @{
+            Body = "Fixes  #123`nRefs: dotnet/maui#123"
+            Message = '*canonical Fixes line*'
+        }
+        @{
+            Body = "Fixes #123 trailing`nRefs: dotnet/maui#123"
+            Message = '*canonical Fixes line*'
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123 trailing"
+            Message = '*canonical Refs line*'
+        }
+    ) {
+        {
+            Get-LeakFixProvenanceIssueNumber `
+                -Body $Body `
+                -Repository 'dotnet/maui'
+        } | Should -Throw $Message
+    }
+
+    It 'allows an unrelated visible Refs citation in addition to the target pair' {
+        $body = "Fixes #123`nRefs: dotnet/maui#123`nRefs: dotnet/maui#501"
+
+        Get-LeakFixProvenanceIssueNumber `
+            -Body $body `
+            -Repository 'dotnet/maui' |
+            Should -Be 123
+    }
+}
+
 Describe 'canonical leak API title parsing' {
     It 'extracts the API only from the anchored leak-scan title position' {
         Get-CanonicalLeakApi `
@@ -2257,6 +2446,27 @@ Describe 'workflow enforcement boundary' {
             $workflow,
             'select\(\.baseRefName == "main" or \.baseRefName == "inflight/current"\)'
         )).Count | Should -BeGreaterOrEqual 3
+    }
+
+    It 'keeps leak-fix provenance instructions aligned with the trusted parser' {
+        $workflow = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/leak-fixer.md'
+        ) -Raw
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $module = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+
+        $workflow | Should -Match 'dedicated\s+visible line'
+        $workflow | Should -Match '0–3\s+leading ASCII spaces'
+        $workflow | Should -Match '(?m)^Fixes #<N>\r?\nRefs: <owner>/<repo>#<N>$'
+        $gate | Should -Match 'Get-LeakFixProvenanceIssueNumber'
+        $gate | Should -Not -Match '\[regex\]::Matches'
+        $module | Should -Match '(?s)Remove-LeakInertMarkdown.*RejectMalformedState'
+        $module | Should -Match '\^\[ \]\{0,3\}Fixes #'
+        $module | Should -Match '\^\[ \]\{0,3\}Refs: '
     }
 
     It 'wires a trusted final live refresh into the hunter safe-output boundary' {

@@ -905,6 +905,12 @@ Emit exactly one `create-pull-request` safe-output. Do NOT set a `base` field (t
 start with the literal tag **`[leak-fix] `** followed by e.g. `Fix <rooting API> memory leak
 (Fixes #<N>)`.
 
+The required `Fixes` and same-issue `Refs` records must each appear exactly once as a dedicated
+visible line with the exact casing and single-space formatting shown below. Use only 0–3
+leading ASCII spaces: never tabs, four-space indentation, fenced code, or HTML comments. The
+trusted mutation gate fails closed on malformed or unclosed fence/comment state and rejects
+duplicate visible required records.
+
 The body MUST start with the required MAUI testing note (verbatim, no block-quote on the first
 two lines as shown), then the details:
 
@@ -945,8 +951,10 @@ PublicAPI.Unshipped.txt entries added).
 
 ```
 
-Before emitting, re-read your body and confirm the `Target branch:` line says `main` and a
-`Fixes #<N>` line is present. If not, drop the attempt: `skipped: PR self-check failed`.
+Before emitting, re-read your body and confirm the `Target branch:` line says `main`, exactly
+one visible `Fixes #<N>` line is present, and exactly one visible
+`Refs: <owner>/<repo>#<N>` line names the same issue in this repository. If not, drop the
+attempt: `skipped: PR self-check failed`.
 
 If no PR was emitted this run (already-fixed, gated out, or validation failed), produce no
 output — that is an acceptable outcome. Otherwise you have produced exactly one validated,

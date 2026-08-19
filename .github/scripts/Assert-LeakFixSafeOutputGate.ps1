@@ -38,21 +38,9 @@ if ([string]::IsNullOrWhiteSpace($api)) {
     throw "Could not derive a canonical Type.Member from create-pull-request title '$title'."
 }
 
-$fixMatches = [regex]::Matches(([string]$item.body), '(?m)^[ \t]*Fixes #(?<number>[1-9][0-9]*)\b')
-if ($fixMatches.Count -ne 1) {
-    throw 'The PR body must contain exactly one canonical Fixes line.'
-}
-
-$issueNumber = [int]$fixMatches[0].Groups['number'].Value
-$repo = [regex]::Escape($Repository)
-$issue = [regex]::Escape([string]$issueNumber)
-$targetRefsMatches = [regex]::Matches(
-    ([string]$item.body),
-    "(?m)^[ \t]*Refs:[ \t]*$repo#$issue\b"
-)
-if ($targetRefsMatches.Count -ne 1) {
-    throw "The PR body must contain exactly one exact-repository Refs line for issue #$issueNumber."
-}
+$issueNumber = Get-LeakFixProvenanceIssueNumber `
+    -Body ([string]$item.body) `
+    -Repository $Repository
 
 $statePath = Join-Path $StateDirectory 'dedup-state.json'
 $state = Read-RegularJsonFile -Path $statePath

@@ -308,7 +308,10 @@ function Select-LeakAuthoritativePullRequests {
 }
 
 function Remove-LeakInertMarkdown {
-    param([AllowEmptyString()][string]$Body)
+    param(
+        [AllowEmptyString()][string]$Body,
+        [switch]$RejectMalformedState
+    )
 
     $normalized = (($Body ?? '') -replace "`r`n", "`n") -replace "`r", "`n"
     $visibleLines = [Collections.Generic.List[string]]::new()
@@ -340,10 +343,101 @@ function Remove-LeakInertMarkdown {
         }
     }
 
-    return [regex]::Replace(
-        ($visibleLines -join "`n"),
-        '(?s)<!--.*?(?:-->|\z)',
-        '')
+    if ($fenceLength -ne 0 -and $RejectMalformedState) {
+        throw 'The PR body contains an unclosed fenced code block.'
+    }
+
+    $withoutFences = $visibleLines -join "`n"
+    if (-not $RejectMalformedState) {
+        return [regex]::Replace(
+            $withoutFences,
+            '(?s)<!--.*?(?:-->|\z)',
+            '')
+    }
+
+    $withoutComments = [Text.StringBuilder]::new()
+    $offset = 0
+    while ($offset -lt $withoutFences.Length) {
+        $commentStart = $withoutFences.IndexOf(
+            '<!--',
+            $offset,
+            [StringComparison]::Ordinal
+        )
+        $commentEnd = $withoutFences.IndexOf(
+            '-->',
+            $offset,
+            [StringComparison]::Ordinal
+        )
+        if ($commentEnd -ge 0 -and
+            ($commentStart -lt 0 -or $commentEnd -lt $commentStart)) {
+            throw 'The PR body contains a malformed HTML comment delimiter.'
+        }
+        if ($commentStart -lt 0) {
+            [void]$withoutComments.Append($withoutFences.Substring($offset))
+            break
+        }
+
+        [void]$withoutComments.Append(
+            $withoutFences.Substring($offset, $commentStart - $offset)
+        )
+        $commentEnd = $withoutFences.IndexOf(
+            '-->',
+            $commentStart + 4,
+            [StringComparison]::Ordinal
+        )
+        if ($commentEnd -lt 0) {
+            throw 'The PR body contains an unclosed HTML comment.'
+        }
+        $nestedComment = $withoutFences.IndexOf(
+            '<!--',
+            $commentStart + 4,
+            [StringComparison]::Ordinal
+        )
+        if ($nestedComment -ge 0 -and $nestedComment -lt $commentEnd) {
+            throw 'The PR body contains a malformed nested HTML comment.'
+        }
+        $offset = $commentEnd + 3
+    }
+
+    return $withoutComments.ToString()
+}
+
+function Get-LeakFixProvenanceIssueNumber {
+    param(
+        [AllowEmptyString()][string]$Body,
+        [Parameter(Mandatory = $true)][string]$Repository
+    )
+
+    $text = Remove-LeakInertMarkdown `
+        -Body ($Body ?? '') `
+        -RejectMalformedState
+    $fixMatches = [regex]::Matches(
+        $text,
+        '(?m)^[ ]{0,3}Fixes #(?<number>[1-9][0-9]*)[ ]*$'
+    )
+    if ($fixMatches.Count -ne 1) {
+        throw 'The PR body must contain exactly one visible canonical Fixes line.'
+    }
+
+    try {
+        $issueNumber = [int]$fixMatches[0].Groups['number'].Value
+    } catch {
+        throw 'The canonical Fixes issue number is outside the supported range.'
+    }
+
+    $repo = [regex]::Escape($Repository)
+    $issue = [regex]::Escape(
+        $issueNumber.ToString([Globalization.CultureInfo]::InvariantCulture)
+    )
+    $targetRefsMatches = [regex]::Matches(
+        $text,
+        "(?m)^[ ]{0,3}Refs: $repo#$issue[ ]*$"
+    )
+    if ($targetRefsMatches.Count -ne 1) {
+        throw "The PR body must contain exactly one visible canonical Refs line for issue #$issueNumber in repository '$Repository'."
+    }
+
+    return $issueNumber
 }
 
 function Test-LeakPrReferencesIssue {
@@ -2194,6 +2288,7 @@ Export-ModuleMember -Function `
     Get-ValidatedExistingLeakApi, `
     Read-RegularJsonFile, `
     Select-LeakAuthoritativePullRequests, `
+    Get-LeakFixProvenanceIssueNumber, `
     Test-LeakPrReferencesIssue, `
     Get-LeakRevertTargets, `
     Invoke-LeakGhJson, `
