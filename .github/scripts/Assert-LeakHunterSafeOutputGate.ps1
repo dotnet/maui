@@ -9,28 +9,6 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
-function Assert-SameApiDisclosure {
-    param(
-        [Parameter(Mandatory = $true)][string]$Body,
-        [Parameter(Mandatory = $true)][ValidateSet('issue', 'pull-request')][string]$Kind,
-        [Parameter(Mandatory = $true)][int]$Number,
-        [Parameter(Mandatory = $true)][string]$Repository
-    )
-
-    $repo = [regex]::Escape($Repository)
-    $label = if ($Kind -eq 'issue') {
-        'Same-API issue comparison'
-    } else {
-        'Same-API comparison'
-    }
-    $labelPattern = [regex]::Escape($label)
-    $pattern = "(?m)^[ `t]*${labelPattern}:[ `t]*$repo#$Number[ `t]*\|[ `t]*Different mechanism:[ `t]*(?<basis>[^|`r`n]{12,500}?)[ `t]*$"
-    $matches = [regex]::Matches($Body, $pattern)
-    if ($matches.Count -ne 1) {
-        throw "Final leak-hunter de-dup gate requires exactly one structured $Kind override for same-API $Repository#${Number}: '$label`: $Repository#$Number | Different mechanism: <specific comparison basis>'."
-    }
-}
-
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'
 }
@@ -102,25 +80,16 @@ if ($merged.Count -ge 1000) {
     throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
-$mergedReverts = @(
-    Invoke-LeakGhJson -Arguments @(
-        'pr', 'list',
-        '--repo', $Repository,
-        '--state', 'merged',
-        '--limit', '1000',
-        '--search', 'Reverts in:body',
-        '--json', 'number,title,body,baseRefName,mergedAt'
-    )
-)
-if ($mergedReverts.Count -ge 1000) {
-    throw "Merged revert-body search returned $($mergedReverts.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
-
 $eligibleMerged = @($merged | Where-Object {
         $null -ne $_.mergedAt -and
         ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
         [string]$_.baseRefName -in @('main', 'inflight/current')
     })
+$mergedReverts = @(
+    Get-RelevantMergedLeakReverts `
+        -Repository $Repository `
+        -TargetPullRequests $eligibleMerged
+)
 $effectivelyReverted = @(
     Get-EffectiveRevertedPullRequestNumbers `
         -Repository $Repository `
@@ -137,29 +106,20 @@ $eligibleMerged = @($eligibleMerged | Where-Object {
 
 foreach ($requested in $requestedItems) {
     $api = [string]$requested.Api
-    $body = [string]$requested.Item.body
     $openApiMatches = @($openIssues | Where-Object {
             $issueTitle = [string]$_.title
             $issueTitle.StartsWith('[leak-scan] ', [StringComparison]::Ordinal) -and
             (Get-CanonicalLeakApi -Title $issueTitle) -ceq $api
         })
-    foreach ($match in $openApiMatches) {
-        Assert-SameApiDisclosure `
-            -Body $body `
-            -Kind issue `
-            -Number ([int]$match.number) `
-            -Repository $Repository
+    if ($openApiMatches.Count -gt 0) {
+        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.number -join ', ')."
     }
 
     $mergedApiMatches = @($eligibleMerged | Where-Object {
             (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $api
         })
-    foreach ($match in $mergedApiMatches) {
-        Assert-SameApiDisclosure `
-            -Body $body `
-            -Kind pull-request `
-            -Number ([int]$match.number) `
-            -Repository $Repository
+    if ($mergedApiMatches.Count -gt 0) {
+        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API merged fix match $($mergedApiMatches.number -join ', ')."
     }
 }
 

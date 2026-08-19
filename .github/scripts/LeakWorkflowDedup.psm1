@@ -7,7 +7,7 @@ function Get-CanonicalLeakApi {
 
     $normalized = ($Title -replace "[`r`n]+", ' ').Trim()
     $identifierChain = '[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+'
-    $apiBoundary = '(?=[ \t,:()\-\u2013\u2014]|$)'
+    $apiBoundary = '(?=[ \t,:()\-\u2013\u2014]|$|\.(?=[ \t]|$))'
     $match = if ($normalized.StartsWith('[leak-scan] ', [StringComparison]::Ordinal)) {
         [regex]::Match($normalized, "^\[leak-scan\][ `t]+(?<api>$identifierChain)$apiBoundary")
     } elseif ($normalized.StartsWith('[leak-fix] ', [StringComparison]::Ordinal)) {
@@ -19,8 +19,13 @@ function Get-CanonicalLeakApi {
         return $null
     }
 
-    $segments = $match.Groups['api'].Value.Split('.')
-    return "$($segments[-2]).$($segments[-1])"
+    $api = $match.Groups['api'].Value
+    $segments = $api.Split('.')
+    if ($segments.Count -eq 2 -or
+        $api.StartsWith('Microsoft.Maui.', [StringComparison]::Ordinal)) {
+        return "$($segments[-2]).$($segments[-1])"
+    }
+    return $api
 }
 
 function Read-RegularJsonFile {
@@ -55,6 +60,21 @@ function Test-LeakPrReferencesIssue {
     $repo = [regex]::Escape($Repository)
     return $text -match "(?m)^[ `t]*Fixes #$IssueNumber\b" -or
         $text -match "(?m)^[ `t]*Refs:[ `t]*$repo#$IssueNumber\b"
+}
+
+function Get-LeakRevertTargets {
+    param(
+        [AllowEmptyString()][string]$Body,
+        [Parameter(Mandatory = $true)][string]$Repository
+    )
+
+    $repo = [regex]::Escape($Repository)
+    $markdownPrefix = '(?:>[ \t]*)?(?:[-+*][ \t]+)?(?:\*{1,2}|_{1,2})?'
+    $pattern = "(?m)^[ `t]*$markdownPrefix" +
+        "Reverts[ `t]+(?:$repo#|#)(?<number>[1-9][0-9]*)\b"
+    return @([regex]::Matches(($Body ?? ''), $pattern) |
+        ForEach-Object { [int]$_.Groups['number'].Value } |
+        Sort-Object -Unique)
 }
 
 function Invoke-LeakGhJson {
@@ -96,6 +116,84 @@ function Invoke-LeakGhJson {
     }
 }
 
+function Get-RelevantMergedLeakReverts {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$TargetPullRequests,
+        [ValidateRange(1, 1000)][int]$SearchLimit = 1000,
+        [ValidateRange(1, 1000)][int]$MaximumDiscoveredPullRequests = 1000
+    )
+
+    $queue = [System.Collections.Generic.Queue[object]]::new()
+    foreach ($target in $TargetPullRequests) {
+        $number = 0
+        if (-not [int]::TryParse([string]$target.number, [ref]$number) -or $number -le 0) {
+            throw "Invalid revert-discovery target PR number '$($target.number)'."
+        }
+        $base = [string]$target.baseRefName
+        if ([string]::IsNullOrWhiteSpace($base)) {
+            throw "Revert-discovery target PR #$number is missing baseRefName."
+        }
+        $queue.Enqueue([pscustomobject]@{
+                number = $number
+                baseRefName = $base
+            })
+    }
+
+    $queried = [System.Collections.Generic.HashSet[int]]::new()
+    $discovered = @{}
+    while ($queue.Count -gt 0) {
+        $target = $queue.Dequeue()
+        $targetNumber = [int]$target.number
+        if (-not $queried.Add($targetNumber)) {
+            continue
+        }
+
+        $rows = @(
+            Invoke-LeakGhJson -Arguments @(
+                'pr', 'list',
+                '--repo', $Repository,
+                '--state', 'merged',
+                '--limit', [string]$SearchLimit,
+                '--search', "Reverts `"#${targetNumber}`" in:body",
+                '--json', 'number,title,body,baseRefName,mergedAt'
+            )
+        )
+        if ($rows.Count -ge $SearchLimit) {
+            throw "Scoped merged-revert search for PR #$targetNumber returned $($rows.Count) rows at its $SearchLimit-result ceiling."
+        }
+
+        foreach ($row in $rows) {
+            if ($null -eq $row.mergedAt -or
+                $targetNumber -notin @(
+                    Get-LeakRevertTargets `
+                        -Body ([string]$row.body) `
+                        -Repository $Repository
+                ) -or
+                [string]$row.baseRefName -cne [string]$target.baseRefName) {
+                continue
+            }
+
+            $reverter = 0
+            if (-not [int]::TryParse([string]$row.number, [ref]$reverter) -or $reverter -le 0) {
+                throw "Invalid discovered merged-revert PR number '$($row.number)'."
+            }
+            if (-not $discovered.ContainsKey($reverter)) {
+                if ($discovered.Count -ge $MaximumDiscoveredPullRequests) {
+                    throw "Relevant merged-revert discovery exceeded the $MaximumDiscoveredPullRequests-PR safety bound."
+                }
+                $discovered[$reverter] = $row
+                $queue.Enqueue([pscustomobject]@{
+                        number = $reverter
+                        baseRefName = [string]$row.baseRefName
+                    })
+            }
+        }
+    }
+
+    return @($discovered.Values | Sort-Object number)
+}
+
 function Assert-LeakDedupState {
     param(
         [Parameter(Mandatory = $true)]$State,
@@ -118,28 +216,9 @@ function Assert-LeakDedupState {
         throw "De-dup state is missing required array 'different_mechanism_prs'."
     }
 
-    $seen = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($decision in @($State.different_mechanism_prs)) {
-        $number = 0
-        if (-not [int]::TryParse([string]$decision.number, [ref]$number) -or $number -le 0) {
-            throw "Invalid different-mechanism PR number '$($decision.number)'."
-        }
-        if (-not $seen.Add($number)) {
-            throw "Duplicate different-mechanism decision for PR #$number."
-        }
-        if ([string]::IsNullOrWhiteSpace([string]$decision.basis) -or
-            ([string]$decision.basis).Length -lt 12) {
-            throw "Different-mechanism decision for PR #$number lacks a specific basis."
-        }
-        $basis = [string]$decision.basis
-        if ($basis -cne $basis.Trim() -or
-            $basis.Length -gt 500 -or
-            $basis -match "[|`r`n]") {
-            throw "Different-mechanism decision for PR #$number has an invalid basis format."
-        }
+    if (@($State.different_mechanism_prs).Count -ne 0) {
+        throw 'Trusted de-dup gates do not accept agent-authored different-mechanism overrides.'
     }
-
-    return @($seen | Sort-Object)
 }
 
 function Get-LeakFixFinalDedupResult {
@@ -149,14 +228,8 @@ function Get-LeakFixFinalDedupResult {
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedPullRequests,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$OpenPullRequests,
-        [AllowEmptyCollection()][object[]]$MergedRevertPullRequests = @(),
-        [int[]]$ApprovedDifferentMechanismPullRequests = @()
+        [AllowEmptyCollection()][object[]]$MergedRevertPullRequests = @()
     )
-
-    $approved = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($number in $ApprovedDifferentMechanismPullRequests) {
-        [void]$approved.Add($number)
-    }
 
     $eligibleMerged = @($MergedPullRequests | Where-Object {
             $null -ne $_.mergedAt -and
@@ -192,19 +265,14 @@ function Get-LeakFixFinalDedupResult {
     $apiMatches = @($eligible | Where-Object {
             (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $Api
         } | Sort-Object number -Unique)
-    $unapprovedApiMatches = @($apiMatches | Where-Object {
-            -not $approved.Contains([int]$_.number)
-        })
 
-    $blocked = $directMatches.Count -gt 0 -or $unapprovedApiMatches.Count -gt 0
+    $blocked = $directMatches.Count -gt 0 -or $apiMatches.Count -gt 0
     $reason = if ($directMatches.Count -gt 0) {
         "direct issue-reference match: $($directMatches.number -join ', ')"
-    } elseif ($unapprovedApiMatches.Count -gt 0) {
-        "same-API match without a different-mechanism decision: $($unapprovedApiMatches.number -join ', ')"
-    } elseif ($apiMatches.Count -eq 0) {
-        'no live direct-reference or same-API duplicate matches'
+    } elseif ($apiMatches.Count -gt 0) {
+        "same-API match: $($apiMatches.number -join ', ')"
     } else {
-        'all live same-API matches were explicitly judged to use different retention mechanisms'
+        'no live direct-reference or same-API duplicate matches'
     }
 
     return [pscustomobject]@{
@@ -212,7 +280,6 @@ function Get-LeakFixFinalDedupResult {
         Reason               = $reason
         DirectMatches        = $directMatches
         ApiMatches           = $apiMatches
-        UnapprovedApiMatches = $unapprovedApiMatches
         EffectivelyReverted  = $effectivelyReverted
     }
 }
@@ -227,11 +294,6 @@ function Get-EffectiveRevertedPullRequestNumbers {
     $revertersByTarget = @{}
     $branchByNumber = @{}
     $fixNumbers = [System.Collections.Generic.List[int]]::new()
-    $repo = [regex]::Escape($Repository)
-    $markdownPrefix = '(?:>[ \t]*)?(?:[-+*][ \t]+)?(?:\*{1,2}|_{1,2})?'
-    $pattern = "(?m)^[ `t]*$markdownPrefix" +
-        "Reverts[ `t]+(?:$repo#|#)(?<number>[1-9][0-9]*)\b"
-
     foreach ($fix in $FixPullRequests) {
         $number = 0
         if (-not [int]::TryParse([string]$fix.number, [ref]$number) -or $number -le 0) {
@@ -268,8 +330,11 @@ function Get-EffectiveRevertedPullRequestNumbers {
     foreach ($revert in $MergedRevertPullRequests) {
         $reverter = [int]$revert.number
         $reverterBase = [string]$revert.baseRefName
-        foreach ($match in [regex]::Matches(([string]$revert.body), $pattern)) {
-            $target = [int]$match.Groups['number'].Value
+        foreach ($target in @(
+                Get-LeakRevertTargets `
+                    -Body ([string]$revert.body) `
+                    -Repository $Repository
+            )) {
             if (-not $branchByNumber.ContainsKey($target) -or
                 $branchByNumber[$target] -cne $reverterBase) {
                 continue
@@ -298,6 +363,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
             return [string]$memo[$PullRequestNumber]
         }
         if (-not $Visiting.Add($PullRequestNumber)) {
+            $memo[$PullRequestNumber] = $ambiguousState
             return $ambiguousState
         }
 
@@ -319,6 +385,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
             }
 
             if ($hasAmbiguousReverter) {
+                $memo[$PullRequestNumber] = $ambiguousState
                 return $ambiguousState
             }
             $memo[$PullRequestNumber] = $activeState
@@ -346,7 +413,9 @@ Export-ModuleMember -Function `
     Get-CanonicalLeakApi, `
     Read-RegularJsonFile, `
     Test-LeakPrReferencesIssue, `
+    Get-LeakRevertTargets, `
     Invoke-LeakGhJson, `
+    Get-RelevantMergedLeakReverts, `
     Assert-LeakDedupState, `
     Get-LeakFixFinalDedupResult, `
     Get-EffectiveRevertedPullRequestNumbers

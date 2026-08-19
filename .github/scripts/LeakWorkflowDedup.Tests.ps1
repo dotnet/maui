@@ -116,7 +116,7 @@ Describe 'fresh-shell de-dup state' {
         } | Should -Throw '*does not match PR issue*'
     }
 
-    It 'rejects malformed different-mechanism decisions' {
+    It 'rejects agent-authored different-mechanism overrides' {
         $state = [pscustomobject]@{
             issue_number = 42
             api = 'Picker.ItemsSource'
@@ -132,29 +132,7 @@ Describe 'fresh-shell de-dup state' {
                 -IssueNumber 42 `
                 -Api 'Picker.ItemsSource' `
                 -Repository 'dotnet/maui'
-        } | Should -Throw '*lacks a specific basis*'
-    }
-
-    It 'rejects a comparison basis that cannot fit the structured body disclosure' {
-        $state = [pscustomobject]@{
-            issue_number = 42
-            api = 'Picker.ItemsSource'
-            repository = 'dotnet/maui'
-            different_mechanism_prs = @(
-                [pscustomobject]@{
-                    number = 100
-                    basis = "Existing teardown path|different reset path"
-                }
-            )
-        }
-
-        {
-            Assert-LeakDedupState `
-                -State $state `
-                -IssueNumber 42 `
-                -Api 'Picker.ItemsSource' `
-                -Repository 'dotnet/maui'
-        } | Should -Throw '*invalid basis format*'
+        } | Should -Throw '*do not accept agent-authored different-mechanism overrides*'
     }
 }
 
@@ -179,9 +157,29 @@ Describe 'canonical leak API title parsing' {
             '[leak-fix] Fix Picker.ItemsSource–clear stale subscriptions'
             '[leak-fix] Fix Picker.ItemsSource—clear stale subscriptions'
             '[leak-fix] Fix Picker.ItemsSource(clear stale subscriptions)'
+            '[leak-fix] Fix Picker.ItemsSource.'
         ) | ForEach-Object {
             Get-CanonicalLeakApi -Title $_ | Should -Be 'Picker.ItemsSource'
         }
+    }
+
+    It 'preserves non-MAUI qualification to prevent namespace collisions' {
+        $foo = Get-CanonicalLeakApi `
+            -Title '[leak-fix] Fix Foo.Bar.CollectionView.ItemsSource leak'
+        $baz = Get-CanonicalLeakApi `
+            -Title '[leak-fix] Fix Baz.Qux.CollectionView.ItemsSource leak'
+
+        $foo | Should -Be 'Foo.Bar.CollectionView.ItemsSource'
+        $baz | Should -Be 'Baz.Qux.CollectionView.ItemsSource'
+        $foo | Should -Not -Be $baz
+    }
+
+    It 'keeps short and legacy Microsoft.Maui-qualified keys stable' {
+        Get-CanonicalLeakApi -Title '[leak-fix] Fix Picker.ItemsSource leak' |
+            Should -Be 'Picker.ItemsSource'
+        Get-CanonicalLeakApi `
+            -Title '[leak-fix] Fix Microsoft.Maui.Controls.Picker.ItemsSource leak' |
+            Should -Be 'Picker.ItemsSource'
     }
 
     It 'rejects a URL before an otherwise valid API' {
@@ -206,8 +204,8 @@ Describe 'canonical leak API title parsing' {
     }
 }
 
-Describe 'mechanism-aware final duplicate gate' {
-    It 'preserves an approved same-API different-mechanism exception' {
+Describe 'trusted final duplicate gate' {
+    It 'conservatively blocks same-API matches without an independent override' {
         $existing = New-LeakPr `
             -Number 100 `
             -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
@@ -218,13 +216,13 @@ Describe 'mechanism-aware final duplicate gate' {
             -Api 'GradientBrush.GradientStops' `
             -Repository 'dotnet/maui' `
             -MergedPullRequests @($existing) `
-            -OpenPullRequests @() `
-            -ApprovedDifferentMechanismPullRequests @(100)
+            -OpenPullRequests @()
 
-        $result.Blocked | Should -BeFalse
+        $result.Blocked | Should -BeTrue
+        $result.ApiMatches.number | Should -Be 100
     }
 
-    It 'blocks a same-API PR that appeared after Step 3 until its mechanism is compared' {
+    It 'blocks a same-API PR that appeared after Step 3' {
         $newOpen = New-LeakPr `
             -Number 101 `
             -Title '[leak-fix] Fix Microsoft.Maui.Controls.GradientBrush.GradientStops reset leak' `
@@ -235,11 +233,10 @@ Describe 'mechanism-aware final duplicate gate' {
             -Api 'GradientBrush.GradientStops' `
             -Repository 'dotnet/maui' `
             -MergedPullRequests @() `
-            -OpenPullRequests @($newOpen) `
-            -ApprovedDifferentMechanismPullRequests @()
+            -OpenPullRequests @($newOpen)
 
         $result.Blocked | Should -BeTrue
-        $result.UnapprovedApiMatches.number | Should -Be 101
+        $result.ApiMatches.number | Should -Be 101
     }
 
     It 'ignores a same-API open PR targeting an unrelated release branch' {
@@ -255,15 +252,14 @@ Describe 'mechanism-aware final duplicate gate' {
             -Api 'GradientBrush.GradientStops' `
             -Repository 'dotnet/maui' `
             -MergedPullRequests @() `
-            -OpenPullRequests @($releaseOpen) `
-            -ApprovedDifferentMechanismPullRequests @()
+            -OpenPullRequests @($releaseOpen)
 
         $result.Blocked | Should -BeFalse
         $result.DirectMatches.Count | Should -Be 0
         $result.ApiMatches.Count | Should -Be 0
     }
 
-    It 'always blocks a direct issue reference even when the PR was approved by API' {
+    It 'always blocks a direct issue reference' {
         $direct = New-LeakPr `
             -Number 102 `
             -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
@@ -274,8 +270,7 @@ Describe 'mechanism-aware final duplicate gate' {
             -Api 'GradientBrush.GradientStops' `
             -Repository 'dotnet/maui' `
             -MergedPullRequests @($direct) `
-            -OpenPullRequests @() `
-            -ApprovedDifferentMechanismPullRequests @(102)
+            -OpenPullRequests @()
 
         $result.Blocked | Should -BeTrue
         $result.DirectMatches.number | Should -Be 102
@@ -336,7 +331,7 @@ Describe 'mechanism-aware final duplicate gate' {
             -MergedRevertPullRequests $reverts
 
         $result.Blocked | Should -BeTrue
-        $result.UnapprovedApiMatches.number | Should -Be 100
+        $result.ApiMatches.number | Should -Be 100
         $result.EffectivelyReverted | Should -Be @(110)
     }
 
@@ -374,6 +369,17 @@ Describe 'mechanism-aware final duplicate gate' {
 }
 
 Describe 'effective recursive revert state' {
+    It 'memoizes ambiguous states at cycle and propagation return paths' {
+        $module = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+
+        ([regex]::Matches(
+            $module,
+            '\$memo\[\$PullRequestNumber\] = \$ambiguousState'
+        )).Count | Should -Be 2
+    }
+
     It 'keeps an unreverted fix active' {
         $fix = New-LeakPr -Number 100 -Title '[leak-fix] Fix Picker.ItemsSource leak'
 
@@ -552,6 +558,81 @@ Describe 'effective recursive revert state' {
     }
 }
 
+Describe 'target-scoped merged revert discovery' {
+    BeforeEach {
+        $script:discoverySearches = [System.Collections.Generic.List[string]]::new()
+        $script:discoveryRowsByTarget = @{}
+        function global:gh {
+            param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+            $global:LASTEXITCODE = 0
+            $searchIndex = [Array]::IndexOf($GhArgs, '--search')
+            $search = $GhArgs[$searchIndex + 1]
+            $script:discoverySearches.Add($search)
+            $target = [regex]::Match($search, '#(?<number>[1-9][0-9]*)').Groups['number'].Value
+            $rows = if ($script:discoveryRowsByTarget.ContainsKey($target)) {
+                @($script:discoveryRowsByTarget[$target])
+            } else {
+                @()
+            }
+            Write-Output (ConvertTo-Json -InputObject $rows -Depth 5)
+        }
+    }
+
+    AfterAll {
+        Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+    }
+
+    It 'recursively discovers only explicit same-branch reverters of the target set' {
+        $script:discoveryRowsByTarget['100'] = @(
+            New-LeakPr `
+                -Number 200 `
+                -Title 'Back out cleanup without Revert in the title' `
+                -Body 'Reverts #100'
+            New-LeakPr `
+                -Number 201 `
+                -Title 'Unrelated mention' `
+                -Body 'Discusses #100 but does not revert it'
+        )
+        $script:discoveryRowsByTarget['200'] = @(
+            New-LeakPr `
+                -Number 300 `
+                -Title 'Restore prior behavior' `
+                -Body 'Reverts dotnet/maui#200'
+        )
+
+        $result = @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @(
+                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
+                )
+        )
+
+        $result.number | Should -Be @(200, 300)
+        $script:discoverySearches | Should -Be @(
+            'Reverts "#100" in:body'
+            'Reverts "#200" in:body'
+            'Reverts "#300" in:body'
+        )
+    }
+
+    It 'fails closed when a target-scoped query reaches its result ceiling' {
+        $script:discoveryRowsByTarget['100'] = @(
+            New-LeakPr -Number 200 -Title 'First' -Body 'Reverts #100'
+            New-LeakPr -Number 201 -Title 'Second' -Body 'Reverts #100'
+        )
+
+        {
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @(
+                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
+                ) `
+                -SearchLimit 2
+        } | Should -Throw '*Scoped merged-revert search for PR #100*2-result ceiling*'
+    }
+}
+
 Describe 'workflow enforcement boundary' {
     It 'fails closed when the early merged-fix search reaches the GitHub Search API ceiling' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
@@ -640,18 +721,30 @@ Describe 'workflow enforcement boundary' {
         $fixer | Should -Not -Match 'awk.*A-Za-z_'
     }
 
-    It 'discovers merged reverter candidates by explicit body-reference text, not title' {
-        $paths = @(
-            'Assert-LeakFixSafeOutputGate.ps1'
-            'Assert-LeakHunterSafeOutputGate.ps1'
-            '../workflows/daily-leak-hunter.md'
-            '../workflows/leak-fixer.md'
-        )
+    It 'uses target-scoped recursive revert discovery in both gates and workflows' {
+        $module = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+        $fixGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $hunterGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
+        ) -Raw
+        $hunter = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md'
+        ) -Raw
+        $fixer = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/leak-fixer.md'
+        ) -Raw
 
-        foreach ($path in $paths) {
-            $content = Get-Content -LiteralPath (Join-Path $PSScriptRoot $path) -Raw
-            $content | Should -Match 'Reverts in:body'
-            $content | Should -Not -Match '"Revert" in:title'
+        $module | Should -Match 'Reverts.*#\$\{targetNumber\}.*in:body'
+        $fixGate | Should -Match 'Get-RelevantMergedLeakReverts'
+        $hunterGate | Should -Match 'Get-RelevantMergedLeakReverts'
+        $hunter | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
+        $fixer | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
+        @($module, $fixGate, $hunterGate, $hunter, $fixer) | ForEach-Object {
+            $_ | Should -Not -Match "Reverts in:body|'Reverts in:body'"
         }
     }
 
@@ -681,6 +774,7 @@ Describe 'workflow enforcement boundary' {
             $global:mockMerged = @()
             $global:mockReverts = @()
             $global:mockOpen = @()
+            $global:mockClosed = @()
             $global:mockGhExitCode = 0
             $global:mockGhStderr = ''
             function global:gh {
@@ -698,11 +792,13 @@ Describe 'workflow enforcement boundary' {
                 $searchIndex = [Array]::IndexOf($GhArgs, '--search')
                 $search = $GhArgs[$searchIndex + 1]
                 if ($state -eq 'merged') {
-                    if ($search -eq 'Reverts in:body') {
+                    if ($search -match '^Reverts "#[1-9][0-9]*" in:body$') {
                         Write-Output (ConvertTo-Json -InputObject @($global:mockReverts) -Depth 5)
                     } else {
                         Write-Output (ConvertTo-Json -InputObject @($global:mockMerged) -Depth 5)
                     }
+                } elseif ($state -eq 'closed') {
+                    Write-Output (ConvertTo-Json -InputObject @($global:mockClosed) -Depth 5)
                 } else {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockOpen) -Depth 5)
                 }
@@ -711,7 +807,7 @@ Describe 'workflow enforcement boundary' {
 
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
-            Remove-Variable mockMerged, mockReverts, mockOpen, mockGhExitCode, mockGhStderr `
+            Remove-Variable mockMerged, mockReverts, mockOpen, mockClosed, mockGhExitCode, mockGhStderr `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -824,13 +920,7 @@ Describe 'workflow enforcement boundary' {
             } | Should -Not -Throw
         }
 
-        It 'rejects a live same-API decision that is absent from the PR body' {
-            $global:mockMerged = @(
-                New-LeakPr `
-                    -Number 501 `
-                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
-                    -Body 'Fixes #10'
-            )
+        It 'rejects an agent-authored different-mechanism state override' {
             @{
                 issue_number = 20
                 api = 'GradientBrush.GradientStops'
@@ -838,7 +928,7 @@ Describe 'workflow enforcement boundary' {
                 different_mechanism_prs = @(
                     @{
                         number = 501
-                        basis = 'Existing PR fixes detach teardown; this issue fixes Reset unsubscription.'
+                        basis = 'Agent-authored mechanism claim'
                     }
                 )
             } | ConvertTo-Json -Depth 5 |
@@ -849,36 +939,23 @@ Describe 'workflow enforcement boundary' {
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*structured same-API disclosure*#501*'
+            } | Should -Throw '*do not accept agent-authored different-mechanism overrides*'
         }
 
-        It 'allows a live same-API match when the body discloses the exact persisted basis' {
-            $basis = 'Existing PR fixes detach teardown; this issue fixes Reset unsubscription.'
+        It 'blocks a live same-API match despite an agent-authored body disclosure' {
             $global:mockMerged = @(
                 New-LeakPr `
                     -Number 501 `
                     -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
                     -Body 'Fixes #10'
             )
-            @{
-                issue_number = 20
-                api = 'GradientBrush.GradientStops'
-                repository = 'dotnet/maui'
-                different_mechanism_prs = @(
-                    @{
-                        number = 501
-                        basis = $basis
-                    }
-                )
-            } | ConvertTo-Json -Depth 5 |
-                Set-Content -LiteralPath (Join-Path $script:stateDirectory 'dedup-state.json')
             $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
             $output.items[0].body = @"
 Fixes #20
 Refs: dotnet/maui#20
 
 ## Same-API comparisons
-Same-API comparison: dotnet/maui#501 | Different mechanism: $basis
+Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
 "@
             $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
 
@@ -887,42 +964,24 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: $basis
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Not -Throw
+            } | Should -Throw '*blocked PR creation*same-API match: 501*'
         }
 
-        It 'rejects a same-API disclosure whose basis differs from persisted state' {
-            $global:mockMerged = @(
-                New-LeakPr `
-                    -Number 501 `
-                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
-                    -Body 'Fixes #10'
+        It 'blocks a fourth closed-unmerged attempt for the same issue or API' {
+            $global:mockClosed = @(
+                New-LeakPr -Number 601 -Title '[leak-fix] Fix Other.Api leak' `
+                    -Body 'Fixes #20' -Merged $false
+                New-LeakPr -Number 602 -Title '[leak-fix] Fix GradientBrush.GradientStops leak' `
+                    -Body 'Fixes #10' -Merged $false
+                New-LeakPr -Number 603 -Title '[leak-fix] Fix Other.Api leak again' `
+                    -Body 'Refs: dotnet/maui#20' -Merged $false
             )
-            @{
-                issue_number = 20
-                api = 'GradientBrush.GradientStops'
-                repository = 'dotnet/maui'
-                different_mechanism_prs = @(
-                    @{
-                        number = 501
-                        basis = 'Existing PR fixes detach teardown; this issue fixes Reset unsubscription.'
-                    }
-                )
-            } | ConvertTo-Json -Depth 5 |
-                Set-Content -LiteralPath (Join-Path $script:stateDirectory 'dedup-state.json')
-            $output = Get-Content -LiteralPath $script:agentOutput -Raw | ConvertFrom-Json
-            $output.items[0].body = @'
-Fixes #20
-Refs: dotnet/maui#20
-Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are definitely unrelated.
-'@
-            $output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $script:agentOutput
-
             {
                 & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*does not match the persisted comparison basis*'
+            } | Should -Throw '*attempt-cap gate blocked PR creation: 3 closed-unmerged attempts*'
         }
 
         It 'allows a release-only open PR even when it directly references the issue' {
@@ -1000,7 +1059,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
                 }
                 $searchIndex = [Array]::IndexOf($GhArgs, '--search')
                 $search = $GhArgs[$searchIndex + 1]
-                if ($search -eq 'Reverts in:body') {
+                if ($search -match '^Reverts "#[1-9][0-9]*" in:body$') {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockHunterReverts) -Depth 5)
                 } else {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockHunterMerged) -Depth 5)
@@ -1065,11 +1124,10 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*structured pull-request override*#701*'
+            } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*701*"
         }
 
-        It 'allows a distinct same-API mechanism with bounded human-visible evidence' {
-            $basis = 'Existing PR fixes detach teardown; this issue proves Reset unsubscription.'
+        It 'blocks agent-authored different-mechanism evidence for a same-API fix' {
             $global:mockHunterMerged = @(
                 New-LeakPr `
                     -Number 701 `
@@ -1080,7 +1138,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: These mechanisms are
 AI-generated leak report
 
 ## Same-API comparisons
-Same-API comparison: dotnet/maui#701 | Different mechanism: $basis
+Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
 "@
             $output | ConvertTo-Json -Depth 5 |
                 Set-Content -LiteralPath $script:hunterAgentOutput
@@ -1089,10 +1147,10 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: $basis
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Not -Throw
+            } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*701*"
         }
 
-        It 'requires a separate structured comparison for a same-API open issue' {
+        It 'blocks a same-API open issue without accepting an override' {
             $global:mockHunterOpenIssues = @(
                 [pscustomobject]@{
                     number = 702
@@ -1106,7 +1164,7 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: $basis
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*structured issue override*#702*'
+            } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*702*"
         }
 
         It 'parses successful hunter JSON without mixing benign gh stderr into stdout' {

@@ -56,13 +56,11 @@ if ($targetRefsMatches.Count -ne 1) {
 
 $statePath = Join-Path $StateDirectory 'dedup-state.json'
 $state = Read-RegularJsonFile -Path $statePath
-$approved = @(
-    Assert-LeakDedupState `
-        -State $state `
-        -IssueNumber $issueNumber `
-        -Api $api `
-        -Repository $Repository
-)
+Assert-LeakDedupState `
+    -State $state `
+    -IssueNumber $issueNumber `
+    -Api $api `
+    -Repository $Repository
 
 $merged = @(
     Invoke-LeakGhJson -Arguments @(
@@ -78,19 +76,16 @@ if ($merged.Count -ge 1000) {
     throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
+$eligibleMerged = @($merged | Where-Object {
+        $null -ne $_.mergedAt -and
+        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
+        [string]$_.baseRefName -in @('main', 'inflight/current')
+    })
 $mergedReverts = @(
-    Invoke-LeakGhJson -Arguments @(
-        'pr', 'list',
-        '--repo', $Repository,
-        '--state', 'merged',
-        '--limit', '1000',
-        '--search', 'Reverts in:body',
-        '--json', 'number,title,body,baseRefName,mergedAt'
-    )
+    Get-RelevantMergedLeakReverts `
+        -Repository $Repository `
+        -TargetPullRequests $eligibleMerged
 )
-if ($mergedReverts.Count -ge 1000) {
-    throw "Merged revert-body search returned $($mergedReverts.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
-}
 
 $open = @(
     Invoke-LeakGhJson -Arguments @(
@@ -106,38 +101,43 @@ if ($open.Count -ge 1000) {
     throw "Open [leak-fix] search returned $($open.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
+$closed = @(
+    Invoke-LeakGhJson -Arguments @(
+        'pr', 'list',
+        '--repo', $Repository,
+        '--state', 'closed',
+        '--limit', '1000',
+        '--search', '"[leak-fix]" in:title',
+        '--json', 'number,title,body,mergedAt'
+    )
+)
+if ($closed.Count -ge 1000) {
+    throw "Closed [leak-fix] search returned $($closed.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
+}
+$closedAttempts = @($closed | Where-Object {
+        $referencesIssue = Test-LeakPrReferencesIssue `
+            -Body ([string]$_.body) `
+            -IssueNumber $issueNumber `
+            -Repository $Repository
+        $null -eq $_.mergedAt -and
+        ([string]$_.title).StartsWith('[leak-fix] ', [StringComparison]::Ordinal) -and
+        ($referencesIssue -or
+            (Get-CanonicalLeakApi -Title ([string]$_.title)) -ceq $api)
+    } | Sort-Object number -Unique)
+if ($closedAttempts.Count -ge 3) {
+    throw "Final leak-fix attempt-cap gate blocked PR creation: $($closedAttempts.Count) closed-unmerged attempts already reference issue #$issueNumber or canonical API '$api'."
+}
+
 $result = Get-LeakFixFinalDedupResult `
     -IssueNumber $issueNumber `
     -Api $api `
     -Repository $Repository `
     -MergedPullRequests $merged `
     -OpenPullRequests $open `
-    -MergedRevertPullRequests $mergedReverts `
-    -ApprovedDifferentMechanismPullRequests $approved
+    -MergedRevertPullRequests $mergedReverts
 
 if ($result.Blocked) {
     throw "Final leak-fix de-dup gate blocked PR creation: $($result.Reason)."
-}
-
-$body = [string]$item.body
-foreach ($match in $result.ApiMatches) {
-    $number = [int]$match.number
-    $decisions = @($state.different_mechanism_prs | Where-Object {
-            [int]$_.number -eq $number
-        })
-    if ($decisions.Count -ne 1) {
-        throw "Final leak-fix de-dup gate could not find exactly one mechanism decision for live same-API PR #$number."
-    }
-
-    $basis = [string]$decisions[0].basis
-    $disclosurePattern = "(?m)^[ `t]*Same-API comparison:[ `t]*$repo#$number[ `t]*\|[ `t]*Different mechanism:[ `t]*(?<basis>[^|`r`n]{12,500}?)[ `t]*$"
-    $disclosures = [regex]::Matches($body, $disclosurePattern)
-    if ($disclosures.Count -ne 1) {
-        throw "The PR body must contain exactly one structured same-API disclosure for live PR #${number}: 'Same-API comparison: $Repository#$number | Different mechanism: <persisted comparison basis>'."
-    }
-    if ($disclosures[0].Groups['basis'].Value.Trim() -cne $basis) {
-        throw "The PR body same-API disclosure basis for PR #$number does not match the persisted comparison basis."
-    }
 }
 
 Write-Host "Final leak-fix de-dup gate passed for issue #$issueNumber ($api): $($result.Reason)."

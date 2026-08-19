@@ -156,18 +156,13 @@ pre-agent-steps:
       # formatting. Resolve those links recursively: any active same-branch direct reverter
       # keeps its target reverted. Reverting a reverter can deactivate that reverter, but
       # independent sibling reverts never cancel each other.
-      # Drop only effectively reverted fixes from the
-      # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
-      gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
-        --search 'Reverts in:body' --json number,title,body,baseRefName,mergedAt \
-        > /tmp/gh-aw/agent/revert-prs-raw.json
-      REVERT_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/revert-prs-raw.json)
-      if test "$REVERT_RAW_COUNT" -ge 1000; then
-        echo "ERROR: merged revert-body search returned $REVERT_RAW_COUNT rows — at/above the GitHub Search API ceiling. Effective revert chains may be truncated, so aborting fail-closed." >&2
-        exit 1
-      fi
-      jq '[.[] | select(.mergedAt != null)]' /tmp/gh-aw/agent/revert-prs-raw.json \
-        > /tmp/gh-aw/agent/merged-revert-prs.json
+      # Discover only same-branch merged PRs whose bodies explicitly revert one of the
+      # relevant leak fixes (then recursively their reverters). Each target-scoped query has
+      # its own fail-closed Search API ceiling, avoiding an unrelated repository-wide cap.
+      pwsh .github/scripts/Get-RelevantMergedLeakReverts.ps1 \
+        -Repository "$GITHUB_REPOSITORY" \
+        -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
+        -OutputPath /tmp/gh-aw/agent/merged-revert-prs.json
       # Resolve the EFFECTIVE state recursively, not just one hop. A merged revert toggles
       # its target only while that revert itself remains active on the SAME base branch.
       # A revert is active only when none of its own same-branch direct reverters is active;
@@ -333,33 +328,27 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
   the fix is still active.
 
 - A candidate is **OUT** if an open `[leak-scan]` issue or active merged `[leak-fix]` PR covers
-  the same rooting API **and retention mechanism**. API identity alone is not leak identity:
-  distinct retention paths can legitimately share one `Type.Member`. Use
-  `already-filed-apis.txt` / `already-merged-fix-apis.txt` as fast match signals, then inspect
-  the matching issue/PR before deciding. **Check this for EVERY candidate before its test.**
+  the same canonical API. Use `already-filed-apis.txt` / `already-merged-fix-apis.txt` as
+  authoritative match signals and skip every match. **Check this for EVERY candidate before
+  its test.**
 - Normalize each candidate with the same anchored title convention: the API must be the first
-  dotted identifier chain immediately after `[leak-scan] ` (or after `[leak-fix] Fix `), and
-  the last `Type.Member` pair of a fully-qualified chain is the canonical key (for example,
-  `Microsoft.Maui.Controls.Picker.ItemsSource` yields `Picker.ItemsSource`). Then use
+  dotted identifier chain immediately after `[leak-scan] ` (or after `[leak-fix] Fix `).
+  Existing short `Type.Member` keys stay stable, `Microsoft.Maui.*` qualification migrates to
+  that short key, and other qualification is preserved to prevent namespace collisions. Then use
   `grep -Fxq "$API" /tmp/gh-aw/agent/already-merged-fix-apis.txt`; do not use substring
   matching.
 - For a merged-fix match, print the matching row(s) from
   `already-merged-fix-apis.tsv` and record
-  `skipped: equivalent fix already merged via #<PR> to <baseRefName>` only when the retention
-  path is equivalent. If the mechanism differs, proceed and include the structured PR
-  comparison line required below.
-- For an open issue match, skip only when its retention path is equivalent. If the mechanism
-  differs, proceed and include the structured issue comparison line required below.
-- Re-filing the same retention mechanism under different wording/number is the primary failure
-  mode, so be strict about both the canonical `Type.Member` and the root-to-transient path.
+  `skipped: canonical API already fixed via #<PR> to <baseRefName>`.
+- For an open issue match, skip the candidate.
+- Re-filing the same canonical API under different wording/number is the primary failure mode.
 - Immediately before issue mutation, a trusted safe-output step independently re-fetches open
   scanner issues, merged fixes, and branch-scoped effective revert state. A late same-API
-  issue/fix blocks matching `create-issue` output unless the emitted body contains exactly one
-  bounded, human-visible different-mechanism comparison for it; do not treat the pre-agent
+  issue/fix unconditionally blocks matching `create-issue` output; do not treat the pre-agent
   snapshot as the final authority.
 
 A candidate whose only prior scanner issue is CLOSED may be re-filed when no active merged fix
-covers the same API and retention mechanism.
+covers the same canonical API.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -486,20 +475,15 @@ one output per canonical rooting API in the current batch. If multiple confirmed
 mechanisms share one API, emit the strongest report and defer the others to a later run rather
 than producing same-API siblings together. De-dup each selected leak against open `[leak-scan]`
 issues, supported-branch merged `[leak-fix]` PRs, AND the other issues you're filing this run.
-A trusted final gate repeats the live de-dup immediately before mutation. For
-every live same-API match that uses a genuinely different retention mechanism, the issue body
-must include exactly one applicable bounded line (12–500 character single-line basis, no `|`):
-
-`Same-API issue comparison: <owner>/<repo>#<issue> | Different mechanism: <specific basis>`
-
-`Same-API comparison: <owner>/<repo>#<PR> | Different mechanism: <specific basis>`
-
-The gate blocks missing/malformed comparisons; omit these lines when there is no same-API match.
-Each title MUST be of the form **`[leak-scan] <Type>.<Member> — <short
-mechanism>`** — it MUST **lead with the canonical rooting `Type.Member`** immediately after the
-tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak ICommand.CanExecuteChanged retains the
-control`). De-dup (Step 2) matches on that leading `Type.Member`, so keep it stable and
-canonical — do not reword it run-to-run.
+Any same-API match blocks output because the trusted gate has no independent evidence that an
+agent-authored mechanism comparison is correct. A trusted final gate repeats the live de-dup
+immediately before mutation.
+Each title MUST be of the form **`[leak-scan] <canonical API> — <short mechanism>`** — it MUST
+lead with the anchored canonical API immediately after the tag. Use the stable short
+`Type.Member` for `Microsoft.Maui.*` APIs (for example, `[leak-scan] SwipeItemView.Command —
+non-weak ICommand.CanExecuteChanged retains the control`), but preserve non-MAUI
+namespace/nesting qualification when needed to distinguish colliding `Type.Member` names.
+De-dup (Step 2) matches that leading key exactly, so do not reword it run-to-run.
 Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
