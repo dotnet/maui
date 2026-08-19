@@ -177,10 +177,7 @@ function Get-RelevantMergedLeakReverts {
         if ([string]::IsNullOrWhiteSpace($base)) {
             throw "Revert-discovery target PR #$number is missing baseRefName."
         }
-        if ($seedNumbers.Add($number) -and
-            $seedNumbers.Count -gt $MaximumSearchQueries) {
-            throw "Revert-discovery seed set exceeded the $MaximumSearchQueries-query aggregate safety budget."
-        }
+        [void]$seedNumbers.Add($number)
         $queue.Enqueue([pscustomobject]@{
                 number = $number
                 baseRefName = $base
@@ -188,6 +185,7 @@ function Get-RelevantMergedLeakReverts {
     }
 
     $queried = [System.Collections.Generic.HashSet[int]]::new()
+    $recursiveQueryCount = 0
     $discovered = @{}
     while ($queue.Count -gt 0) {
         $target = $queue.Dequeue()
@@ -195,8 +193,13 @@ function Get-RelevantMergedLeakReverts {
         if ($queried.Contains($targetNumber)) {
             continue
         }
-        if ($queried.Count -ge $MaximumSearchQueries) {
-            throw "Relevant merged-revert discovery exhausted the $MaximumSearchQueries-query aggregate safety budget."
+        # Initial merged-fix history is bounded by its upstream Search API ceiling.
+        # Reserve this budget for the additional queries introduced by recursive discovery.
+        if (-not $seedNumbers.Contains($targetNumber)) {
+            if ($recursiveQueryCount -ge $MaximumSearchQueries) {
+                throw "Relevant merged-revert discovery exhausted the $MaximumSearchQueries-query recursive safety budget."
+            }
+            $recursiveQueryCount++
         }
         [void]$queried.Add($targetNumber)
 

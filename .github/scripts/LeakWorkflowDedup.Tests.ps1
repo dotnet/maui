@@ -677,28 +677,37 @@ Describe 'target-scoped merged revert discovery' {
         } | Should -Throw '*Scoped merged-revert search for PR #100*2-result ceiling*'
     }
 
-    It 'fails closed before querying when the seed set exceeds the aggregate budget' {
-        {
+    It 'accommodates more than 100 initial seeds and charges only recursive queries' {
+        $targets = @(1000..1100 | ForEach-Object {
+                [pscustomobject]@{ number = $_; baseRefName = 'main' }
+            })
+        $script:discoveryRowsByTarget['1000'] = @(
+            New-LeakPr -Number 2000 -Title 'Relevant revert' -Body 'Reverts #1000'
+        )
+
+        $result = @(
             Get-RelevantMergedLeakReverts `
                 -Repository 'dotnet/maui' `
-                -TargetPullRequests @(
-                    [pscustomobject]@{ number = 100; baseRefName = 'main' }
-                    [pscustomobject]@{ number = 101; baseRefName = 'main' }
-                    [pscustomobject]@{ number = 102; baseRefName = 'main' }
-                ) `
-                -MaximumSearchQueries 2
-        } | Should -Throw '*seed set exceeded the 2-query aggregate safety budget*'
+                -TargetPullRequests $targets `
+                -MaximumSearchQueries 1
+        )
 
-        $script:discoverySearches.Count | Should -Be 0
+        $result.number | Should -Be 2000
+        $script:discoverySearches.Count | Should -Be 102
+        $script:discoverySearches[0] | Should -Be 'Reverts "#1000" in:body'
+        $script:discoverySearches[-1] | Should -Be 'Reverts "#2000" in:body'
     }
 
-    It 'fails closed when recursive discovery exhausts the aggregate query budget' {
+    It 'fails closed when recursive discovery exhausts its query budget' {
         $script:discoveryRowsByTarget['100'] = @(
             New-LeakPr -Number 200 -Title 'First revert' -Body 'Reverts #100'
         )
         $script:discoveryRowsByTarget['200'] = @(
             New-LeakPr -Number 300 -Title 'Second revert' -Body 'Reverts #200'
         )
+        $script:discoveryRowsByTarget['300'] = @(
+            New-LeakPr -Number 400 -Title 'Third revert' -Body 'Reverts #300'
+        )
 
         {
             Get-RelevantMergedLeakReverts `
@@ -707,11 +716,12 @@ Describe 'target-scoped merged revert discovery' {
                     [pscustomobject]@{ number = 100; baseRefName = 'main' }
                 ) `
                 -MaximumSearchQueries 2
-        } | Should -Throw '*exhausted the 2-query aggregate safety budget*'
+        } | Should -Throw '*exhausted the 2-query recursive safety budget*'
 
         $script:discoverySearches | Should -Be @(
             'Reverts "#100" in:body'
             'Reverts "#200" in:body'
+            'Reverts "#300" in:body'
         )
     }
 }
@@ -818,7 +828,7 @@ Describe 'workflow enforcement boundary' {
         $fixer | Should -Match '(?m)^  bash: \[[^\r\n]*"pwsh"\]$'
     }
 
-    It 'defines one shared aggregate revert-query budget for every caller' {
+    It 'defines one shared recursive revert-query budget for every caller' {
         $module = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
         ) -Raw
