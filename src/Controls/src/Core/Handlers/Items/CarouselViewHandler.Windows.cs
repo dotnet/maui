@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
+		const double CenteringTolerance = 1;
+
 		LoopableCollectionView _loopableCollectionView;
 		ScrollViewer _scrollViewer;
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
@@ -32,6 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _positionUpdateFromScroll = -1;
 		bool _hasCurrentItemUpdateFromScroll;
 		object _currentItemUpdateFromScroll;
+		bool _hasCurrentItemUpdateFromCollection;
+		object _currentItemUpdateFromCollection;
 		bool _isRecentering;
 		double _recenteringHorizontalOffset;
 		double _recenteringVerticalOffset;
@@ -44,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _gotoPosition = -1;
 		bool _isCollectionChanged;
 		bool _isCollectionChangeScrollPending;
+		int _collectionChangeVersion;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -91,6 +96,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_positionUpdateFromScroll = -1;
 			_hasCurrentItemUpdateFromScroll = false;
 			_currentItemUpdateFromScroll = null;
+			_hasCurrentItemUpdateFromCollection = false;
+			_currentItemUpdateFromCollection = null;
 			ResetRecenteringState();
 			_isScrollingForward = false;
 			_centerItemIndexFromScroll = -1;
@@ -98,6 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_gotoPosition = -1;
 			_isCollectionChanged = false;
 			_isCollectionChangeScrollPending = false;
+			_collectionChangeVersion++;
 		}
 
 		void ResetRecenteringState()
@@ -415,10 +423,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var item = itemTemplateContext.Item;
 			var isPositionUpdateFromScroll = _positionUpdateFromScroll == carouselPosition;
+			var isCurrentItemUpdateFromCollection = _isInternalPositionUpdate;
+			var hadCurrentItemUpdateFromCollection = _hasCurrentItemUpdateFromCollection;
+			var previousCurrentItemUpdateFromCollection = _currentItemUpdateFromCollection;
 			if (isPositionUpdateFromScroll)
 			{
 				_hasCurrentItemUpdateFromScroll = true;
 				_currentItemUpdateFromScroll = item;
+			}
+
+			if (isCurrentItemUpdateFromCollection)
+			{
+				_hasCurrentItemUpdateFromCollection = true;
+				_currentItemUpdateFromCollection = item;
 			}
 
 			try
@@ -431,6 +448,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					_hasCurrentItemUpdateFromScroll = false;
 					_currentItemUpdateFromScroll = null;
+				}
+
+				if (isCurrentItemUpdateFromCollection)
+				{
+					_hasCurrentItemUpdateFromCollection = hadCurrentItemUpdateFromCollection;
+					_currentItemUpdateFromCollection = previousCurrentItemUpdateFromCollection;
 				}
 			}
 		}
@@ -485,6 +508,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_hasCurrentItemUpdateFromScroll
 				&& _positionUpdateFromScroll == ItemsView.Position
 				&& ReferenceEquals(_currentItemUpdateFromScroll, ItemsView.CurrentItem))
+			{
+				return;
+			}
+
+			if (_hasCurrentItemUpdateFromCollection
+				&& ReferenceEquals(_currentItemUpdateFromCollection, ItemsView.CurrentItem))
 			{
 				return;
 			}
@@ -613,11 +642,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var scrollDelta = CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-				? e.HorizontalDelta
-				: e.VerticalDelta;
-			if (scrollDelta != 0)
-				_isScrollingForward = scrollDelta > 0;
+			var itemsLayout = CarouselItemsLayout;
+			if (itemsLayout is not null)
+			{
+				var scrollDelta = itemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+					? e.HorizontalDelta
+					: e.VerticalDelta;
+				if (!_isRecentering && scrollDelta != 0)
+					_isScrollingForward = scrollDelta > 0;
+			}
 
 			var position = e.CenterItemIndex;
 			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
@@ -734,8 +767,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		static bool AreClose(Point first, Point second) =>
-			Math.Abs(first.X - second.X) <= 1
-				&& Math.Abs(first.Y - second.Y) <= 1;
+			Math.Abs(first.X - second.X) <= CenteringTolerance
+				&& Math.Abs(first.Y - second.Y) <= CenteringTolerance;
 
 		void QueueCenterCarouselItem(int centerItemIndexFromScroll)
 		{
@@ -762,7 +795,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		void CenterCarouselItem(int centerItemIndexFromScroll)
+		internal void CenterCarouselItem(int centerItemIndexFromScroll)
 		{
 			if (!InitialPositionSet
 				|| _gotoPosition != -1
@@ -787,7 +820,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition != -1 || ItemsView.Position != closestPosition)
 				return;
 
-			if (distance > 1 && _recenteringAttemptCount < 2)
+			if (distance > CenteringTolerance && _recenteringAttemptCount < 2)
 			{
 				_recenteringAttemptCount++;
 				_isRecentering = true;
@@ -864,10 +897,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return closestVisibleIndex != -1;
 		}
 
-		static bool TrySelectCandidate(double candidateDistance, ref double closestDistance, bool isScrollingForward)
+		internal static bool TrySelectCandidate(double candidateDistance, ref double closestDistance, bool isScrollingForward)
 		{
-			if (candidateDistance >= closestDistance - 1
-				&& (!isScrollingForward || Math.Abs(candidateDistance - closestDistance) > 1))
+			if (candidateDistance >= closestDistance - CenteringTolerance
+				&& (!isScrollingForward || Math.Abs(candidateDistance - closestDistance) > CenteringTolerance))
 			{
 				return false;
 			}
@@ -882,6 +915,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Set flag to disable animation during collection changes
 			_isInternalPositionUpdate = true;
+			var collectionChangeVersion = ++_collectionChangeVersion;
 
 			try
 			{
@@ -925,13 +959,44 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					carouselPosition = 0;
 				}
 
+				object collectionCurrentItem = null;
+				if (IsValidPosition(carouselPosition)
+					&& GetItem(carouselPosition) is ItemTemplateContext itemTemplateContext)
+				{
+					collectionCurrentItem = itemTemplateContext.Item;
+				}
+
 				SetCarouselViewCurrentItem(carouselPosition);
+				if (!ReferenceEquals(collectionCurrentItem, ItemsView.CurrentItem))
+				{
+					var overriddenCurrentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+					if (overriddenCurrentItemPosition != -1)
+						carouselPosition = overriddenCurrentItemPosition;
+				}
+
 				SetCarouselViewPosition(carouselPosition);
 			}
 			finally
 			{
+				if (_isCollectionChanged)
+					QueueCollectionChangeReset(collectionChangeVersion);
+
 				// Reset flag after collection operations complete
 				_isInternalPositionUpdate = false;
+			}
+		}
+
+		void QueueCollectionChangeReset(int collectionChangeVersion)
+		{
+			var dispatcherQueue = ListViewBase?.DispatcherQueue;
+			if (dispatcherQueue is null
+				|| !dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+				{
+					if (collectionChangeVersion == _collectionChangeVersion)
+						_isCollectionChanged = false;
+				}))
+			{
+				_isCollectionChanged = false;
 			}
 		}
 

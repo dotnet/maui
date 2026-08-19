@@ -355,6 +355,208 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task CollectionChangeWithoutNativeScrollDoesNotSuppressNextScroll()
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<object>(CreateItems());
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				items.Add(new object());
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var itemWidth = GetItemLength(
+					GetItemContainer(handler, initialPhysicalPosition),
+					ItemsLayoutOrientation.Horizontal);
+				var targetOffset = scrollViewer.HorizontalOffset + itemWidth * 0.5 + 1;
+				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
+			});
+		}
+
+		[Fact]
+		public async Task RemovingCurrentItemDoesNotSuppressNextScroll()
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<object>(CreateItems());
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+				int scrollToRequests = 0;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				items.RemoveAt(0);
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.Equal(0, carouselView.Position);
+				Assert.Same(items[0], carouselView.CurrentItem);
+
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var itemWidth = GetItemLength(
+					GetItemContainer(handler, initialPhysicalPosition),
+					ItemsLayoutOrientation.Horizontal);
+				var targetOffset = scrollViewer.HorizontalOffset + itemWidth * 0.5 + 1;
+				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
+				Assert.Equal(0, scrollToRequests);
+			});
+		}
+
+		[Fact]
+		public async Task CollectionChangePreservesSynchronousCurrentItemOverride()
+		{
+			SetupBuilder();
+			var firstItem = new object();
+			var replacementItem = new object();
+			var overrideItem = new object();
+			var items = new ObservableCollection<object> { firstItem, replacementItem, overrideItem };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				int scrollToRequests = 0;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				carouselView.CurrentItemChanged += (_, args) =>
+				{
+					if (ReferenceEquals(args.CurrentItem, replacementItem))
+						carouselView.CurrentItem = overrideItem;
+				};
+
+				items.RemoveAt(0);
+				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 1);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(overrideItem, carouselView.CurrentItem);
+				Assert.Equal(1, scrollToRequests);
+			});
+		}
+
+		[Fact]
+		public async Task ReplacingCurrentItemDoesNotRequestNativeScroll()
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<object>(CreateItems());
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				int scrollToRequests = 0;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				var replacementItem = new object();
+				items[0] = replacementItem;
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.Equal(0, carouselView.Position);
+				Assert.Same(replacementItem, carouselView.CurrentItem);
+				Assert.Equal(0, scrollToRequests);
+			});
+		}
+
+		[Fact]
+		public async Task CollectionChangePreservesDuplicateCurrentItemPosition()
+		{
+			SetupBuilder();
+			var sharedItem = new object();
+			var items = new ObservableCollection<object> { sharedItem, sharedItem, new object() };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var itemWidth = GetItemLength(
+					GetItemContainer(handler, initialPhysicalPosition),
+					ItemsLayoutOrientation.Horizontal);
+				var targetOffset = scrollViewer.HorizontalOffset + itemWidth * 0.5 + 1;
+				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(sharedItem, carouselView.CurrentItem);
+
+				items.RemoveAt(2);
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(sharedItem, carouselView.CurrentItem);
+				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
+			});
+		}
+
+		[Fact]
+		public async Task CollectionResetWithStalePositionDoesNotCrash()
+		{
+			SetupBuilder();
+			var items = new ResettableObservableCollection<object>(CreateItems());
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.Position = 4;
+				Assert.Equal(4, carouselView.Position);
+
+				items.Reset(new object(), new object());
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.NotNull(handler.PlatformView);
+			});
+		}
+
+		[Fact]
+		public async Task NativeScrollWithNullItemsLayoutUpdatesSelectionWithoutCrash()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.ItemsLayout = null;
+				carouselView.SendScrolled(new ItemsViewScrolledEventArgs
+				{
+					CenterItemIndex = 1,
+					HorizontalDelta = 100,
+				});
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(items[1], carouselView.CurrentItem);
+			});
+		}
+
+		[Fact]
 		public async Task TerminalCenterIndexUpdatesSelectionWhenGeometryIsUnavailable()
 		{
 			SetupBuilder();
@@ -372,7 +574,7 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField<WScrollViewer>(handler, "_scrollViewer", null);
 				try
 				{
-					InvokePrivateMethod(handler, "CenterCarouselItem", 1);
+					handler.CenterCarouselItem(1);
 				}
 				finally
 				{
@@ -394,11 +596,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			for (int index = 0; index < distances.Length; index++)
 			{
-				var arguments = new object[] { distances[index], closestDistance, true };
-				if ((bool)InvokePrivateStaticMethod("TrySelectCandidate", arguments))
+				if (CarouselViewHandler.TrySelectCandidate(distances[index], ref closestDistance, true))
 					selectedIndex = index;
-
-				closestDistance = (double)arguments[1];
 			}
 
 			Assert.Equal(1, selectedIndex);
@@ -485,6 +684,8 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_positionUpdateFromScroll", 1);
 				SetPrivateField(handler, "_hasCurrentItemUpdateFromScroll", true);
 				SetPrivateField(handler, "_currentItemUpdateFromScroll", new object());
+				SetPrivateField(handler, "_hasCurrentItemUpdateFromCollection", true);
+				SetPrivateField(handler, "_currentItemUpdateFromCollection", new object());
 				SetPrivateField(handler, "_isRecentering", true);
 				SetPrivateField(handler, "_recenteringHorizontalOffset", 10d);
 				SetPrivateField(handler, "_recenteringVerticalOffset", 20d);
@@ -497,12 +698,15 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_gotoPosition", 1);
 				SetPrivateField(handler, "_isCollectionChanged", true);
 				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
+				SetPrivateField(handler, "_collectionChangeVersion", 1);
 
 				((IElementHandler)handler).DisconnectHandler();
 
 				Assert.Equal(-1, GetPrivateField<int>(handler, "_positionUpdateFromScroll"));
 				Assert.False(GetPrivateField<bool>(handler, "_hasCurrentItemUpdateFromScroll"));
 				Assert.Null(GetPrivateField<object>(handler, "_currentItemUpdateFromScroll"));
+				Assert.False(GetPrivateField<bool>(handler, "_hasCurrentItemUpdateFromCollection"));
+				Assert.Null(GetPrivateField<object>(handler, "_currentItemUpdateFromCollection"));
 				Assert.False(GetPrivateField<bool>(handler, "_isRecentering"));
 				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringHorizontalOffset"));
 				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringVerticalOffset"));
@@ -515,6 +719,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(-1, GetPrivateField<int>(handler, "_gotoPosition"));
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChanged"));
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+				Assert.Equal(2, GetPrivateField<int>(handler, "_collectionChangeVersion"));
 
 				return Task.CompletedTask;
 			});
@@ -522,6 +727,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		static object[] CreateItems() =>
 			[new object(), new object(), new object(), new object(), new object()];
+
+		sealed class ResettableObservableCollection<T> : ObservableCollection<T>
+		{
+			public ResettableObservableCollection(IEnumerable items)
+			{
+				foreach (T item in items)
+					Items.Add(item);
+			}
+
+			public void Reset(params T[] items)
+			{
+				Items.Clear();
+				foreach (var item in items)
+					Items.Add(item);
+
+				OnCollectionChanged(new System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+					System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
+			}
+		}
 
 		static CarouselView CreateCarouselView(
 			IEnumerable items,
@@ -728,20 +952,6 @@ namespace Microsoft.Maui.DeviceTests
 			var field = typeof(CarouselViewHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(field);
 			field.SetValue(handler, value);
-		}
-
-		static object InvokePrivateMethod(CarouselViewHandler handler, string methodName, params object[] arguments)
-		{
-			var method = typeof(CarouselViewHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(method);
-			return method.Invoke(handler, arguments);
-		}
-
-		static object InvokePrivateStaticMethod(string methodName, params object[] arguments)
-		{
-			var method = typeof(CarouselViewHandler).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
-			Assert.NotNull(method);
-			return method.Invoke(null, arguments);
 		}
 
 		static async Task DrainDispatcherQueueAsync(WUIElement element)
