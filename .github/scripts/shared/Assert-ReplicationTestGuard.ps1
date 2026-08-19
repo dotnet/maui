@@ -847,6 +847,99 @@ function Get-ReplicationCompiledLineMap {
     return $map
 }
 
+function Get-ReplicationOwningProjectTargetFrameworks {
+    <#
+    .SYNOPSIS
+        Reads the TargetFramework(s) of the project that will compile a test.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [string]$RepositoryRoot
+    )
+
+    if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) { $RepositoryRoot = '.' }
+    $directory = Split-Path -Parent (Join-Path $RepositoryRoot ($Path -replace '/', [IO.Path]::DirectorySeparatorChar))
+    $rootFull = try { (Resolve-Path -LiteralPath $RepositoryRoot -ErrorAction Stop).Path } catch { $null }
+
+    while ($directory -and (Test-Path -LiteralPath $directory)) {
+        $project = @(Get-ChildItem -LiteralPath $directory -Filter '*.csproj' -File -ErrorAction SilentlyContinue) |
+            Select-Object -First 1
+        if ($project) {
+            $text = Get-Content -LiteralPath $project.FullName -Raw -ErrorAction SilentlyContinue
+            $single = [regex]::Match($text, '<TargetFramework>\s*([^<]+?)\s*</TargetFramework>')
+            $many = [regex]::Match($text, '<TargetFrameworks>\s*([^<]+?)\s*</TargetFrameworks>')
+            return [pscustomobject]@{
+                ProjectPath = $project.FullName
+                Value = if ($many.Success) { $many.Groups[1].Value } elseif ($single.Success) { $single.Groups[1].Value } else { '' }
+            }
+        }
+        $parent = Split-Path -Parent $directory
+        if ($parent -eq $directory) { break }
+        if ($rootFull -and $directory -eq $rootFull) { break }
+        $directory = $parent
+    }
+
+    return $null
+}
+
+function Assert-ReplicationTestRunsOnEvidencePlatform {
+    <#
+    .SYNOPSIS
+        A test that never compiles for the platform cannot be evidence about it.
+
+    .DESCRIPTION
+        Reviewers rejected every headless reproduction on this one ground.
+        Controls.Core.UnitTests declares a single non-platform TargetFramework,
+        so, as the review of pull request 190 put it, the platform code is "not
+        merely unexercised, it is not present in the tested closure"; the review
+        of 226 recorded IsMacCatalyst == false and null handlers, and 199 found
+        no platform result at all. Every replication ships a recording made on
+        one platform and claims to reproduce what that recording shows, so a
+        single non-platform target framework contradicts the claim.
+
+        This applies only to the in-process tiers. An Appium UI test project
+        also targets a non-platform framework, legitimately: it runs on the host
+        and drives a real app on the device, so its own target framework says
+        nothing about what the app under test exercises. Only a provable
+        contradiction is rejected; an unrecognised property is left alone.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform,
+        [Parameter(Mandatory = $true)][string]$TestType,
+        [string]$RepositoryRoot
+    )
+
+    # A UI test drives the app over WebDriver and a device test is compiled into
+    # it; only the in-process tiers claim to exercise platform code themselves.
+    if ($TestType -cnotin @('UnitTest', 'XamlUnitTest')) { return }
+    if ([IO.Path]::GetExtension($Path) -inotin @('.cs', '.xaml')) { return }
+
+    $project = Get-ReplicationOwningProjectTargetFrameworks -Path $Path -RepositoryRoot $RepositoryRoot
+    if (-not $project) { return }
+
+    $value = ([string]$project.Value).Trim().Trim(';')
+    # A platform target framework carries an OS moniker; these do not. A list
+    # is only non-platform when every entry in it is.
+    $entries = @($value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($entries.Count -eq 0) { return }
+    $nonPlatform = -not (@($entries | Where-Object {
+                $_ -notmatch '^net\d+\.\d+$' -and $_ -notmatch '(?i)^\$\(_?MauiDotNetTfm\)$'
+            }).Count -gt 0)
+    if (-not $nonPlatform) { return }
+
+    $projectName = if ($project.ProjectPath) { Split-Path -Leaf $project.ProjectPath } else { 'the owning project' }
+    throw ("Candidate test source '$Path' is compiled by $projectName, which declares the single " +
+        "non-platform target framework '$value'. There is no $Platform build of that assembly, so the " +
+        "platform code is not present in the tested closure and the test cannot be evidence for a " +
+        "reproduction recorded on $Platform. Author the test where it builds for $Platform, such as a " +
+        'device test project or the UI test host application.')
+}
+
 function Assert-ReplicationTestPlatformScope {
     <#
     .SYNOPSIS

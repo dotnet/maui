@@ -5096,3 +5096,108 @@ Describe 'Get-ReplicationTestAttemptKind' {
         $source | Should -Match "\`$stage, \`$code, \(\`$reportedAttemptKinds -join"
     }
 }
+
+Describe 'Assert-ReplicationTestRunsOnEvidencePlatform' {
+    BeforeAll {
+        $script:GuardRoot = Join-Path $TestDrive 'closure'
+        function New-TestProject {
+            param([string]$Directory, [string]$Xml)
+            $full = Join-Path $script:GuardRoot $Directory
+            New-Item -ItemType Directory -Path $full -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $full 'Project.csproj') -Value $Xml -Encoding utf8
+            return $full
+        }
+        New-TestProject -Directory 'src/tests/Headless' -Xml '<Project><PropertyGroup><TargetFramework>$(_MauiDotNetTfm)</TargetFramework></PropertyGroup></Project>' | Out-Null
+        New-TestProject -Directory 'src/tests/Literal' -Xml '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>' | Out-Null
+        New-TestProject -Directory 'src/tests/Device' -Xml '<Project><PropertyGroup><TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks></PropertyGroup></Project>' | Out-Null
+        New-TestProject -Directory 'src/tests/Unknown' -Xml '<Project><PropertyGroup><TargetFramework>$(SomeUnknownProperty)</TargetFramework></PropertyGroup></Project>' | Out-Null
+    }
+
+    It 'rejects a test compiled only for a non-platform target framework' {
+        # Reviews of pull requests 190, 199 and 226 rejected every headless
+        # reproduction on this ground: no platform build of the assembly exists.
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/tests/Headless/Issue1.cs' -Platform 'catalyst' -TestType 'UnitTest' `
+                -RepositoryRoot $script:GuardRoot } |
+            Should -Throw -ExpectedMessage '*not present in the tested closure*'
+    }
+
+    It 'rejects a literal non-platform moniker too' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/tests/Literal/Issue1.cs' -Platform 'android' -TestType 'UnitTest' `
+                -RepositoryRoot $script:GuardRoot } | Should -Throw
+    }
+
+    It 'allows a project that builds for the platforms' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/tests/Device/Issue1.cs' -Platform 'ios' -TestType 'UnitTest' `
+                -RepositoryRoot $script:GuardRoot } | Should -Not -Throw
+    }
+
+    It 'leaves an unrecognised target framework property alone' {
+        # Only a provable contradiction is rejected.
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/tests/Unknown/Issue1.cs' -Platform 'windows' -TestType 'UnitTest' `
+                -RepositoryRoot $script:GuardRoot } | Should -Not -Throw
+    }
+
+    It 'does not fail when no owning project can be found' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/nowhere/Issue1.cs' -Platform 'windows' -TestType 'UnitTest' `
+                -RepositoryRoot $script:GuardRoot } | Should -Not -Throw
+    }
+
+    It 'is wired into the generated-test guard run' {
+        $source = Get-Content -LiteralPath $script:ScriptPath -Raw
+        $source | Should -Match 'Assert-ReplicationTestRunsOnEvidencePlatform'
+    }
+}
+
+Describe 'Platform closure guard reads target framework lists' {
+    BeforeAll {
+        $script:ListRoot = Join-Path $TestDrive 'lists'
+        function New-ListProject {
+            param([string]$Name, [string]$Xml)
+            $full = Join-Path $script:ListRoot $Name
+            New-Item -ItemType Directory -Path $full -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $full 'P.csproj') -Value $Xml -Encoding utf8
+        }
+        New-ListProject -Name 'AllHeadless' -Xml '<Project><PropertyGroup><TargetFrameworks>net10.0</TargetFrameworks></PropertyGroup></Project>'
+        New-ListProject -Name 'Mixed' -Xml '<Project><PropertyGroup><TargetFrameworks>net10.0;net10.0-android</TargetFrameworks></PropertyGroup></Project>'
+    }
+
+    It 'rejects a list whose every entry is non-platform' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform -Path 'AllHeadless/Issue1.cs' `
+                -Platform 'android' -TestType 'UnitTest' -RepositoryRoot $script:ListRoot } | Should -Throw
+    }
+
+    It 'allows a list that contains a platform target framework' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform -Path 'Mixed/Issue1.cs' `
+                -Platform 'android' -TestType 'UnitTest' -RepositoryRoot $script:ListRoot } | Should -Not -Throw
+    }
+}
+
+Describe 'Platform closure guard spares host-driven UI tests' {
+    It 'allows an Appium UI test although its project targets no platform' {
+        # Controls.TestCases.Shared.Tests targets $(_MauiDotNetTfm) because it
+        # runs on the host and drives a real app over WebDriver, so its own
+        # target framework says nothing about what the app exercises. This is
+        # the tier most reproductions use; rejecting it would block them all.
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
+                -Platform 'ios' -TestType 'UITest' -RepositoryRoot '.' } | Should -Not -Throw
+    }
+
+    It 'allows a device test' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Issue1.cs' `
+                -Platform 'catalyst' -TestType 'DeviceTest' -RepositoryRoot '.' } | Should -Not -Throw
+    }
+
+    It 'still rejects an in-process unit test in the real repository layout' {
+        { Assert-ReplicationTestRunsOnEvidencePlatform `
+                -Path 'src/Controls/tests/Core.UnitTests/Issue6456Tests.cs' `
+                -Platform 'catalyst' -TestType 'UnitTest' -RepositoryRoot '.' } |
+            Should -Throw -ExpectedMessage '*not present in the tested closure*'
+    }
+}
