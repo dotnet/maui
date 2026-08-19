@@ -1074,6 +1074,38 @@ function Assert-TrustedReproductionScript {
     return $fullPath
 }
 
+function Get-ReproductionKeptDurationSeconds {
+    <#
+        .SYNOPSIS
+        Bounds the kept footage to the part that shows the app.
+
+        .DESCRIPTION
+        The capture keeps running while the app is torn down and the runner
+        writes its own output. On the desktop platforms the capture is a
+        full-screen grab, so those trailing frames show a terminal. Keep only
+        what was recorded while the scenario was still running.
+    #>
+    param(
+        [AllowNull()][Nullable[double]]$ScenarioElapsedSeconds,
+        [double]$TrimStartSeconds,
+        [Parameter(Mandatory = $true)][double]$MaxDurationSeconds
+    )
+
+    $ceiling = [Math]::Max(0.0, $MaxDurationSeconds - $TrimStartSeconds)
+    if ($null -eq $ScenarioElapsedSeconds) {
+        # The scenario never reported an end, so nothing is known about which
+        # frames are the app. Keep the existing bound rather than guess.
+        return $ceiling
+    }
+
+    $kept = [double]$ScenarioElapsedSeconds - $TrimStartSeconds
+    if ($kept -gt $ceiling) { return $ceiling }
+    # Never hand back an empty or near-empty clip; a recording that proves
+    # nothing is worse than one that carries a little extra tail.
+    if ($kept -lt 1.0) { return [Math]::Min(1.0, $ceiling) }
+    return $kept
+}
+
 function Invoke-TrustedReproduction {
     param([Parameter(Mandatory = $true)][System.Diagnostics.Stopwatch]$CaptureClock)
 
@@ -1167,6 +1199,7 @@ foreach ($knownPath in $knownEvidencePaths) {
 }
 
 $durationArgument = ConvertTo-InvariantArgument $MaxDurationSeconds
+$script:scenarioElapsedSeconds = $null
 $boundedVideoFilter = "fps=$maxFrameRate,scale=${maxLongEdge}:${maxLongEdge}:force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1"
 $normalizationVideoFilter = if ($Platform -eq 'ios') {
     "$boundedVideoFilter,tpad=stop_mode=clone:stop_duration=2"
@@ -1299,6 +1332,13 @@ try {
                 $env:MAUI_REPLICATION_RECORDING_START_MARKER =
                     $recordingStartMarkerPath
                 Invoke-TrustedReproduction -CaptureClock $captureClock
+                # Everything the capture picks up after this instant belongs to
+                # tearing the app down and to the runner's own console. On the
+                # desktop platforms that is a full-screen grab, so the last
+                # frames cut from the app to hosted-agent terminal output and a
+                # reviewer of pull request 236 read that discontinuity as the
+                # evidence not being of the app at all.
+                $script:scenarioElapsedSeconds = $captureClock.Elapsed.TotalSeconds
             } finally {
                 $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY =
                     $previousCatalystFramesDirectory
@@ -1534,6 +1574,11 @@ try {
             [Math]::Max(0.0, $MaxDurationSeconds - 2.0))
     }
     $trimStartArgument = ConvertTo-InvariantArgument $trimStartSeconds
+    $keptDurationSeconds = Get-ReproductionKeptDurationSeconds `
+        -ScenarioElapsedSeconds $script:scenarioElapsedSeconds `
+        -TrimStartSeconds $trimStartSeconds `
+        -MaxDurationSeconds $MaxDurationSeconds
+    $keptDurationArgument = ConvertTo-InvariantArgument $keptDurationSeconds
     $normalizeArguments = @(
         '-nostdin',
         '-y',
@@ -1550,7 +1595,7 @@ try {
         '-an',
         '-vf', $normalizationVideoFilter,
         '-r', [string][int]$maxFrameRate,
-        '-t', $durationArgument,
+        '-t', $keptDurationArgument,
         '-c:v', 'libx264',
         '-preset', 'veryfast',
         '-crf', '28',

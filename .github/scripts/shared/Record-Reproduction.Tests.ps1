@@ -985,3 +985,53 @@ Describe 'Select-ReproductionDiagnosticLines native backtraces' {
         $selected | Should -Not -Match '1297\s*\|'
     }
 }
+
+Describe 'Kept footage stops where the scenario stopped' {
+    BeforeAll {
+        # Define the bounding helper on its own; the recording harness cannot
+        # run a real capture and this is arithmetic.
+        $recordScriptPath = Join-Path $PSScriptRoot 'Record-Reproduction.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $recordScriptPath, [ref] $null, [ref] $null)
+        $definition = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq 'Get-ReproductionKeptDurationSeconds'
+            }, $true)
+        if (-not $definition) { throw 'Get-ReproductionKeptDurationSeconds is missing.' }
+        . ([scriptblock]::Create($definition[0].Extent.Text))
+    }
+
+    It 'drops the frames recorded after the scenario ended' {
+        # A reviewer of pull request 236 saw the capture cut from the app to
+        # hosted-agent terminal output about 0.3 seconds before the end.
+        Get-ReproductionKeptDurationSeconds `
+            -ScenarioElapsedSeconds 4.2 -TrimStartSeconds 0 -MaxDurationSeconds 60 |
+            Should -Be 4.2
+    }
+
+    It 'counts from the trimmed start, because -ss precedes the input' {
+        Get-ReproductionKeptDurationSeconds `
+            -ScenarioElapsedSeconds 10 -TrimStartSeconds 4 -MaxDurationSeconds 60 |
+            Should -Be 6
+    }
+
+    It 'never exceeds the recording limit' {
+        Get-ReproductionKeptDurationSeconds `
+            -ScenarioElapsedSeconds 900 -TrimStartSeconds 0 -MaxDurationSeconds 60 |
+            Should -Be 60
+    }
+
+    It 'keeps the existing bound when the scenario never reported an end' {
+        Get-ReproductionKeptDurationSeconds `
+            -ScenarioElapsedSeconds $null -TrimStartSeconds 0 -MaxDurationSeconds 60 |
+            Should -Be 60
+    }
+
+    It 'never produces an empty clip' {
+        # Evidence that proves nothing is worse than a little extra tail.
+        Get-ReproductionKeptDurationSeconds `
+            -ScenarioElapsedSeconds 0.1 -TrimStartSeconds 0 -MaxDurationSeconds 60 |
+            Should -Be 1
+    }
+}

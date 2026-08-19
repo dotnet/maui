@@ -5340,3 +5340,16 @@ Describe 'A locator the driver could not find is not the app crashing' {
         Test-ReplicationAppTerminated -Text $script:AbortGloss | Should -BeTrue
     }
 }
+
+Describe 'Prompt refuses a multi-sample oracle a flat fill would satisfy' {
+    # A reviewer of pull request 236 measured a gradient with two tolerance
+    # checks whose expected colours were within tolerance of each other.
+    It 'requires the expected values to be further apart than the tolerance' {
+        $script:Source | Should -Match 'further apart than the tolerance'
+        $script:Source | Should -Match 'satisfied by a flat fill'
+    }
+
+    It 'requires sample points to be in bounds and on the measured surface' {
+        $script:Source | Should -Match 'proven in bounds and on the surface being measured'
+    }
+}
