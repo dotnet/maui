@@ -505,6 +505,53 @@ Describe 'shared regular JSON file validation' {
                 -MaximumBytes $bytes.Length).value | Should -Be 'é'
     }
 
+    It 'accepts a valid full-body open-PR snapshot above the default 1MB bound' {
+        $path = Join-Path $TestDrive 'large-open-pr-snapshot.json'
+        $body = 'x' * (1MB + 1024)
+        $snapshot = @(
+            New-LeakPr `
+                -Number 46 `
+                -Title '[leak-fix] Fix Large.Body leak' `
+                -Body $body `
+                -Merged $false
+        )
+        $json = ConvertTo-Json -InputObject $snapshot -Depth 5 -Compress
+        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($json)
+        $bytes.Length | Should -BeGreaterThan 1MB
+        $bytes.Length | Should -BeLessThan 128MB
+        [System.IO.File]::WriteAllBytes($path, $bytes)
+
+        $result = @(
+            Read-RegularJsonFile `
+                -Path $path `
+                -MaximumBytes 128MB
+        )
+        $result.Count | Should -Be 1
+        $result[0].number | Should -Be 46
+        $result[0].body.Length | Should -Be $body.Length
+    }
+
+    It 'rejects a full-body open-PR snapshot above the 128MB ingress bound' {
+        $path = Join-Path $TestDrive 'oversized-open-pr-snapshot.json'
+        $stream = [System.IO.FileStream]::new(
+            $path,
+            [System.IO.FileMode]::CreateNew,
+            [System.IO.FileAccess]::ReadWrite,
+            [System.IO.FileShare]::None
+        )
+        try {
+            $stream.SetLength(128MB + 1)
+        } finally {
+            $stream.Dispose()
+        }
+
+        {
+            Read-RegularJsonFile `
+                -Path $path `
+                -MaximumBytes 128MB
+        } | Should -Throw '*JSON file is empty or too large*'
+    }
+
     It 'rejects missing, zero-byte, whitespace-only, oversized, and invalid JSON files' {
         {
             Read-RegularJsonFile -Path (Join-Path $TestDrive 'missing.json')
@@ -1070,6 +1117,122 @@ Refs: dotnet/maui#123
             -Body $body `
             -Repository 'dotnet/maui' |
             Should -Be 123
+    }
+}
+
+Describe 'open leak-fix title identity extraction' {
+    It 'retains a valid title identity when strict body provenance is malformed or missing' -ForEach @(
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123`n--> stray closer"
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123`n<!-- outer <!-- nested -->"
+        }
+        @{
+            Body = "Fixes #123`nRefs: dotnet/maui#123`n<!-- unfinished"
+        }
+        @{
+            Body = (
+                "Fixes #123`nRefs: dotnet/maui#123`n" +
+                '```text' + "`nunfinished"
+            )
+        }
+        @{
+            Body = 'Fixes #123'
+        }
+        @{
+            Body = 'Refs: dotnet/maui#123'
+        }
+    ) {
+        $pullRequest = New-LeakPr `
+            -Number 47 `
+            -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+            -Body $Body `
+            -Merged $false
+
+        $titleIdentity = Get-LeakFixPullRequestTitleIdentity `
+            -PullRequest $pullRequest `
+            -Context 'Open pull request #47'
+        $titleIdentity.Api | Should -BeExactly 'GradientBrush.GradientStops'
+
+        Get-ValidatedLeakFixPullRequestIdentity `
+            -PullRequest $pullRequest `
+            -Repository 'dotnet/maui' `
+            -Context 'Open pull request #47' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'does not create a title identity from a malformed leak-fix title' {
+        $pullRequest = New-LeakPr `
+            -Number 48 `
+            -Title '[leak-fix] Investigate GradientBrush.GradientStops' `
+            -Body "Fixes #123`nRefs: dotnet/maui#123" `
+            -Merged $false
+
+        Get-LeakFixPullRequestTitleIdentity `
+            -PullRequest $pullRequest `
+            -Context 'Open pull request #48' |
+            Should -BeNullOrEmpty
+        Get-ValidatedLeakFixPullRequestIdentity `
+            -PullRequest $pullRequest `
+            -Repository 'dotnet/maui' `
+            -Context 'Open pull request #48' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'keeps a different title-derived API from matching the requested API' {
+        $pullRequest = New-LeakPr `
+            -Number 49 `
+            -Title '[leak-fix] Fix Button.Background retained brush' `
+            -Body "Fixes #123`nRefs: dotnet/maui#123`n<!-- unfinished" `
+            -Merged $false
+        $identity = Get-LeakFixPullRequestTitleIdentity `
+            -PullRequest $pullRequest `
+            -Context 'Open pull request #49'
+
+        $identity.Api | Should -BeExactly 'Button.Background'
+        Test-LeakApiIdentityMatch `
+            -Left $identity.Api `
+            -Right 'GradientBrush.GradientStops' |
+            Should -BeFalse
+    }
+
+    It 'returns title and issue identity when strict provenance is valid' {
+        $pullRequest = New-LeakPr `
+            -Number 50 `
+            -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+            -Body "Fixes #123`nRefs: dotnet/maui#123" `
+            -Merged $false
+
+        $identity = Get-ValidatedLeakFixPullRequestIdentity `
+            -PullRequest $pullRequest `
+            -Repository 'dotnet/maui' `
+            -Context 'Open pull request #50'
+
+        $identity.Api | Should -BeExactly 'GradientBrush.GradientStops'
+        $identity.IssueNumber | Should -Be 123
+    }
+
+    It 'lets title identity block independently while strict issue provenance fails closed' {
+        $requestedApi = 'GradientBrush.GradientStops'
+        $pullRequest = New-LeakPr `
+            -Number 51 `
+            -Title "[leak-fix] Fix $requestedApi reset leak" `
+            -Body "Fixes #123`nRefs: dotnet/maui#123`n<!-- unfinished" `
+            -Merged $false
+
+        $titleIdentity = Get-LeakFixPullRequestTitleIdentity `
+            -PullRequest $pullRequest `
+            -Context 'Open pull request #51'
+        Test-LeakApiIdentityMatch `
+            -Left $titleIdentity.Api `
+            -Right $requestedApi |
+            Should -BeTrue
+        Get-ValidatedLeakFixPullRequestIdentity `
+            -PullRequest $pullRequest `
+            -Repository 'dotnet/maui' `
+            -Context 'Open pull request #51' |
+            Should -BeNullOrEmpty
     }
 }
 
@@ -3577,7 +3740,8 @@ Describe 'workflow enforcement boundary' {
         $gate | Should -Match '(?s)Get-LeakPullRequestConsistencySignature.*?-PullRequests \$after'
         $gate | Should -Match '\$consistentIssueState = \$afterIssueState'
         $gate | Should -Match '\$beforeIssueState\.Signature -ceq \$afterIssueState\.Signature'
-        $gate | Should -Match 'Get-ValidatedLeakFixPullRequestIdentity'
+        $gate | Should -Match 'Get-LeakFixPullRequestTitleIdentity'
+        $gate | Should -Not -Match 'Get-ValidatedLeakFixPullRequestIdentity'
         $gate | Should -Match 'same-API open fix match'
         $gate | Should -Match 'remained inconsistent after \$maximumConsistencyAttempts bounded attempts'
         $gate | Should -Not -Match '(?s)Get-CompleteLeakPullRequests.*?-State\s+(?:OPEN|CLOSED|MERGED)'
@@ -3787,16 +3951,34 @@ Describe 'workflow enforcement boundary' {
         $fixer | Should -Not -Match 'awk.*A-Za-z_'
     }
 
-    It 'preloads validated authoritative open fixes for the hunter' {
+    It 'preloads title-identified authoritative open fixes for the hunter' {
         $workflow = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md'
         ) -Raw
 
         $workflow | Should -Match '(?s)Get-CompleteLeakPullRequests\.ps1.*-State OPEN.*open-leak-fix-prs-raw\.json'
-        $workflow | Should -Match 'Get-ValidatedLeakFixPullRequestIdentity'
+        $workflow | Should -Match 'Get-LeakFixPullRequestTitleIdentity'
+        $workflow | Should -Not -Match 'Get-ValidatedLeakFixPullRequestIdentity'
         $workflow | Should -Match 'Select-LeakAuthoritativePullRequests'
         $workflow | Should -Match 'already-open-fix-apis\.tsv'
-        $workflow | Should -Match 'exact visible `Fixes #N` /'
+        $workflow | Should -Match 'body provenance (?:must not|cannot) erase'
+    }
+
+    It 'reads the complete full-body open-PR snapshot with the 128MB ingress bound' {
+        $workflow = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md'
+        ) -Raw
+        $stepStart = $workflow.IndexOf(
+            '# Authoritative open [leak-fix] PRs remain duplicate work'
+        )
+        $stepEnd = $workflow.IndexOf('network:', $stepStart)
+        $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
+
+        $step | Should -Match (
+            '(?s)Read-RegularJsonFile\s+`?\s*' +
+            '-Path "/tmp/gh-aw/agent/open-leak-fix-prs-raw\.json"\s+`?\s*' +
+            '-MaximumBytes 128MB'
+        )
     }
 
     It 'allows pwsh for fixer agent bash calls' {
@@ -5914,7 +6096,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Not -Throw
         }
 
-        It 'blocks a validated open fix when the original scan issue is already closed' {
+        It 'blocks a valid title-identified open fix when the original scan issue is already closed' {
             $global:mockHunterOpenPullRequests = @(
                 New-LeakPr `
                     -Number 708 `
@@ -5930,7 +6112,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Throw "*same-API open fix match 708*"
         }
 
-        It 'does not block a validated open fix for a different qualified namespace' {
+        It 'does not block a title-identified open fix for a different qualified namespace' {
             $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
                 ConvertFrom-Json
             $output.items[0].title = (
@@ -5959,7 +6141,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Not -Throw
         }
 
-        It 'blocks a validated open fix across a short and qualified ambiguity' {
+        It 'blocks a title-identified open fix across a short and qualified ambiguity' {
             $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
                 ConvertFrom-Json
             $output.items[0].title = (
@@ -5984,33 +6166,19 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Throw "*same-API open fix match 710*"
         }
 
-        It 'ignores malformed open-fix title or body provenance' -ForEach @(
+        It 'ignores malformed open-fix titles even when body provenance is valid' -ForEach @(
             @{
                 Title = '[leak-fix] Investigate GradientBrush.GradientStops'
-                Body = "Fixes #700`nRefs: dotnet/maui#700"
-            }
-            @{
-                Title = '[leak-fix] Fix GradientBrush.GradientStops reset leak'
-                Body = 'Fixes #700'
             }
             @{
                 Title = '[LEAK-FIX] Fix GradientBrush.GradientStops reset leak'
-                Body = "Fixes #700`nRefs: dotnet/maui#700"
-            }
-            @{
-                Title = '[leak-fix] Fix GradientBrush.GradientStops reset leak'
-                Body = (
-                    '```text' + "`n" +
-                    "Fixes #700`nRefs: dotnet/maui#700`n" +
-                    '```'
-                )
             }
         ) {
             $global:mockHunterOpenPullRequests = @(
                 New-LeakPr `
                     -Number 711 `
                     -Title $Title `
-                    -Body $Body `
+                    -Body "Fixes #700`nRefs: dotnet/maui#700" `
                     -Merged $false
             )
 
@@ -6021,7 +6189,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Not -Throw
         }
 
-        It 'ignores a validated same-API open fix on a release-only branch' {
+        It 'ignores a title-identified same-API open fix on a release-only branch' {
             $global:mockHunterOpenPullRequests = @(
                 New-LeakPr `
                     -Number 712 `

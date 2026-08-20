@@ -167,9 +167,8 @@ $authoritativeOpen = @(
 $openFixApis = @(
     foreach ($pullRequest in $authoritativeOpen) {
         $number = [int]$pullRequest.number
-        $identity = Get-ValidatedLeakFixPullRequestIdentity `
+        $identity = Get-LeakFixPullRequestTitleIdentity `
             -PullRequest $pullRequest `
-            -Repository $Repository `
             -Context "Open pull request #$number"
         if ($null -ne $identity) {
             [pscustomobject]@{

@@ -186,8 +186,9 @@ pre-agent-steps:
       fi
 
       # Authoritative open [leak-fix] PRs remain duplicate work even when their original
-      # scanner issue was closed independently. Only main/inflight PRs with both a valid
-      # anchored title identity and the exact visible Fixes/Refs provenance contract count.
+      # scanner issue was closed independently. A valid anchored title identity is sufficient
+      # for conservative API de-dup; malformed or missing editable body provenance must not
+      # erase it. Strict Fixes/Refs provenance remains required when creating a new fix PR.
       pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
         -Repository "$GITHUB_REPOSITORY" \
         -State OPEN \
@@ -197,16 +198,16 @@ pre-agent-steps:
         $ErrorActionPreference = "Stop"
         Import-Module .github/scripts/LeakWorkflowDedup.psm1 -Force
         $open = @(Read-RegularJsonFile `
-            -Path "/tmp/gh-aw/agent/open-leak-fix-prs-raw.json")
+            -Path "/tmp/gh-aw/agent/open-leak-fix-prs-raw.json" `
+            -MaximumBytes 128MB)
         $authoritative = @(Select-LeakAuthoritativePullRequests `
             -PullRequests $open `
             -Context "Hunter pre-agent open leak-fix de-dup search")
-        $validated = @(
+        $identified = @(
           foreach ($pullRequest in $authoritative) {
             $number = [int]$pullRequest.number
-            $identity = Get-ValidatedLeakFixPullRequestIdentity `
+            $identity = Get-LeakFixPullRequestTitleIdentity `
               -PullRequest $pullRequest `
-              -Repository $env:GITHUB_REPOSITORY `
               -Context "Open pull request #$number"
             if ($null -ne $identity) {
               [pscustomobject]@{
@@ -219,7 +220,7 @@ pre-agent-steps:
             }
           }
         )
-        ConvertTo-Json -InputObject @($validated) -Depth 5
+        ConvertTo-Json -InputObject @($identified) -Depth 5
       ' > /tmp/gh-aw/agent/already-open-fix-prs.json
       jq -r '.[] | [.api, .number, .baseRefName, .url, .title] | @tsv' \
         /tmp/gh-aw/agent/already-open-fix-prs.json \
@@ -227,7 +228,7 @@ pre-agent-steps:
         > /tmp/gh-aw/agent/already-open-fix-apis.tsv
       cut -f1 /tmp/gh-aw/agent/already-open-fix-apis.tsv | sort -u \
         > /tmp/gh-aw/agent/already-open-fix-apis.txt
-      echo "already-open validated fix APIs:"
+      echo "already-open title-identified fix APIs:"
       cat /tmp/gh-aw/agent/already-open-fix-apis.tsv
 
 network:
@@ -242,7 +243,7 @@ safe-outputs:
   # merge or open during the up-to-90-minute hunt. Re-fetch authoritative live metadata in
   # the generated safe-output job immediately before Process Safe Outputs. The gate brackets
   # effective-revert evaluation with matching bounded all-state snapshots, then rejects the
-  # entire create-issue batch for a late same-API issue, merged fix, or validated open fix.
+  # entire create-issue batch for a late same-API issue, merged fix, or title-identified open fix.
   # Otherwise-distinct items retry on the next scheduled run. The gate deliberately does not
   # rewrite agent output or accept agent-authored mechanism overrides. Restore it from the
   # read-only default branch rather than executing workflow-dispatch-selected code with the
@@ -317,11 +318,12 @@ Never push, never open a PR, never comment, never edit product or test code in t
    device tests and are out of scope.
 4. **Skip weak-proxied code.** If the suspect uses `WeakEventManager`,
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
-5. **De-dup against open scanner issues, merged fixes, AND validated open fixes.** Before
+5. **De-dup against open scanner issues, merged fixes, AND title-identified open fixes.** Before
    testing or filing, skip a leak already covered by this workflow's open `[leak-scan]` issue
    (same rooting API / retention path), by an exact `[leak-fix]` PR for the same API/retention
-   path already merged to `main` or `inflight/current`, or by a validated `[leak-fix]` PR still
-   OPEN on either authoritative lane. Do NOT suppress a candidate merely because
+   path already merged to `main` or `inflight/current`, or by an OPEN `[leak-fix]` PR on either
+   authoritative lane whose anchored title identifies the same API. Body provenance is not
+   needed for this conservative same-API block. Do NOT suppress a candidate merely because
    AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine. A
    candidate whose only prior scanner issue is CLOSED may be re-filed only when no equivalent
    supported-branch merged or open fix exists.
@@ -344,7 +346,7 @@ Three de-dup sources matter:
 
 1. this workflow's own open `[leak-scan]` issues; and
 2. exact `[leak-fix]` PRs already merged to `main` or `inflight/current`; and
-3. validated `[leak-fix]` PRs still OPEN on `main` or `inflight/current`.
+3. title-identified `[leak-fix]` PRs still OPEN on `main` or `inflight/current`.
 
 You do **not** care about AdamEssenmacher's repro branches or anyone else's issues by
 themselves — duplicating those is explicitly fine. A merged generated fix is different: the
@@ -363,7 +365,7 @@ READ it:
 ```bash
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.tsv
-echo "already-open validated fix APIs:"; cat /tmp/gh-aw/agent/already-open-fix-apis.tsv
+echo "already-open title-identified fix APIs:"; cat /tmp/gh-aw/agent/already-open-fix-apis.tsv
 ```
 
 - `already-filed-apis.txt` — the rooting API identity of every currently-open `[leak-scan]`
@@ -380,12 +382,14 @@ echo "already-open validated fix APIs:"; cat /tmp/gh-aw/agent/already-open-fix-a
   cannot toggle a main/inflight fix. Missing, ambiguous, malformed, truncated, or over-budget
   evidence retains the original fix as active or blocks the run.
 - `already-open-fix-apis.tsv` / `.txt` — the same identity and PR metadata for every
-  authoritative OPEN `[leak-fix]` PR whose anchored title and exact visible `Fixes #N` /
-  `Refs: dotnet/maui#N` provenance pair both validate. This remains a duplicate even when
-  issue `#N` was independently closed.
+  authoritative OPEN `[leak-fix]` PR with a valid anchored title-derived API identity. Missing
+  or malformed editable body provenance cannot erase that conservative same-API identity.
+  Strict visible `Fixes #N` / `Refs: dotnet/maui#N` provenance remains mandatory when a new
+  fix PR reaches its mutation boundary, and invalid provenance cannot establish a strict
+  issue-provenance identity.
 
 - A candidate is **OUT** if an open `[leak-scan]` issue, active merged `[leak-fix]` PR, or
-  validated authoritative open `[leak-fix]` PR covers the same API identity. Use all three
+  title-identified authoritative open `[leak-fix]` PR covers the same API identity. Use all three
   identity files as authoritative match signals and skip every match. **Check this for EVERY
   candidate before its test.**
 - Extract each candidate with the same anchored title convention: the API must be the first
@@ -403,15 +407,16 @@ echo "already-open validated fix APIs:"; cat /tmp/gh-aw/agent/already-open-fix-a
 - For an open issue match, skip the candidate.
 - Re-filing the same API identity under different wording/number is the primary failure mode.
 - Immediately before issue mutation, a trusted safe-output step independently re-fetches open
-  scanner issues plus a coherent all-state PR snapshot, validates authoritative open-fix
-  provenance, and brackets branch-scoped effective-revert evaluation with a matching snapshot.
+  scanner issues plus a coherent all-state PR snapshot, extracts authoritative open-fix title
+  identities independently of editable body provenance, and brackets branch-scoped
+  effective-revert evaluation with a matching snapshot.
   A late same-API issue, merged fix, or open fix rejects the entire `create-issue` batch before
   mutation. Otherwise-distinct items remain unchanged and retry on the next scheduled run; do
   not treat the pre-agent snapshot as the final authority or expect the gate to filter agent
   output.
 
 A candidate whose only prior scanner issue is CLOSED may be re-filed when no active merged fix
-or validated authoritative open fix covers the same API identity.
+or title-identified authoritative open fix covers the same API identity.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -538,7 +543,7 @@ one output per exact or conservatively ambiguous rooting API identity in the cur
 multiple confirmed retention mechanisms share one identity, emit the strongest report and defer
 the others to a later run rather than producing same-API siblings together. De-dup each
 selected leak against open `[leak-scan]` issues, supported-branch merged `[leak-fix]` PRs,
-validated authoritative open `[leak-fix]` PRs, AND the other issues you're filing this run.
+title-identified authoritative open `[leak-fix]` PRs, AND the other issues you're filing this run.
 Any exact or short/full ambiguous match blocks output because the trusted gate has no
 independent evidence that an agent-authored mechanism comparison is correct. A trusted final
 gate repeats the live de-dup immediately before mutation. It validates the up-to-eight-item

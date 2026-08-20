@@ -481,10 +481,9 @@ function Get-LeakFixProvenanceIssueNumber {
     return $issueNumber
 }
 
-function Get-ValidatedLeakFixPullRequestIdentity {
+function Get-LeakFixPullRequestTitleIdentity {
     param(
         [Parameter(Mandatory = $true)]$PullRequest,
-        [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][string]$Context
     )
 
@@ -496,7 +495,30 @@ function Get-ValidatedLeakFixPullRequestIdentity {
         if ([string]::IsNullOrWhiteSpace($api)) {
             return $null
         }
+    } catch {
+        return $null
+    }
 
+    return [pscustomobject]@{
+        Api = $api
+    }
+}
+
+function Get-ValidatedLeakFixPullRequestIdentity {
+    param(
+        [Parameter(Mandatory = $true)]$PullRequest,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    $titleIdentity = Get-LeakFixPullRequestTitleIdentity `
+        -PullRequest $PullRequest `
+        -Context $Context
+    if ($null -eq $titleIdentity) {
+        return $null
+    }
+
+    try {
         $issueNumber = Get-LeakFixProvenanceIssueNumber `
             -Body ([string]$PullRequest.body) `
             -Repository $Repository
@@ -505,7 +527,7 @@ function Get-ValidatedLeakFixPullRequestIdentity {
     }
 
     return [pscustomobject]@{
-        Api = $api
+        Api = [string]$titleIdentity.Api
         IssueNumber = $issueNumber
     }
 }
@@ -2917,6 +2939,7 @@ Export-ModuleMember -Function `
     Read-RegularJsonFile, `
     Select-LeakAuthoritativePullRequests, `
     Get-LeakFixProvenanceIssueNumber, `
+    Get-LeakFixPullRequestTitleIdentity, `
     Get-ValidatedLeakFixPullRequestIdentity, `
     Test-LeakPrReferencesIssue, `
     Select-LeakPullRequestsReferencingIssue, `
