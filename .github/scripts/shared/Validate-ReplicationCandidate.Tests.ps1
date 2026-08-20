@@ -455,7 +455,7 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             "Filter: $($Fixture.TestFilter)"
             "[$($Fixture.TestType)] $($Fixture.TestName): FAILED ✅ (expected)"
             '📊 Parsed test results: Passed=0 Failed=1 Total=1 (from 1 result blocks)'
-            'VERIFICATION PASSED'
+            'VERIFICATION PASSED ✅ All 1 test(s) FAILED as expected!'
             'REPLICATION TEST VERIFICATION PASSED'
         ) -join "`n"
         Write-TestText `
@@ -2500,6 +2500,23 @@ public class Issue1 : ContentPage
         { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*asserts 0 times*'
     }
 
+    It 'certifies a UI run whose console carries only the verifier summary' {
+        # A UI test run prints no parsed runner counts at all. Requiring them
+        # would have refused every UI reproduction, and six of the ten
+        # published reproductions are UI tests.
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value (((Get-Content -LiteralPath $path) |
+                    Where-Object { $_ -notmatch 'Parsed test results' }) -join "`n")
+        }
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+    }
+
     It 'refuses to certify when the console does not prove one test ran' {
         # The claim used to be hard-coded, so a run that dragged in a
         # neighbouring test published a pull request saying it had not.
@@ -2514,13 +2531,25 @@ public class Issue1 : ContentPage
             Should -Throw '*exactly one test was selected and executed*'
     }
 
-    It 'refuses to certify when the console omits the parsed result counts' {
+    It 'refuses to certify when the console omits the verifier summary' {
         $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
         $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
         foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
             $path = Join-Path $verificationRoot $name
             Write-TestText -Path $path -Value (((Get-Content -LiteralPath $path) |
-                    Where-Object { $_ -notmatch 'Parsed test results' }) -join "`n")
+                    Where-Object { $_ -notmatch 'FAILED as expected' -and $_ -notmatch 'Parsed test results' }) -join "`n")
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*exactly one test was selected and executed*'
+    }
+
+    It 'refuses to certify when the verifier summary counts more than one test' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value ((Get-Content -LiteralPath $path -Raw) -replace 'All 1 test', 'All 2 test')
         }
 
         { Invoke-FixtureValidation -Fixture $fixture } |

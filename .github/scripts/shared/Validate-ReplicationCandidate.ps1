@@ -2723,16 +2723,24 @@ function Assert-ReplicationVerificationEvidence {
             # The pull request claims exactly one test was selected and
             # executed. That claim was previously hard-coded here, so a run that
             # dragged in a neighbouring test would still have been published
-            # saying it had not. The verifier prints the counts it parsed out of
-            # the runner's own result file, so read them.
-            $totals = [regex]::Matches($console, '(?i)Parsed test results:.*?\bTotal=(?<total>\d+)')
-            if ($totals.Count -eq 0) {
+            # saying it had not.
+            #
+            # The verifier states the count it acted on in its own summary, and
+            # that line is the only count a UI test run prints: device runs also
+            # echo the counts parsed from the runner's result file, but UI runs
+            # do not, so requiring those would refuse every UI reproduction.
+            # All fifty-two summaries in the collected pipeline logs read
+            # "All 1 test(s)", and every one of the UI runs among them has it.
+            $summary = [regex]::Match($console, '(?i)\bAll\s+(?<count>\d+)\s+test\(s\)\s+FAILED as expected')
+            if (-not $summary.Success -or [int]$summary.Groups['count'].Value -ne 1) {
                 $exactlyOneTestExecuted = $false
-            } else {
-                foreach ($total in $totals) {
-                    if ([int]$total.Groups['total'].Value -ne 1) {
-                        $exactlyOneTestExecuted = $false
-                    }
+            }
+            # A device run additionally reports what the runner itself counted,
+            # which is stronger than the verifier's own summary. Honour it when
+            # it is there.
+            foreach ($total in [regex]::Matches($console, '(?i)Parsed test results:.*?\bTotal=(?<total>\d+)')) {
+                if ([int]$total.Groups['total'].Value -ne 1) {
+                    $exactlyOneTestExecuted = $false
                 }
             }
         }
