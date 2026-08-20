@@ -22,6 +22,10 @@ defaults:
   executor: copilot-sdk
 
 environment:
+  # Isolate and load the unit under test. `expect_skills` documents the
+  # expected route but does not itself force Copilot to invoke the skill.
+  skills:
+    - ..
   files:
     - src: fixtures/trim-aot/shared/src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.cs
       dest: review-input/src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.cs
@@ -29,19 +33,24 @@ environment:
       dest: review-input/src/Core/src/Hosting/MauiHandlersCollectionExtensions.cs
     - src: fixtures/trim-aot/shared/src/Core/src/RuntimeFeature.cs
       dest: review-input/src/Core/src/RuntimeFeature.cs
+    - src: fixtures/trim-aot/shared/src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets
+      dest: review-input/src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets
 
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 1 — A documented Android ILC limitation permits a narrowly
-  # scoped suppression only after the reviewer verifies the guard and
-  # annotation chain. Source: PR #34868.
+  # scoped suppression only after the reviewer verifies the build-time
+  # substitution, guard, and annotation chain. Adapted from PR #34868 with a
+  # forced-off switch so the positive fixture establishes unreachability as an
+  # invariant rather than relying on the production target's default.
   # ───────────────────────────────────────────────────────────────────────
   - name: scoped-suppression-requires-annotation-chain-proof
     tags:
       source_pr: "34868"
       kind: trim-aot
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
+      Before analyzing the patch, invoke the `code-review` skill and follow its
+      independence-first workflow. The review input is
       materialized under `review-input`: inspect `review-input/change.diff`
       first, then read the supporting source snapshots under
       `review-input/src`.
@@ -53,10 +62,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format (Independent Assessment, Findings,
-      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark
-      each finding with a severity emoji and end with NEEDS_CHANGES,
-      NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Trim/AOT
+      Evidence Chain, Findings, Blast Radius or Failure-Mode Probing, Verdict,
+      and Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       files:
         - src: fixtures/trim-aot/case-a/change.diff
@@ -64,11 +73,13 @@ stimuli:
         - src: fixtures/trim-aot/case-a/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
           dest: review-input/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
     graders:
+      - type: skill-invocation
+        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: '(LGTM|NEEDS_DISCUSSION)'
       - type: tool-calls
-        config: &review-input-only
+        config:
           required:
             - name: '^(bash|view|grep|rg)$'
               pattern: 'change\.diff'
@@ -80,6 +91,8 @@ stimuli:
               pattern: 'MauiHandlersCollectionExtensions\.cs'
             - name: '^(bash|view|grep|rg)$'
               pattern: 'RuntimeFeature\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Microsoft\.Maui\.Controls\.targets'
           disallowed:
             - name: '^(bash|powershell)$'
               command: '\b(?:gh|curl|wget)\b'
@@ -98,10 +111,12 @@ stimuli:
         The agent traces the annotation chain across HybridWebViewHandler's
         RequiresUnreferencedCode/RequiresDynamicCode attributes, the
         DynamicallyAccessedMembers generic registration hop, and the
-        FeatureGuard annotations in src/Core/src/RuntimeFeature.cs. It scopes
-        the toolchain distinction called out in the candidate patch to Android
-        NativeAOT rather than claiming that a feature guard universally
-        suppresses every warning.
+        FeatureGuard annotations in src/Core/src/RuntimeFeature.cs, plus the
+        Microsoft.Maui.Controls.targets setting that forces and substitutes
+        the switch to false for PublishAot or full trimming. It scopes the toolchain
+        distinction called out in the candidate patch to Android NativeAOT
+        rather than claiming that a feature guard universally suppresses every
+        warning.
       - >-
         The agent does not reject the pragma merely because it suppresses
         IL2026/IL3050. It distinguishes this proven exception from a broad
@@ -121,14 +136,16 @@ stimuli:
 
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 2 — An annotated helper structurally isolates dynamic
-  # registration from the default path. Source: PR #34958.
+  # registration from the default path. Adapted from PR #34958 under the same
+  # forced-off AOT/full-trim switch contract as the positive suppression case.
   # ───────────────────────────────────────────────────────────────────────
   - name: annotated-helper-structurally-isolates-dynamic-registration
     tags:
       source_pr: "34958"
       kind: trim-aot
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
+      Before analyzing the patch, invoke the `code-review` skill and follow its
+      independence-first workflow. The review input is
       materialized under `review-input`: inspect `review-input/change.diff`
       first, then read the supporting source snapshots under
       `review-input/src`.
@@ -139,10 +156,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format (Independent Assessment, Findings,
-      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark
-      each finding with a severity emoji and end with NEEDS_CHANGES,
-      NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Trim/AOT
+      Evidence Chain, Findings, Blast Radius or Failure-Mode Probing, Verdict,
+      and Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       files:
         - src: fixtures/trim-aot/case-b/change.diff
@@ -150,11 +167,30 @@ stimuli:
         - src: fixtures/trim-aot/case-b/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
           dest: review-input/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
     graders:
+      - type: skill-invocation
+        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: '(LGTM|NEEDS_DISCUSSION)'
       - type: tool-calls
-        config: *review-input-only
+        config:
+          required:
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'change\.diff'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'AppHostBuilderExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'HybridWebViewHandler\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'MauiHandlersCollectionExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'RuntimeFeature\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Microsoft\.Maui\.Controls\.targets'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       - type: prompt
         name: annotated-helper-judge
         config:
@@ -169,10 +205,11 @@ stimuli:
         call.
       - >-
         The agent traces HybridWebViewHandler's
-        RequiresUnreferencedCode/RequiresDynamicCode attributes and the
+        RequiresUnreferencedCode/RequiresDynamicCode attributes, the
         DynamicallyAccessedMembers generic registration hop that motivated the
-        structural separation, rather than treating the warning as
-        automatically false-positive.
+        structural separation, and the build target that makes the guarded
+        path unreachable for PublishAot/full trimming, rather than treating
+        the warning as automatically false-positive.
       - >-
         The agent recognizes the structural solution as an alternative to
         broad suppression or an expected-warning baseline, and does not invent
@@ -202,7 +239,8 @@ stimuli:
     tags:
       kind: trim-aot
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
+      Before analyzing the patch, invoke the `code-review` skill and follow its
+      independence-first workflow. The review input is
       materialized under `review-input`: inspect `review-input/change.diff`
       first, then read the supporting source snapshots under
       `review-input/src`.
@@ -213,10 +251,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format (Independent Assessment, Findings,
-      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark
-      each finding with a severity emoji and end with NEEDS_CHANGES,
-      NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Trim/AOT
+      Evidence Chain, Findings, Blast Radius or Failure-Mode Probing, Verdict,
+      and Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       files:
         - src: fixtures/trim-aot/case-c/change.diff
@@ -224,11 +262,30 @@ stimuli:
         - src: fixtures/trim-aot/case-c/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
           dest: review-input/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
     graders:
+      - type: skill-invocation
+        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: 'NEEDS_CHANGES'
       - type: tool-calls
-        config: *review-input-only
+        config:
+          required:
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'change\.diff'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'AppHostBuilderExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'HybridWebViewHandler\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'MauiHandlersCollectionExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'RuntimeFeature\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Microsoft\.Maui\.Controls\.targets'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       - type: prompt
         name: reachable-suppression-judge
         config:
@@ -269,7 +326,7 @@ stimuli:
         - code-review
 
 scoring:
-  # Each scenario has one expected-verdict grader plus a review-input access
-  # grader and a prompt grader. A missing verdict can score at most 2/3 for
-  # that scenario; 0.9 prevents the other scenarios from masking its failure.
-  threshold: 0.9
+  # Each scenario proves skill activation, the expected verdict, review-input
+  # access, and semantic reasoning. The workflow treats any failed
+  # skill-invocation detail as a hard veto in addition to this aggregate score.
+  threshold: 0.925

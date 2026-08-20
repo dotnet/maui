@@ -42,7 +42,8 @@
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
 
 .PARAMETER BaseBranch
-    Branch to revert files from. Auto-detected from PR if not specified.
+    Branch or full commit SHA to revert files from. Auto-detected from PR if not specified.
+    A full commit SHA also selects frozen-fixture test detection from the local diff.
 
 .PARAMETER RequireFullVerification
     If set, the script will fail if it cannot run full verification mode
@@ -184,6 +185,7 @@ Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
+$ExplicitBaseBranch = $BaseBranch
 . $BaselineScript
 
 # Import the shared test detection script
@@ -322,6 +324,14 @@ function Invoke-TestRun {
         [string]$LogFile
     )
 
+    $hostOnlyTargetFrameworkArgs = @(
+        "-p:IncludeAndroidTargetFrameworks=false",
+        "-p:IncludeIosTargetFrameworks=false",
+        "-p:IncludeMacCatalystTargetFrameworks=false",
+        "-p:IncludeWindowsTargetFrameworks=false",
+        "-p:IncludeTizenTargetFrameworks=false"
+    )
+
     # Boot device/simulator once for test types that need a platform.
     # Both BuildAndRunHostApp.ps1 and Run-DeviceTests.ps1 use Start-Emulator.ps1
     # internally, but we pre-boot here to ensure a consistent UDID is shared
@@ -394,7 +404,7 @@ function Invoke-TestRun {
                 "test", $projectPath,
                 "--configuration", "Debug",
                 "--logger", "console;verbosity=normal"
-            )
+            ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -432,7 +442,7 @@ function Invoke-TestRun {
                 "test", $projectPath,
                 "--configuration", "Debug",
                 "--logger", "console;verbosity=normal"
-            )
+            ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -839,11 +849,12 @@ function Get-AutoDetectedTests {
     param([string]$MergeBase)
 
     $params = @{}
+    $useFrozenWorktreeDiff = $MergeBase -and
+        $ExplicitBaseBranch -match '^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$'
 
-    # Prefer PR number (GitHub API gives exact PR files, not polluted by branch diff)
-    if ($PRNumber) {
-        $params.PRNumber = $PRNumber
-    } elseif ($MergeBase) {
+    # A full commit ID identifies a local/frozen worktree. Prefer its immutable
+    # diff over PR metadata so an unrelated real PR number cannot change the run.
+    if ($useFrozenWorktreeDiff) {
         $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
         if (-not $changedFiles -or $changedFiles.Count -eq 0) {
             $changedFiles = git diff --name-only 2>$null
@@ -854,10 +865,18 @@ function Get-AutoDetectedTests {
         if ($changedFiles) {
             $params.ChangedFiles = $changedFiles
         }
+    } elseif ($PRNumber) {
+        # GitHub API gives the exact PR files for ordinary PR-backed runs.
+        $params.PRNumber = $PRNumber
+    } elseif ($MergeBase) {
+        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+        if ($changedFiles) {
+            $params.ChangedFiles = $changedFiles
+        }
     }
 
     # Fall back to PR number if no changed files from git diff
-    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber) {
+    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber -and -not $useFrozenWorktreeDiff) {
         $params.PRNumber = $PRNumber
     }
 
@@ -924,7 +943,7 @@ function Get-TestResultFromLog {
 Write-Host ""
 Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
 
-$baseInfo = Find-MergeBase -ExplicitBaseBranch $BaseBranch
+$baseInfo = Find-MergeBase -ExplicitBaseBranch $ExplicitBaseBranch
 
 if (-not $baseInfo) {
     Write-Host ""
