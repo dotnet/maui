@@ -3845,6 +3845,22 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 -Attempt $planAttempt
             try {
                 $plannedTestProposal = Read-TestProposal -ValidateNewTargets
+
+                # A tier that has no build for the evidence platform can never
+                # be repaired into one, so rejecting it here costs a planning
+                # round instead of a full generate-build-verify attempt. Build
+                # 15029301 re-proposed the same non-Catalyst XAML project after
+                # escalation and spent every attempt being told the same thing,
+                # because the closure was only checked once a test existed.
+                $plannedVerifierTestType = Get-VerifierTestType `
+                    -TestType ([string]$plannedTestProposal.testType)
+                foreach ($plannedFile in @(Get-ProposedTestFiles -Proposal $plannedTestProposal)) {
+                    Assert-ReplicationTestRunsOnEvidencePlatform `
+                        -Path $plannedFile `
+                        -Platform $Platform `
+                        -TestType $plannedVerifierTestType `
+                        -RepositoryRoot $repoRoot
+                }
                 break
             } catch {
                 $testPlanFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000

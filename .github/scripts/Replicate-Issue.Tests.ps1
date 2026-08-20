@@ -6004,3 +6004,24 @@ public void Issue12345_LabelUpdates_Control()
                 -TestFilter 'Issue12345_LabelUpdates' } | Should -Not -Throw
     }
 }
+
+Describe 'Planned test tier must build for the evidence platform' {
+    It 'rejects an impossible tier while planning rather than after generating' {
+        # Build 15029301 recorded a Catalyst reproduction, planned the test in
+        # Controls.Xaml.UnitTests, and spent every attempt being told that the
+        # project has no Catalyst build. No edit to a test changes the target
+        # frameworks of its project, so the plan is what has to be rejected.
+        $planBlock = [regex]::Match(
+            $script:Source,
+            '\$plannedTestProposal = Read-TestProposal -ValidateNewTargets(.|\n)*?\n            \} catch \{').Value
+        $planBlock | Should -Match 'Assert-ReplicationTestRunsOnEvidencePlatform'
+        $planBlock | Should -Match 'Get-ProposedTestFiles -Proposal \$plannedTestProposal'
+        $planBlock | Should -Match '-Platform \$Platform'
+    }
+
+    It 'feeds the rejection back into the planning round it belongs to' {
+        # The check has to run inside the planning retry loop, so the agent is
+        # asked to plan again with the reason, rather than throwing the run away.
+        $script:Source | Should -Match 'Test-plan attempt \$planAttempt failed'
+    }
+}
