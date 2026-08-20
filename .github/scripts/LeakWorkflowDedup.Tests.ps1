@@ -39,6 +39,54 @@ BeforeAll {
         [pscustomobject]$result
     }
 
+    function Get-AmbiguousDiamondRevertGraph {
+        param(
+            [ValidateRange(1, 20)][int]$Layers,
+            [int]$RootNumber = 100
+        )
+
+        $fix = New-LeakPr `
+            -Number $RootNumber `
+            -Title "[leak-fix] Fix Type$RootNumber.Member leak"
+        $reverts = [System.Collections.Generic.List[object]]::new()
+        $previousTargets = @($RootNumber)
+        $nextNumber = $RootNumber + 100
+        for ($layer = 1; $layer -le $Layers; $layer++) {
+            $left = $nextNumber
+            $right = $nextNumber + 1
+            $reverts.Add((New-LeakPr `
+                        -Number $left `
+                        -Title "Diamond layer $layer left" `
+                        -VerifiedRevertTargets ([int[]]$previousTargets)))
+            $reverts.Add((New-LeakPr `
+                        -Number $right `
+                        -Title "Diamond layer $layer right" `
+                        -VerifiedRevertTargets ([int[]]$previousTargets)))
+            $previousTargets = @($left, $right)
+            $nextNumber += 2
+        }
+
+        $cycleLeft = $nextNumber
+        $cycleRight = $nextNumber + 1
+        $reverts.Add((New-LeakPr `
+                    -Number $cycleLeft `
+                    -Title 'Shared cycle left' `
+                    -VerifiedRevertTargets (
+                        [int[]]@($previousTargets + $cycleRight)
+                    )))
+        $reverts.Add((New-LeakPr `
+                    -Number $cycleRight `
+                    -Title 'Shared cycle right' `
+                    -VerifiedRevertTargets (
+                        [int[]]@($previousTargets + $cycleLeft)
+                    )))
+
+        [pscustomobject]@{
+            Fix = $fix
+            Reverts = @($reverts)
+        }
+    }
+
     function New-LeakGraphQlPageJson {
         param(
             [Parameter(Mandatory = $true)][string]$ConnectionName,
@@ -1430,6 +1478,190 @@ Describe 'effective recursive revert state' {
         $function | Should -Not -Match (
             '\$memo\[\$PullRequestNumber\]\s*=\s*\$ambiguousState'
         )
+    }
+
+    It 'fails closed when a shared diamond over a cycle exhausts root work' {
+        $graph = Get-AmbiguousDiamondRevertGraph -Layers 12
+
+        {
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($graph.Fix) `
+                -MergedRevertPullRequests $graph.Reverts `
+                -MaximumRootTraversalEvaluations 256 `
+                -MaximumAggregateTraversalEvaluations 1000 `
+                -MaximumTraversalDepth 32
+        } | Should -Throw (
+            '*256-evaluation per-root effective-revert traversal safety budget*' +
+                'root PR #100*refusing to guess active/reverted state*'
+        )
+    }
+
+    It 'honors the exact root and aggregate evaluation boundary' {
+        # Four shared diamond layers over the two-node cycle require exactly
+        # 2^(4 + 3) - 1 = 127 state evaluations.
+        $graph = Get-AmbiguousDiamondRevertGraph -Layers 4
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($graph.Fix) `
+                -MergedRevertPullRequests $graph.Reverts `
+                -MaximumRootTraversalEvaluations 127 `
+                -MaximumAggregateTraversalEvaluations 127 `
+                -MaximumTraversalDepth 16
+        ).Count | Should -Be 0
+
+        {
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($graph.Fix) `
+                -MergedRevertPullRequests $graph.Reverts `
+                -MaximumRootTraversalEvaluations 126 `
+                -MaximumAggregateTraversalEvaluations 1000 `
+                -MaximumTraversalDepth 16
+        } | Should -Throw '*126-evaluation per-root*root PR #100*'
+    }
+
+    It 'completes a shared ambiguous diamond while it remains under budget' {
+        $graph = Get-AmbiguousDiamondRevertGraph -Layers 6
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($graph.Fix) `
+                -MergedRevertPullRequests $graph.Reverts `
+                -MaximumRootTraversalEvaluations 600 `
+                -MaximumAggregateTraversalEvaluations 600 `
+                -MaximumTraversalDepth 16
+        ).Count | Should -Be 0
+    }
+
+    It 'applies aggregate work across many independently bounded roots' {
+        $fixes = [System.Collections.Generic.List[object]]::new()
+        $reverts = [System.Collections.Generic.List[object]]::new()
+        foreach ($offset in 0..3) {
+            $root = 100 + $offset
+            $middle = 200 + $offset
+            $terminal = 300 + $offset
+            $fixes.Add((New-LeakPr `
+                        -Number $root `
+                        -Title "[leak-fix] Fix Type$root.Member leak"))
+            $reverts.Add((New-LeakPr `
+                        -Number $middle `
+                        -Title "Revert root $root" `
+                        -VerifiedRevertTargets @($root)))
+            $reverts.Add((New-LeakPr `
+                        -Number $terminal `
+                        -Title "Restore root $root" `
+                        -VerifiedRevertTargets @($middle)))
+        }
+
+        {
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fixes) `
+                -MergedRevertPullRequests @($reverts) `
+                -MaximumRootTraversalEvaluations 3 `
+                -MaximumAggregateTraversalEvaluations 11 `
+                -MaximumTraversalDepth 4
+        } | Should -Throw (
+            '*11-evaluation aggregate effective-revert traversal safety budget*' +
+                'root PR #103*'
+        )
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fixes) `
+                -MergedRevertPullRequests @($reverts) `
+                -MaximumRootTraversalEvaluations 3 `
+                -MaximumAggregateTraversalEvaluations 12 `
+                -MaximumTraversalDepth 4
+        ).Count | Should -Be 0
+    }
+
+    It 'exhausts the same deterministic budget regardless of input order' {
+        $graph = Get-AmbiguousDiamondRevertGraph -Layers 8
+        $reversed = @($graph.Reverts)
+        [array]::Reverse($reversed)
+        $orders = @(
+            [pscustomobject]@{ Items = @($graph.Reverts) }
+            [pscustomobject]@{ Items = $reversed }
+        )
+        $messages = @(
+            foreach ($order in $orders) {
+                try {
+                    Get-EffectiveRevertedPullRequestNumbers `
+                        -Repository 'dotnet/maui' `
+                        -FixPullRequests @($graph.Fix) `
+                        -MergedRevertPullRequests $order.Items `
+                        -MaximumRootTraversalEvaluations 128 `
+                        -MaximumAggregateTraversalEvaluations 1000 `
+                        -MaximumTraversalDepth 32
+                    'unexpected completion'
+                } catch {
+                    $_.Exception.Message
+                }
+            }
+        )
+
+        $messages[0] | Should -Match '128-evaluation per-root'
+        $messages[1] | Should -BeExactly $messages[0]
+    }
+
+    It 'fails closed before a deep acyclic chain can exhaust the call stack' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Type100.Member leak'
+        $reverts = [System.Collections.Generic.List[object]]::new()
+        $target = 100
+        foreach ($number in 200..204) {
+            $reverts.Add((New-LeakPr `
+                        -Number $number `
+                        -Title "Chain node $number" `
+                        -VerifiedRevertTargets @($target)))
+            $target = $number
+        }
+
+        {
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests @($reverts) `
+                -MaximumRootTraversalEvaluations 20 `
+                -MaximumAggregateTraversalEvaluations 20 `
+                -MaximumTraversalDepth 5
+        } | Should -Throw (
+            '*maximum effective-revert traversal depth of 5*' +
+                'root PR #100*refusing to guess active/reverted state*'
+        )
+    }
+
+    It 'completes a normal large acyclic revert graph within trusted defaults' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Type100.Member leak'
+        $reverts = [System.Collections.Generic.List[object]]::new()
+        foreach ($offset in 0..499) {
+            $branch = 1000 + ($offset * 2)
+            $terminal = $branch + 1
+            $reverts.Add((New-LeakPr `
+                        -Number $branch `
+                        -Title "Large DAG branch $offset" `
+                        -VerifiedRevertTargets @(100)))
+            $reverts.Add((New-LeakPr `
+                        -Number $terminal `
+                        -Title "Large DAG terminal $offset" `
+                        -VerifiedRevertTargets @($branch)))
+        }
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests @($reverts)
+        ).Count | Should -Be 0
     }
 
     It 'resolves intersecting roots independently of fix and revert input order' {
@@ -3186,6 +3418,38 @@ Describe 'workflow enforcement boundary' {
             $_ | Should -Match 'Get-RelevantMergedLeakReverts'
             $_ | Should -Not -Match 'MaximumPageQueries'
             $_ | Should -Not -Match 'MaximumTraversalPullRequests'
+        }
+    }
+
+    It 'keeps effective-revert work bounds in trusted module defaults' {
+        $module = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+        $driver = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Get-EffectiveRevertedLeakFixes.ps1'
+        ) -Raw
+        $fixGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $hunterGate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
+        ) -Raw
+
+        $module | Should -Match (
+            '\$MaximumRootTraversalEvaluations = 100000'
+        )
+        $module | Should -Match (
+            '\$MaximumAggregateTraversalEvaluations = 250000'
+        )
+        $module | Should -Match '\$MaximumTraversalDepth = 256'
+        @($driver, $hunterGate) | ForEach-Object {
+            $_ | Should -Match 'Get-EffectiveRevertedPullRequestNumbers'
+        }
+        $fixGate | Should -Match 'Get-LeakFixFinalDedupResult'
+        @($driver, $fixGate, $hunterGate) | ForEach-Object {
+            $_ | Should -Not -Match 'MaximumRootTraversalEvaluations'
+            $_ | Should -Not -Match 'MaximumAggregateTraversalEvaluations'
+            $_ | Should -Not -Match 'MaximumTraversalDepth'
         }
     }
 

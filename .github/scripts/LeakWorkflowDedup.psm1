@@ -2404,13 +2404,18 @@ function Get-EffectiveRevertedPullRequestNumbers {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$FixPullRequests,
-        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedRevertPullRequests
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedRevertPullRequests,
+        [ValidateRange(1, 1000000)][int]$MaximumRootTraversalEvaluations = 100000,
+        [ValidateRange(1, 2000000)][int]$MaximumAggregateTraversalEvaluations = 250000,
+        [ValidateRange(1, 256)][int]$MaximumTraversalDepth = 256
     )
 
     [void](Get-LeakRepositoryCoordinates -Repository $Repository)
+    # Trusted discovery is already capped at 2,000 PRs and 20,000 commit
+    # records; these defaults leave headroom for legitimate shared history.
     $revertersByTarget = @{}
     $branchByNumber = @{}
-    $fixNumbers = [System.Collections.Generic.List[int]]::new()
+    $fixNumbers = [System.Collections.Generic.SortedSet[int]]::new()
     foreach ($fix in $FixPullRequests) {
         $number = 0
         if (-not [int]::TryParse([string]$fix.number, [ref]$number) -or $number -le 0) {
@@ -2425,7 +2430,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
             throw "PR #$number has conflicting base branches."
         }
         $branchByNumber[$number] = $base
-        $fixNumbers.Add($number)
+        [void]$fixNumbers.Add($number)
     }
 
     foreach ($revert in $MergedRevertPullRequests) {
@@ -2488,11 +2493,10 @@ function Get-EffectiveRevertedPullRequestNumbers {
                 continue
             }
             if (-not $revertersByTarget.ContainsKey($target)) {
-                $revertersByTarget[$target] = [System.Collections.Generic.List[int]]::new()
+                $revertersByTarget[$target] =
+                    [System.Collections.Generic.SortedSet[int]]::new()
             }
-            if (-not $revertersByTarget[$target].Contains($reverter)) {
-                $revertersByTarget[$target].Add($reverter)
-            }
+            [void]$revertersByTarget[$target].Add($reverter)
         }
     }
 
@@ -2500,19 +2504,42 @@ function Get-EffectiveRevertedPullRequestNumbers {
     $activeState = 'active'
     $inactiveState = 'inactive'
     $ambiguousState = 'ambiguous'
+    $maximumRootEvaluations = $MaximumRootTraversalEvaluations
+    $maximumAggregateEvaluations = $MaximumAggregateTraversalEvaluations
+    $maximumDepth = $MaximumTraversalDepth
+    $aggregateTraversal = [pscustomobject]@{
+        Evaluations = [long]0
+    }
 
     function Get-EffectState {
         param(
             [int]$PullRequestNumber,
-            [System.Collections.Generic.HashSet[int]]$Visiting
+            [System.Collections.Generic.HashSet[int]]$Visiting,
+            [int]$Depth,
+            [pscustomobject]$RootTraversal
         )
 
+        # Charge every state attempt before cycle or memo shortcuts so repeated
+        # ambiguous paths cannot evade either work budget.
+        $RootTraversal.Evaluations = [long]$RootTraversal.Evaluations + 1
+        $aggregateTraversal.Evaluations =
+            [long]$aggregateTraversal.Evaluations + 1
+        if ($RootTraversal.Evaluations -gt $maximumRootEvaluations) {
+            throw "Trusted leak de-dup gate exhausted the $maximumRootEvaluations-evaluation per-root effective-revert traversal safety budget while resolving root PR #$($RootTraversal.RootNumber); refusing to guess active/reverted state."
+        }
+        if ($aggregateTraversal.Evaluations -gt
+            $maximumAggregateEvaluations) {
+            throw "Trusted leak de-dup gate exhausted the $maximumAggregateEvaluations-evaluation aggregate effective-revert traversal safety budget while resolving root PR #$($RootTraversal.RootNumber); refusing to guess active/reverted state."
+        }
         if ($Visiting.Contains($PullRequestNumber)) {
             # This cycle marker is valid only for the current traversal stack.
             return $ambiguousState
         }
         if ($memo.ContainsKey($PullRequestNumber)) {
             return [string]$memo[$PullRequestNumber]
+        }
+        if ($Depth -gt $maximumDepth) {
+            throw "Trusted leak de-dup gate exceeded the maximum effective-revert traversal depth of $maximumDepth while resolving root PR #$($RootTraversal.RootNumber); refusing to guess active/reverted state."
         }
         [void]$Visiting.Add($PullRequestNumber)
 
@@ -2522,7 +2549,9 @@ function Get-EffectiveRevertedPullRequestNumbers {
                 foreach ($reverter in $revertersByTarget[$PullRequestNumber]) {
                     $reverterState = Get-EffectState `
                         -PullRequestNumber $reverter `
-                        -Visiting $Visiting
+                        -Visiting $Visiting `
+                        -Depth ($Depth + 1) `
+                        -RootTraversal $RootTraversal
                     if ($reverterState -eq $activeState) {
                         $memo[$PullRequestNumber] = $inactiveState
                         return $inactiveState
@@ -2545,9 +2574,15 @@ function Get-EffectiveRevertedPullRequestNumbers {
     $effectivelyReverted = [System.Collections.Generic.List[int]]::new()
     foreach ($number in $fixNumbers) {
         $visiting = [System.Collections.Generic.HashSet[int]]::new()
+        $rootTraversal = [pscustomobject]@{
+            RootNumber = $number
+            Evaluations = [long]0
+        }
         $state = Get-EffectState `
             -PullRequestNumber $number `
-            -Visiting $visiting
+            -Visiting $visiting `
+            -Depth 1 `
+            -RootTraversal $rootTraversal
         if ($state -eq $inactiveState) {
             $effectivelyReverted.Add($number)
         }
