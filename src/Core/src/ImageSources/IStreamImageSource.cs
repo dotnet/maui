@@ -9,4 +9,8 @@ namespace Microsoft.Maui
 	{
 		Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default);
 	}
+
+	internal interface IStreamImageSourceWithCache : IStreamImageSource
+	{
+	}
 }

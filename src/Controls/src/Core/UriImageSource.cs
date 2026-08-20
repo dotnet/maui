@@ -9,7 +9,6 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
 	/// <summary>An <see cref="ImageSource"/> that loads an image from a URI, with caching support.</summary>
 	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
@@ -90,25 +89,17 @@ namespace Microsoft.Maui.Controls
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			Stream stream = null;
-
 			if (CachingEnabled)
 			{
-				// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
-
-				// var key = GetKey();
-				// var cached = TryGetFromCache(key, out stream)
-				if (stream is null)
-					stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-				// if (!cached)
-				//    Cache(key, stream)
-			}
-			else
-			{
-				stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+				return await UriImageSourceCache.GetStreamAsync(
+					uri,
+					CacheValidity,
+					token => DownloadStreamAsync(uri, token),
+					ex => Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Unable to cache image URI '{Uri}'.", uri),
+					cancellationToken).ConfigureAwait(false);
 			}
 
-			return stream;
+			return await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
 		}
 
 		async Task<Stream> DownloadStreamAsync(Uri uri, CancellationToken cancellationToken)
@@ -120,6 +111,10 @@ namespace Microsoft.Maui.Controls
 				// Do not remove this await otherwise the client will dispose before
 				// the stream even starts
 				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+			}
+			catch (OperationCanceledException)
+			{
+				throw;
 			}
 			catch (Exception ex)
 			{

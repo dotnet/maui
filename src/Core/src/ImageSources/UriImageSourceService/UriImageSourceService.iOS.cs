@@ -45,6 +45,10 @@ namespace Microsoft.Maui
 
 		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
 		{
+			// Avoid caching the same bytes twice when the stream source owns its cache.
+			if (imageSource is IStreamImageSourceWithCache)
+				return await DownloadImageAsync(imageSource, cancellationToken);
+
 			// TODO: use a real caching library with the URI
 
 			var filename = GetCachedFileName(imageSource);
@@ -52,7 +56,7 @@ namespace Microsoft.Maui
 
 			NSData? imageData;
 
-			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
+			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache, imageSource.CacheValidity))
 			{
 				imageData = GetCachedImage(pathToImageCache);
 			}
@@ -104,6 +108,18 @@ namespace Microsoft.Maui
 		public bool IsImageCached(string path)
 		{
 			return File.Exists(path);
+		}
+
+		internal bool IsImageCached(string path, TimeSpan cacheValidity)
+		{
+			if (cacheValidity <= TimeSpan.Zero)
+				return false;
+
+			if (!IsImageCached(path))
+				return false;
+
+			return cacheValidity == TimeSpan.MaxValue ||
+				DateTime.UtcNow - File.GetLastWriteTimeUtc(path) < cacheValidity;
 		}
 
 		public NSData GetCachedImage(string path)
