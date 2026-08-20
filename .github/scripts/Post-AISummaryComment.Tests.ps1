@@ -674,7 +674,7 @@ Describe 'New-FutureActionSection' {
         $section | Should -Match 'diff --git a/file.cs b/file.cs'
     }
 
-    It 'renders an explicit patch-required action when pr-plus-reviewer wins' {
+    It 'renders a public action without internal artifact instructions when pr-plus-reviewer wins' {
         @{
             winner = 'pr-plus-reviewer'
             isPRFix = $true
@@ -684,11 +684,12 @@ Describe 'New-FutureActionSection' {
 
         $section = New-FutureActionSection -PRAgentDir $script:testDir
 
-        $section | Should -Match 'reviewer patch required'
-        $section | Should -Match 'submitted PR still needs those changes'
-        $section | Should -Match 'PRAgent/pr-plus-reviewer/reviewer.patch'
+        $section | Should -Match 'reviewer changes required'
+        $section | Should -Match 'changes that are not yet in the submitted PR'
+        $section | Should -Match 'Address the actionable findings in this review before merging'
         $section | Should -Match 'The reviewer patch closes a correctness gap'
         $section | Should -Not -Match 'No alternative fix was selected'
+        $section | Should -Not -Match 'reviewer\.patch|CopilotLogs|Required submitted-PR change'
     }
 
     It 'keeps generated guidance inside details when the agent summary contains a closing tag' {
@@ -700,7 +701,7 @@ Describe 'New-FutureActionSection' {
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
 
         $section = New-FutureActionSection -PRAgentDir $script:testDir
-        $guidanceIndex = $section.IndexOf('Apply <code>PRAgent/pr-plus-reviewer/reviewer.patch</code>')
+        $guidanceIndex = $section.IndexOf('Address the actionable findings in this review before merging.')
         $closingIndex = $section.LastIndexOf('</details>')
 
         $section | Should -Match ([regex]::Escape('Readable rationale &lt;/details&gt; &amp; follow-up.'))
