@@ -5664,6 +5664,42 @@ Describe 'Get-ReplicationTestAttemptKind' {
         Get-ReplicationTestAttemptKind -FailureSummary '' | Should -Be 'other'
     }
 
+    It 'names the broken machine that build 15014604 reported as other' {
+        # Verbatim from the verifier throw at Invoke-ReplicationTestVerification
+        # line 534. Five of the sixteen measured verification_inconclusive runs
+        # carried this and said only attemptKinds=[other, ...], which is
+        # indistinguishable from an agent that could not author a test.
+        $summary = 'Replication test verification failed (verifierPassed=False, ' +
+            'signatureMatched=False, signatureEquivalent=False, infrastructureFailure=True, ' +
+            'consistentRuns=False, completedRuns=1/3, stableFailureMessage=True).'
+
+        Get-ReplicationTestAttemptKind -FailureSummary $summary | Should -Be 'harness-error'
+    }
+
+    It 'keeps a broken machine out of the verdict kinds so the outcome is unchanged' {
+        # This is a diagnostic refinement, not a reclassification. A run that
+        # only ever hit the harness must still block red as verification_
+        # inconclusive exactly as it did when the kind was named other.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('harness-error')
+
+        Test-ReplicationVerificationReachedAVerdict -AttemptKinds $kinds | Should -BeFalse
+        Get-ReplicationBlockedCode -RawReason 'x' -Stage 'test' -AttemptKinds $kinds |
+            Should -Be 'verification_inconclusive'
+    }
+
+    It 'never lets a broken machine steal an attempt that reached a real verdict' {
+        # The check sits after every verdict branch on purpose. Placing it
+        # earlier would convert answers into pipeline defects and make the board
+        # redder than the evidence warrants.
+        $passed = Get-ReplicationTestPassedDiagnosis + ' infrastructureFailure=True'
+        Get-ReplicationTestAttemptKind -FailureSummary $passed | Should -Be 'test-passed'
+
+        $wrong = "The test failed, but with 'System.TimeoutException' instead of the " +
+            "declared expectedFailureSignature 'X'. infrastructureFailure=True"
+        Get-ReplicationTestAttemptKind -FailureSummary $wrong | Should -Be 'wrong-signature'
+    }
+
     It 'reports test-stage attempts instead of the empty sandbox list' {
         # Runs 15015663, 15015728 and 15015744 all blocked with an empty list
         # because the sandbox had succeeded, hiding three unrelated causes.

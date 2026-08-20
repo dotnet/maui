@@ -546,7 +546,8 @@ function Test-ReplicationVerificationReachedAVerdict {
         These kinds are only ever recorded after the named test was selected,
         executed and its outcome read, so each one is evidence that the run
         learned something about the proposed oracle. The remaining kinds
-        (build-failed, app-terminated, other) mean no verdict was reached.
+        (build-failed, app-terminated, harness-error, other) mean no verdict was
+        reached.
     #>
     param(
         [AllowNull()][AllowEmptyCollection()]
@@ -2018,6 +2019,13 @@ function Get-ReplicationTestAttemptKind {
     if ($FailureSummary -match '(?i)reports a different value|stableFailureMessage=False') { return 'unstable-failure' }
     if ($FailureSummary -match 'cannot be attributed to the named test') { return 'ambiguous-selection' }
     if (Test-ReplicationAppTerminated -Text $FailureSummary) { return 'app-terminated' }
+    # The verifier states outright when the device, harness or runner failed
+    # underneath it. Five of the sixteen measured verification_inconclusive runs
+    # carried infrastructureFailure=True and reported attemptKinds=[other, ...],
+    # which reads exactly like an agent that could not author a test. The
+    # outcome is unchanged - a broken machine still reaches no verdict - but the
+    # operator can now tell a sick device from a failing agent.
+    if ($FailureSummary -match 'infrastructureFailure=True') { return 'harness-error' }
     return 'other'
 }
 
