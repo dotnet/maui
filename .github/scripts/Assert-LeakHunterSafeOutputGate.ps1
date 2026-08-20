@@ -9,6 +9,53 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
+function Set-LeakHunterAgentOutput {
+    param(
+        [Parameter(Mandatory = $true)][object]$Output,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.LinkType -or
+        ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0 -or
+        $item.PSIsContainer -or
+        $item -isnot [System.IO.FileInfo]) {
+        throw "Refusing non-regular agent output file: $Path"
+    }
+
+    $json = ConvertTo-Json -InputObject $Output -Depth 100 -Compress
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    $bytes = $encoding.GetBytes($json)
+    if ($bytes.Length -eq 0 -or $bytes.Length -gt 1MB) {
+        throw "Filtered agent output is empty or too large: $Path"
+    }
+
+    $temporaryPath = Join-Path $item.DirectoryName (
+        ".$($item.Name).leak-gate-$PID-$([Guid]::NewGuid().ToString('N'))"
+    )
+    $stream = $null
+    try {
+        $stream = [System.IO.FileStream]::new(
+            $temporaryPath,
+            [System.IO.FileMode]::CreateNew,
+            [System.IO.FileAccess]::Write,
+            [System.IO.FileShare]::None
+        )
+        $stream.Write($bytes, 0, $bytes.Length)
+        $stream.Flush($true)
+        $stream.Dispose()
+        $stream = $null
+        [System.IO.File]::Move($temporaryPath, $item.FullName, $true)
+    } finally {
+        if ($null -ne $stream) {
+            $stream.Dispose()
+        }
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Force
+        }
+    }
+}
+
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'
 }
@@ -179,33 +226,74 @@ $openFixApis = @(
     }
 )
 
-# Validation is intentionally batch-atomic. Do not rewrite agent output at this trusted
-# boundary: any stale item aborts before Process Safe Outputs, and distinct items retry next run.
+$staleTitles = [System.Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::Ordinal
+)
+$retainedRequestedItems = [System.Collections.Generic.List[object]]::new()
+$firstStaleFailure = $null
 foreach ($requested in $requestedItems) {
     $api = [string]$requested.Api
+    $staleReason = $null
     $openApiMatches = @($openIssueApis | Where-Object {
             Test-LeakApiIdentityMatch -Left ([string]$_.Api) -Right $api
         })
     if ($openApiMatches.Count -gt 0) {
-        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open issue match $($openApiMatches.Number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
+        $staleReason =
+            "same-API open issue match $($openApiMatches.Number -join ', ')"
     }
 
-    $mergedApiMatches = @($eligibleMerged | Where-Object {
-            $existingApi = Get-CanonicalExistingLeakApi `
-                -Title ([string]$_.title)
-            Test-LeakApiIdentityMatch -Left $existingApi -Right $api
-        })
-    if ($mergedApiMatches.Count -gt 0) {
-        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API merged fix match $($mergedApiMatches.number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
+    if ($null -eq $staleReason) {
+        $mergedApiMatches = @($eligibleMerged | Where-Object {
+                $existingApi = Get-CanonicalExistingLeakApi `
+                    -Title ([string]$_.title)
+                Test-LeakApiIdentityMatch -Left $existingApi -Right $api
+            })
+        if ($mergedApiMatches.Count -gt 0) {
+            $staleReason =
+                "same-API merged fix match $($mergedApiMatches.number -join ', ')"
+        }
     }
 
-    $openFixApiMatches = @($openFixApis | Where-Object {
-            Test-LeakApiIdentityMatch -Left ([string]$_.Api) -Right $api
-        })
-    if ($openFixApiMatches.Count -gt 0) {
-        throw "Final leak-hunter de-dup gate blocked issue creation for '$api': same-API open fix match $($openFixApiMatches.Number -join ', '). The safe-output batch is rejected atomically; other items can retry on the next scheduled run."
+    if ($null -eq $staleReason) {
+        $openFixApiMatches = @($openFixApis | Where-Object {
+                Test-LeakApiIdentityMatch -Left ([string]$_.Api) -Right $api
+            })
+        if ($openFixApiMatches.Count -gt 0) {
+            $staleReason =
+                "same-API open fix match $($openFixApiMatches.Number -join ', ')"
+        }
     }
+
+    if ($null -ne $staleReason) {
+        [void]$staleTitles.Add([string]$requested.Item.title)
+        $staleFailure =
+            "Final leak-hunter de-dup gate blocked issue creation for '$api': $staleReason."
+        if ($null -eq $firstStaleFailure) {
+            $firstStaleFailure = $staleFailure
+        }
+        Write-Warning "Final leak-hunter de-dup gate identified stale issue creation for '$api': $staleReason."
+        continue
+    }
+
+    $retainedRequestedItems.Add($requested)
 }
 
-$apis = @($requestedItems | ForEach-Object { $_.Api } | Sort-Object)
+if ($staleTitles.Count -gt 0) {
+    if ($retainedRequestedItems.Count -eq 0) {
+        throw $firstStaleFailure
+    }
+
+    $retainedOutputItems = [System.Collections.Generic.List[object]]::new()
+    foreach ($item in @($agentOutput.items)) {
+        if ([string]$item.type -ceq 'create_issue' -and
+            $staleTitles.Contains([string]$item.title)) {
+            continue
+        }
+        $retainedOutputItems.Add($item)
+    }
+    $agentOutput.items = [object[]]@($retainedOutputItems)
+    Set-LeakHunterAgentOutput -Output $agentOutput -Path $AgentOutputPath
+}
+
+$apis = @($retainedRequestedItems | ForEach-Object { $_.Api } | Sort-Object)
 Write-Host "Final leak-hunter de-dup gate passed for APIs: $($apis -join ', ')."

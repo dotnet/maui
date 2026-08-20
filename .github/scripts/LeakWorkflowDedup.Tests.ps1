@@ -3578,28 +3578,62 @@ Describe 'merged revert discovery from complete history' {
         ).Count | Should -Be 0
     }
 
-    It 'ignores revert proof that appears only in a non-merge PR commit' {
+    It 'uses branch-commit revert proof when the merge message omits it' {
         $fix = New-LeakPr `
             -Number 100 `
             -Title '[leak-fix] Fix Picker.ItemsSource leak'
-        $unrelated = New-LeakPr `
+        $revert = New-LeakPr `
             -Number 200 `
-            -Title 'Unrelated squash-merged change'
+            -Title 'Revert Picker cleanup'
 
-        @(
+        $result = @(
             Get-RelevantMergedLeakReverts `
                 -Repository 'dotnet/maui' `
                 -TargetPullRequests @($fix) `
-                -MergedPullRequests @($fix, $unrelated) `
+                -MergedPullRequests @($fix, $revert) `
                 -PullRequestCommitHistories @(
                     New-LeakCommitHistory `
-                        -PullRequest $unrelated `
+                        -PullRequest $revert `
                         -Messages @(
-                            "Unrelated branch commit`n`nThis reverts commit $($fix.mergeCommitOid)."
+                            "Revert cleanup`n`nThis reverts commit $($fix.mergeCommitOid)."
                         ) `
-                        -MergeCommitMessage 'Squash merge unrelated change'
+                        -MergeCommitMessage 'Merge the revert pull request'
                 )
-        ).Count | Should -Be 0
+        )
+
+        $result.number | Should -Be @(200)
+        $result[0].verifiedRevertTargets | Should -Be @(100)
+    }
+
+    It 'ignores unrelated same-base growth outside revert-shaped candidates' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $unrelated = @(200..224 | ForEach-Object {
+                New-LeakPr -Number $_ -Title "Ordinary merged change $_"
+            })
+        $revert = New-LeakPr `
+            -Number 300 `
+            -Title 'Back out Picker cleanup'
+
+        $result = @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests (@($fix) + $unrelated + @($revert)) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $revert `
+                        -Messages @(
+                            "Revert cleanup`n`nThis reverts commit $($fix.mergeCommitOid)."
+                        ) `
+                        -MergeCommitMessage 'Merge the revert pull request'
+                ) `
+                -MaximumTraversalPullRequests 2
+        )
+
+        $result.number | Should -Be @(300)
+        $result[0].verifiedRevertTargets | Should -Be @(100)
     }
 
     It 'rejects wrong and abbreviated immutable commit references' -ForEach @(
@@ -6457,7 +6491,7 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
             } | Should -Throw "*blocked issue creation for 'BackButtonBehavior.Command'*36345*"
         }
 
-        It 'rejects a mixed batch atomically when one item becomes stale' {
+        It 'removes a stale item while preserving distinct siblings' {
             $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
             $output.items += [pscustomobject]@{
                 type = 'create_issue'
@@ -6479,15 +6513,15 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw "*blocked issue creation for 'Button.Clicked'*rejected atomically*"
+            } | Should -Not -Throw
 
-            $unchanged = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+            $filtered = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
                 ConvertFrom-Json
-            @($unchanged.items).Count | Should -Be 2
-            @($unchanged.items.title) | Should -Contain (
+            @($filtered.items).Count | Should -Be 1
+            @($filtered.items.title) | Should -Contain (
                 '[leak-scan] GradientBrush.GradientStops — reset leak'
             )
-            @($unchanged.items.title) | Should -Contain (
+            @($filtered.items.title) | Should -Not -Contain (
                 '[leak-scan] Button.Clicked — event subscription leak'
             )
         }

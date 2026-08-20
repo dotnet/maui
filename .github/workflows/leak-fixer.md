@@ -484,9 +484,11 @@ jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
 
 # A merged fix is not authoritative if it was later effectively reverted. The complete history
-# carries each original merge/squash commit OID. Editable `Reverts #N` body text identifies
-# candidates only; the helper batches complete candidate commit histories (10 PRs/query,
-# 100 commits/page) and accepts an edge only for exactly one full immutable
+# carries each original merge/squash commit OID. Editable `Reverts #N` body text and
+# revert-shaped titles identify candidates only, keeping unrelated merged-PR growth outside the
+# traversal budget. The helper batches complete candidate commit histories (10 PRs/query,
+# 100 commits/page) and accepts an edge only when the union of the merge/squash message and
+# branch commit messages contains one unambiguous full
 # `This reverts commit <40-hex-target-OID>.` proof on the same base. Wrong, abbreviated,
 # duplicate, ambiguous, cross-branch, truncated, or over-budget evidence leaves the fix active
 # or fails closed. Commit verification has a 1000-query and 20000-record budget; recursive

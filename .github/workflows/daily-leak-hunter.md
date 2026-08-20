@@ -141,19 +141,21 @@ pre-agent-steps:
       # A merged [leak-fix] PR is not permanent proof the fix is still active — it may since
       # have been reverted (e.g. it broke something else), in which case the shipped package
       # will still reproduce the ORIGINAL leak and skipping the API forever would be wrong.
-      # Repository-local "Reverts #<N>" body references narrow the candidate set but are
-      # editable and never establish revert state themselves. Resolve only independently
-      # verified links recursively: any active same-branch direct reverter keeps its target
-      # reverted. Reverting a reverter can deactivate it, but independent sibling reverts
-      # never cancel each other.
+      # Repository-local "Reverts #<N>" body references and revert-shaped titles narrow the
+      # candidate set but are editable and never establish revert state themselves. This keeps
+      # ordinary unrelated merged-PR growth outside the traversal budget. Resolve only
+      # independently verified links recursively: any active same-branch direct reverter keeps
+      # its target reverted. Reverting a reverter can deactivate it, but
+      # independent sibling reverts never cancel each other.
       # Reuse the same complete merged-PR history, including each original merge/squash commit
-      # OID. Editable `Reverts #N` body lines identify candidates only. The helper batches
-      # candidate PR commit-history queries and accepts an edge only when a complete immutable
-      # commit message contains exactly one full `This reverts commit <40-hex-target-OID>.`
-      # proof. Wrong, abbreviated, duplicate, ambiguous, cross-branch, truncated, or over-budget
-      # evidence leaves the original fix active or fails closed. Both merged-history and commit
-      # pagination use stable totalCount/pageInfo validation and rebuild the whole snapshot once
-      # on count, duplicate, cursor, or cross-base retarget churn. Persistent churn fails closed.
+      # OID. Those editable hints identify candidates only. The helper batches
+      # candidate PR commit-history queries and accepts an edge only when the union of the
+      # merge/squash message and complete branch commit messages contains one unambiguous full
+      # `This reverts commit <40-hex-target-OID>.` proof. Wrong, abbreviated, duplicate,
+      # ambiguous, cross-branch, truncated, or over-budget evidence leaves the original fix
+      # active or fails closed. Both merged-history and commit pagination use stable
+      # totalCount/pageInfo validation and rebuild the whole snapshot once on count, duplicate,
+      # cursor, or cross-base retarget churn. Persistent churn fails closed.
       # Native requests use bounded transient retries, capped server-directed rate-limit delays,
       # and 1000-query safety budgets per snapshot attempt; commit verification is batched 10 PRs
       # at a time, pages 100 commits, and caps aggregate records at 20000. Local traversal keeps
@@ -546,9 +548,9 @@ selected leak against open `[leak-scan]` issues, supported-branch merged `[leak-
 title-identified authoritative open `[leak-fix]` PRs, AND the other issues you're filing this run.
 Any exact or short/full ambiguous match blocks output because the trusted gate has no
 independent evidence that an agent-authored mechanism comparison is correct. A trusted final
-gate repeats the live de-dup immediately before mutation. It validates the up-to-eight-item
-batch atomically: one late same-API match aborts every issue mutation, and otherwise-distinct
-reports retry on the next scheduled run.
+gate repeats the live de-dup immediately before mutation. It removes any late same-API matches
+from the up-to-eight-item batch while preserving otherwise-distinct reports; if every item
+became stale, it blocks the batch without mutation.
 Each title MUST be of the form **`[leak-scan] <API identity> — <short mechanism>`** — it MUST
 lead with the anchored API identity immediately after the tag. Use the most qualified source
 identifier available and preserve it exactly (for example,

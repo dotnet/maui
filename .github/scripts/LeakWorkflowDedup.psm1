@@ -611,6 +611,21 @@ function Get-LeakRevertTargets {
         Sort-Object -Unique)
 }
 
+function Test-LeakPotentialRevertPullRequest {
+    param(
+        [AllowEmptyString()][string]$Title,
+        [AllowEmptyString()][string]$Body,
+        [Parameter(Mandatory = $true)][string]$Repository
+    )
+
+    if (@(Get-LeakRevertTargets -Body $Body -Repository $Repository).Count -gt 0) {
+        return $true
+    }
+
+    return ($Title ?? '') -cmatch
+        '(?i)\b(?:revert(?:ed|ing)?|back[ -]?out|restore|undo)\b'
+}
+
 function ConvertTo-LeakUtcTimestamp {
     param(
         [Parameter(Mandatory = $true)][AllowNull()][object]$Value,
@@ -2468,13 +2483,17 @@ function Get-RelevantMergedLeakReverts {
                 -not $targetNumbers.Contains($number) -and
                 $branches.Contains($base) -and
                 $mergedAtByNumber[$number] -ge
-                    $earliestTargetMergeByBranch[$base]
+                    $earliestTargetMergeByBranch[$base] -and
+                (Test-LeakPotentialRevertPullRequest `
+                    -Title ([string]$_.title) `
+                    -Body ([string]$_.body) `
+                    -Repository $Repository)
             } |
             Sort-Object number
     )
     if (($commitScanCandidates.Count + $targetNumbers.Count) -gt
         $MaximumTraversalPullRequests) {
-        throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget while preparing immutable commit-proof discovery."
+        throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget while preparing revert-shaped immutable commit-proof candidates."
     }
     if ($commitScanCandidates.Count -eq 0) {
         return @()
@@ -2552,6 +2571,8 @@ function Get-RelevantMergedLeakReverts {
                 -RequireArray
         )
 
+        $proofMessages = [System.Collections.Generic.List[string]]::new()
+        $proofMessages.Add($mergeCommitMessage)
         $seenCommitOids = [System.Collections.Generic.HashSet[string]]::new(
             [StringComparer]::OrdinalIgnoreCase
         )
@@ -2572,11 +2593,39 @@ function Get-RelevantMergedLeakReverts {
             if ($message -isnot [string]) {
                 throw "Merged reverter commit history PR #$number has a malformed commit message."
             }
+            $proofMessages.Add($message)
+        }
+
+        $proofOids = [System.Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase
+        )
+        $ambiguousProofOids =
+            [System.Collections.Generic.HashSet[string]]::new(
+                [StringComparer]::OrdinalIgnoreCase
+            )
+        foreach ($message in $proofMessages) {
+            $messageProofCounts = @{}
+            foreach ($proofOid in @(
+                    Get-LeakImmutableRevertCommitOids -Message $message
+                )) {
+                if (-not $messageProofCounts.ContainsKey($proofOid)) {
+                    $messageProofCounts[$proofOid] = 0
+                }
+                $messageProofCounts[$proofOid]++
+            }
+            foreach ($proofOid in $messageProofCounts.Keys) {
+                if ($messageProofCounts[$proofOid] -ne 1) {
+                    [void]$ambiguousProofOids.Add($proofOid)
+                    continue
+                }
+                [void]$proofOids.Add($proofOid)
+            }
+        }
+        foreach ($proofOid in $ambiguousProofOids) {
+            [void]$proofOids.Remove($proofOid)
         }
         $commitHistoryByNumber[$number] = [pscustomobject]@{
-            ProofOids = @(
-                Get-LeakImmutableRevertCommitOids -Message $mergeCommitMessage
-            )
+            ProofOids = @($proofOids | Sort-Object)
         }
     }
     if ($null -eq $PullRequestCommitHistories -and
