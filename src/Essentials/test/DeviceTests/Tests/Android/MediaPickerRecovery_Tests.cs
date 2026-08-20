@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
@@ -20,11 +21,12 @@ using JavaList = Android.Runtime.JavaList;
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
 	[Category("MediaPicker")]
+	[Collection(Microsoft.Maui.Essentials.DeviceTests.EssentialsStaticStateCollection.Name)]
 	public class MediaPickerRecovery_Tests : IDisposable
 	{
 		const string ActiveOperationPreferenceKey = "active_operation";
 		const string RecoveredResultsPreferenceKey = "recovered_results";
-		static readonly string RecoveryPreferencesSharedName = Preferences.GetPrivatePreferencesSharedName("media_picker");
+		static string RecoveryPreferencesSharedName => MediaPickerRecoveryStore.PreferencesSharedName;
 
 		// These tests drive the recovery manager and AndroidX callback wrappers directly.
 		// They avoid launching real camera/picker apps while still preserving the important
@@ -55,6 +57,55 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Equal(1, captureVideoRegistrations);
 			Assert.Equal(1, pickVisualMediaRegistrations);
 			Assert.Equal(1, pickMultipleVisualMediaRegistrations);
+		}
+
+		[Fact]
+		public void Recovery_Preferences_Namespace_Uses_Android_App_Package()
+		{
+			var originalAppInfo = AppInfo.Current;
+			var expected = Preferences.GetPrivatePreferencesSharedName(
+				Assert.IsType<string>(Application.Context.PackageName),
+				"media_picker");
+
+			try
+			{
+				AppInfo.SetCurrent(new StubAppInfo("first.package"));
+				Assert.Equal(expected, MediaPickerRecoveryStore.PreferencesSharedName);
+
+				AppInfo.SetCurrent(new StubAppInfo("second.package"));
+				Assert.Equal(expected, MediaPickerRecoveryStore.PreferencesSharedName);
+			}
+			finally
+			{
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
+		[Fact]
+		public void Recovery_Preferences_Bypass_Bridged_Preferences_Facade()
+		{
+			var originalPreferences = Preferences.Default;
+			var bridgedPreferences = new RecordingPreferences();
+
+			try
+			{
+				Preferences.SetDefault(bridgedPreferences);
+				MediaPickerRecoveryStore.WriteRecoveredResults([
+					new RecoveredMediaPickerRecord(
+						"durable",
+						RecoveredMediaPickerResultKind.CapturePhoto,
+						["durable.jpg"])
+				]);
+
+				var record = Assert.Single(MediaPickerRecoveryStore.ReadRecoveredResults());
+
+				Assert.Equal("durable", record.Id);
+				Assert.Equal(0, bridgedPreferences.AccessCount);
+			}
+			finally
+			{
+				Preferences.SetDefault(originalPreferences);
+			}
 		}
 
 		[Fact]
@@ -1879,8 +1930,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
 			MediaPickerRecoveryManager.SetBeginOperationWithRecoveryCheckpointForTests(null);
 			SetRecoveryReconciliationGeneration(0);
-			Preferences.Remove(ActiveOperationPreferenceKey, RecoveryPreferencesSharedName);
-			Preferences.Remove(RecoveredResultsPreferenceKey, RecoveryPreferencesSharedName);
+			using var preferences = PreferencesImplementation.GetSharedPreferences(RecoveryPreferencesSharedName);
+			using var editor = preferences.Edit() ??
+				throw new InvalidOperationException("Unable to edit MediaPicker recovery preferences.");
+			editor.Remove(ActiveOperationPreferenceKey);
+			editor.Remove(RecoveredResultsPreferenceKey);
+			editor.Apply();
 		}
 
 		static PendingMediaPickerOperation GetActiveOperation()
@@ -1890,7 +1945,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			=> GetRecoveryWaiters().Count;
 
 		static string GetSerializedActiveOperation()
-			=> Preferences.Get(ActiveOperationPreferenceKey, null, RecoveryPreferencesSharedName);
+		{
+			using var preferences = PreferencesImplementation.GetSharedPreferences(RecoveryPreferencesSharedName);
+			return preferences.GetString(ActiveOperationPreferenceKey, null);
+		}
 
 		static void ClearInProcessOperationIds()
 		{
@@ -1968,6 +2026,66 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 			public void Dispose()
 				=> MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
+		}
+
+		sealed class StubAppInfo : IAppInfo
+		{
+			readonly string _packageName;
+
+			public StubAppInfo(string packageName)
+			{
+				_packageName = packageName;
+			}
+
+			public string PackageName => _packageName;
+			public string Name => "Test";
+			public string VersionString => "1.0.0";
+			public Version Version => new(1, 0);
+			public string BuildString => "1";
+			public AppTheme RequestedTheme => AppTheme.Light;
+			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
+			public void ShowSettingsUI() { }
+		}
+
+		sealed class RecordingPreferences : IPreferences
+		{
+			readonly Dictionary<(string Key, string SharedName), object> _values = [];
+
+			public int AccessCount { get; private set; }
+
+			public bool ContainsKey(string key, string sharedName = null)
+			{
+				AccessCount++;
+				return _values.ContainsKey((key, sharedName));
+			}
+
+			public void Remove(string key, string sharedName = null)
+			{
+				AccessCount++;
+				_values.Remove((key, sharedName));
+			}
+
+			public void Clear(string sharedName = null)
+			{
+				AccessCount++;
+				foreach (var key in _values.Keys.Where(key => key.SharedName == sharedName).ToArray())
+					_values.Remove(key);
+			}
+
+			public void Set<T>(string key, T value, string sharedName = null)
+			{
+				AccessCount++;
+				_values[(key, sharedName)] = value;
+			}
+
+			public T Get<T>(string key, T defaultValue, string sharedName = null)
+			{
+				AccessCount++;
+				return _values.TryGetValue((key, sharedName), out var value)
+					? (T)value!
+					: defaultValue;
+			}
 		}
 
 		static string CreateCacheFilePath(string extension)
