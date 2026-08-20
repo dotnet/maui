@@ -129,7 +129,7 @@ public partial class BlazorWebViewTests
 		// for the IBlazorWebView service type. The two HostBuilderHandlerTests in Core verify the
 		// underlying ConfigureMauiHandlers replacement mechanism with stub types; this test exercises
 		// the new public API surface end-to-end with the real BlazorWebView/IBlazorWebView types.
-		var builder = MauiApp.CreateBuilder();
+		var builder = MauiApp.CreateBuilder(useDefaults: false);
 		builder.Services.AddMauiBlazorWebView()
 			.UsePlatformHandler<CustomBlazorWebViewHandlerStub>();
 		using var app = builder.Build();
@@ -146,7 +146,7 @@ public partial class BlazorWebViewTests
 		// The factory overload registers a different ServiceDescriptor shape (ImplementationFactory
 		// rather than ImplementationType), so GetHandlerType returns null here; we resolve through
 		// GetHandler instead and assert the produced instance type.
-		var builder = MauiApp.CreateBuilder();
+		var builder = MauiApp.CreateBuilder(useDefaults: false);
 		var factoryWasCalled = false;
 		builder.Services.AddMauiBlazorWebView()
 			.UsePlatformHandler(_ =>
