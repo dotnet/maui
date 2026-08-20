@@ -1,6 +1,6 @@
 ---
 name: release-readiness
-description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews — and produces public-safe, copy-ready release handoffs or Loop-page drafts from the resulting evidence. Use for readiness verdicts, release blockers, Preview/SR status, release handoff pages, manual validation instructions, or "make the SR10/Preview N release page." Surveys CI and release delta, classifies regressions, and keeps Preview and servicing semantics distinct.
+description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews — and produces public-safe, copy-ready release handoffs or Loop-page drafts from the resulting evidence. Use for readiness verdicts, release blockers, Preview/SR status, release handoff pages, manual validation instructions, "make the SR10/Preview N release page," or an interactive follow-up that explicitly asks to execute an identified SR backport. Surveys CI and release delta, classifies regressions, and keeps Preview and servicing semantics distinct; deterministic scripts never write.
 metadata:
   author: dotnet-maui
   version: "2.0"
@@ -11,9 +11,11 @@ compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. 
 
 This skill produces deterministic, evidence-backed answers to **"Is `<release branch>` ready to ship?"** for .NET MAUI release branches — both **Servicing Releases (SR)** and **Previews**, in both **in-flight** and **candidate** (pre-cut) modes.
 
-## 🚨 Report-only
+## Deterministic engine and interactive actions
 
-This skill **reports**. It does **not** execute release operations against dotnet/maui — no branch cuts, no SR merges, no tags, no pushes to `release/*` refs. If you (the agent/user invoking this skill) are asked to perform a release operation, refuse and emit the recommended commands as a copy-pasteable block for the human release captain to run.
+The PowerShell entry points are deterministic and **always report-only**: they do not cut branches, post comments, create PRs, merge, tag, trigger builds, or push refs.
+
+The interactive [`release-readiness-agent`](../../agents/release-readiness-agent.agent.md) is read-only by default, but an explicit request to execute a specific SR backport may transition to its constrained action mode. That mode may post the validated Arcade `/backport` command or create a fork-based manual backport PR. It never pushes directly to an upstream release ref, merges the PR, creates release/version commits, tags, or starts release builds. Do not refuse an explicitly authorized backport solely because this deterministic skill was used earlier in the conversation.
 
 ## When to Use
 
@@ -21,6 +23,7 @@ This skill **reports**. It does **not** execute release operations against dotne
 - "What's blocking SR9 candidate?" / "What would ship if we cut SR9 today?"
 - "How does net11 preview6 look?" / "Are we ready to cut preview6 from net11.0?"
 - "Are there any regression fixes I should backport to SR8?"
+- "Backport PR #12345 to SR8" / "Post the backport command" / "Open the manual backport PR" (interactive agent action mode)
 - "What's new in SR8 since the last sync?"
 - "Give me a status on all releases" / "release status overview" / "what needs attention across releases" (**portfolio** — read the open `[Release Readiness]` tracker issues first; see [Reading trackers directly](#reading-trackers-directly-ad-hoc-status) below)
 - Scheduled and event-driven release tracking across all active majors
@@ -465,7 +468,7 @@ Each candidate fix PR is classified with confidence + evidence:
 
 ## SR backport handoff
 
-This skill remains report-only: it MUST NOT post a comment, create a branch, or open a backport PR. When reporting a backport candidate:
+The deterministic scripts only report. The interactive agent acts only when the user explicitly asks it to execute the named backport; otherwise it emits the handoff:
 
 1. For `merged-on-main-no-backport`, include this exact command in the recommendation for the **merged source PR**:
 
@@ -473,11 +476,12 @@ This skill remains report-only: it MUST NOT post a comment, create a branch, or 
    /backport to release/<major>.0.1xx-sr<N>
    ```
 
-2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, do not trigger a duplicate backport.
-3. For `merged-non-main-only`, do **not** recommend the command yet. Require a fix PR to merge into `main` first, then rerun readiness; only recommend the command after the merged source PR's ancestry is verified on `main`.
-4. If the automation reports a conflict, recommend manually cherry-picking the source PR's **merge commit** onto the SR branch with `git cherry-pick -x`, resolving and testing the conflict, then opening a PR targeting the SR branch.
+2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, never trigger or create a duplicate backport.
+3. For `merged-non-main-only`, do **not** use the Arcade command. Require the source to reach `main` first unless the release captain explicitly authorizes a manual port of a named immutable commit already selected in the inflight candidate.
+4. On explicit authorization, follow the agent's action gates before writing. The automated path may post the command only after main ancestry and duplicate checks pass.
+5. If automation conflicts, or the user explicitly authorizes the non-main candidate exception, create a dedicated fork branch and manual backport PR. Apply only the named commit/patch scope, test it, document the exception, and never push directly to the upstream SR ref.
 
-Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape and manual fallback commands.
+Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape, execution boundary, and manual path.
 
 ## CI Status Categories
 
@@ -530,9 +534,9 @@ For SR9 → SR10, the complete source change is:
 
 This is the same one-file, one-line pattern used for SR8 in
 [#35433](https://github.com/dotnet/maui/pull/35433) (`70` → `80`) and SR9 in
-[#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). The skill
-remains report-only: it must explain this PR precisely, never edit or push
-`main` itself.
+[#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). The
+interactive action mode is limited to SR backports, so it must explain this
+mainline bump precisely and never edit or push `main` itself.
 
 ### Expected ship date
 

@@ -11708,6 +11708,38 @@ try {
 }
 Assert-Eq -Label "engine: Add-SrNightlyFeedFreshness catch survives WarningPreference=Stop (fail-open)" -Expected $true -Actual (-not $nfEngThrew)
 
+# ───── Interactive agent action boundary contract ─────
+Write-Host "`n[Unit] Release-readiness agent action boundary" -ForegroundColor Cyan
+$agentContractPath = Join-Path $PSScriptRoot '../../../agents/release-readiness-agent.agent.md'
+$skillContractPath = Join-Path $PSScriptRoot '../SKILL.md'
+$methodologyContractPath = Join-Path $PSScriptRoot '../references/methodology.md'
+$agentContract = Get-Content -LiteralPath $agentContractPath -Raw
+$skillContract = Get-Content -LiteralPath $skillContractPath -Raw
+$methodologyContract = Get-Content -LiteralPath $methodologyContractPath -Raw
+
+Assert-Eq -Label "agent: explicit backport action mode is documented" -Expected $true `
+    -Actual ([bool]($agentContract -match 'ACTION BOUNDARY — READ-ONLY BY DEFAULT; EXPLICIT BACKPORTS ONLY'))
+Assert-Eq -Label "agent: explicit request authorizes fork push without a redundant confirmation" -Expected $true `
+    -Actual ([bool]($agentContract -match 'explicit request to push or open the PR is sufficient push authorization'))
+Assert-Eq -Label "agent: automated action retains main-ancestry gate" -Expected $true `
+    -Actual ([bool]($agentContract -match 'merge commit is an ancestor of `origin/main`'))
+Assert-Eq -Label "agent: duplicate backport gate is mandatory" -Expected $true `
+    -Actual ([bool]($agentContract -match 'Do not post a duplicate command or open a duplicate PR'))
+Assert-Eq -Label "agent: manual action pushes only to authenticated user fork" -Expected $true `
+    -Actual ([bool]($agentContract -match 'push only the new backport branch to that fork'))
+Assert-Eq -Label "agent: direct upstream release pushes remain forbidden" -Expected $true `
+    -Actual ([bool]($agentContract -match 'MUST NEVER:[\s\S]*Push directly to any `dotnet/maui` `release/\*`'))
+Assert-Eq -Label "agent: merging backport PRs remains forbidden" -Expected $true `
+    -Actual ([bool]($agentContract -match 'MUST NEVER:[\s\S]*Merge or close a backport PR'))
+Assert-Eq -Label "skill: deterministic scripts remain report-only" -Expected $true `
+    -Actual ([bool]($skillContract -match 'PowerShell entry points are deterministic and \*\*always report-only\*\*'))
+Assert-Eq -Label "skill: explicit interactive backports are not blanket-refused" -Expected $true `
+    -Actual ([bool]($skillContract -match 'Do not refuse an explicitly authorized backport solely because this deterministic skill was used earlier'))
+Assert-Eq -Label "methodology: non-main manual exception requires immutable selected candidate commit" -Expected $true `
+    -Actual ([bool]($methodologyContract -match 'named immutable commit that is selected in an inflight candidate'))
+Assert-Eq -Label "methodology: manual push destination is an authenticated fork remote" -Expected $true `
+    -Actual ([bool]($methodologyContract -match 'git push -u <authenticated-user-fork-remote> HEAD'))
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

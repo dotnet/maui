@@ -117,7 +117,7 @@ The skill records `onMain`, `onInflight`, `onSr` independently. A PR can be merg
 
 ### The trap
 
-Do not treat a merged PR or an open SR fix branch as a backport candidate. A backport starts from a **merged source PR whose merge commit is on `main`**. Triggering the automation before that point is skipped; triggering it for `merged-non-main-only` bypasses the required mainline fix.
+Do not treat a merged PR or an open SR fix branch as automatically eligible for the Arcade path. Automated backports start from a **merged source PR whose merge commit is on `main`**. Triggering the automation before that point is skipped; triggering it for `merged-non-main-only` bypasses the required mainline fix.
 
 ### The automated path
 
@@ -135,9 +135,17 @@ Post this exact comment on the merged source PR:
 
 `.github/workflows/backport.yml` delegates this operation to Arcade. Arcade downloads the source PR patch and reapplies it with `git am --3way`; it does **not** run `git cherry-pick -x`. A successful run creates a branch named `backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N>` and an SR-targeted PR whose body identifies `Backport of #<source-pr>`. Validate the automated path by that generated branch name and PR body, not by a cherry-pick trailer.
 
-### Automation conflict fallback
+### Interactive execution boundary
 
-If the workflow cannot apply the change cleanly, use the source PR's **merge commit** — not its head-branch tip — to prepare a manual backport:
+Readiness remains read-only unless the user explicitly asks to execute a specific backport. After that authorization, the agent may post the Arcade command when every automated-path gate passes or open a fork-based manual backport PR. It must never push directly to a `dotnet/maui` release ref, merge the PR, tag a release, create a version bump, or trigger a release build.
+
+Before either write path, check for an existing command and any OPEN or MERGED PR targeting the same SR branch. The user's explicit push/open request authorizes the new fork branch and PR; it does not authorize duplicate or broader release operations.
+
+### Manual PR path
+
+Use the manual path when Arcade cannot apply the change cleanly. It is also available when a release captain explicitly requests a manual port of a named immutable commit that is selected in an inflight candidate but has not reached `main`; document that exception and never describe it as mainline ancestry.
+
+For a normal automation conflict, use the source PR's **merge commit** — not its head-branch tip:
 
 ```bash
 git fetch origin
@@ -145,7 +153,7 @@ git switch -c backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N> \
   origin/release/<major>.0.1xx-sr<N>
 git cherry-pick -x <source-merge-sha>
 # Resolve any conflicts, then test the resolved behavior.
-git push -u origin HEAD
+git push -u <authenticated-user-fork-remote> HEAD
 ```
 
 If `<source-merge-sha>` is a multi-parent merge commit, use mainline parent 1:
@@ -154,9 +162,9 @@ If `<source-merge-sha>` is a multi-parent merge commit, use mainline parent 1:
 git cherry-pick -x -m 1 <source-merge-sha>
 ```
 
-Retain plain `git cherry-pick -x <source-merge-sha>` for single-parent squash/rebase commits. Only this manual fallback creates the `(cherry picked from commit <sha>)` trailer.
+Retain plain `git cherry-pick -x <source-merge-sha>` for single-parent squash/rebase commits. For the explicit non-main candidate exception, use the immutable candidate commit actually selected for mainline flow rather than the source PR's merge commit, and link both in the PR body. Only the manual path creates the `(cherry picked from commit <sha>)` trailer.
 
-Open the resulting PR against the SR branch, keep the generated branch/title convention, and state `Backport of #<source-pr>` in its body. After it merges, re-run readiness so the regression is classified from the SR contents rather than the source PR's state.
+Before pushing, inspect the complete target-relative diff and verify that the remote belongs to the authenticated `gh api user`; never use the upstream repository as the push destination. Open the resulting PR against the SR branch, keep the generated branch/title convention, begin with the repository's required testing note, and state `Backport of #<source-pr>` plus any selectively applied follow-up commits in its body. Do not merge it. After a human merges it, re-run readiness so the regression is classified from the SR contents rather than the source PR's state.
 
 ## Gotcha #5: Servicing Version Flip
 
