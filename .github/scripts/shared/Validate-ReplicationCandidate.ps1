@@ -666,6 +666,7 @@ function Read-ReplicationManifest {
         'reproductionResult', 'reproduction_result',
         'evidenceManifest', 'evidence_manifest',
         'verificationResult', 'verification_result',
+        'negativeControl', 'negative_control',
         'patch'
     )
     Assert-KnownProperties `

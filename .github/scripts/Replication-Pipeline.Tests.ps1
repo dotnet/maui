@@ -548,4 +548,45 @@ Describe 'The trusted publisher stages every module its gate loads' {
                 "a staged publisher script dot-sources $name, so it must be staged too"
         }
     }
+
+    It 'allows every candidate manifest field the orchestrator writes' {
+        # Build 15031427 reproduced its issue on a device, authored a passing
+        # negative control and was then thrown away because the gate had never
+        # been told the manifest gained a 'negativeControl' field. An allowlist
+        # that lags the writer silently destroys finished work, so derive the
+        # written names from the orchestrator instead of trusting the list.
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        # Several manifests in this script open with a schema version, so anchor
+        # on the candidate manifest's own last field and walk back to its start.
+        $manifestEnd = $orchestrator.IndexOf("        patch = 'test.patch'")
+        $manifestEnd | Should -BeGreaterThan 0
+        $manifestStart = $orchestrator.LastIndexOf('schemaVersion = 1', $manifestEnd)
+        $manifestStart | Should -BeGreaterThan 0
+        $manifestBlock = $orchestrator.Substring(
+            $manifestStart, $manifestEnd - $manifestStart)
+
+        # Only the manifest's own top-level keys are validated by the gate's
+        # allowlist; nested hashtable keys are checked by their own rules.
+        $written = @([regex]::Matches(
+                $manifestBlock, "(?m)^        ([A-Za-z][A-Za-z0-9]*) = ") |
+            ForEach-Object { $_.Groups[1].Value })
+        $written | Should -Contain 'negativeControl'
+        $written.Count | Should -BeGreaterThan 10
+
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1') -Raw
+        $allowStart = $gate.IndexOf('$allowedProperties = @(')
+        $allowStart | Should -BeGreaterThan 0
+        $allowEnd = $gate.IndexOf(')', $allowStart)
+        $allowed = @([regex]::Matches(
+                $gate.Substring($allowStart, $allowEnd - $allowStart),
+                "'([A-Za-z_][A-Za-z0-9_]*)'") |
+            ForEach-Object { $_.Groups[1].Value })
+
+        foreach ($name in $written) {
+            $allowed | Should -Contain $name -Because `
+                "the orchestrator writes the manifest field $name"
+        }
+    }
 }
