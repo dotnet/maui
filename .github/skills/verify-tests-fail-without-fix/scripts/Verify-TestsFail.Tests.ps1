@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -1748,5 +1748,56 @@ Describe 'Get-AutoDetectedTests — PR metadata fallback' {
         } finally {
             Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'The authoritative test result is kept as evidence' {
+    # The reviewer of PR 242 could not check the claim that the named test
+    # failed, because the run published only this script's summary of the
+    # runner's output and discarded the runner's own document.
+    It 'copies the result document next to the machine result and names it' {
+        $resultDir = Join-Path $TestDrive 'verification'
+        New-Item -ItemType Directory -Path $resultDir -Force | Out-Null
+        $sourceTrx = Join-Path $TestDrive 'Issue12345.trx'
+        '<TestRun><Results /></TestRun>' | Set-Content -LiteralPath $sourceTrx
+
+        $script:ReplicationAuthoritativeResultPath = $sourceTrx
+        $MachineResultPath = Join-Path $resultDir 'machine-result.json'
+
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry @{
+                Type = 'UITest'; Filter = 'FullyQualifiedName~Issue12345'
+                Project = 'Controls.TestCases.Shared.Tests'
+                ProjectPath = 'src/x.csproj'; ClassFilter = 'Issue12345'
+                Methods = @('Repro')
+            } `
+            -TestResult @{ Passed = $false; Total = 1 } `
+            -ActualFailureMessage 'expected red but was blue'
+
+        $written = Get-Content -LiteralPath $MachineResultPath -Raw | ConvertFrom-Json
+        $written.resultFile | Should -BeExactly 'verification-test-result.trx'
+        Test-Path -LiteralPath (Join-Path $resultDir 'verification-test-result.trx') |
+            Should -BeTrue
+
+        $script:ReplicationAuthoritativeResultPath = $null
+    }
+
+    It 'reports no retained document when none was authoritative' {
+        $resultDir = Join-Path $TestDrive 'verification-none'
+        New-Item -ItemType Directory -Path $resultDir -Force | Out-Null
+        $script:ReplicationAuthoritativeResultPath = $null
+        $MachineResultPath = Join-Path $resultDir 'machine-result.json'
+
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry @{
+                Type = 'UnitTest'; Filter = 'FullyQualifiedName=A.B'
+                Project = 'P'; ProjectPath = 'p.csproj'; ClassFilter = 'A'
+                Methods = @('B')
+            } `
+            -TestResult @{ Passed = $false; Total = 1 } `
+            -ActualFailureMessage 'boom'
+
+        (Get-Content -LiteralPath $MachineResultPath -Raw |
+            ConvertFrom-Json).resultFile | Should -BeExactly ''
     }
 }

@@ -1188,6 +1188,7 @@ function Get-TargetedTestFailureMessage {
             }
         }
         if ($messages.Count -gt 0) {
+            $script:ReplicationAuthoritativeResultPath = $fullPath
             return ($messages -join [Environment]::NewLine)
         }
 
@@ -1226,6 +1227,7 @@ function Get-TargetedTestFailureMessage {
             }
         }
         if ($messages.Count -gt 0) {
+            $script:ReplicationAuthoritativeResultPath = $fullPath
             return ($messages -join [Environment]::NewLine)
         }
     }
@@ -1255,6 +1257,27 @@ function Write-ReplicationVerifierMachineResult {
         }
     }
 
+    # The reviewer of PR 242 could not check the claim that the named test
+    # failed, because the run kept only its own summary of the result file.
+    # Retain the authoritative document next to the machine result so the
+    # evidence is the runner's own output rather than this script's reading.
+    $retainedResultName = ''
+    $authoritativePath = $script:ReplicationAuthoritativeResultPath
+    if (-not [string]::IsNullOrWhiteSpace($authoritativePath) -and
+        (Test-Path -LiteralPath $authoritativePath -PathType Leaf)) {
+        try {
+            $resultDirectory = Split-Path -Parent $MachineResultPath
+            $extension = [IO.Path]::GetExtension($authoritativePath)
+            if ([string]::IsNullOrWhiteSpace($extension)) { $extension = '.xml' }
+            $retainedResultName = "verification-test-result$extension"
+            Copy-Item -LiteralPath $authoritativePath `
+                -Destination (Join-Path $resultDirectory $retainedResultName) -Force
+        } catch {
+            Write-Host "Could not retain the authoritative test result: $($_.Exception.Message)"
+            $retainedResultName = ''
+        }
+    }
+
     [ordered]@{
         schemaVersion = 1
         testType = [string]$TestEntry.Type
@@ -1266,6 +1289,7 @@ function Write-ReplicationVerifierMachineResult {
         failed = -not [bool]$TestResult.Passed
         executedTestCount = $executedTestCount
         actualFailureMessage = $ActualFailureMessage
+        resultFile = $retainedResultName
     } |
         ConvertTo-Json -Depth 10 |
         Set-Content -LiteralPath $MachineResultPath -Encoding utf8NoBOM

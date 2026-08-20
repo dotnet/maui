@@ -268,6 +268,7 @@ function Invoke-SingleVerificationRun {
     $verifierPassed = $exitCode -eq 0 -and $combined -match 'VERIFICATION PASSED'
     $actualFailureMessage = ''
     $executedTestCount = -1
+    $retainedResultFile = ''
     $expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
         "FullyQualifiedName=$TestClass.$TestMethod"
     } else {
@@ -304,6 +305,10 @@ function Invoke-SingleVerificationRun {
                             [ref]$parsedCount)) {
                         $executedTestCount = $parsedCount
                     }
+                }
+                $resultFileProperty = $machineResult.PSObject.Properties['resultFile']
+                if ($resultFileProperty -and $resultFileProperty.Value) {
+                    $retainedResultFile = [string]$resultFileProperty.Value
                 }
             }
         } catch {
@@ -353,6 +358,7 @@ function Invoke-SingleVerificationRun {
         InfrastructureFailure = $infrastructureFailure
         SelectionAmbiguous = $selectionAmbiguous
         ExecutedTestCount = $executedTestCount
+        RetainedResultFile = $retainedResultFile
         TestPassed = $testPassed
         ActualFailureMessage = $actualFailureMessage
         Passed = $verifierPassed -and $signatureEquivalent -and
@@ -499,6 +505,10 @@ $executedTestCounts = @($runOutcomes |
     Where-Object { $_.ExecutedTestCount -ge 0 } |
     ForEach-Object { [int]$_.ExecutedTestCount } |
     Sort-Object -Unique)
+$retainedResultFiles = @($runOutcomes |
+    ForEach-Object { [string]$_.RetainedResultFile } |
+    Where-Object { $_ } |
+    Sort-Object -Unique)
 $nonZeroExitCodes = @($runOutcomes | Where-Object { $_.ExitCode -ne 0 })
 $exitCode = if ($nonZeroExitCodes.Count -gt 0) { [int]$nonZeroExitCodes[0].ExitCode } else { 0 }
 $actualFailureMessage = [string]$firstOutcome.ActualFailureMessage
@@ -547,6 +557,7 @@ $result = [ordered]@{
     infrastructureFailure = $infrastructureFailure
     selectionAmbiguous = $selectionAmbiguous
     executedTestCounts = @($executedTestCounts)
+    retainedResultFiles = @($retainedResultFiles)
     verificationPassed = $verificationPassed
     requestedRunCount = $RunCount
     completedRunCount = $completedRuns

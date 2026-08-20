@@ -2413,6 +2413,7 @@ function Assert-ReplicationVerificationEvidence {
                 'infrastructureFailure',
                 'selectionAmbiguous',
                 'executedTestCounts',
+                'retainedResultFiles',
                 'verificationPassed',
                 'requestedRunCount',
                 'completedRunCount',
