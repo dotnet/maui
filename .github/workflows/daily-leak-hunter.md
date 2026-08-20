@@ -244,12 +244,12 @@ safe-outputs:
   # The pre-agent snapshot keeps the agent from wasting work on known leaks, but a fix can
   # merge or open during the up-to-90-minute hunt. Re-fetch authoritative live metadata in
   # the generated safe-output job immediately before Process Safe Outputs. The gate brackets
-  # effective-revert evaluation with matching bounded all-state snapshots, then rejects the
-  # entire create-issue batch for a late same-API issue, merged fix, or title-identified open fix.
-  # Otherwise-distinct items retry on the next scheduled run. The gate deliberately does not
-  # rewrite agent output or accept agent-authored mechanism overrides. Restore it from the
-  # read-only default branch rather than executing workflow-dispatch-selected code with the
-  # write-capable job token.
+  # effective-revert evaluation with matching bounded all-state snapshots, removes each late
+  # same-API issue, merged fix, or title-identified open fix, and atomically rewrites the agent
+  # output so otherwise-distinct items proceed. It blocks without mutation only when every
+  # create-issue item became stale. It never accepts agent-authored mechanism overrides.
+  # Restore it from the read-only default branch rather than executing
+  # workflow-dispatch-selected code with the write-capable job token.
   steps:
     - name: Checkout trusted leak-hunter de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
@@ -412,10 +412,10 @@ echo "already-open title-identified fix APIs:"; cat /tmp/gh-aw/agent/already-ope
   scanner issues plus a coherent all-state PR snapshot, extracts authoritative open-fix title
   identities independently of editable body provenance, and brackets branch-scoped
   effective-revert evaluation with a matching snapshot.
-  A late same-API issue, merged fix, or open fix rejects the entire `create-issue` batch before
-  mutation. Otherwise-distinct items remain unchanged and retry on the next scheduled run; do
-  not treat the pre-agent snapshot as the final authority or expect the gate to filter agent
-  output.
+  A late same-API issue, merged fix, or open fix removes only the stale `create-issue` item.
+  The gate atomically rewrites the bounded agent output so otherwise-distinct items proceed,
+  and it blocks without mutation only when every requested issue became stale. Do not treat
+  the pre-agent snapshot as the final authority.
 
 A candidate whose only prior scanner issue is CLOSED may be re-filed when no active merged fix
 or title-identified authoritative open fix covers the same API identity.
