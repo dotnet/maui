@@ -136,6 +136,7 @@ namespace Microsoft.Maui.Controls
 		/// Executes the associated command and raises the <see cref="DragLeave"/> event.
 		/// </summary>
 		/// <param name="args">The event arguments that describe the drag operation.</param>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDragLeave(DragEventArgs args)
@@ -151,6 +152,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="args">The event arguments that describe the drop operation.</param>
 		/// <returns>A task that completes when event dispatch and any default drop processing are complete.</returns>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task SendDrop(DropEventArgs args)
