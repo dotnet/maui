@@ -1919,15 +1919,24 @@ stages:
               }
 
               if (Test-Path -LiteralPath $source -PathType Container) {
-                $linkedItems = @(
-                  Get-Item -LiteralPath $source -Force
-                  Get-ChildItem -LiteralPath $source -Recurse -Force
-                ) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
-                if ($linkedItems.Count -gt 0) {
-                  throw "CopilotLogs contains unsupported linked items."
+                $boundedCopyScript = ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+                if (-not (Test-Path -LiteralPath $boundedCopyScript -PathType Leaf)) {
+                  throw "Bounded CopilotLogs import helper is missing."
                 }
+                . $boundedCopyScript
 
-                Copy-Item -LiteralPath $source -Destination $target -Recurse
+                $maxImportedLogFiles = 2048
+                $maxImportedLogDirectories = 1024
+                $maxImportedLogFileBytes = 16MB
+                $maxImportedLogBytes = 128MB
+                $importResult = Copy-BoundedRegularFileTree `
+                  -SourceDirectory $source `
+                  -DestinationDirectory $target `
+                  -MaxFileCount $maxImportedLogFiles `
+                  -MaxDirectoryCount $maxImportedLogDirectories `
+                  -MaxFileBytes $maxImportedLogFileBytes `
+                  -MaxTotalBytes $maxImportedLogBytes
+                Write-Host "Imported $($importResult.CopiedFiles) bounded Copilot log file(s) ($($importResult.CopiedBytes) bytes)."
               } else {
                 Write-Host "##vso[task.logissue type=warning]CustomAgentLogsTmp was not found in CopilotLogs."
                 New-Item -ItemType Directory -Force -Path $target | Out-Null
@@ -3422,7 +3431,7 @@ stages:
               $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
               $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
               if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
-              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
             displayName: 'Prepare UI failure analysis input'
             continueOnError: true
             env:

@@ -735,6 +735,33 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape("-not (`$_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)"))
     }
 
+    It 'bounds the Copilot log tree before the credentialed PostReview phase imports it' {
+        $postReviewStart = $pipelineContent.IndexOf("      - job: PostReview")
+        $deepStageStart = $pipelineContent.IndexOf("- stage: RunDeepUITests", $postReviewStart)
+        $postReviewBlock = $pipelineContent.Substring(
+            $postReviewStart,
+            $deepStageStart - $postReviewStart)
+
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '. $boundedCopyScript'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '$maxImportedLogFiles = 2048'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '$maxImportedLogFileBytes = 16MB'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '$maxImportedLogBytes = 128MB'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            'Copy-BoundedRegularFileTree `'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-MaxFileCount $maxImportedLogFiles'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-MaxFileBytes $maxImportedLogFileBytes'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-MaxTotalBytes $maxImportedLogBytes'))
+        $postReviewBlock | Should -Not -Match (
+            'Copy-Item\s+-LiteralPath\s+\$source\s+-Destination\s+\$target\s+-Recurse')
+    }
+
     It 'passes the selected platform into every UI category detection pass' {
         $pipelineContent | Should -Match ([regex]::Escape('-PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM"'))
         $pipelineContent | Should -Match ([regex]::Escape('PARAM_PLATFORM: ${{ parameters.Platform }}'))
