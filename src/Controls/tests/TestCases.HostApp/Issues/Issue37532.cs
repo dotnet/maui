@@ -32,7 +32,7 @@ public class Issue37532 : TestShell
 		// Static "Help" link in the flyout, just like MauiHelp's AppShell.xaml <MenuItem Text="Help" .../>
 		Items.Add(new MenuItem
 		{
-			Text = "Help",
+			Text = "HelpMenuItem",
 			Command = new Command(OnHelpClicked)
 		});
 	}
