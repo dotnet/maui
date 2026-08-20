@@ -1099,6 +1099,14 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
             Should -Not -BeNullOrEmpty
     }
 
+    It 'refuses a report whose trigger is an implicit XAML namespace' -ForEach @(
+        @{ Title = 'Use of XAML Implicit namespace causes runtime fault' }
+        @{ Title = 'XSG drops Trigger.Setters.Add() for Shell Tab Icons when using implicit xmlns - 10.0.40' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -Not -BeNullOrEmpty -Because 'the generated page must declare both namespaces explicitly'
+    }
+
     It 'still accepts a launch crash whose trigger is an ordinary page property' -ForEach @(
         @{ Title = 'iOS app crashes on start because of set SafeAreaEdges="None"' }
         @{ Title = '[Windows] "TitleBar.ExtendsContentIntoTitleBar = false" is now crashing startup every time in minimal Maui Project' }

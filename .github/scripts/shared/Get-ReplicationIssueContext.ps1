@@ -1882,6 +1882,18 @@ function Get-ReplicationRuntimeScopeMismatch {
                 '[^.]{0,40}\b(?:crash\w*|fail\w*|error|broken|hang\w*|does\s*n[o\x27]t\s+work)\b'
             Scope   = 'the untouched template, which leaves no page to author'
         }
+        [pscustomobject]@{
+            # Replicate-Issue.ps1 line 1331 requires every generated page to
+            # declare both namespaces explicitly on the root ContentPage, so a
+            # report whose whole trigger is that the declaration is absent
+            # contradicts the contract the page must satisfy. Build 15033572
+            # spent five Windows attempts finding that, the last of which said
+            # so in exactly those terms.
+            Pattern = '(?i)\bimplicit\b[^.]{0,24}\b(?:xmlns|namespaces?)\b' +
+                '|\b(?:xmlns|namespaces?)\b[^.]{0,24}\bimplicit\b' +
+                '|\bglobal\s*xmlns\b|\bXmlnsDefinition\b'
+            Scope   = 'a XAML namespace declaration the generated page is required to make'
+        }
     )
 
     $text = [string]$Title
