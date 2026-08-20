@@ -2187,7 +2187,14 @@ function Assert-ReplicationNegativeControlIsInformative {
     param(
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BaselineSource,
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ControlSource,
-        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestFilter
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestFilter,
+        # A UI test keeps its oracle in the test file and the condition that
+        # provokes the defect in the HostApp page, so the control edits one file
+        # and must preserve the assertions in another. When these are omitted
+        # the edited file is the oracle and the checks read the same sources as
+        # before.
+        [AllowEmptyString()][string]$OracleBaselineSource,
+        [AllowEmptyString()][string]$OracleControlSource
     )
 
     if ([string]::IsNullOrWhiteSpace($ControlSource)) {
@@ -2209,8 +2216,18 @@ function Assert-ReplicationNegativeControlIsInformative {
         }
     }
 
-    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $BaselineSource)
-    $controlAssertions = @(Get-ReplicationAssertionStatements -Source $ControlSource)
+    $oracleBaseline = if ($PSBoundParameters.ContainsKey('OracleBaselineSource')) {
+        $OracleBaselineSource
+    } else {
+        $BaselineSource
+    }
+    $oracleControl = if ($PSBoundParameters.ContainsKey('OracleControlSource')) {
+        $OracleControlSource
+    } else {
+        $ControlSource
+    }
+    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $oracleBaseline)
+    $controlAssertions = @(Get-ReplicationAssertionStatements -Source $oracleControl)
 
     if ($baselineAssertions.Count -eq 0) {
         throw "The reproduction '$TestFilter' contains no assertion, so there is no oracle for a control to preserve."
