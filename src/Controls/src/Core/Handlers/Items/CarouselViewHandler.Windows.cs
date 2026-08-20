@@ -1153,7 +1153,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (position < 0
 				|| position >= ItemCount
 				|| GetItem(position) is not ItemTemplateContext itemTemplateContext
-				|| !ReferenceEquals(itemTemplateContext.Item, currentItem))
+				|| !ReferenceEquals(itemTemplateContext.Item, currentItem)
+				|| position >= ListViewBase.Items.Count
+				|| !ReferenceEquals(ListViewBase.Items[position], itemTemplateContext))
 			{
 				if (attemptsRemaining > 0)
 				{
