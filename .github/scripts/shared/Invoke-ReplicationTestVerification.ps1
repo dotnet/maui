@@ -471,10 +471,14 @@ function Test-ReplicationFailureMessagesAreStable {
 
 $runOutcomes = New-Object 'System.Collections.Generic.List[object]'
 for ($run = 1; $run -le $RunCount; $run++) {
+    # The control shares the reproduction's output directory so the gate can
+    # compare them, so it must never reuse the reproduction's console names or
+    # it would overwrite the very evidence it is meant to corroborate.
+    $consolePrefix = if ($ExpectPass) { 'negative-control-console' } else { 'verification-console' }
     $consoleLog = if ($run -eq 1) {
-        Join-Path $OutputDirectory 'verification-console.log'
+        Join-Path $OutputDirectory "$consolePrefix.log"
     } else {
-        Join-Path $OutputDirectory "verification-console-run-$run.log"
+        Join-Path $OutputDirectory "$consolePrefix-run-$run.log"
     }
     $outcome = Invoke-SingleVerificationRun -Run $run -ConsoleLog $consoleLog
     $runOutcomes.Add($outcome)

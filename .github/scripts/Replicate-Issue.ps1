@@ -44,6 +44,12 @@ param(
     [int]$MaxTestAttempts = 5,
     [int]$MaxTestBuildRepairs = 4,
 
+    # The control is authored against a strict shape, so a rejected first
+    # attempt is usually recoverable, while an unbounded retry would spend
+    # device time proving nothing.
+    [ValidateRange(1, 4)]
+    [int]$MaxControlAttempts = 2,
+
     # A reproduction proved by a single execution is not evidence of a
     # deterministic defect, so the verified test is executed more than once.
     [ValidateRange(1, 3)]
@@ -97,6 +103,7 @@ $reproductionResultPath = Join-Path $ArtifactRoot 'reproduction-result.json'
 $sandboxProposalPath = Join-Path $agentDir 'sandbox-proposal.json'
 $sandboxBlockedPath = Join-Path $agentDir 'sandbox-blocked.json'
 $testProposalPath = Join-Path $agentDir 'test-proposal.json'
+$controlVariantPath = Join-Path $agentDir 'negative-control-variant.cs'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
 $sandboxCodePath = Join-Path $sandboxDir 'MainPage.xaml.cs'
@@ -2764,7 +2771,7 @@ function Resolve-ReplicationVerifierMetadata {
 function New-CopilotPrompt {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet('sandbox', 'test-plan', 'test', 'repair')]
+        [ValidateSet('sandbox', 'test-plan', 'test', 'repair', 'control')]
         [string]$Phase,
         [string]$FailureSummary = ''
     )
@@ -2906,6 +2913,21 @@ Do not repair an environment-sensitive test by hard-coding localized or platform
 For Mac Catalyst tests using UIKit, keep the code in an .iOS.cs file or an existing Apple-platform directory; never use a .MacCatalyst.cs filename.
 Do not use Task.Delay, Thread.Sleep, timers, Task.Run, or other arbitrary settling/background work. Use an existing test wait helper or event-driven completion such as a TaskCompletionSource completed by the relevant layout, size, navigation, or collection event.
 Do not add a fix or escalate the test type.
+"@
+        }
+        'control' {
+            return $common + @"
+
+The reproduction test is confirmed red for the reported behavior. Now author its negative control.
+Read "$testProposalPath", the generated test source, and the reportedTrigger/testTrigger fields.
+Write one file, "$controlVariantPath", containing the complete source of the generated test file with the reported trigger removed and nothing else changed.
+The control exists to show that the failure depends on the trigger. It is checked against the reproduction, and it is rejected unless it satisfies all of the following:
+- every assertion statement is byte-identical to the reproduction, in the same order and the same number. Do not weaken, delete, reword, or reorder an assertion.
+- the only difference is the removal or neutralisation of the reported trigger, such as not setting the property the report blames, using the documented benign value, or omitting the reported action.
+- it must not be skipped, ignored, conditioned out, commented out, or emptied. A control that does not run proves nothing.
+- keep the same namespace, class name, method name, attributes, and usings so the same test filter selects it.
+Expect this control to PASS. If you believe removing the trigger cannot make this oracle pass, do not invent a passing variant: say so in test-proposal.json under controlNotPossible and write no file.
+Failure summary from the previous control attempt, if any: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 "@
         }
     }
@@ -3390,6 +3412,137 @@ function Restore-TrackedVerificationSideEffects {
     if ($unexpected.Count -gt 0) {
         throw "Verifier cleanup left an unexpected repository path: $($unexpected[0].Path)"
     }
+}
+
+function Invoke-ReplicationNegativeControl {
+    <#
+        .SYNOPSIS
+        Runs the reproduction test again with the reported trigger removed.
+
+        .DESCRIPTION
+        A red test proves only that the test is red. The control removes the
+        trigger the report blames, keeps the oracle byte-identical and requires
+        the same test to pass, which is what distinguishes a test that measures
+        the defect from one that can never pass.
+
+        A control that runs and stays red is a rejection: the failure did not
+        depend on the trigger, so the reproduction does not show what it claims.
+        A control that could not be authored or could not build is not evidence
+        either way, so it downgrades the certification instead of discarding a
+        reproduction the device already demonstrated.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string[]]$GeneratedFiles,
+        [Parameter(Mandatory = $true)][object]$VerifierMetadata,
+        [Parameter(Mandatory = $true)][object]$TestProposal,
+        [Parameter(Mandatory = $true)][string[]]$BaseVerificationArguments
+    )
+
+    $methodName = [string]$VerifierMetadata.MethodName
+    $baselineFile = @($GeneratedFiles | Where-Object {
+        $full = Join-Path $repoRoot $_
+        (Test-Path -LiteralPath $full -PathType Leaf) -and
+            ((Get-Content -LiteralPath $full -Raw) -match [regex]::Escape($methodName))
+    })
+    if ($baselineFile.Count -ne 1) {
+        Write-Host 'Negative control skipped: the reproduction test method is not in exactly one generated file.'
+        return $null
+    }
+
+    $relativePath = $baselineFile[0]
+    $baselinePath = Join-Path $repoRoot $relativePath
+    $baselineSource = Get-Content -LiteralPath $baselinePath -Raw
+    # The gate reads the control snapshots from the verification root, and the
+    # control writes only negative-control-result.json there, so it cannot
+    # overwrite the reproduction's own verification-result.json.
+    $controlDir = $verificationDir
+    Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-baseline.cs') `
+        -Value $baselineSource -Encoding utf8NoBOM
+
+    $controlFailureSummary = ''
+    for ($round = 1; $round -le $MaxControlAttempts; $round++) {
+        if (Test-Path -LiteralPath $controlVariantPath -PathType Leaf) {
+            Remove-Item -LiteralPath $controlVariantPath -Force
+        }
+        try {
+            Invoke-ReplicationCopilot `
+                -PhaseName "control-$round" `
+                -Prompt (New-CopilotPrompt -Phase control -FailureSummary $controlFailureSummary) `
+                -LogPath (Join-Path $sandboxArtifactDir "copilot-control-$round.log")
+        }
+        catch {
+            Write-Host "Negative control skipped: the control author failed. $($_.Exception.Message)"
+            return $null
+        }
+
+        if (-not (Test-Path -LiteralPath $controlVariantPath -PathType Leaf)) {
+            # The author is allowed to refuse, and a refusal is more honest than
+            # a fabricated variant, so it downgrades rather than rejects.
+            Write-Host 'Negative control skipped: no control variant was written.'
+            return $null
+        }
+
+        $controlSource = Get-Content -LiteralPath $controlVariantPath -Raw
+        try {
+            Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $baselineSource `
+                -ControlSource $controlSource `
+                -TestFilter ([string]$TestProposal.testFilter)
+        }
+        catch {
+            $controlFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
+            Write-Host "Negative control attempt ${round} was not informative: $controlFailureSummary"
+            if ($round -eq $MaxControlAttempts) {
+                Write-Host 'Negative control skipped: no informative control was produced.'
+                return $null
+            }
+            continue
+        }
+
+        Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-variant.cs') `
+            -Value $controlSource -Encoding utf8NoBOM
+        $controlArguments = @($BaseVerificationArguments) + '-ExpectPass'
+
+        try {
+            Set-Content -LiteralPath $baselinePath -Value $controlSource -Encoding utf8NoBOM
+            Invoke-LoggedChildProcess `
+                -ScriptPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') `
+                -Arguments $controlArguments `
+                -LogPath (Join-Path $sandboxArtifactDir 'verification-control.log') `
+                -Description 'Running the reproduction test as a negative control' `
+                -TimeoutSeconds (5400 + (1800 * ($VerificationRunCount - 1)))
+        }
+        catch {
+            $controlMessage = ConvertTo-ReplicationSafeLog $_.Exception.Message 2000
+            if ((Test-ReplicationTestBuildFailure -FailureSummary $controlMessage) -or
+                (Test-ReplicationTestHarnessFault -FailureSummary $controlMessage)) {
+                Write-Host "Negative control skipped: it did not run. $controlMessage"
+                return $null
+            }
+            throw ("The negative control ran and did not pass, so the reproduction fails without the reported " +
+                "trigger and does not measure the defect it claims. $controlMessage")
+        }
+        finally {
+            Set-Content -LiteralPath $baselinePath -Value $baselineSource -Encoding utf8NoBOM
+        }
+
+        $controlResultPath = Join-Path $controlDir 'negative-control-result.json'
+        if (-not (Test-Path -LiteralPath $controlResultPath -PathType Leaf)) {
+            Write-Host 'Negative control skipped: the control produced no result file.'
+            return $null
+        }
+        $controlResult = Get-Content -LiteralPath $controlResultPath -Raw | ConvertFrom-Json
+        Write-Host ("Negative control passed {0} of {1} runs." -f $controlResult.passCount, $controlResult.runCount)
+        return [ordered]@{
+            runCount = [int]$controlResult.runCount
+            passCount = [int]$controlResult.passCount
+            baselineSource = 'verification/negative-control-baseline.cs'
+            controlSource = 'verification/negative-control-variant.cs'
+            result = 'verification/negative-control-result.json'
+        }
+    }
+
+    return $null
 }
 
 function Copy-VerificationDiagnostics {
@@ -4170,6 +4323,13 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
         }
         throw 'Trusted verification did not pass.'
     }
+
+    $negativeControl = Invoke-ReplicationNegativeControl `
+        -GeneratedFiles $generatedFiles `
+        -VerifierMetadata $verifierMetadata `
+        -TestProposal $testProposal `
+        -BaseVerificationArguments $verificationArgs
+
     New-TestPatch -Files $generatedFiles
 
     $reproductionSteps = @($testProposal.reproductionSteps | ForEach-Object {
@@ -4208,6 +4368,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
         reproductionResult = 'reproduction-result.json'
         evidenceManifest = 'evidence/evidence.json'
         verificationResult = 'verification/verification-result.json'
+        negativeControl = $negativeControl
         patch = 'test.patch'
     } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
 

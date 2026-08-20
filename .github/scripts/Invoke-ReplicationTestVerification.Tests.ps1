@@ -658,3 +658,16 @@ exit 1
         $control.infrastructureFailure | Should -BeTrue
     }
 }
+
+Describe 'The negative control keeps its own console evidence' {
+    It 'never writes the reproduction console names in control mode' {
+        # Sharing the output directory is deliberate so the gate can compare the
+        # two arms, which means the control must not overwrite the arm it
+        # corroborates.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1') -Raw
+        $source | Should -Match "\`$consolePrefix = if \(\`$ExpectPass\) \{ 'negative-control-console' \}"
+        $source | Should -Match '"\$consolePrefix\.log"'
+        $source | Should -Match '"\$consolePrefix-run-\$run\.log"'
+    }
+}
+

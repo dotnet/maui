@@ -1758,7 +1758,8 @@ function Get-ReplicationEvidenceInventory {
         'test-without-fix.log',
         'negative-control-baseline.cs',
         'negative-control-variant.cs',
-        'negative-control-console.log'
+        'negative-control-console.log',
+        'negative-control-result.json'
     )
 
     $mediaItems = @(Get-ChildItem -LiteralPath $mediaRoot -Force)
@@ -1824,7 +1825,8 @@ function Get-ReplicationEvidenceInventory {
         if (
             $item.Name -cnotin $allowedVerificationNames -and
             $item.Name -cnotmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -and
-            $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$'
+            $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
+            $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$'
         ) {
             throw 'Verification directory contains an unexpected artifact.'
         }
@@ -1846,8 +1848,10 @@ function Get-ReplicationEvidenceInventory {
                     'verification-result.json',
                     'negative-control-baseline.cs',
                     'negative-control-variant.cs',
-                    'negative-control-console.log') -and
-                $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$') {
+                    'negative-control-console.log',
+                    'negative-control-result.json') -and
+                $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
+                $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$') {
                 throw 'Machine-readable verification directory contains an unexpected artifact.'
             }
         }

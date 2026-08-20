@@ -6073,6 +6073,62 @@ Describe 'An observed negative verdict is a non-reproduction' {
     }
 }
 
+Describe 'The reproduction is run again without the reported trigger' {
+    It 'asks for a control that keeps the oracle and removes only the trigger' {
+        $script:Source | Should -Match "'control' \{"
+        $script:Source | Should -Match 'byte-identical to the reproduction'
+        $script:Source | Should -Match 'Expect this control to PASS'
+    }
+
+    It 'lets the author refuse rather than invent a passing variant' {
+        $script:Source | Should -Match 'controlNotPossible'
+    }
+
+    It 'runs the control through the failure-only verifier in pass mode' {
+        $script:Source | Should -Match "\+ '-ExpectPass'"
+    }
+
+    It 'restores the reproduction source however the control ends' {
+        # The control edits the generated test in place, so a control that
+        # throws must not leave the variant behind as the published test.
+        $control = [regex]::Match(
+            $script:Source,
+            'function Invoke-ReplicationNegativeControl \{.*?\n\}\n',
+            'Singleline').Value
+        $control | Should -Match 'finally \{'
+        $control | Should -Match 'Set-Content -LiteralPath \$baselinePath -Value \$baselineSource'
+    }
+
+    It 'rejects a control that ran and stayed red' {
+        $control = [regex]::Match(
+            $script:Source,
+            'function Invoke-ReplicationNegativeControl \{.*?\n\}\n',
+            'Singleline').Value
+        $control | Should -Match 'does not measure the defect it claims'
+    }
+
+    It 'downgrades rather than rejects when the control never ran' {
+        $control = [regex]::Match(
+            $script:Source,
+            'function Invoke-ReplicationNegativeControl \{.*?\n\}\n',
+            'Singleline').Value
+        $control | Should -Match 'Test-ReplicationTestBuildFailure'
+        $control | Should -Match 'Test-ReplicationTestHarnessFault'
+    }
+
+    It 'writes the snapshots where the credential-free gate reads them' {
+        # The gate resolves the snapshots against the verification root, so a
+        # separate control directory would be invisible to it.
+        $script:Source | Should -Match '\$controlDir = \$verificationDir'
+        $script:Source | Should -Match 'verification/negative-control-baseline\.cs'
+        $script:Source | Should -Match 'verification/negative-control-variant\.cs'
+    }
+
+    It 'carries the control into the candidate manifest' {
+        $script:Source | Should -Match 'negativeControl = \$negativeControl'
+    }
+}
+
 Describe 'A test that ran but found no element is not a build failure' {
     It 'recognises an element the test waited for and never saw' {
         # Build 15029879 spent attempts 8 and 9 being told to make a test
