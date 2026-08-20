@@ -419,7 +419,12 @@ namespace Microsoft.Maui.Controls
 				foreach (var datum in existing)
 				{
 					if (!returnValue.ContainsKey(datum.Key))
-						returnValue[datum.Key] = datum.Value;
+					{
+						if (existing.IsShellContentQueryParameter(datum.Key))
+							returnValue.SetShellContentQueryParameter(datum.Key, datum.Value);
+						else
+							returnValue[datum.Key] = datum.Value;
+					}
 				}
 
 				return returnValue;

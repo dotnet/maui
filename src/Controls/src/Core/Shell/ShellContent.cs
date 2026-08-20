@@ -57,6 +57,15 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ContentTemplateProperty, value);
 		}
 
+		/// <summary>
+		/// Gets the query parameters supplied to this content's page when the content is selected.
+		/// </summary>
+		/// <remarks>
+		/// Changes to this collection or its parameters are applied immediately when this content is selected,
+		/// or the next time it is selected otherwise.
+		/// </remarks>
+		public IList<ShellContentQueryParameter> QueryParameters { get; }
+
 		Page IShellContentController.Page => ContentCache;
 
 		EventHandler _isPageVisibleChanged;
@@ -126,6 +135,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Page _contentCache;
+		readonly HashSet<ShellContentQueryParameter> _trackedQueryParameters = new();
+		readonly HashSet<string> _lastAppliedContentParameterNames = new(StringComparer.Ordinal);
+		bool _hasAppliedQueryParameters;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ShellContent"/> class.
@@ -133,16 +145,22 @@ namespace Microsoft.Maui.Controls
 		public ShellContent()
 		{
 			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
+			QueryParameters = new ObservableCollection<ShellContentQueryParameter>();
+			((INotifyCollectionChanged)QueryParameters).CollectionChanged += QueryParametersCollectionChanged;
+			BindingContextChanged += OnShellContentBindingContextChanged;
 		}
 
 		internal bool IsVisibleContent =>
-			Parent is ShellSection shellSection &&
-			shellSection.IsVisibleSection &&
-			shellSection.CurrentItem == this &&
+			IsSelectedContent &&
 			(
 				Navigation?.ModalStack is null ||
 				Navigation?.ModalStack?.Count == 0
 			);
+
+		bool IsSelectedContent =>
+			Parent is ShellSection shellSection &&
+			shellSection.IsVisibleSection &&
+			shellSection.CurrentItem == this;
 
 		internal override void SendDisappearing()
 		{
@@ -367,10 +385,103 @@ namespace Microsoft.Maui.Controls
 				}
 		}
 
+		void QueryParametersCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				foreach (var parameter in new List<ShellContentQueryParameter>(_trackedQueryParameters))
+					UntrackQueryParameter(parameter);
+			}
+			else if (e.OldItems is not null)
+			{
+				foreach (ShellContentQueryParameter parameter in e.OldItems)
+					if (parameter is not null && !QueryParameters.Contains(parameter))
+						UntrackQueryParameter(parameter);
+			}
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				foreach (var parameter in QueryParameters)
+					TrackQueryParameterIfNeeded(parameter);
+			}
+			else if (e.NewItems is not null)
+				foreach (ShellContentQueryParameter parameter in e.NewItems)
+					TrackQueryParameterIfNeeded(parameter);
+
+			ApplyQueryParametersIfVisible();
+		}
+
+		void TrackQueryParameterIfNeeded(ShellContentQueryParameter parameter)
+		{
+			if (parameter is not null && _trackedQueryParameters.Add(parameter))
+				TrackQueryParameter(parameter);
+		}
+
+		void TrackQueryParameter(ShellContentQueryParameter parameter)
+		{
+			parameter.PropertyChanged += OnQueryParameterPropertyChanged;
+			SetInheritedBindingContext(parameter, BindingContext);
+		}
+
+		void UntrackQueryParameter(ShellContentQueryParameter parameter)
+		{
+			_trackedQueryParameters.Remove(parameter);
+			parameter.PropertyChanged -= OnQueryParameterPropertyChanged;
+			SetInheritedBindingContext(parameter, null);
+		}
+
+		void OnQueryParameterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == ShellContentQueryParameter.NameProperty.PropertyName ||
+				e.PropertyName == ShellContentQueryParameter.ValueProperty.PropertyName)
+			{
+				ApplyQueryParametersIfVisible();
+			}
+		}
+
+		void ApplyQueryParametersIfVisible()
+		{
+			if (IsSelectedContent)
+				ApplyQueryAttributesFromParameterChange();
+		}
+
+		internal void ApplyQueryAttributesFromSelection()
+		{
+			if (this.FindParentOfType<Shell>()?.NavigationManager.AccumulateNavigatedEvents == true)
+				return;
+
+			if (!IsSelectedContent)
+				return;
+
+			var query = CreateSelectionQueryParameters(out bool hasQueryParameters);
+			if (!hasQueryParameters && !_hasAppliedQueryParameters)
+				return;
+
+			ApplyQueryAttributesCore(query);
+			_hasAppliedQueryParameters = hasQueryParameters;
+		}
+
+		void ApplyQueryAttributesFromParameterChange()
+		{
+			var query = CreateParameterChangeQueryParameters(out bool hasQueryParameters);
+			if (!hasQueryParameters && !_hasAppliedQueryParameters)
+				return;
+
+			ApplyQueryAttributesCore(query);
+			_hasAppliedQueryParameters = hasQueryParameters;
+		}
+
 		internal override void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 			base.ApplyQueryAttributes(query);
 
+			var mergedQuery = CreateMergedQueryParameters(query, out bool hasQueryParameters);
+			ApplyQueryAttributesCore(mergedQuery);
+			_hasAppliedQueryParameters = hasQueryParameters;
+		}
+
+		void ApplyQueryAttributesCore(ShellRouteParameters query)
+		{
 			// If the query parameters are empty and this attribute wasn't previously set
 			// That means there's no work to be done here.
 			// An empty query is only valid if we've previously propagated
@@ -382,6 +493,100 @@ namespace Microsoft.Maui.Controls
 
 			if (ContentCache is BindableObject bindable)
 				bindable.SetValue(QueryAttributesProperty, query);
+		}
+
+		ShellRouteParameters CreateMergedQueryParameters(ShellRouteParameters navigationQuery, out bool hasQueryParameters)
+		{
+			var contentQuery = GetContentQueryParameters();
+			hasQueryParameters = contentQuery.Count > 0;
+
+			if (!hasQueryParameters)
+			{
+				_lastAppliedContentParameterNames.Clear();
+				return navigationQuery;
+			}
+
+			var query = new ShellRouteParameters(navigationQuery);
+			var appliedNames = new HashSet<string>(StringComparer.Ordinal);
+
+			foreach (var parameter in contentQuery)
+			{
+				if (!query.ContainsKey(parameter.Key) || query.IsShellContentQueryParameter(parameter.Key))
+				{
+					query.SetShellContentQueryParameter(parameter.Key, parameter.Value);
+					appliedNames.Add(parameter.Key);
+				}
+			}
+
+			UpdateLastAppliedContentParameterNames(appliedNames);
+			return query;
+		}
+
+		ShellRouteParameters CreateSelectionQueryParameters(out bool hasQueryParameters)
+		{
+			var existing = GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			var query = existing is null ? new ShellRouteParameters() : new ShellRouteParameters(existing);
+			var contentQuery = GetContentQueryParameters();
+
+			foreach (var name in _lastAppliedContentParameterNames)
+				query.RemoveShellContentQueryParameter(name);
+
+			foreach (var parameter in contentQuery)
+				query.SetShellContentQueryParameter(parameter.Key, parameter.Value);
+
+			hasQueryParameters = contentQuery.Count > 0;
+			UpdateLastAppliedContentParameterNames(contentQuery.Keys);
+			return query;
+		}
+
+		ShellRouteParameters CreateParameterChangeQueryParameters(out bool hasQueryParameters)
+		{
+			var existing = GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			var query = existing is null ? new ShellRouteParameters() : new ShellRouteParameters(existing);
+			var contentQuery = GetContentQueryParameters();
+			var previouslyAppliedNames = new HashSet<string>(_lastAppliedContentParameterNames, StringComparer.Ordinal);
+			var appliedNames = new HashSet<string>(StringComparer.Ordinal);
+
+			foreach (var name in previouslyAppliedNames)
+				query.RemoveShellContentQueryParameter(name);
+
+			foreach (var parameter in contentQuery)
+			{
+				if (previouslyAppliedNames.Contains(parameter.Key) || !query.ContainsKey(parameter.Key))
+				{
+					query.SetShellContentQueryParameter(parameter.Key, parameter.Value);
+					appliedNames.Add(parameter.Key);
+				}
+			}
+
+			hasQueryParameters = contentQuery.Count > 0;
+			UpdateLastAppliedContentParameterNames(appliedNames);
+			return query;
+		}
+
+		Dictionary<string, object> GetContentQueryParameters()
+		{
+			var contentQuery = new Dictionary<string, object>(StringComparer.Ordinal);
+			foreach (var parameter in QueryParameters)
+			{
+				if (!string.IsNullOrEmpty(parameter?.Name))
+					contentQuery[parameter.Name] = parameter.Value;
+			}
+
+			return contentQuery;
+		}
+
+		void UpdateLastAppliedContentParameterNames(IEnumerable<string> names)
+		{
+			_lastAppliedContentParameterNames.Clear();
+			foreach (var name in names)
+				_lastAppliedContentParameterNames.Add(name);
+		}
+
+		void OnShellContentBindingContextChanged(object sender, EventArgs e)
+		{
+			foreach (var parameter in _trackedQueryParameters)
+				SetInheritedBindingContext(parameter, BindingContext);
 		}
 
 		static void OnQueryAttributesPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -423,7 +628,7 @@ namespace Microsoft.Maui.Controls
 						{
 							if (prop.PropertyType == typeof(string))
 							{
-								if (value != null)
+								if (value != null && !query.IsShellContentQueryParameter(attrib.QueryId))
 									value = global::System.Net.WebUtility.UrlDecode((string)value);
 
 								prop.SetValue(content, value);

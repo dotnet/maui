@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly ShellNavigationQueryParameters _shellNavigationQueryParameters =
 			new ShellNavigationQueryParameters();
+		readonly HashSet<string> _shellContentQueryParameterNames =
+			new HashSet<string>(StringComparer.Ordinal);
 
 		public ShellRouteParameters()
 		{
@@ -19,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var item in shellRouteParams._shellNavigationQueryParameters)
 				_shellNavigationQueryParameters[item.Key] = item.Value;
+
+			foreach (var item in shellRouteParams._shellContentQueryParameterNames)
+				_shellContentQueryParameterNames.Add(item);
 		}
 
 		internal IDictionary<string, object> ToReadOnlyIfUsingShellNavigationQueryParameters()
@@ -54,6 +59,12 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var item in query._shellNavigationQueryParameters)
 				_shellNavigationQueryParameters[item.Key] = item.Value;
+
+			foreach (var item in query._shellContentQueryParameterNames)
+			{
+				if (item.StartsWith(prefix, StringComparison.Ordinal))
+					_shellContentQueryParameterNames.Add(item.Substring(prefix.Length));
+			}
 		}
 
 		internal ShellRouteParameters(IDictionary<string, object> shellRouteParams) : base(shellRouteParams)
@@ -97,6 +108,23 @@ namespace Microsoft.Maui.Controls
 					this[item.Key] = item.Value;
 			}
 		}
+
+		internal void SetShellContentQueryParameter(string name, object value)
+		{
+			this[name] = value;
+			_shellNavigationQueryParameters.Remove(name);
+			_shellContentQueryParameterNames.Add(name);
+		}
+
+		internal void RemoveShellContentQueryParameter(string name)
+		{
+			Remove(name);
+			_shellNavigationQueryParameters.Remove(name);
+			_shellContentQueryParameterNames.Remove(name);
+		}
+
+		internal bool IsShellContentQueryParameter(string name) =>
+			_shellContentQueryParameterNames.Contains(name);
 
 		static Dictionary<string, string> ParseQueryString(ReadOnlySpan<char> query)
 		{

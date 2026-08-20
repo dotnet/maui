@@ -179,6 +179,13 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Type targetType, System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
 ~Microsoft.Maui.Controls.ShellAppearance.Background.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.ShellContent.QueryParameters.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.ShellContentQueryParameter>
+Microsoft.Maui.Controls.ShellContentQueryParameter
+Microsoft.Maui.Controls.ShellContentQueryParameter.Name.get -> string?
+Microsoft.Maui.Controls.ShellContentQueryParameter.Name.set -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter.ShellContentQueryParameter() -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter.Value.get -> object?
+Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
 ~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.get -> string
 ~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.set -> void
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
@@ -221,6 +228,8 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.ValueProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -151,9 +151,18 @@ static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> 
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.ShellAppearance.Background.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.ShellContent.QueryParameters.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.ShellContentQueryParameter>
+Microsoft.Maui.Controls.ShellContentQueryParameter
+Microsoft.Maui.Controls.ShellContentQueryParameter.Name.get -> string?
+Microsoft.Maui.Controls.ShellContentQueryParameter.Name.set -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter.ShellContentQueryParameter() -> void
+Microsoft.Maui.Controls.ShellContentQueryParameter.Value.get -> object?
+Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
 ~static Microsoft.Maui.Controls.Shell.GetBackground(Microsoft.Maui.Controls.BindableObject obj) -> Microsoft.Maui.Controls.Brush
 ~static Microsoft.Maui.Controls.Shell.SetBackground(Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Brush value) -> void
 ~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.ValueProperty -> Microsoft.Maui.Controls.BindableProperty!
 override Microsoft.Maui.Controls.BindablePropertyConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.BindablePropertyConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.BindablePropertyConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
