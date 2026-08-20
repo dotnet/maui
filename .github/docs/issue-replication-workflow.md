@@ -69,6 +69,20 @@ Successful publication requires both:
 
 A video alone, a test alone, a compilation error, a timeout, an infrastructure failure, or a missing snapshot baseline does not qualify.
 
+## Negative control
+
+A red test proves only that the test is red. After the reproduction verifies, the workflow runs the same test a second time with the reported trigger removed and requires it to pass.
+
+The control must remove only the trigger. Its assertion statements are compared with the reproduction's and must be byte-identical in the same order and number, it must keep the namespace, class, method, attributes, and usings so the same filter selects it, and it must not be skipped, ignored, conditioned out, commented out, or emptied. Both sources are published alongside the result so the credential-free gate re-checks the comparison rather than trusting the manifest's description of it.
+
+The control shares the reproduction's output directory so the two arms can be compared, and it writes its own console and result files so it can never overwrite the reproduction's evidence.
+
+Outcomes:
+
+- the control runs and passes: the failure depends on the reported trigger, and the candidate is graded accordingly;
+- the control runs and stays red: the reproduction does not measure the defect it claims, and the candidate is rejected;
+- the control could not be authored, refused as impossible, or failed to build or run: nothing is established either way, so the grade is downgraded rather than the reproduction discarded.
+
 For an exact Windows app-crash report, the final trusted action may assert that the specific Sandbox process launched by the runner exited after a recorded ready-state check and exact trigger. Generic window loss, navigation, or a process that was already absent before the trigger remains infrastructure failure.
 
 ## Safety boundary
