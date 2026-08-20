@@ -74,6 +74,7 @@ BeforeAll {
         'Test-ReplicationFailureAlreadySeen',
         'Test-ReplicationNonReproductionIsConclusive',
         'Get-ReplicationBlockedCode',
+        'Test-ReplicationVerificationReachedAVerdict',
         'Join-ReplicationWrappedGutterLines',
         'Get-ReplicationAbortExitPattern',
         'Get-ReplicationPlanVerdictPattern',
@@ -1724,9 +1725,11 @@ public class Issue35516
         # Rethrowing failed the task and skipped the publication stage that
         # reports the outcome, so runs such as issue 36694 on Windows went red
         # even though the pipeline had answered the question correctly.
-        $script:Source.Contains(
-            'if ($code -in @(''sandbox_not_reproduced'', ''unsupported_scenario''))') |
-            Should -BeTrue
+        # Which codes belong on that list is settled structurally by
+        # 'every blocked code is deliberately classified as an answer or a
+        # defect' in Replication-Pipeline.Tests.ps1, which derives them from
+        # the classifier instead of quoting them here a second time.
+        $script:Source | Should -Match 'if \(\$code -in @\('
         $script:Source | Should -Match 'ISSUE REPLICATION CONCLUDED WITHOUT A CANDIDATE'
         $script:Source | Should -Match 'exit 0'
 
@@ -6734,5 +6737,30 @@ Describe 'The control author never writes the control source' {
             'produced unusable edits').Index
         $before = $script:ControlLoopSource.Substring(0, $section)
         $before | Should -Match 'CommandNotFoundException'
+    }
+}
+
+Describe 'Get-ReplicationBlockedCode separates an answer from a defect at the test stage' {
+    # Build 15033560 reproduced issue 34563 on device, authored a test that
+    # failed with 'Expected typeof(UILabel), Actual typeof(WrapperView)'
+    # instead of the declared safe-area signature, and was correctly refused.
+    # It then finished red, which is how a broken pipeline looks.
+    It 'calls a refused oracle an answer' -ForEach @(
+        @{ Kinds = @('other', 'other', 'other', 'other', 'wrong-signature') }
+        @{ Kinds = @('test-passed', 'test-passed') }
+        @{ Kinds = @('unstable-failure') }
+        @{ Kinds = @('ambiguous-selection') }
+    ) {
+        Get-ReplicationBlockedCode -RawReason 'verification failed' -Stage 'test' -AttemptKinds ([System.Collections.Generic.List[string]]$Kinds) |
+            Should -BeExactly 'verification_not_trustworthy'
+    }
+
+    It 'still calls a run that never reached the device a defect' -ForEach @(
+        @{ Kinds = @('build-failed', 'build-failed', 'build-failed') }
+        @{ Kinds = @('app-terminated') }
+        @{ Kinds = @('other', 'other') }
+    ) {
+        Get-ReplicationBlockedCode -RawReason 'verification failed' -Stage 'test' -AttemptKinds ([System.Collections.Generic.List[string]]$Kinds) |
+            Should -BeExactly 'verification_inconclusive'
     }
 }

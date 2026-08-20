@@ -981,3 +981,88 @@ Describe 'The gate grades the control the verifier actually ran' {
         $script:GateText2 | Should -Not -Match "\`$result\.PSObject\.Properties\['negativeControl'\]"
     }
 }
+
+Describe 'every blocked code is deliberately classified as an answer or a defect' {
+    # The set of codes that finish the run successfully is a hand-written list,
+    # and a hand-written list has silently gone stale in this pipeline five
+    # times. Derive the codes the classifier can actually produce and require
+    # each one to have been placed on a side, so adding a code forces the
+    # decision instead of defaulting it to a red build.
+    BeforeAll {
+        $script:ReplicateScript = Join-Path (Split-Path -Parent $PSCommandPath) 'Replicate-Issue.ps1'
+        $script:ReplicateAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ReplicateScript, [ref]$null, [ref]$null)
+
+        $classifier = $script:ReplicateAst.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq 'Get-ReplicationBlockedCode'
+            }, $true) | Select-Object -First 1
+        if (-not $classifier) { throw 'Get-ReplicationBlockedCode was not found.' }
+
+        $script:ProducibleCodes = @(
+            $classifier.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.ReturnStatementAst] -and
+                    $node.Pipeline -and
+                    $node.Pipeline.PipelineElements.Count -eq 1
+                }, $true) |
+                ForEach-Object {
+                    $expression = $_.Pipeline.PipelineElements[0].Expression
+                    if ($expression -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
+                        $expression.Value
+                    }
+                } |
+                Where-Object { $_ } |
+                Sort-Object -Unique
+        )
+
+        # The successful-exit test is the only '-in @(...)' membership check
+        # written against the $code variable, so find it structurally rather
+        # than by quoting the list a second time.
+        $membership = $script:ReplicateAst.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.BinaryExpressionAst] -and
+                $node.Operator -eq [System.Management.Automation.Language.TokenKind]::Iin -and
+                $node.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                $node.Left.VariablePath.UserPath -eq 'code'
+            }, $true) | Select-Object -First 1
+        if (-not $membership) { throw 'The successful-exit membership test was not found.' }
+
+        $script:SuccessCodes = @(
+            $membership.Right.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.StringConstantExpressionAst]
+                }, $true) | ForEach-Object { $_.Value } | Sort-Object -Unique
+        )
+    }
+
+    It 'finishes successfully only on codes the classifier can produce' {
+        foreach ($code in $script:SuccessCodes) {
+            $script:ProducibleCodes | Should -Contain $code -Because `
+                "'$code' finishes the run successfully but Get-ReplicationBlockedCode never returns it"
+        }
+    }
+
+    It 'has a deliberate decision recorded for every producible code' {
+        # Update this partition when a code is added. Doing so is the point:
+        # the decision is whether the run learned the answer or broke.
+        $answers = @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy')
+        $defects = @(
+            'copilot_cli_unavailable', 'copilot_service_unavailable',
+            'sandbox_inconclusive', 'verification_inconclusive')
+
+        foreach ($code in $script:ProducibleCodes) {
+            ($answers + $defects) | Should -Contain $code -Because `
+                "'$code' is produced but neither finishes the run nor fails it deliberately"
+        }
+        foreach ($code in $answers) {
+            $script:SuccessCodes | Should -Contain $code -Because `
+                "'$code' is an empirical answer and must not fail the build"
+        }
+        foreach ($code in $defects) {
+            $script:SuccessCodes | Should -Not -Contain $code -Because `
+                "'$code' means no answer was reached and must stay red"
+        }
+    }
+}

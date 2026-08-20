@@ -517,7 +517,43 @@ function Get-ReplicationBlockedCode {
         }
         return 'sandbox_inconclusive'
     }
+    # A test-stage block means one of two very different things. Either a test
+    # ran on the device and its result failed the trustworthiness bar, which is
+    # a conclusive answer about the oracle and not a pipeline defect, or no
+    # verdict was ever obtained, which is. Build 15033560 reproduced issue 34563
+    # on device, authored a test that failed with a setup assertion rather than
+    # the declared safe-area signature, was correctly refused, and then finished
+    # red as though the pipeline had broken.
+    if (Test-ReplicationVerificationReachedAVerdict $AttemptKinds) {
+        return 'verification_not_trustworthy'
+    }
     return 'verification_inconclusive'
+}
+
+function Test-ReplicationVerificationReachedAVerdict {
+    <#
+        .SYNOPSIS
+        Reports whether any attempt got a real result out of the device.
+
+        .DESCRIPTION
+        These kinds are only ever recorded after the named test was selected,
+        executed and its outcome read, so each one is evidence that the run
+        learned something about the proposed oracle. The remaining kinds
+        (build-failed, app-terminated, other) mean no verdict was reached.
+    #>
+    param(
+        [AllowNull()][AllowEmptyCollection()]
+        [System.Collections.Generic.List[string]]$AttemptKinds
+    )
+
+    $verdictKinds = @('test-passed', 'wrong-signature', 'unstable-failure', 'ambiguous-selection')
+    foreach ($kind in @($AttemptKinds)) {
+        if ($verdictKinds -contains [string]$kind) {
+            return $true
+        }
+    }
+
+    return $false
 }
 
 function Get-ReplicationFailureSignature {
@@ -4822,7 +4858,7 @@ catch {
     } catch {
         Write-Warning "Sandbox cleanup also failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
-    if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario')) {
+    if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy')) {
         # These are conclusive empirical answers rather than pipeline defects.
         # Failing the task here would skip the publication stage that reports the
         # outcome on the issue, so finish successfully with the blocked candidate.
