@@ -430,6 +430,11 @@ $second
             }
         }
 
+        # Oversized bytes must never become a screenshot the agent sees, but
+        # that is a reason to drop the attachment, not to end a replication run
+        # that has not started yet. Build 15034051 died in setup for exactly
+        # this, so the property asserted here is that nothing survives, not
+        # that the run dies.
         {
             Invoke-GetReplicationIssueContext `
                 -IssueNumber 123 `
@@ -437,10 +442,14 @@ $second
                 -OutputDir $output `
                 -IssueJsonPath $fixture `
                 -DownloadScreenshots `
-                -MaxScreenshotBytes 16
-        } | Should -Throw '*exceeds MaxScreenshotBytes*'
+                -MaxScreenshotBytes 16 `
+                -WarningAction SilentlyContinue
+        } | Should -Not -Throw
         Test-Path -LiteralPath (Join-Path $output 'screenshots') |
             Should -BeFalse
+        $context = Get-Content -LiteralPath (Join-Path $output 'issue-context.json') -Raw |
+            ConvertFrom-Json
+        @($context.screenshots).Count | Should -Be 0
     }
 
     It 'uses the gh API seam only when IssueJsonPath is absent' {
@@ -1203,5 +1212,61 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
 
         (Read-TestContext $output).platformMismatch |
             Should -Match 'already-compiled fixed project'
+    }
+}
+
+Describe 'Get-ReplicationScreenshotRecords resilience' {
+    It 'drops a screenshot it cannot sanitize instead of ending the run' {
+        # Build 15034051 never reached its simulator: one attachment failed the
+        # post-sanitize size check and the whole replication run died in setup,
+        # even though screenshots are optional supporting context.
+        $root = Join-Path $TestDrive ('shots-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $urls = @(
+            'https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111',
+            'https://github.com/user-attachments/assets/22222222-2222-2222-2222-222222222222')
+
+        Mock Invoke-ScreenshotHttpRequest {
+            [pscustomobject]@{ Bytes = [byte[]]@(1, 2, 3); ContentType = 'image/png' }
+        }
+        Mock Get-RasterImageInfo { [pscustomobject]@{ Width = 10; Height = 10 } }
+        Mock ConvertTo-SafeScreenshotPng {
+            Set-Content -LiteralPath $OutputPath -Value 'png' -Encoding utf8NoBOM
+        }
+        Mock ConvertTo-SafeScreenshotPng -ParameterFilter {
+            $OutputPath.EndsWith('screenshot-001.png')
+        } -MockWith {
+            throw 'Sanitized screenshot is empty, oversized, or not a regular file.'
+        }
+
+        $records = @(Get-ReplicationScreenshotRecords -Urls $urls -OutputRoot $root -DownloadScreenshots -MaxScreenshotBytes 1024 -WarningAction SilentlyContinue)
+
+        $records.Count | Should -Be 1
+        $records[0].localPath | Should -Be 'screenshots/screenshot-002.png'
+    }
+
+    It 'keeps an earlier screenshot when a later one fails' {
+        $root = Join-Path $TestDrive ('shots2-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $urls = @(
+            'https://github.com/user-attachments/assets/33333333-3333-3333-3333-333333333333',
+            'https://github.com/user-attachments/assets/44444444-4444-4444-4444-444444444444')
+
+        Mock Invoke-ScreenshotHttpRequest {
+            [pscustomobject]@{ Bytes = [byte[]]@(1, 2, 3); ContentType = 'image/png' }
+        }
+        Mock Get-RasterImageInfo { [pscustomobject]@{ Width = 10; Height = 10 } }
+        Mock ConvertTo-SafeScreenshotPng {
+            Set-Content -LiteralPath $OutputPath -Value 'png' -Encoding utf8NoBOM
+        }
+        Mock ConvertTo-SafeScreenshotPng -ParameterFilter {
+            $OutputPath.EndsWith('screenshot-002.png')
+        } -MockWith { throw 'nope' }
+
+        $records = @(Get-ReplicationScreenshotRecords -Urls $urls -OutputRoot $root -DownloadScreenshots -MaxScreenshotBytes 1024 -WarningAction SilentlyContinue)
+
+        $records.Count | Should -Be 1
+        $records[0].localPath | Should -Be 'screenshots/screenshot-001.png'
+        Test-Path -LiteralPath (Join-Path $root 'screenshots/screenshot-001.png') | Should -BeTrue
     }
 }

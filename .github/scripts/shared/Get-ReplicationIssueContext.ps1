@@ -1999,28 +1999,47 @@ function Get-ReplicationScreenshotRecords {
                 throw 'Screenshot URL is not allowlisted.'
             }
 
-            $download = Invoke-ScreenshotHttpRequest `
-                -Url $url `
-                -MaxBytes $MaxScreenshotBytes
-            if ($null -eq $download.Bytes -or $download.Bytes -isnot [byte[]]) {
-                throw 'Screenshot response did not contain bytes.'
-            }
-            if ($download.Bytes.LongLength -gt $MaxScreenshotBytes) {
-                throw 'Screenshot exceeds MaxScreenshotBytes.'
-            }
+            # A screenshot is optional supporting context, so an image this
+            # code refuses to sanitize must be dropped rather than allowed to
+            # end the run. Build 15034051 reached the device queue and died in
+            # setup because one attachment re-encoded to something the size
+            # check rejected. Skipping keeps the safety property exactly as it
+            # was: nothing unsanitized is ever handed to the agent.
+            # These persist across iterations, so a failure before they are
+            # reassigned would otherwise let the cleanup delete the previous
+            # screenshot and let the record point at the previous file name.
+            $fileName = $null
+            $filePath = $null
+            try {
+                $download = Invoke-ScreenshotHttpRequest `
+                    -Url $url `
+                    -MaxBytes $MaxScreenshotBytes
+                if ($null -eq $download.Bytes -or $download.Bytes -isnot [byte[]]) {
+                    throw 'Screenshot response did not contain bytes.'
+                }
+                if ($download.Bytes.LongLength -gt $MaxScreenshotBytes) {
+                    throw 'Screenshot exceeds MaxScreenshotBytes.'
+                }
 
-            [void] (Get-RasterImageInfo `
-                -Bytes $download.Bytes `
-                -ContentType ([string] $download.ContentType))
-            $fileName = 'screenshot-{0:D3}.png' -f ($index + 1)
-            $filePath = Get-SafeReplicationOutputPath `
-                -Root $screenshotDirectory `
-                -RelativePath $fileName
-            Assert-SafeIssueOutputFile $filePath
-            ConvertTo-SafeScreenshotPng `
-                -Bytes $download.Bytes `
-                -OutputPath $filePath `
-                -MaxBytes $MaxScreenshotBytes
+                [void] (Get-RasterImageInfo `
+                    -Bytes $download.Bytes `
+                    -ContentType ([string] $download.ContentType))
+                $fileName = 'screenshot-{0:D3}.png' -f ($index + 1)
+                $filePath = Get-SafeReplicationOutputPath `
+                    -Root $screenshotDirectory `
+                    -RelativePath $fileName
+                Assert-SafeIssueOutputFile $filePath
+                ConvertTo-SafeScreenshotPng `
+                    -Bytes $download.Bytes `
+                    -OutputPath $filePath `
+                    -MaxBytes $MaxScreenshotBytes
+            } catch {
+                Write-Warning ("Skipping screenshot {0}: {1}" -f ($index + 1), $_.Exception.Message)
+                if ($filePath -and (Test-Path -LiteralPath $filePath)) {
+                    Remove-Item -LiteralPath $filePath -Force -ErrorAction SilentlyContinue
+                }
+                continue
+            }
 
             [void] $records.Add([ordered] @{
                     sourceUrl = $url
@@ -2032,6 +2051,12 @@ function Get-ReplicationScreenshotRecords {
             Remove-Item -LiteralPath $screenshotDirectory -Recurse -Force -ErrorAction SilentlyContinue
         }
         throw
+    }
+
+    # Leaving an empty directory behind would advertise screenshots the run
+    # deliberately refused to use.
+    if ($records.Count -eq 0 -and (Test-Path -LiteralPath $screenshotDirectory)) {
+        Remove-Item -LiteralPath $screenshotDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     return $records.ToArray()
