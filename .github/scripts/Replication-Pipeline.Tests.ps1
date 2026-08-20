@@ -590,3 +590,87 @@ Describe 'The trusted publisher stages every module its gate loads' {
         }
     }
 }
+
+Describe 'Every in-process call binds parameters its target actually declares' {
+    # The negative control never ran once. It called Invoke-ReplicationCopilot
+    # with -LogPath, which that function does not declare, so every reproduction
+    # from the control's introduction until build 15031868 published claiming
+    # "No negative control was run". The catch around the call reported the
+    # binding error as an author refusal, which is a legitimate outcome, so
+    # nothing upstream ever looked wrong.
+    BeforeAll {
+        $script:ScriptPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+        $tokens = $null
+        $errors = $null
+        $script:Ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$tokens, [ref]$errors)
+        $script:Ast | Should -Not -BeNullOrEmpty
+
+        $script:Definitions = @{}
+        foreach ($fn in $script:Ast.FindAll({
+                param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)) {
+            $parameters = $null
+            if ($fn.Body.ParamBlock) { $parameters = $fn.Body.ParamBlock.Parameters }
+            elseif ($fn.Parameters) { $parameters = $fn.Parameters }
+            if (-not $parameters) { continue }
+
+            $declared = [ordered]@{}
+            foreach ($p in $parameters) {
+                $isMandatory = $false
+                foreach ($attribute in $p.Attributes) {
+                    if ($attribute -isnot [System.Management.Automation.Language.AttributeAst]) { continue }
+                    if ($attribute.TypeName.Name -notmatch '^Parameter$') { continue }
+                    foreach ($named in $attribute.NamedArguments) {
+                        if ($named.ArgumentName -eq 'Mandatory' -and
+                            $named.Argument.Extent.Text -match 'true') { $isMandatory = $true }
+                    }
+                }
+                $declared[$p.Name.VariablePath.UserPath] = $isMandatory
+            }
+            $script:Definitions[$fn.Name] = $declared
+        }
+    }
+
+    It 'passes only declared parameters, and every mandatory one' {
+        $problems = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($call in $script:Ast.FindAll({
+                param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)) {
+            $name = $call.GetCommandName()
+            if (-not $name -or -not $script:Definitions.Contains($name)) { continue }
+
+            $declared = $script:Definitions[$name]
+            $supplied = [System.Collections.Generic.List[string]]::new()
+            $splatted = $false
+            foreach ($element in $call.CommandElements) {
+                if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+                    [void]$supplied.Add($element.ParameterName)
+                } elseif ($element -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                    $element.Splatted) {
+                    $splatted = $true
+                }
+            }
+            if ($splatted) { continue }
+
+            $line = $call.Extent.StartLineNumber
+            foreach ($parameterName in $supplied) {
+                # PowerShell accepts an unambiguous prefix, so resolve the same way.
+                $matched = @($declared.Keys | Where-Object {
+                    $_ -eq $parameterName -or $_ -like "$parameterName*" })
+                if ($matched.Count -eq 0) {
+                    [void]$problems.Add("line ${line}: $name has no parameter -$parameterName")
+                }
+            }
+            if ($supplied.Count -eq 0) { continue }
+            foreach ($parameterName in $declared.Keys) {
+                if (-not $declared[$parameterName]) { continue }
+                $isBound = @($supplied | Where-Object { $parameterName -like "$_*" }).Count -gt 0
+                if (-not $isBound) {
+                    [void]$problems.Add("line ${line}: $name requires -$parameterName")
+                }
+            }
+        }
+
+        $problems -join "`n" | Should -BeExactly ''
+    }
+}

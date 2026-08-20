@@ -3561,9 +3561,17 @@ function Invoke-ReplicationNegativeControl {
             Invoke-ReplicationCopilot `
                 -PhaseName "control-$round" `
                 -Prompt (New-CopilotPrompt -Phase control -FailureSummary $controlFailureSummary) `
-                -LogPath (Join-Path $sandboxArtifactDir "copilot-control-$round.log")
+                -WritePaths @($controlVariantPath) `
+                -Attempt $round
         }
         catch {
+            # A binding or command-resolution failure is a defect in this
+            # script, not the author declining, and reporting it as a refusal
+            # is how the control stayed dead through every published PR.
+            if ($_.Exception -is [System.Management.Automation.ParameterBindingException] -or
+                $_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
+                throw
+            }
             Write-Host "Negative control skipped: the control author failed. $($_.Exception.Message)"
             return $null
         }
