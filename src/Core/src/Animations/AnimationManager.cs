@@ -115,12 +115,25 @@ namespace Microsoft.Maui.Animations
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposedValue)
+			if (_disposedValue)
 			{
-				if (disposing && Ticker is IDisposable disposable)
-					disposable.Dispose();
+				return;
+			}
 
-				_disposedValue = true;
+			_disposedValue = true;
+
+			if (!disposing)
+			{
+				return;
+			}
+
+			Ticker.Fire -= OnFire;
+			End();
+			_animations.Clear();
+
+			if (Ticker is IDisposable disposable)
+			{
+				disposable.Dispose();
 			}
 		}
 
