@@ -131,6 +131,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// This infrastructure method is intended for gesture platform managers. If the returned event arguments indicate that the
 		/// operation was canceled or handled, the drag is not marked active and <see cref="SendDropCompleted"/> will not dispatch a completion.
+		/// Starting a new operation replaces any previously active operation.
 		/// </remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="element"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -138,6 +139,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_ = element ?? throw new ArgumentNullException(nameof(element));
 
+			_isDragActive = false;
 			var args = new DragStartingEventArgs(getPosition, platformArgs);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);

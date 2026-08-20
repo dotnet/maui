@@ -131,6 +131,7 @@ namespace Microsoft.Maui.Controls
 			DragOver?.Invoke(Parent ?? this, args);
 		}
 
+#nullable enable
 		/// <summary>
 		/// Executes the associated command and raises the <see cref="DragLeave"/> event.
 		/// </summary>
@@ -152,10 +153,16 @@ namespace Microsoft.Maui.Controls
 		/// <returns>A task that completes when event dispatch and any default drop processing are complete.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public async Task SendDrop(DropEventArgs args)
+		public Task SendDrop(DropEventArgs args)
 		{
 			_ = args ?? throw new ArgumentNullException(nameof(args));
 
+			return SendDropCore(args);
+		}
+#nullable disable
+
+		async Task SendDropCore(DropEventArgs args)
+		{
 			if (!AllowDrop)
 				return;
 

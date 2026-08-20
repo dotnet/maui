@@ -69,11 +69,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task SendDropThrowsForNullArgs()
+		public void SendDropThrowsSynchronouslyForNullArgs()
 		{
 			var dropRec = new DropGestureRecognizer();
 
-			await Assert.ThrowsAsync<ArgumentNullException>(() => dropRec.SendDrop(null));
+			Assert.Throws<ArgumentNullException>(() =>
+			{
+				_ = dropRec.SendDrop(null);
+			});
 		}
 
 		[Theory]

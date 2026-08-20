@@ -141,6 +141,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, counter);
 		}
 
+		[Fact]
+		public void CanceledDragStartingClearsPreviousActiveDrag()
+		{
+			int counter = 0;
+			var dragRec = new DragGestureRecognizer
+			{
+				DropCompletedCommand = new Command(() => counter++)
+			};
+
+			dragRec.SendDragStarting(new Label());
+			dragRec.DragStarting += (_, args) => args.Cancel = true;
+
+			dragRec.SendDragStarting(new Label());
+			dragRec.SendDropCompleted(new DropCompletedEventArgs());
+
+			Assert.Equal(0, counter);
+		}
+
 		[Theory]
 		[InlineData(typeof(Entry), "EntryTest")]
 		[InlineData(typeof(Label), "LabelTest")]
