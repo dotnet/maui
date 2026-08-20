@@ -726,3 +726,41 @@ Describe 'The gate expects every artifact the verifier retains' {
         $script:GateSource | Should -Match "Verification directory contains an unexpected artifact: '\`$reportedName'"
     }
 }
+
+Describe 'The negative control author gets every attempt it is allotted' {
+    BeforeAll {
+        $script:orchestrator = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:orchestrator, [ref]$tokens, [ref]$errors)
+        $script:controlFunction = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $n.Name -eq 'Invoke-ReplicationNegativeControl'
+            }, $true) | Select-Object -First 1
+    }
+
+    It 'finds the negative control function' {
+        $script:controlFunction | Should -Not -BeNullOrEmpty
+    }
+
+    It 'never downgrades a recoverable control failure before the last attempt' {
+        # A silent non-write and an uninformative variant are both recoverable,
+        # so each must retry. Returning on the first non-write discarded
+        # certification the author would have earned on a retry.
+        $body = $script:controlFunction.Extent.Text
+        $guards = ([regex]::Matches($body, '\$round\s+-eq\s+\$MaxControlAttempts')).Count
+        $guards | Should -BeGreaterOrEqual 2
+    }
+
+    It 'retries rather than returns when no control variant was written' {
+        $body = $script:controlFunction.Extent.Text
+        $index = $body.IndexOf('wrote no control variant', [StringComparison]::Ordinal)
+        $index | Should -BeGreaterThan 0
+        # The downgrade that follows the non-write must be attempt-guarded.
+        $following = $body.Substring($index, [Math]::Min(400, $body.Length - $index))
+        $following | Should -Match '\$round\s+-eq\s+\$MaxControlAttempts'
+        $following | Should -Match 'continue'
+    }
+}

@@ -3742,9 +3742,17 @@ function Invoke-ReplicationNegativeControl {
 
         if (-not (Test-Path -LiteralPath $controlVariantPath -PathType Leaf)) {
             # The author is allowed to refuse, and a refusal is more honest than
-            # a fabricated variant, so it downgrades rather than rejects.
-            Write-Host 'Negative control skipped: no control variant was written.'
-            return $null
+            # a fabricated variant, so it downgrades rather than rejects. It
+            # only downgrades after the same number of attempts an uninformative
+            # variant gets, because returning on the first silent non-write
+            # discarded certification the author would have earned on a retry.
+            $controlFailureSummary = 'The previous attempt wrote no control variant. Write the control variant file at the requested path.'
+            Write-Host "Negative control attempt ${round} wrote no control variant."
+            if ($round -eq $MaxControlAttempts) {
+                Write-Host 'Negative control skipped: no control variant was written.'
+                return $null
+            }
+            continue
         }
 
         $controlSource = Get-Content -LiteralPath $controlVariantPath -Raw
