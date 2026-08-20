@@ -22,6 +22,7 @@ BeforeAll {
     if ($parseErrors -and $parseErrors.Count -gt 0) {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
+    $script:scriptText = Get-Content -LiteralPath $scriptPath -Raw
 
     $function = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -55,6 +56,9 @@ BeforeAll {
     foreach ($helperName in @(
         'Resolve-ExplicitTestProject',
         'New-ExplicitTestEntry',
+        'Resolve-RepositoryRelativePath',
+        'Get-ChangedFilesWithoutRenameDetection',
+        'Test-GitTreeContainsPath',
         'Set-WithoutFixFileState',
         'Set-WithFixFileState'
     )) {
@@ -223,6 +227,43 @@ Describe 'Full verification file-state transitions' {
             Remove-Item -LiteralPath $repo -Recurse -Force
         }
     }
+
+    It 'restores both sides of a committed rename' {
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrename-" + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $repo | Out-Null
+
+        try {
+            Push-Location $repo
+            git init --quiet
+            git config user.email "verify-tests@example.invalid"
+            git config user.name "Verify Tests"
+            "original" | Set-Content old-name.txt
+            git add -- old-name.txt
+            git commit --quiet -m "baseline"
+            $mergeBase = (git rev-parse HEAD).Trim()
+
+            git mv old-name.txt new-name.txt
+            git commit --quiet -m "rename"
+
+            $changedFiles = @(Get-ChangedFilesWithoutRenameDetection -MergeBase $mergeBase)
+            $changedFiles | Should -Contain 'old-name.txt'
+            $changedFiles | Should -Contain 'new-name.txt'
+
+            Set-WithoutFixFileState -RepoRoot $repo -MergeBase $mergeBase `
+                -RevertableFiles @('old-name.txt') -NewFiles @('new-name.txt')
+            Test-Path (Join-Path $repo 'old-name.txt') | Should -BeTrue
+            Test-Path (Join-Path $repo 'new-name.txt') | Should -BeFalse
+
+            Set-WithFixFileState -RepoRoot $repo -RevertableFiles @('old-name.txt') `
+                -DeletedByPrFiles @('old-name.txt') -NewFiles @('new-name.txt')
+            Test-Path (Join-Path $repo 'old-name.txt') | Should -BeFalse
+            Test-Path (Join-Path $repo 'new-name.txt') | Should -BeTrue
+            git status --porcelain | Should -BeNullOrEmpty
+        } finally {
+            Pop-Location
+            Remove-Item -LiteralPath $repo -Recurse -Force
+        }
+    }
 }
 
 Describe 'Get-AutoDetectedTests — ordinary PR metadata' {
@@ -257,6 +298,35 @@ Describe 'Explicit test project resolution' {
             -TestProject Controls.Core.UnitTests -RepoRoot $TestDrive
         $result.Project | Should -Be 'Controls.Core.UnitTests'
         $result.ProjectPath | Should -Be 'src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj'
+    }
+
+    Describe 'FixFiles path validation' {
+        It 'rejects escaped and absolute paths without touching the target' {
+            $victim = Join-Path (Split-Path $TestDrive -Parent) (
+                "fix-victim-" + [Guid]::NewGuid().ToString('N') + ".txt")
+            'keep' | Set-Content -LiteralPath $victim
+
+            try {
+                $escape = [System.IO.Path]::GetRelativePath($TestDrive, $victim)
+                { Resolve-RepositoryRelativePath -RepoRoot $TestDrive -Path $escape `
+                    -ParameterName 'FixFiles entry' } | Should -Throw '*escapes the repository root*'
+                { Resolve-RepositoryRelativePath -RepoRoot $TestDrive -Path $victim `
+                    -ParameterName 'FixFiles entry' } | Should -Throw '*repo-relative path*'
+                Get-Content -LiteralPath $victim | Should -Be 'keep'
+            } finally {
+                Remove-Item -LiteralPath $victim -Force
+            }
+        }
+    }
+
+    Describe 'Pinned tooling root' {
+        It 'uses ToolRoot for tooling and RepoRoot for target projects' {
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/scripts/EstablishBrokenBaseline\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/scripts/shared/Detect-TestsInDiff\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/scripts/BuildAndRunHostApp\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/skills/run-device-tests/scripts/Run-DeviceTests\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$RepoRoot "src/Controls/tests/Xaml\.UnitTests/'
+        }
     }
 
     It 'resolves a repo-relative unit test project path' {

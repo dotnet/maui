@@ -37,6 +37,16 @@ Record:
 
 Do not use `git add .`. Do not include logs, attempt artifacts, product fixes, or unrelated worktree changes.
 
+Pin the current trusted issue-fixer tooling separately from the source baseline. Historical/candidate
+worktrees may contain an older verifier or no verifier at all:
+
+```bash
+tooling_sha=$(git -C <session-worktree> rev-parse HEAD)
+git worktree add --detach <temp-root>/tooling "$tooling_sha"
+```
+
+Never modify this tooling worktree. Record its SHA and use it for every attempt/verification command.
+
 ## 2. Create one isolated worktree per attempt
 
 Attempts still run **sequentially** because they share the emulator/device, but each gets independent Git
@@ -70,7 +80,12 @@ be rejected.
 ## 3. Capture the complete candidate
 
 After testing and self-review, stage **only explicit candidate product paths**. Include added, modified,
-deleted, and renamed files; exclude reproduction paths and `CustomAgentLogsTmp/`.
+deleted, and renamed files; exclude reproduction paths and `CustomAgentLogsTmp/`. Derive the candidate path
+list with rename detection disabled so a rename contributes both source and destination:
+
+```bash
+git diff --no-renames --name-only <checkpoint-sha> HEAD --
+```
 
 Create an ephemeral local candidate commit and export its complete binary diff:
 
@@ -91,12 +106,18 @@ the candidate commit remains reachable.
 ## 4. Verify the winner from committed state
 
 Create a disposable verification worktree at the winning candidate commit. Run
-`verify-tests-fail-without-fix` in full-verification mode against the checkpoint:
+the verifier from the pinned current tooling worktree, targeting the historical candidate worktree:
 
 ```powershell
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 `
-  -BaseBranch issue-<N>-repro-checkpoint `
-  -FixFiles @(<explicit-candidate-product-paths>) `
+$toolRoot = "<temp-root>/tooling"
+$targetRoot = "<temp-root>/verification"
+$fixFiles = @(git -C $targetRoot diff --no-renames --name-only <checkpoint-sha> <candidate-sha> --)
+
+pwsh "$toolRoot/.github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1" `
+  -ToolRoot $toolRoot `
+  -TargetRepoRoot $targetRoot `
+  -BaseBranch <checkpoint-sha> `
+  -FixFiles $fixFiles `
   -TestType <type> `
   -TestProject <unit-project-key-or-csproj-path | device-project-name> `
   -TestFilter "<filter>" `
@@ -107,7 +128,8 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 Both the reproduction and candidate must be committed in this disposable worktree. `-TestProject` is required
 for `UnitTest` and `DeviceTest`; omit it for `UITest`/`XamlUnitTest`. Never omit `-RequireFullVerification`;
-failure-only mode cannot establish that the candidate passes.
+failure-only mode cannot establish that the candidate passes. Current tooling supplies the verifier and runner
+scripts; source, projects, and test outputs come from `$targetRoot`.
 
 ## 5. Materialize and clean up
 
@@ -122,5 +144,5 @@ git -C <session-worktree> apply --index <temp-root>/selected.patch
 Review the staged paths, unstage them for normal local review if appropriate, and confirm the session
 worktree contains exactly the reproduction + selected fix. Do not commit or push without user approval.
 
-Remove only the explicitly named temporary worktrees and local branches after materialization. Never remove or
-reset the session worktree or the main checkout.
+Remove only the explicitly named attempt, verification, reproduction, and tooling worktrees and local branches
+after materialization. Never remove or reset the session worktree or the main checkout.

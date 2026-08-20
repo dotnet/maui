@@ -140,6 +140,10 @@ Full verification requires the with-fix state to be committed in the worktree so
 for the without-fix run and restored from `HEAD` for the with-fix run. This makes disposable issue-mode
 candidate commits valid inputs as well as ordinary PR commits.
 
+For historical issue-mode candidates, invoke the current verifier from a pinned tooling checkout and pass
+`-ToolRoot <tooling-checkout>` plus `-TargetRepoRoot <candidate-worktree>`. This keeps current verifier/runner
+semantics while building and testing the historical target tree.
+
 ## Requirements
 
 **Verify Failure Only Mode:**

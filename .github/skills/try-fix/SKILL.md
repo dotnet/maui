@@ -589,12 +589,22 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 
 # 2. Save the complete candidate.
 if ($Mode -eq "Issue") {
-    # Candidate paths were staged explicitly in Step 5/7.5. This temporary local
-    # commit makes added/deleted/renamed files part of a complete, reachable artifact.
-    git -c user.name="MAUI Issue Fixer" -c user.email="issue-fixer@example.invalid" `
-        commit -m "Temporary issue $IssueNumber candidate"
-    if ($LASTEXITCODE -ne 0) { throw "Failed to create issue-mode candidate commit." }
-    $candidateCommit = (git rev-parse HEAD).Trim()
+    # Candidate paths were staged explicitly in Step 5/7.5. A no-diff attempt is
+    # valid only as Blocked/Fail; retain the checkpoint SHA so structured artifacts
+    # and cleanup still complete.
+    git diff --cached --quiet $BrokenCheckpoint --
+    $diffExitCode = $LASTEXITCODE
+    if ($diffExitCode -eq 0) {
+        "Blocked" | Set-Content "$OUTPUT_DIR/result.txt" -Force
+        $candidateCommit = $BrokenCheckpoint
+    } elseif ($diffExitCode -eq 1) {
+        git -c user.name="MAUI Issue Fixer" -c user.email="issue-fixer@example.invalid" `
+            commit -m "Temporary issue $IssueNumber candidate"
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create issue-mode candidate commit." }
+        $candidateCommit = (git rev-parse HEAD).Trim()
+    } else {
+        throw "Failed to inspect the issue-mode candidate diff."
+    }
     $candidateCommit | Set-Content "$OUTPUT_DIR/candidate-commit.txt"
     Set-Content -Path "$OUTPUT_DIR/fix.diff" `
         -Value (git diff --binary $BrokenCheckpoint $candidateCommit | Out-String) -NoNewline

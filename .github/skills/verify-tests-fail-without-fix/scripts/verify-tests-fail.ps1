@@ -42,6 +42,14 @@
     test project map (for example, Controls.Core.UnitTests) or a repo-relative .csproj path. For DeviceTest,
     pass the Run-DeviceTests project name (Controls, Core, Essentials, Graphics, or BlazorWebView).
 
+.PARAMETER ToolRoot
+    Optional pinned checkout containing the current trusted `.github/scripts` and `.github/skills` tooling.
+    Defaults to the target repository root for ordinary PR/CI use.
+
+.PARAMETER TargetRepoRoot
+    Optional worktree whose source and tests are being verified. Defaults to the current Git worktree.
+    Issue mode uses this to verify historical candidates with current tooling.
+
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
@@ -89,6 +97,12 @@ param(
     [string]$TestProject,
 
     [Parameter(Mandatory = $false)]
+    [string]$ToolRoot,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TargetRepoRoot,
+
+    [Parameter(Mandatory = $false)]
     [string[]]$FixFiles,
 
     [Parameter(Mandatory = $false)]
@@ -106,7 +120,28 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$RepoRoot = git rev-parse --show-toplevel
+$RepoRoot = if ($TargetRepoRoot) {
+    [System.IO.Path]::GetFullPath($TargetRepoRoot)
+} else {
+    (git rev-parse --show-toplevel).Trim()
+}
+
+if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container) -or
+    -not (git -C $RepoRoot rev-parse --is-inside-work-tree 2>$null)) {
+    throw "TargetRepoRoot is not a Git worktree: '$RepoRoot'."
+}
+
+$ToolRoot = if ($ToolRoot) {
+    [System.IO.Path]::GetFullPath($ToolRoot)
+} else {
+    $RepoRoot
+}
+
+if (-not (Test-Path -LiteralPath $ToolRoot -PathType Container)) {
+    throw "ToolRoot does not exist: '$ToolRoot'."
+}
+
+Set-Location -LiteralPath $RepoRoot
 
 # Normalize platform name (accept both "catalyst" and "maccatalyst")
 if ($Platform -eq "maccatalyst") {
@@ -190,14 +225,14 @@ Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 # ============================================================
 # Import shared baseline script for merge-base and file detection
 # ============================================================
-$BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
+$BaselineScript = Join-Path $ToolRoot ".github/scripts/EstablishBrokenBaseline.ps1"
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 $ExplicitBaseBranch = $BaseBranch
 . $BaselineScript
 
 # Import the shared test detection script
-$DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
+$DetectTestsScript = Join-Path $ToolRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
 
 
 # ============================================================
@@ -336,6 +371,65 @@ function New-ExplicitTestEntry {
     }
 }
 
+function Resolve-RepositoryRelativePath {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][string]$Path,
+        [string]$ParameterName = "path"
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or [System.IO.Path]::IsPathRooted($Path)) {
+        throw "$ParameterName must be a non-empty repo-relative path: '$Path'."
+    }
+
+    $repoFullPath = [System.IO.Path]::GetFullPath($RepoRoot).TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar)
+    $repoPrefix = $repoFullPath + [System.IO.Path]::DirectorySeparatorChar
+    $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $repoFullPath $Path))
+    $pathComparison = if ([OperatingSystem]::IsWindows()) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+
+    if (-not $candidatePath.StartsWith($repoPrefix, $pathComparison)) {
+        throw "$ParameterName escapes the repository root: '$Path'."
+    }
+
+    $relativePath = ([System.IO.Path]::GetRelativePath($repoFullPath, $candidatePath)).Replace('\', '/')
+    if ($relativePath -eq ".git" -or $relativePath.StartsWith(".git/", [StringComparison]::Ordinal)) {
+        throw "$ParameterName may not target Git metadata: '$Path'."
+    }
+
+    return $relativePath
+}
+
+function Get-ChangedFilesWithoutRenameDetection {
+    param([Parameter(Mandatory)][string]$MergeBase)
+
+    $changedFiles = @(git diff --no-renames --name-only $MergeBase HEAD -- 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to enumerate changed files from $MergeBase`: $($changedFiles -join [Environment]::NewLine)"
+    }
+
+    return $changedFiles
+}
+
+function Test-GitTreeContainsPath {
+    param(
+        [Parameter(Mandatory)][string]$Commit,
+        [Parameter(Mandatory)][string]$Path
+    )
+
+    $output = @(git ls-tree -r --name-only $Commit -- ":(literal)$Path" 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to inspect '$Path' at $Commit`: $($output -join [Environment]::NewLine)"
+    }
+
+    return $output.Count -gt 0
+}
+
 function Get-TestTypeFromFiles {
     <#
     .SYNOPSIS
@@ -464,7 +558,7 @@ function Invoke-TestRun {
                 $script:BootedDeviceUdid = $DeviceUdid
             } else {
                 Write-Host "🔹 Booting $Platform device/simulator (shared across all test runs)..." -ForegroundColor Cyan
-                $startEmulatorScript = Join-Path $RepoRoot ".github/scripts/shared/Start-Emulator.ps1"
+                $startEmulatorScript = Join-Path $ToolRoot ".github/scripts/shared/Start-Emulator.ps1"
                 $emulatorParams = @{ Platform = $emulatorPlatform }
                 $script:BootedDeviceUdid = & $startEmulatorScript @emulatorParams
                 if ($LASTEXITCODE -ne 0) {
@@ -484,7 +578,7 @@ function Invoke-TestRun {
                 Write-Host "❌ UI tests require -Platform (android, ios, catalyst, windows)" -ForegroundColor Red
                 exit 1
             }
-            $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+            $buildScript = Join-Path $ToolRoot ".github/scripts/BuildAndRunHostApp.ps1"
             $uiParams = @{
                 Platform   = $Platform
                 TestFilter = $Filter
@@ -574,7 +668,7 @@ function Invoke-TestRun {
             }
             $deviceProject = if ($DetectedProject) { $DetectedProject } else { "Controls" }
 
-            $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+            $deviceTestScript = Join-Path $ToolRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
             Write-Host "🧪 Running device tests: $deviceProject on $devicePlatform" -ForegroundColor Cyan
             Write-Host "   Filter: $Filter" -ForegroundColor Gray
 
@@ -1085,9 +1179,15 @@ if ($baseInfo.Distance) {
     Write-Host "   ($($baseInfo.Distance) commits ahead of $BaseBranchName)" -ForegroundColor Gray
 }
 
-# Check for fix files (non-test files that changed since merge-base)
+# Check for fix files (non-test files that changed since merge-base). Disabling rename detection makes both
+# sides of a rename explicit, so the without-fix state can restore the source and remove the destination.
 $DetectedFixFiles = @()
-$changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+try {
+    $changedFiles = Get-ChangedFilesWithoutRenameDetection -MergeBase $MergeBase
+} catch {
+    Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}
 
 if ($changedFiles) {
     foreach ($file in $changedFiles) {
@@ -1100,6 +1200,15 @@ if ($changedFiles) {
 # Override with explicitly provided fix files
 if ($FixFiles -and $FixFiles.Count -gt 0) {
     $DetectedFixFiles = $FixFiles
+}
+
+try {
+    $DetectedFixFiles = @($DetectedFixFiles | ForEach-Object {
+        Resolve-RepositoryRelativePath -RepoRoot $RepoRoot -Path $_ -ParameterName "FixFiles entry"
+    } | Select-Object -Unique)
+} catch {
+    Write-Host "❌ Invalid FixFiles input: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
 }
 
 # Error if no fix files detected and RequireFullVerification is set
@@ -1656,7 +1765,7 @@ function Set-WithoutFixFileState {
 
     foreach ($file in $RevertableFiles) {
         Write-Log "  Reverting: $file"
-        $gitOutput = git checkout $MergeBase -- $file 2>&1
+        $gitOutput = git checkout $MergeBase -- ":(literal)$file" 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to revert $file from $MergeBase`: $gitOutput"
         }
@@ -1664,10 +1773,12 @@ function Set-WithoutFixFileState {
 
     foreach ($file in $NewFiles) {
         Write-Log "  Removing new fix file for baseline: $file"
-        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
-        $wtPath = Join-Path $RepoRoot $file
-        if (Test-Path $wtPath) {
-            Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue
+        $gitOutput = git rm -f -- ":(literal)$file" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to remove new fix file $file for baseline: $gitOutput"
+        }
+        if (Test-Path -LiteralPath (Join-Path $RepoRoot $file)) {
+            throw "New fix file still exists after baseline removal: $file"
         }
     }
 }
@@ -1683,14 +1794,16 @@ function Set-WithFixFileState {
     foreach ($file in $RevertableFiles) {
         if ($DeletedByPrFiles -contains $file) {
             Write-Log "  Re-removing (deleted by PR): $file"
-            git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
-            $wtPath = Join-Path $RepoRoot $file
-            if (Test-Path $wtPath) {
-                Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue
+            $gitOutput = git rm -f -- ":(literal)$file" 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to re-remove deleted fix file ${file}: $gitOutput"
+            }
+            if (Test-Path -LiteralPath (Join-Path $RepoRoot $file)) {
+                throw "Deleted fix file still exists after with-fix restoration: $file"
             }
         } else {
             Write-Log "  Restoring: $file"
-            $gitOutput = git checkout HEAD -- $file 2>&1
+            $gitOutput = git checkout HEAD -- ":(literal)$file" 2>&1
             if ($LASTEXITCODE -ne 0) {
                 throw "Failed to restore $file from HEAD: $gitOutput"
             }
@@ -1699,7 +1812,7 @@ function Set-WithFixFileState {
 
     foreach ($file in $NewFiles) {
         Write-Log "  Restoring new fix file: $file"
-        $gitOutput = git checkout HEAD -- $file 2>&1
+        $gitOutput = git checkout HEAD -- ":(literal)$file" 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to restore new fix file $file from HEAD: $gitOutput"
         }
@@ -1719,9 +1832,9 @@ Write-Log "Verifying fix files are present (on disk or at merge-base)..."
 $missingFixFiles = @()
 foreach ($file in $FixFiles) {
     $fullPath = Join-Path $RepoRoot $file
-    if (Test-Path $fullPath) {
+    if (Test-Path -LiteralPath $fullPath) {
         Write-Log "  ✓ $file exists"
-    } elseif (git ls-tree -r $MergeBase --name-only -- $file 2>$null) {
+    } elseif (Test-GitTreeContainsPath -Commit $MergeBase -Path $file) {
         Write-Log "  ○ $file (deleted by PR — exists at merge-base, will be restored to form the baseline)"
     } else {
         Write-Log "ERROR: Fix file not found on disk or at merge-base: $file"
@@ -1743,11 +1856,16 @@ $DeletedByPrFiles = @()
 
 foreach ($file in $FixFiles) {
     # Check if file exists at merge-base commit
-    $existsInBase = git ls-tree -r $MergeBase --name-only -- $file 2>$null
+    try {
+        $existsInBase = Test-GitTreeContainsPath -Commit $MergeBase -Path $file
+        $existsAtHead = Test-GitTreeContainsPath -Commit HEAD -Path $file
+    } catch {
+        Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
 
     if ($existsInBase) {
         $RevertableFiles += $file
-        $existsAtHead = git ls-tree -r HEAD --name-only -- $file 2>$null
         if ($existsAtHead) {
             Write-Log "  ✓ $file (exists at merge-base - will revert)"
         } else {
@@ -1768,7 +1886,11 @@ Write-Log "Checking for uncommitted changes on fix files..."
 $uncommittedFiles = @()
 foreach ($file in $FixFiles) {
     # Check if file has uncommitted changes (staged or unstaged)
-    $status = git status --porcelain -- $file 2>$null
+    $status = git status --porcelain -- ":(literal)$file" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Failed to inspect Git status for fix file: $file" -ForegroundColor Red
+        exit 1
+    }
     if ($status) {
         $uncommittedFiles += $file
     }
