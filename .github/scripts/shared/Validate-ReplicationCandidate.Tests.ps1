@@ -2405,14 +2405,18 @@ public void Repro_Control()
             [string]$VariantSource
         )
 
+        # The control runs after verification-result.json is written, so
+        # production never puts the control inside it. Fixtures that did hid a
+        # defect that graded every real reproduction as uncontrolled, so write
+        # the artifact the verifier actually produces.
         $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
-        $resultPath = Join-Path $verificationRoot 'verification-result.json'
-        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
-        Add-Member -InputObject $result -NotePropertyName 'negativeControl' -NotePropertyValue ([ordered]@{
-                runCount  = $RunCount
-                passCount = $PassCount
-            }) -Force
-        Write-TestJson -Path $resultPath -Value $result
+        Write-TestJson `
+            -Path (Join-Path $verificationRoot 'negative-control-result.json') `
+            -Value ([ordered]@{
+                schemaVersion = 1
+                runCount      = $RunCount
+                passCount     = $PassCount
+            })
 
         if (-not $OmitSources) {
             Write-TestText `

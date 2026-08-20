@@ -947,3 +947,37 @@ Describe 'Every artifact written beside the verification result is accounted for
         }
     }
 }
+
+Describe 'The gate grades the control the verifier actually ran' {
+    # Every published reproduction, including build 15033161 whose control
+    # passed 3 of 3 on device, was graded 'no negative control was run'. The
+    # gate looked for the control inside verification-result.json, but the
+    # control runs after that file is written and its result goes to its own
+    # artifact. Derive the filename from the verifier so the two cannot drift.
+    BeforeAll {
+        $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        $script:VerifierText = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Invoke-ReplicationTestVerification.ps1')
+        $script:GateText2 = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Validate-ReplicationCandidate.ps1')
+    }
+
+    It 'finds the artifact the verifier writes for the control' {
+        $script:VerifierText | Should -Match "controlPath = Join-Path \`$OutputDirectory '(?<n>[^']+)'"
+        [regex]::Match($script:VerifierText,
+            "controlPath = Join-Path \`$OutputDirectory '(?<n>[^']+)'").Groups['n'].Value |
+            Should -BeExactly 'negative-control-result.json'
+    }
+
+    It 'reads the control counts from that artifact' {
+        $name = [regex]::Match($script:VerifierText,
+            "controlPath = Join-Path \`$OutputDirectory '(?<n>[^']+)'").Groups['n'].Value
+        $script:GateText2 | Should -Match ([regex]::Escape($name))
+    }
+
+    It 'does not take the control from the verification result it precedes' {
+        # verification-result.json is written before the control runs, so a
+        # lookup there can only ever report that no control happened.
+        $script:GateText2 | Should -Not -Match "\`$result\.PSObject\.Properties\['negativeControl'\]"
+    }
+}

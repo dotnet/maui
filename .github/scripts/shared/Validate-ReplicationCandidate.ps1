@@ -2719,17 +2719,28 @@ function Assert-ReplicationVerificationEvidence {
         # hand, so it is computed here and carried into the pull request.
         $negativeRuns = 0
         $negativePasses = 0
-        $control = $result.PSObject.Properties['negativeControl']
-        if ($control -and $null -ne $control.Value) {
+        # The control runs after this verification result is written, so it can
+        # never appear inside it. Reading it there graded every reproduction as
+        # 'no negative control was run', including build 15033161, whose control
+        # passed 3 of 3 on device. Read the artifact the verifier actually
+        # produces for the control instead.
+        $controlResultPath = Join-Path $Inventory.VerificationRoot 'negative-control-result.json'
+        if (Test-Path -LiteralPath $controlResultPath -PathType Leaf) {
+            $controlValue = Read-BoundedUtf8File `
+                -Path $controlResultPath `
+                -MaximumBytes $script:CandidateFileMaxBytes `
+                -Root $Inventory.VerificationRoot `
+                -Context 'Negative control result' |
+                ConvertFrom-Json
             $negativeRuns = ConvertTo-PositiveInteger `
                 -Value (Find-AliasedProperty `
-                    -Object $control.Value `
+                    -Object $controlValue `
                     -Names @('runCount') `
                     -Context 'Negative control' `
                     -Required).Value `
                 -Context 'Negative control run count'
             $negativePasses = [int](Find-AliasedProperty `
-                    -Object $control.Value `
+                    -Object $controlValue `
                     -Names @('passCount') `
                     -Context 'Negative control' `
                     -Required).Value
