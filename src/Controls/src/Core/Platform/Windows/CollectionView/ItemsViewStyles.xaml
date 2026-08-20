@@ -373,7 +373,8 @@
                                                                 Margin="{TemplateBinding Padding}"
                                                                 HorizontalAlignment="Stretch"
                                                                 VerticalAlignment="Stretch"
-                                                                XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
+								TabFocusNavigation="Local"
+								XYFocusKeyboardNavigation="Enabled"/>
 
 
                                         <!-- EmptyView sits between the items and the footer in the StackPanel

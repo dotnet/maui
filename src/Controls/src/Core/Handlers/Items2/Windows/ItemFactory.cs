@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -164,6 +165,9 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// selectability behavior.
 				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+				container.IsTabStop = !isHeaderOrFooter;
+				container.TabNavigation = KeyboardNavigationMode.Local;
+				container.UseSystemFocusVisuals = !isHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
 					// Cache the default template once for later restoration
@@ -308,6 +312,8 @@ internal partial class ElementWrapper : ContentControl
 	public ElementWrapper(IMauiContext context)
 	{
 		_context = context;
+		IsTabStop = false;
+		TabNavigation = KeyboardNavigationMode.Local;
 	}
 
 	/// <summary>
