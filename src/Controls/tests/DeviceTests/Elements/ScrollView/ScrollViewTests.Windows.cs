@@ -58,6 +58,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(entry.IsFocused);
 				Assert.False(focused);
+				Assert.Same(
+					platformScrollView,
+					Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(platformScrollView.XamlRoot));
+
+				Assert.True(Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
+					Microsoft.UI.Xaml.Input.FocusNavigationDirection.Next));
+				Assert.True(entry.IsFocused);
 			});
 		}
 
@@ -165,6 +172,41 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(platformScrollView.IsTabStop);
 				Assert.Equal(true, platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+			});
+		}
+
+		[Fact]
+		public async Task UnfocusDuringLoadingRestoresOriginalTabStopState()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, UnfocusOnLoadScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var entry = new Entry();
+			var scrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 2000,
+					Children = { entry }
+				}
+			};
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
+			{
+				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+
+				Assert.False(platformScrollView.IsTabStop);
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+				Assert.False(entry.IsFocused);
 			});
 		}
 
@@ -558,6 +600,26 @@ namespace Microsoft.Maui.DeviceTests
 			static void SetTabStop(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
 			{
 				((WScrollViewer)sender).IsTabStop = true;
+			}
+		}
+
+		sealed class UnfocusOnLoadScrollViewHandler : ScrollViewHandler
+		{
+			protected override void ConnectHandler(WScrollViewer platformView)
+			{
+				base.ConnectHandler(platformView);
+				platformView.Loaded += Unfocus;
+			}
+
+			protected override void DisconnectHandler(WScrollViewer platformView)
+			{
+				platformView.Loaded -= Unfocus;
+				base.DisconnectHandler(platformView);
+			}
+
+			void Unfocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+			{
+				Microsoft.Maui.Platform.ViewExtensions.Unfocus((WScrollViewer)sender, VirtualView);
 			}
 		}
 

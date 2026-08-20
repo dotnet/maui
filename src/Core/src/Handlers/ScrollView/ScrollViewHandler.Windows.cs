@@ -96,6 +96,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var generation = ++_tabStopGeneration;
+			// WinUI's load focus pass completes before Loaded handlers return. Keep the
+			// transient target through Loaded, then restore it on the next dispatcher turn.
 			if (scrollViewer.DispatcherQueue?.TryEnqueue(() =>
 			{
 				if (generation == _tabStopGeneration &&
