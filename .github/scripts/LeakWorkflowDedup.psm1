@@ -1704,6 +1704,7 @@ function Invoke-LeakPullRequestCommitHistorySnapshot {
                 Number = $number
                 BaseRefName = $base
                 MergeCommitOid = $mergeCommitOid
+                MergeCommitMessage = $null
                 Cursor = $null
                 ExpectedTotal = [long]-1
                 Complete = $false
@@ -1744,6 +1745,7 @@ function Invoke-LeakPullRequestCommitHistorySnapshot {
       baseRefName
       mergeCommit {
         oid
+        message
       }
       commits(first: `$first, after: `$after$index) {
         totalCount
@@ -1856,6 +1858,19 @@ $($selections -join "`n")
                 -Context $context
             if ($currentMergeCommitOid -cne $state.MergeCommitOid) {
                 throw "$context mergeCommitOid changed from '$($state.MergeCommitOid)' to '$currentMergeCommitOid'."
+            }
+            $currentMergeCommitMessage = Get-LeakRequiredPropertyValue `
+                -Object $mergeCommit `
+                -Name 'message' `
+                -Context "$context mergeCommit"
+            if ($currentMergeCommitMessage -isnot [string]) {
+                throw "$context mergeCommit returned a malformed message."
+            }
+            if ($null -eq $state.MergeCommitMessage) {
+                $state.MergeCommitMessage = $currentMergeCommitMessage
+            } elseif ($currentMergeCommitMessage -cne $state.MergeCommitMessage) {
+                throw (New-LeakSnapshotChurnException `
+                        -Message "$context mergeCommit message changed during pagination.")
             }
 
             $connection = Get-LeakRequiredPropertyValue `
@@ -1977,6 +1992,7 @@ $($selections -join "`n")
                 merged = $true
                 baseRefName = $_.BaseRefName
                 mergeCommitOid = $_.MergeCommitOid
+                mergeCommitMessage = $_.MergeCommitMessage
                 commits = @($_.Commits)
             }
         } | Sort-Object number)
@@ -2521,6 +2537,13 @@ function Get-RelevantMergedLeakReverts {
             [string]$commitScanCandidateByNumber[$number].mergeCommitOid) {
             throw "Merged reverter commit history PR #$number has an unexpected mergeCommitOid."
         }
+        $mergeCommitMessage = Get-LeakRequiredPropertyValue `
+            -Object $commitHistory `
+            -Name 'mergeCommitMessage' `
+            -Context "Merged reverter commit history PR #$number"
+        if ($mergeCommitMessage -isnot [string]) {
+            throw "Merged reverter commit history PR #$number has a malformed merge-commit message."
+        }
         $commits = @(
             Get-LeakRequiredPropertyValue `
                 -Object $commitHistory `
@@ -2529,7 +2552,6 @@ function Get-RelevantMergedLeakReverts {
                 -RequireArray
         )
 
-        $proofOids = [System.Collections.Generic.List[string]]::new()
         $seenCommitOids = [System.Collections.Generic.HashSet[string]]::new(
             [StringComparer]::OrdinalIgnoreCase
         )
@@ -2550,12 +2572,11 @@ function Get-RelevantMergedLeakReverts {
             if ($message -isnot [string]) {
                 throw "Merged reverter commit history PR #$number has a malformed commit message."
             }
-            foreach ($proofOid in @(Get-LeakImmutableRevertCommitOids -Message $message)) {
-                $proofOids.Add($proofOid)
-            }
         }
         $commitHistoryByNumber[$number] = [pscustomobject]@{
-            ProofOids = @($proofOids)
+            ProofOids = @(
+                Get-LeakImmutableRevertCommitOids -Message $mergeCommitMessage
+            )
         }
     }
     if ($null -eq $PullRequestCommitHistories -and

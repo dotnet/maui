@@ -12,12 +12,19 @@ BeforeAll {
             [string]$Base = 'main',
             [bool]$Merged = $true,
             [string]$MergeCommitOid = '',
+            [AllowEmptyString()][string]$MergeCommitMessage = '',
             [int[]]$VerifiedRevertTargets,
             [string[]]$CommitMessages
         )
 
         if ($Merged -and [string]::IsNullOrWhiteSpace($MergeCommitOid)) {
             $MergeCommitOid = '{0:x40}' -f $Number
+        }
+        if ($Merged -and
+            -not $PSBoundParameters.ContainsKey('MergeCommitMessage') -and
+            $PSBoundParameters.ContainsKey('CommitMessages') -and
+            $CommitMessages.Count -gt 0) {
+            $MergeCommitMessage = $CommitMessages[0]
         }
         $result = [ordered]@{
             number      = $Number
@@ -28,6 +35,7 @@ BeforeAll {
             merged      = $Merged
             mergedAt    = if ($Merged) { '2026-08-10T00:00:00Z' } else { $null }
             mergeCommitOid = if ($Merged) { $MergeCommitOid } else { $null }
+            mergeCommitMessage = if ($Merged) { $MergeCommitMessage } else { $null }
             url         = "https://github.com/dotnet/maui/pull/$Number"
         }
         if ($PSBoundParameters.ContainsKey('VerifiedRevertTargets')) {
@@ -148,9 +156,14 @@ BeforeAll {
         param(
             [Parameter(Mandatory = $true)][object]$PullRequest,
             [AllowEmptyCollection()][string[]]$Messages = @(),
+            [AllowEmptyString()][string]$MergeCommitMessage = '',
             [AllowNull()][object[]]$Commits = $null
         )
 
+        if (-not $PSBoundParameters.ContainsKey('MergeCommitMessage') -and
+            $Messages.Count -gt 0) {
+            $MergeCommitMessage = $Messages[0]
+        }
         if ($null -eq $Commits) {
             $commitNumber = 0
             $Commits = @($Messages | ForEach-Object {
@@ -169,6 +182,7 @@ BeforeAll {
             merged = $true
             baseRefName = [string]$PullRequest.baseRefName
             mergeCommitOid = [string]$PullRequest.mergeCommitOid
+            mergeCommitMessage = $MergeCommitMessage
             commits = @($Commits)
         }
     }
@@ -180,6 +194,7 @@ BeforeAll {
             [Parameter(Mandatory = $true)][long]$TotalCount,
             [Parameter(Mandatory = $true)][bool]$HasNextPage,
             [AllowNull()][string]$EndCursor,
+            [AllowEmptyString()][string]$MergeCommitMessage = '',
             [string]$Alias = 'pr0'
         )
 
@@ -192,6 +207,7 @@ BeforeAll {
             baseRefName = [string]$PullRequest.baseRefName
             mergeCommit = @{
                 oid = [string]$PullRequest.mergeCommitOid
+                message = $MergeCommitMessage
             }
             commits = @{
                 totalCount = $TotalCount
@@ -3238,7 +3254,8 @@ Describe 'merged reverter commit-history pagination' {
                         -PullRequest $candidate `
                         -Commits $commits `
                         -TotalCount $count `
-                        -HasNextPage $false)
+                        -HasNextPage $false `
+                        -MergeCommitMessage "Merge commit $count")
             )
 
             $result = @(
@@ -3253,6 +3270,8 @@ Describe 'merged reverter commit-history pagination' {
                 Should -Be @(
                     $commits | ForEach-Object { $_.message }
                 )
+            $result[0].mergeCommitMessage |
+                Should -BeExactly "Merge commit $count"
         }
 
         $global:leakCommitHistoryCalls.Count | Should -Be 3
@@ -3278,7 +3297,10 @@ Describe 'merged reverter commit-history pagination' {
                 merged = $true
                 mergedAt = $entry.PullRequest.mergedAt
                 baseRefName = $entry.PullRequest.baseRefName
-                mergeCommit = @{ oid = $entry.PullRequest.mergeCommitOid }
+                mergeCommit = @{
+                    oid = $entry.PullRequest.mergeCommitOid
+                    message = $entry.Commit.message
+                }
                 commits = @{
                     totalCount = 1
                     nodes = @(@{ commit = $entry.Commit })
@@ -3553,6 +3575,30 @@ Describe 'merged revert discovery from complete history' {
                 -Repository 'dotnet/maui' `
                 -FixPullRequests @($fix) `
                 -MergedRevertPullRequests $reverts
+        ).Count | Should -Be 0
+    }
+
+    It 'ignores revert proof that appears only in a non-merge PR commit' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $unrelated = New-LeakPr `
+            -Number 200 `
+            -Title 'Unrelated squash-merged change'
+
+        @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $unrelated) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $unrelated `
+                        -Messages @(
+                            "Unrelated branch commit`n`nThis reverts commit $($fix.mergeCommitOid)."
+                        ) `
+                        -MergeCommitMessage 'Squash merge unrelated change'
+                )
         ).Count | Should -Be 0
     }
 
@@ -4258,6 +4304,7 @@ Describe 'workflow enforcement boundary' {
                             baseRefName = $pullRequest[0].baseRefName
                             mergeCommit = @{
                                 oid = $pullRequest[0].mergeCommitOid
+                                message = $pullRequest[0].mergeCommitMessage
                             }
                             commits = @{
                                 totalCount = $messages.Count
@@ -5477,6 +5524,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                             baseRefName = $pullRequest[0].baseRefName
                             mergeCommit = @{
                                 oid = $pullRequest[0].mergeCommitOid
+                                message = $pullRequest[0].mergeCommitMessage
                             }
                             commits = @{
                                 totalCount = $messages.Count
