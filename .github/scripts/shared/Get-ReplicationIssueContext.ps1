@@ -1815,6 +1815,13 @@ function Get-ReplicationRuntimeScopeMismatch {
             Pattern = '(?i)\.xbf\b|\bconflicting\s+values\s+for\s+resource\b|\bresource\s+conflict\b'
             Scope   = 'how compiled resources are merged into the app'
         }
+        [pscustomobject]@{
+            # The agent may not touch project files or dependencies, and the
+            # Sandbox project is fixed, so a report whose trigger is a
+            # third-party package cannot be arranged at all.
+            Pattern = '(?i)\b(?:community\s?toolkit|syncfusion|devexpress|telerik|sharpnado|reactiveui|prism|refit|mopups|plugin\.\w+)\b'
+            Scope   = 'a third-party package the fixed Sandbox project cannot reference'
+        }
     )
 
     $text = [string]$Title

@@ -1031,6 +1031,10 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         @{ Title = 'MAUI incremental build re-executes Android targets on repeat no-change build' }
         @{ Title = "XAML Source Generation doesn't check for null references" }
         @{ Title = "Conflicting values for resource 'Platform/Windows/TabbedPage/TabbedPageStyle.xbf'" }
+        # The agent may not add a package reference, so a trigger that needs one
+        # cannot be arranged in the Sandbox at all.
+        @{ Title = 'MethodAccessException when using CommunityToolkit.Maui AppThemeResource with 10.0.40' }
+        @{ Title = 'Syncfusion.Maui.Popup.SfPopupOverlayContainer has been Garbage Collected' }
     ) {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
     }
