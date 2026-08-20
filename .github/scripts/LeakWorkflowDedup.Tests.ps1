@@ -733,6 +733,17 @@ Describe 'fresh-shell de-dup state' {
 }
 
 Describe 'leak PR issue reference parsing' {
+    It 'uses the shared reader with the 128MB ingress bound' {
+        $driverPath = Join-Path (
+            $PSScriptRoot
+        ) 'Select-LeakPullRequestsByIssueReference.ps1'
+        $driver = Get-Content -LiteralPath $driverPath -Raw
+
+        $driver | Should -Match '(?s)Read-RegularJsonFile\s+`?\s*-Path \$InputPath\s+`?\s*-MaximumBytes 128MB'
+        $driver | Should -Not -Match '(?s)Get-Content[^\r\n]*\$InputPath'
+        $driver | Should -Not -Match 'ConvertFrom-Json'
+    }
+
     It 'accepts only exact visible same-repository contract lines' -ForEach @(
         @{ Body = 'Fixes #123'; Expected = $true }
         @{ Body = 'Refs: dotnet/maui#123'; Expected = $true }
@@ -812,6 +823,64 @@ Describe 'leak PR issue reference parsing' {
                 ConvertFrom-Json)
         $scriptSelected.Count | Should -Be 3
         (@($scriptSelected.number) -join ',') | Should -Be '1,2,7'
+    }
+
+    It 'accepts and filters valid input above the default 1MB bound' {
+        $inputPath = Join-Path $TestDrive 'large-issue-reference-input.json'
+        $outputPath = Join-Path $TestDrive 'large-issue-reference-output.json'
+        $driverPath = Join-Path (
+            $PSScriptRoot
+        ) 'Select-LeakPullRequestsByIssueReference.ps1'
+        $pullRequests = @(
+            New-LeakPr -Number 81 -Title '[leak-fix] Fix Match.Api leak' `
+                -Body 'Fixes #123'
+            New-LeakPr -Number 82 -Title '[leak-fix] Fix Other.Api leak' `
+                -Body ("Fixes #999`n" + ('x' * (1MB + 1024)))
+        )
+        $json = ConvertTo-Json -InputObject $pullRequests -Depth 5
+        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($json)
+        $bytes.Length | Should -BeGreaterThan 1MB
+        $bytes.Length | Should -BeLessThan 128MB
+        [System.IO.File]::WriteAllBytes($inputPath, $bytes)
+
+        & $driverPath `
+            -InputPath $inputPath `
+            -OutputPath $outputPath `
+            -IssueNumber 123 `
+            -Repository 'dotnet/maui'
+
+        $selected = @(Get-Content -LiteralPath $outputPath -Raw |
+                ConvertFrom-Json)
+        $selected.Count | Should -Be 1
+        $selected[0].number | Should -Be 81
+    }
+
+    It 'rejects input above 128MB before parsing' {
+        $inputPath = Join-Path $TestDrive 'oversized-issue-reference-input.json'
+        $outputPath = Join-Path $TestDrive 'oversized-issue-reference-output.json'
+        $driverPath = Join-Path (
+            $PSScriptRoot
+        ) 'Select-LeakPullRequestsByIssueReference.ps1'
+        $stream = [System.IO.FileStream]::new(
+            $inputPath,
+            [System.IO.FileMode]::CreateNew,
+            [System.IO.FileAccess]::ReadWrite,
+            [System.IO.FileShare]::None
+        )
+        try {
+            $stream.SetLength(128MB + 1)
+        } finally {
+            $stream.Dispose()
+        }
+
+        {
+            & $driverPath `
+                -InputPath $inputPath `
+                -OutputPath $outputPath `
+                -IssueNumber 123 `
+                -Repository 'dotnet/maui'
+        } | Should -Throw '*JSON file is empty or too large*'
+        Test-Path -LiteralPath $outputPath | Should -BeFalse
     }
 }
 

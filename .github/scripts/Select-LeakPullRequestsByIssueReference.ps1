@@ -11,7 +11,11 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
-$pullRequests = @(Read-RegularJsonFile -Path $InputPath)
+$pullRequests = @(
+    Read-RegularJsonFile `
+        -Path $InputPath `
+        -MaximumBytes 128MB
+)
 $matches = @(
     Select-LeakPullRequestsReferencingIssue `
         -PullRequests $pullRequests `
