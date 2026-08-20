@@ -6824,6 +6824,12 @@ Describe 'The control author never writes the control source' {
         # impossible.
         $script:ControlLoopSource | Should -Match '\$sceneCandidates = @\(\$GeneratedFiles \| Where-Object'
         $script:ControlLoopSource | Should -Match 'if \(\$sceneCandidates\.Count -eq 1\)'
+        # Measured over ten published reproductions: six UI tests arrive as a
+        # HostApp page plus a test file, three device tests are a single file,
+        # and one UI test is XAML markup plus code-behind plus a test file. The
+        # markup is where a declarative trigger lives.
+        $script:ControlLoopSource | Should -Match "\`$markup = @\(\`$sceneCandidates \| Where-Object"
+        $script:ControlLoopSource | Should -Match 'if \(\$markup\.Count -eq 1\)'
         $script:ControlLoopSource | Should -Match '-OracleBaselineSource \$oracleSource'
         $script:ControlLoopSource | Should -Match '-OracleControlSource \$oracleSource'
     }

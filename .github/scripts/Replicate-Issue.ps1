@@ -3797,8 +3797,20 @@ function Invoke-ReplicationNegativeControl {
         $_ -ne $oracleRelativePath -and
             (Test-Path -LiteralPath (Join-Path $repoRoot $_) -PathType Leaf)
     })
+    $sceneRelativePath = $null
     if ($sceneCandidates.Count -eq 1) {
-        $relativePath = $sceneCandidates[0]
+        $sceneRelativePath = $sceneCandidates[0]
+    } elseif ($sceneCandidates.Count -gt 1) {
+        # A XAML page arrives as markup plus code-behind, so "the other file" is
+        # ambiguous. The markup is where a declarative trigger lives, and the
+        # code-behind of a generated page is usually only InitializeComponent.
+        $markup = @($sceneCandidates | Where-Object { $_ -match '(?i)\.xaml$' })
+        if ($markup.Count -eq 1) {
+            $sceneRelativePath = $markup[0]
+        }
+    }
+    if ($sceneRelativePath) {
+        $relativePath = $sceneRelativePath
         Write-Host ("Negative control will edit the scene file '$relativePath'; " +
             "the oracle in '$oracleRelativePath' is left untouched.")
     }
