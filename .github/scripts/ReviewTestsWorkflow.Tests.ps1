@@ -107,9 +107,7 @@ Describe '/review tests compiled trust boundary' {
             'trusted="/tmp/review-tests-trusted-${GITHUB_RUN_ID}"'
             'test "$(stat -c ''%u'' /tmp)" = "0"'
             'test -k /tmp'
-            'sudo mkdir -- "${trusted}"'
-            'sudo chown root:root "${trusted}"'
-            'sudo chmod 0755 "${trusted}"'
+            'sudo mkdir -m 0755 -- "${trusted}"'
         )
 
         foreach ($file in $script:mandatoryFiles) {

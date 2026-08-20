@@ -304,9 +304,7 @@ steps:
       trusted="/tmp/review-tests-trusted-${GITHUB_RUN_ID}"
       test "$(stat -c '%u' /tmp)" = "0"
       test -k /tmp
-      sudo mkdir -- "${trusted}"
-      sudo chown root:root "${trusted}"
-      sudo chmod 0755 "${trusted}"
+      sudo mkdir -m 0755 -- "${trusted}"
       sudo install -o root -g root -m 0444 \
         .github/skills/review-test-failures/SKILL.md \
         "${trusted}/SKILL.md"
