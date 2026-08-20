@@ -111,9 +111,8 @@ function Get-ValidatedExistingLeakApi {
     } else {
         '[leak-fix]'
     }
-    $tagStem = $tag.Substring(0, $tag.Length - 1)
     if (-not $normalized.StartsWith(
-            $tagStem,
+            $tag,
             [System.StringComparison]::OrdinalIgnoreCase
         )) {
         return $null
@@ -2508,13 +2507,14 @@ function Get-EffectiveRevertedPullRequestNumbers {
             [System.Collections.Generic.HashSet[int]]$Visiting
         )
 
+        if ($Visiting.Contains($PullRequestNumber)) {
+            # This cycle marker is valid only for the current traversal stack.
+            return $ambiguousState
+        }
         if ($memo.ContainsKey($PullRequestNumber)) {
             return [string]$memo[$PullRequestNumber]
         }
-        if (-not $Visiting.Add($PullRequestNumber)) {
-            $memo[$PullRequestNumber] = $ambiguousState
-            return $ambiguousState
-        }
+        [void]$Visiting.Add($PullRequestNumber)
 
         try {
             $hasAmbiguousReverter = $false
@@ -2532,9 +2532,7 @@ function Get-EffectiveRevertedPullRequestNumbers {
                     }
                 }
             }
-
             if ($hasAmbiguousReverter) {
-                $memo[$PullRequestNumber] = $ambiguousState
                 return $ambiguousState
             }
             $memo[$PullRequestNumber] = $activeState

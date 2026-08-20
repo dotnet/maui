@@ -897,6 +897,95 @@ Describe 'canonical leak API title parsing' {
             Should -Be 'BackButtonBehavior.Command'
     }
 
+    It 'accepts exact existing tags with space and tab boundaries' -ForEach @(
+        @{
+            Kind = 'Scan'
+            Title = '[leak-scan] Picker.ItemsSource retention'
+            Expected = 'Picker.ItemsSource'
+        }
+        @{
+            Kind = 'Scan'
+            Title = "[leak-scan]`tPicker.ItemsSource retention"
+            Expected = 'Picker.ItemsSource'
+        }
+        @{
+            Kind = 'Fix'
+            Title = '[leak-fix] Fix Picker.ItemsSource retention'
+            Expected = 'Picker.ItemsSource'
+        }
+        @{
+            Kind = 'Fix'
+            Title = "[leak-fix]`tFix`tPicker.ItemsSource retention"
+            Expected = 'Picker.ItemsSource'
+        }
+    ) {
+        Get-ValidatedExistingLeakApi `
+            -Title $Title `
+            -Kind $Kind `
+            -Context 'Existing item' |
+            Should -BeExactly $Expected
+    }
+
+    It 'ignores unrelated near-prefix existing tags' -ForEach @(
+        @{ Kind = 'Scan'; Title = '[leak-scanx] tracking' }
+        @{ Kind = 'Scan'; Title = '[leak-scanner] tracking' }
+        @{ Kind = 'Scan'; Title = '[LEAK-SCANX] tracking' }
+        @{ Kind = 'Fix'; Title = '[leak-fixx] tracking' }
+        @{ Kind = 'Fix'; Title = '[leak-fixer] tracking' }
+        @{ Kind = 'Fix'; Title = '[LEAK-FIXX] tracking' }
+    ) {
+        Get-ValidatedExistingLeakApi `
+            -Title $Title `
+            -Kind $Kind `
+            -Context 'Existing item' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'fails closed after recognizing a malformed complete existing tag' -ForEach @(
+        @{
+            Kind = 'Scan'
+            Title = '[leak-scan]Picker.ItemsSource retention'
+            Message = '*malformed or ambiguous*title prefix*'
+        }
+        @{
+            Kind = 'Scan'
+            Title = '[leak-scan]x Picker.ItemsSource retention'
+            Message = '*malformed or ambiguous*title prefix*'
+        }
+        @{
+            Kind = 'Scan'
+            Title = '[LEAK-SCAN] Picker.ItemsSource retention'
+            Message = '*malformed or ambiguous*title prefix*'
+        }
+        @{
+            Kind = 'Scan'
+            Title = '[leak-scan] Investigate Picker.ItemsSource'
+            Message = '*malformed*title without a canonical API*'
+        }
+        @{
+            Kind = 'Fix'
+            Title = '[leak-fix]Fix Picker.ItemsSource retention'
+            Message = '*malformed or ambiguous*title prefix*'
+        }
+        @{
+            Kind = 'Fix'
+            Title = '[LEAK-FIX] Fix Picker.ItemsSource retention'
+            Message = '*malformed or ambiguous*title prefix*'
+        }
+        @{
+            Kind = 'Fix'
+            Title = '[leak-fix] Picker.ItemsSource retention'
+            Message = '*malformed*title without a canonical API*'
+        }
+    ) {
+        {
+            Get-ValidatedExistingLeakApi `
+                -Title $Title `
+                -Kind $Kind `
+                -Context 'Existing item'
+        } | Should -Throw $Message
+    }
+
     It 'rejects missing-whitespace and near-prefix variants' {
         @(
             '[leak-scan]Picker.ItemsSource retention'
@@ -1320,15 +1409,135 @@ Describe 'trusted final duplicate gate' {
 }
 
 Describe 'effective recursive revert state' {
-    It 'memoizes ambiguous states at cycle and propagation return paths' {
+    It 'checks the traversal stack before memo lookup without caching ambiguity' {
         $module = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
         ) -Raw
-
-        ([regex]::Matches(
+        $function = [regex]::Match(
             $module,
-            '\$memo\[\$PullRequestNumber\] = \$ambiguousState'
-        )).Count | Should -Be 2
+            '(?s)function Get-EffectiveRevertedPullRequestNumbers \{.*?' +
+                '(?=\n\}\n\nExport-ModuleMember)'
+        ).Value
+        $cycleIndex = $function.IndexOf(
+            '$Visiting.Contains($PullRequestNumber)'
+        )
+        $memoIndex = $function.IndexOf(
+            '$memo.ContainsKey($PullRequestNumber)'
+        )
+
+        $cycleIndex | Should -BeGreaterOrEqual 0
+        $memoIndex | Should -BeGreaterThan $cycleIndex
+        $function | Should -Not -Match (
+            '\$memo\[\$PullRequestNumber\]\s*=\s*\$ambiguousState'
+        )
+    }
+
+    It 'resolves intersecting roots independently of fix and revert input order' {
+        $first = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Type100.Member leak' `
+            -VerifiedRevertTargets @(300)
+        $second = New-LeakPr `
+            -Number 200 `
+            -Title '[leak-fix] Fix Type200.Member leak' `
+            -VerifiedRevertTargets @(100)
+        $cyclePeer = New-LeakPr `
+            -Number 300 `
+            -Title 'Cycle peer' `
+            -VerifiedRevertTargets @(200)
+        $terminal = New-LeakPr `
+            -Number 400 `
+            -Title 'Terminal reverter' `
+            -VerifiedRevertTargets @(100)
+        $fixOrders = @(
+            [pscustomobject]@{ First = $first; Second = $second }
+            [pscustomobject]@{ First = $second; Second = $first }
+        )
+        $revertOrders = @(
+            [pscustomobject]@{
+                Items = @($first, $second, $cyclePeer, $terminal)
+            }
+            [pscustomobject]@{
+                Items = @($terminal, $cyclePeer, $second, $first)
+            }
+        )
+
+        foreach ($fixOrder in $fixOrders) {
+            foreach ($revertOrder in $revertOrders) {
+                @(
+                    Get-EffectiveRevertedPullRequestNumbers `
+                        -Repository 'dotnet/maui' `
+                        -FixPullRequests @(
+                            $fixOrder.First,
+                            $fixOrder.Second
+                        ) `
+                        -MergedRevertPullRequests $revertOrder.Items
+                ) | Should -Be @(100, 200)
+            }
+        }
+    }
+
+    It 'reuses definitive states across roots that share DAG descendants' {
+        $first = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Type100.Member leak'
+        $second = New-LeakPr `
+            -Number 110 `
+            -Title '[leak-fix] Fix Type110.Member leak'
+        $left = New-LeakPr `
+            -Number 200 `
+            -Title 'Left branch' `
+            -VerifiedRevertTargets @(100)
+        $shared = New-LeakPr `
+            -Number 300 `
+            -Title 'Shared branch' `
+            -VerifiedRevertTargets @(100, 110)
+        $sharedTerminal = New-LeakPr `
+            -Number 400 `
+            -Title 'Shared terminal' `
+            -VerifiedRevertTargets @(200, 300)
+        $directTerminal = New-LeakPr `
+            -Number 500 `
+            -Title 'Direct terminal' `
+            -VerifiedRevertTargets @(110)
+        $reverts = @(
+            $left,
+            $shared,
+            $sharedTerminal,
+            $directTerminal
+        )
+
+        foreach ($fixes in @(
+                [pscustomobject]@{ First = $first; Second = $second }
+                [pscustomobject]@{ First = $second; Second = $first }
+            )) {
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fixes.First, $fixes.Second) `
+                -MergedRevertPullRequests $reverts |
+                Should -Be @(110)
+        }
+    }
+
+    It 'keeps an isolated revert cycle ambiguous and therefore active' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $first = New-LeakPr `
+            -Number 200 `
+            -Title 'First cycle peer' `
+            -VerifiedRevertTargets @(100, 300)
+        $second = New-LeakPr `
+            -Number 300 `
+            -Title 'Second cycle peer' `
+            -VerifiedRevertTargets @(200)
+
+        @(
+            Get-EffectiveRevertedPullRequestNumbers `
+                -Repository 'dotnet/maui' `
+                -FixPullRequests @($fix) `
+                -MergedRevertPullRequests @($first, $second)
+        ).Count | Should -Be 0
     }
 
     It 'keeps an unreverted fix active' {
@@ -4472,8 +4681,8 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
             @{ ExistingTitle = '[leak-scan]' }
             @{ ExistingTitle = '[leak-scan] Investigate GradientBrush.GradientStops' }
             @{ ExistingTitle = '[leak-scan]x GradientBrush.GradientStops' }
-            @{ ExistingTitle = '[leak-scanx] GradientBrush.GradientStops' }
             @{ ExistingTitle = '[LEAK-SCAN] GradientBrush.GradientStops' }
+            @{ ExistingTitle = '[Leak-Scan] GradientBrush.GradientStops' }
             @{ ExistingTitle = '[leak-scan] [leak-scan] GradientBrush.GradientStops' }
         ) {
             $global:mockHunterOpenIssues = @(
@@ -4490,6 +4699,35 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw '*malformed*leak-scan*'
+        }
+
+        It 'ignores unrelated shared-label near-prefix open issues' {
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 704
+                    title = '[leak-scanx] tracking'
+                    body = 'Unrelated shared-label issue'
+                    url = 'https://github.com/dotnet/maui/issues/704'
+                }
+                [pscustomobject]@{
+                    number = 705
+                    title = '[leak-scanner] tracking'
+                    body = 'Unrelated shared-label issue'
+                    url = 'https://github.com/dotnet/maui/issues/705'
+                }
+                [pscustomobject]@{
+                    number = 706
+                    title = '[LEAK-SCANX] tracking'
+                    body = 'Unrelated shared-label issue'
+                    url = 'https://github.com/dotnet/maui/issues/706'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
         }
 
         It 'ignores unrelated open issue titles' {
