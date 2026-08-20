@@ -60,6 +60,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(commandExecuted, parameter);
 		}
 
+		[Fact]
+		public void SendDragLeaveThrowsForNullArgs()
+		{
+			var dropRec = new DropGestureRecognizer();
+
+			Assert.Throws<ArgumentNullException>(() => dropRec.SendDragLeave(null));
+		}
+
+		[Fact]
+		public async Task SendDropThrowsForNullArgs()
+		{
+			var dropRec = new DropGestureRecognizer();
+
+			await Assert.ThrowsAsync<ArgumentNullException>(() => dropRec.SendDrop(null));
+		}
+
 		[Theory]
 		[InlineData(typeof(Entry), "EntryTest")]
 		[InlineData(typeof(Label), "LabelTest")]
