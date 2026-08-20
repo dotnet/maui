@@ -1,12 +1,13 @@
 #nullable enable
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
-using System.Xml.XPath;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using Microsoft.UI.Windowing;
@@ -18,15 +19,13 @@ namespace Microsoft.Maui.Authentication
 	partial class WebAuthenticatorImplementation : IWebAuthenticator, IPlatformWebAuthenticatorCallback
 	{
 		const string CallbackRouteKeyPrefix = "Microsoft.Maui.WebAuthenticator:";
+		const int ErrorSuccess = 0;
+		const int ErrorInsufficientBuffer = 122;
 
-		readonly object locker = new();
+		public bool OnAppInstanceActivatedCallback(AppActivationArguments args) =>
+			TryHandleBuiltInActivation(args);
 
-		TaskCompletionSource<WebAuthenticatorResult>? tcsResponse;
-		Uri? currentRedirectUri;
-		WebAuthenticatorOptions? currentOptions;
-		AppWindow? currentAppWindow;
-
-		public bool OnAppInstanceActivatedCallback(AppActivationArguments args)
+		internal static bool TryHandleBuiltInActivation(AppActivationArguments args)
 		{
 			if (args.Kind != ExtendedActivationKind.Protocol ||
 				args.Data is not IProtocolActivatedEventArgs protocolArgs)
@@ -36,47 +35,9 @@ namespace Microsoft.Maui.Authentication
 
 			var callbackUri = protocolArgs.Uri;
 
-			TaskCompletionSource<WebAuthenticatorResult>? response;
-			Uri? redirectUri;
-			WebAuthenticatorOptions? options;
-			AppWindow? appWindow;
-
-			bool isLocalCallbackRoute;
-
-			lock (locker)
-			{
-				response = tcsResponse;
-				redirectUri = currentRedirectUri;
-				options = currentOptions;
-				appWindow = currentAppWindow;
-
-				isLocalCallbackRoute = redirectUri is not null && IsSameCallbackRoute(redirectUri, callbackUri);
-			}
-
-			if (response?.Task.IsCompleted == false &&
-				redirectUri is not null &&
-				WebUtils.CanHandleCallback(redirectUri, callbackUri))
-			{
-				try
-				{
-					var result = new WebAuthenticatorResult(callbackUri, options?.ResponseDecoder);
-
-					// Only the callback that completes the request may restore its window.
-					if (response.TrySetResult(result))
-						TryBringToForeground(appWindow);
-				}
-				catch (Exception ex)
-				{
-					response.TrySetException(ex);
-				}
-
+			// The built-in process-wide request always gets first refusal for a matching route.
+			if (WebAuthenticatorRequestManager.TryHandleCallback(callbackUri))
 				return true;
-			}
-
-			// A callback can have the expected scheme and still fail host validation.
-			// Leave the active route registered so a later valid callback can complete it.
-			if (isLocalCallbackRoute)
-				return false;
 
 			var routeOwner = FindCallbackRouteOwner(callbackUri);
 			if (routeOwner is null)
@@ -85,71 +46,96 @@ namespace Microsoft.Maui.Authentication
 			return RedirectActivationAndExit(routeOwner, args);
 		}
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
-			=> await AuthenticateAsync(webAuthenticatorOptions, CancellationToken.None);
+		public Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions) =>
+			AuthenticateAsync(webAuthenticatorOptions, CancellationToken.None);
 
-		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(
+			WebAuthenticatorOptions webAuthenticatorOptions,
+			CancellationToken cancellationToken)
 		{
-			ArgumentNullException.ThrowIfNull(webAuthenticatorOptions);
+			if (webAuthenticatorOptions is null)
+				throw new ArgumentNullException(nameof(webAuthenticatorOptions));
 
-			var url = webAuthenticatorOptions.Url ??
+			var url = webAuthenticatorOptions.Url;
+			var callbackUrl = webAuthenticatorOptions.CallbackUrl;
+			var responseDecoder = webAuthenticatorOptions.ResponseDecoder;
+			var prefersEphemeral = webAuthenticatorOptions.PrefersEphemeralWebBrowserSession;
+
+			if (url is null)
 				throw new ArgumentNullException(nameof(webAuthenticatorOptions.Url));
-			var callbackUrl = webAuthenticatorOptions.CallbackUrl ??
+			if (callbackUrl is null)
 				throw new ArgumentNullException(nameof(webAuthenticatorOptions.CallbackUrl));
-
-			cancellationToken.ThrowIfCancellationRequested();
+			if (!url.IsAbsoluteUri)
+				throw new ArgumentException("The authentication URL must be absolute.", nameof(webAuthenticatorOptions.Url));
+			if (!callbackUrl.IsAbsoluteUri)
+				throw new ArgumentException("The callback URL must be absolute.", nameof(webAuthenticatorOptions.CallbackUrl));
 
 			ValidateCallbackUrl(callbackUrl);
+			cancellationToken.ThrowIfCancellationRequested();
 
-			var response = new TaskCompletionSource<WebAuthenticatorResult>();
-			TaskCompletionSource<WebAuthenticatorResult>? previousResponse;
-
-			// Capture the request window so a multi-window app restores the same window
-			// after authentication completes.
+			// AppWindow is agile and remains strongly captured by the framework-owned closure.
 			var appWindow = TryGetActiveAppWindow();
+			var request = WebAuthenticatorRequestManager.Begin(
+				url,
+				callbackUrl,
+				responseDecoder,
+				prefersEphemeral,
+				cancellationToken,
+				() => TryBringToForeground(appWindow));
 
-			lock (locker)
-			{
-				RegisterCallbackRoute(callbackUrl);
-
-				previousResponse = tcsResponse;
-				tcsResponse = response;
-				currentRedirectUri = callbackUrl;
-				currentOptions = webAuthenticatorOptions;
-				currentAppWindow = appWindow;
-			}
-
-			previousResponse?.TrySetCanceled();
-
-			using (cancellationToken.Register(() => response.TrySetCanceled()))
-			{
-				try
+			var registration = cancellationToken.Register(
+				static state =>
 				{
-					var launched = await global::Windows.System.Launcher.LaunchUriAsync(url);
-					if (!launched)
-						throw new InvalidOperationException("Failed to launch the browser for authentication.");
+					var request = (WebAuthenticatorRequest)state!;
+					WebAuthenticatorRequestManager.TryCancelFromCaller(request);
+				},
+				request);
 
-					return await response.Task;
-				}
-				finally
+			try
+			{
+				if (!request.Task.IsCompleted)
 				{
-					lock (locker)
+					try
 					{
-						if (ReferenceEquals(tcsResponse, response))
-							ClearCurrentAuthentication();
+						RegisterCallbackRoute(callbackUrl);
+					}
+					catch (Exception ex)
+					{
+						WebAuthenticatorRequestManager.TryFail(
+							request,
+							CreateCallbackRouteException(
+								"Unable to register the WebAuthenticator callback route.",
+								ex));
 					}
 				}
-			}
-		}
 
-		void ClearCurrentAuthentication()
-		{
-			// Do not call UnregisterKey here. Windows App SDK cannot safely register another
-			// key after UnregisterKey (microsoft/WindowsAppSDK#4420).
-			tcsResponse = null;
-			currentRedirectUri = null;
-			currentOptions = null;
-			currentAppWindow = null;
+				if (!request.Task.IsCompleted)
+				{
+					try
+					{
+						if (!await global::Windows.System.Launcher.LaunchUriAsync(url))
+						{
+							WebAuthenticatorRequestManager.TryFail(
+								request,
+								new InvalidOperationException("Failed to launch the browser for authentication."));
+						}
+					}
+					catch (Exception ex)
+					{
+						WebAuthenticatorRequestManager.TryFail(
+							request,
+							new InvalidOperationException("Failed to launch the browser for authentication.", ex));
+					}
+				}
+
+				return await request.Task.ConfigureAwait(false);
+			}
+			finally
+			{
+				// Windows has no per-request native object to close. Registration disposal precedes End.
+				registration.Dispose();
+				WebAuthenticatorRequestManager.End(request);
+			}
 		}
 
 		static AppWindow? TryGetActiveAppWindow()
@@ -160,7 +146,7 @@ namespace Microsoft.Maui.Authentication
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"Unable to identify the WebAuthenticator window: {ex}");
+				Debug.WriteLine($"Unable to identify the WebAuthenticator window ({ex}).");
 				return null;
 			}
 		}
@@ -179,8 +165,6 @@ namespace Microsoft.Maui.Authentication
 					return;
 				}
 
-				// AppWindow APIs are agile. Restore or show without activation so the native
-				// call below makes the only best-effort foreground request.
 				if (appWindow.Presenter is OverlappedPresenter presenter &&
 					presenter.State == OverlappedPresenterState.Minimized)
 				{
@@ -190,22 +174,17 @@ namespace Microsoft.Maui.Authentication
 				if (!appWindow.IsVisible)
 					appWindow.Show(false);
 
-				// RedirectActivationToAsync attempts to transfer foreground permission to the
-				// route owner, but Windows can still deny this request.
 				if (!PlatformMethods.SetForegroundWindow(windowHandle))
 					Debug.WriteLine("Windows denied the WebAuthenticator window foreground activation.");
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"Unable to bring the WebAuthenticator window to the foreground: {ex}");
+				Debug.WriteLine($"Unable to bring the WebAuthenticator window to the foreground ({ex}).");
 			}
 		}
 
 		static void ValidateCallbackUrl(Uri callbackUrl)
 		{
-			if (!callbackUrl.IsAbsoluteUri)
-				throw new InvalidOperationException("The callback URI must be absolute.");
-
 			if (callbackUrl.Scheme is "http" or "https")
 			{
 				throw new InvalidOperationException(
@@ -218,59 +197,81 @@ namespace Microsoft.Maui.Authentication
 				if (!IsUriProtocolDeclared(callbackUrl.Scheme))
 				{
 					throw new InvalidOperationException(
-						$"You need to declare the windows.protocol usage of the " +
-						$"protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file.");
+						$"You need to declare the windows.protocol usage of scheme '{callbackUrl.Scheme}' " +
+						"for the current application in AppxManifest.xml.");
 				}
 			}
 			else if (!IsRegistryDeclared(callbackUrl.Scheme))
 			{
 				throw new InvalidOperationException(
-					$"The URI scheme '{callbackUrl.Scheme}' is not registered. " +
+					$"The URI scheme '{callbackUrl.Scheme}' is not registered for this application. " +
 					"Call ActivationRegistrationManager.RegisterForProtocolActivation when running unpackaged.");
 			}
 		}
 
 		static void RegisterCallbackRoute(Uri callbackUrl)
 		{
-			var currentInstance = AppInstance.GetCurrent();
-			var routeKey = CreateCallbackRouteKey(callbackUrl);
-			var currentKey = currentInstance.Key;
+			AppInstance currentInstance;
+			string? currentKey;
 
+			try
+			{
+				currentInstance = AppInstance.GetCurrent();
+				currentKey = currentInstance.Key;
+			}
+			catch (Exception ex)
+			{
+				throw CreateCallbackRouteException(
+					"Unable to inspect the current application instance.",
+					ex);
+			}
+
+			var routeKey = CreateCallbackRouteKey(callbackUrl);
 			if (string.Equals(currentKey, routeKey, StringComparison.Ordinal))
 				return;
 
-			// Preserve application-owned AppInstance routing. Such apps must redirect protocol
-			// activations to this instance so the lifecycle callback above can complete the request.
+			// App-owned keys are never replaced. The app must redirect protocol activations to this instance.
 			if (!CanRegisterCallbackRoute(currentKey))
 				return;
 
-			var routeOwner = AppInstance.FindOrRegisterForKey(routeKey);
-			if (routeOwner is null)
+			// Keep the framework route registered after the request. Explicitly calling UnregisterKey
+			// prevents reliable re-registration (https://github.com/microsoft/WindowsAppSDK/issues/4420),
+			// while FindOrRegisterForKey replaces a previous framework route when the next request uses
+			// a different callback scheme.
+			AppInstance? routeOwner;
+			try
 			{
-				throw new InvalidOperationException(
-					$"Unable to register the callback route for scheme '{callbackUrl.Scheme}'.");
+				routeOwner = AppInstance.FindOrRegisterForKey(routeKey);
+			}
+			catch (Exception ex)
+			{
+				throw CreateCallbackRouteException(
+					"Unable to register the WebAuthenticator callback route.",
+					ex);
 			}
 
-			if (!routeOwner.IsCurrent)
+			if (routeOwner is null || !routeOwner.IsCurrent ||
+				!string.Equals(routeOwner.Key, routeKey, StringComparison.Ordinal))
 			{
-				throw new InvalidOperationException(
-					$"Another app instance is already waiting for the callback scheme '{callbackUrl.Scheme}'.");
-			}
-
-			if (!string.Equals(routeOwner.Key, routeKey, StringComparison.Ordinal))
-			{
-				throw new InvalidOperationException(
-					$"Unable to register the callback route for scheme '{callbackUrl.Scheme}'.");
+				throw new InvalidOperationException("Another app instance owns the WebAuthenticator callback route.");
 			}
 		}
 
 		static AppInstance? FindCallbackRouteOwner(Uri callbackUri)
 		{
-			var routeKey = CreateCallbackRouteKey(callbackUri);
+			try
+			{
+				var routeKey = CreateCallbackRouteKey(callbackUri);
 
-			return AppInstance.GetInstances().FirstOrDefault(instance =>
-				!instance.IsCurrent &&
-				string.Equals(instance.Key, routeKey, StringComparison.Ordinal));
+				return AppInstance.GetInstances().FirstOrDefault(instance =>
+					!instance.IsCurrent &&
+					string.Equals(instance.Key, routeKey, StringComparison.Ordinal));
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to inspect WebAuthenticator callback route ownership ({ex}).");
+				return null;
+			}
 		}
 
 		static bool RedirectActivationAndExit(AppInstance routeOwner, AppActivationArguments args)
@@ -283,11 +284,12 @@ namespace Microsoft.Maui.Authentication
 		{
 			try
 			{
+				// Both arguments remain captured until the asynchronous redirection has finished.
 				await routeOwner.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"Unable to redirect WebAuthenticator callback activation: {ex}");
+				Debug.WriteLine($"Unable to redirect WebAuthenticator callback activation ({ex}).");
 			}
 			finally
 			{
@@ -303,18 +305,22 @@ namespace Microsoft.Maui.Authentication
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"Unable to terminate the transient WebAuthenticator callback process: {ex}");
+				Debug.WriteLine($"Unable to terminate the transient WebAuthenticator callback process ({ex}).");
 				Environment.Exit(1);
 			}
 		}
 
-		// AppInstance keys are app-defined, so keep WebAuthenticator routes separate from application-owned keys.
 		internal static string CreateCallbackRouteKey(Uri callbackUrl) =>
 			$"{CallbackRouteKeyPrefix}{callbackUrl.Scheme}";
 
 		internal static bool CanRegisterCallbackRoute(string? currentKey) =>
 			string.IsNullOrEmpty(currentKey) ||
 			currentKey.StartsWith(CallbackRouteKeyPrefix, StringComparison.Ordinal);
+
+		internal static InvalidOperationException CreateCallbackRouteException(
+			string message,
+			Exception innerException) =>
+			new(message, innerException);
 
 		internal static bool IsSameCallbackRoute(Uri expectedCallbackUrl, Uri callbackUrl) =>
 			string.Equals(
@@ -324,25 +330,173 @@ namespace Microsoft.Maui.Authentication
 
 		static bool IsUriProtocolDeclared(string scheme)
 		{
-			var docPath = FileSystemUtils.PlatformGetFullAppPackageFilePath(PlatformUtils.AppManifestFilename);
-			var doc = XDocument.Load(docPath, LoadOptions.None);
+			try
+			{
+				var docPath = FileSystemUtils.PlatformGetFullAppPackageFilePath(PlatformUtils.AppManifestFilename);
+				var document = XDocument.Load(docPath, LoadOptions.None);
+				return IsUriProtocolDeclared(document, TryGetCurrentApplicationId(), scheme);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to inspect the current application protocol declaration ({ex}).");
+				return false;
+			}
+		}
 
-			using var reader = doc.CreateReader();
-			var namespaceManager = new XmlNamespaceManager(reader.NameTable);
-			namespaceManager.AddNamespace("uap", PlatformUtils.AppManifestUapXmlns);
+		internal static bool IsUriProtocolDeclared(XDocument document, string? applicationId, string scheme)
+		{
+			if (document?.Root is null || string.IsNullOrEmpty(scheme))
+				return false;
 
-			var root = doc.Root ?? throw new InvalidOperationException("The app manifest could not be loaded.");
-			var declarations = root.XPathSelectElements(
-				$"//uap:Extension[@Category='windows.protocol']/uap:Protocol[@Name='{scheme}']",
-				namespaceManager);
+			var applications = document.Root
+				.Descendants()
+				.Where(element => element.Name.LocalName == "Application" && element.Parent?.Name.LocalName == "Applications")
+				.ToList();
 
-			return declarations.Any();
+			XElement? currentApplication;
+			if (!string.IsNullOrEmpty(applicationId))
+			{
+				currentApplication = applications.FirstOrDefault(element =>
+					string.Equals((string?)element.Attribute("Id"), applicationId, StringComparison.Ordinal));
+			}
+			else
+			{
+				currentApplication = applications.Count == 1 ? applications[0] : null;
+			}
+
+			if (currentApplication is null)
+				return false;
+
+			return currentApplication
+				.Descendants()
+				.Where(element =>
+					element.Name.LocalName == "Extension" &&
+					string.Equals((string?)element.Attribute("Category"), "windows.protocol", StringComparison.Ordinal))
+				.SelectMany(extension => extension.Descendants().Where(element => element.Name.LocalName == "Protocol"))
+				.Any(protocol => string.Equals(
+					(string?)protocol.Attribute("Name"),
+					scheme,
+					StringComparison.OrdinalIgnoreCase));
+		}
+
+		static string? TryGetCurrentApplicationId()
+		{
+			try
+			{
+				if (global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.ApplicationModel.AppInfo"))
+				{
+					var applicationId = global::Windows.ApplicationModel.AppInfo.Current.Id;
+					if (!string.IsNullOrEmpty(applicationId))
+						return applicationId;
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Unable to read the current packaged application identity ({ex}).");
+			}
+
+			return TryGetApplicationIdFromAppUserModelId();
+		}
+
+		static string? TryGetApplicationIdFromAppUserModelId()
+		{
+			try
+			{
+				uint length = 0;
+				var result = GetCurrentApplicationUserModelId(ref length, null);
+				if (result != ErrorInsufficientBuffer || length == 0 || length > 4096)
+					return null;
+
+				var builder = new StringBuilder((int)length);
+				result = GetCurrentApplicationUserModelId(ref length, builder);
+				if (result != ErrorSuccess)
+					return null;
+
+				var appUserModelId = builder.ToString();
+				var separatorIndex = appUserModelId.LastIndexOf("!", StringComparison.Ordinal);
+				return separatorIndex >= 0 && separatorIndex + 1 < appUserModelId.Length
+					? appUserModelId.Substring(separatorIndex + 1)
+					: null;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
 		}
 
 		static bool IsRegistryDeclared(string scheme)
 		{
-			using var key = Win32.Registry.ClassesRoot.OpenSubKey(scheme);
-			return key?.GetValue("URL Protocol") is not null;
+			try
+			{
+				using var key = Win32.Registry.ClassesRoot.OpenSubKey(scheme);
+				if (key?.GetValue("URL Protocol") is null)
+					return false;
+
+				using var commandKey = key.OpenSubKey(@"shell\open\command");
+				var command = commandKey?.GetValue(null) as string;
+				return IsRegistryCommandOwnedByCurrentExecutable(command, Environment.ProcessPath);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
+
+		internal static bool IsRegistryCommandOwnedByCurrentExecutable(string? command, string? currentExecutablePath)
+		{
+			if (string.IsNullOrWhiteSpace(command) || string.IsNullOrWhiteSpace(currentExecutablePath))
+				return true;
+
+			if (!TryGetCommandExecutable(command, out var registeredExecutable) ||
+				!Path.IsPathFullyQualified(registeredExecutable))
+			{
+				return true;
+			}
+
+			try
+			{
+				return string.Equals(
+					Path.GetFullPath(registeredExecutable),
+					Path.GetFullPath(currentExecutablePath),
+					StringComparison.OrdinalIgnoreCase);
+			}
+			catch (Exception)
+			{
+				// Ambiguous commands must not create a false negative.
+				return true;
+			}
+		}
+
+		static bool TryGetCommandExecutable(string command, out string executable)
+		{
+			executable = string.Empty;
+			var trimmed = command.TrimStart();
+			if (trimmed.Length == 0)
+				return false;
+
+			if (trimmed[0] == '"')
+			{
+				var closingQuote = trimmed.IndexOf("\"", 1, StringComparison.Ordinal);
+				if (closingQuote <= 1)
+					return false;
+
+				executable = trimmed.Substring(1, closingQuote - 1);
+			}
+			else
+			{
+				var separator = trimmed.IndexOfAny(new[] { ' ', '\t' });
+				executable = separator < 0 ? trimmed : trimmed.Substring(0, separator);
+			}
+
+			executable = Environment.ExpandEnvironmentVariables(executable);
+			return !string.IsNullOrWhiteSpace(executable) &&
+				!executable.Contains("%", StringComparison.Ordinal) &&
+				string.Equals(Path.GetExtension(executable), ".exe", StringComparison.OrdinalIgnoreCase);
+		}
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+		static extern int GetCurrentApplicationUserModelId(
+			ref uint applicationUserModelIdLength,
+			StringBuilder? applicationUserModelId);
 	}
 }
