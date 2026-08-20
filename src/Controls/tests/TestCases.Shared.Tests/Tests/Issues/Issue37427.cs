@@ -19,10 +19,18 @@ public class Issue37427 : _IssuesUITest
 	public void DynamicallyAddedContentRendersAfterCellRealization()
 	{
 		App.WaitForElement("37427CollectionView");
-		App.ScrollDown("37427CollectionView", ScrollStrategy.Gesture, 0.8, 500);
+		App.ScrollTo("37427Card10");
 		App.WaitForElement("37427Card10");
 
-		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+		Assert.Multiple(() =>
+		{
+			for (var colorIndex = 0; colorIndex < 5; colorIndex++)
+			{
+				var colorBounds = App.WaitForElement($"37427Card10Color{colorIndex}").GetRect();
+				Assert.That(colorBounds.Width, Is.GreaterThan(0), $"Color {colorIndex} should have a non-zero width.");
+				Assert.That(colorBounds.Height, Is.GreaterThan(0), $"Color {colorIndex} should have a non-zero height.");
+			}
+		});
 	}
 }
 #endif

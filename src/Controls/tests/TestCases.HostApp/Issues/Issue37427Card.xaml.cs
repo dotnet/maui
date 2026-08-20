@@ -83,7 +83,11 @@ public partial class Issue37427Card : Border
 		foreach (var color in colors)
 		{
 			card.previewColorsLayout.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-			card.previewColorsLayout.Add(new BoxView { BackgroundColor = color, HeightRequest = 32 }, column++, 0);
+			var colorView = new BoxView { BackgroundColor = color, HeightRequest = 32 };
+			colorView.SetBinding(
+				AutomationIdProperty,
+				new Binding(nameof(AutomationId), source: card, stringFormat: $"{{0}}Color{column}"));
+			card.previewColorsLayout.Add(colorView, column++, 0);
 		}
 	}
 }

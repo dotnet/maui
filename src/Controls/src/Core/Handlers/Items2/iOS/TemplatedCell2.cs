@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
@@ -39,9 +40,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _measureInvalidated;
 		bool _needsArrange;
 		bool _hasArrangedSize;
-		bool _isArranging;
-		bool _measureInvalidatedDuringArrange;
-		bool _replayedArrangeInvalidation;
 		Size _measuredSize;
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
@@ -95,6 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal void Unbind()
 		{
 			_bound = false;
+			ResetArrangeState();
 
 			if (PlatformHandler?.VirtualView is View view)
 			{
@@ -165,12 +164,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
 
+				// Consume the invalidation before arranging so an invalidation raised by
+				// Arrange remains pending for the next measurement.
 				_measureInvalidated = false;
 
 				if (_needsArrange)
 				{
 					_needsArrange = false;
-					Arrange(virtualView, size);
+					virtualView.Arrange(new Rect(Point.Zero, size));
+					_lastArrangedSize = size;
+					_hasArrangedSize = true;
 				}
 			}
 
@@ -208,13 +211,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
 				var boundsSize = Bounds.Size.ToSize();
-				if (!_needsArrange)
+				if (!_needsArrange && !_hasArrangedSize)
 				{
-					if (!_hasArrangedSize || Bounds.Size.IsCloseTo(_lastArrangedSize))
-					{
-						return;
-					}
+					return;
+				}
 
+				var sizeChanged = !Bounds.Size.IsCloseTo(_lastArrangedSize);
+				if (!_needsArrange && sizeChanged)
+				{
 					// The layout can stretch a cell beyond its preferred size (for example,
 					// to match the tallest item in a grid row). Only re-arrange when every
 					// finite measurement constraint still matches the final bounds.
@@ -230,45 +234,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					}
 				}
 
-				_needsArrange = false;
-				Arrange(virtualView, boundsSize);
-			}
-		}
+				var previousCellSafeArea = PlatformView is MauiView currentMauiView
+					? currentMauiView.CellSafeAreaOverride
+					: SafeAreaPadding.Empty;
 
-		void Arrange(IView virtualView, Size size)
-		{
-			_measureInvalidatedDuringArrange = false;
-			_isArranging = true;
-			try
-			{
+				// Safe area depends on the final window-relative cell position, so apply it
+				// only from LayoutSubviews and never during preferred-size calculation.
 				MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
-				virtualView.Arrange(new Rect(Point.Zero, size));
-				_lastArrangedSize = size;
-				_hasArrangedSize = true;
-			}
-			finally
-			{
-				_isArranging = false;
-			}
+				var safeAreaChanged = PlatformView is MauiView updatedMauiView &&
+					!previousCellSafeArea.EqualsAtPixelLevel(updatedMauiView.CellSafeAreaOverride);
 
-			if (_measureInvalidatedDuringArrange)
-			{
-				if (_replayedArrangeInvalidation)
+				if (!_needsArrange)
 				{
-					// Bound an arrange-time invalidation to one follow-up measure pass.
-					_measureInvalidated = false;
+					if (!sizeChanged && !safeAreaChanged)
+					{
+						return;
+					}
 				}
-				else
-				{
-					_replayedArrangeInvalidation = true;
-					this.InvalidateAncestorsMeasures();
-				}
+
+				_needsArrange = false;
+				virtualView.Arrange(new Rect(Point.Zero, boundsSize));
+				_lastArrangedSize = boundsSize;
+				_hasArrangedSize = true;
 			}
 		}
 
 		public override void PrepareForReuse()
 		{
 			//Unbind();
+			_bound = false;
+			ResetArrangeState();
 			isSupplementaryView = false;
 			base.PrepareForReuse();
 		}
@@ -296,8 +291,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
-			_measureInvalidatedDuringArrange = false;
-			_replayedArrangeInvalidation = false;
+			ResetArrangeState();
 
 			var oldElement = PlatformHandler?.VirtualView as View;
 
@@ -351,6 +345,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_bound = true;
 			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 			this.UpdateAccessibilityTraits(itemsView);
+		}
+
+		void ClearCellSafeAreaOverride()
+		{
+			if (PlatformView is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
+			{
+				mauiView.CellSafeAreaOverride = SafeAreaPadding.Empty;
+			}
+		}
+
+		void ResetArrangeState()
+		{
+			_measureInvalidated = false;
+			_needsArrange = false;
+			_hasArrangedSize = false;
+			_lastArrangedSize = default;
+			ClearCellSafeAreaOverride();
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)
@@ -476,14 +487,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!_measureInvalidated && _bound)
 			{
 				_measureInvalidated = true;
-
-				if (_isArranging)
-				{
-					_measureInvalidatedDuringArrange = true;
-					return false;
-				}
-
-				_replayedArrangeInvalidation = false;
 				return true;
 			}
 
