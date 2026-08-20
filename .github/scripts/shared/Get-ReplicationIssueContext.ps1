@@ -1826,7 +1826,7 @@ function Get-ReplicationRuntimeScopeMismatch {
             # Hot Reload, IntelliSense and Visual Studio itself are developer
             # tooling. The Sandbox records what a built app does on a device,
             # so it can show none of them.
-            Pattern = '(?i)\bIDE\b|\bvisual\s+studio\b|\bintellisense\b|\bhot\s+reload\b'
+            Pattern = '(?i)\bIDE\b|\bvisual\s+studio\b|\bVS\s*20\d\d\b|\bintellisense\b|\bhot\s+reload\b'
             Scope   = 'the behaviour of the IDE or its tooling'
         }
         [pscustomobject]@{
@@ -1835,6 +1835,15 @@ function Get-ReplicationRuntimeScopeMismatch {
             # every planning round being told no test could carry it.
             Pattern = '(?i)\bgenerated\s+(?:xaml|code|c#|source|file)\b|\bwarnings?\b[^.]{0,30}\bgenerated\b'
             Scope   = 'code emitted at compile time and the diagnostics it raises'
+        }
+        [pscustomobject]@{
+            # Wave 48 spent four device runs discovering what the reports
+            # already said: builds 15032839, 15032841 and 15032844 each
+            # reached the Sandbox stage and refused because the trigger needs
+            # HybridWebView, a Blazor web view or a WPF WebView2 host, none of
+            # which the plain-controls Sandbox may reference.
+            Pattern = '(?i)\b(?:blazor(?:\s*web\s*view)?|hybrid\s*web\s*view|webview2|wpf|windows\s+forms|winforms)\b'
+            Scope   = 'a hosted web view or desktop framework the Sandbox may not reference'
         }
     )
 

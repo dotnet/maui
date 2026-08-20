@@ -1043,6 +1043,30 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
     }
 
+    It 'refuses a report whose trigger is a hosted web view the Sandbox may not use' {
+        foreach ($title in @(
+                'MAUI HybridWebView C# to JavaScript interface hang',
+                '[Android] BlazorWebView predictive back callback blocks back-to-home',
+                'WPF WebView2 DoubleClick Event is not triggered.',
+                'Deploying .NET MAUI Blazor Hybrid to Android Emulator crashes immediately'
+            )) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title -Labels @() |
+                Should -Not -BeNullOrEmpty -Because "'$title' cannot run in a plain-controls Sandbox"
+        }
+    }
+
+    It 'refuses an IDE report that abbreviates the product name with a year' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'VS 2026 XAML Binding Failures window not scanning initial page' -Labels @() |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'still accepts an ordinary control report that merely renders web content' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'WebView inside ScrollView does not scroll on Android' -Labels @() |
+            Should -BeNullOrEmpty
+    }
+
     It 'keeps reports about what the app does at runtime' -ForEach @(
         @{ Title = '[Mac] FlowDirection Property of DatePicker Is Not Functioning as Expected' }
         @{ Title = "TextToSpeech.Default.GetLocalesAsync() doesn't show Lithuanian language on iOS" }
