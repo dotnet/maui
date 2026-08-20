@@ -1,15 +1,57 @@
 function ConvertTo-CanonicalLeakApi {
     param([Parameter(Mandatory = $true)][string]$Api)
 
-    $segments = $Api.Split('.')
-    if ($segments.Count -lt 2) {
-        return $Api
-    }
-    if ($segments.Count -eq 2 -or
-        $Api.StartsWith('Microsoft.Maui.', [StringComparison]::Ordinal)) {
-        return "$($segments[-2]).$($segments[-1])"
-    }
     return $Api
+}
+
+function Test-LeakApiIdentityMatch {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Left,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Right
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Left) -or
+        [string]::IsNullOrWhiteSpace($Right)) {
+        return $false
+    }
+    if ([string]::Equals($Left, $Right, [StringComparison]::Ordinal)) {
+        return $true
+    }
+
+    $leftSegments = $Left.Split('.')
+    $rightSegments = $Right.Split('.')
+    if ($leftSegments.Count -lt 2 -or $rightSegments.Count -lt 2) {
+        return $false
+    }
+
+    $leftIsUnqualified = $leftSegments.Count -eq 2
+    $rightIsUnqualified = $rightSegments.Count -eq 2
+    if ($leftIsUnqualified -eq $rightIsUnqualified) {
+        return $false
+    }
+
+    $unqualified = if ($leftIsUnqualified) {
+        $Left
+    } else {
+        $Right
+    }
+    $qualifiedSegments = if ($leftIsUnqualified) {
+        $rightSegments
+    } else {
+        $leftSegments
+    }
+    $qualifiedTrailingPair =
+        "$($qualifiedSegments[-2]).$($qualifiedSegments[-1])"
+
+    return [string]::Equals(
+        $unqualified,
+        $qualifiedTrailingPair,
+        [StringComparison]::Ordinal
+    )
 }
 
 function Test-LeakTitlePrefix {
@@ -439,6 +481,35 @@ function Get-LeakFixProvenanceIssueNumber {
     return $issueNumber
 }
 
+function Get-ValidatedLeakFixPullRequestIdentity {
+    param(
+        [Parameter(Mandatory = $true)]$PullRequest,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    try {
+        $api = Get-ValidatedExistingLeakApi `
+            -Title ([string]$PullRequest.title) `
+            -Kind Fix `
+            -Context $Context
+        if ([string]::IsNullOrWhiteSpace($api)) {
+            return $null
+        }
+
+        $issueNumber = Get-LeakFixProvenanceIssueNumber `
+            -Body ([string]$PullRequest.body) `
+            -Repository $Repository
+    } catch {
+        return $null
+    }
+
+    return [pscustomobject]@{
+        Api = $api
+        IssueNumber = $issueNumber
+    }
+}
+
 function Test-LeakPrReferencesIssue {
     param(
         [AllowEmptyString()][string]$Body,
@@ -466,6 +537,82 @@ function Get-LeakRevertTargets {
     return @([regex]::Matches(($Body ?? ''), $pattern) |
         ForEach-Object { [int]$_.Groups['number'].Value } |
         Sort-Object -Unique)
+}
+
+function Get-LeakPullRequestConsistencySignature {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$PullRequests,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [AllowEmptyCollection()][int[]]$RelevantRevertTargetNumbers = @()
+    )
+
+    $relevantRevertTargets = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($number in $RelevantRevertTargetNumbers) {
+        if ($number -le 0) {
+            throw "Consistency signature received invalid revert target PR #$number."
+        }
+        [void]$relevantRevertTargets.Add($number)
+    }
+
+    # Preserve immutable identity for every merged PR, but include editable title/body
+    # only when the record can affect leak-fix or relevant revert de-duplication.
+    $relevant = @(
+        $PullRequests |
+            Where-Object {
+                [string]$_.state -ceq 'MERGED' -or
+                (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
+            } |
+            Sort-Object number |
+            ForEach-Object {
+                $includeMutableMetadata =
+                    Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix
+                if (-not $includeMutableMetadata -and
+                    [string]$_.state -ceq 'MERGED' -and
+                    $relevantRevertTargets.Count -gt 0) {
+                    foreach ($targetNumber in @(
+                            Get-LeakRevertTargets `
+                                -Body ([string]$_.body) `
+                                -Repository $Repository
+                        )) {
+                        if ($relevantRevertTargets.Contains($targetNumber)) {
+                            $includeMutableMetadata = $true
+                            break
+                        }
+                    }
+                }
+
+                $record = [ordered]@{
+                    number = [int]$_.number
+                    baseRefName = [string]$_.baseRefName
+                    state = [string]$_.state
+                    merged = [bool]$_.merged
+                    mergedAt = if ($null -eq $_.mergedAt) {
+                        $null
+                    } else {
+                        [string]$_.mergedAt
+                    }
+                    mergeCommitOid = if ($null -eq $_.mergeCommitOid) {
+                        $null
+                    } else {
+                        [string]$_.mergeCommitOid
+                    }
+                    url = [string]$_.url
+                }
+                if ($includeMutableMetadata) {
+                    $record.title = [string]$_.title
+                    $record.body = if ($null -eq $_.body) {
+                        $null
+                    } else {
+                        [string]$_.body
+                    }
+                }
+                $record
+            }
+    )
+
+    return ConvertTo-Json -InputObject $relevant -Depth 4 -Compress
 }
 
 function Get-NormalizedLeakMergeCommitOid {
@@ -1849,7 +1996,7 @@ query($owner: String!, $name: String!, $number: Int!) {
     if ([string]::IsNullOrWhiteSpace($liveApi)) {
         throw "$context has a malformed [leak-scan] title without a canonical API."
     }
-    if ($liveApi -cne $Api) {
+    if (-not (Test-LeakApiIdentityMatch -Left $liveApi -Right $Api)) {
         throw "$context canonical API '$liveApi' does not match proposed PR API '$Api'."
     }
 
@@ -2313,7 +2460,9 @@ function Assert-LeakDedupState {
     if ($State.issue_number -ne $IssueNumber) {
         throw "De-dup state issue_number '$($State.issue_number)' does not match PR issue #$IssueNumber."
     }
-    if ($State.api -cne $Api) {
+    if (-not (Test-LeakApiIdentityMatch `
+                -Left ([string]$State.api) `
+                -Right $Api)) {
         throw "De-dup state API '$($State.api)' does not match PR API '$Api'."
     }
     if ($State.repository -cne $Repository) {
@@ -2379,7 +2528,9 @@ function Get-LeakFixFinalDedupResult {
         } | Sort-Object number -Unique)
 
     $apiMatches = @($eligible | Where-Object {
-            (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) -ceq $Api
+            $existingApi = Get-CanonicalExistingLeakApi `
+                -Title ([string]$_.title)
+            Test-LeakApiIdentityMatch -Left $existingApi -Right $Api
         } | Sort-Object number -Unique)
 
     $blocked = $directMatches.Count -gt 0 -or $apiMatches.Count -gt 0
@@ -2593,14 +2744,17 @@ function Get-EffectiveRevertedPullRequestNumbers {
 
 Export-ModuleMember -Function `
     Test-LeakTitlePrefix, `
+    Test-LeakApiIdentityMatch, `
     Get-CanonicalLeakApi, `
     Get-CanonicalExistingLeakApi, `
     Get-ValidatedExistingLeakApi, `
     Read-RegularJsonFile, `
     Select-LeakAuthoritativePullRequests, `
     Get-LeakFixProvenanceIssueNumber, `
+    Get-ValidatedLeakFixPullRequestIdentity, `
     Test-LeakPrReferencesIssue, `
     Get-LeakRevertTargets, `
+    Get-LeakPullRequestConsistencySignature, `
     Invoke-LeakGhJson, `
     Get-CompleteLeakPullRequests, `
     Get-CompleteLeakPullRequestCommitHistories, `

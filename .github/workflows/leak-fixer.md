@@ -406,9 +406,9 @@ Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Ex
 
 A fix PR carries `Fixes #<N>` (and `Refs: <owner>/<repo>#<N>`) in its body — that is the join
 key. But the same underlying leak can be filed under MULTIPLE issue numbers (duplicate
-`[leak-scan]` issues, or a pre-existing upstream issue), so also de-dup by the **rooting
-`Type.Member`** the target names — never open a second fix for a leak already being fixed or
-already merged into `main` / `inflight/current`.
+`[leak-scan]` issues, or a pre-existing upstream issue), so also de-dup by the **rooting API
+identity** the target names — never open a second fix for a leak already being fixed or already
+merged into `main` / `inflight/current`.
 
 Use the PR's live `baseRefName` as the branch authority. Do not trust a potentially stale
 `Target branch:` line in its body: leak PRs can be retargeted to `inflight/current` before
@@ -416,9 +416,10 @@ merge.
 
 ```bash
 N=<issue-number>
-# The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
+# The rooting API identity this issue is about (titles lead with it immediately after the tag).
 # Use the shared anchored parser from daily-leak-hunter.md so malformed titles cannot key from
-# a later URL/namespace token and fully-qualified titles normalize identically on both sides.
+# a later URL/namespace token. Qualified identifiers remain fully qualified; comparisons use
+# exact ordinal identity plus conservative short/full trailing-pair ambiguity.
 # Fetch the title first so a TRANSIENT fetch failure fails closed (empty title => abort) rather than
 # silently yielding an empty $API, which would disable the same-API dedup scan below and let a
 # duplicate [leak-fix] PR be opened under a re-filed leak.
@@ -430,7 +431,7 @@ fi
 API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
 echo "target rooting API: $API"
 if test -z "$API"; then
-  echo "ERROR: issue #$N title has no canonical Type.Member; refusing unsupported empty-API de-dup before build/test work." >&2
+  echo "ERROR: issue #$N title has no anchored API identity; refusing unsupported empty-API de-dup before build/test work." >&2
   exit 1
 fi
 # Escape the repo slug (repo names may contain '.' / '-') for the exact `Refs:` match below.
@@ -471,8 +472,8 @@ jq -r '.[] | ["_", .number, .baseRefName, .title] | @tsv' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/merged-leak-fix-prs.tsv
 
-# Canonicalize every merged PR title with the same anchored parser used for the selected issue.
-# This handles fully-qualified titles without accepting off-contract wording or substring matches.
+# Extract every merged PR title with the same anchored parser used for the selected issue.
+# This preserves fully-qualified titles without accepting off-contract wording or substring matches.
 jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE BASE URL; do
@@ -518,7 +519,7 @@ if test -s /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt; then
     > /tmp/gh-aw/agent/merged-leak-fix-apis.tsv
 fi
 
-# Match either the selected issue reference OR the canonical rooting API. The latter catches
+# Match either the selected issue reference OR the rooting API identity. The latter catches
 # duplicate scanner issue numbers such as #36539 after #36344 was already fixed by #36369.
 # Anchor `Fixes #N` to the start of a body line (excludes incidental/negated text like "Does
 # not Fixes #N" mid-sentence) and require `Refs:` to name THIS repo exactly (excludes
@@ -529,15 +530,19 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
       test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
   /tmp/gh-aw/agent/merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/merged-issue-fix-prs.json
-awk -F '\t' -v api="$API" '$1 == api' \
-  /tmp/gh-aw/agent/merged-leak-fix-apis.tsv \
+while IFS=$'\t' read -r PR_API PR BASE URL PR_TITLE; do
+  if pwsh .github/scripts/Test-LeakApiIdentity.ps1 \
+      -Left "$PR_API" -Right "$API"; then
+    printf '%s\t%s\t%s\t%s\t%s\n' "$PR_API" "$PR" "$BASE" "$URL" "$PR_TITLE"
+  fi
+done < /tmp/gh-aw/agent/merged-leak-fix-apis.tsv \
   > /tmp/gh-aw/agent/merged-api-fix-prs.tsv
 jq -r '.[] | "equivalent fix already merged: #\(.number) -> \(.baseRefName) \(.url) — \(.title)"' \
   /tmp/gh-aw/agent/merged-issue-fix-prs.json
 awk -F '\t' '{ print "equivalent API fix already merged: #" $2 " -> " $3 " " $4 " — " $5 }' \
   /tmp/gh-aw/agent/merged-api-fix-prs.tsv
 echo "merged issue-reference matches: $(jq 'length' /tmp/gh-aw/agent/merged-issue-fix-prs.json)"
-echo "merged canonical-API matches: $(wc -l < /tmp/gh-aw/agent/merged-api-fix-prs.tsv | tr -d ' ')"
+echo "merged API-identity matches: $(wc -l < /tmp/gh-aw/agent/merged-api-fix-prs.tsv | tr -d ' ')"
 # (b) Open [leak-fix] PR already addressing THIS issue number?
 pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
@@ -552,13 +557,11 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
   /tmp/gh-aw/agent/open-fix-prs-raw.json \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
-# (c) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
-#     Canonicalize each open PR title with the SAME anchored extraction used for the
-#     merged-fix gate (a) and the target issue, then compare canonical keys exactly — do NOT
-#     anchor-match the raw title against $API. A fully-qualified title like "[leak-fix] Fix
-#     Microsoft.Maui.Controls.Picker.ItemsSource memory leak" represents the same
-#     Picker.ItemsSource leak but would not match an anchored "Fix Picker\.ItemsSource" regex,
-#     letting a second concurrent fix PR for the same leak through.
+# (c) Open [leak-fix] PR already fixing the SAME rooting API identity (any issue number)?
+#     Parse each open PR title with the SAME anchored extraction used for the merged-fix gate
+#     (a) and the target issue, then use the shared ordinal identity comparator. Exact
+#     qualified identifiers match, different qualified namespaces remain distinct, and a
+#     legacy short Type.Member conservatively matches a qualified trailing pair.
 jq -r '.[] |
     select(.baseRefName == "main" or .baseRefName == "inflight/current") |
     select(.title | test("^\\[leak-fix\\][ \\t]+")) |
@@ -566,7 +569,8 @@ jq -r '.[] |
   /tmp/gh-aw/agent/open-fix-prs-raw.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
-      if test "$PR_API" = "$API"; then
+      if pwsh .github/scripts/Test-LeakApiIdentity.ps1 \
+          -Left "$PR_API" -Right "$API"; then
         jq -n --arg number "$PR" --arg title "$TITLE" '{number: ($number|tonumber), title: $title}'
       fi
     done \
@@ -581,7 +585,7 @@ pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
 # Validate every returned baseRefName before filtering.
 # Each whole-snapshot attempt has one aggregate budget across both authoritative lanes:
 # main and inflight/current.
-# These attempts represent the same canonical leak work; well-formed release/* (and other
+# These attempts represent the same leak identity; well-formed release/* (and other
 # non-authoritative) lanes do not consume it.
 pwsh -NoLogo -NoProfile -Command '
   $ErrorActionPreference = "Stop"
@@ -596,7 +600,7 @@ pwsh -NoLogo -NoProfile -Command '
 jq '[.[] | select(.title | test("^\\[leak-fix\\][ \\t]+")) | select(.mergedAt == null)]' \
   /tmp/gh-aw/agent/closed-fix-prs-authoritative.json \
   > /tmp/gh-aw/agent/closed-unmerged-fix-prs.json
-# Count by BOTH this issue-number reference AND the canonical rooting Type.Member (same
+# Count by BOTH this issue-number reference AND the rooting API identity (same
 # extraction as gates (a)/(c)) — otherwise the cap resets to 0 whenever the same leak is
 # re-filed under a duplicate issue number, letting it burn through another 3-attempt budget
 # (e.g. #36548 already carries 2 closed-unmerged IndicatorView.ItemsSource attempts that must
@@ -604,7 +608,10 @@ jq '[.[] | select(.title | test("^\\[leak-fix\\][ \\t]+")) | select(.mergedAt ==
 API_MATCH_NUMBERS=$(jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/closed-unmerged-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
-      test -n "$API" && test "$PR_API" = "$API" && echo "$PR"
+      if pwsh .github/scripts/Test-LeakApiIdentity.ps1 \
+          -Left "$PR_API" -Right "$API"; then
+        echo "$PR"
+      fi
     done | jq -R 'tonumber' | jq -s '.')
 jq --arg n "$N" --arg repo "$REPO_RE" --argjson apiNums "$API_MATCH_NUMBERS" '[.[] |
     select(((.body // "") |
@@ -622,14 +629,14 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
   `skipped: equivalent fix already merged via #<PR> to <baseRefName>` and stop. For automatic
   selection, move to the next oldest issue; for explicit `issue_number`, stop the run.
 - If `merged-api-fix-prs.tsv` has at least one row, stop with
-  `skipped: canonical API already fixed via #<PR> to <baseRefName>`. The trusted gate cannot
+  `skipped: API identity already fixed via #<PR> to <baseRefName>`. The trusted gate cannot
   independently prove an agent-authored different-mechanism assertion, so same-API overrides
   are not accepted.
 - If an **open** fix PR already refs this issue (b) → `skipped: leak already being fixed` and
   stop (or move to the next automatic candidate). Open PRs targeting unrelated release
   branches are not authority for the `main` fix lane and do not block.
-- If an open fix PR already fixes the same canonical API with no direct issue reference (c) →
-  stop with `skipped: canonical API already being fixed`.
+- If an open fix PR already fixes the same API identity with no direct issue reference (c) →
+  stop with `skipped: API identity already being fixed`.
 - Keep `different_mechanism_prs` empty. Any same-API match is a hard stop.
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
@@ -853,7 +860,10 @@ jq -r '.[] | [.number, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
-      test "$PR_API" = "$API" && printf 'merged\t%s\t%s\n' "$PR" "$TITLE"
+      if pwsh .github/scripts/Test-LeakApiIdentity.ps1 \
+          -Left "$PR_API" -Right "$API"; then
+        printf 'merged\t%s\t%s\n' "$PR" "$TITLE"
+      fi
     done > /tmp/gh-aw/agent/final-merged-api-matches.tsv
 
 pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
@@ -874,7 +884,10 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
 jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-open-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)
-      test "$PR_API" = "$API" && printf 'open\t%s\t%s\n' "$PR" "$TITLE"
+      if pwsh .github/scripts/Test-LeakApiIdentity.ps1 \
+          -Left "$PR_API" -Right "$API"; then
+        printf 'open\t%s\t%s\n' "$PR" "$TITLE"
+      fi
     done > /tmp/gh-aw/agent/final-open-api-matches.tsv
 
 cat /tmp/gh-aw/agent/final-merged-api-matches.tsv \
@@ -903,7 +916,8 @@ echo "all live same-API matches (all are blocking):"; cat /tmp/gh-aw/agent/final
 Emit exactly one `create-pull-request` safe-output. Do NOT set a `base` field (the
 `base-branch: main` config pins it). Source `branch` MUST be `leak-fix/issue-<N>`. Title MUST
 start with the literal tag **`[leak-fix] `** followed by e.g. `Fix <rooting API> memory leak
-(Fixes #<N>)`.
+(Fixes #<N>)`. Reuse the issue's anchored API identity exactly: preserve all namespace
+qualification and casing rather than shortening a qualified identifier to `Type.Member`.
 
 The required `Fixes` and same-issue `Refs` records must each appear exactly once as a dedicated
 visible line with the exact casing and single-space formatting shown below. Use only 0–3

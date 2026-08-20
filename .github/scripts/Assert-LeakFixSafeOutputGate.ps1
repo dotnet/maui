@@ -10,82 +10,6 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
-function Get-LeakFixConsistencySignature {
-    param(
-        [Parameter(Mandatory = $true)]
-        [AllowEmptyCollection()]
-        [object[]]$PullRequests,
-        [Parameter(Mandatory = $true)][string]$Repository,
-        [AllowEmptyCollection()][int[]]$RelevantRevertTargetNumbers = @()
-    )
-
-    $relevantRevertTargets = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($number in $RelevantRevertTargetNumbers) {
-        if ($number -le 0) {
-            throw "Consistency signature received invalid revert target PR #$number."
-        }
-        [void]$relevantRevertTargets.Add($number)
-    }
-
-    # Preserve immutable identity for every merged PR, but include editable title/body
-    # only when the record can affect leak-fix or relevant revert de-duplication.
-    $relevant = @(
-        $PullRequests |
-            Where-Object {
-                [string]$_.state -ceq 'MERGED' -or
-                (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
-            } |
-            Sort-Object number |
-            ForEach-Object {
-                $includeMutableMetadata =
-                    Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix
-                if (-not $includeMutableMetadata -and
-                    [string]$_.state -ceq 'MERGED' -and
-                    $relevantRevertTargets.Count -gt 0) {
-                    foreach ($targetNumber in @(
-                            Get-LeakRevertTargets `
-                                -Body ([string]$_.body) `
-                                -Repository $Repository
-                        )) {
-                        if ($relevantRevertTargets.Contains($targetNumber)) {
-                            $includeMutableMetadata = $true
-                            break
-                        }
-                    }
-                }
-
-                $record = [ordered]@{
-                    number = [int]$_.number
-                    baseRefName = [string]$_.baseRefName
-                    state = [string]$_.state
-                    merged = [bool]$_.merged
-                    mergedAt = if ($null -eq $_.mergedAt) {
-                        $null
-                    } else {
-                        [string]$_.mergedAt
-                    }
-                    mergeCommitOid = if ($null -eq $_.mergeCommitOid) {
-                        $null
-                    } else {
-                        [string]$_.mergeCommitOid
-                    }
-                    url = [string]$_.url
-                }
-                if ($includeMutableMetadata) {
-                    $record.title = [string]$_.title
-                    $record.body = if ($null -eq $_.body) {
-                        $null
-                    } else {
-                        [string]$_.body
-                    }
-                }
-                $record
-            }
-    )
-
-    return ConvertTo-Json -InputObject $relevant -Depth 4 -Compress
-}
-
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'
 }
@@ -111,7 +35,7 @@ if (-not (Test-LeakTitlePrefix -Title $title -Kind Fix)) {
 
 $api = Get-CanonicalLeakApi -Title $title
 if ([string]::IsNullOrWhiteSpace($api)) {
-    throw "Could not derive a canonical Type.Member from create-pull-request title '$title'."
+    throw "Could not derive an anchored API identity from create-pull-request title '$title'."
 }
 
 $issueNumber = Get-LeakFixProvenanceIssueNumber `
@@ -167,10 +91,10 @@ for ($attempt = 1; $attempt -le $maximumConsistencyAttempts; $attempt++) {
             -Repository $Repository `
             -States @('OPEN', 'CLOSED', 'MERGED')
     )
-    $beforeSignature = Get-LeakFixConsistencySignature -PullRequests $before `
+    $beforeSignature = Get-LeakPullRequestConsistencySignature -PullRequests $before `
         -Repository $Repository `
         -RelevantRevertTargetNumbers $relevantRevertTargetNumbers
-    $afterSignature = Get-LeakFixConsistencySignature -PullRequests $after `
+    $afterSignature = Get-LeakPullRequestConsistencySignature -PullRequests $after `
         -Repository $Repository `
         -RelevantRevertTargetNumbers $relevantRevertTargetNumbers
     if ($beforeSignature -ceq $afterSignature) {
@@ -206,7 +130,9 @@ $closedAttempts = @($authoritativeClosed | Where-Object {
         $null -eq $_.mergedAt -and
         (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix) -and
         ($referencesIssue -or
-            (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) -ceq $api)
+            (Test-LeakApiIdentityMatch `
+                -Left (Get-CanonicalExistingLeakApi -Title ([string]$_.title)) `
+                -Right $api))
     } | Sort-Object number -Unique)
 if ($closedAttempts.Count -ge 3) {
     throw "Final leak-fix attempt-cap gate blocked PR creation: $($closedAttempts.Count) closed-unmerged attempts already reference issue #$issueNumber or canonical API '$api'."

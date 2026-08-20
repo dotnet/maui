@@ -678,6 +678,40 @@ Describe 'fresh-shell de-dup state' {
         } | Should -Throw '*does not match PR issue*'
     }
 
+    It 'accepts a conservative short-to-qualified persisted identity match' {
+        $state = [pscustomobject]@{
+            issue_number = 42
+            api = 'ButtonRenderer.Dispose'
+            repository = 'dotnet/maui'
+            different_mechanism_prs = @()
+        }
+
+        {
+            Assert-LeakDedupState `
+                -State $state `
+                -IssueNumber 42 `
+                -Api 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose' `
+                -Repository 'dotnet/maui'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects different qualified persisted identities with the same trailing pair' {
+        $state = [pscustomobject]@{
+            issue_number = 42
+            api = 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose'
+            repository = 'dotnet/maui'
+            different_mechanism_prs = @()
+        }
+
+        {
+            Assert-LeakDedupState `
+                -State $state `
+                -IssueNumber 42 `
+                -Api 'Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer.Dispose' `
+                -Repository 'dotnet/maui'
+        } | Should -Throw '*does not match PR API*'
+    }
+
     It 'rejects agent-authored different-mechanism overrides' {
         $state = [pscustomobject]@{
             issue_number = 42
@@ -924,19 +958,19 @@ Describe 'canonical leak API title parsing' {
     It 'extracts the API only from the anchored leak-scan title position' {
         Get-CanonicalLeakApi `
             -Title '[leak-scan] Microsoft.Maui.Controls.Picker.ItemsSource — collection retention' |
-            Should -Be 'Picker.ItemsSource'
+            Should -Be 'Microsoft.Maui.Controls.Picker.ItemsSource'
     }
 
     It 'extracts the API only from the anchored leak-fix title position' {
         Get-CanonicalLeakApi `
             -Title '[leak-fix] Fix Microsoft.Maui.Controls.Picker.ItemsSource memory leak' |
-            Should -Be 'Picker.ItemsSource'
+            Should -Be 'Microsoft.Maui.Controls.Picker.ItemsSource'
     }
 
     It 'accepts tabs wherever the title grammar permits prefix whitespace' {
         Get-CanonicalLeakApi `
             -Title "[leak-scan]`tMicrosoft.Maui.Controls.Picker.ItemsSource — retention" |
-            Should -Be 'Picker.ItemsSource'
+            Should -Be 'Microsoft.Maui.Controls.Picker.ItemsSource'
         Get-CanonicalLeakApi `
             -Title "[leak-fix]`tFix`tPicker.ItemsSource memory leak" |
             Should -Be 'Picker.ItemsSource'
@@ -1098,12 +1132,12 @@ Describe 'canonical leak API title parsing' {
         $foo | Should -Not -Be $baz
     }
 
-    It 'keeps short and legacy Microsoft.Maui-qualified keys stable' {
+    It 'keeps short keys stable while preserving Microsoft.Maui qualification' {
         Get-CanonicalLeakApi -Title '[leak-fix] Fix Picker.ItemsSource leak' |
             Should -Be 'Picker.ItemsSource'
         Get-CanonicalLeakApi `
             -Title '[leak-fix] Fix Microsoft.Maui.Controls.Picker.ItemsSource leak' |
-            Should -Be 'Picker.ItemsSource'
+            Should -Be 'Microsoft.Maui.Controls.Picker.ItemsSource'
     }
 
     It 'rejects a URL before an otherwise valid API' {
@@ -1154,6 +1188,124 @@ Describe 'canonical leak API title parsing' {
         ) | ForEach-Object {
             (Get-CanonicalExistingLeakApi -Title $_) | Should -BeNullOrEmpty
         }
+    }
+}
+
+Describe 'leak API identity matrix and order invariance' {
+    BeforeAll {
+        $script:identityCases = @(
+            @{
+                Left = 'Picker.ItemsSource'
+                Right = 'Picker.ItemsSource'
+                Expected = $true
+            }
+            @{
+                Left = 'Microsoft.Maui.Controls.Picker.ItemsSource'
+                Right = 'Microsoft.Maui.Controls.Picker.ItemsSource'
+                Expected = $true
+            }
+            @{
+                Left = 'Picker.ItemsSource'
+                Right = 'Microsoft.Maui.Controls.Picker.ItemsSource'
+                Expected = $true
+            }
+            @{
+                Left = 'Microsoft.Maui.Controls.Picker.ItemsSource'
+                Right = 'Picker.ItemsSource'
+                Expected = $true
+            }
+            @{
+                Left = 'Microsoft.Maui.Controls.Picker.ItemsSource'
+                Right = 'Microsoft.Maui.Platform.Picker.ItemsSource'
+                Expected = $false
+            }
+            @{
+                Left = 'Foo.Bar.CollectionView.ItemsSource'
+                Right = 'Baz.Qux.CollectionView.ItemsSource'
+                Expected = $false
+            }
+            @{
+                Left = 'Microsoft.Maui.Controls.Picker.ItemsSource'
+                Right = 'Microsoft.Maui.Controls.Picker.itemsSource'
+                Expected = $false
+            }
+            @{
+                Left = 'Picker.ItemsSource'
+                Right = 'Picker.itemsSource'
+                Expected = $false
+            }
+        )
+    }
+
+    It 'applies exact, ambiguous-short, qualified-collision, and case-sensitive semantics' {
+        foreach ($case in $script:identityCases) {
+            Test-LeakApiIdentityMatch -Left $case.Left -Right $case.Right |
+                Should -Be $case.Expected
+        }
+    }
+
+    It 'returns the same result regardless of comparison order' {
+        foreach ($case in $script:identityCases) {
+            $forward = Test-LeakApiIdentityMatch `
+                -Left $case.Left `
+                -Right $case.Right
+            $reverse = Test-LeakApiIdentityMatch `
+                -Left $case.Right `
+                -Right $case.Left
+
+            $forward | Should -Be $case.Expected
+            $reverse | Should -Be $forward
+        }
+    }
+
+    It 'keeps two qualified MAUI APIs with the same trailing pair distinct' {
+        Test-LeakApiIdentityMatch `
+            -Left 'Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer.Dispose' `
+            -Right 'Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer.Dispose' |
+            Should -BeFalse
+    }
+
+    It 'keeps two qualified non-MAUI APIs with the same trailing pair distinct' {
+        Test-LeakApiIdentityMatch `
+            -Left 'Contoso.Platform.Android.ButtonRenderer.Dispose' `
+            -Right 'Fabrikam.Platform.iOS.ButtonRenderer.Dispose' |
+            Should -BeFalse
+    }
+
+    It 'distinguishes realistic ButtonRenderer.Dispose namespaces but blocks a legacy short key' {
+        $qualified = @(
+            'Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer.Dispose'
+            'Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer.Dispose'
+            'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose'
+            'Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer.Dispose'
+        )
+
+        for ($left = 0; $left -lt $qualified.Count; $left++) {
+            for ($right = $left + 1; $right -lt $qualified.Count; $right++) {
+                Test-LeakApiIdentityMatch `
+                    -Left $qualified[$left] `
+                    -Right $qualified[$right] |
+                    Should -BeFalse
+            }
+            Test-LeakApiIdentityMatch `
+                -Left 'ButtonRenderer.Dispose' `
+                -Right $qualified[$left] |
+                Should -BeTrue
+        }
+    }
+
+    It 'exposes the same identity policy through the workflow command wrapper' {
+        $scriptPath = Join-Path $PSScriptRoot 'Test-LeakApiIdentity.ps1'
+
+        & pwsh -NoLogo -NoProfile -File $scriptPath `
+            -Left 'ButtonRenderer.Dispose' `
+            -Right 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose'
+        $LASTEXITCODE | Should -Be 0
+
+        & pwsh -NoLogo -NoProfile -File $scriptPath `
+            -Left 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose' `
+            -Right 'Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer.Dispose'
+        $LASTEXITCODE | Should -Be 1
     }
 }
 
@@ -1285,6 +1437,48 @@ Describe 'trusted final duplicate gate' {
 
         $exact.Blocked | Should -BeTrue
         $caseVariant.Blocked | Should -BeFalse
+    }
+
+    It 'keeps distinct qualified namespaces separate even when their trailing pair collides' {
+        $existing = New-LeakPr `
+            -Number 105 `
+            -Title (
+                '[leak-fix] Fix ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose leak'
+            )
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api (
+                'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                'ButtonRenderer.Dispose'
+            ) `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($existing) `
+            -OpenPullRequests @()
+
+        $result.Blocked | Should -BeFalse
+        $result.ApiMatches.Count | Should -Be 0
+    }
+
+    It 'conservatively blocks a qualified API against a legacy trailing-pair title' {
+        $existing = New-LeakPr `
+            -Number 106 `
+            -Title '[leak-fix] Fix ButtonRenderer.Dispose leak'
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api (
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose'
+            ) `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($existing) `
+            -OpenPullRequests @()
+
+        $result.Blocked | Should -BeTrue
+        $result.ApiMatches.number | Should -Be 106
     }
 
     It 'blocks the known legacy form when it appears on an existing fix' {
@@ -3163,7 +3357,7 @@ Describe 'workflow enforcement boundary' {
     It 'uses complete non-Search pagination for the early merged-fix history' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
         $stepStart = $workflow.IndexOf('# (a) Exact [leak-fix] PRs already MERGED')
-        $stepEnd = $workflow.IndexOf('# Canonicalize every merged PR title', $stepStart)
+        $stepEnd = $workflow.IndexOf('# Extract every merged PR title', $stepStart)
         $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
 
         $fetch = $step.IndexOf('Get-CompleteLeakPullRequests.ps1')
@@ -3224,8 +3418,26 @@ Describe 'workflow enforcement boundary' {
             "-States @\('OPEN', 'CLOSED', 'MERGED'\)"
         )).Count | Should -Be 2
         $gate | Should -Match '\$maximumConsistencyAttempts = 3'
-        $gate | Should -Match 'Get-LeakFixConsistencySignature -PullRequests \$before'
-        $gate | Should -Match 'Get-LeakFixConsistencySignature -PullRequests \$after'
+        $gate | Should -Match 'Get-LeakPullRequestConsistencySignature -PullRequests \$before'
+        $gate | Should -Match 'Get-LeakPullRequestConsistencySignature -PullRequests \$after'
+        $gate | Should -Match 'remained inconsistent after \$maximumConsistencyAttempts bounded attempts'
+        $gate | Should -Not -Match '(?s)Get-CompleteLeakPullRequests.*?-State\s+(?:OPEN|CLOSED|MERGED)'
+    }
+
+    It 'brackets final leak-hunter revert and open-fix analysis with all-state snapshots' {
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1'
+        ) -Raw
+
+        ([regex]::Matches(
+            $gate,
+            "-States @\('OPEN', 'CLOSED', 'MERGED'\)"
+        )).Count | Should -Be 2
+        $gate | Should -Match '\$maximumConsistencyAttempts = 3'
+        $gate | Should -Match '(?s)Get-LeakPullRequestConsistencySignature.*?-PullRequests \$before'
+        $gate | Should -Match '(?s)Get-LeakPullRequestConsistencySignature.*?-PullRequests \$after'
+        $gate | Should -Match 'Get-ValidatedLeakFixPullRequestIdentity'
+        $gate | Should -Match 'same-API open fix match'
         $gate | Should -Match 'remained inconsistent after \$maximumConsistencyAttempts bounded attempts'
         $gate | Should -Not -Match '(?s)Get-CompleteLeakPullRequests.*?-State\s+(?:OPEN|CLOSED|MERGED)'
     }
@@ -3251,7 +3463,7 @@ Describe 'workflow enforcement boundary' {
         $module | Should -Match 'issueOrPullRequest\(number: \$number\)'
         $module | Should -Match "typeName -cne 'Issue'"
         $module | Should -Match "state -cne 'OPEN'"
-        $module | Should -Match 'liveApi -cne \$Api'
+        $module | Should -Match 'Test-LeakApiIdentityMatch -Left \$liveApi -Right \$Api'
         $module | Should -Match "'agentic-workflows', 'perf/memory-leak 💦'"
         $hunter | Should -Match 'labels: \[agentic-workflows, "perf/memory-leak 💦"\]'
     }
@@ -3362,15 +3574,15 @@ Describe 'workflow enforcement boundary' {
         $workflow | Should -Not -Match 'combined by parity|combine by parity'
     }
 
-    It 'keeps hunter batch instructions aligned with the canonical-API gate' {
+    It 'keeps hunter batch instructions aligned with the API-identity gate' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
 
-        $workflow | Should -Match 'at most\s+one output per canonical rooting API in the current batch'
-        $workflow | Should -Match 'defer the others to a later run'
+        $workflow | Should -Match 'at most\s+one output per exact or conservatively ambiguous rooting API identity'
+        $workflow | Should -Match 'defer\s+the others to a later run'
         $workflow | Should -Not -Match 'distinct mechanisms on one API are separate leaks'
     }
 
-    It 'uses the shared anchored API parser in every workflow parser path' {
+    It 'uses the shared anchored parser and identity comparator in every workflow path' {
         $hunter = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
         $fixer = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
 
@@ -3384,8 +3596,32 @@ Describe 'workflow enforcement boundary' {
             $fixer,
             'Get-CanonicalLeakApi\.ps1 -Title "\$TITLE" -ExistingTitle'
         )).Count | Should -Be 6
+        ([regex]::Matches(
+            $hunter,
+            'Test-LeakApiIdentity\.ps1'
+        )).Count | Should -Be 1
+        ([regex]::Matches(
+            $fixer,
+            'Test-LeakApiIdentity\.ps1'
+        )).Count | Should -Be 5
+        @($hunter, $fixer) | ForEach-Object {
+            $_ | Should -Match 'preserve'
+            $_ | Should -Match 'qualified'
+        }
         $hunter | Should -Not -Match 'awk.*A-Za-z_'
         $fixer | Should -Not -Match 'awk.*A-Za-z_'
+    }
+
+    It 'preloads validated authoritative open fixes for the hunter' {
+        $workflow = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md'
+        ) -Raw
+
+        $workflow | Should -Match '(?s)Get-CompleteLeakPullRequests\.ps1.*-State OPEN.*open-leak-fix-prs-raw\.json'
+        $workflow | Should -Match 'Get-ValidatedLeakFixPullRequestIdentity'
+        $workflow | Should -Match 'Select-LeakAuthoritativePullRequests'
+        $workflow | Should -Match 'already-open-fix-apis\.tsv'
+        $workflow | Should -Match 'exact visible `Fixes #N` /'
     }
 
     It 'allows pwsh for fixer agent bash calls' {
@@ -3808,6 +4044,62 @@ Describe 'workflow enforcement boundary' {
             } | Should -Throw "*canonical API 'GradientBrush.gradientStops' does not match proposed PR API 'GradientBrush.GradientStops'*"
         }
 
+        It 'accepts a qualified live issue against a legacy short proposed identity' {
+            $global:mockLiveIssue.title = (
+                '[leak-scan] ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose — retained renderer'
+            )
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-fix] Fix ButtonRenderer.Dispose retained renderer'
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:agentOutput
+            $statePath = Join-Path $script:stateDirectory 'dedup-state.json'
+            $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            $state.api = 'ButtonRenderer.Dispose'
+            $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $statePath
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'rejects different qualified live and proposed identities with one trailing pair' {
+            $global:mockLiveIssue.title = (
+                '[leak-scan] ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose — retained renderer'
+            )
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = (
+                '[leak-fix] Fix ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                'ButtonRenderer.Dispose retained renderer'
+            )
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:agentOutput
+            $statePath = Join-Path $script:stateDirectory 'dedup-state.json'
+            $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            $state.api = (
+                'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                'ButtonRenderer.Dispose'
+            )
+            $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $statePath
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*canonical API*does not match proposed PR API*'
+        }
+
         It 'rejects a closed live issue' {
             $global:mockLiveIssue.state = 'CLOSED'
 
@@ -3988,7 +4280,7 @@ Describe 'workflow enforcement boundary' {
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*Could not derive a canonical Type.Member*'
+            } | Should -Throw '*Could not derive an anchored API identity*'
         }
 
         It 'rejects the legacy form when an agent emits it as new PR output' {
@@ -4002,7 +4294,7 @@ Describe 'workflow enforcement boundary' {
                     -AgentOutputPath $script:agentOutput `
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*Could not derive a canonical Type.Member*'
+            } | Should -Throw '*Could not derive an anchored API identity*'
         }
 
         It 'accepts an additional exact-repository Refs citation for an API-match PR' {
@@ -4452,6 +4744,96 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Throw '*attempt-cap gate blocked PR creation: 3 closed-unmerged attempts*'
         }
 
+        It 'does not aggregate closed attempts from different qualified namespaces' {
+            $targetApi = (
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose'
+            )
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = "[leak-fix] Fix $targetApi retained renderer"
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:agentOutput
+            $statePath = Join-Path $script:stateDirectory 'dedup-state.json'
+            $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            $state.api = $targetApi
+            $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $statePath
+            $global:mockLiveIssue.title =
+                "[leak-scan] $targetApi — retained renderer"
+            $global:mockClosed = @(
+                New-LeakPr `
+                    -Number 607 `
+                    -Title (
+                        '[leak-fix] Fix ' +
+                        'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                        'ButtonRenderer.Dispose leak'
+                    ) `
+                    -Body 'Fixes #10' `
+                    -Merged $false
+                New-LeakPr `
+                    -Number 608 `
+                    -Title (
+                        '[leak-fix] Fix ' +
+                        'Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.' +
+                        'ButtonRenderer.Dispose leak'
+                    ) `
+                    -Body 'Fixes #11' `
+                    -Merged $false
+                New-LeakPr `
+                    -Number 609 `
+                    -Title (
+                        '[leak-fix] Fix ' +
+                        'Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.' +
+                        'ButtonRenderer.Dispose leak'
+                    ) `
+                    -Body 'Fixes #12' `
+                    -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'aggregates legacy short closed attempts against a qualified target' {
+            $targetApi = (
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose'
+            )
+            $output = Get-Content -LiteralPath $script:agentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = "[leak-fix] Fix $targetApi retained renderer"
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:agentOutput
+            $statePath = Join-Path $script:stateDirectory 'dedup-state.json'
+            $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            $state.api = $targetApi
+            $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $statePath
+            $global:mockLiveIssue.title =
+                "[leak-scan] $targetApi — retained renderer"
+            $global:mockClosed = @(
+                New-LeakPr -Number 610 `
+                    -Title '[leak-fix] Fix ButtonRenderer.Dispose leak' `
+                    -Body 'Fixes #10' -Merged $false
+                New-LeakPr -Number 611 `
+                    -Title '[leak-fix] Fix ButtonRenderer.Dispose leak again' `
+                    -Body 'Fixes #11' -Merged $false
+                New-LeakPr -Number 612 `
+                    -Title '[leak-fix] Fix ButtonRenderer.Dispose final attempt' `
+                    -Body 'Fixes #12' -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*attempt-cap gate blocked PR creation: 3 closed-unmerged attempts*'
+        }
+
         It 'fails closed when a closed attempt is missing baseRefName' {
             $global:mockReturnAllBases = $true
             $global:mockClosed = @(
@@ -4571,9 +4953,14 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             $global:mockHunterOpenIssues = @()
             $global:mockHunterMerged = @()
             $global:mockHunterReverts = @()
+            $global:mockHunterOpenPullRequests = @()
+            $global:mockHunterClosed = @()
             $global:mockHunterGhExitCode = 0
             $global:mockHunterGhStderr = ''
             $global:mockHunterReturnAllBases = $false
+            $global:mockHunterGateSnapshots = @()
+            $global:mockHunterGateSnapshotIndex = 0
+            $global:mockHunterActiveGateSnapshot = $null
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockHunterGhExitCode
@@ -4666,32 +5053,74 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 $baseArgument = @($GhArgs | Where-Object {
                         $_.StartsWith('base=', [StringComparison]::Ordinal)
                     })[0]
-                if ($queryArgument -notmatch 'states: \[MERGED\]' -or
+                if ($queryArgument -notmatch 'states: \[(?<states>(?:OPEN|CLOSED|MERGED)(?:,\s*(?:OPEN|CLOSED|MERGED))*)\]' -or
                     [string]::IsNullOrWhiteSpace($baseArgument)) {
                     throw 'Unexpected mock GraphQL request.'
                 }
+                $requestedStates = @($Matches.states -split ',\s*')
                 $base = $baseArgument.Substring('base='.Length)
-                $source = @($global:mockHunterMerged) + @($global:mockHunterReverts)
+                $snapshot = if ($global:mockHunterGateSnapshots.Count -gt 0) {
+                    if ($base -ceq 'main') {
+                        if ($global:mockHunterGateSnapshotIndex -ge
+                            $global:mockHunterGateSnapshots.Count) {
+                            throw 'No mock hunter gate snapshot remains.'
+                        }
+                        $global:mockHunterActiveGateSnapshot =
+                            $global:mockHunterGateSnapshots[
+                                $global:mockHunterGateSnapshotIndex
+                            ]
+                        $global:mockHunterGateSnapshotIndex++
+                    } elseif ($null -eq $global:mockHunterActiveGateSnapshot) {
+                        throw 'The mock hunter gate snapshot was not initialized by the main query.'
+                    }
+                    $global:mockHunterActiveGateSnapshot
+                } else {
+                    [pscustomobject]@{
+                        Merged = @($global:mockHunterMerged) +
+                            @($global:mockHunterReverts)
+                        Open = @($global:mockHunterOpenPullRequests)
+                        Closed = @($global:mockHunterClosed)
+                    }
+                }
+                $source = @(
+                    foreach ($state in $requestedStates) {
+                        $propertyName = switch ($state) {
+                            'MERGED' { 'Merged' }
+                            'OPEN' { 'Open' }
+                            'CLOSED' { 'Closed' }
+                        }
+                        foreach ($row in @($snapshot.$propertyName)) {
+                            [pscustomobject]@{
+                                Row = $row
+                                State = $state
+                            }
+                        }
+                    }
+                )
                 if (-not $global:mockHunterReturnAllBases) {
                     $source = @($source | Where-Object {
-                            [string]$_.baseRefName -ceq $base
+                            [string]$_.Row.baseRefName -ceq $base
                         })
                 }
                 $nodes = @($source | ForEach-Object {
+                        $row = $_.Row
+                        $state = $_.State
                         $node = [ordered]@{}
                         foreach ($name in @(
                                 'number', 'title', 'body', 'baseRefName',
                                 'mergedAt', 'url'
                             )) {
-                            $property = $_.PSObject.Properties[$name]
+                            $property = $row.PSObject.Properties[$name]
                             if ($null -ne $property) {
                                 $node[$name] = $property.Value
                             }
                         }
-                        $node.state = 'MERGED'
-                        $node.merged = $true
-                        $node.mergeCommit = @{
-                            oid = [string]$_.mergeCommitOid
+                        $node.state = $state
+                        $node.merged = $state -ceq 'MERGED'
+                        $node.mergeCommit = if ($state -ceq 'MERGED') {
+                            @{ oid = [string]$row.mergeCommitOid }
+                        } else {
+                            $null
                         }
                         [pscustomobject]$node
                     })
@@ -4706,7 +5135,10 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
             Remove-Variable mockHunterOpenIssues, mockHunterMerged, mockHunterReverts, `
-                mockHunterGhExitCode, mockHunterGhStderr, mockHunterReturnAllBases `
+                mockHunterOpenPullRequests, mockHunterClosed, mockHunterGhExitCode, `
+                mockHunterGhStderr, mockHunterReturnAllBases, `
+                mockHunterGateSnapshots, mockHunterGateSnapshotIndex, `
+                mockHunterActiveGateSnapshot `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -4759,7 +5191,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*Could not derive a canonical Type.Member*'
+            } | Should -Throw '*Could not derive an anchored API identity*'
         }
 
         It 'rejects the legacy form when an agent emits it as new output' {
@@ -4773,10 +5205,10 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw '*Could not derive a canonical Type.Member*'
+            } | Should -Throw '*Could not derive an anchored API identity*'
         }
 
-        It 'rejects differently titled issues for the same canonical API in one output batch' {
+        It 'rejects differently titled issues for the same exact API in one output batch' {
             $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw | ConvertFrom-Json
             $output.items += [pscustomobject]@{
                 type = 'create_issue'
@@ -4790,7 +5222,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
-            } | Should -Throw "*same canonical API 'GradientBrush.GradientStops'*"
+            } | Should -Throw "*overlapping API identities 'GradientBrush.GradientStops' and 'GradientBrush.GradientStops'*"
         }
 
         It 'keeps casing-only C# APIs distinct while the exact-casing batch contract still dedups' {
@@ -4810,6 +5242,57 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Not -Throw
         }
 
+        It 'keeps two qualified same-trailing-pair APIs distinct in one output batch' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = (
+                '[leak-scan] ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose — retained renderer'
+            )
+            $output.items += [pscustomobject]@{
+                type = 'create_issue'
+                title = (
+                    '[leak-scan] ' +
+                    'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                    'ButtonRenderer.Dispose — retained renderer'
+                )
+                body = 'Second AI-generated leak report'
+            }
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'rejects a short and qualified trailing-pair ambiguity in one output batch' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title =
+                '[leak-scan] ButtonRenderer.Dispose — legacy short identity'
+            $output.items += [pscustomobject]@{
+                type = 'create_issue'
+                title = (
+                    '[leak-scan] ' +
+                    'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                    'ButtonRenderer.Dispose — qualified identity'
+                )
+                body = 'Second AI-generated leak report'
+            }
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*overlapping API identities 'ButtonRenderer.Dispose' and 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose'*"
+        }
+
         It 'blocks issue emission when a matching fix merged after the pre-agent snapshot' {
             $global:mockHunterMerged = @(
                 New-LeakPr `
@@ -4822,6 +5305,146 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*701*"
+        }
+
+        It 'does not block a different qualified namespace from a merged fix' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = (
+                '[leak-scan] ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose — retained renderer'
+            )
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+            $global:mockHunterMerged = @(
+                New-LeakPr `
+                    -Number 707 `
+                    -Title (
+                        '[leak-fix] Fix ' +
+                        'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                        'ButtonRenderer.Dispose retained renderer'
+                    )
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'retries a same-API open-to-merged transition and blocks the stable merge' {
+            $openCandidate = New-LeakPr `
+                -Number 713 `
+                -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                -Body "Fixes #700`nRefs: dotnet/maui#700" `
+                -Merged $false
+            $mergedCandidate = New-LeakPr `
+                -Number 713 `
+                -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                -Body "Fixes #700`nRefs: dotnet/maui#700"
+            $stableMerged = [pscustomobject]@{
+                Merged = @($mergedCandidate)
+                Open = @()
+                Closed = @()
+            }
+            $global:mockHunterGateSnapshots = @(
+                [pscustomobject]@{
+                    Merged = @()
+                    Open = @($openCandidate)
+                    Closed = @()
+                }
+                $stableMerged
+                $stableMerged
+                $stableMerged
+            )
+            $global:mockHunterMerged = @($mergedCandidate)
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*same-API merged fix match 713*"
+            $global:mockHunterGateSnapshotIndex | Should -Be 4
+        }
+
+        It 'retries a mid-gate revert-of-revert and blocks the reapplied fix' {
+            $fix = New-LeakPr `
+                -Number 714 `
+                -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                -Body "Fixes #700`nRefs: dotnet/maui#700"
+            $revert = New-LeakPr `
+                -Number 715 `
+                -Title 'Revert gradient-brush leak fix' `
+                -Body 'Reverts dotnet/maui#714' `
+                -CommitMessages @(
+                    "Revert leak fix`n`nThis reverts commit $($fix.mergeCommitOid)."
+                )
+            $restore = New-LeakPr `
+                -Number 716 `
+                -Title 'Restore gradient-brush leak fix' `
+                -Body 'Reverts dotnet/maui#715' `
+                -CommitMessages @(
+                    "Restore leak fix`n`nThis reverts commit $($revert.mergeCommitOid)."
+                )
+            $beforeRestore = [pscustomobject]@{
+                Merged = @($fix, $revert)
+                Open = @()
+                Closed = @()
+            }
+            $afterRestore = [pscustomobject]@{
+                Merged = @($fix, $revert, $restore)
+                Open = @()
+                Closed = @()
+            }
+            $global:mockHunterGateSnapshots = @(
+                $beforeRestore
+                $afterRestore
+                $afterRestore
+                $afterRestore
+            )
+            $global:mockHunterMerged = @($fix)
+            $global:mockHunterReverts = @($revert, $restore)
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*same-API merged fix match 714*"
+            $global:mockHunterGateSnapshotIndex | Should -Be 4
+        }
+
+        It 'fails closed when hunter snapshot churn exhausts bounded retries' {
+            $candidate = New-LeakPr `
+                -Number 717 `
+                -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak'
+            $emptySnapshot = [pscustomobject]@{
+                Merged = @()
+                Open = @()
+                Closed = @()
+            }
+            $mergedSnapshot = [pscustomobject]@{
+                Merged = @($candidate)
+                Open = @()
+                Closed = @()
+            }
+            $global:mockHunterGateSnapshots = @(
+                $emptySnapshot
+                $mergedSnapshot
+                $emptySnapshot
+                $mergedSnapshot
+                $emptySnapshot
+                $mergedSnapshot
+            )
+            $global:mockHunterMerged = @($candidate)
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*remained inconsistent after 3 bounded attempts*'
+            $global:mockHunterGateSnapshotIndex | Should -Be 6
         }
 
         It 'fails closed before mutation when merged metadata is missing baseRefName' {
@@ -4873,6 +5496,130 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -Number 706 `
                     -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
                     -Base 'release/10.0.1xx-sr9'
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'blocks a validated open fix when the original scan issue is already closed' {
+            $global:mockHunterOpenPullRequests = @(
+                New-LeakPr `
+                    -Number 708 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                    -Body "Fixes #700`nRefs: dotnet/maui#700" `
+                    -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*same-API open fix match 708*"
+        }
+
+        It 'does not block a validated open fix for a different qualified namespace' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = (
+                '[leak-scan] ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose — retained renderer'
+            )
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+            $global:mockHunterOpenPullRequests = @(
+                New-LeakPr `
+                    -Number 709 `
+                    -Title (
+                        '[leak-fix] Fix ' +
+                        'Microsoft.Maui.Controls.Compatibility.Platform.UWP.' +
+                        'ButtonRenderer.Dispose retained renderer'
+                    ) `
+                    -Body "Fixes #700`nRefs: dotnet/maui#700" `
+                    -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'blocks a validated open fix across a short and qualified ambiguity' {
+            $output = Get-Content -LiteralPath $script:hunterAgentOutput -Raw |
+                ConvertFrom-Json
+            $output.items[0].title = (
+                '[leak-scan] ' +
+                'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
+                'ButtonRenderer.Dispose — retained renderer'
+            )
+            $output | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $script:hunterAgentOutput
+            $global:mockHunterOpenPullRequests = @(
+                New-LeakPr `
+                    -Number 710 `
+                    -Title '[leak-fix] Fix ButtonRenderer.Dispose retained renderer' `
+                    -Body "Fixes #700`nRefs: dotnet/maui#700" `
+                    -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*same-API open fix match 710*"
+        }
+
+        It 'ignores malformed open-fix title or body provenance' -ForEach @(
+            @{
+                Title = '[leak-fix] Investigate GradientBrush.GradientStops'
+                Body = "Fixes #700`nRefs: dotnet/maui#700"
+            }
+            @{
+                Title = '[leak-fix] Fix GradientBrush.GradientStops reset leak'
+                Body = 'Fixes #700'
+            }
+            @{
+                Title = '[LEAK-FIX] Fix GradientBrush.GradientStops reset leak'
+                Body = "Fixes #700`nRefs: dotnet/maui#700"
+            }
+            @{
+                Title = '[leak-fix] Fix GradientBrush.GradientStops reset leak'
+                Body = (
+                    '```text' + "`n" +
+                    "Fixes #700`nRefs: dotnet/maui#700`n" +
+                    '```'
+                )
+            }
+        ) {
+            $global:mockHunterOpenPullRequests = @(
+                New-LeakPr `
+                    -Number 711 `
+                    -Title $Title `
+                    -Body $Body `
+                    -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'ignores a validated same-API open fix on a release-only branch' {
+            $global:mockHunterOpenPullRequests = @(
+                New-LeakPr `
+                    -Number 712 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                    -Body "Fixes #700`nRefs: dotnet/maui#700" `
+                    -Base 'release/10.0.1xx-sr9' `
+                    -Merged $false
             )
 
             {

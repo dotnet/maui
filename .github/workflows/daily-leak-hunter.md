@@ -62,7 +62,7 @@ tools:
   github:
     toolsets: [issues, search]
   edit:
-  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl"]
+  bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl", "pwsh"]
 
 checkout:
   fetch-depth: 50
@@ -185,6 +185,51 @@ pre-agent-steps:
           > /tmp/gh-aw/agent/already-merged-fix-apis.txt
       fi
 
+      # Authoritative open [leak-fix] PRs remain duplicate work even when their original
+      # scanner issue was closed independently. Only main/inflight PRs with both a valid
+      # anchored title identity and the exact visible Fixes/Refs provenance contract count.
+      pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
+        -Repository "$GITHUB_REPOSITORY" \
+        -State OPEN \
+        -OutputPath /tmp/gh-aw/agent/open-leak-fix-prs-raw.json
+      # shellcheck disable=SC2016
+      pwsh -NoLogo -NoProfile -Command '
+        $ErrorActionPreference = "Stop"
+        Import-Module .github/scripts/LeakWorkflowDedup.psm1 -Force
+        $open = @(Read-RegularJsonFile `
+            -Path "/tmp/gh-aw/agent/open-leak-fix-prs-raw.json")
+        $authoritative = @(Select-LeakAuthoritativePullRequests `
+            -PullRequests $open `
+            -Context "Hunter pre-agent open leak-fix de-dup search")
+        $validated = @(
+          foreach ($pullRequest in $authoritative) {
+            $number = [int]$pullRequest.number
+            $identity = Get-ValidatedLeakFixPullRequestIdentity `
+              -PullRequest $pullRequest `
+              -Repository $env:GITHUB_REPOSITORY `
+              -Context "Open pull request #$number"
+            if ($null -ne $identity) {
+              [pscustomobject]@{
+                api = [string]$identity.Api
+                number = $number
+                baseRefName = [string]$pullRequest.baseRefName
+                url = [string]$pullRequest.url
+                title = [string]$pullRequest.title
+              }
+            }
+          }
+        )
+        ConvertTo-Json -InputObject @($validated) -Depth 5
+      ' > /tmp/gh-aw/agent/already-open-fix-prs.json
+      jq -r '.[] | [.api, .number, .baseRefName, .url, .title] | @tsv' \
+        /tmp/gh-aw/agent/already-open-fix-prs.json \
+        | sort -u \
+        > /tmp/gh-aw/agent/already-open-fix-apis.tsv
+      cut -f1 /tmp/gh-aw/agent/already-open-fix-apis.tsv | sort -u \
+        > /tmp/gh-aw/agent/already-open-fix-apis.txt
+      echo "already-open validated fix APIs:"
+      cat /tmp/gh-aw/agent/already-open-fix-apis.tsv
+
 network:
   allowed:
     - defaults
@@ -194,12 +239,14 @@ network:
 
 safe-outputs:
   # The pre-agent snapshot keeps the agent from wasting work on known leaks, but a fix can
-  # merge during the up-to-90-minute hunt. Re-fetch authoritative live metadata in the
-  # generated safe-output job immediately before Process Safe Outputs. A late same-API
-  # issue/fix rejects the entire create-issue batch before mutation; otherwise-distinct items
-  # retry on the next scheduled run. The gate deliberately does not rewrite agent output or
-  # accept agent-authored mechanism overrides. Restore it from the read-only default branch
-  # rather than executing workflow-dispatch-selected code with the write-capable job token.
+  # merge or open during the up-to-90-minute hunt. Re-fetch authoritative live metadata in
+  # the generated safe-output job immediately before Process Safe Outputs. The gate brackets
+  # effective-revert evaluation with matching bounded all-state snapshots, then rejects the
+  # entire create-issue batch for a late same-API issue, merged fix, or validated open fix.
+  # Otherwise-distinct items retry on the next scheduled run. The gate deliberately does not
+  # rewrite agent output or accept agent-authored mechanism overrides. Restore it from the
+  # read-only default branch rather than executing workflow-dispatch-selected code with the
+  # write-capable job token.
   steps:
     - name: Checkout trusted leak-hunter de-dup gate
       if: ${{ contains(needs.agent.outputs.output_types, 'create_issue') }}
@@ -270,13 +317,14 @@ Never push, never open a PR, never comment, never edit product or test code in t
    device tests and are out of scope.
 4. **Skip weak-proxied code.** If the suspect uses `WeakEventManager`,
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
-5. **De-dup against open scanner issues AND merged fixes.** Before testing or filing, skip a
-   leak already covered by this workflow's open `[leak-scan]` issue (same rooting API /
-   retention path), or by an exact `[leak-fix]` PR for the same API/retention path already
-   merged to `main` or `inflight/current`. Do NOT suppress a candidate merely because
+5. **De-dup against open scanner issues, merged fixes, AND validated open fixes.** Before
+   testing or filing, skip a leak already covered by this workflow's open `[leak-scan]` issue
+   (same rooting API / retention path), by an exact `[leak-fix]` PR for the same API/retention
+   path already merged to `main` or `inflight/current`, or by a validated `[leak-fix]` PR still
+   OPEN on either authoritative lane. Do NOT suppress a candidate merely because
    AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine. A
    candidate whose only prior scanner issue is CLOSED may be re-filed only when no equivalent
-   supported-branch merged fix exists.
+   supported-branch merged or open fix exists.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
    `[ActiveIssue]`/skip/mute existing tests, never push.
@@ -290,12 +338,13 @@ Never push, never open a PR, never comment, never edit product or test code in t
    candidate with a **standalone** test that references the **shipped `Microsoft.Maui.Controls`
    NuGet package** from nuget.org (Step 4) — no source build, no workload, no emulator.
 
-## Step 2 — Fetch open scanner issues and merged fixes (de-dup)
+## Step 2 — Fetch open scanner issues plus merged/open fixes (de-dup)
 
-Two de-dup sources matter:
+Three de-dup sources matter:
 
 1. this workflow's own open `[leak-scan]` issues; and
-2. exact `[leak-fix]` PRs already merged to `main` or `inflight/current`.
+2. exact `[leak-fix]` PRs already merged to `main` or `inflight/current`; and
+3. validated `[leak-fix]` PRs still OPEN on `main` or `inflight/current`.
 
 You do **not** care about AdamEssenmacher's repro branches or anyone else's issues by
 themselves — duplicating those is explicitly fine. A merged generated fix is different: the
@@ -314,11 +363,12 @@ READ it:
 ```bash
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.tsv
+echo "already-open validated fix APIs:"; cat /tmp/gh-aw/agent/already-open-fix-apis.tsv
 ```
 
-- `already-filed-apis.txt` — the rooting `Type.Member` of every currently-open `[leak-scan]`
+- `already-filed-apis.txt` — the rooting API identity of every currently-open `[leak-scan]`
   issue this workflow filed (one per line).
-- `already-merged-fix-apis.tsv` / `.txt` — `Type.Member <TAB> PR# <TAB> baseRefName <TAB> URL
+- `already-merged-fix-apis.tsv` / `.txt` — `API identity <TAB> PR# <TAB> baseRefName <TAB> URL
   <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
   `.txt` is just the first column, deduplicated). Effective revert state is resolved
   recursively and per base branch. Editable repository-local `Reverts #<N>` body references
@@ -329,30 +379,39 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
   independently verified; sibling reverts never cancel each other. A servicing-branch revert
   cannot toggle a main/inflight fix. Missing, ambiguous, malformed, truncated, or over-budget
   evidence retains the original fix as active or blocks the run.
+- `already-open-fix-apis.tsv` / `.txt` — the same identity and PR metadata for every
+  authoritative OPEN `[leak-fix]` PR whose anchored title and exact visible `Fixes #N` /
+  `Refs: dotnet/maui#N` provenance pair both validate. This remains a duplicate even when
+  issue `#N` was independently closed.
 
-- A candidate is **OUT** if an open `[leak-scan]` issue or active merged `[leak-fix]` PR covers
-  the same canonical API. Use `already-filed-apis.txt` / `already-merged-fix-apis.txt` as
-  authoritative match signals and skip every match. **Check this for EVERY candidate before
-  its test.**
-- Normalize each candidate with the same anchored title convention: the API must be the first
+- A candidate is **OUT** if an open `[leak-scan]` issue, active merged `[leak-fix]` PR, or
+  validated authoritative open `[leak-fix]` PR covers the same API identity. Use all three
+  identity files as authoritative match signals and skip every match. **Check this for EVERY
+  candidate before its test.**
+- Extract each candidate with the same anchored title convention: the API must be the first
   dotted identifier chain immediately after `[leak-scan] ` (or after `[leak-fix] Fix `).
-  Existing short `Type.Member` keys stay stable, `Microsoft.Maui.*` qualification migrates to
-  that short key, and other qualification is preserved to prevent namespace collisions. Then use
-  `grep -Fxq "$API" /tmp/gh-aw/agent/already-merged-fix-apis.txt`; do not use substring
-  matching.
+  Preserve every qualified identifier exactly, including `Microsoft.Maui.*`; never strip its
+  namespace. Exact identifiers compare ordinal/case-sensitively. A legacy unqualified
+  `Type.Member` conservatively overlaps any qualified identifier ending in that exact trailing
+  pair, while two different qualified identifiers remain distinct even when their trailing
+  pairs collide. Use `pwsh .github/scripts/Test-LeakApiIdentity.ps1 -Left "$API" -Right
+  "$EXISTING_API"` for every comparison; do not use raw equality, substring matching, or
+  trailing-pair normalization.
 - For a merged-fix match, print the matching row(s) from
   `already-merged-fix-apis.tsv` and record
-  `skipped: canonical API already fixed via #<PR> to <baseRefName>`.
+  `skipped: API identity already fixed via #<PR> to <baseRefName>`.
 - For an open issue match, skip the candidate.
-- Re-filing the same canonical API under different wording/number is the primary failure mode.
+- Re-filing the same API identity under different wording/number is the primary failure mode.
 - Immediately before issue mutation, a trusted safe-output step independently re-fetches open
-  scanner issues, merged fixes, and branch-scoped effective revert state. A late same-API
-  issue/fix rejects the entire `create-issue` batch before mutation. Otherwise-distinct items
-  remain unchanged and retry on the next scheduled run; do not treat the pre-agent snapshot
-  as the final authority or expect the gate to filter agent output.
+  scanner issues plus a coherent all-state PR snapshot, validates authoritative open-fix
+  provenance, and brackets branch-scoped effective-revert evaluation with a matching snapshot.
+  A late same-API issue, merged fix, or open fix rejects the entire `create-issue` batch before
+  mutation. Otherwise-distinct items remain unchanged and retry on the next scheduled run; do
+  not treat the pre-agent snapshot as the final authority or expect the gate to filter agent
+  output.
 
 A candidate whose only prior scanner issue is CLOSED may be re-filed when no active merged fix
-covers the same canonical API.
+or validated authoritative open fix covers the same API identity.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -473,23 +532,25 @@ no MAUI source build, no emulator.
 
 ## Step 6 — File the issues (Pass A — one per confirmed leak)
 
-For **every** leak Step 5 confirmed whose canonical API has not already been selected this run,
+For **every** leak Step 5 confirmed whose API identity has not already been selected this run,
 emit a `create-issue` safe-output (up to the 8 cap) — one issue per distinct leak, with at most
-one output per canonical rooting API in the current batch. If multiple confirmed retention
-mechanisms share one API, emit the strongest report and defer the others to a later run rather
-than producing same-API siblings together. De-dup each selected leak against open `[leak-scan]`
-issues, supported-branch merged `[leak-fix]` PRs, AND the other issues you're filing this run.
-Any same-API match blocks output because the trusted gate has no independent evidence that an
-agent-authored mechanism comparison is correct. A trusted final gate repeats the live de-dup
-immediately before mutation. It validates the up-to-eight-item batch atomically: one late
-same-API match aborts every issue mutation, and otherwise-distinct reports retry on the next
-scheduled run.
-Each title MUST be of the form **`[leak-scan] <canonical API> — <short mechanism>`** — it MUST
-lead with the anchored canonical API immediately after the tag. Use the stable short
-`Type.Member` for `Microsoft.Maui.*` APIs (for example, `[leak-scan] SwipeItemView.Command —
-non-weak ICommand.CanExecuteChanged retains the control`), but preserve non-MAUI
-namespace/nesting qualification when needed to distinguish colliding `Type.Member` names.
-De-dup (Step 2) matches that leading key exactly, so do not reword it run-to-run.
+one output per exact or conservatively ambiguous rooting API identity in the current batch. If
+multiple confirmed retention mechanisms share one identity, emit the strongest report and defer
+the others to a later run rather than producing same-API siblings together. De-dup each
+selected leak against open `[leak-scan]` issues, supported-branch merged `[leak-fix]` PRs,
+validated authoritative open `[leak-fix]` PRs, AND the other issues you're filing this run.
+Any exact or short/full ambiguous match blocks output because the trusted gate has no
+independent evidence that an agent-authored mechanism comparison is correct. A trusted final
+gate repeats the live de-dup immediately before mutation. It validates the up-to-eight-item
+batch atomically: one late same-API match aborts every issue mutation, and otherwise-distinct
+reports retry on the next scheduled run.
+Each title MUST be of the form **`[leak-scan] <API identity> — <short mechanism>`** — it MUST
+lead with the anchored API identity immediately after the tag. Use the most qualified source
+identifier available and preserve it exactly (for example,
+`[leak-scan] Microsoft.Maui.Controls.SwipeItemView.Command — non-weak
+ICommand.CanExecuteChanged retains the control`). Never strip a `Microsoft.Maui.*` namespace.
+Legacy short `Type.Member` identities remain supported but conservatively block every qualified
+identity with that trailing pair. Keep the leading identity stable run-to-run.
 Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
