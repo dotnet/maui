@@ -77,6 +77,31 @@ function Normalize-ReviewPipelineRef {
     return $pipelineRef
 }
 
+function Normalize-ReviewPlatform {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    $platform = $Value.Trim().ToLowerInvariant()
+    $aliases = @{
+        macos       = 'catalyst'
+        maccatalyst = 'catalyst'
+        mac         = 'catalyst'
+        win         = 'windows'
+    }
+    if ($aliases.ContainsKey($platform)) {
+        $platform = $aliases[$platform]
+    }
+
+    if ($platform -in @('android', 'ios', 'catalyst', 'windows')) {
+        return $platform
+    }
+
+    return ''
+}
+
 function ConvertFrom-ReviewCommand {
     param([string]$Body)
 
@@ -88,7 +113,6 @@ function ConvertFrom-ReviewCommand {
         return $null
     }
 
-    $validPlatforms = @('android', 'ios', 'catalyst', 'windows')
     $argsText = [regex]::Replace($trimmed, '(?i)^/review\s*', '')
     $tokens = @()
     if (-not [string]::IsNullOrWhiteSpace($argsText)) {
@@ -111,16 +135,16 @@ function ConvertFrom-ReviewCommand {
             continue
         }
         if ($token -match '^(--platform|-p)=(.*)$') {
-            $candidate = $Matches[2].ToLowerInvariant()
-            if ($validPlatforms -contains $candidate) {
+            $candidate = Normalize-ReviewPlatform $Matches[2]
+            if ($candidate) {
                 $platform = $candidate
             }
             continue
         }
         if ($token -match '^(--platform|-p)$') {
             if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
-                $candidate = ([string]$tokens[$i + 1]).ToLowerInvariant()
-                if ($validPlatforms -contains $candidate) {
+                $candidate = Normalize-ReviewPlatform $tokens[$i + 1]
+                if ($candidate) {
                     $platform = $candidate
                 }
                 $i++
@@ -128,8 +152,8 @@ function ConvertFrom-ReviewCommand {
             continue
         }
 
-        $candidate = $token.ToLowerInvariant()
-        if (-not $platform -and $validPlatforms -contains $candidate) {
+        $candidate = Normalize-ReviewPlatform $token
+        if (-not $platform -and $candidate) {
             $platform = $candidate
         }
     }

@@ -20,6 +20,8 @@ on:
     paths:
       - '.github/scripts/**'
       - '.github/patches/**'
+      - '.github/skills/run-device-tests/scripts/*.ps1'
+      - '.github/skills/verify-tests-fail-without-fix/scripts/*.ps1'
       - '.github/workflows/**'
       - 'eng/scripts/**'
       - 'eng/pipelines/ci-copilot.yml'
@@ -72,6 +74,8 @@ jobs:
           $config = New-PesterConfiguration
           $config.Run.Path = @(
             '.github/scripts'
+            '.github/skills/run-device-tests/scripts'
+            '.github/skills/verify-tests-fail-without-fix/scripts'
             'eng/pipelines/ci-official-release.Tests.ps1'
             'eng/scripts/nuget_release_packages.Tests.ps1'
           )

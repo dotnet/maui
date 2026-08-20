@@ -90,6 +90,28 @@ Describe 'Get-AmbiguousStartupPatterns' {
     }
 }
 
+Describe 'Verified crash/startup retry history' {
+    It 'is a strict subset of retryable environment-error patterns' {
+        $env = Get-EnvErrorPatterns
+        $verified = Get-VerifiedCrashStartupEnvErrorPatterns
+        $verified.Count | Should -BeGreaterThan 0
+        $verified.Count | Should -BeLessThan $env.Count
+        foreach ($p in $verified) { $env | Should -Contain $p }
+    }
+
+    It 'keeps install failure followed by timeout in the generic timeout bucket' {
+        Test-EnvErrorHistoryHasVerifiedCrashStartup `
+            -EnvErrorHistory @('InstallFailedException', 'timeout') |
+            Should -BeFalse
+    }
+
+    It 'recognizes a verified app-startup failure followed by timeout' {
+        Test-EnvErrorHistoryHasVerifiedCrashStartup `
+            -EnvErrorHistory @('did not recover after crash-recovery attempts', 'timeout') |
+            Should -BeTrue
+    }
+}
+
 Describe 'Ambiguous startup retry decision' {
     It 'allows the first occurrence to retry (one device-recovery attempt)' {
         Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button' -History @() |

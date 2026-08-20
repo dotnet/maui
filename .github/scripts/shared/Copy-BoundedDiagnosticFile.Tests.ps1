@@ -141,3 +141,96 @@ Describe 'Copy-BoundedDiagnosticFileSet' {
             Should -BeLessOrEqual 512
     }
 }
+
+Describe 'Copy-BoundedRegularFileTree' {
+    BeforeEach {
+        $script:fixture = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:sourceDir = Join-Path $script:fixture 'source'
+        $script:destinationDir = Join-Path $script:fixture 'destination'
+        New-Item -ItemType Directory -Path $script:sourceDir -Force | Out-Null
+    }
+
+    It 'copies a bounded regular-file tree while preserving relative paths' {
+        $nested = Join-Path $script:sourceDir 'nested'
+        New-Item -ItemType Directory -Path $nested -Force | Out-Null
+        'root' | Set-Content -LiteralPath (Join-Path $script:sourceDir 'root.log') -NoNewline
+        'nested' | Set-Content -LiteralPath (Join-Path $nested 'child.json') -NoNewline
+
+        $result = Copy-BoundedRegularFileTree `
+            -SourceDirectory $script:sourceDir `
+            -DestinationDirectory $script:destinationDir `
+            -MaxFileCount 4 `
+            -MaxDirectoryCount 4 `
+            -MaxFileBytes 256 `
+            -MaxTotalBytes 512
+
+        $result.CopiedFiles | Should -Be 2
+        $result.CopiedDirectories | Should -Be 2
+        $result.CopiedBytes | Should -Be 10
+        (Get-Content -Raw -LiteralPath (Join-Path $script:destinationDir 'root.log')) |
+            Should -BeExactly 'root'
+        (Get-Content -Raw -LiteralPath (Join-Path $script:destinationDir 'nested/child.json')) |
+            Should -BeExactly 'nested'
+    }
+
+    It 'fails closed when the file-count limit is exceeded' {
+        1..3 | ForEach-Object {
+            "$_" | Set-Content -LiteralPath (Join-Path $script:sourceDir "$_.log") -NoNewline
+        }
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileCount 2 `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024
+        } | Should -Throw '*2-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'fails closed when a regular file exceeds the per-file limit' {
+        ('x' * 300) |
+            Set-Content -LiteralPath (Join-Path $script:sourceDir 'oversized.log') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024
+        } | Should -Throw '*256-byte per-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'fails closed when regular files exceed the aggregate limit' {
+        ('a' * 200) | Set-Content -LiteralPath (Join-Path $script:sourceDir 'first.log') -NoNewline
+        ('b' * 200) | Set-Content -LiteralPath (Join-Path $script:sourceDir 'second.log') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 300
+        } | Should -Throw '*300-byte aggregate limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'rejects a reparse-point escape before creating the destination' {
+        $outside = Join-Path $script:fixture 'outside.log'
+        'outside' | Set-Content -LiteralPath $outside -NoNewline
+        New-Item `
+            -ItemType SymbolicLink `
+            -Path (Join-Path $script:sourceDir 'escape.log') `
+            -Target $outside |
+            Out-Null
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir
+        } | Should -Throw '*unsupported reparse point*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+}

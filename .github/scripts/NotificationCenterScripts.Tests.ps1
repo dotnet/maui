@@ -108,12 +108,31 @@ Describe 'Notification Center script safety' {
 
         foreach ($path in @(
             ".github/workflows/**",
+            ".github/skills/run-device-tests/scripts/*.ps1",
+            ".github/skills/verify-tests-fail-without-fix/scripts/*.ps1",
             "eng/scripts/**",
             "eng/pipelines/common/provision.yml",
             "eng/pipelines/common/ui-tests-steps.yml"
         )) {
             $workflowContent | Should -Match ([regex]::Escape("- '$path'"))
         }
+    }
+
+    It 'discovers only the two coupled skill script suites' {
+        $workflowContent = Get-Content -Raw -LiteralPath $pesterWorkflow
+        $runPathStart = $workflowContent.IndexOf('$config.Run.Path = @(')
+        $runPathEnd = $workflowContent.IndexOf(')', $runPathStart)
+        $runPathBlock = $workflowContent.Substring($runPathStart, $runPathEnd - $runPathStart)
+
+        foreach ($path in @(
+            ".github/skills/run-device-tests/scripts",
+            ".github/skills/verify-tests-fail-without-fix/scripts"
+        )) {
+            $runPathBlock | Should -Match ([regex]::Escape("'$path'"))
+        }
+        ([regex]::Matches($runPathBlock, "'\.github/skills/")).Count | Should -Be 2
+        $runPathBlock | Should -Not -Match "'\.github/skills'"
+        $workflowContent | Should -Not -Match ([regex]::Escape("- '.github/skills/**'"))
     }
 
     It 'runs commands directly when the agent already is the console user' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {

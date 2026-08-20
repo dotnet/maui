@@ -10,6 +10,8 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'post-ai-summary-comment.ps1'
+    . (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+
     $script:ScriptSource = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
@@ -687,5 +689,24 @@ Describe 'New-FutureActionSection' {
         $section | Should -Match 'PRAgent/pr-plus-reviewer/reviewer.patch'
         $section | Should -Match 'The reviewer patch closes a correctness gap'
         $section | Should -Not -Match 'No alternative fix was selected'
+    }
+
+    It 'keeps generated guidance inside details when the agent summary contains a closing tag' {
+        @{
+            winner = 'pr-plus-reviewer'
+            isPRFix = $true
+            summary = 'Readable rationale </details> & follow-up.'
+            candidateDiff = ''
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        $section = New-FutureActionSection -PRAgentDir $script:testDir
+        $guidanceIndex = $section.IndexOf('Apply <code>PRAgent/pr-plus-reviewer/reviewer.patch</code>')
+        $closingIndex = $section.LastIndexOf('</details>')
+
+        $section | Should -Match ([regex]::Escape('Readable rationale &lt;/details&gt; &amp; follow-up.'))
+        ([regex]::Matches($section, '(?i)<details(?:\s|>)')).Count |
+            Should -Be ([regex]::Matches($section, '(?i)</details>')).Count
+        $guidanceIndex | Should -BeGreaterOrEqual 0
+        $guidanceIndex | Should -BeLessThan $closingIndex
     }
 }

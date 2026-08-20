@@ -94,6 +94,8 @@ variables:
     value: $(Agent.TempDirectory)/.appium/
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
+  - name: GateTaskTimeoutMinutes
+    value: 150
 
 stages:
   - stage: ReviewPR
@@ -2370,7 +2372,7 @@ stages:
             # killed-on-timeout case, turning it into a non-blocking succeededWithIssues so the
             # deep tests + expert review still deliver a summary (gate reported INCONCLUSIVE).
             continueOnError: true
-            # timeoutInMinutes: 150 — SAFETY NET. The gate runs UI tests via
+            # GateTaskTimeoutMinutes — SAFETY NET. The gate runs UI tests via
             # BuildAndRunHostApp.ps1 which has no internal overall timeout, and the
             # env-error retry loop only triggers when a run RETURNS an error — a run
             # that HANGS (emulator boot / Appium / dotnet test never returns) is
@@ -2379,15 +2381,16 @@ stages:
             # the number of expensive device/UI tests it verifies per run
             # (Limit-ExpensiveGateTests, default 2 device + 2 UI) so a PR touching
             # many device-test files can no longer explode into a 120-min timeout
-            # (observed: build 14676353 / PR #36109, 11 device tests). 150m gives
-            # the capped A/B set headroom (each device test builds+runs TWICE)
+            # (observed: build 14676353 / PR #36109, 11 device tests). The configured
+            # cap gives the bounded A/B set headroom (each device test builds+runs TWICE)
             # while still catching true hangs ~3.5h earlier than the job cap.
-            timeoutInMinutes: 150
+            timeoutInMinutes: ${{ variables.GateTaskTimeoutMinutes }}
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
+              GATE_TASK_TIMEOUT_MINUTES: ${{ variables.GateTaskTimeoutMinutes }}
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
@@ -2591,15 +2594,24 @@ stages:
               }
 
               if (Test-Path -LiteralPath $source -PathType Container) {
-                $linkedItems = @(
-                  Get-Item -LiteralPath $source -Force
-                  Get-ChildItem -LiteralPath $source -Recurse -Force
-                ) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
-                if ($linkedItems.Count -gt 0) {
-                  throw "CopilotLogs contains unsupported linked items."
+                $boundedCopyScript = ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+                if (-not (Test-Path -LiteralPath $boundedCopyScript -PathType Leaf)) {
+                  throw "Bounded CopilotLogs import helper is missing."
                 }
+                . $boundedCopyScript
 
-                Copy-Item -LiteralPath $source -Destination $target -Recurse
+                $maxImportedLogFiles = 2048
+                $maxImportedLogDirectories = 1024
+                $maxImportedLogFileBytes = 16MB
+                $maxImportedLogBytes = 128MB
+                $importResult = Copy-BoundedRegularFileTree `
+                  -SourceDirectory $source `
+                  -DestinationDirectory $target `
+                  -MaxFileCount $maxImportedLogFiles `
+                  -MaxDirectoryCount $maxImportedLogDirectories `
+                  -MaxFileBytes $maxImportedLogFileBytes `
+                  -MaxTotalBytes $maxImportedLogBytes
+                Write-Host "Imported $($importResult.CopiedFiles) bounded Copilot log file(s) ($($importResult.CopiedBytes) bytes)."
               } else {
                 Write-Host "##vso[task.logissue type=warning]CustomAgentLogsTmp was not found in CopilotLogs."
                 New-Item -ItemType Directory -Force -Path $target | Out-Null
@@ -4400,8 +4412,102 @@ stages:
       - RunDeepUITests
     condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
+      # Prompt-influenced analysis is intentionally isolated from the posting
+      # credentials in the next job. Microsoft-hosted jobs use fresh agents, so
+      # local/global Git config, hooks, PowerShell profiles, and other filesystem
+      # mutations made by Copilot cannot cross this boundary.
+      - job: AnalyzeUIFailures
+        displayName: 'Analyze deep UI failures without posting credentials'
+        variables:
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            persistCredentials: false
+            clean: true
+            fetchDepth: 1
+            fetchTags: false
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download deep UI results for failure analysis'
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop-deep-uitests'
+              targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
+            condition: >-
+              and(
+                succeeded(),
+                ne(variables['detectedCategories'], ''),
+                ne(variables['detectedCategories'], 'NONE'),
+                ne(variables['detectedCategories'], 'ALL')
+              )
+            continueOnError: true
+
+          # Prep legitimately needs the comment token for read-only PR metadata.
+          # It completes before any prompt-influenced process starts.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
+              $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
+              if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
+            displayName: 'Prepare UI failure analysis input'
+            continueOnError: true
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - bash: |
+              echo "Installing GitHub Copilot CLI for UI failure analysis..."
+              npm install -g @github/copilot
+              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
+              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
+              copilot --version || true
+            displayName: 'Install Copilot CLI (UI failure analysis)'
+            condition: eq(variables['hasUIFailures'], 'true')
+            continueOnError: true
+
+          # This task holds only the Copilot token. Its output is untrusted data
+          # that is published below and imported through a bounded regular-file
+          # copy on the separate posting agent.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
+              $analysisDir = Join-Path "$(Agent.TempDirectory)" "uifail-analysis-artifact"
+              $analysisFile = Join-Path $analysisDir "uifail-analysis.md"
+              $analyzeScript = ".github/scripts/shared/Analyze-UITestFailures.ps1"
+              if (-not (Test-Path $analyzeScript)) { Write-Host "$analyzeScript missing — skipping"; exit 0 }
+              & $analyzeScript -InputFile $inputFile -OutputFile $analysisFile -PRNumber "${{ parameters.PRNumber }}"
+            displayName: 'Analyze UI test failures (Copilot)'
+            condition: eq(variables['hasUIFailures'], 'true')
+            continueOnError: true
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+
+          - pwsh: |
+              $analysisDir = Join-Path "$(Agent.TempDirectory)" "uifail-analysis-artifact"
+              New-Item -ItemType Directory -Force -Path $analysisDir | Out-Null
+              Set-Content -LiteralPath (Join-Path $analysisDir "artifact-version.txt") -Value "1" -Encoding UTF8
+            displayName: 'Seal UI failure analysis artifact'
+            condition: succeededOrFailed()
+            continueOnError: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish UI failure analysis'
+            inputs:
+              targetPath: '$(Agent.TempDirectory)/uifail-analysis-artifact'
+              artifact: 'uifail-analysis'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+            continueOnError: true
+
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
+        dependsOn: AnalyzeUIFailures
+        condition: not(canceled())
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
         # this just makes the value available as $(aiSummaryReviewId)
@@ -4449,13 +4555,13 @@ stages:
           # the PR never got its deep-test summary. Mirrors the AnalyzeTokenUsage
           # (fetchDepth 1) + CleanupReviewLock (checkout: none) hardening below.
           - checkout: self
+            persistCredentials: false
+            clean: true
             fetchDepth: 1
             fetchTags: false
-            # Prompt-influenced Copilot analysis runs later in this checkout. Never
-            # persist the service-connection PAT while that agent can read .git/config.
-            # A second checkout introduces the publication credential only after the
-            # Copilot step has finished, immediately before the trusted post step.
-            persistCredentials: false
+            # This is a fresh Microsoft-hosted agent and no prompt-controlled
+            # process runs in this job. Asset publication uses an explicitly
+            # scoped task token, never the checkout service credential.
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -4506,74 +4612,36 @@ stages:
               )
             continueOnError: true
 
-          # ── AI analysis of deep UI test failures (PR-related vs unrelated) ──
-          # Only runs when there are REGULAR (non-setup) failures. Split across
-          # three tasks so the Copilot analysis task holds ONLY the Copilot
-          # token and NEVER GH_TOKEN (security rule 1): prep (GH_TOKEN) gathers
-          # the failing tests + PR diff, analysis (Copilot token) classifies
-          # them, and the existing post task (GH_TOKEN) folds the result into
-          # the review. All three are non-fatal — a failure here never blocks
-          # posting the summary review.
-          - pwsh: |
-              $ErrorActionPreference = 'Continue'
-              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
-              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
-              $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
-              if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
-              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile
-            displayName: 'Prepare UI failure analysis input'
-            continueOnError: true
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-
-          - bash: |
-              echo "Installing GitHub Copilot CLI for UI failure analysis..."
-              npm install -g @github/copilot
-              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
-              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
-              copilot --version || true
-            displayName: 'Install Copilot CLI (UI failure analysis)'
-            condition: eq(variables['hasUIFailures'], 'true')
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download UI failure analysis'
+            inputs:
+              buildType: 'current'
+              artifactName: 'uifail-analysis'
+              targetPath: '$(Pipeline.Workspace)/uifail-analysis'
             continueOnError: true
 
-          # env: COPILOT_GITHUB_TOKEN ONLY — no GH_TOKEN (security rule 1). The
-          # Copilot CLI reads the prep data file + worktree (pipeline branch,
-          # not the PR) and writes its classification to a temp file; it cannot
-          # post to GitHub.
-          - pwsh: |
-              $ErrorActionPreference = 'Continue'
-              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
-              $analysisFile = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
-              $analyzeScript = ".github/scripts/shared/Analyze-UITestFailures.ps1"
-              if (-not (Test-Path $analyzeScript)) { Write-Host "$analyzeScript missing — skipping"; exit 0 }
-              & $analyzeScript -InputFile $inputFile -OutputFile $analysisFile -PRNumber "${{ parameters.PRNumber }}"
-            displayName: 'Analyze UI test failures (Copilot)'
-            condition: eq(variables['hasUIFailures'], 'true')
-            continueOnError: true
-            env:
-              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-
-          # Introduce the GitHub service-connection credential only AFTER all
-          # prompt-influenced Copilot execution has completed. The remaining step is
-          # trusted pipeline-branch PowerShell that publishes snapshot assets and posts
-          # the review; no agent or PR-controlled process runs after this checkout.
-          - checkout: self
-            displayName: 'Enable trusted snapshot asset publication credential'
-            fetchDepth: 1
-            fetchTags: false
-            # Discard any checkout mutation the prompt-influenced agent attempted
-            # before credentials appear. Its intended output lives in Agent.TempDirectory.
-            clean: true
-            persistCredentials: true
-
+          # Import only the expected bounded regular file. The analysis artifact
+          # is prompt-controlled data and must never overwrite trusted scripts or
+          # introduce executable content into the checkout.
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $persistedHeaders = @(git config --get-regexp '^http\..*\.extraheader$' 2>$null)
-              if ($LASTEXITCODE -ne 0 -or $persistedHeaders.Count -eq 0) {
-                throw "Snapshot asset publication requires the persisted checkout credential, but no Git HTTP authorization header was configured."
+              $source = Join-Path "$(Pipeline.Workspace)" "uifail-analysis/uifail-analysis.md"
+              $destination = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
+              Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $source)) {
+                Write-Host "No UI failure analysis artifact was produced."
+                exit 0
               }
-              Write-Host "Trusted snapshot asset publication credential is configured."
-            displayName: 'Verify snapshot asset publication credential'
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              try {
+                $copyResult = Copy-BoundedDiagnosticFile -Source $source -Destination $destination -MaxBytes 256KB
+                Write-Host "Imported bounded UI failure analysis ($($copyResult.CopiedBytes) bytes)."
+              } catch {
+                Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]UI failure analysis artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import bounded UI failure analysis'
+            continueOnError: true
 
           - pwsh: |
               # DO NOT add AzDO compile-time template expressions (the double-curly
@@ -4629,38 +4697,6 @@ stages:
                 }
               }
 
-              # ── One-time diagnostic: does the persisted checkout PAT (and every
-              # other pipeline credential) have Contents:write on the asset repo?
-              # Runs UNCONDITIONALLY (even when there are no snapshot diffs) so ANY
-              # build's Post log confirms the write-token matrix without needing a
-              # diff-producing run. Read-only (probes repos/{repo}.permissions.push);
-              # NEVER echoes a token value (rule 8) — only the candidate NAME + a
-              # boolean. Restores GH_TOKEN afterwards so review posting is unaffected.
-              try {
-                $diagReviewTok = $env:GH_TOKEN
-                $diagRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
-                $diagCheckout = $null
-                try {
-                  foreach ($ln in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                    if ($ln -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') { $diagCheckout = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1])) -split ':', 2)[-1]; break }
-                    elseif ($ln -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') { $diagCheckout = $matches[1]; break }
-                  }
-                } catch { $diagCheckout = $null }
-                $diagCand = New-Object System.Collections.Generic.List[object]
-                if ($diagCheckout             -and $diagCheckout             -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'CHECKOUT_PAT';      t = $diagCheckout }) }
-                if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
-                if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
-                if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
-                if ($diagReviewTok            -and $diagReviewTok            -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'GH_COMMENT_TOKEN';  t = $diagReviewTok }) }
-                Write-Host ("[EMBED-DIAG] checkout PAT present={0}; probing {1} credential(s) for Contents:write on {2}" -f [bool]$diagCheckout, $diagCand.Count, $diagRepo)
-                foreach ($c in $diagCand) {
-                  $p = $false
-                  try { $env:GH_TOKEN = $c.t; $p = [bool]((gh api "repos/$diagRepo" 2>$null | ConvertFrom-Json).permissions.push) } catch { $p = $false }
-                  Write-Host ("[EMBED-DIAG] · Contents:write probe {0}: push={1}" -f $c.n, $p)
-                }
-                $env:GH_TOKEN = $diagReviewTok
-              } catch { Write-Host "[EMBED-DIAG] probe failed: $($_.Exception.Message)" }
-
               # Aggregator returns @{ category -> @{ Total/Passed/Failed/.../Results } }
               # using the SAME shape the in-process STEP 3 renderer expects
               # so we can reuse the markdown generation pattern directly.
@@ -4671,6 +4707,7 @@ stages:
               . .github/scripts/shared/Get-TrxResults.ps1
               . .github/scripts/shared/Get-CategoryFromArtifactName.ps1
               . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
+              . .github/scripts/shared/Get-EnvErrorPatterns.ps1
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
 
               # Detect categories whose HostApp failed to COMPILE. A compile
@@ -4711,15 +4748,19 @@ stages:
                       #      (e.g. "did not recover after crash-recovery attempts"),
                       #      each attempt burned its whole slice, and the last one
                       #      hit the deadline — raising the budget just lets it spin
-                      #      longer. Distinguish via EnvErrorHistory: if ANY attempt
-                      #      failed with a non-'timeout' env error, it is crash-driven
-                      #      (observed on PR #36521's Brush: 2 crash-recovery failures
-                      #      then a final timeout, exit 124).
+                      #      longer. Distinguish via EnvErrorHistory, but only when a
+                      #      prior attempt matched a verified app-crash/startup signature.
+                      #      General infrastructure history (install, connectivity, etc.)
+                      #      followed by timeout remains a genuine timeout.
                       $histLine = ''
                       $hm = [regex]::Match($statusText, '(?im)^EnvErrorHistory=(.*)$')
                       if ($hm.Success) { $histLine = $hm.Groups[1].Value.Trim() }
-                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne 'timeout' })
-                      if ($histTokens.Count -gt 0) { $crashTimedOutCats += $cat } else { $timedOutCats += $cat }
+                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+                      if (Test-EnvErrorHistoryHasVerifiedCrashStartup -EnvErrorHistory $histTokens) {
+                        $crashTimedOutCats += $cat
+                      } else {
+                        $timedOutCats += $cat
+                      }
                       continue
                     }
                   }
@@ -5123,46 +5164,30 @@ stages:
                   if ($pngCount -gt 0 -and $renderRecs.Count -gt 0) {
                     # Git-object writes (blobs/trees/commits/refs) need Contents:write on
                     # the PUBLIC asset repo. GH_COMMENT_TOKEN (Contents:read) 404s and
-                    # COPILOT_TOKEN 403s. Rather than provision a NEW secret, probe every
-                    # credential the pipeline ALREADY exposes and use the first that can
-                    # actually write (repos/{repo}.permissions.push == true). The chosen
-                    # token only ever lives in $env:GH_TOKEN (gh reads it there) — never in
-                    # a URL/command line — and the review comment token is restored in the
-                    # finally so the review itself always posts as maui-bot. The
+                    # COPILOT_TOKEN 403s. Use the explicitly scoped SnapshotAssetToken;
+                    # the checkout service credential is never persisted or extracted.
+                    # The token only ever lives in $env:GH_TOKEN (gh reads it there) —
+                    # never in a URL/command line — and the review comment token is
+                    # restored before the review itself posts as maui-bot. The
                     # -notmatch '^\$\(' guard skips any unexpanded AzDO macro (a secret that
                     # was never provisioned) instead of authenticating with the literal.
                     $reviewTok = $env:GH_TOKEN
                     $assetRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
-                    # The BEST credential is the one the pipeline ALREADY has AND that
-                    # already has Contents:write: the GitHub service-connection PAT the
-                    # checkout persists into .git/config (persistCredentials:true on this
-                    # trusted-only job). Extract it so NO new token is needed. The probe
-                    # below still validates it (permissions.push) before use, so a config
-                    # format change just falls through to the next candidate — never a bad
-                    # auth. NEVER echo $checkoutTok or the raw extraheader line (rule 8).
-                    $checkoutTok = $null
-                    try {
-                      foreach ($ln in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                        if ($ln -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') { $checkoutTok = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1])) -split ':', 2)[-1]; break }
-                        elseif ($ln -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') { $checkoutTok = $matches[1]; break }
-                      }
-                    } catch { $checkoutTok = $null }
-                    $cand = New-Object System.Collections.Generic.List[object]
-                    if ($checkoutTok              -and $checkoutTok              -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'CHECKOUT_PAT';      t = $checkoutTok }) }
-                    if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
-                    if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
-                    if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
-                    if ($reviewTok                -and $reviewTok                -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'GH_COMMENT_TOKEN';  t = $reviewTok }) }
-                    $writeTok = $null; $writeName = $null
-                    foreach ($c in $cand) {
+                    $writeTok = $null
+                    if ($env:ASSET_WRITE_TOKEN -and $env:ASSET_WRITE_TOKEN -notmatch '^\$\(') {
                       $push = $false
-                      try { $env:GH_TOKEN = $c.t; $push = [bool]((gh api "repos/$assetRepo" 2>$null | ConvertFrom-Json).permissions.push) } catch { $push = $false }
-                      Write-Host ("  · Contents:write probe {0}: push={1}" -f $c.n, $push)
-                      if ($push) { $writeTok = $c.t; $writeName = $c.n; break }
+                      try {
+                        $env:GH_TOKEN = $env:ASSET_WRITE_TOKEN
+                        $push = [bool]((gh api "repos/$assetRepo" 2>$null | ConvertFrom-Json).permissions.push)
+                      } catch {
+                        $push = $false
+                      } finally {
+                        $env:GH_TOKEN = $reviewTok
+                      }
+                      if ($push) { $writeTok = $env:ASSET_WRITE_TOKEN }
                     }
-                    $env:GH_TOKEN = $reviewTok
-                    if (-not $writeTok) { throw ("no pipeline credential has Contents:write on {0} (probed: {1})" -f $assetRepo, (($cand | ForEach-Object { $_.n }) -join ', ')) }
-                    Write-Host ("Hosting snapshot diffs on {0} using {1} (Contents:write confirmed)" -f $assetRepo, $writeName)
+                    if (-not $writeTok) { throw "No configured snapshot publication credential has Contents:write on $assetRepo." }
+                    Write-Host "Snapshot asset publication credential verified."
                     $env:GH_TOKEN = $writeTok
                     try {
                     # 1) resolve the shared asset repo + branch. Public repo =>
@@ -5862,12 +5887,6 @@ stages:
               # copilot-review-tests GHA workflow already uses to write that branch.
               # Until it exists this macro is unexpanded and the embed skips cleanly.
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
-              # Extra existing-secret candidates the embed probes for Contents:write on
-              # the public asset repo — NO new token is provisioned; whichever pipeline
-              # secret already has push wins. VIGILANT_GUIDE_DISPATCH_TOKEN and
-              # COPILOT_TOKEN are the only other GitHub credentials this pipeline exposes.
-              EMBED_TOKEN_DISPATCH: $(VIGILANT_GUIDE_DISPATCH_TOKEN)
-              EMBED_TOKEN_COPILOT: $(COPILOT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
               BUILD_BUILDID: $(Build.BuildId)
