@@ -499,9 +499,16 @@ function Get-ReplicationBlockedCode {
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$RawReason,
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Stage,
         [Parameter(Mandatory = $true)][AllowNull()][AllowEmptyCollection()]
-        [System.Collections.Generic.List[string]]$AttemptKinds
+        [System.Collections.Generic.List[string]]$AttemptKinds,
+        [switch]$ControlRefutedReproduction
     )
 
+    if ($ControlRefutedReproduction) {
+        # Build 15034006 ran its control, watched the test stay red without the
+        # trigger and correctly refused the reproduction, then finished red as
+        # though the pipeline had broken.
+        return 'control_refuted_reproduction'
+    }
     if ($RawReason.StartsWith('Copilot CLI unavailable:', [StringComparison]::Ordinal)) {
         return 'copilot_cli_unavailable'
     }
@@ -3237,11 +3244,13 @@ Do not add a fix or escalate the test type.
             return $common + @"
 
 The reproduction test is confirmed red for the reported behavior. Now author its negative control.
-The reproduction lives in exactly one file, "$BaselineRelativePath", and its complete current contents are quoted below between the BEGIN and END markers. Quote your "find" text from what is between those markers and from nothing else. Build 15033545 quoted a line of Sandbox page code that is not in this file at all, three times, and the control was skipped.
+A negative control keeps the scenario running and removes only the condition that makes the behaviour wrong. It does not remove the navigation, the tap, or anything else the oracle needs in order to execute. If the control cannot reach the assertion, it is not a control. Builds 15033984 and 15033999 both declared a control impossible after considering only the removal of the action that reaches the screen, which is the wrong edit.
+Ask instead: with the user still performing the same steps and the same assertions still running, what one property, configuration, ordering or API choice would make the reported behaviour correct? Removing or neutralising that is the control, and the test is then expected to pass.
+You may edit only the file quoted below, "$BaselineRelativePath", and its complete current contents are between the BEGIN and END markers. Quote your "find" text from between those markers and from nothing else. Build 15033545 quoted a line that is not in this file at all, three times, and the control was skipped.
 
------ BEGIN REPRODUCTION SOURCE -----
+----- BEGIN CONTROL SOURCE -----
 $BaselineSource
------ END REPRODUCTION SOURCE -----
+----- END CONTROL SOURCE -----
 
 Read "$testProposalPath" for the reportedTrigger/testTrigger fields.
 You do not write the control source. You describe the trigger removal and trusted code performs it, so the oracle stays byte-identical.
@@ -3775,6 +3784,24 @@ function Invoke-ReplicationNegativeControl {
     }
 
     $relativePath = $baselineFile[0]
+    $oracleRelativePath = $relativePath
+    $oracleSource = Get-Content -LiteralPath (Join-Path $repoRoot $oracleRelativePath) -Raw
+    # A UI test drives the app from outside: its file holds the tap and the
+    # assertions, while the condition the report blames lives in the HostApp
+    # page. Offering only the test file leaves the author nothing to remove but
+    # the navigation, which destroys the oracle instead of isolating the defect,
+    # and builds 15033984 and 15033999 both declared the control impossible for
+    # exactly that reason. Editing the scene file instead keeps the oracle
+    # untouched by construction, because it is never written.
+    $sceneCandidates = @($GeneratedFiles | Where-Object {
+        $_ -ne $oracleRelativePath -and
+            (Test-Path -LiteralPath (Join-Path $repoRoot $_) -PathType Leaf)
+    })
+    if ($sceneCandidates.Count -eq 1) {
+        $relativePath = $sceneCandidates[0]
+        Write-Host ("Negative control will edit the scene file '$relativePath'; " +
+            "the oracle in '$oracleRelativePath' is left untouched.")
+    }
     $baselinePath = Join-Path $repoRoot $relativePath
     $baselineSource = Get-Content -LiteralPath $baselinePath -Raw
     # The gate reads the control snapshots from the verification root, and the
@@ -3864,7 +3891,9 @@ function Invoke-ReplicationNegativeControl {
             Assert-ReplicationNegativeControlIsInformative `
                 -BaselineSource $baselineSource `
                 -ControlSource $controlSource `
-                -TestFilter ([string]$TestProposal.testFilter)
+                -TestFilter ([string]$TestProposal.testFilter) `
+                -OracleBaselineSource $oracleSource `
+                -OracleControlSource $oracleSource
         }
         catch {
             $controlFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
@@ -3917,6 +3946,11 @@ function Invoke-ReplicationNegativeControl {
                 Write-Host "Negative control skipped: it did not run. $controlMessage"
                 return $null
             }
+            # The control executed and refuted the reproduction. That is an
+            # empirical answer about the oracle, not a broken pipeline, so
+            # record it structurally here rather than making the classifier
+            # re-read a rendered exception string.
+            $script:ReplicationControlRefutedReproduction = $true
             throw ("The negative control ran and did not pass, so the reproduction fails without the reported " +
                 "trigger and does not measure the defect it claims. $controlMessage")
         }
@@ -4844,17 +4878,22 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 catch {
     $rawReason = [string]$_.Exception.Message
     $reason = ConvertTo-ReplicationSafeLog $rawReason 500
-    $code = Get-ReplicationBlockedCode `
-        -RawReason $rawReason `
-        -Stage $stage `
-        -AttemptKinds $sandboxAttemptKinds
     # Report the attempts belonging to the stage that failed: the sandbox list
-    # is empty once the sandbox has succeeded.
+    # is empty once the sandbox has succeeded. The classifier must read the same
+    # list it prints. Build 15034037 recorded ten test attempts including
+    # test-passed and wrong-signature, printed them, and was still called
+    # verification_inconclusive because the classifier was handed the empty
+    # sandbox list instead.
     $reportedAttemptKinds = if ($stage -eq 'test' -and $testAttemptKinds.Count -gt 0) {
         $testAttemptKinds
     } else {
         $sandboxAttemptKinds
     }
+    $code = Get-ReplicationBlockedCode `
+        -RawReason $rawReason `
+        -Stage $stage `
+        -AttemptKinds $reportedAttemptKinds `
+        -ControlRefutedReproduction:([bool]$script:ReplicationControlRefutedReproduction)
     Write-BlockedCandidate -Stage $stage -Code $code -Reason $reason
     # Run 15013775 recorded three clean 'no defect' observations and still
     # finished red, and nothing in the log said which arm chose the code or
@@ -4867,7 +4906,8 @@ catch {
     } catch {
         Write-Warning "Sandbox cleanup also failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
-    if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy')) {
+    if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy',
+            'control_refuted_reproduction')) {
         # These are conclusive empirical answers rather than pipeline defects.
         # Failing the task here would skip the publication stage that reports the
         # outcome on the issue, so finish successfully with the blocked candidate.

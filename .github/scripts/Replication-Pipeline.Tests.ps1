@@ -1047,7 +1047,8 @@ Describe 'every blocked code is deliberately classified as an answer or a defect
     It 'has a deliberate decision recorded for every producible code' {
         # Update this partition when a code is added. Doing so is the point:
         # the decision is whether the run learned the answer or broke.
-        $answers = @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy')
+        $answers = @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy',
+            'control_refuted_reproduction')
         $defects = @(
             'copilot_cli_unavailable', 'copilot_service_unavailable',
             'sandbox_inconclusive', 'verification_inconclusive')
@@ -1064,5 +1065,51 @@ Describe 'every blocked code is deliberately classified as an answer or a defect
             $script:SuccessCodes | Should -Not -Contain $code -Because `
                 "'$code' means no answer was reached and must stay red"
         }
+    }
+}
+
+Describe 'the blocked-run classifier reads the attempts it reports' {
+    BeforeAll {
+        $script:ReplicateAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
+    }
+
+    It 'passes the same variable to the classifier that it prints' {
+        # Build 15034037 printed ten test attempts including test-passed and
+        # wrong-signature and was still classified verification_inconclusive,
+        # because the classifier was handed the sandbox list, which is empty
+        # once the sandbox has succeeded. The two must not be able to drift.
+        $call = @($script:ReplicateAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.CommandAst] -and
+                        $node.GetCommandName() -eq 'Get-ReplicationBlockedCode'
+                }, $true))
+        $call.Count | Should -Be 1 -Because 'the classifier is invoked exactly once'
+
+        $elements = $call[0].CommandElements
+        $classifierVariable = $null
+        for ($i = 0; $i -lt $elements.Count - 1; $i++) {
+            $parameter = $elements[$i] -as [System.Management.Automation.Language.CommandParameterAst]
+            if ($parameter -and $parameter.ParameterName -eq 'AttemptKinds') {
+                $classifierVariable =
+                    ($elements[$i + 1] -as [System.Management.Automation.Language.VariableExpressionAst]).VariablePath.UserPath
+            }
+        }
+        $classifierVariable | Should -Not -BeNullOrEmpty
+
+        $report = @($script:ReplicateAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.CommandAst] -and
+                        $node.GetCommandName() -eq 'Write-Host' -and
+                        $node.Extent.Text -match 'ISSUE REPLICATION BLOCKED'
+                }, $true))
+        $report.Count | Should -Be 1
+
+        $reportedVariables = @($report[0].FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.VariableExpressionAst]
+                }, $true) | ForEach-Object { $_.VariablePath.UserPath })
+        $reportedVariables | Should -Contain $classifierVariable -Because `
+            "the classifier reads '$classifierVariable' but the run reports a different list"
     }
 }

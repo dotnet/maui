@@ -5251,6 +5251,37 @@ public class Issue35889 : ControlsHandlerTestBase
     }
 }
 
+Describe 'Get-ReplicationBlockedCode control refutation' {
+    It 'names a control that ran and refuted the reproduction' {
+        # Build 15034006 ran its control, saw the test stay red without the
+        # trigger, correctly refused the reproduction and then exited red,
+        # which is indistinguishable from a broken pipeline.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('reproduced')
+        Get-ReplicationBlockedCode -RawReason 'The negative control ran and did not pass.' `
+            -Stage 'test' -AttemptKinds $kinds -ControlRefutedReproduction |
+            Should -Be 'control_refuted_reproduction'
+    }
+
+    It 'does not claim refutation when the control never ran' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('build-failed')
+        Get-ReplicationBlockedCode -RawReason 'boom' -Stage 'test' -AttemptKinds $kinds |
+            Should -Be 'verification_inconclusive'
+    }
+
+    It 'reads the refutation from a recorded flag rather than the exception text' {
+        # The docstring on this function exists because a previous arm re-read a
+        # rendered error string and lost the marker PowerShell had reformatted.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('reproduced')
+        Get-ReplicationBlockedCode `
+            -RawReason 'The negative control ran and did not pass, so the reproduction fails.' `
+            -Stage 'test' -AttemptKinds $kinds |
+            Should -Be 'verification_inconclusive'
+    }
+}
+
 Describe 'Get-ReplicationBlockedCode' {
     It 'concludes non-reproduction from the recorded kinds alone' {
         # The conclusion must not depend on the marker still being legible in a
@@ -6149,6 +6180,51 @@ public void Issue12345_LabelUpdates_Control()
                 -TestFilter 'Issue12345_LabelUpdates' } | Should -Not -Throw
     }
 
+    It 'reads the assertions from the oracle when the control edits the scene file' {
+        # The HostApp page a UI test drives has no assertions at all. Judging it
+        # as the oracle rejected every UI-test control with "the reproduction
+        # contains no assertion", which is true of the page and false of the
+        # test.
+        $scene = @'
+public class Issue12345 : ContentPage
+{
+    public Issue12345()
+    {
+        Content = new Label { Text = "x", IsVisible = true };
+    }
+}
+'@
+        $sceneControl = $scene.Replace('IsVisible = true', 'IsVisible = false')
+        $oracle = @'
+public class Issue12345Test : _IssuesUITest
+{
+    [Test]
+    public void Issue12345_LabelUpdates()
+    {
+        App.Tap("Go");
+        Assert.That(App.FindElement("Result").GetText(), Is.EqualTo("ok"));
+    }
+}
+'@
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $scene `
+                -ControlSource $sceneControl `
+                -TestFilter 'Issue12345_LabelUpdates' `
+                -OracleBaselineSource $oracle `
+                -OracleControlSource $oracle } | Should -Not -Throw
+    }
+
+    It 'still requires an oracle when the scene file carries no assertions either' {
+        $scene = 'public class Issue12345 : ContentPage { }'
+        { Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $scene `
+                -ControlSource 'public class Issue12345 : ContentPage { int x; }' `
+                -TestFilter 'Issue12345_LabelUpdates' `
+                -OracleBaselineSource 'public class T { [Test] public void M() { } }' `
+                -OracleControlSource 'public class T { [Test] public void M() { } }' } |
+            Should -Throw '*no assertion*'
+    }
+
     It 'ignores commented-out assertions when comparing oracles' {
         $commented = $script:Control -replace 'App\.NavigateTo\("PlainButtonGallery"\);', '// Assert.That(false);'
 
@@ -6733,11 +6809,28 @@ Describe 'The control author never writes the control source' {
         # of Sandbox page code that is not in the test file, on three separate
         # attempts. The prompt named no path and quoted no contents, so the
         # author was recalling the reproduction rather than reading it.
-        $script:ControlLoopSource | Should -Match 'BEGIN REPRODUCTION SOURCE'
-        $script:ControlLoopSource | Should -Match 'END REPRODUCTION SOURCE'
+        $script:ControlLoopSource | Should -Match 'BEGIN CONTROL SOURCE'
+        $script:ControlLoopSource | Should -Match 'END CONTROL SOURCE'
         $script:ControlLoopSource | Should -Match '\$BaselineRelativePath'
         $script:ControlLoopSource |
             Should -Match '-BaselineRelativePath \$relativePath -BaselineSource \$baselineSource'
+    }
+
+    It 'edits the scene file so a UI test oracle is untouched by construction' {
+        # A UI test keeps the tap and the assertions in the test file and the
+        # condition the report blames in the HostApp page. Builds 15033984 and
+        # 15033999 were each offered only the test file, so the sole removable
+        # thing was the navigation, and both correctly declared a control
+        # impossible.
+        $script:ControlLoopSource | Should -Match '\$sceneCandidates = @\(\$GeneratedFiles \| Where-Object'
+        $script:ControlLoopSource | Should -Match 'if \(\$sceneCandidates\.Count -eq 1\)'
+        $script:ControlLoopSource | Should -Match '-OracleBaselineSource \$oracleSource'
+        $script:ControlLoopSource | Should -Match '-OracleControlSource \$oracleSource'
+    }
+
+    It 'tells the author to keep whatever the oracle needs to run' {
+        $script:ControlLoopSource | Should -Match 'does not remove the navigation, the tap'
+        $script:ControlLoopSource | Should -Match 'If the control cannot reach the assertion, it is not a control'
     }
 
     It 'builds the variant in trusted code' {
