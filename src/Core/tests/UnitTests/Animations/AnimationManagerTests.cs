@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Animations;
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.UnitTests
 
 			public int MaxFps { get; set; } = 60;
 
-			public Action Fire { get; set; }
+			public Action? Fire { get; set; }
 
 			public int DisposeCount { get; private set; }
 
