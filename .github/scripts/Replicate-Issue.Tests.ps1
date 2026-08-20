@@ -6728,6 +6728,18 @@ Describe 'The control author never writes the control source' {
         $script:ControlLoopSource | Should -Not -Match '-WritePaths @\(\$controlVariantPath'
     }
 
+    It 'shows the author the file it must quote from' {
+        # Build 15033545 quoted 'await Navigation.PushModalAsync(...)', a line
+        # of Sandbox page code that is not in the test file, on three separate
+        # attempts. The prompt named no path and quoted no contents, so the
+        # author was recalling the reproduction rather than reading it.
+        $script:ControlLoopSource | Should -Match 'BEGIN REPRODUCTION SOURCE'
+        $script:ControlLoopSource | Should -Match 'END REPRODUCTION SOURCE'
+        $script:ControlLoopSource | Should -Match '\$BaselineRelativePath'
+        $script:ControlLoopSource |
+            Should -Match '-BaselineRelativePath \$relativePath -BaselineSource \$baselineSource'
+    }
+
     It 'builds the variant in trusted code' {
         $script:ControlLoopSource | Should -Match 'New-ReplicationControlVariant'
     }

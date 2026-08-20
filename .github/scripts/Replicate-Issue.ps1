@@ -3084,7 +3084,9 @@ function New-CopilotPrompt {
         [ValidateSet('sandbox', 'test-plan', 'test', 'repair', 'control')]
         [string]$Phase,
         [string]$FailureSummary = '',
-        [string[]]$ForbiddenTestTiers = @()
+        [string[]]$ForbiddenTestTiers = @(),
+        [string]$BaselineRelativePath = '',
+        [string]$BaselineSource = ''
     )
 
     $replicationSkill = Join-Path $trustedSkills 'replicate-issue/SKILL.md'
@@ -3235,7 +3237,13 @@ Do not add a fix or escalate the test type.
             return $common + @"
 
 The reproduction test is confirmed red for the reported behavior. Now author its negative control.
-Read "$testProposalPath", the generated test source, and the reportedTrigger/testTrigger fields.
+The reproduction lives in exactly one file, "$BaselineRelativePath", and its complete current contents are quoted below between the BEGIN and END markers. Quote your "find" text from what is between those markers and from nothing else. Build 15033545 quoted a line of Sandbox page code that is not in this file at all, three times, and the control was skipped.
+
+----- BEGIN REPRODUCTION SOURCE -----
+$BaselineSource
+----- END REPRODUCTION SOURCE -----
+
+Read "$testProposalPath" for the reportedTrigger/testTrigger fields.
 You do not write the control source. You describe the trigger removal and trusted code performs it, so the oracle stays byte-identical.
 Write one file, "$controlEditsPath", containing a JSON array of at most 10 edits. Each edit is an object with "find" and optional "replace":
 - "find" is text copied out of the generated test source, and it must appear exactly once in that file. Include enough surrounding text to be unique. Indentation and line endings are ignored when the text is located, so copy the code and do not try to reproduce tabs or blank lines exactly.
@@ -3787,7 +3795,8 @@ function Invoke-ReplicationNegativeControl {
         try {
             Invoke-ReplicationCopilot `
                 -PhaseName "control-$round" `
-                -Prompt (New-CopilotPrompt -Phase control -FailureSummary $controlFailureSummary) `
+                -Prompt (New-CopilotPrompt -Phase control -FailureSummary $controlFailureSummary `
+                    -BaselineRelativePath $relativePath -BaselineSource $baselineSource) `
                 -WritePaths @($controlEditsPath, $testProposalPath) `
                 -Attempt $round
         }
