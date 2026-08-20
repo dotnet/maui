@@ -6232,6 +6232,31 @@ Describe 'The reproduction is run again without the reported trigger' {
         $control | Should -Match 'Test-ReplicationTestHarnessFault'
     }
 
+    It 'repairs a control that did not compile instead of abandoning it' {
+        # Build 15032126's control called a protected DisconnectHandler
+        # overload. It was written, it was informative, and one compiler
+        # diagnostic ended the only causal check the reproduction had.
+        $control = [regex]::Match(
+            $script:Source,
+            'function Invoke-ReplicationNegativeControl \{.*?\n\}\n',
+            'Singleline').Value
+        $control | Should -Match '\$round -lt \$MaxControlAttempts'
+        $control | Should -Match 'Get-ReplicationCompilerDiagnostics'
+        $control | Should -Match 'The control did not compile'
+        $control | Should -Match '\$controlFailureSummary\s*='
+    }
+
+    It 'reads the control''s own console log, not the reproduction''s' {
+        # Both share the verification directory, so the default console name
+        # would hand the control author the reproduction's diagnostics.
+        $control = [regex]::Match(
+            $script:Source,
+            'function Invoke-ReplicationNegativeControl \{.*?\n\}\n',
+            'Singleline').Value
+        $control | Should -Match "negative-control-console\.log"
+        $control | Should -Not -Match '-VerificationDirectory \$controlDir'
+    }
+
     It 'writes the snapshots where the credential-free gate reads them' {
         # The gate resolves the snapshots against the verification root, so a
         # separate control directory would be invisible to it.

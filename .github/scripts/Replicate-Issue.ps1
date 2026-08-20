@@ -48,7 +48,7 @@ param(
     # attempt is usually recoverable, while an unbounded retry would spend
     # device time proving nothing.
     [ValidateRange(1, 4)]
-    [int]$MaxControlAttempts = 2,
+    [int]$MaxControlAttempts = 3,
 
     # A reproduction proved by a single execution is not evidence of a
     # deterministic defect, so the verified test is executed more than once.
@@ -3615,7 +3615,28 @@ function Invoke-ReplicationNegativeControl {
         }
         catch {
             $controlMessage = ConvertTo-ReplicationSafeLog $_.Exception.Message 2000
-            if ((Test-ReplicationTestBuildFailure -FailureSummary $controlMessage) -or
+            $controlBuildFailed = Test-ReplicationTestBuildFailure -FailureSummary $controlMessage
+            if ($controlBuildFailed -and $round -lt $MaxControlAttempts) {
+                # Build 15032126's control called a protected DisconnectHandler
+                # overload. The author can correct that when it is told which
+                # file, line and diagnostic, exactly as the reproduction test is
+                # repaired, so spend the remaining round instead of abandoning a
+                # control that had already been written.
+                #
+                # The control writes its own console log. Reading the shared
+                # directory's default name would hand the author the
+                # reproduction's diagnostics instead of the control's.
+                $diagnostics = Get-ReplicationCompilerDiagnostics `
+                    -LogPath (Join-Path $controlDir 'negative-control-console.log')
+                $controlFailureSummary = if ($diagnostics) {
+                    "The control did not compile. Fix these compiler diagnostics: $diagnostics"
+                } else {
+                    "The control did not compile. $controlMessage"
+                }
+                Write-Host "Negative control attempt ${round} did not compile: $controlFailureSummary"
+                continue
+            }
+            if ($controlBuildFailed -or
                 (Test-ReplicationTestHarnessFault -FailureSummary $controlMessage)) {
                 Write-Host "Negative control skipped: it did not run. $controlMessage"
                 return $null
