@@ -65,6 +65,7 @@ BeforeAll {
         'Test-ReplicationReplayHarnessFault',
         'Get-ReplicationElementInventory',
         'Get-ReplicationFailureSignature',
+        'Test-ReplicationObservedNegativeVerdict',
         'Get-ReplicationAttemptFailureKind',
         'Get-ReplicationAppTerminationPattern',
         'Test-ReplicationFailureAlreadySeen',
@@ -6023,5 +6024,49 @@ Describe 'Planned test tier must build for the evidence platform' {
         # The check has to run inside the planning retry loop, so the agent is
         # asked to plan again with the reason, rather than throwing the run away.
         $script:Source | Should -Match 'Test-plan attempt \$planAttempt failed'
+    }
+}
+
+Describe 'An observed negative verdict is a non-reproduction' {
+    It 'reads the app verdict rather than the timeout it arrived as' {
+        # Builds 15029288, 15029295 and 15029303 each saw the app report no
+        # defect and finished red as inconclusive, because the final assertion
+        # reports a non-reproduction by timing out.
+        $summary = "Reproduction failed: expected='BUG REPRODUCED:' actual='NO BUG:' " +
+            '---> OpenQA.Selenium.WebDriverTimeoutException: Timed out after 15 seconds'
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'not-reproduced'
+    }
+
+    It 'accepts the PASS spelling of the same initialized state' {
+        $summary = "expected='BUG REPRODUCED:' actual=`"PASS: layout settled`" WebDriverTimeoutException"
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'not-reproduced'
+    }
+
+    It 'recognises the verdict reported beside a numeric comparison' {
+        # Build 15029295 rendered the same conclusion as "actual=3; result=NO BUG:".
+        $summary = "Expected 5 items actual=3; result=NO BUG: WebDriverTimeoutException"
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'not-reproduced'
+    }
+
+    It 'still calls a genuinely missing element an infrastructure failure' {
+        # An empty or absent actual value proves nothing about the defect.
+        $summary = "expected='BUG REPRODUCED:' actual='' " +
+            'OpenQA.Selenium.WebDriverTimeoutException: Timed out after 15 seconds'
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'element-missing'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary 'no such element: Unable to locate element' |
+            Should -Be 'element-missing'
+    }
+
+    It 'does not mistake the pre-trigger latch check for a non-reproduction' {
+        # Here the negative verdict is what was expected, not what was seen, so
+        # the run had already latched the defect before recording started.
+        $summary = "expected='NO BUG:' actual='BUG REPRODUCED:' WebDriverTimeoutException"
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Not -Be 'not-reproduced'
+    }
+
+    It 'keeps a build break ahead of the verdict reading' {
+        $summary = "error CS0103: something actual='NO BUG:'"
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'build-failed'
     }
 }

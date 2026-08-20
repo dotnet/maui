@@ -296,6 +296,40 @@ function Test-ReplicationAppTerminated {
     return [bool]($value -match (Get-ReplicationAbortExitPattern))
 }
 
+function Test-ReplicationObservedNegativeVerdict {
+    <#
+        .SYNOPSIS
+        Recognises an attempt whose app reported that the defect did not occur.
+
+        .DESCRIPTION
+        Every plan initialises a result element to 'PASS:' or 'NO BUG:' before
+        the trigger and changes it to 'BUG REPRODUCED:' only when the defect is
+        observed. That initialised negative state exists precisely so a
+        completed negative run is distinguishable from a lookup or
+        infrastructure failure.
+
+        The final assertion still fails when the defect does not occur, and it
+        fails by timing out, so classifying on the timeout alone called that
+        'element-missing' and the run finished red as inconclusive. Builds
+        15029288, 15029295 and 15029303 each observed the app say 'NO BUG' and
+        reported an infrastructure failure instead of an honest
+        non-reproduction.
+
+        Only a step expecting something other than the negative verdict can
+        report the negative verdict as its actual value, so reading the actual
+        value cannot mistake the pre-trigger latch check for this. The runner
+        also reports the verdict element alongside a numeric comparison, as
+        "actual=3; result=NO BUG:", so both renderings are recognised.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    return [bool]([string]$Text -cmatch "(?:actual|result)=['\`"]?\s*(?:PASS:|NO BUG:)")
+}
+
 function Get-ReplicationAttemptFailureKind {
     <#
         .SYNOPSIS
@@ -320,6 +354,9 @@ function Get-ReplicationAttemptFailureKind {
         return 'build-failed'
     }
     if ($text -match '(?i)REPLICATION_NOT_REPRODUCED') {
+        return 'not-reproduced'
+    }
+    if (Test-ReplicationObservedNegativeVerdict -Text $text) {
         return 'not-reproduced'
     }
     if ($text -match '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException|Timed out after \d+ seconds') {
