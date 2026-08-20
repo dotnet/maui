@@ -98,6 +98,9 @@ BeforeAll {
         'Assert-NoDuplicateJsonProperties',
         'Test-TimingSensitiveIssueContext',
         'Test-CrashReportingIssueContext',
+        'Get-ReplicationMauiTypeVocabulary',
+        'Get-ReplicationNamedMauiType',
+        'Test-ReplicationTestOmitsReportedApi',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
         'Write-ReplicationAgentDiagnostic',
@@ -6481,5 +6484,73 @@ Describe 'Replication failure summary truncation' {
 
         $safe | Should -Match 'characters omitted'
         $safe.Substring(0, 20) | Should -Be $message.Substring(0, 20)
+    }
+}
+
+Describe 'Issue-to-test API fidelity' {
+    BeforeAll {
+        # A realistic vocabulary: derived names are multi-word PascalCase.
+        $script:vocab = [string[]]@(
+            0..60 | ForEach-Object { "GeneratedFiller${_}Type" }
+        ) + @('CollectionView', 'ScrollView', 'ShellContent', 'DatePicker', 'SwipeView')
+    }
+
+    It 'ignores a report that names fewer than two recognisable types' {
+        Test-ReplicationTestOmitsReportedApi `
+            -IssueText 'The CollectionView scrolls badly on a page with a button.' `
+            -SourceTexts @('public class T { DatePicker p; }') `
+            -Vocabulary $script:vocab |
+            Should -BeNullOrEmpty
+    }
+
+    It 'accepts a test that exercises one of the reported types' {
+        Test-ReplicationTestOmitsReportedApi `
+            -IssueText 'A CollectionView inside a ScrollView misplaces items.' `
+            -SourceTexts @('var view = new CollectionView();') `
+            -Vocabulary $script:vocab |
+            Should -BeNullOrEmpty
+    }
+
+    It 'rejects a test that exercises none of the reported types' {
+        $detail = Test-ReplicationTestOmitsReportedApi `
+            -IssueText 'A CollectionView inside a ScrollView misplaces items.' `
+            -SourceTexts @('var picker = new DatePicker();') `
+            -Vocabulary $script:vocab
+        $detail | Should -Match 'CollectionView'
+        $detail | Should -Match 'ScrollView'
+        $detail | Should -Match 'DatePicker'
+    }
+
+    It 'reports that a test exercises no recognisable type at all' {
+        Test-ReplicationTestOmitsReportedApi `
+            -IssueText 'A CollectionView inside a ScrollView misplaces items.' `
+            -SourceTexts @('Assert.True(1 == 1);') `
+            -Vocabulary $script:vocab |
+            Should -Match 'exercises none'
+    }
+
+    It 'never blocks a reproduction when the vocabulary is unavailable' {
+        Test-ReplicationTestOmitsReportedApi `
+            -IssueText 'A CollectionView inside a ScrollView misplaces items.' `
+            -SourceTexts @('Assert.True(1 == 1);') `
+            -Vocabulary ([string[]]@('CollectionView', 'ScrollView')) |
+            Should -BeNullOrEmpty
+    }
+
+    It 'matches type names only as whole words' {
+        Get-ReplicationNamedMauiType `
+            -Text 'MyCollectionViewHelper and ScrollViewExtensions' `
+            -Vocabulary ([string[]]@('CollectionView', 'ScrollView')) |
+            Should -BeNullOrEmpty
+    }
+
+    It 'derives a vocabulary of multi-word PascalCase names from the checkout' {
+        $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        $vocabulary = Get-ReplicationMauiTypeVocabulary -RepositoryRoot $repoRoot
+        $vocabulary.Count | Should -BeGreaterThan 100
+        $vocabulary | Should -Contain 'CollectionView'
+        # Single words occur in ordinary prose and must not be treated as APIs.
+        $vocabulary | Should -Not -Contain 'Button'
+        $vocabulary | Should -Not -Contain 'Label'
     }
 }

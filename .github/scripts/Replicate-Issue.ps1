@@ -1484,6 +1484,122 @@ function Test-CrashReportingIssueContext {
     return $context -match '(?i)\b(?:crash(?:es|ed|ing)?|unhandled exception|app (?:closes|closed|quits|terminates)|force close[sd]?|hard crash)\b'
 }
 
+$script:replicationMauiTypeVocabulary = $null
+
+function Get-ReplicationMauiTypeVocabulary {
+    <#
+        .SYNOPSIS
+        Derives the recognisable MAUI type names from the checkout itself.
+
+        .DESCRIPTION
+        The vocabulary is taken from the public Controls source layout rather
+        than a hand-maintained list, so it tracks the product automatically.
+        Only multi-word PascalCase names are kept: single words such as Button,
+        Label or Page occur in ordinary prose and carry no fidelity signal.
+    #>
+    [OutputType([string[]])]
+    param([Parameter(Mandatory)][string]$RepositoryRoot)
+
+    if (
+        (Test-Path -LiteralPath 'variable:script:replicationMauiTypeVocabulary') -and
+        $null -ne $script:replicationMauiTypeVocabulary
+    ) {
+        return $script:replicationMauiTypeVocabulary
+    }
+
+    $coreRoot = Join-Path $RepositoryRoot 'src/Controls/src/Core'
+    $names = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    if (Test-Path -LiteralPath $coreRoot -PathType Container) {
+        foreach ($file in Get-ChildItem -LiteralPath $coreRoot -Filter '*.cs' -File -Recurse -ErrorAction SilentlyContinue) {
+            [void]$names.Add([IO.Path]::GetFileNameWithoutExtension($file.Name))
+        }
+        foreach ($directory in Get-ChildItem -LiteralPath $coreRoot -Directory -Recurse -ErrorAction SilentlyContinue) {
+            [void]$names.Add($directory.Name)
+        }
+    }
+
+    $vocabulary = [string[]]@(
+        $names | Where-Object {
+            $_ -cmatch '^[A-Z][A-Za-z0-9]*$' -and
+            $_.Length -ge 6 -and
+            ([regex]::Matches($_, '[A-Z]')).Count -ge 2
+        } | Sort-Object -Unique
+    )
+
+    $script:replicationMauiTypeVocabulary = $vocabulary
+    return , $vocabulary
+}
+
+function Get-ReplicationNamedMauiType {
+    <#
+        .SYNOPSIS
+        Returns the vocabulary entries named as whole words in some text.
+    #>
+    [OutputType([string[]])]
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Vocabulary
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return , [string[]]@()
+    }
+
+    return , [string[]]@(
+        $Vocabulary | Where-Object { $Text -cmatch ('\b' + [regex]::Escape($_) + '\b') }
+    )
+}
+
+function Test-ReplicationTestOmitsReportedApi {
+    <#
+        .SYNOPSIS
+        Reports a test that exercises none of the MAUI types the issue names.
+
+        .DESCRIPTION
+        Implements issue-to-test API fidelity. A report that names at least two
+        recognisable MAUI types is specific enough that a faithful test must
+        touch one of them; a test that touches none is proving something else.
+        The comparison uses the sanitized issue context rather than the agent's
+        own summary of it, so the agent cannot satisfy the check by restating
+        the types it chose to test. Returns a description of the mismatch, or
+        an empty string when the test is faithful or the rule does not apply.
+    #>
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$IssueText,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$SourceTexts,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Vocabulary
+    )
+
+    # A checkout without the Controls source cannot support the comparison;
+    # never block a reproduction on an unavailable vocabulary.
+    if ($Vocabulary.Count -lt 50) {
+        return ''
+    }
+
+    $issueTypes = Get-ReplicationNamedMauiType -Text $IssueText -Vocabulary $Vocabulary
+    if ($issueTypes.Count -lt 2) {
+        return ''
+    }
+
+    $combinedSource = $SourceTexts -join "`n"
+    $testTypes = Get-ReplicationNamedMauiType -Text $combinedSource -Vocabulary $Vocabulary
+    $overlap = [string[]]@($issueTypes | Where-Object { $testTypes -ccontains $_ })
+    if ($overlap.Count -gt 0) {
+        return ''
+    }
+
+    $reported = ($issueTypes | Select-Object -First 6) -join ', '
+    $exercised = if ($testTypes.Count -gt 0) {
+        ($testTypes | Select-Object -First 6) -join ', '
+    }
+    else {
+        'none'
+    }
+
+    return "the issue reports $reported but the generated test exercises $exercised"
+}
+
 function Read-GeneratedAppiumPlan {
     Assert-BoundedGeneratedFile `
         -Path $appiumPlanPath `
@@ -2632,6 +2748,26 @@ function Read-TestProposal {
         -MaximumLength 2000
     if (
         $PSBoundParameters.ContainsKey('ActualFiles') -and
+        (Test-Path -LiteralPath $issueAgentContextPath -PathType Leaf)
+    ) {
+        $sourceTexts = [string[]]@(
+            foreach ($file in $ActualFiles) {
+                if ($file -notmatch '(?i)\.(?:cs|xaml)$') {
+                    continue
+                }
+                Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
+            }
+        )
+        $apiMismatch = Test-ReplicationTestOmitsReportedApi `
+            -IssueText (Get-Content -LiteralPath $issueAgentContextPath -Raw) `
+            -SourceTexts $sourceTexts `
+            -Vocabulary (Get-ReplicationMauiTypeVocabulary -RepositoryRoot $repoRoot)
+        if ($apiMismatch) {
+            throw "The generated test does not exercise the reported API: $apiMismatch."
+        }
+    }
+    if (
+        $PSBoundParameters.ContainsKey('ActualFiles') -and
         "$($proposal.reportedTrigger) $($proposal.testTrigger)" -match '(?i)\b(?:orientation|portrait|landscape|rotation)\b'
     ) {
         foreach ($file in $ActualFiles) {
@@ -2967,7 +3103,7 @@ Plan the lightest automated test that proves the same behavior: unit/XAML first,
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
-reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The automated test must use the same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence as the recorded Sandbox rather than proving a different self-authored harness. For visible rendering, clipping, overflow, disappearance, flicker, or pixel-content defects, managed MAUI Bounds alone are not direct proof: require native-view state or rendered-pixel evidence that distinguishes visible output from managed layout bookkeeping. When an oracle samples more than one point to prove that two places differ, such as the two ends of a gradient, the expected values must be further apart than the tolerance in at least one channel and the test must assert that separation directly; two independent tolerance checks that overlap are satisfied by a flat fill, so the test cannot tell the reported defect from the correct rendering. Every sampled point must also be proven in bounds and on the surface being measured rather than on text, selection or hover chrome that happens to sit there. A position oracle must read where the content actually rendered, such as the native on-screen location or frame of the view, and must never reconstruct a position from padding arithmetic: on Android CompoundPaddingTop already includes the top padding, the compound drawable's height and the drawable padding, so computing an icon centre as PaddingTop plus half the icon and a text centre as CompoundPaddingTop plus half the text layout makes the two differ by construction whenever both an icon and text are present, and no product fix can make them equal. Before asserting any geometric, colour, or pixel comparison, prove the oracle on a control arranged so the reported defect is absent and show it reports the clean value there; an oracle that also reports the defect on that control is measuring itself, not the product, and the candidate must be rejected instead of published. Size and position oracles must separately prove that the intended item exists at the expected identity/location, then assert an absolute issue-derived dimension or invariant; a relative before/after comparison must not let a missing or mispositioned item masquerade as the reported size change. For keyboard, SafeArea, or ScrollView range defects, use the native inset-aware model, including ContentInset or AdjustedContentInset where relevant, and assert reachable behavior rather than an arbitrary fixed range threshold. For system-inset propagation defects, verify that the runtime supplied a nonzero relevant inset and exercise normal root-window propagation; never call DispatchApplyWindowInsets or OnApplyWindowInsets directly on the target view to manufacture the callback. If the report expects an ordinary bindable-property change to propagate automatically, never call Handler.UpdateValue or a mapper method manually unless that direct API call is itself the reported trigger. If the resulting native state may refresh asynchronously, use a bounded repository-standard eventual assertion or a real completion event rather than sampling it immediately. If the report changes a property after attachment, perform that runtime transition instead of preconfiguring the final value. If the report is dynamic, perform and prove the reported resize, orientation, content mutation, scrolling, or repeated-layout transition; a single fixed layout is insufficient. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. Before that final assertion, separately assert every precondition the oracle depends on, such as the attributed text, styling attribute, registered source, applied template, or measured baseline it presumes, because an arrangement that silently failed to take effect reaches the same failing assertion and would otherwise be published as the reported defect. A sentinel is only impossible if the correct product behaviour could never leave it in place: recording the index of a centred item as 4 when 4 is also the expected answer lets the test pass when the awaited callback never runs, so choose a sentinel such as -1 that no correct run can produce, and separately assert the callback occurred. A test that asserts locale-, calendar-, or clock-formatted output must set and verify the culture it asserts, for example by assigning CultureInfo.CurrentCulture and DefaultThreadCurrentCulture and confirming the active setting, because a literal such as '07:30' otherwise fails on a differently configured runner even after the product is fixed. When the report concerns restoring or applying a platform-default appearance, do not introduce an explicit Style, Background, or colour to stand in for that default: the default itself is the subject, so arrange the control exactly as the report does and assert against the captured initial native value. Choose the lightest tier that can actually observe the recorded reproduction, not merely the lightest tier overall: a device test constructs handlers in isolation, so it cannot observe a defect that only appears after real Shell, flyout, tab, modal, or back-navigation transitions, nor one that requires the second and subsequent visit to a page. When the recording had to navigate the running app to expose the defect, plan a UI test and say in lighterTypesRejected which transition the lighter tier cannot perform. When the report describes the defect as intermittent, occasional, or random, repeat the reported transition enough times for the automated test to observe it deterministically, and if no bounded repetition makes it deterministic, declare the scenario blocked instead of publishing a test that passes by chance. When the report covers several controls or several conditions, report each one separately in the failure message instead of collapsing them into a single count or a single combined token, so the message identifies which control or condition actually failed. When the asserted state is native and may settle after the managed trigger, use a bounded repository-standard eventual assertion rather than a single immediate probe. Every failure message must embed the concrete measured values that decided the assertion, such as the observed size, offset, inset, bounds, colour, count, or state token together with the value the issue expects, so a reader can tell how far the behaviour deviates without rerunning the test. Comparisons over device-derived floating-point measurements such as sizes, offsets, insets, and densities must use a small explicit tolerance rather than exact equality, because platform metrics carry rounding and scaling error. If the test performs an interaction, that interaction must be causally required for the assertion: capture the relevant state before and after it and assert the transition, so the result cannot be identical when the interaction never happened. When the reported defect is a static property of the arranged state and no interaction can affect the assertion, omit the decorative interaction instead of implying a causal link the oracle does not test. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
+reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The automated test must use the same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence as the recorded Sandbox rather than proving a different self-authored harness. When the report names specific MAUI types, the test must construct and exercise at least one of them; a test built entirely from unrelated types proves a different defect and will be rejected. For visible rendering, clipping, overflow, disappearance, flicker, or pixel-content defects, managed MAUI Bounds alone are not direct proof: require native-view state or rendered-pixel evidence that distinguishes visible output from managed layout bookkeeping. When an oracle samples more than one point to prove that two places differ, such as the two ends of a gradient, the expected values must be further apart than the tolerance in at least one channel and the test must assert that separation directly; two independent tolerance checks that overlap are satisfied by a flat fill, so the test cannot tell the reported defect from the correct rendering. Every sampled point must also be proven in bounds and on the surface being measured rather than on text, selection or hover chrome that happens to sit there. A position oracle must read where the content actually rendered, such as the native on-screen location or frame of the view, and must never reconstruct a position from padding arithmetic: on Android CompoundPaddingTop already includes the top padding, the compound drawable's height and the drawable padding, so computing an icon centre as PaddingTop plus half the icon and a text centre as CompoundPaddingTop plus half the text layout makes the two differ by construction whenever both an icon and text are present, and no product fix can make them equal. Before asserting any geometric, colour, or pixel comparison, prove the oracle on a control arranged so the reported defect is absent and show it reports the clean value there; an oracle that also reports the defect on that control is measuring itself, not the product, and the candidate must be rejected instead of published. Size and position oracles must separately prove that the intended item exists at the expected identity/location, then assert an absolute issue-derived dimension or invariant; a relative before/after comparison must not let a missing or mispositioned item masquerade as the reported size change. For keyboard, SafeArea, or ScrollView range defects, use the native inset-aware model, including ContentInset or AdjustedContentInset where relevant, and assert reachable behavior rather than an arbitrary fixed range threshold. For system-inset propagation defects, verify that the runtime supplied a nonzero relevant inset and exercise normal root-window propagation; never call DispatchApplyWindowInsets or OnApplyWindowInsets directly on the target view to manufacture the callback. If the report expects an ordinary bindable-property change to propagate automatically, never call Handler.UpdateValue or a mapper method manually unless that direct API call is itself the reported trigger. If the resulting native state may refresh asynchronously, use a bounded repository-standard eventual assertion or a real completion event rather than sampling it immediately. If the report changes a property after attachment, perform that runtime transition instead of preconfiguring the final value. If the report is dynamic, perform and prove the reported resize, orientation, content mutation, scrolling, or repeated-layout transition; a single fixed layout is insufficient. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. Before that final assertion, separately assert every precondition the oracle depends on, such as the attributed text, styling attribute, registered source, applied template, or measured baseline it presumes, because an arrangement that silently failed to take effect reaches the same failing assertion and would otherwise be published as the reported defect. A sentinel is only impossible if the correct product behaviour could never leave it in place: recording the index of a centred item as 4 when 4 is also the expected answer lets the test pass when the awaited callback never runs, so choose a sentinel such as -1 that no correct run can produce, and separately assert the callback occurred. A test that asserts locale-, calendar-, or clock-formatted output must set and verify the culture it asserts, for example by assigning CultureInfo.CurrentCulture and DefaultThreadCurrentCulture and confirming the active setting, because a literal such as '07:30' otherwise fails on a differently configured runner even after the product is fixed. When the report concerns restoring or applying a platform-default appearance, do not introduce an explicit Style, Background, or colour to stand in for that default: the default itself is the subject, so arrange the control exactly as the report does and assert against the captured initial native value. Choose the lightest tier that can actually observe the recorded reproduction, not merely the lightest tier overall: a device test constructs handlers in isolation, so it cannot observe a defect that only appears after real Shell, flyout, tab, modal, or back-navigation transitions, nor one that requires the second and subsequent visit to a page. When the recording had to navigate the running app to expose the defect, plan a UI test and say in lighterTypesRejected which transition the lighter tier cannot perform. When the report describes the defect as intermittent, occasional, or random, repeat the reported transition enough times for the automated test to observe it deterministically, and if no bounded repetition makes it deterministic, declare the scenario blocked instead of publishing a test that passes by chance. When the report covers several controls or several conditions, report each one separately in the failure message instead of collapsing them into a single count or a single combined token, so the message identifies which control or condition actually failed. When the asserted state is native and may settle after the managed trigger, use a bounded repository-standard eventual assertion rather than a single immediate probe. Every failure message must embed the concrete measured values that decided the assertion, such as the observed size, offset, inset, bounds, colour, count, or state token together with the value the issue expects, so a reader can tell how far the behaviour deviates without rerunning the test. Comparisons over device-derived floating-point measurements such as sizes, offsets, insets, and densities must use a small explicit tolerance rather than exact equality, because platform metrics carry rounding and scaling error. If the test performs an interaction, that interaction must be causally required for the assertion: capture the relevant state before and after it and assert the transition, so the result cannot be identical when the interaction never happened. When the reported defect is a static property of the arranged state and no interaction can affect the assertion, omit the decorative interaction instead of implying a causal link the oracle does not test. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
 A test placed in TestCases.Shared.Tests or in a DeviceTests project is link-compiled into the Android, iOS, MacCatalyst and Windows assemblies alike, so an unscoped reproduction is scheduled on three lanes that produced no evidence for it. Wrap the test in the conditional directive for the platform this run reproduced on, using the repository's own spelling: #if ANDROID, #if IOS, #if MACCATALYST or #if WINDOWS. Remember that TEST_FAILS_ON_WINDOWS means 'compile everywhere except Windows'.
 Never discard the verdict of a wait that decides whether the scenario reached the state under test, and never combine two such waits with a short-circuiting operator: a transient first condition then skips the check meant to catch the defect and the test passes while the defect is happening. Evaluate each wait separately and assert its result.
 If the reported behaviour only occurs under an opt-in feature switch such as UseMaterial3, arrange that switch and let the product register the gated types itself; never hand-register the gated handler while the switch is off, and never assert that the resolved handler is the type the test registered. A gated product fix does not execute when the switch is off, so such a test stays red after a real fix and reports it as unfixed. Assert the switch is active, then assert the behaviour the product controls.
