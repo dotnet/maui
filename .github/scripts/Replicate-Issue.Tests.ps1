@@ -67,6 +67,7 @@ BeforeAll {
         'Get-ReplicationFailureSignature',
         'Test-ReplicationObservedNegativeVerdict',
         'Test-ReplicationTestHarnessFault',
+        'Test-ReplicationTestElementLookupFailure',
         'Get-ReplicationAttemptFailureKind',
         'Get-ReplicationAppTerminationPattern',
         'Test-ReplicationFailureAlreadySeen',
@@ -6069,6 +6070,35 @@ Describe 'An observed negative verdict is a non-reproduction' {
     It 'keeps a build break ahead of the verdict reading' {
         $summary = "error CS0103: something actual='NO BUG:'"
         Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'build-failed'
+    }
+}
+
+Describe 'A test that ran but found no element is not a build failure' {
+    It 'recognises an element the test waited for and never saw' {
+        # Build 15029879 spent attempts 8 and 9 being told to make a test
+        # compile that had already compiled and run.
+        Test-ReplicationTestElementLookupFailure `
+            -FailureSummary 'System.TimeoutException : Timed out waiting for element...' |
+            Should -BeTrue
+        Test-ReplicationTestElementLookupFailure `
+            -FailureSummary 'Element was not visible: id=HandlerStatus' | Should -BeTrue
+    }
+
+    It 'leaves a lost harness and a compile error to their own handling' {
+        # An app that was never installed finds no element either, and no edit
+        # to the locator recovers it.
+        Test-ReplicationTestElementLookupFailure `
+            -FailureSummary ('Timed out waiting for element... TearDown : ' +
+                'OpenQA.Selenium.UnknownErrorException : The app could not be found') |
+            Should -BeFalse
+        Test-ReplicationTestElementLookupFailure `
+            -FailureSummary 'error CS0103: the name does not exist' | Should -BeFalse
+        Test-ReplicationTestElementLookupFailure -FailureSummary '' | Should -BeFalse
+    }
+
+    It 'tells the agent to fix the locator rather than the build' {
+        $script:Source | Should -Match 'never appeared'
+        $script:Source | Should -Match 'do not simply raise the timeout'
     }
 }
 

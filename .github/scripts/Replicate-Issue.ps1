@@ -706,6 +706,40 @@ function Test-ReplicationTestBuildFailure {
     return [bool]($text -match '(?i)never ran because the build failed|failed for build or infrastructure reasons|\berror CS\d+\b|\bMSB\d+\b')
 }
 
+function Test-ReplicationTestElementLookupFailure {
+    <#
+        .SYNOPSIS
+        Reports a verification round whose test ran but never found an element.
+
+        .DESCRIPTION
+        The verifier reports an element the test waited for and never saw as an
+        infrastructure failure, so the agent was told to 'make the test compile
+        and run' for a test that had already compiled and run. Build 15029879
+        spent attempts 8 and 9 on that advice while the real fault was a locator
+        that never resolved.
+
+        A harness fault is excluded because a lost session or an app that was
+        never installed finds no element either, and editing the locator does
+        not recover it.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$FailureSummary
+    )
+
+    $text = [string]$FailureSummary
+    if (-not $text) {
+        return $false
+    }
+    if (Test-ReplicationTestHarnessFault -FailureSummary $text) {
+        return $false
+    }
+    if ($text -match '(?i)\berror CS\d+\b|\bMSB\d+\b') {
+        return $false
+    }
+    return [bool]($text -match ('(?i)Timed out waiting for element|Element was not visible|' +
+        'NoSuchElementException|an element could not be located'))
+}
+
 function Test-ReplicationTestHarnessFault {
     <#
         .SYNOPSIS
@@ -832,6 +866,9 @@ function Get-ReplicationVerificationFailureSummary {
             -VerificationDirectory $VerificationDirectory
         if ($diagnostics) {
             return "The test never ran because the build failed. Fix these compiler diagnostics: $diagnostics. Note that this repository builds with warnings as errors, so a warning-level diagnostic such as CS0108 still fails the build."
+        }
+        if (Test-ReplicationTestElementLookupFailure -FailureSummary $actual) {
+            return "The test compiled and ran, but an element it waited for never appeared: '$actual'. Do not change the build and do not simply raise the timeout. Set an explicit AutomationId on the element the test queries, confirm the test navigates to the page that hosts it, and wait for a state the app actually reaches. If the element only exists once the reported defect occurs, assert the observable state that exists in both cases instead."
         }
         return "The test did not run: it failed for build or infrastructure reasons rather than the reported behavior. Actual failure: '$actual'. Make the test compile and run before asserting the bug."
     }
