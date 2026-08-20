@@ -116,11 +116,17 @@ namespace Microsoft.Maui.Authentication
 							}
 						});
 					}
-					catch (Exception)
+					catch (FeatureNotSupportedException)
+					{
+						throw;
+					}
+					catch (Exception ex)
 					{
 						WebAuthenticatorRequestManager.TryFail(
 							request,
-							new InvalidOperationException("The native web authentication session could not be started."));
+							new InvalidOperationException(
+								"The native web authentication session could not be started.",
+								ex));
 					}
 #else
 					try

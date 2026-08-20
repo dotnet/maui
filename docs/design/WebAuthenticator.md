@@ -8,6 +8,8 @@ token exchange, and token validation remain in the application.
 
 - A process can have one active built-in request. A second valid call throws
   `InvalidOperationException` without canceling the first request.
+- Applications must serialize authentication attempts, such as by disabling sign-in actions while
+  a request is pending. This replaces the previous behavior where a new request canceled the first.
 - Options are snapshotted before validation and are not retained as mutable platform state.
 - Callback, cancellation, and failure race through one process-wide completion reservation.
 - Decoder and platform callbacks run outside the manager lock and at most once.
@@ -50,7 +52,8 @@ completion.
 
 Both targets use `ASWebAuthenticationSession`. HTTPS callbacks require version 17.4 or later, the
 default HTTPS port, and matching Associated Domains configuration. Native completion is posted to
-the main queue before completing the shared request. The framework does not clear shared cookies.
+the main queue before completing the shared request. Applications supporting earlier OS versions
+must use a custom-scheme callback. The framework does not clear shared cookies.
 
 ### Android
 
@@ -59,9 +62,11 @@ by request ID. HTTPS callbacks with a non-default port are not eligible for Auth
 transport cannot preserve the port. If Auth Tab is unavailable or ineligible, the implementation
 falls back to a Custom Tab and then the system browser. Both fallback transports are launched from
 a request-owned intermediate activity, so returning from the browser without a callback cancels the
-same request. Caller cancellation only targets a matching live intermediate activity and never
-creates a cleanup activity. Custom-scheme fallbacks require a matching exported callback activity;
-HTTPS callbacks require matching Digital Asset Links.
+same request. Bringing the application task to the foreground before a callback is received is also
+treated as a terminal return, even if an external browser task remains open. Caller cancellation only
+targets a matching live intermediate activity and never creates a cleanup activity. Custom-scheme
+fallbacks require a matching exported callback activity; HTTPS callbacks require matching Digital
+Asset Links.
 
 ## Diagnostics and limitations
 

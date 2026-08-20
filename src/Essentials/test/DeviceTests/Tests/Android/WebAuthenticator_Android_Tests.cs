@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	}
 
 	[Collection(AndroidWebAuthenticatorCollection.CollectionName)]
+	[Category("WebAuthenticator")]
 	public class WebAuthenticator_Android_Tests : IDisposable
 	{
 		readonly List<WebAuthenticatorRequest> requests = new();

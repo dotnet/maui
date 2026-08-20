@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Authentication
 		/// <exception cref="InvalidOperationException">
 		/// <para>All platforms: Thrown when another authentication operation is already in progress.</para>
 		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
+		/// <para>iOS and Mac Catalyst: Thrown when the authentication or callback URL is unsupported, including an HTTPS callback with a non-default port, or when the native session cannot be started.</para>
 		/// <para>Windows: Thrown when the callback URL is invalid, its protocol is not registered, the browser cannot be launched, or another app instance is already waiting for the callback scheme.</para>
 		/// </exception>
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
@@ -41,6 +42,7 @@ namespace Microsoft.Maui.Authentication
 		/// <exception cref="InvalidOperationException">
 		/// <para>All platforms: Thrown when another authentication operation is already in progress.</para>
 		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
+		/// <para>iOS and Mac Catalyst: Thrown when the authentication or callback URL is unsupported, including an HTTPS callback with a non-default port, or when the native session cannot be started.</para>
 		/// <para>Windows: Thrown when the callback URL is invalid, its protocol is not registered, the browser cannot be launched, or another app instance is already waiting for the callback scheme.</para>
 		/// </exception>
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken);
