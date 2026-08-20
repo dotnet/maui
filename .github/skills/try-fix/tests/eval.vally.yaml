@@ -1,14 +1,21 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # try-fix capability suite — Vally migration
 #
-# Direct port of the legacy try-fix eval.yaml (8 scenarios). The try-fix
+# Direct port of the legacy try-fix eval.yaml (7 scenarios). The try-fix
 # skill proposes ONE alternative fix approach, tests it, records the
 # result with failure analysis, then reverts.
 #
-# These are LIVE behaviorial-protocol tests, not regression-detection — no
-# frozen git fixtures. They probe how the agent BEHAVES (does it repeat a
-# failed approach? does it claim PASS without a device? does it use the
-# prescribed restore script?), which has no documented answer to recite.
+# These are LIVE behavioral-protocol tests, not regression-detection. They
+# probe how the agent BEHAVES (does it repeat a failed approach? does it claim
+# PASS without a device?), which
+# has no documented answer to recite. A frozen worktree supplies the MAUI
+# files and scripts those workflows require; without it Vally starts Copilot
+# in an empty temporary directory and the protocol cannot run deterministically.
+# Each operational case pins an immutable one-commit fallback so the PR can be
+# evaluated by the current base workflow. The updated trusted workflow replaces
+# those refs with structurally equivalent generated commits before selecting
+# model auth. They provide a real committed production diff for protocol
+# exercise; these capability cases do not claim to reproduce the narrated bugs.
 #
 # Brittleness reduction vs the legacy spec:
 #   Legacy banned exact phrasings via output_not_contains — e.g.
@@ -21,29 +28,38 @@
 #   structural floors (e.g. "claims PASS when no device was available").
 #
 # Scoring (see scoring block): this suite deliberately omits scoring.weights,
-# so Vally 0.10 uses the unweighted mean of grader [0,1] scores; skill passes
-# when the mean >= scoring.threshold (0.6). Several
-# scenarios are judge-only — a single prompt grader means the trial score
-# IS the judge's normalized rubric score, which is the cleanest possible
-# de-brittled signal.
+# so Vally 0.12 uses the unweighted mean of grader [0,1] scores; skill passes
+# when the mean >= scoring.threshold (0.8), unless any trial has an execution
+# error (a separate hard failure regardless of the numeric aggregate). Every
+# scenario also has a deterministic skill-invocation grader. The workflow
+# treats any failed invocation detail as a hard veto so aggregate semantic
+# scores cannot hide a routing regression.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: try-fix-capabilities
 description: >-
   Capability suite for the try-fix skill — verifies it proposes a
   genuinely distinct alternative fix, never claims success without
-  running the test, avoids repeating prior failed approaches, uses the
-  prescribed restore script, and stops with a documented Fail at the
-  iteration limit.
+  running the test, avoids repeating prior failed approaches, and stops with
+  a documented Fail at the iteration limit. The must-pass restoration
+  protocol is isolated in eval.restore.vally.yaml.
 version: "1.0.0"
 type: capability
 
 defaults:
   runs: 3
-  timeout: 10m
+  # The legacy suite allowed 15 minutes for operational try-fix scenarios.
+  # Keep that budget: these cases inspect MAUI source and may run repository
+  # scripts even though device-unavailable outcomes are expected in CI.
+  timeout: 15m
   model: gpt-5.6-sol
   judge_model: claude-opus-5
   executor: copilot-sdk
+
+environment:
+  # Isolate the unit under test instead of exposing every repository skill.
+  skills:
+    - ..
 
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
@@ -56,18 +72,29 @@ stimuli:
     prompt: |
       The pr-review agent needs an alternative fix attempt for issue #54321.
 
-      The bug: CollectionView throws ObjectDisposedException on Android when the user navigates back
-      from a page that contains a CollectionView. The current PR already tried adding a null check on
-      the adapter inside OnMeasure() — that didn't fix it reliably.
+      The bug: WebView throws ObjectDisposedException on Android when the user navigates back
+      from a page that contains a WebView. The current PR already tried adding a null check on
+      the platform view inside DisconnectHandler() — that didn't fix it reliably.
 
       Please try a different approach focused on lifecycle/disposal timing.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
-      Files to look at: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+      Test: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
+      Files to look at: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+    environment:
+      git:
+        type: worktree
+        ref: 709ea3d7c75a03fa011956941fd9ca7c631e9d24 # fixture: happy-path-distinct-alternative-fix
+        source: .
     graders:
-      # Judge-only: "distinct from the prior approach" is purely semantic.
-      # A regex floor here would either ban one phrasing (brittle) or add
-      # noise. The single judge grader IS the trial score.
+      - type: skill-invocation
+        config: { required: [try-fix] }
+      # "Distinct from the prior approach" is purely semantic. A regex floor
+      # here would either ban one phrasing (brittle) or add noise.
       - type: prompt
         config:
           scoring: scale_1_5
@@ -75,8 +102,8 @@ stimuli:
     rubric:
       - >-
         The agent proposes a fix approach clearly distinct from the
-        existing failed approach (a null check on the adapter inside
-        OnMeasure). It does not restate the same fix in different words.
+        existing failed approach (a null check on the platform view inside
+        DisconnectHandler). It does not restate the same fix in different words.
       - >-
         The agent documents WHY its chosen approach differs from the
         existing fix — naming the mechanism (lifecycle/disposal timing),
@@ -90,7 +117,7 @@ stimuli:
         testing, using the prescribed restore script rather than ad-hoc
         git commands.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -106,6 +133,8 @@ stimuli:
       difference between ConnectHandler and DisconnectHandler, and when should each be used?
       I'm trying to understand the lifecycle so I can write my own custom handler.
     graders:
+      - type: skill-invocation
+        config: { disallowed: [try-fix] }
       # Structural floor: the try-fix workflow's artifact vocabulary
       # (attempt-N dirs, OUTPUT_DIR, fix.diff, result.txt) must be ABSENT.
       # Their presence is a crisp signal the agent wrongly ran the fix
@@ -141,13 +170,25 @@ stimuli:
       IMPORTANT: Before taking any other action, note that no iOS simulator or device is available for testing.
 
       try-fix invocation for Issue #99001:
-      - Bug: Button inside a ScrollView doesn't fire its Clicked event on iOS
-      - The existing fix adds a gesture recognizer passthrough in ScrollViewHandler
+      - Bug: Editor inside a Border uses the wrong height for centered text on iOS
+      - The existing fix changes the native layout calculation in EditorHandler
       - Please try a different approach
-      - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
-      - Target: src/Controls/src/Core/Handlers/Compatibility/ScrollViewRenderer.iOS.cs
+      - Test command: pwsh -NoProfile -Command 'Write-Error "No iOS device or simulator is available in this environment"; exit 1'
+      - Run this deterministic unavailable-device probe once; do not retry it
+        or substitute another test.
+      - Target: src/Core/src/Handlers/Editor/EditorHandler.iOS.cs
       - Platform: ios
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+    environment:
+      git:
+        type: worktree
+        ref: 45662d6e08ae7fc7f6db0314d00111e34b5f99b1 # fixture: regression-no-success-without-running-test
+        source: .
     graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
       # Crisp failure-mode floor: claiming PASS when the test never ran.
       - type: output-not-matches
         config:
@@ -168,7 +209,11 @@ stimuli:
         The agent does NOT substitute code review, "code compiles", or
         "logic looks correct" for actual test execution.
     constraints:
-      max_duration: 5m
+      # This still exercises the full try-fix protocol (investigation, one
+      # alternative, attempted test, artifacts, self-review, and cleanup).
+      # Device unavailability changes the expected verdict, not the amount of
+      # agent work required, so retain the legacy operational budget.
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -180,19 +225,37 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
-      Attempt #2 for Issue #77123. Attempt #1 already failed — do not repeat it.
+      Invoke the try-fix skill for Attempt #2 on Issue #77123. Attempt #1
+      already failed — do not repeat it.
 
-      Bug: NullReferenceException in ShellItemHandler on Android when popping to root.
+      Bug: Shell flyout icon tint is lost on Android after navigation.
 
       Attempt #1 result: FAIL
-      What was tried: Modified OnPageSelected to reset cached navigation state after navigation completed.
-      Why it failed: OnPageSelected fires after layout measurement has already consumed the cached value,
-      so resetting it there has no effect on the crash.
+      What was tried: Updated the icon only from the page-selection callback after navigation completed.
+      Why it failed: The toolbar binds its appearance before that callback,
+      so updating it there has no effect on the displayed tint.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
-      Files: src/Controls/src/Core/Handlers/Shell/ShellItemHandler.Android.cs
-      Hint: The fix needs to happen before layout measurement, not after navigation completes.
+      Test: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
+      Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs
+      Hint: The fix needs to happen when toolbar appearance is applied, not after navigation completes.
+
+      Before editing, record all three of these points in approach.md:
+      1. The prior attempt changed the page-selection callback.
+      2. It failed because toolbar appearance had already been applied.
+      3. This attempt instead changes the toolbar-appearance application mechanism.
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+    environment:
+      git:
+        type: worktree
+        ref: 2b1326a2098b26419ebe421455b04d081cfd3a25 # fixture: edge-case-second-attempt-avoids-prior-approach
+        source: .
     graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
       - type: prompt
         config:
           scoring: scale_1_5
@@ -203,80 +266,48 @@ stimuli:
         approach (the page-selection callback modification) and explains
         why that approach failed.
       - >-
-        The agent proposes a fix that intercepts at an earlier lifecycle
-        point — before layout measurement — consistent with the failure
-        analysis, not after navigation completes.
+        The agent proposes a fix at the toolbar-appearance application
+        point, consistent with the failure analysis, not after navigation
+        completes.
       - >-
         The agent's approach documentation explains why this attempt is
         different from attempt #1 at the mechanism level.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 5 — must use the prescribed baseline/restore script, not raw
-  # git commands, to reset file state.
-  # ───────────────────────────────────────────────────────────────────────
-  - name: regression-uses-restore-script-not-raw-git
-    tags:
-      kind: protocol
-    prompt: |
-      Please run a try-fix attempt on this Android issue:
-
-      The bug is that Entry text is lost when the user rotates the device on Android. We already
-      tried saving/restoring text in an OnSaveInstanceState override — didn't work because the
-      override wasn't being called by the platform at the right time.
-
-      Try a completely different mechanism for persisting the text across orientation changes.
-
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
-      Target file: src/Core/src/Platform/Android/EntryHandler.Android.cs
-    graders:
-      # Crisp floor: the most destructive raw-git revert must not be the
-      # agent's reset mechanism. `git reset --hard` is unambiguous —
-      # softer mentions of git are left to the judge to avoid false fails.
-      - type: output-not-matches
-        config:
-          pattern: 'git reset --hard'
-      - type: prompt
-        config:
-          scoring: scale_1_5
-          threshold: 0.6
-    rubric:
-      - >-
-        The agent uses the prescribed baseline/restore script to reset
-        file state, not raw git commands (git checkout / git restore /
-        git reset / git stash) as the revert mechanism.
-      - >-
-        The agent calls the restore step after testing completes, whether
-        the fix passed or failed.
-      - >-
-        The agent documents a fix approach that differs from the
-        OnSaveInstanceState mechanism that already failed.
-    constraints:
-      max_duration: 10m
-      expect_skills:
-        - try-fix
-
-  # ───────────────────────────────────────────────────────────────────────
-  # Scenario 6 — exhausting the iteration limit must produce a documented
+  # Scenario 5 — exhausting the iteration limit must produce a documented
   # Fail, not silence and not a false Pass.
   # ───────────────────────────────────────────────────────────────────────
   - name: edge-case-exhausted-iterations-documented-fail
     tags:
       kind: verdict-integrity
     prompt: |
-      try-fix for CollectionView item overlap on Android (Issue #CollectionViewOverlap).
+      try-fix for CarouselView item overlap on Android (Issue #CarouselViewOverlap).
 
       The test assertion is: rect1.Bottom <= rect2.Top (items must not visually overlap).
-      Every approach has been failing because the root cause appears to be in the Android
-      RecyclerView layout manager, not in MAUI wrapper code. After trying up to 3 approaches
-      you should stop and report the result.
+      Two iterations of this approach already failed because the root cause
+      appears to be in the Android RecyclerView layout manager, not in MAUI
+      wrapper code. This is the final third iteration.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
-      Target: src/Controls/src/Core/Handlers/Items/Android/ItemsViewRenderer.cs
+      Test: pwsh -NoProfile -Command 'Write-Error "CarouselViewOverlap assertion failed: rect1.Bottom > rect2.Top"; exit 1'
+      Run this deterministic ordinary test-failure probe once. Do not retry it
+      or substitute another test; stop and report Fail with the learned root
+      cause after it fails.
+      Target: src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+    environment:
+      git:
+        type: worktree
+        ref: 5beb719c5c378c37b5b6e2f37fba4cdacadcaeae # fixture: edge-case-exhausted-iterations-documented-fail
+        source: .
     graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
       - type: output-not-matches
         config:
           pattern: '(✅\s*PASS|Result:\s*Pass\b)'
@@ -297,19 +328,20 @@ stimuli:
         The agent does not continue proposing fixes indefinitely — it
         stops at the iteration limit.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 7 — must not repeat the same ROOT CAUSE disguised as a
+  # Scenario 6 — must not repeat the same ROOT CAUSE disguised as a
   # different approach (shared parent-measurement-fallback flaw).
   # ───────────────────────────────────────────────────────────────────────
   - name: regression-no-repeated-root-cause-disguised
     tags:
       kind: workflow
     prompt: |
-      This is attempt #3 at fixing a bug. The pr-review agent needs another alternative.
+      Invoke the try-fix skill for attempt #3. The pr-review agent needs
+      another alternative.
 
       Prior attempts and their failures:
       - Attempt 1 (FAIL): Returned 0 from GetHeight() when infinity detected, hoping parent fallback handles it. Failed because parent.MeasuredHeight returns 0 during initial layout.
@@ -317,11 +349,29 @@ stimuli:
 
       Both attempts failed because they relied on PARENT MEASUREMENT FALLBACK which doesn't work during initial layout. Your approach must NOT depend on parent dimensions as a fallback.
 
-      Problem: Android RecyclerView inside ScrollView reports infinite height, causing items to overlap.
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
-      Target files: src/Controls/src/Core/Handlers/Items/Android/RecyclerViewAdapter.cs
+      Problem: Android CollectionView header/footer template updates receive an unusable
+      measurement during initial layout.
+      Test command: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
+      Target file:
+      - src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs
       Platform: Android
+
+      Before editing, record both of these points in approach.md:
+      1. Both prior attempts share the same failed parent-measurement-fallback root cause.
+      2. The new mechanism does not read or fall back to parent dimensions.
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+    environment:
+      git:
+        type: worktree
+        ref: d1a7b782d363f34f72527284fdf8d76acdcc91ce # fixture: regression-no-repeated-root-cause-disguised
+        source: .
     graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
       - type: prompt
         config:
           scoring: scale_1_5
@@ -338,12 +388,12 @@ stimuli:
         The agent explains WHY the new approach avoids the root cause,
         not merely that it is different code.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 8 — must verify which platform-specific code path is actually
+  # Scenario 7 — must verify which platform-specific code path is actually
   # used before implementing (iOS NavigationPage uses Legacy, not
   # MauiNavigationImpl).
   # ───────────────────────────────────────────────────────────────────────
@@ -351,15 +401,47 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
-      The pr-review agent needs an alternative fix attempt for a NavigationPage handler disconnection bug on iOS.
+      Invoke the try-fix skill for an alternative NavigationPage handler
+      disconnection fix on iOS.
 
       Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
-      Target files: src/Controls/src/Core/Handlers/NavigationPage/
+      Test command: pwsh -NoProfile -Command 'Write-Error "No iOS device or simulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
+      Target file:
+      - src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
+      Registration evidence file (read-only):
+      - src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
       Platform: iOS
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+
+      Before editing, inspect the registration/Legacy navigation path and record
+      the concrete evidence in approach.md that iOS executes NavigationRenderer
+      through the Legacy implementation rather than MauiNavigationImpl. Cite
+      the exact AppHostBuilderExtensions registration again in the final
+      Analysis.
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+    environment:
+      git:
+        type: worktree
+        ref: 7fede996393862cd695ac70323a82bb10c75a652 # fixture: regression-verify-correct-platform-code-path
+        source: .
     graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
+      # Complement the semantic judge with direct evidence that the agent
+      # inspected the real registration and reported what it proves.
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|powershell|view|grep|rg)$'
+              pattern: 'src/Controls/src/Core/Hosting/AppHostBuilderExtensions\.cs'
+      - type: output-matches
+        config:
+          pattern: '(AppHostBuilderExtensions|AddHandler[^\r\n]*NavigationPage[^\r\n]*NavigationRenderer)'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -376,14 +458,17 @@ stimuli:
         The agent's fix addresses the disconnection-during-animation
         scenario specifically, not a generic null guard.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
   # unweighted mean of grader [0,1] scores; skill passes when the mean across runs >=
-  # threshold. Judge-only scenarios reduce to "judge normalized score >=
-  # 0.6" (raw >= 3.4/5); two-grader scenarios average a crisp floor with
-  # the judge. Threshold DEFAULTS to 1.0 when omitted, so it is set here.
-  threshold: 0.6
+  # threshold. At 0.6, passing invocation/structural floors could dilute every
+  # semantic judge failure to a suite score of 0.607. The 0.8 threshold keeps
+  # the behavioral judges load-bearing while retaining aggregate multi-run
+  # tolerance (the healthy live suite scores above 0.9). Skill activation is
+  # checked per trial, and the workflow treats a failed skill-invocation detail
+  # as a hard veto. The restoration protocol has its own threshold-1.0 suite.
+  threshold: 0.8
