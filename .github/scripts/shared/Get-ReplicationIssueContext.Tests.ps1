@@ -1270,3 +1270,65 @@ Describe 'Get-ReplicationScreenshotRecords resilience' {
         Test-Path -LiteralPath (Join-Path $root 'screenshots/screenshot-001.png') | Should -BeTrue
     }
 }
+
+Describe 'Get-ReplicationRuntimeScopeMismatch infrastructure and publish-mode signals' {
+    It 'refuses this repository''s own CI lane and UI-test harness' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Windows] WebView CI lane is taking a long time to complete tests' |
+            Should -Match 'own test suite'
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[UITest] Long accessibility identifier (>128 chars) causes WebDriverAgent failure' |
+            Should -Match 'own test suite'
+    }
+
+    It 'refuses a named test in this repository''s suite' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Bug] ContentViewRespondsWhenViewRemoved test fails on Catalyst' |
+            Should -Match 'named test'
+    }
+
+    It 'requires the PascalCase form so ordinary testing reports stay selectable' {
+        # A bare "test fails" appears in reports about an app's own tests and in
+        # reports that merely mention testing. Only a PascalCase identifier is
+        # unambiguously a test in this repository.
+        # Matched case-insensitively, [A-Z][a-z]+ splits any ordinary lowercase
+        # word into as many groups as it likes, so each of these would be
+        # refused as one of this repository's tests.
+        foreach ($title in @(
+                'My unit test fails after upgrading to .NET 10',
+                'the test fails on Android when the label is empty',
+                'the collectionview test fails on Android',
+                'my carousel scrolling test fails',
+                'the shell navigation test fails')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'refuses NativeAOT because the publish mode cannot be enabled' {
+        # All five NativeAOT reports in 1,071 titles are out of reach, including
+        # the runtime-sounding ones: enabling the mode is a project-file change.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title "[dotnet11 preview 6] ClientWebSocket doesn't work with NativeAOT on Android" |
+            Should -Match 'publish mode'
+        # The remaining NativeAOT titles are refused too, some by the packaging
+        # and build signals that already existed.
+        foreach ($title in @(
+                'Error getting pack version building NativeAot for android',
+                'Failed to Make MSIX Package when using NativeAOT',
+                '[dotnet 11 preview7] maui template project fails to build with NativeAot enabled')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    It 'keeps accepting ordinary runtime reports selected for this wave' {
+        foreach ($title in @(
+                '[Android] CollectionView with an EmptyView or EmptyViewTemplate gets potentially corrupted after being cleared and repopulated a number of times',
+                'Android: memoryleaks when programmatically changing the Detail of a FlyoutPage',
+                'Platform-specific (Windows) ResourceDictionary cannot align partial classes',
+                'Add page level style makes the label invisible on Windows',
+                '[iOS 26] Setting Shell FlyoutBehavior to Locked makes the page freeze',
+                '[iOS] ObjectDisposedException')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -BeNullOrEmpty
+        }
+    }
+}

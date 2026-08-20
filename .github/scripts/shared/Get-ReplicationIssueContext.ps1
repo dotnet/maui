@@ -1871,13 +1871,35 @@ function Get-ReplicationRuntimeScopeMismatch {
             Scope   = 'a project file property the agent may not change'
         }
         [pscustomobject]@{
-            # A report that MAUI's own test assembly fails on a candidate PR is
-            # triage of this repository's CI, not an app behaviour any device
-            # page can show.
+            # A report that MAUI's own test assembly, UI-test harness or CI lane
+            # is failing is triage of this repository's infrastructure, not an
+            # app behaviour any device page can show. The PascalCase form is
+            # required: a named test identifier followed by "test fails" only
+            # ever refers to a test in this repository, while a bare "test
+            # fails" would refuse reports that merely mention testing.
             Pattern = '(?i)\binflight\s+regression\b' +
                 '|\b(?:Core|Xaml|Controls)\.UnitTests\b' +
-                '|\bfail\w*\b[^.]{0,30}\bin\s+candidate\s+PR\b'
-            Scope   = "this repository's own test suite on a candidate pull request"
+                '|\bfail\w*\b[^.]{0,30}\bin\s+candidate\s+PR\b' +
+                '|\bCI\s+lane\b' +
+                '|^\[UITest\]|\bWebDriverAgent\b'
+            Scope   = "this repository's own test suite, UI-test harness or CI lane"
+        }
+        [pscustomobject]@{
+            # Case-sensitive by design, so only a PascalCase test identifier
+            # matches. Measured against 1,071 titles: two hits, both this
+            # repository's own tests.
+            Pattern = '\b[A-Z][a-z]+(?:[A-Z][a-z]+){2,}\s+test\s+(?:fails?|is\s+failing)\b'
+            CaseSensitive = $true
+            Scope   = "a named test in this repository's own suite"
+        }
+        [pscustomobject]@{
+            # The Sandbox is a fixed, already-compiled project, and enabling
+            # ahead-of-time publishing is a project-file change the agent may
+            # not make. Every one of the five NativeAOT reports in 1,071 titles
+            # is therefore out of reach, including the runtime-sounding ones,
+            # because the mode itself cannot be turned on.
+            Pattern = '(?i)\bNativeAOT\b'
+            Scope   = 'a publish mode the fixed Sandbox project cannot enable'
         }
         [pscustomobject]@{
             # The Sandbox reproduces a report by authoring one page. A report
@@ -1949,7 +1971,12 @@ function Get-ReplicationRuntimeScopeMismatch {
     }
 
     foreach ($signal in $signals) {
-        if ($text -match $signal.Pattern) {
+        $matched = if ($signal.CaseSensitive) {
+            $text -cmatch $signal.Pattern
+        } else {
+            $text -match $signal.Pattern
+        }
+        if ($matched) {
             return ("The report is about $($signal.Scope), and the Sandbox runs one page inside an " +
                 'already-compiled fixed project, so no page it can show would be evidence for what was reported.')
         }
