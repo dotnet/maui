@@ -1107,6 +1107,48 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
             Should -Not -BeNullOrEmpty -Because 'the generated page must declare both namespaces explicitly'
     }
 
+    It 'refuses a report whose label says it is not a defect' -ForEach @(
+        # Measured on the 600 open issues in the live pool: 49 proposal/open,
+        # 8 t/enhancement, 28 ci-scan-*, 1 Known Build Error, and none of the
+        # 86 also carries t/bug.
+        @{ Label = 'proposal/open' }
+        @{ Label = 't/enhancement' }
+        @{ Label = "t/enhancement `u{2600}`u{FE0F}" }
+        @{ Label = 'ci-scan-net11' }
+        @{ Label = 'Known Build Error' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[iOS] Label text is clipped when FontSize changes' -Labels @($Label) |
+            Should -Not -BeNullOrEmpty -Because "'$Label' is not a defect report"
+    }
+
+    It 'keeps an ordinary bug report that carries unrelated labels' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[iOS] Label text is clipped when FontSize changes' `
+            -Labels @('t/bug', 'platform/ios', 's/verified', 'area-controls-label', 'partner/syncfusion') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'refuses a Syncfusion control the Sandbox may not reference' -ForEach @(
+        @{ Title = '[iOS] SfAutocomplete with ShowSuggestionsOnFocus freezes in a popup' }
+        @{ Title = 'SfListView does not scroll to the last item' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @('t/bug') |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report that the compiler should have warned' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'XAML Does Not Warn or Obsolete FontSize' -Labels @('t/bug') |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'keeps a runtime report whose control name merely starts with lowercase sf' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Android] Safe area inset is wrong after rotation' -Labels @('t/bug') |
+            Should -BeNullOrEmpty
+    }
+
     It 'still accepts a launch crash whose trigger is an ordinary page property' -ForEach @(
         @{ Title = 'iOS app crashes on start because of set SafeAreaEdges="None"' }
         @{ Title = '[Windows] "TitleBar.ExtendsContentIntoTitleBar = false" is now crashing startup every time in minimal Maui Project' }

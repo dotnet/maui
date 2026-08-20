@@ -1767,7 +1767,12 @@ function Get-ReplicationRuntimeScopeMismatch {
             Scope   = 'a build failure'
         }
         [pscustomobject]@{
-            Pattern = '(?i)\b(?:MSB|NU|NETSDK|XA|IL)\d{3,5}\b'
+            Pattern = '(?i)\b(?:MSB|NU|NETSDK|XA|IL)\d{3,5}\b' +
+                # A report that the compiler should have warned, or should have
+                # marked something obsolete, is about a diagnostic raised while
+                # the app is compiled. The Sandbox is already compiled.
+                '|\b(?:does\s*n[o\x27]t|did\s*n[o\x27]t|no|should|fails?\s+to)\s+(?:warn|obsolete)\b' +
+                '|\bwarn\s+or\s+obsolete\b|\bmissing\s+(?:compiler\s+)?warning\b'
             Scope   = 'a build-tool diagnostic'
         }
         [pscustomobject]@{
@@ -1819,7 +1824,12 @@ function Get-ReplicationRuntimeScopeMismatch {
             # The agent may not touch project files or dependencies, and the
             # Sandbox project is fixed, so a report whose trigger is a
             # third-party package cannot be arranged at all.
-            Pattern = '(?i)\b(?:community\s?toolkit|syncfusion|devexpress|telerik|sharpnado|reactiveui|prism|refit|mopups|plugin\.\w+)\b'
+            Pattern = '(?i)\b(?:community\s?toolkit|syncfusion|devexpress|telerik|sharpnado|reactiveui|prism|refit|mopups|plugin\.\w+)\b' +
+                # Syncfusion prefixes every control with Sf, and the Sandbox may
+                # not reference the package that defines it. The partner label is
+                # deliberately not used: it marks who reported the issue, and 152
+                # of the 600 open issues carry it while being ordinary MAUI bugs.
+                '|\bSf[A-Z]\w+\b'
             Scope   = 'a third-party package the fixed Sandbox project cannot reference'
         }
         [pscustomobject]@{
@@ -1902,6 +1912,38 @@ function Get-ReplicationRuntimeScopeMismatch {
             $text = "$text $label"
         }
     }
+
+    # A label states what kind of report this is, which is far more reliable
+    # than inferring it from the title. Measured against the 600 open issues
+    # in the live pool, each of these is perfectly disjoint from t/bug: 49
+    # proposal/open, 8 t/enhancement, 28 ci-scan-*, 1 Known Build Error, and
+    # not one of the 86 also carries t/bug. A proposal has no defect to
+    # reproduce, and a CI scan compares a stored baseline the agent may not
+    # add or change.
+    $labelRefusals = @(
+        [pscustomobject]@{
+            Pattern = '(?i)^(?:proposal/|t/enhancement)'
+            Scope   = 'a proposal or enhancement rather than a defect'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)^ci-scan'
+            Scope   = 'a CI scan comparing a stored baseline'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)^Known Build Error$'
+            Scope   = 'a known build error'
+        }
+    )
+    foreach ($label in @($Labels)) {
+        foreach ($refusal in $labelRefusals) {
+            if ([string]$label -match $refusal.Pattern) {
+                return ("The report is labelled as $($refusal.Scope), and the Sandbox runs one page " +
+                    'inside an already-compiled fixed project, so no page it can show would be ' +
+                    'evidence for what was reported.')
+            }
+        }
+    }
+
     if ([string]::IsNullOrWhiteSpace($text)) {
         return ''
     }
