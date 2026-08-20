@@ -398,3 +398,10 @@ src/Core/AndroidNative/build/reports/
 # explicit path the workflow passes, so a local run leaves them untracked
 # in the repo root one `git add -A` away from being committed.
 ci-scan-reconcile-*.json
+
+# Pester scratch roots. The replication suites build real candidate trees --
+# patches, evidence, even a throwaway git repository -- next to the test file
+# they belong to, so a run that overlaps a `git add -A` commits them. The
+# directory is removed on a clean exit, which is exactly why an interrupted
+# run is the one that leaves it behind.
+.github/scripts/**/.*.Tests.work/
