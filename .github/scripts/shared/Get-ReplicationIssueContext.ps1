@@ -1736,6 +1736,74 @@ function Get-ReplicationPlatformMismatch {
         'so a reproduction on it would not be evidence for what was reported.')
 }
 
+function Get-ReplicationRuntimeScopeMismatch {
+    <#
+        .SYNOPSIS
+        Explains why a bounded Sandbox page cannot answer the report, if it cannot.
+
+        .DESCRIPTION
+        The Sandbox reproduces app behaviour by running one page inside a fixed,
+        already-compiled project. A report about the build itself, about how a
+        package is assembled, or about a test that only fails on CI is therefore
+        outside what any page can show, and the agent says so correctly, but
+        only after provisioning a device and spending several attempts. Runs
+        15032133, 15032134 and 15032131 each concluded exactly that.
+
+        Only the title is examined. A runtime report often mentions building the
+        app in passing, and rejecting on body text would refuse real candidates.
+    #>
+    param(
+        [AllowEmptyString()][string]$Title,
+        [string[]]$Labels = @()
+    )
+
+    $signals = @(
+        [pscustomobject]@{
+            Pattern = '(?i)\b(?:build|compil\w*|msbuild|restore|nuget|linker|trimming|aot)\s+(?:error|fail\w*|warning|break\w*)\b'
+            Scope   = 'a build failure'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)\b(?:MSB|NU|NETSDK|XA|IL)\d{3,5}\b'
+            Scope   = 'a build-tool diagnostic'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)\b(?:packaging|\.pri\b|pri\s+file|app\s*bundle|msix|apk\s+size|ipa\b|publish(?:ing)?\s+output|obj\s+director\w*|source\s+generator)\b'
+            Scope   = 'how the package is assembled'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)\bMAX_PATH\b|\bpath\s+(?:too\s+)?(?:length|limit|is\s+too\s+long)\b|\b(?:binding|source|code)\s+generators?\b'
+            Scope   = 'what the compiler writes to disk'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)\b(?:workload|dotnet\s+workload|sdk\s+install\w*|version\s+bump)\b'
+            Scope   = 'the SDK or workload installation'
+        }
+        [pscustomobject]@{
+            Pattern = '(?i)\b(?:ci|pipeline|azure\s*devops|github\s+actions)\b.*\b(?:only|fail\w*|flak\w*)\b'
+            Scope   = 'a failure seen only on CI'
+        }
+    )
+
+    $text = [string]$Title
+    foreach ($label in @($Labels)) {
+        if ([string]$label -match '(?i)^area-(?:infrastructure|build)') {
+            $text = "$text $label"
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        return ''
+    }
+
+    foreach ($signal in $signals) {
+        if ($text -match $signal.Pattern) {
+            return ("The report is about $($signal.Scope), and the Sandbox runs one page inside an " +
+                'already-compiled fixed project, so no page it can show would be evidence for what was reported.')
+        }
+    }
+
+    return ''
+}
+
 function Get-ReplicationScreenshotRecords {
     [CmdletBinding()]
     param(
@@ -1988,11 +2056,14 @@ function Invoke-GetReplicationIssueContext {
             selectedPlatform = $selectedPlatform
             sections = $boundedSections
             screenshots = [object[]] $screenshotRecords
-            platformMismatch = (Get-ReplicationPlatformMismatch `
-                -Title $title `
-                -AffectedPlatforms ([string]$boundedSections['affectedPlatforms']) `
-                -Labels $labels `
-                -SelectedPlatform $selectedPlatform)
+            platformMismatch = @(@(
+                (Get-ReplicationPlatformMismatch `
+                    -Title $title `
+                    -AffectedPlatforms ([string]$boundedSections['affectedPlatforms']) `
+                    -Labels $labels `
+                    -SelectedPlatform $selectedPlatform)
+                (Get-ReplicationRuntimeScopeMismatch -Title $title -Labels $labels)
+            ) | Where-Object { $_ })[0]
         }
         $agentContext = [ordered] @{
             schemaVersion = 1

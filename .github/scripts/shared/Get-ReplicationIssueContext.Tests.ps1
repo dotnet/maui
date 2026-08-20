@@ -997,3 +997,66 @@ exit 1
         $variables | Where-Object { $_ -match '(?i)token' } | Should -BeNullOrEmpty
     }
 }
+
+Describe 'Get-ReplicationRuntimeScopeMismatch' {
+    # Runs 15032131, 15032133 and 15032134 each provisioned a machine, built the
+    # Sandbox and spent several attempts before the agent correctly reported
+    # that a build, packaging or CI-only report is not something a page can
+    # show. The titles said so before any of that work started.
+    BeforeAll {
+        $contextScript = Join-Path (Split-Path -Parent $PSCommandPath) 'Get-ReplicationIssueContext.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $contextScript, [ref]$null, [ref]$null)
+        $fn = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Get-ReplicationRuntimeScopeMismatch' }, $true)
+        if (-not $fn) { throw 'Get-ReplicationRuntimeScopeMismatch not found' }
+        . ([scriptblock]::Create($fn.Extent.Text))
+    }
+
+    It 'refuses reports the Sandbox cannot answer' -ForEach @(
+        @{ Title = 'MSB6003 build failure from MakePri collision' }
+        @{ Title = 'Binding generators easily exceeds MAX_PATH on Windows' }
+        @{ Title = '[macOS CI] Flaky Label tests Pass Locally but Fail in CI' }
+        @{ Title = 'Failed to Make MSIX Package when using NativeAOT' }
+        @{ Title = '.NET MAUI iOS Native Linker Failure on .NET 9 + Xcode 26.5' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
+    }
+
+    It 'keeps reports about what the app does at runtime' -ForEach @(
+        @{ Title = '[Mac] FlowDirection Property of DatePicker Is Not Functioning as Expected' }
+        @{ Title = "TextToSpeech.Default.GetLocalesAsync() doesn't show Lithuanian language on iOS" }
+        @{ Title = '[iOS, Windows] Shell.TabBarBackgroundColor not reset to Null' }
+        @{ Title = "[Windows] The Shell's foreground color is not applied to the ToolbarItems" }
+        @{ Title = 'App crashes on startup after building in Release' }
+        @{ Title = 'Switch iOS Liquid glass rendering issue' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -BeExactly ''
+    }
+
+    It 'says nothing about a report with no title' {
+        Get-ReplicationRuntimeScopeMismatch -Title '' | Should -BeExactly ''
+    }
+
+    It 'reaches the field the pipeline already stops on' {
+        # The pipeline reads context.platformMismatch before it provisions a
+        # device, so a scope refusal has to arrive in that same field rather
+        # than a new one nothing consumes.
+        $fixture = Write-TestIssueJson `
+            -Body "### Description`n`nBuild breaks.`n" `
+            -Number 9571 `
+            -Title 'MSB6003 build failure from MakePri collision' `
+            -Labels @([ordered] @{ name = 't/bug' })
+
+        $output = Join-Path $TestDrive 'scope-mismatch'
+        Invoke-GetReplicationIssueContext `
+            -IssueNumber 9571 `
+            -Platform windows `
+            -OutputDir $output `
+            -IssueJsonPath $fixture | Out-Null
+
+        (Read-TestContext $output).platformMismatch |
+            Should -Match 'already-compiled fixed project'
+    }
+}
