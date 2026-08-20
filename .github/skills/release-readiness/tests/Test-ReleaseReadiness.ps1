@@ -11713,32 +11713,59 @@ Write-Host "`n[Unit] Release-readiness agent action boundary" -ForegroundColor C
 $agentContractPath = Join-Path $PSScriptRoot '../../../agents/release-readiness-agent.agent.md'
 $skillContractPath = Join-Path $PSScriptRoot '../SKILL.md'
 $methodologyContractPath = Join-Path $PSScriptRoot '../references/methodology.md'
+$approvalWorkflowPath = Join-Path $PSScriptRoot '../../../workflows/release-agent-human-approval.yml'
+$approvalPolicyPath = Join-Path $PSScriptRoot '../scripts/Assert-ReleaseAgentHumanApproval.ps1'
 $agentContract = Get-Content -LiteralPath $agentContractPath -Raw
 $skillContract = Get-Content -LiteralPath $skillContractPath -Raw
 $methodologyContract = Get-Content -LiteralPath $methodologyContractPath -Raw
+$approvalWorkflow = Get-Content -LiteralPath $approvalWorkflowPath -Raw
+$approvalPolicy = Get-Content -LiteralPath $approvalPolicyPath -Raw
 
-Assert-Eq -Label "agent: explicit backport action mode is documented" -Expected $true `
-    -Actual ([bool]($agentContract -match 'ACTION BOUNDARY — READ-ONLY BY DEFAULT; EXPLICIT BACKPORTS ONLY'))
+Assert-Eq -Label "agent: explicit human-gated release PR mode is documented" -Expected $true `
+    -Actual ([bool]($agentContract -match 'ACTION BOUNDARY — READ-ONLY BY DEFAULT; EXPLICIT HUMAN-GATED PRS ONLY'))
 Assert-Eq -Label "agent: explicit request authorizes fork push without a redundant confirmation" -Expected $true `
     -Actual ([bool]($agentContract -match 'explicit request to push or open the PR is sufficient push authorization'))
 Assert-Eq -Label "agent: automated action retains main-ancestry gate" -Expected $true `
     -Actual ([bool]($agentContract -match 'merge commit is an ancestor of `origin/main`'))
 Assert-Eq -Label "agent: duplicate backport gate is mandatory" -Expected $true `
-    -Actual ([bool]($agentContract -match 'Do not post a duplicate command or open a duplicate PR'))
+    -Actual ([bool]($agentContract -match 'Check OPEN and MERGED PRs for an equivalent change\. Do not open a duplicate\.'))
 Assert-Eq -Label "agent: manual action pushes only to authenticated user fork" -Expected $true `
-    -Actual ([bool]($agentContract -match 'push only the new backport branch to that fork'))
-Assert-Eq -Label "agent: direct upstream release pushes remain forbidden" -Expected $true `
-    -Actual ([bool]($agentContract -match 'MUST NEVER:[\s\S]*Push directly to any `dotnet/maui` `release/\*`'))
-Assert-Eq -Label "agent: merging backport PRs remains forbidden" -Expected $true `
-    -Actual ([bool]($agentContract -match 'MUST NEVER:[\s\S]*Merge or close a backport PR'))
+    -Actual ([bool]($agentContract -match 'push only the new branch to that fork'))
+Assert-Eq -Label "agent: direct upstream pushes remain forbidden" -Expected $true `
+    -Actual ([bool]($agentContract -match 'MUST NEVER:[\s\S]*Push directly to any `dotnet/maui`'))
+Assert-Eq -Label "agent: approval and merge remain forbidden" -Expected $true `
+    -Actual ([bool]($agentContract -match 'MUST NEVER:[\s\S]*Approve, merge, enable auto-merge'))
+Assert-Eq -Label "agent: general release PR examples extend beyond backports" -Expected $true `
+    -Actual ([bool]($agentContract -match 'servicing-version flips, focused hotfix/version bumps, next-cycle main bumps'))
+Assert-Eq -Label "agent: branch prefix and durable PR marker are mandatory" -Expected $true `
+    -Actual ([bool]($agentContract -match 'release-agent/<descriptive-slug>') -and
+        $agentContract.Contains('<!-- release-readiness-agent: human-approval-required -->'))
+Assert-Eq -Label "agent: human approvals bind to current PR head" -Expected $true `
+    -Actual ([bool]($agentContract -match 'approval.+commit_id.+current PR head SHA'))
 Assert-Eq -Label "skill: deterministic scripts remain report-only" -Expected $true `
     -Actual ([bool]($skillContract -match 'PowerShell entry points are deterministic and \*\*always report-only\*\*'))
-Assert-Eq -Label "skill: explicit interactive backports are not blanket-refused" -Expected $true `
-    -Actual ([bool]($skillContract -match 'Do not refuse an explicitly authorized backport solely because this deterministic skill was used earlier'))
+Assert-Eq -Label "skill: explicit interactive release PRs are not blanket-refused" -Expected $true `
+    -Actual ([bool]($skillContract -match 'Do not refuse an explicitly authorized, PR-representable release change'))
 Assert-Eq -Label "methodology: non-main manual exception requires immutable selected candidate commit" -Expected $true `
     -Actual ([bool]($methodologyContract -match 'named immutable commit that is selected in an inflight candidate'))
 Assert-Eq -Label "methodology: manual push destination is an authenticated fork remote" -Expected $true `
     -Actual ([bool]($methodologyContract -match 'git push -u <authenticated-user-fork-remote> HEAD'))
+Assert-Eq -Label "workflow: trusted context never checks out pull-request code" -Expected $true `
+    -Actual ($approvalWorkflow.Contains('pull_request_target:') -and
+        -not $approvalWorkflow.Contains('actions/checkout'))
+Assert-Eq -Label "workflow: branch prefix and PR marker both activate gate" -Expected $true `
+    -Actual ($approvalWorkflow.Contains("startsWith(github.event.pull_request.head.ref, 'release-agent/')") -and
+        $approvalWorkflow.Contains('<!-- release-readiness-agent: human-approval-required -->'))
+Assert-Eq -Label "workflow: head SHA and write-permission evidence reach policy" -Expected $true `
+    -Actual ($approvalWorkflow.Contains('-PullRequestHeadSha "$PULL_REQUEST_HEAD_SHA"') -and
+        $approvalWorkflow.Contains('collaborators/$login/permission'))
+Assert-Eq -Label "workflow: normal two-approval policy remains enforced" -Expected $true `
+    -Actual $approvalWorkflow.Contains('-RequiredApprovals 2')
+Assert-Eq -Label "policy: latest decision, bot, author, and current-head gates exist" -Expected $true `
+    -Actual ($approvalPolicy.Contains('$latestByReviewer') -and
+        $approvalPolicy.Contains('$knownBotLogins') -and
+        $approvalPolicy.Contains('$PullRequestAuthor') -and
+        $approvalPolicy.Contains('$PullRequestHeadSha'))
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

@@ -263,10 +263,10 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
 
 5. **release-readiness-agent** - Assesses ship-readiness for a .NET MAUI release branch — both **SR** (`release/*-srN`) and **Preview** (`release/*-previewN`)
-   - **Use when**: A release is approaching ship date and needs a synthesized verdict, for a portfolio question across active releases, **or** when the user explicitly asks to execute an SR backport identified by readiness.
-   - **Capabilities**: Resolves and surveys SR/Preview branches, enriches uncertain evidence, presents an overall verdict, and—only after explicit authorization—posts a validated Arcade backport command or creates a fork-based manual backport PR. It never pushes directly to upstream release refs or merges/tags/releases.
-   - **Trigger phrases**: "is SR7 ready to ship", "survey the SR8 branch", "how does net11 preview6 look", "status across all releases", "backport PR #XXXXX to SR8", "post the backport command", "open the manual backport PR"
-   - **Output**: Verdict + classified evidence + next steps; for an authorized backport action, the accepted command/workflow evidence or created PR URL.
+   - **Use when**: A release is approaching ship date and needs a synthesized verdict, for a portfolio question across active releases, **or** when the user explicitly asks to create a reviewable release repository change identified by readiness.
+   - **Capabilities**: Resolves and surveys SR/Preview branches, enriches uncertain evidence, presents an overall verdict, and—only after explicit authorization—creates a fork-based, human-gated PR for a scoped release change or posts a validated Arcade backport command. It never pushes directly to upstream targets, approves, merges, tags, publishes, or triggers release builds.
+   - **Trigger phrases**: "is SR7 ready to ship", "survey the SR8 branch", "how does net11 preview6 look", "status across all releases", "backport PR #XXXXX to SR8", "prepare the hotfix bump", "open the servicing PR"
+   - **Output**: Verdict + classified evidence + next steps; for an authorized action, the accepted backport workflow evidence or created PR URL awaiting actual human approval.
    - **Do NOT use for**: Programmatic / scripted consumers that just need the raw JSON — use the `release-readiness` skill directly. Reviewing a single PR (use **pr**). Running tests manually (use **sandbox-agent**).
 
 ### Reusable Skills
@@ -349,7 +349,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
     - **Trigger phrases**: "release readiness for SRN", "is SR7 ready to ship", "survey the SR branch", "release readiness for preview6", "how does preview6 look (deterministic)", "status across all releases" (reads the live `[Release Readiness]` tracker issues by body marker — no survey re-run needed)
     - **Scripts**: `Get-ReleaseReadiness.ps1` (SR lane), `Get-PreviewReadiness.ps1` (Preview lane), `Find-ReleaseReadinessTrackers.ps1` (tracker discovery)
     - **Output**: JSON + Markdown report, list of source PRs, classification of regression issues (in-sr-active, rejected-from-sr, no-fix-yet, etc.)
-    - **Note**: Deterministic and reproducible — no MCP, LLM judgment, or writes. Use **this skill directly** for scripts, dashboards, cron jobs, or raw output. Use **`release-readiness-agent`** for natural-language synthesis or an explicitly authorized SR backport action.
+    - **Note**: Deterministic and reproducible — no MCP, LLM judgment, or writes. Use **this skill directly** for scripts, dashboards, cron jobs, or raw output. Use **`release-readiness-agent`** for natural-language synthesis or an explicitly authorized, human-gated release PR.
 
 #### Internal Skills (Used by Agents)
 
@@ -371,7 +371,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Is SR7 ready to ship?" → Immediately invoke **release-readiness-agent**
 - User: "How does net11 preview6 look?" → Immediately invoke **release-readiness-agent**
 - User: "Give me a status on releases / what needs attention across releases?" → Immediately invoke **release-readiness-agent** (portfolio mode — it enumerates active releases by reading the `[Release Readiness]` tracker issues; don't ask "which release?")
-- User: "Backport PR #36255 to SR10 / post the command / open the manual backport PR" → Immediately invoke **release-readiness-agent** (explicit action mode; never push directly to the upstream release ref)
+- User: "Backport PR #36255 to SR10 / prepare the hotfix bump / open the servicing PR" → Immediately invoke **release-readiness-agent** (explicit PR mode; fork branch only, actual human approval required)
 - User: "Give me the raw release-readiness JSON for SR8" → Use the **release-readiness** skill directly (no enrichment needed)
 
 **When NOT to delegate**:

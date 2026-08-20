@@ -1,0 +1,110 @@
+name: Release Agent Human Approval
+
+# Configure "Release Agent Human Approval / Require human approval" as a
+# required status check on protected targets to make this gate unbypassable.
+on:
+  # This workflow never checks out or executes pull-request code. Using the
+  # trusted base context prevents a PR from weakening its own approval gate.
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  human-approval:
+    name: Require human approval
+    if: >-
+      startsWith(github.event.pull_request.head.ref, 'release-agent/') ||
+      startsWith(github.event.pull_request.head.ref, 'backport/pr-') ||
+      contains(github.event.pull_request.body || '', '<!-- release-readiness-agent: human-approval-required -->')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read reviews and trusted approval policy
+        id: inputs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          reviews="$RUNNER_TEMP/reviews.json"
+          permissions="$RUNNER_TEMP/reviewer-permissions.json"
+          policy="$RUNNER_TEMP/Assert-ReleaseAgentHumanApproval.ps1"
+
+          gh api --paginate \
+            "repos/$REPOSITORY/pulls/$PULL_REQUEST/reviews?per_page=100" |
+            jq -s 'add // []' > "$reviews"
+
+          printf '{}\n' > "$permissions"
+          jq -r '
+            .[]
+            | select(
+                (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED") and
+                .user.type == "User" and
+                (.author_association == "OWNER" or
+                 .author_association == "MEMBER" or
+                 .author_association == "COLLABORATOR"))
+            | .user.login
+          ' "$reviews" | sort -fu | while IFS= read -r login; do
+            permission="$(gh api \
+              "repos/$REPOSITORY/collaborators/$login/permission" \
+              --jq '.permission')"
+            next_permissions="$RUNNER_TEMP/reviewer-permissions-next.json"
+            jq \
+              --arg login "${login,,}" \
+              --arg permission "$permission" \
+              '. + {($login): $permission}' \
+              "$permissions" > "$next_permissions"
+            mv "$next_permissions" "$permissions"
+          done
+
+          gh api \
+            -H "Accept: application/vnd.github.raw+json" \
+            "repos/$REPOSITORY/contents/.github/skills/release-readiness/scripts/Assert-ReleaseAgentHumanApproval.ps1?ref=$DEFAULT_BRANCH" \
+            > "$policy"
+
+          {
+            echo "reviews=$reviews"
+            echo "permissions=$permissions"
+            echo "policy=$policy"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Require two current human maintainer approvals
+        shell: bash
+        env:
+          REVIEWS_PATH: ${{ steps.inputs.outputs.reviews }}
+          POLICY_PATH: ${{ steps.inputs.outputs.policy }}
+          PULL_REQUEST_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REVIEWER_PERMISSIONS_PATH: ${{ steps.inputs.outputs.permissions }}
+        run: |
+          set -euo pipefail
+
+          result="$RUNNER_TEMP/human-approval.json"
+          set +e
+          pwsh -NoProfile -File "$POLICY_PATH" \
+            -ReviewsJsonPath "$REVIEWS_PATH" \
+            -ReviewerPermissionsJsonPath "$REVIEWER_PERMISSIONS_PATH" \
+            -PullRequestAuthor "$PULL_REQUEST_AUTHOR" \
+            -PullRequestHeadSha "$PULL_REQUEST_HEAD_SHA" \
+            -RequiredApprovals 2 > "$result"
+          status=$?
+          set -e
+
+          cat "$result"
+          {
+            echo "### Release-agent human approval"
+            echo
+            echo "- Required approvals: $(jq -r '.RequiredApprovals' "$result")"
+            echo "- Qualified approvers: $(jq -r 'if (.Approvers | length) == 0 then "_none_" else (.Approvers | join(", ")) end' "$result")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$status"

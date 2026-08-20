@@ -1,6 +1,6 @@
 ---
 name: release-readiness
-description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews — and produces public-safe, copy-ready release handoffs or Loop-page drafts from the resulting evidence. Use for readiness verdicts, release blockers, Preview/SR status, release handoff pages, manual validation instructions, "make the SR10/Preview N release page," or an interactive follow-up that explicitly asks to execute an identified SR backport. Surveys CI and release delta, classifies regressions, and keeps Preview and servicing semantics distinct; deterministic scripts never write.
+description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews — and produces public-safe, copy-ready release handoffs or Loop-page drafts from the resulting evidence. Use for readiness verdicts, release blockers, Preview/SR status, release handoff pages, manual validation instructions, "make the SR10/Preview N release page," or an interactive follow-up that explicitly asks to create a reviewable release PR. Surveys CI and release delta, classifies regressions, and keeps Preview and servicing semantics distinct; deterministic scripts never write.
 metadata:
   author: dotnet-maui
   version: "2.0"
@@ -15,7 +15,7 @@ This skill produces deterministic, evidence-backed answers to **"Is `<release br
 
 The PowerShell entry points are deterministic and **always report-only**: they do not cut branches, post comments, create PRs, merge, tag, trigger builds, or push refs.
 
-The interactive [`release-readiness-agent`](../../agents/release-readiness-agent.agent.md) is read-only by default, but an explicit request to execute a specific SR backport may transition to its constrained action mode. That mode may post the validated Arcade `/backport` command or create a fork-based manual backport PR. It never pushes directly to an upstream release ref, merges the PR, creates release/version commits, tags, or starts release builds. Do not refuse an explicitly authorized backport solely because this deterministic skill was used earlier in the conversation.
+The interactive [`release-readiness-agent`](../../agents/release-readiness-agent.agent.md) is read-only by default, but an explicit request to execute a specific repository change may transition to its constrained PR mode. That mode may create a fork-based PR for reviewable release work or post the validated Arcade `/backport` command. It never pushes directly to an upstream target, approves or merges its PR, tags, publishes, or starts release builds. Do not refuse an explicitly authorized, PR-representable release change solely because this deterministic skill was used earlier in the conversation.
 
 ## When to Use
 
@@ -23,7 +23,7 @@ The interactive [`release-readiness-agent`](../../agents/release-readiness-agent
 - "What's blocking SR9 candidate?" / "What would ship if we cut SR9 today?"
 - "How does net11 preview6 look?" / "Are we ready to cut preview6 from net11.0?"
 - "Are there any regression fixes I should backport to SR8?"
-- "Backport PR #12345 to SR8" / "Post the backport command" / "Open the manual backport PR" (interactive agent action mode)
+- "Backport PR #12345 to SR8" / "Prepare the hotfix bump" / "Open the servicing PR" (interactive agent PR mode)
 - "What's new in SR8 since the last sync?"
 - "Give me a status on all releases" / "release status overview" / "what needs attention across releases" (**portfolio** — read the open `[Release Readiness]` tracker issues first; see [Reading trackers directly](#reading-trackers-directly-ad-hoc-status) below)
 - Scheduled and event-driven release tracking across all active majors
@@ -32,7 +32,7 @@ The interactive [`release-readiness-agent`](../../agents/release-readiness-agent
 
 ## Architecture
 
-This skill has **four** PowerShell entry points, one Preview helper, and one workflow:
+This skill has **five** PowerShell entry points, one Preview helper, and two workflows:
 
 | Script | Branch type | Purpose |
 |--------|-------------|---------|
@@ -41,7 +41,9 @@ This skill has **four** PowerShell entry points, one Preview helper, and one wor
 | [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`), including consumer-installability evidence. |
 | [`PreviewInstallability.ps1`](scripts/PreviewInstallability.ps1) | Preview helper | Resolves the workload-set package, validates branch-pin coherence, probes manifest and representative pack availability, extracts platform prerequisites, and emits an isolated NuGet configuration for local validation. |
 | [`New-ReleaseHandoff.ps1`](scripts/New-ReleaseHandoff.ps1) | both | Projects existing readiness JSON plus separately verified public release evidence into copy-ready Markdown and normalized JSON. Missing facts remain `TBD`; it never selects builds or mutates release state. |
+| [`Assert-ReleaseAgentHumanApproval.ps1`](scripts/Assert-ReleaseAgentHumanApproval.ps1) | interactive PR guard | Fails closed until two distinct non-bot maintainers with write access have approved the current PR head. |
 | [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Three-hourly daytime UTC schedule + event-driven refreshes + manual dispatch + PR validation. Non-PR triggers run `Find-Trackers -AllActiveMajors`, fan out a matrix job per tracker, and write idempotent `[Release Readiness]` issues; PR triggers validate outputs only. |
+| [`release-agent-human-approval.yml`](../../workflows/release-agent-human-approval.yml) | interactive PR guard | Evaluates marked `release-agent/*` and Arcade `backport/pr-*` PRs without executing pull-request code. Configure its `Require human approval` job as a required check on protected targets. |
 
 Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
 
@@ -534,9 +536,10 @@ For SR9 → SR10, the complete source change is:
 
 This is the same one-file, one-line pattern used for SR8 in
 [#35433](https://github.com/dotnet/maui/pull/35433) (`70` → `80`) and SR9 in
-[#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). The
-interactive action mode is limited to SR backports, so it must explain this
-mainline bump precisely and never edit or push `main` itself.
+[#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). On an
+explicit request, the interactive agent may prepare this focused change on a
+fork branch and open a human-gated PR to `main`; it must never push directly to
+`main`, approve the PR, or merge it.
 
 ### Expected ship date
 

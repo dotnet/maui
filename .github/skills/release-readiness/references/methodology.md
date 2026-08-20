@@ -137,9 +137,9 @@ Post this exact comment on the merged source PR:
 
 ### Interactive execution boundary
 
-Readiness remains read-only unless the user explicitly asks to execute a specific backport. After that authorization, the agent may post the Arcade command when every automated-path gate passes or open a fork-based manual backport PR. It must never push directly to a `dotnet/maui` release ref, merge the PR, tag a release, create a version bump, or trigger a release build.
+Readiness remains read-only unless the user explicitly asks to execute a specific repository change. Reviewable release work—including backports, servicing flips, version bumps, issue-template updates, and release-note changes—may be prepared on a fork branch and opened as a human-gated PR. The agent must never push directly to an upstream target, approve or merge its PR, tag or publish a release, mutate external release systems, or trigger a release build.
 
-Before either write path, check for an existing command and any OPEN or MERGED PR targeting the same SR branch. The user's explicit push/open request authorizes the new fork branch and PR; it does not authorize duplicate or broader release operations.
+Every agent-created PR uses a `release-agent/*` branch and carries `<!-- release-readiness-agent: human-approval-required -->`; Arcade-created `backport/pr-*` branches are detected separately. The **Release Agent Human Approval** check requires two approvals on the current PR head SHA from distinct non-bot MAUI maintainers with write access, other than the PR author. Repository administrators must configure `Release Agent Human Approval / Require human approval` as a required check on protected targets; the workflow does not replace the normal review policy. Before writing, check for an equivalent OPEN or MERGED PR. The user's explicit push/open request authorizes the new fork branch and PR; it does not authorize duplicate or broader release operations.
 
 ### Manual PR path
 
@@ -149,7 +149,7 @@ For a normal automation conflict, use the source PR's **merge commit** — not i
 
 ```bash
 git fetch origin
-git switch -c backport/pr-<source-pr>-to-release/<major>.0.1xx-sr<N> \
+git switch -c release-agent/backport-pr-<source-pr>-to-sr<N> \
   origin/release/<major>.0.1xx-sr<N>
 git cherry-pick -x <source-merge-sha>
 # Resolve any conflicts, then test the resolved behavior.

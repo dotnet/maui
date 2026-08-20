@@ -37,6 +37,7 @@ on:
     types: [opened, synchronize]
     paths:
       - '.github/workflows/release-readiness.yml'
+      - '.github/workflows/release-agent-human-approval.yml'
       - '.github/skills/release-readiness/**'
       - '.github/scripts/shared/MauiReleaseVersioning.psm1'
 
@@ -903,6 +904,7 @@ jobs:
         run: |
           set -euo pipefail
           pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseAgentHumanApproval.ps1
           pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseHandoff.ps1
 
       - name: Run Find-Trackers (no issue side-effects)
