@@ -454,6 +454,7 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             "Platform: $($Fixture.Platform)"
             "Filter: $($Fixture.TestFilter)"
             "[$($Fixture.TestType)] $($Fixture.TestName): FAILED ✅ (expected)"
+            '📊 Parsed test results: Passed=0 Failed=1 Total=1 (from 1 result blocks)'
             'VERIFICATION PASSED'
             'REPLICATION TEST VERIFICATION PASSED'
         ) -join "`n"
@@ -481,6 +482,7 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             requestedRunCount = 2
             completedRunCount = 2
             consistentRuns = $true
+            stableFailureMessage = $true
             logFiles = @('verification-console.log', 'verification-console-run-2.log')
         }
         Write-TestJson `
@@ -2496,6 +2498,44 @@ public class Issue1 : ContentPage
             Should -BeFalse
 
         { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*asserts 0 times*'
+    }
+
+    It 'refuses to certify when the console does not prove one test ran' {
+        # The claim used to be hard-coded, so a run that dragged in a
+        # neighbouring test published a pull request saying it had not.
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value ((Get-Content -LiteralPath $path -Raw) -replace 'Total=1', 'Total=2')
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*exactly one test was selected and executed*'
+    }
+
+    It 'refuses to certify when the console omits the parsed result counts' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value (((Get-Content -LiteralPath $path) |
+                    Where-Object { $_ -notmatch 'Parsed test results' }) -join "`n")
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*exactly one test was selected and executed*'
+    }
+
+    It 'refuses to certify when the verifier reports an unstable failure message' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        $result.stableFailureMessage = $false
+        Write-TestJson -Path $resultPath -Value $result
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*failure message was not identical across runs*'
     }
 
     It 'certifies a reproduction whose control passes without the trigger' {

@@ -2669,6 +2669,15 @@ function Assert-ReplicationVerificationEvidence {
 
         # Every independent execution has to carry the same proof, otherwise a
         # candidate could pass by failing once and being ignored afterwards.
+        $exactlyOneTestExecuted = $true
+        # The verifier compares the failure messages across runs and records the
+        # answer. Asserting it here instead meant the pull request claimed a
+        # stable message on the gate's authority while the gate had not looked.
+        $stableProperty = Find-AliasedProperty `
+            -Object $result `
+            -Names @('stableFailureMessage', 'stable_failure_message') `
+            -Context 'Verification result'
+        $stableFailureMessage = $stableProperty.Found -and [bool]$stableProperty.Value
         $consoleNames = @('verification-console.log')
         for ($runIndex = 2; $runIndex -le $completedRunCount; $runIndex++) {
             $consoleNames += "verification-console-run-$runIndex.log"
@@ -2709,6 +2718,22 @@ function Assert-ReplicationVerificationEvidence {
                 )
             ) {
                 throw 'Verification console does not prove the named test failed as expected.'
+            }
+
+            # The pull request claims exactly one test was selected and
+            # executed. That claim was previously hard-coded here, so a run that
+            # dragged in a neighbouring test would still have been published
+            # saying it had not. The verifier prints the counts it parsed out of
+            # the runner's own result file, so read them.
+            $totals = [regex]::Matches($console, '(?i)Parsed test results:.*?\bTotal=(?<total>\d+)')
+            if ($totals.Count -eq 0) {
+                $exactlyOneTestExecuted = $false
+            } else {
+                foreach ($total in $totals) {
+                    if ([int]$total.Groups['total'].Value -ne 1) {
+                        $exactlyOneTestExecuted = $false
+                    }
+                }
             }
         }
 
@@ -2797,8 +2822,8 @@ function Assert-ReplicationVerificationEvidence {
             runtimeAvailable       = $true
             baselineRuns           = $completedRunCount
             baselineFailures       = $completedRunCount
-            stableFailureMessage   = $true
-            exactlyOneTestExecuted = $true
+            stableFailureMessage   = $stableFailureMessage
+            exactlyOneTestExecuted = $exactlyOneTestExecuted
             negativeControlRuns    = $negativeRuns
             negativeControlPasses  = $negativePasses
         } -RequiredRuns $script:VerificationMinimumRunCount
