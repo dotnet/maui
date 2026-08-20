@@ -1025,6 +1025,12 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         @{ Title = '[.NET 11] CLI - Creating new MAUI Blazor Sample App from CLI is .NET 10 by default' }
         @{ Title = '[Android] `dotnet new maui -sc` fails to build: minSdkVersion 21 conflicts' }
         @{ Title = '[dotnet 11 preview7] maui template project fails to build with NativeAot enabled' }
+        # Wave 48 selection surfaced these four; each reached the shortlist
+        # because the words the filter needed were one word further apart.
+        @{ Title = '[macOS]Build may fail if the title contains a slash' }
+        @{ Title = 'MAUI incremental build re-executes Android targets on repeat no-change build' }
+        @{ Title = "XAML Source Generation doesn't check for null references" }
+        @{ Title = "Conflicting values for resource 'Platform/Windows/TabbedPage/TabbedPageStyle.xbf'" }
     ) {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
     }

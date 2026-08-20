@@ -1759,7 +1759,11 @@ function Get-ReplicationRuntimeScopeMismatch {
 
     $signals = @(
         [pscustomobject]@{
-            Pattern = '(?i)\b(?:build|compil\w*|msbuild|restore|nuget|linker|trimming|aot)\s+(?:error|fail\w*|warning|break\w*)\b'
+            # "Build may fail" and "build failing after upgrading" are the same
+            # report as "build failure"; requiring the words to be adjacent let
+            # them through. The gap is bounded and may not cross a sentence.
+            Pattern = '(?i)\b(?:build|compil\w*|msbuild|restore|nuget|linker|trimming|aot)\b' +
+                '[^.]{0,24}?\b(?:error|fail\w*|warning|break\w*|hang\w*)\b'
             Scope   = 'a build failure'
         }
         [pscustomobject]@{
@@ -1793,6 +1797,23 @@ function Get-ReplicationRuntimeScopeMismatch {
                 '|\b(?:project|item|solution|starter)\s+templates?\b|\btemplates?\s+(?:project|pack|creat\w*)\b' +
                 '|\b(?:maui|blazor|net\s*maui)\s+(?:app\s+)?templates?\b'
             Scope   = 'the project the CLI or a template creates'
+        }
+        [pscustomobject]@{
+            # What MSBuild decides to re-run between two builds is invisible to
+            # a running app, so no page can show it.
+            Pattern = '(?i)\bincremental\s+build\b|\bre-?execut\w*\b[^.]{0,30}\btargets?\b|\bno-?change\s+build\b'
+            Scope   = 'what MSBuild re-runs between builds'
+        }
+        [pscustomobject]@{
+            # A generator runs at compile time; the Sandbox is already compiled.
+            Pattern = '(?i)\bsource\s+gener(?:ator|ation)s?\b|\bxaml\s+source\s+gener\w*'
+            Scope   = 'code a generator emits at compile time'
+        }
+        [pscustomobject]@{
+            # An .xbf or duplicated resource entry is decided while the app is
+            # assembled, not while it runs.
+            Pattern = '(?i)\.xbf\b|\bconflicting\s+values\s+for\s+resource\b|\bresource\s+conflict\b'
+            Scope   = 'how compiled resources are merged into the app'
         }
     )
 
