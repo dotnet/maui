@@ -38,6 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _hasCurrentItemUpdateFromCollection;
 		object _currentItemUpdateFromCollection;
 		object _collectionCurrentItemOverride;
+		global::Windows.Foundation.Collections.IObservableVector<object> _collectionCurrentItemOverrideItems;
+		int _collectionCurrentItemOverridePosition = -1;
+		int _collectionCurrentItemOverrideVersion = -1;
+		int _collectionCurrentItemOverrideQueueVersion;
 		IList _collectionItemsSource;
 		bool _isRecentering;
 		double _recenteringHorizontalOffset;
@@ -102,7 +106,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_currentItemUpdateFromScroll = null;
 			_hasCurrentItemUpdateFromCollection = false;
 			_currentItemUpdateFromCollection = null;
-			_collectionCurrentItemOverride = null;
+			ClearCollectionCurrentItemOverride();
 			_collectionItemsSource = null;
 			ResetRecenteringState();
 			_isScrollingForward = false;
@@ -530,7 +534,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (_hasCurrentItemUpdateFromScroll)
 					return;
 
-				_collectionCurrentItemOverride = null;
+				ClearCollectionCurrentItemOverride();
 			}
 
 			if (_hasCurrentItemUpdateFromScroll
@@ -725,7 +729,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (position == Element.Position)
 			{
-				_collectionCurrentItemOverride = null;
+				ClearCollectionCurrentItemOverride();
 				return;
 			}
 
@@ -738,7 +742,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					&& _collectionCurrentItemOverride is not null
 					&& !ReferenceEquals(_collectionCurrentItemOverride, itemsView.CurrentItem))
 				{
-					_collectionCurrentItemOverride = null;
+					ClearCollectionCurrentItemOverride();
 				}
 			}
 			finally
@@ -1091,7 +1095,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				else
 				{
-					_collectionCurrentItemOverride = null;
+					ClearCollectionCurrentItemOverride();
 				}
 			}
 			finally
@@ -1108,9 +1112,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void QueueCollectionCurrentItemOverrideScroll(
 			object currentItem,
 			int position,
-			int collectionChangeVersion,
-			int attemptsRemaining = 2)
+			int collectionChangeVersion)
 		{
+			_collectionCurrentItemOverridePosition = position;
+			_collectionCurrentItemOverrideVersion = collectionChangeVersion;
+
+			var nativeItems = ListViewBase?.Items;
+			if (!ReferenceEquals(_collectionCurrentItemOverrideItems, nativeItems))
+			{
+				StopWaitingForCollectionCurrentItemOverride();
+				_collectionCurrentItemOverrideItems = nativeItems;
+				if (_collectionCurrentItemOverrideItems is not null)
+					_collectionCurrentItemOverrideItems.VectorChanged += OnCollectionCurrentItemOverrideItemsChanged;
+			}
+
+			var queueVersion = ++_collectionCurrentItemOverrideQueueVersion;
 			var dispatcherQueue = ListViewBase?.DispatcherQueue;
 			if (dispatcherQueue is null
 				|| !dispatcherQueue.TryEnqueue(
@@ -1119,13 +1135,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						currentItem,
 						position,
 						collectionChangeVersion,
-						attemptsRemaining)))
+						queueVersion)))
 			{
 				CompleteCollectionCurrentItemOverrideScroll(
 					currentItem,
 					position,
 					collectionChangeVersion,
-					attemptsRemaining: 0);
+					queueVersion);
 			}
 		}
 
@@ -1133,9 +1149,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			object currentItem,
 			int position,
 			int collectionChangeVersion,
-			int attemptsRemaining)
+			int queueVersion)
 		{
-			if (collectionChangeVersion != _collectionChangeVersion
+			if (queueVersion != _collectionCurrentItemOverrideQueueVersion
+				|| collectionChangeVersion != _collectionChangeVersion
 				|| !ReferenceEquals(_collectionCurrentItemOverride, currentItem))
 			{
 				return;
@@ -1146,34 +1163,55 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				|| !ReferenceEquals(itemsView.CurrentItem, currentItem)
 				|| itemsView.Position != position)
 			{
-				_collectionCurrentItemOverride = null;
+				ClearCollectionCurrentItemOverride();
 				return;
 			}
 
 			if (position < 0
+				|| ListViewBase is null
 				|| position >= ItemCount
 				|| GetItem(position) is not ItemTemplateContext itemTemplateContext
 				|| !ReferenceEquals(itemTemplateContext.Item, currentItem)
 				|| position >= ListViewBase.Items.Count
 				|| !ReferenceEquals(ListViewBase.Items[position], itemTemplateContext))
 			{
-				if (attemptsRemaining > 0)
-				{
-					QueueCollectionCurrentItemOverrideScroll(
-						currentItem,
-						position,
-						collectionChangeVersion,
-						attemptsRemaining - 1);
-				}
-				else
-				{
-					_collectionCurrentItemOverride = null;
-				}
-
 				return;
 			}
 
+			StopWaitingForCollectionCurrentItemOverride();
 			itemsView.ScrollTo(position, position: ScrollToPosition.Center, animate: false);
+		}
+
+		void OnCollectionCurrentItemOverrideItemsChanged(
+			global::Windows.Foundation.Collections.IObservableVector<object> sender,
+			global::Windows.Foundation.Collections.IVectorChangedEventArgs args)
+		{
+			if (ReferenceEquals(sender, _collectionCurrentItemOverrideItems)
+				&& _collectionCurrentItemOverride is not null)
+			{
+				QueueCollectionCurrentItemOverrideScroll(
+					_collectionCurrentItemOverride,
+					_collectionCurrentItemOverridePosition,
+					_collectionCurrentItemOverrideVersion);
+			}
+		}
+
+		void ClearCollectionCurrentItemOverride()
+		{
+			_collectionCurrentItemOverride = null;
+			_collectionCurrentItemOverridePosition = -1;
+			_collectionCurrentItemOverrideVersion = -1;
+			_collectionCurrentItemOverrideQueueVersion++;
+			StopWaitingForCollectionCurrentItemOverride();
+		}
+
+		void StopWaitingForCollectionCurrentItemOverride()
+		{
+			if (_collectionCurrentItemOverrideItems is not null)
+			{
+				_collectionCurrentItemOverrideItems.VectorChanged -= OnCollectionCurrentItemOverrideItemsChanged;
+				_collectionCurrentItemOverrideItems = null;
+			}
 		}
 
 		void QueueCollectionChangeReset(int collectionChangeVersion)
