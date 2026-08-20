@@ -522,3 +522,139 @@ Describe 'The harness verdict decides whether a test was actually verified' {
         Test-ReplicationInfrastructureFailure -Content $output | Should -BeFalse
     }
 }
+
+Describe 'Replication negative control' {
+    BeforeAll {
+        $script:ControlScriptPath = Join-Path $PSScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1'
+
+        function New-ReplicationControlStub {
+            <#
+                .SYNOPSIS
+                A verifier that reports the targeted test running and passing.
+            #>
+            param(
+                [Parameter(Mandatory = $true)][string]$Path,
+                [switch]$Infrastructure,
+                [int]$PassUntilRun = 0
+            )
+
+            @"
+param(
+    [string]`$Platform,
+    [string]`$TestType,
+    [string]`$TestFilter,
+    [string]`$TestProject,
+    [string]`$TestProjectPath,
+    [string]`$TestClass,
+    [string]`$TestMethod,
+    [string]`$MachineResultPath,
+    [string]`$DeviceTestScriptPath,
+    [string]`$PRNumber
+)
+Add-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt') -Value 'run' -Encoding utf8NoBOM
+`$run = @(Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count
+if ('$Infrastructure' -eq 'True') {
+    Write-Host 'VERIFY FAILURE ONLY MODE'
+    Write-Host 'error CS0103: The name does not exist in the current context'
+    Write-Host 'VERIFICATION FAILED'
+    exit 1
+}
+if ($PassUntilRun -gt 0 -and `$run -gt $PassUntilRun) {
+    Write-Host 'VERIFY FAILURE ONLY MODE'
+    Write-Host "[`$TestType] `$TestFilter FAILED"
+    Write-Host 'VERIFICATION PASSED'
+    exit 0
+}
+Write-Host 'VERIFY FAILURE ONLY MODE'
+Write-Host 'VERIFICATION FAILED'
+Write-Host '1/1 test(s) PASSED but should FAIL!'
+exit 1
+"@ | Set-Content -LiteralPath $Path -Encoding utf8NoBOM
+        }
+
+        function Invoke-ReplicationControl {
+            param(
+                [Parameter(Mandatory = $true)][string]$Verifier,
+                [Parameter(Mandatory = $true)][string]$Output,
+                [int]$RunCount = 2
+            )
+
+            & pwsh -NoProfile -File $script:ControlScriptPath `
+                -IssueNumber 12345 `
+                -Platform android `
+                -TestType UnitTest `
+                -TestFilter Issue12345 `
+                -TestProject Controls.Core.UnitTests `
+                -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+                -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+                -TestMethod ReproducesIssue12345 `
+                -ExpectedFailureSignature Issue12345 `
+                -VerifierPath $Verifier `
+                -OutputDirectory $Output `
+                -RunCount $RunCount `
+                -ExpectPass *>&1 | Out-String
+        }
+    }
+
+    It 'records a control that passes in every run' {
+        $verifier = Join-Path $TestDrive 'control-pass.ps1'
+        $output = Join-Path $TestDrive 'control-pass-out'
+        New-ReplicationControlStub -Path $verifier
+
+        Invoke-ReplicationControl -Verifier $verifier -Output $output | Out-Null
+        $LASTEXITCODE | Should -Be 0
+
+        $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
+            ConvertFrom-Json
+        $control.runCount | Should -Be 2
+        $control.passCount | Should -Be 2
+        $control.infrastructureFailure | Should -BeFalse
+    }
+
+    It 'never writes the baseline verification result from a control run' {
+        # The control shares the reproduction's output directory shape, so a
+        # control that overwrote verification-result.json would replace the
+        # evidence of the red baseline with evidence of a green one.
+        $verifier = Join-Path $TestDrive 'control-isolated.ps1'
+        $output = Join-Path $TestDrive 'control-isolated-out'
+        New-ReplicationControlStub -Path $verifier
+
+        Invoke-ReplicationControl -Verifier $verifier -Output $output | Out-Null
+
+        Test-Path -LiteralPath (Join-Path $output 'verification-result.json') | Should -BeFalse
+    }
+
+    It 'rejects a control that still fails' {
+        # A control that stays red proves the reproduction does not depend on
+        # the reported trigger, which is the case worth catching.
+        $verifier = Join-Path $TestDrive 'control-red.ps1'
+        $output = Join-Path $TestDrive 'control-red-out'
+        New-ReplicationControlStub -Path $verifier -PassUntilRun 1
+
+        $log = Invoke-ReplicationControl -Verifier $verifier -Output $output
+        $LASTEXITCODE | Should -Not -Be 0
+        $log | Should -Match 'does not depend'
+
+        $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
+            ConvertFrom-Json
+        $control.runCount | Should -Be 2
+        $control.passCount | Should -Be 1
+    }
+
+    It 'refuses to count a build break as a passing control' {
+        # "Did not fail" and "passed" are the same observation to a failure-only
+        # verifier, so a control that never compiled must not certify anything.
+        $verifier = Join-Path $TestDrive 'control-infra.ps1'
+        $output = Join-Path $TestDrive 'control-infra-out'
+        New-ReplicationControlStub -Path $verifier -Infrastructure
+
+        $log = Invoke-ReplicationControl -Verifier $verifier -Output $output
+        $LASTEXITCODE | Should -Not -Be 0
+        $log | Should -Match 'build or infrastructure'
+
+        $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
+            ConvertFrom-Json
+        $control.passCount | Should -Be 0
+        $control.infrastructureFailure | Should -BeTrue
+    }
+}

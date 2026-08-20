@@ -47,11 +47,33 @@ param(
     # Reviewers reject a reproduction proved by a single execution, so the same
     # targeted test is run repeatedly and every run has to fail identically.
     [ValidateRange(1, 3)]
-    [int]$RunCount = 1
+    [int]$RunCount = 1,
+
+    # Runs the same targeted test as a negative control, where the reported
+    # trigger has been removed and the unchanged oracle is therefore expected to
+    # pass. A red test only shows that something is wrong; the control is what
+    # shows the red depends on the reported behaviour rather than on something
+    # incidental to the scenario.
+    [switch]$ExpectPass
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
+
+function Get-ReplicationControlPassMarker {
+    <#
+        .SYNOPSIS
+        The verifier banner that reports a targeted test which ran and passed.
+
+        .DESCRIPTION
+        The failure-only verifier has no success path for a passing test: it
+        reports one as a rejection. A negative control wants exactly that
+        rejection, so the two read the same banner rather than each carrying its
+        own copy, which is how the tier-escalation detector previously drifted
+        away from the producer and stopped firing.
+    #>
+    return 'test(s) PASSED but should FAIL'
+}
 
 function Test-ReplicationExpectedFailureSignature {
     param(
@@ -365,6 +387,13 @@ function Invoke-SingleVerificationRun {
     }
     $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
 
+    # A control run is only informative when the test actually executed and
+    # reported a pass. An empty log, a crashed runner or a build break also
+    # "did not fail", and treating those as a passing control would certify the
+    # very reproductions that never ran.
+    $testPassed = (-not $infrastructureFailure) -and
+        $combined.Contains((Get-ReplicationControlPassMarker), [StringComparison]::Ordinal)
+
     return [pscustomobject]@{
         Run = $Run
         ExitCode = $exitCode
@@ -372,6 +401,7 @@ function Invoke-SingleVerificationRun {
         SignatureMatched = $signatureMatched
         SignatureEquivalent = $signatureEquivalent
         InfrastructureFailure = $infrastructureFailure
+        TestPassed = $testPassed
         ActualFailureMessage = $actualFailureMessage
         Passed = $verifierPassed -and $signatureEquivalent -and -not $infrastructureFailure
         LogFiles = @($runLogs | Sort-Object -Unique)
@@ -448,11 +478,55 @@ for ($run = 1; $run -le $RunCount; $run++) {
     }
     $outcome = Invoke-SingleVerificationRun -Run $run -ConsoleLog $consoleLog
     $runOutcomes.Add($outcome)
-    if (-not $outcome.Passed) {
+    $runSucceeded = if ($ExpectPass) { $outcome.TestPassed } else { $outcome.Passed }
+    if (-not $runSucceeded) {
         # Repeating a run that already failed only wastes device time; the
         # orchestrator repairs the test and verifies again from scratch.
         break
     }
+}
+
+if ($ExpectPass) {
+    # The control shares the reproduction's oracle, so it must never be graded
+    # on the expected failure signature: it is expected to produce no failure at
+    # all. Report only how many control runs completed and how many observed the
+    # test pass, and let the credential-free gate decide what that proves.
+    $controlRuns = $runOutcomes.Count
+    $controlPasses = @($runOutcomes | Where-Object { $_.TestPassed }).Count
+    $controlInfrastructureFailure = @($runOutcomes |
+        Where-Object { $_.InfrastructureFailure }).Count -gt 0
+
+    $controlResult = [ordered]@{
+        schemaVersion = 1
+        issueNumber = $IssueNumber
+        platform = $Platform
+        testType = $TestType
+        testFilter = $TestFilter
+        testClass = $TestClass
+        testMethod = $TestMethod
+        requestedRunCount = $RunCount
+        runCount = $controlRuns
+        passCount = $controlPasses
+        infrastructureFailure = $controlInfrastructureFailure
+        logFiles = @($runOutcomes | ForEach-Object { $_.LogFiles } | Sort-Object -Unique)
+    }
+    $controlPath = Join-Path $OutputDirectory 'negative-control-result.json'
+    $controlResult | ConvertTo-Json -Depth 10 |
+        Set-Content -LiteralPath $controlPath -Encoding utf8NoBOM
+
+    Write-Host ("Negative control observed the test pass in $controlPasses of " +
+        "$controlRuns run(s); requested $RunCount.")
+
+    if ($controlInfrastructureFailure) {
+        throw ('The negative control failed for build or infrastructure reasons, so it cannot ' +
+            'show that removing the reported trigger turns the test green.')
+    }
+    if ($controlRuns -ne $RunCount -or $controlPasses -ne $RunCount) {
+        throw ("The negative control was expected to pass in all $RunCount run(s) but passed in " +
+            "$controlPasses of $controlRuns. The reproduction's failure therefore does not depend " +
+            'on the reported trigger alone.')
+    }
+    return
 }
 
 $firstOutcome = $runOutcomes[0]
