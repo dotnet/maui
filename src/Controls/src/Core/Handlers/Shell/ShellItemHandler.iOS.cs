@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 [nameof(ShellItem.CurrentItem)] = MapCurrentItem,
                 [Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible,
-                ["PrefersHomeIndicatorAutoHidden"] = MapPrefersHomeIndicatorAutoHidden,
-                ["PrefersStatusBarHidden"] = MapPrefersStatusBarHidden,
-                ["PreferredStatusBarUpdateAnimation"] = MapPreferredStatusBarUpdateAnimation,
+                [PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName] = MapPrefersHomeIndicatorAutoHidden,
+                [PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName] = MapPrefersStatusBarHidden,
+                [PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName] = MapPreferredStatusBarUpdateAnimation,
             };
 
         public static CommandMapper<ShellItem, ShellItemHandler> CommandMapper =

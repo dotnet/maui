@@ -437,7 +437,7 @@ internal class FlyoutContainerManager
 
 		if (_clickOffView is not null)
 		{
-			_clickOffView.BackgroundColor = color ?? new UIColor(0, 0, 0, 0);
+			_clickOffView.BackgroundColor = color ?? UIColor.Clear;
 		}
 	}
 
@@ -570,10 +570,12 @@ internal class FlyoutContainerManager
 		}
 
 		// Dim the detail content via the click-off scrim overlay rather than Layer.Opacity — see
-		// the comment above where _dimDetailWithScrim is set for why.
+		// the comment above where _dimDetailWithScrim is set for why. Fall back to the
+		// consumer-supplied _scrimColor (set via SetScrimColor) instead of Clear when not
+		// dimming, so a custom FlyoutBackdrop isn't wiped out by this layout pass.
 		if (_clickOffView is not null)
 		{
-			_clickOffView.BackgroundColor = _dimDetailWithScrim ? ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f) : UIColor.Clear;
+			_clickOffView.BackgroundColor = _dimDetailWithScrim ? ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f) : (_scrimColor ?? UIColor.Clear);
 		}
 
 		// Animate or set detail frame

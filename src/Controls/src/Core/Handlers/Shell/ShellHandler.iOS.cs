@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        IShellItemRenderer IShellContext.CurrentShellItemRenderer => _currentShellItemRenderer!;
+        IShellItemRenderer? IShellContext.CurrentShellItemRenderer => _currentShellItemRenderer;
 
         Shell IShellContext.Shell => VirtualView;
 
