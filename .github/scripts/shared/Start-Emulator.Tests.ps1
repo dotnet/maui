@@ -21,6 +21,14 @@ BeforeAll {
     }
 
     Invoke-Expression $function.Extent.Text
+    $processLookupFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-AndroidEmulatorProcessIds'
+    }, $true)
+    if (-not $processLookupFunction) {
+        throw "Function 'Get-AndroidEmulatorProcessIds' not found"
+    }
+    Invoke-Expression $processLookupFunction.Extent.Text
     $scriptContent = Get-Content -Raw -Path $scriptPath
     $downloadFunction = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -67,6 +75,24 @@ Describe 'Reused Android emulator recovery' {
     It 'uses total unready time instead of an offline-only streak' {
         $scriptContent | Should -Match ([regex]::Escape('-UnreadySeconds $deviceWaited'))
         $scriptContent | Should -Not -Match '\$offlineStreak'
+    }
+}
+
+Describe 'Android emulator process discovery' {
+    It 'does not match the lookup process itself on Unix' -Skip:$IsWindows {
+        $avdName = "NoSuchAvd_$([guid]::NewGuid().ToString('N'))"
+
+        @(Get-AndroidEmulatorProcessIds -AvdName $avdName).Count |
+            Should -Be 0
+    }
+
+    It 'keeps the pgrep pattern out of an ancestor bash command line' {
+        $processLookupFunction.Extent.Text |
+            Should -Match '& pgrep -f \$processPattern'
+        $processLookupFunction.Extent.Text |
+            Should -Not -Match 'bash\s+-c'
+        $scriptContent |
+            Should -Not -Match 'bash\s+-c\s+"pgrep\s+-f'
     }
 }
 

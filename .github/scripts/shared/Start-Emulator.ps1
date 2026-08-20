@@ -55,6 +55,40 @@ function Test-ShouldRestartReusedAndroidEmulator {
         $UnreadySeconds -ge $RecoveryThresholdSeconds
 }
 
+function Get-AndroidEmulatorProcessIds {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName
+    )
+
+    if ($IsWindows) {
+        return @(
+            Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.CommandLine -match [regex]::Escape($AvdName)
+                } |
+                Select-Object -ExpandProperty Id -Unique
+        )
+    }
+
+    $processIds = [System.Collections.Generic.HashSet[int]]::new()
+    $escapedAvdName = [regex]::Escape($AvdName)
+    foreach ($processName in @('qemu', 'emulator')) {
+        $processPattern = "$processName.*$escapedAvdName"
+        foreach ($candidate in @(& pgrep -f $processPattern 2>$null)) {
+            $processId = 0
+            if ([int]::TryParse(
+                    ([string]$candidate).Trim(),
+                    [ref]$processId
+                ) -and $processId -gt 0) {
+                [void]$processIds.Add($processId)
+            }
+        }
+    }
+
+    return @($processIds | Sort-Object)
+}
+
 Write-Step "Detecting and starting $Platform device..."
 
 if ($Platform -eq "android") {
@@ -213,12 +247,9 @@ if ($Platform -eq "android") {
             # and failing the gate with a false INCONCLUSIVE. If a process for this
             # AVD already exists, reuse it and skip straight to the wait loop.
             $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
-            if ($IsWindows) {
-                $existingAvdProc = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
-                    Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
-            } else {
-                $existingAvdProc = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
-            }
+            $existingAvdProc = @(
+                Get-AndroidEmulatorProcessIds -AvdName $selectedAvd
+            ) -join "`n"
             $reuseExistingEmulator = -not [string]::IsNullOrWhiteSpace($existingAvdProc)
 
             if ($reuseExistingEmulator) {
@@ -258,12 +289,9 @@ if ($Platform -eq "android") {
             Start-Sleep -Seconds 5
             
             # Check if emulator process is running
-            if ($IsWindows) {
-                $emulatorProcs = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue | 
-                    Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
-            } else {
-                $emulatorProcs = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
-            }
+            $emulatorProcs = @(
+                Get-AndroidEmulatorProcessIds -AvdName $selectedAvd
+            ) -join "`n"
             if ([string]::IsNullOrWhiteSpace($emulatorProcs)) {
                 Write-Error "Emulator process did not start. Checking log..."
                 if (Test-Path $emulatorLog) {
@@ -322,12 +350,14 @@ if ($Platform -eq "android") {
                     -RecoveryAlreadyAttempted $wedgedRecoveryDone `
                     -UnreadySeconds $deviceWaited) {
                     Write-Info "Reused emulator '$selectedAvd' remained unavailable for ${deviceWaited}s — killing it by PID and cold-booting a fresh instance (one-time recovery)."
-                    if ($IsWindows) {
-                        $wedgedPids = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
-                            Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id
-                        foreach ($wp in $wedgedPids) { Stop-Process -Id $wp -Force -ErrorAction SilentlyContinue }
-                    } else {
-                        bash -c "pgrep -f 'qemu.*$selectedAvd' | xargs -r kill -9; pgrep -f 'emulator.*$selectedAvd' | xargs -r kill -9; true" 2>&1 | Out-Null
+                    $wedgedPids = @(
+                        Get-AndroidEmulatorProcessIds -AvdName $selectedAvd
+                    )
+                    foreach ($processId in $wedgedPids) {
+                        Stop-Process `
+                            -Id $processId `
+                            -Force `
+                            -ErrorAction SilentlyContinue
                     }
                     Start-Sleep -Seconds 5
                     adb kill-server 2>&1 | Out-Null
