@@ -3461,6 +3461,33 @@ Describe 'merged revert discovery from complete history' {
         $result[1].verifiedRevertTargets | Should -Be @(200)
     }
 
+    It 'discovers a revert from immutable commit proof without editable body text' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Fix Picker.ItemsSource leak'
+        $revert = New-LeakPr `
+            -Number 200 `
+            -Title 'Back out cleanup' `
+            -Body ''
+
+        $result = @(
+            Get-RelevantMergedLeakReverts `
+                -Repository 'dotnet/maui' `
+                -TargetPullRequests @($fix) `
+                -MergedPullRequests @($fix, $revert) `
+                -PullRequestCommitHistories @(
+                    New-LeakCommitHistory `
+                        -PullRequest $revert `
+                        -Messages @(
+                            "Revert cleanup`n`nThis reverts commit $($fix.mergeCommitOid)."
+                        )
+                )
+        )
+
+        $result.number | Should -Be @(200)
+        $result[0].verifiedRevertTargets | Should -Be @(100)
+    }
+
     It 'keeps more than 100 seeds on one shared history scan' {
         $targets = @(1000..1100 | ForEach-Object {
                 New-LeakPr `
@@ -6267,7 +6294,6 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
         }
 
         It 'fails closed on malformed or ambiguous expected-prefix open titles' -ForEach @(
-            @{ ExistingTitle = '[leak-scan]' }
             @{ ExistingTitle = '[leak-scan] Investigate GradientBrush.GradientStops' }
             @{ ExistingTitle = '[leak-scan]x GradientBrush.GradientStops' }
             @{ ExistingTitle = '[LEAK-SCAN] GradientBrush.GradientStops' }
@@ -6289,6 +6315,24 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                     -Repository 'dotnet/maui'
             } | Should -Throw '*malformed*leak-scan*'
             $global:mockHunterIssueQueryCount | Should -Be 1
+        }
+
+        It 'ignores a malformed non-target open scan issue' {
+            $global:mockHunterOpenIssues = @(
+                [pscustomobject]@{
+                    number = 704
+                    title = '[leak-scan] Button leaks on navigation'
+                    body = 'Legacy scanner issue without a canonical API identity'
+                    url = 'https://github.com/dotnet/maui/issues/704'
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockHunterIssueQueryCount | Should -Be 2
         }
 
         It 'ignores unrelated shared-label near-prefix open issues' {

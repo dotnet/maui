@@ -176,6 +176,33 @@ function Get-ValidatedExistingLeakApi {
     return $api
 }
 
+function Test-LeakTitleMayReferenceRequestedApi {
+    param(
+        [AllowEmptyString()][string]$Title,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$RequestedApis
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Title)) {
+        return $false
+    }
+
+    $identifierChain =
+        '[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+'
+    foreach ($match in [regex]::Matches($Title, $identifierChain)) {
+        foreach ($requestedApi in $RequestedApis) {
+            if (Test-LeakApiIdentityMatch `
+                    -Left $match.Value `
+                    -Right $requestedApi) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
 function Get-RegularJsonFileInfo {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -646,6 +673,34 @@ function Get-LeakRelevantIssueConsistencyState {
                 -Object $issue `
                 -Name 'title' `
                 -Context "Open agentic-workflows issue #$number"
+            if ($title -isnot [string]) {
+                throw "Open agentic-workflows issue #$number has malformed title metadata."
+            }
+
+            $api = Get-CanonicalExistingLeakApi -Title $title
+            if ([string]::IsNullOrWhiteSpace($api)) {
+                if (Test-LeakTitleMayReferenceRequestedApi `
+                        -Title $title `
+                        -RequestedApis $RequestedApis) {
+                    [void](Get-ValidatedExistingLeakApi `
+                            -Title $title `
+                            -Kind Scan `
+                            -Context "Open issue #$number")
+                }
+                continue
+            }
+
+            $matchesRequestedApi = @($RequestedApis | Where-Object {
+                    Test-LeakApiIdentityMatch -Left $_ -Right $api
+                }).Count -gt 0
+            if (-not $matchesRequestedApi) {
+                continue
+            }
+
+            $api = Get-ValidatedExistingLeakApi `
+                -Title $title `
+                -Kind Scan `
+                -Context "Open issue #$number"
             $body = Get-LeakRequiredPropertyValue `
                 -Object $issue `
                 -Name 'body' `
@@ -666,27 +721,11 @@ function Get-LeakRelevantIssueConsistencyState {
             $normalizedUpdatedAt = ConvertTo-LeakUtcTimestamp `
                 -Value $updatedAt `
                 -Context "Open agentic-workflows issue #$number"
-            if ($title -isnot [string] -or
-                ($null -ne $body -and $body -isnot [string]) -or
+            if (($null -ne $body -and $body -isnot [string]) -or
                 $state -isnot [string] -or $state -cne 'OPEN' -or
                 $url -isnot [string] -or
                 [string]::IsNullOrWhiteSpace($url)) {
                 throw "Open agentic-workflows issue #$number has malformed consistency metadata."
-            }
-
-            $api = Get-ValidatedExistingLeakApi `
-                -Title $title `
-                -Kind Scan `
-                -Context "Open issue #$number"
-            if ([string]::IsNullOrWhiteSpace($api)) {
-                continue
-            }
-
-            $matchesRequestedApi = @($RequestedApis | Where-Object {
-                    Test-LeakApiIdentityMatch -Left $_ -Right $api
-                }).Count -gt 0
-            if (-not $matchesRequestedApi) {
-                continue
             }
 
             [pscustomobject][ordered]@{
@@ -2292,6 +2331,7 @@ function Get-RelevantMergedLeakReverts {
     )
 
     $historyByNumber = @{}
+    $mergedAtByNumber = @{}
     $numbersByMergeCommit = @{}
     foreach ($row in $MergedPullRequests) {
         $number = 0
@@ -2322,6 +2362,13 @@ function Get-RelevantMergedLeakReverts {
             $null -eq $mergedAt) {
             throw "Complete merged pull-request history PR #$number is not authoritatively merged."
         }
+        $normalizedMergedAt = ConvertTo-LeakUtcTimestamp `
+            -Value $mergedAt `
+            -Context "Complete merged pull-request history PR #$number mergedAt"
+        $mergedAtByNumber[$number] = [DateTimeOffset]::Parse(
+            $normalizedMergedAt,
+            [Globalization.CultureInfo]::InvariantCulture
+        )
         $mergeCommitOid = Get-NormalizedLeakMergeCommitOid `
             -PullRequest $row `
             -Context 'Complete merged pull-request history'
@@ -2347,11 +2394,12 @@ function Get-RelevantMergedLeakReverts {
         $numbersByMergeCommit[$commitIdentity].Add($number)
     }
 
-    $queue = [System.Collections.Generic.Queue[object]]::new()
     $branches = [System.Collections.Generic.HashSet[string]]::new(
         [StringComparer]::Ordinal
     )
     $branchByNumber = @{}
+    $targetNumbers = [System.Collections.Generic.HashSet[int]]::new()
+    $earliestTargetMergeByBranch = @{}
     foreach ($target in $TargetPullRequests) {
         $number = 0
         if (-not [int]::TryParse([string]$target.number, [ref]$number) -or $number -le 0) {
@@ -2383,70 +2431,36 @@ function Get-RelevantMergedLeakReverts {
             throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget while loading seeds."
         }
         $branchByNumber[$number] = $base
+        [void]$targetNumbers.Add($number)
         [void]$branches.Add($base)
-        $queue.Enqueue([pscustomobject]@{
-                number = $number
-                baseRefName = $base
-            })
-    }
-
-    $bodyRevertersByTarget = @{}
-    foreach ($row in $historyByNumber.Values) {
-        $base = [string]$row.baseRefName
-        if (-not $branches.Contains($base)) {
-            continue
-        }
-        foreach ($targetNumber in @(
-                Get-LeakRevertTargets `
-                    -Body ([string]$row.body) `
-                    -Repository $Repository
-            )) {
-            if (-not $bodyRevertersByTarget.ContainsKey($targetNumber)) {
-                $bodyRevertersByTarget[$targetNumber] =
-                    [System.Collections.Generic.List[object]]::new()
-            }
-            $bodyRevertersByTarget[$targetNumber].Add($row)
+        $targetMergedAt = $mergedAtByNumber[$number]
+        if (-not $earliestTargetMergeByBranch.ContainsKey($base) -or
+            $targetMergedAt -lt $earliestTargetMergeByBranch[$base]) {
+            $earliestTargetMergeByBranch[$base] = $targetMergedAt
         }
     }
 
-    $traversed = [System.Collections.Generic.HashSet[int]]::new()
-    $candidateReverters = @{}
-    while ($queue.Count -gt 0) {
-        $target = $queue.Dequeue()
-        $targetNumber = [int]$target.number
-        if (-not $traversed.Add($targetNumber) -or
-            -not $bodyRevertersByTarget.ContainsKey($targetNumber)) {
-            continue
-        }
-        foreach ($row in $bodyRevertersByTarget[$targetNumber]) {
-            if ([string]$row.baseRefName -cne [string]$target.baseRefName) {
-                continue
-            }
-
-            $reverter = [int]$row.number
-            if (-not $candidateReverters.ContainsKey($reverter)) {
-                if ($candidateReverters.Count -ge $MaximumDiscoveredPullRequests) {
-                    throw "Relevant merged-revert discovery exceeded the $MaximumDiscoveredPullRequests-PR safety bound."
-                }
-                if (-not $branchByNumber.ContainsKey($reverter)) {
-                    if ($branchByNumber.Count -ge $MaximumTraversalPullRequests) {
-                        throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget."
-                    }
-                    $branchByNumber[$reverter] = [string]$row.baseRefName
-                } elseif ([string]$branchByNumber[$reverter] -cne
-                    [string]$row.baseRefName) {
-                    throw "Discovered merged-revert PR #$reverter has conflicting base branches."
-                }
-                $candidateReverters[$reverter] = $row
-                $queue.Enqueue([pscustomobject]@{
-                        number = $reverter
-                        baseRefName = [string]$row.baseRefName
-                    })
-            }
-        }
+    if ($targetNumbers.Count -eq 0) {
+        return @()
     }
 
-    if ($candidateReverters.Count -eq 0) {
+    $commitScanCandidates = @(
+        $historyByNumber.Values |
+            Where-Object {
+                $number = [int]$_.number
+                $base = [string]$_.baseRefName
+                -not $targetNumbers.Contains($number) -and
+                $branches.Contains($base) -and
+                $mergedAtByNumber[$number] -ge
+                    $earliestTargetMergeByBranch[$base]
+            } |
+            Sort-Object number
+    )
+    if (($commitScanCandidates.Count + $targetNumbers.Count) -gt
+        $MaximumTraversalPullRequests) {
+        throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget while preparing immutable commit-proof discovery."
+    }
+    if ($commitScanCandidates.Count -eq 0) {
         return @()
     }
 
@@ -2454,7 +2468,7 @@ function Get-RelevantMergedLeakReverts {
         @(
             Get-CompleteLeakPullRequestCommitHistories `
                 -Repository $Repository `
-                -PullRequests @($candidateReverters.Values) `
+                -PullRequests $commitScanCandidates `
                 -PageSize $CommitPageSize `
                 -BatchSize $CommitBatchSize `
                 -MaximumPageQueries $MaximumCommitPageQueries `
@@ -2464,6 +2478,10 @@ function Get-RelevantMergedLeakReverts {
         @($PullRequestCommitHistories)
     }
 
+    $commitScanCandidateByNumber = @{}
+    foreach ($candidate in $commitScanCandidates) {
+        $commitScanCandidateByNumber[[int]$candidate.number] = $candidate
+    }
     $commitHistoryByNumber = @{}
     foreach ($commitHistory in $commitHistories) {
         $number = 0
@@ -2471,7 +2489,7 @@ function Get-RelevantMergedLeakReverts {
             $number -le 0) {
             throw "Invalid merged reverter commit-history PR number '$($commitHistory.number)'."
         }
-        if (-not $candidateReverters.ContainsKey($number)) {
+        if (-not $commitScanCandidateByNumber.ContainsKey($number)) {
             throw "Merged reverter commit history unexpectedly contains non-candidate PR #$number."
         }
         if ($commitHistoryByNumber.ContainsKey($number)) {
@@ -2492,14 +2510,15 @@ function Get-RelevantMergedLeakReverts {
         $base = Get-NormalizedLeakBaseRefName `
             -PullRequest $commitHistory `
             -Context 'Merged reverter commit history'
-        if ($base -cne [string]$candidateReverters[$number].baseRefName) {
+        if ($base -cne
+            [string]$commitScanCandidateByNumber[$number].baseRefName) {
             throw "Merged reverter commit history PR #$number has an unexpected base branch."
         }
         $mergeCommitOid = Get-NormalizedLeakMergeCommitOid `
             -PullRequest $commitHistory `
             -Context 'Merged reverter commit history'
         if ($mergeCommitOid -cne
-            [string]$candidateReverters[$number].mergeCommitOid) {
+            [string]$commitScanCandidateByNumber[$number].mergeCommitOid) {
             throw "Merged reverter commit history PR #$number has an unexpected mergeCommitOid."
         }
         $commits = @(
@@ -2539,44 +2558,42 @@ function Get-RelevantMergedLeakReverts {
             ProofOids = @($proofOids)
         }
     }
-    if ($commitHistoryByNumber.Count -ne $candidateReverters.Count) {
-        $missing = @($candidateReverters.Keys |
+    if ($null -eq $PullRequestCommitHistories -and
+        $commitHistoryByNumber.Count -ne $commitScanCandidateByNumber.Count) {
+        $missing = @($commitScanCandidateByNumber.Keys |
             Where-Object { -not $commitHistoryByNumber.ContainsKey([int]$_) } |
             Sort-Object)
-        throw "Merged reverter commit history is incomplete; missing candidate PRs: $($missing -join ', ')."
+        throw "Merged reverter commit history is incomplete; missing scanned PRs: $($missing -join ', ')."
     }
 
     $verifiedRevertersByTarget = @{}
-    foreach ($row in $candidateReverters.Values) {
-        $number = [int]$row.number
-        $verifiedTargets = [System.Collections.Generic.List[int]]::new()
-        foreach ($targetNumber in @(
-                Get-LeakRevertTargets `
-                    -Body ([string]$row.body) `
-                    -Repository $Repository
-            )) {
-            if (-not $historyByNumber.ContainsKey($targetNumber)) {
-                continue
+    foreach ($number in $commitHistoryByNumber.Keys) {
+        $row = $commitScanCandidateByNumber[[int]$number]
+        $proofCounts = @{}
+        foreach ($proofOid in $commitHistoryByNumber[$number].ProofOids) {
+            if (-not $proofCounts.ContainsKey($proofOid)) {
+                $proofCounts[$proofOid] = 0
             }
-            $target = $historyByNumber[$targetNumber]
-            if ([string]$target.baseRefName -cne [string]$row.baseRefName) {
-                continue
-            }
+            $proofCounts[$proofOid]++
+        }
 
-            $targetMergeCommitOid = [string]$target.mergeCommitOid
-            $commitIdentity =
-                "$($target.baseRefName)`0$targetMergeCommitOid"
-            if ($numbersByMergeCommit[$commitIdentity].Count -ne 1) {
+        $verifiedTargets = [System.Collections.Generic.HashSet[int]]::new()
+        foreach ($proofOid in $proofCounts.Keys) {
+            if ($proofCounts[$proofOid] -ne 1) {
                 continue
             }
-            $proofCount = @(
-                $commitHistoryByNumber[$number].ProofOids |
-                    Where-Object { $_ -ceq $targetMergeCommitOid }
-            ).Count
-            if ($proofCount -ne 1) {
+            $commitIdentity = "$($row.baseRefName)`0$proofOid"
+            if (-not $numbersByMergeCommit.ContainsKey($commitIdentity) -or
+                $numbersByMergeCommit[$commitIdentity].Count -ne 1) {
                 continue
             }
-            $verifiedTargets.Add($targetNumber)
+            $targetNumber = [int]$numbersByMergeCommit[$commitIdentity][0]
+            if ($targetNumber -eq [int]$number -or
+                $mergedAtByNumber[$targetNumber] -gt
+                    $mergedAtByNumber[[int]$number]) {
+                continue
+            }
+            [void]$verifiedTargets.Add($targetNumber)
         }
 
         if ($verifiedTargets.Count -eq 0) {
@@ -2592,7 +2609,7 @@ function Get-RelevantMergedLeakReverts {
             mergedAt = $row.mergedAt
             mergeCommitOid = [string]$row.mergeCommitOid
             url = [string]$row.url
-            verifiedRevertTargets = @($verifiedTargets | Sort-Object -Unique)
+            verifiedRevertTargets = @($verifiedTargets | Sort-Object)
         }
         foreach ($targetNumber in $verified.verifiedRevertTargets) {
             if (-not $verifiedRevertersByTarget.ContainsKey($targetNumber)) {
@@ -2625,6 +2642,21 @@ function Get-RelevantMergedLeakReverts {
             }
             $reverter = [int]$row.number
             if (-not $verifiedDiscovered.ContainsKey($reverter)) {
+                if ($verifiedDiscovered.Count -ge
+                    $MaximumDiscoveredPullRequests) {
+                    throw "Relevant merged-revert discovery exceeded the $MaximumDiscoveredPullRequests-PR safety bound."
+                }
+                if (-not $branchByNumber.ContainsKey($reverter)) {
+                    if ($branchByNumber.Count -ge
+                        $MaximumTraversalPullRequests) {
+                        throw "Relevant merged-revert discovery exhausted the $MaximumTraversalPullRequests-PR aggregate traversal safety budget."
+                    }
+                    $branchByNumber[$reverter] =
+                        [string]$row.baseRefName
+                } elseif ([string]$branchByNumber[$reverter] -cne
+                    [string]$row.baseRefName) {
+                    throw "Discovered merged-revert PR #$reverter has conflicting base branches."
+                }
                 $verifiedDiscovered[$reverter] = $row
                 $verifiedQueue.Enqueue([pscustomobject]@{
                         number = $reverter
