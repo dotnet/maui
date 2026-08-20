@@ -354,9 +354,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// The path size should consider the space taken by the border (top and bottom, left and right)
-			var pathSize = new Rect(0, 0, width - strokeThickness * 2, height - strokeThickness * 2);
+			var pathSize = new Rect(
+				0,
+				0,
+				Math.Max(0, width - strokeThickness * 2),
+				Math.Max(0, height - strokeThickness * 2));
 
-			if (clipGeometry is IRoundRectangle roundedRectangle)
+			if (pathSize.Width == 0 || pathSize.Height == 0)
+			{
+				clipPath = new PathF();
+				IsInnerPath = clipGeometry is IRoundRectangle;
+			}
+			else if (clipGeometry is IRoundRectangle roundedRectangle)
 			{
 				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
 				IsInnerPath = true;

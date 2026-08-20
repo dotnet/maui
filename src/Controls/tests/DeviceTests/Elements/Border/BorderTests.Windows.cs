@@ -523,6 +523,82 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Border clips all content when stroke consumes available size - Issue 17523")]
+		public async Task BorderClipsAllContentWhenStrokeConsumesAvailableSize()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<BoxView, BoxViewHandler>();
+				});
+			});
+
+			var shape = new RecordingShape();
+			var border = new Border
+			{
+				Content = new BoxView
+				{
+					Color = Colors.Red,
+					HeightRequest = 40,
+					WidthRequest = 40,
+				},
+				Stroke = Colors.Blue,
+				StrokeShape = shape,
+				StrokeThickness = 8,
+				HeightRequest = 10,
+				WidthRequest = 10,
+			};
+
+			await AttachAndRun(border, async (BorderHandler handler) =>
+			{
+				var clipHost = Assert.IsType<ContentPanelClipHost>(handler.PlatformView.ContentClipHost);
+				Assert.NotNull(ElementCompositionPreview.GetElementVisual(clipHost).Clip);
+
+				var bitmap = await handler.PlatformView.ToBitmap(MauiContext);
+				Assert.Equal(0, CountRedPixels(bitmap));
+				Assert.DoesNotContain(shape.Bounds, bounds => bounds.Width < 0 || bounds.Height < 0);
+			});
+		}
+
+		[Fact(DisplayName = "Rounded Border clips all content when stroke consumes available size - Issue 17523")]
+		public async Task RoundedBorderClipsAllContentWhenStrokeConsumesAvailableSize()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<BoxView, BoxViewHandler>();
+				});
+			});
+
+			var border = new Border
+			{
+				Content = new BoxView
+				{
+					Color = Colors.Red,
+					HeightRequest = 40,
+					WidthRequest = 40,
+				},
+				Stroke = Colors.Blue,
+				StrokeShape = new RoundRectangle { CornerRadius = 5 },
+				StrokeThickness = 8,
+				HeightRequest = 10,
+				WidthRequest = 10,
+			};
+
+			await AttachAndRun(border, async (BorderHandler handler) =>
+			{
+				var clipHost = Assert.IsType<ContentPanelClipHost>(handler.PlatformView.ContentClipHost);
+				Assert.NotNull(ElementCompositionPreview.GetElementVisual(clipHost).Clip);
+
+				var bitmap = await handler.PlatformView.ToBitmap(MauiContext);
+				Assert.Equal(0, CountRedPixels(bitmap));
+			});
+		}
+
 		[Fact(DisplayName = "Border returns its cross-platform arranged size - Issue 17523")]
 		public async Task BorderReturnsItsCrossPlatformArrangedSize()
 		{
@@ -588,6 +664,33 @@ namespace Microsoft.Maui.DeviceTests
 				platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, 100, 100));
 				platformView.Measure(availableSize);
 				platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, 100, 100));
+			});
+		}
+
+		[Fact(DisplayName = "Derived Border handler sees content during disconnect - Issue 17523")]
+		public async Task DerivedBorderHandlerSeesContentDuringDisconnect()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, DisconnectTrackingBorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var border = new Border { Content = new Label { Text = "Content" } };
+			var handler = await CreateHandlerAsync<DisconnectTrackingBorderHandler>(border);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.True(handler.HadContentDuringDisconnect);
+				Assert.Null(platformView.Content);
+				Assert.Null(platformView.CrossPlatformLayout);
 			});
 		}
 
@@ -860,6 +963,30 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			protected override ContentPanel CreatePlatformView() =>
 				new() { CrossPlatformLayout = VirtualView };
+		}
+
+		sealed class DisconnectTrackingBorderHandler : BorderHandler
+		{
+			public bool HadContentDuringDisconnect { get; private set; }
+
+			protected override void DisconnectHandler(ContentPanel platformView)
+			{
+				HadContentDuringDisconnect = platformView.Content is not null;
+				base.DisconnectHandler(platformView);
+			}
+		}
+
+		sealed class RecordingShape : IShape
+		{
+			public System.Collections.Generic.List<Rect> Bounds { get; } = [];
+
+			public PathF PathForBounds(Rect bounds)
+			{
+				Bounds.Add(bounds);
+				var path = new PathF();
+				path.AppendRectangle(bounds);
+				return path;
+			}
 		}
 
 		sealed class TestContentPanelBorderHandler : BorderHandler

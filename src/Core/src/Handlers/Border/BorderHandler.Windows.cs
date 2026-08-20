@@ -64,8 +64,14 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override void OnDisconnectHandler(Microsoft.UI.Xaml.FrameworkElement platformView)
 		{
-			((ContentPanel)platformView).DisconnectContent();
-			base.OnDisconnectHandler(platformView);
+			try
+			{
+				base.OnDisconnectHandler(platformView);
+			}
+			finally
+			{
+				((ContentPanel)platformView).DisconnectContent();
+			}
 		}
 
 	}
