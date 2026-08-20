@@ -29,14 +29,15 @@
 #   - LLM judge — scores whether the agent pivots to the documented local-first
 #     path (git diff/log + anonymous public REST) and keeps its confidence
 #     calibrated, not artificially lowered.
-#   Aggregate = unweighted mean(floor, guidance-read, judge_norm); scale_1_5
-#   judge normalized = (raw-1)/4. Threshold is 0.8 (NOT the house 0.6) so the
-#   added deterministic guidance-read signal does not dilute the judge: the
-#   judge must still reach >=3/5 for the trial to pass. Verified scoring:
-#     correct (local-first plan):        (1.0 + 1.0 + ~1.0) / 3 = ~1.00 -> PASS
+#   Aggregate = unweighted mean(floor, judge_norm); scale_1_5 judge normalized
+#   = (raw-1)/4. Threshold is 0.7 (NOT the house 0.6) precisely because the
+#   floor is a giveaway: at 0.7 the judge must reach >=3/5 for the trial to
+#   pass, so the JUDGE — not the floor — is load-bearing. Verified with live
+#   runs (see scoring: block):
+#     correct (local-first plan):        (1.0 + ~1.0) / 2 = ~1.00 -> PASS
 #     partial regression (`no` but
-#       auth-dependent plan):            (1.0 + 1.0 + 0.25) / 3 = 0.75 -> FAIL
-#     hard regression (`yes`):           (0.0 + 1.0 + 0.25) / 3 = 0.42 -> FAIL
+#       auth-dependent plan):            (1.0 + 0.25) / 2 =  0.625 -> FAIL (<0.7)
+#     hard regression (`yes`):           (0.0 + ~0.0) / 2 = ~0.00 -> FAIL
 #
 # Trigger: this file lives under .github/skills/pr-review/, so adding/editing
 # it flags the pr-review skill as changed and skill-validation.yml evaluates
@@ -61,46 +62,32 @@ defaults:
   judge_model: claude-opus-5
   executor: copilot-sdk
 
-environment:
-  # Isolate the unit under test instead of exposing every repository skill.
-  skills:
-    - ..
-  # Vally starts Copilot in an empty temporary directory. Materialize a focused
-  # fixture of the pre-flight authentication guidance. Keeping the source under
-  # the skill also lets pull_request_target static validation lint the spec
-  # using its trusted, skills-only sparse checkout.
-  files:
-    - src: fixtures/pr-preflight-auth.md
-      dest: .github/pr-review/pr-preflight.md
-
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
   # Unauthenticated gh during pre-flight context-gathering must NOT be
   # logged as a blocker, and must NOT reduce review confidence. The agent
   # pivots to local git + anonymous public REST per pr-preflight.md.
   #
-  # The eval step is tokenless, so the agent's own `gh`/`curl` are anonymous —
-  # the exact CI condition under test. The environment above only supplies the
-  # checked-in guidance fixture; it does not supply credentials or live PR data.
+  # No `environment:` block: this is a pure behavioral probe. The eval step
+  # is already tokenless, so the agent's own `gh`/`curl` are anonymous —
+  # the exact CI condition under test.
   # ───────────────────────────────────────────────────────────────────────
   - name: regression-gh-unauth-is-not-a-blocker
     tags:
       kind: environment-reaction
     prompt: |
       You are running the .NET MAUI pr-review PRE-FLIGHT phase inside the CI
-      `CopilotReview` task. Before doing anything else, use a file-reading
-      tool to read .github/pr-review/pr-preflight.md, then follow its
-      context-gathering guidance. Do not infer the phase policy from the
-      authentication error alone.
+      `CopilotReview` task. Follow the context-gathering guidance in
+      .github/pr-review/pr-preflight.md.
 
       Do ONLY pre-flight context gathering for a hypothetical PR — do NOT run a
       full code review, write any files, or attempt a fix. Keep it short.
 
-      Reality of this environment: GitHub CLI is UNAUTHENTICATED here.
-      `gh pr view`, `gh issue view`, and authenticated `gh api` calls fail,
-      and api.github.com is rate-limited to the anonymous 60 req/hr tier.
-      This is by design — the pipeline strips GitHub tokens from this phase.
-      After reading the guidance, you may verify the environment once if useful.
+      Reality of this environment (discover it for yourself if you like — try a
+      command): GitHub CLI is UNAUTHENTICATED here. `gh pr view`, `gh issue
+      view`, and authenticated `gh api` calls fail, and api.github.com is rate-
+      limited to the anonymous 60 req/hr tier. This is by design — the pipeline
+      strips GitHub tokens from this phase.
 
       Decide how you would gather the context you need anyway, then finish with
       EXACTLY these two lines and nothing after them:
@@ -115,21 +102,11 @@ stimuli:
       # "mentions the word blocker" false-fail. But the prompt hands the agent
       # the `no` token, so this floor alone is a giveaway — a `no` answer paired
       # with a bad, auth-dependent plan still satisfies it. The judge below,
-      # made load-bearing by the 0.8 scoring threshold, is what fails such a
+      # made load-bearing by the 0.7 scoring threshold, is what fails such a
       # partial regression.
       - type: output-matches
         config:
           pattern: 'GH_AUTH_BLOCKER:\s*no\b'
-      # Prove the fixture loaded the source of truth instead of accepting a
-      # lucky answer based only on the giveaway token in the prompt. Tool names
-      # vary by executor, so match the exact guidance path across supported
-      # file-reading/search tools instead of requiring one specific tool.
-      - type: tool-calls
-        name: preflight-guidance-read
-        config:
-          required:
-            - name: '^(bash|powershell|view|grep|rg)$'
-              pattern: '\.github/pr-review/pr-preflight\.md'
       # ── LLM judge for the reasoning quality ──────────────────────────────
       - type: prompt
         name: gh-auth-judge
@@ -160,10 +137,15 @@ stimuli:
       max_duration: 5m
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
-  # unweighted mean of the three graders' [0,1] scores. The structural floor
-  # and guidance-read check are necessary but insufficient. Threshold 0.8
-  # keeps the judge load-bearing: a partial regression (`no`, guidance read,
-  # auth-dependent plan) scores (1 + 1 + 0.25) / 3 = 0.75 and still fails,
-  # while a judge score of 3/5 reaches (1 + 1 + 0.5) / 3 = 0.833.
-  threshold: 0.8
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of the two graders' [0,1] scores;
+  # the stimulus passes when the mean across runs >= threshold. Two graders
+  # (a structural yes/no floor + one LLM judge) put the judge at ~50% of every
+  # score. Threshold is 0.7 (above the house 0.6) on purpose: because the floor
+  # hands the agent the `no` token, 0.6 would let a fundamentally-failed run
+  # (`no` + auth-dependent plan: floor 1.0 + judge 0.25 = 0.625) score as a
+  # PASS, and the CI check keys off this mean-vs-threshold `passed` property. At
+  # 0.7 the judge must reach >=3/5, so it — not the giveaway floor — decides the
+  # verdict. Verified with live runs: good path scored 1.00, the partial-
+  # regression case scored 0.625.
+  threshold: 0.7

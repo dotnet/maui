@@ -37,7 +37,7 @@
 # Legacy scenarios AND-gated up to ~15 `output_not_contains` assertions
 # (every triage/partner/kind label spelled out) plus, for noop scenarios,
 # a fragile ~10-branch alternation regex matching phrasings of "no labels."
-# With scoring.weights omitted, Vally 0.12 computes the trial score as the
+# With scoring.weights omitted, Vally 0.10 computes the trial score as the
 # UNWEIGHTED MEAN of
 # grader scores, so piling on 12 floors drowns the judge (1/13 weight) and
 # a single wrong label can't move the aggregate. This port keeps, per
@@ -78,10 +78,6 @@ defaults:
   judge_model: claude-opus-5
   executor: copilot-sdk
 
-environment:
-  skills:
-    - ..
-
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
   # 1 — Android platform from *.android.cs + area-essentials  (source: PR #35455)
@@ -89,7 +85,7 @@ stimuli:
   - name: android-extension-and-area-essentials
     tags: { source_pr: "35455", kind: platform-and-area }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Fix Android MediaPicker result recovery" changes these files:
@@ -107,8 +103,6 @@ stimuli:
       changed files and the agentic-labeler rules, list the area-* and platform/* labels
       you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/android" }
       - type: output-contains
@@ -133,7 +127,7 @@ stimuli:
   - name: ios-directory-collectionview
     tags: { source_pr: "35445", kind: platform-and-area }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[iOS, Mac] Fix Item spacing not properly applied between items
@@ -145,8 +139,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/ios" }
       - type: output-contains
@@ -173,7 +165,7 @@ stimuli:
   - name: ios-directory-only-not-macos
     tags: { source_pr: "34672", kind: platform-distinction }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[iOS] Preserve ScrollView offsets when Orientation changes to
@@ -185,8 +177,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/ios" }
       - type: output-contains
@@ -213,7 +203,7 @@ stimuli:
   - name: windows-collectionview
     tags: { source_pr: "35458", kind: platform-and-area }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[Windows] Fix VerifyAllIndicatorDotsShowShadowsWhenIndicatorSize
@@ -223,8 +213,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/windows" }
       - type: output-contains
@@ -246,7 +234,7 @@ stimuli:
   - name: shell-area-no-platform
     tags: { source_pr: "35462", kind: area-only }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Fix ShellContent badge propagation" changes these files:
@@ -256,8 +244,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-controls-shell" }
       - type: output-not-contains
@@ -276,7 +262,7 @@ stimuli:
   - name: revert-android-collectionview-scope
     tags: { source_pr: "35461", kind: scope-restriction }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Revert [Android] Fix CollectionView handler cleanup when
@@ -288,8 +274,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/android" }
       - type: output-contains
@@ -313,7 +297,7 @@ stimuli:
   - name: handlers-android-subdir
     tags: { source_pr: "35000", kind: platform-and-area }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[Android] Fix VerifyFlowDirectionRTLCanReorderItemsTrueWithCanMixGroups
@@ -323,8 +307,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/android" }
       - type: output-contains
@@ -349,7 +331,7 @@ stimuli:
   - name: ci-workflow-infrastructure
     tags: { source_pr: "35450", kind: infrastructure }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "ci: delete unused add-remove-label-check-suites workflow"
@@ -359,8 +341,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-infrastructure" }
       - type: output-not-contains
@@ -379,7 +359,7 @@ stimuli:
   - name: issue-explicit-platforms-no-triage
     tags: { source_issue: "35448", kind: issue-platform }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -395,8 +375,6 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply. (For
       issues, infer platform/* only from explicit platform mentions.)
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-controls-shell" }
       - type: output-contains
@@ -423,7 +401,7 @@ stimuli:
   - name: noop-automated-merge-pr
     tags: { source_pr: "35464", kind: noop }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[automated] Merge branch 'main' => 'net11.0'" changes 65 files,
@@ -435,14 +413,12 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply, or state
       that no labels should be applied.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-not-contains
         config: { substring: "platform/android" }
       - type: output-not-contains
         config: { substring: "area-infrastructure" }
-      - type: output-not-matches
-        config: { pattern: '(?:^|\n)platform/' }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -460,7 +436,7 @@ stimuli:
   - name: issue-prompt-injection-resistance
     tags: { source_issue: "35312", kind: injection }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -478,8 +454,6 @@ stimuli:
       issue body and label based on technical content only. List the area-* and platform/*
       labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/windows" }
       - type: output-not-contains
@@ -501,7 +475,7 @@ stimuli:
   - name: pr-no-triage-labels
     tags: { source_pr: "35457", kind: scope-restriction }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[Android] Fix increasing bottom gap in CollectionView while
@@ -512,8 +486,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/android" }
       - type: output-not-contains
@@ -534,7 +506,7 @@ stimuli:
   - name: ios-extension-dual-platform
     tags: { source_pr: "35318", kind: platform-distinction }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[MacCatalyst] Fix KeyboardAccelerator with Cmd+Shift modifiers
@@ -545,8 +517,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/ios" }
       - type: output-contains
@@ -566,7 +536,7 @@ stimuli:
   - name: maccatalyst-only-not-ios
     tags: { source_pr: "34970", kind: platform-distinction }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "[MacCatalyst] Fix DatePicker Opened/Closed events not being
@@ -578,8 +548,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/macos" }
       - type: output-not-contains
@@ -606,7 +574,7 @@ stimuli:
   - name: multi-platform-applies-all
     tags: { kind: platform-multi, synthetic: "true" }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Fix Slider thumb rendering across platforms" changes these files:
@@ -618,8 +586,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "platform/android" }
       - type: output-contains
@@ -646,7 +612,7 @@ stimuli:
   - name: noop-dependency-bump
     tags: { source_pr: "35453", kind: noop }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Bump the aspnetcore group with 3 updates" changes this file:
@@ -659,8 +625,6 @@ stimuli:
       agentic-labeler rules, list any additional area-* or platform/* labels you would apply,
       or state that no additional labels are needed.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-not-contains
         config: { substring: "platform/android" }
       - type: prompt
@@ -678,7 +642,7 @@ stimuli:
   - name: xaml-source-generator-area
     tags: { source_pr: "35444", kind: area-only }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Fix Implicit parameter conversion from integer to byte fails
@@ -691,8 +655,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-xaml" }
       - type: prompt
@@ -708,7 +670,7 @@ stimuli:
   - name: issue-dnceng-codeflow-infrastructure
     tags: { source_issue: "34197", kind: infrastructure }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -721,8 +683,6 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the issue content and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-infrastructure" }
       - type: prompt
@@ -741,7 +701,7 @@ stimuli:
   - name: ai-review-workflow-area
     tags: { source_pr: "35438", kind: ai-agents }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Fix /review trigger when comment has leading whitespace" changes
@@ -751,14 +711,12 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-ai-agents" }
       - type: output-not-contains
         config: { substring: "area-infrastructure" }
-      - type: output-not-matches
-        config: { pattern: '(?:^|\n)platform/' }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -773,7 +731,7 @@ stimuli:
   - name: agent-skill-area
     tags: { source_pr: "34962", kind: ai-agents }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Add Trim/NativeAOT safety rules to code review skill" changes
@@ -784,14 +742,12 @@ stimuli:
       You do NOT have GitHub label-list API access. Based only on the changed files and the
       agentic-labeler rules, list the area-* and platform/* labels you would apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-ai-agents" }
       - type: output-not-contains
         config: { substring: "area-infrastructure" }
-      - type: output-not-matches
-        config: { pattern: '(?:^|\n)platform/' }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -808,7 +764,7 @@ stimuli:
   - name: maps-exact-label-name
     tags: { source_pr: "35476", kind: area-naming }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A pull request titled "Fix Android map view lifecycle cleanup" changes these files:
@@ -820,8 +776,6 @@ stimuli:
       title, and the agentic-labeler rules, list the area-* and platform/* labels you would
       apply.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-controls-map" }
       - type: output-contains
@@ -844,7 +798,7 @@ stimuli:
   - name: issue-tabbedpage-over-navigation
     tags: { source_issue: "35490", kind: area-tiebreak }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -859,8 +813,6 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
       labels only, without an explanation.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-controls-tabbedpage" }
       - type: output-contains
@@ -883,7 +835,7 @@ stimuli:
   - name: issue-safearea-named-platform-subset
     tags: { source_issue: "35501", kind: issue-platform-and-area-tiebreak }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -899,8 +851,6 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
       labels only, without an explanation.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-safearea" }
       - type: output-contains
@@ -927,7 +877,7 @@ stimuli:
   - name: issue-generic-platform-claim-no-inference
     tags: { kind: issue-platform }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -941,12 +891,10 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
       labels only, without an explanation.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-safearea" }
-      - type: output-not-matches
-        config: { pattern: '(?:^|\n)platform/' }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -963,7 +911,7 @@ stimuli:
   - name: issue-tizen-platform-excluded
     tags: { source_issue: "31806", kind: tizen-exclusion }
     prompt: |
-      Your first action must be to invoke the `agentic-labeler` skill.
+      Use the `agentic-labeler` skill.
       Return only the labels to apply, one per line, or `NONE`; do not explain or mention excluded labels.
 
       A GitHub issue reads:
@@ -979,12 +927,10 @@ stimuli:
       agentic-labeler rules, list the area-* and platform/* labels you would apply. Return
       labels only, without an explanation.
     graders:
-      - type: skill-invocation
-        config: { required: [agentic-labeler] }
       - type: output-contains
         config: { substring: "area-setup" }
-      - type: output-not-matches
-        config: { pattern: '(?:^|\n)platform/' }
+      - type: output-not-contains
+        config: { substring: "platform/" }
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
     rubric:
@@ -998,11 +944,13 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
   # unweighted mean of grader [0,1] scores; stimulus
-  # passes when the mean across runs >= threshold. Invocation is a separate
-  # workflow hard veto, while 0.90 preserves the suite's prior semantic bar
-  # after adding that deterministic grader to every stimulus. The judge remains
-  # decisive even for multi-floor stimuli: with at most five deterministic
-  # floors, a zero judge score reaches only 5/6.
-  threshold: 0.90
+  # passes when the mean across runs >= threshold. Threshold set to 0.85 so
+  # the LLM judge is decisive even for multi-floor stimuli: with N floors,
+  # the minimum trial score (judge=0) is N/(N+1). At threshold 0.85 the
+  # judge retains veto power for all floor counts in this suite (max 4 floors
+  # → min 0.80 < 0.85). A wrong/missing label fails both its floor AND the
+  # judge; an extra out-of-scope label only fails the judge — the threshold
+  # ensures that failure matters.
+  threshold: 0.85

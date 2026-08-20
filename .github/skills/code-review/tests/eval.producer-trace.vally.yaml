@@ -29,7 +29,9 @@ stimuli:
       source_pr: "36185"
       kind: producer-trace
     prompt: >-
-      Use the `code-review` skill to review a candidate patch before merge. The review input is materialized
+      /code-review
+
+      Review a candidate patch before merge. The review input is materialized
       under `review-input`: inspect `review-input/change.diff` first, then read
       supporting source snapshots under `review-input/src` as needed.
 
@@ -39,8 +41,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format. Mark each finding with a severity
-      emoji and end with NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Findings,
+      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark each
+      finding with a severity emoji and end with NEEDS_CHANGES,
+      NEEDS_DISCUSSION, or LGTM.
     environment:
       # Isolate the unit under test. Without this, --skill-dir loads every
       # repository skill and Copilot may answer without activating code-review.
@@ -54,8 +58,6 @@ stimuli:
         - src: fixtures/producer-trace/src/eng/devices/run-windows-devicetests.cmd
           dest: review-input/src/eng/devices/run-windows-devicetests.cmd
     graders:
-      - type: skill-invocation
-        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: 'External Output Contract[\s\S]*(NEEDS_CHANGES|NEEDS_DISCUSSION)'
@@ -100,8 +102,11 @@ stimuli:
         - code-review
 
 scoring:
-  # All four signals are load-bearing. Invocation failures are also a workflow
-  # hard veto. Preserve the original semantic bar after adding invocation:
-  # (1 + 1 + 1 + 0.55) / 4 = 0.8875. The judge's own 0.6 threshold controls its
+  # All three signals are load-bearing. With an unweighted mean and threshold
+  # 0.85, missing the contract + non-LGTM verdict or any required source read
+  # caps the maximum possible score at 2/3, so no holistic judge score can mask
+  # it.
+  # Across runs, the suite also needs a judge average >= 0.55:
+  # (1 + 1 + 0.55) / 3 = 0.85. The judge's own 0.6 threshold controls its
   # per-trial pass label; Vally computes the suite gate from aggregate scores.
-  threshold: 0.8875
+  threshold: 0.85

@@ -47,7 +47,7 @@ function New-DeviceWorkItemFailureRecords {
 
     $consoleIncomplete = ($null -ne $Console) -and [bool]$Console.isIncomplete
     $consoleCrash = ($null -ne $Console) -and [bool]$Console.isCrash
-    $incomplete = $consoleIncomplete -or $consoleCrash -or $HasDump -or (-not $AnyResultFile) -or $ResultReadIncomplete
+    $incomplete = $consoleIncomplete -or $consoleCrash -or $HasDump -or (-not $AnyResultFile) -or $ResultReadIncomplete -or ($namedFailures -eq 0)
 
     if ($incomplete) {
         $records.Add([ordered]@{

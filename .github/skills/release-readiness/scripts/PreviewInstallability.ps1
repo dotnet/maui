@@ -97,10 +97,6 @@ function ConvertFrom-PreviewPackageSourceSpec {
     & $add 'dotnet-workloads' "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-workloads/nuget/v3/index.json" 'workload-set' $false
     & $add "dotnet$Major-workloads" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$Major-workloads/nuget/v3/index.json" 'platform' $false
     & $add "dotnet$Major" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$Major/nuget/v3/index.json" 'product' $false
-    if ($Major -gt 8) {
-        $compatMajor = $Major - 1
-        & $add "dotnet$compatMajor" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$compatMajor/nuget/v3/index.json" 'compatibility' $false
-    }
     & $add "dotnet$Major-transport" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$Major-transport/nuget/v3/index.json" 'transport' $false
     & $add 'dotnet-public' "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" 'shared' $false
     & $add 'nuget.org' 'https://api.nuget.org/v3/index.json' 'shared' $false
@@ -507,17 +503,17 @@ function Get-PreviewSourceOrder {
 
     $id = $PackageId.ToLowerInvariant()
     $roleOrder = if ($id -match '^microsoft\.net\.workloads\.') {
-        @('workload-set', 'additional', 'product', 'compatibility', 'platform', 'transport', 'shared')
+        @('workload-set', 'additional', 'product', 'platform', 'transport', 'shared')
     } elseif ($id -match '^microsoft\.net\.sdk\.android\.manifest-' -or $id -match '^microsoft\.android\.') {
-        @('platform', 'additional', 'product', 'compatibility', 'transport', 'shared')
+        @('platform', 'additional', 'product', 'transport', 'shared')
     } elseif ($id -match '^microsoft\.netcore\.app\.runtime\.' -or $id -match '^microsoft\.net\.runtime\.') {
-        @('additional', 'transport', 'product', 'compatibility', 'platform', 'shared')
+        @('additional', 'transport', 'product', 'platform', 'shared')
     } elseif ($id -match '^microsoft\.(ios|maccatalyst|macos|tvos)\.') {
-        @('product', 'compatibility', 'additional', 'platform', 'transport', 'shared')
+        @('product', 'additional', 'platform', 'transport', 'shared')
     } elseif ($id -match '^microsoft\.net\..+\.manifest-' -or $id -match '^microsoft\.maui\.') {
-        @('product', 'compatibility', 'additional', 'platform', 'transport', 'shared')
+        @('product', 'additional', 'platform', 'transport', 'shared')
     } else {
-        @('additional', 'product', 'compatibility', 'platform', 'transport', 'shared')
+        @('additional', 'product', 'platform', 'transport', 'shared')
     }
 
     return @(
@@ -789,10 +785,7 @@ function Get-PreviewRepresentativePackRequests {
 }
 
 function ConvertTo-IsolatedNuGetConfig {
-    param(
-        [Parameter(Mandatory)][array]$Sources,
-        [AllowNull()][string]$WorkloadSetSourceName
-    )
+    param([Parameter(Mandatory)][array]$Sources)
 
     $builder = [Text.StringBuilder]::new()
     [void]$builder.AppendLine('<?xml version="1.0" encoding="utf-8"?>')
@@ -805,20 +798,6 @@ function ConvertTo-IsolatedNuGetConfig {
         [void]$builder.AppendLine("    <add key=`"$name`" value=`"$uri`" protocolVersion=`"3`" />")
     }
     [void]$builder.AppendLine('  </packageSources>')
-    [void]$builder.AppendLine('  <packageSourceMapping>')
-    foreach ($source in @($Sources | Sort-Object -Property Name -Unique)) {
-        $name = [Security.SecurityElement]::Escape([string]$source.Name)
-        [void]$builder.AppendLine("    <packageSource key=`"$name`">")
-        if ([string]$source.Role -eq 'workload-set' -or
-            [string]$source.Name -eq $WorkloadSetSourceName) {
-            [void]$builder.AppendLine('      <package pattern="Microsoft.NET.Workloads.*" />')
-        }
-        if ([string]$source.Role -ne 'workload-set') {
-            [void]$builder.AppendLine('      <package pattern="*" />')
-        }
-        [void]$builder.AppendLine('    </packageSource>')
-    }
-    [void]$builder.AppendLine('  </packageSourceMapping>')
     [void]$builder.AppendLine('</configuration>')
     return $builder.ToString()
 }
@@ -889,7 +868,6 @@ function ConvertTo-PublicInstallabilityResult {
     }
 
     $copy.NuGetConfig = $null
-    $copy.PublicEvidence = $true
     # A release-owner-confirmed build or a candidate learned from an authenticated/internal
     # source is sensitive. Keep public candidates visible, but withhold sensitive top-level
     # and nested versions while retaining match/mismatch/missing status as coherence evidence.
@@ -1297,7 +1275,7 @@ function Get-PreviewConsumerInstallability {
     foreach ($location in @($allLocations | Where-Object { $_.Status -eq 'found' })) {
         [void]$requiredSources.Add($location.ResolvedSource.Source)
     }
-    foreach ($baseline in @($sources | Where-Object { -not $_.IsAdditional })) {
+    foreach ($baseline in @($sources | Where-Object { $_.Role -eq 'shared' })) {
         [void]$requiredSources.Add($baseline)
     }
     if ($status -ne 'installable') {
@@ -1307,8 +1285,7 @@ function Get-PreviewConsumerInstallability {
     }
     $requiredSources = @($requiredSources | Sort-Object -Property Name -Unique)
 
-    $config = ConvertTo-IsolatedNuGetConfig -Sources $requiredSources `
-        -WorkloadSetSourceName ([string]$package.Source.Source.Name)
+    $config = ConvertTo-IsolatedNuGetConfig -Sources $requiredSources
     $command = "dotnet workload install maui --version $selectedCliVersion --configfile ./preview-nuget.config"
     $summary = switch ($status) {
         'installable' { 'The confirmed workload set matches branch pins and its required manifest and representative pack assets are resolvable.' }

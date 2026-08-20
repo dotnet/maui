@@ -101,7 +101,7 @@ stimuli:
       max_turns: 10
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
   # unweighted mean. Threshold 1.0 means the single stimulus must score a perfect 1.0
   # to "pass" — i.e. the agent's output matched the anonymous rate limit
   # (CORE_LIMIT:60). The hermeticity-gate job reads the verdict directly:

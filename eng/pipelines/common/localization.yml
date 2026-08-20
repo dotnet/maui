@@ -1,5 +1,5 @@
 parameters:
-  CeapexServiceConnection: dnceng-onelocbuild-ceapex
+  CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
 stages:
@@ -14,14 +14,9 @@ stages:
         pool:  $(1ESPTPool)
 
         variables:
-          - group: OneLocBuildVariables # Contains the GithubPat
+          - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
 
         steps:
-          - template: /eng/common/templates/steps/get-federated-access-token.yml
-            parameters:
-              federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
-              outputVariableName: CeapexEntraToken
-
           - task: OneLocBuild@2
             displayName: 'Localization Build'
             env:
@@ -30,7 +25,7 @@ stages:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
-              patVariable: $(CeapexEntraToken)
+              patVariable: ${{ parameters.CeapexPat }}
               isCreatePrSelected: true                            # Create the PR with the Localization changes if there are any
               isShouldReusePrSelected: true                       # Make sure to not keep creating new PRs if one is already open
               isAutoCompletePrSelected: false                     # Allow us to review the created PR instead of auto-merging it

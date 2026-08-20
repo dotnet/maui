@@ -1,6 +1,6 @@
 # Release Readiness — Methodology
 
-This document captures the deterministic algorithms used by the SR and Preview readiness engines, including **the eight gotchas** discovered through real release analysis and the Preview **consumer-installability gate**.
+This document captures the deterministic algorithms used by the SR and Preview readiness engines, including **the seven gotchas** discovered through real SR analysis and the Preview **consumer-installability gate**.
 
 ## Gotcha #1: Cherry-Pick Number Swap
 
@@ -309,84 +309,6 @@ catches it.
 
 The report derives and surfaces the feed URL but remains report-only — it does
 not create channels, promote builds, or edit the Assessment.
-
-## Gotcha #8: Internal Official-Build Evidence Must Stay Local
-
-### The trap
-
-The public tracker can inspect public GitHub and BAR state, but the signed
-`dotnet-maui` official pipeline lives in Azure DevOps org `dnceng`, project
-`internal`, definition `1095`. GitHub-hosted public automation has no credential
-for it. Querying that endpoint unconditionally causes slow 401/403 failures,
-turns every public tracker into `UNKNOWN`, and risks copying private build URLs
-or identifiers into a public issue.
-
-Checking only one manually supplied build ID is also insufficient. A net11
-preview decision has two independent official-build surfaces:
-
-- `refs/heads/net11.0`, the survey/inflight source.
-- The specific `refs/heads/release/11.0.1xx-previewN` branch, when it exists.
-
-A green release-branch build does not compensate for a red inflight build, and
-vice versa. A green build for an older SHA also does not prove the current branch
-HEAD.
-
-### The algorithm
-
-`InternalOfficialBuild.ps1` keeps fetch, parsing/classification, aggregation, and
-formatting separate:
-
-1. Before any Azure invocation, skip when `GITHUB_ACTIONS=true` or the major is
-   not net11.
-2. Build a unique ref list containing `net11.0` and, when it exists, the
-   evaluated release branch.
-3. Query a bounded, server-ordered window of definition-1095 builds independently
-   for each ref. Prefer the newest build at exact branch HEAD, then any candidate
-   proven current by trigger-path analysis after skipping only newer candidates
-   proven stale. Buffer indeterminate candidates rather than blindly bypassing or
-   immediately selecting them: preserve `unknown` when possible outcomes disagree,
-   but keep a later proven-current failure `red` when every buffered candidate is
-   also a completed failure/cancellation. If the bounded window ends with only
-   same-branch failed/canceled indeterminate candidates, preserve a blocking
-   `failed-or-stale` outcome because every possible currency result blocks. Keep
-   that classification distinct from definite `red`: local guidance first restores
-   currency evidence, then chooses failure repair or a current-HEAD rerun. Use
-   `queueTime` with build ID as the deterministic ordering. This prevents both false
-   readiness upgrades and loss of certain blocking evidence.
-4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
-5. Classify deterministically:
-   - current completed/succeeded → `green`
-   - current completed/partially succeeded → `partial-success`
-   - current failed or canceled → `red`
-   - queued, not started, running, postponed, or canceling → `in-progress`
-   - build SHA behind the newest trigger-eligible commit → `stale`
-   - no build, malformed response, missing SHA/HEAD, or unknown result → `unknown`
-   - GitHub Actions or unavailable internal authentication → `skipped`
-6. Bound each Azure CLI, GitHub, and local Git query; a timeout becomes `unknown`
-   evidence instead of hanging the local run. Local Git runs from the explicit
-   repository root and performs a bounded fetch of only the evaluated branch
-   when either compared commit object is absent.
-7. When the build is an ancestor of branch HEAD, inspect the exact paths touched by
-   every first-parent commit against `eng/pipelines/ci-official.yml`, including
-   each merge result relative to its first parent; excluded-only and successful
-   no-op advances remain current. Do not trim path text, traverse merged
-   second-parent history, or use an aggregate tip-to-tip diff because whitespace
-   is valid in Git paths, merged history may already be built, and a later revert
-   can hide an earlier trigger-eligible change. A conclusive non-ancestor result
-   means the build is stale; only missing or failed Git evidence remains unknown.
-8. Fold local classifications into readiness:
-   `red`/`stale`/`failed-or-stale` → `BLOCKED`,
-   `in-progress`/`partial-success` → `WATCH`, `unknown` → `UNKNOWN`; `skipped`
-   is fail-open. For `failed-or-stale`, restore build-currency evidence before
-   choosing between repairing a current failed build and running the official
-   build at current HEAD.
-9. In public-safe mode, omit the internal branch records and local table
-   completely. Never serialize build IDs, numbers, SHAs, URLs, raw Azure errors,
-   account details, or internal branch evidence into public tracker output.
-
-The helper accepts build and branch-HEAD fetchers, so all classification and
-redaction behavior is covered with offline fixtures. Tests must never depend on
-live dnceng/internal access.
 
 ## Revert Detection
 
