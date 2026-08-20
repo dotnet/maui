@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 	{
 		const int BackgroundLayerZIndex = int.MinValue;
 		Canvas? _backgroundLayer;
+		RectangleGeometry? _boundsClip;
 		public bool ClipsToBounds { get; set; }
 
 		// Creates a MauiLayoutAutomationPeer so a Layout's AutomationId is visible to UI Automation
@@ -35,9 +36,17 @@ namespace Microsoft.Maui.Platform
 				_backgroundLayer.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 			}
 
-			if (!(Parent is ContentPanel contentPanel && contentPanel.BorderStroke?.Shape is not null))
+			// Border shape clipping is applied to ContentPanel's stationary clip host.
+			// This rectangular clip only represents the Layout's own IsClippedToBounds setting.
+			if (ClipsToBounds)
 			{
-				Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
+				_boundsClip ??= new RectangleGeometry();
+				_boundsClip.Rect = new WRect(0, 0, finalSize.Width, finalSize.Height);
+				Clip = _boundsClip;
+			}
+			else
+			{
+				Clip = null;
 			}
 
 			return actual;
