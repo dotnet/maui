@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Entry, EntryHandler>();
-					handlers.AddHandler<ScrollView, ScrollViewHandler>();
+					handlers.AddHandler<ScrollView, TrackingTabStopScrollViewHandler>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 				});
 			});
@@ -50,9 +50,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
 			{
-				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
-				await WaitAssert(() => !platformScrollView.IsTabStop);
+				var handler = (TrackingTabStopScrollViewHandler)scrollView.Handler;
+				var platformScrollView = handler.PlatformView;
+				await handler.TemporaryTabStopObserved.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				Assert.False(platformScrollView.IsTabStop);
 
 				Assert.False(entry.IsFocused);
 				Assert.False(focused);
@@ -123,12 +125,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = (BoundTabStopScrollViewHandler)scrollView.Handler;
 				var platformScrollView = handler.PlatformView;
-				await WaitAssert(() => !platformScrollView.IsTabStop);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 
+				Assert.False(platformScrollView.IsTabStop);
 				Assert.NotNull(platformScrollView.GetBindingExpression(WControl.IsTabStopProperty));
 
 				handler.Source.Value = true;
-				await WaitAssert(() => platformScrollView.IsTabStop);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				Assert.True(platformScrollView.IsTabStop);
 			});
 		}
 
@@ -191,9 +195,9 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
 			{
 				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
-				await WaitAssert(() => !platformScrollView.IsTabStop);
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 
+				Assert.False(platformScrollView.IsTabStop);
 				Assert.True(entry.IsFocused);
 			});
 		}
@@ -227,9 +231,44 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
 			{
 				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
-				await WaitAssert(() => !platformScrollView.IsTabStop);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 
+				Assert.False(platformScrollView.IsTabStop);
 				Assert.Equal(false, platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+				Assert.False(entry.IsFocused);
+			});
+		}
+
+		[Fact]
+		public async Task ScrollViewerPreservesCustomTrueTabStopValueAfterLoading()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, TrueTabStopScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var entry = new Entry();
+			var scrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 2000,
+					Children = { entry }
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
+			{
+				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+
+				Assert.True(platformScrollView.IsTabStop);
+				Assert.Equal(true, platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
 				Assert.False(entry.IsFocused);
 			});
 		}
@@ -263,11 +302,11 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
 			{
 				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
-				await WaitAssert(() =>
-					ReferenceEquals(
-						WDependencyProperty.UnsetValue,
-						platformScrollView.ReadLocalValue(WControl.IsTabStopProperty)));
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
 				Assert.True(platformScrollView.IsTabStop);
 				Assert.False(entry.IsFocused);
 			});
@@ -312,7 +351,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var scrollViewHandler = (ScrollViewHandler)scrollView.Handler;
 				var platformScrollView = scrollViewHandler.PlatformView;
-				await WaitAssert(() => !platformScrollView.IsTabStop);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				Assert.False(platformScrollView.IsTabStop);
 
 				var unloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				Microsoft.UI.Xaml.RoutedEventHandler unloadedHandler = (_, _) => unloaded.TrySetResult();
@@ -344,8 +384,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				Assert.True(platformScrollView.IsLoaded);
-				await WaitAssert(() => !platformScrollView.IsTabStop);
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				Assert.False(platformScrollView.IsTabStop);
 
 				Assert.False(entry.IsFocused);
 				Assert.False(focused);
@@ -386,7 +426,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = (DisconnectOnLoadScrollViewHandler)scrollView.Handler;
 				var platformScrollView = handler.PlatformView;
-				await WaitAssert(() => !platformScrollView.IsTabStop);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				Assert.False(platformScrollView.IsTabStop);
 
 				var unloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				Microsoft.UI.Xaml.RoutedEventHandler unloadedHandler = (_, _) => unloaded.TrySetResult();
@@ -421,12 +462,47 @@ namespace Microsoft.Maui.DeviceTests
 			return idle.Task.WaitAsync(TimeSpan.FromSeconds(5));
 		}
 
+		sealed class TrackingTabStopScrollViewHandler : ScrollViewHandler
+		{
+			public TaskCompletionSource TemporaryTabStopObserved { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			protected override void ConnectHandler(WScrollViewer platformView)
+			{
+				base.ConnectHandler(platformView);
+				platformView.Loaded += OnLoaded;
+			}
+
+			protected override void DisconnectHandler(WScrollViewer platformView)
+			{
+				platformView.Loaded -= OnLoaded;
+				base.DisconnectHandler(platformView);
+			}
+
+			void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+			{
+				if (((WScrollViewer)sender).IsTabStop)
+					TemporaryTabStopObserved.TrySetResult();
+				else
+					TemporaryTabStopObserved.TrySetException(
+						new InvalidOperationException("The temporary ScrollViewer tab stop was not active during loading."));
+			}
+		}
+
 		sealed class CustomTabStopScrollViewHandler : ScrollViewHandler
 		{
 			protected override void ConnectHandler(WScrollViewer platformView)
 			{
 				base.ConnectHandler(platformView);
 				platformView.IsTabStop = false;
+			}
+		}
+
+		sealed class TrueTabStopScrollViewHandler : ScrollViewHandler
+		{
+			protected override void ConnectHandler(WScrollViewer platformView)
+			{
+				base.ConnectHandler(platformView);
+				platformView.IsTabStop = true;
 			}
 		}
 

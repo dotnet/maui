@@ -83,8 +83,10 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformViewLoading(FrameworkElement sender, object args)
 		{
 			var scrollViewer = (ScrollViewer)sender;
-			if (ReferenceEquals(_tabStopPlatformView, scrollViewer))
-				BeginTemporaryTabStop(scrollViewer);
+			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer))
+				return;
+
+			BeginTemporaryTabStop(scrollViewer);
 		}
 
 		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
@@ -123,8 +125,8 @@ namespace Microsoft.Maui.Handlers
 			if (_isTabStopTemporary)
 				return;
 
-			// Handler mappings have already run, so preserve any custom local value before
-			// giving WinUI's next load focus pass a non-content target.
+			// Preserve this ScrollViewer's customized state before giving its load-time
+			// focus pass a non-content target.
 			_isTabStopLocalValue = scrollViewer.ReadLocalValue(Control.IsTabStopProperty);
 			_isTabStopValue = scrollViewer.IsTabStop;
 			_isTabStopBinding = scrollViewer.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding;
@@ -149,13 +151,14 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Restore the effective value before removing the temporary binding.
+			// Clearing directly while focused makes WinUI re-route focus into the content.
 			scrollViewer.IsTabStop = _isTabStopValue;
-			scrollViewer.ClearValue(Control.IsTabStopProperty);
 
 			if (_isTabStopBinding is not null)
 				scrollViewer.SetBinding(Control.IsTabStopProperty, _isTabStopBinding);
-			else if (!ReferenceEquals(_isTabStopLocalValue, DependencyProperty.UnsetValue))
-				scrollViewer.SetValue(Control.IsTabStopProperty, _isTabStopLocalValue);
+			else if (_isTabStopLocalValue is not bool)
+				scrollViewer.ClearValue(Control.IsTabStopProperty);
 
 			ResetTemporaryTabStop();
 		}
