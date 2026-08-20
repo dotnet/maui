@@ -6655,6 +6655,47 @@ public void Issue12345_LabelUpdates()
             Should -Throw -ExpectedMessage '*exactly once*'
     }
 
+    Context 'when the author quotes the right code with the wrong indentation' {
+        # Build 15033553 reproduced on device, then skipped the control three
+        # times because the author quoted this element with tabs the file does
+        # not have. The quoted code was correct every time.
+        BeforeAll {
+            $script:XamlBase = @"
+<Grid>`n`t`t`t<Grid.GestureRecognizers>`n`t`t`t`t<TapGestureRecognizer Tapped="OnTapped" />`n`t`t`t</Grid.GestureRecognizers>`n`t`t`t<Border />`n</Grid>`nAssert.That(hit, Is.True);
+"@
+        }
+
+        It 'removes the trigger despite different indentation' {
+            $variant = New-ReplicationControlVariant -BaselineSource $script:XamlBase -Edits @(
+                @{ find = "<Grid.GestureRecognizers>`n    <TapGestureRecognizer Tapped=`"OnTapped`" />`n  </Grid.GestureRecognizers>" }
+            )
+            $variant | Should -Not -Match 'TapGestureRecognizer'
+            $variant | Should -Match '<Border />'
+            @(Get-ReplicationAssertionStatements -Source $variant).Count |
+                Should -Be @(Get-ReplicationAssertionStatements -Source $script:XamlBase).Count
+        }
+
+        It 'removes the trigger despite different line endings' {
+            $variant = New-ReplicationControlVariant -BaselineSource $script:XamlBase -Edits @(
+                @{ find = "<TapGestureRecognizer Tapped=`"OnTapped`" />`r`n" }
+            )
+            $variant | Should -Not -Match 'TapGestureRecognizer'
+        }
+
+        It 'still refuses text that is ambiguous once indentation is ignored' {
+            $doubled = "if (a)`n{`n    Use();`n}`nif (b)`n{`n        Use();`n}`nAssert.That(x, Is.True);"
+            { New-ReplicationControlVariant -BaselineSource $doubled `
+                -Edits @(@{ find = 'Use();' }) } |
+                Should -Throw -ExpectedMessage '*exactly once*'
+        }
+
+        It 'reports that indentation was already ignored when nothing matches' {
+            { New-ReplicationControlVariant -BaselineSource $script:XamlBase `
+                -Edits @(@{ find = '<Button Text="Go" />' }) } |
+                Should -Throw -ExpectedMessage '*ignoring indentation*'
+        }
+    }
+
     It 'refuses edits that change nothing' {
         { New-ReplicationControlVariant -BaselineSource $script:ControlBase `
             -Edits @(@{ find = 'label.MaxLines = 2;'; replace = 'label.MaxLines = 2;' }) } |

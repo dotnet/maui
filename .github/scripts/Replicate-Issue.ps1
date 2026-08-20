@@ -3202,7 +3202,7 @@ The reproduction test is confirmed red for the reported behavior. Now author its
 Read "$testProposalPath", the generated test source, and the reportedTrigger/testTrigger fields.
 You do not write the control source. You describe the trigger removal and trusted code performs it, so the oracle stays byte-identical.
 Write one file, "$controlEditsPath", containing a JSON array of at most 10 edits. Each edit is an object with "find" and optional "replace":
-- "find" is text copied byte-for-byte out of the generated test source, and it must appear exactly once in that file. Include enough surrounding text to be unique.
+- "find" is text copied out of the generated test source, and it must appear exactly once in that file. Include enough surrounding text to be unique. Indentation and line endings are ignored when the text is located, so copy the code and do not try to reproduce tabs or blank lines exactly.
 - "replace" is what it becomes. Omit it or use "" to delete the text, or give the documented benign value to neutralise the trigger.
 Together the edits must remove or neutralise the reported trigger and change nothing else.
 An edit whose "find" or "replace" contains an assertion is rejected: the assertions are the oracle and they must survive untouched.

@@ -2231,6 +2231,79 @@ function Assert-ReplicationNegativeControlIsInformative {
     }
 }
 
+function Get-ReplicationWhitespaceInsensitiveSpan {
+    <#
+        .SYNOPSIS
+        Locates text in a source ignoring how it happens to be indented.
+
+        .DESCRIPTION
+        An author quoting several lines of XAML has to reproduce every tab to
+        match byte for byte, and build 15033553 shows they do not: two of three
+        attempts quoted the right element with the wrong indentation and the
+        control was skipped. Collapsing whitespace asks the author for the right
+        code instead of the right bytes.
+
+        This is stricter about ambiguity rather than looser. Two regions that
+        differ only in whitespace collapse to the same text, so both are counted
+        and the caller refuses the edit.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Source,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Find
+    )
+
+    $normalized = [System.Text.StringBuilder]::new()
+    $map = [System.Collections.Generic.List[int]]::new()
+    $cursor = 0
+    while ($cursor -lt $Source.Length) {
+        if ([char]::IsWhiteSpace($Source[$cursor])) {
+            $runStart = $cursor
+            while ($cursor -lt $Source.Length -and [char]::IsWhiteSpace($Source[$cursor])) {
+                $cursor++
+            }
+            [void] $normalized.Append(' ')
+            [void] $map.Add($runStart)
+            continue
+        }
+
+        [void] $normalized.Append($Source[$cursor])
+        [void] $map.Add($cursor)
+        $cursor++
+    }
+
+    $needle = ([regex]::Replace($Find, '\s+', ' ')).Trim()
+    if ([string]::IsNullOrEmpty($needle)) {
+        return [pscustomobject]@{ Count = 0; Index = -1; Length = 0 }
+    }
+
+    $haystack = $normalized.ToString()
+    $count = 0
+    $first = -1
+    $search = 0
+    while ($search -ge 0 -and $search -le ($haystack.Length - $needle.Length)) {
+        $hit = $haystack.IndexOf($needle, $search, [StringComparison]::Ordinal)
+        if ($hit -lt 0) { break }
+        $count++
+        if ($first -lt 0) { $first = $hit }
+        $search = $hit + 1
+    }
+
+    if ($count -ne 1) {
+        return [pscustomobject]@{ Count = $count; Index = -1; Length = 0 }
+    }
+
+    # The needle is trimmed, so its last character is never a collapsed
+    # whitespace run and the original span ends one past that character.
+    $startOriginal = $map[$first]
+    $endOriginal = $map[$first + $needle.Length - 1] + 1
+    return [pscustomobject]@{
+        Count  = 1
+        Index  = $startOriginal
+        Length = ($endOriginal - $startOriginal)
+    }
+}
+
 function New-ReplicationControlVariant {
     <#
         .SYNOPSIS
@@ -2296,13 +2369,21 @@ function New-ReplicationControlVariant {
         }
 
         $occurrences = ([regex]::Matches($variant, [regex]::Escape($find))).Count
-        if ($occurrences -ne 1) {
-            throw "The control edit text occurs $occurrences times in the reproduction, but it must occur exactly once: '$($find.Trim())'."
+        if ($occurrences -eq 1) {
+            $index = $variant.IndexOf($find, [StringComparison]::Ordinal)
+            $length = $find.Length
+        } else {
+            $span = Get-ReplicationWhitespaceInsensitiveSpan -Source $variant -Find $find
+            if ($span.Count -ne 1) {
+                throw ("The control edit text occurs $($span.Count) times in the reproduction, " +
+                    "ignoring indentation, but it must occur exactly once: '$($find.Trim())'.")
+            }
+            $index = $span.Index
+            $length = $span.Length
         }
 
-        $index = $variant.IndexOf($find, [StringComparison]::Ordinal)
         $variant = $variant.Substring(0, $index) + $replace +
-            $variant.Substring($index + $find.Length)
+            $variant.Substring($index + $length)
     }
 
     if ($variant -ceq [string]$BaselineSource) {
