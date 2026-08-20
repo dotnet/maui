@@ -466,6 +466,8 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				items.RemoveAt(0);
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(overrideItem, carouselView.CurrentItem);
 				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 1);
 
 				Assert.Equal(1, carouselView.Position);
