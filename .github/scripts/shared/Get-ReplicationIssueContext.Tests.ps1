@@ -1035,6 +1035,10 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         # cannot be arranged in the Sandbox at all.
         @{ Title = 'MethodAccessException when using CommunityToolkit.Maui AppThemeResource with 10.0.40' }
         @{ Title = 'Syncfusion.Maui.Popup.SfPopupOverlayContainer has been Garbage Collected' }
+        # Build 15032415 recorded a Windows page for this before refusing it.
+        @{ Title = 'Warnings From Generated XAML Refer to a file the IDE cannot find' }
+        @{ Title = 'XAML Hot reload completely broken' }
+        @{ Title = 'Obsolete Named FontSize Values in XAML are Suggested by IntelliSense' }
     ) {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
     }

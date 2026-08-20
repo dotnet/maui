@@ -1822,6 +1822,20 @@ function Get-ReplicationRuntimeScopeMismatch {
             Pattern = '(?i)\b(?:community\s?toolkit|syncfusion|devexpress|telerik|sharpnado|reactiveui|prism|refit|mopups|plugin\.\w+)\b'
             Scope   = 'a third-party package the fixed Sandbox project cannot reference'
         }
+        [pscustomobject]@{
+            # Hot Reload, IntelliSense and Visual Studio itself are developer
+            # tooling. The Sandbox records what a built app does on a device,
+            # so it can show none of them.
+            Pattern = '(?i)\bIDE\b|\bvisual\s+studio\b|\bintellisense\b|\bhot\s+reload\b'
+            Scope   = 'the behaviour of the IDE or its tooling'
+        }
+        [pscustomobject]@{
+            # Build 15032415 recorded a Windows page for "Warnings From
+            # Generated XAML Refer to a file the IDE cannot find", then spent
+            # every planning round being told no test could carry it.
+            Pattern = '(?i)\bgenerated\s+(?:xaml|code|c#|source|file)\b|\bwarnings?\b[^.]{0,30}\bgenerated\b'
+            Scope   = 'code emitted at compile time and the diagnostics it raises'
+        }
     )
 
     $text = [string]$Title
