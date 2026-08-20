@@ -674,3 +674,55 @@ Describe 'Every in-process call binds parameters its target actually declares' {
         $problems -join "`n" | Should -BeExactly ''
     }
 }
+
+Describe 'The gate expects every artifact the verifier retains' {
+    # Fourth incident of a hand-maintained list discarding finished device
+    # work: the YAML staging list, the verification-result allowlist, the
+    # candidate-manifest allowlist, and now the verification *directory*
+    # allowlist. Builds 15032408 and 15032410 both reproduced their issue on a
+    # device and were thrown away because verification-test-result.trx was
+    # written without being expected. The expectation is derived from the
+    # producer here rather than restated.
+    BeforeAll {
+        $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        $script:VerifierSource = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1')
+        $script:GateSource = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Validate-ReplicationCandidate.ps1')
+    }
+
+    It 'retains a name built from a bounded set of extensions' {
+        # An extension copied from whatever the runner produced could be
+        # anything, and the gate accepts exactly two.
+        $script:VerifierSource |
+            Should -Match "\`$extension = if \(\[IO\.Path\]::GetExtension\(\`$authoritativePath\) -ieq '\.trx'\) \{ '\.trx' \} else \{ '\.xml' \}"
+    }
+
+    It 'accepts every retained name the verifier can actually produce' {
+        $stem = [regex]::Match($script:VerifierSource,
+            '\$retainedResultName = "(?<stem>[a-z-]+)\$extension"').Groups['stem'].Value
+        $stem | Should -Not -BeNullOrEmpty -Because 'the retained name must be discoverable from the producer'
+
+        $pattern = [regex]::Match($script:GateSource,
+            "\`$retainedResultPattern = '(?<p>[^']+)'").Groups['p'].Value
+        $pattern | Should -Not -BeNullOrEmpty -Because 'the gate must declare the pattern it accepts'
+
+        foreach ($extension in @('.trx', '.xml')) {
+            "$stem$extension" | Should -Match $pattern -Because "the verifier can write $stem$extension"
+        }
+    }
+
+    It 'applies the retained pattern in both directory layouts' {
+        # The verification directory is sometimes the same directory as the
+        # evidence root, and that branch filters names separately; allowing the
+        # file in only one of the two still discards the reproduction.
+        $checks = [regex]::Matches($script:GateSource, '\$retainedResultPattern')
+        $checks.Count | Should -BeGreaterOrEqual 3 -Because 'declaration, combined-root filter, and per-item check'
+    }
+
+    It 'names the artifact it rejects' {
+        # The original message said only that something was unexpected, which
+        # is why two lost reproductions took a log download each to explain.
+        $script:GateSource | Should -Match "Verification directory contains an unexpected artifact: '\`$reportedName'"
+    }
+}

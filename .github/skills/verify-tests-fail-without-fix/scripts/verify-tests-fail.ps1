@@ -1267,8 +1267,13 @@ function Write-ReplicationVerifierMachineResult {
         (Test-Path -LiteralPath $authoritativePath -PathType Leaf)) {
         try {
             $resultDirectory = Split-Path -Parent $MachineResultPath
-            $extension = [IO.Path]::GetExtension($authoritativePath)
-            if ([string]::IsNullOrWhiteSpace($extension)) { $extension = '.xml' }
+            # The credential-free gate accepts exactly two extensions here, so
+            # the name is normalised to one of them at the point it is written.
+            # Deriving it from whatever the runner happened to produce is how a
+            # retained result would silently become an unexpected artifact and
+            # discard a finished device reproduction, as it did for builds
+            # 15032408 and 15032410.
+            $extension = if ([IO.Path]::GetExtension($authoritativePath) -ieq '.trx') { '.trx' } else { '.xml' }
             $retainedResultName = "verification-test-result$extension"
             Copy-Item -LiteralPath $authoritativePath `
                 -Destination (Join-Path $resultDirectory $retainedResultName) -Force

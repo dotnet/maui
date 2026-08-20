@@ -1763,6 +1763,12 @@ function Get-ReplicationEvidenceInventory {
         'negative-control-result.json'
     )
 
+    # The runner's own result document is retained beside the machine result as
+    # evidence, so the gate must expect it. Its extension follows the runner
+    # (.trx for VSTest, .xml for NUnit), which is why this is a pattern rather
+    # than another literal name.
+    $retainedResultPattern = '^verification-test-result\.(?:trx|xml)$'
+
     $mediaItems = @(Get-ChildItem -LiteralPath $mediaRoot -Force)
     if ($mediaItems.Count -gt 20) {
         throw 'Evidence directory contains too many artifacts.'
@@ -1811,7 +1817,8 @@ function Get-ReplicationEvidenceInventory {
     $verificationItems = if ($verificationRoot -ceq $mediaRoot) {
         @($mediaItems | Where-Object {
             $_.Name -cin $allowedVerificationNames -or
-            $_.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$'
+            $_.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -or
+            $_.Name -cmatch $retainedResultPattern
         })
     } else {
         @(Get-ChildItem -LiteralPath $verificationRoot -Force)
@@ -1827,9 +1834,18 @@ function Get-ReplicationEvidenceInventory {
             $item.Name -cnotin $allowedVerificationNames -and
             $item.Name -cnotmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -and
             $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
-            $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$'
+            $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$' -and
+            $item.Name -cnotmatch $retainedResultPattern
         ) {
-            throw 'Verification directory contains an unexpected artifact.'
+            # Naming the file matters: builds 15032408 and 15032410 each
+            # finished a device reproduction and were discarded here, and the
+            # message gave no way to tell which artifact was unexpected. The
+            # name reaches a log, so only a bounded safe subset is echoed.
+            $reportedName = [regex]::Replace([string]$item.Name, '[^A-Za-z0-9._-]', '?')
+            if ($reportedName.Length -gt 100) {
+                $reportedName = $reportedName.Substring(0, 100)
+            }
+            throw "Verification directory contains an unexpected artifact: '$reportedName'."
         }
         $null = Get-SafeRegularFile `
             -Path $item.FullName `
