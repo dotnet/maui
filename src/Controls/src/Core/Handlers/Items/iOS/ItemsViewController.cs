@@ -84,16 +84,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		// Deterministically unbind every realized templated cell when this controller's handler
 		// disconnects (e.g. page popped), instead of relying on VisibleCells/recycling heuristics.
-		// The CollectionView is going away here, so it's safe to permanently tear down each cell
-		// via UnbindAndDisconnect() (also used by ClearMeasurementCells()), which detaches the
-		// logical child, clears native subviews, and disconnects the handler tree.
+		//
+		// Also the only place (with ClearMeasurementCells) that calls DetachFromItemsView() and
+		// disconnects each cell's Handler. Not done in TemplatedCell.Unbind() because that also
+		// runs during routine recycling, where removing the view mid-layout can corrupt native
+		// state (e.g. CarouselView). Here the CollectionView is going away, so
+		// it's safe to sever permanently.
 		void UnbindRealizedTemplatedCells()
 		{
 			for (int n = _realizedTemplatedCells.Count - 1; n >= 0; n--)
 			{
 				if (_realizedTemplatedCells[n].TryGetTarget(out var templatedCell))
 				{
-					templatedCell.UnbindAndDisconnect();
+					if (templatedCell.PlatformHandler?.VirtualView is View view)
+					{
+						templatedCell.Unbind();
+						templatedCell.DetachFromItemsView();
+
+						// Recursive DisconnectHandlers() since the bound view (DataTemplate root)
+						// commonly has child views whose handlers also need disconnecting.
+						view.DisconnectHandlers();
+					}
+					else
+					{
+						templatedCell.Unbind();
+					}
 				}
 			}
 
@@ -581,12 +596,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			foreach (var measurementCell in _measurementCells.Values)
 			{
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
+				measurementCell.Unbind();
 
 				// Discarded measurement cells are never reused and have no other strong references,
 				// so they can be GC'd before Disconnect() runs, leaking their handler if not
-				// disconnected here. UnbindAndDisconnect() detaches the logical child, clears
-				// native subviews, and disconnects the handler tree.
-				measurementCell.UnbindAndDisconnect();
+				// disconnected here.
+				if (measurementCell.PlatformHandler?.VirtualView is View measurementView)
+				{
+					measurementCell.DetachFromItemsView();
+					measurementView.DisconnectHandlers();
+				}
 			}
 
 			_measurementCells.Clear();
@@ -973,23 +992,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
 			if (_measurementCells != null)
-			{
-				var bindingContext = ItemsSource[indexPath];
-
-				// A layout re-constrain (bounds change, rotation, ConstrainTo) can request a
-				// measurement cell for an index path that already has one cached. Release the
-				// displaced cell's content before overwriting the cache entry, otherwise its
-				// bound view stays orphaned as a logical child of the ItemsView for as long as
-				// the ItemsView is alive - the same leak class this PR fixes.
-				if (_measurementCells.TryGetValue(bindingContext, out var previousMeasurementCell) &&
-					!ReferenceEquals(previousMeasurementCell, templatedCell))
-				{
-					previousMeasurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
-					previousMeasurementCell.UnbindAndDisconnect();
-				}
-
-				_measurementCells[bindingContext] = templatedCell;
-			}
+				_measurementCells[ItemsSource[indexPath]] = templatedCell;
 
 			return templatedCell;
 		}
