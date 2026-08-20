@@ -1778,6 +1778,7 @@ function Get-ReplicationEvidenceInventory {
         'verify-tests-fail.log',
         'test-without-fix.log',
         'negative-control-baseline.cs',
+        'negative-control-oracle.cs',
         'negative-control-variant.cs',
         'negative-control-console.log',
         'negative-control-result.json'
@@ -1881,6 +1882,7 @@ function Get-ReplicationEvidenceInventory {
                     'verification-console.log',
                     'verification-result.json',
                     'negative-control-baseline.cs',
+                    'negative-control-oracle.cs',
                     'negative-control-variant.cs',
                     'negative-control-console.log',
                     'negative-control-result.json') -and
@@ -2759,18 +2761,36 @@ function Assert-ReplicationVerificationEvidence {
                 }
             }
 
-            Assert-ReplicationNegativeControlIsInformative `
-                -BaselineSource (Read-BoundedUtf8File `
+            $informativeArguments = @{
+                BaselineSource = Read-BoundedUtf8File `
                     -Path $baselineSourcePath `
                     -MaximumBytes $script:CandidateFileMaxBytes `
                     -Root $Inventory.VerificationRoot `
-                    -Context 'Negative control baseline source') `
-                -ControlSource (Read-BoundedUtf8File `
+                    -Context 'Negative control baseline source'
+                ControlSource = Read-BoundedUtf8File `
                     -Path $variantSourcePath `
                     -MaximumBytes $script:CandidateFileMaxBytes `
                     -Root $Inventory.VerificationRoot `
-                    -Context 'Negative control variant source') `
-                -TestFilter $Manifest.TestName
+                    -Context 'Negative control variant source'
+                TestFilter = $Manifest.TestName
+            }
+
+            # A UI test's control edits the HostApp page and never writes the
+            # test file, so the assertions it must preserve are in a third
+            # snapshot. Read from the page instead, the guard finds no
+            # assertions at all and refuses a control that is correct.
+            $oracleSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-oracle.cs'
+            if (Test-Path -LiteralPath $oracleSourcePath -PathType Leaf) {
+                $oracleSource = Read-BoundedUtf8File `
+                    -Path $oracleSourcePath `
+                    -MaximumBytes $script:CandidateFileMaxBytes `
+                    -Root $Inventory.VerificationRoot `
+                    -Context 'Negative control oracle source'
+                $informativeArguments['OracleBaselineSource'] = $oracleSource
+                $informativeArguments['OracleControlSource'] = $oracleSource
+            }
+
+            Assert-ReplicationNegativeControlIsInformative @informativeArguments
         }
 
         $certification = Get-ReplicationCertification -Evidence @{

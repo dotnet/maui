@@ -3822,6 +3822,12 @@ function Invoke-ReplicationNegativeControl {
     $controlDir = $verificationDir
     Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-baseline.cs') `
         -Value $baselineSource -Encoding utf8NoBOM
+    # The gate re-checks that the control preserved the oracle. When the control
+    # edits the scene file the oracle lives elsewhere, so snapshot it too;
+    # otherwise the gate reads a HostApp page, finds no assertions in it and
+    # refuses every certified candidate at the last step.
+    Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-oracle.cs') `
+        -Value $oracleSource -Encoding utf8NoBOM
 
     $controlFailureSummary = ''
     for ($round = 1; $round -le $MaxControlAttempts; $round++) {

@@ -2439,6 +2439,48 @@ public void Repro_Control()
         $result.certificationLevel | Should -BeExactly 'observed-reproduction'
     }
 
+    It 'certifies a control that edits the scene while the oracle lives elsewhere' {
+        # A UI test's control edits the HostApp page, which has no assertions of
+        # its own. Reading the oracle from that page, the gate found none and
+        # refused a control that had passed on the device.
+        $scene = @'
+public class Issue1 : ContentPage
+{
+    public Issue1()
+    {
+        var grid = new Grid();
+        grid.GestureRecognizers.Add(new TapGestureRecognizer());
+        Content = grid;
+    }
+}
+'@
+        $sceneControl = $scene.Replace('grid.GestureRecognizers.Add(new TapGestureRecognizer());', '')
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource $sceneControl
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') -Value $scene
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-oracle.cs') `
+            -Value $script:ControlBaselineSource
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+    }
+
+    It 'still refuses a scene control whose oracle snapshot has no assertion' {
+        $scene = 'public class Issue1 : ContentPage { public Issue1() { var x = 1; } }'
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource 'public class Issue1 : ContentPage { public Issue1() { } }'
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') -Value $scene
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-oracle.cs') `
+            -Value 'public class T { [Test] public void M() { App.Tap("x"); } }'
+
+        { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*no assertion*'
+    }
+
     It 'certifies a reproduction whose control passes without the trigger' {
         $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
 
