@@ -2410,6 +2410,8 @@ function Assert-ReplicationVerificationEvidence {
                 'signatureEquivalent',
                 'effectiveFailureSignature',
                 'infrastructureFailure',
+                'selectionAmbiguous',
+                'executedTestCounts',
                 'verificationPassed',
                 'requestedRunCount',
                 'completedRunCount',
@@ -2561,6 +2563,28 @@ function Assert-ReplicationVerificationEvidence {
                 -Required
             if ($property.Value -isnot [bool] -or $property.Value -ne $entry.Value) {
                 throw "Verification result '$($entry.Key)' does not prove a valid failure-only run."
+            }
+        }
+        # A run produced by an older trusted verifier carries neither field. Both
+        # are therefore optional, but strict whenever the verifier reported them,
+        # so a build already in flight is not thrown away for a schema addition.
+        $ambiguousProperty = $result.PSObject.Properties['selectionAmbiguous']
+        if ($ambiguousProperty) {
+            if ($ambiguousProperty.Value -isnot [bool] -or $ambiguousProperty.Value) {
+                throw ('Verification result reports an ambiguous test selection, ' +
+                    'so the failure is not attributable to the named test.')
+            }
+        }
+        $executedCountsProperty = $result.PSObject.Properties['executedTestCounts']
+        if ($executedCountsProperty) {
+            foreach ($executedCount in @($executedCountsProperty.Value)) {
+                # A recorded count is the runner's own answer to "how many tests
+                # did this filter select". Anything other than one means the
+                # published failure cannot be attributed to the single test.
+                if ([string]$executedCount -cne '1') {
+                    throw ('Verification result executed ' +
+                        "$executedCount tests instead of exactly one targeted test.")
+                }
             }
         }
         $requestedRunCount = ConvertTo-PositiveInteger `

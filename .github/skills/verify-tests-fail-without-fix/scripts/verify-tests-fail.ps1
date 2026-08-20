@@ -1244,6 +1244,17 @@ function Write-ReplicationVerifierMachineResult {
         return
     }
 
+    $executedTestCount = -1
+    foreach ($countName in @('Total', 'TotalCount')) {
+        if ($TestResult.ContainsKey($countName)) {
+            $countValue = $TestResult[$countName]
+            if ($null -ne $countValue -and [int]::TryParse([string]$countValue, [ref]$null)) {
+                $executedTestCount = [int]$countValue
+                break
+            }
+        }
+    }
+
     [ordered]@{
         schemaVersion = 1
         testType = [string]$TestEntry.Type
@@ -1253,6 +1264,7 @@ function Write-ReplicationVerifierMachineResult {
         testClass = [string]$TestEntry.ClassFilter
         testMethod = [string]($TestEntry.Methods | Select-Object -First 1)
         failed = -not [bool]$TestResult.Passed
+        executedTestCount = $executedTestCount
         actualFailureMessage = $ActualFailureMessage
     } |
         ConvertTo-Json -Depth 10 |
@@ -1776,7 +1788,20 @@ function Get-TestResultFromOutput {
     if ($content -match "Failed:\s*(\d+)") {
         $failCount = [int]$matches[1]
         if ($failCount -gt 0) {
-            return @{ Passed = $false; FailCount = $failCount; Failed = $failCount; PassCount = 0; Total = $failCount; Skipped = 0 }
+            # A failing run still has to report how many tests the filter actually
+            # selected. A contains-style filter can match several tests, and
+            # "one of them failed" is not the same evidence as "the one targeted
+            # test failed", so keep the sibling counts instead of assuming zero.
+            $alsoPassed = if ($content -match "Passed:\s*(\d+)") { [int]$matches[1] } else { 0 }
+            $alsoSkipped = if ($content -match "Skipped:\s*(\d+)") { [int]$matches[1] } else { 0 }
+            return @{
+                Passed = $false
+                FailCount = $failCount
+                Failed = $failCount
+                PassCount = $alsoPassed
+                Total = $failCount + $alsoPassed + $alsoSkipped
+                Skipped = $alsoSkipped
+            }
         }
     }
 

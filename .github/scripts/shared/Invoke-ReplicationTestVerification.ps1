@@ -267,6 +267,7 @@ function Invoke-SingleVerificationRun {
 
     $verifierPassed = $exitCode -eq 0 -and $combined -match 'VERIFICATION PASSED'
     $actualFailureMessage = ''
+    $executedTestCount = -1
     $expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
         "FullyQualifiedName=$TestClass.$TestMethod"
     } else {
@@ -292,6 +293,18 @@ function Invoke-SingleVerificationRun {
                 ([string]$machineResult.actualFailureMessage).Length -le 10000
             ) {
                 $actualFailureMessage = [string]$machineResult.actualFailureMessage
+                # Strict mode turns a missing property into a terminating error,
+                # and the catch below would blank the failure message, so probe
+                # for the optional count instead of dereferencing it.
+                $countProperty = $machineResult.PSObject.Properties['executedTestCount']
+                if ($countProperty -and $null -ne $countProperty.Value) {
+                    $parsedCount = 0
+                    if ([int]::TryParse(
+                            [string]$countProperty.Value,
+                            [ref]$parsedCount)) {
+                        $executedTestCount = $parsedCount
+                    }
+                }
             }
         } catch {
             $actualFailureMessage = ''
@@ -314,6 +327,16 @@ function Invoke-SingleVerificationRun {
     }
     $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
 
+    # The evidence claim is "this one test fails". A contains-style filter can
+    # select several tests, and a run where two tests executed cannot tell us
+    # which one produced the failure, so the selection is not proof of anything.
+    $selectionAmbiguous = $executedTestCount -gt 1
+    if ($selectionAmbiguous) {
+        Write-Host ("The targeted filter selected $executedTestCount tests, so the " +
+            'failure cannot be attributed to the named test. Narrow the filter to ' +
+            'select exactly one test.')
+    }
+
     # A control run is only informative when the test actually executed and
     # reported a pass. An empty log, a crashed runner or a build break also
     # "did not fail", and treating those as a passing control would certify the
@@ -328,9 +351,12 @@ function Invoke-SingleVerificationRun {
         SignatureMatched = $signatureMatched
         SignatureEquivalent = $signatureEquivalent
         InfrastructureFailure = $infrastructureFailure
+        SelectionAmbiguous = $selectionAmbiguous
+        ExecutedTestCount = $executedTestCount
         TestPassed = $testPassed
         ActualFailureMessage = $actualFailureMessage
-        Passed = $verifierPassed -and $signatureEquivalent -and -not $infrastructureFailure
+        Passed = $verifierPassed -and $signatureEquivalent -and
+            -not $infrastructureFailure -and -not $selectionAmbiguous
         LogFiles = @($runLogs | Sort-Object -Unique)
     }
 }
@@ -468,6 +494,11 @@ $verifierPassed = @($runOutcomes | Where-Object { -not $_.VerifierPassed }).Coun
 $signatureMatched = @($runOutcomes | Where-Object { -not $_.SignatureMatched }).Count -eq 0
 $signatureEquivalent = @($runOutcomes | Where-Object { -not $_.SignatureEquivalent }).Count -eq 0
 $infrastructureFailure = @($runOutcomes | Where-Object { $_.InfrastructureFailure }).Count -gt 0
+$selectionAmbiguous = @($runOutcomes | Where-Object { $_.SelectionAmbiguous }).Count -gt 0
+$executedTestCounts = @($runOutcomes |
+    Where-Object { $_.ExecutedTestCount -ge 0 } |
+    ForEach-Object { [int]$_.ExecutedTestCount } |
+    Sort-Object -Unique)
 $nonZeroExitCodes = @($runOutcomes | Where-Object { $_.ExitCode -ne 0 })
 $exitCode = if ($nonZeroExitCodes.Count -gt 0) { [int]$nonZeroExitCodes[0].ExitCode } else { 0 }
 $actualFailureMessage = [string]$firstOutcome.ActualFailureMessage
@@ -480,6 +511,7 @@ $stableFailureMessage = Test-ReplicationFailureMessagesAreStable -Outcomes $runO
 $verificationPassed = $verifierPassed -and
     $signatureEquivalent -and
     -not $infrastructureFailure -and
+    -not $selectionAmbiguous -and
     $consistentRuns -and
     $stableFailureMessage
 
@@ -513,6 +545,8 @@ $result = [ordered]@{
     signatureEquivalent = $signatureEquivalent
     effectiveFailureSignature = $effectiveFailureSignature
     infrastructureFailure = $infrastructureFailure
+    selectionAmbiguous = $selectionAmbiguous
+    executedTestCounts = @($executedTestCounts)
     verificationPassed = $verificationPassed
     requestedRunCount = $RunCount
     completedRunCount = $completedRuns
@@ -527,6 +561,19 @@ $result = [ordered]@{
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8NoBOM
 
 if (-not $verificationPassed) {
+    if ($selectionAmbiguous) {
+        # A summary of booleans would send the agent hunting for a build or
+        # signature problem, so name the one thing that has to change.
+        $rendered = if ($executedTestCounts.Count -gt 0) {
+            ($executedTestCounts -join ' and ')
+        } else {
+            'several'
+        }
+        throw ("The run executed $rendered tests, so the failure cannot be " +
+            'attributed to the named test. Give the reproduction test a unique ' +
+            'name that no other test name contains so the runner selects ' +
+            'exactly one test.')
+    }
     if (-not $stableFailureMessage -and $verifierPassed -and $consistentRuns) {
         $observed = @($runOutcomes |
             ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |

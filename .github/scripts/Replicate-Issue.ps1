@@ -896,6 +896,17 @@ function Get-ReplicationVerificationFailureSummary {
         }
         return "The test did not run: it failed for build or infrastructure reasons rather than the reported behavior. Actual failure: '$actual'. Make the test compile and run before asserting the bug."
     }
+    if ($result.PSObject.Properties['selectionAmbiguous'] -and
+        $result.selectionAmbiguous -eq $true) {
+        # A contains-style filter that matches several tests cannot attribute
+        # the failure to the named test, so the red proves nothing about it.
+        $counts = @($result.PSObject.Properties['executedTestCounts'] |
+            ForEach-Object { $_.Value } |
+            ForEach-Object { [string]$_ } |
+            Where-Object { $_ })
+        $rendered = if ($counts.Count -gt 0) { $counts -join ' and ' } else { 'several' }
+        return "The run executed $rendered tests, so the failure cannot be attributed to the named test. Give the reproduction test a unique name that no other test name contains, and make sure no helper or sibling test shares its prefix, so the runner selects exactly one test."
+    }
     if ($result.verifierPassed -ne $true) {
         return (Get-ReplicationTestPassedDiagnosis)
     }
@@ -1780,6 +1791,7 @@ function Get-ReplicationTestAttemptKind {
     if (Test-ReplicationTestDidNotReproduce $FailureSummary) { return 'test-passed' }
     if ($FailureSummary -match 'instead of the declared expectedFailureSignature') { return 'wrong-signature' }
     if ($FailureSummary -match '(?i)reports a different value|stableFailureMessage=False') { return 'unstable-failure' }
+    if ($FailureSummary -match 'cannot be attributed to the named test') { return 'ambiguous-selection' }
     if (Test-ReplicationAppTerminated -Text $FailureSummary) { return 'app-terminated' }
     return 'other'
 }

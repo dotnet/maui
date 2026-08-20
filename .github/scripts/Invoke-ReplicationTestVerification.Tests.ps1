@@ -53,6 +53,7 @@ BeforeAll {
         param(
             [Parameter(Mandatory = $true)][string]$Path,
             [Parameter(Mandatory = $true)][string]$ActualFailureMessage,
+            [int]$ExecutedTestCount = -1,
             [string[]]$PerRunFailureMessages
         )
 
@@ -94,7 +95,7 @@ if (`$perRun.Count -gt 0) {
     `$index = [Math]::Min(`$invocationCount - 1, `$perRun.Count - 1)
     `$message = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(`$perRun[`$index]))
 }
-[ordered]@{
+`$machineResult = [ordered]@{
     schemaVersion = 1
     testType = `$TestType
     testFilter = if (`$TestType -in @('UnitTest', 'XamlUnitTest')) {
@@ -108,7 +109,11 @@ if (`$perRun.Count -gt 0) {
     testMethod = `$TestMethod
     failed = `$true
     actualFailureMessage = `$message
-} | ConvertTo-Json | Set-Content -LiteralPath `$MachineResultPath -Encoding utf8NoBOM
+}
+if ($ExecutedTestCount -ge 0) {
+    `$machineResult['executedTestCount'] = $ExecutedTestCount
+}
+`$machineResult | ConvertTo-Json | Set-Content -LiteralPath `$MachineResultPath -Encoding utf8NoBOM
 Write-Host 'VERIFY FAILURE ONLY MODE'
 Write-Host "[`$TestType] `$TestFilter FAILED"
 Write-Host 'VERIFICATION PASSED'
@@ -213,6 +218,67 @@ Describe 'Replication failure-only verification' {
         $script:Source | Should -Match "& pwsh @arguments"
         $script:Source | Should -Match "signatureMatched"
         $script:Source | Should -Match "infrastructureFailure"
+    }
+
+    It 'rejects a run whose filter selected more than one test' {
+        $verifier = Join-Path $TestDrive 'ambiguous-verifier.ps1'
+        $output = Join-Path $TestDrive 'ambiguous'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Assert.Equal() Failure: Issue12345 expected red but was blue' `
+            -ExecutedTestCount 2
+
+        $stderr = & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UITest `
+            -TestFilter 'FullyQualifiedName~Issue12345' `
+            -TestProject Controls.TestCases.Shared.Tests `
+            -TestProjectPath src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj `
+            -TestClass Microsoft.Maui.TestCases.Tests.Issue12345 `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output `
+            -RunCount 2 2>&1
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.selectionAmbiguous | Should -BeTrue
+        $result.executedTestCounts | Should -Be @(2)
+        $result.verificationPassed | Should -BeFalse
+        ($stderr | Out-String) | Should -Match 'cannot be attributed to the named test'
+    }
+
+    It 'accepts a run whose filter selected exactly one test' {
+        $verifier = Join-Path $TestDrive 'exact-one-verifier.ps1'
+        $output = Join-Path $TestDrive 'exact-one'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Assert.Equal() Failure: Issue12345 expected red but was blue' `
+            -ExecutedTestCount 1
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output `
+            -RunCount 2 *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.selectionAmbiguous | Should -BeFalse
+        $result.executedTestCounts | Should -Be @(1)
+        $result.verificationPassed | Should -BeTrue
     }
 
     It 'executes the targeted test once for every requested run' {

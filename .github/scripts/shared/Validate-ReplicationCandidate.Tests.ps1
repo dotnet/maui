@@ -1189,6 +1189,51 @@ Describe 'Validate-ReplicationCandidate verification boundary' {
             Should -Throw '*consistentRuns*'
     }
 
+    It 'accepts a result that omits the executed test count' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } | Should -Not -Throw
+    }
+
+    It 'rejects a filter that selected more than one test' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult |
+            Add-Member -NotePropertyName 'executedTestCounts' -NotePropertyValue @(2)
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*instead of exactly one targeted test*'
+    }
+
+    It 'accepts a filter that selected exactly one test' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult |
+            Add-Member -NotePropertyName 'executedTestCounts' -NotePropertyValue @(1)
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } | Should -Not -Throw
+    }
+
+    It 'rejects a verifier that reported an ambiguous selection' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult |
+            Add-Member -NotePropertyName 'selectionAmbiguous' -NotePropertyValue $true
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*not attributable to the named test*'
+    }
+
     It 'rejects a repeat run whose console log does not prove the failure' {
         $fixture = New-ValidationFixture
         $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
