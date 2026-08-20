@@ -706,6 +706,39 @@ function Test-ReplicationTestBuildFailure {
     return [bool]($text -match '(?i)never ran because the build failed|failed for build or infrastructure reasons|\berror CS\d+\b|\bMSB\d+\b')
 }
 
+function Test-ReplicationTestHarnessFault {
+    <#
+        .SYNOPSIS
+        Reports a verification round the device harness lost before the test ran.
+
+        .DESCRIPTION
+        A UI test whose OneTimeSetUp cannot start an Appium session observed
+        nothing about the reported issue, and no edit to the test changes that.
+        The build-failure detector matches 'build or infrastructure reasons',
+        so build 15029298 spent its four build repairs and then every remaining
+        attempt asking the agent to fix compiler diagnostics that did not exist,
+        while the real fault was a driver session that never opened.
+
+        This is deliberately narrow: it requires a driver or session fault, so
+        an ordinary assertion failure inside a fixture is still a real result.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$FailureSummary
+    )
+
+    $text = [string]$FailureSummary
+    if (-not $text) {
+        return $false
+    }
+    if ($text -match '(?i)\berror CS\d+\b|\bMSB\d+\b') {
+        # A genuine compile error is repairable and must stay repairable.
+        return $false
+    }
+    return [bool]($text -match ('(?i)OneTimeSetUp.*(?:OpenQA\.Selenium|Appium|WebDriver)|' +
+        'A new session could not be created|UnknownErrorException|' +
+        'Could not (?:find|start) (?:the )?Appium server'))
+}
+
 function Test-ReplicationRefundsTestAttempt {
     <#
         .SYNOPSIS
@@ -3911,6 +3944,8 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         $repairFailureSummary = ''
 
         $buildRepairRounds = 0
+        $testHarnessRetries = 0
+        $MaxTestHarnessRetries = 3
         $verificationRound = 0
         for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
             $verificationRound++
@@ -4033,6 +4068,23 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                 if ($escalateTestTier) {
                     Write-Host ("The {0} tier cannot prove this reproduction; re-planning at a tier that can observe it." -f
                         $plannedTestProposal.testType)
+                }
+                elseif (Test-ReplicationTestHarnessFault -FailureSummary $repairFailureSummary) {
+                    # The device harness lost the round before the test ran, so
+                    # there is no code for the agent to repair. Build 15029298
+                    # spent its build repairs and then every remaining attempt
+                    # asking for compiler fixes while an Appium session was
+                    # failing to open in OneTimeSetUp.
+                    if ($testHarnessRetries -lt $MaxTestHarnessRetries) {
+                        $testHarnessRetries++
+                        Write-Host ("Test harness retry {0}/{1}: attempt {2} lost its device session before the test ran, so it does not consume a verification attempt." -f
+                            $testHarnessRetries, $MaxTestHarnessRetries, $attempt)
+                        Start-Sleep -Seconds (30 * $testHarnessRetries)
+                        $attempt--
+                    }
+                    elseif ($attempt -eq $MaxTestAttempts) {
+                        throw
+                    }
                 }
                 elseif (Test-ReplicationRefundsTestAttempt `
                         -FailureSummary $repairFailureSummary `

@@ -66,6 +66,7 @@ BeforeAll {
         'Get-ReplicationElementInventory',
         'Get-ReplicationFailureSignature',
         'Test-ReplicationObservedNegativeVerdict',
+        'Test-ReplicationTestHarnessFault',
         'Get-ReplicationAttemptFailureKind',
         'Get-ReplicationAppTerminationPattern',
         'Test-ReplicationFailureAlreadySeen',
@@ -6068,5 +6069,39 @@ Describe 'An observed negative verdict is a non-reproduction' {
     It 'keeps a build break ahead of the verdict reading' {
         $summary = "error CS0103: something actual='NO BUG:'"
         Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'build-failed'
+    }
+}
+
+Describe 'A lost device session is not a test to repair' {
+    It 'recognises an Appium session that never opened in OneTimeSetUp' {
+        # Build 15029298 spent four build repairs and every remaining attempt
+        # asking the agent to fix compiler diagnostics that did not exist.
+        $summary = 'The test did not run: it failed for build or infrastructure reasons. ' +
+            'Actual failure: OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown error'
+        Test-ReplicationTestHarnessFault -FailureSummary $summary | Should -BeTrue
+
+        Test-ReplicationTestHarnessFault -FailureSummary 'A new session could not be created' |
+            Should -BeTrue
+    }
+
+    It 'leaves a genuine compile error repairable' {
+        # Compiler diagnostics are exact and cheap to act on, so they must keep
+        # their own repair allowance rather than being retried as flakiness.
+        Test-ReplicationTestHarnessFault -FailureSummary 'error CS0103: name does not exist' |
+            Should -BeFalse
+        Test-ReplicationTestHarnessFault `
+            -FailureSummary 'OneTimeSetUp OpenQA.Selenium something and error CS0246 too' |
+            Should -BeFalse
+    }
+
+    It 'leaves an ordinary assertion failure alone' {
+        Test-ReplicationTestHarnessFault `
+            -FailureSummary 'Expected: True But was: False' | Should -BeFalse
+        Test-ReplicationTestHarnessFault -FailureSummary '' | Should -BeFalse
+    }
+
+    It 'gives the harness its own bounded budget in the attempt loop' {
+        $script:Source | Should -Match '\$MaxTestHarnessRetries = 3'
+        $script:Source | Should -Match 'Test harness retry \{0\}/\{1\}'
     }
 }
