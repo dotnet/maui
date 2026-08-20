@@ -628,8 +628,12 @@ namespace Microsoft.Maui.Controls
 						{
 							if (prop.PropertyType == typeof(string))
 							{
-								if (value != null && !query.IsShellContentQueryParameter(attrib.QueryId))
-									value = global::System.Net.WebUtility.UrlDecode((string)value);
+								if (value != null)
+								{
+									value = query.IsShellContentQueryParameter(attrib.QueryId)
+										? Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture)
+										: global::System.Net.WebUtility.UrlDecode((string)value);
+								}
 
 								prop.SetValue(content, value);
 							}
@@ -644,7 +648,10 @@ namespace Microsoft.Maui.Controls
 								}
 								else
 								{
-									var castValue = Convert.ChangeType(value, targetType);
+									var culture = query.IsShellContentQueryParameter(attrib.QueryId)
+										? global::System.Globalization.CultureInfo.InvariantCulture
+										: global::System.Globalization.CultureInfo.CurrentCulture;
+									var castValue = Convert.ChangeType(value, targetType, culture);
 									prop.SetValue(content, castValue);
 								}
 							}

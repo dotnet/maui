@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -307,6 +308,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void QueryPropertyConvertsStaticValueToString()
+		{
+			var content = new ShellContent
+			{
+				Route = "content",
+				ContentTemplate = new DataTemplate(() => new QueryPropertyPage()),
+			};
+			content.QueryParameters.Add(new ShellContentQueryParameter
+			{
+				Name = "value",
+				Value = 42,
+			});
+			CreateShell(content);
+
+			Assert.Equal("42", GetPage<QueryPropertyPage>(content).Value);
+		}
+
+		[Fact]
+		public void QueryPropertyConvertsStaticStringUsingInvariantCulture()
+		{
+			var originalCulture = CultureInfo.CurrentCulture;
+			try
+			{
+				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+				var content = new ShellContent
+				{
+					Route = "content",
+					ContentTemplate = new DataTemplate(() => new NumericQueryPropertyPage()),
+				};
+				content.QueryParameters.Add(new ShellContentQueryParameter
+				{
+					Name = "value",
+					Value = "3.5",
+				});
+				CreateShell(content);
+
+				Assert.Equal(3.5, GetPage<NumericQueryPropertyPage>(content).Value);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = originalCulture;
+			}
+		}
+
+		[Fact]
 		public async Task QueryPropertyPreservesLiteralStaticStringAfterRelativePop()
 		{
 			Routing.RegisterRoute("details", typeof(ContentPage));
@@ -446,6 +492,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal("navigation", page.Value);
 			Assert.Equal(1, page.ApplyCount);
+		}
+
+		[Fact]
+		public async Task DeepLinkAppliesStaticParametersToSelectedRootContent()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var first = CreateContent("first");
+			first.Route = "first";
+			var second = CreateContent("static");
+			second.Route = "second";
+			var (shell, _) = CreateShell(first, second);
+
+			await shell.GoToAsync("//second/details");
+
+			var page = GetPage<QueryAttributablePage>(second);
+			Assert.Equal("static", page.Value);
+			Assert.Equal(1, page.ApplyCount);
+		}
+
+		[Fact]
+		public async Task DeepLinkDoesNotApplyDetailNavigationParametersToRootContent()
+		{
+			Routing.RegisterRoute("details", typeof(QueryAttributablePage));
+			var first = CreateContent("first");
+			first.Route = "first";
+			var second = CreateContent("static");
+			second.Route = "second";
+			var (shell, _) = CreateShell(first, second);
+			var navigationParameters = new ShellNavigationQueryParameters
+			{
+				["detailId"] = 42,
+			};
+
+			await shell.GoToAsync(new ShellNavigationState("//second/details"), navigationParameters);
+
+			var rootPage = GetPage<QueryAttributablePage>(second);
+			Assert.Equal("static", rootPage.Value);
+			Assert.DoesNotContain("detailId", rootPage.LastQuery);
+
+			var detailPage = Assert.IsType<QueryAttributablePage>(shell.CurrentPage);
+			Assert.Equal(42, detailPage.LastQuery["detailId"]);
 		}
 
 		[Fact]
@@ -652,6 +739,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		sealed class QueryPropertyPage : ContentPage
 		{
 			public string Value { get; set; }
+		}
+
+		[QueryProperty(nameof(Value), "value")]
+		sealed class NumericQueryPropertyPage : ContentPage
+		{
+			public double Value { get; set; }
 		}
 
 		[QueryProperty(nameof(First), "first")]

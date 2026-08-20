@@ -58,7 +58,16 @@ namespace Microsoft.Maui.Controls
 			}
 
 			foreach (var item in query._shellNavigationQueryParameters)
-				_shellNavigationQueryParameters[item.Key] = item.Value;
+			{
+				if (!item.Key.StartsWith(prefix, StringComparison.Ordinal))
+					continue;
+
+				var key = item.Key.Substring(prefix.Length);
+				if (key.IndexOf(".", StringComparison.Ordinal) != -1)
+					continue;
+
+				_shellNavigationQueryParameters[key] = item.Value;
+			}
 
 			foreach (var item in query._shellContentQueryParameterNames)
 			{
