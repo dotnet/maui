@@ -2789,6 +2789,32 @@ Describe 'workflow enforcement boundary' {
         $gate | Should -Not -Match '(?s)Get-CompleteLeakPullRequests.*?-State\s+(?:OPEN|CLOSED|MERGED)'
     }
 
+    It 'validates the exact live scanner issue at the final mutation boundary' {
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+        $module = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1'
+        ) -Raw
+        $hunter = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md'
+        ) -Raw
+
+        $blockedIndex = $gate.IndexOf('if ($result.Blocked)')
+        $liveIssueIndex = $gate.IndexOf('Get-ValidatedLeakScanIssue')
+        $successIndex = $gate.IndexOf('Final leak-fix de-dup gate passed')
+
+        $blockedIndex | Should -BeGreaterOrEqual 0
+        $liveIssueIndex | Should -BeGreaterThan $blockedIndex
+        $successIndex | Should -BeGreaterThan $liveIssueIndex
+        $module | Should -Match 'issueOrPullRequest\(number: \$number\)'
+        $module | Should -Match "typeName -cne 'Issue'"
+        $module | Should -Match "state -cne 'OPEN'"
+        $module | Should -Match 'liveApi -cne \$Api'
+        $module | Should -Match "'agentic-workflows', 'perf/memory-leak 💦'"
+        $hunter | Should -Match 'labels: \[agentic-workflows, "perf/memory-leak 💦"\]'
+    }
+
     It 'keeps trusted merged branch validation in parity across both final gates' {
         $fixGate = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
@@ -3047,6 +3073,30 @@ Describe 'workflow enforcement boundary' {
             $global:mockGateSnapshots = @()
             $global:mockGateSnapshotIndex = 0
             $global:mockActiveGateSnapshot = $null
+            $global:mockIssueFetchCount = 0
+            $global:mockIssueResponses =
+                [System.Collections.Generic.Queue[object]]::new()
+            $global:mockLiveIssue = [pscustomobject]@{
+                __typename = 'Issue'
+                number = 20
+                title = '[leak-scan] GradientBrush.GradientStops — reset leak'
+                state = 'OPEN'
+                url = 'https://github.com/dotnet/maui/issues/20'
+                repository = @{
+                    nameWithOwner = 'dotnet/maui'
+                }
+                labels = @{
+                    totalCount = 2
+                    pageInfo = @{
+                        hasNextPage = $false
+                        endCursor = $null
+                    }
+                    nodes = @(
+                        @{ name = 'agentic-workflows' }
+                        @{ name = 'perf/memory-leak 💦' }
+                    )
+                }
+            }
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockGhExitCode
@@ -3060,6 +3110,29 @@ Describe 'workflow enforcement boundary' {
                 $queryArgument = @($GhArgs | Where-Object {
                         $_.StartsWith('query=', [StringComparison]::Ordinal)
                     })[0]
+                if ($queryArgument -match 'issueOrPullRequest') {
+                    $global:mockIssueFetchCount++
+                    if ($global:mockIssueResponses.Count -gt 0) {
+                        $response = $global:mockIssueResponses.Dequeue()
+                        $global:LASTEXITCODE = [int]$response.ExitCode
+                        if (-not [string]::IsNullOrWhiteSpace(
+                                [string]$response.Stderr
+                            )) {
+                            Write-Error ([string]$response.Stderr) `
+                                -ErrorAction Continue
+                        }
+                        Write-Output ([string]$response.Stdout)
+                        return
+                    }
+                    Write-Output (@{
+                            data = @{
+                                repository = @{
+                                    issueOrPullRequest = $global:mockLiveIssue
+                                }
+                            }
+                        } | ConvertTo-Json -Depth 10 -Compress)
+                    return
+                }
                 if ($queryArgument -match 'commits\(first:') {
                     $repository = @{}
                     $source = @($global:mockMerged) + @($global:mockReverts)
@@ -3200,7 +3273,8 @@ Describe 'workflow enforcement boundary' {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
             Remove-Variable mockMerged, mockReverts, mockOpen, mockClosed, mockGhExitCode, `
                 mockGhStderr, mockReturnAllBases, mockGateSnapshots, `
-                mockGateSnapshotIndex, mockActiveGateSnapshot `
+                mockGateSnapshotIndex, mockActiveGateSnapshot, mockIssueFetchCount, `
+                mockIssueResponses, mockLiveIssue `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -3224,6 +3298,168 @@ Describe 'workflow enforcement boundary' {
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+            $global:mockIssueFetchCount | Should -Be 1
+        }
+
+        It 'rejects a live issue response with the wrong issue number' {
+            $global:mockLiveIssue.number = 21
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*mismatched issue number '21'*"
+        }
+
+        It 'rejects a missing exact repository issue' {
+            $global:mockLiveIssue = $null
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*does not exist in repository 'dotnet/maui' or is not accessible*"
+        }
+
+        It 'uses ordinal semantics for the live issue canonical API' {
+            $global:mockLiveIssue.title =
+                '[leak-scan] GradientBrush.gradientStops — casing-only mismatch'
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*canonical API 'GradientBrush.gradientStops' does not match proposed PR API 'GradientBrush.GradientStops'*"
+        }
+
+        It 'rejects a closed live issue' {
+            $global:mockLiveIssue.state = 'CLOSED'
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*must still be OPEN; live state was 'CLOSED'*"
+        }
+
+        It 'rejects an issue transferred out of the trusted repository' {
+            $global:mockLiveIssue.repository.nameWithOwner = 'dotnet/other'
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*belongs to unexpected repository 'dotnet/other'*"
+        }
+
+        It 'rejects a pull request masquerading as the issue number' {
+            $global:mockLiveIssue = [pscustomobject]@{
+                __typename = 'PullRequest'
+            }
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*is a pull request, not an issue*'
+        }
+
+        It 'rejects a malformed live leak-scan title' {
+            $global:mockLiveIssue.title =
+                '[leak-scan] Investigate issue 20 for GradientBrush.GradientStops'
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*malformed * title without a canonical API*'
+        }
+
+        It 'rejects a live issue missing the scanner provenance labels' {
+            $global:mockLiveIssue.labels.totalCount = 1
+            $global:mockLiveIssue.labels.nodes = @(
+                @{ name = 'agentic-workflows' }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*missing required scanner provenance label 'perf/memory-leak 💦'*"
+        }
+
+        It 'rejects ambiguous scanner provenance label metadata' {
+            $global:mockLiveIssue.labels.totalCount = 3
+            $global:mockLiveIssue.labels.nodes = @(
+                @{ name = 'agentic-workflows' }
+                @{ name = 'Agentic-Workflows' }
+                @{ name = 'perf/memory-leak 💦' }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*malformed or ambiguous label metadata*'
+        }
+
+        It 'retries a transient live issue fetch and validates the recovered response' {
+            $global:mockIssueResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 503: Service Unavailable; Retry-After: 0'
+                    Stdout = ''
+                })
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockIssueFetchCount | Should -Be 2
+        }
+
+        It 'fails closed when transient live issue fetch failures exhaust retries' {
+            1..3 | ForEach-Object {
+                $global:mockIssueResponses.Enqueue([pscustomobject]@{
+                        ExitCode = 1
+                        Stderr = 'HTTP 503: Service Unavailable; Retry-After: 0'
+                        Stdout = ''
+                    })
+            }
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*failed with exit code 1 after 3 attempt(s)*'
+            $global:mockIssueFetchCount | Should -Be 3
+        }
+
+        It 'fails closed without retrying a permanent live issue fetch failure' {
+            $global:mockIssueResponses.Enqueue([pscustomobject]@{
+                    ExitCode = 1
+                    Stderr = 'HTTP 404: Not Found'
+                    Stdout = ''
+                })
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*failed with exit code 1 after 1 attempt(s)*'
+            $global:mockIssueFetchCount | Should -Be 1
         }
 
         It 'accepts tab-separated prefix grammar at the mutation boundary' {
@@ -3459,9 +3695,163 @@ Describe 'workflow enforcement boundary' {
             $global:mockGateSnapshotIndex | Should -Be 4
         }
 
+        It 'does not restart for an unrelated merged PR body edit' {
+            $before = New-LeakPr `
+                -Number 512 `
+                -Title 'Update unrelated documentation' `
+                -Body 'Original prose'
+            $after = New-LeakPr `
+                -Number 512 `
+                -Title 'Update unrelated documentation' `
+                -Body 'Edited prose after merge'
+            $global:mockGateSnapshots = @(
+                [pscustomobject]@{
+                    Merged = @($before)
+                    Open = @()
+                    Closed = @()
+                }
+                [pscustomobject]@{
+                    Merged = @($after)
+                    Open = @()
+                    Closed = @()
+                }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockGateSnapshotIndex | Should -Be 2
+        }
+
+        It 'restarts when mutable metadata changes on a leak-fix PR' {
+            $before = New-LeakPr `
+                -Number 513 `
+                -Title '[leak-fix] Fix Other.Api leak' `
+                -Body 'Original leak-fix prose'
+            $after = New-LeakPr `
+                -Number 513 `
+                -Title '[leak-fix] Fix Other.Api leak' `
+                -Body 'Edited leak-fix prose'
+            $beforeSnapshot = [pscustomobject]@{
+                Merged = @($before)
+                Open = @()
+                Closed = @()
+            }
+            $afterSnapshot = [pscustomobject]@{
+                Merged = @($after)
+                Open = @()
+                Closed = @()
+            }
+            $global:mockGateSnapshots = @(
+                $beforeSnapshot
+                $afterSnapshot
+                $afterSnapshot
+                $afterSnapshot
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockGateSnapshotIndex | Should -Be 4
+        }
+
+        It 'restarts when a relevant revert marker is added' {
+            $fix = New-LeakPr `
+                -Number 514 `
+                -Title '[leak-fix] Fix Other.Api leak' `
+                -Body 'Fixes #99'
+            $beforeReverter = New-LeakPr `
+                -Number 515 `
+                -Title 'Back out unrelated work' `
+                -Body 'No revert marker'
+            $afterReverter = New-LeakPr `
+                -Number 515 `
+                -Title 'Back out unrelated work' `
+                -Body 'Reverts #514' `
+                -CommitMessages @(
+                    "Revert other fix`n`nThis reverts commit $($fix.mergeCommitOid)."
+                )
+            $beforeSnapshot = [pscustomobject]@{
+                Merged = @($fix, $beforeReverter)
+                Open = @()
+                Closed = @()
+            }
+            $afterSnapshot = [pscustomobject]@{
+                Merged = @($fix, $afterReverter)
+                Open = @()
+                Closed = @()
+            }
+            $global:mockGateSnapshots = @(
+                $beforeSnapshot
+                $afterSnapshot
+                $afterSnapshot
+                $afterSnapshot
+            )
+            $global:mockMerged = @($fix)
+            $global:mockReverts = @($afterReverter)
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockGateSnapshotIndex | Should -Be 4
+        }
+
+        It 'restarts when a relevant revert marker is removed' {
+            $fix = New-LeakPr `
+                -Number 516 `
+                -Title '[leak-fix] Fix Other.Api leak' `
+                -Body 'Fixes #99'
+            $beforeReverter = New-LeakPr `
+                -Number 517 `
+                -Title 'Back out unrelated work' `
+                -Body 'Reverts #516' `
+                -CommitMessages @(
+                    "Revert other fix`n`nThis reverts commit $($fix.mergeCommitOid)."
+                )
+            $afterReverter = New-LeakPr `
+                -Number 517 `
+                -Title 'Back out unrelated work' `
+                -Body 'Revert marker removed'
+            $beforeSnapshot = [pscustomobject]@{
+                Merged = @($fix, $beforeReverter)
+                Open = @()
+                Closed = @()
+            }
+            $afterSnapshot = [pscustomobject]@{
+                Merged = @($fix, $afterReverter)
+                Open = @()
+                Closed = @()
+            }
+            $global:mockGateSnapshots = @(
+                $beforeSnapshot
+                $afterSnapshot
+                $afterSnapshot
+                $afterSnapshot
+            )
+            $global:mockMerged = @($fix)
+            $global:mockReverts = @($beforeReverter)
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockGateSnapshotIndex | Should -Be 4
+        }
+
         It 'fails closed when candidate state churn exhausts the consistency retries' {
             $candidate = New-LeakPr `
-                    -Number 512 `
+                    -Number 518 `
                     -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
                     -Body 'Fixes #10' `
                     -Merged $false

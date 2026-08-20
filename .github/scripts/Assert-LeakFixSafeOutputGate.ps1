@@ -14,9 +14,21 @@ function Get-LeakFixConsistencySignature {
     param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyCollection()]
-        [object[]]$PullRequests
+        [object[]]$PullRequests,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [AllowEmptyCollection()][int[]]$RelevantRevertTargetNumbers = @()
     )
 
+    $relevantRevertTargets = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($number in $RelevantRevertTargetNumbers) {
+        if ($number -le 0) {
+            throw "Consistency signature received invalid revert target PR #$number."
+        }
+        [void]$relevantRevertTargets.Add($number)
+    }
+
+    # Preserve immutable identity for every merged PR, but include editable title/body
+    # only when the record can affect leak-fix or relevant revert de-duplication.
     $relevant = @(
         $PullRequests |
             Where-Object {
@@ -25,10 +37,25 @@ function Get-LeakFixConsistencySignature {
             } |
             Sort-Object number |
             ForEach-Object {
-                [ordered]@{
+                $includeMutableMetadata =
+                    Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix
+                if (-not $includeMutableMetadata -and
+                    [string]$_.state -ceq 'MERGED' -and
+                    $relevantRevertTargets.Count -gt 0) {
+                    foreach ($targetNumber in @(
+                            Get-LeakRevertTargets `
+                                -Body ([string]$_.body) `
+                                -Repository $Repository
+                        )) {
+                        if ($relevantRevertTargets.Contains($targetNumber)) {
+                            $includeMutableMetadata = $true
+                            break
+                        }
+                    }
+                }
+
+                $record = [ordered]@{
                     number = [int]$_.number
-                    title = [string]$_.title
-                    body = if ($null -eq $_.body) { $null } else { [string]$_.body }
                     baseRefName = [string]$_.baseRefName
                     state = [string]$_.state
                     merged = [bool]$_.merged
@@ -44,6 +71,15 @@ function Get-LeakFixConsistencySignature {
                     }
                     url = [string]$_.url
                 }
+                if ($includeMutableMetadata) {
+                    $record.title = [string]$_.title
+                    $record.body = if ($null -eq $_.body) {
+                        $null
+                    } else {
+                        [string]$_.body
+                    }
+                }
+                $record
             }
     )
 
@@ -120,14 +156,23 @@ for ($attempt = 1; $attempt -le $maximumConsistencyAttempts; $attempt++) {
             -TargetPullRequests $eligibleMerged `
             -MergedPullRequests $beforeMerged
     )
+    $relevantRevertTargetNumbers = @(
+        @($eligibleMerged | ForEach-Object { [int]$_.number }) +
+        @($candidateMergedReverts | ForEach-Object { [int]$_.number }) |
+            Sort-Object -Unique
+    )
 
     $after = @(
         Get-CompleteLeakPullRequests `
             -Repository $Repository `
             -States @('OPEN', 'CLOSED', 'MERGED')
     )
-    $beforeSignature = Get-LeakFixConsistencySignature -PullRequests $before
-    $afterSignature = Get-LeakFixConsistencySignature -PullRequests $after
+    $beforeSignature = Get-LeakFixConsistencySignature -PullRequests $before `
+        -Repository $Repository `
+        -RelevantRevertTargetNumbers $relevantRevertTargetNumbers
+    $afterSignature = Get-LeakFixConsistencySignature -PullRequests $after `
+        -Repository $Repository `
+        -RelevantRevertTargetNumbers $relevantRevertTargetNumbers
     if ($beforeSignature -ceq $afterSignature) {
         $consistentSnapshot = $after
         $mergedReverts = $candidateMergedReverts
@@ -179,4 +224,11 @@ if ($result.Blocked) {
     throw "Final leak-fix de-dup gate blocked PR creation: $($result.Reason)."
 }
 
-Write-Host "Final leak-fix de-dup gate passed for issue #$issueNumber ($api): $($result.Reason)."
+# Keep this exact issue fetch last so its type, repository, OPEN state, canonical
+# title, and scanner-owned labels are as fresh as possible before PR mutation.
+$liveIssue = Get-ValidatedLeakScanIssue `
+    -Repository $Repository `
+    -IssueNumber $issueNumber `
+    -Api $api
+
+Write-Host "Final leak-fix de-dup gate passed for issue #$issueNumber ($api): $($result.Reason). Live issue $($liveIssue.url) validated."

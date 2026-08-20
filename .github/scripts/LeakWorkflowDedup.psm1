@@ -1108,6 +1108,10 @@ function Invoke-LeakPullRequestSnapshot {
     $stateQuery = $requestedStates -join ', '
     $stateContext = $requestedStates -join '/'
 
+    # Keep body in this single all-state snapshot. Every merged body is the bounded,
+    # non-Search prefilter for possible Reverts references before immutable commit proof.
+    # Splitting only OPEN/CLOSED bodies would add lifecycle-sensitive detail round trips
+    # and query budget without reducing the required merged-history payload.
     $query = @'
 query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
@@ -1727,6 +1731,216 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
     }
 
     return @($issues | Sort-Object number)
+}
+
+function Get-ValidatedLeakScanIssue {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$IssueNumber,
+        [Parameter(Mandatory = $true)][string]$Api
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Api)) {
+        throw 'A canonical leak API is required for live issue validation.'
+    }
+
+    $coordinates = Get-LeakRepositoryCoordinates -Repository $Repository
+    $query = @'
+query($owner: String!, $name: String!, $number: Int!) {
+  repository(owner: $owner, name: $name) {
+    issueOrPullRequest(number: $number) {
+      __typename
+      ... on Issue {
+        number
+        title
+        state
+        url
+        repository {
+          nameWithOwner
+        }
+        labels(first: 100) {
+          totalCount
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+'@
+    $response = Invoke-LeakGhJson -Arguments @(
+        'api', 'graphql',
+        '-f', "query=$query",
+        '-f', "owner=$($coordinates.Owner)",
+        '-f', "name=$($coordinates.Name)",
+        '-F', "number=$IssueNumber"
+    )
+    $context = "Live leak-scan issue #$IssueNumber"
+    Assert-LeakGraphQlResponse -Response $response -Context $context
+
+    $data = Get-LeakRequiredPropertyValue `
+        -Object $response `
+        -Name 'data' `
+        -Context "$context response"
+    $repositoryNode = Get-LeakRequiredPropertyValue `
+        -Object $data `
+        -Name 'repository' `
+        -Context "$context response data" `
+        -AllowNull
+    if ($null -eq $repositoryNode) {
+        throw "$context repository '$Repository' was not found or is not accessible."
+    }
+    $issue = Get-LeakRequiredPropertyValue `
+        -Object $repositoryNode `
+        -Name 'issueOrPullRequest' `
+        -Context "$context repository response" `
+        -AllowNull
+    if ($null -eq $issue) {
+        throw "$context does not exist in repository '$Repository' or is not accessible."
+    }
+
+    $typeName = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name '__typename' `
+        -Context $context
+    if ($typeName -isnot [string]) {
+        throw "$context returned malformed type metadata."
+    }
+    if ($typeName -cne 'Issue') {
+        if ($typeName -ceq 'PullRequest') {
+            throw "$context is a pull request, not an issue."
+        }
+        throw "$context returned unexpected type '$typeName'."
+    }
+
+    $liveNumberValue = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name 'number' `
+        -Context $context
+    $liveNumber = 0
+    if (-not [int]::TryParse([string]$liveNumberValue, [ref]$liveNumber) -or
+        $liveNumber -ne $IssueNumber) {
+        throw "$context returned mismatched issue number '$liveNumberValue'."
+    }
+
+    $state = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name 'state' `
+        -Context $context
+    if ($state -isnot [string] -or $state -cne 'OPEN') {
+        throw "$context must still be OPEN; live state was '$state'."
+    }
+
+    $title = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name 'title' `
+        -Context $context
+    if ($title -isnot [string] -or
+        -not (Test-LeakTitlePrefix -Title $title -Kind Scan)) {
+        throw "$context must have a visible canonical [leak-scan] title."
+    }
+    $liveApi = Get-CanonicalLeakApi -Title $title
+    if ([string]::IsNullOrWhiteSpace($liveApi)) {
+        throw "$context has a malformed [leak-scan] title without a canonical API."
+    }
+    if ($liveApi -cne $Api) {
+        throw "$context canonical API '$liveApi' does not match proposed PR API '$Api'."
+    }
+
+    $url = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name 'url' `
+        -Context $context
+    if ($url -isnot [string] -or [string]::IsNullOrWhiteSpace($url)) {
+        throw "$context returned malformed URL metadata."
+    }
+    $issueRepository = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name 'repository' `
+        -Context $context
+    $nameWithOwner = Get-LeakRequiredPropertyValue `
+        -Object $issueRepository `
+        -Name 'nameWithOwner' `
+        -Context "$context repository"
+    if ($nameWithOwner -isnot [string] -or $nameWithOwner -cne $Repository) {
+        throw "$context belongs to unexpected repository '$nameWithOwner'."
+    }
+
+    $labels = Get-LeakRequiredPropertyValue `
+        -Object $issue `
+        -Name 'labels' `
+        -Context $context
+    $totalCountValue = Get-LeakRequiredPropertyValue `
+        -Object $labels `
+        -Name 'totalCount' `
+        -Context "$context labels"
+    [long]$totalCount = -1
+    if (-not [long]::TryParse([string]$totalCountValue, [ref]$totalCount) -or
+        $totalCount -lt 0 -or $totalCount -gt 100) {
+        throw "$context returned malformed or over-budget label metadata."
+    }
+    $pageInfo = Get-LeakRequiredPropertyValue `
+        -Object $labels `
+        -Name 'pageInfo' `
+        -Context "$context labels"
+    $hasNextPage = Get-LeakRequiredPropertyValue `
+        -Object $pageInfo `
+        -Name 'hasNextPage' `
+        -Context "$context labels pageInfo"
+    if ($hasNextPage -isnot [bool] -or $hasNextPage) {
+        throw "$context label metadata is incomplete or malformed."
+    }
+    $labelNodes = @(
+        Get-LeakRequiredPropertyValue `
+            -Object $labels `
+            -Name 'nodes' `
+            -Context "$context labels" `
+            -RequireArray
+    )
+    if ($labelNodes.Count -ne $totalCount) {
+        throw "$context label metadata is incomplete."
+    }
+
+    $labelNames = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    $labelNamesIgnoreCase = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::OrdinalIgnoreCase
+    )
+    foreach ($labelNode in $labelNodes) {
+        $labelName = Get-LeakRequiredPropertyValue `
+            -Object $labelNode `
+            -Name 'name' `
+            -Context "$context label"
+        if ($labelName -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($labelName) -or
+            -not $labelNamesIgnoreCase.Add($labelName)) {
+            throw "$context returned malformed or ambiguous label metadata."
+        }
+        [void]$labelNames.Add($labelName)
+    }
+
+    foreach ($requiredLabel in @('agentic-workflows', 'perf/memory-leak 💦')) {
+        if (-not $labelNames.Contains($requiredLabel)) {
+            throw "$context is missing required scanner provenance label '$requiredLabel'."
+        }
+    }
+
+    return [pscustomobject]@{
+        number = $liveNumber
+        title = $title
+        state = $state
+        api = $liveApi
+        url = $url
+        labels = @($labelNames | Sort-Object)
+    }
 }
 
 function Get-RelevantMergedLeakReverts {
@@ -2358,6 +2572,7 @@ Export-ModuleMember -Function `
     Get-CompleteLeakPullRequests, `
     Get-CompleteLeakPullRequestCommitHistories, `
     Get-CompleteLeakIssues, `
+    Get-ValidatedLeakScanIssue, `
     Get-RelevantMergedLeakReverts, `
     Assert-LeakDedupState, `
     Get-LeakFixFinalDedupResult, `
