@@ -1113,3 +1113,57 @@ Describe 'the blocked-run classifier reads the attempts it reports' {
             "the classifier reads '$classifierVariable' but the run reports a different list"
     }
 }
+
+Describe 'script-scoped state survives StrictMode' {
+    It 'assigns every script-scoped variable at file scope before it is read' {
+        # Replicate-Issue.ps1 runs under Set-StrictMode -Version 3.0, where
+        # reading a variable that has never been assigned is a terminating
+        # error. A flag set only inside the branch that owns it therefore
+        # crashes every run that skips that branch, and those are the runs that
+        # matter: the scenario the agent reported as structurally blocked, the
+        # reproduction the device refused. Builds 15034975 and 15034980 died
+        # this way, turning two correct refusals into pipeline failures.
+        #
+        # The check is textual order rather than reachability, which is a
+        # stronger requirement than StrictMode imposes and easy to satisfy: put
+        # the initialiser above the code that reads it.
+        function Test-InsideFunction($node) {
+            $parent = $node.Parent
+            while ($parent) {
+                if ($parent -is [System.Management.Automation.Language.FunctionDefinitionAst]) {
+                    return $true
+                }
+                $parent = $parent.Parent
+            }
+            return $false
+        }
+
+        $uses = @($script:ReplicateAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                        $node.VariablePath.IsScript
+                }, $true))
+        $uses.Count | Should -BeGreaterThan 0
+
+        foreach ($group in ($uses | Group-Object { $_.VariablePath.UserPath })) {
+            $reads = @($group.Group | Where-Object {
+                    -not (($_.Parent -is [System.Management.Automation.Language.AssignmentStatementAst]) -and
+                        $_.Parent.Left -eq $_)
+                })
+            if ($reads.Count -eq 0) { continue }
+
+            $fileScopeAssignments = @($group.Group | Where-Object {
+                    ($_.Parent -is [System.Management.Automation.Language.AssignmentStatementAst]) -and
+                        $_.Parent.Left -eq $_ -and
+                        -not (Test-InsideFunction $_)
+                })
+            $fileScopeAssignments.Count | Should -BeGreaterThan 0 -Because `
+                "'$($group.Name)' is read but never assigned outside a function, so any run that skips that function fails under StrictMode"
+
+            $firstAssignment = ($fileScopeAssignments | ForEach-Object { $_.Extent.StartLineNumber } | Measure-Object -Minimum).Minimum
+            $firstRead = ($reads | ForEach-Object { $_.Extent.StartLineNumber } | Measure-Object -Minimum).Minimum
+            $firstAssignment | Should -BeLessThan $firstRead -Because `
+                "'$($group.Name)' is read on line $firstRead before its file-scope initialiser on line $firstAssignment"
+        }
+    }
+}

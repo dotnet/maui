@@ -3748,6 +3748,13 @@ function Restore-TrackedVerificationSideEffects {
     }
 }
 
+# Set only where a control runs and returns a still-red test. The exit
+# classification reads it on every path, including the many that never reach a
+# control at all -- a scenario the agent reported as structurally blocked, a
+# reproduction the device refused -- and StrictMode makes reading an unassigned
+# variable a terminating error, so the flag has to exist before any of them.
+$script:ReplicationControlRefutedReproduction = $false
+
 function Invoke-ReplicationNegativeControl {
     <#
         .SYNOPSIS
