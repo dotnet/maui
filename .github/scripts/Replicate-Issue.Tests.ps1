@@ -6576,3 +6576,25 @@ Describe 'A control the device runner never executed' {
             Should -BeFalse
     }
 }
+
+Describe 'A committed test may not assert on the Sandbox verdict' {
+    # A test that checks the app printed 'BUG REPRODUCED' proves only that the
+    # app can print. It would stay green after the defect is fixed, which is the
+    # opposite of a regression oracle.
+    BeforeAll {
+        $script:ProposalSource = Get-Content -Raw -LiteralPath (
+            Join-Path (Split-Path -Parent $PSCommandPath) 'Replicate-Issue.ps1')
+    }
+
+    It 'rejects a generated test carrying the verdict text' {
+        $script:ProposalSource | Should -Match "cmatch 'BUG REPRODUCED\|NO BUG'"
+    }
+
+    It 'explains what to assert on instead' {
+        $script:ProposalSource | Should -Match 'not on a label the app writes about itself'
+    }
+
+    It 'tells the author the same rule before it rejects them' {
+        $script:ProposalSource | Should -Match "never assert that the app printed"
+    }
+}
