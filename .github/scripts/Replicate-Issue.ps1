@@ -3561,7 +3561,7 @@ function Invoke-ReplicationNegativeControl {
             Invoke-ReplicationCopilot `
                 -PhaseName "control-$round" `
                 -Prompt (New-CopilotPrompt -Phase control -FailureSummary $controlFailureSummary) `
-                -WritePaths @($controlVariantPath) `
+                -WritePaths @($controlVariantPath, $testProposalPath) `
                 -Attempt $round
         }
         catch {
