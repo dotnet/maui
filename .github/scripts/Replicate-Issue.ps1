@@ -4305,6 +4305,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         }
         $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
         $repairFailureSummary = ''
+        $testFailureHistory = [ordered]@{}
 
         $buildRepairRounds = 0
         $testHarnessRetries = 0
@@ -4468,6 +4469,41 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                 }
                 elseif ($attempt -eq $MaxTestAttempts) {
                     throw
+                }
+
+                # Appended last, after every detector above has read the raw
+                # summary: the history restates earlier failures verbatim, so
+                # adding it sooner would let a stale "test passed" or closure
+                # rejection re-trigger escalation on an unrelated later round.
+                #
+                # Build 15032173 spent twelve attempts alternating between a
+                # build failure and a wrong signature, each revision fixing
+                # only the failure it had just been shown. The sandbox loop
+                # already carries its whole failure history for exactly this
+                # reason; the repair loop did not, so it could oscillate until
+                # its budget ran out.
+                $testFailureSignature = Get-ReplicationFailureSignature $repairFailureSummary
+                if (Test-ReplicationFailureAlreadySeen `
+                        -History $testFailureHistory -Signature $testFailureSignature) {
+                    $earlierTestAttempt = $testFailureHistory[$testFailureSignature]
+                    $repairFailureSummary = @"
+$repairFailureSummary
+
+This same failure already occurred on attempt $earlierTestAttempt. Repeating a revision that was already tried wastes the remaining attempts. Take a materially different approach instead of resubmitting an equivalent test.
+"@
+                }
+                $testFailureHistory[$testFailureSignature] = $verificationRound
+                if ($testFailureHistory.Count -gt 1) {
+                    $testHistoryLines = $testFailureHistory.GetEnumerator() |
+                        Sort-Object -Property Value |
+                        ForEach-Object { "- attempt $($_.Value): $($_.Key)" }
+                    $repairFailureSummary = @"
+$repairFailureSummary
+
+Distinct failures seen so far on this test:
+$($testHistoryLines -join [Environment]::NewLine)
+Your next revision must resolve every one of them at once. A revision that fixes only the newest failure and reintroduces an earlier one simply cycles between them and will exhaust the remaining attempts.
+"@
                 }
             }
             finally {

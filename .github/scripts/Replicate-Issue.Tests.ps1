@@ -5990,6 +5990,48 @@ Describe 'A tier with no build for the platform escalates instead of stalling' {
     }
 }
 
+Describe 'The repair loop carries its whole failure history' {
+    # Build 15032173 spent twelve attempts alternating build-failed and
+    # wrong-signature: each revision fixed only the failure it had just been
+    # shown and reintroduced the previous one. The sandbox loop already
+    # accumulates every distinct failure for exactly this reason.
+    It 'keeps a history for the test loop as well as the sandbox loop' {
+        $script:Source | Should -Match '\$testFailureHistory = \[ordered\]@\{\}'
+        $script:Source | Should -Match 'Distinct failures seen so far on this test'
+    }
+
+    It 'names the attempt on which an identical failure was already seen' {
+        $script:Source | Should -Match 'This same failure already occurred on attempt \$earlierTestAttempt'
+    }
+
+    It 'reuses the signature helper the sandbox loop already proved' {
+        $script:Source | Should -Match 'Get-ReplicationFailureSignature \$repairFailureSummary'
+        $script:Source | Should -Match '-History \$testFailureHistory -Signature \$testFailureSignature'
+    }
+
+    It 'appends the history only after every detector has read the raw summary' {
+        # The history restates earlier failures verbatim. Appending it before
+        # these run would let a stale "test passed" or platform-closure
+        # rejection re-trigger tier escalation on an unrelated later round.
+        $historyAt = $script:Source.IndexOf('Distinct failures seen so far on this test')
+        $historyAt | Should -BeGreaterThan 0
+        foreach ($detector in @(
+                'Test-ReplicationTestDidNotReproduce $repairFailureSummary',
+                'Test-ReplicationTierCannotBuildForPlatform $repairFailureSummary',
+                'Test-ReplicationTestHarnessFault -FailureSummary $repairFailureSummary')) {
+            $at = $script:Source.IndexOf($detector)
+            $at | Should -BeGreaterThan 0 -Because "$detector must appear in the repair loop"
+            $at | Should -BeLessThan $historyAt -Because "$detector must read the summary before the history is appended"
+        }
+    }
+
+    It 'resets the history for each fresh plan round' {
+        # A tier escalation replans from scratch, so failures from the tier
+        # that was abandoned must not be quoted back at the new one.
+        $script:Source | Should -Match "\`$repairFailureSummary = ''\s*\r?\n\s*\`$testFailureHistory = \[ordered\]@\{\}"
+    }
+}
+
 Describe 'Assert-ReplicationNegativeControlIsInformative' {
     BeforeAll {
         $script:Baseline = @'
