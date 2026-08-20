@@ -649,10 +649,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_appliesSafeAreaAdjustments)
 			{
-				var safeBounds = AdjustForSafeArea(bounds);
-
 				if (CrossPlatformLayout is ISafeAreaLayout safeAreaLayout)
 				{
+					ValidateSafeArea();
 					safeAreaLayout.CrossPlatformArrange(
 						bounds.ToRectangle(),
 						new Thickness(_safeArea.Left, _safeArea.Top, _safeArea.Right, _safeArea.Bottom),
@@ -660,7 +659,7 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				bounds = safeBounds;
+				bounds = AdjustForSafeArea(bounds);
 			}
 			else
 			{

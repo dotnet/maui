@@ -7,4 +7,12 @@ namespace Microsoft.Maui
 		Size CrossPlatformArrange(Rect bounds, Thickness safeArea, bool delegateTopInset);
 		void DisconnectSafeArea();
 	}
+
+#if IOS
+	internal interface ISafeAreaScrollView
+	{
+		void ApplyDelegatedTopInset(double topInset);
+		void ResetDelegatedTopInset();
+	}
+#endif
 }

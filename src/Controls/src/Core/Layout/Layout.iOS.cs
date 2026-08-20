@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Layout : ISafeAreaLayout
 	{
-		UIScrollView _delegatedNativeScrollView;
+		WeakReference<UIScrollView> _delegatedNativeScrollView;
 		UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
 		nfloat _delegatedTopInset;
 		nfloat _delegatedScrollIndicatorTopInset;
@@ -32,7 +31,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			const double tolerance = 1;
-			var candidates = new List<(IView Host, IView ScrollContent, double ContentTopInset)>();
+			IView scrollHost = null;
+			IView scrollContent = null;
+			double contentTopInset = 0;
+			var candidateCount = 0;
 
 			foreach (var child in this)
 			{
@@ -47,16 +49,23 @@ namespace Microsoft.Maui.Controls
 				var fixedTopSiblingsAreOverlays = FixedTopSiblingsAreOverlays(child, frame, safeBounds, tolerance);
 
 				if (beginsWithinSafeBounds && occupiesMostOfSafeHeight && fixedTopSiblingsAreOverlays)
-					candidates.Add((child, foundScrollContent, frame.Top - bounds.Top));
+				{
+					candidateCount++;
+					scrollHost = child;
+					scrollContent = foundScrollContent;
+					contentTopInset = frame.Top - bounds.Top;
+
+					if (candidateCount > 1)
+						break;
+				}
 			}
 
-			if (candidates.Count != 1)
+			if (candidateCount != 1)
 			{
 				ResetNativeScrollInsetOwnership();
 				return arranged;
 			}
 
-			var (scrollHost, scrollContent, contentTopInset) = candidates[0];
 			var nativeScrollView = ResolveNativeScrollView(scrollContent);
 			if (nativeScrollView is null)
 			{
@@ -65,7 +74,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var scrollFrame = scrollHost.Frame;
-			scrollHost.Arrange(new Rect(
+			scrollHost.Handler?.PlatformArrange(new Rect(
 				scrollFrame.X,
 				bounds.Top,
 				scrollFrame.Width,
@@ -79,11 +88,20 @@ namespace Microsoft.Maui.Controls
 
 		void TransferNativeScrollInsetOwnership(UIScrollView nativeScrollView, double topInset)
 		{
-			if (_delegatedNativeScrollView != nativeScrollView)
+			if (_delegatedNativeScrollView?.TryGetTarget(out var delegatedScrollView) != true ||
+				delegatedScrollView != nativeScrollView)
 			{
 				ResetNativeScrollInsetOwnership();
-				_delegatedNativeScrollView = nativeScrollView;
-				_previousInsetAdjustmentBehavior = nativeScrollView.ContentInsetAdjustmentBehavior;
+				_delegatedNativeScrollView = new(nativeScrollView);
+
+				if (nativeScrollView is not ISafeAreaScrollView)
+					_previousInsetAdjustmentBehavior = nativeScrollView.ContentInsetAdjustmentBehavior;
+			}
+
+			if (nativeScrollView is ISafeAreaScrollView safeAreaScrollView)
+			{
+				safeAreaScrollView.ApplyDelegatedTopInset(topInset);
+				return;
 			}
 
 			var distanceFromTop = nativeScrollView.ContentOffset.Y + nativeScrollView.AdjustedContentInset.Top;
@@ -116,36 +134,51 @@ namespace Microsoft.Maui.Controls
 
 		void ResetNativeScrollInsetOwnership()
 		{
-			if (_delegatedNativeScrollView is null)
-				return;
-
-			if (_delegatedNativeScrollView.Handle != IntPtr.Zero)
+			if (_delegatedNativeScrollView?.TryGetTarget(out var delegatedScrollView) != true)
 			{
-				var distanceFromTop = _delegatedNativeScrollView.ContentOffset.Y +
-					_delegatedNativeScrollView.AdjustedContentInset.Top;
-				var contentInset = _delegatedNativeScrollView.ContentInset;
-				var indicatorInsets = _delegatedNativeScrollView.VerticalScrollIndicatorInsets;
+				ClearNativeScrollInsetOwnership();
+				return;
+			}
 
-				_delegatedNativeScrollView.ContentInset = new UIEdgeInsets(
+			if (delegatedScrollView.Handle != IntPtr.Zero)
+			{
+				if (delegatedScrollView is ISafeAreaScrollView safeAreaScrollView)
+				{
+					safeAreaScrollView.ResetDelegatedTopInset();
+					ClearNativeScrollInsetOwnership();
+					return;
+				}
+
+				var distanceFromTop = delegatedScrollView.ContentOffset.Y +
+					delegatedScrollView.AdjustedContentInset.Top;
+				var contentInset = delegatedScrollView.ContentInset;
+				var indicatorInsets = delegatedScrollView.VerticalScrollIndicatorInsets;
+
+				delegatedScrollView.ContentInset = new UIEdgeInsets(
 					contentInset.Top - _delegatedTopInset,
 					contentInset.Left,
 					contentInset.Bottom,
 					contentInset.Right);
-				_delegatedNativeScrollView.VerticalScrollIndicatorInsets = new UIEdgeInsets(
+				delegatedScrollView.VerticalScrollIndicatorInsets = new UIEdgeInsets(
 					indicatorInsets.Top - _delegatedScrollIndicatorTopInset,
 					indicatorInsets.Left,
 					indicatorInsets.Bottom,
 					indicatorInsets.Right);
-				_delegatedNativeScrollView.ContentInsetAdjustmentBehavior = _previousInsetAdjustmentBehavior;
+				delegatedScrollView.ContentInsetAdjustmentBehavior = _previousInsetAdjustmentBehavior;
 
-				if (!_delegatedNativeScrollView.Dragging && !_delegatedNativeScrollView.Decelerating)
+				if (!delegatedScrollView.Dragging && !delegatedScrollView.Decelerating)
 				{
-					_delegatedNativeScrollView.ContentOffset = new CGPoint(
-						_delegatedNativeScrollView.ContentOffset.X,
-						distanceFromTop - _delegatedNativeScrollView.AdjustedContentInset.Top);
+					delegatedScrollView.ContentOffset = new CGPoint(
+						delegatedScrollView.ContentOffset.X,
+						distanceFromTop - delegatedScrollView.AdjustedContentInset.Top);
 				}
 			}
 
+			ClearNativeScrollInsetOwnership();
+		}
+
+		void ClearNativeScrollInsetOwnership()
+		{
 			_delegatedNativeScrollView = null;
 			_delegatedTopInset = 0;
 			_delegatedScrollIndicatorTopInset = 0;
@@ -159,7 +192,7 @@ namespace Microsoft.Maui.Controls
 			if (view.Handler?.PlatformView is UIView platformView)
 			{
 				return FindNativeScrollView(platformView, verticallyScrollableOnly: true) ??
-					FindNativeScrollView(platformView, verticallyScrollableOnly: false);
+					(view is WebView ? FindNativeScrollView(platformView, verticallyScrollableOnly: false) : null);
 			}
 
 			return null;

@@ -224,6 +224,102 @@ public class Issue33037NonShell : _IssuesUITest
 			Assert.That(topMarker.Y, Is.GreaterThan(20),
 				"Content should remain below the status bar when the navigation bar is hidden.");
 		}
+
+		[Test]
+		[Category(UITestCategories.Navigation)]
+		public void OrdinaryHeaderPreservesSafeAreaLayout()
+		{
+			RequireIOS26OrHigher();
+			App.WaitForElement("Issue33037OrdinaryHeaderButton").Click();
+
+			try
+			{
+				var titleRect = App.WaitForElement("Issue33037 Ordinary Header").GetRect();
+				var headerRect = App.WaitForElement("Issue33037OrdinaryHeader").GetRect();
+				var scrollerRect = App.WaitForElement("Issue33037OrdinaryHeaderScroller").GetRect();
+
+				Assert.That(headerRect.Y, Is.GreaterThanOrEqualTo(titleRect.Y + titleRect.Height - 2),
+					"An ordinary fixed header must remain below the navigation title.");
+				Assert.That(scrollerRect.Y, Is.GreaterThanOrEqualTo(headerRect.Y + headerRect.Height - 2),
+					"The scroll host must remain below an ordinary fixed header rather than being delegated edge-to-edge.");
+			}
+
+			[Test]
+			[Category(UITestCategories.Navigation)]
+			public void MultipleScrollCandidatesPreserveSafeAreaLayout()
+			{
+				RequireIOS26OrHigher();
+				App.WaitForElement("Issue33037MultipleCandidatesButton").Click();
+
+				try
+				{
+					var first = App.WaitForElement("Issue33037FirstCandidate").GetRect();
+					var second = App.WaitForElement("Issue33037SecondCandidate").GetRect();
+
+					Assert.That(first.Y, Is.GreaterThan(20),
+						"Ambiguous scroll candidates must remain in the root safe-area layout.");
+					Assert.That(second.Y, Is.EqualTo(first.Y).Within(2),
+						"Neither ambiguous candidate should receive delegated top-inset ownership.");
+				}
+				finally
+				{
+					App.Back();
+				}
+			}
+
+			[Test]
+			[Category(UITestCategories.Navigation)]
+			public void ExplicitSafeAreaOwnershipResetsDelegation()
+			{
+				RequireIOS26OrHigher();
+				App.WaitForElement("Issue33037ExplicitSafeAreaButton").Click();
+
+				try
+				{
+					var delegatedRect = App.WaitForElement("Issue33037ExplicitSafeAreaScroller").GetRect();
+					Assert.That(delegatedRect.Y, Is.LessThanOrEqualTo(2),
+						"The implicit scroll host should initially receive delegated top-inset ownership.");
+
+					App.WaitForElement("Issue33037ExplicitSafeAreaToggle").Click();
+					App.WaitForElement("Explicit safe-area ownership active");
+					var explicitRect = App.WaitForElement("Issue33037ExplicitSafeAreaScroller").GetRect();
+
+					Assert.That(explicitRect.Y, Is.GreaterThan(20),
+						"Setting explicit SafeAreaEdges must reset delegated ownership and restore safe-area layout.");
+				}
+				finally
+				{
+					App.Back();
+				}
+			}
+
+			[Test]
+			[Category(UITestCategories.Navigation)]
+			public void LargeTitleNeverPreservesSafeAreaLayout()
+			{
+				RequireIOS26OrHigher();
+				App.WaitForElement("Issue33037LargeTitleNeverButton").Click();
+
+				try
+				{
+					var title = App.WaitForElement("Issue33037 No Large Title").GetRect();
+					var scroller = App.WaitForElement("Issue33037LargeTitleNeverScroller").GetRect();
+
+					Assert.That(title.Height, Is.LessThan(60),
+						"LargeTitleDisplayMode.Never should keep the compact navigation title.");
+					Assert.That(scroller.Y, Is.GreaterThan(20),
+						"A page which opts out of large titles must retain the normal safe-area layout.");
+				}
+				finally
+				{
+					App.Back();
+				}
+			}
+			finally
+			{
+				App.Back();
+			}
+		}
 		finally
 		{
 			App.WaitForElement("Issue33037HiddenNavigationBarBackButton").Click();

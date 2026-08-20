@@ -50,6 +50,10 @@ public class Issue33037NonShellRootPage : ContentPage
 				CreateButton("Issue33037WebViewButton", "Grid wrapping WebView", () => new Issue33037NonShellWebViewPage()),
 				CreateButton("Issue33037CandidateSelectionButton", "Hidden and horizontal scrollers before vertical content", () => new Issue33037NonShellCandidateSelectionPage()),
 				CreateButton("Issue33037FixedHeaderCollectionViewButton", "Fixed header with CollectionView", () => new Issue33037NonShellFixedHeaderCollectionViewPage()),
+				CreateButton("Issue33037OrdinaryHeaderButton", "Ordinary header preserves safe area", () => new Issue33037NonShellOrdinaryHeaderPage()),
+				CreateButton("Issue33037MultipleCandidatesButton", "Multiple candidates preserve safe area", () => new Issue33037NonShellMultipleCandidatesPage()),
+				CreateButton("Issue33037ExplicitSafeAreaButton", "Explicit safe-area ownership and reset", () => new Issue33037NonShellExplicitSafeAreaPage()),
+				CreateButton("Issue33037LargeTitleNeverButton", "Large-title opt-out preserves safe area", () => new Issue33037NonShellLargeTitleNeverPage()),
 				CreateButton("Issue33037ShortFixedHeaderCollectionViewButton", "Short fixed header with CollectionView", () => new Issue33037NonShellShortFixedHeaderCollectionViewPage()),
 				CreateButton("Issue33037ProgrammaticCollectionViewButton", "Programmatic CollectionView scroll", () => new Issue33037NonShellProgrammaticCollectionViewPage()),
 				CreateButton("Issue33037AppearingCollectionViewButton", "OnAppearing CollectionView scroll", () => new Issue33037NonShellAppearingCollectionViewPage()),
@@ -649,6 +653,137 @@ class Issue33037NonShellShortFixedHeaderCollectionViewPage : Issue33037NonShellS
 				header,
 				collectionView
 			}
+		};
+	}
+}
+
+class Issue33037NonShellOrdinaryHeaderPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellOrdinaryHeaderPage() : base("Issue33037 Ordinary Header")
+	{
+		var header = new Label
+		{
+			AutomationId = "Issue33037OrdinaryHeader",
+			Text = "This ordinary header must remain in the safe-area layout.",
+			BackgroundColor = Colors.LightBlue,
+			FontAttributes = FontAttributes.Bold,
+			Padding = 12
+		};
+
+		var collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037OrdinaryHeaderScroller",
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		Grid.SetRow(collectionView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				header,
+				collectionView
+			}
+		};
+	}
+}
+
+class Issue33037NonShellMultipleCandidatesPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellMultipleCandidatesPage() : base("Issue33037 Multiple Candidates")
+	{
+		var first = new CollectionView
+		{
+			AutomationId = "Issue33037FirstCandidate",
+			ItemsSource = CreateItems()
+		};
+
+		var second = new CollectionView
+		{
+			AutomationId = "Issue33037SecondCandidate",
+			ItemsSource = CreateItems()
+		};
+
+		Content = new AbsoluteLayout
+		{
+			Children =
+			{
+				first,
+				second
+			}
+		};
+
+		AbsoluteLayout.SetLayoutBounds(first, new Rect(0, 0, 0.5, 1));
+		AbsoluteLayout.SetLayoutFlags(first, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(second, new Rect(1, 0, 0.5, 1));
+		AbsoluteLayout.SetLayoutFlags(second, AbsoluteLayoutFlags.All);
+	}
+}
+
+class Issue33037NonShellExplicitSafeAreaPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellExplicitSafeAreaPage() : base("Issue33037 Explicit Safe Area")
+	{
+		var scrollView = new ScrollView
+		{
+			AutomationId = "Issue33037ExplicitSafeAreaScroller",
+			Content = CreateStackContent("Issue33037ExplicitSafeArea")
+		};
+
+		var toggle = new Button
+		{
+			AutomationId = "Issue33037ExplicitSafeAreaToggle",
+			Text = "Take explicit safe-area ownership"
+		};
+		toggle.Clicked += (_, _) =>
+		{
+			scrollView.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+			toggle.Text = "Explicit safe-area ownership active";
+		};
+
+		Content = new Grid
+		{
+			Children =
+			{
+				scrollView,
+				new VerticalStackLayout
+				{
+					VerticalOptions = LayoutOptions.End,
+					ZIndex = 1,
+					Children = { toggle }
+				}
+			}
+		};
+	}
+}
+
+class Issue33037NonShellLargeTitleNeverPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellLargeTitleNeverPage() : base("Issue33037 No Large Title")
+	{
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetLargeTitleDisplay(
+			this,
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never);
+
+		Content = new CollectionView
+		{
+			AutomationId = "Issue33037LargeTitleNeverScroller",
+			ItemsSource = CreateItems()
 		};
 	}
 }
