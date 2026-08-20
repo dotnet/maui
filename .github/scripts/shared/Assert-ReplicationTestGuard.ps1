@@ -361,6 +361,24 @@ function Get-ReplicationNonAttributiveOracles {
             # oracle in PR 213.
             Pattern = '(?i)\brequires\b.{0,60}?\b(?:or (?:later|newer|higher)|version \d|simulator|emulator|physical device|a display|network|internet|geometry|orientation|accessibility state|default accessibility)\b'
             Reason = 'a precondition on the environment rather than the reported behavior, so the red it predicts is a lane the test was never meant to run in'
+        },
+        [pscustomobject]@{
+            # PR 242 nominated "expected at least 1 purple icon pixel after
+            # Shell.ForegroundColor Purple". A reviewer rejected it because one
+            # antialiased or contaminated pixel satisfies that threshold, so a
+            # completely wrong rendering turns the test green. A measurement
+            # oracle has to name a share of what it measured, not a single unit.
+            Pattern = '(?i)\b(?:at least\s+(?:1|one)|>=\s*1|>\s*0)\b[^.;]{0,60}?\bpixels?\b'
+            Reason = 'a single pixel, which one antialiased or contaminated pixel satisfies, so a fully wrong rendering would still turn this test green'
+            Guidance = 'Assert a calibrated share of the opaque pixels you measured, such as a minimum fraction of the icon mask, and report the measured counts in the failure message.'
+        },
+        [pscustomobject]@{
+            # The same weak threshold, written with the measurement first.
+            # A camelCase identifier such as purplePixels has no word boundary
+            # before "Pixels", so the leading anchor is deliberately absent.
+            Pattern = '(?i)pixels?\b[^.;]{0,40}?(?:>=\s*1\b(?!\d)|>\s*0\b|at least\s+(?:1|one)\b)'
+            Reason = 'a single pixel, which one antialiased or contaminated pixel satisfies, so a fully wrong rendering would still turn this test green'
+            Guidance = 'Assert a calibrated share of the opaque pixels you measured, such as a minimum fraction of the icon mask, and report the measured counts in the failure message.'
         }
     )
 }
@@ -379,8 +397,13 @@ function Assert-ReplicationOracleIsFalsifiable {
 
     foreach ($oracle in Get-ReplicationNonAttributiveOracles) {
         if ([regex]::IsMatch($signature, $oracle.Pattern)) {
+            $guidance = if ($oracle.PSObject.Properties['Guidance'] -and $oracle.Guidance) {
+                [string]$oracle.Guidance
+            } else {
+                'Assert the reported behavior directly, so that a product fix turns this exact test green.'
+            }
             throw ("The reproduction '$TestFilter' nominates a non-falsifiable oracle: its expected failure is $($oracle.Reason). " +
-                'Assert the reported behavior directly, so that a product fix turns this exact test green.')
+                $guidance)
         }
     }
 }

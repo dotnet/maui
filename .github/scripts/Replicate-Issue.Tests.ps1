@@ -3909,6 +3909,34 @@ Describe 'A reproduction must nominate a falsifiable oracle' {
         }
     }
 
+    It 'rejects a pixel oracle that one stray pixel would satisfy' {
+        # A reviewer corroborated PR 242's Windows baseline but refused the test
+        # because "expected at least 1 purple icon pixel" is satisfied by a
+        # single antialiased pixel, so a fully wrong icon still turns it green.
+        foreach ($signature in @(
+            'expected at least 1 purple icon pixel after Shell.ForegroundColor Purple; measured icon=0, reference=4320',
+            'Expected at least one tinted pixel in the toolbar icon, but found none',
+            'purplePixels >= 1 expected, actual 0')) {
+            {
+                Assert-ReplicationOracleIsFalsifiable `
+                    -ExpectedFailureSignature $signature `
+                    -TestFilter 'Issue34071'
+            } | Should -Throw '*calibrated share*'
+        }
+    }
+
+    It 'accepts a pixel oracle calibrated against what it measured' {
+        foreach ($signature in @(
+            'expected at least 40% of the 4320 opaque icon pixels to be purple; measured 0 of 4320',
+            'expected at least 1728 purple icon pixels of 4320 opaque; measured 0')) {
+            {
+                Assert-ReplicationOracleIsFalsifiable `
+                    -ExpectedFailureSignature $signature `
+                    -TestFilter 'Issue34071'
+            } | Should -Not -Throw
+        }
+    }
+
     It 'rejects a reproduction that nominates no signature at all' {
         {
             Assert-ReplicationOracleIsFalsifiable `
