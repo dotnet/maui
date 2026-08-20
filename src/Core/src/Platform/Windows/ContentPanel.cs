@@ -415,6 +415,7 @@ namespace Microsoft.Maui.Platform
 
 		internal global::Windows.Foundation.Size ArrangedSize { get; private set; }
 		internal ICrossPlatformLayout? LayoutOwner => _owner.CrossPlatformLayout;
+		internal ContentPanel Owner => _owner;
 
 		internal ContentPanelClipHost(ContentPanel owner)
 		{

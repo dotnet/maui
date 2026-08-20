@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -21,16 +22,70 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.PlatformView.Content = null;
 			handler.PlatformView.EnsureBorderPath();
 
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
-				// Detach the old handler if it exists (prevents WinUI COM exception on reuse)
-				view.Handler?.DisconnectHandler(); 
-				handler.PlatformView.Content = view.ToPlatform(handler.MauiContext);
+				var platformView = view.ToPlatform(handler.MauiContext);
+				ReparentContent(handler.PlatformView, platformView);
 			}
-				
+			else
+			{
+				handler.PlatformView.Content = null;
+			}
+
+		}
+
+		internal static void ReparentContent(ContentPanel target, FrameworkElement platformView)
+		{
+			var parent = platformView.Parent;
+			var isCurrentContent =
+				ReferenceEquals(target.Content, platformView) &&
+				(ReferenceEquals(parent, target) || ReferenceEquals(parent, target.ContentClipHost));
+
+			if (isCurrentContent)
+			{
+				return;
+			}
+
+			// Detach from existing parent — mirrors Android RemoveFromParent / iOS RemoveFromSuperview.
+			// Always remove via CachedChildren directly: Content = null is a no-op when _content
+			// is null (e.g. ScrollViewHandler adds via paddingShim.CachedChildren.Add, not the
+			// Content setter), leaving the element with a live parent and causing a COM exception
+			// when we try to reparent it.
+			if (parent is ContentPanelClipHost existingClipHost)
+			{
+				if (ReferenceEquals(existingClipHost.Owner.Content, platformView))
+				{
+					existingClipHost.Owner.Content = null;
+				}
+				else
+				{
+					existingClipHost.CachedChildren.Remove(platformView);
+				}
+			}
+			else if (parent is ContentPanel existingContentPanel)
+			{
+				if (ReferenceEquals(existingContentPanel.Content, platformView))
+				{
+					existingContentPanel.Content = null;
+				}
+				else
+				{
+					existingContentPanel.CachedChildren.Remove(platformView);
+				}
+			}
+			else if (parent is MauiPanel existingPanel)
+			{
+				existingPanel.CachedChildren.Remove(platformView);
+			}
+
+			if (ReferenceEquals(target.Content, platformView))
+			{
+				target.Content = null;
+			}
+
+			target.Content = platformView;
 		}
 
 		internal static void MapInvalidateMeasure(BorderHandler handler, IBorderView view, object? args)

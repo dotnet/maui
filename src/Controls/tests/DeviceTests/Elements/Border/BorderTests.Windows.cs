@@ -818,6 +818,57 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Border reparents content between clip hosts")]
+		public async Task BorderReparentsContentBetweenClipHosts()
+		{
+			SetupBuilder();
+
+			var content = new Label
+			{
+				Text = "Content"
+			};
+			var firstBorder = new Border
+			{
+				Content = content
+			};
+			var secondBorder = new Border();
+			var layout = new VerticalStackLayout
+			{
+				firstBorder,
+				secondBorder
+			};
+
+			await AttachAndRun(layout, (LayoutHandler layoutHandler) =>
+			{
+				var firstPanel = GetNativeBorder(Assert.IsType<BorderHandler>(firstBorder.Handler));
+				var firstClipHost = Assert.IsType<ContentPanelClipHost>(firstPanel.ContentClipHost);
+				var secondPanel = GetNativeBorder(Assert.IsType<BorderHandler>(secondBorder.Handler));
+				var secondClipHost = Assert.IsType<ContentPanelClipHost>(secondPanel.ContentClipHost);
+				var platformContent = Assert.IsAssignableFrom<FrameworkElement>(content.Handler.PlatformView);
+
+				Assert.Contains(platformContent, firstClipHost.CachedChildren);
+
+				BorderHandler.ReparentContent(secondPanel, platformContent);
+				Assert.Null(firstPanel.Content);
+				Assert.DoesNotContain(platformContent, firstClipHost.CachedChildren);
+				Assert.Contains(platformContent, secondClipHost.CachedChildren);
+
+				secondClipHost.CachedChildren.Remove(platformContent);
+				layoutHandler.PlatformView.CachedChildren.Add(platformContent);
+				Assert.Same(platformContent, secondPanel.Content);
+				Assert.Same(layoutHandler.PlatformView, platformContent.Parent);
+
+				BorderHandler.ReparentContent(secondPanel, platformContent);
+				Assert.DoesNotContain(platformContent, layoutHandler.PlatformView.CachedChildren);
+				Assert.Contains(platformContent, secondClipHost.CachedChildren);
+
+				BorderHandler.ReparentContent(firstPanel, platformContent);
+				Assert.Null(secondPanel.Content);
+				Assert.DoesNotContain(platformContent, secondClipHost.CachedChildren);
+				Assert.Contains(platformContent, firstClipHost.CachedChildren);
+			});
+		}
+
 		[Fact(DisplayName = "Border clears native shape and content clip when shape is removed")]
 		public async Task BorderClearsNativeShapeAndContentClipWhenShapeIsRemoved()
 		{

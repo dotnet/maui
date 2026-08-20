@@ -12,30 +12,30 @@ namespace Microsoft.Maui.ApplicationModel
 #else
 		[DllImport(Constants.libSystemLibrary, EntryPoint = "sysctlbyname")]
 #endif
-		internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, uint newlen);
+		internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, ref nuint oldLen, IntPtr newp, nuint newlen);
 
 		internal static string GetSystemLibraryProperty(string property)
 		{
-			var lengthPtr = Marshal.AllocHGlobal(sizeof(int));
-			SysctlByName(property, IntPtr.Zero, lengthPtr, IntPtr.Zero, 0);
-
-			var propertyLength = Marshal.ReadInt32(lengthPtr);
-
-			if (propertyLength == 0)
+			nuint propertyLength = 0;
+			if (SysctlByName(property, IntPtr.Zero, ref propertyLength, IntPtr.Zero, 0) != 0 || propertyLength == 0)
 			{
-				Marshal.FreeHGlobal(lengthPtr);
 				throw new InvalidOperationException("Unable to read length of property.");
 			}
 
-			var valuePtr = Marshal.AllocHGlobal(propertyLength);
-			SysctlByName(property, valuePtr, lengthPtr, IntPtr.Zero, 0);
+			var valuePtr = Marshal.AllocHGlobal(checked((nint)propertyLength));
+			try
+			{
+				if (SysctlByName(property, valuePtr, ref propertyLength, IntPtr.Zero, 0) != 0)
+				{
+					throw new InvalidOperationException("Unable to read property.");
+				}
 
-			var returnValue = Marshal.PtrToStringAnsi(valuePtr);
-
-			Marshal.FreeHGlobal(lengthPtr);
-			Marshal.FreeHGlobal(valuePtr);
-
-			return returnValue;
+				return Marshal.PtrToStringAnsi(valuePtr);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(valuePtr);
+			}
 		}
 
 		internal static void BeginInvokeOnMainThread(Action action)
