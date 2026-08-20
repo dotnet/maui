@@ -551,4 +551,25 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		AssertDoesNotContain("UseAvalonia", mauiProgram);
 	}
+
+	[Fact]
+	public void WithAvaloniaIsIncludedWithCSharpUI()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--ui csharp --with-avalonia --no-restore", output: _output),
+			"Unable to create template maui with --ui csharp --with-avalonia. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertContains("Include=\"Avalonia.Controls.Maui\"", csproj);
+		AssertContains("Include=\"Avalonia.Controls.Maui.Desktop\"", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertContains(".UseAvaloniaApp(useSingleViewLifetime)", mauiProgram);
+		AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
+
+		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+	}
 }

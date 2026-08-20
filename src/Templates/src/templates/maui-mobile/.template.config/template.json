@@ -276,7 +276,7 @@
       },
       "UseAvaloniaHandlers": {
         "type": "computed",
-        "value": "(WithAvalonia && !IncludeSampleContent)"
+        "value": "(WithAvalonia && !EnableSampleContent)"
       },
       "avaloniaControlsMauiVersion": {
         "type": "parameter",
