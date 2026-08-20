@@ -854,3 +854,50 @@ Describe 'A control the device runner never executed is not evidence against the
     }
 
 }
+
+Describe 'Every artifact written beside the verification result is accounted for' {
+    # Five separate incidents destroyed finished device work because a producer
+    # wrote a file into the directory the credential-free gate inspects and no
+    # one taught the gate about it. Derive the producers' own names here so a
+    # sixth cannot ship: each must either be accepted by the gate or provably
+    # removed before the gate runs.
+    BeforeAll {
+        $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        $script:VerificationSource = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Invoke-ReplicationTestVerification.ps1')
+        $script:GateText = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Validate-ReplicationCandidate.ps1')
+    }
+
+    It 'discovers the names the verifier writes into its output directory' {
+        $names = [regex]::Matches($script:VerificationSource,
+            "Join-Path\s+\`$OutputDirectory\s+'(?<name>[^']+)'") |
+            ForEach-Object { $_.Groups['name'].Value } | Sort-Object -Unique
+        $names.Count | Should -BeGreaterThan 0
+        $names | Should -Contain 'verification-result.json'
+    }
+
+    It 'either accepts or removes every name the verifier writes there' {
+        $names = [regex]::Matches($script:VerificationSource,
+            "Join-Path\s+\`$OutputDirectory\s+'(?<name>[^']+)'") |
+            ForEach-Object { $_.Groups['name'].Value } | Sort-Object -Unique
+
+        foreach ($name in $names) {
+            $accepted = $script:GateText -match ("'" + [regex]::Escape($name) + "'")
+            # An intermediate file is acceptable only if it cannot survive the
+            # run, which means its removal is guaranteed by a finally block.
+            $variable = [regex]::Match($script:VerificationSource,
+                "(?<var>\`$\w+)\s*=\s*Join-Path\s+\`$OutputDirectory\s+'" +
+                [regex]::Escape($name) + "'").Groups['var'].Value
+            $removed = $false
+            if ($variable) {
+                $removed = $script:VerificationSource -match (
+                    'finally\s*\{[^}]*Remove-Item[^}]*' + [regex]::Escape($variable))
+            }
+
+            ($accepted -or $removed) | Should -BeTrue -Because (
+                "'$name' is written beside the verification result, so the gate must " +
+                'accept it or a finally block must remove it')
+        }
+    }
+}

@@ -313,8 +313,13 @@ function Invoke-SingleVerificationRun {
             }
         } catch {
             $actualFailureMessage = ''
+        } finally {
+            # This intermediate file lives in the directory the credential-free
+            # gate inspects, and that gate rejects any artifact it does not
+            # expect. Removing it only on the success path would let a failed
+            # run leave behind a file that destroys the next candidate.
+            Remove-Item -LiteralPath $machineResultPath -Force -ErrorAction SilentlyContinue
         }
-        Remove-Item -LiteralPath $machineResultPath -Force
     }
 
     $signatureMatched = Test-ReplicationExpectedFailureSignature `
