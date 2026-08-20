@@ -3833,8 +3833,20 @@ function Invoke-ReplicationNegativeControl {
     # edits the scene file the oracle lives elsewhere, so snapshot it too;
     # otherwise the gate reads a HostApp page, finds no assertions in it and
     # refuses every certified candidate at the last step.
-    Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-oracle.cs') `
-        -Value $oracleSource -Encoding utf8NoBOM
+    #
+    # Only when it lives elsewhere. A device test is a single file, so its
+    # oracle is the file the control edits, and snapshotting it would have the
+    # gate compare that snapshot against itself: assertion parity would hold by
+    # definition and a control that deleted the assertions would pass. Leaving
+    # the snapshot absent keeps the gate comparing baseline against control,
+    # which is the check that case needs.
+    $oracleSnapshotPath = Join-Path $controlDir 'negative-control-oracle.cs'
+    if ($oracleRelativePath -ne $relativePath) {
+        Set-Content -LiteralPath $oracleSnapshotPath -Value $oracleSource -Encoding utf8NoBOM
+    } elseif (Test-Path -LiteralPath $oracleSnapshotPath -PathType Leaf) {
+        # A snapshot left by an earlier run would be read as this run's oracle.
+        Remove-Item -LiteralPath $oracleSnapshotPath -Force
+    }
 
     $controlFailureSummary = ''
     for ($round = 1; $round -le $MaxControlAttempts; $round++) {

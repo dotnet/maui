@@ -6452,6 +6452,20 @@ Describe 'The reproduction is run again without the reported trigger' {
         $script:Source | Should -Match 'verification/negative-control-variant\.cs'
     }
 
+    It 'snapshots the oracle only when it is not the file the control edits' {
+        # A UI test's oracle lives in a different file from the scene the
+        # control edits, and the gate needs it. A device test is a single file,
+        # so the oracle is that same file: snapshotting it would have the gate
+        # compare the snapshot against itself, assertion parity would hold by
+        # definition, and a control that deleted the assertions would certify.
+        $control = [regex]::Match(
+            $script:Source,
+            'function Invoke-ReplicationNegativeControl \{.*?\n\}\n',
+            'Singleline').Value
+        $control | Should -Match '\$oracleRelativePath -ne \$relativePath'
+        $control | Should -Match 'Remove-Item -LiteralPath \$oracleSnapshotPath'
+    }
+
     It 'carries the control into the candidate manifest' {
         $script:Source | Should -Match 'negativeControl = \$negativeControl'
     }

@@ -2481,6 +2481,23 @@ public class Issue1 : ContentPage
         { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*no assertion*'
     }
 
+    It 'refuses a single-file control that drops the assertions it must preserve' {
+        # A device test is one file, so its oracle is the file the control
+        # edits and no oracle snapshot is written. The gate then compares
+        # baseline against control, which is the only way this case can catch a
+        # control that passes because it stopped measuring. Writing a snapshot
+        # here would have the gate compare it against itself and let this
+        # through.
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource 'public class T { [Test] public void M() { var x = 1; } }'
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        Test-Path -LiteralPath (Join-Path $verificationRoot 'negative-control-oracle.cs') |
+            Should -BeFalse
+
+        { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*asserts 0 times*'
+    }
+
     It 'certifies a reproduction whose control passes without the trigger' {
         $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
 
