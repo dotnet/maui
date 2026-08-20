@@ -319,6 +319,24 @@ Build FAILED.
         Remove-Item -LiteralPath $log -Force
     }
 
+    It 'spends the excerpt budget on the message, not the agent directory' {
+        # Catalyst build 15031426 burned five attempts on the diagnosis
+        # "'TestDevice' could not be found (are you missing a u" because 120 of
+        # the 200 characters went to a path prefix the reader already knows.
+        $log = New-LogFile @"
+Build FAILED.
+/Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue30163.cs(9,20): error CS0246: The type or namespace name 'TestDevice' could not be found (are you missing a using directive or an assembly reference?) [/Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+
+        $r.BuildError | Should -BeTrue
+        $r.Error | Should -Match 'Issue30163\.cs\(9,20\)'
+        $r.Error | Should -Match 'are you missing a using directive or an assembly reference'
+        $r.Error | Should -Not -Match '_work'
+        $r.Error | Should -Not -Match 'csproj'
+        Remove-Item -LiteralPath $log -Force
+    }
+
     It 'flags CS / MSB / NETSDK / XA compile errors as build errors' {
         foreach ($err in @(
             "error CS0234: The type or namespace name 'CodeAnalysis' does not exist",

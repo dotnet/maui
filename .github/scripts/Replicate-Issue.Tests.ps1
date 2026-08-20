@@ -1765,6 +1765,22 @@ public class Issue35516
         $script:Source | Should -Match 'It is ignored before attempt 3'
     }
 
+    It 'names the file and position the compiler already located' {
+        # Catalyst build 15031426 spent five attempts on "'TestDevice' could
+        # not be found (are you missing a u" because the diagnosis dropped the
+        # file the compiler had named and truncated the rest of the sentence.
+        $log = Join-Path $TestDrive 'prepare-attempt-loc.log'
+        @(
+            'info : Build command: dotnet build TestCases.Shared.Tests.csproj'
+            "Issue30163.cs(9,20): error CS0246: The type or namespace name 'TestDevice' could not be found (are you missing a using directive or an assembly reference?)"
+        ) | Set-Content -LiteralPath $log
+
+        $diagnostics = Get-ReplicationCompilerDiagnostics -LogPath $log
+
+        $diagnostics | Should -Match 'Issue30163\.cs\(9,20\)'
+        $diagnostics | Should -Match 'are you missing a using directive'
+    }
+
     It 'surfaces Sandbox build diagnostics that truncation would otherwise hide' {
         # dotnet/maui#37427 lost three Sandbox attempts to compiler errors the
         # agent never saw, because the 1000 character summary kept only the

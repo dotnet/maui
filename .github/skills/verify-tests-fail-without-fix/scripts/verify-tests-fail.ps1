@@ -1660,6 +1660,15 @@ function Get-TestResultFromOutput {
         $errMatch = [regex]::Match($content, '(?m)^.*\berror\s+[A-Z]{2,}\d+\b.*$')
         if ($errMatch.Success) {
             $excerpt = $errMatch.Value.Trim()
+            # An absolute agent path and the trailing project reference consume
+            # most of the budget, so the message itself is what gets cut.
+            # Catalyst build 15031426 reported "'TestDevice' could not be found
+            # (are you missing a u" because 120 characters went to a directory
+            # the reader already knows. Keep the file name and the position.
+            $excerpt = [regex]::Replace(
+                $excerpt, '(?<![\w.])(?:[A-Za-z]:[\\/]|/)[^\s(]*[\\/]([^\\/\s(]+)', '$1')
+            $excerpt = [regex]::Replace($excerpt, '\s*\[[^\]]*\]\s*$', '')
+            $excerpt = ([regex]::Replace($excerpt, '\s+', ' ')).Trim()
             if ($excerpt.Length -gt 200) { $excerpt = $excerpt.Substring(0, 200) + "..." }
             $buildErrorExcerpt = $excerpt
         }

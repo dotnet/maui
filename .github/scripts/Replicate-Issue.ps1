@@ -732,7 +732,9 @@ function Get-ReplicationCompilerDiagnostics {
     $seen = [System.Collections.Generic.HashSet[string]]::new()
     $diagnostics = [System.Collections.Generic.List[string]]::new()
     foreach ($line in $lines) {
-        $match = [regex]::Match([string]$line, '(?<code>(?:CS|MSB|XC|XLS|NETSDK|CA)\d{3,5})\s*:\s*(?<text>.+)$')
+        $match = [regex]::Match(
+            [string]$line,
+            '(?:(?<file>[^\s\\/:]+\.(?:cs|xaml|csproj)\(\d+,\d+\))\s*:\s*(?:error|warning)\s+)?(?<code>(?:CS|MSB|XC|XLS|NETSDK|CA)\d{3,5})\s*:\s*(?<text>.+)$')
         if (-not $match.Success) {
             continue
         }
@@ -744,7 +746,12 @@ function Get-ReplicationCompilerDiagnostics {
             $text = $text.Substring(0, 220) + '...'
         }
 
-        $diagnostic = ConvertTo-ReplicationSafeLog "${code}: $text" 260
+        # Without the file and position the agent has to search for the member
+        # the compiler already located, and build 15031426 spent five attempts
+        # doing exactly that.
+        $location = $match.Groups['file'].Value
+        $prefix = if ($location) { "$location " } else { '' }
+        $diagnostic = ConvertTo-ReplicationSafeLog "$prefix${code}: $text" 300
         if (-not $diagnostic) {
             continue
         }
