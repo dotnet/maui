@@ -205,15 +205,72 @@ function ConvertTo-ReplicationSafeLog {
         $safe = Remove-ReplicationLogNoise -Text $safe
     }
     if ($safe.Length -gt $MaximumLength) {
-        # The diagnosis is at the end of tool output, not the beginning.
+        # Tool output puts its banner first and its stack last, so a fixed head
+        # plus tail keeps both and drops the one sentence that names the cause.
+        # Windows run 15031433 elided "Expected element text to equal 'FIRST
+        # SCROLL: TARGET NOT AT TOP', actual 'FIRST SCROLL: REQUESTED'" out of
+        # every attempt, so all five were classified 'other' and the agent was
+        # told nothing it could act on. Put the cause at the front instead.
+        $cause = Get-ReplicationCauseExcerpt -Text $safe
         $headLength = [Math]::Max(1, [int]($MaximumLength / 4))
         $tailLength = $MaximumLength - $headLength
         $omitted = $safe.Length - $MaximumLength
-        $safe = $safe.Substring(0, $headLength) +
+        $head = if ($cause -and $cause.Length -le $headLength) {
+            $cause
+        } else {
+            $safe.Substring(0, $headLength)
+        }
+        $safe = $head +
             " ... [$omitted characters omitted] ... " +
             $safe.Substring($safe.Length - $tailLength)
     }
     return $safe
+}
+
+function Get-ReplicationCauseExcerpt {
+    <#
+        .SYNOPSIS
+        Returns the sentence that names why an attempt failed.
+
+        .DESCRIPTION
+        Failure text carries a banner, then the cause, then a stack. Only the
+        cause tells the classifier which kind of failure this was and tells the
+        agent what to change, so it must survive truncation.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return ''
+    }
+
+    $causePatterns = @(
+        'REPLICATION_NOT_REPRODUCED[^|]*',
+        'Unhandled exception\.\s*[A-Za-z0-9_.]*Exception[^|]*',
+        '[A-Za-z0-9_.]+Exception:[^|]*',
+        'Expected element text[^|]*',
+        'error CS\d+[^|]*'
+    )
+    foreach ($pattern in $causePatterns) {
+        $match = [regex]::Match($Text, $pattern)
+        if ($match.Success) {
+            # The inner exception that follows names the driver-level cause,
+            # which is what separates a missing element from a wrong value.
+            $rest = $Text.Substring($match.Index)
+            $inner = [regex]::Match($rest, '--->\s*[A-Za-z0-9_.]+Exception[^|]*')
+            $excerpt = if ($inner.Success -and $inner.Index -lt 400) {
+                $rest.Substring(0, $inner.Index + $inner.Length)
+            } else {
+                $match.Value
+            }
+            return $excerpt.Trim()
+        }
+    }
+
+    return ''
 }
 
 function Test-ReplicationFailureAlreadySeen {

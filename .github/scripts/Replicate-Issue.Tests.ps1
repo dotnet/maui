@@ -57,6 +57,7 @@ BeforeAll {
 
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
+        'Get-ReplicationCauseExcerpt',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationFailureDetails',
         'Get-ReplicationSchemaMismatchDetail',
@@ -6260,5 +6261,56 @@ Describe 'A lost device session is not a test to repair' {
     It 'gives the harness its own bounded budget in the attempt loop' {
         $script:Source | Should -Match '\$MaxTestHarnessRetries = 3'
         $script:Source | Should -Match 'Test harness retry \{0\}/\{1\}'
+    }
+}
+
+Describe 'Replication failure summary truncation' {
+    It 'keeps the cause when the summary is too long to fit' {
+        # Windows build 15031433 elided this exact sentence out of all five
+        # attempts, so every one was classified 'other' and the agent was told
+        # only "the test did not run" while the app had plainly answered.
+        $cause = "Expected element text to equal 'FIRST SCROLL: TARGET NOT AT " +
+            "TOP', actual 'FIRST SCROLL: REQUESTED'. "
+        $message = 'Recording the on-device reproduction failed with exit code ' +
+            '1. Reproduction failed: Run trusted reproduction script failed ' +
+            'with exit code -532462766. That code is an unhandled .NET ' +
+            'exception terminated the process. Output: STEP 2/7: Confirm the ' +
+            'scenario starts without a latched failure. | Unhandled ' +
+            "exception. System.InvalidOperationException: $cause| ---> " +
+            'OpenQA.Selenium.WebDriverTimeoutException: Timed out after 20 ' +
+            'seconds | ' + ('at Program.g__AssertElementText in Run.cs:line 823 | ' * 20)
+
+        $message.Length | Should -BeGreaterThan 1000
+        $safe = ConvertTo-ReplicationSafeLog $message 1000
+
+        $safe | Should -Match 'characters omitted'
+        $safe | Should -Match 'FIRST SCROLL: REQUESTED'
+        $safe | Should -Match 'WebDriverTimeoutException'
+        Get-ReplicationAttemptFailureKind $safe | Should -Be 'element-missing'
+    }
+
+    It 'keeps a negative verdict that would otherwise be elided' {
+        $message = 'Recording the on-device reproduction failed with exit code ' +
+            '1. Reproduction failed: Run trusted reproduction script failed ' +
+            'with exit code -532462766. That code is an unhandled .NET ' +
+            'exception terminated the process. Output: STEP 4/7: Confirm the ' +
+            'scenario reaches the reported state without a latched failure. | ' +
+            "REPLICATION_NOT_REPRODUCED actual='NO BUG:' | " +
+            ('at Program.g__AssertElementText in Run.cs:line 870 | ' * 14)
+
+        $message.Length | Should -BeGreaterThan 1000
+        $safe = ConvertTo-ReplicationSafeLog $message 1000
+
+        $safe | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        Get-ReplicationAttemptFailureKind $safe | Should -Be 'not-reproduced'
+    }
+
+    It 'leaves text that carries no cause sentence unchanged at the head' {
+        $message = ('plain progress output without any failure sentence ' * 40)
+
+        $safe = ConvertTo-ReplicationSafeLog $message 1000
+
+        $safe | Should -Match 'characters omitted'
+        $safe.Substring(0, 20) | Should -Be $message.Substring(0, 20)
     }
 }
