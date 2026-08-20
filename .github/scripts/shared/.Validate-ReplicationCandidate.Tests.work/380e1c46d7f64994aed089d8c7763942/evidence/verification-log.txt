@@ -1,0 +1,6 @@
+Verify Tests Fail (Failure Only Mode)
+Platform: android
+TestFilter: Issue12345
+TestName: Issue12345
+[XamlUnitTest] Issue12345: Passed=False Failed=1
+VERIFICATION PASSED

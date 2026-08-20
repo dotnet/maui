@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "issueNumber": 12345,
+  "platform": "android",
+  "testType": "XamlUnitTest",
+  "testName": "Issue12345",
+  "testFilter": "Issue12345",
+  "expectedFailurePattern": "Expected control to remain visible",
+  "verificationMode": "failure-only",
+  "verificationStatus": "VERIFICATION PASSED",
+  "video": "repro.mp4",
+  "preview": "preview.gif"
+}

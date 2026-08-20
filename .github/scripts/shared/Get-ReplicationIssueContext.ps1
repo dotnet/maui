@@ -1873,7 +1873,13 @@ function Get-ReplicationRuntimeScopeMismatch {
         [pscustomobject]@{
             # A report that MAUI's own test assembly, UI-test harness or CI lane
             # is failing is triage of this repository's infrastructure, not an
-            # app behaviour any device page can show. The PascalCase form is
+            # app behaviour any device page can show. The same is true of a
+            # request to re-enable a test this repository has disabled, or to
+            # de-flake one: the work is editing the suite, and the reproduction
+            # would be running a test that already exists. Measured against
+            # 1,071 titles: eight re-enable hits and one flaky hit, all of them
+            # this repository's own tests.
+            # The PascalCase form is
             # required: a named test identifier followed by "test fails" only
             # ever refers to a test in this repository, while a bare "test
             # fails" would refuse reports that merely mention testing.
@@ -1881,6 +1887,8 @@ function Get-ReplicationRuntimeScopeMismatch {
                 '|\b(?:Core|Xaml|Controls)\.UnitTests\b' +
                 '|\bfail\w*\b[^.]{0,30}\bin\s+candidate\s+PR\b' +
                 '|\bCI\s+lane\b' +
+                '|\bflaky\s+tests?\b' +
+                '|\bre-?enable\b[^.]{0,40}\btests?\b' +
                 '|^\[UITest\]|\bWebDriverAgent\b'
             Scope   = "this repository's own test suite, UI-test harness or CI lane"
         }
@@ -1891,6 +1899,19 @@ function Get-ReplicationRuntimeScopeMismatch {
             Pattern = '\b[A-Z][a-z]+(?:[A-Z][a-z]+){2,}\s+test\s+(?:fails?|is\s+failing)\b'
             CaseSensitive = $true
             Scope   = "a named test in this repository's own suite"
+        }
+        [pscustomobject]@{
+            # Publishing is a build step, not something a device can be driven
+            # through. The Sandbox is deployed by the pipeline in debug, and the
+            # two publish failures in 1,071 titles both turn on package
+            # restore or a project reference, neither of which the agent may
+            # change. Two clauses were measured and rejected: "missing
+            # Microsoft.*" only ever appears inside one of these same reports,
+            # and "fails to publish" adds no hit the other signals do not
+            # already refuse while colliding with the app-code sense of the
+            # verb, as in a messenger that fails to publish a message.
+            Pattern = '(?i)\bunable to publish\b'
+            Scope   = 'a publish or restore failure no device interaction reaches'
         }
         [pscustomobject]@{
             # The Sandbox is a fixed, already-compiled project, and enabling

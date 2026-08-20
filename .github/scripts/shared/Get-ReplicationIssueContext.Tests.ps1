@@ -1304,6 +1304,52 @@ Describe 'Get-ReplicationRuntimeScopeMismatch infrastructure and publish-mode si
         }
     }
 
+    It 'refuses a request to re-enable or de-flake this repository''s tests' {
+        # Eight re-enable hits and one flaky hit in 1,071 titles, all of them
+        # asking for an edit to this repository's own suite rather than
+        # describing an app behaviour a device page could show.
+        foreach ($title in @(
+                'Re-enable Issue2818 test on iOS/Catalyst - FlyoutPage RTL hamburger icon not displaying',
+                '[Testing] Re-enable the Essentials Geocoding Tests on Windows',
+                '[testing] Reenable MultiProjectTemplate Test MultiProject@Symbol & More',
+                '[Testing][Android] Fix flaky tests for CookiesCorrectlyLoadWithMultipleWebViews in CI')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -Match 'own test suite'
+        }
+    }
+
+    It 'keeps a report selectable when it merely mentions enabling a feature' {
+        # The re-enable signal has to reach "tests", so a report about turning
+        # an app capability back on is unaffected.
+        foreach ($title in @(
+                '[Android] Cannot re-enable the swipe gesture after disabling it',
+                '[iOS] Re-enable scrolling on a CollectionView leaves it stuck')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'refuses a publish failure because no device interaction reaches one' {
+        # Both publish failures in 1,071 titles turn on package restore or a
+        # project reference, neither of which the agent may change. Only the
+        # first is this signal's: the Blazor report is already refused as a
+        # hosted web view, which is why the broader "fails to publish" clause
+        # was measured and rejected.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'Unable to publish Maui with .Net 10 to win-x64 platform due to missing Microsoft.NETCore.App.Runtime.Mono.win-x64 version 10.0.0' |
+            Should -Match 'publish or restore'
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'MAUI Blazor Hybrid fails to publish Windows app if Blazor project reference contains QuickGrid.' |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'keeps a report selectable when the app itself fails to publish content' {
+        # "publish" is a common word in app code, so the signal is confined to
+        # the build sense and a report about an app publishing a message stays
+        # selectable.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Android] WeakReferenceMessenger fails to publish a message after the page is popped' |
+            Should -BeNullOrEmpty
+    }
+
     It 'refuses NativeAOT because the publish mode cannot be enabled' {
         # All five NativeAOT reports in 1,071 titles are out of reach, including
         # the runtime-sounding ones: enabling the mode is a project-file change.
