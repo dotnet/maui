@@ -1782,6 +1782,18 @@ function Get-ReplicationRuntimeScopeMismatch {
             Pattern = '(?i)\b(?:ci|pipeline|azure\s*devops|github\s+actions)\b.*\b(?:only|fail\w*|flak\w*)\b'
             Scope   = 'a failure seen only on CI'
         }
+        [pscustomobject]@{
+            # The Sandbox is one already-created project, so it can never show
+            # what a different project the CLI creates would contain. Run
+            # 15032411 recorded a page for "Creating new MAUI Blazor Sample App
+            # from CLI is .NET 10 by default" and then spent every planning
+            # round being told no test could carry that evidence.
+            Pattern = '(?i)\bdotnet\s+new\b' +
+                '|\bcli\b[^.]*\b(?:creat\w*|new)\b|\b(?:creat\w*|new)\b[^.]*\bfrom\s+(?:the\s+)?cli\b' +
+                '|\b(?:project|item|solution|starter)\s+templates?\b|\btemplates?\s+(?:project|pack|creat\w*)\b' +
+                '|\b(?:maui|blazor|net\s*maui)\s+(?:app\s+)?templates?\b'
+            Scope   = 'the project the CLI or a template creates'
+        }
     )
 
     $text = [string]$Title

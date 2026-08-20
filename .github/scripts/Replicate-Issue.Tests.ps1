@@ -85,6 +85,7 @@ BeforeAll {
         'Get-ReplicationTestPassedDiagnosis',
     'Get-ReplicationDriverElementFailurePattern',
     'Test-ReplicationTierCannotBuildForPlatform',
+    'Get-ReplicationTierExclusionGuidance',
         'Get-ReplicationTestAttemptKind',
         'Remove-ReplicationLogNoise',
         'Get-ReplicationExistingIssueTestPaths',
@@ -5923,6 +5924,63 @@ Describe 'A tier with no build for the platform escalates instead of stalling' {
     It 'does not escalate on an ordinary repairable failure' {
         Test-ReplicationTierCannotBuildForPlatform 'error CS0246: type not found' |
             Should -BeFalse
+    }
+
+    Context 'A rejected tier stops being selectable' {
+        # Build 15032411 proposed Controls.Core.UnitTests three times running
+        # for a Catalyst recording. The prompt already named that project as
+        # ineligible and the rejection was fed back verbatim each round, so
+        # prose the agent can weigh against its tier preference is not enough.
+        BeforeAll {
+            $script:Platform = 'catalyst'
+        }
+
+        It 'says nothing when no tier has been rejected yet' {
+            Get-ReplicationTierExclusionGuidance -ForbiddenTiers @() |
+                Should -BeExactly ''
+        }
+
+        It 'removes a rejected tier from the selectable set' {
+            $guidance = Get-ReplicationTierExclusionGuidance -ForbiddenTiers @('unit')
+            $guidance | Should -Match 'no longer selectable'
+            $guidance | Should -Match 'testType MUST be one of'
+            $guidance | Should -Match '`xaml`'
+            $guidance | Should -Match '`device`'
+            $guidance | Should -Match '`ui`'
+        }
+
+        It 'never offers a rejected tier back as an option' {
+            $guidance = Get-ReplicationTierExclusionGuidance -ForbiddenTiers @('unit', 'xaml')
+            $allowed = [regex]::Match($guidance, 'testType MUST be one of: (?<list>[^\r\n]+)').Groups['list'].Value
+            $allowed | Should -Not -Match '`unit`'
+            $allowed | Should -Not -Match '`xaml`'
+            $allowed | Should -Match '`device`'
+        }
+
+        It 'names the platform the rejection was made for' {
+            Get-ReplicationTierExclusionGuidance -ForbiddenTiers @('unit') |
+                Should -Match 'catalyst'
+        }
+
+        It 'reaches the planner through the test-plan prompt' {
+            # A constraint the prompt never renders is not a constraint.
+            $script:Source | Should -Match 'Get-ReplicationTierExclusionGuidance -ForbiddenTiers \$ForbiddenTestTiers'
+            $script:Source | Should -Match '-ForbiddenTestTiers \$forbiddenTestTiers'
+        }
+
+        It 'rejects a re-proposed tier without resolving its files' {
+            # The exclusion must be checked before the file-level guard, so a
+            # repeat costs no work at all.
+            $script:Source | Should -Match '\$forbiddenTestTiers -contains \$proposedTier'
+        }
+
+        It 'records a tier the guard rejects at plan time' {
+            $script:Source | Should -Match '\$forbiddenTestTiers \+= \$proposedTier'
+        }
+
+        It 'records a tier the guard rejects during verification' {
+            $script:Source | Should -Match '\$forbiddenTestTiers \+= \$rejectedTier'
+        }
     }
 
     It 'tells the planner the instruction to keep testType no longer applies' {

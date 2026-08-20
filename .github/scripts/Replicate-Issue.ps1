@@ -2861,12 +2861,39 @@ function Resolve-ReplicationVerifierMetadata {
     }
 }
 
+function Get-ReplicationTierExclusionGuidance {
+    <#
+        .SYNOPSIS
+        States which test tiers this run has already proven cannot be evidence.
+
+        .DESCRIPTION
+        The test-plan prompt already names the three non-platform unit test
+        projects, yet build 15032411 proposed Controls.Core.UnitTests three
+        times in a row for a Catalyst recording and was rejected with the same
+        sentence each time. Prose the agent may weigh against its tier
+        preference is not enough, so a tier the guard has already rejected is
+        removed from the selectable set and the removal is restated as a
+        constraint rather than as advice.
+    #>
+    param([string[]]$ForbiddenTiers = @())
+
+    $forbidden = @($ForbiddenTiers | Where-Object { $_ })
+    if ($forbidden.Count -eq 0) { return '' }
+
+    $allowed = @('unit', 'xaml', 'device', 'ui') | Where-Object { $forbidden -notcontains $_ }
+    return @"
+
+This run has already proven that the $(($forbidden | ForEach-Object { "``$_``" }) -join ' and ') tier cannot be evidence for a reproduction recorded on $Platform, because the project that compiles such a test has no $Platform build. Those tiers are no longer selectable. testType MUST be one of: $(($allowed | ForEach-Object { "``$_``" }) -join ', '). Proposing an excluded tier again fails the attempt without being read. Record the exclusion in lighterTypesRejected as required for the tier you do select.
+"@
+}
+
 function New-CopilotPrompt {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateSet('sandbox', 'test-plan', 'test', 'repair', 'control')]
         [string]$Phase,
-        [string]$FailureSummary = ''
+        [string]$FailureSummary = '',
+        [string[]]$ForbiddenTestTiers = @()
     )
 
     $replicationSkill = Join-Path $trustedSkills 'replicate-issue/SKILL.md'
@@ -2937,6 +2964,7 @@ Reproduction tests are add-only, so every proposed path must be new. Do not prop
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last. The unit and XAML tiers are only available for a defect that is purely managed. Controls.Core.UnitTests, Core.UnitTests and Controls.Xaml.UnitTests each declare a single non-platform TargetFramework, so there is no platform build of those assemblies and a test placed in them cannot be evidence for behaviour recorded on a device. If proving the defect requires a handler, a native view, a window, a MauiContext, or any platform runtime, select device or ui and say so in lighterTypesRejected.
+$(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
 reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The automated test must use the same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence as the recorded Sandbox rather than proving a different self-authored harness. For visible rendering, clipping, overflow, disappearance, flicker, or pixel-content defects, managed MAUI Bounds alone are not direct proof: require native-view state or rendered-pixel evidence that distinguishes visible output from managed layout bookkeeping. When an oracle samples more than one point to prove that two places differ, such as the two ends of a gradient, the expected values must be further apart than the tolerance in at least one channel and the test must assert that separation directly; two independent tolerance checks that overlap are satisfied by a flat fill, so the test cannot tell the reported defect from the correct rendering. Every sampled point must also be proven in bounds and on the surface being measured rather than on text, selection or hover chrome that happens to sit there. A position oracle must read where the content actually rendered, such as the native on-screen location or frame of the view, and must never reconstruct a position from padding arithmetic: on Android CompoundPaddingTop already includes the top padding, the compound drawable's height and the drawable padding, so computing an icon centre as PaddingTop plus half the icon and a text centre as CompoundPaddingTop plus half the text layout makes the two differ by construction whenever both an icon and text are present, and no product fix can make them equal. Before asserting any geometric, colour, or pixel comparison, prove the oracle on a control arranged so the reported defect is absent and show it reports the clean value there; an oracle that also reports the defect on that control is measuring itself, not the product, and the candidate must be rejected instead of published. Size and position oracles must separately prove that the intended item exists at the expected identity/location, then assert an absolute issue-derived dimension or invariant; a relative before/after comparison must not let a missing or mispositioned item masquerade as the reported size change. For keyboard, SafeArea, or ScrollView range defects, use the native inset-aware model, including ContentInset or AdjustedContentInset where relevant, and assert reachable behavior rather than an arbitrary fixed range threshold. For system-inset propagation defects, verify that the runtime supplied a nonzero relevant inset and exercise normal root-window propagation; never call DispatchApplyWindowInsets or OnApplyWindowInsets directly on the target view to manufacture the callback. If the report expects an ordinary bindable-property change to propagate automatically, never call Handler.UpdateValue or a mapper method manually unless that direct API call is itself the reported trigger. If the resulting native state may refresh asynchronously, use a bounded repository-standard eventual assertion or a real completion event rather than sampling it immediately. If the report changes a property after attachment, perform that runtime transition instead of preconfiguring the final value. If the report is dynamic, perform and prove the reported resize, orientation, content mutation, scrolling, or repeated-layout transition; a single fixed layout is insufficient. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. Before that final assertion, separately assert every precondition the oracle depends on, such as the attributed text, styling attribute, registered source, applied template, or measured baseline it presumes, because an arrangement that silently failed to take effect reaches the same failing assertion and would otherwise be published as the reported defect. A sentinel is only impossible if the correct product behaviour could never leave it in place: recording the index of a centred item as 4 when 4 is also the expected answer lets the test pass when the awaited callback never runs, so choose a sentinel such as -1 that no correct run can produce, and separately assert the callback occurred. A test that asserts locale-, calendar-, or clock-formatted output must set and verify the culture it asserts, for example by assigning CultureInfo.CurrentCulture and DefaultThreadCurrentCulture and confirming the active setting, because a literal such as '07:30' otherwise fails on a differently configured runner even after the product is fixed. When the report concerns restoring or applying a platform-default appearance, do not introduce an explicit Style, Background, or colour to stand in for that default: the default itself is the subject, so arrange the control exactly as the report does and assert against the captured initial native value. Choose the lightest tier that can actually observe the recorded reproduction, not merely the lightest tier overall: a device test constructs handlers in isolation, so it cannot observe a defect that only appears after real Shell, flyout, tab, modal, or back-navigation transitions, nor one that requires the second and subsequent visit to a page. When the recording had to navigate the running app to expose the defect, plan a UI test and say in lighterTypesRejected which transition the lighter tier cannot perform. When the report describes the defect as intermittent, occasional, or random, repeat the reported transition enough times for the automated test to observe it deterministically, and if no bounded repetition makes it deterministic, declare the scenario blocked instead of publishing a test that passes by chance. When the report covers several controls or several conditions, report each one separately in the failure message instead of collapsing them into a single count or a single combined token, so the message identifies which control or condition actually failed. When the asserted state is native and may settle after the managed trigger, use a bounded repository-standard eventual assertion rather than a single immediate probe. Every failure message must embed the concrete measured values that decided the assertion, such as the observed size, offset, inset, bounds, colour, count, or state token together with the value the issue expects, so a reader can tell how far the behaviour deviates without rerunning the test. Comparisons over device-derived floating-point measurements such as sizes, offsets, insets, and densities must use a small explicit tolerance rather than exact equality, because platform metrics carry rounding and scaling error. If the test performs an interaction, that interaction must be causally required for the assertion: capture the relevant state before and after it and assert the transition, so the result cannot be identical when the interaction never happened. When the reported defect is a static property of the arranged state and no interaction can affect the assertion, omit the decorative interaction instead of implying a causal link the oracle does not test. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration.
@@ -4210,6 +4238,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
     # A tier that cannot observe the defect yields a passing test no matter how
     # often the same plan is repaired, so allow one re-plan at a tier that can.
     $tierEscalationSummary = ''
+    $forbiddenTestTiers = @()
     $maxPlanRounds = 2
     for ($planRound = 1; $planRound -le $maxPlanRounds; $planRound++) {
         $finalPlanRound = ($planRound -eq $maxPlanRounds)
@@ -4223,11 +4252,25 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 -PhaseName 'test-plan' `
                 -Prompt (New-CopilotPrompt `
                     -Phase test-plan `
-                    -FailureSummary $testPlanFailureSummary) `
+                    -FailureSummary $testPlanFailureSummary `
+                    -ForbiddenTestTiers $forbiddenTestTiers) `
                 -WritePaths @($testProposalPath) `
                 -Attempt $planAttempt
+            $proposedTier = ''
             try {
                 $plannedTestProposal = Read-TestProposal -ValidateNewTargets
+                $proposedTier = ([string]$plannedTestProposal.testType).Trim().ToLowerInvariant()
+
+                # A tier already proven to have no build for this platform is
+                # rejected before its files are even resolved, so the run
+                # cannot spend a third round on the plan it was told twice not
+                # to make.
+                if ($forbiddenTestTiers -contains $proposedTier) {
+                    throw ("The '$proposedTier' tier was already rejected in this run because " +
+                        (Get-ReplicationPlatformClosureMarker) +
+                        " for $Platform. It is not selectable. Choose a tier that builds for " +
+                        "${Platform}: a device test project or the UI test host application.")
+                }
 
                 # A tier that has no build for the evidence platform can never
                 # be repaired into one, so rejecting it here costs a planning
@@ -4248,6 +4291,13 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
             } catch {
                 $testPlanFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
                 Write-Host "Test-plan attempt $planAttempt failed: $testPlanFailureSummary"
+                if ($proposedTier -and
+                    $forbiddenTestTiers -notcontains $proposedTier -and
+                    (Test-ReplicationTierCannotBuildForPlatform $testPlanFailureSummary)) {
+                    $forbiddenTestTiers += $proposedTier
+                    Write-Host ("The '{0}' tier has no {1} build, so it is excluded from the remaining plan attempts." -f
+                        $proposedTier, $Platform)
+                }
                 if ($planAttempt -eq 3) {
                     throw
                 }
@@ -4377,6 +4427,10 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                     # repair prompt forbids changing testType and the only
                     # remedy is a different tier.
                     $escalateTestTier = $true
+                    $rejectedTier = ([string]$plannedTestProposal.testType).Trim().ToLowerInvariant()
+                    if ($rejectedTier -and $forbiddenTestTiers -notcontains $rejectedTier) {
+                        $forbiddenTestTiers += $rejectedTier
+                    }
                 }
                 if ($escalateTestTier) {
                     Write-Host ("The {0} tier cannot prove this reproduction; re-planning at a tier that can observe it." -f

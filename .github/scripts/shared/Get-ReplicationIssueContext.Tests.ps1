@@ -1020,6 +1020,11 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         @{ Title = '[macOS CI] Flaky Label tests Pass Locally but Fail in CI' }
         @{ Title = 'Failed to Make MSIX Package when using NativeAOT' }
         @{ Title = '.NET MAUI iOS Native Linker Failure on .NET 9 + Xcode 26.5' }
+        # Build 15032411 recorded a page for this one, then spent every plan
+        # round being told no test could carry the evidence.
+        @{ Title = '[.NET 11] CLI - Creating new MAUI Blazor Sample App from CLI is .NET 10 by default' }
+        @{ Title = '[Android] `dotnet new maui -sc` fails to build: minSdkVersion 21 conflicts' }
+        @{ Title = '[dotnet 11 preview7] maui template project fails to build with NativeAot enabled' }
     ) {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
     }
@@ -1031,6 +1036,11 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         @{ Title = "[Windows] The Shell's foreground color is not applied to the ToolbarItems" }
         @{ Title = 'App crashes on startup after building in Release' }
         @{ Title = 'Switch iOS Liquid glass rendering issue' }
+        # A control template is not a project template; these are the ordinary
+        # runtime reports the new CLI signal must not touch.
+        @{ Title = '[Android] ControlTemplate is not applied to ContentView on reuse' }
+        @{ Title = 'DataTemplate selector creates a new cell for every item' }
+        @{ Title = 'CollectionView ItemTemplate binding breaks after grouping changes' }
     ) {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -BeExactly ''
     }
