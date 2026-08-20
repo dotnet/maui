@@ -1780,6 +1780,34 @@ Describe 'complete GraphQL pagination' {
         $global:leakPaginationCalls.Count | Should -Be 3
     }
 
+    It 'reads open, closed, and merged PRs in one complete state-stable connection' {
+        $nodes = @(
+            New-LeakGraphQlPullRequestNode -Number 1 -State OPEN
+            New-LeakGraphQlPullRequestNode -Number 2 -State CLOSED
+            New-LeakGraphQlPullRequestNode -Number 3 -State MERGED
+        )
+        $global:leakPaginationResponses.Enqueue(
+            (New-LeakGraphQlPageJson `
+                    -ConnectionName pullRequests `
+                    -Nodes $nodes `
+                    -TotalCount $nodes.Count `
+                    -HasNextPage $false)
+        )
+
+        $result = @(
+            Get-CompleteLeakPullRequests `
+                -Repository 'dotnet/maui' `
+                -States @('OPEN', 'CLOSED', 'MERGED') `
+                -BaseRefNames @('main')
+        )
+
+        $result.number | Should -Be @(1, 2, 3)
+        $result.state | Should -Be @('OPEN', 'CLOSED', 'MERGED')
+        $global:leakPaginationCalls.Count | Should -Be 1
+        ($global:leakPaginationCalls[0] -join ' ') |
+            Should -Match 'states: \[OPEN, CLOSED, MERGED\]'
+    }
+
     It 'rejects scalar and nested node shapes' {
         $node = New-LeakGraphQlPullRequestNode -Number 1
         $global:leakPaginationResponses.Enqueue(
@@ -2737,11 +2765,28 @@ Describe 'workflow enforcement boundary' {
         $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
 
         $step | Should -Match '(?s)Get-CompleteLeakPullRequests\.ps1.*-State CLOSED'
-        $gate | Should -Match '(?s)Get-CompleteLeakPullRequests.*-State CLOSED'
+        $gate | Should -Match "(?s)Get-CompleteLeakPullRequests.*-States @\('OPEN', 'CLOSED', 'MERGED'\)"
+        $gate | Should -Match '(?s)\$closed = @\(\$consistentSnapshot.*?\$_.state -ceq ''CLOSED'''
         @($step, $gate) | ForEach-Object {
             $_ | Should -Match 'Select-LeakAuthoritativePullRequests'
             $_ | Should -Match 'one aggregate budget across both authoritative lanes'
         }
+    }
+
+    It 'brackets final leak-fix analysis with bounded matching all-state snapshots' {
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1'
+        ) -Raw
+
+        ([regex]::Matches(
+            $gate,
+            "-States @\('OPEN', 'CLOSED', 'MERGED'\)"
+        )).Count | Should -Be 2
+        $gate | Should -Match '\$maximumConsistencyAttempts = 3'
+        $gate | Should -Match 'Get-LeakFixConsistencySignature -PullRequests \$before'
+        $gate | Should -Match 'Get-LeakFixConsistencySignature -PullRequests \$after'
+        $gate | Should -Match 'remained inconsistent after \$maximumConsistencyAttempts bounded attempts'
+        $gate | Should -Not -Match '(?s)Get-CompleteLeakPullRequests.*?-State\s+(?:OPEN|CLOSED|MERGED)'
     }
 
     It 'keeps trusted merged branch validation in parity across both final gates' {
@@ -2949,7 +2994,7 @@ Describe 'workflow enforcement boundary' {
         @($fixGate, $hunterGate) | ForEach-Object {
             $_ | Should -Match 'Get-CompleteLeakPullRequests'
             $_ | Should -Match 'Get-RelevantMergedLeakReverts'
-            $_ | Should -Match 'MergedPullRequests \$merged'
+            $_ | Should -Match 'MergedPullRequests \$(?:merged|[A-Za-z]+Merged)'
         }
         $hunter | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
         $fixer | Should -Match 'Get-RelevantMergedLeakReverts\.ps1'
@@ -2999,6 +3044,9 @@ Describe 'workflow enforcement boundary' {
             $global:mockGhExitCode = 0
             $global:mockGhStderr = ''
             $global:mockReturnAllBases = $false
+            $global:mockGateSnapshots = @()
+            $global:mockGateSnapshotIndex = 0
+            $global:mockActiveGateSnapshot = $null
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockGhExitCode
@@ -3072,29 +3120,61 @@ Describe 'workflow enforcement boundary' {
                 $baseArgument = @($GhArgs | Where-Object {
                         $_.StartsWith('base=', [StringComparison]::Ordinal)
                     })[0]
-                if ($queryArgument -notmatch 'states: \[(?<state>OPEN|CLOSED|MERGED)\]' -or
+                if ($queryArgument -notmatch 'states: \[(?<states>(?:OPEN|CLOSED|MERGED)(?:,\s*(?:OPEN|CLOSED|MERGED))*)\]' -or
                     [string]::IsNullOrWhiteSpace($baseArgument)) {
                     throw 'Unexpected mock GraphQL request.'
                 }
-                $state = $Matches.state
+                $requestedStates = @($Matches.states -split ',\s*')
                 $base = $baseArgument.Substring('base='.Length)
-                $source = switch ($state) {
-                    'MERGED' { @($global:mockMerged) + @($global:mockReverts) }
-                    'CLOSED' { @($global:mockClosed) }
-                    'OPEN' { @($global:mockOpen) }
+                $snapshot = if ($global:mockGateSnapshots.Count -gt 0) {
+                    if ($base -ceq 'main') {
+                        if ($global:mockGateSnapshotIndex -ge
+                            $global:mockGateSnapshots.Count) {
+                            throw 'No mock gate snapshot remains.'
+                        }
+                        $global:mockActiveGateSnapshot =
+                            $global:mockGateSnapshots[$global:mockGateSnapshotIndex]
+                        $global:mockGateSnapshotIndex++
+                    } elseif ($null -eq $global:mockActiveGateSnapshot) {
+                        throw 'The mock gate snapshot was not initialized by the main query.'
+                    }
+                    $global:mockActiveGateSnapshot
+                } else {
+                    [pscustomobject]@{
+                        Merged = @($global:mockMerged) + @($global:mockReverts)
+                        Open = @($global:mockOpen)
+                        Closed = @($global:mockClosed)
+                    }
                 }
+                $source = @(
+                    foreach ($state in $requestedStates) {
+                        $propertyName = switch ($state) {
+                            'MERGED' { 'Merged' }
+                            'OPEN' { 'Open' }
+                            'CLOSED' { 'Closed' }
+                        }
+                        foreach ($row in @($snapshot.$propertyName)) {
+                            [pscustomobject]@{
+                                Row = $row
+                                State = $state
+                            }
+                        }
+                    }
+                )
                 if (-not $global:mockReturnAllBases) {
                     $source = @($source | Where-Object {
-                            [string]$_.baseRefName -ceq $base
+                            [string]$_.Row.baseRefName -ceq $base
                         })
                 }
                 $nodes = @($source | ForEach-Object {
+                        $row = $_.Row
+                        $state = $_.State
                         $node = [ordered]@{}
                         foreach ($name in @(
                                 'number', 'title', 'body', 'baseRefName',
                                 'mergedAt', 'url'
                             )) {
-                            $property = $_.PSObject.Properties[$name]
+                            $property = $row.PSObject.Properties[$name]
                             if ($null -ne $property) {
                                 $node[$name] = $property.Value
                             }
@@ -3102,7 +3182,7 @@ Describe 'workflow enforcement boundary' {
                         $node.state = $state
                         $node.merged = $state -ceq 'MERGED'
                         $node.mergeCommit = if ($state -ceq 'MERGED') {
-                            @{ oid = [string]$_.mergeCommitOid }
+                            @{ oid = [string]$row.mergeCommitOid }
                         } else {
                             $null
                         }
@@ -3119,7 +3199,8 @@ Describe 'workflow enforcement boundary' {
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
             Remove-Variable mockMerged, mockReverts, mockOpen, mockClosed, mockGhExitCode, `
-                mockGhStderr, mockReturnAllBases `
+                mockGhStderr, mockReturnAllBases, mockGateSnapshots, `
+                mockGateSnapshotIndex, mockActiveGateSnapshot `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -3242,6 +3323,174 @@ Describe 'workflow enforcement boundary' {
                     -StateDirectory $script:stateDirectory `
                     -Repository 'dotnet/maui'
             } | Should -Throw '*blocked PR creation*direct issue-reference match*'
+        }
+
+        It 'blocks a stable merged duplicate from two matching live snapshots' {
+            $candidate = New-LeakPr `
+                    -Number 507 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10'
+            $global:mockGateSnapshots = @(
+                    [pscustomobject]@{
+                        Merged = @($candidate)
+                        Open = @()
+                        Closed = @()
+                    }
+                    [pscustomobject]@{
+                        Merged = @($candidate)
+                        Open = @()
+                        Closed = @()
+                    }
+            )
+
+            {
+                    & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                        -AgentOutputPath $script:agentOutput `
+                        -StateDirectory $script:stateDirectory `
+                        -Repository 'dotnet/maui'
+            } | Should -Throw '*blocked PR creation*same-API match: 507*'
+            $global:mockGateSnapshotIndex | Should -Be 2
+        }
+
+        It 'blocks a stable open duplicate from two matching live snapshots' {
+            $candidate = New-LeakPr `
+                    -Number 508 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10' `
+                    -Merged $false
+            $global:mockGateSnapshots = @(
+                    [pscustomobject]@{
+                        Merged = @()
+                        Open = @($candidate)
+                        Closed = @()
+                    }
+                    [pscustomobject]@{
+                        Merged = @()
+                        Open = @($candidate)
+                        Closed = @()
+                    }
+            )
+
+            {
+                    & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                        -AgentOutputPath $script:agentOutput `
+                        -StateDirectory $script:stateDirectory `
+                        -Repository 'dotnet/maui'
+            } | Should -Throw '*blocked PR creation*same-API match: 508*'
+            $global:mockGateSnapshotIndex | Should -Be 2
+        }
+
+        It 'retries an open-to-merged transition and blocks the stable merged duplicate' {
+            $openCandidate = New-LeakPr `
+                    -Number 509 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10' `
+                    -Merged $false
+            $mergedCandidate = New-LeakPr `
+                    -Number 509 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10'
+            $global:mockGateSnapshots = @(
+                    [pscustomobject]@{
+                        Merged = @()
+                        Open = @($openCandidate)
+                        Closed = @()
+                    }
+                    [pscustomobject]@{
+                        Merged = @($mergedCandidate)
+                        Open = @()
+                        Closed = @()
+                    }
+                    [pscustomobject]@{
+                        Merged = @($mergedCandidate)
+                        Open = @()
+                        Closed = @()
+                    }
+                    [pscustomobject]@{
+                        Merged = @($mergedCandidate)
+                        Open = @()
+                        Closed = @()
+                    }
+            )
+
+            {
+                    & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                        -AgentOutputPath $script:agentOutput `
+                        -StateDirectory $script:stateDirectory `
+                        -Repository 'dotnet/maui'
+            } | Should -Throw '*blocked PR creation*same-API match: 509*'
+            $global:mockGateSnapshotIndex | Should -Be 4
+        }
+
+        It 'retries an open-to-closed transition without stale duplicate or attempt counting' {
+            $transitioned = New-LeakPr `
+                    -Number 510 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10' `
+                    -Merged $false
+            $otherAttempt = New-LeakPr `
+                    -Number 511 `
+                    -Title '[leak-fix] Fix Other.Api leak' `
+                    -Body 'Fixes #20' `
+                    -Merged $false
+            $openSnapshot = [pscustomobject]@{
+                    Merged = @()
+                    Open = @($transitioned)
+                    Closed = @($otherAttempt)
+            }
+            $closedSnapshot = [pscustomobject]@{
+                    Merged = @()
+                    Open = @()
+                    Closed = @($transitioned, $otherAttempt)
+            }
+            $global:mockGateSnapshots = @(
+                    $openSnapshot
+                    $closedSnapshot
+                    $closedSnapshot
+                    $closedSnapshot
+            )
+
+            {
+                    & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                        -AgentOutputPath $script:agentOutput `
+                        -StateDirectory $script:stateDirectory `
+                        -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockGateSnapshotIndex | Should -Be 4
+        }
+
+        It 'fails closed when candidate state churn exhausts the consistency retries' {
+            $candidate = New-LeakPr `
+                    -Number 512 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops teardown leak' `
+                    -Body 'Fixes #10' `
+                    -Merged $false
+            $openSnapshot = [pscustomobject]@{
+                    Merged = @()
+                    Open = @($candidate)
+                    Closed = @()
+            }
+            $closedSnapshot = [pscustomobject]@{
+                    Merged = @()
+                    Open = @()
+                    Closed = @($candidate)
+            }
+            $global:mockGateSnapshots = @(
+                    $openSnapshot
+                    $closedSnapshot
+                    $openSnapshot
+                    $closedSnapshot
+                    $openSnapshot
+                    $closedSnapshot
+            )
+
+            {
+                    & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                        -AgentOutputPath $script:agentOutput `
+                        -StateDirectory $script:stateDirectory `
+                        -Repository 'dotnet/maui'
+            } | Should -Throw '*remained inconsistent after 3 bounded attempts*'
+            $global:mockGateSnapshotIndex | Should -Be 6
         }
 
         It 'fails closed when the final GitHub fetch fails' {

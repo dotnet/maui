@@ -1082,15 +1082,31 @@ function Invoke-LeakPullRequestSnapshot {
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)]
         [ValidateSet('OPEN', 'CLOSED', 'MERGED')]
-        [string]$State,
+        [string[]]$States,
         [string[]]$BaseRefNames = @('main', 'inflight/current'),
         [ValidateRange(1, 100)][int]$PageSize = 100,
         [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000
     )
 
+    if ($States.Count -eq 0) {
+        throw 'At least one pull-request state is required.'
+    }
     if ($BaseRefNames.Count -eq 0) {
         throw 'At least one baseRefName is required.'
     }
+
+    $stateSet = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal
+    )
+    $requestedStates = [System.Collections.Generic.List[string]]::new()
+    foreach ($state in $States) {
+        if (-not $stateSet.Add($state)) {
+            throw "Leak pull-request pagination received duplicate state '$state'."
+        }
+        $requestedStates.Add($state)
+    }
+    $stateQuery = $requestedStates -join ', '
+    $stateContext = $requestedStates -join '/'
 
     $query = @'
 query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: String) {
@@ -1099,7 +1115,7 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
       first: $first
       after: $after
       baseRefName: $base
-      states: [__STATE__]
+      states: [__STATES__]
       orderBy: { field: CREATED_AT, direction: ASC }
     ) {
       totalCount
@@ -1123,7 +1139,7 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
     }
   }
 }
-'@.Replace('__STATE__', $State)
+'@.Replace('__STATES__', $stateQuery)
 
     $queryBudget = @{ Queries = 0 }
     $all = [System.Collections.Generic.List[object]]::new()
@@ -1139,7 +1155,7 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
             throw "Leak pull-request pagination received duplicate baseRefName '$base'."
         }
 
-        $context = "$State pull-request pagination for '$base'"
+        $context = "$stateContext pull-request pagination for '$base'"
         $connection = Invoke-LeakGraphQlConnection `
             -Repository $Repository `
             -Query $query `
@@ -1171,7 +1187,8 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
                 -Object $node `
                 -Name 'state' `
                 -Context "$context PR #$number"
-            if ($nodeState -isnot [string] -or $nodeState -cne $State) {
+            if ($nodeState -isnot [string] -or
+                -not $stateSet.Contains($nodeState)) {
                 throw "$context returned PR #$number with unexpected state '$nodeState'."
             }
             $title = Get-LeakRequiredPropertyValue `
@@ -1206,17 +1223,18 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
                 ($null -ne $body -and $body -isnot [string])) {
                 throw "$context returned malformed text metadata for PR #$number."
             }
-            if (($State -ceq 'MERGED' -and $null -eq $mergedAt) -or
-                ($State -cne 'MERGED' -and $null -ne $mergedAt)) {
+            $isMerged = $nodeState -ceq 'MERGED'
+            if (($isMerged -and $null -eq $mergedAt) -or
+                (-not $isMerged -and $null -ne $mergedAt)) {
                 throw "$context returned inconsistent mergedAt metadata for PR #$number."
             }
             if ($merged -isnot [bool] -or
-                $merged -ne ($State -ceq 'MERGED')) {
+                $merged -ne $isMerged) {
                 throw "$context returned inconsistent merged metadata for PR #$number."
             }
 
             $mergeCommitOid = $null
-            if ($State -ceq 'MERGED') {
+            if ($isMerged) {
                 if ($null -eq $mergeCommit) {
                     throw "$context returned no mergeCommit for merged PR #$number."
                 }
@@ -1239,7 +1257,7 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
                     title = $title
                     body = $body
                     baseRefName = $nodeBase
-                    state = $State
+                    state = $nodeState
                     merged = [bool]$merged
                     mergedAt = $mergedAt
                     mergeCommitOid = $mergeCommitOid
@@ -1252,23 +1270,34 @@ query($owner: String!, $name: String!, $base: String!, $first: Int!, $after: Str
 }
 
 function Get-CompleteLeakPullRequests {
+    [CmdletBinding(DefaultParameterSetName = 'SingleState')]
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'SingleState')]
         [ValidateSet('OPEN', 'CLOSED', 'MERGED')]
         [string]$State,
+        [Parameter(Mandatory = $true, ParameterSetName = 'MultipleStates')]
+        [ValidateSet('OPEN', 'CLOSED', 'MERGED')]
+        [string[]]$States,
         [string[]]$BaseRefNames = @('main', 'inflight/current'),
         [ValidateRange(1, 100)][int]$PageSize = 100,
         [ValidateRange(1, 5000)][int]$MaximumPageQueries = 1000
     )
 
+    $requestedStates = if ($PSCmdlet.ParameterSetName -ceq 'SingleState') {
+        @($State)
+    } else {
+        @($States)
+    }
+    $stateContext = $requestedStates -join '/'
+
     return @(
         Invoke-LeakWholeSnapshot `
-            -Context "$State pull-request pagination" `
+            -Context "$stateContext pull-request pagination" `
             -Operation {
                 Invoke-LeakPullRequestSnapshot `
                     -Repository $Repository `
-                    -State $State `
+                    -States $requestedStates `
                     -BaseRefNames $BaseRefNames `
                     -PageSize $PageSize `
                     -MaximumPageQueries $MaximumPageQueries

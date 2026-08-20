@@ -10,6 +10,46 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'LeakWorkflowDedup.psm1') -Force
 
+function Get-LeakFixConsistencySignature {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$PullRequests
+    )
+
+    $relevant = @(
+        $PullRequests |
+            Where-Object {
+                [string]$_.state -ceq 'MERGED' -or
+                (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
+            } |
+            Sort-Object number |
+            ForEach-Object {
+                [ordered]@{
+                    number = [int]$_.number
+                    title = [string]$_.title
+                    body = if ($null -eq $_.body) { $null } else { [string]$_.body }
+                    baseRefName = [string]$_.baseRefName
+                    state = [string]$_.state
+                    merged = [bool]$_.merged
+                    mergedAt = if ($null -eq $_.mergedAt) {
+                        $null
+                    } else {
+                        [string]$_.mergedAt
+                    }
+                    mergeCommitOid = if ($null -eq $_.mergeCommitOid) {
+                        $null
+                    } else {
+                        [string]$_.mergeCommitOid
+                    }
+                    url = [string]$_.url
+                }
+            }
+    )
+
+    return ConvertTo-Json -InputObject $relevant -Depth 4 -Compress
+}
+
 if ([string]::IsNullOrWhiteSpace($Repository)) {
     throw 'GITHUB_REPOSITORY is required.'
 }
@@ -50,39 +90,62 @@ Assert-LeakDedupState `
     -Api $api `
     -Repository $Repository
 
-$merged = @(
-    Get-CompleteLeakPullRequests `
-        -Repository $Repository `
-        -State MERGED
-)
+$maximumConsistencyAttempts = 3
+$consistentSnapshot = $null
+$mergedReverts = $null
 
-$authoritativeMerged = @(
-    Select-LeakAuthoritativePullRequests `
-        -PullRequests $merged `
-        -Context 'Final merged leak-fix de-dup search'
-)
-$eligibleMerged = @($authoritativeMerged | Where-Object {
-        $null -ne $_.mergedAt -and
-        (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
-    })
-$mergedReverts = @(
-    Get-RelevantMergedLeakReverts `
-        -Repository $Repository `
-        -TargetPullRequests $eligibleMerged `
-        -MergedPullRequests $merged
-)
+# Read every lifecycle state in one complete connection so an OPEN -> MERGED or
+# OPEN -> CLOSED transition cannot disappear between state-filtered queries.
+# Revert analysis is bracketed by an identical final read; any relevant change
+# discards the whole attempt and rebuilds from live data.
+for ($attempt = 1; $attempt -le $maximumConsistencyAttempts; $attempt++) {
+    $before = @(
+        Get-CompleteLeakPullRequests `
+            -Repository $Repository `
+            -States @('OPEN', 'CLOSED', 'MERGED')
+    )
+    $beforeMerged = @($before | Where-Object { $_.state -ceq 'MERGED' })
+    $authoritativeMerged = @(
+        Select-LeakAuthoritativePullRequests `
+            -PullRequests $beforeMerged `
+            -Context 'Final merged leak-fix de-dup search'
+    )
+    $eligibleMerged = @($authoritativeMerged | Where-Object {
+            $null -ne $_.mergedAt -and
+            (Test-LeakTitlePrefix -Title ([string]$_.title) -Kind Fix)
+        })
+    $candidateMergedReverts = @(
+        Get-RelevantMergedLeakReverts `
+            -Repository $Repository `
+            -TargetPullRequests $eligibleMerged `
+            -MergedPullRequests $beforeMerged
+    )
 
-$open = @(
-    Get-CompleteLeakPullRequests `
-        -Repository $Repository `
-        -State OPEN
-)
+    $after = @(
+        Get-CompleteLeakPullRequests `
+            -Repository $Repository `
+            -States @('OPEN', 'CLOSED', 'MERGED')
+    )
+    $beforeSignature = Get-LeakFixConsistencySignature -PullRequests $before
+    $afterSignature = Get-LeakFixConsistencySignature -PullRequests $after
+    if ($beforeSignature -ceq $afterSignature) {
+        $consistentSnapshot = $after
+        $mergedReverts = $candidateMergedReverts
+        break
+    }
 
-$closed = @(
-    Get-CompleteLeakPullRequests `
-        -Repository $Repository `
-        -State CLOSED
-)
+    if ($attempt -lt $maximumConsistencyAttempts) {
+        Write-Warning "Final leak-fix live pull-request state changed during consistency attempt $attempt of $maximumConsistencyAttempts; rebuilding the snapshot and revert analysis."
+    }
+}
+
+if ($null -eq $consistentSnapshot) {
+    throw "Final leak-fix live pull-request state remained inconsistent after $maximumConsistencyAttempts bounded attempts."
+}
+
+$merged = @($consistentSnapshot | Where-Object { $_.state -ceq 'MERGED' })
+$open = @($consistentSnapshot | Where-Object { $_.state -ceq 'OPEN' })
+$closed = @($consistentSnapshot | Where-Object { $_.state -ceq 'CLOSED' })
 $authoritativeClosed = @(
     Select-LeakAuthoritativePullRequests `
         -PullRequests $closed `
