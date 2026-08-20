@@ -858,7 +858,8 @@ function Test-ReplicationTestHarnessFault {
     }
     return [bool]($text -match ('(?i)OneTimeSetUp.*(?:OpenQA\.Selenium|Appium|WebDriver)|' +
         'A new session could not be created|UnknownErrorException|' +
-        'Could not (?:find|start) (?:the )?Appium server'))
+        'Could not (?:find|start) (?:the )?Appium server|' +
+        'the target tests did not run'))
 }
 
 function Test-ReplicationRefundsTestAttempt {

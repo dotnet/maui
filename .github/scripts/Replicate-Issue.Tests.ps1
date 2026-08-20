@@ -6554,3 +6554,25 @@ Describe 'Issue-to-test API fidelity' {
         $vocabulary | Should -Not -Contain 'Label'
     }
 }
+
+Describe 'A control the device runner never executed' {
+    It 'treats a not-run control as inconclusive rather than a real result' {
+        Test-ReplicationTestHarnessFault -FailureSummary (
+            "Device test result file(s) contained no tests for requested class(es): " +
+            "Microsoft.Maui.DeviceTests.Memory.Issue36613 (the target tests did not run).") |
+            Should -BeTrue
+    }
+
+    It 'still treats an ordinary assertion failure as a real result' {
+        Test-ReplicationTestHarnessFault -FailureSummary (
+            'Assert.Equal() Failure: Expected 40 but found 0.') |
+            Should -BeFalse
+    }
+
+    It 'still treats a compile error as repairable rather than a harness fault' {
+        Test-ReplicationTestHarnessFault -FailureSummary (
+            "Issue36613.cs(41,25): error CS8602: Dereference of a possibly null reference. " +
+            "(the target tests did not run)") |
+            Should -BeFalse
+    }
+}

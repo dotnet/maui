@@ -712,18 +712,81 @@ Describe 'The gate expects every artifact the verifier retains' {
         }
     }
 
-    It 'applies the retained pattern in both directory layouts' {
-        # The verification directory is sometimes the same directory as the
-        # evidence root, and that branch filters names separately; allowing the
-        # file in only one of the two still discards the reproduction.
-        $checks = [regex]::Matches($script:GateSource, '\$retainedResultPattern')
-        $checks.Count | Should -BeGreaterOrEqual 3 -Because 'declaration, combined-root filter, and per-item check'
+    It 'consults the retained pattern at every artifact rejection' {
+        # Counting occurrences let a second allowlist ship without the pattern:
+        # the machine-readable branch rejected verification-test-result.trx and
+        # destroyed build 15032847, a Catalyst reproduction whose negative
+        # control had already passed 3 of 3. Enumerate the rejection sites from
+        # the source instead of asserting how many there should be.
+        $tokens = $null
+        $errors = $null
+        $gatePath = Join-Path (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) `
+            'scripts/shared/Validate-ReplicationCandidate.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $gatePath, [ref]$tokens, [ref]$errors)
+
+        $rejections = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.ThrowStatementAst] -and
+                $n.Extent.Text -match 'unexpected artifact'
+            }, $true)
+        $rejections.Count | Should -BeGreaterOrEqual 2 -Because 'both directory layouts reject artifacts'
+
+        # A guard may consult the pattern through a well-named intermediate,
+        # so accept any variable that is itself derived from it.
+        $derived = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+        foreach ($assignment in $ast.FindAll({
+                    param($n)
+                    $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                    $n.Right.Extent.Text -match '\$retainedResultPattern'
+                }, $true)) {
+            if ($assignment.Left -is [System.Management.Automation.Language.VariableExpressionAst]) {
+                [void]$derived.Add($assignment.Left.VariablePath.UserPath)
+            }
+        }
+
+        foreach ($rejection in $rejections) {
+            $guard = $rejection.Parent
+            while ($null -ne $guard -and
+                $guard -isnot [System.Management.Automation.Language.IfStatementAst]) {
+                $guard = $guard.Parent
+            }
+            $guard | Should -Not -BeNullOrEmpty -Because 'each rejection must sit inside a guard'
+            $condition = $guard.Clauses[0].Item1.Extent.Text
+            $consults = $condition -match '\$retainedResultPattern'
+            foreach ($name in $derived) {
+                if ($condition -match ('\$' + [regex]::Escape($name) + '\b')) {
+                    $consults = $true
+                }
+            }
+            $consults | Should -BeTrue -Because (
+                "the rejection at line $($rejection.Extent.StartLineNumber) must accept the retained result")
+        }
     }
 
     It 'names the artifact it rejects' {
         # The original message said only that something was unexpected, which
-        # is why two lost reproductions took a log download each to explain.
-        $script:GateSource | Should -Match "Verification directory contains an unexpected artifact: '\`$reportedName'"
+        # is why several lost reproductions took a log download each to explain.
+        # Derive the requirement from the rejection sites rather than listing
+        # the messages, so a new rejection cannot ship nameless.
+        $tokens = $null
+        $errors = $null
+        $gatePath = Join-Path (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) `
+            'scripts/shared/Validate-ReplicationCandidate.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $gatePath, [ref]$tokens, [ref]$errors)
+
+        $rejections = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.ThrowStatementAst] -and
+                $n.Extent.Text -match 'unexpected artifact'
+            }, $true)
+        $rejections.Count | Should -BeGreaterOrEqual 2
+
+        foreach ($rejection in $rejections) {
+            $rejection.Extent.Text | Should -Match 'Get-ReportableArtifactName' -Because (
+                "the rejection at line $($rejection.Extent.StartLineNumber) must say which file it means")
+        }
     }
 }
 
@@ -763,4 +826,31 @@ Describe 'The negative control author gets every attempt it is allotted' {
         $following | Should -Match '\$round\s+-eq\s+\$MaxControlAttempts'
         $following | Should -Match 'continue'
     }
+}
+
+Describe 'A control the device runner never executed is not evidence against the test' {
+    BeforeAll {
+        $script:runner = Join-Path $PSScriptRoot '../skills/run-device-tests/scripts/Run-DeviceTests.ps1'
+        $script:orchestratorSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+    }
+
+    It 'reads the device runner that reports a class which never ran' {
+        Test-Path -LiteralPath $script:runner -PathType Leaf | Should -BeTrue
+    }
+
+    It 'recognises every not-run message the device runner can throw' {
+        # Derive the phrase from the producer instead of restating it, so the
+        # detector cannot drift away from the runner that emits it. Build
+        # 15032401 blocked a finished Android reproduction because the control
+        # reported "the target tests did not run" and the detector, which knew
+        # only Appium session faults, let it fall through to a hard rejection.
+        $runnerSource = Get-Content -LiteralPath $script:runner -Raw
+        $phrases = [regex]::Matches($runnerSource, '\(the target tests did not run\)')
+        $phrases.Count | Should -BeGreaterThan 0
+
+        $literal = 'the target tests did not run'
+        $script:orchestratorSource | Should -Match ([regex]::Escape($literal))
+    }
+
 }

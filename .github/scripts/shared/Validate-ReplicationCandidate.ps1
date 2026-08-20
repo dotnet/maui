@@ -1711,6 +1711,26 @@ function Assert-ReplicationCandidateSources {
     }
 }
 
+function Get-ReportableArtifactName {
+    <#
+        .SYNOPSIS
+        Renders an artifact name safe to embed in a rejection message.
+
+        .DESCRIPTION
+        A rejection that does not say which file it means costs a log download
+        to explain, and several lost reproductions did exactly that. The name
+        comes from the file system, so it is reduced to a conservative
+        character set and bounded before it reaches a message or Markdown.
+    #>
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Name)
+
+    $safe = [regex]::Replace($Name, '[^A-Za-z0-9._-]', '?')
+    if ($safe.Length -gt 100) {
+        $safe = $safe.Substring(0, 100)
+    }
+    return $safe
+}
+
 function Get-ReplicationEvidenceInventory {
     param([Parameter(Mandatory = $true)][string]$Directory)
 
@@ -1779,14 +1799,15 @@ function Get-ReplicationEvidenceInventory {
             (
                 $item.Name -cin $allowedVerificationNames -or
                 $item.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -or
-                $item.Name -cmatch '^verification-console-run-[2-3]\.log$'
+                $item.Name -cmatch '^verification-console-run-[2-3]\.log$' -or
+                $item.Name -cmatch $retainedResultPattern
             )
         )
         if ($item.PSIsContainer) {
             throw 'Evidence directory must not contain nested directories.'
         }
         if ($item.Name -cnotin $allowedMediaNames -and -not $isCombinedVerificationFile) {
-            throw 'Evidence directory contains an unexpected artifact.'
+            throw "Evidence directory contains an unexpected artifact: '$(Get-ReportableArtifactName -Name $item.Name)'."
         }
         $null = Get-SafeRegularFile `
             -Path $item.FullName `
@@ -1841,11 +1862,7 @@ function Get-ReplicationEvidenceInventory {
             # finished a device reproduction and were discarded here, and the
             # message gave no way to tell which artifact was unexpected. The
             # name reaches a log, so only a bounded safe subset is echoed.
-            $reportedName = [regex]::Replace([string]$item.Name, '[^A-Za-z0-9._-]', '?')
-            if ($reportedName.Length -gt 100) {
-                $reportedName = $reportedName.Substring(0, 100)
-            }
-            throw "Verification directory contains an unexpected artifact: '$reportedName'."
+            throw "Verification directory contains an unexpected artifact: '$(Get-ReportableArtifactName -Name $item.Name)'."
         }
         $null = Get-SafeRegularFile `
             -Path $item.FullName `
@@ -1868,8 +1885,10 @@ function Get-ReplicationEvidenceInventory {
                     'negative-control-console.log',
                     'negative-control-result.json') -and
                 $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
-                $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$') {
-                throw 'Machine-readable verification directory contains an unexpected artifact.'
+                $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$' -and
+                $item.Name -cnotmatch $retainedResultPattern) {
+                throw ("Machine-readable verification directory contains an unexpected artifact: " +
+                    "'$(Get-ReportableArtifactName -Name $item.Name)'.")
             }
         }
         if (-not (Test-Path -LiteralPath (Join-Path $verificationRoot 'verification-console.log') -PathType Leaf)) {
