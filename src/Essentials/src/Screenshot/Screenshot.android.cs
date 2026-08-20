@@ -67,11 +67,11 @@ namespace Microsoft.Maui.Media
 				var bitmap = await RenderUsingPixelCopyAsync(view, window).ConfigureAwait(false);
 				if (bitmap is not null)
 					return bitmap;
-			}
 
-			// View fallbacks require the UI thread; dispatching could deadlock if a synchronous caller is blocking it.
-			if (!MainThread.IsMainThread)
-				return null;
+				// PixelCopy may complete off the UI thread, where view-based fallbacks are unsafe.
+				if (!MainThread.IsMainThread)
+					return null;
+			}
 
 			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
 		}
