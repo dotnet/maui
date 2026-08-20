@@ -1061,6 +1061,53 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
             Should -Not -BeNullOrEmpty
     }
 
+    It 'refuses a report whose trigger is a project file property the agent may not edit' -ForEach @(
+        # Build 15033579 provisioned a Windows agent for this and spent three
+        # attempts concluding the Sandbox cannot restore or rebuild a project.
+        @{ Title = 'Unittests not working after changing ApplicationDisplayVersion different from ApplicationVersion' }
+        @{ Title = 'Setting RuntimeIdentifier breaks Release deployment on Windows' }
+        @{ Title = 'Adding a TargetFramework to the csproj drops the Android head' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -Not -BeNullOrEmpty -Because "'$Title' can only be arranged by editing a project file"
+    }
+
+    It "refuses triage of this repository's own test suite on a candidate pull request" -ForEach @(
+        @{ Title = '[inflight regression] Core.UnitTests/PickerTests fail in candidate PR 36411' }
+        @{ Title = '[inflight regression] UsesReflectionBasedBindings Xaml.UnitTests fails in candidate PR 36411' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'still accepts a runtime report that merely mentions a version or a restored value' -ForEach @(
+        # 'restore' is a build verb and an ordinary English one. Every title
+        # here was taken from the live corpus and must stay selectable.
+        @{ Title = '[SafeArea] [Android] Padding not restored after SoftInput closes' }
+        @{ Title = '[Windows, Android, iOS & Mac]Button TextColor does not restore to platform default when reset to null' }
+        @{ Title = '[iOS, Mac & Windows]Button BackgroundColor does not restore to default when reset to null after dynamic update' }
+        @{ Title = 'Label text is wrong after upgrading to 10.0.60' }
+        @{ Title = 'Running Maui in Unit Tests gets TypeInitializationException due to missing FocusManager' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -BeNullOrEmpty -Because "'$Title' describes what the running app does"
+    }
+
+    It 'refuses a report that the untouched template already misbehaves' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'Clean MAUI project crashes on start in release mode on Android' -Labels @() |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'still accepts a launch crash whose trigger is an ordinary page property' -ForEach @(
+        @{ Title = 'iOS app crashes on start because of set SafeAreaEdges="None"' }
+        @{ Title = '[Windows] "TitleBar.ExtendsContentIntoTitleBar = false" is now crashing startup every time in minimal Maui Project' }
+        @{ Title = 'App crashes on startup after building in Release' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -BeNullOrEmpty -Because "'$Title' names a trigger a Sandbox page can set"
+    }
+
     It 'still accepts an ordinary control report that merely renders web content' {
         Get-ReplicationRuntimeScopeMismatch `
             -Title 'WebView inside ScrollView does not scroll on Android' -Labels @() |

@@ -1845,6 +1845,43 @@ function Get-ReplicationRuntimeScopeMismatch {
             Pattern = '(?i)\b(?:blazor(?:\s*web\s*view)?|hybrid\s*web\s*view|webview2|wpf|windows\s+forms|winforms)\b'
             Scope   = 'a hosted web view or desktop framework the Sandbox may not reference'
         }
+        [pscustomobject]@{
+            # These names exist only inside a project file. The agent is
+            # forbidden from editing project files and the Sandbox project is
+            # fixed, so a report whose trigger is one of them cannot be
+            # arranged at all, whatever the symptom looks like. Build 15033579
+            # provisioned a Windows agent for "Unittests not working after
+            # changing ApplicationDisplayVersion different from
+            # ApplicationVersion" and spent three attempts concluding exactly
+            # that. No build word appears in the title, so the build-failure
+            # signal above cannot catch it.
+            Pattern = '(?i)\bApplication(?:DisplayVersion|Version|Id|Title)\b' +
+                '|\bAssembly(?:Version|Name)\b|\bRuntimeIdentifiers?\b' +
+                '|\bTargetFrameworks?\b|\b(?:Property|Item)Group\b'
+            Scope   = 'a project file property the agent may not change'
+        }
+        [pscustomobject]@{
+            # A report that MAUI's own test assembly fails on a candidate PR is
+            # triage of this repository's CI, not an app behaviour any device
+            # page can show.
+            Pattern = '(?i)\binflight\s+regression\b' +
+                '|\b(?:Core|Xaml|Controls)\.UnitTests\b' +
+                '|\bfail\w*\b[^.]{0,30}\bin\s+candidate\s+PR\b'
+            Scope   = "this repository's own test suite on a candidate pull request"
+        }
+        [pscustomobject]@{
+            # The Sandbox reproduces a report by authoring one page. A report
+            # that the untouched template already misbehaves therefore has
+            # nothing for it to author, and build 15033565 spent an Android
+            # agent discovering that for "Clean MAUI project crashes on start
+            # in release mode". Startup crashes in general stay selectable:
+            # 'SafeAreaEdges="None"' and 'TitleBar.ExtendsContentIntoTitleBar'
+            # both crash at launch and are ordinary page triggers.
+            Pattern = '(?i)\b(?:clean|empty|blank|fresh|vanilla|brand[-\s]?new|newly[-\s]?created|unmodified|untouched)\b' +
+                '[^.]{0,24}\b(?:maui\s+)?(?:project|app|application|solution)\b' +
+                '[^.]{0,40}\b(?:crash\w*|fail\w*|error|broken|hang\w*|does\s*n[o\x27]t\s+work)\b'
+            Scope   = 'the untouched template, which leaves no page to author'
+        }
     )
 
     $text = [string]$Title
