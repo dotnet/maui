@@ -21,9 +21,15 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = true)
+		// Default flipped to false so NavigationRenderer runs by default on iOS/MacCatalyst; the
+		// #else branch below is unaffected and always registers NavigationViewHandler on other
+		// platforms regardless of this parameter. See VisualElementTreeNavigationHandlerTests.iOS.cs.
+		protected virtual void SetupBuilder(bool includeNavigationViewHandler = false)
 		{
 			EnsureHandlerCreated(builder =>
 			{

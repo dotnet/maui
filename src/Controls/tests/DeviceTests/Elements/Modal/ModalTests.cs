@@ -30,9 +30,15 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		protected virtual void SetupBuilder(bool includeNavigationViewHandler = true)
+		// Default flipped to false so NavigationRenderer runs by default on iOS/MacCatalyst; the
+		// #else branch below is unaffected and always registers NavigationViewHandler on other
+		// platforms regardless of this parameter. See ModalNavigationHandlerTests.iOS.cs.
+		protected virtual void SetupBuilder(bool includeNavigationViewHandler = false)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -264,7 +270,28 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+			// Renderer-only: pushing two nested modals back-to-back from Appearing
+			// hangs under NavigationViewHandler for useShell:false. Register
+			// NavigationRenderer directly (not via SetupBuilder) so this stays
+			// Renderer-only even when inherited by ModalNavigationHandlerTests.
+			// See Handler_PushModalFromAppearing_DoesNotCrash and
+			// Handler_PushModalFromNavigatedTo for the Handler-equivalent tests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
 			var windowPage = new ContentPage()
 			{
 				Content = new Label()

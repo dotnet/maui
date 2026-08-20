@@ -24,9 +24,12 @@ using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFl
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.FlyoutPage)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class FlyoutPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -35,12 +38,24 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every FlyoutPageTests test run against both the NavigationPage renderer and handler.
+		// See FlyoutPageNavigationRendererTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 		[Theory]

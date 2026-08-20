@@ -28,9 +28,15 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = true)
+		// Default flipped to false so NavigationRenderer runs by default on iOS/MacCatalyst; the
+		// #else branch below is unaffected and always registers NavigationViewHandler on other
+		// platforms regardless of this parameter. See TabbedPageNavigationHandlerTests.iOS.cs.
+		protected virtual void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = false)
 		{
 			EnsureHandlerCreated(builder =>
 			{

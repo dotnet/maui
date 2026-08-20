@@ -24,16 +24,19 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Collection(RunInNewWindowCollection)]
 	[Category(TestCategory.CollectionView)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
 
@@ -44,12 +47,23 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #if IOS && !MACCATALYST
 					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
 #endif
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every CollectionViewTests test run against both the NavigationPage renderer and
+		// handler. See CollectionViewNavigationRendererTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 		[Fact(

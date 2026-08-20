@@ -32,7 +32,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	public class CarouselView2 : CarouselView { }
 
 
-	void SetupBuilder()
+	void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -91,6 +91,12 @@ public class MemoryTests : ControlsHandlerTestBase
 
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #if IOS || MACCATALYST
+				if (!includeNavigationViewHandler)
+				{
+					handlers.AddHandler<NavigationPage, NavigationRenderer>();
+				}
+#endif
+#if IOS || MACCATALYST
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();
 				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
 #else
@@ -102,16 +108,21 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 	[Theory("Pages Do Not Leak")]
-	[InlineData(typeof(ContentPage))]
-	[InlineData(typeof(NavigationPage))]
+	[InlineData(typeof(ContentPage), true)]
+	[InlineData(typeof(NavigationPage), true)]
+#if IOS || MACCATALYST
+	// Also verify NavigationPage doesn't leak when using the legacy NavigationRenderer, not just
+	// the NavigationViewHandler above. See RendererHandlerVariant.cs.
+	[InlineData(typeof(NavigationPage), false)]
+#endif
 	// Issue #27411 (partially) and #33918 have been fixed - NavigationPage no longer leaks on Android
-	[InlineData(typeof(TabbedPage))]
+	[InlineData(typeof(TabbedPage), true)]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ContentPage))]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NavigationPage))]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TabbedPage))]
-	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type, bool includeNavigationViewHandler)
 	{
-		SetupBuilder();
+		SetupBuilder(includeNavigationViewHandler);
 
 		var references = new List<WeakReference>();
 		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
