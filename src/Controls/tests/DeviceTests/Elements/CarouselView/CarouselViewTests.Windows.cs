@@ -524,6 +524,81 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task CollectionChangePreservesPositionOverrideFromCurrentItemChanged()
+		{
+			SetupBuilder();
+			var firstItem = new object();
+			var secondItem = new object();
+			var overrideItem = new object();
+			var items = new ObservableCollection<object> { firstItem, secondItem, overrideItem };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.CurrentItemChanged += (_, args) =>
+				{
+					if (ReferenceEquals(args.CurrentItem, secondItem))
+						carouselView.Position = 1;
+				};
+
+				items.RemoveAt(0);
+				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 1);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(overrideItem, carouselView.CurrentItem);
+			});
+		}
+
+		[Fact]
+		public async Task CompletedCollectionOverrideDoesNotSuppressLaterCurrentItemUpdate()
+		{
+			SetupBuilder();
+			var firstItem = new object();
+			var replacementItem = new object();
+			var overrideItem = new object();
+			var items = new ObservableCollection<object> { firstItem, replacementItem, overrideItem };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				int overrideScrollToRequests = 0;
+				carouselView.ScrollToRequested += (_, args) =>
+				{
+					if (args.Mode == ScrollToMode.Position && args.Index == 1)
+						overrideScrollToRequests++;
+				};
+
+				bool overrideApplied = false;
+				carouselView.CurrentItemChanged += (_, args) =>
+				{
+					if (!overrideApplied && ReferenceEquals(args.CurrentItem, replacementItem))
+					{
+						overrideApplied = true;
+						carouselView.CurrentItem = overrideItem;
+					}
+				};
+
+				items.RemoveAt(0);
+				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 1);
+				Assert.Equal(1, overrideScrollToRequests);
+
+				handler.SetPositionFromScroll(0);
+				Assert.Same(replacementItem, carouselView.CurrentItem);
+
+				carouselView.CurrentItem = overrideItem;
+
+				Assert.Equal(2, overrideScrollToRequests);
+			});
+		}
+
+		[Fact]
 		public async Task CollectionChangeDefersNewCurrentItemOverrideUntilNativeViewUpdates()
 		{
 			SetupBuilder();
@@ -868,6 +943,34 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DisconnectFromCurrentItemChangedDuringNativeScrollDoesNotCrash()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				bool disconnected = false;
+				carouselView.CurrentItemChanged += (_, args) =>
+				{
+					if (!ReferenceEquals(args.CurrentItem, items[1]))
+						return;
+
+					disconnected = true;
+					((IElementHandler)handler).DisconnectHandler();
+				};
+
+				handler.SetPositionFromScroll(1);
+
+				Assert.True(disconnected);
+				Assert.Null(((IElementHandler)handler).VirtualView);
+			});
+		}
+
+		[Fact]
 		public async Task DisconnectClearsTransientScrollState()
 		{
 			SetupBuilder();
@@ -876,6 +979,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, handler =>
 			{
 				SetPrivateField(handler, "_positionUpdateFromScroll", 1);
+				SetPrivateField(handler, "_isPositionUpdateFromCollection", true);
 				SetPrivateField(handler, "_hasCurrentItemUpdateFromScroll", true);
 				SetPrivateField(handler, "_currentItemUpdateFromScroll", new object());
 				SetPrivateField(handler, "_hasCurrentItemUpdateFromCollection", true);
@@ -899,6 +1003,7 @@ namespace Microsoft.Maui.DeviceTests
 				((IElementHandler)handler).DisconnectHandler();
 
 				Assert.Equal(-1, GetPrivateField<int>(handler, "_positionUpdateFromScroll"));
+				Assert.False(GetPrivateField<bool>(handler, "_isPositionUpdateFromCollection"));
 				Assert.False(GetPrivateField<bool>(handler, "_hasCurrentItemUpdateFromScroll"));
 				Assert.Null(GetPrivateField<object>(handler, "_currentItemUpdateFromScroll"));
 				Assert.False(GetPrivateField<bool>(handler, "_hasCurrentItemUpdateFromCollection"));

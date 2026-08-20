@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		Size _currentSize;
 		bool _isCarouselViewReady;
 		bool _isInternalPositionUpdate;
+		bool _isPositionUpdateFromCollection;
 		int _positionUpdateFromScroll = -1;
 		bool _hasCurrentItemUpdateFromScroll;
 		object _currentItemUpdateFromScroll;
@@ -96,6 +97,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void ResetScrollState()
 		{
 			_positionUpdateFromScroll = -1;
+			_isPositionUpdateFromCollection = false;
 			_hasCurrentItemUpdateFromScroll = false;
 			_currentItemUpdateFromScroll = null;
 			_hasCurrentItemUpdateFromCollection = false;
@@ -571,7 +573,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (CollectionViewSource == null)
 				return;
 
-			if (_isInternalPositionUpdate)
+			if (_isPositionUpdateFromCollection)
 				return;
 
 			var carouselPosition = ItemsView.Position;
@@ -723,6 +725,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (position == Element.Position)
 			{
+				_collectionCurrentItemOverride = null;
 				return;
 			}
 
@@ -730,6 +733,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			try
 			{
 				SetCarouselViewPosition(position);
+				var itemsView = ((IElementHandler)this).VirtualView as CarouselView;
+				if (itemsView is not null
+					&& _collectionCurrentItemOverride is not null
+					&& !ReferenceEquals(_collectionCurrentItemOverride, itemsView.CurrentItem))
+				{
+					_collectionCurrentItemOverride = null;
+				}
 			}
 			finally
 			{
@@ -958,6 +968,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_centerRequestVersion++;
 
+			var itemsView = ((IElementHandler)this).VirtualView as CarouselView;
+			if (itemsView is null)
+				return;
+
 			// Set flag to disable animation during collection changes
 			var wasInternalPositionUpdate = _isInternalPositionUpdate;
 			var previousCollectionItemsSource = _collectionItemsSource;
@@ -967,19 +981,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			try
 			{
-				var carouselPosition = ItemsView.Position;
-				var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+				var carouselPosition = itemsView.Position;
+				var currentItemPosition = GetItemPositionInCarousel(itemsView.CurrentItem);
 				var count = _collectionItemsSource.Count;
 				bool currentItemOverridden = false;
 
 				bool removingCurrentElement = currentItemPosition == -1;
 				bool removingLastElement = e.OldStartingIndex == count;
 				bool removingFirstElement = e.OldStartingIndex == 0;
-				bool removingCurrentElementButNotFirst = removingCurrentElement && removingLastElement && ItemsView.Position > 0;
+				bool removingCurrentElementButNotFirst = removingCurrentElement && removingLastElement && itemsView.Position > 0;
 
 				if (removingCurrentElementButNotFirst)
 				{
-					carouselPosition = ItemsView.Position - 1;
+					carouselPosition = itemsView.Position - 1;
 				}
 				else if (removingFirstElement && !removingCurrentElement)
 				{
@@ -999,11 +1013,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_isCollectionChanged = true;
 				}
 
-				if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+				if (itemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 				{
 					carouselPosition = count == 0 ? 0 : count - 1;
 				}
-				else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+				else if (itemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 				{
 					carouselPosition = 0;
 				}
@@ -1016,9 +1030,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				SetCarouselViewCurrentItem(carouselPosition);
-				if (!ReferenceEquals(collectionCurrentItem, ItemsView.CurrentItem))
+				if (!ReferenceEquals(((IElementHandler)this).VirtualView, itemsView))
+					return;
+
+				if (!ReferenceEquals(collectionCurrentItem, itemsView.CurrentItem))
 				{
-					var overriddenCurrentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+					var overriddenCurrentItemPosition = GetItemPositionInCarousel(itemsView.CurrentItem);
 					if (overriddenCurrentItemPosition != -1)
 					{
 						carouselPosition = overriddenCurrentItemPosition;
@@ -1026,22 +1043,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 
-				var currentItemBeforePositionUpdate = ItemsView.CurrentItem;
-				SetCarouselViewPosition(carouselPosition);
-				if (!ReferenceEquals(currentItemBeforePositionUpdate, ItemsView.CurrentItem))
+				var currentItemBeforePositionUpdate = itemsView.CurrentItem;
+				var wasPositionUpdateFromCollection = _isPositionUpdateFromCollection;
+				_isPositionUpdateFromCollection = true;
+				try
 				{
-					var overriddenCurrentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+					SetCarouselViewPosition(carouselPosition);
+				}
+				finally
+				{
+					_isPositionUpdateFromCollection = wasPositionUpdateFromCollection;
+				}
+
+				if (!ReferenceEquals(((IElementHandler)this).VirtualView, itemsView))
+					return;
+
+				if (!ReferenceEquals(currentItemBeforePositionUpdate, itemsView.CurrentItem))
+				{
+					var overriddenCurrentItemPosition = GetItemPositionInCarousel(itemsView.CurrentItem);
 					if (overriddenCurrentItemPosition != -1)
 					{
 						carouselPosition = overriddenCurrentItemPosition;
 						currentItemOverridden = true;
-						SetCarouselViewPosition(carouselPosition);
+						wasPositionUpdateFromCollection = _isPositionUpdateFromCollection;
+						_isPositionUpdateFromCollection = true;
+						try
+						{
+							SetCarouselViewPosition(carouselPosition);
+						}
+						finally
+						{
+							_isPositionUpdateFromCollection = wasPositionUpdateFromCollection;
+						}
+
+						if (!ReferenceEquals(((IElementHandler)this).VirtualView, itemsView))
+							return;
 					}
 				}
 
 				if (currentItemOverridden)
 				{
-					_collectionCurrentItemOverride = ItemsView.CurrentItem;
+					_collectionCurrentItemOverride = itemsView.CurrentItem;
 					QueueCollectionCurrentItemOverrideScroll(
 						_collectionCurrentItemOverride,
 						carouselPosition,
