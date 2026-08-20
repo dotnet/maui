@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -208,6 +209,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 			Assert.True(Brush.HasTransparency(allSemiTransparentBrush));
+		}
+
+		[Fact]
+		public void SharedGradientStopsDoNotRetainBrush()
+		{
+			var sharedGradientStops = new GradientStopCollection
+			{
+				new GradientStop(Colors.Red, 0),
+				new GradientStop(Colors.Blue, 1),
+			};
+
+			var brushReference = CreateBrushReference(sharedGradientStops);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(brushReference.IsAlive);
+			GC.KeepAlive(sharedGradientStops);
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateBrushReference(GradientStopCollection gradientStops)
+		{
+			var brush = new RadialGradientBrush { GradientStops = gradientStops };
+			return new WeakReference(brush);
 		}
 	}
 }

@@ -16,10 +16,30 @@ namespace Microsoft.Maui.Controls
 		// cross-TFM reference-equality comparer instead (avoids a netstandard build break).
 		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new(GradientStopReferenceComparer.Instance);
 
+		// Cached delegates: WeakNotifyXProxy only holds a WeakReference to the handler, so an
+		// inline method-group delegate would have no other root and could be collected on its own.
+		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
+		readonly PropertyChangedEventHandler _stopChangedHandler;
+
+		readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
+		readonly Dictionary<GradientStop, WeakNotifyPropertyChangedProxy> _stopProxies = new(GradientStopReferenceComparer.Instance);
+
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
+			_collectionChangedHandler = OnGradientStopCollectionChanged;
+			_stopChangedHandler = OnGradientStopPropertyChanged;
 			GradientStops = new GradientStopCollection();
+		}
+
+		~GradientBrush()
+		{
+			_collectionProxy.Unsubscribe();
+
+			foreach (var proxy in _stopProxies.Values)
+			{
+				proxy.Unsubscribe();
+			}
 		}
 
 		public event EventHandler InvalidateGradientBrushRequested;
@@ -68,7 +88,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			collection.CollectionChanged += OnGradientStopCollectionChanged;
+			_collectionProxy.Subscribe(collection, _collectionChangedHandler);
 
 			foreach (var stop in collection)
 			{
@@ -83,7 +103,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			collection.CollectionChanged -= OnGradientStopCollectionChanged;
+			_collectionProxy.Unsubscribe();
 			UnsubscribeFromAllGradientStops();
 		}
 
@@ -155,7 +175,9 @@ namespace Microsoft.Maui.Controls
 
 			_subscriptionRefCounts[stop] = 1;
 			stop.Parent = this;
-			stop.PropertyChanged += OnGradientStopPropertyChanged;
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			proxy.Subscribe(stop, _stopChangedHandler);
+			_stopProxies[stop] = proxy;
 		}
 
 		void UnsubscribeFromGradientStop(GradientStop stop)
@@ -178,7 +200,11 @@ namespace Microsoft.Maui.Controls
 
 			_subscriptionRefCounts.Remove(stop);
 			stop.Parent = null;
-			stop.PropertyChanged -= OnGradientStopPropertyChanged;
+			if (_stopProxies.TryGetValue(stop, out var proxy))
+			{
+				proxy.Unsubscribe();
+				_stopProxies.Remove(stop);
+			}
 		}
 
 		void UnsubscribeFromAllGradientStops()
@@ -186,9 +212,13 @@ namespace Microsoft.Maui.Controls
 			foreach (var stop in _subscriptionRefCounts.Keys)
 			{
 				stop.Parent = null;
-				stop.PropertyChanged -= OnGradientStopPropertyChanged;
+				if (_stopProxies.TryGetValue(stop, out var proxy))
+				{
+					proxy.Unsubscribe();
+				}
 			}
 
+			_stopProxies.Clear();
 			_subscriptionRefCounts.Clear();
 		}
 

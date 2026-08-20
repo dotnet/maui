@@ -24,4 +24,5 @@ override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.LayoutSubview
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
+Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void
 Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
