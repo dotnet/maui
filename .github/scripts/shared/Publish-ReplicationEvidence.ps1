@@ -38,6 +38,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
+. (Join-Path $PSScriptRoot 'Get-ReplicationSignatureMatch.ps1')
+
 function Test-ReplicationAssetPrefix {
     param([Parameter(Mandatory = $true)][string]$Value)
 
@@ -277,9 +279,15 @@ $actualFailureMessage = [string](Get-ReplicationCandidateValue `
     -Candidate $candidate `
     -Names @('actualFailureMessage') `
     -Description 'targeted failure message')
+# The gate deliberately accepts a wording difference as the same defect, so
+# repeating that decision as literal containment discarded reproductions it had
+# already validated. Apply the same rule here.
 if (-not $actualFailureMessage.Contains(
-    $failureSignature,
-    [StringComparison]::Ordinal)) {
+        $failureSignature,
+        [StringComparison]::Ordinal) -and
+    -not (Test-ReplicationSignatureEquivalent `
+        -Declared $failureSignature `
+        -Observed $actualFailureMessage)) {
     throw 'Validated candidate targeted failure message does not contain the expected failure signature.'
 }
 

@@ -2778,6 +2778,7 @@ stages:
               foreach ($name in @(
                 'Assert-ReplicationTestGuard.ps1',
                 'Get-ReplicationCertification.ps1',
+                'Get-ReplicationSignatureMatch.ps1',
                 'Get-ReplicationGitHubLogin.ps1',
                 'Validate-ReplicationCandidate.ps1',
                 'Publish-ReplicationOutcome.ps1',

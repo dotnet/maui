@@ -6073,6 +6073,29 @@ Describe 'An observed negative verdict is a non-reproduction' {
     }
 }
 
+Describe 'Manifest reproduction steps survive the gate' {
+    It 'trims a step whose newline became a trailing space' {
+        # Build 15030804 reproduced its issue and was rejected for whitespace,
+        # because newlines were replaced after truncation.
+        $render = {
+            param($value)
+            ([regex]::Replace(($value -replace '\r|\n', ' '), '\s+', ' ')).Trim()
+        }
+        & $render "Launch the page`n" | Should -BeExactly 'Launch the page'
+        & $render "Tap  the`r`n  button " | Should -BeExactly 'Tap the button'
+    }
+
+    It 'collapses and trims in the orchestrator itself' {
+        $steps = [regex]::Match(
+            $script:Source,
+            '\$reproductionSteps = @\(.*?Select-Object -First 10\)',
+            'Singleline').Value
+        $steps | Should -Not -BeNullOrEmpty
+        $steps | Should -Match '\)\)\.Trim\(\)'
+        $steps | Should -Match 'IsNullOrWhiteSpace'
+    }
+}
+
 Describe 'The reproduction is run again without the reported trigger' {
     It 'asks for a control that keeps the oracle and removes only the trigger' {
         $script:Source | Should -Match "'control' \{"

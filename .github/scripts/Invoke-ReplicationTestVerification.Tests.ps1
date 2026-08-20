@@ -11,6 +11,17 @@ BeforeAll {
         throw ($errors | ForEach-Object Message) -join [Environment]::NewLine
     }
 
+    # The signature comparison is shared with the trusted publisher so the two
+    # cannot disagree, so it is loaded from that module rather than this script.
+    $matchPath = Join-Path $PSScriptRoot 'shared/Get-ReplicationSignatureMatch.ps1'
+    $matchErrors = $null
+    $matchAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $matchPath, [ref]$null, [ref]$matchErrors)
+    if ($matchErrors) {
+        throw ($matchErrors | ForEach-Object Message) -join [Environment]::NewLine
+    }
+    $searchRoots = @($ast, $matchAst)
+
     foreach ($name in @(
         'ConvertTo-NormalizedReplicationSignature',
         'Get-ReplicationSignatureTokens',
@@ -22,10 +33,19 @@ BeforeAll {
         'Get-ReplicationVolatileFreeMessage',
         'Test-ReplicationFailureMessagesAreStable'
     )) {
-        $function = $ast.Find({
-            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-            $args[0].Name -eq $name
-        }, $true)
+        $function = $null
+        foreach ($root in $searchRoots) {
+            $function = $root.Find({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq $name
+            }, $true)
+            if ($function) {
+                break
+            }
+        }
+        if (-not $function) {
+            throw "The verification suite could not find function $name."
+        }
         Invoke-Expression $function.Extent.Text
     }
 

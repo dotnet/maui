@@ -511,31 +511,41 @@ Describe 'MAUI Copilot pipeline argument contracts' {
 }
 
 Describe 'The trusted publisher stages every module its gate loads' {
-    It 'copies each shared script the credential-free gate dot-sources' {
+    It 'copies each shared script every staged publisher script dot-sources' {
         # Builds 15029872 and 15029876 each reproduced their issue and were
         # rejected at the gate because Get-ReplicationCertification.ps1 was
         # dot-sourced but never staged. The staging list is written by hand, so
         # it is compared against what the gate actually loads.
-        $gatePath = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
-        $gate = Get-Content -LiteralPath $gatePath -Raw
-
-        $required = [System.Collections.Generic.HashSet[string]]::new()
-        foreach ($match in [regex]::Matches($gate, "(?m)^\s*\.\s+.*?['`"]?([A-Za-z0-9\-]+\.ps1)")) {
-            [void]$required.Add($match.Groups[1].Value)
-        }
-        foreach ($match in [regex]::Matches($gate, "Join-Path\s+\`$PSScriptRoot\s+'([A-Za-z0-9\-]+\.ps1)'")) {
-            [void]$required.Add($match.Groups[1].Value)
-        }
-        $required.Count | Should -BeGreaterThan 0
-
         $stagingBlock = [regex]::Match(
             $script:Pipeline,
             "(?s)\`$trustedRoot = Join-Path.*?foreach \(\`$name in @\((.*?)\)\) \{").Groups[1].Value
         $stagingBlock | Should -Not -BeNullOrEmpty
 
+        # Build 15030627 reproduced its issue, passed the gate and then failed
+        # in the publisher, so every staged script is checked, not just the gate.
+        $staged = @([regex]::Matches($stagingBlock, "'([A-Za-z0-9\-]+\.ps1)'") |
+            ForEach-Object { $_.Groups[1].Value })
+        $staged.Count | Should -BeGreaterThan 0
+
+        $required = [System.Collections.Generic.HashSet[string]]::new()
+        foreach ($stagedName in $staged) {
+            $stagedPath = Join-Path $PSScriptRoot "shared/$stagedName"
+            if (-not (Test-Path -LiteralPath $stagedPath -PathType Leaf)) {
+                throw "The pipeline stages $stagedName, but no such shared script exists."
+            }
+            $source = Get-Content -LiteralPath $stagedPath -Raw
+            foreach ($match in [regex]::Matches($source, "(?m)^\s*\.\s+.*?['`"]?([A-Za-z0-9\-]+\.ps1)")) {
+                [void]$required.Add($match.Groups[1].Value)
+            }
+            foreach ($match in [regex]::Matches($source, "Join-Path\s+\`$PSScriptRoot\s+'([A-Za-z0-9\-]+\.ps1)'")) {
+                [void]$required.Add($match.Groups[1].Value)
+            }
+        }
+        $required.Count | Should -BeGreaterThan 0
+
         foreach ($name in $required) {
             $stagingBlock | Should -Match ([regex]::Escape($name)) -Because `
-                "the gate dot-sources $name, so the trusted publisher must stage it"
+                "a staged publisher script dot-sources $name, so it must be staged too"
         }
     }
 }

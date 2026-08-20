@@ -4332,9 +4332,15 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 
     New-TestPatch -Files $generatedFiles
 
+    # Replacing newlines after truncation left a trailing space, and the gate
+    # rejects an untrimmed manifest step, so build 15030804 reproduced its issue
+    # and was discarded for whitespace. Collapse and trim after the replacement.
     $reproductionSteps = @($testProposal.reproductionSteps | ForEach-Object {
-        (ConvertTo-ReplicationSafeLog $_ 300) -replace '\r|\n', ' '
-    } | Where-Object { $_ } | Select-Object -First 10)
+        ([regex]::Replace(
+            ((ConvertTo-ReplicationSafeLog $_ 300) -replace '\r|\n', ' '),
+            '\s+',
+            ' ')).Trim()
+    } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 10)
     [ordered]@{
         schemaVersion = 1
         issueNumber = $IssueNumber
