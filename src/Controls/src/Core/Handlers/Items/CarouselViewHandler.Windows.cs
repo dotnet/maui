@@ -323,7 +323,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateIsBounceEnabled()
 		{
-			_scrollViewer?.IsScrollInertiaEnabled = ItemsView.IsBounceEnabled;
+			if (_scrollViewer != null)
+				_scrollViewer.IsScrollInertiaEnabled = ItemsView.IsBounceEnabled;
 		}
 
 		void UpdateIsSwipeEnabled()
@@ -570,6 +571,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (CollectionViewSource == null)
 				return;
 
+			if (_isInternalPositionUpdate)
+				return;
+
 			var carouselPosition = ItemsView.Position;
 
 			if (carouselPosition < 0 || carouselPosition >= ItemCount)
@@ -739,16 +743,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			_centerRequestVersion++;
-			if (!_isRecentering)
-				_recenteringAttemptCount = 0;
+			if (_isRecentering)
+				return;
+
+			_recenteringAttemptCount = 0;
 			ItemsView.SetIsDragging(true);
 			ItemsView.IsScrolling = true;
 		}
 
 		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
-			ItemsView.SetIsDragging(e.IsIntermediate);
-			ItemsView.IsScrolling = e.IsIntermediate;
+			if (!_isRecentering)
+			{
+				ItemsView.SetIsDragging(e.IsIntermediate);
+				ItemsView.IsScrolling = e.IsIntermediate;
+			}
 
 			if (e.IsIntermediate)
 				return;
@@ -840,14 +849,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var itemsView = ((IElementHandler)this).VirtualView as CarouselView;
+			if (itemsView is null)
+				return;
+
 			var closestPosition = closestVisibleIndex;
-			if (ItemsView.Loop && _loopableCollectionView?.RealCount > 0)
+			if (itemsView.Loop && _loopableCollectionView?.RealCount > 0)
 				closestPosition %= _loopableCollectionView.RealCount;
 
 			SetPositionFromScroll(closestVisibleIndex);
 
 			// A nested application update may have selected another item while Position changed.
-			if (_gotoPosition != -1 || ItemsView.Position != closestPosition)
+			if (!ReferenceEquals(((IElementHandler)this).VirtualView, itemsView)
+				|| _gotoPosition != -1
+				|| itemsView.Position != closestPosition)
 				return;
 
 			if (distance > CenteringTolerance && _recenteringAttemptCount < 2)
@@ -1011,7 +1026,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 
+				var currentItemBeforePositionUpdate = ItemsView.CurrentItem;
 				SetCarouselViewPosition(carouselPosition);
+				if (!ReferenceEquals(currentItemBeforePositionUpdate, ItemsView.CurrentItem))
+				{
+					var overriddenCurrentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+					if (overriddenCurrentItemPosition != -1)
+					{
+						carouselPosition = overriddenCurrentItemPosition;
+						currentItemOverridden = true;
+						SetCarouselViewPosition(carouselPosition);
+					}
+				}
+
 				if (currentItemOverridden)
 				{
 					_collectionCurrentItemOverride = ItemsView.CurrentItem;
@@ -1072,8 +1099,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (!ReferenceEquals(ItemsView?.CurrentItem, currentItem)
-				|| ItemsView.Position != position)
+			var itemsView = ((IElementHandler)this).VirtualView as CarouselView;
+			if (itemsView is null
+				|| !ReferenceEquals(itemsView.CurrentItem, currentItem)
+				|| itemsView.Position != position)
 			{
 				_collectionCurrentItemOverride = null;
 				return;
@@ -1100,7 +1129,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			ItemsView.ScrollTo(position, position: ScrollToPosition.Center, animate: false);
+			itemsView.ScrollTo(position, position: ScrollToPosition.Center, animate: false);
 		}
 
 		void QueueCollectionChangeReset(int collectionChangeVersion)
