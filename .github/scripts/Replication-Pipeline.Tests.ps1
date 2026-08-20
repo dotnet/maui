@@ -509,3 +509,33 @@ Describe 'MAUI Copilot pipeline argument contracts' {
         $entry.Groups['body'].Value | Should -Match '-AllowAnonymousFallback:\$AllowAnonymousFallback'
     }
 }
+
+Describe 'The trusted publisher stages every module its gate loads' {
+    It 'copies each shared script the credential-free gate dot-sources' {
+        # Builds 15029872 and 15029876 each reproduced their issue and were
+        # rejected at the gate because Get-ReplicationCertification.ps1 was
+        # dot-sourced but never staged. The staging list is written by hand, so
+        # it is compared against what the gate actually loads.
+        $gatePath = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
+        $gate = Get-Content -LiteralPath $gatePath -Raw
+
+        $required = [System.Collections.Generic.HashSet[string]]::new()
+        foreach ($match in [regex]::Matches($gate, "(?m)^\s*\.\s+.*?['`"]?([A-Za-z0-9\-]+\.ps1)")) {
+            [void]$required.Add($match.Groups[1].Value)
+        }
+        foreach ($match in [regex]::Matches($gate, "Join-Path\s+\`$PSScriptRoot\s+'([A-Za-z0-9\-]+\.ps1)'")) {
+            [void]$required.Add($match.Groups[1].Value)
+        }
+        $required.Count | Should -BeGreaterThan 0
+
+        $stagingBlock = [regex]::Match(
+            $script:Pipeline,
+            "(?s)\`$trustedRoot = Join-Path.*?foreach \(\`$name in @\((.*?)\)\) \{").Groups[1].Value
+        $stagingBlock | Should -Not -BeNullOrEmpty
+
+        foreach ($name in $required) {
+            $stagingBlock | Should -Match ([regex]::Escape($name)) -Because `
+                "the gate dot-sources $name, so the trusted publisher must stage it"
+        }
+    }
+}

@@ -2777,6 +2777,7 @@ stages:
               New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
               foreach ($name in @(
                 'Assert-ReplicationTestGuard.ps1',
+                'Get-ReplicationCertification.ps1',
                 'Get-ReplicationGitHubLogin.ps1',
                 'Validate-ReplicationCandidate.ps1',
                 'Publish-ReplicationOutcome.ps1',
