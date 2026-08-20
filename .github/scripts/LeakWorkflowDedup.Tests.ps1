@@ -735,15 +735,23 @@ Describe 'fresh-shell de-dup state' {
 Describe 'leak PR issue reference parsing' {
     It 'accepts only exact visible same-repository contract lines' -ForEach @(
         @{ Body = 'Fixes #123'; Expected = $true }
-        @{ Body = 'Fixes: #123'; Expected = $true }
-        @{ Body = 'Fixes dotnet/maui#123'; Expected = $true }
-        @{ Body = 'Refs #123'; Expected = $true }
         @{ Body = 'Refs: dotnet/maui#123'; Expected = $true }
-        @{ Body = '   Fixes #123'; Expected = $true }
+        @{ Body = '   Fixes #123   '; Expected = $true }
+        @{ Body = '  Refs: dotnet/maui#123 '; Expected = $true }
+        @{ Body = "Fixes #123`nRefs: dotnet/maui#123"; Expected = $true }
+        @{ Body = 'Fixes: #123'; Expected = $false }
+        @{ Body = 'Fixes dotnet/maui#123'; Expected = $false }
+        @{ Body = 'Refs #123'; Expected = $false }
         @{ Body = 'Fixes dotnet/runtime#123'; Expected = $false }
         @{ Body = 'Refs: dotnet/runtime#123'; Expected = $false }
         @{ Body = 'Fixes #123extra'; Expected = $false }
         @{ Body = 'PrefixFixes #123'; Expected = $false }
+        @{ Body = 'fixes #123'; Expected = $false }
+        @{ Body = 'refs: dotnet/maui#123'; Expected = $false }
+        @{ Body = 'Fixes  #123'; Expected = $false }
+        @{ Body = 'Refs:  dotnet/maui#123'; Expected = $false }
+        @{ Body = 'Fixes #123 trailing'; Expected = $false }
+        @{ Body = 'Refs: dotnet/maui#123 trailing'; Expected = $false }
         @{ Body = 'Fixes `#123`'; Expected = $false }
         @{ Body = '`Fixes #123`'; Expected = $false }
         @{ Body = '<!-- Fixes #123 -->'; Expected = $false }
@@ -762,6 +770,48 @@ Describe 'leak PR issue reference parsing' {
             -IssueNumber 123 `
             -Repository 'dotnet/maui' |
             Should -Be $Expected
+    }
+
+    It 'filters prompt and final-refresh candidates once using the shared visible-line contract' {
+        $pullRequests = @(
+            New-LeakPr -Number 1 -Title '[leak-fix] Fix One.Api leak' `
+                -Body 'Fixes #123'
+            New-LeakPr -Number 2 -Title '[leak-fix] Fix Two.Api leak' `
+                -Body 'Refs: dotnet/maui#123'
+            New-LeakPr -Number 3 -Title '[leak-fix] Fix Three.Api leak' `
+                -Body ('```text' + "`nFixes #123`n" + '```')
+            New-LeakPr -Number 4 -Title '[leak-fix] Fix Four.Api leak' `
+                -Body "<!--`nRefs: dotnet/maui#123`n-->"
+            New-LeakPr -Number 5 -Title '[leak-fix] Fix Five.Api leak' `
+                -Body "`tFixes #123"
+            New-LeakPr -Number 6 -Title '[leak-fix] Fix Six.Api leak' `
+                -Body '    Refs: dotnet/maui#123'
+            New-LeakPr -Number 7 -Title '[leak-fix] Fix Seven.Api leak' `
+                -Body "Fixes #123`nRefs: dotnet/maui#123`nFixes #123"
+        )
+
+        $selected = @(
+            Select-LeakPullRequestsReferencingIssue `
+                -PullRequests $pullRequests `
+                -IssueNumber 123 `
+                -Repository 'dotnet/maui'
+        )
+        $selected.Count | Should -Be 3
+        (@($selected.number) -join ',') | Should -Be '1,2,7'
+
+        $inputPath = Join-Path $TestDrive 'prompt-final-refresh-input.json'
+        $outputPath = Join-Path $TestDrive 'prompt-final-refresh-output.json'
+        ConvertTo-Json -InputObject $pullRequests -Depth 5 |
+            Set-Content -LiteralPath $inputPath
+        & (Join-Path $PSScriptRoot 'Select-LeakPullRequestsByIssueReference.ps1') `
+            -InputPath $inputPath `
+            -OutputPath $outputPath `
+            -IssueNumber 123 `
+            -Repository 'dotnet/maui'
+        $scriptSelected = @(Get-Content -LiteralPath $outputPath -Raw |
+                ConvertFrom-Json)
+        $scriptSelected.Count | Should -Be 3
+        (@($scriptSelected.number) -join ',') | Should -Be '1,2,7'
     }
 }
 
@@ -2535,12 +2585,16 @@ Describe 'complete GraphQL pagination' {
                 number = 10
                 title = '[leak-scan] First.Api — leak'
                 body = ''
+                state = 'OPEN'
+                updatedAt = '2026-08-20T08:00:00Z'
                 url = 'https://github.com/dotnet/maui/issues/10'
             }
             [pscustomobject]@{
                 number = 11
                 title = '[leak-scan] Second.Api — leak'
                 body = ''
+                state = 'OPEN'
+                updatedAt = '2026-08-20T08:01:00Z'
                 url = 'https://github.com/dotnet/maui/issues/11'
             }
         )
@@ -2549,6 +2603,8 @@ Describe 'complete GraphQL pagination' {
                 number = 12
                 title = '[leak-scan] Third.Api — leak'
                 body = ''
+                state = 'OPEN'
+                updatedAt = '2026-08-20T08:02:00Z'
                 url = 'https://github.com/dotnet/maui/issues/12'
             }
         )
@@ -2575,9 +2631,17 @@ Describe 'complete GraphQL pagination' {
         )
 
         $result.number | Should -Be @(10, 11, 12)
+        $result.state | Should -Be @('OPEN', 'OPEN', 'OPEN')
+        $result.updatedAt | Should -Be @(
+            '2026-08-20T08:00:00.0000000Z',
+            '2026-08-20T08:01:00.0000000Z',
+            '2026-08-20T08:02:00.0000000Z'
+        )
         $global:leakPaginationCalls.Count | Should -Be 2
         ($global:leakPaginationCalls[0] -join ' ') |
             Should -Match 'labels: \["agentic-workflows"\]'
+        ($global:leakPaginationCalls[0] -join ' ') |
+            Should -Match 'state\s+updatedAt'
         ($global:leakPaginationCalls[1] -join ' ') |
             Should -Match 'after=issue-cursor'
     }
@@ -3433,13 +3497,23 @@ Describe 'workflow enforcement boundary' {
             $gate,
             "-States @\('OPEN', 'CLOSED', 'MERGED'\)"
         )).Count | Should -Be 2
+        ([regex]::Matches($gate, 'Get-CompleteLeakIssues')).Count |
+            Should -Be 2
+        ([regex]::Matches(
+            $gate,
+            'Get-LeakRelevantIssueConsistencyState'
+        )).Count | Should -Be 2
         $gate | Should -Match '\$maximumConsistencyAttempts = 3'
         $gate | Should -Match '(?s)Get-LeakPullRequestConsistencySignature.*?-PullRequests \$before'
         $gate | Should -Match '(?s)Get-LeakPullRequestConsistencySignature.*?-PullRequests \$after'
+        $gate | Should -Match '\$consistentIssueState = \$afterIssueState'
+        $gate | Should -Match '\$beforeIssueState\.Signature -ceq \$afterIssueState\.Signature'
         $gate | Should -Match 'Get-ValidatedLeakFixPullRequestIdentity'
         $gate | Should -Match 'same-API open fix match'
         $gate | Should -Match 'remained inconsistent after \$maximumConsistencyAttempts bounded attempts'
         $gate | Should -Not -Match '(?s)Get-CompleteLeakPullRequests.*?-State\s+(?:OPEN|CLOSED|MERGED)'
+        $gate.IndexOf('Get-CompleteLeakIssues') |
+            Should -BeGreaterThan $gate.IndexOf('for ($attempt = 1')
     }
 
     It 'validates the exact live scanner issue at the final mutation boundary' {
@@ -3524,6 +3598,38 @@ Describe 'workflow enforcement boundary' {
         $module | Should -Match '(?s)Remove-LeakInertMarkdown.*RejectMalformedState'
         $module | Should -Match '\^\[ \]\{0,3\}Fixes #'
         $module | Should -Match '\^\[ \]\{0,3\}Refs: '
+    }
+
+    It 'routes every prompt and final-refresh issue-reference decision through the shared parser' {
+        $workflow = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../workflows/leak-fixer.md'
+        ) -Raw
+        $filter = 'Select-LeakPullRequestsByIssueReference\.ps1'
+
+        ([regex]::Matches($workflow, $filter)).Count | Should -Be 5
+        $workflow | Should -Not -Match 'REPO_RE='
+        $workflow | Should -Not -Match '--arg repo(?:\s|")'
+        $workflow | Should -Not -Match 'test\("\(\^\|\\n\)\[ \\t\]\*Fixes #'
+
+        $attemptStart = $workflow.IndexOf('# (d) Closed-unmerged attempts')
+        $attemptEnd = $workflow.IndexOf("`n" + '```', $attemptStart)
+        $attemptStep = $workflow.Substring(
+            $attemptStart,
+            $attemptEnd - $attemptStart
+        )
+        $attemptStep | Should -Match $filter
+        $attemptStep | Should -Match 'closed-issue-reference-prs\.json'
+        $attemptStep | Should -Match 'unique_by\(\.number\)'
+
+        $refreshStart = $workflow.IndexOf('## Step 9.5')
+        $refreshEnd = $workflow.IndexOf('## Step 10', $refreshStart)
+        $refreshStep = $workflow.Substring(
+            $refreshStart,
+            $refreshEnd - $refreshStart
+        )
+        ([regex]::Matches($refreshStep, $filter)).Count | Should -Be 2
+        $refreshStep | Should -Match 'final-merged-issue-fix-prs\.json'
+        $refreshStep | Should -Match 'final-open-issue-fix-prs\.json'
     }
 
     It 'wires a trusted final live refresh into the hunter safe-output boundary' {
@@ -4326,6 +4432,25 @@ Describe 'workflow enforcement boundary' {
             } | Should -Throw '*blocked PR creation*direct issue-reference match*'
         }
 
+        It 'ignores fenced and commented direct-reference decoys at the mutation boundary' {
+            $global:mockMerged = @(
+                New-LeakPr `
+                    -Number 506 `
+                    -Title '[leak-fix] Fix Button.Clicked event leak' `
+                    -Body (
+                        '```text' + "`nFixes #20`n" + '```' + "`n" +
+                        '<!-- Refs: dotnet/maui#20 -->'
+                    )
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
         It 'blocks a stable merged duplicate from two matching live snapshots' {
             $candidate = New-LeakPr `
                     -Number 507 `
@@ -4744,6 +4869,26 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             } | Should -Throw '*attempt-cap gate blocked PR creation: 3 closed-unmerged attempts*'
         }
 
+        It 'does not spend the attempt cap on hidden or over-indented provenance decoys' {
+            $global:mockClosed = @(
+                New-LeakPr -Number 613 -Title '[leak-fix] Fix OtherOne.Api leak' `
+                    -Body ('```text' + "`nFixes #20`n" + '```') -Merged $false
+                New-LeakPr -Number 614 -Title '[leak-fix] Fix OtherTwo.Api leak' `
+                    -Body '<!-- Refs: dotnet/maui#20 -->' -Merged $false
+                New-LeakPr -Number 615 -Title '[leak-fix] Fix OtherThree.Api leak' `
+                    -Body "`tFixes #20" -Merged $false
+                New-LeakPr -Number 616 -Title '[leak-fix] Fix OtherFour.Api leak' `
+                    -Body '    Refs: dotnet/maui#20' -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
         It 'does not aggregate closed attempts from different qualified namespaces' {
             $targetApi = (
                 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.' +
@@ -4961,6 +5106,9 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
             $global:mockHunterGateSnapshots = @()
             $global:mockHunterGateSnapshotIndex = 0
             $global:mockHunterActiveGateSnapshot = $null
+            $global:mockHunterIssueSnapshots = @()
+            $global:mockHunterIssueSnapshotIndex = 0
+            $global:mockHunterIssueQueryCount = 0
             function global:gh {
                 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
                 $global:LASTEXITCODE = $global:mockHunterGhExitCode
@@ -4975,16 +5123,42 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                         $_.StartsWith('query=', [StringComparison]::Ordinal)
                     })[0]
                 if ($queryArgument -match '\bissues\(') {
-                    $nodes = @($global:mockHunterOpenIssues | ForEach-Object {
-                            $node = [ordered]@{}
-                            foreach ($name in @('number', 'title', 'body', 'url')) {
-                                $property = $_.PSObject.Properties[$name]
+                        $global:mockHunterIssueQueryCount++
+                        $issues = if ($global:mockHunterIssueSnapshots.Count -gt 0) {
+                            if ($global:mockHunterIssueSnapshotIndex -ge
+                                $global:mockHunterIssueSnapshots.Count) {
+                                throw 'No mock hunter issue snapshot remains.'
+                            }
+                            $snapshot = $global:mockHunterIssueSnapshots[
+                                $global:mockHunterIssueSnapshotIndex
+                            ]
+                            $global:mockHunterIssueSnapshotIndex++
+                            @($snapshot.Issues)
+                        } else {
+                            @($global:mockHunterOpenIssues)
+                        }
+                        $nodes = @($issues | ForEach-Object {
+                                $node = [ordered]@{}
+                                foreach ($name in @('number', 'title', 'body', 'url')) {
+                                    $property = $_.PSObject.Properties[$name]
                                 if ($null -ne $property) {
                                     $node[$name] = $property.Value
                                 }
                             }
-                            [pscustomobject]$node
-                        })
+                                $stateProperty = $_.PSObject.Properties['state']
+                                $updatedAtProperty = $_.PSObject.Properties['updatedAt']
+                                $node.state = if ($null -eq $stateProperty) {
+                                    'OPEN'
+                                } else {
+                                    $stateProperty.Value
+                                }
+                                $node.updatedAt = if ($null -eq $updatedAtProperty) {
+                                    '2026-08-20T08:00:00Z'
+                                } else {
+                                    $updatedAtProperty.Value
+                                }
+                                [pscustomobject]$node
+                            })
                     Write-Output (New-LeakGraphQlPageJson `
                             -ConnectionName issues `
                             -Nodes $nodes `
@@ -5138,7 +5312,8 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                 mockHunterOpenPullRequests, mockHunterClosed, mockHunterGhExitCode, `
                 mockHunterGhStderr, mockHunterReturnAllBases, `
                 mockHunterGateSnapshots, mockHunterGateSnapshotIndex, `
-                mockHunterActiveGateSnapshot `
+                mockHunterActiveGateSnapshot, mockHunterIssueSnapshots, `
+                mockHunterIssueSnapshotIndex, mockHunterIssueQueryCount `
                 -Scope Global -ErrorAction SilentlyContinue
         }
 
@@ -5148,6 +5323,7 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Not -Throw
+            $global:mockHunterIssueQueryCount | Should -Be 2
         }
 
         It 'accepts tab-separated issue prefix grammar at the mutation boundary' {
@@ -5291,6 +5467,170 @@ Same-API comparison: dotnet/maui#501 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*overlapping API identities 'ButtonRenderer.Dispose' and 'Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer.Dispose'*"
+        }
+
+        It 'restarts when a matching issue appears after the first issue read and blocks the final snapshot' {
+            $issue = [pscustomobject]@{
+                number = 718
+                title = '[leak-scan] GradientBrush.GradientStops — appeared mid-gate'
+                body = 'New scanner provenance'
+                url = 'https://github.com/dotnet/maui/issues/718'
+            }
+            $empty = [pscustomobject]@{ Issues = @() }
+            $matching = [pscustomobject]@{ Issues = @($issue) }
+            $global:mockHunterIssueSnapshots = @(
+                $empty
+                $matching
+                $matching
+                $matching
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*same-API open issue match 718*"
+            $global:mockHunterIssueQueryCount | Should -Be 4
+            $global:mockHunterIssueSnapshotIndex | Should -Be 4
+        }
+
+        It 'restarts when a matching issue closes and accepts the stable closed state' {
+            $issue = [pscustomobject]@{
+                number = 719
+                title = '[leak-scan] GradientBrush.GradientStops — closing mid-gate'
+                body = 'Scanner provenance'
+                url = 'https://github.com/dotnet/maui/issues/719'
+            }
+            $matching = [pscustomobject]@{ Issues = @($issue) }
+            $empty = [pscustomobject]@{ Issues = @() }
+            $global:mockHunterIssueSnapshots = @(
+                $matching
+                $empty
+                $empty
+                $empty
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockHunterIssueQueryCount | Should -Be 4
+        }
+
+        It 'restarts when a matching issue is retitled away and uses the final identity' {
+            $matchingIssue = [pscustomobject]@{
+                number = 720
+                title = '[leak-scan] GradientBrush.GradientStops — original identity'
+                body = 'Scanner provenance'
+                url = 'https://github.com/dotnet/maui/issues/720'
+            }
+            $retitledIssue = [pscustomobject]@{
+                number = 720
+                title = '[leak-scan] Button.Clicked — corrected identity'
+                body = 'Scanner provenance'
+                url = 'https://github.com/dotnet/maui/issues/720'
+            }
+            $matching = [pscustomobject]@{ Issues = @($matchingIssue) }
+            $retitled = [pscustomobject]@{ Issues = @($retitledIssue) }
+            $global:mockHunterIssueSnapshots = @(
+                $matching
+                $retitled
+                $retitled
+                $retitled
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockHunterIssueQueryCount | Should -Be 4
+        }
+
+        It 'restarts when matching issue provenance is edited and blocks the stable edit' {
+            $beforeIssue = [pscustomobject]@{
+                number = 721
+                title = '[leak-scan] GradientBrush.GradientStops — provenance edit'
+                body = 'Original scanner provenance'
+                updatedAt = '2026-08-20T08:00:00Z'
+                url = 'https://github.com/dotnet/maui/issues/721'
+            }
+            $afterIssue = [pscustomobject]@{
+                number = 721
+                title = '[leak-scan] GradientBrush.GradientStops — provenance edit'
+                body = 'Edited scanner provenance'
+                updatedAt = '2026-08-20T08:01:00Z'
+                url = 'https://github.com/dotnet/maui/issues/721'
+            }
+            $before = [pscustomobject]@{ Issues = @($beforeIssue) }
+            $after = [pscustomobject]@{ Issues = @($afterIssue) }
+            $global:mockHunterIssueSnapshots = @(
+                $before
+                $after
+                $after
+                $after
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw "*same-API open issue match 721*"
+            $global:mockHunterIssueQueryCount | Should -Be 4
+        }
+
+        It 'ignores unrelated issue churn in the consistency signature' {
+            $beforeIssue = [pscustomobject]@{
+                number = 722
+                title = '[leak-scan] Button.Clicked — unrelated issue'
+                body = 'Original unrelated provenance'
+                url = 'https://github.com/dotnet/maui/issues/722'
+            }
+            $afterIssue = [pscustomobject]@{
+                number = 722
+                title = '[leak-scan] Button.Clicked — unrelated issue edited'
+                body = 'Edited unrelated provenance'
+                url = 'https://github.com/dotnet/maui/issues/722'
+            }
+            $global:mockHunterIssueSnapshots = @(
+                [pscustomobject]@{ Issues = @($beforeIssue) }
+                [pscustomobject]@{ Issues = @($afterIssue) }
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+            $global:mockHunterIssueQueryCount | Should -Be 2
+        }
+
+        It 'fails closed when relevant issue churn exhausts the bounded retries' {
+            $issue = [pscustomobject]@{
+                number = 723
+                title = '[leak-scan] GradientBrush.GradientStops — persistent churn'
+                body = 'Scanner provenance'
+                url = 'https://github.com/dotnet/maui/issues/723'
+            }
+            $empty = [pscustomobject]@{ Issues = @() }
+            $matching = [pscustomobject]@{ Issues = @($issue) }
+            $global:mockHunterIssueSnapshots = @(
+                $empty
+                $matching
+                $empty
+                $matching
+                $empty
+                $matching
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakHunterSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:hunterAgentOutput `
+                    -Repository 'dotnet/maui'
+            } | Should -Throw '*relevant issue state remained inconsistent after 3 bounded attempts*'
+            $global:mockHunterIssueQueryCount | Should -Be 6
+            $global:mockHunterIssueSnapshotIndex | Should -Be 6
         }
 
         It 'blocks issue emission when a matching fix merged after the pre-agent snapshot' {
@@ -5667,6 +6007,7 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw "*blocked issue creation for 'GradientBrush.GradientStops'*702*"
+            $global:mockHunterIssueQueryCount | Should -Be 2
         }
 
         It 'accepts space and tab grammar when validating existing open scan titles' {
@@ -5710,6 +6051,7 @@ Same-API comparison: dotnet/maui#701 | Different mechanism: Agent-authored claim
                     -AgentOutputPath $script:hunterAgentOutput `
                     -Repository 'dotnet/maui'
             } | Should -Throw '*malformed*leak-scan*'
+            $global:mockHunterIssueQueryCount | Should -Be 1
         }
 
         It 'ignores unrelated shared-label near-prefix open issues' {

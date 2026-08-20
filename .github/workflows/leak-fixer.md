@@ -434,8 +434,6 @@ if test -z "$API"; then
   echo "ERROR: issue #$N title has no anchored API identity; refusing unsupported empty-API de-dup before build/test work." >&2
   exit 1
 fi
-# Escape the repo slug (repo names may contain '.' / '-') for the exact `Refs:` match below.
-REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # Every bash tool call starts in a fresh shell. Persist the target identity; Step 9.5 and,
 # authoritatively, the safe-output mutation-boundary gate reload and validate this file.
 # `different_mechanism_prs` is retained as an explicitly empty schema field — trusted gates
@@ -521,15 +519,14 @@ fi
 
 # Match either the selected issue reference OR the rooting API identity. The latter catches
 # duplicate scanner issue numbers such as #36539 after #36344 was already fixed by #36369.
-# Anchor `Fixes #N` to the start of a body line (excludes incidental/negated text like "Does
-# not Fixes #N" mid-sentence) and require `Refs:` to name THIS repo exactly (excludes
-# cross-repo text like "Refs: other/repo#N", which the old "[^0-9]*" gap let through).
-jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
-    select((.body // "") |
-      test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
-      test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
-  /tmp/gh-aw/agent/merged-leak-fix-prs.json \
-  > /tmp/gh-aw/agent/merged-issue-fix-prs.json
+# The shared PowerShell filter uses the same visible-line contract as the trusted mutation
+# gate: inert Markdown is removed, only 0-3 ASCII-space indentation is accepted, and the
+# exact-casing full-line forms are `Fixes #N` or `Refs: owner/repo#N`.
+pwsh .github/scripts/Select-LeakPullRequestsByIssueReference.ps1 \
+  -InputPath /tmp/gh-aw/agent/merged-leak-fix-prs.json \
+  -OutputPath /tmp/gh-aw/agent/merged-issue-fix-prs.json \
+  -IssueNumber "$N" \
+  -Repository "$GITHUB_REPOSITORY"
 while IFS=$'\t' read -r PR_API PR BASE URL PR_TITLE; do
   if pwsh .github/scripts/Test-LeakApiIdentity.ps1 \
       -Left "$PR_API" -Right "$API"; then
@@ -548,14 +545,16 @@ pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
   -Repository "$GITHUB_REPOSITORY" \
   -State OPEN \
   -OutputPath /tmp/gh-aw/agent/open-fix-prs-raw.json
-jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
+jq '[.[] |
     select(.baseRefName == "main" or .baseRefName == "inflight/current") |
-    select(.title | test("^\\[leak-fix\\][ \\t]+")) |
-    select((.body // "") |
-      test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
-      test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
+    select(.title | test("^\\[leak-fix\\][ \\t]+"))]' \
   /tmp/gh-aw/agent/open-fix-prs-raw.json \
-  > /tmp/gh-aw/agent/open-fix-prs.json
+  > /tmp/gh-aw/agent/open-authoritative-fix-prs.json
+pwsh .github/scripts/Select-LeakPullRequestsByIssueReference.ps1 \
+  -InputPath /tmp/gh-aw/agent/open-authoritative-fix-prs.json \
+  -OutputPath /tmp/gh-aw/agent/open-fix-prs.json \
+  -IssueNumber "$N" \
+  -Repository "$GITHUB_REPOSITORY"
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 # (c) Open [leak-fix] PR already fixing the SAME rooting API identity (any issue number)?
 #     Parse each open PR title with the SAME anchored extraction used for the merged-fix gate
@@ -613,12 +612,18 @@ API_MATCH_NUMBERS=$(jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/clos
         echo "$PR"
       fi
     done | jq -R 'tonumber' | jq -s '.')
-jq --arg n "$N" --arg repo "$REPO_RE" --argjson apiNums "$API_MATCH_NUMBERS" '[.[] |
-    select(((.body // "") |
-      test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
-      test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b")) or
-      (.number as $num | $apiNums | index($num) != null))]' \
+pwsh .github/scripts/Select-LeakPullRequestsByIssueReference.ps1 \
+  -InputPath /tmp/gh-aw/agent/closed-unmerged-fix-prs.json \
+  -OutputPath /tmp/gh-aw/agent/closed-issue-reference-prs.json \
+  -IssueNumber "$N" \
+  -Repository "$GITHUB_REPOSITORY"
+jq --argjson apiNums "$API_MATCH_NUMBERS" '[.[] |
+    select(.number as $num | $apiNums | index($num) != null)]' \
   /tmp/gh-aw/agent/closed-unmerged-fix-prs.json \
+  > /tmp/gh-aw/agent/closed-api-fix-prs.json
+jq -s 'add | unique_by(.number)' \
+  /tmp/gh-aw/agent/closed-issue-reference-prs.json \
+  /tmp/gh-aw/agent/closed-api-fix-prs.json \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 
@@ -811,7 +816,6 @@ N=$(jq -er '.issue_number | select(type == "number" and . > 0 and floor == .)' "
 API=$(jq -er '.api | select(type == "string" and test("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$"))' "$STATE")
 STATE_REPOSITORY=$(jq -er '.repository | select(type == "string" and length > 0)' "$STATE")
 test "$STATE_REPOSITORY" = "$GITHUB_REPOSITORY"
-REPO_RE=$(printf '%s' "$STATE_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 jq -e '.different_mechanism_prs == []' "$STATE" > /dev/null
 
 pwsh .github/scripts/Get-CompleteLeakPullRequests.ps1 \
@@ -850,12 +854,11 @@ if test -s /tmp/gh-aw/agent/final-reverted-fix-pr-numbers.txt; then
     > /tmp/gh-aw/agent/final-merged-leak-fix-prs.json
 fi
 
-jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
-    select((.body // "") |
-      test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
-      test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
-  /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
-  > /tmp/gh-aw/agent/final-merged-issue-fix-prs.json
+pwsh .github/scripts/Select-LeakPullRequestsByIssueReference.ps1 \
+  -InputPath /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
+  -OutputPath /tmp/gh-aw/agent/final-merged-issue-fix-prs.json \
+  -IssueNumber "$N" \
+  -Repository "$STATE_REPOSITORY"
 jq -r '.[] | [.number, .title] | @tsv' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
@@ -875,12 +878,11 @@ jq '[.[] |
     select(.title | test("^\\[leak-fix\\][ \\t]+"))]' \
   /tmp/gh-aw/agent/final-open-fix-prs-raw.json \
   > /tmp/gh-aw/agent/final-open-fix-prs.json
-jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
-    select((.body // "") |
-      test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
-      test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
-  /tmp/gh-aw/agent/final-open-fix-prs.json \
-  > /tmp/gh-aw/agent/final-open-issue-fix-prs.json
+pwsh .github/scripts/Select-LeakPullRequestsByIssueReference.ps1 \
+  -InputPath /tmp/gh-aw/agent/final-open-fix-prs.json \
+  -OutputPath /tmp/gh-aw/agent/final-open-issue-fix-prs.json \
+  -IssueNumber "$N" \
+  -Repository "$STATE_REPOSITORY"
 jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-open-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(pwsh .github/scripts/Get-CanonicalLeakApi.ps1 -Title "$TITLE" -ExistingTitle)

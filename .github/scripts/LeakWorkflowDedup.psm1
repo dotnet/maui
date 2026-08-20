@@ -520,8 +520,31 @@ function Test-LeakPrReferencesIssue {
     $text = Remove-LeakInertMarkdown -Body ($Body ?? '')
     $repo = [regex]::Escape($Repository)
     $number = [regex]::Escape($IssueNumber.ToString([Globalization.CultureInfo]::InvariantCulture))
-    $pattern = "(?im)^[ ]{0,3}(?:Fixes|Refs)\b:?[ ]*(?:$repo#|#)$number\b[ ]*$"
-    return $text -match $pattern
+    $fixPattern = "(?m)^[ ]{0,3}Fixes #$number[ ]*$"
+    $refsPattern = "(?m)^[ ]{0,3}Refs: $repo#$number[ ]*$"
+    return $text -cmatch $fixPattern -or $text -cmatch $refsPattern
+}
+
+function Select-LeakPullRequestsReferencingIssue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$PullRequests,
+        [Parameter(Mandatory = $true)][int]$IssueNumber,
+        [Parameter(Mandatory = $true)][string]$Repository
+    )
+
+    foreach ($pullRequest in $PullRequests) {
+        if ($null -eq $pullRequest) {
+            throw 'Issue-reference filtering received a null pull-request record.'
+        }
+        if (Test-LeakPrReferencesIssue `
+                -Body ([string]$pullRequest.body) `
+                -IssueNumber $IssueNumber `
+                -Repository $Repository) {
+            Write-Output $pullRequest
+        }
+    }
 }
 
 function Get-LeakRevertTargets {
@@ -537,6 +560,132 @@ function Get-LeakRevertTargets {
     return @([regex]::Matches(($Body ?? ''), $pattern) |
         ForEach-Object { [int]$_.Groups['number'].Value } |
         Sort-Object -Unique)
+}
+
+function ConvertTo-LeakUtcTimestamp {
+    param(
+        [Parameter(Mandatory = $true)][AllowNull()][object]$Value,
+        [Parameter(Mandatory = $true)][string]$Context
+    )
+
+    $parsed = [DateTimeOffset]::MinValue
+    if ($Value -is [DateTimeOffset]) {
+        $parsed = [DateTimeOffset]$Value
+    } elseif ($Value -is [DateTime]) {
+        $parsed = [DateTimeOffset][DateTime]$Value
+    } elseif ($Value -isnot [string] -or
+        -not [DateTimeOffset]::TryParse(
+            $Value,
+            [Globalization.CultureInfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind,
+            [ref]$parsed
+        )) {
+        throw "$Context has malformed updatedAt metadata."
+    }
+
+    return $parsed.UtcDateTime.ToString(
+        'O',
+        [Globalization.CultureInfo]::InvariantCulture
+    )
+}
+
+function Get-LeakRelevantIssueConsistencyState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Issues,
+        [Parameter(Mandatory = $true)]
+        [string[]]$RequestedApis
+    )
+
+    if ($RequestedApis.Count -eq 0 -or
+        @($RequestedApis | Where-Object {
+                [string]::IsNullOrWhiteSpace($_)
+            }).Count -gt 0) {
+        throw 'Relevant issue consistency requires at least one non-empty requested API.'
+    }
+
+    $relevant = @(
+        foreach ($issue in $Issues) {
+            if ($null -eq $issue) {
+                throw 'Relevant issue consistency received a null issue record.'
+            }
+
+            $numberValue = Get-LeakRequiredPropertyValue `
+                -Object $issue `
+                -Name 'number' `
+                -Context 'Open agentic-workflows issue'
+            $number = 0
+            if (-not [int]::TryParse([string]$numberValue, [ref]$number) -or
+                $number -le 0) {
+                throw "Open agentic-workflows issue has invalid number '$numberValue'."
+            }
+            $title = Get-LeakRequiredPropertyValue `
+                -Object $issue `
+                -Name 'title' `
+                -Context "Open agentic-workflows issue #$number"
+            $body = Get-LeakRequiredPropertyValue `
+                -Object $issue `
+                -Name 'body' `
+                -Context "Open agentic-workflows issue #$number" `
+                -AllowNull
+            $state = Get-LeakRequiredPropertyValue `
+                -Object $issue `
+                -Name 'state' `
+                -Context "Open agentic-workflows issue #$number"
+            $updatedAt = Get-LeakRequiredPropertyValue `
+                -Object $issue `
+                -Name 'updatedAt' `
+                -Context "Open agentic-workflows issue #$number"
+            $url = Get-LeakRequiredPropertyValue `
+                -Object $issue `
+                -Name 'url' `
+                -Context "Open agentic-workflows issue #$number"
+            $normalizedUpdatedAt = ConvertTo-LeakUtcTimestamp `
+                -Value $updatedAt `
+                -Context "Open agentic-workflows issue #$number"
+            if ($title -isnot [string] -or
+                ($null -ne $body -and $body -isnot [string]) -or
+                $state -isnot [string] -or $state -cne 'OPEN' -or
+                $url -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($url)) {
+                throw "Open agentic-workflows issue #$number has malformed consistency metadata."
+            }
+
+            $api = Get-ValidatedExistingLeakApi `
+                -Title $title `
+                -Kind Scan `
+                -Context "Open issue #$number"
+            if ([string]::IsNullOrWhiteSpace($api)) {
+                continue
+            }
+
+            $matchesRequestedApi = @($RequestedApis | Where-Object {
+                    Test-LeakApiIdentityMatch -Left $_ -Right $api
+                }).Count -gt 0
+            if (-not $matchesRequestedApi) {
+                continue
+            }
+
+            [pscustomobject][ordered]@{
+                Api = $api
+                Number = $number
+                State = $state
+                UpdatedAt = $normalizedUpdatedAt
+                Title = $title
+                Body = $body
+                Url = $url
+            }
+        }
+    )
+    $relevant = @($relevant | Sort-Object Number)
+
+    return [pscustomobject]@{
+        Issues = $relevant
+        Signature = (
+            ConvertTo-Json -InputObject $relevant -Depth 4 -Compress
+        )
+    }
 }
 
 function Get-LeakPullRequestConsistencySignature {
@@ -1825,6 +1974,8 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
         number
         title
         body
+        state
+        updatedAt
         url
       }
     }
@@ -1859,11 +2010,24 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
             -Name 'body' `
             -Context "Open agentic-workflows issue #$number" `
             -AllowNull
+        $state = Get-LeakRequiredPropertyValue `
+            -Object $node `
+            -Name 'state' `
+            -Context "Open agentic-workflows issue #$number"
+        $updatedAt = Get-LeakRequiredPropertyValue `
+            -Object $node `
+            -Name 'updatedAt' `
+            -Context "Open agentic-workflows issue #$number"
         $url = Get-LeakRequiredPropertyValue `
             -Object $node `
             -Name 'url' `
             -Context "Open agentic-workflows issue #$number"
-        if ($title -isnot [string] -or $url -isnot [string] -or
+        $normalizedUpdatedAt = ConvertTo-LeakUtcTimestamp `
+            -Value $updatedAt `
+            -Context "Open agentic-workflows issue #$number"
+        if ($title -isnot [string] -or
+            $state -isnot [string] -or $state -cne 'OPEN' -or
+            $url -isnot [string] -or
             [string]::IsNullOrWhiteSpace($url) -or
             ($null -ne $body -and $body -isnot [string])) {
             throw "Open agentic-workflows issue pagination returned malformed text metadata for issue #$number."
@@ -1872,6 +2036,8 @@ query($owner: String!, $name: String!, $first: Int!, $after: String) {
                 number = $number
                 title = $title
                 body = $body
+                state = $state
+                updatedAt = $normalizedUpdatedAt
                 url = $url
             })
     }
@@ -2753,7 +2919,9 @@ Export-ModuleMember -Function `
     Get-LeakFixProvenanceIssueNumber, `
     Get-ValidatedLeakFixPullRequestIdentity, `
     Test-LeakPrReferencesIssue, `
+    Select-LeakPullRequestsReferencingIssue, `
     Get-LeakRevertTargets, `
+    Get-LeakRelevantIssueConsistencyState, `
     Get-LeakPullRequestConsistencySignature, `
     Invoke-LeakGhJson, `
     Get-CompleteLeakPullRequests, `

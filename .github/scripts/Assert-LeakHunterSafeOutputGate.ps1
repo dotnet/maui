@@ -53,38 +53,23 @@ foreach ($item in $createItems) {
         })
 }
 
-$openIssues = @(
-    Get-CompleteLeakIssues -Repository $Repository
-)
-$openIssueApis = @(
-    foreach ($issue in $openIssues) {
-        $issueNumber = [string]$issue.number
-        $context = if ([string]::IsNullOrWhiteSpace($issueNumber)) {
-            'Open issue'
-        } else {
-            "Open issue #$issueNumber"
-        }
-        $issueApi = Get-ValidatedExistingLeakApi `
-            -Title ([string]$issue.title) `
-            -Kind Scan `
-            -Context $context
-        if (-not [string]::IsNullOrWhiteSpace($issueApi)) {
-            [pscustomobject]@{
-                Api = $issueApi
-                Number = $issue.number
-            }
-        }
-    }
-)
-
 $maximumConsistencyAttempts = 3
 $consistentSnapshot = $null
+$consistentIssueState = $null
 $mergedReverts = $null
 
 # Read every lifecycle state in one complete connection so a same-API OPEN -> MERGED
-# transition cannot disappear between state-filtered queries. Revert analysis is
-# bracketed by an identical final read; any relevant change discards the whole attempt.
+# transition cannot disappear between state-filtered queries. Relevant open issue state
+# brackets the pull-request and revert analysis; any relevant change discards the whole
+# attempt, while unrelated shared-label issue churn does not perturb the signature.
 for ($attempt = 1; $attempt -le $maximumConsistencyAttempts; $attempt++) {
+    $beforeIssues = @(
+        Get-CompleteLeakIssues -Repository $Repository
+    )
+    $beforeIssueState = Get-LeakRelevantIssueConsistencyState `
+        -Issues $beforeIssues `
+        -RequestedApis ([string[]]@($requestedApis))
+
     $before = @(
         Get-CompleteLeakPullRequests `
             -Repository $Repository `
@@ -117,6 +102,13 @@ for ($attempt = 1; $attempt -le $maximumConsistencyAttempts; $attempt++) {
             -Repository $Repository `
             -States @('OPEN', 'CLOSED', 'MERGED')
     )
+    $afterIssues = @(
+        Get-CompleteLeakIssues -Repository $Repository
+    )
+    $afterIssueState = Get-LeakRelevantIssueConsistencyState `
+        -Issues $afterIssues `
+        -RequestedApis ([string[]]@($requestedApis))
+
     $beforeSignature = Get-LeakPullRequestConsistencySignature `
         -PullRequests $before `
         -Repository $Repository `
@@ -125,21 +117,24 @@ for ($attempt = 1; $attempt -le $maximumConsistencyAttempts; $attempt++) {
         -PullRequests $after `
         -Repository $Repository `
         -RelevantRevertTargetNumbers $relevantRevertTargetNumbers
-    if ($beforeSignature -ceq $afterSignature) {
+    if ($beforeSignature -ceq $afterSignature -and
+        $beforeIssueState.Signature -ceq $afterIssueState.Signature) {
         $consistentSnapshot = $after
+        $consistentIssueState = $afterIssueState
         $mergedReverts = $candidateMergedReverts
         break
     }
 
     if ($attempt -lt $maximumConsistencyAttempts) {
-        Write-Warning "Final leak-hunter live pull-request state changed during consistency attempt $attempt of $maximumConsistencyAttempts; rebuilding the snapshot and revert analysis."
+        Write-Warning "Final leak-hunter live pull-request or relevant issue state changed during consistency attempt $attempt of $maximumConsistencyAttempts; rebuilding the coherent snapshot and revert analysis."
     }
 }
 
-if ($null -eq $consistentSnapshot) {
-    throw "Final leak-hunter live pull-request state remained inconsistent after $maximumConsistencyAttempts bounded attempts."
+if ($null -eq $consistentSnapshot -or $null -eq $consistentIssueState) {
+    throw "Final leak-hunter live pull-request or relevant issue state remained inconsistent after $maximumConsistencyAttempts bounded attempts."
 }
 
+$openIssueApis = @($consistentIssueState.Issues)
 $merged = @($consistentSnapshot | Where-Object { $_.state -ceq 'MERGED' })
 $open = @($consistentSnapshot | Where-Object { $_.state -ceq 'OPEN' })
 $authoritativeMerged = @(
