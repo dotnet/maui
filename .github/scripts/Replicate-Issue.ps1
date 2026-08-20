@@ -104,6 +104,7 @@ $sandboxProposalPath = Join-Path $agentDir 'sandbox-proposal.json'
 $sandboxBlockedPath = Join-Path $agentDir 'sandbox-blocked.json'
 $testProposalPath = Join-Path $agentDir 'test-proposal.json'
 $controlVariantPath = Join-Path $agentDir 'negative-control-variant.cs'
+$controlEditsPath = Join-Path $agentDir 'negative-control-edits.json'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
 $sandboxCodePath = Join-Path $sandboxDir 'MainPage.xaml.cs'
@@ -3199,12 +3200,13 @@ Do not add a fix or escalate the test type.
 
 The reproduction test is confirmed red for the reported behavior. Now author its negative control.
 Read "$testProposalPath", the generated test source, and the reportedTrigger/testTrigger fields.
-Write one file, "$controlVariantPath", containing the complete source of the generated test file with the reported trigger removed and nothing else changed.
-The control exists to show that the failure depends on the trigger. It is checked against the reproduction, and it is rejected unless it satisfies all of the following:
-- every assertion statement is byte-identical to the reproduction, in the same order and the same number. Do not weaken, delete, reword, or reorder an assertion.
-- the only difference is the removal or neutralisation of the reported trigger, such as not setting the property the report blames, using the documented benign value, or omitting the reported action.
-- it must not be skipped, ignored, conditioned out, commented out, or emptied. A control that does not run proves nothing.
-- keep the same namespace, class name, method name, attributes, and usings so the same test filter selects it.
+You do not write the control source. You describe the trigger removal and trusted code performs it, so the oracle stays byte-identical.
+Write one file, "$controlEditsPath", containing a JSON array of at most 10 edits. Each edit is an object with "find" and optional "replace":
+- "find" is text copied byte-for-byte out of the generated test source, and it must appear exactly once in that file. Include enough surrounding text to be unique.
+- "replace" is what it becomes. Omit it or use "" to delete the text, or give the documented benign value to neutralise the trigger.
+Together the edits must remove or neutralise the reported trigger and change nothing else.
+An edit whose "find" or "replace" contains an assertion is rejected: the assertions are the oracle and they must survive untouched.
+Because trusted code applies these edits to the reproduction source, the namespace, class, method, attributes and usings are preserved automatically and the same test filter still selects the control.
 Expect this control to PASS. If you believe removing the trigger cannot make this oracle pass, do not invent a passing variant: say so in test-proposal.json under controlNotPossible and write no file.
 Failure summary from the previous control attempt, if any: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 "@
@@ -3743,11 +3745,14 @@ function Invoke-ReplicationNegativeControl {
         if (Test-Path -LiteralPath $controlVariantPath -PathType Leaf) {
             Remove-Item -LiteralPath $controlVariantPath -Force
         }
+        if (Test-Path -LiteralPath $controlEditsPath -PathType Leaf) {
+            Remove-Item -LiteralPath $controlEditsPath -Force
+        }
         try {
             Invoke-ReplicationCopilot `
                 -PhaseName "control-$round" `
                 -Prompt (New-CopilotPrompt -Phase control -FailureSummary $controlFailureSummary) `
-                -WritePaths @($controlVariantPath, $testProposalPath) `
+                -WritePaths @($controlEditsPath, $testProposalPath) `
                 -Attempt $round
         }
         catch {
@@ -3762,22 +3767,54 @@ function Invoke-ReplicationNegativeControl {
             return $null
         }
 
-        if (-not (Test-Path -LiteralPath $controlVariantPath -PathType Leaf)) {
+        if (-not (Test-Path -LiteralPath $controlEditsPath -PathType Leaf)) {
             # The author is allowed to refuse, and a refusal is more honest than
             # a fabricated variant, so it downgrades rather than rejects. It
             # only downgrades after the same number of attempts an uninformative
             # variant gets, because returning on the first silent non-write
             # discarded certification the author would have earned on a retry.
-            $controlFailureSummary = 'The previous attempt wrote no control variant. Write the control variant file at the requested path.'
-            Write-Host "Negative control attempt ${round} wrote no control variant."
+            $controlFailureSummary = 'The previous attempt wrote no control edits. Write the control edits JSON file at the requested path.'
+            Write-Host "Negative control attempt ${round} wrote no control edits."
             if ($round -eq $MaxControlAttempts) {
-                Write-Host 'Negative control skipped: no control variant was written.'
+                Write-Host 'Negative control skipped: no control edits were written.'
                 return $null
             }
             continue
         }
 
-        $controlSource = Get-Content -LiteralPath $controlVariantPath -Raw
+        # The author describes the trigger removal and trusted code performs
+        # it. Authors handed the whole file returned a variant with no
+        # assertions on every attempt, so the oracle is preserved here by
+        # construction rather than by asking.
+        try {
+            $editsItem = Get-Item -LiteralPath $controlEditsPath -Force
+            if ($editsItem.Length -le 0 -or $editsItem.Length -gt 32KB) {
+                throw 'The control edits file is empty or oversized.'
+            }
+            $controlEdits = Get-Content -LiteralPath $controlEditsPath -Raw |
+                ConvertFrom-Json -Depth 10 -ErrorAction Stop
+            $controlSource = New-ReplicationControlVariant `
+                -BaselineSource $baselineSource `
+                -Edits $controlEdits
+        }
+        catch {
+            # A command-resolution or binding failure here is a defect in this
+            # script, not the author declining. Reporting it as a refusal is
+            # how the control stayed dead through every published PR.
+            if ($_.Exception -is [System.Management.Automation.ParameterBindingException] -or
+                $_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
+                throw
+            }
+            $controlFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
+            Write-Host "Negative control attempt ${round} produced unusable edits: $controlFailureSummary"
+            if ($round -eq $MaxControlAttempts) {
+                Write-Host 'Negative control skipped: no usable control edits were produced.'
+                return $null
+            }
+            continue
+        }
+
+        Set-Content -LiteralPath $controlVariantPath -Value $controlSource -Encoding utf8NoBOM
         try {
             Assert-ReplicationNegativeControlIsInformative `
                 -BaselineSource $baselineSource `

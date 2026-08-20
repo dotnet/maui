@@ -6295,7 +6295,12 @@ Describe 'Manifest reproduction steps survive the gate' {
 Describe 'The reproduction is run again without the reported trigger' {
     It 'asks for a control that keeps the oracle and removes only the trigger' {
         $script:Source | Should -Match "'control' \{"
-        $script:Source | Should -Match 'byte-identical to the reproduction'
+        # The oracle used to be preserved by asking the author for a
+        # byte-identical copy, and three consecutive authors returned a variant
+        # with no assertions instead. It is now preserved by construction, so
+        # require the guarantee rather than the wording that failed.
+        $script:Source | Should -Match 'contains an assertion is rejected'
+        $script:Source | Should -Match 'New-ReplicationControlVariant'
         $script:Source | Should -Match 'Expect this control to PASS'
     }
 
@@ -6596,5 +6601,97 @@ Describe 'A committed test may not assert on the Sandbox verdict' {
 
     It 'tells the author the same rule before it rejects them' {
         $script:ProposalSource | Should -Match "never assert that the app printed"
+    }
+}
+
+Describe 'New-ReplicationControlVariant' {
+    # Authors handed the whole control file returned a variant with zero
+    # assertions on every attempt, in three separate runs, despite prose that
+    # spelled out the rule. The variant is therefore built from the author's
+    # edits by trusted code so the oracle survives by construction.
+    BeforeAll {
+        . (Join-Path (Split-Path -Parent $PSCommandPath) 'shared/Assert-ReplicationTestGuard.ps1')
+        $script:ControlBase = @'
+[Test]
+public void Issue12345_LabelUpdates()
+{
+    var label = new Label();
+    label.MaxLines = 2;
+    Assert.That(label.MaxLines, Is.EqualTo(2));
+    Assert.That(label.IsVisible, Is.True);
+}
+'@
+    }
+
+    It 'removes the trigger and keeps every assertion' {
+        $variant = New-ReplicationControlVariant -BaselineSource $script:ControlBase `
+            -Edits @(@{ find = '    label.MaxLines = 2;'; replace = '' })
+        $variant | Should -Not -Match 'label\.MaxLines = 2;'
+        @(Get-ReplicationAssertionStatements -Source $variant).Count | Should -Be 2
+    }
+
+    It 'accepts a neutralising replacement' {
+        $variant = New-ReplicationControlVariant -BaselineSource $script:ControlBase `
+            -Edits @(@{ find = 'label.MaxLines = 2;'; replace = 'label.MaxLines = -1;' })
+        $variant | Should -Match 'label\.MaxLines = -1;'
+        @(Get-ReplicationAssertionStatements -Source $variant).Count | Should -Be 2
+    }
+
+    It 'refuses an edit that deletes an assertion' {
+        { New-ReplicationControlVariant -BaselineSource $script:ControlBase `
+            -Edits @(@{ find = 'Assert.That(label.IsVisible, Is.True);' }) } |
+            Should -Throw -ExpectedMessage '*removes an assertion*'
+    }
+
+    It 'refuses an edit that introduces an assertion' {
+        { New-ReplicationControlVariant -BaselineSource $script:ControlBase `
+            -Edits @(@{ find = '    label.MaxLines = 2;'; replace = 'Assert.Fail();' }) } |
+            Should -Throw -ExpectedMessage '*introduces an assertion*'
+    }
+
+    It 'refuses text that is not unique in the reproduction' {
+        { New-ReplicationControlVariant -BaselineSource $script:ControlBase `
+            -Edits @(@{ find = 'label' }) } |
+            Should -Throw -ExpectedMessage '*exactly once*'
+    }
+
+    It 'refuses edits that change nothing' {
+        { New-ReplicationControlVariant -BaselineSource $script:ControlBase `
+            -Edits @(@{ find = 'label.MaxLines = 2;'; replace = 'label.MaxLines = 2;' }) } |
+            Should -Throw -ExpectedMessage '*changed nothing*'
+    }
+
+    It 'refuses an empty edit list' {
+        { New-ReplicationControlVariant -BaselineSource $script:ControlBase -Edits @() } |
+            Should -Throw -ExpectedMessage '*empty*'
+    }
+
+    It 'reads the shape ConvertFrom-Json produces' {
+        $edits = '[{"find":"    label.MaxLines = 2;","replace":""}]' | ConvertFrom-Json
+        $variant = New-ReplicationControlVariant -BaselineSource $script:ControlBase -Edits $edits
+        @(Get-ReplicationAssertionStatements -Source $variant).Count | Should -Be 2
+    }
+}
+
+Describe 'The control author never writes the control source' {
+    BeforeAll {
+        $script:ControlLoopSource = Get-Content -Raw -LiteralPath (
+            Join-Path (Split-Path -Parent $PSCommandPath) 'Replicate-Issue.ps1')
+    }
+
+    It 'hands the author the edits file, not the variant' {
+        $script:ControlLoopSource | Should -Match '-WritePaths @\(\$controlEditsPath, \$testProposalPath\)'
+        $script:ControlLoopSource | Should -Not -Match '-WritePaths @\(\$controlVariantPath'
+    }
+
+    It 'builds the variant in trusted code' {
+        $script:ControlLoopSource | Should -Match 'New-ReplicationControlVariant'
+    }
+
+    It 'rethrows a script defect instead of blaming the author' {
+        $section = [regex]::Match($script:ControlLoopSource,
+            'produced unusable edits').Index
+        $before = $script:ControlLoopSource.Substring(0, $section)
+        $before | Should -Match 'CommandNotFoundException'
     }
 }

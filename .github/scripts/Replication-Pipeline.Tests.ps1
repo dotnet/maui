@@ -817,14 +817,60 @@ Describe 'The negative control author gets every attempt it is allotted' {
         $guards | Should -BeGreaterOrEqual 2
     }
 
-    It 'retries rather than returns when no control variant was written' {
-        $body = $script:controlFunction.Extent.Text
-        $index = $body.IndexOf('wrote no control variant', [StringComparison]::Ordinal)
-        $index | Should -BeGreaterThan 0
-        # The downgrade that follows the non-write must be attempt-guarded.
-        $following = $body.Substring($index, [Math]::Min(400, $body.Length - $index))
-        $following | Should -Match '\$round\s+-eq\s+\$MaxControlAttempts'
-        $following | Should -Match 'continue'
+    It 'attempt-guards every recoverable control failure it reports' {
+        # Enumerate the branches instead of naming one of them: an earlier
+        # version pinned the exact sentence 'wrote no control variant' and went
+        # stale the moment the artifact was renamed, which hides whether the
+        # branch is still guarded at all. Walk each report up to its enclosing
+        # if-statements so the check does not depend on how far the guard sits
+        # from the message.
+        $reports = $script:controlFunction.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.CommandAst] -and
+                $n.Extent.Text -match 'Write-Host "Negative control attempt'
+            }, $true)
+        $reports.Count | Should -BeGreaterOrEqual 3
+
+        foreach ($report in $reports) {
+            # The guard is an ancestor when the whole retry branch is wrapped
+            # in '-lt $MaxControlAttempts', and a sibling when the downgrade
+            # that follows the message is wrapped in '-eq $MaxControlAttempts'.
+            # Both spend every allotted attempt, so accept either shape.
+            $guarded = $false
+            $node = $report.Parent
+            while ($node -and -not $guarded) {
+                if ($node -is [System.Management.Automation.Language.IfStatementAst]) {
+                    foreach ($clause in $node.Clauses) {
+                        if ($clause.Item1.Extent.Text -match '\$MaxControlAttempts') {
+                            $guarded = $true
+                        }
+                    }
+                }
+                if ($node -is [System.Management.Automation.Language.StatementBlockAst]) {
+                    foreach ($sibling in $node.Statements) {
+                        if ($sibling -is [System.Management.Automation.Language.IfStatementAst]) {
+                            foreach ($clause in $sibling.Clauses) {
+                                if ($clause.Item1.Extent.Text -match '\$MaxControlAttempts') {
+                                    $guarded = $true
+                                }
+                            }
+                        }
+                    }
+                }
+                if ($node -eq $script:controlFunction) { break }
+                $node = $node.Parent
+            }
+
+            $guarded | Should -BeTrue -Because (
+                "$($report.Extent.Text) must sit inside a branch guarded by the attempt count")
+
+            $following = $script:controlFunction.Extent.Text
+            $offset = $following.IndexOf($report.Extent.Text, [StringComparison]::Ordinal)
+            $following.Substring($offset,
+                [Math]::Min(400, $following.Length - $offset)) |
+                Should -Match 'continue' -Because (
+                    "$($report.Extent.Text) must retry before the last attempt")
+        }
     }
 }
 

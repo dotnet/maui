@@ -2230,3 +2230,94 @@ function Assert-ReplicationNegativeControlIsInformative {
         }
     }
 }
+
+function New-ReplicationControlVariant {
+    <#
+        .SYNOPSIS
+        Builds a negative control by removing the reported trigger from the
+        reproduction source.
+
+        .DESCRIPTION
+        Authors were asked three times, in explicit prose, to copy the
+        reproduction and delete only the trigger, and they returned a variant
+        with no assertions every time. Prose does not constrain an author, so
+        this takes the file away from them: they describe the trigger edits and
+        trusted code performs them, which makes the oracle byte-identical by
+        construction rather than by instruction.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BaselineSource,
+        [Parameter(Mandatory = $true)][AllowNull()]$Edits
+    )
+
+    $editList = @($Edits)
+    if ($editList.Count -eq 0) {
+        throw 'The control edits list is empty. List the exact trigger statements to remove.'
+    }
+    if ($editList.Count -gt 10) {
+        throw "The control edits list has $($editList.Count) entries, which is more than the 10 a trigger removal should need."
+    }
+
+    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $BaselineSource)
+    $variant = [string]$BaselineSource
+
+    foreach ($edit in $editList) {
+        $find = ''
+        $replace = ''
+        if ($edit -is [string]) {
+            $find = [string]$edit
+        } elseif ($edit -is [System.Collections.IDictionary]) {
+            if ($edit.Contains('find')) { $find = [string]$edit['find'] }
+            if ($edit.Contains('replace') -and $null -ne $edit['replace']) {
+                $replace = [string]$edit['replace']
+            }
+        } else {
+            $findProperty = $edit.PSObject.Properties['find']
+            if ($findProperty) { $find = [string]$findProperty.Value }
+            $replaceProperty = $edit.PSObject.Properties['replace']
+            if ($replaceProperty -and $null -ne $replaceProperty.Value) {
+                $replace = [string]$replaceProperty.Value
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($find)) {
+            throw 'A control edit has an empty find value. Quote the exact trigger text from the reproduction.'
+        }
+
+        # An edit that carries an assertion is the author deleting the oracle
+        # under the name of removing the trigger, which is the exact failure
+        # this function exists to make impossible.
+        if (@(Get-ReplicationAssertionStatements -Source $find).Count -gt 0) {
+            throw "A control edit removes an assertion: '$($find.Trim())'. Remove only the trigger and leave every assertion in place."
+        }
+        if (@(Get-ReplicationAssertionStatements -Source $replace).Count -gt 0) {
+            throw "A control edit introduces an assertion: '$($replace.Trim())'. The control must keep the reproduction's assertions unchanged."
+        }
+
+        $occurrences = ([regex]::Matches($variant, [regex]::Escape($find))).Count
+        if ($occurrences -ne 1) {
+            throw "The control edit text occurs $occurrences times in the reproduction, but it must occur exactly once: '$($find.Trim())'."
+        }
+
+        $index = $variant.IndexOf($find, [StringComparison]::Ordinal)
+        $variant = $variant.Substring(0, $index) + $replace +
+            $variant.Substring($index + $find.Length)
+    }
+
+    if ($variant -ceq [string]$BaselineSource) {
+        throw 'The control edits changed nothing, so the control would rerun the reproduction unchanged.'
+    }
+
+    $variantAssertions = @(Get-ReplicationAssertionStatements -Source $variant)
+    if ($variantAssertions.Count -ne $baselineAssertions.Count) {
+        throw "The control has $($variantAssertions.Count) assertions where the reproduction has $($baselineAssertions.Count). Remove only the trigger."
+    }
+    for ($i = 0; $i -lt $variantAssertions.Count; $i++) {
+        if ($variantAssertions[$i] -cne $baselineAssertions[$i]) {
+            throw "Control assertion $($i + 1) changed from '$($baselineAssertions[$i])' to '$($variantAssertions[$i])'."
+        }
+    }
+
+    return $variant
+}
