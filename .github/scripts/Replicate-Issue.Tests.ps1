@@ -6073,6 +6073,54 @@ Describe 'An observed negative verdict is a non-reproduction' {
     }
 }
 
+Describe 'The element inventory reaches the next attempt' {
+    BeforeAll {
+        $script:InventoryRoot = Join-Path ([IO.Path]::GetTempPath()) ("inv-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Path $script:InventoryRoot -Force | Out-Null
+    }
+    AfterAll {
+        Remove-Item -LiteralPath $script:InventoryRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'reads the inventory from the recorder log' {
+        $log = Join-Path $script:InventoryRoot 'record-attempt-1.log'
+        Set-Content -LiteralPath $log -Encoding utf8NoBOM -Value @'
+Element was not visible: id=Missing.
+<<<REPLICATION_VISIBLE_ELEMENTS AutomationId=StatusLabel | text=Ready REPLICATION_VISIBLE_ELEMENTS>>>
+'@
+        Get-ReplicationElementInventory -LogPath $log |
+            Should -Match 'AutomationId=StatusLabel'
+    }
+
+    It 'recovers the inventory from the raised failure text' {
+        # Build 15030797 spent four attempts re-guessing identifiers because the
+        # inventory was only ever looked for in one sink.
+        $missing = Join-Path $script:InventoryRoot 'record-attempt-9.log'
+        $text = 'Run trusted reproduction script failed. ' +
+            '<<<REPLICATION_VISIBLE_ELEMENTS AutomationId=ResultLabel REPLICATION_VISIBLE_ELEMENTS>>>'
+        Get-ReplicationElementInventory -LogPath $missing -FallbackText $text |
+            Should -Match 'AutomationId=ResultLabel'
+    }
+
+    It 'prefers the log over the failure text and returns empty when neither has it' {
+        $log = Join-Path $script:InventoryRoot 'record-attempt-2.log'
+        Set-Content -LiteralPath $log -Encoding utf8NoBOM -Value `
+            '<<<REPLICATION_VISIBLE_ELEMENTS AutomationId=FromLog REPLICATION_VISIBLE_ELEMENTS>>>'
+        Get-ReplicationElementInventory `
+            -LogPath $log `
+            -FallbackText '<<<REPLICATION_VISIBLE_ELEMENTS AutomationId=FromText REPLICATION_VISIBLE_ELEMENTS>>>' |
+            Should -Match 'FromLog'
+
+        Get-ReplicationElementInventory `
+            -LogPath (Join-Path $script:InventoryRoot 'absent.log') `
+            -FallbackText 'no marker here' | Should -BeExactly ''
+    }
+
+    It 'passes the failure text at the call site' {
+        $script:Source | Should -Match '-FallbackText \$sandboxFailureSummary'
+    }
+}
+
 Describe 'Manifest reproduction steps survive the gate' {
     It 'trims a step whose newline became a trailing space' {
         # Build 15030804 reproduced its issue and was rejected for whitespace,

@@ -575,24 +575,41 @@ function Get-ReplicationElementInventory {
     param(
         [Parameter(Mandatory)]
         [string]$LogPath,
+        [AllowEmptyString()][string]$FallbackText = '',
         [int]$MaximumLength = 1200
     )
 
-    if (-not (Test-Path -LiteralPath $LogPath -PathType Leaf)) {
-        return ''
+    # The runner appends the inventory to the locator-timeout message, which
+    # reaches the orchestrator through whichever sink survived: the recorder
+    # log, the raised failure text, or a sibling log from the same attempt.
+    # Build 15030797 spent four attempts re-guessing identifiers because only
+    # one of those was searched and the inventory was not in it.
+    $sources = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($candidatePath in @($LogPath, ($LogPath -replace '\.log$', '.err.log'))) {
+        if (Test-Path -LiteralPath $candidatePath -PathType Leaf) {
+            try {
+                $sources.Add([string](Get-Content -LiteralPath $candidatePath -Raw -ErrorAction Stop))
+            } catch {
+                # An unreadable sink is not worth failing the attempt over.
+            }
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($FallbackText)) {
+        $sources.Add([string]$FallbackText)
     }
 
-    try {
-        $content = Get-Content -LiteralPath $LogPath -Raw -ErrorAction Stop
-    } catch {
-        return ''
+    $match = $null
+    foreach ($content in $sources) {
+        $candidate = [regex]::Match(
+            [string]$content,
+            '<<<REPLICATION_VISIBLE_ELEMENTS(?<body>.*?)REPLICATION_VISIBLE_ELEMENTS>>>',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        if ($candidate.Success) {
+            $match = $candidate
+            break
+        }
     }
-
-    $match = [regex]::Match(
-        [string]$content,
-        '<<<REPLICATION_VISIBLE_ELEMENTS(?<body>.*?)REPLICATION_VISIBLE_ELEMENTS>>>',
-        [Text.RegularExpressions.RegexOptions]::Singleline)
-    if (-not $match.Success) {
+    if (-not $match) {
         return ''
     }
 
@@ -3970,7 +3987,8 @@ This issue reports a crash and the app did terminate, so the termination is the 
             elseif ($sandboxFailureSummary -match
                 '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException|The element was never found') {
                 $inventory = Get-ReplicationElementInventory `
-                    -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
+                    -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log") `
+                    -FallbackText $sandboxFailureSummary
                 if ($inventory) {
                     $sandboxFailureSummary = @"
 The Appium plan waited for an element that the running app never exposed. These are the identifying attributes the app actually exposed at that moment: $inventory
