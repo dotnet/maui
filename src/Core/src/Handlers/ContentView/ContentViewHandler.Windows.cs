@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -44,6 +45,12 @@ namespace Microsoft.Maui.Handlers
 					else if (fwElement.Parent is MauiPanel existingPanel)
 					{
 						existingPanel.CachedChildren.Remove(fwElement);
+					}
+					else if (fwElement.Parent is Panel existingParent)
+					{
+#pragma warning disable RS0030 // Do not use banned APIs; MauiPanel is handled above, but not every parent is a MauiPanel.
+						existingParent.Children.Remove(fwElement);
+#pragma warning restore RS0030 // Do not use banned APIs
 					}
 				}
 
