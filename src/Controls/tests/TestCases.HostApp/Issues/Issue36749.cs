@@ -64,8 +64,22 @@ public class Issue36749 : ContentPage
 		backgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
 
 		// UIColor.Cyan = R:0, G:1, B:1, A:1
-		bool isCyan = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
-		_resultLabel.Text = isCyan ? "PASS" : "FAIL";
+		bool preservedInitialColor = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
+
+		// A later null mapping must clear MAUI-applied state even while the native view is
+		// detached. Window-based initial-map detection incorrectly leaves this color red.
+		_button.Background = new SolidColorBrush(Colors.Red);
+		platformButton.RemoveFromSuperview();
+		_button.Background = null;
+
+		bool clearedDetachedColor = false;
+		if (platformButton.BackgroundColor is UIColor detachedColor)
+		{
+			detachedColor.GetRGBA(out _, out _, out _, out var detachedAlpha);
+			clearedDetachedColor = detachedAlpha < 0.01;
+		}
+
+		_resultLabel.Text = preservedInitialColor && clearedDetachedColor ? "PASS" : "FAIL";
 #endif
     }
 }

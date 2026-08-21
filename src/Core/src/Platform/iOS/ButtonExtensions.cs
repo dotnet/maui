@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -6,6 +7,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
+		static readonly ConditionalWeakTable<UIButton, BackgroundUpdateState> BackgroundUpdateStates = new();
+
 		public const double AlmostZero = 0.00001;
 
 		public static void UpdateStrokeColor(this UIButton platformButton, IButtonStroke buttonStroke)
@@ -57,21 +60,22 @@ namespace Microsoft.Maui.Platform
 		// TODO: Make this public in .NET 11
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
+			var updateState = BackgroundUpdateStates.GetValue(platformButton, static _ => new());
+			var isInitialUpdate = updateState.IsInitialUpdate;
+			updateState.IsInitialUpdate = false;
+
 			// Remove previous background gradient layer if any.
-			// Safe to call unconditionally even when Window is null (initial-render path): at that
-			// point MAUI has not yet inserted a named gradient layer, so this is a no-op.
+			// Safe to call unconditionally during the initial mapping because MAUI has not yet
+			// inserted a named gradient layer, so this is a no-op.
 			// Running it before the Window/paint guard ensures any previously-applied gradient is
 			// cleaned up regardless of the new paint value.
 			platformButton.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
 			{
-				// Only reset to UIColor.Clear when the button is already attached to a window.
-				// During initial property mapping (ConnectHandler), Window is null because the view
-				// hasn't been added to the hierarchy yet — skipping here preserves native BackgroundColor
-				// set by custom UIButton subclasses. Once live on screen, null means a VisualState
-				// transition back to Normal, so we do reset. Mirrors the same guard in UpdateTextColor.
-				if (platformButton.Window is not null)
+				// Preserve constructor or appearance-proxy styling only during the first property
+				// mapping. Later null updates must clear prior MAUI state even while detached.
+				if (!isInitialUpdate)
 				{
 					platformButton.BackgroundColor = UIColor.Clear;
 				}
@@ -80,6 +84,11 @@ namespace Microsoft.Maui.Platform
 
 			// Delegate to the standard view background update
 			ViewExtensions.UpdateBackground(platformButton, paint);
+		}
+
+		sealed class BackgroundUpdateState
+		{
+			public bool IsInitialUpdate { get; set; } = true;
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
