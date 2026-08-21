@@ -258,11 +258,29 @@ if ($TestFilter -ne 'Name = Foo Bar') {
         $script:ResetScriptSource | Should -Match 'Complete-DeviceReset -Succeeded \$false'
     }
 
-    It 'reports an unverified host-platform reset only when status is requested' {
-        $defaultOutput = @(& $script:ResetScriptPath -Platform windows)
-        $statusOutput = @(& $script:ResetScriptPath -Platform windows -PassThruStatus)
+    It 'treats a repeated startup failure as deterministic after <Platform> starts a fresh host' -TestCases @(
+        @{ Platform = 'catalyst' }
+        @{ Platform = 'maccatalyst' }
+        @{ Platform = 'windows' }
+    ) {
+        param([string]$Platform)
+
+        $defaultOutput = @(& $script:ResetScriptPath -Platform $Platform)
+        $statusOutput = @(& $script:ResetScriptPath -Platform $Platform -PassThruStatus)
 
         $defaultOutput.Count | Should -Be 0
+        $statusOutput.Count | Should -Be 1
+        $statusOutput[0] | Should -BeTrue
+        Test-AmbiguousStartupIsDeterministic `
+            -EnvHit 'Timed out waiting for Go To Test button to appear' `
+            -History @('Timed out waiting for Go To Test button to appear') `
+            -RecoveryVerified $statusOutput[0] |
+            Should -BeTrue
+    }
+
+    It 'does not verify recovery for an unsupported platform' {
+        $statusOutput = @(& $script:ResetScriptPath -Platform unsupported -PassThruStatus)
+
         $statusOutput.Count | Should -Be 1
         $statusOutput[0] | Should -BeFalse
     }

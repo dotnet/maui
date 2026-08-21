@@ -31,8 +31,9 @@
   Max seconds to wait for the device to finish rebooting (default 180).
 
 .PARAMETER PassThruStatus
-  Emits one Boolean indicating whether recovery was verified. Other callers retain
-  the existing best-effort, no-output behavior when this switch is omitted.
+  Emits one Boolean indicating whether recovery was verified. A fresh host process
+  is the verified clean state for Catalyst, MacCatalyst, and Windows. Other callers
+  retain the existing best-effort, no-output behavior when this switch is omitted.
 #>
 [CmdletBinding()]
 param(
@@ -253,12 +254,16 @@ try {
             return
         }
     }
-    else {
+    elseif ($p -in @('catalyst', 'maccatalyst', 'windows')) {
         # catalyst / maccatalyst / windows run the HostApp as a fresh HOST process
         # per category (there is no shared VM/emulator to reboot), so the
-        # cross-category device-degradation failure mode does not apply. Nothing
-        # to reset here.
-        Write-Host "Platform '$Platform' has no shared device to reset — skipping."
+        # cross-category device-degradation failure mode does not apply. The next
+        # attempt therefore starts from a verified clean host-process state.
+        Write-Host "Platform '$Platform' starts a fresh host process — recovery is verified."
+        Complete-DeviceReset -Succeeded $true
+    }
+    else {
+        Write-Host "##[warning]Unsupported reset platform '$Platform' — recovery is not verified."
         Complete-DeviceReset -Succeeded $false
     }
 }
