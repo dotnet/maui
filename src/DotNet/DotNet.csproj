@@ -13,6 +13,9 @@
     <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
+    <_NormalizedMSBuildExtensionsPath>$([MSBuild]::EnsureTrailingSlash('$(MSBuildExtensionsPath)'))</_NormalizedMSBuildExtensionsPath>
+    <_WorkloadManifestInstallDirectory>$(_NormalizedMSBuildExtensionsPath)../../sdk-manifests/$(DotNetSdkManifestsFolder)</_WorkloadManifestInstallDirectory>
+    <_WorkloadInstallDotNetPath>$(_NormalizedMSBuildExtensionsPath)../../dotnet</_WorkloadInstallDotNetPath>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
@@ -73,7 +76,7 @@
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
-        WorkloadDirectory="$([MSBuild]::EnsureTrailingSlash('$(MSBuildExtensionsPath)'))../../sdk-manifests/$(DotNetSdkManifestsFolder)"
+        WorkloadDirectory="$(_WorkloadManifestInstallDirectory)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
@@ -88,7 +91,7 @@
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$([MSBuild]::EnsureTrailingSlash('$(MSBuildExtensionsPath)'))../../dotnet&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$(_WorkloadInstallDotNetPath)&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
