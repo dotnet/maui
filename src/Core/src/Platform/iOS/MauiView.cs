@@ -345,9 +345,7 @@ namespace Microsoft.Maui.Platform
 			// so that safe-area calculations are correct if the view is later re-attached.
 			if (_isKeyboardShowing)
 			{
-				_keyboardFrame = CGRect.Empty;
-				_isKeyboardShowing = false;
-				_safeAreaInvalidated = true;
+				ClearKeyboardState();
 			}
 		}
 
