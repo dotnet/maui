@@ -335,7 +335,11 @@ Describe 'Replication issue outcome publication boundary' {
         $check = $script:Pipeline.IndexOf(
             'Check for an existing reproduction pull request')
         $check | Should -BeGreaterThan 0
-        $step = $script:Pipeline.Substring($check - 3600, 3600)
+        # Slice from where the step actually begins rather than a fixed number
+        # of characters back, which silently truncated the step whenever it grew.
+        $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
+        $stepStart | Should -BeGreaterThan 0
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
         $step.Contains('repos/dotnet/maui/issues/') | Should -BeTrue
         $step.Contains('.state_reason') | Should -BeTrue
         $step.Contains('variable=replicationIssueIneligible') | Should -BeTrue
@@ -1165,5 +1169,47 @@ Describe 'script-scoped state survives StrictMode' {
             $firstAssignment | Should -BeLessThan $firstRead -Because `
                 "'$($group.Name)' is read on line $firstRead before its file-scope initialiser on line $firstAssignment"
         }
+    }
+}
+
+Describe 'Every gate reads a path something actually writes' {
+    BeforeAll {
+        $script:Yaml = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+    }
+
+    It 'points the scope gate at the directory the context script writes to' {
+        # The gate read $contextDir/issue-context.json, but the step only ever
+        # copied the *agent* context there, so Test-Path was false and the gate
+        # approved every run in silence from its introduction to build 15051047.
+        $setter = [regex]::Match($script:Yaml,
+            'variable=REPLICATION_CONTEXT_PATH\]\$\(Join-Path (\$\w+)')
+        $setter.Success | Should -BeTrue
+
+        $writtenTo = 'privateContextDir'
+        $setter.Groups[1].Value | Should -Be ('$' + $writtenTo)
+    }
+
+    It 'passes the context script the same directory the gate later reads' {
+        # OutputDir and the gate's path have to agree, or the gate reads a file
+        # that exists somewhere else.
+        $script:Yaml | Should -Match 'OutputDir\s*=\s*\$privateContextDir'
+    }
+
+    It 'copies only the agent context into the agent-readable directory' {
+        # The full context stays private; moving the gate must not smuggle the
+        # unsanitized report into the directory the agent can read.
+        $agentReadable = [regex]::Matches($script:Yaml,
+            'Copy-Item -LiteralPath \(Join-Path \$privateContextDir "([^"]+)"\) -Destination \$contextDir')
+        @($agentReadable).Count | Should -BeGreaterThan 0
+        foreach ($match in $agentReadable) {
+            $match.Groups[1].Value | Should -Match '^issue-agent-context\.'
+        }
+    }
+
+    It 'says so when the scope gate cannot find its evidence' {
+        # A gate that silently approves is worse than no gate, because the run
+        # looks checked.
+        $script:Yaml | Should -Match 'The scope gate could not read the issue context'
     }
 }

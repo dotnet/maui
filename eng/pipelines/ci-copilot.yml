@@ -602,7 +602,7 @@ stages:
               New-Item -ItemType Directory -Path $privateContextDir -Force | Out-Null
               New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -Force | Out-Null
               Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_ROOT]$root"
-              Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $contextDir 'issue-context.json')"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $privateContextDir 'issue-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_PRIVATE_CONTEXT_ROOT]$privateContextDir"
               # Splatted as a hashtable: an array splat would pass these
@@ -723,13 +723,21 @@ stages:
               # the refusal belongs here rather than forty minutes downstream.
               try {
                 $contextPath = $env:REPLICATION_CONTEXT_PATH
-                if (-not [string]::IsNullOrWhiteSpace($contextPath) -and (Test-Path -LiteralPath $contextPath)) {
+                if ([string]::IsNullOrWhiteSpace($contextPath) -or -not (Test-Path -LiteralPath $contextPath)) {
+                  # This gate read a path nothing ever wrote from its
+                  # introduction until build 15051047, so it silently approved
+                  # every run it was added to stop. A gate that cannot find its
+                  # evidence has to say so rather than quietly pass.
+                  Write-Host "##vso[task.logissue type=warning]The scope gate could not read the issue context at '$contextPath', so it approved this run without checking."
+                } else {
                   $mismatch = [string](Get-Content -LiteralPath $contextPath -Raw |
                     ConvertFrom-Json).platformMismatch
                   if (-not [string]::IsNullOrWhiteSpace($mismatch)) {
                     Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
                     Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
                     Write-Host "ISSUE REPLICATION SKIPPED: $mismatch"
+                  } else {
+                    Write-Host "Scope gate: the report does not name a platform or scope this run cannot answer."
                   }
                 }
               } catch {
