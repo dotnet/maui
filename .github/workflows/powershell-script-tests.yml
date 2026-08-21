@@ -20,6 +20,11 @@ on:
     paths:
       - '.github/scripts/**'
       - '.github/workflows/powershell-script-tests.yml'
+      # UI-test pipeline partitioning is guarded by
+      # UITestsPipelinePartitions.Tests.ps1, so re-run the suite when the
+      # partitioned pipeline templates change too.
+      - 'eng/pipelines/common/ui-tests.yml'
+      - 'eng/pipelines/common/ui-tests-steps.yml'
   workflow_dispatch:
 
 concurrency:

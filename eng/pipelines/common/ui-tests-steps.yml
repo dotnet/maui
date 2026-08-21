@@ -10,7 +10,8 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
-  testFilter: ''
+  testFilter: '' # comma-separated category list, expanded into ORed TestCategory= terms
+  testFilterExpression: '' # a complete VSTest filter expression, used verbatim (takes precedence over testFilter); used for fixture-level shard partitioning
   headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
@@ -139,11 +140,21 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    # A pre-built VSTest filter expression (used for fixture-level shard
+    # partitioning of oversized categories such as CollectionView) takes
+    # precedence and is passed through verbatim. Otherwise the comma-separated
+    # category list is expanded into ORed "TestCategory=" terms (historical behavior).
+    $testFilterExpression = "${{ parameters.testFilterExpression }}"
+    if ($testFilterExpression) {
+      $testFilter = $testFilterExpression
     }
+    else {
+      "${{ parameters.testFilter }}".Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
+      }
 
-    $testFilter = $testFilter.TrimEnd("|")
+      $testFilter = $testFilter.TrimEnd("|")
+    }
 
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
