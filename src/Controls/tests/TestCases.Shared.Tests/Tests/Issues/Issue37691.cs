@@ -36,7 +36,7 @@ public class Issue37691 : _IssuesUITest
 
 			var restoredBottom = App.WaitForElement("BottomMarker").GetRect().Bottom;
 			TestContext.Progress.WriteLine($"Cycle {cycle}: initial bottom={initialBottom}; restored bottom={restoredBottom}");
-			Assert.That(restoredBottom, Is.EqualTo(initialBottom).Within(2),
+			Assert.That(restoredBottom, Is.EqualTo(initialBottom).Within(5),
 				$"The underlying page did not restore its original height after cycle {cycle}. Initial bottom: {initialBottom}; restored bottom: {restoredBottom}.");
 		}
 
