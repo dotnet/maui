@@ -482,6 +482,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var item = itemTemplateContext.Item;
 			var isPositionUpdateFromScroll = _positionUpdateFromScroll == carouselPosition;
 			var isCurrentItemUpdateFromCollection = _isInternalPositionUpdate;
+			var hadCurrentItemUpdateFromScroll = _hasCurrentItemUpdateFromScroll;
+			var previousCurrentItemUpdateFromScroll = _currentItemUpdateFromScroll;
 			var hadCurrentItemUpdateFromCollection = _hasCurrentItemUpdateFromCollection;
 			var previousCurrentItemUpdateFromCollection = _currentItemUpdateFromCollection;
 			if (isPositionUpdateFromScroll)
@@ -504,8 +506,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (isPositionUpdateFromScroll)
 				{
-					_hasCurrentItemUpdateFromScroll = false;
-					_currentItemUpdateFromScroll = null;
+					_hasCurrentItemUpdateFromScroll = hadCurrentItemUpdateFromScroll;
+					_currentItemUpdateFromScroll = previousCurrentItemUpdateFromScroll;
 				}
 
 				if (isCurrentItemUpdateFromCollection)
@@ -756,7 +758,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Centered mandatory layouts are reconciled geometrically after the native scroll settles.
 			if (ShouldCenterCarouselItem())
 			{
-				_centerItemIndexFromScroll = position;
+				if (!_isCollectionChangeScrollPending || collectionChangeScroll)
+					_centerItemIndexFromScroll = position;
+
 				return;
 			}
 
@@ -1213,6 +1217,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							return;
 					}
 				}
+
+				if (collectionChangeVersion != _collectionChangeVersion)
+					return;
 
 				if (currentItemOverridden)
 				{

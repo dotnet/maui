@@ -88,6 +88,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task NativeScrollCollectionMutationDoesNotRequestProgrammaticFeedback()
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<object>(CreateItems());
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+			bool collectionMutated = false;
+			carouselView.CurrentItemChanged += (_, args) =>
+			{
+				if (!collectionMutated && ReferenceEquals(args.CurrentItem, items[1]))
+				{
+					collectionMutated = true;
+					items.Add(new object());
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				int scrollToRequests = 0;
+				carouselView.ScrollToRequested += (_, _) => scrollToRequests++;
+
+				handler.SetPositionFromScroll(1);
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.True(collectionMutated);
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.Equal(0, scrollToRequests);
+			});
+		}
+
+		[Fact]
 		public async Task VerticalNativeScrollUpdatesSelectionWithoutProgrammaticFeedbackAndSettlesCentered()
 		{
 			SetupBuilder();
@@ -208,6 +242,37 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(items[0], carouselView.CurrentItem);
 				Assert.Equal(1, positionChanges);
 				Assert.Equal(0, scrollToRequests);
+			});
+		}
+
+		[Fact]
+		public async Task LoopedCollectionCenterTargetSurvivesLaterNativeEvents()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: true);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+				var collectionPosition = carouselView.Position;
+
+				SetPrivateField(handler, "_isCollectionChanged", true);
+				carouselView.SendScrolled(new ItemsViewScrolledEventArgs
+				{
+					CenterItemIndex = initialPhysicalPosition,
+				});
+
+				Assert.True(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+				Assert.Equal(collectionPosition, GetPrivateField<int>(handler, "_centerItemIndexFromScroll"));
+
+				carouselView.SendScrolled(new ItemsViewScrolledEventArgs
+				{
+					CenterItemIndex = initialPhysicalPosition + 1,
+				});
+
+				Assert.Equal(collectionPosition, GetPrivateField<int>(handler, "_centerItemIndexFromScroll"));
 			});
 		}
 
@@ -604,6 +669,50 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
 				Assert.False(carouselView.IsDragging);
+			});
+		}
+
+		[Fact]
+		public async Task SupersededCollectionChangeDoesNotLeaveStaleCurrentItemOverride()
+		{
+			SetupBuilder();
+			var firstItem = new object();
+			var secondItem = new object();
+			var thirdItem = new object();
+			var items = new ObservableCollection<object> { firstItem, secondItem, thirdItem };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+			CarouselViewHandler carouselViewHandler = null;
+			bool collectionChangeSuperseded = false;
+			carouselView.CurrentItemChanged += (_, args) =>
+			{
+				if (!collectionChangeSuperseded && ReferenceEquals(args.CurrentItem, secondItem))
+				{
+					collectionChangeSuperseded = true;
+					var collectionChangeVersion = GetPrivateField<int>(carouselViewHandler, "_collectionChangeVersion");
+					SetPrivateField(carouselViewHandler, "_collectionChangeVersion", collectionChangeVersion + 1);
+					carouselView.CurrentItem = thirdItem;
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				carouselViewHandler = handler;
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				items.RemoveAt(0);
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.True(collectionChangeSuperseded);
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(thirdItem, carouselView.CurrentItem);
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
+
+				handler.SetPositionFromScroll(0);
+
+				Assert.Equal(0, carouselView.Position);
+				Assert.Same(secondItem, carouselView.CurrentItem);
 			});
 		}
 
