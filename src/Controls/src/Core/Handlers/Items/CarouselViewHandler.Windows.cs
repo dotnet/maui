@@ -42,8 +42,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _collectionCurrentItemOverridePosition = -1;
 		int _collectionCurrentItemOverrideVersion = -1;
 		int _collectionCurrentItemOverrideQueueVersion;
+		global::Windows.Foundation.Collections.VectorChangedEventHandler<object> _collectionCurrentItemOverrideItemsChanged;
+		readonly WeakVectorChangedProxy _collectionCurrentItemOverrideProxy = new();
 		IList _collectionItemsSource;
 		bool _isRecentering;
+		bool _hasRecenteringViewChanging;
 		double _recenteringHorizontalOffset;
 		double _recenteringVerticalOffset;
 		Point? _failedRecenteringOffset;
@@ -59,7 +62,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
-		~CarouselViewHandler() => _proxy.Unsubscribe();
+		~CarouselViewHandler()
+		{
+			_proxy.Unsubscribe();
+			_collectionCurrentItemOverrideProxy.Unsubscribe();
+		}
 
 		protected override IItemsLayout Layout { get; }
 
@@ -121,6 +128,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void ResetRecenteringState()
 		{
 			_isRecentering = false;
+			_hasRecenteringViewChanging = false;
 			_recenteringHorizontalOffset = 0;
 			_recenteringVerticalOffset = 0;
 			_failedRecenteringOffset = null;
@@ -693,17 +701,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var position = e.CenterItemIndex;
+			// Suppress intermediate scroll events during a programmatic animated scroll.
+			if (_gotoPosition != -1)
+			{
+				return;
+			}
+
 			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				position = ItemsView.Position;
 				_isCollectionChanged = false;
 				_isCollectionChangeScrollPending = true;
-			}
-
-			// Suppress intermediate scroll events during a programmatic animated scroll.
-			if (_gotoPosition != -1)
-			{
-				return;
 			}
 
 			// Centered mandatory layouts are reconciled geometrically after the native scroll settles.
@@ -758,9 +766,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_centerRequestVersion++;
 			if (_isRecentering)
-				return;
+			{
+				if (_hasRecenteringViewChanging)
+					return;
 
-			_recenteringAttemptCount = 0;
+				var nextView = new Point(e.NextView.HorizontalOffset, e.NextView.VerticalOffset);
+				var recenteringTarget = new Point(_recenteringHorizontalOffset, _recenteringVerticalOffset);
+				if (AreClose(nextView, recenteringTarget))
+				{
+					_hasRecenteringViewChanging = true;
+					return;
+				}
+
+				// A newer native input supersedes a recenter request that produced no matching event.
+				_isRecentering = false;
+				_hasRecenteringViewChanging = false;
+				_recenteringHorizontalOffset = 0;
+				_recenteringVerticalOffset = 0;
+			}
+			else
+			{
+				_recenteringAttemptCount = 0;
+			}
 			ItemsView.SetIsDragging(true);
 			ItemsView.IsScrolling = true;
 		}
@@ -789,6 +816,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_isRecentering)
 			{
 				_isRecentering = false;
+				_hasRecenteringViewChanging = false;
 				var currentOffset = new Point(_scrollViewer.HorizontalOffset, _scrollViewer.VerticalOffset);
 				var recenteringTarget = new Point(_recenteringHorizontalOffset, _recenteringVerticalOffset);
 				if (AreClose(currentOffset, recenteringTarget))
@@ -883,6 +911,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_recenteringAttemptCount++;
 				_isRecentering = true;
+				_hasRecenteringViewChanging = false;
 				_recenteringHorizontalOffset = horizontalOffset;
 				_recenteringVerticalOffset = verticalOffset;
 				if (!_scrollViewer.ChangeView(horizontalOffset, verticalOffset, null, true))
@@ -941,15 +970,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else
 					candidateVerticalOffset = position.Y - ((_scrollViewer.ViewportHeight - container.ActualHeight) / 2);
 
+				candidateHorizontalOffset = Math.Clamp(candidateHorizontalOffset, 0, _scrollViewer.ScrollableWidth);
+				candidateVerticalOffset = Math.Clamp(candidateVerticalOffset, 0, _scrollViewer.ScrollableHeight);
 				var candidateDistance = Math.Abs(currentHorizontalOffset - candidateHorizontalOffset)
 					+ Math.Abs(currentVerticalOffset - candidateVerticalOffset);
 				if (TrySelectCandidate(candidateDistance, ref closestDistance, _isScrollingForward))
 				{
 					closestVisibleIndex = index;
-					horizontalOffset = Math.Clamp(candidateHorizontalOffset, 0, _scrollViewer.ScrollableWidth);
-					verticalOffset = Math.Clamp(candidateVerticalOffset, 0, _scrollViewer.ScrollableHeight);
-					distance = Math.Abs(currentHorizontalOffset - horizontalOffset)
-						+ Math.Abs(currentVerticalOffset - verticalOffset);
+					horizontalOffset = candidateHorizontalOffset;
+					verticalOffset = candidateVerticalOffset;
+					distance = candidateDistance;
 				}
 			}
 
@@ -1123,7 +1153,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				StopWaitingForCollectionCurrentItemOverride();
 				_collectionCurrentItemOverrideItems = nativeItems;
 				if (_collectionCurrentItemOverrideItems is not null)
-					_collectionCurrentItemOverrideItems.VectorChanged += OnCollectionCurrentItemOverrideItemsChanged;
+				{
+					_collectionCurrentItemOverrideItemsChanged ??= OnCollectionCurrentItemOverrideItemsChanged;
+					_collectionCurrentItemOverrideProxy.Subscribe(
+						_collectionCurrentItemOverrideItems,
+						_collectionCurrentItemOverrideItemsChanged);
+				}
 			}
 
 			var queueVersion = ++_collectionCurrentItemOverrideQueueVersion;
@@ -1209,7 +1244,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (_collectionCurrentItemOverrideItems is not null)
 			{
-				_collectionCurrentItemOverrideItems.VectorChanged -= OnCollectionCurrentItemOverrideItemsChanged;
+				_collectionCurrentItemOverrideProxy.Unsubscribe();
 				_collectionCurrentItemOverrideItems = null;
 			}
 		}
@@ -1280,6 +1315,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var style = new WStyle(typeof(ListViewItem));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
 			return style;
+		}
+
+		sealed class WeakVectorChangedProxy : WeakEventProxy<
+			global::Windows.Foundation.Collections.IObservableVector<object>,
+			global::Windows.Foundation.Collections.VectorChangedEventHandler<object>>
+		{
+			void OnVectorChanged(
+				global::Windows.Foundation.Collections.IObservableVector<object> sender,
+				global::Windows.Foundation.Collections.IVectorChangedEventArgs args)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, args);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(
+				global::Windows.Foundation.Collections.IObservableVector<object> source,
+				global::Windows.Foundation.Collections.VectorChangedEventHandler<object> handler)
+			{
+				if (TryGetSource(out var previousSource))
+					previousSource.VectorChanged -= OnVectorChanged;
+
+				source.VectorChanged += OnVectorChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+					source.VectorChanged -= OnVectorChanged;
+
+				base.Unsubscribe();
+			}
 		}
 	}
 }
