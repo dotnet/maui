@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var appearance = WindowExtensions.GetStatusBarAppearance(
 					themedContext,
-					isLightTheme: !isDarkTheme,
+					isLightTheme: isDarkTheme,
 					isMaterial3: true);
 
 				Assert.Equal(expectedLightAppearance, appearance);
