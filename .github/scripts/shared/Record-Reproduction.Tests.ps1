@@ -23,6 +23,7 @@ BeforeAll {
                 HasVideo        = $true
                 HasAudio        = $false
                 Decodable       = $true
+                DecodedFrames       = 48
                 DurationSeconds = 3.25
                 Width           = 1280
                 Height          = 720
@@ -524,7 +525,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
 Describe 'Record-Reproduction media validation' {
     It 'rejects media without a video stream' {
         $media = [pscustomobject]@{
-            HasVideo = $false; HasAudio = $false; Decodable = $true
+            HasVideo = $false; HasAudio = $false; Decodable = $true; DecodedFrames = 48
             DurationSeconds = 3; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -539,7 +540,7 @@ Describe 'Record-Reproduction media validation' {
 
     It 'rejects undecodable media' {
         $media = [pscustomobject]@{
-            HasVideo = $true; HasAudio = $false; Decodable = $false
+            HasVideo = $true; HasAudio = $false; Decodable = $false; DecodedFrames = 48
             DurationSeconds = 3; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -568,7 +569,7 @@ Describe 'Record-Reproduction media validation' {
 
     It 'rejects media whose duration exceeds the configured bound' {
         $media = [pscustomobject]@{
-            HasVideo = $true; HasAudio = $false; Decodable = $true
+            HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
             DurationSeconds = 10.01; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -582,9 +583,41 @@ Describe 'Record-Reproduction media validation' {
         } | Should -Throw '*duration exceeds the 10-second limit*'
     }
 
+    It 'refuses a recording that decoded no frames' -ForEach @(
+        @{ Frames = 0 }
+        @{ Frames = 1 }
+    ) {
+        # Every other property here is valid, and all of them come from the
+        # container header, which the encoder writes whether or not a frame
+        # ever reached it. Without the decoded count a recorder that failed
+        # silently is published as twelve seconds of evidence.
+        $media = [pscustomobject]@{
+            HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = $Frames
+            DurationSeconds = 12.0; Width = 1280; Height = 720; FrameRate = 15
+        }
+        $harness = New-RecordingHarness -MediaInfo $media
+
+        {
+            Invoke-TestRecording `
+                -Harness $harness `
+                -Platform catalyst `
+                -EvidenceDir (Join-Path $TestDrive "frames-$Frames")
+        } | Should -Throw '*carries no evidence of what happened on the device*'
+    }
+
+    It 'counts frames by decoding rather than reading the header' {
+        # -count_frames is what makes nb_read_frames a decoded count. Without
+        # it ffprobe reports the header's frame count, which is exactly the
+        # number this check may not trust.
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Record-Reproduction.ps1') -Raw
+        $source | Should -Match "'-count_frames'"
+        $source | Should -Match "nb_read_frames"
+    }
+
     It 'rejects media that is not longer than one second' {
         $media = [pscustomobject]@{
-            HasVideo = $true; HasAudio = $false; Decodable = $true
+            HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
             DurationSeconds = 1; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -601,7 +634,7 @@ Describe 'Record-Reproduction media validation' {
         @{
             Name = 'audio'
             Media = [pscustomobject]@{
-                HasVideo = $true; HasAudio = $true; Decodable = $true
+                HasVideo = $true; HasAudio = $true; Decodable = $true; DecodedFrames = 48
                 DurationSeconds = 3; Width = 1280; Height = 720; FrameRate = 15
             }
             Message = '*audio stream*'
@@ -609,7 +642,7 @@ Describe 'Record-Reproduction media validation' {
         @{
             Name = 'dimensions'
             Media = [pscustomobject]@{
-                HasVideo = $true; HasAudio = $false; Decodable = $true
+                HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
                 DurationSeconds = 3; Width = 1920; Height = 1080; FrameRate = 15
             }
             Message = '*long-edge limit*'
@@ -618,7 +651,7 @@ Describe 'Record-Reproduction media validation' {
             # A tall portrait capture must be accepted at the same long edge.
             Name = 'portrait long edge'
             Media = [pscustomobject]@{
-                HasVideo = $true; HasAudio = $false; Decodable = $true
+                HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
                 DurationSeconds = 3; Width = 720; Height = 1281; FrameRate = 15
             }
             Message = '*long-edge limit*'
@@ -737,6 +770,9 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $manifest.durationSeconds | Should -Be 3.25
         $manifest.dimensions.width | Should -Be 1280
         $manifest.dimensions.height | Should -Be 720
+        # The count a reviewer needs in order to tell a real recording from a
+        # header that merely claims one.
+        $manifest.decodedFrames | Should -Be 48
         $manifest.sha256 | Should -BeExactly $expectedHash
         $manifest.files.video | Should -BeExactly 'repro.mp4'
         $manifest.files.thumbnail | Should -BeExactly 'thumbnail.png'
@@ -796,6 +832,7 @@ Describe 'Record-Reproduction safe inputs and evidence' {
             HasVideo        = $true
             HasAudio        = $false
             Decodable       = $true
+            DecodedFrames       = 48
             DurationSeconds = 24.0
             Width           = 1280
             Height          = 720

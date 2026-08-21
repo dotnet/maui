@@ -938,12 +938,18 @@ function Get-DefaultMediaProbe {
         -ArgumentList @(
             '-v', 'error',
             '-protocol_whitelist', 'file,pipe',
+            # Counting frames decodes the stream, which is the only way to learn
+            # how many frames are really there. A container records a duration
+            # in its header whatever the encoder managed to write, so a recorder
+            # that produced no frames at all still probes as a valid twelve
+            # second video and passes every dimension and duration check.
+            '-count_frames',
             '-show_format',
             '-show_streams',
             '-of', 'json',
             $Path
         ) `
-        -TimeoutSeconds 30 `
+        -TimeoutSeconds ($MaxDurationSeconds + 60) `
         -Purpose 'Probe recorded MP4'
     try {
         $probeJson = [string](Get-ObjectPropertyValue $probeResult 'StdOut' '')
@@ -988,6 +994,8 @@ function Get-DefaultMediaProbe {
         HasVideo       = $null -ne $video
         HasAudio       = $audioStreams.Count -gt 0
         Decodable      = $true
+        DecodedFrames  = [long](ConvertTo-PositiveDouble (
+                Get-ObjectPropertyValue $video 'nb_read_frames' 0))
         DurationSeconds = $duration
         Width          = [int](Get-ObjectPropertyValue $video 'width' 0)
         Height         = [int](Get-ObjectPropertyValue $video 'height' 0)
@@ -1017,6 +1025,8 @@ function Get-ValidatedMediaInfo {
     $hasVideo = [bool](Get-ObjectPropertyValue $probe 'HasVideo' $false)
     $hasAudio = [bool](Get-ObjectPropertyValue $probe 'HasAudio' $false)
     $decodable = [bool](Get-ObjectPropertyValue $probe 'Decodable' $false)
+    $decodedFrames = [long](ConvertTo-PositiveDouble (
+            Get-ObjectPropertyValue $probe 'DecodedFrames' 0))
     $duration = ConvertTo-PositiveDouble (Get-ObjectPropertyValue $probe 'DurationSeconds')
     $width = [int](Get-ObjectPropertyValue $probe 'Width' 0)
     $height = [int](Get-ObjectPropertyValue $probe 'Height' 0)
@@ -1030,6 +1040,14 @@ function Get-ValidatedMediaInfo {
     }
     if (-not $decodable) {
         throw 'Recorded MP4 is not decodable.'
+    }
+    # A frame that decoded is the only proof the recorder captured anything.
+    # Duration, dimensions and frame rate all come from the container header,
+    # which the encoder writes whether or not a single frame reached it, so a
+    # recording that failed silently satisfies every other check here.
+    if ($decodedFrames -lt 2) {
+        throw ("Recorded MP4 decoded $decodedFrames frames, so it carries no " +
+            'evidence of what happened on the device.')
     }
     if ($duration -le 1.0) {
         throw "Recorded MP4 duration must be greater than one second (actual: $duration)."
@@ -1055,6 +1073,7 @@ function Get-ValidatedMediaInfo {
         Width           = $width
         Height          = $height
         FrameRate       = $frameRate
+        DecodedFrames   = $decodedFrames
     }
 }
 
@@ -1703,6 +1722,7 @@ try {
             height = $mediaInfo.Height
         }
         sha256            = $hash
+        decodedFrames     = [long]$mediaInfo.DecodedFrames
         videoBytes        = [long]$videoItem.Length
         files             = [ordered]@{
             video     = [System.IO.Path]::GetFileName($videoPath)

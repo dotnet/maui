@@ -97,6 +97,41 @@ function Get-ReplicationControlOutcome {
     }
 }
 
+function Get-ReplicationFailureStatus {
+    <#
+        .SYNOPSIS
+        Names, in one fixed phrase, what a draft is still missing.
+
+        .DESCRIPTION
+        A draft that is not certified has to say which gate stopped it, because
+        "not certified" reads to a reviewer as "probably fine, just unlucky".
+        The phrase is derived from the same evidence the grade is, in a fixed
+        order, so the first unmet gate is the one reported and two runs that
+        failed the same way always report the same phrase.
+    #>
+    param(
+        [bool]$RuntimeAvailable,
+        [int]$BaselineRuns,
+        [bool]$ExactlyOneTestExecuted,
+        [bool]$BaselineSatisfied,
+        [bool]$StableFailureMessage,
+        [bool]$ControlArmFailed,
+        [bool]$NegativeControlAttempted
+    )
+
+    if (-not $RuntimeAvailable) { return 'RUNTIME UNAVAILABLE' }
+    # The runtime was there and still nothing ran, so the candidate never
+    # became a test that could be executed.
+    if ($BaselineRuns -le 0) { return 'SOURCE CHANGES REQUIRED' }
+    if (-not $ExactlyOneTestExecuted) { return 'ZERO TESTS SELECTED' }
+    if (-not $BaselineSatisfied -or -not $StableFailureMessage) {
+        return 'WRONG ASSERTION REACHED'
+    }
+    if ($ControlArmFailed) { return 'CAUSAL CONTROL FAILED' }
+    if (-not $NegativeControlAttempted) { return 'EVIDENCE INCOMPLETE' }
+    return 'CERTIFIED'
+}
+
 function Get-ReplicationCertification {
     <#
         .SYNOPSIS
@@ -156,6 +191,10 @@ function Get-ReplicationCertification {
             Publish            = $true
             ClaimsReproduction = $false
             Reasons            = @('The platform runtime was unavailable, so no test was executed.')
+            Status             = (Get-ReplicationFailureStatus -RuntimeAvailable $false `
+                    -BaselineRuns 0 -ExactlyOneTestExecuted $false -BaselineSatisfied $false `
+                    -StableFailureMessage $false -ControlArmFailed $false `
+                    -NegativeControlAttempted $false)
             Controls           = @{}
         }
     }
@@ -207,6 +246,14 @@ function Get-ReplicationCertification {
             Publish            = $false
             ClaimsReproduction = $false
             Reasons            = @($reasons)
+            Status             = (Get-ReplicationFailureStatus `
+                    -RuntimeAvailable $runtimeAvailable `
+                    -BaselineRuns $baseline.Requested `
+                    -ExactlyOneTestExecuted $exactlyOne `
+                    -BaselineSatisfied $baseline.Satisfied `
+                    -StableFailureMessage $stableMessage `
+                    -ControlArmFailed $false `
+                    -NegativeControlAttempted $negative.Attempted)
             Controls           = $controls
         }
     }
@@ -230,6 +277,14 @@ function Get-ReplicationCertification {
             Publish            = $true
             ClaimsReproduction = $true
             Reasons            = @($reasons)
+            Status             = (Get-ReplicationFailureStatus `
+                    -RuntimeAvailable $runtimeAvailable `
+                    -BaselineRuns $baseline.Requested `
+                    -ExactlyOneTestExecuted $exactlyOne `
+                    -BaselineSatisfied $baseline.Satisfied `
+                    -StableFailureMessage $stableMessage `
+                    -ControlArmFailed $true `
+                    -NegativeControlAttempted $true)
             Controls           = $controls
         }
     }
@@ -240,6 +295,14 @@ function Get-ReplicationCertification {
             Publish            = $true
             ClaimsReproduction = $true
             Reasons            = @('No negative control was run, so the failure has not been tied to the reported trigger.')
+            Status             = (Get-ReplicationFailureStatus `
+                    -RuntimeAvailable $runtimeAvailable `
+                    -BaselineRuns $baseline.Requested `
+                    -ExactlyOneTestExecuted $exactlyOne `
+                    -BaselineSatisfied $baseline.Satisfied `
+                    -StableFailureMessage $stableMessage `
+                    -ControlArmFailed $false `
+                    -NegativeControlAttempted $false)
             Controls           = $controls
         }
     }
@@ -249,6 +312,14 @@ function Get-ReplicationCertification {
         Publish            = $true
         ClaimsReproduction = $true
         Reasons            = @()
+        Status             = (Get-ReplicationFailureStatus `
+                -RuntimeAvailable $runtimeAvailable `
+                -BaselineRuns $baseline.Requested `
+                -ExactlyOneTestExecuted $exactlyOne `
+                -BaselineSatisfied $baseline.Satisfied `
+                -StableFailureMessage $stableMessage `
+                -ControlArmFailed $false `
+                -NegativeControlAttempted $true)
         Controls           = $controls
     }
 }
@@ -272,6 +343,18 @@ function Get-ReplicationCertificationSummary {
     $level = [string]$Certification.Level
     $lines = New-Object 'System.Collections.Generic.List[string]'
     $lines.Add("**Evidence level: ``$level``**")
+    # A draft that is not certified has to name the gate that stopped it, in
+    # the same fixed phrase every time, so a reviewer never has to infer from
+    # prose whether the run fell short of proof or merely of polish.
+    $status = ''
+    if ($Certification -is [System.Collections.IDictionary]) {
+        if ($Certification.Contains('Status')) { $status = [string]$Certification['Status'] }
+    } elseif ($Certification.PSObject.Properties['Status']) {
+        $status = [string]$Certification.PSObject.Properties['Status'].Value
+    }
+    if (-not [string]::IsNullOrWhiteSpace($status) -and $status -ne 'CERTIFIED') {
+        $lines.Add("**Status: ``$status``**")
+    }
     $lines.Add('')
 
     $descriptions = @{

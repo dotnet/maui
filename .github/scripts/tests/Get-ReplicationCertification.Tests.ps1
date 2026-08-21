@@ -270,3 +270,89 @@ Describe 'Get-ReplicationCertificationSummary' {
         $summary | Should -Match 'not a reproduction'
     }
 }
+
+Describe 'Get-ReplicationCertification failure status' {
+    It 'names the unmet gate rather than leaving a reviewer to infer it' {
+        $cases = @(
+            @{ Status = 'RUNTIME UNAVAILABLE'     ; Evidence = @{ runtimeAvailable = $false } },
+            @{ Status = 'SOURCE CHANGES REQUIRED' ; Evidence = @{ baselineRuns = 0; baselineFailures = 0 } },
+            @{ Status = 'ZERO TESTS SELECTED'     ; Evidence = @{ exactlyOneTestExecuted = $false } },
+            @{ Status = 'WRONG ASSERTION REACHED' ; Evidence = @{ stableFailureMessage = $false } },
+            @{ Status = 'EVIDENCE INCOMPLETE'     ; Evidence = @{} },
+            @{ Status = 'CAUSAL CONTROL FAILED'   ; Evidence = @{ negativeControlRuns = 3; negativeControlPasses = 1 } },
+            @{ Status = 'CERTIFIED'               ; Evidence = @{ negativeControlRuns = 3; negativeControlPasses = 3 } }
+        )
+
+        foreach ($case in $cases) {
+            $result = Get-ReplicationCertification -Evidence (New-Evidence $case.Evidence)
+            $result.Status | Should -Be $case.Status
+        }
+    }
+
+    It 'reports the first unmet gate when several are unmet at once' {
+        # A run with no runtime also has no selection and no control, and it
+        # has to report the reason that made all the others unknowable.
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{
+                runtimeAvailable       = $false
+                exactlyOneTestExecuted = $false
+                stableFailureMessage   = $false
+            })
+
+        $result.Status | Should -Be 'RUNTIME UNAVAILABLE'
+    }
+
+    It 'separates a missing control from a failed one' {
+        # Both are uncertified, but one was never asked and the other answered
+        # no, and a reviewer acts differently on each.
+        $missing = Get-ReplicationCertification -Evidence (New-Evidence @{})
+        $failed = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 0
+            })
+
+        $missing.Status | Should -Be 'EVIDENCE INCOMPLETE'
+        $failed.Status | Should -Be 'CAUSAL CONTROL FAILED'
+        $missing.Status | Should -Not -Be $failed.Status
+    }
+
+    It 'prints the status in the pull request body unless the run certified' {
+        $uncertified = Get-ReplicationCertification -Evidence (New-Evidence @{ exactlyOneTestExecuted = $false })
+        $certified = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 3
+                fixControlRuns = 3; fixControlPasses = 3
+                restorationRuns = 3; restorationFailures = 3
+            })
+
+        (Get-ReplicationCertificationSummary -Certification $uncertified) |
+            Should -Match 'Status:.*ZERO TESTS SELECTED'
+        (Get-ReplicationCertificationSummary -Certification $certified) |
+            Should -Not -Match 'Status:'
+    }
+
+    It 'uses only the agreed vocabulary so the phrase can be matched exactly' {
+        $allowed = @(
+            'RUNTIME UNAVAILABLE', 'SOURCE CHANGES REQUIRED', 'ZERO TESTS SELECTED',
+            'WRONG ASSERTION REACHED', 'CAUSAL CONTROL FAILED', 'EVIDENCE INCOMPLETE',
+            'CERTIFIED')
+
+        foreach ($runtime in @($true, $false)) {
+            foreach ($runs in @(0, 3)) {
+                foreach ($exact in @($true, $false)) {
+                    foreach ($stable in @($true, $false)) {
+                        foreach ($passes in @(0, 1, 3)) {
+                            $result = Get-ReplicationCertification -Evidence (New-Evidence @{
+                                    runtimeAvailable       = $runtime
+                                    baselineRuns           = $runs
+                                    baselineFailures       = $runs
+                                    exactlyOneTestExecuted = $exact
+                                    stableFailureMessage   = $stable
+                                    negativeControlRuns    = $passes
+                                    negativeControlPasses  = $passes
+                                })
+                            $allowed | Should -Contain $result.Status
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
