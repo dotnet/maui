@@ -43,6 +43,12 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 			&& RoundToPixel(Bottom, scale) == RoundToPixel(other.Bottom, scale);
 	}
 
+	internal static bool IsNonZeroAtPixelLevel(double value)
+	{
+		var scale = (double)UIScreen.MainScreen.Scale;
+		return RoundToPixel(value, scale) != 0;
+	}
+
 	static double RoundToPixel(double value, double scale)
 		=> Math.Round(value * scale, MidpointRounding.AwayFromZero);
 }
@@ -100,7 +106,7 @@ internal static class SafeAreaInsetsExtensions
 			{
 				if (!blockedEdges[edge] &&
 					mv.GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None &&
-					mv.GetSafeAreaComponentForEdge(edge) != 0)
+					SafeAreaPadding.IsNonZeroAtPixelLevel(mv.GetSafeAreaComponentForEdge(edge)))
 				{
 					blockedEdges[edge] = true;
 					resolvedCount++;
