@@ -526,6 +526,7 @@ namespace Microsoft.Maui.DeviceTests
 				items.Add(new object());
 				await DrainDispatcherQueueAsync(scrollViewer);
 				Assert.True(GetPrivateField<bool>(handler, "_isCollectionChanged"));
+				SetPrivateField(handler, "_isPointerPressed", true);
 
 				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
 				var itemWidth = GetItemLength(
@@ -561,6 +562,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, carouselView.Position);
 				Assert.Same(items[0], carouselView.CurrentItem);
 
+				SetPrivateField(handler, "_isPointerPressed", true);
 				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
 				var itemWidth = GetItemLength(
 					GetItemContainer(handler, initialPhysicalPosition),
@@ -572,6 +574,36 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(items[1], carouselView.CurrentItem);
 				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
 				Assert.Equal(0, scrollToRequests);
+			});
+		}
+
+		[Fact]
+		public async Task PointerInputWithoutNativeScrollDoesNotLeaveDraggingState()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				InvokePrivateMethod(handler, "OnScrollViewerPointerPressed", scrollViewer, null);
+				Assert.True(GetPrivateField<bool>(handler, "_isPointerPressed"));
+				Assert.False(carouselView.IsDragging);
+
+				InvokePrivateMethod(handler, "OnScrollViewerPointerReleased", scrollViewer, null);
+				Assert.False(GetPrivateField<bool>(handler, "_isPointerPressed"));
+
+				InvokePrivateMethod(handler, "OnScrollViewerPointerWheelChanged", scrollViewer, null);
+				Assert.True(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
+				Assert.False(carouselView.IsDragging);
+
+				await Task.Delay(100);
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.False(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
+				Assert.False(carouselView.IsDragging);
 			});
 		}
 
@@ -656,6 +688,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(3, carouselView.Position);
 				Assert.Same(overrideItem, carouselView.CurrentItem);
+				await AssertEventually(
+					() => overrideScrollToRequests == 1,
+					timeout: 2000,
+					message: "The deferred current-item override did not request its final centered scroll.");
 				Assert.Equal(1, overrideScrollToRequests);
 				Assert.Equal(ScrollToMode.Position, scrollToRequest.Mode);
 				Assert.Equal(3, scrollToRequest.Index);
@@ -728,6 +764,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				items.RemoveAt(0);
 				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 1);
+				await AssertEventually(
+					() => overrideScrollToRequests == 1,
+					timeout: 2000,
+					message: "The completed current-item override did not request its final centered scroll.");
 				Assert.Equal(1, overrideScrollToRequests);
 
 				handler.SetPositionFromScroll(0);
@@ -780,10 +820,17 @@ namespace Microsoft.Maui.DeviceTests
 
 				items.Add(overrideItem);
 				Assert.Equal(0, overrideScrollToRequests);
+				handler.SetPositionFromScroll(1);
+				Assert.Equal(2, carouselView.Position);
+				Assert.Same(overrideItem, carouselView.CurrentItem);
 				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 2);
 
 				Assert.Equal(2, carouselView.Position);
 				Assert.Same(overrideItem, carouselView.CurrentItem);
+				await AssertEventually(
+					() => overrideScrollToRequests == 1,
+					timeout: 2000,
+					message: "The realized current-item override did not request its final centered scroll.");
 				Assert.Equal(1, overrideScrollToRequests);
 				Assert.Equal(ScrollToMode.Position, scrollToRequest.Mode);
 				Assert.Equal(2, scrollToRequest.Index);
@@ -1172,6 +1219,8 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_isCollectionChanged", true);
 				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
 				SetPrivateField(handler, "_collectionChangeVersion", 1);
+				SetPrivateField(handler, "_isPointerPressed", true);
+				SetPrivateField(handler, "_hasPendingPointerWheelInput", true);
 
 				((IElementHandler)handler).DisconnectHandler();
 
@@ -1196,6 +1245,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChanged"));
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
 				Assert.Equal(2, GetPrivateField<int>(handler, "_collectionChangeVersion"));
+				Assert.False(GetPrivateField<bool>(handler, "_isPointerPressed"));
+				Assert.False(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
 
 				return Task.CompletedTask;
 			});
@@ -1283,13 +1334,34 @@ namespace Microsoft.Maui.DeviceTests
 			var physicalPosition = GetCenteredPhysicalPosition(handler, scrollViewer, logicalPosition);
 			Assert.True(
 				isReady,
-				$"CarouselView did not finish its initial layout and centering. " +
+				$"CarouselView did not finish its layout and centering. " +
 				$"ViewportLength={GetViewportLength(scrollViewer, orientation)}, " +
 				$"ScrollableLength={GetScrollableLength(scrollViewer, orientation)}, " +
 				$"Offset={GetOffset(scrollViewer, orientation)}, " +
-				$"Position={handler.VirtualView.Position}, PhysicalPosition={physicalPosition}.");
+				$"Position={handler.VirtualView.Position}, PhysicalPosition={physicalPosition}, " +
+				$"NativeState={GetNativeLayoutState(handler, scrollViewer, orientation)}.");
 
 			return physicalPosition;
+		}
+
+		static string GetNativeLayoutState(
+			CarouselViewHandler handler,
+			WScrollViewer scrollViewer,
+			ItemsLayoutOrientation orientation)
+		{
+			var itemsPanel = handler.PlatformView.ItemsPanelRoot as Microsoft.UI.Xaml.Controls.ItemsStackPanel;
+			var containers = Enumerable.Range(0, handler.PlatformView.Items.Count)
+				.Select(index =>
+				{
+					if (handler.PlatformView.ContainerFromIndex(index) is not WFrameworkElement container)
+						return $"{index}:unrealized";
+
+					return $"{index}:length={GetItemLength(container, orientation)},center={GetCenteredOffset(handler, scrollViewer, index, orientation)}";
+				});
+
+			return $"Items={handler.PlatformView.Items.Count},Source={handler.VirtualView.ItemsSource.Cast<object>().Count()}," +
+				$"Visible={itemsPanel?.FirstVisibleIndex}-{itemsPanel?.LastVisibleIndex}," +
+				$"Containers=[{string.Join(";", containers)}]";
 		}
 
 		static Task ChangeViewAndWaitForSettleAsync(
