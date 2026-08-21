@@ -601,10 +601,6 @@ function Assert-ValidFingerprint {
         [Parameter(Mandatory = $true)][object]$ScannerConfig
     )
 
-    if ($Fingerprint.Length -gt 512) {
-        throw 'Fingerprint exceeds 512 characters.'
-    }
-
     # Apostrophes in test names carry no identity information and cannot be
     # represented in the publisher-owned HTML marker alphabet. Normalize only
     # the common apostrophe code points, then retain the strict safety gate for
@@ -613,6 +609,10 @@ function Assert-ValidFingerprint {
         Replace("'", '').
         Replace([string][char]0x2018, '').
         Replace([string][char]0x2019, '')
+
+    if ($normalizedFingerprint.Length -gt 512) {
+        throw 'Fingerprint exceeds 512 characters.'
+    }
 
     if ($normalizedFingerprint -cnotmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()\-|]*$') {
         throw "Fingerprint contains unsafe characters."

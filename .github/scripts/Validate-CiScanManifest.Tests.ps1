@@ -535,6 +535,27 @@ Describe 'CI scanner issue payload gate' {
             Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($canonicalFingerprint)) -->$"
     }
 
+    It 'applies the fingerprint length limit after apostrophe canonicalization' {
+        $prefix = 'ci-scan-net11|net11.0|maui-pr|'
+        $suffix = '|assertion failed|windows'
+        $scenario = [string]::new([char]'a', 512 - $prefix.Length - $suffix.Length)
+        $canonicalFingerprint = $prefix + $scenario + $suffix
+        $productionFingerprint = $prefix + "'" + [char]0x2018 + [char]0x2019 + $scenario + $suffix
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $productionFingerprint)
+        )
+
+        $productionFingerprint.Length | Should -BeGreaterThan 512
+        $canonicalFingerprint.Length | Should -Be 512
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.pipelines[0].signatures[0].fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Fingerprint | Should -BeExactly $canonicalFingerprint
+    }
+
     It 'rejects fingerprints that collide after trusted case canonicalization' {
         $productionFingerprint = 'ci-scan|main|maui-pr|runoniOS_MauiReleaseTrimFull|ios-simulator-boot-timeout|ios-simulator-64'
         $canonicalFingerprint = $productionFingerprint.ToLowerInvariant()
