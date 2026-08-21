@@ -22,13 +22,13 @@ public class Issue35826 : _IssuesUITest
 		// This regression only manifests on Android API 36, where the ActivityResultLauncher
 		// ownership rules are enforced strictly enough that using the wrong activity's launcher
 		// causes the result to never be delivered, hanging the task indefinitely.
-		if (App is AppiumApp appiumApp)
+		var appiumApp = App as AppiumApp
+			?? throw new InvalidOperationException("Issue #35826 requires the Appium test driver.");
+		var apiLevel = (long?)appiumApp.Driver.Capabilities.GetCapability("deviceApiLevel")
+			?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
+		if (apiLevel < 36)
 		{
-			var apiLevel = (long?)appiumApp.Driver.Capabilities.GetCapability("deviceApiLevel") ?? 0;
-			if (apiLevel < 36)
-			{
-				Assert.Ignore($"Issue #35826 only manifests on Android API 36+. Current device API: {apiLevel}.");
-			}
+			Assert.Ignore($"Issue #35826 only manifests on Android API 36+. Current device API: {apiLevel}.");
 		}
 
 		// Verify the host page loaded

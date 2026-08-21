@@ -64,7 +64,7 @@ public class Issue35826 : ContentPage
 [Android.App.Activity(Label = "Issue35826 Child Activity", Theme = "@style/Maui.SplashTheme")]
 public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 {
-	Android.Widget.TextView _resultLabel;
+	Android.Widget.TextView _resultLabel = null!;
 
 	protected override void OnCreate(Android.OS.Bundle savedInstanceState)
 	{

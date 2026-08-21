@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
 	{
+		const string MissingComponentActivityMessage =
+			"The current Activity must inherit from AndroidX.Activity.ComponentActivity (for example, Microsoft.Maui.MauiAppCompatActivity) and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.";
+
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
@@ -179,7 +182,7 @@ namespace Microsoft.Maui.Media
 		async Task<FileResult> PickUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
 			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
-				?? throw new InvalidOperationException("The current activity must inherit from AndroidX.Activity.ComponentActivity.");
+				?? throw new InvalidOperationException(MissingComponentActivityMessage);
 
 			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
@@ -213,7 +216,7 @@ namespace Microsoft.Maui.Media
 		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
 			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
-				?? throw new InvalidOperationException("The current activity must inherit from AndroidX.Activity.ComponentActivity.");
+				?? throw new InvalidOperationException(MissingComponentActivityMessage);
 
 			// Android has a limitation that you need to use a different request for single and multiple picks.
 			// If the selection limit is 1, we can use the single pick method,

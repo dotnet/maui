@@ -49,12 +49,6 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	readonly ConditionalWeakTable<ComponentActivity, TaskCompletionSource<TResult>> _pendingRequests = new();
 
 	/// <summary>
-	/// Gets a value indicating whether the request has a launcher registered for the
-	/// currently focused activity.
-	/// </summary>
-	protected bool HasLauncherForCurrentActivity => GetLauncherForCurrentActivity() is not null;
-
-	/// <summary>
 	/// Registers this request to start an activity for a result.
 	/// Each <see cref="ComponentActivity"/> instance receives its own launcher so child
 	/// activities can use MediaPicker independently of the main activity.
@@ -188,14 +182,4 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 	}
 
-	ActivityResultLauncher GetLauncherForCurrentActivity()
-	{
-		if (ActivityStateManager.Default.GetCurrentActivity() is ComponentActivity currentActivity &&
-			_activityLaunchers.TryGetValue(currentActivity, out var launcher))
-		{
-			return launcher;
-		}
-
-		return null;
-	}
 }
