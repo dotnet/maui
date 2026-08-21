@@ -400,6 +400,9 @@ namespace Microsoft.Maui.Platform
 
 			var isTabStopBinding = control.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding;
 			var isTabStopLocalValue = control.ReadLocalValue(Control.IsTabStopProperty);
+			if (isTabStopBinding is not null)
+				control.ClearValue(Control.IsTabStopProperty);
+
 			control.IsTabStop = false;
 			control.IsEnabled = false;
 			control.IsEnabled = true;

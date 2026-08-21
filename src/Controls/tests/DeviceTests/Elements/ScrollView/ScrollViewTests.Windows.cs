@@ -62,8 +62,12 @@ namespace Microsoft.Maui.DeviceTests
 					platformScrollView,
 					Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(platformScrollView.XamlRoot));
 
+				var searchRoot = Assert.IsAssignableFrom<Microsoft.UI.Xaml.UIElement>(
+					platformScrollView.XamlRoot.Content);
 				Assert.True(Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
-					Microsoft.UI.Xaml.Input.FocusNavigationDirection.Next));
+					Microsoft.UI.Xaml.Input.FocusNavigationDirection.Next,
+					new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = searchRoot }));
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 				Assert.True(entry.IsFocused);
 			});
 		}
@@ -140,6 +144,60 @@ namespace Microsoft.Maui.DeviceTests
 				handler.Source.Value = true;
 				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
 				Assert.True(platformScrollView.IsTabStop);
+			});
+		}
+
+		[Fact]
+		public async Task UnfocusPreservesTwoWayTabStopBinding()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, TwoWayBoundTabStopScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var entry = new Entry();
+			var scrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 2000,
+					Children = { entry }
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
+			{
+				var handler = (TwoWayBoundTabStopScrollViewHandler)scrollView.Handler;
+				var platformScrollView = handler.PlatformView;
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				var originalBinding = platformScrollView
+					.GetBindingExpression(WControl.IsTabStopProperty)
+					?.ParentBinding;
+
+				Assert.True(platformScrollView.IsTabStop);
+				Assert.True(handler.Source.Value);
+				Assert.NotNull(originalBinding);
+
+				var entryFocused = false;
+				entry.Focused += (_, _) => entryFocused = true;
+				Microsoft.Maui.Platform.ViewExtensions.Unfocus(platformScrollView, scrollView);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+
+				Assert.True(platformScrollView.IsTabStop);
+				Assert.True(handler.Source.Value);
+				Assert.Same(
+					originalBinding,
+					platformScrollView.GetBindingExpression(WControl.IsTabStopProperty)?.ParentBinding);
+				Assert.False(entryFocused);
+				Assert.False(entry.IsFocused);
+				Assert.NotSame(
+					platformScrollView,
+					Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(platformScrollView.XamlRoot));
 			});
 		}
 
@@ -576,6 +634,23 @@ namespace Microsoft.Maui.DeviceTests
 				scrollViewer.SetBinding(WControl.IsTabStopProperty, new WBinding
 				{
 					Mode = WBindingMode.OneWay,
+					Path = new WPropertyPath(nameof(BooleanSource.Value)),
+					Source = Source
+				});
+				return scrollViewer;
+			}
+		}
+
+		sealed class TwoWayBoundTabStopScrollViewHandler : ScrollViewHandler
+		{
+			public BooleanSource Source { get; } = new() { Value = true };
+
+			protected override WScrollViewer CreatePlatformView()
+			{
+				var scrollViewer = new WScrollViewer();
+				scrollViewer.SetBinding(WControl.IsTabStopProperty, new WBinding
+				{
+					Mode = WBindingMode.TwoWay,
 					Path = new WPropertyPath(nameof(BooleanSource.Value)),
 					Source = Source
 				});
