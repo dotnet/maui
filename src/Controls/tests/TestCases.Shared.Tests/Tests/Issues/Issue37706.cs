@@ -21,7 +21,10 @@ public class Issue37706 : _IssuesUITest
 
 		App.Back();
 
-		App.WaitForTextToBePresentInElement("BackButtonPressedStatus", "OnBackButtonPressed called 1 time");
+		Assert.That(
+			App.WaitForTextToBePresentInElement("BackButtonPressedStatus", "OnBackButtonPressed called 1 time"),
+			Is.True,
+			"OnBackButtonPressed should be called exactly once.");
 		App.WaitForElement("RootPageLabel");
 	}
 }
