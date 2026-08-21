@@ -3188,6 +3188,7 @@ PS-STEP-FAILED: step 3 did not find its target
             'Assert-ReplicationConditionalCompilationBalance',
             'Assert-ReplicationLeakTestMethodology',
             'Assert-ReplicationGestureTravel',
+            'Assert-ReplicationProbeGeometryIsMeasured',
             'Assert-ReplicationHandlerRegistrationIsNotTautological',
             'Assert-ReplicationWaitResultIsUsed',
             'Assert-ReplicationTestPlatformScope',
@@ -4370,6 +4371,66 @@ static void DragUpTwiceWhileHeld(AppiumApp app)
         {
             Assert-ReplicationGestureTravel -Content $source -Path 'Issue1.cs'
         } | Should -Not -Throw
+    }
+}
+
+Describe 'Assert-ReplicationProbeGeometryIsMeasured' {
+    It 'refuses the cross-axis probe a reviewer disqualified on PR 265' {
+        # Verbatim from the committed HostApp source. Three exact-one runs
+        # failed red against this probe and the negative control passed, yet
+        # the oracle decides nothing: X=288 lies outside the correctly
+        # start-aligned rotated Border as well, so a real fix can leave it
+        # red and the reported misplacement can make it green.
+        $source = @'
+    var expectedX = border.Height - border.Padding.Left;
+    var expectedY = modalPage.Height / 2;
+'@
+        {
+            Assert-ReplicationProbeGeometryIsMeasured -Content $source -Path 'Issue33530.cs'
+        } | Should -Throw -ExpectedMessage '*computes the probe coordinate*'
+    }
+
+    It 'accepts a probe read from the rect the platform reported' {
+        # This is the correction the reviewer asked for: derive the point from
+        # measured bounds rather than from requested layout values.
+        $source = @'
+    var rect = border.GetRect();
+    var expectedX = rect.X + (rect.Width / 2);
+    var expectedY = rect.Y + (rect.Height / 2);
+'@
+        {
+            Assert-ReplicationProbeGeometryIsMeasured -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'leaves same-axis layout arithmetic alone' {
+        # A Y taken from a Height is ordinary layout arithmetic. Only a
+        # coordinate derived across axes is the rotation guess being refused.
+        $source = @'
+    var expectedY = container.Height - container.Padding.Bottom;
+    var expectedX = container.Width / 2;
+'@
+        {
+            Assert-ReplicationProbeGeometryIsMeasured -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'accepts every published reproduction except the disqualified one' {
+        # Measured over the ten published pull requests before the guard was
+        # written: cross-axis derivation occurred once, in the one pull request
+        # a human reviewer independently rejected.
+        $accepted = @'
+    var rect = label.GetRect();
+    var centerX = rect.X + (rect.Width / 2);
+'@
+        {
+            Assert-ReplicationProbeGeometryIsMeasured -Content $accepted -Path 'Issue1.cs'
+        } | Should -Not -Throw
+
+        $rejected = 'var probeX = view.Height - view.Padding.Left;'
+        {
+            Assert-ReplicationProbeGeometryIsMeasured -Content $rejected -Path 'Issue2.cs'
+        } | Should -Throw
     }
 }
 

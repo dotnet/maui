@@ -2618,6 +2618,9 @@ function Assert-GeneratedTestContent {
                 Assert-ReplicationGestureTravel `
                     -Content $content `
                     -Path $file
+                Assert-ReplicationProbeGeometryIsMeasured `
+                    -Content $content `
+                    -Path $file
                 Assert-ReplicationGestureIsSynchronized `
                     -Content $content `
                     -Path $file

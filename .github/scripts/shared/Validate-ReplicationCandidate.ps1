@@ -1580,6 +1580,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationGestureTravel `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationProbeGeometryIsMeasured `
+            -Content $normalized `
+            -Path $Path
         Assert-ReplicationGestureIsSynchronized `
             -Content $normalized `
             -Path $Path

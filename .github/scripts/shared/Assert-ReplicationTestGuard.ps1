@@ -642,6 +642,72 @@ function Assert-ReplicationGestureTravel {
     }
 }
 
+function Assert-ReplicationProbeGeometryIsMeasured {
+    <#
+    .SYNOPSIS
+        Refuses a probe point that is computed across axes from requested layout
+        values instead of read from the element's measured bounds.
+
+    .DESCRIPTION
+        PR 265 committed 'var expectedX = border.Height - border.Padding.Left'
+        to probe an initially rotated Border, and three exact-one runs failed
+        red against it. A reviewer then showed the oracle decides nothing: for
+        a correctly start-aligned 170x300 rotated visual the horizontal bounds
+        are roughly -65..235 DIP, so the committed X=288 probe lands outside a
+        *correct* Border as well. A real product fix can leave the probe
+        reporting MISSING, and the reported misplacement can drag the Border
+        across X=288 and report a false green.
+
+        Deriving an X from a Height (or a Y from a Width) is the signature of a
+        hand-rolled rotation guess. The transformed extent of a rotated visual
+        is a measured quantity, so it has to come from the rect the platform
+        actually reports. Reading that rect is allowed and is what the other
+        nine measured pull requests already do; only the cross-axis arithmetic
+        that replaces it is refused.
+
+        The negative control cannot catch this. Removing the trigger moves the
+        visual, so the probe flips green and the control passes while the
+        oracle is still keyed to a coordinate that means nothing.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    # Only an assignment that names a coordinate is examined. A width computed
+    # from a height is ordinary layout arithmetic and says nothing about where
+    # the test decides to look.
+    $assignments = [regex]::Matches(
+        $code,
+        '(?m)^[^\r\n]*?\b(?<name>[A-Za-z_][A-Za-z0-9_]*(?<axis>X|Y))\s*=\s*(?<rhs>[^;]+);')
+
+    foreach ($assignment in $assignments) {
+        $rhs = $assignment.Groups['rhs'].Value
+
+        # A coordinate taken from the rect the platform reported is exactly the
+        # measured value this guard is asking for.
+        if ($rhs -match '(?i)\b(GetRect|GetBoundingBox|Bounds|Frame|Location|Size)\b') {
+            continue
+        }
+
+        $axis = $assignment.Groups['axis'].Value
+        $crossAxis = if ($axis -eq 'X') { 'Height' } else { 'Width' }
+        if ($rhs -notmatch ('\.{0}\b' -f $crossAxis)) {
+            continue
+        }
+
+        throw ("Candidate test source '$Path' computes the probe coordinate " +
+            "'$($assignment.Groups['name'].Value)' from '.$crossAxis': $($rhs.Trim()). " +
+            "A $axis derived from a $crossAxis is a hand-rolled guess at where a transformed visual sits, " +
+            'and a probe placed by that guess can miss a correctly laid out element and report a false red, ' +
+            'or be reached by the reported misplacement and report a false green. ' +
+            "Read the element's measured rect and derive the probe from the bounds the platform reports.")
+    }
+}
+
 function Get-ReplicationBalancedBlock {
     <#
     .SYNOPSIS
