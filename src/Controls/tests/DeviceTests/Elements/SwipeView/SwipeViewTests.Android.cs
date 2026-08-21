@@ -288,8 +288,8 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => swipeButton.Height > 0);
 
 				// The button's MeasuredHeight should be LESS than its layout height.
-				// This proves it was measured with AtMost (self-sizing) rather than
-				// Exactly (forced to fill).
+				// In this scenario, that is the expected result of AtMost measurement;
+				// Exactly would always force the measured height to fill the available space.
 				Assert.True(
 					swipeButton.MeasuredHeight < swipeButton.Height,
 					$"SwipeItem button should self-size (MeasuredHeight={swipeButton.MeasuredHeight}) " +
