@@ -1,10 +1,9 @@
-# Pester regression gate for `.github/scripts/**`.
+# Pester regression gate for `.github/scripts/**` and release-critical helpers.
 #
-# Why this exists: the automation under `.github/scripts` ships a large Pester
-# suite (transport gating, safe-output expectation reconciliation, milestone
-# drift, review triggers), but nothing ran it automatically. A regression in
-# that logic could only be caught by a live Actions run of the workflow that
-# consumes it, which is exactly how several production bugs shipped.
+# Why this exists: repository automation ships Pester suites for transport
+# gating, release publishing, safe-output expectation reconciliation, milestone
+# drift, and review triggers. A regression in that logic should be caught before
+# the workflow that consumes it runs in production.
 #
 # Security model:
 #   - `pull_request` (NOT `pull_request_target`): this job EXECUTES PowerShell
@@ -19,6 +18,10 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - 'eng/pipelines/ci-official-release.yml'
+      - 'eng/pipelines/ci-official-release.Tests.ps1'
+      - 'eng/scripts/nuget_release_packages.ps1'
+      - 'eng/scripts/nuget_release_packages.Tests.ps1'
       - '.github/workflows/powershell-script-tests.yml'
       # UI-test pipeline partitioning is guarded by
       # UITestsPipelinePartitions.Tests.ps1, so re-run the suite when the
@@ -36,7 +39,7 @@ permissions:
 
 jobs:
   pester:
-    name: Pester (.github/scripts)
+    name: Pester scripts
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -67,7 +70,11 @@ jobs:
           Import-Module Pester -RequiredVersion 5.9.0
 
           $config = New-PesterConfiguration
-          $config.Run.Path = '.github/scripts'
+          $config.Run.Path = @(
+            '.github/scripts'
+            'eng/pipelines/ci-official-release.Tests.ps1'
+            'eng/scripts/nuget_release_packages.Tests.ps1'
+          )
           $config.Run.PassThru = $true
           $config.Output.Verbosity = 'Detailed'
           $config.TestResult.Enabled = $true
@@ -86,7 +93,7 @@ jobs:
           }
 
           if ($result.TotalCount -lt 1) {
-            throw 'Pester discovered no tests under .github/scripts; the gate would pass vacuously.'
+            throw 'Pester discovered no script tests; the gate would pass vacuously.'
           }
 
       - name: Upload Pester results

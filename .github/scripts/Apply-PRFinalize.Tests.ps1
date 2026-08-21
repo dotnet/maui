@@ -37,7 +37,8 @@ BeforeAll {
         'Test-FinalizeIsNoOp',
         'Get-FinalizeRecommendation',
         'Merge-PreservedTitlePrefix',
-        'Merge-PreservedBodyPreamble'
+        'Merge-PreservedBodyPreamble',
+        'New-ExclusiveTempFile'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -315,5 +316,231 @@ Describe 'Security regressions — AzDO logging-command injection' {
         $tag = "[wi{0}p][iOS] old" -f [char]13
         Merge-PreservedTitlePrefix -CurrentTitle $tag -RecommendedTitle '[iOS] new' |
             Should -Be '[iOS] new'
+    }
+}
+
+Describe 'New-ExclusiveTempFile' {
+    BeforeAll {
+        $script:SandboxDir = Join-Path ([System.IO.Path]::GetTempPath()) "apply-prfinalize-tests-$([System.IO.Path]::GetRandomFileName())"
+        New-Item -ItemType Directory -Path $script:SandboxDir -Force | Out-Null
+        $script:RealNewItem = Get-Command New-Item -CommandType Cmdlet
+        $script:OriginalAgentTemp = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
+    }
+
+    AfterAll {
+        $env:AGENT_TEMPDIRECTORY = $script:OriginalAgentTemp
+        Remove-Item -LiteralPath $script:SandboxDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'creates the file inside AGENT_TEMPDIRECTORY when it is set' {
+        $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        try {
+            Test-Path -LiteralPath $path | Should -BeTrue
+            (Split-Path -Parent $path) | Should -Be $script:SandboxDir
+        } finally {
+            Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'produces a unique path on each call, so the name is not predictable' {
+        $a = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        $b = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        try {
+            $a | Should -Not -Be $b
+        } finally {
+            Remove-Item -LiteralPath $a -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $b -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # These pin the actual finding-#2 behaviour. The earlier version of this test was
+    # vacuous: it never planted a symlink at a path the helper would try, so a
+    # predictable-name Set-Content write-through implementation still passed it. The
+    # -NameGenerator seam forces known candidates so a symlink can be planted precisely.
+    It 'refuses a pre-planted symlink and leaves its target untouched' {
+        $secret = Join-Path $script:SandboxDir 'secret-existing.txt'
+        Set-Content -LiteralPath $secret -Value 'ORIGINAL' -Encoding UTF8
+
+        $planted = Join-Path $script:SandboxDir 'pr-finalize-body-123-forced0.md'
+        New-Item -ItemType SymbolicLink -Path $planted -Target $secret | Out-Null
+
+        # $script: scope is required — a plain $i++ inside the scriptblock would mutate a
+        # local copy, so every attempt would re-request the planted name.
+        $script:ForcedIndex = 0
+        $script:AttemptedPaths = @()
+        Mock New-Item {
+            $script:AttemptedPaths += $Path
+            & $script:RealNewItem -ItemType $ItemType -Path $Path -ErrorAction Stop
+        } -ParameterFilter { $ItemType -eq 'File' }
+
+        $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
+            $n = "forced$($script:ForcedIndex)"; $script:ForcedIndex++; $n
+        }
+        try {
+            # The spy proves New-Item actually attempted the planted path before moving on.
+            # Generator consumption alone is insufficient: an implementation could generate
+            # forced0, skip it without calling New-Item, then successfully create forced1.
+            $script:AttemptedPaths[0] | Should -Be $planted
+            $script:AttemptedPaths[1] | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
+            $script:ForcedIndex | Should -BeGreaterThan 1
+            $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
+
+            $path | Should -Not -Be $planted
+            'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
+            # ...so the symlink target is untouched, and the link is still a link.
+            (Get-Content -Raw -LiteralPath $secret).Trim() | Should -Be 'ORIGINAL'
+            (Get-Item -LiteralPath $planted).LinkType | Should -Be 'SymbolicLink'
+            (Get-Content -Raw -LiteralPath $path).Trim() | Should -Be 'REPLACEMENT BODY'
+        } finally {
+            Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $planted -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'refuses a dangling pre-planted symlink rather than creating its target' {
+        $missingTarget = Join-Path $script:SandboxDir 'never-created.txt'
+        $planted = Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle0.md'
+        New-Item -ItemType SymbolicLink -Path $planted -Target $missingTarget | Out-Null
+
+        $script:DangleIndex = 0
+        $script:AttemptedPaths = @()
+        Mock New-Item {
+            $script:AttemptedPaths += $Path
+            & $script:RealNewItem -ItemType $ItemType -Path $Path -ErrorAction Stop
+        } -ParameterFilter { $ItemType -eq 'File' }
+
+        $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
+            $n = "dangle$($script:DangleIndex)"; $script:DangleIndex++; $n
+        }
+        try {
+            # As above: pins that the planted path was attempted and skipped, not bypassed.
+            $script:AttemptedPaths[0] | Should -Be $planted
+            $script:AttemptedPaths[1] | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
+            $script:DangleIndex | Should -BeGreaterThan 1
+            $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
+
+            $path | Should -Not -Be $planted
+            'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
+            # Writing through a dangling link would have created the target.
+            Test-Path -LiteralPath $missingTarget | Should -BeFalse
+        } finally {
+            Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $planted -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'throws instead of falling back to a predictable path when every candidate is occupied' {
+        $secret = Join-Path $script:SandboxDir 'secret-exhaust.txt'
+        Set-Content -LiteralPath $secret -Value 'ORIGINAL' -Encoding UTF8
+
+        $planted = 0..4 | ForEach-Object {
+            $link = Join-Path $script:SandboxDir "pr-finalize-body-123-exhaust$_.md"
+            New-Item -ItemType SymbolicLink -Path $link -Target $secret | Out-Null
+            $link
+        }
+
+        try {
+            $script:ExhaustIndex = 0
+            { New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
+                $n = "exhaust$($script:ExhaustIndex)"; $script:ExhaustIndex++; $n
+            } } | Should -Throw -ExpectedMessage '*after 5 attempts*'
+            # No fallback path was written, so the symlink target is still intact.
+            (Get-Content -Raw -LiteralPath $secret).Trim() | Should -Be 'ORIGINAL'
+        } finally {
+            $planted | ForEach-Object { Remove-Item -LiteralPath $_ -Force -ErrorAction SilentlyContinue }
+        }
+    }
+
+    It 'tries exactly MaxAttempts candidates before giving up' {
+        $secret = Join-Path $script:SandboxDir 'secret-count.txt'
+        Set-Content -LiteralPath $secret -Value 'ORIGINAL' -Encoding UTF8
+        $planted = 0..4 | ForEach-Object {
+            $link = Join-Path $script:SandboxDir "pr-finalize-body-123-count$_.md"
+            New-Item -ItemType SymbolicLink -Path $link -Target $secret | Out-Null
+            $link
+        }
+
+        try {
+            $script:Calls = 0
+            { New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator { $n = "count$($script:Calls)"; $script:Calls++; $n } } |
+                Should -Throw
+            $script:Calls | Should -Be 5
+        } finally {
+            $planted | ForEach-Object { Remove-Item -LiteralPath $_ -Force -ErrorAction SilentlyContinue }
+        }
+    }
+
+    It 'surfaces a non-collision failure immediately instead of retrying it away' {
+        # A missing base directory can never be resolved by picking another name, so it must
+        # propagate rather than be masked by the generic "after N attempts" message.
+        $saved = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
+        try {
+            $script:Calls = 0
+            # Assert on the exception *type*, not the message: .NET message strings are
+            # localized, so matching "Could not find a part of the path" would fail on a
+            # non-en-US agent. The type is culture-invariant.
+            $thrown = $null
+            try {
+                New-ExclusiveTempFile -Prefix 'missing-dir/nope/body' -NameGenerator { $script:Calls++; 'x' }
+            } catch {
+                $thrown = $_.Exception
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown | Should -BeOfType ([System.IO.DirectoryNotFoundException])
+            $script:Calls | Should -Be 1
+        } finally {
+            $env:AGENT_TEMPDIRECTORY = $saved
+        }
+    }
+
+    It 'ignores AGENT_TEMPDIRECTORY when it points at a file rather than a directory' {
+        $saved = $env:AGENT_TEMPDIRECTORY
+        $asFile = Join-Path $script:SandboxDir 'not-a-directory.txt'
+        Set-Content -LiteralPath $asFile -Value 'x' -Encoding UTF8
+        $env:AGENT_TEMPDIRECTORY = $asFile
+        try {
+            $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+            try {
+                Test-Path -LiteralPath $path | Should -BeTrue
+                (Split-Path -Parent $path) | Should -Not -Be $asFile
+            } finally {
+                Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            }
+        } finally {
+            $env:AGENT_TEMPDIRECTORY = $saved
+        }
+    }
+
+    It 'falls back to the system temp directory when AGENT_TEMPDIRECTORY is unset' {
+        $saved = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = $null
+        try {
+            $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+            try {
+                Test-Path -LiteralPath $path | Should -BeTrue
+            } finally {
+                Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            }
+        } finally {
+            $env:AGENT_TEMPDIRECTORY = $saved
+        }
+    }
+
+    It 'ignores AGENT_TEMPDIRECTORY when it points at a missing directory' {
+        $saved = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = Join-Path $script:SandboxDir 'does-not-exist'
+        try {
+            $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+            try {
+                Test-Path -LiteralPath $path | Should -BeTrue
+            } finally {
+                Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            }
+        } finally {
+            $env:AGENT_TEMPDIRECTORY = $saved
+        }
     }
 }
