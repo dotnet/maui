@@ -5,7 +5,7 @@
     Pester tests for the ambiguous-startup retry decision shared by
     Get-EnvErrorPatterns.ps1 and Invoke-UITestWithRetry.ps1.
 
-    "Timed out waiting for Go To Test button" / "did not recover after crash-recovery
+    "Timed out waiting for Go To Test button to appear" / "did not recover after crash-recovery
     attempts" are emitted BOTH for a broken emulator and for a PR that deterministically
     breaks HostApp startup. They stay retryable so a real infra flake still recovers, but
     a recurrence AFTER the device reboot + fresh rebuild must be reported as a genuine
@@ -90,7 +90,21 @@ Describe 'Get-AmbiguousStartupPatterns' {
     It 'covers both HostApp startup signatures whose producer text is cause-ambiguous' {
         $ambiguous = Get-AmbiguousStartupPatterns
         $ambiguous | Should -Contain 'did not recover after crash-recovery attempts'
-        $ambiguous | Should -Contain 'Timed out waiting for Go To Test button'
+        $ambiguous | Should -Contain 'Timed out waiting for Go To Test button to appear'
+    }
+
+    It 'does not classify a normal page-navigation disappearance timeout as startup failure' {
+        $startupMessage = 'Timed out waiting for Go To Test button to appear'
+        $navigationMessage = 'Timed out waiting for Go To Test button to disappear'
+
+        @(Get-EnvErrorPatterns | Where-Object { $startupMessage -match $_ }).Count |
+            Should -BeGreaterThan 0
+        @(Get-AmbiguousStartupPatterns | Where-Object { $startupMessage -match $_ }).Count |
+            Should -BeGreaterThan 0
+        @(Get-EnvErrorPatterns | Where-Object { $navigationMessage -match $_ }).Count |
+            Should -Be 0
+        @(Get-AmbiguousStartupPatterns | Where-Object { $navigationMessage -match $_ }).Count |
+            Should -Be 0
     }
 
     It 'does not mark unambiguous infrastructure signatures as ambiguous' {
@@ -125,21 +139,21 @@ Describe 'Verified crash/startup retry history' {
 
 Describe 'Ambiguous startup retry decision' {
     It 'allows the first occurrence to retry (one device-recovery attempt)' {
-        Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button' -History @() |
+        Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button to appear' -History @() |
             Should -BeFalse
     }
 
     It 'treats a recurrence after recovery as deterministic (PR-caused), not infrastructure' {
         Test-AmbiguousStartupIsDeterministic `
-            -EnvHit 'Timed out waiting for Go To Test button' `
-            -History @('Timed out waiting for Go To Test button') |
+            -EnvHit 'Timed out waiting for Go To Test button to appear' `
+            -History @('Timed out waiting for Go To Test button to appear') |
             Should -BeTrue
     }
 
     It 'keeps retrying when a DIFFERENT ambiguous signature follows the first one' {
         Test-AmbiguousStartupIsDeterministic `
             -EnvHit 'did not recover after crash-recovery attempts' `
-            -History @('Timed out waiting for Go To Test button') |
+            -History @('Timed out waiting for Go To Test button to appear') |
             Should -BeFalse
     }
 

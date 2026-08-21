@@ -348,6 +348,7 @@ function Invoke-MissedReviewCommandRecovery {
         -NotBefore $NotBefore `
         -Now $Now)
     $recovered = [System.Collections.Generic.List[object]]::new()
+    $failed = [System.Collections.Generic.List[object]]::new()
 
     foreach ($candidate in $candidates) {
         if ($recovered.Count -ge $MaxRecoveries) {
@@ -399,6 +400,11 @@ function Invoke-MissedReviewCommandRecovery {
                 DryRun = [bool]$DryRun
             })
         } catch {
+            $failed.Add([pscustomobject]@{
+                CommentId = $candidate.CommentId
+                PRNumber = $candidate.PRNumber
+                Error = $_.Exception.Message
+            })
             Write-Warning "Skipping recovery candidate comment $($candidate.CommentId) for PR #$($candidate.PRNumber) after an isolated failure: $($_.Exception.Message)"
             continue
         }
@@ -408,6 +414,7 @@ function Invoke-MissedReviewCommandRecovery {
         CommentsScanned = $comments.Count
         Candidates = $candidates.Count
         Recovered = $recovered.ToArray()
+        Failed = $failed.ToArray()
         DryRun = [bool]$DryRun
     }
 }
@@ -433,15 +440,27 @@ $result = Invoke-MissedReviewCommandRecovery `
     -DryRun:$DryRun
 
 $mode = if ($DryRun) { 'dry run' } else { 'apply' }
-Write-Host "Review trigger recovery ($mode): scanned=$($result.CommentsScanned) candidates=$($result.Candidates) recovered=$($result.Recovered.Count)"
+$failedCandidates = @($result.Failed | ForEach-Object {
+    "comment $($_.CommentId) (PR #$($_.PRNumber))"
+})
+$failedSummary = $failedCandidates -join ', '
+Write-Host "Review trigger recovery ($mode): scanned=$($result.CommentsScanned) candidates=$($result.Candidates) recovered=$($result.Recovered.Count) failed=$($result.Failed.Count)"
+if ($result.Failed.Count -gt 0) {
+    Write-Host "::warning title=Review trigger recovery failures::$($result.Failed.Count) candidate(s) failed: $failedSummary"
+}
 
 if ($env:GITHUB_STEP_SUMMARY) {
-    @"
+    $stepSummary = @"
 ## Review trigger recovery
 
 - Mode: $mode
 - Comments scanned: $($result.CommentsScanned)
 - Review command candidates: $($result.Candidates)
 - Commands recovered: $($result.Recovered.Count)
-"@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+- Failed recoveries: $($result.Failed.Count)
+"@
+    if ($result.Failed.Count -gt 0) {
+        $stepSummary += "`n- Failed candidates: $failedSummary"
+    }
+    $stepSummary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
 }

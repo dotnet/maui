@@ -140,6 +140,36 @@ Describe 'Copy-BoundedDiagnosticFileSet' {
         (Get-Item -LiteralPath (Join-Path $script:destinationDir 'appium.log')).Length |
             Should -BeLessOrEqual 512
     }
+
+    It 'retains colliding text diagnostic names from separate attempts' {
+        $firstAttempt = Join-Path $script:sourceDir 'attempt-1'
+        $secondAttempt = Join-Path $script:sourceDir 'attempt-2'
+        New-Item -ItemType Directory -Path $firstAttempt, $secondAttempt -Force | Out-Null
+        'first attempt' |
+            Set-Content -LiteralPath (Join-Path $firstAttempt 'android-device.log') -NoNewline
+        'second attempt' |
+            Set-Content -LiteralPath (Join-Path $secondAttempt 'android-device.log') -NoNewline
+
+        $files = @(
+            Get-Item -LiteralPath (Join-Path $firstAttempt 'android-device.log')
+            Get-Item -LiteralPath (Join-Path $secondAttempt 'android-device.log')
+        )
+        $result = Copy-BoundedDiagnosticFileSet `
+            -Files $files `
+            -DestinationDirectory $script:destinationDir
+
+        $result.CopiedFiles | Should -Be 2
+        $result.CopiedBytes | Should -Be 27
+        $retained = @(Get-ChildItem -LiteralPath $script:destinationDir -Filter 'android-device*.log')
+        $retained.Name | Should -Contain 'android-device.log'
+        $retained.Name | Should -Contain 'android-device-1.log'
+        $retainedContents = @($retained | ForEach-Object {
+            Get-Content -Raw -LiteralPath $_.FullName
+        })
+        $retainedContents.Count | Should -Be 2
+        $retainedContents | Should -Contain 'first attempt'
+        $retainedContents | Should -Contain 'second attempt'
+    }
 }
 
 Describe 'Copy-BoundedRegularFileTree' {

@@ -139,6 +139,27 @@ function Test-PhaseRequiresReviewWorktree {
     return $PhaseName -in @('Gate', 'CopilotReview')
 }
 
+function Resolve-UITestCategoryRefresh {
+    param(
+        [string]$GateCategories,
+        [string]$RefreshedCategories
+    )
+
+    $gate = $GateCategories.Trim()
+    $refreshed = $RefreshedCategories.Trim()
+    if ($refreshed -eq 'NONE') {
+        return 'NONE'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($refreshed) -and $refreshed -ne 'ALL') {
+        return $refreshed
+    }
+    if (-not [string]::IsNullOrWhiteSpace($gate) -and $gate -notin @('ALL', 'NONE')) {
+        return $gate
+    }
+
+    return 'ALL'
+}
+
 function Get-GateReportRetryClass {
     param([string]$ReportContent)
 
@@ -2929,11 +2950,9 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
             # last resort when the gate itself found no specific categories.
             # (Observed on PR #36448: gate detected 'Material3,ViewBaseTests' but the
             # blank AI refresh downgraded it to 'ALL' -> deep stage skipped -> warning.)
-            $refreshedForOutput =
-                if ($refreshedCategories -eq 'NONE') { 'NONE' }
-                elseif (-not [string]::IsNullOrWhiteSpace($refreshedCategories) -and $refreshedCategories -ne 'ALL') { $refreshedCategories }
-                elseif (-not [string]::IsNullOrWhiteSpace($uitestCategories) -and $uitestCategories -notin @('ALL', 'NONE')) { $uitestCategories }
-                else { 'ALL' }
+            $refreshedForOutput = Resolve-UITestCategoryRefresh `
+                -GateCategories $uitestCategories `
+                -RefreshedCategories $refreshedCategories
             # Always emit so RunReview.detectedCategories is authoritative (the stage
             # coalesce prefers RunReview over RunGate); never leave a downgrade in place.
             Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"

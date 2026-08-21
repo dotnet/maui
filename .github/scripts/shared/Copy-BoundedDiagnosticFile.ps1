@@ -196,7 +196,17 @@ function Copy-BoundedDiagnosticFileSet {
         }
 
         $fileLimit = [long][Math]::Min($MaxTextFileBytes, $remainingBytes)
-        $destination = Join-Path $destinationRoot $file.Name
+        $destinationName = $file.Name
+        $destination = Join-Path $destinationRoot $destinationName
+        $collision = 1
+        while (Test-Path -LiteralPath $destination) {
+            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+            $extension = [System.IO.Path]::GetExtension($file.Name)
+            $destinationName = "$baseName-$collision$extension"
+            $destination = Join-Path $destinationRoot $destinationName
+            $collision++
+        }
+
         try {
             $copyResult = Copy-BoundedDiagnosticFile `
                 -Source $file.FullName `
