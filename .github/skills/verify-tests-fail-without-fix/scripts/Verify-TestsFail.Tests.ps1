@@ -1152,6 +1152,33 @@ Describe 'Gate failure precedence' {
             -PrTestBuildError:$false |
             Should -BeFalse
     }
+
+    It 'treats a with-fix-only build error as definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$true `
+            -BaselineBuildError:$false `
+            -PrTestBuildError:$false |
+            Should -BeTrue
+    }
+
+    It 'keeps a build error present in both baseline and with-fix non-definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$true `
+            -BaselineBuildError:$true `
+            -PrTestBuildError:$false |
+            Should -BeFalse
+    }
+
+    It 'treats a PR-test build error as definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$false `
+            -BaselineBuildError:$false `
+            -PrTestBuildError:$true |
+            Should -BeTrue
+    }
 }
 
 Describe 'Invoke-TestRunWithRetry — Windows no-result exits' {
