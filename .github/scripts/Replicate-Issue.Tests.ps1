@@ -4565,6 +4565,226 @@ Describe 'An oracle may not be the state the page started in' {
     }
 }
 
+Describe 'The host page must report an observation, not decide the verdict' {
+    BeforeAll {
+        $script:HostPath = 'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs'
+        $script:TestPath = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs'
+    }
+
+    It 'rejects the branch verdict a reviewer refused on PR 265' {
+        # The page hit-tested a point it had guessed, then wrote down whether
+        # it liked the answer. The test asserted "ALIGNED", so a wrong guess in
+        # the page reads as a passing test and no product fix can turn it green.
+        $page = @'
+    var edge = "MISSING";
+    foreach (var element in elements)
+    {
+        if (element == border)
+        {
+            edge = "ALIGNED";
+            break;
+        }
+    }
+
+    UpdateStatus(border, edge);
+'@
+        $test = 'Assert.That(initial.Edge, Is.EqualTo("ALIGNED"), "start aligned");'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Throw '*selects with the branch*'
+    }
+
+    It 'rejects the conditional verdict a reviewer refused on PR 263' {
+        # The page decided stability from its own counter and published the
+        # word. The test asserted the word, so the oracle can only ever agree
+        # with the page.
+        $page = @'
+    _resetButton.Text = _scrollBarChanges == 0
+        ? "Observed: scrollbar stable"
+        : $"Observed: scrollbar changes={_scrollBarChanges}";
+'@
+        $test = 'Assert.That(observations, Is.All.EqualTo("Observed: scrollbar stable"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Throw '*conditional expression*'
+    }
+
+    It 'accepts a page that reports the measurement and lets the test judge' {
+        # The same scenario written soundly: the page publishes what it
+        # measured and the test does the comparing.
+        $page = @'
+    _resetButton.Text = FormattableString.Invariant($"Observed: changes={_scrollBarChanges}");
+'@
+        $test = 'Assert.That(observation, Is.EqualTo("Observed: changes=0"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'leaves a starting sentinel alone' {
+        # PR 261 asserted "NOT_TAPPED" to prove the callback had not run yet.
+        # Nothing chose that text, so there is no verdict to launder.
+        $page = @'
+    var gestureStatus = new Label
+    {
+        AutomationId = "GestureStatus",
+        Text = "NOT_TAPPED"
+    };
+
+    view.Tapped += (s, e) =>
+        gestureStatus.Text = FormattableString.Invariant($"TAPPED: Width={width:R}");
+'@
+        $test = 'Assert.That(initialStatus, Is.EqualTo("NOT_TAPPED"), "not yet tapped.");'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'leaves a static caption alone' {
+        # PR 264 asserted a band caption only to prove it had the right
+        # element in hand.
+        $page = @'
+    var topBand = new Grid
+    {
+        Children = { new Label { Text = "EDGE-TO-EDGE CONTENT START" } }
+    };
+'@
+        $test = 'Assert.That(bandText.GetText(), Is.EqualTo("EDGE-TO-EDGE CONTENT START"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'does not read a comparison that chose some other text' {
+        # The page branches on a comparison, but the word the test asserts is
+        # written unconditionally afterwards.
+        $page = @'
+    if (_count == 0)
+    {
+        _log.Text = "EMPTY";
+    }
+
+    _status.Text = "READY";
+'@
+        $test = 'Assert.That(status, Is.EqualTo("READY"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'does not read a branch the page has already closed' {
+        $page = @'
+    if (_count == 0)
+    {
+        _log.Text = "EMPTY";
+    }
+
+    void Reset() => _status.Text = "READY";
+'@
+        $test = 'Assert.That(status, Is.EqualTo("READY"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'reads a branch written without braces' {
+        $page = 'if (element == border) edge = "ALIGNED";'
+        $test = 'Assert.That(status, Is.EqualTo("ALIGNED"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Throw '*selects with the branch*'
+    }
+
+    It 'reads the xUnit assertion form too' {
+        $page = @'
+    if (element == border)
+    {
+        edge = "ALIGNED";
+    }
+'@
+        $test = 'Assert.Equal("ALIGNED", status.Text);'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Throw '*selects with the branch*'
+    }
+
+    It 'ignores a verdict the page decides but no test asserts' {
+        $page = @'
+    if (element == border)
+    {
+        edge = "ALIGNED";
+    }
+'@
+        $test = 'Assert.That(status, Is.EqualTo("MEASURED"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'is called where both files are in hand' {
+        # Verdict laundering spans two files: the page decides, the test
+        # repeats. A per-file guard can never see both, so this one has to run
+        # from the cross-file block or it protects nothing.
+        $block = [regex]::Match(
+            $script:Source,
+            'Assert-ReplicationOracleIsNotInitialState -Files \$candidateContents\s*\r?\n\s*' +
+            'Assert-ReplicationVerdictIsNotComputedByTheApp -Files \$candidateContents')
+        $block.Success | Should -BeTrue
+    }
+
+    It 'says nothing when the candidate has no host page' {
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                'src/Core/tests/DeviceTests/Issue1.cs' = 'Assert.Equal("ALIGNED", label.Text);'
+            }
+        } | Should -Not -Throw
+    }
+
+    It 'does not read a decision inside a comment' {
+        $page = @'
+    // if (element == border) { edge = "ALIGNED"; }
+    status.Text = "ALIGNED";
+'@
+        $test = 'Assert.That(status, Is.EqualTo("ALIGNED"));'
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                $script:HostPath = $page
+                $script:TestPath = $test
+            }
+        } | Should -Not -Throw
+    }
+}
+
 Describe 'A geometry oracle must pin a measurement to an expected value' {
     It 'rejects the symmetry oracle a reviewer satisfied with uniformly wrong geometry' {
         # PR 229: the oracle asserted the top and bottom safe-area gaps were

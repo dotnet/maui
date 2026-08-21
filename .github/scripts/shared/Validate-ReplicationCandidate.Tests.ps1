@@ -2679,3 +2679,26 @@ public class Issue1 : ContentPage
             Should -Throw '*removes nothing*'
     }
 }
+
+Describe 'The pre-publish gate refuses a verdict the host page computed' {
+    It 'runs the cross-file verdict guard before any credential is exposed' {
+        # The publisher is the last gate before a draft PR appears, so a guard
+        # the runner applies is worth nothing here unless this gate applies it
+        # too.
+        $source = Get-Content -LiteralPath $script:validatorPath -Raw
+        $source | Should -Match (
+            'Assert-ReplicationOracleIsNotInitialState -Files \$candidateContents\s*\r?\n\s*' +
+            'Assert-ReplicationVerdictIsNotComputedByTheApp -Files \$candidateContents')
+    }
+
+    It 'rejects a candidate whose page decides the word the test asserts' {
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' =
+                    'if (element == border) { edge = "ALIGNED"; }'
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' =
+                    'Assert.That(status, Is.EqualTo("ALIGNED"));'
+            }
+        } | Should -Throw '*selects with the branch*'
+    }
+}

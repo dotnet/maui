@@ -1931,6 +1931,153 @@ function Assert-ReplicationOracleIsNotInitialState {
     }
 }
 
+function Get-ReplicationComparisonSelectedLiteral {
+    <#
+    .SYNOPSIS
+        Reports the decision that picked a string literal, when the host
+        application picked it by comparing values itself.
+
+    .DESCRIPTION
+        Returns a description of the branch that selected the literal at
+        'Index', or $null when nothing nearby chose it. A literal written
+        unconditionally, such as a caption on a label or a starting sentinel,
+        is not selected by anything and returns $null.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Code,
+        [Parameter(Mandatory = $true)][int]$Index
+    )
+
+    $comparison =
+        '(==|!=|<=|>=|(?<![<>=!])[<>](?![<>=])|\.Equals\s*\(|\.Contains\s*\(' +
+        '|\.Any\s*\(|\.All\s*\(|\.SequenceEqual\s*\(|\.StartsWith\s*\(|\.EndsWith\s*\()'
+
+    # A decision that selects a literal sits within the same statement or the
+    # branch immediately around it, so the search stays local on purpose: a
+    # comparison elsewhere in the file did not choose this text.
+    $start = [Math]::Max(0, $Index - 600)
+    $window = $Code.Substring($start, $Index - $start)
+
+    # Conditional expression: cond ? "literal" : other. Exclude ?. ?? and ?[.
+    $ternaries = @([regex]::Matches($window, '\?(?![\.\?\[])'))
+    if ($ternaries.Count -gt 0) {
+        $question = $ternaries[$ternaries.Count - 1].Index
+        $before = $window.Substring(0, $question)
+        $conditionStart = 0
+        foreach ($boundary in [regex]::Matches($before, '[;{}]')) {
+            $conditionStart = $boundary.Index + 1
+        }
+        $condition = $before.Substring($conditionStart)
+        if ($condition -cmatch $comparison) {
+            return "the conditional expression '$(($condition.Trim() -replace '\s+', ' '))'"
+        }
+    }
+
+    # Guarded assignment: if (cond) { target = "literal"; }
+    $ifs = @([regex]::Matches($window, '\bif\s*\('))
+    if ($ifs.Count -eq 0) { return $null }
+
+    $lastIf = $ifs[$ifs.Count - 1]
+    $cursor = $lastIf.Index + $lastIf.Length
+    $depth = 1
+    $condition = ''
+    while ($cursor -lt $window.Length -and $depth -gt 0) {
+        $character = $window[$cursor]
+        if ($character -ceq '(') { $depth++ }
+        elseif ($character -ceq ')') {
+            $depth--
+            if ($depth -eq 0) { break }
+        }
+        $condition += $character
+        $cursor++
+    }
+    if ($condition -cnotmatch $comparison) { return $null }
+
+    # The literal only belongs to that branch while the branch still contains
+    # it: a braced body must still be open, and a braceless body ends at its
+    # first statement.
+    $body = $window.Substring([Math]::Min($cursor + 1, $window.Length))
+    if ($body.TrimStart().StartsWith('{')) {
+        $opened = @([regex]::Matches($body, '\{')).Count
+        $closed = @([regex]::Matches($body, '\}')).Count
+        if ($opened -le $closed) { return $null }
+    }
+    elseif ($body -cmatch ';') { return $null }
+
+    return "the branch 'if ($(($condition.Trim() -replace '\s+', ' ')))'"
+}
+
+function Assert-ReplicationVerdictIsNotComputedByTheApp {
+    <#
+    .SYNOPSIS
+        Rejects an oracle that asserts a word the host application chose by
+        comparing values itself.
+
+    .DESCRIPTION
+        Two reviewed reproductions failed for the same reason: the scene
+        compared the observed state against its own expectation, wrote the
+        answer into a label as a word, and the test asserted that word. One
+        page decided 'edge = element == border ? "ALIGNED" : "MISSING"'; the
+        other decided '_scrollBarChanges == 0 ? "scrollbar stable" : ...'. In
+        both the app is the judge and the test only repeats the judgement, so
+        a wrong expectation in the scene reads as a passing test and the
+        reproduction proves nothing about the product.
+
+        A scene may still report freely. Captions, starting sentinels and
+        interpolated measurements such as $"TAPPED: Width={width}" are all
+        untouched, because none of them is chosen by a comparison. Only the
+        act of deciding is refused, and the fix is to emit the measurement and
+        let the test compare it.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Files
+    )
+
+    $asserted = @{}
+    foreach ($path in $Files.Keys) {
+        $normalized = $path.Replace('\', '/')
+        if ($normalized -cmatch '(?i)TestCases\.HostApp/') { continue }
+        if ($normalized -cnotmatch '(?i)\.cs$') { continue }
+
+        $code = Get-ReplicationCommentFreeText -Text $Files[$path] -Path $path
+        $pattern =
+            '(?:Is\s*\.\s*(?:All\s*\.\s*)?EqualTo\s*\(\s*' +
+            '|(?:Assert|ClassicAssert)\s*\.\s*(?:Equal|AreEqual)\s*\(\s*)' +
+            '"(?<literal>[^"]+)"'
+        foreach ($match in [regex]::Matches($code, $pattern)) {
+            $asserted[$match.Groups['literal'].Value] = $normalized
+        }
+    }
+    if ($asserted.Count -eq 0) { return }
+
+    foreach ($path in $Files.Keys) {
+        $normalized = $path.Replace('\', '/')
+        if ($normalized -cnotmatch '(?i)TestCases\.HostApp/') { continue }
+        if ($normalized -cnotmatch '(?i)\.cs$') { continue }
+
+        $code = Get-ReplicationCommentFreeText -Text $Files[$path] -Path $path
+        foreach ($literal in $asserted.Keys) {
+            $needle = '"' + [regex]::Escape($literal) + '"'
+            foreach ($occurrence in [regex]::Matches($code, $needle)) {
+                $decision = Get-ReplicationComparisonSelectedLiteral `
+                    -Code $code `
+                    -Index $occurrence.Index
+                if (-not $decision) { continue }
+
+                throw ("Candidate test source '$($asserted[$literal])' asserts the text " +
+                    "'$literal', which the host page '$normalized' selects with $decision. " +
+                    'The scene is comparing the observed state against its own expectation and ' +
+                    'writing the answer down, so the test only repeats a verdict the application ' +
+                    'already reached. If that expectation is wrong the test still passes, and a ' +
+                    'product fix cannot turn it green on its own. Report the measured value from ' +
+                    'the page instead and let the test compare it.')
+            }
+        }
+    }
+}
+
 function Get-ReplicationSystemFonts {
     <#
     .SYNOPSIS

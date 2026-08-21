@@ -2699,6 +2699,7 @@ function Assert-GeneratedTestContent {
     # The host page states what the screen shows before the test touches it, so
     # whether an oracle merely restates that can only be decided across files.
     Assert-ReplicationOracleIsNotInitialState -Files $candidateContents
+    Assert-ReplicationVerdictIsNotComputedByTheApp -Files $candidateContents
 
     if (-not $targetTestFound) {
         throw 'Generated files do not contain a test method in the expected test project.'

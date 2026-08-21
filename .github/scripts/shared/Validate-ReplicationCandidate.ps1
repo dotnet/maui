@@ -1698,6 +1698,7 @@ function Assert-ReplicationCandidateSources {
     $candidateContents = @{}
     foreach ($file in $CandidateFiles) { $candidateContents[$file.Path] = $file.Content }
     Assert-ReplicationOracleIsNotInitialState -Files $candidateContents
+    Assert-ReplicationVerdictIsNotComputedByTheApp -Files $candidateContents
 
     if (-not $testAttributeFound) {
         throw 'Candidate files do not add a test method in the expected test project.'
