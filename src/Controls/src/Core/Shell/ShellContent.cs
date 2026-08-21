@@ -31,6 +31,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ContentTemplateProperty =
 			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
 
+		/// <summary>Bindable property for <see cref="QueryString"/>.</summary>
+		public static readonly BindableProperty QueryStringProperty =
+			BindableProperty.Create(nameof(QueryString), typeof(string), typeof(ShellContent), default(string), propertyChanged: OnQueryStringChanged);
+
 		internal static readonly BindableProperty QueryAttributesProperty =
 			BindableProperty.CreateAttached("QueryAttributes", typeof(ShellRouteParameters), typeof(ShellContent), defaultValue: null, propertyChanged: OnQueryAttributesPropertyChanged);
 
@@ -56,6 +60,21 @@ namespace Microsoft.Maui.Controls
 			get => (DataTemplate)GetValue(ContentTemplateProperty);
 			set => SetValue(ContentTemplateProperty, value);
 		}
+
+		/// <summary>
+		/// Gets or sets an encoded query string supplied to this content's page when the content is selected.
+		/// </summary>
+		/// <remarks>
+		/// The leading <c>?</c> is optional. Values from <see cref="QueryParameters"/> take precedence over
+		/// values in this query string, while parameters supplied to Shell navigation take precedence over both.
+		/// </remarks>
+#nullable enable
+		public string? QueryString
+		{
+			get => (string?)GetValue(QueryStringProperty);
+			set => SetValue(QueryStringProperty, value);
+		}
+#nullable disable
 
 		/// <summary>
 		/// Gets the query parameters supplied to this content's page when the content is selected.
@@ -445,6 +464,11 @@ namespace Microsoft.Maui.Controls
 				ApplyQueryAttributesFromParameterChange();
 		}
 
+		static void OnQueryStringChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((ShellContent)bindable).ApplyQueryParametersIfVisible();
+		}
+
 		internal void ApplyQueryAttributesFromSelection()
 		{
 			if (this.FindParentOfType<Shell>()?.NavigationManager.AccumulateNavigatedEvents == true)
@@ -511,9 +535,9 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var parameter in contentQuery)
 			{
-				if (!query.ContainsKey(parameter.Key) || query.IsShellContentQueryParameter(parameter.Key))
+				if (!query.ContainsKey(parameter.Key) || query.IsShellContentParameter(parameter.Key))
 				{
-					query.SetShellContentQueryParameter(parameter.Key, parameter.Value);
+					SetContentQueryParameter(query, parameter.Key, parameter.Value);
 					appliedNames.Add(parameter.Key);
 				}
 			}
@@ -532,7 +556,7 @@ namespace Microsoft.Maui.Controls
 				query.RemoveShellContentQueryParameter(name);
 
 			foreach (var parameter in contentQuery)
-				query.SetShellContentQueryParameter(parameter.Key, parameter.Value);
+				SetContentQueryParameter(query, parameter.Key, parameter.Value);
 
 			hasQueryParameters = contentQuery.Count > 0;
 			UpdateLastAppliedContentParameterNames(contentQuery.Keys);
@@ -554,7 +578,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (previouslyAppliedNames.Contains(parameter.Key) || !query.ContainsKey(parameter.Key))
 				{
-					query.SetShellContentQueryParameter(parameter.Key, parameter.Value);
+					SetContentQueryParameter(query, parameter.Key, parameter.Value);
 					appliedNames.Add(parameter.Key);
 				}
 			}
@@ -564,16 +588,33 @@ namespace Microsoft.Maui.Controls
 			return query;
 		}
 
-		Dictionary<string, object> GetContentQueryParameters()
+		Dictionary<string, ContentQueryParameter> GetContentQueryParameters()
 		{
-			var contentQuery = new Dictionary<string, object>(StringComparer.Ordinal);
+			var contentQuery = new Dictionary<string, ContentQueryParameter>(StringComparer.Ordinal);
+			var queryStringParameters = new ShellRouteParameters();
+			queryStringParameters.SetQueryStringParameters(QueryString);
+
+			foreach (var parameter in queryStringParameters)
+			{
+				if (!string.IsNullOrEmpty(parameter.Key))
+					contentQuery[parameter.Key] = new ContentQueryParameter(parameter.Value, isQueryString: true);
+			}
+
 			foreach (var parameter in QueryParameters)
 			{
 				if (!string.IsNullOrEmpty(parameter?.Name))
-					contentQuery[parameter.Name] = parameter.Value;
+					contentQuery[parameter.Name] = new ContentQueryParameter(parameter.Value, isQueryString: false);
 			}
 
 			return contentQuery;
+		}
+
+		static void SetContentQueryParameter(ShellRouteParameters query, string name, ContentQueryParameter parameter)
+		{
+			if (parameter.IsQueryString)
+				query.SetShellContentQueryStringParameter(name, parameter.Value);
+			else
+				query.SetShellContentQueryParameter(name, parameter.Value);
 		}
 
 		void UpdateLastAppliedContentParameterNames(IEnumerable<string> names)
@@ -587,6 +628,18 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var parameter in _trackedQueryParameters)
 				SetInheritedBindingContext(parameter, BindingContext);
+		}
+
+		readonly struct ContentQueryParameter
+		{
+			public ContentQueryParameter(object value, bool isQueryString)
+			{
+				Value = value;
+				IsQueryString = isQueryString;
+			}
+
+			public object Value { get; }
+			public bool IsQueryString { get; }
 		}
 
 		static void OnQueryAttributesPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -630,9 +683,10 @@ namespace Microsoft.Maui.Controls
 							{
 								if (value != null)
 								{
-									value = query.IsShellContentQueryParameter(attrib.QueryId)
-										? Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture)
-										: global::System.Net.WebUtility.UrlDecode((string)value);
+									if (query.IsShellContentQueryParameter(attrib.QueryId))
+										value = Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture);
+									else if (!query.IsShellContentQueryStringParameter(attrib.QueryId))
+										value = global::System.Net.WebUtility.UrlDecode((string)value);
 								}
 
 								prop.SetValue(content, value);
@@ -648,7 +702,7 @@ namespace Microsoft.Maui.Controls
 								}
 								else
 								{
-									var culture = query.IsShellContentQueryParameter(attrib.QueryId)
+									var culture = query.IsShellContentParameter(attrib.QueryId)
 										? global::System.Globalization.CultureInfo.InvariantCulture
 										: global::System.Globalization.CultureInfo.CurrentCulture;
 									var castValue = Convert.ChangeType(value, targetType, culture);
@@ -662,7 +716,13 @@ namespace Microsoft.Maui.Controls
 						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
 						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-							prop.SetValue(content, null);
+						{
+							object defaultValue = prop.PropertyType.IsValueType &&
+								Nullable.GetUnderlyingType(prop.PropertyType) is null
+									? Activator.CreateInstance(prop.PropertyType)
+									: null;
+							prop.SetValue(content, defaultValue);
+						}
 					}
 				}
 			}

@@ -23,6 +23,7 @@ public partial class Maui3868 : Shell
 
 			shell.ReminderTab.CurrentItem = shell.Today;
 			Assert.Equal("2021-12-14", GetPage(shell.Today).Date);
+			Assert.Equal("xaml", GetPage(shell.Today).ReceivedQuery["source"]);
 
 			shell.ReminderTab.CurrentItem = shell.Tomorrow;
 			Assert.Equal("2021-12-15", GetPage(shell.Tomorrow).Date);
@@ -39,9 +40,11 @@ public partial class Maui3868 : Shell
 public class Maui3868ReminderPage : ContentPage, IQueryAttributable
 {
 	public string Date { get; private set; }
+	public IDictionary<string, object> ReceivedQuery { get; private set; }
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
+		ReceivedQuery = new Dictionary<string, object>(query);
 		Date = (string)query["date"];
 	}
 }

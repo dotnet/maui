@@ -180,6 +180,8 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
 ~Microsoft.Maui.Controls.ShellAppearance.Background.get -> Microsoft.Maui.Controls.Brush
 ~Microsoft.Maui.Controls.ShellContent.QueryParameters.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.ShellContentQueryParameter>
+Microsoft.Maui.Controls.ShellContent.QueryString.get -> string?
+Microsoft.Maui.Controls.ShellContent.QueryString.set -> void
 Microsoft.Maui.Controls.ShellContentQueryParameter
 Microsoft.Maui.Controls.ShellContentQueryParameter.Name.get -> string?
 Microsoft.Maui.Controls.ShellContentQueryParameter.Name.set -> void
@@ -230,6 +232,7 @@ Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
 ~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.NameProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.ShellContentQueryParameter.ValueProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static readonly Microsoft.Maui.Controls.ShellContent.QueryStringProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty

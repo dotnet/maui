@@ -62,6 +62,157 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void QueryStringSelectionDeliversDistinctParametersToSharedPageTemplate()
+		{
+			var pageTemplate = new DataTemplate(() => new ReminderPage());
+			var yesterday = CreateContent("Yesterday", "date=2021-12-13");
+			var today = CreateContent("Today", "date=2021-12-14");
+			var tomorrow = CreateContent("Tomorrow", "date=2021-12-15");
+			var (_, tab) = CreateShell(yesterday, today, tomorrow);
+
+			Assert.Equal("2021-12-13", GetPage<ReminderPage>(yesterday).Date);
+
+			tab.CurrentItem = today;
+			Assert.Equal("2021-12-14", GetPage<ReminderPage>(today).Date);
+
+			tab.CurrentItem = tomorrow;
+			Assert.Equal("2021-12-15", GetPage<ReminderPage>(tomorrow).Date);
+
+			ShellContent CreateContent(string title, string queryString) =>
+				new()
+				{
+					Title = title,
+					QueryString = queryString,
+					ContentTemplate = pageTemplate,
+				};
+		}
+
+		[Fact]
+		public void QueryStringDeliversParametersViaIQueryAttributable()
+		{
+			var content = CreateQueryStringContent("value=first&other=second");
+			CreateShell(content);
+
+			var page = GetPage<QueryAttributablePage>(content);
+
+			Assert.Equal("first", page.Value);
+			Assert.Equal("second", page.LastQuery["other"]);
+		}
+
+		[Fact]
+		public void QueryStringDecodesQueryProperty()
+		{
+			var content = CreateQueryStringContent(
+				"value=A%2BB",
+				() => new QueryPropertyPage());
+			CreateShell(content);
+
+			Assert.Equal("A+B", GetPage<QueryPropertyPage>(content).Value);
+		}
+
+		[Fact]
+		public void QueryStringConvertsUsingInvariantCulture()
+		{
+			var originalCulture = CultureInfo.CurrentCulture;
+			try
+			{
+				CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+				var content = CreateQueryStringContent(
+					"value=3.5",
+					() => new NumericQueryPropertyPage());
+				CreateShell(content);
+
+				Assert.Equal(3.5, GetPage<NumericQueryPropertyPage>(content).Value);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = originalCulture;
+			}
+		}
+
+		[Fact]
+		public void ClearingQueryStringResetsNonNullableQueryProperty()
+		{
+			var content = CreateQueryStringContent(
+				"value=42",
+				() => new IntegerQueryPropertyPage());
+			CreateShell(content);
+			var page = GetPage<IntegerQueryPropertyPage>(content);
+
+			Assert.Equal(42, page.Value);
+
+			content.QueryString = null;
+			Assert.Equal(0, page.Value);
+		}
+
+		[Fact]
+		public void QueryStringChangeUpdatesCurrentPageAndClearRemovesValue()
+		{
+			var content = CreateQueryStringContent("value=first");
+			CreateShell(content);
+			var page = GetPage<QueryAttributablePage>(content);
+
+			content.QueryString = "value=updated";
+			Assert.Equal("updated", page.Value);
+
+			content.QueryString = null;
+			Assert.Null(page.Value);
+		}
+
+		[Fact]
+		public void QueryStringIgnoresEmptyParameterName()
+		{
+			var content = CreateQueryStringContent("=ignored&value=valid");
+			CreateShell(content);
+
+			var page = GetPage<QueryAttributablePage>(content);
+
+			Assert.Equal("valid", page.Value);
+			Assert.DoesNotContain("", page.LastQuery);
+		}
+
+		[Fact]
+		public void BoundQueryStringInheritsBindingContext()
+		{
+			var viewModel = new TestViewModel { Value = "value=first" };
+			var content = CreateQueryStringContent(null);
+			content.SetBinding(ShellContent.QueryStringProperty, nameof(TestViewModel.Value));
+			var (shell, _) = CreateShell(content);
+			shell.BindingContext = viewModel;
+			var page = GetPage<QueryAttributablePage>(content);
+
+			Assert.Equal("first", page.Value);
+
+			viewModel.Value = "value=updated";
+			Assert.Equal("updated", page.Value);
+		}
+
+		[Fact]
+		public void StructuredParameterOverridesQueryString()
+		{
+			var content = CreateQueryStringContent("value=query-string");
+			content.QueryParameters.Add(new ShellContentQueryParameter
+			{
+				Name = "value",
+				Value = "structured",
+			});
+			CreateShell(content);
+
+			Assert.Equal("structured", GetPage<QueryAttributablePage>(content).Value);
+		}
+
+		[Fact]
+		public async Task NavigationParameterOverridesQueryString()
+		{
+			var content = CreateQueryStringContent("value=query-string");
+			var (shell, _) = CreateShell(content);
+
+			await shell.GoToAsync("//content?value=navigation");
+
+			Assert.Equal("navigation", GetPage<QueryAttributablePage>(content).Value);
+		}
+
+		[Fact]
 		public void SwitchingBackReappliesParametersToReusedPage()
 		{
 			var first = CreateContent("first");
@@ -376,6 +527,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task QueryStringRemainsSingleDecodedAndUpdatesAfterRelativePop()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var content = CreateQueryStringContent(
+				"value=A%2BB",
+				() => new QueryPropertyPage());
+			var (shell, _) = CreateShell(content);
+			var page = GetPage<QueryPropertyPage>(content);
+
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("..");
+
+			Assert.Equal("A+B", page.Value);
+
+			content.QueryString = "value=updated";
+			Assert.Equal("updated", page.Value);
+		}
+
+		[Fact]
 		public async Task StaticParameterCanUpdateAndBeRemovedAfterRelativePop()
 		{
 			Routing.RegisterRoute("details", typeof(ContentPage));
@@ -508,6 +678,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var page = GetPage<QueryAttributablePage>(second);
 			Assert.Equal("static", page.Value);
+			Assert.Equal(1, page.ApplyCount);
+		}
+
+		[Fact]
+		public async Task DeepLinkAppliesQueryStringToSelectedRootContent()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var first = CreateQueryStringContent("value=first");
+			first.Route = "first";
+			var second = CreateQueryStringContent("value=query-string");
+			second.Route = "second";
+			var (shell, _) = CreateShell(first, second);
+
+			await shell.GoToAsync("//second/details");
+
+			var page = GetPage<QueryAttributablePage>(second);
+			Assert.Equal("query-string", page.Value);
 			Assert.Equal(1, page.ApplyCount);
 		}
 
@@ -706,6 +893,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return content;
 		}
 
+		static ShellContent CreateQueryStringContent(string queryString, Func<Page> factory = null) =>
+			new()
+			{
+				Route = "content",
+				QueryString = queryString,
+				ContentTemplate = new DataTemplate(factory ?? (() => new QueryAttributablePage())),
+			};
+
 		static (Shell Shell, Tab Tab) CreateShell(params ShellContent[] contents)
 		{
 			var tab = new Tab { Route = "tab" };
@@ -745,6 +940,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		sealed class NumericQueryPropertyPage : ContentPage
 		{
 			public double Value { get; set; }
+		}
+
+		[QueryProperty(nameof(Value), "value")]
+		sealed class IntegerQueryPropertyPage : ContentPage
+		{
+			public int Value { get; set; }
 		}
 
 		[QueryProperty(nameof(First), "first")]

@@ -359,7 +359,8 @@ namespace Microsoft.Maui.Controls
 			// a prior cycle from propagating to pages that are not the navigation target.
 			if (!isLastItem &&
 				filteredQuery.Count == 0 &&
-				(baseShellItem is not ShellContent shellContent || shellContent.QueryParameters.Count == 0))
+				(baseShellItem is not ShellContent shellContent ||
+					(shellContent.QueryParameters.Count == 0 && string.IsNullOrEmpty(shellContent.QueryString))))
 			{
 				return;
 			}
@@ -424,6 +425,8 @@ namespace Microsoft.Maui.Controls
 					{
 						if (existing.IsShellContentQueryParameter(datum.Key))
 							returnValue.SetShellContentQueryParameter(datum.Key, datum.Value);
+						else if (existing.IsShellContentQueryStringParameter(datum.Key))
+							returnValue.SetShellContentQueryStringParameter(datum.Key, datum.Value);
 						else
 							returnValue[datum.Key] = datum.Value;
 					}

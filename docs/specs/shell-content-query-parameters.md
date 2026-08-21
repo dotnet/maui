@@ -4,6 +4,21 @@
 `ShellContent`, including when users select tabs or flyout items without calling
 `Shell.GoToAsync`.
 
+For string-only parameters, `QueryString` provides compact URI query syntax:
+
+```xaml
+<ShellContent Title="Yesterday"
+              Route="reminders-yesterday"
+              QueryString="date=2021-12-13"
+              ContentTemplate="{DataTemplate pages:ReminderPage}" />
+```
+
+The leading `?` is optional. Standard URI query escaping applies, so `&` must be written
+as `&amp;` when multiple parameters are declared in an XML attribute.
+
+Use the structured collection when values need individual bindings, non-string objects,
+or explicit nulls:
+
 ```xaml
 <Tab Title="Reminders">
     <ShellContent Title="Yesterday"
@@ -32,6 +47,11 @@ or uniqueness.
 
 - Names are case-sensitive. Parameters with null or empty names are ignored.
 - Null values are delivered as values rather than treated as removal.
+- Parameters supplied to `Shell.GoToAsync` take precedence over structured parameters,
+  which take precedence over `QueryString`.
+- `QueryString` values use URI query decoding. Both declarative forms use invariant
+  conversion when assigned through `QueryPropertyAttribute`; structured values retain
+  their original CLR type when no conversion is required.
 - When names are duplicated, the last parameter in collection order wins. Removing or
   replacing it reveals the preceding value, if one exists.
 - Parameters are applied on initial selection and whenever the user switches back to the
