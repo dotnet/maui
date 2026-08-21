@@ -5957,6 +5957,22 @@ Describe 'Get-ReplicationTestAttemptKind' {
         Get-ReplicationTestAttemptKind -FailureSummary $summary | Should -Be 'harness-error'
     }
 
+    It 'still calls a compile failure a build failure when the machine flag is also set' {
+        # Build 15035188 raised infrastructureFailure=True five times, every one
+        # of them a compile error the repair loop then fixed. The verifier sets
+        # that flag whenever the test did not run, so it covers a broken build
+        # as well as a broken device. Reading it first would rename every
+        # repairable compile error a sick machine and hide the diagnostic the
+        # author needs, which is why the build check runs ahead of it.
+        $summary = 'Replication test verification failed (verifierPassed=False, ' +
+            'signatureMatched=False, signatureEquivalent=False, infrastructureFailure=True, ' +
+            'consistentRuns=False, completedRuns=1/3, stableFailureMessage=True). ' +
+            'The test never ran because the build failed. Fix these compiler diagnostics: ' +
+            'Issue32587.cs(38,20) CS8602: Dereference of a possibly null reference.'
+
+        Get-ReplicationTestAttemptKind -FailureSummary $summary | Should -Be 'build-failed'
+    }
+
     It 'keeps a broken machine out of the verdict kinds so the outcome is unchanged' {
         # This is a diagnostic refinement, not a reclassification. A run that
         # only ever hit the harness must still block red as verification_
