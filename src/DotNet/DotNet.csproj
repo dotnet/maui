@@ -73,7 +73,7 @@
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
-        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetSdkManifestsFolder)"
+        WorkloadDirectory="$([MSBuild]::EnsureTrailingSlash('$(MSBuildExtensionsPath)'))../../sdk-manifests/$(DotNetSdkManifestsFolder)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
@@ -88,7 +88,7 @@
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$([MSBuild]::EnsureTrailingSlash('$(MSBuildExtensionsPath)'))../../dotnet&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
