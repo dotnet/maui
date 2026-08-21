@@ -229,13 +229,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("SwipeItem icon and text should be vertically aligned when SwipeView has large content")]
-		public async Task SwipeItemIconAndTextVerticallyAligned()
+		[Description("SwipeItem button should self-size when SwipeView has large content")]
+		public async Task SwipeItemButtonSelfSizesWithLargeContent()
 		{
 			// Regression test for https://github.com/dotnet/maui/issues/36736
 			// When SwipeView wraps tall content (e.g., CollectionView), the SwipeItem button
 			// should self-size its content (AtMost height) rather than being forced to fill
-			// the entire content area (Exactly height), which would misalign icon and text.
+			// the entire content area (Exactly height).
 			SetupBuilder();
 
 			var content = new VerticalStackLayout
@@ -289,13 +289,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The button's MeasuredHeight should be LESS than its layout height.
 				// This proves it was measured with AtMost (self-sizing) rather than
-				// Exactly (forced to fill), which keeps icon+text vertically aligned.
+				// Exactly (forced to fill).
 				Assert.True(
 					swipeButton.MeasuredHeight < swipeButton.Height,
 					$"SwipeItem button should self-size (MeasuredHeight={swipeButton.MeasuredHeight}) " +
 					$"rather than fill entire area (Height={swipeButton.Height}). " +
-					$"If MeasuredHeight equals Height, the button is forced to fill, " +
-					$"causing icon and text to misalign.");
+					$"If MeasuredHeight equals Height, the button is forced to fill.");
 			});
 		}
 	}
