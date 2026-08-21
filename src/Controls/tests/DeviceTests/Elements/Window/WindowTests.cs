@@ -574,6 +574,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Reentrant Disconnect Detaches Discarded Prepared Root")]
+		public async Task ReentrantDisconnectDetachesDiscardedPreparedRoot()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var initialRoot = handler.PlatformViewUnderTest;
+
+				Assert.False(handler.ConnectContent(replacementPage, rootPrepared: rootManager.Disconnect));
+
+				var discardedRoot = handler.PlatformViewUnderTest;
+				Assert.NotSame(initialRoot, discardedRoot);
+				Assert.Null(discardedRoot.Parent);
+				Assert.Null(rootManager.RootView);
+				Assert.Null(replacementPage.Handler);
+			});
+		}
+
 		[Fact(DisplayName = "New Toolbar Element Reusing Outgoing Toolbar Wins During Root Drain")]
 		public async Task NewToolbarElementReusingOutgoingToolbarWinsDuringRootDrain()
 		{

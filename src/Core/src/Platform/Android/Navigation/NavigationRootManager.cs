@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Platform
 			IView? view,
 			IMauiContext? mauiContext = null,
 			Action<AView?>? rootPrepared = null,
+			Action<AView?>? rootDiscarded = null,
 			Action<RootRequestOutcome, AView?>? completion = null)
 		{
 			return SubmitRootRequest(new RootRequest(
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Platform
 				_toolbar,
 				_toolbarVersion,
 				rootPrepared,
+				rootDiscarded,
 				completion));
 		}
 
@@ -116,6 +118,7 @@ namespace Microsoft.Maui.Platform
 				_toolbar,
 				_toolbarVersion,
 				rootPrepared: null,
+				rootDiscarded: null,
 				completion));
 		}
 
@@ -505,6 +508,7 @@ namespace Microsoft.Maui.Platform
 			catch
 			{
 				DiscardPublishedRoot(
+					request,
 					view,
 					previousHandler,
 					rootView,
@@ -517,6 +521,7 @@ namespace Microsoft.Maui.Platform
 			if (_queuedRequest is not null)
 			{
 				DiscardPublishedRoot(
+					request,
 					view,
 					previousHandler,
 					rootView,
@@ -674,11 +679,13 @@ namespace Microsoft.Maui.Platform
 		}
 
 		void DiscardPublishedRoot(
+			RootRequest request,
 			IView? view,
 			IElementHandler? previousHandler,
 			AView? rootView,
 			bool clearToolbarElement)
 		{
+			request.DiscardPreparedRoot(rootView);
 			_rootView = null;
 			ReleaseOutgoingRoot(rootView, clearToolbarElement);
 
@@ -697,7 +704,9 @@ namespace Microsoft.Maui.Platform
 		sealed class RootRequest
 		{
 			Action<AView?>? _rootPrepared;
+			Action<AView?>? _rootDiscarded;
 			Action<RootRequestOutcome, AView?>? _completion;
+			bool _rootPreparedInvoked;
 
 			public RootRequest(
 				bool disconnect,
@@ -706,6 +715,7 @@ namespace Microsoft.Maui.Platform
 				IToolbar? toolbar,
 				int toolbarVersion,
 				Action<AView?>? rootPrepared,
+				Action<AView?>? rootDiscarded,
 				Action<RootRequestOutcome, AView?>? completion)
 			{
 				Disconnect = disconnect;
@@ -714,6 +724,7 @@ namespace Microsoft.Maui.Platform
 				Toolbar = toolbar;
 				ToolbarVersion = toolbarVersion;
 				_rootPrepared = rootPrepared;
+				_rootDiscarded = rootDiscarded;
 				_completion = completion;
 			}
 
@@ -748,12 +759,25 @@ namespace Microsoft.Maui.Platform
 			{
 				var rootPrepared = _rootPrepared;
 				_rootPrepared = null;
+				_rootPreparedInvoked = true;
 				rootPrepared?.Invoke(rootView);
+			}
+
+			public void DiscardPreparedRoot(AView? rootView)
+			{
+				if (!_rootPreparedInvoked)
+					return;
+
+				_rootPreparedInvoked = false;
+				var rootDiscarded = _rootDiscarded;
+				_rootDiscarded = null;
+				rootDiscarded?.Invoke(rootView);
 			}
 
 			public void Complete(RootRequestOutcome outcome, AView? rootView)
 			{
 				_rootPrepared = null;
+				_rootDiscarded = null;
 				var completion = _completion;
 				_completion = null;
 				completion?.Invoke(outcome, rootView);

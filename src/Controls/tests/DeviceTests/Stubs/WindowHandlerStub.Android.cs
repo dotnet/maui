@@ -40,7 +40,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				{
 					rootPrepared?.Invoke();
 					OnRootPrepared(rootManager, rootView);
-				});
+				},
+				rootDiscarded: OnRootDiscarded);
 		}
 
 		void OnRootPrepared(
@@ -65,6 +66,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 
 			PlatformViewUnderTest = platformView;
+		}
+
+		void OnRootDiscarded(AView? platformView)
+		{
+			if (ReferenceEquals(PlatformViewUnderTest, platformView))
+				platformView.RemoveFromParent();
 		}
 
 		internal void SetActivityRoot(FakeActivityRootView activityRoot)
