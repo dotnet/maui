@@ -75,6 +75,13 @@ Describe 'post-inline-review findings JSON handling' {
                 Should -BeFalse
         }
 
+        It 'allows the first inline review when no prior review bodies exist' {
+            $marker = New-InlineReviewMarker -ReviewedHead $script:HeadA -Comments $script:Findings
+
+            Test-InlineReviewMarkerExists -ReviewBodies @() -Marker $marker |
+                Should -BeFalse
+        }
+
         It 'queries durable review bodies before the POST and keeps stale-head rejection' {
             $queryIndex = $script:Content.IndexOf('pulls/$PRNumber/reviews?per_page=100')
             $postIndex = $script:Content.IndexOf('--method POST "repos/dotnet/maui/pulls/$PRNumber/reviews"')

@@ -146,53 +146,6 @@ mutation MinimizeComment($subjectId: ID!, $classifier: ReportedContentClassifier
     }
 }
 
-function Invoke-GitHubUnminimizeComment {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$SubjectNodeId,
-
-        [string]$Reason = 'refreshed MauiBot artifact',
-
-        [switch]$DryRun
-    )
-
-    # When we reuse an existing AI-Summary issue comment by PATCHing fresh content into it,
-    # the comment may have been minimized (collapsed) by an earlier run's stale-artifact sweep.
-    # A REST PATCH updates the body but does NOT un-hide a minimized comment, so the fresh
-    # summary would stay invisible. Un-minimize it so the current summary is always visible.
-    if ([string]::IsNullOrWhiteSpace($SubjectNodeId)) {
-        return $false
-    }
-
-    if ($DryRun) {
-        Write-Host "  [DryRun] Would un-hide $Reason (node_id: $SubjectNodeId)" -ForegroundColor Magenta
-        return $true
-    }
-
-    $query = @'
-mutation UnminimizeComment($subjectId: ID!) {
-  unminimizeComment(input: { subjectId: $subjectId }) {
-    unminimizedComment {
-      isMinimized
-    }
-  }
-}
-'@
-
-    try {
-        $output = gh api graphql -f query="$query" -F subjectId="$SubjectNodeId" 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            throw "unminimizeComment failed (exit code $LASTEXITCODE): $output"
-        }
-        Write-Host "  Un-hid $Reason so the fresh summary is visible (node_id: $SubjectNodeId)" -ForegroundColor Gray
-        return $true
-    } catch {
-        Write-Host "  Warning: could not un-hide $Reason with node_id ${SubjectNodeId}: $_" -ForegroundColor Yellow
-        return $false
-    }
-}
-
 function Get-GitHubIssueComments {
     param([Parameter(Mandatory = $true)][int]$PRNumber)
 

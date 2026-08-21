@@ -42,7 +42,7 @@ function Get-EnvErrorPatterns {
         # retry and then treat a recurrence as a deterministic (PR-caused) failure
         # instead of burning the whole retry budget and reporting INCONCLUSIVE.
         'did not recover after crash-recovery attempts',
-        'Timed out waiting for Go To Test button'
+        'Timed out waiting for Go To Test button to appear'
     )
 }
 
@@ -62,7 +62,7 @@ function Get-AmbiguousStartupPatterns {
     #>
     return @(
         'did not recover after crash-recovery attempts',
-        'Timed out waiting for Go To Test button'
+        'Timed out waiting for Go To Test button to appear'
     )
 }
 

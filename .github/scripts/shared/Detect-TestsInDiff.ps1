@@ -356,17 +356,22 @@ function Test-CsFileHasTestMethods {
     return $true
 }
 
-function Get-AddedDeviceTestMethodsFromPatch {
+function Get-ChangedDeviceTestMethodsFromPatch {
     <#
     .SYNOPSIS
-        Returns only added methods that are explicitly marked as tests.
+        Returns changed methods that are explicitly marked as tests.
     .DESCRIPTION
         Device-test files often add public helper methods alongside [Fact]/[Test]
         methods. Treating every added public void/Task as a test makes result
         validation demand helpers that the runner will never execute, turning a
-        clean with-fix run into a false environment error.
+        clean with-fix run into a false environment error. When the committed
+        source is available, changed lines are also mapped to existing test-method
+        scopes so body-only and attribute-only edits remain method-scoped.
     #>
-    param([string]$Patch)
+    param(
+        [string]$Patch,
+        [string]$SourceContent
+    )
 
     if ([string]::IsNullOrWhiteSpace($Patch)) {
         return @()
@@ -640,6 +645,262 @@ function Get-AddedDeviceTestMethodsFromPatch {
         $pendingTestAttribute = $false
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($SourceContent)) {
+        $changedLineNumbers = [System.Collections.Generic.HashSet[int]]::new()
+        $newLineNumber = 0
+        $inChangedHunk = $false
+
+        foreach ($rawLine in ($Patch -split "`n")) {
+            if ($rawLine -match '^@@ -\d+(?:,\d+)? \+(?<start>\d+)(?:,\d+)? @@') {
+                $newLineNumber = [int]$matches['start']
+                $inChangedHunk = $true
+                continue
+            }
+            if (-not $inChangedHunk) {
+                continue
+            }
+
+            if ($rawLine -match '^\+(?!\+\+)') {
+                [void]$changedLineNumbers.Add($newLineNumber)
+                $newLineNumber++
+            } elseif ($rawLine -match '^-(?!---)') {
+                # A removed line has no new-file line number. Associate it with
+                # the source line now occupying that position so deletion-only
+                # edits can still retain method scope.
+                [void]$changedLineNumbers.Add([Math]::Max(1, $newLineNumber))
+            } elseif ($rawLine.StartsWith(' ')) {
+                $newLineNumber++
+            }
+        }
+
+        function Get-CSharpMethodEndLine {
+            param(
+                [string[]]$Lines,
+                [int]$DeclarationIndex
+            )
+
+            $braceDepth = 0
+            $bodyStarted = $false
+            $expressionBodied = $false
+            $inBlockComment = $false
+            $stringKind = $null
+            $escapeNext = $false
+            $rawQuoteCount = 0
+
+            for ($lineIndex = $DeclarationIndex; $lineIndex -lt $Lines.Count; $lineIndex++) {
+                $line = $Lines[$lineIndex]
+                for ($characterIndex = 0; $characterIndex -lt $line.Length; $characterIndex++) {
+                    $character = $line[$characterIndex]
+
+                    if ($inBlockComment) {
+                        if ($character -eq '*' -and
+                            ($characterIndex + 1) -lt $line.Length -and
+                            $line[$characterIndex + 1] -eq '/') {
+                            $characterIndex++
+                            $inBlockComment = $false
+                        }
+                        continue
+                    }
+
+                    if ($stringKind -eq 'Raw') {
+                        if ($character -eq '"') {
+                            $quoteCount = 1
+                            while (($characterIndex + $quoteCount) -lt $line.Length -and
+                                $line[$characterIndex + $quoteCount] -eq '"') {
+                                $quoteCount++
+                            }
+                            $characterIndex += $quoteCount - 1
+                            if ($quoteCount -ge $rawQuoteCount) {
+                                $stringKind = $null
+                                $rawQuoteCount = 0
+                            }
+                        }
+                        continue
+                    }
+
+                    if ($stringKind -eq 'Verbatim') {
+                        if ($character -eq '"') {
+                            if (($characterIndex + 1) -lt $line.Length -and
+                                $line[$characterIndex + 1] -eq '"') {
+                                $characterIndex++
+                            } else {
+                                $stringKind = $null
+                            }
+                        }
+                        continue
+                    }
+
+                    if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
+                        if ($escapeNext) {
+                            $escapeNext = $false
+                            continue
+                        }
+                        if ($character -eq '\') {
+                            $escapeNext = $true
+                            continue
+                        }
+                        if (($stringKind -eq 'Regular' -and $character -eq '"') -or
+                            ($stringKind -eq 'Character' -and $character -eq "'")) {
+                            $stringKind = $null
+                        }
+                        continue
+                    }
+
+                    if ($character -eq '/' -and ($characterIndex + 1) -lt $line.Length) {
+                        if ($line[$characterIndex + 1] -eq '/') {
+                            break
+                        }
+                        if ($line[$characterIndex + 1] -eq '*') {
+                            $characterIndex++
+                            $inBlockComment = $true
+                            continue
+                        }
+                    }
+
+                    if ($character -eq '"') {
+                        $quoteCount = 1
+                        while (($characterIndex + $quoteCount) -lt $line.Length -and
+                            $line[$characterIndex + $quoteCount] -eq '"') {
+                            $quoteCount++
+                        }
+                        $prefix = $line.Substring(0, $characterIndex)
+                        $characterIndex += $quoteCount - 1
+                        if ($quoteCount -ge 3) {
+                            $stringKind = 'Raw'
+                            $rawQuoteCount = $quoteCount
+                        } elseif ($quoteCount -eq 2) {
+                            # Empty regular/verbatim string; both delimiters are
+                            # present in this run, so no string state remains open.
+                            $stringKind = $null
+                        } elseif ($prefix -match '@\$*$') {
+                            $stringKind = 'Verbatim'
+                        } else {
+                            $stringKind = 'Regular'
+                        }
+                        continue
+                    }
+
+                    if ($character -eq "'") {
+                        $stringKind = 'Character'
+                        continue
+                    }
+
+                    if (-not $bodyStarted -and
+                        $character -eq '=' -and
+                        ($characterIndex + 1) -lt $line.Length -and
+                        $line[$characterIndex + 1] -eq '>') {
+                        $expressionBodied = $true
+                        $characterIndex++
+                        continue
+                    }
+
+                    if ($expressionBodied -and $character -eq ';') {
+                        return $lineIndex + 1
+                    }
+
+                    if ($character -eq '{') {
+                        $bodyStarted = $true
+                        $braceDepth++
+                    } elseif ($bodyStarted -and $character -eq '}') {
+                        $braceDepth--
+                        if ($braceDepth -eq 0) {
+                            return $lineIndex + 1
+                        }
+                    }
+                }
+
+                if ($stringKind -eq 'Regular' -or $stringKind -eq 'Character') {
+                    $stringKind = $null
+                    $escapeNext = $false
+                }
+            }
+
+            return $Lines.Count
+        }
+
+        $sourceLines = @($SourceContent -split "`r?`n")
+        $pendingSourceTestAttribute = $false
+        $sourceAttributeState = $null
+        $sourceAttributeStartLine = $null
+
+        for ($sourceIndex = 0; $sourceIndex -lt $sourceLines.Count; $sourceIndex++) {
+            $declaration = $sourceLines[$sourceIndex]
+
+            while ($true) {
+                if ($null -eq $sourceAttributeState) {
+                    $attributeStart = [regex]::Match($declaration, '^\s*\[')
+                    if (-not $attributeStart.Success) {
+                        break
+                    }
+                    $sourceAttributeState = New-CSharpAttributeState
+                    if ($null -eq $sourceAttributeStartLine) {
+                        $sourceAttributeStartLine = $sourceIndex + 1
+                    }
+                    $startIndex = $attributeStart.Index + $attributeStart.Length - 1
+                } else {
+                    $startIndex = 0
+                }
+
+                $attributeResult = Read-CSharpAttributeFragment `
+                    -State $sourceAttributeState `
+                    -Text $declaration `
+                    -StartIndex $startIndex
+
+                if (-not $attributeResult.Closed) {
+                    $declaration = ''
+                    break
+                }
+
+                if ($attributeResult.Invalid) {
+                    $pendingSourceTestAttribute = $false
+                } elseif ($sourceAttributeState.Text.ToString() -match $testAttributePattern) {
+                    $pendingSourceTestAttribute = $true
+                }
+
+                $declaration = $declaration.Substring($attributeResult.EndIndex + 1)
+                $sourceAttributeState = $null
+            }
+
+            if ($null -ne $sourceAttributeState) {
+                continue
+            }
+
+            if ([string]::IsNullOrWhiteSpace($declaration) -or
+                $declaration -match '^\s*(?://|/\*|\*|#)') {
+                continue
+            }
+
+            if ($pendingSourceTestAttribute -and
+                $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
+                $methodName = $matches[1]
+                $methodStartLine = if ($null -ne $sourceAttributeStartLine) {
+                    [int]$sourceAttributeStartLine
+                } else {
+                    $sourceIndex + 1
+                }
+                $methodEndLine = Get-CSharpMethodEndLine `
+                    -Lines $sourceLines `
+                    -DeclarationIndex $sourceIndex
+
+                $methodChanged = $false
+                foreach ($changedLineNumber in $changedLineNumbers) {
+                    if ($changedLineNumber -ge $methodStartLine -and
+                        $changedLineNumber -le $methodEndLine) {
+                        $methodChanged = $true
+                        break
+                    }
+                }
+
+                if ($methodChanged -and $methods -notcontains $methodName) {
+                    $methods.Add($methodName)
+                }
+            }
+
+            $pendingSourceTestAttribute = $false
+            $sourceAttributeStartLine = $null
+        }
+    }
+
     return @($methods)
 }
 
@@ -810,10 +1071,10 @@ foreach ($key in @($testGroups.Keys)) {
     $group = $testGroups[$key]
     if ($group.Type -ne "DeviceTest") { continue }
 
-    # Find added test methods from the diff. Never include public helpers: a
+    # Find changed test methods from the diff. Never include public helpers: a
     # missing helper result is otherwise misclassified as an environment error
     # after all real tests pass.
-    $addedMethods = @()
+    $changedMethods = @()
     # Cache PR files API response once before the inner loop.
     # A failure here must NEVER abort the gate. The script runs under
     # $ErrorActionPreference='Stop', so an unguarded parse error is terminating: `gh api`
@@ -858,18 +1119,26 @@ foreach ($key in @($testGroups.Keys)) {
         }
 
         if ($patch) {
-            foreach ($methodName in @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch)) {
-                if ($addedMethods -notcontains $methodName) {
-                    $addedMethods += $methodName
+            $sourceContent = $null
+            $sourceLines = @(git show "HEAD:$file" 2>$null)
+            if ($LASTEXITCODE -eq 0) {
+                $sourceContent = $sourceLines -join "`n"
+            }
+
+            foreach ($methodName in @(Get-ChangedDeviceTestMethodsFromPatch `
+                -Patch $patch `
+                -SourceContent $sourceContent)) {
+                if ($changedMethods -notcontains $methodName) {
+                    $changedMethods += $methodName
                 }
             }
         }
     }
 
     # Method names are optional display metadata and provide narrower result scoping when available.
-    if ($addedMethods.Count -gt 0) {
-        $group.TestName = "$($group.TestName) ($($addedMethods -join ', '))"
-        $group.Methods = $addedMethods
+    if ($changedMethods.Count -gt 0) {
+        $group.TestName = "$($group.TestName) ($($changedMethods -join ', '))"
+        $group.Methods = $changedMethods
     }
 
     # Find [Category] attribute (and the namespace, for a fully-qualified class filter)

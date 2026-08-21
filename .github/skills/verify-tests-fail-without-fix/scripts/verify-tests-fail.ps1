@@ -1885,15 +1885,18 @@ function Limit-ExpensiveGateTests {
         AzDO hard-kills the task → a "The task has timed out" FAILED verdict
         with no analysis (observed on build 14676353 / PR #36109: 11 device
         tests → 120-min timeout). This caps the expensive tests, prioritising
-        the PR's own newly-added (fix-authored) regression tests. The Deep UI
-        Tests stage still exercises the full category matrix. Cheap unit/XAML
-        tests are never capped (they are fast). Caps are env-overridable via
-        GATE_MAX_DEVICE_TESTS / GATE_MAX_UI_TESTS.
+        the PR's own newly-added (fix-authored) regression tests. Deep UI Tests
+        exercises the HostApp UI category matrix, but does not run DeviceTests;
+        any dropped device-test groups are persisted as an explicit coverage
+        limitation in the gate report. Cheap unit/XAML tests are never capped
+        (they are fast). Caps are env-overridable via GATE_MAX_DEVICE_TESTS /
+        GATE_MAX_UI_TESTS.
     #>
     param(
         [object[]]$Tests,
         [string[]]$AddedFiles = @()
     )
+    $script:GateCoverageLimitations = @()
     if (-not $Tests -or @($Tests).Count -le 1) { return $Tests }
 
     $maxDevice = if ($env:GATE_MAX_DEVICE_TESTS) { [int]$env:GATE_MAX_DEVICE_TESTS } else { 2 }
@@ -1919,10 +1922,24 @@ function Limit-ExpensiveGateTests {
 
     $keptDevice = @($device | Select-Object -First $maxDevice)
     $keptUi     = @($ui     | Select-Object -First $maxUi)
+    $droppedDevice = @($device | Select-Object -Skip $maxDevice)
+    $droppedUi     = @($ui     | Select-Object -Skip $maxUi)
 
-    $dropped = (@($device).Count - @($keptDevice).Count) + (@($ui).Count - @($keptUi).Count)
+    $dropped = $droppedDevice.Count + $droppedUi.Count
     if ($dropped -gt 0) {
-        Write-Host "⚠️  Gate work-cap: PR touches $(@($device).Count) device + $(@($ui).Count) UI test(s); the gate verifies the first $(@($keptDevice).Count) device + $(@($keptUi).Count) UI test(s) (fix-authored/newly-added tests prioritised) to stay within the task timeout. The remaining $dropped expensive test(s) are exercised by the Deep UI Tests stage." -ForegroundColor Yellow
+        Write-Host "⚠️  Gate work-cap: PR touches $(@($device).Count) device + $(@($ui).Count) UI test(s); the A/B gate verifies the first $(@($keptDevice).Count) device + $(@($keptUi).Count) UI test(s) (fix-authored/newly-added tests prioritised) to stay within the task timeout." -ForegroundColor Yellow
+    }
+    if ($droppedDevice.Count -gt 0) {
+        $droppedDeviceNames = @($droppedDevice | ForEach-Object { $_.TestName }) -join ', '
+        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Deep UI Tests runs HostApp UI categories only and does not execute DeviceTests; separate device-test validation is required."
+        $script:GateCoverageLimitations += $deviceLimitation
+        Write-Host "⚠️  $deviceLimitation" -ForegroundColor Yellow
+    }
+    if ($droppedUi.Count -gt 0) {
+        $droppedUiNames = @($droppedUi | ForEach-Object { $_.TestName }) -join ', '
+        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Those UI categories are exercised separately by the Deep UI Tests stage, without the gate's before/after comparison."
+        $script:GateCoverageLimitations += $uiLimitation
+        Write-Host "⚠️  $uiLimitation" -ForegroundColor Yellow
     }
 
     # Cheap tests first (fast red/green signal), then the capped expensive set.
@@ -2623,7 +2640,8 @@ function Write-MarkdownReport {
         [string]$ReportPlatform,
         [string]$ReportBaseBranch,
         [array]$ReportRevertableFiles,
-        [array]$ReportNewFiles
+        [array]$ReportNewFiles,
+        [string[]]$CoverageLimitations = @()
     )
     
     # Check for environment / build errors in results — a test that could not be built or
@@ -2884,6 +2902,13 @@ function Write-MarkdownReport {
     if ($failureClassification) {
         $lines += ""
         $lines += $failureClassification
+    }
+    if ($CoverageLimitations.Count -gt 0) {
+        $lines += ""
+        $lines += "#### ⚠️ Gate coverage limitations"
+        foreach ($limitation in $CoverageLimitations) {
+            $lines += "- $limitation"
+        }
     }
     $lines += ""
 
@@ -4223,7 +4248,8 @@ Write-MarkdownReport `
     -ReportPlatform $Platform `
     -ReportBaseBranch $BaseBranchName `
     -ReportRevertableFiles $RevertableFiles `
-    -ReportNewFiles $NewFiles
+    -ReportNewFiles $NewFiles `
+    -CoverageLimitations $script:GateCoverageLimitations
 
 if ($verificationPassed) {
     Write-Host ""

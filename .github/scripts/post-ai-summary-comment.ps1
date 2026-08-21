@@ -592,16 +592,14 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>🧭 Next Steps</strong> — reviewer patch required (<code>pr-plus-reviewer</code>)</summary>
+<summary><strong>🧭 Next Steps</strong> — reviewer changes required</summary>
 <br/>
 
-**The reviewer-enhanced candidate won, so the submitted PR still needs those changes.**
+**The reviewer-enhanced candidate identified changes that are not yet in the submitted PR.**
 
 **Why:** $safeRationale
 
-Apply <code>PRAgent/pr-plus-reviewer/reviewer.patch</code> from the <code>CopilotLogs</code>
-artifact (or follow the report's **Required submitted-PR change**), push the update, and run
-the review again.
+Address the actionable findings in this review before merging.
 
 </details>
 "@

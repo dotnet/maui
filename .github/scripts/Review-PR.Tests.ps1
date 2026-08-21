@@ -57,6 +57,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Resolve-UITestCategoryRefresh')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateRetryBudgetMinutes')
@@ -734,6 +735,20 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match 'screen\.\?shot'
         $pipelineContent | Should -Match 'PageSource'
         $pipelineContent | Should -Match ([regex]::Escape("-not (`$_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)"))
+        $pipelineContent | Should -Match ([regex]::Escape("Join-Path `$uiDiagSrc 'hang-diagnostics'"))
+        $pipelineContent | Should -Match ([regex]::Escape('Remove-Item -LiteralPath $hangDiagDir -Recurse'))
+    }
+
+    It 'recomputes the category hard-stop budget after a device reset' {
+        $resetStart = $pipelineContent.IndexOf('if ($needDeviceReset)')
+        $resetEnd = $pipelineContent.IndexOf('# Give each still-pending category', $resetStart)
+        $resetBlock = $pipelineContent.Substring($resetStart, $resetEnd - $resetStart)
+        $refreshIndex = $resetBlock.IndexOf('$catStart = Get-Date')
+        $remainingIndex = $resetBlock.IndexOf('$remainToHardStopMin =')
+
+        $refreshIndex | Should -BeGreaterThan -1
+        $remainingIndex | Should -BeGreaterThan $refreshIndex
+        $resetBlock | Should -Match ([regex]::Escape('if ($remainToHardStopMin -lt 3)'))
     }
 
     It 'bounds the Copilot log tree before the credentialed PostReview phase imports it' {
@@ -1298,6 +1313,40 @@ Describe 'AI summary review ID handoff' {
 }
 
 Describe 'Detected UI category handoff' {
+    It 'honors an explicit NONE refresh' {
+        Resolve-UITestCategoryRefresh `
+            -GateCategories 'Material3,ViewBaseTests' `
+            -RefreshedCategories 'NONE' |
+            Should -Be 'NONE'
+    }
+
+    It 'uses a specific refreshed category list' {
+        Resolve-UITestCategoryRefresh `
+            -GateCategories 'Material3' `
+            -RefreshedCategories 'Button,Layout' |
+            Should -Be 'Button,Layout'
+    }
+
+    It 'preserves specific gate categories for blank or ALL refreshes' {
+        foreach ($refresh in @('', ' ', 'ALL')) {
+            Resolve-UITestCategoryRefresh `
+                -GateCategories 'Material3,ViewBaseTests' `
+                -RefreshedCategories $refresh |
+                Should -Be 'Material3,ViewBaseTests'
+        }
+    }
+
+    It 'falls back to ALL for blank or ALL refreshes without specific gate categories' {
+        foreach ($gate in @('', 'ALL', 'NONE')) {
+            foreach ($refresh in @('', 'ALL')) {
+                Resolve-UITestCategoryRefresh `
+                    -GateCategories $gate `
+                    -RefreshedCategories $refresh |
+                    Should -Be 'ALL'
+            }
+        }
+    }
+
     It 'passes detected categories as environment data instead of inline PowerShell source' {
         $pipelineContent | Should -Match ([regex]::Escape('$cats = $env:DETECTED_CATEGORIES'))
         $pipelineContent | Should -Match ([regex]::Escape('DETECTED_CATEGORIES: $(detectedCategories)'))

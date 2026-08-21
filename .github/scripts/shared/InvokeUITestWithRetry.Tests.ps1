@@ -5,7 +5,7 @@
     Pester tests for the ambiguous-startup retry decision shared by
     Get-EnvErrorPatterns.ps1 and Invoke-UITestWithRetry.ps1.
 
-    "Timed out waiting for Go To Test button" / "did not recover after crash-recovery
+    "Timed out waiting for Go To Test button to appear" / "did not recover after crash-recovery
     attempts" are emitted BOTH for a broken emulator and for a PR that deterministically
     breaks HostApp startup. They stay retryable so a real infra flake still recovers, but
     a recurrence AFTER the device reboot + fresh rebuild must be reported as a genuine
@@ -19,6 +19,8 @@ BeforeAll {
 
     $script:RetryScriptPath = Join-Path $PSScriptRoot 'Invoke-UITestWithRetry.ps1'
     $script:RetryScriptSource = Get-Content -Raw -LiteralPath $script:RetryScriptPath
+    $script:ResetScriptPath = Join-Path $PSScriptRoot 'Reset-DeviceState.ps1'
+    $script:ResetScriptSource = Get-Content -Raw -LiteralPath $script:ResetScriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile(
@@ -55,6 +57,15 @@ BeforeAll {
     if (-not $boundedFunction) {
         throw "Function 'Invoke-BuildScriptBounded' not found"
     }
+    $script:BoundedFunctionSource = $boundedFunction.Extent.Text
+    $saveDiagnosticsFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Save-AndroidHangDiagnostics'
+    }, $true)
+    if (-not $saveDiagnosticsFunction) {
+        throw "Function 'Save-AndroidHangDiagnostics' not found"
+    }
+    $script:SaveDiagnosticsFunctionSource = $saveDiagnosticsFunction.Extent.Text
     Invoke-Expression $boundedFunction.Extent.Text
 
     # Mirrors the decision made in the Invoke-UITestWithRetry.ps1 retry loop: an ambiguous
@@ -79,7 +90,21 @@ Describe 'Get-AmbiguousStartupPatterns' {
     It 'covers both HostApp startup signatures whose producer text is cause-ambiguous' {
         $ambiguous = Get-AmbiguousStartupPatterns
         $ambiguous | Should -Contain 'did not recover after crash-recovery attempts'
-        $ambiguous | Should -Contain 'Timed out waiting for Go To Test button'
+        $ambiguous | Should -Contain 'Timed out waiting for Go To Test button to appear'
+    }
+
+    It 'does not classify a normal page-navigation disappearance timeout as startup failure' {
+        $startupMessage = 'Timed out waiting for Go To Test button to appear'
+        $navigationMessage = 'Timed out waiting for Go To Test button to disappear'
+
+        @(Get-EnvErrorPatterns | Where-Object { $startupMessage -match $_ }).Count |
+            Should -BeGreaterThan 0
+        @(Get-AmbiguousStartupPatterns | Where-Object { $startupMessage -match $_ }).Count |
+            Should -BeGreaterThan 0
+        @(Get-EnvErrorPatterns | Where-Object { $navigationMessage -match $_ }).Count |
+            Should -Be 0
+        @(Get-AmbiguousStartupPatterns | Where-Object { $navigationMessage -match $_ }).Count |
+            Should -Be 0
     }
 
     It 'does not mark unambiguous infrastructure signatures as ambiguous' {
@@ -114,21 +139,21 @@ Describe 'Verified crash/startup retry history' {
 
 Describe 'Ambiguous startup retry decision' {
     It 'allows the first occurrence to retry (one device-recovery attempt)' {
-        Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button' -History @() |
+        Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button to appear' -History @() |
             Should -BeFalse
     }
 
     It 'treats a recurrence after recovery as deterministic (PR-caused), not infrastructure' {
         Test-AmbiguousStartupIsDeterministic `
-            -EnvHit 'Timed out waiting for Go To Test button' `
-            -History @('Timed out waiting for Go To Test button') |
+            -EnvHit 'Timed out waiting for Go To Test button to appear' `
+            -History @('Timed out waiting for Go To Test button to appear') |
             Should -BeTrue
     }
 
     It 'keeps retrying when a DIFFERENT ambiguous signature follows the first one' {
         Test-AmbiguousStartupIsDeterministic `
             -EnvHit 'did not recover after crash-recovery attempts' `
-            -History @('Timed out waiting for Go To Test button') |
+            -History @('Timed out waiting for Go To Test button to appear') |
             Should -BeFalse
     }
 
@@ -177,5 +202,43 @@ if ($TestFilter -ne 'Name = Foo Bar') {
         ($result.Output -join "`n") | Should -Match 'filter=Name = Foo Bar'
         $script:RetryScriptSource | Should -Match '\.ArgumentList\.Add\(\[string\]\$argument\)'
         $script:RetryScriptSource | Should -Not -Match 'Start-Process\s+-FilePath\s+\$pwshExe\s+-ArgumentList'
+    }
+
+    It 'tree-kills the hung run before bounded Android diagnostic capture' {
+        $killIndex = $script:BoundedFunctionSource.IndexOf('Stop-ProcessTree -ProcessId $proc.Id')
+        $captureIndex = $script:BoundedFunctionSource.IndexOf('Save-AndroidHangDiagnostics -RepoRoot $RepoRoot -Attempt $Attempt')
+
+        $killIndex | Should -BeGreaterThan -1
+        $captureIndex | Should -BeGreaterThan $killIndex
+        $script:SaveDiagnosticsFunctionSource | Should -Match 'Invoke-AndroidDiagnosticCommand'
+        $script:SaveDiagnosticsFunctionSource | Should -Not -Match '(?m)&\s*adb\b'
+    }
+
+    It 'retains hang diagnostics in an attempt-numbered directory until artifact capture' {
+        $script:SaveDiagnosticsFunctionSource |
+            Should -Match ([regex]::Escape('CustomAgentLogsTmp/UITests/hang-diagnostics/attempt-$Attempt'))
+        $script:RetryScriptSource |
+            Should -Match ([regex]::Escape('-CrashLoopAbortThreshold 10 -Attempt $attempt'))
+    }
+
+    It 'uses the bounded shared reset helper between retry attempts' {
+        $recoveryStart = $script:RetryScriptSource.IndexOf('# Same recovery as Gate')
+        if ($recoveryStart -lt 0) {
+            $recoveryStart = $script:RetryScriptSource.IndexOf('$recoveryBudgetSeconds = 180')
+        }
+        $recoveryEnd = $script:RetryScriptSource.IndexOf('Start-Sleep -Seconds $RetryDelaySeconds', $recoveryStart)
+        $recoveryBlock = $script:RetryScriptSource.Substring($recoveryStart, $recoveryEnd - $recoveryStart)
+
+        $recoveryBlock | Should -Match ([regex]::Escape("Join-Path `$PSScriptRoot 'Reset-DeviceState.ps1'"))
+        $recoveryBlock | Should -Match ([regex]::Escape('-BootTimeoutSeconds $recoveryBudgetSeconds'))
+        $recoveryBlock | Should -Not -Match '(?m)&\s*(adb|xcrun)\b'
+    }
+
+    It 'bounds all reset-native commands and verifies iOS boot completion' {
+        $script:ResetScriptSource | Should -Match 'Invoke-ProcessWithTimeout'
+        $script:ResetScriptSource | Should -Not -Match '(?m)^\s*&\s*(adb|xcrun)\b'
+        $script:ResetScriptSource |
+            Should -Match ([regex]::Escape("@('simctl', 'bootstatus', `$sim, '-b', '-t', `"`$bootStatusTimeout`")"))
+        $script:ResetScriptSource | Should -Match '\$bootStatus\.ExitCode\s*-eq\s*0'
     }
 }
