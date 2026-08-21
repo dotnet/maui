@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.Controls;
@@ -7,6 +9,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using ATextView = Android.Widget.TextView;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -228,32 +231,31 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		[Description("SwipeItem button should self-size when SwipeView has large content")]
-		public async Task SwipeItemButtonSelfSizesWithLargeContent()
+		[Theory]
+		[InlineData(1)]
+		[InlineData(5)]
+		[InlineData(20)]
+		[Description("SwipeItem icon and text should remain centered together when wrapping a CollectionView")]
+		public async Task SwipeItemIconAndTextRemainAlignedWithCollectionView(int itemCount)
 		{
-			// Regression test for https://github.com/dotnet/maui/issues/36736
-			// When SwipeView wraps tall content (e.g., CollectionView), the SwipeItem button
-			// should self-size its content (AtMost height) rather than being forced to fill
-			// the entire content area (Exactly height).
 			SetupBuilder();
 
-			var content = new VerticalStackLayout
+			var collectionView = new CollectionView
 			{
-				HeightRequest = 300,
-				Background = new SolidColorBrush(Colors.White)
+				ItemsSource = Enumerable.Range(1, itemCount).Select(index => $"{index} record").ToArray(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { Padding = 10 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
 			};
 
 			var swipeItem = new SwipeItem
 			{
-				Text = "Delete",
-				BackgroundColor = Colors.Red,
-				IconImageSource = new FontImageSource
-				{
-					Glyph = "X",
-					FontFamily = "Arial",
-					Size = 20
-				}
+				Text = "Back",
+				BackgroundColor = Colors.White,
+				IconImageSource = new FileImageSource { File = "red.png" }
 			};
 
 			var swipeItems = new SwipeItems
@@ -263,17 +265,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			var swipeView = new SwipeView()
 			{
-				HeightRequest = 300,
 				LeftItems = swipeItems,
-				Content = content
+				Content = collectionView
 			};
 
-			await AttachAndRun(swipeView, async (handler) =>
+			var root = new Grid
 			{
-				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				HeightRequest = 500,
+				WidthRequest = 300,
+				RowDefinitions =
+				{
+					new RowDefinition { Height = 40 },
+					new RowDefinition { Height = GridLength.Star }
+				}
+			};
+			root.Add(new Label { Text = "Records" });
+			root.Add(swipeView, row: 1);
+
+			await AttachAndRun(root, async (_) =>
+			{
+				var platformView = Assert.IsType<SwipeViewHandler>(swipeView.Handler).PlatformView;
 				swipeView.Open(OpenSwipeItem.LeftItems, false);
 
-				// Wait for SwipeView to create action view with children
 				await AssertEventually(() => platformView.ChildCount > 1);
 
 				var actionView = platformView.GetChildAt(1) as ViewGroup;
@@ -281,20 +294,26 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertEventually(() => actionView.ChildCount > 0);
 
-				var swipeButton = actionView.GetChildAt(0);
-				Assert.NotNull(swipeButton);
+				var swipeButton = Assert.IsAssignableFrom<ATextView>(actionView.GetChildAt(0));
 
-				// Wait for button to be laid out
-				await AssertEventually(() => swipeButton.Height > 0);
+				await AssertEventually(() =>
+					swipeButton.Height > 0 &&
+					swipeButton.Baseline > 0 &&
+					swipeButton.GetCompoundDrawables()[1] is not null);
 
-				// The button's MeasuredHeight should be LESS than its layout height.
-				// In this scenario, that is the expected result of AtMost measurement;
-				// Exactly would always force the measured height to fill the available space.
-				Assert.True(
-					swipeButton.MeasuredHeight < swipeButton.Height,
-					$"SwipeItem button should self-size (MeasuredHeight={swipeButton.MeasuredHeight}) " +
-					$"rather than fill entire area (Height={swipeButton.Height}). " +
-					$"If MeasuredHeight equals Height, the button is forced to fill.");
+				var icon = swipeButton.GetCompoundDrawables()[1];
+				var fontMetrics = new global::Android.Graphics.Paint.FontMetricsInt();
+				swipeButton.Paint.GetFontMetricsInt(fontMetrics);
+				var iconTop = swipeButton.PaddingTop;
+				var iconBottom = iconTop + icon.Bounds.Height();
+				var textTop = swipeButton.Baseline + fontMetrics.Top;
+				var density = swipeButton.Context.GetDisplayDensity();
+				var tolerance = (int)Math.Ceiling(density);
+				var maxAlignmentGap = Math.Max(
+					swipeButton.CompoundDrawablePadding + tolerance,
+					swipeButton.LineHeight / 2);
+
+				Assert.InRange(textTop - iconBottom, 0, maxAlignmentGap);
 			});
 		}
 	}
