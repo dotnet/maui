@@ -56,12 +56,19 @@ public class DotNetProjectTests
 
 	string GetProjectProperty(string projectFile, string propertyName, string? extensionsPath = null)
 	{
-		var propertyArgument = extensionsPath is null
-			? string.Empty
-			: $" -p:MSBuildExtensionsPath=\"{extensionsPath}\"";
-		var output = DotnetInternal.RunForOutput(
+		var arguments = new List<string>
+		{
 			"msbuild",
-			$"\"{projectFile}\" -nologo -verbosity:quiet -getProperty:{propertyName}{propertyArgument}",
+			projectFile,
+			"-nologo",
+			"-verbosity:quiet",
+			$"-getProperty:{propertyName}",
+		};
+		if (extensionsPath is not null)
+			arguments.Add($"-p:MSBuildExtensionsPath={extensionsPath}");
+
+		var output = DotnetInternal.RunForOutput(
+			arguments,
 			out var exitCode,
 			timeoutInSeconds: 60,
 			output: _output);
