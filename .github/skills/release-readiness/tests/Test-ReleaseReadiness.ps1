@@ -11714,11 +11714,13 @@ $agentContractPath = Join-Path $PSScriptRoot '../../../agents/release-readiness-
 $skillContractPath = Join-Path $PSScriptRoot '../SKILL.md'
 $methodologyContractPath = Join-Path $PSScriptRoot '../references/methodology.md'
 $approvalWorkflowPath = Join-Path $PSScriptRoot '../../../workflows/release-agent-human-approval.yml'
+$releaseReadinessWorkflowPath = Join-Path $PSScriptRoot '../../../workflows/release-readiness.yml'
 $approvalPolicyPath = Join-Path $PSScriptRoot '../scripts/Assert-ReleaseAgentHumanApproval.ps1'
 $agentContract = Get-Content -LiteralPath $agentContractPath -Raw
 $skillContract = Get-Content -LiteralPath $skillContractPath -Raw
 $methodologyContract = Get-Content -LiteralPath $methodologyContractPath -Raw
 $approvalWorkflow = Get-Content -LiteralPath $approvalWorkflowPath -Raw
+$releaseReadinessWorkflow = Get-Content -LiteralPath $releaseReadinessWorkflowPath -Raw
 $approvalPolicy = Get-Content -LiteralPath $approvalPolicyPath -Raw
 
 Assert-Eq -Label "agent: explicit human-gated release PR mode is documented" -Expected $true `
@@ -11740,6 +11742,10 @@ Assert-Eq -Label "agent: general release PR examples extend beyond backports" -E
 Assert-Eq -Label "agent: branch prefix and durable PR marker are mandatory" -Expected $true `
     -Actual ([bool]($agentContract -match 'release-agent/<descriptive-slug>') -and
         $agentContract.Contains('<!-- release-readiness-agent: human-approval-required -->'))
+Assert-Eq -Label "agent: trusted durable tracking label is mandatory before handoff" -Expected $true `
+    -Actual ($agentContract.Contains('release-agent-human-approval') -and
+        $agentContract.Contains('github-actions[bot]') -and
+        $agentContract.Contains('do not hand off the PR'))
 Assert-Eq -Label "agent: human approvals bind to current PR head" -Expected $true `
     -Actual ([bool]($agentContract -match 'approval.+commit_id.+current PR head SHA'))
 Assert-Eq -Label "skill: deterministic scripts remain report-only" -Expected $true `
@@ -11753,14 +11759,29 @@ Assert-Eq -Label "methodology: manual push destination is an authenticated fork 
 Assert-Eq -Label "workflow: trusted context never checks out pull-request code" -Expected $true `
     -Actual ($approvalWorkflow.Contains('pull_request_target:') -and
         -not $approvalWorkflow.Contains('actions/checkout'))
-Assert-Eq -Label "workflow: branch prefix and PR marker both activate gate" -Expected $true `
-    -Actual ($approvalWorkflow.Contains("startsWith(github.event.pull_request.head.ref, 'release-agent/')") -and
-        $approvalWorkflow.Contains('<!-- release-readiness-agent: human-approval-required -->'))
+Assert-Eq -Label "workflow: required job always runs and uses trusted durable provenance" -Expected $true `
+    -Actual (-not [bool]($approvalWorkflow -match '(?ms)^  human-approval:\r?\n    name: Require human approval\r?\n    if:') -and
+        $approvalWorkflow.Contains('issues/$PULL_REQUEST/timeline') -and
+        $approvalWorkflow.Contains('.actor.login == "github-actions[bot]"') -and
+        $approvalWorkflow.Contains('TRACKING_LABEL: release-agent-human-approval'))
+Assert-Eq -Label "workflow: branch prefix and PR marker seed durable tracking" -Expected $true `
+    -Actual ($approvalWorkflow.Contains('release-agent/*') -and
+        $approvalWorkflow.Contains('<!-- release-readiness-agent: human-approval-required -->') -and
+        $approvalWorkflow.Contains('-f "labels[]=$TRACKING_LABEL"'))
 Assert-Eq -Label "workflow: head SHA and write-permission evidence reach policy" -Expected $true `
     -Actual ($approvalWorkflow.Contains('-PullRequestHeadSha "$PULL_REQUEST_HEAD_SHA"') -and
         $approvalWorkflow.Contains('collaborators/$login/permission'))
+Assert-Eq -Label "workflow: failed reviewer permission lookup remains untrusted without aborting" -Expected $true `
+    -Actual ($approvalWorkflow.Contains("permission='none'") -and
+        $approvalWorkflow.Contains('treating the reviewer as untrusted'))
+Assert-Eq -Label "workflow: malformed policy output is summarized without masking policy status" -Expected $true `
+    -Actual ($approvalWorkflow.Contains("if jq -e '") -and
+        $approvalWorkflow.Contains('trusted approval policy did not emit valid result JSON') -and
+        $approvalWorkflow.Contains('status=1'))
 Assert-Eq -Label "workflow: normal two-approval policy remains enforced" -Expected $true `
     -Actual $approvalWorkflow.Contains('-RequiredApprovals 2')
+Assert-Eq -Label "workflow: agent contract changes trigger release-readiness validation" -Expected $true `
+    -Actual $releaseReadinessWorkflow.Contains("- '.github/agents/release-readiness-agent.agent.md'")
 Assert-Eq -Label "policy: latest decision, bot, author, and current-head gates exist" -Expected $true `
     -Actual ($approvalPolicy.Contains('$latestByReviewer') -and
         $approvalPolicy.Contains('$knownBotLogins') -and

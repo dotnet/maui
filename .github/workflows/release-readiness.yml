@@ -38,6 +38,7 @@ on:
     paths:
       - '.github/workflows/release-readiness.yml'
       - '.github/workflows/release-agent-human-approval.yml'
+      - '.github/agents/release-readiness-agent.agent.md'
       - '.github/skills/release-readiness/**'
       - '.github/scripts/shared/MauiReleaseVersioning.psm1'
 

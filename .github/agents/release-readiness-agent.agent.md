@@ -51,6 +51,7 @@ Every PR created by this agent MUST:
 
 - use a `release-agent/<descriptive-slug>` head branch, except an Arcade-generated `backport/pr-*` branch;
 - include `<!-- release-readiness-agent: human-approval-required -->` in its body;
+- acquire the durable `release-agent-human-approval` label from `github-actions[bot]`; if the label does not appear, correct the branch/body signals and do not hand off the PR;
 - remain unmerged until the **Release Agent Human Approval** check confirms two approvals on the current PR head SHA from non-bot MAUI maintainers with write access, other than the PR author; and
 - stop at the PR boundary for an actual human to approve and merge.
 
@@ -186,11 +187,12 @@ Do not execute branch cuts, external BAR/Maestro configuration, build triggers, 
 6. Apply only the authorized change, inspect the complete target-relative diff, and run the smallest tests that cover it. Stop and ask when conflict resolution or validation expands the requested behavior.
 7. Resolve the authenticated login with `gh api user`, verify the push remote belongs to that user, and push only the new branch to that fork.
 8. Open the PR with the repository testing note first and `<!-- release-readiness-agent: human-approval-required -->` in the body. Explain the requested change, evidence, validation, and unresolved release risks.
-9. Return the PR URL and stop. Never approve, merge, enable auto-merge, or manufacture a review.
+9. Verify that `github-actions[bot]` applied the durable `release-agent-human-approval` label and that `Release Agent Human Approval / Require human approval` appears. Correct missing branch/body signals instead of handing off an untracked PR.
+10. Return the PR URL and stop. Never approve, merge, enable auto-merge, or manufacture a review.
 
-The workflow check `.github/workflows/release-agent-human-approval.yml` evaluates each `release-agent/*` PR and automated `backport/pr-*` PR. It accepts only the latest decision-bearing review per reviewer, requires each approval's `commit_id` to equal the current PR head SHA, excludes the author and automation accounts, verifies repository write/maintain/admin permission, and requires two distinct approvals to match `.github/CONTRIBUTING.md`.
+The workflow check `.github/workflows/release-agent-human-approval.yml` evaluates each `release-agent/*` PR and automated `backport/pr-*` PR. On the first matching event it records durable provenance with the `release-agent-human-approval` label applied by `github-actions[bot]`; later edits cannot disable the gate by removing the body marker or renaming the branch. It accepts only the latest decision-bearing review per reviewer, requires each approval's `commit_id` to equal the current PR head SHA, excludes the author and automation accounts, verifies repository write/maintain/admin permission, and requires two distinct approvals to match `.github/CONTRIBUTING.md`.
 
-After opening the PR, verify that `Release Agent Human Approval / Require human approval` appears. Repository administrators must configure that check as required on each protected target; if that cannot be verified, disclose the enforcement gap rather than claiming the PR is protected.
+After opening the PR, verify that the durable label and `Release Agent Human Approval / Require human approval` both appear. Repository administrators must configure that check as required on each protected target; if either signal cannot be verified, disclose the enforcement gap rather than claiming the PR is protected.
 
 #### SR backport specialization
 

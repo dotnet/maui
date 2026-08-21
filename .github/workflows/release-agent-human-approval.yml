@@ -6,26 +6,88 @@ on:
   # This workflow never checks out or executes pull-request code. Using the
   # trusted base context prevents a PR from weakening its own approval gate.
   pull_request_target:
-    types: [opened, edited, synchronize, reopened, ready_for_review]
+    types: [opened, edited, synchronize, reopened, ready_for_review, labeled, unlabeled]
   pull_request_review:
     types: [submitted, dismissed]
 
 permissions:
   contents: read
+  issues: write
   pull-requests: read
 
 jobs:
   human-approval:
     name: Require human approval
-    if: >-
-      startsWith(github.event.pull_request.head.ref, 'release-agent/') ||
-      startsWith(github.event.pull_request.head.ref, 'backport/pr-') ||
-      contains(github.event.pull_request.body || '', '<!-- release-readiness-agent: human-approval-required -->')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Determine durable release-agent applicability
+        id: applicability
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
+          PULL_REQUEST_BODY: ${{ github.event.pull_request.body }}
+          PULL_REQUEST_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          TRACKING_LABEL: release-agent-human-approval
+        run: |
+          set -euo pipefail
+
+          timeline="$RUNNER_TEMP/timeline.json"
+          current_labels="$RUNNER_TEMP/current-labels.json"
+
+          gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "repos/$REPOSITORY/issues/$PULL_REQUEST/timeline?per_page=100" |
+            jq -s 'add // []' > "$timeline"
+
+          current_signal=false
+          if [[ "$PULL_REQUEST_HEAD_REF" == release-agent/* ||
+                "$PULL_REQUEST_HEAD_REF" == backport/pr-* ||
+                "$PULL_REQUEST_BODY" == *'<!-- release-readiness-agent: human-approval-required -->'* ]]; then
+            current_signal=true
+          fi
+
+          trusted_tracking=false
+          if jq -e --arg label "$TRACKING_LABEL" '
+            any(.[];
+              .event == "labeled" and
+              .label.name == $label and
+              .actor.login == "github-actions[bot]")
+          ' "$timeline" >/dev/null; then
+            trusted_tracking=true
+          fi
+
+          if [ "$current_signal" != true ] && [ "$trusted_tracking" != true ]; then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            echo "Release-agent human approval is not applicable to this PR." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if ! gh api "repos/$REPOSITORY/labels/$TRACKING_LABEL" >/dev/null 2>&1; then
+            gh api --method POST "repos/$REPOSITORY/labels" \
+              -f name="$TRACKING_LABEL" \
+              -f color="8250df" \
+              -f description="Durable provenance for release-agent human approval" \
+              >/dev/null 2>&1 ||
+              gh api "repos/$REPOSITORY/labels/$TRACKING_LABEL" >/dev/null
+          fi
+
+          gh api --paginate \
+            "repos/$REPOSITORY/issues/$PULL_REQUEST/labels?per_page=100" |
+            jq -s 'add // []' > "$current_labels"
+          if ! jq -e --arg label "$TRACKING_LABEL" \
+            'any(.[]; .name == $label)' "$current_labels" >/dev/null; then
+            gh api --method POST "repos/$REPOSITORY/issues/$PULL_REQUEST/labels" \
+              -f "labels[]=$TRACKING_LABEL" >/dev/null
+          fi
+
+          echo "required=true" >> "$GITHUB_OUTPUT"
+
       - name: Read reviews and trusted approval policy
         id: inputs
+        if: steps.applicability.outputs.required == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -54,9 +116,13 @@ jobs:
                  .author_association == "COLLABORATOR"))
             | .user.login
           ' "$reviews" | sort -fu | while IFS= read -r login; do
-            permission="$(gh api \
-              "repos/$REPOSITORY/collaborators/$login/permission" \
-              --jq '.permission')"
+            permission='none'
+            if ! permission="$(gh api \
+                "repos/$REPOSITORY/collaborators/$login/permission" \
+                --jq '.permission' 2>/dev/null)"; then
+              echo "::warning::Could not determine permission for reviewer '$login'; treating the reviewer as untrusted."
+              permission='none'
+            fi
             next_permissions="$RUNNER_TEMP/reviewer-permissions-next.json"
             jq \
               --arg login "${login,,}" \
@@ -78,6 +144,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Require two current human maintainer approvals
+        if: steps.applicability.outputs.required == 'true'
         shell: bash
         env:
           REVIEWS_PATH: ${{ steps.inputs.outputs.reviews }}
@@ -100,11 +167,27 @@ jobs:
           set -e
 
           cat "$result"
-          {
-            echo "### Release-agent human approval"
-            echo
-            echo "- Required approvals: $(jq -r '.RequiredApprovals' "$result")"
-            echo "- Qualified approvers: $(jq -r 'if (.Approvers | length) == 0 then "_none_" else (.Approvers | join(", ")) end' "$result")"
-          } >> "$GITHUB_STEP_SUMMARY"
+          if jq -e '
+              type == "object" and
+              (.RequiredApprovals | type == "number") and
+              (.Approvers | type == "array")
+            ' "$result" >/dev/null 2>&1; then
+            {
+              echo "### Release-agent human approval"
+              echo
+              echo "- Required approvals: $(jq -r '.RequiredApprovals' "$result")"
+              echo "- Qualified approvers: $(jq -r 'if (.Approvers | length) == 0 then "_none_" else (.Approvers | join(", ")) end' "$result")"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::The trusted approval policy did not emit valid result JSON (exit $status)."
+            {
+              echo "### Release-agent human approval"
+              echo
+              echo "The trusted approval policy did not emit a valid result."
+            } >> "$GITHUB_STEP_SUMMARY"
+            if [ "$status" -eq 0 ]; then
+              status=1
+            fi
+          fi
 
           exit "$status"
