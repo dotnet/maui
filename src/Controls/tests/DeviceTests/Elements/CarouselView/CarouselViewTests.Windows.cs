@@ -309,7 +309,6 @@ namespace Microsoft.Maui.DeviceTests
 				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
 				var (_, itemWidth) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
 				SetPrivateField(handler, "_isRecentering", true);
-				SetPrivateField(handler, "_hasRecenteringViewChanging", false);
 				SetPrivateField(handler, "_recenteringHorizontalOffset", scrollViewer.ScrollableWidth);
 				SetPrivateField(handler, "_recenteringVerticalOffset", 0d);
 				SetPrivateField(handler, "_recenteringAttemptCount", 1);
@@ -318,6 +317,62 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(GetPrivateField<bool>(handler, "_isRecentering"));
 				Assert.Equal(1, GetPrivateField<int>(handler, "_recenteringAttemptCount"));
+				Assert.False(carouselView.IsDragging);
+				Assert.False(carouselView.IsScrolling);
+			});
+		}
+
+		[Fact]
+		public async Task NewNativeScrollOverridesAcknowledgedRecenteringAndReportsDrag()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var (targetOffset, itemWidth) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+
+				bool injectedNewestScroll = false;
+				bool observedDragging = false;
+				carouselView.PropertyChanged += (_, args) =>
+				{
+					if (injectedNewestScroll
+						&& args.PropertyName == nameof(CarouselView.IsDragging)
+						&& carouselView.IsDragging)
+					{
+						observedDragging = true;
+					}
+				};
+
+				void InjectNewestScroll(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangingEventArgs args)
+				{
+					if (injectedNewestScroll || !GetPrivateField<bool>(handler, "_isRecentering"))
+						return;
+
+					injectedNewestScroll = true;
+					Assert.True(scrollViewer.ChangeView(0, null, null, true));
+				}
+
+				scrollViewer.ViewChanging += InjectNewestScroll;
+				try
+				{
+					await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset + itemWidth * 0.5 + 1);
+				}
+				finally
+				{
+					scrollViewer.ViewChanging -= InjectNewestScroll;
+				}
+
+				Assert.True(injectedNewestScroll);
+				Assert.True(observedDragging);
+				Assert.False(GetPrivateField<bool>(handler, "_isRecentering"));
 				Assert.False(carouselView.IsDragging);
 				Assert.False(carouselView.IsScrolling);
 			});
@@ -403,7 +458,35 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task CollectionChangeDuringProgrammaticScrollDoesNotArmTerminalSuppression()
+		public async Task CollectionChangeTerminalScrollRecentersCapturedItem()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				var (targetOffset, itemWidth) = await PrimeNativeScrollAsync(handler, scrollViewer, initialPhysicalPosition);
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
+
+				await ChangeViewAndWaitForSettleAsync(scrollViewer, targetOffset + itemWidth * 0.5 + 1);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(items[1], carouselView.CurrentItem);
+				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+				Assert.InRange(GetHorizontalCenterError(handler, scrollViewer, initialPhysicalPosition + 1), 0, 1);
+			});
+		}
+
+		[Fact]
+		public async Task CollectionChangeDuringProgrammaticScrollPreservesReconciliation()
 		{
 			SetupBuilder();
 			var items = new ObservableCollection<object>(CreateItems());
@@ -419,8 +502,9 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_gotoPosition", 1);
 				carouselView.SendScrolled(new ItemsViewScrolledEventArgs { CenterItemIndex = 1 });
 
-				Assert.True(GetPrivateField<bool>(handler, "_isCollectionChanged"));
-				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChanged"));
+				Assert.True(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+				Assert.Equal(0, GetPrivateField<int>(handler, "_centerItemIndexFromScroll"));
 
 				SetPrivateField(handler, "_gotoPosition", -1);
 			});
@@ -441,6 +525,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				items.Add(new object());
 				await DrainDispatcherQueueAsync(scrollViewer);
+				Assert.True(GetPrivateField<bool>(handler, "_isCollectionChanged"));
 
 				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
 				var itemWidth = GetItemLength(
@@ -704,6 +789,38 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, scrollToRequest.Index);
 				Assert.Equal(ScrollToPosition.Center, scrollToRequest.ScrollToPosition);
 				Assert.False(scrollToRequest.IsAnimated);
+			});
+		}
+
+		[Fact]
+		public async Task UnrealizedCollectionOverrideStopsWaitingAfterBoundedRetries()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				var pendingItem = new object();
+				carouselView.CurrentItem = pendingItem;
+				SetPrivateField(handler, "_collectionCurrentItemOverride", pendingItem);
+
+				InvokePrivateMethod(
+					handler,
+					"QueueCollectionCurrentItemOverrideScroll",
+					pendingItem,
+					carouselView.Position,
+					GetPrivateField<int>(handler, "_collectionChangeVersion"));
+
+				await AssertEventually(
+					() => GetPrivateField<object>(handler, "_collectionCurrentItemOverride") is null,
+					timeout: 2000,
+					message: "The unrealized current-item override remained subscribed after bounded retries.");
+
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverrideItems"));
 			});
 		}
 
@@ -1043,7 +1160,6 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_collectionCurrentItemOverride", new object());
 				SetPrivateField(handler, "_collectionItemsSource", new ArrayList());
 				SetPrivateField(handler, "_isRecentering", true);
-				SetPrivateField(handler, "_hasRecenteringViewChanging", true);
 				SetPrivateField(handler, "_recenteringHorizontalOffset", 10d);
 				SetPrivateField(handler, "_recenteringVerticalOffset", 20d);
 				SetPrivateField(handler, "_failedRecenteringOffset", (WPoint?)new WPoint(1, 2));
@@ -1068,7 +1184,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
 				Assert.Null(GetPrivateField<IList>(handler, "_collectionItemsSource"));
 				Assert.False(GetPrivateField<bool>(handler, "_isRecentering"));
-				Assert.False(GetPrivateField<bool>(handler, "_hasRecenteringViewChanging"));
 				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringHorizontalOffset"));
 				Assert.Equal(0, GetPrivateField<double>(handler, "_recenteringVerticalOffset"));
 				Assert.Null(GetPrivateField<WPoint?>(handler, "_failedRecenteringOffset"));
@@ -1338,6 +1453,13 @@ namespace Microsoft.Maui.DeviceTests
 			var field = typeof(CarouselViewHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(field);
 			field.SetValue(handler, value);
+		}
+
+		static void InvokePrivateMethod(CarouselViewHandler handler, string methodName, params object[] arguments)
+		{
+			var method = typeof(CarouselViewHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(method);
+			method.Invoke(handler, arguments);
 		}
 
 		static async Task DrainDispatcherQueueAsync(WUIElement element)
