@@ -108,6 +108,71 @@ Describe 'Gate test detection snapshot pinning' {
     }
 }
 
+Describe 'Limit-ExpensiveGateTests coverage reporting' {
+    BeforeEach {
+        $script:oldMaxDeviceTests = $env:GATE_MAX_DEVICE_TESTS
+        $script:oldMaxUiTests = $env:GATE_MAX_UI_TESTS
+        $env:GATE_MAX_DEVICE_TESTS = '1'
+        $env:GATE_MAX_UI_TESTS = '1'
+    }
+
+    AfterEach {
+        $env:GATE_MAX_DEVICE_TESTS = $script:oldMaxDeviceTests
+        $env:GATE_MAX_UI_TESTS = $script:oldMaxUiTests
+        $script:GateCoverageLimitations = @()
+    }
+
+    It 'persists dropped device tests as uncovered while delegating only dropped UI tests to Deep UI' {
+        $tests = @(
+            @{ Type = 'DeviceTest'; TestName = 'NewDeviceTest'; Files = @('NewDeviceTests.cs') }
+            @{ Type = 'DeviceTest'; TestName = 'ExistingDeviceTest'; Files = @('ExistingDeviceTests.cs') }
+            @{ Type = 'UITest'; TestName = 'NewUiTest'; Files = @('NewUiTests.cs') }
+            @{ Type = 'UITest'; TestName = 'ExistingUiTest'; Files = @('ExistingUiTests.cs') }
+            @{ Type = 'UnitTest'; TestName = 'CheapUnitTest'; Files = @('CheapUnitTests.cs') }
+        )
+
+        $kept = @(Limit-ExpensiveGateTests `
+            -Tests $tests `
+            -AddedFiles @('NewDeviceTests.cs', 'NewUiTests.cs') 6>$null)
+
+        @($kept.TestName) | Should -Be @('CheapUnitTest', 'NewDeviceTest', 'NewUiTest')
+        @($script:GateCoverageLimitations).Count | Should -Be 2
+        $script:GateCoverageLimitations[0] | Should -Match 'ExistingDeviceTest'
+        $script:GateCoverageLimitations[0] | Should -Match 'does not execute DeviceTests'
+        $script:GateCoverageLimitations[1] | Should -Match 'ExistingUiTest'
+        $script:GateCoverageLimitations[1] | Should -Match 'exercised separately by the Deep UI Tests stage'
+    }
+
+    It 'writes the coverage limitation into the persisted Markdown report' {
+        $script:MarkdownReport = Join-Path $TestDrive 'gate-coverage.md'
+        $script:OutputPath = $TestDrive
+        $withoutFix = @(@{
+            TestName = 'TargetTest'; Passed = $false; BuildError = $false
+            EnvError = $false; FilterMismatch = $false
+        })
+        $withFix = @(@{
+            TestName = 'TargetTest'; Passed = $true; BuildError = $false
+            EnvError = $false; FilterMismatch = $false
+        })
+        $tests = @([pscustomobject]@{
+            Type = 'DeviceTest'; TestName = 'TargetTest'; Filter = 'TargetTest'
+        })
+
+        Write-MarkdownReport `
+            -VerificationPassed $true -CompileCoupledVerified $false `
+            -FailedWithoutFix $true -PassedWithFix $true `
+            -WithoutFixResult $withoutFix[0] -WithFixResult $withFix[0] `
+            -WithoutFixResultsList $withoutFix -WithFixResultsList $withFix `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @() -ReportNewFiles @() `
+            -CoverageLimitations @('DroppedDeviceTest was not executed by this gate.')
+
+        $report = Get-Content -LiteralPath $script:MarkdownReport -Raw
+        $report | Should -Match 'Gate coverage limitations'
+        $report | Should -Match 'DroppedDeviceTest was not executed by this gate'
+    }
+}
+
 Describe 'Invoke-TestRun — host-only target frameworks' {
     It 'applies the shared platform exclusions to unit and XAML unit tests' {
         ([regex]::Matches($script:invokeTestRunText, '\+\s*\$hostOnlyTargetFrameworkArgs')).Count | Should -Be 2
