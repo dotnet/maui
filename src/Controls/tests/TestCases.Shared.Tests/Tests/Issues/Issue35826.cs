@@ -19,17 +19,9 @@ public class Issue35826 : _IssuesUITest
 	[Category(UITestCategories.Essentials)]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
 	{
-		// This regression only manifests on Android API 36, where the ActivityResultLauncher
-		// ownership rules are enforced strictly enough that using the wrong activity's launcher
-		// causes the result to never be delivered, hanging the task indefinitely.
-		var appiumApp = App as AppiumApp
-			?? throw new InvalidOperationException("Issue #35826 requires the Appium test driver.");
-		var apiLevel = (long?)appiumApp.Driver.Capabilities.GetCapability("deviceApiLevel")
-			?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
-		if (apiLevel < 36)
-		{
-			Assert.Ignore($"Issue #35826 only manifests on Android API 36+. Current device API: {apiLevel}.");
-		}
+		// API 36 exposed the stricter launcher-ownership regression, but completion from
+		// a child activity is valid on every supported Android version and belongs in the
+		// existing Essentials CI lane.
 
 		// Verify the host page loaded
 		App.WaitForElement(OpenChildActivityButton);
