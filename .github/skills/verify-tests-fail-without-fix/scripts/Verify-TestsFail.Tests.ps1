@@ -24,7 +24,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -1402,7 +1402,7 @@ Total tests: 20
 }
 
 Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
-    It 'classifies a UITest snapshot SIZE mismatch as INCONCLUSIVE (env), not a failure (build 14850018 #37032)' {
+    It 'records a UITest snapshot size mismatch for later sibling A/B comparison' {
         $log = New-LogFile -Content @"
   [UITest] Issue36422 (filter: Issue36422)
   FixtureSetup for Issue36422(iOS)
@@ -1412,13 +1412,14 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
   [UITest] Issue36422: Passed=False Failed=1 [303s]
 "@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
         $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Failed | Should -Be 1
         $r.Error | Should -Match 'size'
         Remove-Item -LiteralPath $log -Force
     }
 
-    It 'classifies device-test size mismatches (Passed:/Failed: counts) as INCONCLUSIVE (env)' {
+    It 'records device-test size mismatches without prematurely downgrading them' {
         $log = New-LogFile -Content @"
   Passed: 3
   Failed: 2
@@ -1426,8 +1427,9 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
   Snapshot different than baseline: B.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
 "@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
         $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Failed | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1469,16 +1471,16 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         Remove-Item -LiteralPath $log -Force
     }
 
-    It 'keeps a count-less run benign when every failure is a missing baseline or size mismatch' {
+    It 'retains a mixed missing-baseline and size-mismatch run until sibling comparison' {
         $log = New-LogFile -Content @"
   VisualTestFailedException : Baseline snapshot not yet created for NewSnapshot.png
   Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
   [UITest] MixedBenignSnapshots: Passed=False Failed=2 [40s]
 "@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
         $r.SnapshotSizeMismatch | Should -BeTrue
-        $r.Failed | Should -Be 0
+        $r.Failed | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1491,6 +1493,62 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         $r.EnvError | Should -Not -BeTrue
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Snapshot size-mismatch A/B pairing' {
+    BeforeEach {
+        $script:without = @{
+            Passed = $false
+            Failed = 1
+            FailCount = 1
+            SnapshotSizeMismatch = $true
+            SnapshotSizeMismatchSignatures = @('sample.png|1206x2472|1124x2286')
+        }
+        $script:with = @{
+            Passed = $false
+            Failed = 1
+            FailCount = 1
+            SnapshotSizeMismatch = $true
+            SnapshotSizeMismatchSignatures = @('sample.png|1206x2472|1124x2286')
+        }
+    }
+
+    It 'downgrades an exact mismatch repeated in both A/B legs' {
+        Convert-SnapshotSizeMismatchPairToEnvironment `
+            -WithoutFixResult $script:without `
+            -WithFixResult $script:with |
+            Should -BeTrue
+
+        $script:without.EnvError | Should -BeTrue
+        $script:with.EnvError | Should -BeTrue
+        $script:without.Failed | Should -Be 0
+        $script:with.Failed | Should -Be 0
+    }
+
+    It 'does not downgrade a with-fix-only size mismatch' {
+        $script:without.SnapshotSizeMismatch = $false
+        $script:without.SnapshotSizeMismatchSignatures = @()
+
+        Convert-SnapshotSizeMismatchPairToEnvironment `
+            -WithoutFixResult $script:without `
+            -WithFixResult $script:with |
+            Should -BeFalse
+
+        $script:with.EnvError | Should -Not -BeTrue
+        $script:with.Failed | Should -Be 1
+    }
+
+    It 'does not downgrade changed with-fix dimensions' {
+        $script:with.SnapshotSizeMismatchSignatures = @('sample.png|1206x2472|1200x2300')
+
+        Convert-SnapshotSizeMismatchPairToEnvironment `
+            -WithoutFixResult $script:without `
+            -WithFixResult $script:with |
+            Should -BeFalse
+
+        $script:with.EnvError | Should -Not -BeTrue
+        $script:with.Failed | Should -Be 1
     }
 }
 

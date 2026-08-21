@@ -215,6 +215,14 @@ Describe 'Deep timeout history classification' {
     }
 }
 
+Describe 'Deep build-failure attribution' {
+    It 'does not infer a base break solely from an unchanged diagnostic file' {
+        $pipelineContent | Should -Match 'The cause is \*\*undetermined\*\*: the diagnostic is reported in unchanged file'
+        $pipelineContent | Should -Match 'a PR API/signature change can break an unchanged consumer'
+        $pipelineContent | Should -Not -Match 'This is a \*\*base-branch build break\*\* — the failing file'
+    }
+}
+
 Describe 'Gate trusted overlay failure classification' {
     It 'keeps a non-applicable Catalyst overlay after setup inconclusive' {
         $childScript = @"

@@ -72,9 +72,9 @@ BeforeAll {
     # startup signature that already appeared in this category's history has survived the
     # device reboot + rebuild recovery, so it is deterministic (a real failure), not infra.
     function Test-AmbiguousStartupIsDeterministic {
-        param([string]$EnvHit, [string[]]$History)
+        param([string]$EnvHit, [string[]]$History, [bool]$RecoveryVerified)
         $ambiguous = Get-AmbiguousStartupPatterns
-        return ([bool]$EnvHit -and ($ambiguous -contains $EnvHit) -and (@($History) -contains $EnvHit))
+        return ($RecoveryVerified -and [bool]$EnvHit -and ($ambiguous -contains $EnvHit) -and (@($History) -contains $EnvHit))
     }
 }
 
@@ -139,28 +139,39 @@ Describe 'Verified crash/startup retry history' {
 
 Describe 'Ambiguous startup retry decision' {
     It 'allows the first occurrence to retry (one device-recovery attempt)' {
-        Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button to appear' -History @() |
+        Test-AmbiguousStartupIsDeterministic -EnvHit 'Timed out waiting for Go To Test button to appear' -History @() -RecoveryVerified $false |
             Should -BeFalse
     }
 
-    It 'treats a recurrence after recovery as deterministic (PR-caused), not infrastructure' {
+    It 'treats a recurrence after verified recovery as deterministic (PR-caused), not infrastructure' {
         Test-AmbiguousStartupIsDeterministic `
             -EnvHit 'Timed out waiting for Go To Test button to appear' `
-            -History @('Timed out waiting for Go To Test button to appear') |
+            -History @('Timed out waiting for Go To Test button to appear') `
+            -RecoveryVerified $true |
             Should -BeTrue
+    }
+
+    It 'preserves the remaining retry when recovery was not verified' {
+        Test-AmbiguousStartupIsDeterministic `
+            -EnvHit 'Timed out waiting for Go To Test button to appear' `
+            -History @('Timed out waiting for Go To Test button to appear') `
+            -RecoveryVerified $false |
+            Should -BeFalse
     }
 
     It 'keeps retrying when a DIFFERENT ambiguous signature follows the first one' {
         Test-AmbiguousStartupIsDeterministic `
             -EnvHit 'did not recover after crash-recovery attempts' `
-            -History @('Timed out waiting for Go To Test button to appear') |
+            -History @('Timed out waiting for Go To Test button to appear') `
+            -RecoveryVerified $true |
             Should -BeFalse
     }
 
     It 'never short-circuits an unambiguous infrastructure error, however often it repeats' {
         Test-AmbiguousStartupIsDeterministic `
             -EnvHit 'no devices/emulators found' `
-            -History @('no devices/emulators found', 'no devices/emulators found') |
+            -History @('no devices/emulators found', 'no devices/emulators found') `
+            -RecoveryVerified $true |
             Should -BeFalse
     }
 }
@@ -171,6 +182,7 @@ Describe 'Invoke-UITestWithRetry wiring' {
     }
 
     It 'clears EnvErrorHit on a confirmed deterministic startup failure so callers see a real failure' {
+        $script:RetryScriptSource | Should -Match '\$recoveryVerified\s+-and\s+\$envHit'
         $script:RetryScriptSource | Should -Match '\$ambiguousStartupPatterns\s*-contains\s*\$envHit'
         $script:RetryScriptSource | Should -Match '\$envErrorHistory\s*-contains\s*\$envHit'
     }
@@ -231,6 +243,8 @@ if ($TestFilter -ne 'Name = Foo Bar') {
 
         $recoveryBlock | Should -Match ([regex]::Escape("Join-Path `$PSScriptRoot 'Reset-DeviceState.ps1'"))
         $recoveryBlock | Should -Match ([regex]::Escape('-BootTimeoutSeconds $recoveryBudgetSeconds'))
+        $recoveryBlock | Should -Match ([regex]::Escape('-PassThruStatus'))
+        $recoveryBlock | Should -Match '\$recoveryVerified'
         $recoveryBlock | Should -Not -Match '(?m)&\s*(adb|xcrun)\b'
     }
 
@@ -240,5 +254,16 @@ if ($TestFilter -ne 'Name = Foo Bar') {
         $script:ResetScriptSource |
             Should -Match ([regex]::Escape("@('simctl', 'bootstatus', `$sim, '-b', '-t', `"`$bootStatusTimeout`")"))
         $script:ResetScriptSource | Should -Match '\$bootStatus\.ExitCode\s*-eq\s*0'
+        $script:ResetScriptSource | Should -Match 'Complete-DeviceReset -Succeeded \$true'
+        $script:ResetScriptSource | Should -Match 'Complete-DeviceReset -Succeeded \$false'
+    }
+
+    It 'reports an unverified host-platform reset only when status is requested' {
+        $defaultOutput = @(& $script:ResetScriptPath -Platform windows)
+        $statusOutput = @(& $script:ResetScriptPath -Platform windows -PassThruStatus)
+
+        $defaultOutput.Count | Should -Be 0
+        $statusOutput.Count | Should -Be 1
+        $statusOutput[0] | Should -BeFalse
     }
 }

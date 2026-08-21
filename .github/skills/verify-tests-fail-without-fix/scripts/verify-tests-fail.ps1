@@ -1245,24 +1245,20 @@ function Get-TestResultFromOutput {
                         FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
                     }
                 }
-                # A snapshot "size differs" failure means the committed baseline PNG has DIFFERENT
-                # pixel DIMENSIONS than the gate simulator's screenshot — i.e. the baseline was
-                # captured on a different-sized device than the gate boots (e.g. an iPhone 16 Pro
-                # 1206x2472 baseline vs the gate's pinned iPhone 11 Pro 1124x2286). A PR *code* fix
-                # can never change screenshot dimensions, so this failure is environmental in BOTH
-                # the without-fix and with-fix runs and the gate cannot A/B verify the test. When
-                # every remaining failure is a size mismatch (alone or together with new-baseline
-                # tests), report INCONCLUSIVE, never FAILED. This is distinct from a real pixel
-                # DIFF ("N% difference"), which is a genuine visual regression and falls through.
-                # (build 14850018, PR #37032: ChangingItemSpacing... baseline 1206x2472 vs gate
-                # 1124x2286 — identical size mismatch in both legs, wrongly reported FAILED.)
-                $sizeMismatchCount = ([regex]::Matches($resultEvidence, '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?')).Count
+                # A size mismatch is environmental only when the exact same file + dimensions
+                # recur in BOTH A/B legs. Record it as a genuine failure for now; the paired
+                # result pass below downgrades identical signatures to INCONCLUSIVE. This keeps
+                # a with-fix-only window-size regression FAILED instead of hiding it as infra.
+                $sizeMismatchSignatures = @(Get-SnapshotSizeMismatchSignatures -Content $resultEvidence)
+                $sizeMismatchCount = $sizeMismatchSignatures.Count
                 if ($sizeMismatchCount -gt 0 -and ($sizeMismatchCount + $baselineMissingCount) -ge $deviceFailCount) {
-                    Write-Host "  ⚠️  All $deviceFailCount failing test(s) are snapshot SIZE mismatches (baseline captured on a different device size than the gate simulator) — INCONCLUSIVE (a code fix cannot change screenshot dimensions)" -ForegroundColor Yellow
+                    Write-Host "  📐 All $deviceFailCount failing test(s) are snapshot size mismatches — retaining FAILED until the sibling A/B leg proves the exact same mismatch." -ForegroundColor Yellow
                     return @{
-                        Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
-                        Error = "Snapshot size mismatch for $sizeMismatchCount test(s): the committed baseline PNG dimensions differ from the gate simulator's screenshot size (baseline captured on a different-sized device). A PR code fix cannot change screenshot dimensions, so the gate cannot A/B verify these tests — the baseline needs regenerating on the current device."
-                        FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
+                        Passed = $false; SnapshotSizeMismatch = $true
+                        SnapshotSizeMismatchSignatures = $sizeMismatchSignatures
+                        Error = "Snapshot size mismatch for $sizeMismatchCount test(s); this remains a failure unless the exact same file and dimensions recur in the sibling A/B leg."
+                        PassCount = $devicePassCount; FailCount = $deviceFailCount
+                        Failed = $deviceFailCount; Total = $deviceTotal; Skipped = 0
                     }
                 }
                 return @{
@@ -1341,26 +1337,21 @@ function Get-TestResultFromOutput {
         }
     }
 
-    # ── Snapshot SIZE mismatch (baseline captured on a different-sized device) ──
-    # "Snapshot different than baseline: X.png (size differs - baseline is WxH pixels, actual is
-    # WxH pixels)" means the committed baseline PNG has different DIMENSIONS than the gate
-    # simulator's screenshot — the baseline was captured on a different device size than the gate
-    # boots (e.g. an iPhone 16 Pro 1206x2472 baseline vs the pinned iPhone 11 Pro 1124x2286). A PR
-    # *code* fix can never change screenshot dimensions, so this failure is environmental in BOTH
-    # the without-fix and with-fix runs and the gate cannot A/B verify the test → INCONCLUSIVE,
-    # never FAILED. This is DISTINCT from a real pixel DIFF ("N% difference") against a same-size
-    # baseline, which is a genuine visual regression and is NOT matched here. Reachable on the
-    # UITest path (NUnit "Passed=False", no "Passed:/Failed:" counts). (build 14850018, PR #37032:
-    # ChangingItemSpacingDoesNotShiftFirstItemOutOfView.png baseline 1206x2472 vs gate 1124x2286 —
-    # identical size mismatch in both legs, wrongly reported FAILED.)
-    $sizeMismatchCount = ([regex]::Matches($content, '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?')).Count
+    # ── Snapshot SIZE mismatch (requires exact sibling A/B confirmation) ──
+    # Record the affected file and dimensions, but retain a genuine failure until the sibling
+    # leg reports the identical signature. The paired result pass later converts only exact
+    # A/B matches to INCONCLUSIVE; a one-sided with-fix window-size regression stays FAILED.
+    $sizeMismatchSignatures = @(Get-SnapshotSizeMismatchSignatures -Content $content)
+    $sizeMismatchCount = $sizeMismatchSignatures.Count
     if ($uiTestFailureCount -gt 0 -and
         $sizeMismatchCount -gt 0 -and
         ($sizeMismatchCount + $baselineMissingCount) -ge $uiTestFailureCount) {
         return @{
-            Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
-            Error = "Snapshot size mismatch for $sizeMismatchCount reported failure(s): the committed baseline PNG dimensions differ from the gate simulator's screenshot size — the baseline was captured on a different-sized device. Every count-less UITest failure was accounted for by a size mismatch or missing baseline, so the gate cannot A/B verify these tests; the baselines need regenerating on the current device."
-            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+            Passed = $false; SnapshotSizeMismatch = $true
+            SnapshotSizeMismatchSignatures = $sizeMismatchSignatures
+            Error = "Snapshot size mismatch for $sizeMismatchCount reported failure(s); this remains a failure unless the exact same file and dimensions recur in the sibling A/B leg."
+            PassCount = 0; FailCount = $uiTestFailureCount
+            Failed = $uiTestFailureCount; Total = $uiTestFailureCount; Skipped = 0
         }
     }
 
@@ -3186,6 +3177,60 @@ function Get-SnapshotDiffMap {
     return $map
 }
 
+function Get-SnapshotSizeMismatchSignatures {
+    param([string] $Content)
+    if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
+
+    $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\r\n]+?)\s*\(size differs\s*-\s*baseline is (?<baseline>\d+x\d+) pixels?, actual is (?<actual>\d+x\d+) pixels?\)'
+    return @($rx.Matches($Content) |
+        ForEach-Object {
+            "$($_.Groups['file'].Value.Trim().ToLowerInvariant())|$($_.Groups['baseline'].Value)|$($_.Groups['actual'].Value)"
+        } |
+        Sort-Object -Unique)
+}
+
+function Test-SnapshotSizeMismatchPair {
+    param(
+        [object] $WithoutFixResult,
+        [object] $WithFixResult
+    )
+
+    if (-not $WithoutFixResult -or -not $WithFixResult) { return $false }
+    if (-not $WithoutFixResult.SnapshotSizeMismatch -or -not $WithFixResult.SnapshotSizeMismatch) {
+        return $false
+    }
+
+    $without = @($WithoutFixResult.SnapshotSizeMismatchSignatures | Where-Object { $_ } | Sort-Object -Unique)
+    $with = @($WithFixResult.SnapshotSizeMismatchSignatures | Where-Object { $_ } | Sort-Object -Unique)
+    if ($without.Count -eq 0 -or $without.Count -ne $with.Count) { return $false }
+    for ($i = 0; $i -lt $without.Count; $i++) {
+        if (-not [string]::Equals($without[$i], $with[$i], [System.StringComparison]::Ordinal)) {
+            return $false
+        }
+    }
+    return $true
+}
+
+function Convert-SnapshotSizeMismatchPairToEnvironment {
+    param(
+        [object] $WithoutFixResult,
+        [object] $WithFixResult
+    )
+
+    if (-not (Test-SnapshotSizeMismatchPair -WithoutFixResult $WithoutFixResult -WithFixResult $WithFixResult)) {
+        return $false
+    }
+
+    foreach ($result in @($WithoutFixResult, $WithFixResult)) {
+        $result.EnvError = $true
+        $result.SnapshotSizeMismatchPaired = $true
+        $result.Error = "The exact same snapshot file and dimensions mismatched in both A/B legs, so the gate cannot attribute the mismatch to the fix. Regenerate the baseline on the current device."
+        $result.FailCount = 0
+        $result.Failed = 0
+    }
+    return $true
+}
+
 function Get-LeakAssertCount {
     # Counts GC memory-leak assertion failures in a test log. The MAUI device/unit test helper
     # AssertionExtensions.WaitForGC emits exactly one "Expected all references to be collected,
@@ -3546,6 +3591,18 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
         Write-Log "  [CleanRetry] $($retryEntry.TestName): compiled clean, tests failed — genuine failure"
     }
     $withFixResults[$ri] = $clean
+}
+
+# A snapshot dimension mismatch is environmental only when the exact same file,
+# baseline dimensions, and actual dimensions recur in both A/B legs.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    if (Convert-SnapshotSizeMismatchPairToEnvironment -WithoutFixResult $wo -WithFixResult $w) {
+        Write-Host "  📐 $($t.TestName): identical snapshot size mismatch in both A/B legs — reclassifying as INCONCLUSIVE." -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): identical A/B snapshot size mismatch — INCONCLUSIVE"
+    }
 }
 
 # Combine into a single summary for backward compatibility
