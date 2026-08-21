@@ -3600,6 +3600,40 @@ stages:
               targetPath: '$(Pipeline.Workspace)/uifail-analysis'
             continueOnError: true
 
+          # Deep UI results are produced after PR code executes. Import the
+          # downloaded tree through the trusted bounded regular-file helper before
+          # the credentialed posting step parses, stages, or reads any snapshot.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = Join-Path "$(Pipeline.Workspace)" "drop-deep-uitests"
+              $destination = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
+              Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+                Write-Host "No deep UI test artifact was produced."
+                exit 0
+              }
+
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              try {
+                $maxDeepResultFiles = 4096
+                $maxDeepResultDirectories = 2048
+                $maxDeepResultFileBytes = 16MB
+                $maxDeepResultBytes = 512MB
+                $importResult = Copy-BoundedRegularFileTree `
+                  -SourceDirectory $source `
+                  -DestinationDirectory $destination `
+                  -MaxFileCount $maxDeepResultFiles `
+                  -MaxDirectoryCount $maxDeepResultDirectories `
+                  -MaxFileBytes $maxDeepResultFileBytes `
+                  -MaxTotalBytes $maxDeepResultBytes
+                Write-Host "Imported $($importResult.CopiedFiles) bounded deep UI result file(s) ($($importResult.CopiedBytes) bytes)."
+              } catch {
+                Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]Deep UI test artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import bounded deep UI test results'
+            continueOnError: true
+
           # Import only the expected bounded regular file. The analysis artifact
           # is prompt-controlled data and must never overwrite trusted scripts or
           # introduce executable content into the checkout.
@@ -3638,7 +3672,7 @@ stages:
                 throw "Required GitHub retry helper not found: $ghRetryHelper"
               }
               . $ghRetryHelper
-              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewId = $env:AI_SUMMARY_REVIEW_ID

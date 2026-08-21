@@ -469,6 +469,35 @@ Describe 'Reviewer pipeline timeout containment' {
         Test-Path -LiteralPath (Join-Path $TestDrive 'posting-home/.gitconfig') | Should -BeFalse
     }
 
+    It 'imports deep UI snapshots through bounded regular-file validation before posting' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+        $postJobStart = $stageBlock.IndexOf('- job: UpdateComment')
+        $postJobBlock = $stageBlock.Substring($postJobStart)
+
+        $importIndex = $stageBlock.IndexOf("displayName: 'Import bounded deep UI test results'")
+        $postIndex = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
+
+        $postJobStart | Should -BeGreaterThan -1
+        $importIndex | Should -BeGreaterThan -1
+        $postIndex | Should -BeGreaterThan $importIndex
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$maxDeepResultFileBytes = 16MB'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$maxDeepResultBytes = 512MB'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            'Copy-BoundedRegularFileTree `'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '-MaxFileBytes $maxDeepResultFileBytes'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '-MaxTotalBytes $maxDeepResultBytes'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"'))
+        $postJobBlock | Should -Not -Match ([regex]::Escape(
+            '$artDir = "$(Pipeline.Workspace)/drop-deep-uitests"'))
+    }
+
     It 'does not enumerate or log credential identities and capabilities in Stage 3' {
         $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
         $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)

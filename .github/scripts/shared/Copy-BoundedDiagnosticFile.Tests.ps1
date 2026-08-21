@@ -233,6 +233,20 @@ Describe 'Copy-BoundedRegularFileTree' {
         Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
     }
 
+    It 'rejects an oversized snapshot diff before the posting tree is created' {
+        ('x' * 300) |
+            Set-Content -LiteralPath (Join-Path $script:sourceDir 'oversized-diff.png') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024
+        } | Should -Throw '*oversized-diff.png*256-byte per-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
     It 'fails closed when regular files exceed the aggregate limit' {
         ('a' * 200) | Set-Content -LiteralPath (Join-Path $script:sourceDir 'first.log') -NoNewline
         ('b' * 200) | Set-Content -LiteralPath (Join-Path $script:sourceDir 'second.log') -NoNewline
@@ -261,6 +275,23 @@ Describe 'Copy-BoundedRegularFileTree' {
                 -SourceDirectory $script:sourceDir `
                 -DestinationDirectory $script:destinationDir
         } | Should -Throw '*unsupported reparse point*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'rejects a snapshot diff reparse point before the posting tree is created' {
+        $outside = Join-Path $script:fixture 'outside.png'
+        'outside' | Set-Content -LiteralPath $outside -NoNewline
+        New-Item `
+            -ItemType SymbolicLink `
+            -Path (Join-Path $script:sourceDir 'escape-diff.png') `
+            -Target $outside |
+            Out-Null
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir
+        } | Should -Throw '*unsupported reparse point*escape-diff.png*'
         Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
     }
 }
