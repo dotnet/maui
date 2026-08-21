@@ -1675,10 +1675,31 @@ function Assert-ReplicationVerdictIsNotSelfAnnounced {
         return
     }
 
-    foreach ($assertion in [regex]::Matches(
-        $scanned,
-        '(?:Assert\s*\.\s*(?:Equal|AreEqual)|ClassicAssert\s*\.\s*AreEqual)\s*\(\s*' +
-        '(?<literal>"(?:[^"\\]|\\.)*")\s*,\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\b')) {
+    # The xUnit form puts the expected value first. NUnit reverses it, and the
+    # repository's UI tests are NUnit: across the ten published reproductions
+    # Assert.That outnumbered Assert.Equal 57 to 9, so matching only the xUnit
+    # spelling left the dominant form unguarded. The two shapes are matched in
+    # separate passes because one alternation would make 'literal' a duplicate
+    # group name, and the branch that did not participate reports an empty
+    # capture.
+    # Each pattern is parenthesised because PowerShell binds the comma tighter
+    # than the plus: without them '@(a + b, c + d)' evaluates to the single
+    # element 'ab cd' and both patterns are silently destroyed.
+    $assertionForms = @(
+        ('(?:Assert\s*\.\s*(?:Equal|AreEqual)|ClassicAssert\s*\.\s*AreEqual)\s*\(\s*' +
+            '(?<literal>"(?:[^"\\]|\\.)*")\s*,\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\b'),
+        ('Assert\s*\.\s*That\s*\(\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\s*,\s*' +
+            'Is\s*\.\s*EqualTo\s*\(\s*(?<literal>"(?:[^"\\]|\\.)*")\s*\)')
+    )
+
+    $assertions = [System.Collections.Generic.List[System.Text.RegularExpressions.Match]]::new()
+    foreach ($form in $assertionForms) {
+        foreach ($match in [regex]::Matches($scanned, $form)) {
+            $assertions.Add($match)
+        }
+    }
+
+    foreach ($assertion in $assertions) {
         $literal = $assertion.Groups['literal'].Value
         if (-not [regex]::IsMatch($literal, $verdict)) {
             continue

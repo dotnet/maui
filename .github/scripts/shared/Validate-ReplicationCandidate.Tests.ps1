@@ -2289,6 +2289,55 @@ Describe 'A test may not read back a verdict it announced itself' {
         } | Should -Not -Throw
     }
 
+    It 'catches the self-announced verdict in the NUnit spelling too' {
+        # The guard only ever matched the xUnit argument order. Across the ten
+        # published reproductions Assert.That outnumbered Assert.Equal 57 to 9,
+        # so the form the repository's UI tests actually use was unguarded, and
+        # PR 265 asserted Is.EqualTo("ALIGNED") against a label it set itself.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    statusLabel.Text = "BUG REPRODUCED";
+    Assert.That(statusLabel.Text, Is.EqualTo("BUG REPRODUCED"));
+'@ `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs'
+        } | Should -Throw -ExpectedMessage '*reading back a verdict it announced*'
+    }
+
+    It 'still allows an NUnit assertion against content the app displays' {
+        # Reading a content label the app rendered is evidence. Only reading
+        # back an announcement of the outcome is not.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    bandText.Text = "EDGE-TO-EDGE CONTENT START";
+    Assert.That(bandText.Text, Is.EqualTo("EDGE-TO-EDGE CONTENT START"));
+'@ `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'keeps every assertion pattern separate from its neighbour' {
+        # PowerShell binds the comma tighter than the plus, so an array of
+        # concatenated patterns written as @(a + b, c + d) collapses into the
+        # single element 'ab cd'. That parses cleanly, matches nothing, and
+        # silently disables this guard; it is only visible as both spellings
+        # being accepted at once. Pin the element count.
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-ReplicationTestGuard.ps1') -Raw
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $source, [ref]$null, [ref]$null)
+        $forms = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $node.Left.Extent.Text -eq '$assertionForms'
+            }, $true)
+
+        $forms.Count | Should -Be 1
+        $values = $forms[0].Right.Expression.SubExpression.Statements[0].PipelineElements[0].Expression.Elements
+        $values.Count | Should -Be 2
+    }
+
     It 'catches the verdict announcement whatever member carries it' {
         foreach ($member in @('Text', 'AutomationId', 'ClassId')) {
             {
