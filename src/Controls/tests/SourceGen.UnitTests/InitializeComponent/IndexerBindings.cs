@@ -662,9 +662,10 @@ public struct ItemStruct
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
 
-		// The indexer result must be captured into a local instead of assigned inline.
+		// The indexer result must be updated locally and assigned back through the indexer.
 		Assert.Contains("p0[0] is {} p1", generated, StringComparison.Ordinal);
 		Assert.Contains("p1.Name = value!;", generated, StringComparison.Ordinal);
+		Assert.Contains("p0[0] = p1;", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain("p0[0].Name = value", generated, StringComparison.Ordinal);
 	}
 

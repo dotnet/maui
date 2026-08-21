@@ -127,6 +127,7 @@ public partial class TestPage
 				&& p0.Bar is {} p1)
 				{
 					p1.Title = value!;
+					p0.Bar = p1;
 				}
 			};
 
@@ -491,7 +492,7 @@ public class Product
 }
 """;
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		// Check that no CS8603 errors are present - even with non-nullable target property,
 		// the generated getter should handle the nullable path correctly
 		Assert.False(result.Diagnostics.Any(d => d.Id == "CS8603"));
@@ -544,12 +545,12 @@ public class Product
 }
 """;
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		// Verify no errors are present - value types through nullable paths don't need null checks
 		// because they use ?? default fallback in the getter and keep the non-nullable type
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// The setter for value types should NOT have HasValue check because PropertyType stays as double, not double?
 		// The conditional access is handled by pattern matching (source.Product is {} p0)
 		Assert.Contains("if (source.Product is {} p0)", generated, StringComparison.Ordinal);
@@ -814,16 +815,16 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify setter uses pattern matching for conditional access
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
-		
+
 		// Should NOT have HasValue check since Count is int, not int?
 		Assert.DoesNotContain("HasValue", generated, StringComparison.Ordinal);
-		
+
 		// Getter should have ?? default for value type through nullable path
 		Assert.Contains("getter: source => (source.Container?.Count ?? default, true)", generated, StringComparison.Ordinal);
 	}
@@ -871,10 +872,10 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify the setter does NOT drop the write when value is null
 		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
 		Assert.DoesNotMatch(earlyReturnPattern, generated);
@@ -925,17 +926,17 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify setter does NOT have early return since Description accepts null
 		// The setter should just use pattern matching without null check on value
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
-		
+
 		// Check the setter signature accepts nullable
 		Assert.Contains("global::System.Action<global::Test.TestPage, string?>", generated, StringComparison.Ordinal);
-		
+
 		// Verify the pattern "if (value is null)" followed by "return;" does NOT appear
 		// This would indicate an early return that we don't want for nullable target properties
 		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
@@ -982,16 +983,16 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify setter uses pattern matching for conditional access
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
-		
+
 		// Check the setter signature accepts nullable value type
 		Assert.Contains("global::System.Action<global::Test.TestPage, int?>", generated, StringComparison.Ordinal);
-		
+
 		// Verify no early return patterns for nullable value types
 		// Should NOT have "if (!value.HasValue) { return;" or "if (value is null) { return;"
 		var hasValueEarlyReturnPattern = @"if\s*\(\s*!\s*value\s*\.\s*HasValue\s*\)\s*\{\s*return\s*;";

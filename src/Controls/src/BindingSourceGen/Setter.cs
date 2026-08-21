@@ -2,7 +2,10 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
-public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
+public sealed record Setter(
+	string[] PatternMatchingExpressions,
+	string AssignmentStatement,
+	string[] CopyBackStatements)
 {
 	public static Setter From(
 		IEnumerable<IPathPart> path,
@@ -11,6 +14,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 	{
 		string accessAccumulator = sourceVariableName;
 		List<string> patternMatchingExpressions = new();
+		List<string> copyBackStatements = new();
 		bool skipNextConditionalAccess = false;
 
 		void AddPatternMatchingExpression(string pattern)
@@ -44,6 +48,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 					AddPatternMatchingExpression("{}");
 				}
 
+				var copyBackTarget = accessAccumulator;
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
 
 				// A value-type member/indexer result accessed mid-path through a possibly-null receiver
@@ -56,22 +61,17 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 					&& NeedsValueTypeCapture(innerPart))
 				{
 					AddPatternMatchingExpression("{}");
+					copyBackStatements.Add(BuildAssignmentStatement(copyBackTarget, innerPart, accessAccumulator));
 				}
 			}
-			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
+			else if (!isLastPart
+				&& parts[i + 1] is not ConditionalAccess
+				&& NeedsValueTypeCapture(part))
 			{
-				// It is necessary to create a variable for value types in order to set their properties.
-				// We can simply reuse the pattern matching mechanism to declare the variable.
+				var copyBackTarget = accessAccumulator;
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
 				AddPatternMatchingExpression("{}");
-			}
-			else if (part is IndexAccess { IsValueType: true, IsArrayElement: false }
-				&& !isLastPart
-				&& parts[i + 1] is not ConditionalAccess)
-			{
-				// Same CS1612 problem as above, for an indexer reached without a conditional access.
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
-				AddPatternMatchingExpression("{}");
+				copyBackStatements.Add(BuildAssignmentStatement(copyBackTarget, part, accessAccumulator));
 			}
 			else if (!isLastPart)
 			{
@@ -84,7 +84,8 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, parts.Count > 0 ? parts[parts.Count - 1] : null, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, parts.Count > 0 ? parts[parts.Count - 1] : null, assignedValueExpression),
+			CopyBackStatements: copyBackStatements.AsEnumerable().Reverse().ToArray());
 
 		// Whether the value produced by this part is an rvalue that has to be captured into a local
 		// before a member of it can be assigned. Fields and array elements are variables (lvalues),
