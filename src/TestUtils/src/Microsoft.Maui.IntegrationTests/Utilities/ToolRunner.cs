@@ -63,8 +63,6 @@ namespace Microsoft.Maui.IntegrationTests
 
 				if (p.WaitForExit(timeoutInSeconds * 1000))
 				{
-					// Timed waits do not guarantee asynchronous output handlers have finished.
-					p.WaitForExit();
 					exitCode = p.ExitCode;
 					output?.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' exited with code: {exitCode}");
 				}
