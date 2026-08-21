@@ -7222,3 +7222,65 @@ Describe 'Get-ReplicationBlockedCode separates an answer from a defect at the te
             Should -BeExactly 'verification_inconclusive'
     }
 }
+
+Describe 'A sandbox attempt that decided something is not called other' {
+    It 'names the policy that turned down an early block declaration' {
+        # Verbatim from builds 15050179, 15050181 and 15050187, each of which
+        # reported attemptKinds=[other, ..., other]. Attempt 1 is not permitted
+        # to declare the scenario blocked, so the runner turns it down. Read as
+        # 'other' that is indistinguishable from an agent that failed outright.
+        $summary = 'A block declaration is not accepted on attempt 1. Attempt the ' +
+            'reproduction genuinely first; only declare the scenario blocked from attempt 3 onward.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'block-declined'
+    }
+
+    It 'names an attempt that declared the scenario out of scope' {
+        # Verbatim from build 15050187. The attempt reached a reasoned decision
+        # about what the bounded Sandbox can express, which is the opposite of
+        # an undiagnosed failure.
+        $summary = 'Unsupported replication scenario: Issue 37008 requires changing and ' +
+            'executing an Azure Pipelines agent-pool configuration, but the bounded Mac ' +
+            'Catalyst Sandbox is only an application.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'scenario-unsupported'
+    }
+
+    It 'still diagnoses a failure that both decides and names a real fault' {
+        # The new branches sit after every diagnostic one, so an attempt whose
+        # text also carries a compiler diagnostic is still a build failure.
+        $summary = 'Unsupported replication scenario: the project would not build. ' +
+            'Fix these compiler diagnostics: Issue1.cs(3,4) error CS0246.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'build-failed'
+    }
+
+    It 'leaves the conclusiveness of a non-reproduction exactly where it was' {
+        # This renames a diagnosis; it must not turn a blocked run green or an
+        # answered one red. Neither kind counts as a clean observation and
+        # neither poisons the run, which is how 'other' behaved.
+        $before = [System.Collections.Generic.List[string]]::new()
+        $before.Add('other'); $before.Add('not-reproduced'); $before.Add('other')
+
+        $after = [System.Collections.Generic.List[string]]::new()
+        $after.Add('block-declined'); $after.Add('not-reproduced'); $after.Add('scenario-unsupported')
+
+        Test-ReplicationNonReproductionIsConclusive $after |
+            Should -Be (Test-ReplicationNonReproductionIsConclusive $before)
+
+        Get-ReplicationBlockedCode -RawReason 'x' -Stage 'sandbox' -AttemptKinds $after |
+            Should -Be (Get-ReplicationBlockedCode -RawReason 'x' -Stage 'sandbox' -AttemptKinds $before)
+    }
+
+    It 'keeps a declared block out of the test-stage verdict kinds' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('block-declined'); $kinds.Add('scenario-unsupported')
+
+        Test-ReplicationVerificationReachedAVerdict -AttemptKinds $kinds | Should -BeFalse
+    }
+
+    It 'still falls back to other for a failure it cannot place' {
+        Get-ReplicationAttemptFailureKind -FailureSummary 'Something entirely unfamiliar happened.' |
+            Should -Be 'other'
+    }
+}

@@ -430,6 +430,20 @@ function Get-ReplicationAttemptFailureKind {
     if ($text -match '(?i)must locate a stable result element|Generated Appium step') {
         return 'plan-rejected'
     }
+    # The two remaining shapes of 'other' are both decisions rather than
+    # diagnostic dead ends, and both were measured on live runs. Attempt 1 is
+    # not permitted to declare a scenario blocked, so the runner turns that
+    # down and asks for a genuine attempt; and an attempt that declares the
+    # scenario out of scope states why. Reported as 'other' the operator cannot
+    # tell either from an agent that simply failed. Both sit after every
+    # diagnostic branch, and neither is read by the conclusiveness test or the
+    # blocked-code map, so no outcome moves.
+    if ($text -match '(?i)block declaration is not accepted on attempt') {
+        return 'block-declined'
+    }
+    if ($text -match '(?i)Unsupported replication scenario:') {
+        return 'scenario-unsupported'
+    }
     return 'other'
 }
 
