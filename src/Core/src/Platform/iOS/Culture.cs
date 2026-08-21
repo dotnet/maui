@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Platform
 
 					try
 					{
-						// On iOS 26, the locale identifier can contain a Regional Format override
+						// On iOS 17+, the locale identifier can contain a Regional Format override
 						// (e.g. "en_US@rg=inzzzz"), which .NET cannot parse directly. Build the
 						// culture name from LanguageCode/ScriptCode/RegionCode instead, since
 						// RegionCode (unlike the identifier) resolves the "rg" override.
-						if (OperatingSystem.IsIOSVersionAtLeast(26))
+						if (OperatingSystem.IsIOSVersionAtLeast(17))
 						{
 							var languageCode = locale.LanguageCode;
 							var scriptCode = locale.ScriptCode;
