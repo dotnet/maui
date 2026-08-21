@@ -1189,10 +1189,71 @@ Describe 'Get-ReplicationRuntimeScopeMismatch' {
         Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -BeExactly ''
     }
 
+    It 'refuses ahead-of-time publishing however the title spaces it' -ForEach @(
+        # Build 15050181 provisioned a Windows agent for the first of these and
+        # refused it three attempts later. Only the closed-up spelling was
+        # matched, and the title carries no error word for the build signal.
+        @{ Title = 'Maui Windows Native AOT custom font' }
+        @{ Title = 'NativeAOT publishing breaks custom fonts' }
+        @{ Title = 'Native  AOT trimming removes a converter' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @('t/bug') |
+            Should -Not -BeNullOrEmpty -Because "'$Title' needs a project-file change"
+    }
+
+    It "refuses this repository's own infrastructure by label" {
+        # Build 15050187 provisioned a Mac for this exact report and spent three
+        # attempts concluding a Sandbox page cannot run its own CI host.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'Move macOS UI tests to ACES Shared infrastructure' `
+            -Labels @('platform/macos', 'area-infrastructure') |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report the maintainers could not reproduce' -ForEach @(
+        @{ Label = 's/needs-repro' }
+        @{ Label = 's/needs-info' }
+    ) {
+        # Build 15050437 provisioned a Mac for "ScrollView in MacCatalyst
+        # doesn't work" and refused it because the evidence omits the hierarchy
+        # and sizing, which is the same thing the label already records.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title "ScrollView in MacCatalyst doesn't work" `
+            -Labels @('t/bug', 'platform/macos', $Label) |
+            Should -Not -BeNullOrEmpty -Because "$Label says the report is not reproducible as written"
+    }
+
+    It 'still accepts a report a maintainer has since verified' -ForEach @(
+        # All three live reports carrying both labels are ordinary app bugs.
+        @{ Title = '[Android] SwipeView Threshold is ignored in Microsoft.Maui.Controls 10.0.100 (regression from 10.0.90)' }
+        @{ Title = 'Windows: Shell.Background behavior is inconsistent with Android and iOS for TabBar' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title $Title -Labels @('t/bug', 's/needs-repro', 's/verified') |
+            Should -BeNullOrEmpty -Because 's/verified answers the question s/needs-repro asked'
+    }
+
+    It 'does not confuse needs-attention with needs-repro' {
+        # Two of the reports that produced a reproduction carry this label.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Windows] CollectionView scrolls to the wrong item' `
+            -Labels @('t/bug', 's/needs-attention') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'keeps every report that has already produced a reproduction' -ForEach @(
+        @{ Title = '[Mac] Border stroke is drawn outside the control'; Labels = @('platform/macos', 's/verified', 'area-controls-general', 's/triaged', 'partner/syncfusion') }
+        @{ Title = '[Android] Shell flyout header overlaps the first item'; Labels = @('t/bug', 'platform/android', 'area-controls-shell', 's/verified', 's/triaged') }
+        @{ Title = '[Windows] CollectionView header is measured twice'; Labels = @('t/bug', 'platform/windows', 'area-controls-collectionview', 's/verified', 's/triaged') }
+        @{ Title = '[iOS] Switch thumb colour is wrong after toggling'; Labels = @('t/bug', 'platform/ios', 's/verified', 'area-controls-switch', 's/triaged', 'version/iOS-26') }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels $Labels |
+            Should -BeNullOrEmpty -Because "'$Title' certified or reproduced on a live run"
+    }
+
     It 'says nothing about a report with no title' {
         Get-ReplicationRuntimeScopeMismatch -Title '' | Should -BeExactly ''
     }
-
     It 'reaches the field the pipeline already stops on' {
         # The pipeline reads context.platformMismatch before it provisions a
         # device, so a scope refusal has to arrive in that same field rather

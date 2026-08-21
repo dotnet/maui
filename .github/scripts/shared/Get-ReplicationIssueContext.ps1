@@ -1919,7 +1919,14 @@ function Get-ReplicationRuntimeScopeMismatch {
             # not make. Every one of the five NativeAOT reports in 1,071 titles
             # is therefore out of reach, including the runtime-sounding ones,
             # because the mode itself cannot be turned on.
-            Pattern = '(?i)\bNativeAOT\b'
+            #
+            # The space is optional. Build 15050181 provisioned a Windows agent
+            # for "Maui Windows Native AOT custom font" and refused it three
+            # attempts later for exactly this reason; the closed-up spelling
+            # this pattern required did not appear in the title, and the
+            # build-failure signal above needs an error word the title has not
+            # got either.
+            Pattern = '(?i)\bNative\s*AOT\b'
             Scope   = 'a publish mode the fixed Sandbox project cannot enable'
         }
         [pscustomobject]@{
@@ -1976,6 +1983,18 @@ function Get-ReplicationRuntimeScopeMismatch {
             Pattern = '(?i)^Known Build Error$'
             Scope   = 'a known build error'
         }
+        [pscustomobject]@{
+            # This repository's own build, CI and bot services. Build 15050187
+            # provisioned a Mac for "Move macOS UI tests to ACES Shared
+            # infrastructure" and spent three attempts concluding that a
+            # Sandbox page cannot select or run its own CI host. Twelve open
+            # issues carry the label; the one that also carries t/bug is
+            # "[Policy Service] Duplicate comments from multiple stored policy
+            # revisions", a defect in a bot service rather than in the app
+            # framework, so refusing the label outright costs no app bug.
+            Pattern = '(?i)^area-infrastructure$'
+            Scope   = "this repository's own build and CI infrastructure"
+        }
     )
     foreach ($label in @($Labels)) {
         foreach ($refusal in $labelRefusals) {
@@ -1984,6 +2003,29 @@ function Get-ReplicationRuntimeScopeMismatch {
                     'inside an already-compiled fixed project, so no page it can show would be ' +
                     'evidence for what was reported.')
             }
+        }
+    }
+
+    # The maintainers have already recorded that this report cannot be
+    # reproduced as written. The agent works from a sanitized copy of the same
+    # text with attachments stripped, so it is strictly worse placed than the
+    # humans who asked for more information, and build 15050437 spent a Mac
+    # proving it: the refusal it wrote - that the evidence omits the ScrollView
+    # hierarchy and content sizing - is the same thing s/needs-repro records.
+    #
+    # s/verified overrides both, because a maintainer who reproduced the report
+    # has answered the question the older label asked. Three of the fourteen
+    # open reports carry that combination and all three are ordinary app bugs,
+    # including a SwipeView threshold regression that is a prime candidate, so
+    # refusing on the stale label alone would throw away good work.
+    $labelSet = @($Labels | ForEach-Object { [string]$_ })
+    if (-not ($labelSet | Where-Object { $_ -match '(?i)^s/verified$' })) {
+        $unreproduced = @($labelSet |
+            Where-Object { $_ -match '(?i)^s/needs-(?:info|repro)$' })
+        if ($unreproduced.Count -gt 0) {
+            return ("The report is labelled $($unreproduced[0]), so the maintainers have already " +
+                'recorded that it cannot be reproduced from what it says. The agent reads a ' +
+                'sanitized copy of that same text, so it has strictly less to work from.')
         }
     }
 
