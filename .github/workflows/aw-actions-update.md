@@ -86,9 +86,14 @@ steps:
         echo "::error::Could not read a valid gh-aw compiler_version from $lock_file."
         exit 1
       fi
-      installed_version="$(gh aw --version)"
-      printf '%s\n' "$installed_version"
-      printf '%s\n' "$installed_version" | grep -F -- "$pinned_version" >/dev/null
+      installed_output="$(gh aw --version)"
+      printf '%s\n' "$installed_output"
+      installed_version="$(printf '%s\n' "$installed_output" \
+        | sed -nE 's/^gh aw version (v[0-9]+\.[0-9]+\.[0-9]+)$/\1/p')"
+      if [ "$installed_version" != "$pinned_version" ]; then
+        echo "::error::Expected gh-aw $pinned_version, found ${installed_version:-an unrecognized version}."
+        exit 1
+      fi
 
 safe-outputs:
   needs: [pat_pool]

@@ -368,7 +368,31 @@ echo "--- [leak-scan] (Track A) ---"; jq -r '.[] | "\(.number)\t\(.title)"' /tmp
 
 (The Daily Memory Leak Hunter files `[leak-scan]` issues with the `agentic-workflows` label.)
 
-Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Extract:
+After choosing `N` in either mode, mechanically enforce the same ownership gate before reading
+or acting on its body:
+
+```bash
+N=<chosen-issue-number>
+TARGET_METADATA=/tmp/gh-aw/agent/leakscan-target-metadata.json
+gh issue view "$N" --repo "$GITHUB_REPOSITORY" \
+  --json number,state,title,author,labels > "$TARGET_METADATA"
+if ! jq -e '
+  (.state == "OPEN") and
+  (.title | startswith("[leak-scan]")) and
+  (.author.login == "github-actions" or .author.login == "github-actions[bot]") and
+  ([.labels[].name] | index("agentic-workflows") != null) and
+  ([.labels[].name] | index("perf/memory-leak 💦") != null)
+' "$TARGET_METADATA" >/dev/null; then
+  echo "skipped: issue is not a workflow-owned leak-scan report"
+  exit 64
+fi
+```
+
+Exit 64 is an expected no-op gate: emit `noop` with that skip reason and stop. Do not fetch,
+extract, or act on the issue body after a failed gate.
+
+Only after the metadata gate succeeds, read the chosen issue's body in full
+(`gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title,body`). Extract:
 
 - the **rooting API** (e.g. `IndicatorView.ItemsSource`),
 - the **retention path** `root -> … -> transient` with the cited file:line(s),

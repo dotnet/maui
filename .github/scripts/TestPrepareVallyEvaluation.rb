@@ -651,18 +651,20 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_match(/retries:\s+3/, post_comment)
   end
 
-  def test_pr_content_checkouts_explicitly_accept_fork_refs_without_credentials
+  def test_pr_content_checkouts_only_accept_unsafe_fork_refs_without_credentials
     skip "skill-validation workflow not supplied" unless SKILL_VALIDATION_WORKFLOW
 
     workflow = File.read(SKILL_VALIDATION_WORKFLOW)
     checkouts = workflow.scan(
       /      - name: Checkout PR content\n.*?(?=\n      - name:|\n  [a-zA-Z0-9_-]+:|\z)/m
     )
+    fork_only_opt_in =
+      'allow-unsafe-pr-checkout: ${{ (needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository) != github.repository }}'
 
     assert_equal 4, checkouts.length
     checkouts.each do |checkout|
       assert_match(/persist-credentials:\s+false/, checkout)
-      assert_match(/allow-unsafe-pr-checkout:\s+true/, checkout)
+      assert_includes checkout, fork_only_opt_in
     end
   end
 
