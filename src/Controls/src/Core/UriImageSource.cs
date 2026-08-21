@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 
 			try
 			{
-				stream = await GetStreamAsync(Uri, CancellationTokenSource.Token);
+				stream = await GetStreamAsync(Uri, CancellationTokenSource.Token, userToken);
 				await OnLoadingCompleted(false);
 			}
 			catch (OperationCanceledException)
@@ -85,7 +85,10 @@ namespace Microsoft.Maui.Controls
 			return $"Uri: {Uri}";
 		}
 
-		async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
+		async Task<Stream> GetStreamAsync(
+			Uri uri,
+			CancellationToken cancellationToken,
+			CancellationToken responseCancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -94,23 +97,26 @@ namespace Microsoft.Maui.Controls
 				return await UriImageSourceCache.GetStreamAsync(
 					uri,
 					CacheValidity,
-					token => DownloadStreamAsync(uri, token),
+					token => DownloadStreamAsync(uri, token, responseCancellationToken),
 					ex => Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Unable to cache image URI '{Uri}'.", uri),
 					cancellationToken).ConfigureAwait(false);
 			}
 
-			return await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+			return await DownloadStreamAsync(uri, cancellationToken, responseCancellationToken).ConfigureAwait(false);
 		}
 
-		async Task<Stream> DownloadStreamAsync(Uri uri, CancellationToken cancellationToken)
+		async Task<Stream> DownloadStreamAsync(
+			Uri uri,
+			CancellationToken cancellationToken,
+			CancellationToken responseCancellationToken)
 		{
 			try
 			{
-				using var client = new HttpClient();
-
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+				return await StreamWrapper.GetStreamAsync(
+					uri,
+					cancellationToken,
+					new HttpClient(),
+					responseCancellationToken).ConfigureAwait(false);
 			}
 			catch (OperationCanceledException)
 			{

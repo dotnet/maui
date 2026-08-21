@@ -13,4 +13,11 @@ namespace Microsoft.Maui
 	internal interface IStreamImageSourceWithCache : IStreamImageSource
 	{
 	}
+
+	internal interface IImageSourceCacheStream
+	{
+		bool CanCache { get; }
+
+		long? ExpectedLength { get; }
+	}
 }

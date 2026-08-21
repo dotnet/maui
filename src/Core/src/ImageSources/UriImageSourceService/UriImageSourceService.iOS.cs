@@ -49,25 +49,26 @@ namespace Microsoft.Maui
 			if (imageSource is IStreamImageSourceWithCache)
 				return await DownloadImageAsync(imageSource, cancellationToken);
 
-			// TODO: use a real caching library with the URI
+			if (imageSource is not IStreamImageSource streamImageSource)
+				throw new InvalidOperationException($"Unable to load image stream from image source type '{imageSource.GetType()}'.");
 
-			var filename = GetCachedFileName(imageSource);
-			var pathToImageCache = Path.Combine(CacheDirectory, filename);
+			async Task<Stream?> GetStreamAsync(CancellationToken token) =>
+				await streamImageSource.GetStreamAsync(token).ConfigureAwait(false);
 
-			NSData? imageData;
+			using var stream = imageSource.CachingEnabled
+				? await UriImageSourceCache.GetStreamAsync(
+					imageSource.Uri,
+					imageSource.CacheValidity,
+					GetStreamAsync,
+					FileSystem.CacheDirectory,
+					cancellationToken,
+					ex => Logger?.LogWarning(ex, "Unable to cache image URI '{Uri}'.", imageSource.Uri)).ConfigureAwait(false)
+				: await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache, imageSource.CacheValidity))
-			{
-				imageData = GetCachedImage(pathToImageCache);
-			}
-			else
-			{
-				imageData = await DownloadImageAsync(imageSource, cancellationToken);
-				if (imageSource.CachingEnabled)
-					CacheImage(imageData, pathToImageCache);
-			}
+			if (stream is null)
+				throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
 
-			return imageData;
+			return GetImageData(stream, imageSource.Uri);
 		}
 
 		internal static async Task<NSData> DownloadImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
@@ -79,10 +80,15 @@ namespace Microsoft.Maui
 			if (stream is null)
 				throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
 
+			return GetImageData(stream, imageSource.Uri);
+		}
+
+		static NSData GetImageData(Stream stream, Uri uri)
+		{
 			var imageData = NSData.FromStream(stream);
 
 			if (imageData is null)
-				throw new InvalidOperationException("Unable to load image stream data.");
+				throw new InvalidOperationException($"Unable to load image stream data from URI '{uri}'.");
 
 			return imageData;
 		}
