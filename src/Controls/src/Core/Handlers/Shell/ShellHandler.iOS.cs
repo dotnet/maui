@@ -221,7 +221,6 @@ namespace Microsoft.Maui.Controls.Handlers
             else
             {
                 _backdropBrush = appearance.FlyoutBackdrop;
-                ApplyFlyoutBackdrop(this, _backdropBrush);
 
                 if (_flyoutWidth != appearance.FlyoutWidth)
                 {
@@ -235,6 +234,8 @@ namespace Microsoft.Maui.Controls.Handlers
                     _flyoutManager?.UpdateFlyoutHeight(_flyoutHeight);
                 }
             }
+
+            ApplyFlyoutBackdrop(this, _backdropBrush);
         }
 
         #endregion

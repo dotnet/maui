@@ -181,6 +181,24 @@ namespace Microsoft.Maui.Platform
             _popCompletionTask = null;
         }
 
+        /// <summary>
+        /// Resolves all pending push/pop completion tasks immediately, e.g. when the
+        /// navigation controller's view disappears (tab switch) without a final
+        /// DidShowViewController callback, which would otherwise leave callers awaiting forever.
+        /// </summary>
+        public void CompletePendingImmediately(bool result)
+        {
+            foreach (var kvp in _completionTasks)
+            {
+                kvp.Value.TrySetResult(result);
+            }
+
+            _completionTasks.Clear();
+
+            _popCompletionTask?.TrySetResult(result);
+            _popCompletionTask = null;
+        }
+
         #endregion
 
         #region ShouldPopItem
@@ -338,15 +356,7 @@ namespace Microsoft.Maui.Platform
 
             // Complete all pending tasks with false rather than cancelling — preserves the
             // soft-fail contract Shell relies on (async void callers can't catch TaskCanceledException).
-            foreach (var kvp in _completionTasks)
-            {
-                kvp.Value.TrySetResult(false);
-            }
-
-            _completionTasks.Clear();
-
-            _popCompletionTask?.TrySetResult(false);
-            _popCompletionTask = null;
+            CompletePendingImmediately(false);
 
             _pendingViewControllers = null;
         }

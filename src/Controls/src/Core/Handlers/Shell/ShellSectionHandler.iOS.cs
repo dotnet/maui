@@ -364,6 +364,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void INavigationManagerDelegate.OnNavigationControllerDidDisappear()
         {
+            // If this section is removed from the view hierarchy (e.g. tab switch) mid-animation
+            // and UIKit never delivers the final DidShowViewController, resolve any pending
+            // navigation completion sources so awaiting Shell navigation calls don't hang.
+            _navManager?.CompletePendingImmediately(false);
             _displayedPage?.SendDisappearing();
         }
 
@@ -938,7 +942,10 @@ namespace Microsoft.Maui.Controls.Handlers
             if (_isInMoreTab && _navigationController.ParentViewController is UITabBarController tabBarController)
             {
                 tabBarController.MoreNavigationController.PushViewController(pageViewController, animated);
-                pageViewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+                if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+                {
+                    pageViewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+                }
                 completionSource?.TrySetResult(true);
             }
             else
