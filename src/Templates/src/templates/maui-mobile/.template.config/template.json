@@ -83,6 +83,30 @@
           ],
           "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
           "continueOnError": true
+        },
+        {
+          "id": "avaloniaIgnoredWithSampleContent",
+          "condition": "((HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\") && WithAvalonia && EnableSampleContent)",
+          "description": "Warning: The Avalonia option was not applied.",
+          "manualInstructions": [
+            {
+              "text": "Avalonia handlers do not currently support the XAML sample content. The generated project includes sample content without Avalonia."
+            }
+          ],
+          "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+          "continueOnError": true
+        },
+        {
+          "id": "sampleContentIgnoredWithCSharpUI",
+          "condition": "((HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\") && UseCSharpUI && IncludeSampleContentCli)",
+          "description": "Warning: The sample content option was not applied.",
+          "manualInstructions": [
+            {
+              "text": "Sample content is only available with XAML. The generated project uses C# UI without sample content."
+            }
+          ],
+          "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+          "continueOnError": true
         }
     ],
     "sources": [
@@ -263,9 +287,16 @@
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
       },
+      "IncludeSampleContentCli": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "displayName": "_Include sample content",
+        "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
+      },
       "EnableSampleContent": {
         "type": "computed",
-        "value": "(IncludeSampleContent && !UseCSharpUI)"
+        "value": "((IncludeSampleContent || IncludeSampleContentCli) && !UseCSharpUI)"
       },
       "WithAvalonia": {
         "type": "parameter",

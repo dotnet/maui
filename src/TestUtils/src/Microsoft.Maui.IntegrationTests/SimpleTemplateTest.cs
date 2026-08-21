@@ -542,7 +542,20 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 		// --with-avalonia is gated on the blank app: combining it with sample content must not wire Avalonia in.
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content --no-restore", output: _output),
+		var commandOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"maui -o \"{projectDir}\" -f {DotNetCurrent} --with-avalonia --sample-content --no-restore",
+			out var exitCode,
+			timeoutInSeconds: 300,
+			output: _output);
+		Assert.Equal(0, exitCode);
+		AssertContains("Warning: The Avalonia option was not applied.", commandOutput);
+		AssertContains(
+			"Avalonia handlers do not currently support the XAML sample content. The generated project includes sample content without Avalonia.",
+			commandOutput);
+		AssertDoesNotContain("Warning: The sample content option was not applied.", commandOutput);
+
+		Assert.True(File.Exists(projectFile),
 			"Unable to create template maui with --with-avalonia --sample-content. Check test output for errors.");
 
 		var csproj = File.ReadAllText(projectFile);
@@ -571,5 +584,34 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+	}
+
+	[Theory]
+	[InlineData("--ui csharp --sample-content --no-restore", false)]
+	[InlineData("--ui csharp --sample-content --with-avalonia --no-restore", true)]
+	public void SampleContentIgnoredWithCSharpUIIsReported(string options, bool expectAvalonia)
+	{
+		SetTestIdentifier(options);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		var commandOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"maui -o \"{projectDir}\" -f {DotNetCurrent} {options}",
+			out var exitCode,
+			timeoutInSeconds: 300,
+			output: _output);
+		Assert.Equal(0, exitCode);
+		AssertContains("Warning: The sample content option was not applied.", commandOutput);
+		AssertContains(
+			"Sample content is only available with XAML. The generated project uses C# UI without sample content.",
+			commandOutput);
+		AssertDoesNotContain("Warning: The Avalonia option was not applied.", commandOutput);
+
+		Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+
+		var csproj = File.ReadAllText(projectFile);
+		Assert.Equal(expectAvalonia, csproj.Contains("Avalonia.Controls.Maui", StringComparison.Ordinal));
 	}
 }

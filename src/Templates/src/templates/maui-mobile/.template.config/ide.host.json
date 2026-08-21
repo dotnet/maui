@@ -33,6 +33,10 @@
       "persistenceScopeName": "maui"
     },
     {
+      "id": "IncludeSampleContentCli",
+      "isVisible": false
+    },
+    {
       "id": "WithAvalonia",
       "isVisible": false
     },
