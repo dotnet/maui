@@ -138,6 +138,70 @@ Start-Sleep -Seconds 30
         Get-Process -Id ([int]$childPid[0]) -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 
+    It 'bounds output draining when a reparented descendant retains the pipe' -Skip:$IsWindows {
+        $pwshPath = (Get-Command pwsh -ErrorAction Stop).Source
+        $pidFile = Join-Path $TestDrive 'reparented-grandchild.pid'
+        $childCommand = @'
+$startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+$startInfo.FileName = $env:PROCESS_DRAIN_TEST_PWSH
+foreach ($argument in @('-NoProfile', '-NonInteractive', '-Command', 'Start-Sleep -Seconds 30')) {
+    $startInfo.ArgumentList.Add($argument)
+}
+$startInfo.UseShellExecute = $false
+$grandchild = [System.Diagnostics.Process]::Start($startInfo)
+Set-Content -LiteralPath $env:PROCESS_DRAIN_PID_FILE -Value $grandchild.Id -NoNewline
+'@
+        $rootCommand = @'
+$startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+$startInfo.FileName = $env:PROCESS_DRAIN_TEST_PWSH
+foreach ($argument in @('-NoProfile', '-NonInteractive', '-Command', $env:PROCESS_DRAIN_CHILD_COMMAND)) {
+    $startInfo.ArgumentList.Add($argument)
+}
+$startInfo.UseShellExecute = $false
+$child = [System.Diagnostics.Process]::Start($startInfo)
+$child.WaitForExit()
+Start-Sleep -Seconds 30
+'@
+
+        $previousPwsh = $env:PROCESS_DRAIN_TEST_PWSH
+        $previousPidFile = $env:PROCESS_DRAIN_PID_FILE
+        $previousChildCommand = $env:PROCESS_DRAIN_CHILD_COMMAND
+        $grandchildPid = 0
+        try {
+            $env:PROCESS_DRAIN_TEST_PWSH = $pwshPath
+            $env:PROCESS_DRAIN_PID_FILE = $pidFile
+            $env:PROCESS_DRAIN_CHILD_COMMAND = $childCommand
+
+            $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+            $result = Invoke-ProcessWithTimeout `
+                -FilePath $pwshPath `
+                -ArgumentList @('-NoProfile', '-NonInteractive', '-Command', $rootCommand) `
+                -TimeoutSeconds 1 `
+                -OutputDrainTimeoutMilliseconds 500
+            $stopwatch.Stop()
+
+            $grandchildPid = [int](Get-Content -Raw -LiteralPath $pidFile)
+            $result.TimedOut | Should -BeTrue
+            $result.OutputDrainTimedOut | Should -BeTrue
+            $result.Output | Should -Contain (
+                'Output capture stopped after 500ms because an inherited pipe handle remained open.')
+            $stopwatch.Elapsed.TotalSeconds | Should -BeLessThan 8
+            Get-Process -Id $grandchildPid -ErrorAction SilentlyContinue |
+                Should -Not -BeNullOrEmpty
+        }
+        finally {
+            if ($grandchildPid -le 0 -and (Test-Path -LiteralPath $pidFile)) {
+                $grandchildPid = [int](Get-Content -Raw -LiteralPath $pidFile)
+            }
+            if ($grandchildPid -gt 0) {
+                Stop-Process -Id $grandchildPid -Force -ErrorAction SilentlyContinue
+            }
+            $env:PROCESS_DRAIN_TEST_PWSH = $previousPwsh
+            $env:PROCESS_DRAIN_PID_FILE = $previousPidFile
+            $env:PROCESS_DRAIN_CHILD_COMMAND = $previousChildCommand
+        }
+    }
+
     It 'bounds every xcodebuild path and aborts into the Gate environment retry path' {
         $downloadFunction.Extent.Text | Should -Match 'Invoke-IosRuntimeDownloadProcess'
         $downloadFunction.Extent.Text | Should -Not -Match '(?m)&\s+(?:sudo\s+-n\s+)?xcodebuild\b'

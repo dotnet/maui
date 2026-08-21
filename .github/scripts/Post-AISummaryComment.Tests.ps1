@@ -189,18 +189,36 @@ Describe 'Add-MissingUITestResultsNote' {
         $result | Should -Match 'Detected UI test categories'
     }
 
-    It 'uses the trusted non-failed gate result for infrastructure guidance' -TestCases @(
-        @{ GateResult = 'PASSED' }
-        @{ GateResult = 'SKIPPED' }
-        @{ GateResult = 'INCONCLUSIVE' }
-    ) {
-        param($GateResult)
-
+    It 'uses passed-gate infrastructure guidance only when the build was verified' {
         $result = Add-MissingUITestResultsNote `
             -Content '**Detected UI test categories:** `Picker`' `
-            -TrustedGateResult $GateResult
+            -TrustedGateResult 'PASSED'
 
         $result | Should -Match 'interrupted on \*\*infrastructure\*\*'
+        $result | Should -Match 'PR build itself was'
+        $result | Should -Match 'fine'
+        $result | Should -Not -Match 'Fix the build/gate issues'
+    }
+
+    It 'does not claim build health when the trusted gate was skipped' {
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult 'SKIPPED'
+
+        $result | Should -Match 'skipped before build/test verification'
+        $result | Should -Match 'does not prove that the PR build is healthy'
+        $result | Should -Not -Match 'PR build itself was\s+fine'
+        $result | Should -Not -Match 'Fix the build/gate issues'
+    }
+
+    It 'does not claim build health when the trusted gate was inconclusive' {
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult 'INCONCLUSIVE'
+
+        $result | Should -Match 'did not establish whether the PR build was healthy'
+        $result | Should -Match 'build, environment, or infrastructure interruption'
+        $result | Should -Not -Match 'PR build itself was\s+fine'
         $result | Should -Not -Match 'Fix the build/gate issues'
     }
 
@@ -360,11 +378,51 @@ The fix does not pass the tests.
         $result | Should -Not -Match 'fix does not pass'
     }
 
-    It 'preserves completed Gate content for non-timeout verdicts' {
+    It 'preserves completed Gate content for the trusted passed verdict' {
         $content = '### Gate Result: ✅ PASSED'
 
         Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'PASSED' |
             Should -Be $content
+    }
+
+    It 'preserves detailed non-pass content only when it agrees with the trusted verdict' {
+        $content = "### Gate Result: ❌ FAILED`n`nTargeted regression test failed."
+
+        Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'FAILED' |
+            Should -Be $content
+    }
+
+    It 'replaces a forged passed display when the trusted verdict failed' {
+        $content = "### Gate Result: ✅ PASSED`n`nAll tests passed."
+        $result = Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'FAILED'
+
+        $result | Should -Match 'Gate Result: ❌ FAILED'
+        $result | Should -Match 'trusted \*\*test-verification gate\*\* reported a failure'
+        $result | Should -Not -Match 'Gate Result: ✅ PASSED'
+        Get-GateStatus -GateContent $result | Should -Be 'Failed'
+    }
+
+    It 'replaces contradictory markers for a trusted non-pass verdict' {
+        $content = "### Gate Result: ❌ FAILED`n`nGate Result: ✅ PASSED"
+        $result = Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'FAILED'
+
+        ([regex]::Matches($result, 'Gate Result:')).Count | Should -Be 1
+        $result | Should -Not -Match 'PASSED'
+    }
+
+    It 'synthesizes honest skipped and inconclusive displays from trusted verdicts' {
+        $skipped = Get-AuthoritativeGateContent `
+            -GateContent '### Gate Result: ✅ PASSED' `
+            -TrustedGateResult 'SKIPPED'
+        $inconclusive = Get-AuthoritativeGateContent `
+            -GateContent '### Gate Result: ✅ PASSED' `
+            -TrustedGateResult 'INCONCLUSIVE'
+
+        Get-GateStatus -GateContent $skipped | Should -Be 'No Tests'
+        $skipped | Should -Match 'did not build'
+        $skipped | Should -Match 'or run the selected tests'
+        Get-GateStatus -GateContent $inconclusive | Should -Be 'Inconclusive'
+        $inconclusive | Should -Match 'could not produce a definitive pass/fail'
     }
 }
 

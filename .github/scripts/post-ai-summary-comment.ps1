@@ -214,12 +214,17 @@ function Get-AuthoritativeGateContent {
         [string]$TrustedGateResult = ''
     )
 
+    $trustedVerdict = $TrustedGateResult.Trim().ToUpperInvariant()
+
+    # PASSED content can retain its detailed report. Every non-pass verdict comes from the
+    # trusted Gate task output and must agree with the agent-writable display artifact.
+    if ($trustedVerdict -notin @('FAILED', 'SKIPPED', 'INCONCLUSIVE', 'TIMEDOUT')) {
+        return $GateContent
+    }
+
     # A TIMEDOUT verdict means the Gate task was killed before its trusted wrapper could
-    # publish a result. Any gate/content.md left behind is necessarily partial or stale and
-    # must not override that pipeline fact. Build 14878396 / PR #36698 retained partial
-    # FAILED-looking A/B content after the 150-minute task timeout, which made the summary
-    # falsely say the fix failed even though the Gate never completed.
-    if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') {
+    # publish a result. Any gate/content.md left behind is necessarily partial or stale.
+    if ($trustedVerdict -eq 'TIMEDOUT') {
         return @'
 ### Gate Result: TIMEDOUT — test verification did not finish
 
@@ -233,7 +238,52 @@ The automated **test-verification gate** did not complete on this run. It was st
 '@
     }
 
-    return $GateContent
+    $displayedVerdicts = @(
+        [regex]::Matches(
+            $GateContent,
+            '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE|TIMEDOUT)') |
+            ForEach-Object { $_.Groups[1].Value.ToUpperInvariant() } |
+            Select-Object -Unique
+    )
+    if ($displayedVerdicts.Count -eq 1 -and $displayedVerdicts[0] -eq $trustedVerdict) {
+        return $GateContent
+    }
+
+    switch ($trustedVerdict) {
+        'FAILED' {
+            return @'
+### Gate Result: ❌ FAILED
+
+The trusted **test-verification gate** reported a failure. Its detailed display artifact was
+missing or contradicted this trusted pipeline verdict, so that agent-writable content was not
+used in the review summary.
+
+Inspect the trusted **Gate** task logs for the failing build or test evidence. This run is not
+eligible for approval.
+'@
+        }
+        'SKIPPED' {
+            return @'
+### Gate Result: ⚠️ SKIPPED
+
+The trusted **test-verification gate** skipped test execution for this change. It did not build
+or run the selected tests, so this verdict does not establish that the PR build is healthy.
+
+Review any independent CI or Deep UI results shown below before merging.
+'@
+        }
+        'INCONCLUSIVE' {
+            return @'
+### Gate Result: ⚠️ INCONCLUSIVE
+
+The trusted **test-verification gate** could not produce a definitive pass/fail result. Its
+detailed display artifact was missing or contradicted this trusted pipeline verdict, so that
+agent-writable content was not used in the review summary.
+
+Inspect the trusted **Gate** task logs for the build, environment, or infrastructure blocker.
+'@
+        }
+    }
 }
 
 function Limit-MarkdownContent {
@@ -334,17 +384,10 @@ function Add-MissingUITestResultsNote {
     }
 
     # Tailor the guidance to the trusted pipeline gate outcome instead of trying to
-    # discover it in UI-phase content. Only a FAILED gate means the PR build is the
-    # likely blocker. A gate that PASSED, was SKIPPED (no tests), or was INCONCLUSIVE
-    # means the PR build itself was not the blocker — so
-    # the deep UI stage produced nothing because it was skipped or died on
-    # INFRASTRUCTURE (the merge-for-testing step, emulator/simulator boot, or an
-    # Appium hang), NOT because of this PR's code. Pointing the author at "fix the
-    # build/gate" in that case sends them down the wrong path (e.g. PR #36544, whose
-    # gate was SKIPPED and whose deep stage failed at the Windows autocrlf merge step).
-    # A FAILED gate — or an unknown/absent gate outcome — falls back to the neutral
-    # "fix the build/gate and push again" guidance. TIMEDOUT gets neutral transient
-    # infrastructure wording without claiming that the build passed.
+    # discover it in UI-phase content. PASSED is the only verdict that proves the PR
+    # build completed successfully. SKIPPED runs no build/tests, while INCONCLUSIVE
+    # and TIMEDOUT do not establish build health. FAILED (or an unknown/absent verdict)
+    # keeps the build/gate guidance.
     $gateState = $TrustedGateResult.Trim().ToUpperInvariant()
 
     if ($gateState -eq 'TIMEDOUT') {
@@ -356,6 +399,24 @@ function Add-MissingUITestResultsNote {
 > This is usually transient **infrastructure**, but the PR build was not proven either way;
 > inspect the **Gate** section and push again after any confirmed build issue is addressed.
 '@
+    } elseif ($gateState -eq 'SKIPPED') {
+        $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The trusted gate was
+> skipped before build/test verification, so it does not prove that the PR build is healthy.
+> The deep UI stage also returned no results; inspect the independent CI checks and retry the
+> review if those categories still need coverage.
+'@
+    } elseif ($gateState -eq 'INCONCLUSIVE') {
+        $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The trusted gate was
+> inconclusive and did not establish whether the PR build was healthy. The deep UI stage also
+> returned no results, usually because of a build, environment, or infrastructure interruption;
+> inspect the **Gate** section and independent CI checks before retrying.
+'@
     } elseif ($gateState -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE')) {
         $note = @'
 
@@ -366,7 +427,7 @@ function Add-MissingUITestResultsNote {
 > re-runs on new commits (a maintainer can also re-run it).
 '@
     } else {
-        # PASSED / SKIPPED / INCONCLUSIVE → the PR build was not the blocker.
+        # PASSED is the only trusted verdict that proves the PR build was not the blocker.
         $note = @'
 
 > [!WARNING]
