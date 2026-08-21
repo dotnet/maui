@@ -19,6 +19,8 @@ BeforeAll {
 
     $script:RetryScriptPath = Join-Path $PSScriptRoot 'Invoke-UITestWithRetry.ps1'
     $script:RetryScriptSource = Get-Content -Raw -LiteralPath $script:RetryScriptPath
+    $script:ResetScriptPath = Join-Path $PSScriptRoot 'Reset-DeviceState.ps1'
+    $script:ResetScriptSource = Get-Content -Raw -LiteralPath $script:ResetScriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile(
@@ -55,6 +57,15 @@ BeforeAll {
     if (-not $boundedFunction) {
         throw "Function 'Invoke-BuildScriptBounded' not found"
     }
+    $script:BoundedFunctionSource = $boundedFunction.Extent.Text
+    $saveDiagnosticsFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Save-AndroidHangDiagnostics'
+    }, $true)
+    if (-not $saveDiagnosticsFunction) {
+        throw "Function 'Save-AndroidHangDiagnostics' not found"
+    }
+    $script:SaveDiagnosticsFunctionSource = $saveDiagnosticsFunction.Extent.Text
     Invoke-Expression $boundedFunction.Extent.Text
 
     # Mirrors the decision made in the Invoke-UITestWithRetry.ps1 retry loop: an ambiguous
@@ -177,5 +188,43 @@ if ($TestFilter -ne 'Name = Foo Bar') {
         ($result.Output -join "`n") | Should -Match 'filter=Name = Foo Bar'
         $script:RetryScriptSource | Should -Match '\.ArgumentList\.Add\(\[string\]\$argument\)'
         $script:RetryScriptSource | Should -Not -Match 'Start-Process\s+-FilePath\s+\$pwshExe\s+-ArgumentList'
+    }
+
+    It 'tree-kills the hung run before bounded Android diagnostic capture' {
+        $killIndex = $script:BoundedFunctionSource.IndexOf('Stop-ProcessTree -ProcessId $proc.Id')
+        $captureIndex = $script:BoundedFunctionSource.IndexOf('Save-AndroidHangDiagnostics -RepoRoot $RepoRoot -Attempt $Attempt')
+
+        $killIndex | Should -BeGreaterThan -1
+        $captureIndex | Should -BeGreaterThan $killIndex
+        $script:SaveDiagnosticsFunctionSource | Should -Match 'Invoke-AndroidDiagnosticCommand'
+        $script:SaveDiagnosticsFunctionSource | Should -Not -Match '(?m)&\s*adb\b'
+    }
+
+    It 'retains hang diagnostics in an attempt-numbered directory until artifact capture' {
+        $script:SaveDiagnosticsFunctionSource |
+            Should -Match ([regex]::Escape('CustomAgentLogsTmp/UITests/hang-diagnostics/attempt-$Attempt'))
+        $script:RetryScriptSource |
+            Should -Match ([regex]::Escape('-CrashLoopAbortThreshold 10 -Attempt $attempt'))
+    }
+
+    It 'uses the bounded shared reset helper between retry attempts' {
+        $recoveryStart = $script:RetryScriptSource.IndexOf('# Same recovery as Gate')
+        if ($recoveryStart -lt 0) {
+            $recoveryStart = $script:RetryScriptSource.IndexOf('$recoveryBudgetSeconds = 180')
+        }
+        $recoveryEnd = $script:RetryScriptSource.IndexOf('Start-Sleep -Seconds $RetryDelaySeconds', $recoveryStart)
+        $recoveryBlock = $script:RetryScriptSource.Substring($recoveryStart, $recoveryEnd - $recoveryStart)
+
+        $recoveryBlock | Should -Match ([regex]::Escape("Join-Path `$PSScriptRoot 'Reset-DeviceState.ps1'"))
+        $recoveryBlock | Should -Match ([regex]::Escape('-BootTimeoutSeconds $recoveryBudgetSeconds'))
+        $recoveryBlock | Should -Not -Match '(?m)&\s*(adb|xcrun)\b'
+    }
+
+    It 'bounds all reset-native commands and verifies iOS boot completion' {
+        $script:ResetScriptSource | Should -Match 'Invoke-ProcessWithTimeout'
+        $script:ResetScriptSource | Should -Not -Match '(?m)^\s*&\s*(adb|xcrun)\b'
+        $script:ResetScriptSource |
+            Should -Match ([regex]::Escape("@('simctl', 'bootstatus', `$sim, '-b', '-t', `"`$bootStatusTimeout`")"))
+        $script:ResetScriptSource | Should -Match '\$bootStatus\.ExitCode\s*-eq\s*0'
     }
 }

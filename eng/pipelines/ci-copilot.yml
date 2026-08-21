@@ -3021,16 +3021,6 @@ stages:
                   $hadFailure = $true
                   continue
                 }
-                # Bound this category so it is tree-killed and returns before the
-                # loop hard stop — this is what actually prevents the task-level
-                # 320-min timeout when a build/run hangs.
-                $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
-                if ($remainToHardStopMin -lt 3) {
-                  $skippedCats += $cat
-                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 320-min task timeout)."
-                  $hadFailure = $true
-                  continue
-                }
                 # A prior category ended in a tree-kill/timeout (wall OR idle),
                 # which can leave the SHARED emulator/simulator degraded — the
                 # HostApp then starts crashing on launch ("… keeps stopping") and
@@ -3048,6 +3038,15 @@ stages:
                     try { & $resetScript -Platform $platform -DeviceUdid $env:DEVICE_UDID } catch { Write-Host "(device reset failed: $_)" -ForegroundColor DarkGray }
                     $catStart = Get-Date   # reboot consumed time; refresh the budget baseline
                   }
+                }
+                # Compute the category budget after any device reset so reset time
+                # cannot extend execution past the task hard stop.
+                $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
+                if ($remainToHardStopMin -lt 3) {
+                  $skippedCats += $cat
+                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 320-min task timeout)."
+                  $hadFailure = $true
+                  continue
                 }
                 # Give each still-pending category a fair slice of the remaining
                 # budget so one large category cannot starve the rest, floored at
@@ -3302,6 +3301,10 @@ stages:
                         $captureResult.BudgetFiles -gt 0 -or
                         $captureResult.OversizedFiles -gt 0) {
                       Write-Host "Diagnostic bounding: $($captureResult.TruncatedTextFiles) text log(s) truncated, $($captureResult.DuplicateFiles) exact duplicate(s) represented by the manifest, $($captureResult.BudgetFiles) file(s) omitted by the aggregate cap, $($captureResult.OversizedFiles) oversized file(s) omitted."
+                    }
+                    $hangDiagDir = Join-Path $uiDiagSrc 'hang-diagnostics'
+                    if (Test-Path -LiteralPath $hangDiagDir -PathType Container) {
+                      Remove-Item -LiteralPath $hangDiagDir -Recurse -Force -ErrorAction SilentlyContinue
                     }
                   } catch {
                     Write-Host "Could not capture bounded UI-test diagnostics: $_" -ForegroundColor Yellow

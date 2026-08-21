@@ -733,6 +733,20 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match 'screen\.\?shot'
         $pipelineContent | Should -Match 'PageSource'
         $pipelineContent | Should -Match ([regex]::Escape("-not (`$_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)"))
+        $pipelineContent | Should -Match ([regex]::Escape("Join-Path `$uiDiagSrc 'hang-diagnostics'"))
+        $pipelineContent | Should -Match ([regex]::Escape('Remove-Item -LiteralPath $hangDiagDir -Recurse'))
+    }
+
+    It 'recomputes the category hard-stop budget after a device reset' {
+        $resetStart = $pipelineContent.IndexOf('if ($needDeviceReset)')
+        $resetEnd = $pipelineContent.IndexOf('# Give each still-pending category', $resetStart)
+        $resetBlock = $pipelineContent.Substring($resetStart, $resetEnd - $resetStart)
+        $refreshIndex = $resetBlock.IndexOf('$catStart = Get-Date')
+        $remainingIndex = $resetBlock.IndexOf('$remainToHardStopMin =')
+
+        $refreshIndex | Should -BeGreaterThan -1
+        $remainingIndex | Should -BeGreaterThan $refreshIndex
+        $resetBlock | Should -Match ([regex]::Escape('if ($remainToHardStopMin -lt 3)'))
     }
 
     It 'bounds the Copilot log tree before the credentialed PostReview phase imports it' {
