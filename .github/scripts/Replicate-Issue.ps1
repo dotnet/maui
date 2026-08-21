@@ -3951,12 +3951,21 @@ function Invoke-ReplicationNegativeControl {
 
         Set-Content -LiteralPath $controlVariantPath -Value $controlSource -Encoding utf8NoBOM
         try {
+            # When a scene file was found the control edits that and the oracle
+            # file is never written, so the oracle after the control is the
+            # oracle before it. With no scene file - a device test keeps the
+            # scenario and the assertions in one file - the control replaces the
+            # oracle file itself, and passing the baseline on both sides would
+            # compare the oracle to itself and wave through a control that
+            # simply deleted the assertion. That is the one arm that promotes a
+            # reproduction to a certified oracle.
+            $oracleControlSource = if ($sceneRelativePath) { $oracleSource } else { $controlSource }
             Assert-ReplicationNegativeControlIsInformative `
                 -BaselineSource $baselineSource `
                 -ControlSource $controlSource `
                 -TestFilter ([string]$TestProposal.testFilter) `
                 -OracleBaselineSource $oracleSource `
-                -OracleControlSource $oracleSource
+                -OracleControlSource $oracleControlSource
         }
         catch {
             $controlFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000

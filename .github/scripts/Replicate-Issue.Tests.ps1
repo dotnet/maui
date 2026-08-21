@@ -7178,7 +7178,12 @@ Describe 'The control author never writes the control source' {
         $script:ControlLoopSource | Should -Match "\`$markup = @\(\`$sceneCandidates \| Where-Object"
         $script:ControlLoopSource | Should -Match 'if \(\$markup\.Count -eq 1\)'
         $script:ControlLoopSource | Should -Match '-OracleBaselineSource \$oracleSource'
-        $script:ControlLoopSource | Should -Match '-OracleControlSource \$oracleSource'
+        # Only a UI test leaves the oracle untouched. The three single-file
+        # device tests above have the control replace the oracle itself, so the
+        # control source has to be what the check reads there.
+        $script:ControlLoopSource | Should -Match '-OracleControlSource \$oracleControlSource'
+        $script:ControlLoopSource | Should -Match (
+            '\$oracleControlSource = if \(\$sceneRelativePath\) \{ \$oracleSource \} else \{ \$controlSource \}')
     }
 
     It 'tells the author to keep whatever the oracle needs to run' {
@@ -7282,5 +7287,49 @@ Describe 'A sandbox attempt that decided something is not called other' {
     It 'still falls back to other for a failure it cannot place' {
         Get-ReplicationAttemptFailureKind -FailureSummary 'Something entirely unfamiliar happened.' |
             Should -Be 'other'
+    }
+}
+
+Describe 'The in-loop control check must read the source the control produced' {
+    It 'passes the control source as the oracle when the control edits the oracle file' {
+        # A UI test keeps the scenario in a HostApp page, so the control edits
+        # that and the oracle file is never written: the oracle after the
+        # control is the oracle before it. A device test is one file, so the
+        # control replaces the oracle itself. Passing the baseline on both sides
+        # there compares the oracle to itself, assertion parity holds by
+        # definition, and a control that deleted the assertion is waved through.
+        # The pre-publish gate already reasons this way; the runner did not.
+        $block = [regex]::Match(
+            $script:Source,
+            'Assert-ReplicationNegativeControlIsInformative[^@]*?-OracleControlSource \$\w+',
+            [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        $block.Success | Should -BeTrue
+        $block.Value | Should -Match '-OracleControlSource \$oracleControlSource'
+        $script:Source | Should -Match (
+            '\$oracleControlSource = if \(\$sceneRelativePath\) \{ \$oracleSource \} else \{ \$controlSource \}')
+    }
+
+    It 'refuses a control that deleted the oracle, once it is given the control source' {
+        $baseline = @'
+    var traits = element.AccessibilityTraits;
+    Assert.True(traits.HasFlag(UIAccessibilityTrait.Button), "must expose Button");
+'@
+        $control = '    var traits = element.AccessibilityTraits;'
+
+        # How a device test now calls it: the control edited the oracle file.
+        {
+            Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $baseline -ControlSource $control `
+                -TestFilter 'Issue1' `
+                -OracleBaselineSource $baseline -OracleControlSource $control
+        } | Should -Throw '*asserts 0 times where the reproduction asserts 1*'
+
+        # How a UI test calls it: the oracle file really was untouched.
+        {
+            Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $baseline -ControlSource $control `
+                -TestFilter 'Issue1' `
+                -OracleBaselineSource $baseline -OracleControlSource $baseline
+        } | Should -Not -Throw
     }
 }
