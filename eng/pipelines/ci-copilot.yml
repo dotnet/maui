@@ -4623,6 +4623,40 @@ stages:
               targetPath: '$(Pipeline.Workspace)/uifail-analysis'
             continueOnError: true
 
+          # Deep UI results are produced after PR code executes. Import the
+          # downloaded tree through the trusted bounded regular-file helper before
+          # the credentialed posting step parses, stages, or reads any snapshot.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = Join-Path "$(Pipeline.Workspace)" "drop-deep-uitests"
+              $destination = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
+              Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+                Write-Host "No deep UI test artifact was produced."
+                exit 0
+              }
+
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              try {
+                $maxDeepResultFiles = 4096
+                $maxDeepResultDirectories = 2048
+                $maxDeepResultFileBytes = 16MB
+                $maxDeepResultBytes = 512MB
+                $importResult = Copy-BoundedRegularFileTree `
+                  -SourceDirectory $source `
+                  -DestinationDirectory $destination `
+                  -MaxFileCount $maxDeepResultFiles `
+                  -MaxDirectoryCount $maxDeepResultDirectories `
+                  -MaxFileBytes $maxDeepResultFileBytes `
+                  -MaxTotalBytes $maxDeepResultBytes
+                Write-Host "Imported $($importResult.CopiedFiles) bounded deep UI result file(s) ($($importResult.CopiedBytes) bytes)."
+              } catch {
+                Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]Deep UI test artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import bounded deep UI test results'
+            continueOnError: true
+
           # Import only the expected bounded regular file. The analysis artifact
           # is prompt-controlled data and must never overwrite trusted scripts or
           # introduce executable content into the checkout.
@@ -4661,7 +4695,7 @@ stages:
                 throw "Required GitHub retry helper not found: $ghRetryHelper"
               }
               . $ghRetryHelper
-              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewId = $env:AI_SUMMARY_REVIEW_ID
@@ -4853,12 +4887,10 @@ stages:
                 $bfList = '`' + ($buildFailedCats -join '`, `') + '`'
                 $bfCatText = if ($buildFailedCats.Count -eq 1) { "1 category ($bfList)" } else { "$($buildFailedCats.Count) categories ($bfList)" }
                 $bfErr = if ($buildFailedSampleError) { " The compiler reported: ``$buildFailedSampleError``." } else { '' }
-                # DEFINITIVELY classify the break instead of hedging with "this
-                # may be either". A PublicAPI/analyzer (RS####) or syntax (CS####)
-                # error fires in the file that declares it, which the PR modifies —
-                # so if the failing file is part of THIS PR's diff it is the PR's
-                # break; if it is not in the diff at all, the break is in base code
-                # this PR never touched. Show the file so the reasoning is visible.
+                # A diagnostic in a changed file is strong evidence of a PR break.
+                # The converse is not true: an API/signature change can surface the
+                # compiler error in an unchanged consumer. Without a base build,
+                # report that case as undetermined rather than blaming the base.
                 $bfClass = ''
                 $prFilesForClass = @()
                 try { $prFilesForClass = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
@@ -4867,7 +4899,7 @@ stages:
                   if ($hit) {
                     $bfClass = " This is a compile error **introduced by this PR** — ``$hit`` is one of the files this PR changes. Fix the build error, then re-comment ``/review`` to run the deep tests."
                   } else {
-                    $bfClass = " This is a **base-branch build break** — the failing file (``$buildFailedSampleFile``) is not part of this PR. Verify ``main`` builds green, then re-comment ``/review``."
+                    $bfClass = " The cause is **undetermined**: the diagnostic is reported in unchanged file ``$buildFailedSampleFile``, but a PR API/signature change can break an unchanged consumer. Compare the same build against the reviewed base before attributing it; inspect ``build-output.log``, then re-comment ``/review`` after the build issue is resolved."
                   }
                 }
                 if (-not $bfClass) {

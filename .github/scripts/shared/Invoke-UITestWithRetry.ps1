@@ -543,6 +543,7 @@ $livenessPaths = @($uiLogsDir, (Join-Path $uiLogsDir 'TestResults'))
 
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $attempts = $attempt
+    $recoveryVerified = $false
     # Record the PREVIOUS attempt's env-error before it is reset below, so the
     # caller sees the full ORDERED history (e.g. two "did not recover after
     # crash-recovery attempts" app-crashes followed by a final 'timeout') and
@@ -578,10 +579,19 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
 
         $resetScript = Join-Path $PSScriptRoot 'Reset-DeviceState.ps1'
         if (Test-Path -LiteralPath $resetScript -PathType Leaf) {
-            & $resetScript `
+            $resetOutput = @(& $resetScript `
                 -Platform $Platform `
                 -DeviceUdid $bootedUdid `
-                -BootTimeoutSeconds $recoveryBudgetSeconds
+                -BootTimeoutSeconds $recoveryBudgetSeconds `
+                -PassThruStatus)
+            $recoveryVerified = (
+                $resetOutput.Count -eq 1 -and
+                $resetOutput[0] -is [bool] -and
+                $resetOutput[0]
+            )
+            if (-not $recoveryVerified) {
+                Write-Host "##[warning]Device recovery was not verified; preserving the remaining retry budget." -ForegroundColor Yellow
+            }
         } else {
             Write-Host "##[warning]Device recovery script is missing: $resetScript" -ForegroundColor Yellow
         }
@@ -638,7 +648,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     # rebuild/reinstall) settles it: if the SAME signature survives that clean-device
     # recovery, it is reproducible and must be reported as a real failure instead of
     # consuming the remaining retry budget and landing as INCONCLUSIVE.
-    if ($envHit -and ($ambiguousStartupPatterns -contains $envHit) -and ($envErrorHistory -contains $envHit)) {
+    if ($recoveryVerified -and $envHit -and ($ambiguousStartupPatterns -contains $envHit) -and ($envErrorHistory -contains $envHit)) {
         Write-Host "⚠️ Ambiguous startup failure '$envHit' recurred after device recovery — treating as a deterministic (PR-caused) failure, not infrastructure." -ForegroundColor Yellow
         # Keep the signature in the ordered history (the deep classifier uses it to tell a
         # crash-driven run from a plain slow one), but clear EnvErrorHit so the caller

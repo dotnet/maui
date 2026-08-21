@@ -29,13 +29,18 @@
 
 .PARAMETER BootTimeoutSeconds
   Max seconds to wait for the device to finish rebooting (default 180).
+
+.PARAMETER PassThruStatus
+  Emits one Boolean indicating whether recovery was verified. Other callers retain
+  the existing best-effort, no-output behavior when this switch is omitted.
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$Platform,
     [string]$DeviceUdid,
     [ValidateRange(1, 3600)]
-    [int]$BootTimeoutSeconds = 180
+    [int]$BootTimeoutSeconds = 180,
+    [switch]$PassThruStatus
 )
 
 $ErrorActionPreference = 'Continue'
@@ -43,9 +48,15 @@ $p = $Platform.ToLowerInvariant()
 $sharedUtils = Join-Path $PSScriptRoot 'shared-utils.ps1'
 if (-not (Test-Path -LiteralPath $sharedUtils -PathType Leaf)) {
     Write-Host "##[warning]Device reset helper is missing: $sharedUtils"
+    if ($PassThruStatus) { Write-Output $false }
     return
 }
 . $sharedUtils
+
+function Complete-DeviceReset {
+    param([bool]$Succeeded)
+    if ($PassThruStatus) { Write-Output $Succeeded }
+}
 
 function Get-RemainingTimeoutSeconds {
     param(
@@ -125,6 +136,7 @@ try {
     if ($p -eq 'android') {
         if (-not (Get-Command adb -ErrorAction SilentlyContinue)) {
             Write-Host "adb not found — skipping device reset"
+            Complete-DeviceReset -Succeeded $false
             return
         }
         $serial = @()
@@ -138,6 +150,7 @@ try {
             -MaximumSeconds 30
         if ($reboot.ExitCode -ne 0) {
             Write-Host "##[warning]adb reboot failed or timed out — continuing without a device reset."
+            Complete-DeviceReset -Succeeded $false
             return
         }
 
@@ -148,6 +161,7 @@ try {
             -MaximumSeconds $BootTimeoutSeconds
         if ($wait.ExitCode -ne 0) {
             Write-Host "##[warning]adb wait-for-device did not complete within the reset budget — continuing anyway."
+            Complete-DeviceReset -Succeeded $false
             return
         }
 
@@ -164,9 +178,12 @@ try {
                 -ArgumentList @($serial + @('shell', 'input', 'keyevent', 'KEYCODE_HOME')) `
                 -Deadline $resetDeadline `
                 -MaximumSeconds 10)
+            Complete-DeviceReset -Succeeded $true
         } else {
             Write-Host "##[warning]Emulator did not report sys.boot_completed within $BootTimeoutSeconds s — continuing anyway (the next category has its own retry/recovery)."
+            Complete-DeviceReset -Succeeded $false
         }
+        return
     }
     elseif ($p -eq 'ios') {
         $sim = $DeviceUdid
@@ -204,6 +221,7 @@ try {
                 -MaximumSeconds 30
             if ($bootResult.ExitCode -ne 0) {
                 Write-Host "##[warning]simctl boot failed or timed out — continuing without a completed reset."
+                Complete-DeviceReset -Succeeded $false
                 return
             }
 
@@ -212,6 +230,7 @@ try {
                 -MaximumSeconds $BootTimeoutSeconds
             if ($bootStatusTimeout -le 0) {
                 Write-Host "##[warning]No reset budget remains for simctl bootstatus — continuing anyway."
+                Complete-DeviceReset -Succeeded $false
                 return
             }
 
@@ -222,11 +241,16 @@ try {
                 -MaximumSeconds $bootStatusTimeout
             if ($bootStatus.ExitCode -eq 0) {
                 Write-Host "  ✓ Simulator rebooted."
+                Complete-DeviceReset -Succeeded $true
             } else {
                 Write-Host "##[warning]simctl bootstatus failed or timed out — continuing anyway (the next category has its own retry/recovery)."
+                Complete-DeviceReset -Succeeded $false
             }
+            return
         } else {
             Write-Host "No booted simulator UDID — skipping device reset"
+            Complete-DeviceReset -Succeeded $false
+            return
         }
     }
     else {
@@ -235,9 +259,11 @@ try {
         # cross-category device-degradation failure mode does not apply. Nothing
         # to reset here.
         Write-Host "Platform '$Platform' has no shared device to reset — skipping."
+        Complete-DeviceReset -Succeeded $false
     }
 }
 catch {
     # Never let a reset problem block the run.
     Write-Host "##[warning]Device reset threw (non-fatal): $_"
+    Complete-DeviceReset -Succeeded $false
 }

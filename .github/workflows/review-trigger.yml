@@ -121,13 +121,16 @@ jobs:
             ACTUAL_NODE_ID=$(echo "${SOURCE_COMMENT}" | jq -r '.node_id // ""')
             ACTUAL_ISSUE_URL=$(echo "${SOURCE_COMMENT}" | jq -r '.issue_url // ""')
             SOURCE_BODY=$(echo "${SOURCE_COMMENT}" | jq -r '.body // ""')
+            SOURCE_ACTOR=$(echo "${SOURCE_COMMENT}" | jq -r '.user.login // ""')
             if [ "${ACTUAL_NODE_ID}" != "${COMMENT_NODE_ID}" ] ||
                [ "${ACTUAL_ISSUE_URL##*/}" != "${PR_NUMBER}" ] ||
+               [ -z "${SOURCE_ACTOR}" ] ||
                ! is_recoverable_review_command "${SOURCE_BODY}"; then
               echo "::warning::Recovery source comment identity or command validation failed; skipping dispatch."
               echo "proceed=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
+            ACTOR="${SOURCE_ACTOR}"
           fi
 
           # The scheduled recovery workflow adds a rocket reaction and minimizes
@@ -177,9 +180,7 @@ jobs:
           fi
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
-            echo "Recovery source comment is still unacknowledged; proceeding with dispatch."
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "Recovery source comment is still unacknowledged; revalidating ${ACTOR}'s current permission."
           fi
 
           PERMISSION=""

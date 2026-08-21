@@ -90,7 +90,10 @@ function Invoke-ProcessWithTimeout {
 
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, 86400)]
-        [int]$TimeoutSeconds
+        [int]$TimeoutSeconds,
+
+        [ValidateRange(100, 60000)]
+        [int]$OutputDrainTimeoutMilliseconds = 2000
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
@@ -139,19 +142,60 @@ function Invoke-ProcessWithTimeout {
             $process.WaitForExit()
         }
 
-        $stdout = $stdoutTask.GetAwaiter().GetResult()
-        $stderr = $stderrTask.GetAwaiter().GetResult()
+        $drainTasks = [System.Threading.Tasks.Task[]]@($stdoutTask, $stderrTask)
+        $outputDrainTimedOut = $false
+        try {
+            $streamsDrained = [System.Threading.Tasks.Task]::WaitAll(
+                $drainTasks,
+                $OutputDrainTimeoutMilliseconds)
+        }
+        catch {
+            # Preserve the existing read-error behavior when both tasks completed;
+            # only inherited open pipe handles should take the bounded fallback.
+            $streamsDrained = $stdoutTask.IsCompleted -and $stderrTask.IsCompleted
+            if ($streamsDrained) {
+                throw
+            }
+        }
+
+        if (-not $streamsDrained) {
+            $outputDrainTimedOut = $true
+            $process.StandardOutput.Close()
+            $process.StandardError.Close()
+            try {
+                [void][System.Threading.Tasks.Task]::WaitAll($drainTasks, 500)
+            }
+            catch {
+                # Closing an active redirected reader can fault its task. The bounded
+                # diagnostic below makes the lost tail explicit to callers.
+            }
+        }
+
+        $stdout = if ($stdoutTask.IsCompletedSuccessfully) {
+            $stdoutTask.GetAwaiter().GetResult()
+        } else {
+            ''
+        }
+        $stderr = if ($stderrTask.IsCompletedSuccessfully) {
+            $stderrTask.GetAwaiter().GetResult()
+        } else {
+            ''
+        }
         $output = @()
         foreach ($text in @($stdout, $stderr)) {
             if (-not [string]::IsNullOrEmpty($text)) {
                 $output += @($text -split "\r?\n" | Where-Object { $_ -ne '' })
             }
         }
+        if ($outputDrainTimedOut) {
+            $output += "Output capture stopped after ${OutputDrainTimeoutMilliseconds}ms because an inherited pipe handle remained open."
+        }
 
         return [pscustomobject]@{
             Output = $output
             ExitCode = if ($timedOut) { 124 } else { $process.ExitCode }
             TimedOut = $timedOut
+            OutputDrainTimedOut = $outputDrainTimedOut
         }
     }
     finally {

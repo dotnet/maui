@@ -215,6 +215,14 @@ Describe 'Deep timeout history classification' {
     }
 }
 
+Describe 'Deep build-failure attribution' {
+    It 'does not infer a base break solely from an unchanged diagnostic file' {
+        $pipelineContent | Should -Match 'The cause is \*\*undetermined\*\*: the diagnostic is reported in unchanged file'
+        $pipelineContent | Should -Match 'a PR API/signature change can break an unchanged consumer'
+        $pipelineContent | Should -Not -Match 'This is a \*\*base-branch build break\*\* — the failing file'
+    }
+}
+
 Describe 'Gate trusted overlay failure classification' {
     It 'keeps a non-applicable Catalyst overlay after setup inconclusive' {
         $childScript = @"
@@ -467,6 +475,35 @@ Describe 'Reviewer pipeline timeout containment' {
         Test-Path -LiteralPath (Join-Path $postGitDir 'attacker-hooks') | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $postGitDir 'hooks/post-checkout') | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $TestDrive 'posting-home/.gitconfig') | Should -BeFalse
+    }
+
+    It 'imports deep UI snapshots through bounded regular-file validation before posting' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+        $postJobStart = $stageBlock.IndexOf('- job: UpdateComment')
+        $postJobBlock = $stageBlock.Substring($postJobStart)
+
+        $importIndex = $stageBlock.IndexOf("displayName: 'Import bounded deep UI test results'")
+        $postIndex = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
+
+        $postJobStart | Should -BeGreaterThan -1
+        $importIndex | Should -BeGreaterThan -1
+        $postIndex | Should -BeGreaterThan $importIndex
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$maxDeepResultFileBytes = 16MB'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$maxDeepResultBytes = 512MB'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            'Copy-BoundedRegularFileTree `'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '-MaxFileBytes $maxDeepResultFileBytes'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '-MaxTotalBytes $maxDeepResultBytes'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"'))
+        $postJobBlock | Should -Not -Match ([regex]::Escape(
+            '$artDir = "$(Pipeline.Workspace)/drop-deep-uitests"'))
     }
 
     It 'does not enumerate or log credential identities and capabilities in Stage 3' {
