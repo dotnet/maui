@@ -604,13 +604,23 @@ function Assert-ValidFingerprint {
     if ($Fingerprint.Length -gt 512) {
         throw 'Fingerprint exceeds 512 characters.'
     }
-    if ($Fingerprint -cnotmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()\-|]*$') {
+
+    # Apostrophes in test names carry no identity information and cannot be
+    # represented in the publisher-owned HTML marker alphabet. Normalize only
+    # the common apostrophe code points, then retain the strict safety gate for
+    # every other unsupported character.
+    $normalizedFingerprint = $Fingerprint.
+        Replace("'", '').
+        Replace([string][char]0x2018, '').
+        Replace([string][char]0x2019, '')
+
+    if ($normalizedFingerprint -cnotmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()\-|]*$') {
         throw "Fingerprint contains unsafe characters."
     }
 
     # Casing is not a trust decision. Canonicalize the accepted ASCII alphabet at
     # the trusted boundary so prompt compliance cannot determine marker identity.
-    $canonicalFingerprint = $Fingerprint.ToLowerInvariant()
+    $canonicalFingerprint = $normalizedFingerprint.ToLowerInvariant()
     $parts = @($canonicalFingerprint.Split('|'))
     if ($parts.Count -ne 6 -or @($parts | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
         throw 'Fingerprint must contain exactly six non-empty pipe-delimited fields.'

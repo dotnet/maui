@@ -489,16 +489,33 @@ safe-outputs:
                 // evidence; the issue body retains the historical proof from the run
                 // that created it, so its evidence key must not be compared byte-for-byte.
                 getEvidenceProof(entry);
-                const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
                 const markerCount = body.split(markerPrefix).length - 1;
                 if (markerCount > 0) {
                   const lines = body.split(/\r?\n/);
+                  const fingerprintMarkers = lines.filter(line =>
+                    /^<!-- ci-scan-fingerprint: [a-z0-9][a-z0-9 ._:/+()\-|]* -->$/.test(line));
                   const countMarkers = lines.filter(line =>
                     /^<!-- ci-scan-match-count: [1-9]\d* hits in failure\.log -->$/.test(line));
                   const evidenceKeyMarkers = lines.filter(line =>
                     /^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$/.test(line));
+                  const canonicalFingerprint = fingerprintMarkers.length === 1
+                    ? fingerprintMarkers[0].slice(markerPrefix.length + 1, -4)
+                    : '';
+                  const currentFields = String(entry.fingerprint).split('|');
+                  const canonicalFields = canonicalFingerprint.split('|');
+                  const normalizePlatformIdentity = value =>
+                    String(value).trim().replace(/[ -]+/g, '-');
+                  const stableIdentityMatches =
+                    currentFields.length === 6 &&
+                    canonicalFields.length === 6 &&
+                    canonicalFields.every(field => field.length > 0) &&
+                    [0, 1, 2, 3].every(index =>
+                      currentFields[index] === canonicalFields[index]) &&
+                    normalizePlatformIdentity(currentFields[5]) ===
+                      normalizePlatformIdentity(canonicalFields[5]);
                   if (markerCount !== 1 ||
-                      !lines.includes(exactMarker) ||
+                      fingerprintMarkers.length !== 1 ||
+                      !stableIdentityMatches ||
                       body.split(matchCountPrefix).length - 1 !== 1 ||
                       countMarkers.length !== 1 ||
                       body.split(evidenceKeyPrefix).length - 1 !== 1 ||
@@ -512,7 +529,10 @@ safe-outputs:
                   if (!hasHistoricalErrorPattern(body, entry.match_pattern)) {
                     throw new Error(`Existing issue #${entry.issue_number} does not contain the current recurrence pattern in its historical Error Message evidence.`);
                   }
-                  entry.coverage_proof = 'canonical-fingerprint-and-distinctive-current-evidence';
+                  entry.canonical_fingerprint = canonicalFingerprint;
+                  entry.coverage_proof = canonicalFingerprint === entry.fingerprint
+                    ? 'canonical-fingerprint-and-distinctive-current-evidence'
+                    : 'canonical-stable-identity-and-distinctive-current-evidence';
                 } else {
                   const matches = legacyEvidenceMatcher(entry, entry.pipeline);
                   if (matches(response.data)) {
@@ -533,20 +553,29 @@ safe-outputs:
               for (const issue of plan.issues) {
                 assertUnambiguousPlannedRecurrence(issue, plan.issues);
               }
+              const canonicalExistingOwners = new Map();
               for (const entry of existingEntries) {
+                const canonicalFingerprint =
+                  String(entry.canonical_fingerprint || entry.fingerprint);
+                const ownerKey = `${entry.pipeline}\u0000${canonicalFingerprint}`;
+                const priorOwner = canonicalExistingOwners.get(ownerKey);
+                if (priorOwner !== undefined) {
+                  throw new Error(`Existing canonical fingerprint ${canonicalFingerprint} is referenced by both #${priorOwner} and #${entry.issue_number}.`);
+                }
+                canonicalExistingOwners.set(ownerKey, entry.issue_number);
                 assertUnambiguousCanonicalRecurrence(
-                  entry.fingerprint,
+                  canonicalFingerprint,
                   entry.pipeline,
                   entry.match_pattern,
                   openTrackingIssues);
-                const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
+                const exactMarker = `<!-- ci-scan-fingerprint: ${canonicalFingerprint} -->`;
                 const markerMatches = openTrackingIssues.filter(candidate =>
                   !candidate.pull_request &&
                   String(candidate.body || '').split(/\r?\n/).includes(exactMarker));
                 if (markerMatches.length !== 1 ||
                     Number(markerMatches[0].number) !== Number(entry.issue_number)) {
                   const matches = markerMatches.map(candidate => `#${candidate.number}`).join(', ') || 'none';
-                  throw new Error(`Existing fingerprint ${entry.fingerprint} does not uniquely resolve to #${entry.issue_number}; open marker matches: ${matches}.`);
+                  throw new Error(`Existing fingerprint ${canonicalFingerprint} does not uniquely resolve to #${entry.issue_number}; open marker matches: ${matches}.`);
                 }
               }
               for (const issue of plan.issues) {
@@ -599,6 +628,7 @@ safe-outputs:
                 results.issues.push({
                   pipeline: entry.pipeline,
                   fingerprint: entry.fingerprint,
+                  canonical_fingerprint: entry.canonical_fingerprint,
                   disposition: 'existing',
                   issue_number: Number(entry.issue_number),
                   coverage_proof: entry.coverage_proof,
@@ -1251,8 +1281,14 @@ reason is rejected for logs in `failed_leaf_log_ids`.
 Disposition-specific fields:
 - `filed` — also include `title` and the complete `body`.
 - `existing` — also include the positive integer `issue_number`. The referenced
-  issue must already carry the exact publisher-owned fingerprint marker and one
-  well-formed historical match-count/evidence-key marker block for this signature.
+  issue must already carry one publisher-owned fingerprint marker and one
+  well-formed historical match-count/evidence-key marker block. The scanner,
+  branch, pipeline, and test/task identity fields of the historical marker must
+  exactly match this signature. The platform field must contain the same tokens
+  after normalizing runs of spaces and hyphens. Its failure-category field may
+  use older normalized wording when the stable identity and the distinctive raw
+  recurrence evidence still match; the publisher preserves that historical marker
+  as the canonical owner instead of creating a duplicate issue.
   Its evidence key binds the run that created the issue and is not expected to
   equal this run's evidence key. The trusted validator independently proves the
   recurrence against this run's frozen evidence. Select a `match_pattern` that

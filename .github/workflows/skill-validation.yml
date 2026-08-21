@@ -257,6 +257,7 @@ jobs:
             .github/agents
             .github/plugin.json
           persist-credentials: false
+          allow-unsafe-pr-checkout: true
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -402,6 +403,7 @@ jobs:
             .github/skills
             .github/plugin.json
           persist-credentials: false
+          allow-unsafe-pr-checkout: true
 
       - name: Discover changed files
         id: changed
@@ -530,6 +532,7 @@ jobs:
           # `git worktree add <SHA>` must be able to resolve them.
           fetch-depth: 0
           persist-credentials: false
+          allow-unsafe-pr-checkout: true
 
       - name: Ensure fixture history is available
         run: |
@@ -963,6 +966,7 @@ jobs:
             .github/skills
             .github/plugin.json
           persist-credentials: false
+          allow-unsafe-pr-checkout: true
 
       - name: Setup Node
         uses: actions/setup-node@v4

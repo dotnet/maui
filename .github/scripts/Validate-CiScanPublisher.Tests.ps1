@@ -738,6 +738,7 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
     It 'separates historical issue evidence from current frozen recurrence proof' {
         $script:TwinLock | Should -Match 'historical proof from the run'
         $script:TwinLock | Should -Match 'canonical-fingerprint-and-distinctive-current-evidence'
+        $script:TwinLock | Should -Match 'canonical-stable-identity-and-distinctive-current-evidence'
         $script:TwinLock | Should -Match 'hasDistinctiveRecurrencePattern'
         $script:TwinLock | Should -Match 'hasHistoricalErrorPattern'
         $script:TwinLock | Should -Match 'assertUnambiguousCanonicalRecurrence'
@@ -863,8 +864,7 @@ issuesToCreate.push(issue);
                 $publisherSource = $publisherSource.Replace($needle, $replacement)
             }
             if ($RequireCurrentEvidenceInExistingBody) {
-                $pattern = '(?m)^(?<indent>\s*)getEvidenceProof\(entry\);\r?\n' +
-                    '\k<indent>const exactMarker = `<!-- ci-scan-fingerprint: \$\{entry\.fingerprint\} -->`;'
+                $pattern = '(?m)^(?<indent>\s*)getEvidenceProof\(entry\);\r?$'
                 [regex]::Matches($publisherSource, $pattern).Count | Should -Be 1
                 $publisherSource = [regex]::Replace(
                     $publisherSource,
@@ -876,7 +876,6 @@ issuesToCreate.push(issue);
                             "${indent}if (!hasTrustedEvidenceLine(body, currentEvidenceProof.hashes)) {"
                             "${indent}  throw new Error(``Existing issue #`${entry.issue_number} does not contain a full current trusted evidence line.``);"
                             "${indent}}"
-                            "${indent}const exactMarker = ``<!-- ci-scan-fingerprint: `${entry.fingerprint} -->``;"
                         ) -join "`n"
                     })
             }
@@ -1412,6 +1411,116 @@ Unique current raw failure line
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*different or malformed trusted markers*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'reuses the exact issue 37559 marker across category and platform separator drift' {
+        $evidenceLine = '2026-08-16T16:43:15.9839713Z Snapshot different than baseline: LayoutShouldBeCorrectOnFirstNavigation.png (6.01% difference)'
+        $matchPattern = 'Snapshot different than baseline: LayoutShouldBeCorrectOnFirstNavigation.png (6.01% difference)'
+        $plan = New-ExistingPlan `
+            -IssueNumber 37559 `
+            -EvidenceLine $evidenceLine `
+            -FingerprintIdentity 'layoutshouldbecorrectonfirstnavigation' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'visual-comparison-failure' `
+            -Platform 'android-api-36' `
+            -MatchPattern $matchPattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $historicalFingerprint = $entry.fingerprint.Replace(
+            '|visual-comparison-failure|android-api-36',
+            '|snapshot different than baseline|android api 36')
+        $existing = New-ExistingIssueStub -Number 37559 -Body @"
+<!-- ci-scan-fingerprint: $historicalFingerprint -->
+<!-- ci-scan-match-count: 2 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+$evidenceLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37559' = $existing }
+
+        $result.ok | Should -BeTrue
+        $result.error | Should -BeNullOrEmpty
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects a historical marker whose stable platform identity changed' {
+        $evidenceLine = '2026-08-16T16:43:15.9839713Z Snapshot different than baseline: LayoutShouldBeCorrectOnFirstNavigation.png (6.01% difference)'
+        $matchPattern = 'Snapshot different than baseline: LayoutShouldBeCorrectOnFirstNavigation.png (6.01% difference)'
+        $plan = New-ExistingPlan `
+            -IssueNumber 37559 `
+            -EvidenceLine $evidenceLine `
+            -FingerprintIdentity 'layoutshouldbecorrectonfirstnavigation' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'visual-comparison-failure' `
+            -Platform 'android-api-36' `
+            -MatchPattern $matchPattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $historicalFingerprint = $entry.fingerprint.Replace(
+            '|visual-comparison-failure|android-api-36',
+            '|snapshot different than baseline|ios')
+        $existing = New-ExistingIssueStub -Number 37559 -Body @"
+<!-- ci-scan-fingerprint: $historicalFingerprint -->
+<!-- ci-scan-match-count: 2 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+$evidenceLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37559' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*different or malformed trusted markers*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects multiple current category aliases that claim the same canonical owner' {
+        $evidenceLine = '2026-08-16T16:43:15.9839713Z Snapshot different than baseline: LayoutShouldBeCorrectOnFirstNavigation.png (6.01% difference)'
+        $matchPattern = 'Snapshot different than baseline: LayoutShouldBeCorrectOnFirstNavigation.png (6.01% difference)'
+        $plan = New-ExistingPlan `
+            -IssueNumber 37559 `
+            -EvidenceLine $evidenceLine `
+            -FingerprintIdentity 'layoutshouldbecorrectonfirstnavigation' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'visual-comparison-failure' `
+            -Platform 'android-api-36' `
+            -MatchPattern $matchPattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $historicalFingerprint = $entry.fingerprint.Replace(
+            '|visual-comparison-failure|android-api-36',
+            '|snapshot different than baseline|android api 36')
+        $secondEntry = [pscustomobject]@{
+            fingerprint          = $entry.fingerprint.Replace(
+                '|visual-comparison-failure|',
+                '|snapshot-comparison-failure|')
+            disposition          = 'existing'
+            issue_number         = 37559
+            match_pattern        = $entry.match_pattern
+            evidence_key         = $entry.evidence_key
+            evidence_line_hashes = $entry.evidence_line_hashes
+        }
+        $plan.pipelines[2].signatures = @($entry, $secondEntry)
+        $existing = New-ExistingIssueStub -Number 37559 -Body @"
+<!-- ci-scan-fingerprint: $historicalFingerprint -->
+<!-- ci-scan-match-count: 2 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+$evidenceLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37559' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*Existing canonical fingerprint*referenced by both*'
         @($result.created).Count | Should -Be 0
     }
 

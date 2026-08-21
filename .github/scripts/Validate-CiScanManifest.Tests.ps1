@@ -494,6 +494,47 @@ Describe 'CI scanner issue payload gate' {
         $plan.issues[0].Body.Contains('runoniOS_MauiReleaseTrimFull') | Should -BeFalse
     }
 
+    It 'canonicalizes apostrophes from the exact production test fingerprint' {
+        $productionFingerprint = "ci-scan|main|maui-pr-devicetests|collectionview header footer doesn't leak|leak test failed|maccatalyst"
+        $canonicalFingerprint = 'ci-scan|main|maui-pr-devicetests|collectionview header footer doesnt leak|leak test failed|maccatalyst'
+        $body = (New-TestBody -Pipeline 'maui-pr-devicetests' -BuildId 123457).
+            Replace('- **Branch**: net11.0', '- **Branch**: main')
+        $manifest = New-CompleteManifest
+        $manifest.pipelines[1].signatures = @(
+            (New-TestSignature `
+                    -Pipeline 'maui-pr-devicetests' `
+                    -BuildId 123457 `
+                    -SourceLogIds @(2001) `
+                    -Fingerprint $productionFingerprint `
+                    -Body $body)
+        )
+        $evidenceRoot = New-DefaultEvidenceRoot
+        New-TestEvidence `
+            -Root $evidenceRoot `
+            -Pipeline 'maui-pr-devicetests' `
+            -BuildId 123457 `
+            -LogId 2001
+        $expectedBuilds = New-ExpectedBuilds `
+            -MainResult 'succeeded' `
+            -MainFailedRecordCount 0 `
+            -MainRequiredLogIds @()
+        $expectedBuilds[1].result = 'failed'
+        $expectedBuilds[1].failed_record_count = 1
+        $expectedBuilds[1].required_log_ids = @(2001)
+        $expectedBuilds[1].failed_leaf_log_ids = @(2001)
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds $expectedBuilds `
+            -TrustedEvidencePath $evidenceRoot `
+            -ScannerId 'ci-scan'
+
+        $plan.pipelines[1].signatures[0].fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Body |
+            Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($canonicalFingerprint)) -->$"
+    }
+
     It 'rejects fingerprints that collide after trusted case canonicalization' {
         $productionFingerprint = 'ci-scan|main|maui-pr|runoniOS_MauiReleaseTrimFull|ios-simulator-boot-timeout|ios-simulator-64'
         $canonicalFingerprint = $productionFingerprint.ToLowerInvariant()
@@ -503,6 +544,18 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest -ScannerId 'ci-scan' } |
+            Should -Throw "*Duplicate fingerprint '$canonicalFingerprint'*"
+    }
+
+    It 'rejects fingerprints that collide after apostrophe canonicalization' {
+        $withApostrophe = "ci-scan-net11|net11.0|maui-pr|test doesn't leak|assertion failed|windows"
+        $canonicalFingerprint = 'ci-scan-net11|net11.0|maui-pr|test doesnt leak|assertion failed|windows'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $withApostrophe -Disposition 'existing' -IssueNumber 36827),
+            (New-TestSignature -Fingerprint $canonicalFingerprint -Disposition 'existing' -IssueNumber 36828)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
             Should -Throw "*Duplicate fingerprint '$canonicalFingerprint'*"
     }
 
