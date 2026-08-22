@@ -438,6 +438,14 @@ function Get-ReplicationAttemptFailureKind {
     # tell either from an agent that simply failed. Both sit after every
     # diagnostic branch, and neither is read by the conclusiveness test or the
     # blocked-code map, so no outcome moves.
+    # Build 15063014 spent four of five attempts on a recorder that never
+    # captured a frame and reported every one of them as 'other', so the wave
+    # summary said nothing about the only thing that went wrong. A recording
+    # failure is an infrastructure fault, not a statement about the scenario,
+    # and it has to be separable from an agent that simply could not reproduce.
+    if ($text -match '(?i)Recording the on-device reproduction failed|Recorded MP4 (does not contain a video stream|is not decodable|decoded \d+ frames)') {
+        return 'recording-failed'
+    }
     if ($text -match '(?i)block declaration is not accepted on attempt') {
         return 'block-declined'
     }
@@ -478,7 +486,13 @@ function Test-ReplicationNonReproductionIsConclusive {
 
     $cleanObservations = 0
     foreach ($kind in $AttemptKinds) {
-        if ($kind -in @('build-failed', 'app-terminated')) {
+        # A recorder that captured nothing lost the attempt just as surely as
+        # a build break or a dead app, and the run learned nothing about the
+        # defect from it. Classified as 'other' it counted towards neither the
+        # veto nor the clean observations, so a run could reach two clean
+        # observations alongside several dead recordings and tell the reporter
+        # their verified issue does not reproduce.
+        if ($kind -in @('build-failed', 'app-terminated', 'recording-failed')) {
             return $false
         }
         if ($kind -eq 'not-reproduced') {

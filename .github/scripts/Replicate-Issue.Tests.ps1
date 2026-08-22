@@ -7333,3 +7333,49 @@ Describe 'The in-loop control check must read the source the control produced' {
         } | Should -Not -Throw
     }
 }
+
+Describe 'A recording that captured nothing is a lost attempt' {
+    # Build 15063014 lost four of five attempts to a recorder that produced an
+    # MP4 with no video stream. Every one was reported as 'other', so the wave
+    # summary named no cause, and because 'other' is neither vetoed nor counted
+    # the run could still have reached a conclusive "does not reproduce".
+    It 'names a failed recording instead of reporting it as other' {
+        $summary = 'Sandbox attempt 1 failed: Recording the on-device reproduction failed with exit code 1.'
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -Be 'recording-failed'
+    }
+
+    It 'names an empty capture from the sentence the probe raises' {
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'Recorded MP4 does not contain a video stream.' |
+            Should -Be 'recording-failed'
+    }
+
+    It 'names a recording that decoded too few frames' {
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'Recorded MP4 decoded 0 frames, so it carries no evidence of what happened on the device.' |
+            Should -Be 'recording-failed'
+    }
+
+    It 'refuses to call a run conclusive when an attempt was lost to the recorder' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('recording-failed')
+        $kinds.Add('not-reproduced')
+        $kinds.Add('not-reproduced')
+
+        # Without the veto these two clean observations would answer the
+        # question, and the run would tell the reporter their verified issue
+        # does not reproduce while a third of the evidence was never captured.
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds |
+            Should -BeFalse
+    }
+
+    It 'still calls a run conclusive when every attempt actually observed' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('not-reproduced')
+        $kinds.Add('not-reproduced')
+
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds |
+            Should -BeTrue
+    }
+}

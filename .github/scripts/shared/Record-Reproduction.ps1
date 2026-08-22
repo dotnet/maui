@@ -973,6 +973,27 @@ function Get-DefaultMediaProbe {
         $duration = ConvertTo-PositiveDouble (Get-ObjectPropertyValue $format 'duration')
     }
 
+    # An empty recording has no video stream, so '-map 0:v:0' selects nothing
+    # and ffmpeg reports "Failed to set value '0:v:0' for option 'map'" and
+    # "Stream map '' matches no streams". That is a true failure but it names
+    # the decoder's argument rather than the recording, and on build 15063014
+    # it was logged four times as an unclassified 'other' while the actual
+    # finding - the simulator captured nothing - was never stated. The caller
+    # already raises exactly that sentence, so let it, and decode only a file
+    # that has something to decode.
+    if ($null -eq $video) {
+        return [pscustomobject]@{
+            HasVideo        = $false
+            HasAudio        = $audioStreams.Count -gt 0
+            Decodable       = $false
+            DecodedFrames   = 0
+            DurationSeconds = $duration
+            Width           = 0
+            Height          = 0
+            FrameRate       = 0
+        }
+    }
+
     [void](Invoke-RequiredCommand `
         -FilePath 'ffmpeg' `
         -ArgumentList @(
