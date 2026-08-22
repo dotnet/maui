@@ -42,7 +42,11 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)name: RunReview.*?condition: and\(succeededOrFailed\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)\)"
         $script:Pipeline | Should -Match "condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'review'\), in\(dependencies\.CopilotReview\.result"
         $script:Pipeline | Should -Match "(?s)- stage: RunDeepUITests.*?eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
-        $script:Pipeline | Should -Match "(?s)- stage: UpdateAISummaryComment.*?condition: and\(not\(canceled\(\)\), eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
+        # The cancellation predicate belongs to the base branch and has already
+        # changed once from not(canceled()) to always(); pinning its spelling
+        # failed this test for a base-branch edit that kept the review-only
+        # guard intact. Assert the guard, which is what this test is about.
+        $script:Pipeline | Should -Match "(?s)- stage: UpdateAISummaryComment.*?condition: and\([^,]+, eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
         $script:Pipeline | Should -Match "(?s)- stage: CleanupReviewLock.*?condition: always\(\).*?- job: CleanupReviewLock.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
     }
 
