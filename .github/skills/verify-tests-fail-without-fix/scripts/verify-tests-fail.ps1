@@ -784,6 +784,69 @@ function Test-GateHasDefinitiveFailure {
     )
 }
 
+function Get-NormalizedAppCrashSignature {
+    param(
+        [AllowNull()]
+        [string]$Content
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return $null
+    }
+
+    $headerPattern = '(?i)(?:FATAL EXCEPTION:|Fatal signal\s+\d+\s+\(SIG[A-Z]+\)|Abort message:|Unhandled (?:managed )?exception|Exception Type:|Termination Reason:)'
+    $supportPattern = '(?i)^\s*(?:Caused by:\s*)?[\w.$+`]+(?:Exception|Error)(?::.*)?$|^\s*(?:at\s+[\w.$+`<>]+|#\d{2}\s+pc\s+).*$'
+    $headers = [System.Collections.Generic.List[string]]::new()
+    $supportingEvidence = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($line in ($Content -split '\r?\n')) {
+        $evidenceLine = [regex]::Replace(
+            $line,
+            '^\s*\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d+\s+\d+\s+\d+\s+[VDIWEF]\s+[^:]+:\s*',
+            '')
+        $evidenceLine = [regex]::Replace(
+            $evidenceLine,
+            '^\s*[VDIWEF]/[^\s(]+\(\s*\d+\):\s*',
+            '')
+        if ($evidenceLine -match $headerPattern) {
+            $headers.Add($evidenceLine.Trim())
+        } elseif ($supportingEvidence.Count -lt 12 -and $evidenceLine -match $supportPattern) {
+            $supportingEvidence.Add($evidenceLine.Trim())
+        }
+    }
+
+    # XHarness APP_CRASH and the recovery timeout are classifications, not identities.
+    # Without an actual crash header, two unrelated crashes cannot safely be called equal.
+    if ($headers.Count -eq 0) {
+        return $null
+    }
+
+    $hasDistinctHeader = @($headers | Where-Object {
+        $_ -match '(?i)(?:Abort message:|Unhandled (?:managed )?exception|Exception Type:|Termination Reason:).*\S'
+    }).Count -gt 0
+    if (-not $hasDistinctHeader -and $supportingEvidence.Count -eq 0) {
+        return $null
+    }
+
+    $normalized = (($headers + $supportingEvidence) -join "`n").ToLowerInvariant()
+    $normalized = [regex]::Replace($normalized, '(?m)^\s*\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d+\s+', '')
+    $normalized = [regex]::Replace($normalized, '\b(pid|tid)\s*[=:]?\s*\d+\b', '${1}=<id>')
+    $normalized = [regex]::Replace($normalized, '\bpc\s+[0-9a-f]+\b', 'pc <address>')
+    $normalized = [regex]::Replace($normalized, '\b0x[0-9a-f]+\b', '<address>')
+    $normalized = [regex]::Replace($normalized, '(?i)(\.cs|\.java|\.kt):\d+', '$1:<line>')
+    $normalized = [regex]::Replace($normalized, '(?i)(?:[a-z]:\\|/)(?:[^ \t\r\n:()]+[\\/])+', '<path>/')
+    $normalized = [regex]::Replace($normalized, '\s+', ' ').Trim()
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
+        $hash = $sha256.ComputeHash($bytes)
+        return ([System.BitConverter]::ToString($hash)).Replace('-', '').ToLowerInvariant()
+    } finally {
+        $sha256.Dispose()
+    }
+}
+
 function Convert-AmbiguousSetupFailurePairToEnvironment {
     param(
         [hashtable]$WithoutFixResult,
@@ -795,7 +858,15 @@ function Convert-AmbiguousSetupFailurePairToEnvironment {
         return $false
     }
 
-    $message = "The same app-startup crash prevented fixture setup in both A/B legs, so the gate cannot attribute it to the fix."
+    $withoutFixSignature = [string]$WithoutFixResult.AppCrashSignature
+    $withFixSignature = [string]$WithFixResult.AppCrashSignature
+    if ([string]::IsNullOrWhiteSpace($withoutFixSignature) -or
+        [string]::IsNullOrWhiteSpace($withFixSignature) -or
+        -not [string]::Equals($withoutFixSignature, $withFixSignature, [System.StringComparison]::Ordinal)) {
+        return $false
+    }
+
+    $message = "A matching app-startup crash signature prevented fixture setup in both A/B legs, so the gate cannot attribute it to the fix."
     foreach ($result in @($WithoutFixResult, $WithFixResult)) {
         $result.EnvError = $true
         $result.PassCount = 0
@@ -1224,9 +1295,11 @@ function Get-TestResultFromOutput {
                 if ($allFailedCasesAreSetupEnvironment) {
                     $allFailedCasesAreAppCrash = $setupAppCrashFailureBlocks.Count -eq $deviceFailCount
                     if ($allFailedCasesAreAppCrash) {
-                        Write-Host "  ⚠️  All $deviceFailCount failing test case(s) hit the same app-startup crash during fixture setup — retaining FAILED until the sibling A/B leg proves the failure is symmetric." -ForegroundColor Yellow
+                        $appCrashSignature = Get-NormalizedAppCrashSignature -Content $resultEvidence
+                        Write-Host "  ⚠️  All $deviceFailCount failing test case(s) hit an app-startup crash during fixture setup — retaining FAILED until the sibling A/B leg proves the crash signature is symmetric." -ForegroundColor Yellow
                         return @{
                             Passed = $false; SetupOnlyFailure = $true; SetupFailureIsAppCrash = $true
+                            AppCrashSignature = $appCrashSignature
                             Error = "All $deviceFailCount failing test case(s) hit an app-startup crash during fixture setup: $setupEnvironmentMessage"
                             PassCount = 0; FailCount = $deviceFailCount; Failed = $deviceFailCount
                             Total = $deviceTotal; Skipped = 0
@@ -3669,15 +3742,15 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
 }
 
 # An app-startup crash during fixture setup is ambiguous in isolation. Downgrade it
-# only when the same failure occurs in both A/B legs; a with-fix-only crash remains
-# a genuine regression and blocks the gate.
+# only when both A/B legs carry the same normalized crash signature; a with-fix-only,
+# distinct, or unidentifiable crash remains a genuine regression and blocks the gate.
 foreach ($t in $AllDetectedTests) {
     $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
     $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
     if (-not $wo -or -not $w) { continue }
     if (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $wo -WithFixResult $w) {
-        Write-Host "  ⚠️ $($t.TestName): the same app-startup fixture failure occurred in both A/B legs — reclassifying as INCONCLUSIVE." -ForegroundColor Yellow
-        Write-Log "  [$($t.Type)] $($t.TestName): symmetric A/B app-startup fixture failure — INCONCLUSIVE"
+        Write-Host "  ⚠️ $($t.TestName): a matching app-startup crash signature occurred in both A/B legs — reclassifying as INCONCLUSIVE." -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): matching A/B app-startup crash signature — INCONCLUSIVE"
     }
 }
 
