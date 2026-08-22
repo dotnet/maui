@@ -67,7 +67,7 @@ public class Issue36749 : ContentPage
 		bool preservedInitialColor = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
 
 		// A later null mapping must clear MAUI-applied state even while the native view is
-		// detached. Window-based initial-map detection incorrectly leaves this color red.
+		// detached. Tracking prior MAUI background application keeps this clear deterministic.
 		_button.Background = new SolidColorBrush(Colors.Red);
 		platformButton.RemoveFromSuperview();
 		_button.Background = null;
