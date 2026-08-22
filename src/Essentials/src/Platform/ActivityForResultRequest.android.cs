@@ -238,11 +238,9 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		finally
 		{
-			if (_taskRemovalMonitors.TryRemove(
-				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation)))
-			{
-				cancellation.Dispose();
-			}
+			_taskRemovalMonitors.TryRemove(
+				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation));
+			cancellation.Dispose();
 		}
 	}
 
@@ -251,7 +249,6 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		if (_taskRemovalMonitors.TryRemove(requestOwner, out var cancellation))
 		{
 			cancellation.Cancel();
-			cancellation.Dispose();
 		}
 	}
 

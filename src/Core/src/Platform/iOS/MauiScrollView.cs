@@ -73,8 +73,8 @@ namespace Microsoft.Maui.Platform
 		// across layout passes to avoid re-walking the ancestor chain (and the allocation that
 		// walk would otherwise require) on every LayoutSubviews call. Invalidated by the same
 		// events that previously invalidated the whole-view _parentHandlesSafeArea cache:
-		// SafeAreaInsetsDidChange, InvalidateSafeArea, MovedToWindow, and ancestor
-		// SafeAreaEdges changes.
+		// SafeAreaInsetsDidChange, InvalidateSafeArea, MovedToWindow, ancestor
+		// SafeAreaEdges changes, and ancestor keyboard transitions.
 		readonly bool[] _blockedEdgesCache = new bool[4];
 		bool _blockedEdgesCacheValid;
 

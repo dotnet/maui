@@ -95,9 +95,9 @@ internal static class SafeAreaInsetsExtensions
 	///
 	/// The result is written into the caller-owned <paramref name="blockedEdges"/> array and
 	/// reused across layout passes via <paramref name="blockedEdgesCacheValid"/> until the
-	/// caller invalidates it (e.g. on SafeAreaInsetsDidChange/InvalidateSafeArea/MovedToWindow
-	/// or when an ancestor changes SafeAreaEdges), so this walk only runs once per invalidation
-	/// cycle instead of on every layout pass.
+	/// caller invalidates it (e.g. on SafeAreaInsetsDidChange/InvalidateSafeArea/MovedToWindow,
+	/// when an ancestor changes SafeAreaEdges, or when an ancestor's keyboard state changes),
+	/// so this walk only runs once per invalidation cycle instead of on every layout pass.
 	/// </summary>
 	/// <param name="startingView">The view whose ancestors should be walked.</param>
 	/// <param name="blockedEdges">A caller-owned, length-4 array to populate in place.</param>

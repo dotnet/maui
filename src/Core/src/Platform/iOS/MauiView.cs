@@ -145,8 +145,8 @@ namespace Microsoft.Maui.Platform
 		// across layout passes to avoid re-walking the ancestor chain (and the allocation that
 		// walk would otherwise require) on every LayoutSubviews call. Invalidated by the same
 		// events that previously invalidated the whole-view _parentHandlesSafeArea cache:
-		// SafeAreaInsetsDidChange, InvalidateSafeArea, MovedToWindow, and ancestor
-		// SafeAreaEdges changes.
+		// SafeAreaInsetsDidChange, InvalidateSafeArea, MovedToWindow, ancestor
+		// SafeAreaEdges changes, and ancestor keyboard transitions.
 		readonly bool[] _blockedEdgesCache = new bool[4];
 		bool _blockedEdgesCacheValid;
 
@@ -362,8 +362,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
 				_isKeyboardShowing = true;
-				_safeAreaInvalidated = true;
-				SetNeedsLayout();
+				this.InvalidateSafeAreaWithDescendants();
 			}
 		}
 
@@ -386,9 +385,7 @@ namespace Microsoft.Maui.Platform
 			// so that safe-area calculations are correct if the view is later re-attached.
 			if (_isKeyboardShowing)
 			{
-				_keyboardFrame = CGRect.Empty;
-				_isKeyboardShowing = false;
-				_safeAreaInvalidated = true;
+				ClearKeyboardState();
 			}
 		}
 
@@ -409,13 +406,12 @@ namespace Microsoft.Maui.Platform
 
 		void OnKeyboardWillShow(NSNotification notification)
 		{
-			_safeAreaInvalidated = true;
 			var keyboardFrame = GetKeyboardFrame(notification);
 			if (keyboardFrame.HasValue)
 			{
 				_keyboardFrame = keyboardFrame.Value;
 				_isKeyboardShowing = true;
-				SetNeedsLayout();
+				this.InvalidateSafeAreaWithDescendants();
 			}
 		}
 
@@ -423,10 +419,9 @@ namespace Microsoft.Maui.Platform
 
 		void ClearKeyboardState()
 		{
-			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
 			_isKeyboardShowing = false;
-			SetNeedsLayout();
+			this.InvalidateSafeAreaWithDescendants();
 		}
 
 		static CGRect? GetKeyboardFrame(NSNotification notification)
