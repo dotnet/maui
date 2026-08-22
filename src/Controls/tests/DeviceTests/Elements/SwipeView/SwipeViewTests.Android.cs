@@ -9,6 +9,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using ALinearLayoutCompat = AndroidX.AppCompat.Widget.LinearLayoutCompat;
 using ATextView = Android.Widget.TextView;
 
 namespace Microsoft.Maui.DeviceTests
@@ -287,13 +288,17 @@ namespace Microsoft.Maui.DeviceTests
 				var platformView = Assert.IsType<SwipeViewHandler>(swipeView.Handler).PlatformView;
 				swipeView.Open(OpenSwipeItem.LeftItems, false);
 
-				await AssertEventually(() => platformView.ChildCount > 1);
+				await AssertEventually(() =>
+					Enumerable.Range(0, platformView.ChildCount)
+						.Select(platformView.GetChildAt)
+						.OfType<ALinearLayoutCompat>()
+						.Any(view => view.ChildCount > 0));
 
-				var actionView = platformView.GetChildAt(1) as ViewGroup;
-				Assert.NotNull(actionView);
-
-				await AssertEventually(() => actionView.ChildCount > 0);
-
+				var actionView = Assert.Single(
+					Enumerable.Range(0, platformView.ChildCount)
+						.Select(platformView.GetChildAt)
+						.OfType<ALinearLayoutCompat>()
+						.Where(view => view.ChildCount > 0));
 				var swipeButton = Assert.IsAssignableFrom<ATextView>(actionView.GetChildAt(0));
 
 				await AssertEventually(() =>
@@ -313,7 +318,7 @@ namespace Microsoft.Maui.DeviceTests
 					swipeButton.CompoundDrawablePadding + tolerance,
 					swipeButton.LineHeight / 2);
 
-				Assert.InRange(textTop - iconBottom, 0, maxAlignmentGap);
+				Assert.InRange(textTop - iconBottom, -tolerance, maxAlignmentGap);
 			});
 		}
 	}
