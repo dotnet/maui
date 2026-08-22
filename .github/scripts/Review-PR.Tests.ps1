@@ -722,6 +722,34 @@ Describe 'Reviewer pipeline timeout containment' {
         $setup | Should -BeGreaterThan $buildTasks
     }
 
+    It 'keeps inflight Deep UI setup on the protected base until credentials are released' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $deepEnd = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment", $deepStart)
+        $deepBlock = $pipelineContent.Substring($deepStart, $deepEnd - $deepStart)
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $resolveStart = $deepBlock.LastIndexOf("- bash:", $deepBlock.IndexOf($resolveName))
+        $resolveEnd = $deepBlock.IndexOf("- template: common/provision.yml", $resolveStart)
+        $resolveBlock = $deepBlock.Substring($resolveStart, $resolveEnd - $resolveStart)
+        $installWorkloads = $deepBlock.IndexOf("displayName: 'Install .NET and workloads'", $resolveEnd)
+        $buildTasks = $deepBlock.IndexOf("displayName: 'Build MSBuild Tasks'", $installWorkloads)
+        $mergeName = "displayName: 'Merge PR for testing'"
+        $mergeStart = $deepBlock.LastIndexOf("- bash:", $deepBlock.IndexOf($mergeName))
+        $mergeEnd = $deepBlock.IndexOf($mergeName, $mergeStart)
+        $mergeBlock = $deepBlock.Substring($mergeStart, $mergeEnd - $mergeStart)
+
+        $resolveBlock | Should -Match ([regex]::Escape('git checkout --detach "${BASE_SHA}"'))
+        $resolveBlock | Should -Not -Match ([regex]::Escape('git checkout --detach "${PR_HEAD_SHA}"'))
+        $resolveBlock | Should -Not -Match ([regex]::Escape('git merge --no-edit "${BASE_SHA}"'))
+        $installWorkloads | Should -BeGreaterThan $resolveEnd
+        $buildTasks | Should -BeGreaterThan $installWorkloads
+        $mergeStart | Should -BeGreaterThan $buildTasks
+        $mergeBlock | Should -Match ([regex]::Escape('if [[ "${BASE_REF}" == inflight/* ]]'))
+        $mergeBlock | Should -Match ([regex]::Escape(
+            'git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"'))
+        $mergeBlock | Should -Match ([regex]::Escape('git merge --no-edit "${BASE_SHA}"'))
+        $mergeBlock | Should -Not -Match 'DOTNET_TOKEN:'
+    }
+
     It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {
         ([regex]::Matches(
             $pipelineContent,
@@ -812,6 +840,31 @@ Describe 'Reviewer pipeline timeout containment' {
             '-MaxTotalBytes $maxImportedLogBytes'))
         $postReviewBlock | Should -Not -Match (
             'Copy-Item\s+-LiteralPath\s+\$source\s+-Destination\s+\$target\s+-Recurse')
+    }
+
+    It 'imports only the canonical bounded PRAgent tree before credentialed posting' {
+        $postStageStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $importName = "displayName: 'Import canonical bounded PRAgent artifact'"
+        $importStart = $pipelineContent.LastIndexOf("- pwsh:", $pipelineContent.IndexOf($importName, $postStageStart))
+        $importEnd = $pipelineContent.IndexOf($importName, $importStart)
+        $importBlock = $pipelineContent.Substring($importStart, $importEnd - $importStart)
+        $postTaskStart = $pipelineContent.IndexOf(
+            '# DO NOT add AzDO compile-time template expressions',
+            $importEnd)
+        $postTaskEnd = $pipelineContent.IndexOf(
+            "displayName: 'Post AI summary review'",
+            $postTaskStart)
+        $postTaskBlock = $pipelineContent.Substring($postTaskStart, $postTaskEnd - $postTaskStart)
+
+        $importStart | Should -BeGreaterThan $postStageStart
+        $postTaskStart | Should -BeGreaterThan $importEnd
+        $importBlock | Should -Match 'Import-ExpectedPRAgentArtifact'
+        $importBlock | Should -Match ([regex]::Escape(
+            '-DestinationDirectory $destination'))
+        $postTaskBlock | Should -Match ([regex]::Escape(
+            '$prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"'))
+        $postTaskBlock | Should -Not -Match (
+            'Get-ChildItem\s+-Path\s+\$copilotLogsDir\s+-Recurse\s+-Directory\s+-Filter\s+"PRAgent"')
     }
 
     It 'passes the selected platform into every UI category detection pass' {

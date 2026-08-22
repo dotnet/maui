@@ -2144,10 +2144,9 @@ stages:
             displayName: 'Capture trusted scripts for deep UI tests'
             timeoutInMinutes: 5
 
-          # Switch the worktree to the PR's base branch before installing
-          # workloads and merging the PR for deep UI tests — same rationale as
-          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
-          # band + conflict-free squash-merge regardless of the pipeline branch).
+          # Switch the worktree to the immutable protected base before installing
+          # workloads and build tasks. The PR snapshot is merged only after every
+          # DOTNET_TOKEN-bearing step has completed, including for inflight/*.
           - bash: |
               set -e
               if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
@@ -2187,24 +2186,8 @@ stages:
                   exit 1
                 fi
               done
-              # inflight/* targets are reviewed on the PR head as-is (see the
-              # CopilotReview-stage ResolveBaseBranch for the rationale); build/resolve
-              # the PR head so the deep stage compiles the PR's actual code.
-              if [[ "${BASE_REF}" == inflight/* ]]; then
-                git checkout --detach "${PR_HEAD_SHA}"
-                # Reproduce the exact inflight base merge performed by trusted Setup.
-                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "${BASE_SHA}"; then
-                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
-                else
-                  echo "##vso[task.logissue type=error]Could not reproduce the trusted Setup merge for the immutable inflight snapshot."
-                  git merge --abort 2>/dev/null || true
-                  exit 1
-                fi
-                echo "Worktree now at $(git rev-parse --short HEAD) (PR #${PARAM_PR_NUMBER} head + ${BASE_REF})"
-              else
-                git checkout --detach "${BASE_SHA}"
-                echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} snapshot)"
-              fi
+              git checkout --detach "${BASE_SHA}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} protected snapshot)"
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
             env:
@@ -2817,27 +2800,42 @@ stages:
               git config core.autocrlf false
               git config core.eol lf
               git checkout -- . 2>/dev/null || true
+              BASE_REF="${REVIEWED_BASE_REF}"
+              BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+                 ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null ||
                  ! git cat-file -e "${PR_HEAD_SHA}^{commit}" 2>/dev/null; then
-                echo "##vso[task.logissue type=error]Immutable reviewed PR head is unavailable."
+                echo "##vso[task.logissue type=error]Immutable reviewed base or PR head is unavailable."
                 exit 1
               fi
-              # Merge the immutable PR head commit so we run tests against the same
-              # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
-              # logic (squash-merge). Setup already proved that these exact base
-              # and PR commits merge cleanly; a conflict here means the immutable
-              # snapshot could not be reproduced and must fail closed.
-              git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
-              git merge --squash "${PR_HEAD_SHA}" || {
-                git reset --hard HEAD
-                echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
-                exit 1
-              }
-              git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+              # Mirror trusted Setup's immutable snapshot semantics only after
+              # provisioning and build-task steps have released DOTNET_TOKEN.
+              if [[ "${BASE_REF}" == inflight/* ]]; then
+                git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"
+                if git merge --no-edit "${BASE_SHA}"; then
+                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
+                else
+                  git merge --abort 2>/dev/null || true
+                  echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable inflight Setup merge."
+                  exit 1
+                fi
+              else
+                git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${BASE_SHA}"
+                git merge --squash "${PR_HEAD_SHA}" || {
+                  git reset --hard HEAD
+                  echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
+                  exit 1
+                }
+                git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+              fi
             displayName: 'Merge PR for testing'
             env:
               REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
+              REVIEWED_BASE_SHA: $(reviewedBaseSha)
+              REVIEWED_BASE_REF: $(reviewedBaseRef)
 
           # Run the deep-UI orchestration from the reviewed pipeline-branch infrastructure,
           # not the base+PR worktree copies. Restore self's scripts and the narrow Catalyst
@@ -3657,6 +3655,40 @@ stages:
             displayName: 'Import bounded UI failure analysis'
             continueOnError: true
 
+          # CopilotLogs is prompt-influenced cross-job data. Resolve only the
+          # canonical PRAgent tree for this PR and import it through regular-file
+          # count/size bounds before the credentialed posting task starts.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $artifactRoot = Join-Path "$(Pipeline.Workspace)" "CopilotLogs"
+              $destination = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
+              Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+                Write-Host "No CopilotLogs artifact was produced."
+                exit 0
+              }
+
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              . ".github/scripts/shared/Import-ExpectedPRAgentArtifact.ps1"
+              try {
+                $importResult = Import-ExpectedPRAgentArtifact `
+                  -ArtifactRoot $artifactRoot `
+                  -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                  -DestinationDirectory $destination `
+                  -MaxFileCount 2048 `
+                  -MaxDirectoryCount 1024 `
+                  -MaxFileBytes 16MB `
+                  -MaxTotalBytes 128MB
+                Write-Host "Imported canonical PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes."
+              } catch {
+                Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]PRAgent artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import canonical bounded PRAgent artifact'
+            continueOnError: true
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
           - pwsh: |
               # DO NOT add AzDO compile-time template expressions (the double-curly
               # -brace syntax) to THIS script block. It is ~28KB. AzDO compiles any
@@ -3673,7 +3705,7 @@ stages:
               }
               . $ghRetryHelper
               $artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
-              $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
+              $prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
               $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewId = $env:AI_SUMMARY_REVIEW_ID
               if (-not [string]::IsNullOrWhiteSpace($reviewId) -and
@@ -3688,7 +3720,7 @@ stages:
               Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
-              Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
+              Write-Host "  bounded PRAgent exists: $(Test-Path $prAgentImportDir)"
               if (Test-Path $artDir) {
                 $trxCount = @(Get-ChildItem -Path $artDir -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue).Count
                 Write-Host "  TRX files in artDir: $trxCount"
@@ -4642,8 +4674,13 @@ stages:
 
               if ($isDeferred) {
                 # ── DEFERRED MODE (first run): Post full review ──
-                # Find the PRAgent content dir from CopilotLogs artifact
-                $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
+                # The prior tokenless import accepted only this PR's unique,
+                # canonical, bounded regular-file tree.
+                $prAgentDir = if (Test-Path -LiteralPath $prAgentImportDir -PathType Container) {
+                  Get-Item -LiteralPath $prAgentImportDir
+                } else {
+                  $null
+                }
                 if (-not $prAgentDir) {
                   # The gate/review agent left no PRAgent content on this run (e.g. the
                   # Review stage failed before the agent uploaded its logs), so there is
