@@ -17,6 +17,9 @@ public class Issue36749 : ContentPage
 
     readonly Label _resultLabel;
     readonly Button _button;
+#if IOS || MACCATALYST
+    bool _hasRunVerification;
+#endif
 
     public Issue36749()
     {
@@ -49,6 +52,11 @@ public class Issue36749 : ContentPage
         base.OnAppearing();
 
 #if IOS || MACCATALYST
+		if (_hasRunVerification)
+			return;
+
+		_hasRunVerification = true;
+
 		if (_button.Handler?.PlatformView is not UIButton platformButton ||
 			platformButton.BackgroundColor is not UIColor backgroundColor)
 		{
