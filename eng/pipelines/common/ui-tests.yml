@@ -56,16 +56,20 @@ parameters:
   # first shard and under `!~` in the second (validated by
   # .github/scripts/UITestsPipelinePartitions.Tests.ps1).
   partitionedCategoryGroups:
-    # CollectionView (~787 tests) is the longest-running leg on Android CoreCLR,
-    # WinUI, MacCatalyst and iOS. Split the three heaviest feature fixtures
-    # (ScrollingFeature ~146 + EmptyView ~128 + HeaderFooter ~89 => ~363) from the
-    # remaining CollectionView tests (~424) to roughly halve the longest shard.
+    # CollectionView (~790 tests) is the longest-running leg on Android CoreCLR,
+    # WinUI, MacCatalyst and iOS. Split it into two fixture-level shards balanced by
+    # MEASURED per-test execution time (declaration count is a poor proxy - the feature
+    # fixtures run many fast cases). CollectionView_1 = the four heaviest feature
+    # fixtures by execution time (ScrollingFeature + EmptyView + HeaderFooter +
+    # SelectionFeature); CollectionView_2 = the remainder. On the dominant Android
+    # CoreCLR CollectionView leg this lands each shard near ~50% of the run
+    # (~52% / ~48% measured), roughly halving the longest shard.
     - name: 'CollectionView_1'
       category: 'CollectionView'
-      filter: 'TestCategory=CollectionView&(FullyQualifiedName~CollectionView_ScrollingFeature|FullyQualifiedName~CollectionView_EmptyView|FullyQualifiedName~CollectionView_HeaderFooter)'
+      filter: 'TestCategory=CollectionView&(FullyQualifiedName~CollectionView_ScrollingFeature|FullyQualifiedName~CollectionView_EmptyView|FullyQualifiedName~CollectionView_HeaderFooter|FullyQualifiedName~CollectionView_SelectionFeature)'
     - name: 'CollectionView_2'
       category: 'CollectionView'
-      filter: 'TestCategory=CollectionView&FullyQualifiedName!~CollectionView_ScrollingFeature&FullyQualifiedName!~CollectionView_EmptyView&FullyQualifiedName!~CollectionView_HeaderFooter'
+      filter: 'TestCategory=CollectionView&FullyQualifiedName!~CollectionView_ScrollingFeature&FullyQualifiedName!~CollectionView_EmptyView&FullyQualifiedName!~CollectionView_HeaderFooter&FullyQualifiedName!~CollectionView_SelectionFeature'
 
   projects:
     - name: name
