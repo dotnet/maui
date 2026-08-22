@@ -460,19 +460,19 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (closed)
 			{
-				var platformPath = new SKPath();
-				platformPath.AddArc(rect, startAngle, sweep);
-				platformPath.Close();
+				using var platformPathBuilder = new SKPathBuilder();
+				platformPathBuilder.AddArc(rect, startAngle, sweep);
+				platformPathBuilder.Close();
+				using var platformPath = platformPathBuilder.Detach();
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-				platformPath.Dispose();
 			}
 			else
 			{
 				// todo: delete this after the api is bound
-				var platformPath = new SKPath();
-				platformPath.AddArc(rect, startAngle, sweep);
+				using var platformPathBuilder = new SKPathBuilder();
+				platformPathBuilder.AddArc(rect, startAngle, sweep);
+				using var platformPath = platformPathBuilder.Detach();
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-				platformPath.Dispose();
 
 				// todo: restore this when the api is bound.
 				//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);
@@ -512,10 +512,10 @@ namespace Microsoft.Maui.Graphics.Skia
 				sweep *= -1;
 
 			// todo: delete this after the api is bound
-			var platformPath = new SKPath();
-			platformPath.AddArc(rect, startAngle, sweep);
+			using var platformPathBuilder = new SKPathBuilder();
+			platformPathBuilder.AddArc(rect, startAngle, sweep);
+			using var platformPath = platformPathBuilder.Detach();
 			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
-			platformPath.Dispose();
 
 			// todo: restore this when the api is bound.
 			//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
@@ -678,21 +678,21 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (horizAlignment == HorizontalAlignment.Left)
 			{
-				_canvas.DrawText(value, x, y, CurrentState.FontFont, CurrentState.FontPaint);
+				_canvas.DrawText(value, x, y, SKTextAlign.Left, CurrentState.FontFont, CurrentState.FontPaint);
 			}
 			else if (horizAlignment == HorizontalAlignment.Right)
 			{
 				var font = CurrentState.FontFont;
 				var width = font.MeasureText(value);
 				x -= width;
-				_canvas.DrawText(value, x, y, CurrentState.FontFont, CurrentState.FontPaint);
+				_canvas.DrawText(value, x, y, SKTextAlign.Left, CurrentState.FontFont, CurrentState.FontPaint);
 			}
 			else
 			{
 				var font = CurrentState.FontFont;
 				var width = font.MeasureText(value);
 				x -= width / 2;
-				_canvas.DrawText(value, x, y, CurrentState.FontFont, CurrentState.FontPaint);
+				_canvas.DrawText(value, x, y, SKTextAlign.Left, CurrentState.FontFont, CurrentState.FontPaint);
 			}
 		}
 
@@ -875,7 +875,8 @@ namespace Microsoft.Maui.Graphics.Skia
 
 				var destRect = new SKRect(rx1, ry1, rx2, ry2);
 				var paint = CurrentState.GetImagePaint(1, 1);
-				_canvas.DrawBitmap(bitmap, srcRect, destRect, paint);
+				var sampling = new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None);
+				_canvas.DrawBitmap(bitmap, srcRect, destRect, sampling, paint);
 				paint?.Dispose();
 				_canvas.Restore();
 			}

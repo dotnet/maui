@@ -14,6 +14,8 @@
     <FileSignInfo Include="Svg.Skia.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Svg.Custom.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Svg.Model.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Svg.SceneGraph.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Svg.Animation.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="ShimSkiaSharp.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Fizzler.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="ExCSS.dll" CertificateName="3PartySHA2" />
