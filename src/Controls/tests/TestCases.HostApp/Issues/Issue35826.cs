@@ -5,6 +5,8 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 35826, "PickPhotosAsync hangs when called from a child activity", PlatformAffected.Android)]
 public class Issue35826 : ContentPage
 {
+	static WeakReference<Label> s_statusLabel;
+
 	public Issue35826()
 	{
 		var instructions = new Label
@@ -33,6 +35,7 @@ public class Issue35826 : ContentPage
 			FontSize = 16,
 			FontAttributes = FontAttributes.Bold
 		};
+		s_statusLabel = new(statusLabel);
 
 		Content = new VerticalStackLayout
 		{
@@ -40,6 +43,12 @@ public class Issue35826 : ContentPage
 			Spacing = 25,
 			Children = { instructions, openButton, statusLabel }
 		};
+	}
+
+	internal static void UpdateStatus(string text)
+	{
+		if (s_statusLabel?.TryGetTarget(out var statusLabel) == true)
+			statusLabel.Dispatcher.Dispatch(() => statusLabel.Text = text);
 	}
 
 	void OnOpenChildActivityClicked(object sender, EventArgs e)
@@ -85,6 +94,17 @@ public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 		_resultLabel.SetPadding(0, 0, 0, 50);
 		SetViewIdResourceName(_resultLabel, "ChildActivityResultLabel");
 
+		var isPhotoPickerAvailable =
+			AndroidX.Activity.Result.Contract.ActivityResultContracts.PickVisualMedia.InvokeIsPhotoPickerAvailable(this);
+		var pickerAvailabilityLabel = new Android.Widget.TextView(this)
+		{
+			Text = isPhotoPickerAvailable
+				? "Photo Picker: Available"
+				: "Photo Picker: Unavailable"
+		};
+		pickerAvailabilityLabel.SetPadding(0, 0, 0, 50);
+		SetViewIdResourceName(pickerAvailabilityLabel, "PhotoPickerAvailabilityLabel");
+
 		var pickButton = new Android.Widget.Button(this)
 		{
 			Text = "Pick Photos"
@@ -111,8 +131,69 @@ public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 			}
 		};
 
+		var overlapButton = new Android.Widget.Button(this)
+		{
+			Text = "Start Overlapping Picks"
+		};
+		SetViewIdResourceName(overlapButton, "ChildActivityOverlapButton");
+		overlapButton.Click += async (_, _) =>
+		{
+			_resultLabel.Text = "Result: Starting overlap...";
+			var firstRequest = MediaPicker.PickPhotosAsync();
+			try
+			{
+				await MediaPicker.PickPhotosAsync();
+				_resultLabel.Text = "Result: Overlap Not Rejected";
+			}
+			catch (InvalidOperationException)
+			{
+				_resultLabel.Text = "Result: Overlap Rejected";
+			}
+			catch (Exception ex)
+			{
+				_resultLabel.Text = $"Result: Error - {ex.Message}";
+			}
+
+			try
+			{
+				await firstRequest;
+			}
+			catch (OperationCanceledException)
+			{
+			}
+		};
+
+		var finishWhilePickingButton = new Android.Widget.Button(this)
+		{
+			Text = "Pick Photos And Finish Activity"
+		};
+		SetViewIdResourceName(finishWhilePickingButton, "ChildActivityFinishWhilePickingButton");
+		finishWhilePickingButton.Click += async (_, _) =>
+		{
+			Issue35826.UpdateStatus("Status: Waiting for launch-activity cancellation");
+			var request = MediaPicker.PickPhotosAsync();
+			Finish();
+
+			try
+			{
+				await request;
+				Issue35826.UpdateStatus("Status: Launch activity completed unexpectedly");
+			}
+			catch (OperationCanceledException)
+			{
+				Issue35826.UpdateStatus("Status: Launch activity cancelled");
+			}
+			catch (Exception ex)
+			{
+				Issue35826.UpdateStatus($"Status: Error - {ex.Message}");
+			}
+		};
+
+		layout.AddView(pickerAvailabilityLabel);
 		layout.AddView(_resultLabel);
 		layout.AddView(pickButton);
+		layout.AddView(overlapButton);
+		layout.AddView(finishWhilePickingButton);
 		SetContentView(layout);
 	}
 

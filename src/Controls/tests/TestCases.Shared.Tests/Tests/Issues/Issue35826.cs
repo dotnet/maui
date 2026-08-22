@@ -13,25 +13,17 @@ public class Issue35826 : _IssuesUITest
 
 	const string OpenChildActivityButton = "OpenChildActivityButton";
 	const string ChildActivityPickButton = "ChildActivityPickButton";
+	const string ChildActivityOverlapButton = "ChildActivityOverlapButton";
+	const string ChildActivityFinishWhilePickingButton = "ChildActivityFinishWhilePickingButton";
 	const string ChildActivityResultLabel = "ChildActivityResultLabel";
+	const string PhotoPickerAvailabilityLabel = "PhotoPickerAvailabilityLabel";
+	const string StatusLabel = "StatusLabel";
 
 	[Test]
 	[Category(UITestCategories.Essentials)]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
 	{
-		// API 36 exposed the stricter launcher-ownership regression, but completion from
-		// a child activity is valid on every supported Android version and belongs in the
-		// existing Essentials CI lane.
-
-		// Verify the host page loaded
-		App.WaitForElement(OpenChildActivityButton);
-
-		// Open the child (non-MAUI AppCompatActivity)
-		App.Tap(OpenChildActivityButton);
-
-		// Verify the child activity's UI is visible
-		App.WaitForElement(ChildActivityPickButton);
-		App.WaitForElement(ChildActivityResultLabel);
+		OpenChildActivityAndRequirePhotoPicker();
 
 		// Tap Pick Photos — calls MediaPicker.PickPhotosAsync() from the child activity.
 		// Before the fix the ActivityResultLauncher was never registered for child activities
@@ -41,6 +33,7 @@ public class Issue35826 : _IssuesUITest
 
 		// Cancel the system photo picker by pressing Back.
 		// After the fix each activity has its own launcher entry so the result is delivered.
+		WaitForPhotoPicker();
 		App.Back();
 
 		// If the bug is present WaitForTextToBePresentInElement times out because the
@@ -67,5 +60,70 @@ public class Issue35826 : _IssuesUITest
 		App.Back();
 		App.WaitForElement(OpenChildActivityButton);
 	}
+
+	[Test]
+	[Category(UITestCategories.Essentials)]
+	public void OverlappingPhotoPickerRequestsAreRejected()
+	{
+		OpenChildActivityAndRequirePhotoPicker();
+
+		App.Tap(ChildActivityOverlapButton);
+		WaitForPhotoPicker();
+		App.Back();
+
+		var rejected = App.WaitForTextToBePresentInElement(
+			ChildActivityResultLabel,
+			"Overlap Rejected",
+			timeout: TimeSpan.FromSeconds(120));
+
+		Assert.That(rejected, Is.True,
+			"A second request must be rejected while the first activity-result callback is pending.");
+		Assert.That(App.FindElement(ChildActivityResultLabel).GetText(), Does.Not.Contain("Error"));
+
+		App.Back();
+		App.WaitForElement(OpenChildActivityButton);
+	}
+
+	[Test]
+	[Category(UITestCategories.Essentials)]
+	public void FinishingLaunchingActivityCancelsPendingPhotoPicker()
+	{
+		OpenChildActivityAndRequirePhotoPicker();
+
+		App.Tap(ChildActivityFinishWhilePickingButton);
+		WaitForPhotoPicker();
+		App.Back();
+
+		App.WaitForElement(StatusLabel);
+		var cancelled = App.WaitForTextToBePresentInElement(
+			StatusLabel,
+			"Launch activity cancelled",
+			timeout: TimeSpan.FromSeconds(120));
+
+		var statusText = App.FindElement(StatusLabel).GetText();
+		Assert.That(cancelled, Is.True,
+			$"Destroying the launching activity must cancel its pending picker request. Actual status: '{statusText}'.");
+		Assert.That(statusText, Does.Not.Contain("Error"));
+		Assert.That(statusText, Does.Not.Contain("unexpectedly"));
+	}
+
+	void OpenChildActivityAndRequirePhotoPicker()
+	{
+		App.WaitForElement(OpenChildActivityButton);
+		App.Tap(OpenChildActivityButton);
+
+		App.WaitForElement(ChildActivityPickButton);
+		App.WaitForElement(ChildActivityResultLabel);
+		var availability = App.WaitForElement(PhotoPickerAvailabilityLabel).GetText()
+			?? throw new AssertionException("Photo picker availability label did not expose text.");
+		if (availability.Contains("Unavailable", StringComparison.Ordinal))
+			Assert.Ignore("AndroidX Photo Picker is unavailable on this device; the changed launcher path is not active.");
+
+		Assert.That(availability, Is.EqualTo("Photo Picker: Available"),
+			"The regression test must exercise the AndroidX Photo Picker launcher path changed by this PR.");
+	}
+
+	void WaitForPhotoPicker() =>
+		App.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Cancel']"));
 }
 #endif

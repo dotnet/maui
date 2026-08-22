@@ -80,32 +80,6 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	}
 
 	/// <summary>
-	/// Launches the activity result request with the specified input.
-	/// </summary>
-	/// <typeparam name="T">The type of the input parameter.</typeparam>
-	/// <param name="input">The input parameter to launch the request with.</param>
-	/// <returns>
-	/// A task that represents the asynchronous operation, containing the result of the activity.
-	/// </returns>
-	public Task<TResult> Launch<T>(T input)
-		where T : JavaObject
-	{
-		var launchingActivity = ActivityStateManager.Default.GetCurrentActivity() as ComponentActivity;
-		if (launchingActivity is null)
-		{
-			Trace.WriteLine("""
-			                ActivityForResultRequest.Launch() called but current activity is null or not a ComponentActivity.
-			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
-			                """);
-			var canceledTcs = new TaskCompletionSource<TResult>();
-			canceledTcs.SetCanceled();
-			return canceledTcs.Task;
-		}
-
-		return Launch(launchingActivity, input);
-	}
-
-	/// <summary>
 	/// Launches the activity result request for a specific activity instance.
 	/// </summary>
 	/// <typeparam name="T">The type of the input parameter.</typeparam>
@@ -121,14 +95,11 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			throw new ArgumentNullException(nameof(launchingActivity));
 
 		var requestOwner = launchingActivity.ViewModelStore;
-		if (_pendingRequests.TryGetValue(requestOwner, out var existingTcs))
+		if (_pendingRequests.TryGetValue(requestOwner, out _))
 		{
-			// Instead of rejecting the new launch, cancel the orphaned previous request and replace it.
-			// This prevents permanent deadlock if a picker result never arrives due to process death or OEM edge cases.
-			// Rejection semantics would block all future launches from this activity forever.
-			Trace.WriteLine("ActivityForResultRequest: canceling overlapping pending request and launching new request.");
-			_pendingRequests.Remove(requestOwner);
-			existingTcs?.TrySetCanceled();
+			Trace.WriteLine("ActivityForResultRequest: rejecting overlapping request for the same activity.");
+			return Task.FromException<TResult>(
+				new InvalidOperationException("An activity result request is already pending for this activity."));
 		}
 
 		var tcs = new TaskCompletionSource<TResult>();

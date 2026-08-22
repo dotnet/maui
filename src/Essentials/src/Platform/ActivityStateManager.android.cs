@@ -213,11 +213,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 		void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
 		{
-			// Only cancel pending picker requests when the activity is truly finishing
-			// (user pressed Back, or the activity was explicitly finished). On a
-			// configuration-change destroy (e.g. rotation), the activity's ViewModelStore
-			// and pending request are retained for the recreated activity's callback.
-			if (activity is ComponentActivity componentActivity && componentActivity.IsFinishing
+			// Configuration recreation retains the ViewModelStore and pending request for
+			// the replacement activity. Every other destroy abandons that store, so its
+			// pending callback must be cancelled rather than left incomplete.
+			if (activity is ComponentActivity componentActivity && !componentActivity.IsChangingConfigurations
 				&& MediaPickerImplementation.IsPhotoPickerAvailable)
 			{
 				PickVisualMediaForResult.Instance.CancelPendingRequest(componentActivity);
