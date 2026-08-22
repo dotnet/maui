@@ -56,7 +56,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	/// </summary>
 	/// <param name="componentActivity">The component activity to register the request with.</param>
 	/// <param name="savedInstanceState">State restored for a recreated activity, if available.</param>
-	public void Register(ComponentActivity componentActivity, Bundle savedInstanceState)
+	public void Register(ComponentActivity componentActivity, Bundle? savedInstanceState)
 	{
 		if (componentActivity is null)
 			throw new ArgumentNullException(nameof(componentActivity));
@@ -150,7 +150,7 @@ internal sealed class ActivityForResultRequestState<TResult>
 		_stateKey = stateKey;
 	}
 
-	internal string RestoreOrCreateOwner(Bundle savedInstanceState) =>
+	internal string RestoreOrCreateOwner(Bundle? savedInstanceState) =>
 		savedInstanceState?.GetString(_stateKey) ?? Guid.NewGuid().ToString("N");
 
 	internal void SaveOwner(Bundle outState, string requestOwner) =>
