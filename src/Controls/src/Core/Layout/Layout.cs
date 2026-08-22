@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls
 			return new Thickness(0);
 		}
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges()
 		{
 			return SafeAreaEdges.Container;
 		}
@@ -409,11 +409,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
-		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for layouts
-
 		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)

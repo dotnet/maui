@@ -1,4 +1,6 @@
 using System;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Converters;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -16,6 +18,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				typeof(ContentPage),
 				typeof(Border),
 				typeof(ScrollView),
+				typeof(CustomSafeAreaView),
 			};
 
 		[Fact]
@@ -277,6 +280,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CustomView_CanReuseSafeAreaEdgesContract()
+		{
+			var view = new CustomSafeAreaView();
+			var safeAreaView = (ISafeAreaView2)view;
+
+			Assert.Equal(SafeAreaEdges.Container, view.SafeAreaEdges);
+			Assert.False(safeAreaView.HasExplicitSafeAreaEdges);
+
+			view.SafeAreaEdges = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container,
+				SafeAreaRegions.None,
+				SafeAreaRegions.SoftInput);
+
+			Assert.True(safeAreaView.HasExplicitSafeAreaEdges);
+			Assert.Equal(SafeAreaRegions.None, safeAreaView.GetSafeAreaRegionsForEdge(0));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(1));
+			Assert.Equal(SafeAreaRegions.None, safeAreaView.GetSafeAreaRegionsForEdge(2));
+			Assert.Equal(SafeAreaRegions.SoftInput, safeAreaView.GetSafeAreaRegionsForEdge(3));
+		}
+
+		[Fact]
+		public void IsSafeAreaEdgesSet_NullBindableThrows()
+		{
+			Assert.Throws<ArgumentNullException>(() => SafeAreaElement.IsSafeAreaEdgesSet(null));
+		}
+
+		[Fact]
+		public void SafeAreaEdgesProperty_NonSafeAreaElementThrowsHelpfulException()
+		{
+			var bindable = new Button();
+
+			var exception = Assert.Throws<InvalidOperationException>(
+				() => bindable.GetValue(SafeAreaElement.SafeAreaEdgesProperty));
+
+			Assert.Contains(nameof(ISafeAreaElement), exception.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void Page_ImplementsSafeAreaInsetsSink()
+		{
+			var page = new ContentPage();
+			var insets = new Thickness(1, 2, 3, 4);
+			var safeAreaInsets = Assert.IsAssignableFrom<ISafeAreaInsets>(page);
+
+			safeAreaInsets.SafeAreaInsets = insets;
+
+			Assert.Equal(insets, page.On<iOS>().SafeAreaInsets());
+		}
+
+		[Fact]
 		public void HasExplicitSafeAreaEdges_StyleValueCountsAsExplicit()
 		{
 			var layout = new Grid
@@ -318,6 +372,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		class SafeAreaBindingContext
 		{
 			public SafeAreaEdges Edges { get; set; }
+		}
+
+		sealed class CustomSafeAreaView : View, ISafeAreaElement, ISafeAreaView2
+		{
+			public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
+			public SafeAreaEdges SafeAreaEdges
+			{
+				get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+				set => SetValue(SafeAreaEdgesProperty, value);
+			}
+
+			bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+
+			SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge) => SafeAreaEdges.GetEdge(edge);
+
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Container;
 		}
 
 		static BindableObject CreateSafeAreaBindable(Type safeAreaViewType)

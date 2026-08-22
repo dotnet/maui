@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.Maui.Controls.SafeAreaElement
+static Microsoft.Maui.Controls.SafeAreaElement.IsSafeAreaEdgesSet(Microsoft.Maui.Controls.BindableObject! bindable) -> bool
+static readonly Microsoft.Maui.Controls.SafeAreaElement.SafeAreaEdgesProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
 Microsoft.Maui.Controls.DropGestureRecognizer.SendDragLeave(Microsoft.Maui.Controls.DragEventArgs! args) -> void

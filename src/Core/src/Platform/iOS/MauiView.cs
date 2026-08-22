@@ -761,7 +761,7 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = false;
 
 			// Store the information about the safe area for developers to use
-			if (View is ISafeAreaView2 safeAreaPage)
+			if (View is ISafeAreaInsets safeAreaPage)
 			{
 				safeAreaPage.SafeAreaInsets = SafeAreaInsets.ToThickness();
 			}

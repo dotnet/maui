@@ -482,17 +482,14 @@ namespace Microsoft.Maui.Controls
 			return regionForEdge;
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
-		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for borders
-
 		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 		/// <summary>
 		/// Provides the default value for the <see cref="SafeAreaEdges"/> property.
 		/// </summary>
 		/// <returns>The default safe area edges of <see cref="SafeAreaEdges.None"/>.</returns>
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges()
 		{
 			return SafeAreaEdges.None;
 		}

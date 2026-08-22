@@ -550,23 +550,13 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges()
 		{
 			return SafeAreaEdges.Default;
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
-		Thickness ISafeAreaView2.SafeAreaInsets
-		{
-			set
-			{
-				// For ScrollView, we don't need to store the SafeAreaInsets
-				// The platform-specific MauiScrollView handles this
-			}
-		}
-
 		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)

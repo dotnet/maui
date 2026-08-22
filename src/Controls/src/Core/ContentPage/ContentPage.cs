@@ -2,12 +2,11 @@
 
 using System;
 using System.Diagnostics;
-
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -172,7 +171,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
@@ -206,7 +205,7 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges()
 		{
 			return SafeAreaEdges.None;
 		}

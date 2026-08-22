@@ -7,17 +7,45 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls
 {
-	internal static class SafeAreaElement
+	/// <summary>
+	/// Provides the shared bindable property used by controls that implement <see cref="ISafeAreaElement"/>.
+	/// </summary>
+	public static class SafeAreaElement
 	{
 		/// <summary>
 		/// The backing store for the <see cref="ISafeAreaElement.SafeAreaEdges" /> bindable property.
 		/// </summary>
+		/// <remarks>
+		/// Types using this property must implement <see cref="ISafeAreaElement"/> and should expose this instance through
+		/// their own public <c>SafeAreaEdgesProperty</c> field.
+		/// </remarks>
 		public static readonly BindableProperty SafeAreaEdgesProperty =
 			BindableProperty.Create(nameof(ISafeAreaElement.SafeAreaEdges), typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
 									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
 
 		static object SafeAreaEdgesDefaultValueCreator(BindableObject bindable)
-			=> ((ISafeAreaElement)bindable).SafeAreaEdgesDefaultValueCreator();
+		{
+			if (bindable is not ISafeAreaElement safeAreaElement)
+				throw new InvalidOperationException($"{bindable.GetType()} must implement {nameof(ISafeAreaElement)} to use {nameof(SafeAreaEdgesProperty)}.");
+
+			return safeAreaElement.GetDefaultSafeAreaEdges();
+		}
+
+		/// <summary>
+		/// Determines whether <see cref="SafeAreaEdgesProperty"/> has been explicitly configured on a bindable object.
+		/// </summary>
+		/// <param name="bindable">The bindable object to inspect.</param>
+		/// <returns><see langword="true"/> when a local value, style, binding, or other non-default value is applied; otherwise, <see langword="false"/>.</returns>
+		/// <remarks>
+		/// The type must use <see cref="SafeAreaEdgesProperty"/> as the backing store for its safe area property.
+		/// </remarks>
+		public static bool IsSafeAreaEdgesSet(BindableObject bindable)
+		{
+			if (bindable is null)
+				throw new ArgumentNullException(nameof(bindable));
+
+			return bindable.IsSetExplicitly(SafeAreaEdgesProperty);
+		}
 
 		/// <summary>
 		/// Gets the effective safe area behavior for a specific edge.
