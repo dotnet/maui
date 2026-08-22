@@ -424,6 +424,16 @@ string SanitizeTestResultsFilename(string input)
 {
     string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
 
+    // Collapse characters that are unsafe in a file name or that split an
+    // unquoted MSBuild "-bl:" command-line argument. The Azure matrix job name
+    // used to keep long fixture-partition filters out of TRX/binlog names
+    // (e.g. "Controls (API 30) CollectionView_1") contains spaces and
+    // parentheses that would otherwise break the command line (MSB1008).
+    resultFilename = resultFilename
+        .Replace(" ", "_")
+        .Replace("(", string.Empty)
+        .Replace(")", string.Empty);
+
     return resultFilename;
 }
 

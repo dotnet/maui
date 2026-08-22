@@ -160,4 +160,13 @@ Describe 'filter selection logic in ui-tests-steps.yml' {
             $deviceScript | Should -Match 'GetTestResultsFilterName\(testFilter\)'
         }
     }
+
+    It 'sanitizes spaces and parentheses out of partition result file names' {
+        # The short job name (e.g. "Controls (API 30) CollectionView_1") contains
+        # spaces and parentheses that split an unquoted MSBuild -bl: argument
+        # (MSB1008). SanitizeTestResultsFilename must strip them.
+        $sharedCake = Get-Content -LiteralPath (Join-Path $script:repoRoot 'eng/devices/devices-shared.cake') -Raw
+        $sharedCake | Should -Match '\.Replace\(" ", "_"\)'
+        $sharedCake | Should -Match '\.Replace\("\(", string\.Empty\)'
+    }
 }
