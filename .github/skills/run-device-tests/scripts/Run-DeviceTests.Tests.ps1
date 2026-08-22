@@ -14,6 +14,7 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+        'ConvertTo-AzdoSafeConsole',
         'Get-CategoryFiltersFromTestFilter',
         'ConvertTo-DeviceTestClassFilterValue',
         'New-AndroidDeviceTestClassFilterInjection',
@@ -986,6 +987,29 @@ Describe 'Get-DeviceTestResultSummary' {
         $summary.Failed | Should -Be 1
         # The failing test must be named (type.method) so the verdict is auditable.
         ($summary.FailedTests -join ';') | Should -BeLike '*EntryHandlerTests.CompletedDoesNotFireOnIMECandidateEnter*'
+    }
+
+    It 'defangs XML-derived failed-test identities before they reach the pipeline log' {
+        $file = Join-Path $script:testDir 'TestResults-LoggingCommand.xml'
+
+        @'
+<assemblies>
+  <assembly total="1" passed="0" failed="1" skipped="0" errors="0">
+    <collection>
+      <test name="Microsoft.Maui.DeviceTests.EntryHandlerTests.Target&#xA;##vso[task.setvariable variable=GateFailed]false" method="Target" result="Fail" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
+
+        $summary.Failed | Should -Be 1
+        $summary.FailedTests | Should -HaveCount 1
+        $summary.FailedTests[0] |
+            Should -Be 'Microsoft.Maui.DeviceTests.EntryHandlerTests.Target ## vso[task.setvariable variable=GateFailed]false'
     }
 
     It 'counts every data-case of a target [Theory] method (same method attribute, different display names)' {

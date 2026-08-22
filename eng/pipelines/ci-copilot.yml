@@ -3142,7 +3142,18 @@ stages:
         ${{ else }}:
           pool: ${{ parameters.windowsPool }}
         timeoutInMinutes: 360
+        cancelTimeoutInMinutes: 10
         steps:
+          # Capture the outer job budget before checkout/provisioning consumes it.
+          # The deep-test loop later derives its hard stop from this timestamp so
+          # it cannot accidentally start a fresh 300-minute budget late in the job.
+          - pwsh: |
+              $startedAt = [DateTimeOffset]::UtcNow.ToString('o')
+              Write-Host "##vso[task.setvariable variable=deepJobStartedAtUtc]$startedAt"
+              Write-Host "Deep UI job budget started at $startedAt"
+            displayName: 'Capture deep UI job budget'
+            timeoutInMinutes: 2
+
           - checkout: self
             fetchDepth: 0
             persistCredentials: false
@@ -3167,10 +3178,9 @@ stages:
             displayName: 'Capture trusted scripts for deep UI tests'
             timeoutInMinutes: 5
 
-          # Switch the worktree to the PR's base branch before installing
-          # workloads and merging the PR for deep UI tests — same rationale as
-          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
-          # band + conflict-free squash-merge regardless of the pipeline branch).
+          # Switch the worktree to the immutable protected base before installing
+          # workloads and build tasks. The PR snapshot is merged only after every
+          # DOTNET_TOKEN-bearing step has completed, including for inflight/*.
           - bash: |
               set -e
               if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
@@ -3210,24 +3220,8 @@ stages:
                   exit 1
                 fi
               done
-              # inflight/* targets are reviewed on the PR head as-is (see the
-              # CopilotReview-stage ResolveBaseBranch for the rationale); build/resolve
-              # the PR head so the deep stage compiles the PR's actual code.
-              if [[ "${BASE_REF}" == inflight/* ]]; then
-                git checkout --detach "${PR_HEAD_SHA}"
-                # Reproduce the exact inflight base merge performed by trusted Setup.
-                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "${BASE_SHA}"; then
-                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
-                else
-                  echo "##vso[task.logissue type=error]Could not reproduce the trusted Setup merge for the immutable inflight snapshot."
-                  git merge --abort 2>/dev/null || true
-                  exit 1
-                fi
-                echo "Worktree now at $(git rev-parse --short HEAD) (PR #${PARAM_PR_NUMBER} head + ${BASE_REF})"
-              else
-                git checkout --detach "${BASE_SHA}"
-                echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} snapshot)"
-              fi
+              git checkout --detach "${BASE_SHA}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} protected snapshot)"
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
             env:
@@ -3840,27 +3834,42 @@ stages:
               git config core.autocrlf false
               git config core.eol lf
               git checkout -- . 2>/dev/null || true
+              BASE_REF="${REVIEWED_BASE_REF}"
+              BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+                 ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null ||
                  ! git cat-file -e "${PR_HEAD_SHA}^{commit}" 2>/dev/null; then
-                echo "##vso[task.logissue type=error]Immutable reviewed PR head is unavailable."
+                echo "##vso[task.logissue type=error]Immutable reviewed base or PR head is unavailable."
                 exit 1
               fi
-              # Merge the immutable PR head commit so we run tests against the same
-              # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
-              # logic (squash-merge). Setup already proved that these exact base
-              # and PR commits merge cleanly; a conflict here means the immutable
-              # snapshot could not be reproduced and must fail closed.
-              git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
-              git merge --squash "${PR_HEAD_SHA}" || {
-                git reset --hard HEAD
-                echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
-                exit 1
-              }
-              git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+              # Mirror trusted Setup's immutable snapshot semantics only after
+              # provisioning and build-task steps have released DOTNET_TOKEN.
+              if [[ "${BASE_REF}" == inflight/* ]]; then
+                git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"
+                if git merge --no-edit "${BASE_SHA}"; then
+                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
+                else
+                  git merge --abort 2>/dev/null || true
+                  echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable inflight Setup merge."
+                  exit 1
+                fi
+              else
+                git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${BASE_SHA}"
+                git merge --squash "${PR_HEAD_SHA}" || {
+                  git reset --hard HEAD
+                  echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
+                  exit 1
+                }
+                git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+              fi
             displayName: 'Merge PR for testing'
             env:
               REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
+              REVIEWED_BASE_SHA: $(reviewedBaseSha)
+              REVIEWED_BASE_REF: $(reviewedBaseRef)
 
           # Run the deep-UI orchestration from the reviewed pipeline-branch infrastructure,
           # not the base+PR worktree copies. Restore self's scripts and the narrow Catalyst
@@ -4014,14 +4023,30 @@ stages:
               # Tunable via DEEP_UITEST_CATEGORY_IDLE_MIN.
               $perCatIdleMin = 25
               if ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -and ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -as [int])) { $perCatIdleMin = [int]$env:DEEP_UITEST_CATEGORY_IDLE_MIN }
-              $loopStart    = Get-Date
-              $loopDeadline = $loopStart.AddMinutes($budgetMin)
-              $taskHardStop = $loopStart.AddMinutes($hardStopMin)
+              $loopStart = [DateTimeOffset]::UtcNow
+              $configuredLoopDeadline = $loopStart.AddMinutes($budgetMin)
+              $configuredTaskHardStop = $loopStart.AddMinutes($hardStopMin)
+
+              # The 360-minute job timeout starts before checkout, workload install,
+              # and provisioning. Bound this late-running loop by the actual remaining
+              # job budget and reserve 20 minutes for status/artifact publication.
+              $jobStartedAt = [DateTimeOffset]::MinValue
+              if (-not [DateTimeOffset]::TryParse($env:DEEP_JOB_STARTED_AT_UTC, [ref]$jobStartedAt)) {
+                Write-Host "##vso[task.logissue type=warning]Deep UI job start timestamp was unavailable; refusing to start long categories without a reliable outer-job budget."
+                $jobStartedAt = $loopStart.AddMinutes(-340)
+              }
+              $jobSafeStop = $jobStartedAt.AddMinutes(340)
+              $taskHardStop = if ($jobSafeStop -lt $configuredTaskHardStop) { $jobSafeStop } else { $configuredTaskHardStop }
+              $latestCategoryStart = $taskHardStop.AddMinutes(-3)
+              $loopDeadline = if ($latestCategoryStart -lt $configuredLoopDeadline) { $latestCategoryStart } else { $configuredLoopDeadline }
+              $jobBudgetConstrained = $jobSafeStop -lt $configuredTaskHardStop
+              $remainingJobBudgetMin = [int][math]::Floor(($jobSafeStop - $loopStart).TotalMinutes)
               Write-Host "Per-category loop budget: $budgetMin min (start-new-category deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
-              Write-Host "Hard stop: $hardStopMin min (every category must return by: $($taskHardStop.ToUniversalTime().ToString('u'))) · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
+              Write-Host "Effective hard stop: $($taskHardStop.ToUniversalTime().ToString('u')) ($remainingJobBudgetMin min of safe job budget remains; 20 min reserved to publish) · configured loop hard stop: $hardStopMin min · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
               $skippedCats = @()
 
               $hadFailure = $false
+              $jobBudgetExhausted = $false
               $catIdx = 0
               $needDeviceReset = $false
               # Signatures that mean the just-finished category left the shared
@@ -4037,10 +4062,11 @@ stages:
               $crashSig = 'investigate as possible crash|was expected to be running still|keeps stopping|OneTimeSetUp: System\.TimeoutException|AndroidRuntime: Process: com\.microsoft\.maui\.uitests|Process com\.microsoft\.maui\.uitests.*has died|Killing [0-9]+:com\.microsoft\.maui\.uitests'
               foreach ($cat in $catList) {
                 $catIdx++
-                $catStart = Get-Date
+                $catStart = [DateTimeOffset]::UtcNow
                 if ($catStart -gt $loopDeadline) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 320-min task timeout)."
+                  if ($jobBudgetConstrained) { $jobBudgetExhausted = $true }
+                  Write-Host "##[warning]Deep UI test time budget exhausted — not starting category '$cat' (preserves time for result publication before the outer job timeout)."
                   $hadFailure = $true
                   continue
                 }
@@ -4059,7 +4085,7 @@ stages:
                   if (Test-Path $resetScript) {
                     Write-Host "Prior category ended abnormally — resetting the shared $platform device before the next category…"
                     try { & $resetScript -Platform $platform -DeviceUdid $env:DEVICE_UDID } catch { Write-Host "(device reset failed: $_)" -ForegroundColor DarkGray }
-                    $catStart = Get-Date   # reboot consumed time; refresh the budget baseline
+                    $catStart = [DateTimeOffset]::UtcNow   # reboot consumed time; refresh the budget baseline
                   }
                 }
                 # Compute the category budget after any device reset so reset time
@@ -4067,7 +4093,8 @@ stages:
                 $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
                 if ($remainToHardStopMin -lt 3) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 320-min task timeout)."
+                  if ($jobBudgetConstrained) { $jobBudgetExhausted = $true }
+                  Write-Host "##[warning]Only $remainToHardStopMin min left before the effective hard stop — not starting category '$cat' (preserves final result publication)."
                   $hadFailure = $true
                   continue
                 }
@@ -4349,8 +4376,17 @@ stages:
                 }
               }
 
+              if ($jobBudgetExhausted) {
+                @(
+                  'Result=TIMEOUT'
+                  'Reason=OuterJobBudget'
+                  "SkippedCategories=$($skippedCats -join ',')"
+                  "JobSafeStopUtc=$($jobSafeStop.ToString('o'))"
+                ) | Set-Content -LiteralPath (Join-Path $outputRoot 'deep-run-status.txt') -Encoding UTF8
+              }
+
               if ($skippedCats.Count -gt 0) {
-                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started due to the $budgetMin-min time budget: $($skippedCats -join ', ')"
+                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started before the effective deadline: $($skippedCats -join ', ')"
               }
               if ($hadFailure) {
                 # Don't FAIL the stage — the AI summary review is the deliverable
@@ -4376,6 +4412,7 @@ stages:
               # with no length limit (mirrors the Post-AI-summary task's pattern).
               PARAM_PLATFORM: ${{ parameters.Platform }}
               DETECTED_CATEGORIES: $(detectedCategories)
+              DEEP_JOB_STARTED_AT_UTC: $(deepJobStartedAtUtc)
 
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
@@ -4397,7 +4434,7 @@ stages:
               targetPath: '$(Build.ArtifactStagingDirectory)/deep-uitests'
               artifact: 'drop-deep-uitests'
               publishLocation: 'pipeline'
-            condition: succeededOrFailed()
+            condition: always()
 
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: PostAISummaryComment
@@ -4413,7 +4450,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(always(), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')))
     jobs:
       # Prompt-influenced analysis is intentionally isolated from the posting
       # credentials in the next job. Microsoft-hosted jobs use fresh agents, so
@@ -4510,7 +4547,7 @@ stages:
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
         dependsOn: AnalyzeUIFailures
-        condition: not(canceled())
+        condition: always()
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
         # this just makes the value available as $(aiSummaryReviewId)
@@ -4540,6 +4577,7 @@ stages:
           # it is the exact signal the deep stage itself gates on — download when
           # (and only when) the deep stage actually ran and published an artifact.
           detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
+          deepStageResult: $[ stageDependencies.RunDeepUITests.RunUITests.result ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -4680,6 +4718,40 @@ stages:
             displayName: 'Import bounded UI failure analysis'
             continueOnError: true
 
+          # CopilotLogs is prompt-influenced cross-job data. Resolve only the
+          # canonical PRAgent tree for this PR and import it through regular-file
+          # count/size bounds before the credentialed posting task starts.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $artifactRoot = Join-Path "$(Pipeline.Workspace)" "CopilotLogs"
+              $destination = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
+              Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+                Write-Host "No CopilotLogs artifact was produced."
+                exit 0
+              }
+
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              . ".github/scripts/shared/Import-ExpectedPRAgentArtifact.ps1"
+              try {
+                $importResult = Import-ExpectedPRAgentArtifact `
+                  -ArtifactRoot $artifactRoot `
+                  -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                  -DestinationDirectory $destination `
+                  -MaxFileCount 2048 `
+                  -MaxDirectoryCount 1024 `
+                  -MaxFileBytes 16MB `
+                  -MaxTotalBytes 128MB
+                Write-Host "Imported canonical PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes."
+              } catch {
+                Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]PRAgent artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import canonical bounded PRAgent artifact'
+            continueOnError: true
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
           - pwsh: |
               # DO NOT add AzDO compile-time template expressions (the double-curly
               # -brace syntax) to THIS script block. It is ~28KB. AzDO compiles any
@@ -4696,7 +4768,21 @@ stages:
               }
               . $ghRetryHelper
               $artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
-              $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
+              $prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
+              $deepStageResult = "$env:DEEP_STAGE_RESULT"
+              $deepRunStatusFile = Join-Path $artDir 'deep-run-status.txt'
+              $deepRunStatus = if (Test-Path -LiteralPath $deepRunStatusFile -PathType Leaf) {
+                Get-Content -LiteralPath $deepRunStatusFile -Raw -ErrorAction SilentlyContinue
+              } else { '' }
+              $deepJobBudgetTimedOut = $deepRunStatus -match '(?im)^Result=TIMEOUT\s*$' -and
+                $deepRunStatus -match '(?im)^Reason=OuterJobBudget\s*$'
+              $deepStageCanceled = $deepStageResult -eq 'Canceled'
+              $deepRunInterrupted = $deepJobBudgetTimedOut -or $deepStageCanceled
+              $deepInterruptionNote = if ($deepJobBudgetTimedOut) {
+                "The deep run reached the remaining outer-job budget and stopped before all categories could start; partial results were preserved and the omitted categories need a rerun."
+              } elseif ($deepStageCanceled) {
+                "The deep job was canceled before normal publication (for example, by the outer 360-minute job cap); results may be incomplete and the deep run needs a rerun."
+              } else { '' }
               $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewId = $env:AI_SUMMARY_REVIEW_ID
               if (-not [string]::IsNullOrWhiteSpace($reviewId) -and
@@ -4710,8 +4796,9 @@ stages:
               Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
               Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
+              Write-Host "  deepStageResult: '$deepStageResult'"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
-              Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
+              Write-Host "  bounded PRAgent exists: $(Test-Path $prAgentImportDir)"
               if (Test-Path $artDir) {
                 $trxCount = @(Get-ChildItem -Path $artDir -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue).Count
                 Write-Host "  TRX files in artDir: $trxCount"
@@ -4724,7 +4811,7 @@ stages:
                 # Reviewer crashed before posting the initial review. If deep
                 # tests produced results, fall back to DEFERRED mode to post
                 # a degraded review with test results only.
-                if (Test-Path $artDir) {
+                if ((Test-Path $artDir) -or $deepRunInterrupted) {
                   Write-Host "No AI summary review ID but deep test artifacts exist — falling back to DEFERRED mode"
                   $reviewId = 'DEFERRED'
                   $isDeferred = $true
@@ -5633,13 +5720,16 @@ stages:
                 # crash note so a missing category is never silently dropped.
                 $headerLine = "$headerLine " + $crashedNote
               }
+              if ($deepRunInterrupted) {
+                $headerLine = "$headerLine $deepInterruptionNote"
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0)) {
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0 -or $deepRunInterrupted)) {
                 # No TRX anywhere (nothing produced results), but we DID detect
                 # compile failures, timeouts, app-crash (built-OK-but-no-TRX)
                 # runs, and/or an MT0180 Xcode/SDK mismatch. Render an honest deep
@@ -5652,6 +5742,7 @@ stages:
                 if ($timedOutCats.Count -gt 0) { $noteParts += $timedOutNote }
                 if ($crashTimedOutCats.Count -gt 0) { $noteParts += $crashTimedOutNote }
                 if ($crashedCats.Count -gt 0) { $noteParts += $crashedNote }
+                if ($deepRunInterrupted) { $noteParts += $deepInterruptionNote }
                 $headerLine  = "⚠️ **Deep UI tests** — " + ($noteParts -join ' ')
                 $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"
               }
@@ -5665,8 +5756,13 @@ stages:
 
               if ($isDeferred) {
                 # ── DEFERRED MODE (first run): Post full review ──
-                # Find the PRAgent content dir from CopilotLogs artifact
-                $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
+                # The prior tokenless import accepted only this PR's unique,
+                # canonical, bounded regular-file tree.
+                $prAgentDir = if (Test-Path -LiteralPath $prAgentImportDir -PathType Container) {
+                  Get-Item -LiteralPath $prAgentImportDir
+                } else {
+                  $null
+                }
                 if (-not $prAgentDir) {
                   # The gate/review agent left no PRAgent content on this run (e.g. the
                   # Review stage failed before the agent uploaded its logs), so there is
@@ -5925,6 +6021,7 @@ stages:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
               BUILD_BUILDID: $(Build.BuildId)
+              DEEP_STAGE_RESULT: $(deepStageResult)
 
 
   - stage: CleanupReviewLock

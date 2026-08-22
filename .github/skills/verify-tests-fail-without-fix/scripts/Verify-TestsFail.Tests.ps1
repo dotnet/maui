@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -482,11 +482,11 @@ OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side err
         Remove-Item -LiteralPath $log -Force
     }
 
-    It 'flags a fixture-wide OneTimeSetUp app-launch/crash-recovery timeout as env, even WITH failure counts (real #35640 build 14844563)' {
-        # The app crashed on launch and never recovered, so every test in the fixture failed at
-        # OneTimeSetUp before any assertion ran (Passed=0/Failed=N). This must be EnvError
-        # (INCONCLUSIVE), never a plain FAIL — the fix was never actually verified.
+    It 'retains a fixture-wide app-startup crash as failed until the sibling A/B leg is known' {
         $log = New-LogFile @'
+FATAL EXCEPTION: main
+java.lang.IllegalStateException: Failed to initialize startup service
+    at com.microsoft.maui.MainActivity.onCreate(MainActivity.java:42)
   Failed Material3CarouselViewFeatureTests.FirstCase [1 s]
   Error Message:
    OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
@@ -502,9 +502,11 @@ Total tests: 2
   Failed: 2
 '@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+        $r.SetupFailureIsAppCrash | Should -BeTrue
+        $r.AppCrashSignature | Should -Not -BeNullOrEmpty
         $r.Passed   | Should -BeFalse
-        $r.Failed   | Should -Be 0
+        $r.Failed   | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -773,6 +775,159 @@ Assert.Equal() Failure: Expected 5, Actual 4
         $r.NativeLibLoadFailure | Should -Not -BeTrue
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Ambiguous startup-crash classification' {
+    It 'keeps a with-fix-only startup crash as a genuine failure' {
+        $without = @{ Passed = $true }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeFalse
+        $with.EnvError | Should -Not -BeTrue
+        $with.Failed | Should -Be 2
+    }
+
+    It 'downgrades only a symmetric A/B startup crash to environment' {
+        $without = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'same-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'same-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeTrue
+        $without.EnvError | Should -BeTrue
+        $with.EnvError | Should -BeTrue
+        $without.Failed | Should -Be 0
+        $with.Failed | Should -Be 0
+    }
+
+    It 'does not downgrade boolean-only crashes without an identity' {
+        $without = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeFalse
+        $with.EnvError | Should -Not -BeTrue
+        $with.Failed | Should -Be 2
+    }
+
+    It 'keeps distinct A/B startup crashes blocking' {
+        $without = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'baseline-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'with-fix-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeFalse
+        $without.EnvError | Should -Not -BeTrue
+        $with.EnvError | Should -Not -BeTrue
+        $with.Failed | Should -Be 2
+    }
+
+    It 'normalizes volatile process ids, addresses, and source lines in a crash identity' {
+        $first = @'
+08-22 10:20:30.123 1234 1234 F AndroidRuntime: FATAL EXCEPTION: main
+08-22 10:20:30.124 1234 1234 F libc: Fatal signal 6 (SIGABRT), code -1 in tid 1234, pid 1234
+E/AndroidRuntime(1234): java.lang.IllegalStateException: startup failed
+E/AndroidRuntime(1234):     at com.microsoft.maui.MainActivity.onCreate(MainActivity.java:42)
+F/DEBUG(1234): #00 pc 0000000000123456 /data/app/libfoo.so (startup_abort+12)
+'@
+        $second = @'
+08-22 10:22:31.987 9876 9876 F AndroidRuntime: FATAL EXCEPTION: main
+08-22 10:22:31.988 9876 9876 F libc: Fatal signal 6 (SIGABRT), code -1 in tid 9876, pid 9876
+E/AndroidRuntime(9876): java.lang.IllegalStateException: startup failed
+E/AndroidRuntime(9876):     at com.microsoft.maui.MainActivity.onCreate(MainActivity.java:99)
+F/DEBUG(9876): #00 pc abcdef0123456789 /other/path/libfoo.so (startup_abort+12)
+'@
+
+        (Get-NormalizedAppCrashSignature -Content $first) |
+            Should -Be (Get-NormalizedAppCrashSignature -Content $second)
+    }
+
+    It 'rejects a generic crash classification without distinguishing evidence' {
+        Get-NormalizedAppCrashSignature -Content 'FATAL EXCEPTION: main' |
+            Should -BeNullOrEmpty
+        Get-NormalizedAppCrashSignature -Content 'Fatal signal 6 (SIGABRT)' |
+            Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Failure-only runner reporting' {
+    It 'converts a runner exception into an environment result that reaches the report writer' {
+        Mock Invoke-TestRunWithRetry { throw 'simulated non-Windows runner failure' }
+        $entry = @{ TestName = 'Issue12345'; Type = 'DeviceTest' }
+
+        $result = Invoke-FailureOnlyTestRun -TestEntry $entry -LogFile 'unused.log'
+
+        $result.EnvError | Should -BeTrue
+        $result.Error | Should -Match 'simulated non-Windows runner failure'
+        $result.TestName | Should -Be 'Issue12345'
+        $result.TestType | Should -Be 'DeviceTest'
+        $script:verifyScriptText | Should -Match ([regex]::Escape(
+            '$testResult = Invoke-FailureOnlyTestRun -TestEntry $testEntry -LogFile $TestLog'))
+    }
+
+    It 'keeps an unpaired startup crash inconclusive in failure-only mode' {
+        Mock Invoke-TestRunWithRetry {
+            @{
+                Passed = $false
+                SetupFailureIsAppCrash = $true
+                FailCount = 2
+                Failed = 2
+                Total = 2
+            }
+        }
+        $entry = @{ TestName = 'Issue12345'; Type = 'UITest' }
+
+        $result = Invoke-FailureOnlyTestRun -TestEntry $entry -LogFile 'unused.log'
+
+        $result.EnvError | Should -BeTrue
+        $result.Failed | Should -Be 0
+        $result.Error | Should -Match 'no with-fix leg'
     }
 }
 
@@ -1314,6 +1469,33 @@ Describe 'Gate failure precedence' {
             -BaselineBuildError:$false `
             -PrTestBuildError:$false |
             Should -BeFalse
+    }
+
+    It 'treats a with-fix-only build error as definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$true `
+            -BaselineBuildError:$false `
+            -PrTestBuildError:$false |
+            Should -BeTrue
+    }
+
+    It 'keeps a build error present in both baseline and with-fix non-definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$true `
+            -BaselineBuildError:$true `
+            -PrTestBuildError:$false |
+            Should -BeFalse
+    }
+
+    It 'treats a PR-test build error as definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$false `
+            -BaselineBuildError:$false `
+            -PrTestBuildError:$true |
+            Should -BeTrue
     }
 }
 

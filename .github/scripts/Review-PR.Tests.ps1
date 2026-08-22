@@ -539,7 +539,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CURRENT_HEAD.*EXPECTED_HEAD.*s/agent-review-incomplete'
     }
 
-    It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
+    It 'publishes an explicit deep cancellation result while always cleaning the review lock' {
         $postReviewJobStart = $pipelineContent.IndexOf("      - job: PostReview")
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
@@ -564,7 +564,12 @@ Describe 'Reviewer pipeline timeout containment' {
             "condition: and\(eq\('.+parameters\.Mode.+', 'review'\), in\(dependencies\.CopilotReview\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'\)\)")
         $deepBlock | Should -Match 'not\(canceled\(\)\)'
         $deepBlock | Should -Not -Match "'Canceled'"
-        $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
+        $postBlock | Should -Match "in\(dependencies\.RunDeepUITests\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'\)"
+        $postBlock | Should -Match 'condition: and\(always\(\)'
+        $postBlock | Should -Match ([regex]::Escape('deepStageResult: $[ stageDependencies.RunDeepUITests.RunUITests.result ]'))
+        $postBlock | Should -Match ([regex]::Escape('$deepStageCanceled = $deepStageResult -eq ''Canceled'''))
+        $postBlock | Should -Match 'The deep job was canceled before normal publication'
+        $postBlock | Should -Match '(?s)- job: UpdateComment.*?condition: always\(\)'
         $cleanupBlock | Should -Match 'condition: always\(\)'
         $cleanupBlock | Should -Match 'SYSTEM_ACCESSTOKEN: \$\(System\.AccessToken\)'
         $cleanupBlock | Should -Match '--oauth2-bearer "\$\{SYSTEM_ACCESSTOKEN\}"'
@@ -574,6 +579,25 @@ Describe 'Reviewer pipeline timeout containment' {
         $cleanupBlock | Should -Match 'Preserving s/agent-review-in-progress'
         $cleanupBlock.IndexOf('OTHER_ACTIVE=') | Should -BeLessThan $cleanupBlock.IndexOf('repos/dotnet/maui/issues/${PR_NUM}/labels')
         $analyzeBlock | Should -Match 'condition: not\(canceled\(\)\)'
+    }
+
+    It 'bounds the deep loop by the actual remaining outer-job budget' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $deepBlock = $pipelineContent.Substring($deepStart, $postStart - $deepStart)
+
+        $captureIndex = $deepBlock.IndexOf("displayName: 'Capture deep UI job budget'")
+        $checkoutIndex = $deepBlock.IndexOf('- checkout: self')
+        $captureIndex | Should -BeGreaterThan -1
+        $checkoutIndex | Should -BeGreaterThan $captureIndex
+        $deepBlock | Should -Match ([regex]::Escape('variable=deepJobStartedAtUtc'))
+        $deepBlock | Should -Match ([regex]::Escape('DEEP_JOB_STARTED_AT_UTC: $(deepJobStartedAtUtc)'))
+        $deepBlock | Should -Match ([regex]::Escape('$jobSafeStop = $jobStartedAt.AddMinutes(340)'))
+        $deepBlock | Should -Match ([regex]::Escape('$taskHardStop = if ($jobSafeStop -lt $configuredTaskHardStop)'))
+        $deepBlock | Should -Match ([regex]::Escape("'Reason=OuterJobBudget'"))
+        $deepBlock | Should -Match ([regex]::Escape("Join-Path `$outputRoot 'deep-run-status.txt'"))
+        $deepBlock | Should -Match 'cancelTimeoutInMinutes: 10'
+        $deepBlock | Should -Match "(?s)displayName: 'Publish drop-deep-uitests'.*?condition: always\(\)"
     }
 
     It 'gives every Android emulator retry group enough time and keeps setup non-blocking' {
@@ -723,6 +747,34 @@ Describe 'Reviewer pipeline timeout containment' {
         $setup | Should -BeGreaterThan $buildTasks
     }
 
+    It 'keeps inflight Deep UI setup on the protected base until credentials are released' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $deepEnd = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment", $deepStart)
+        $deepBlock = $pipelineContent.Substring($deepStart, $deepEnd - $deepStart)
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $resolveStart = $deepBlock.LastIndexOf("- bash:", $deepBlock.IndexOf($resolveName))
+        $resolveEnd = $deepBlock.IndexOf("- template: common/provision.yml", $resolveStart)
+        $resolveBlock = $deepBlock.Substring($resolveStart, $resolveEnd - $resolveStart)
+        $installWorkloads = $deepBlock.IndexOf("displayName: 'Install .NET and workloads'", $resolveEnd)
+        $buildTasks = $deepBlock.IndexOf("displayName: 'Build MSBuild Tasks'", $installWorkloads)
+        $mergeName = "displayName: 'Merge PR for testing'"
+        $mergeStart = $deepBlock.LastIndexOf("- bash:", $deepBlock.IndexOf($mergeName))
+        $mergeEnd = $deepBlock.IndexOf($mergeName, $mergeStart)
+        $mergeBlock = $deepBlock.Substring($mergeStart, $mergeEnd - $mergeStart)
+
+        $resolveBlock | Should -Match ([regex]::Escape('git checkout --detach "${BASE_SHA}"'))
+        $resolveBlock | Should -Not -Match ([regex]::Escape('git checkout --detach "${PR_HEAD_SHA}"'))
+        $resolveBlock | Should -Not -Match ([regex]::Escape('git merge --no-edit "${BASE_SHA}"'))
+        $installWorkloads | Should -BeGreaterThan $resolveEnd
+        $buildTasks | Should -BeGreaterThan $installWorkloads
+        $mergeStart | Should -BeGreaterThan $buildTasks
+        $mergeBlock | Should -Match ([regex]::Escape('if [[ "${BASE_REF}" == inflight/* ]]'))
+        $mergeBlock | Should -Match ([regex]::Escape(
+            'git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"'))
+        $mergeBlock | Should -Match ([regex]::Escape('git merge --no-edit "${BASE_SHA}"'))
+        $mergeBlock | Should -Not -Match 'DOTNET_TOKEN:'
+    }
+
     It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {
         ([regex]::Matches(
             $pipelineContent,
@@ -780,7 +832,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $resetStart = $pipelineContent.IndexOf('if ($needDeviceReset)')
         $resetEnd = $pipelineContent.IndexOf('# Give each still-pending category', $resetStart)
         $resetBlock = $pipelineContent.Substring($resetStart, $resetEnd - $resetStart)
-        $refreshIndex = $resetBlock.IndexOf('$catStart = Get-Date')
+        $refreshIndex = $resetBlock.IndexOf('$catStart = [DateTimeOffset]::UtcNow')
         $remainingIndex = $resetBlock.IndexOf('$remainToHardStopMin =')
 
         $refreshIndex | Should -BeGreaterThan -1
@@ -813,6 +865,31 @@ Describe 'Reviewer pipeline timeout containment' {
             '-MaxTotalBytes $maxImportedLogBytes'))
         $postReviewBlock | Should -Not -Match (
             'Copy-Item\s+-LiteralPath\s+\$source\s+-Destination\s+\$target\s+-Recurse')
+    }
+
+    It 'imports only the canonical bounded PRAgent tree before credentialed posting' {
+        $postStageStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $importName = "displayName: 'Import canonical bounded PRAgent artifact'"
+        $importStart = $pipelineContent.LastIndexOf("- pwsh:", $pipelineContent.IndexOf($importName, $postStageStart))
+        $importEnd = $pipelineContent.IndexOf($importName, $importStart)
+        $importBlock = $pipelineContent.Substring($importStart, $importEnd - $importStart)
+        $postTaskStart = $pipelineContent.IndexOf(
+            '# DO NOT add AzDO compile-time template expressions',
+            $importEnd)
+        $postTaskEnd = $pipelineContent.IndexOf(
+            "displayName: 'Post AI summary review'",
+            $postTaskStart)
+        $postTaskBlock = $pipelineContent.Substring($postTaskStart, $postTaskEnd - $postTaskStart)
+
+        $importStart | Should -BeGreaterThan $postStageStart
+        $postTaskStart | Should -BeGreaterThan $importEnd
+        $importBlock | Should -Match 'Import-ExpectedPRAgentArtifact'
+        $importBlock | Should -Match ([regex]::Escape(
+            '-DestinationDirectory $destination'))
+        $postTaskBlock | Should -Match ([regex]::Escape(
+            '$prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"'))
+        $postTaskBlock | Should -Not -Match (
+            'Get-ChildItem\s+-Path\s+\$copilotLogsDir\s+-Recurse\s+-Directory\s+-Filter\s+"PRAgent"')
     }
 
     It 'passes the selected platform into every UI category detection pass' {

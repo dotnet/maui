@@ -26,7 +26,11 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($functionName in @('ConvertTo-UiFailureSafeConsoleText', 'ConvertTo-UiFailureSafeMarkdownText')) {
+    foreach ($functionName in @(
+        'ConvertTo-UiFailureSafeConsoleText',
+        'ConvertTo-UiFailureSafeMarkdownText',
+        'New-UiFailureDataBoundary'
+    )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -98,5 +102,22 @@ Describe 'Analyze-UITestFailures input cap' {
         $script:AnalyzeText | Should -Match ([regex]::Escape(
             'Write-Host "##[warning]Copilot produced no UI-failure analysis file (copilotFailed=$copilotFailed)'))
         $script:AnalyzeText | Should -Not -Match 'ConvertTo-UiFailureSafeConsoleText "##\[warning\]'
+    }
+
+    It 'uses an unpredictable boundary token that cannot collide with untrusted input' {
+        $candidates = [System.Collections.Generic.Queue[string]]::new()
+        $candidates.Enqueue('COLLIDING_BOUNDARY')
+        $candidates.Enqueue('SAFE_BOUNDARY')
+
+        $boundary = New-UiFailureDataBoundary `
+            -Content 'attacker content containing COLLIDING_BOUNDARY' `
+            -CandidateFactory { $candidates.Dequeue() }
+
+        $boundary | Should -Be 'SAFE_BOUNDARY'
+        $script:AnalyzeText | Should -Match ([regex]::Escape(
+            '"MAUI_UI_FAILURE_DATA_$([Guid]::NewGuid().ToString(''N''))"'))
+        $script:AnalyzeText | Should -Not -Match '>>>DATA|<<<DATA'
+        $script:AnalyzeText | Should -Match ([regex]::Escape(
+            '-----END UNTRUSTED DATA $dataBoundary-----'))
     }
 }
