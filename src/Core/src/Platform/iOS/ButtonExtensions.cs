@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -6,6 +7,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
+		static readonly ConditionalWeakTable<UIButton, BackgroundUpdateState> BackgroundUpdateStates = new();
+
 		public const double AlmostZero = 0.00001;
 
 		public static void UpdateStrokeColor(this UIButton platformButton, IButtonStroke buttonStroke)
@@ -57,19 +60,33 @@ namespace Microsoft.Maui.Platform
 		// TODO: Make this public in .NET 11
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
-			// Remove previous background gradient layer if any
+			// Remove previous background gradient layer if any.
+			// Safe to call when MAUI has not applied a gradient because this is a no-op.
+			// Running it before the paint guard ensures any previously-applied gradient is cleaned
+			// up regardless of the new paint value.
 			platformButton.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
 			{
-				// Reset to clear background for buttons when paint is null.
-				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
-				platformButton.BackgroundColor = UIColor.Clear;
+				// Preserve constructor or appearance-proxy styling until MAUI applies a background.
+				// This also covers handlers reconnected to another virtual view with no background.
+				if (BackgroundUpdateStates.TryGetValue(platformButton, out var updateState) && updateState.HasMauiBackground)
+				{
+					platformButton.BackgroundColor = UIColor.Clear;
+					BackgroundUpdateStates.Remove(platformButton);
+				}
 				return;
 			}
 
 			// Delegate to the standard view background update
 			ViewExtensions.UpdateBackground(platformButton, paint);
+			if (paint is SolidPaint or LinearGradientPaint or RadialGradientPaint)
+				BackgroundUpdateStates.GetValue(platformButton, static _ => new()).HasMauiBackground = true;
+		}
+
+		sealed class BackgroundUpdateState
+		{
+			public bool HasMauiBackground { get; set; }
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
