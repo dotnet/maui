@@ -1,5 +1,7 @@
-﻿using System;
+﻿#nullable enable annotations
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -10,6 +12,13 @@ using Bundle = Android.OS.Bundle;
 using JavaObject = Java.Lang.Object;
 
 namespace Microsoft.Maui.ApplicationModel;
+
+internal interface IActivityForResultRequest
+{
+	void Register(ComponentActivity componentActivity, Bundle? savedInstanceState);
+	void SaveInstanceState(ComponentActivity componentActivity, Bundle outState);
+	void ActivityDestroyed(ComponentActivity componentActivity);
+}
 
 /// <summary>
 /// Represents a request for an activity result.
@@ -35,9 +44,12 @@ namespace Microsoft.Maui.ApplicationModel;
 /// </para>
 /// </remarks>
 internal abstract class ActivityForResultRequest<TContract, TResult>
+	: IActivityForResultRequest
 	where TContract : ActivityResultContract, new()
 	where TResult : JavaObject
 {
+	static readonly TimeSpan TaskPresencePollInterval = TimeSpan.FromSeconds(2);
+
 	static readonly string RequestOwnerStateKey =
 		$"Microsoft.Maui.ApplicationModel.ActivityForResultRequest.{typeof(TContract).FullName}";
 
@@ -47,6 +59,8 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
 
 	readonly ConditionalWeakTable<ComponentActivity, string> _requestOwners = new();
+	readonly ConditionalWeakTable<ComponentActivity, object> _savedRequestOwners = new();
+	readonly ConcurrentDictionary<string, System.Threading.CancellationTokenSource> _taskRemovalMonitors = new();
 	readonly ActivityForResultRequestState<TResult> _requestState = new(RequestOwnerStateKey);
 
 	/// <summary>
@@ -70,15 +84,23 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		var contract = new TContract();
 
 		var requestOwner = _requestState.RestoreOrCreateOwner(savedInstanceState);
+		StopTaskRemovalMonitor(requestOwner);
 		var callback = new ActivityResultCallback<TResult>(result =>
 		{
-			_requestState.TrySetResult(requestOwner, result);
+			if (_requestState.TrySetResult(requestOwner, result))
+				StopTaskRemovalMonitor(requestOwner);
 		});
 
-		var launcher = componentActivity.RegisterForActivityResult(contract, callback);
+		var launcher = RegisterForActivityResult(componentActivity, contract, callback);
 		_requestOwners.Add(componentActivity, requestOwner);
 		_activityLaunchers.Add(componentActivity, launcher);
 	}
+
+	protected virtual ActivityResultLauncher RegisterForActivityResult(
+		ComponentActivity componentActivity,
+		TContract contract,
+		ActivityResultCallback<TResult> callback) =>
+		componentActivity.RegisterForActivityResult(contract, callback);
 
 	/// <summary>
 	/// Launches the activity result request for a specific activity instance.
@@ -115,7 +137,8 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		catch (Exception ex)
 		{
-			_requestState.TrySetException(requestOwner, ex);
+			if (_requestState.TrySetException(requestOwner, ex))
+				StopTaskRemovalMonitor(requestOwner);
 		}
 
 		return request;
@@ -124,7 +147,10 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	internal void SaveInstanceState(ComponentActivity componentActivity, Bundle outState)
 	{
 		if (_requestOwners.TryGetValue(componentActivity, out var requestOwner))
+		{
 			_requestState.SaveOwner(outState, requestOwner);
+			_savedRequestOwners.GetValue(componentActivity, static _ => new object());
+		}
 	}
 
 	/// <summary>
@@ -136,7 +162,108 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	internal void CancelPendingRequest(ComponentActivity componentActivity)
 	{
 		if (_requestOwners.TryGetValue(componentActivity, out var requestOwner))
-			_requestState.TrySetCanceled(requestOwner);
+		{
+			if (_requestState.TrySetCanceled(requestOwner))
+				StopTaskRemovalMonitor(requestOwner);
+		}
+	}
+
+	internal void ActivityDestroyed(ComponentActivity componentActivity)
+	{
+		if (!_requestOwners.TryGetValue(componentActivity, out var requestOwner)
+			|| !_requestState.HasPendingRequest(requestOwner))
+		{
+			return;
+		}
+
+		if (componentActivity.IsFinishing
+			|| !_savedRequestOwners.TryGetValue(componentActivity, out _)
+			|| componentActivity.GetSystemService(global::Android.Content.Context.ActivityService) is not global::Android.App.ActivityManager activityManager
+			|| !IsTaskPresent(activityManager, componentActivity.TaskId))
+		{
+			CancelPendingRequest(componentActivity);
+			return;
+		}
+
+		// A saved owner can be adopted by a replacement activity, but task removal may
+		// happen later without another callback for this already-destroyed instance.
+		StartTaskRemovalMonitor(requestOwner, activityManager, componentActivity.TaskId);
+	}
+
+	void IActivityForResultRequest.SaveInstanceState(ComponentActivity componentActivity, Bundle outState) =>
+		SaveInstanceState(componentActivity, outState);
+
+	void IActivityForResultRequest.ActivityDestroyed(ComponentActivity componentActivity) =>
+		ActivityDestroyed(componentActivity);
+
+	void StartTaskRemovalMonitor(
+		string requestOwner,
+		global::Android.App.ActivityManager activityManager,
+		int taskId)
+	{
+		var cancellation = new System.Threading.CancellationTokenSource();
+		if (!_taskRemovalMonitors.TryAdd(requestOwner, cancellation))
+		{
+			cancellation.Dispose();
+			return;
+		}
+
+		_ = MonitorTaskPresenceAsync(requestOwner, activityManager, taskId, cancellation);
+	}
+
+	async Task MonitorTaskPresenceAsync(
+		string requestOwner,
+		global::Android.App.ActivityManager activityManager,
+		int taskId,
+		System.Threading.CancellationTokenSource cancellation)
+	{
+		try
+		{
+			while (_requestState.HasPendingRequest(requestOwner))
+			{
+				await Task.Delay(TaskPresencePollInterval, cancellation.Token).ConfigureAwait(false);
+				if (!IsTaskPresent(activityManager, taskId))
+				{
+					_requestState.TrySetCanceled(requestOwner);
+					break;
+				}
+			}
+		}
+		catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+		{
+		}
+		catch (global::Java.Lang.SecurityException ex)
+		{
+			_requestState.TrySetException(requestOwner, ex);
+		}
+		finally
+		{
+			if (_taskRemovalMonitors.TryRemove(
+				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation)))
+			{
+				cancellation.Dispose();
+			}
+		}
+	}
+
+	void StopTaskRemovalMonitor(string requestOwner)
+	{
+		if (_taskRemovalMonitors.TryRemove(requestOwner, out var cancellation))
+		{
+			cancellation.Cancel();
+			cancellation.Dispose();
+		}
+	}
+
+	static bool IsTaskPresent(global::Android.App.ActivityManager activityManager, int taskId)
+	{
+		foreach (var appTask in activityManager.AppTasks ?? [])
+		{
+			if (appTask.TaskInfo?.TaskId == taskId)
+				return true;
+		}
+
+		return false;
 	}
 }
 
@@ -158,7 +285,7 @@ internal sealed class ActivityForResultRequestState<TResult>
 
 	internal Task<TResult> BeginRequest(string requestOwner)
 	{
-		var tcs = new TaskCompletionSource<TResult>();
+		var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 		if (!_pendingRequests.TryAdd(requestOwner, tcs))
 		{
 			Trace.WriteLine("ActivityForResultRequest: rejecting overlapping request for the same activity.");
@@ -168,6 +295,9 @@ internal sealed class ActivityForResultRequestState<TResult>
 
 		return tcs.Task;
 	}
+
+	internal bool HasPendingRequest(string requestOwner) =>
+		_pendingRequests.ContainsKey(requestOwner);
 
 	internal bool TrySetResult(string requestOwner, TResult result) =>
 		_pendingRequests.TryRemove(requestOwner, out var tcs) && tcs.TrySetResult(result);
