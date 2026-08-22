@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.Controls;
@@ -7,6 +9,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using ALinearLayoutCompat = AndroidX.AppCompat.Widget.LinearLayoutCompat;
+using ATextView = Android.Widget.TextView;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -225,6 +229,96 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var isEnabled = nativeView.Enabled;
 				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(5)]
+		[InlineData(20)]
+		[Description("SwipeItem icon and text should remain centered together when wrapping a CollectionView")]
+		public async Task SwipeItemIconAndTextRemainAlignedWithCollectionView(int itemCount)
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = Enumerable.Range(1, itemCount).Select(index => $"{index} record").ToArray(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { Padding = 10 };
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				Text = "Back",
+				BackgroundColor = Colors.White,
+				IconImageSource = new FileImageSource { File = "red.png" }
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				LeftItems = swipeItems,
+				Content = collectionView
+			};
+
+			var root = new Grid
+			{
+				HeightRequest = 500,
+				WidthRequest = 300,
+				RowDefinitions =
+				{
+					new RowDefinition { Height = 40 },
+					new RowDefinition { Height = GridLength.Star }
+				}
+			};
+			root.Add(new Label { Text = "Records" });
+			root.Add(swipeView, row: 1);
+
+			await AttachAndRun(root, async (_) =>
+			{
+				var platformView = Assert.IsType<SwipeViewHandler>(swipeView.Handler).PlatformView;
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				await AssertEventually(() =>
+					Enumerable.Range(0, platformView.ChildCount)
+						.Select(platformView.GetChildAt)
+						.OfType<ALinearLayoutCompat>()
+						.Any(view => view.ChildCount > 0));
+
+				var actionView = Assert.Single(
+					Enumerable.Range(0, platformView.ChildCount)
+						.Select(platformView.GetChildAt)
+						.OfType<ALinearLayoutCompat>()
+						.Where(view => view.ChildCount > 0));
+				var swipeButton = Assert.IsAssignableFrom<ATextView>(actionView.GetChildAt(0));
+
+				await AssertEventually(() =>
+					swipeButton.Height > 0 &&
+					swipeButton.Baseline > 0 &&
+					swipeButton.GetCompoundDrawables()[1] is not null);
+
+				var icon = swipeButton.GetCompoundDrawables()[1];
+				var fontMetrics = new global::Android.Graphics.Paint.FontMetricsInt();
+				swipeButton.Paint.GetFontMetricsInt(fontMetrics);
+				var iconTop = swipeButton.PaddingTop;
+				var iconBottom = iconTop + icon.Bounds.Height();
+				var textTop = swipeButton.Baseline + fontMetrics.Top;
+				var density = swipeButton.Context.GetDisplayDensity();
+				var tolerance = (int)Math.Ceiling(density);
+				var maxAlignmentGap = Math.Max(
+					swipeButton.CompoundDrawablePadding + tolerance,
+					swipeButton.LineHeight / 2);
+
+				Assert.InRange(textTop - iconBottom, -tolerance, maxAlignmentGap);
 			});
 		}
 	}
