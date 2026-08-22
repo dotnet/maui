@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		const double CenteringTolerance = 1;
 		const int MaxCollectionCurrentItemOverrideRetries = 10;
-		const int PointerWheelInputExpirationMilliseconds = 50;
 
 		LoopableCollectionView _loopableCollectionView;
 		ScrollViewer _scrollViewer;
@@ -45,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _collectionCurrentItemOverrideVersion = -1;
 		int _collectionCurrentItemOverrideQueueVersion;
 		int _collectionCurrentItemOverrideRetryCount;
+		bool _centerLoopedCollectionCurrentItemOverride;
 		global::Microsoft.UI.Dispatching.DispatcherQueueTimer _collectionCurrentItemOverrideRetryTimer;
 		global::Windows.Foundation.Collections.VectorChangedEventHandler<object> _collectionCurrentItemOverrideItemsChanged;
 		readonly WeakVectorChangedProxy _collectionCurrentItemOverrideProxy = new();
@@ -64,17 +64,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _collectionChangeVersion;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		bool _isPointerPressed;
-		bool _hasPendingPointerWheelInput;
 		global::Microsoft.UI.Xaml.Input.PointerEventHandler _scrollViewerPointerPressed;
 		global::Microsoft.UI.Xaml.Input.PointerEventHandler _scrollViewerPointerReleased;
 		global::Microsoft.UI.Xaml.Input.PointerEventHandler _scrollViewerPointerWheelChanged;
-		global::Microsoft.UI.Dispatching.DispatcherQueueTimer _pointerWheelInputExpirationTimer;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
 		~CarouselViewHandler()
 		{
 			_proxy.Unsubscribe();
-			_collectionCurrentItemOverrideProxy.Unsubscribe();
 		}
 
 		protected override IItemsLayout Layout { get; }
@@ -102,24 +99,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_proxy.Unsubscribe();
 			}
 
-			if (_scrollViewer != null)
-			{
-				_scrollViewer.ViewChanging -= OnScrollViewChanging;
-				_scrollViewer.ViewChanged -= OnScrollViewChanged;
-				_scrollViewer.SizeChanged -= OnScrollViewSizeChanged;
-				_scrollViewer.RemoveHandler(UIElement.PointerPressedEvent, _scrollViewerPointerPressed);
-				_scrollViewer.RemoveHandler(UIElement.PointerReleasedEvent, _scrollViewerPointerReleased);
-				_scrollViewer.RemoveHandler(UIElement.PointerCanceledEvent, _scrollViewerPointerReleased);
-				_scrollViewer.RemoveHandler(UIElement.PointerCaptureLostEvent, _scrollViewerPointerReleased);
-				_scrollViewer.RemoveHandler(UIElement.PointerWheelChangedEvent, _scrollViewerPointerWheelChanged);
-			}
-
-			if (_pointerWheelInputExpirationTimer != null)
-			{
-				_pointerWheelInputExpirationTimer.Stop();
-				_pointerWheelInputExpirationTimer.Tick -= OnPointerWheelInputExpirationTimerTick;
-				_pointerWheelInputExpirationTimer = null;
-			}
+			DetachScrollViewer();
 
 			ResetScrollState();
 			base.DisconnectHandler(platformView);
@@ -144,8 +124,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_isCollectionChangeScrollPending = false;
 			_collectionChangeVersion++;
 			_isPointerPressed = false;
-			_hasPendingPointerWheelInput = false;
-			_pointerWheelInputExpirationTimer?.Stop();
 		}
 
 		void ResetRecenteringState()
@@ -179,6 +157,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
+			if (ReferenceEquals(_scrollViewer, scrollViewer))
+				return;
+
+			DetachScrollViewer();
 			base.OnScrollViewerFound(scrollViewer);
 
 			_scrollViewer = scrollViewer;
@@ -193,10 +175,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollViewer.AddHandler(UIElement.PointerCanceledEvent, _scrollViewerPointerReleased, true);
 			_scrollViewer.AddHandler(UIElement.PointerCaptureLostEvent, _scrollViewerPointerReleased, true);
 			_scrollViewer.AddHandler(UIElement.PointerWheelChangedEvent, _scrollViewerPointerWheelChanged, true);
-			_pointerWheelInputExpirationTimer = _scrollViewer.DispatcherQueue.CreateTimer();
-			_pointerWheelInputExpirationTimer.Interval = TimeSpan.FromMilliseconds(PointerWheelInputExpirationMilliseconds);
-			_pointerWheelInputExpirationTimer.IsRepeating = false;
-			_pointerWheelInputExpirationTimer.Tick += OnPointerWheelInputExpirationTimerTick;
 
 			if (Element.Loop)
 			{
@@ -206,6 +184,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				UpdateScrollBarVisibility();
 			}
+		}
+
+		void DetachScrollViewer()
+		{
+			if (_scrollViewer is null)
+				return;
+
+			_scrollViewer.ViewChanging -= OnScrollViewChanging;
+			_scrollViewer.ViewChanged -= OnScrollViewChanged;
+			_scrollViewer.SizeChanged -= OnScrollViewSizeChanged;
+			_scrollViewer.RemoveHandler(UIElement.PointerPressedEvent, _scrollViewerPointerPressed);
+			_scrollViewer.RemoveHandler(UIElement.PointerReleasedEvent, _scrollViewerPointerReleased);
+			_scrollViewer.RemoveHandler(UIElement.PointerCanceledEvent, _scrollViewerPointerReleased);
+			_scrollViewer.RemoveHandler(UIElement.PointerCaptureLostEvent, _scrollViewerPointerReleased);
+			_scrollViewer.RemoveHandler(UIElement.PointerWheelChangedEvent, _scrollViewerPointerWheelChanged);
+			_scrollViewer = null;
 		}
 
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
@@ -314,6 +308,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override async Task ScrollTo(ScrollToRequestEventArgs args)
 		{
 			_centerRequestVersion++;
+			var loopableCollectionView = _centerLoopedCollectionCurrentItemOverride
+				? _loopableCollectionView
+				: null;
+			var previousCenterMode = loopableCollectionView?.CenterMode ?? false;
 
 			if (args.IsAnimated && args.Mode == ScrollToMode.Position)
 			{
@@ -325,7 +323,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			try
 			{
-				await base.ScrollTo(args);
+				Task scrollTask;
+				try
+				{
+					loopableCollectionView?.CenterMode = true;
+
+					scrollTask = base.ScrollTo(args);
+				}
+				finally
+				{
+					loopableCollectionView?.CenterMode = previousCenterMode;
+				}
+
+				await scrollTask;
 			}
 			finally
 			{
@@ -814,12 +824,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView.ItemsSource is null)
 				return;
 
-			if (_isPointerPressed || _hasPendingPointerWheelInput)
-			{
-				_hasPendingPointerWheelInput = false;
-				_pointerWheelInputExpirationTimer?.Stop();
+			if (_isPointerPressed)
 				OnUserScrollStarting();
-			}
 
 			_centerRequestVersion++;
 			if (_isRecentering)
@@ -849,20 +855,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void OnScrollViewerPointerReleased(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs args) =>
 			_isPointerPressed = false;
 
-		void OnScrollViewerPointerWheelChanged(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs args)
-		{
-			_hasPendingPointerWheelInput = true;
-			_pointerWheelInputExpirationTimer?.Stop();
-			_pointerWheelInputExpirationTimer?.Start();
-		}
-
-		void OnPointerWheelInputExpirationTimerTick(
-			global::Microsoft.UI.Dispatching.DispatcherQueueTimer sender,
-			object args)
-		{
-			sender.Stop();
-			_hasPendingPointerWheelInput = false;
-		}
+		void OnScrollViewerPointerWheelChanged(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs args) =>
+			OnUserScrollStarting();
 
 		void OnUserScrollStarting()
 		{
@@ -1195,6 +1189,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (!ReferenceEquals(((IElementHandler)this).VirtualView, itemsView))
 					return;
 
+				var overriddenPosition = itemsView.Position;
+				if (overriddenPosition != carouselPosition && IsValidPosition(overriddenPosition))
+				{
+					carouselPosition = overriddenPosition;
+					currentItemOverridden = true;
+					SetCarouselViewCurrentItem(carouselPosition);
+
+					if (!ReferenceEquals(((IElementHandler)this).VirtualView, itemsView))
+						return;
+				}
+
 				if (!ReferenceEquals(currentItemBeforePositionUpdate, itemsView.CurrentItem))
 				{
 					var overriddenCurrentItemPosition = GetItemPositionInCarousel(itemsView.CurrentItem);
@@ -1329,17 +1334,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (ListViewBase.ItemsPanelRoot is not ItemsStackPanel itemsPanel
-				|| position < itemsPanel.FirstVisibleIndex
-				|| position > itemsPanel.LastVisibleIndex)
+				|| !IsCollectionCurrentItemOverrideVisible(itemsView, position, itemsPanel))
 			{
-				ListViewBase.ScrollIntoView(itemTemplateContext, ScrollIntoViewAlignment.Leading);
-				ListViewBase.UpdateLayout();
+				var useLoopCenter = itemsView.Loop && _loopableCollectionView is not null;
+				var previousCenterMode = useLoopCenter && _loopableCollectionView.CenterMode;
+				try
+				{
+					if (useLoopCenter)
+						_loopableCollectionView.CenterMode = true;
+
+					ListViewBase.ScrollIntoView(itemTemplateContext, ScrollIntoViewAlignment.Leading);
+					ListViewBase.UpdateLayout();
+				}
+				finally
+				{
+					if (useLoopCenter)
+						_loopableCollectionView.CenterMode = previousCenterMode;
+				}
+
 				ScheduleCollectionCurrentItemOverrideRetry();
 				return;
 			}
 
 			ClearCollectionCurrentItemOverride();
-			itemsView.ScrollTo(position, position: ScrollToPosition.Center, animate: false);
+			_centerLoopedCollectionCurrentItemOverride = itemsView.Loop;
+			try
+			{
+				itemsView.ScrollTo(position, position: ScrollToPosition.Center, animate: false);
+			}
+			finally
+			{
+				_centerLoopedCollectionCurrentItemOverride = false;
+			}
+		}
+
+		bool IsCollectionCurrentItemOverrideVisible(
+			CarouselView itemsView,
+			int position,
+			ItemsStackPanel itemsPanel)
+		{
+			var firstVisibleIndex = itemsPanel.FirstVisibleIndex;
+			var lastVisibleIndex = itemsPanel.LastVisibleIndex;
+			if (firstVisibleIndex < 0 || lastVisibleIndex < firstVisibleIndex)
+				return false;
+
+			if (!itemsView.Loop || _loopableCollectionView?.RealCount is not int realCount || realCount <= 0)
+				return position >= firstVisibleIndex && position <= lastVisibleIndex;
+
+			for (int index = firstVisibleIndex; index <= lastVisibleIndex; index++)
+			{
+				if (index % realCount == position)
+					return true;
+			}
+
+			return false;
 		}
 
 		void ScheduleCollectionCurrentItemOverrideRetry()
@@ -1397,7 +1445,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ReferenceEquals(sender, _collectionCurrentItemOverrideItems)
 				&& _collectionCurrentItemOverride is not null)
 			{
-				QueueCollectionCurrentItemOverrideScroll(
+				QueueCollectionCurrentItemOverrideScrollCore(
 					_collectionCurrentItemOverride,
 					_collectionCurrentItemOverridePosition,
 					_collectionCurrentItemOverrideVersion);

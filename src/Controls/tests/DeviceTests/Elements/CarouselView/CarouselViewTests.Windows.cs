@@ -309,6 +309,39 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task RepeatedScrollViewerDiscoveryDoesNotDuplicateViewChanging()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.ItemsLayout.SnapPointsAlignment = SnapPointsAlignment.Start;
+				scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				InvokePrivateMethod(handler, "OnScrollViewerFound", scrollViewer);
+
+				int nativeViewChangingEvents = 0;
+				scrollViewer.ViewChanging += (_, _) => nativeViewChangingEvents++;
+				var initialCenterRequestVersion = GetPrivateField<int>(handler, "_centerRequestVersion");
+				var itemWidth = GetItemLength(
+					GetItemContainer(handler, initialPhysicalPosition),
+					ItemsLayoutOrientation.Horizontal);
+
+				await ChangeViewAndWaitForSettleAsync(
+					scrollViewer,
+					scrollViewer.HorizontalOffset + itemWidth * 0.25);
+
+				Assert.True(nativeViewChangingEvents > 0);
+				Assert.Equal(
+					nativeViewChangingEvents,
+					GetPrivateField<int>(handler, "_centerRequestVersion") - initialCenterRequestVersion);
+			});
+		}
+
+		[Fact]
 		public async Task NewNativeScrollOverridesPendingRecentering()
 		{
 			SetupBuilder();
@@ -648,10 +681,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
 
-			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, handler =>
 			{
 				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
-				await WaitForInitialPositionAsync(handler, scrollViewer);
 
 				InvokePrivateMethod(handler, "OnScrollViewerPointerPressed", scrollViewer, null);
 				Assert.True(GetPrivateField<bool>(handler, "_isPointerPressed"));
@@ -661,13 +693,34 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(GetPrivateField<bool>(handler, "_isPointerPressed"));
 
 				InvokePrivateMethod(handler, "OnScrollViewerPointerWheelChanged", scrollViewer, null);
-				Assert.True(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
 				Assert.False(carouselView.IsDragging);
 
-				await Task.Delay(100);
-				await DrainDispatcherQueueAsync(scrollViewer);
+				return Task.CompletedTask;
+			});
+		}
 
-				Assert.False(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
+		[Fact]
+		public async Task WheelInputImmediatelySupersedesPendingCollectionState()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				var pendingItem = new object();
+				SetPrivateField(handler, "_collectionCurrentItemOverride", pendingItem);
+				SetPrivateField(handler, "_isCollectionChanged", true);
+				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
+				SetPrivateField(handler, "_centerItemIndexFromScroll", 1);
+
+				InvokePrivateMethod(handler, "OnScrollViewerPointerWheelChanged", scrollViewer, null);
+
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
+				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChanged"));
+				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
+				Assert.Equal(-1, GetPrivateField<int>(handler, "_centerItemIndexFromScroll"));
 				Assert.False(carouselView.IsDragging);
 			});
 		}
@@ -840,6 +893,36 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task CollectionChangePreservesPositionOverrideFromPositionChanged()
+		{
+			SetupBuilder();
+			var firstItem = new object();
+			var secondItem = new object();
+			var thirdItem = new object();
+			var items = new ObservableCollection<object> { firstItem, secondItem, thirdItem };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				carouselView.PositionChanged += (_, args) =>
+				{
+					if (args.CurrentPosition == 1)
+						carouselView.Position = 2;
+				};
+
+				items.Insert(0, new object());
+				await WaitForCenteredPositionAsync(handler, scrollViewer, logicalPosition: 2);
+
+				Assert.Equal(2, carouselView.Position);
+				Assert.Same(secondItem, carouselView.CurrentItem);
+			});
+		}
+
+		[Fact]
 		public async Task CompletedCollectionOverrideDoesNotSuppressLaterCurrentItemUpdate()
 		{
 			SetupBuilder();
@@ -949,6 +1032,96 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task LoopedVisibleCollectionOverrideDoesNotEnterRealizationRetry()
+		{
+			SetupBuilder();
+			var items = new ObservableCollection<object>(CreateItems());
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: true);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				var loopableCollectionView = GetPrivateField<object>(handler, "_loopableCollectionView");
+				SetPrivateProperty(loopableCollectionView, "CenterMode", true);
+				try
+				{
+					handler.PlatformView.ScrollIntoView(handler.PlatformView.Items[2]);
+				}
+				finally
+				{
+					SetPrivateProperty(loopableCollectionView, "CenterMode", false);
+				}
+
+				await AssertEventually(
+					() =>
+					{
+						handler.PlatformView.UpdateLayout();
+						return handler.PlatformView.ItemsPanelRoot is Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel
+							&& itemsPanel.FirstVisibleIndex > 1000
+							&& itemsPanel.FirstVisibleIndex % items.Count == 2;
+					},
+					timeout: 3000,
+					message: "The looped collection did not move to its high physical range.");
+
+				SetPrivateField(handler, "_isPositionUpdateFromCollection", true);
+				try
+				{
+					carouselView.Position = 2;
+				}
+				finally
+				{
+					SetPrivateField(handler, "_isPositionUpdateFromCollection", false);
+				}
+
+				SetPrivateField(handler, "_isInternalPositionUpdate", true);
+				try
+				{
+					carouselView.CurrentItem = items[2];
+				}
+				finally
+				{
+					SetPrivateField(handler, "_isInternalPositionUpdate", false);
+				}
+
+				int overrideScrollToRequests = 0;
+				bool exposedCenterMode = false;
+				carouselView.ScrollToRequested += (_, args) =>
+				{
+					if (args.Mode == ScrollToMode.Position && args.Index == 2)
+					{
+						overrideScrollToRequests++;
+						exposedCenterMode |= GetPrivateProperty<bool>(loopableCollectionView, "CenterMode");
+					}
+				};
+
+				SetPrivateField(handler, "_collectionCurrentItemOverride", items[2]);
+				InvokePrivateMethod(
+					handler,
+					"QueueCollectionCurrentItemOverrideScroll",
+					items[2],
+					2,
+					GetPrivateField<int>(handler, "_collectionChangeVersion"));
+				await DrainDispatcherQueueAsync(scrollViewer);
+
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
+				Assert.Equal(0, GetPrivateField<int>(handler, "_collectionCurrentItemOverrideRetryCount"));
+				Assert.Equal(1, overrideScrollToRequests);
+				Assert.False(exposedCenterMode);
+				await AssertEventually(
+					() =>
+					{
+						handler.PlatformView.UpdateLayout();
+						return handler.PlatformView.ItemsPanelRoot is Microsoft.UI.Xaml.Controls.ItemsStackPanel itemsPanel
+							&& itemsPanel.FirstVisibleIndex > 1000
+							&& itemsPanel.FirstVisibleIndex % items.Count == 2;
+					},
+					timeout: 3000,
+					message: "The centered override left the looped collection's high physical range.");
+			});
+		}
+
+		[Fact]
 		public async Task UnrealizedCollectionOverrideStopsWaitingAfterBoundedRetries()
 		{
 			SetupBuilder();
@@ -977,6 +1150,39 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverride"));
 				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverrideItems"));
+			});
+		}
+
+		[Fact]
+		public async Task NativeItemsChangeDoesNotResetCollectionOverrideRetryBudget()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				var pendingItem = new object();
+				carouselView.CurrentItem = pendingItem;
+				SetPrivateField(handler, "_collectionCurrentItemOverride", pendingItem);
+
+				InvokePrivateMethod(
+					handler,
+					"QueueCollectionCurrentItemOverrideScroll",
+					pendingItem,
+					carouselView.Position,
+					GetPrivateField<int>(handler, "_collectionChangeVersion"));
+				SetPrivateField(handler, "_collectionCurrentItemOverrideRetryCount", 7);
+
+				InvokePrivateMethod(
+					handler,
+					"OnCollectionCurrentItemOverrideItemsChanged",
+					GetPrivateField<object>(handler, "_collectionCurrentItemOverrideItems"),
+					null);
+
+				Assert.Equal(7, GetPrivateField<int>(handler, "_collectionCurrentItemOverrideRetryCount"));
+				InvokePrivateMethod(handler, "ClearCollectionCurrentItemOverride");
 			});
 		}
 
@@ -1329,7 +1535,6 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
 				SetPrivateField(handler, "_collectionChangeVersion", 1);
 				SetPrivateField(handler, "_isPointerPressed", true);
-				SetPrivateField(handler, "_hasPendingPointerWheelInput", true);
 
 				((IElementHandler)handler).DisconnectHandler();
 
@@ -1355,7 +1560,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
 				Assert.Equal(2, GetPrivateField<int>(handler, "_collectionChangeVersion"));
 				Assert.False(GetPrivateField<bool>(handler, "_isPointerPressed"));
-				Assert.False(GetPrivateField<bool>(handler, "_hasPendingPointerWheelInput"));
 
 				return Task.CompletedTask;
 			});
@@ -1634,6 +1838,24 @@ namespace Microsoft.Maui.DeviceTests
 			var field = typeof(CarouselViewHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(field);
 			field.SetValue(handler, value);
+		}
+
+		static void SetPrivateProperty(object instance, string propertyName, object value)
+		{
+			var property = instance.GetType().GetProperty(
+				propertyName,
+				BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			Assert.NotNull(property);
+			property.SetValue(instance, value);
+		}
+
+		static T GetPrivateProperty<T>(object instance, string propertyName)
+		{
+			var property = instance.GetType().GetProperty(
+				propertyName,
+				BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			Assert.NotNull(property);
+			return (T)property.GetValue(instance);
 		}
 
 		static void InvokePrivateMethod(CarouselViewHandler handler, string methodName, params object[] arguments)
