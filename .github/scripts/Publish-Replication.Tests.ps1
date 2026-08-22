@@ -221,8 +221,8 @@ Describe 'Trusted replication pull request publishing' {
                 preview = 'preview.gif'
                 thumbnail = 'thumbnail.png'
             }
-            certificationLevel = 'certified-oracle'
-            certificationSummary = "**Evidence level: ``certified-oracle``**`n`n| Control | Expected | Result |`n| --- | --- | --- |`n| Trigger removed | passes | 3/3 |"
+            certificationLevel = 'trigger-certified'
+            certificationSummary = "**Evidence level: ``trigger-certified``**`n`n| Control | Expected | Result |`n| --- | --- | --- |`n| Trigger removed | passes | 3/3 |"
         } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
 
         $evidence = [pscustomobject]@{
@@ -242,7 +242,7 @@ Describe 'Trusted replication pull request publishing' {
             -BuildUrl 'https://example.com/build/1'
 
         $body | Should -Match '## Evidence level'
-        $body | Should -Match 'certified-oracle'
+        $body | Should -Match 'trigger-certified'
         $body | Should -Match 'Trigger removed'
     }
 

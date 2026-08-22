@@ -19,18 +19,22 @@ Set-StrictMode -Version Latest
       candidate-scenario     The source compiles. Not empirically validated.
       observed-reproduction  The exact test repeatedly failed at the intended
                              assertion with an identical message.
-      certified-oracle       Removing the trigger makes it pass, and where a
-                             minimal fix was applied, the fix makes it pass and
-                             reverting the fix makes it fail again. Only this
-                             level establishes that the test measures the defect
-                             and not merely something.
+      trigger-certified      Removing the reported trigger makes the same test
+                             pass, so its failure is attributable to the trigger
+                             rather than to an unrelated cause.
+
+    The name stops at 'trigger' deliberately. A full regression oracle would
+    also require a minimal product fix to turn the test green and reverting
+    that fix to turn it red again. Authoring product fixes is out of scope for
+    replicate mode, so those arms never run, and naming this level 'certified'
+    outright would claim causal evidence the run never gathered.
 #>
 
 $script:ReplicationCertificationLevels = @(
     'runtime-blocked',
     'candidate-scenario',
     'observed-reproduction',
-    'certified-oracle'
+    'trigger-certified'
 )
 
 function Get-ReplicationCertificationLevels {
@@ -49,7 +53,7 @@ function Get-ReplicationCertificationRank {
         .DESCRIPTION
         Callers compare strength constantly, and comparing the names as strings
         would order them alphabetically, which puts 'candidate-scenario' above
-        'certified-oracle'.
+        'trigger-certified'.
     #>
     [CmdletBinding()]
     param(
@@ -152,7 +156,7 @@ function Get-ReplicationCertification {
 
         The fix and restoration arms are optional because authoring a minimal
         product fix is out of scope for a reproduction. When they are absent the
-        run can still reach 'certified-oracle' on the negative control alone,
+        run can still reach 'trigger-certified' on the negative control alone,
         which is the arm that rules out a test that is red for an unrelated
         reason. When they are present and disagree, they are decisive: a fix
         that does not turn the test green means the test is not measuring what
@@ -308,7 +312,7 @@ function Get-ReplicationCertification {
     }
 
     return @{
-        Level              = 'certified-oracle'
+        Level              = 'trigger-certified'
         Publish            = $true
         ClaimsReproduction = $true
         Reasons            = @()
@@ -361,7 +365,7 @@ function Get-ReplicationCertificationSummary {
         'runtime-blocked'       = 'The platform runtime was unavailable. Nothing was executed and this is not a reproduction.'
         'candidate-scenario'    = 'The source compiles. It has not been empirically validated.'
         'observed-reproduction' = 'The exact test repeatedly failed at the intended assertion.'
-        'certified-oracle'      = 'Controls establish that the failure is caused by the reported trigger.'
+        'trigger-certified'     = 'Removing the reported trigger makes the same test pass, so the failure is attributable to the trigger. A minimal product fix was not authored, so this is not a full regression oracle.'
     }
     if ($descriptions.ContainsKey($level)) {
         $lines.Add($descriptions[$level])
@@ -373,17 +377,21 @@ function Get-ReplicationCertificationSummary {
         $lines.Add('| Control | Expected | Result |')
         $lines.Add('| --- | --- | --- |')
 
+        # An arm that was never going to run must not read like an arm that
+        # failed to. The fix arms are skipped by policy, not by accident, and a
+        # bare 'not run' next to two green arms invites a reviewer to read the
+        # matrix as incomplete evidence rather than as bounded scope.
         $arms = @(
-            @{ Key = 'Baseline';    Name = 'Baseline';               Expected = 'fails' },
-            @{ Key = 'Negative';    Name = 'Trigger removed';        Expected = 'passes' },
-            @{ Key = 'Fix';         Name = 'Minimal product fix';    Expected = 'passes' },
-            @{ Key = 'Restoration'; Name = 'Fix reverted';           Expected = 'fails' }
+            @{ Key = 'Baseline';    Name = 'Baseline';               Expected = 'fails';  OutOfScope = $false },
+            @{ Key = 'Negative';    Name = 'Trigger removed';        Expected = 'passes'; OutOfScope = $false },
+            @{ Key = 'Fix';         Name = 'Minimal product fix';    Expected = 'passes'; OutOfScope = $true },
+            @{ Key = 'Restoration'; Name = 'Fix reverted';           Expected = 'fails';  OutOfScope = $true }
         )
 
         foreach ($arm in $arms) {
             $outcome = $controls[$arm.Key]
             $result = if (-not $outcome -or -not $outcome.Attempted) {
-                'not run'
+                if ($arm.OutOfScope) { 'not run (out of scope)' } else { 'not run' }
             } elseif ($outcome.Satisfied) {
                 "$($outcome.Observed)/$($outcome.Requested) ✅"
             } else {

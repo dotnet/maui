@@ -2516,7 +2516,7 @@ public class Issue1 : ContentPage
 
         $result = Invoke-FixtureValidation -Fixture $fixture
 
-        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
     }
 
     It 'still refuses a scene control whose oracle snapshot has no assertion' {
@@ -2563,7 +2563,7 @@ public class Issue1 : ContentPage
 
         $result = Invoke-FixtureValidation -Fixture $fixture
 
-        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
     }
 
     It 'refuses to certify when the console does not prove one test ran' {
@@ -2621,7 +2621,7 @@ public class Issue1 : ContentPage
 
         $result = Invoke-FixtureValidation -Fixture $fixture
 
-        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
     }
 
     It 'reports the certification matrix for the pull request body' {

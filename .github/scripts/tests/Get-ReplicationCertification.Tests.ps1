@@ -32,7 +32,7 @@ Describe 'Get-ReplicationCertificationRank' {
         $blocked = Get-ReplicationCertificationRank -Level 'runtime-blocked'
         $candidate = Get-ReplicationCertificationRank -Level 'candidate-scenario'
         $observed = Get-ReplicationCertificationRank -Level 'observed-reproduction'
-        $certified = Get-ReplicationCertificationRank -Level 'certified-oracle'
+        $certified = Get-ReplicationCertificationRank -Level 'trigger-certified'
 
         $blocked | Should -BeLessThan $candidate
         $candidate | Should -BeLessThan $observed
@@ -40,8 +40,8 @@ Describe 'Get-ReplicationCertificationRank' {
     }
 
     It 'ranks certified above candidate even though it sorts earlier as text' {
-        ('candidate-scenario' -lt 'certified-oracle') | Should -BeTrue
-        (Get-ReplicationCertificationRank -Level 'certified-oracle') |
+        ('candidate-scenario' -lt 'trigger-certified') | Should -BeTrue
+        (Get-ReplicationCertificationRank -Level 'trigger-certified') |
             Should -BeGreaterThan (Get-ReplicationCertificationRank -Level 'candidate-scenario')
     }
 
@@ -128,7 +128,7 @@ Describe 'Get-ReplicationCertification observed reproduction' {
     It 'does not promote a repeatable failure that was never controlled' {
         $result = Get-ReplicationCertification -Evidence (New-Evidence)
 
-        $result.Level | Should -Not -Be 'certified-oracle'
+        $result.Level | Should -Not -Be 'trigger-certified'
         $result.Reasons -join ' ' | Should -Match 'No negative control'
     }
 }
@@ -137,7 +137,7 @@ Describe 'Get-ReplicationCertification causal controls' {
     It 'certifies when removing the trigger makes the test pass' {
         $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 }
 
-        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'certified-oracle'
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
     }
 
     It 'refuses to certify when the test stays red without the trigger' {
@@ -164,7 +164,7 @@ Describe 'Get-ReplicationCertification causal controls' {
             restorationFailures   = 3
         }
 
-        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'certified-oracle'
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
     }
 
     It 'treats a fix that does not turn the test green as decisive against the test' {
@@ -209,7 +209,7 @@ Describe 'Get-ReplicationCertification input shapes' {
         $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 } |
             ConvertTo-Json | ConvertFrom-Json
 
-        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'certified-oracle'
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
     }
 
     It 'treats absent fields as absent evidence rather than as success' {
@@ -354,5 +354,64 @@ Describe 'Get-ReplicationCertification failure status' {
                 }
             }
         }
+    }
+}
+
+Describe 'The top level claims only the arms that ran' {
+    # The published matrix showed 'Baseline 3/3 OK | Trigger removed 3/3 OK |
+    # Minimal product fix: not run | Fix reverted: not run' under a level named
+    # 'certified-oracle'. Nothing in the table was false, but the name asserted
+    # causal certification the run never gathered, because a regression oracle
+    # is certified by the fix and restoration arms and those never execute.
+    It 'does not offer a level whose name claims a fix arm that never runs' {
+        Get-ReplicationCertificationLevels | Should -Not -Contain 'certified-oracle'
+    }
+
+    It 'names the top level for the trigger it actually controlled' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns   = 3
+                negativeControlPasses = 3
+            })
+        $result.Level | Should -Be 'trigger-certified'
+        $result.Status | Should -Be 'CERTIFIED'
+    }
+
+    It 'keeps the top level strongest so the rename did not reorder strength' {
+        (Get-ReplicationCertificationRank -Level 'trigger-certified') |
+            Should -BeGreaterThan (Get-ReplicationCertificationRank -Level 'observed-reproduction')
+    }
+
+    It 'says a skipped fix arm was out of scope, not merely absent' {
+        $summary = Get-ReplicationCertificationSummary -Certification (
+            Get-ReplicationCertification -Evidence (New-Evidence @{
+                    negativeControlRuns   = 3
+                    negativeControlPasses = 3
+                }))
+        $text = $summary -join "`n"
+        $text | Should -Match 'Minimal product fix \| passes \| not run \(out of scope\)'
+        $text | Should -Match 'Fix reverted \| fails \| not run \(out of scope\)'
+    }
+
+    It 'still reports a genuinely missing baseline as plain "not run"' {
+        # Only the fix arms are skipped by policy. A baseline or negative
+        # control that did not run is a gap, and labelling it out of scope
+        # would excuse exactly the evidence this grader exists to demand.
+        $summary = Get-ReplicationCertificationSummary -Certification (
+            Get-ReplicationCertification -Evidence (New-Evidence @{
+                    negativeControlRuns   = 0
+                    negativeControlPasses = 0
+                }))
+        $text = $summary -join "`n"
+        $text | Should -Match 'Trigger removed \| passes \| not run$|Trigger removed \| passes \| not run\s'
+        $text | Should -Not -Match 'Trigger removed \| passes \| not run \(out of scope\)'
+    }
+
+    It 'tells the reader in prose that this is not a full regression oracle' {
+        $summary = Get-ReplicationCertificationSummary -Certification (
+            Get-ReplicationCertification -Evidence (New-Evidence @{
+                    negativeControlRuns   = 3
+                    negativeControlPasses = 3
+                }))
+        ($summary -join "`n") | Should -Match 'not a full regression oracle'
     }
 }
