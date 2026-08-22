@@ -2702,3 +2702,77 @@ Describe 'The pre-publish gate refuses a verdict the host page computed' {
         } | Should -Throw '*selects with the branch*'
     }
 }
+
+Describe 'The evidence allowlist knows every field the recorder writes' {
+    # Adding decodedFrames to the recorder without adding it to the publisher's
+    # strict allowlist made the publisher throw "unexpected property
+    # 'decodedFrames'" and killed build 15051402 at the final gate, after the
+    # emulator, the recording and the whole verification had already been paid
+    # for. Comparing the two lists by hand is exactly the check that was missed,
+    # so derive both from the source instead.
+    BeforeAll {
+        function Get-HashtableKeys {
+            param([string]$Path, [string]$MarkerKey)
+
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+                $Path, [ref]$null, [ref]$null)
+            $tables = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.HashtableAst] -and
+                    @($node.KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") }) -contains $MarkerKey
+                }, $true)
+            if ($tables.Count -lt 1) { throw "No hashtable containing '$MarkerKey' in $Path." }
+            return @($tables[0].KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") })
+        }
+
+        function Get-EvidenceAllowlist {
+            param([string]$Path)
+
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+                $Path, [ref]$null, [ref]$null)
+            $calls = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.CommandAst] -and
+                    $node.GetCommandName() -eq 'Assert-KnownProperties' -and
+                    $node.Extent.Text -match "Context\s+'Evidence metadata'"
+                }, $true)
+            if ($calls.Count -lt 1) { throw 'No evidence-metadata allowlist found.' }
+            # Reading the call's raw text would also read its comments, and
+            # the comment above this allowlist quotes 'decodedFrames' to
+            # explain why it is there. That made the test pass while the
+            # allowlist itself was empty of it, so bind the parameter and read
+            # the array literal, which contains no comments by construction.
+            $binder = [System.Management.Automation.Language.StaticParameterBinder]::BindCommand(
+                $calls[0])
+            $bound = $binder.BoundParameters['AllowedNames']
+            if (-not $bound) { throw 'The evidence allowlist has no AllowedNames argument.' }
+            $arrayAst = $bound.Value
+            while ($arrayAst -is [System.Management.Automation.Language.UnaryExpressionAst] -or
+                $arrayAst -is [System.Management.Automation.Language.ParenExpressionAst]) {
+                $arrayAst = $arrayAst.Child ?? $arrayAst.Pipeline
+            }
+            $elements = $arrayAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.StringConstantExpressionAst]
+                }, $true)
+            return @($elements | ForEach-Object { $_.Value })
+        }
+
+        $script:RecorderPath = Join-Path $PSScriptRoot 'Record-Reproduction.ps1'
+        $script:ValidatorPath = Join-Path $PSScriptRoot 'Validate-ReplicationCandidate.ps1'
+    }
+
+    It 'allows every top-level key the recorder writes into the manifest' {
+        $written = Get-HashtableKeys -Path $script:RecorderPath -MarkerKey 'schemaVersion'
+        $allowed = Get-EvidenceAllowlist -Path $script:ValidatorPath
+
+        $written | Should -Not -BeNullOrEmpty
+        foreach ($key in $written) {
+            $allowed | Should -Contain $key -Because "the recorder writes '$key' and the publisher rejects anything unlisted"
+        }
+    }
+
+    It 'still lists the frame count that build 15051402 was rejected for' {
+        (Get-EvidenceAllowlist -Path $script:ValidatorPath) | Should -Contain 'decodedFrames'
+    }
+}

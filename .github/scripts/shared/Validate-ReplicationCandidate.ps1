@@ -2097,6 +2097,13 @@ function Read-ReplicationEvidenceMetadata {
                 'dimensions',
                 'sha256',
                 'videoBytes',
+                # The recorder writes the decoded frame count so a container
+                # that holds no frames cannot pass as a recording. This
+                # allowlist is strict by design, so omitting the field here
+                # made the publisher reject every run that produced one, at
+                # the last gate and after all the device work: build 15051402
+                # died on "unexpected property 'decodedFrames'".
+                'decodedFrames',
                 'files'
             ) `
             -Context 'Evidence metadata'
