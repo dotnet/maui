@@ -427,6 +427,12 @@ string SanitizeTestResultsFilename(string input)
     return resultFilename;
 }
 
+string GetTestResultsFilterName(string filter)
+{
+    var testResultName = EnvironmentVariable("TEST_RESULT_NAME");
+    return string.IsNullOrWhiteSpace(testResultName) ? filter : testResultName;
+}
+
 bool IsSimulatorLaunchFailure(Exception ex)
 {
     // Check if the exception message contains indicators of simulator launch failures

@@ -19,6 +19,13 @@ BeforeAll {
     $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
     $script:uiTestsPath = Join-Path $script:repoRoot 'eng/pipelines/common/ui-tests.yml'
     $script:uiStepsPath = Join-Path $script:repoRoot 'eng/pipelines/common/ui-tests-steps.yml'
+    $script:deviceScripts = @(
+        'android.cake'
+        'ios.cake'
+        'catalyst.cake'
+    ) | ForEach-Object {
+        Get-Content -LiteralPath (Join-Path $script:repoRoot "eng/devices/$_") -Raw
+    }
     $script:testRoot = Join-Path $script:repoRoot 'src/Controls/tests/TestCases.Shared.Tests'
     $script:uiTests = Get-Content -LiteralPath $script:uiTestsPath -Raw
     $script:uiSteps = Get-Content -LiteralPath $script:uiStepsPath -Raw
@@ -144,5 +151,13 @@ Describe 'filter selection logic in ui-tests-steps.yml' {
         $script:uiSteps | Should -Match 'if \(\$testFilterExpression\)'
         $script:uiSteps | Should -Match '\$testFilter = \$testFilterExpression'
         $script:uiSteps | Should -Match '"TestCategory="'
+    }
+
+    It 'uses the short matrix job name for partition result files' {
+        $script:uiSteps | Should -Match '\$env:TEST_RESULT_NAME\s*=\s*"\$\(Agent\.JobName\)"'
+
+        foreach ($deviceScript in $script:deviceScripts) {
+            $deviceScript | Should -Match 'GetTestResultsFilterName\(testFilter\)'
+        }
     }
 }

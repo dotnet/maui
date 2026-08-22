@@ -147,6 +147,9 @@ steps:
     $testFilterExpression = "${{ parameters.testFilterExpression }}"
     if ($testFilterExpression) {
       $testFilter = $testFilterExpression
+      # Keep the full expression out of TRX/binlog filenames. Long fixture
+      # partitions can exceed the filesystem's component-length limit.
+      $env:TEST_RESULT_NAME = "$(Agent.JobName)"
     }
     else {
       "${{ parameters.testFilter }}".Split(",") | ForEach {
