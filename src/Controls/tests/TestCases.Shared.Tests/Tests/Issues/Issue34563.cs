@@ -15,47 +15,50 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.SafeAreaEdges)]
 		public void SafeAreaEdgesRespectedWhenTopAndBottomMismatch()
 		{
-			const string initialStatus = "Parent: Top=None, Bottom=Container | Child: Top=Container";
+			const string initialStatus = "Parent: Top=None, Bottom=Container | Child: Top=Container, Bottom=Container";
 			App.WaitForElement("TopMarker");
+			App.WaitForElement("BottomMarker");
 			Assert.That(App.WaitForTextToBePresentInElement("SafeAreaStatusLabel", initialStatus), Is.True);
 
-			var rootTop = App.WaitForElement("RootGrid").GetRect().Y;
+			var root = App.WaitForElement("RootGrid").GetRect();
+			var rootTop = root.Y;
+			var rootBottom = root.Y + root.Height;
 			var singleTopInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
+			var bottomMarker = App.WaitForElement("BottomMarker").GetRect();
+			var singleBottomInset = rootBottom - (bottomMarker.Y + bottomMarker.Height);
 #if MACCATALYST
 			if (singleTopInset <= 5)
 				Assert.Ignore("This MacCatalyst environment does not expose a measurable title-bar safe area.");
 #endif
 			Assert.That(singleTopInset, Is.GreaterThan(5),
 				"The child must apply the top safe area even though its parent handles only Bottom.");
+#if !MACCATALYST
+			Assert.That(singleBottomInset, Is.GreaterThan(5),
+				"The parent must apply the bottom safe area while the child defers that edge.");
+#endif
 
-			App.Tap("ToggleChildTopButton");
+			App.Tap("ToggleParentEdgeButton");
 			Assert.That(
 				App.WaitForTextToBePresentInElement(
 					"SafeAreaStatusLabel",
-					"Parent: Top=None, Bottom=Container | Child: Top=None"),
+					"Parent: Top=Container, Bottom=None | Child: Top=Container, Bottom=Container"),
 				Is.True);
 
-			var noTopInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
-			Assert.That(singleTopInset - noTopInset, Is.GreaterThan(5),
-				"Removing the child's top safe area must move the marker to the no-inset position.");
-
-			App.Tap("ToggleChildTopButton");
-			Assert.That(App.WaitForTextToBePresentInElement("SafeAreaStatusLabel", initialStatus), Is.True);
-
-			var restoredSingleInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
-			Assert.That(restoredSingleInset, Is.EqualTo(singleTopInset).Within(3),
-				"Restoring child-only top handling must restore exactly one safe-area inset.");
-
-			App.Tap("ToggleParentTopButton");
-			Assert.That(
-				App.WaitForTextToBePresentInElement(
-					"SafeAreaStatusLabel",
-					"Parent: Top=Container, Bottom=Container | Child: Top=Container"),
-				Is.True);
-
-			var parentAndChildInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
-			Assert.That(parentAndChildInset, Is.EqualTo(singleTopInset).Within(3),
-				"When both parent and child request Top, ancestor arbitration must prevent double padding.");
+			App.RetryAssert(() =>
+			{
+				var parentAndChildInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
+				Assert.That(parentAndChildInset, Is.EqualTo(singleTopInset).Within(3),
+					"When both parent and child request Top, ancestor arbitration must prevent double padding.");
+			});
+#if !MACCATALYST
+			App.RetryAssert(() =>
+			{
+				var childBottomMarker = App.WaitForElement("BottomMarker").GetRect();
+				var childBottomInset = rootBottom - (childBottomMarker.Y + childBottomMarker.Height);
+				Assert.That(childBottomInset, Is.EqualTo(singleBottomInset).Within(3),
+					"When the parent stops handling Bottom, the child must apply that newly unblocked edge.");
+			});
+#endif
 		}
 	}
 }

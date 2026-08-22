@@ -7,7 +7,6 @@ public class Issue34563 : ContentPage
 	readonly Grid _childSafeAreaContainer;
 	readonly Label _statusLabel;
 	bool _parentHandlesTop;
-	bool _childHandlesTop = true;
 
 	public Issue34563()
 	{
@@ -25,29 +24,30 @@ public class Issue34563 : ContentPage
 			VerticalOptions = LayoutOptions.Start,
 		};
 
+		var bottomMarker = new Label
+		{
+			AutomationId = "BottomMarker",
+			BackgroundColor = Colors.Blue,
+			HeightRequest = 30,
+			HorizontalOptions = LayoutOptions.Fill,
+			HorizontalTextAlignment = TextAlignment.Center,
+			Text = "Bottom safe-area marker",
+			TextColor = Colors.White,
+			VerticalOptions = LayoutOptions.End,
+		};
+
 		_statusLabel = new Label
 		{
 			AutomationId = "SafeAreaStatusLabel",
 			HorizontalTextAlignment = TextAlignment.Center,
 		};
 
-		var toggleChildTopButton = new Button
+		var toggleParentEdgeButton = new Button
 		{
-			AutomationId = "ToggleChildTopButton",
-			Text = "Toggle child top safe area",
+			AutomationId = "ToggleParentEdgeButton",
+			Text = "Swap parent safe-area edge",
 		};
-		toggleChildTopButton.Clicked += (_, _) =>
-		{
-			_childHandlesTop = !_childHandlesTop;
-			UpdateSafeAreaEdges();
-		};
-
-		var toggleParentTopButton = new Button
-		{
-			AutomationId = "ToggleParentTopButton",
-			Text = "Toggle parent top safe area",
-		};
-		toggleParentTopButton.Clicked += (_, _) =>
+		toggleParentEdgeButton.Clicked += (_, _) =>
 		{
 			_parentHandlesTop = !_parentHandlesTop;
 			UpdateSafeAreaEdges();
@@ -62,11 +62,10 @@ public class Issue34563 : ContentPage
 			{
 				new Label
 				{
-					Text = "The green marker must receive exactly one top safe-area inset.",
+					Text = "The child handles Top and Bottom while its parent swaps between handling exactly one of those edges.",
 					HorizontalTextAlignment = TextAlignment.Center,
 				},
-				toggleChildTopButton,
-				toggleParentTopButton,
+				toggleParentEdgeButton,
 				_statusLabel,
 			}
 		};
@@ -76,6 +75,7 @@ public class Issue34563 : ContentPage
 			AutomationId = "ChildSafeAreaContainer",
 		};
 		_childSafeAreaContainer.Add(topMarker);
+		_childSafeAreaContainer.Add(bottomMarker);
 		_childSafeAreaContainer.Add(controls);
 
 		_parentSafeAreaContainer = new ContentView
@@ -97,16 +97,17 @@ public class Issue34563 : ContentPage
 			SafeAreaRegions.None,
 			_parentHandlesTop ? SafeAreaRegions.Container : SafeAreaRegions.None,
 			SafeAreaRegions.None,
-			SafeAreaRegions.Container);
+			_parentHandlesTop ? SafeAreaRegions.None : SafeAreaRegions.Container);
 
 		_childSafeAreaContainer.SafeAreaEdges = new SafeAreaEdges(
 			SafeAreaRegions.None,
-			_childHandlesTop ? SafeAreaRegions.Container : SafeAreaRegions.None,
+			SafeAreaRegions.Container,
 			SafeAreaRegions.None,
-			SafeAreaRegions.None);
+			SafeAreaRegions.Container);
 
 		_statusLabel.Text =
-			$"Parent: Top={(_parentHandlesTop ? "Container" : "None")}, Bottom=Container | " +
-			$"Child: Top={(_childHandlesTop ? "Container" : "None")}";
+			$"Parent: Top={(_parentHandlesTop ? "Container" : "None")}, " +
+			$"Bottom={(_parentHandlesTop ? "None" : "Container")} | " +
+			"Child: Top=Container, Bottom=Container";
 	}
 }

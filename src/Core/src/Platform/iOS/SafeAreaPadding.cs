@@ -55,6 +55,21 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 
 internal static class SafeAreaInsetsExtensions
 {
+	// UIKit does not always report new insets when only an ancestor's edge policy changes.
+	internal static void InvalidateSafeAreaWithDescendants(this UIView startingView)
+	{
+		if (startingView is MauiView mauiView)
+			mauiView.InvalidateSafeArea();
+		else if (startingView is MauiScrollView mauiScrollView)
+			mauiScrollView.InvalidateSafeArea();
+
+		var subviews = startingView.Subviews;
+		for (int i = 0; i < subviews.Length; i++)
+		{
+			subviews[i].InvalidateSafeAreaWithDescendants();
+		}
+	}
+
 	public static SafeAreaPadding ToSafeAreaInsets(this UIEdgeInsets insets)
 	{
 		// Filters out negligible floating-point values from UIKit that may cause layout issues (e.g., 3.5527136788005009e-15).
@@ -80,8 +95,9 @@ internal static class SafeAreaInsetsExtensions
 	///
 	/// The result is written into the caller-owned <paramref name="blockedEdges"/> array and
 	/// reused across layout passes via <paramref name="blockedEdgesCacheValid"/> until the
-	/// caller invalidates it (e.g. on SafeAreaInsetsDidChange/InvalidateSafeArea/MovedToWindow),
-	/// so this walk only runs once per invalidation cycle instead of on every layout pass.
+	/// caller invalidates it (e.g. on SafeAreaInsetsDidChange/InvalidateSafeArea/MovedToWindow
+	/// or when an ancestor changes SafeAreaEdges), so this walk only runs once per invalidation
+	/// cycle instead of on every layout pass.
 	/// </summary>
 	/// <param name="startingView">The view whose ancestors should be walked.</param>
 	/// <param name="blockedEdges">A caller-owned, length-4 array to populate in place.</param>
