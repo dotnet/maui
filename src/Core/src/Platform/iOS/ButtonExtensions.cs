@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Platform
 
 			// Delegate to the standard view background update
 			ViewExtensions.UpdateBackground(platformButton, paint);
-			if (paint is SolidPaint or GradientPaint)
+			if (paint is SolidPaint or LinearGradientPaint or RadialGradientPaint)
 				BackgroundUpdateStates.GetValue(platformButton, static _ => new()).HasMauiBackground = true;
 		}
 

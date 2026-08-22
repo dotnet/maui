@@ -166,6 +166,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task UnsupportedGradientDoesNotClearNativeBackground()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = new UIButton(UIButtonType.System)
+				{
+					BackgroundColor = UIColor.Cyan
+				};
+
+				platformButton.UpdateBackground(new UnsupportedGradientPaint());
+				platformButton.UpdateBackground(null);
+
+				Assert.Equal(Colors.Cyan, platformButton.BackgroundColor.ToColor());
+			});
+		}
+
 		sealed class NativeStyledButtonHandler : ButtonHandler
 		{
 			protected override UIButton CreatePlatformView()
@@ -186,6 +203,10 @@ namespace Microsoft.Maui.DeviceTests
 			public float StepX => 1;
 			public float StepY => 1;
 			public void Draw(ICanvas canvas) { }
+		}
+
+		sealed class UnsupportedGradientPaint : GradientPaint
+		{
 		}
 
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
