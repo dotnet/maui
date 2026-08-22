@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
-using AndroidX.Lifecycle;
+using Bundle = Android.OS.Bundle;
 using JavaObject = Java.Lang.Object;
 
 namespace Microsoft.Maui.ApplicationModel;
@@ -28,23 +29,25 @@ namespace Microsoft.Maui.ApplicationModel;
 /// concurrent in-flight requests cannot clobber each other.
 /// </para>
 /// <para>
-/// Pending requests are keyed by the activity's <see cref="ViewModelStore"/>, whose
-/// identity survives configuration recreation. The callback registered by the recreated
-/// activity can therefore resolve the task started by the previous activity instance.
+/// Pending requests use an owner identifier saved in the activity instance state. A callback
+/// registered by a recreated activity can therefore resolve the task started by the previous
+/// activity instance, including recreation that does not retain the ViewModelStore.
 /// </para>
 /// </remarks>
 internal abstract class ActivityForResultRequest<TContract, TResult>
 	where TContract : ActivityResultContract, new()
 	where TResult : JavaObject
 {
+	static readonly string RequestOwnerStateKey =
+		$"Microsoft.Maui.ApplicationModel.ActivityForResultRequest.{typeof(TContract).FullName}";
+
 	// Tracks one ActivityResultLauncher per ComponentActivity instance.
 	// ConditionalWeakTable holds weak references to keys, so entries are automatically
 	// eligible for collection when the activity is no longer referenced.
 	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
 
-	// ViewModelStore is stable across configuration recreation but distinct for separate
-	// activity instances, so requests survive rotation without clobbering another activity.
-	readonly ConditionalWeakTable<ViewModelStore, TaskCompletionSource<TResult>> _pendingRequests = new();
+	readonly ConditionalWeakTable<ComponentActivity, string> _requestOwners = new();
+	readonly ActivityForResultRequestState<TResult> _requestState = new(RequestOwnerStateKey);
 
 	/// <summary>
 	/// Registers this request to start an activity for a result.
@@ -52,7 +55,8 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	/// activities can use MediaPicker independently of the main activity.
 	/// </summary>
 	/// <param name="componentActivity">The component activity to register the request with.</param>
-	public void Register(ComponentActivity componentActivity)
+	/// <param name="savedInstanceState">State restored for a recreated activity, if available.</param>
+	public void Register(ComponentActivity componentActivity, Bundle savedInstanceState)
 	{
 		if (componentActivity is null)
 			throw new ArgumentNullException(nameof(componentActivity));
@@ -65,17 +69,14 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		var contract = new TContract();
 
-		var requestOwner = componentActivity.ViewModelStore;
+		var requestOwner = _requestState.RestoreOrCreateOwner(savedInstanceState);
 		var callback = new ActivityResultCallback<TResult>(result =>
 		{
-			if (_pendingRequests.TryGetValue(requestOwner, out var tcs))
-			{
-				_pendingRequests.Remove(requestOwner);
-				tcs?.TrySetResult(result);
-			}
+			_requestState.TrySetResult(requestOwner, result);
 		});
 
 		var launcher = componentActivity.RegisterForActivityResult(contract, callback);
+		_requestOwners.Add(componentActivity, requestOwner);
 		_activityLaunchers.Add(componentActivity, launcher);
 	}
 
@@ -94,28 +95,19 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		if (launchingActivity is null)
 			throw new ArgumentNullException(nameof(launchingActivity));
 
-		var requestOwner = launchingActivity.ViewModelStore;
-		if (_pendingRequests.TryGetValue(requestOwner, out _))
-		{
-			Trace.WriteLine("ActivityForResultRequest: rejecting overlapping request for the same activity.");
-			return Task.FromException<TResult>(
-				new InvalidOperationException("An activity result request is already pending for this activity."));
-		}
-
-		var tcs = new TaskCompletionSource<TResult>();
-		_pendingRequests.Add(requestOwner, tcs);
-
-		// Get the launcher for this specific activity
-		if (!_activityLaunchers.TryGetValue(launchingActivity, out var launcher))
+		if (!_requestOwners.TryGetValue(launchingActivity, out var requestOwner)
+			|| !_activityLaunchers.TryGetValue(launchingActivity, out var launcher))
 		{
 			Trace.WriteLine("""
 			                ActivityForResultRequest is not registered for the launching activity; cancelling the request.
 			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
 			                """);
-			_pendingRequests.Remove(requestOwner);
-			tcs.SetCanceled();
-			return tcs.Task;
+			return Task.FromCanceled<TResult>(new System.Threading.CancellationToken(true));
 		}
+
+		var request = _requestState.BeginRequest(requestOwner);
+		if (request.IsFaulted)
+			return request;
 
 		try
 		{
@@ -123,11 +115,16 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		catch (Exception ex)
 		{
-			_pendingRequests.Remove(requestOwner);
-			tcs.TrySetException(ex);
+			_requestState.TrySetException(requestOwner, ex);
 		}
 
-		return tcs.Task;
+		return request;
+	}
+
+	internal void SaveInstanceState(ComponentActivity componentActivity, Bundle outState)
+	{
+		if (_requestOwners.TryGetValue(componentActivity, out var requestOwner))
+			_requestState.SaveOwner(outState, requestOwner);
 	}
 
 	/// <summary>
@@ -138,12 +135,46 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	/// <param name="componentActivity">The activity whose pending request should be cancelled.</param>
 	internal void CancelPendingRequest(ComponentActivity componentActivity)
 	{
-		var requestOwner = componentActivity.ViewModelStore;
-		if (_pendingRequests.TryGetValue(requestOwner, out var tcs))
-		{
-			_pendingRequests.Remove(requestOwner);
-			tcs?.TrySetCanceled();
-		}
+		if (_requestOwners.TryGetValue(componentActivity, out var requestOwner))
+			_requestState.TrySetCanceled(requestOwner);
+	}
+}
+
+internal sealed class ActivityForResultRequestState<TResult>
+{
+	readonly string _stateKey;
+	readonly ConcurrentDictionary<string, TaskCompletionSource<TResult>> _pendingRequests = new();
+
+	internal ActivityForResultRequestState(string stateKey)
+	{
+		_stateKey = stateKey;
 	}
 
+	internal string RestoreOrCreateOwner(Bundle savedInstanceState) =>
+		savedInstanceState?.GetString(_stateKey) ?? Guid.NewGuid().ToString("N");
+
+	internal void SaveOwner(Bundle outState, string requestOwner) =>
+		outState.PutString(_stateKey, requestOwner);
+
+	internal Task<TResult> BeginRequest(string requestOwner)
+	{
+		var tcs = new TaskCompletionSource<TResult>();
+		if (!_pendingRequests.TryAdd(requestOwner, tcs))
+		{
+			Trace.WriteLine("ActivityForResultRequest: rejecting overlapping request for the same activity.");
+			return Task.FromException<TResult>(
+				new InvalidOperationException("An activity result request is already pending for this activity."));
+		}
+
+		return tcs.Task;
+	}
+
+	internal bool TrySetResult(string requestOwner, TResult result) =>
+		_pendingRequests.TryRemove(requestOwner, out var tcs) && tcs.TrySetResult(result);
+
+	internal bool TrySetException(string requestOwner, Exception exception) =>
+		_pendingRequests.TryRemove(requestOwner, out var tcs) && tcs.TrySetException(exception);
+
+	internal bool TrySetCanceled(string requestOwner) =>
+		_pendingRequests.TryRemove(requestOwner, out var tcs) && tcs.TrySetCanceled();
 }

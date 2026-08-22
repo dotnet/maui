@@ -89,8 +89,8 @@ namespace Microsoft.Maui.ApplicationModel
 
 			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
 			{
-				PickVisualMediaForResult.Instance.Register(componentActivity);
-				PickMultipleVisualMediaForResult.Instance.Register(componentActivity);
+				PickVisualMediaForResult.Instance.Register(componentActivity, bundle);
+				PickMultipleVisualMediaForResult.Instance.Register(componentActivity, bundle);
 			}
 
 			Init(application);
@@ -213,10 +213,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 		void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
 		{
-			// Configuration recreation retains the ViewModelStore and pending request for
-			// the replacement activity. Every other destroy abandons that store, so its
-			// pending callback must be cancelled rather than left incomplete.
-			if (activity is ComponentActivity componentActivity && !componentActivity.IsChangingConfigurations
+			// Non-finishing activities can be recreated from saved state even when Android
+			// does not classify the teardown as a configuration change.
+			if (activity is ComponentActivity componentActivity && componentActivity.IsFinishing
 				&& MediaPickerImplementation.IsPhotoPickerAvailable)
 			{
 				PickVisualMediaForResult.Instance.CancelPendingRequest(componentActivity);
@@ -238,8 +237,16 @@ namespace Microsoft.Maui.ApplicationModel
 			_onActivityStateChanged(activity, ActivityState.Resumed);
 		}
 
-		void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState) =>
+		void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState)
+		{
+			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
+			{
+				PickVisualMediaForResult.Instance.SaveInstanceState(componentActivity, outState);
+				PickMultipleVisualMediaForResult.Instance.SaveInstanceState(componentActivity, outState);
+			}
+
 			_onActivityStateChanged(activity, ActivityState.SaveInstanceState);
+		}
 
 		void Application.IActivityLifecycleCallbacks.OnActivityStarted(Activity activity) =>
 			_onActivityStateChanged(activity, ActivityState.Started);
