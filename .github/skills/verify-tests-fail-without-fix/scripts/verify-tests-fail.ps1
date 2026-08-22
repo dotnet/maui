@@ -784,6 +784,68 @@ function Test-GateHasDefinitiveFailure {
     )
 }
 
+function Convert-AmbiguousSetupFailurePairToEnvironment {
+    param(
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult
+    )
+
+    if (-not $WithoutFixResult.SetupFailureIsAppCrash -or
+        -not $WithFixResult.SetupFailureIsAppCrash) {
+        return $false
+    }
+
+    $message = "The same app-startup crash prevented fixture setup in both A/B legs, so the gate cannot attribute it to the fix."
+    foreach ($result in @($WithoutFixResult, $WithFixResult)) {
+        $result.EnvError = $true
+        $result.PassCount = 0
+        $result.FailCount = 0
+        $result.Failed = 0
+        $result.Total = 0
+        $result.Error = $message
+    }
+
+    return $true
+}
+
+function Invoke-FailureOnlyTestRun {
+    param(
+        [hashtable]$TestEntry,
+        [string]$LogFile
+    )
+
+    try {
+        $result = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $LogFile
+    } catch {
+        $result = @{
+            Passed = $false
+            EnvError = $true
+            Error = "Test runner threw before producing a result: $($_.Exception.Message)"
+            PassCount = 0
+            FailCount = 0
+            Failed = 0
+            Total = 0
+            Skipped = 0
+        }
+    }
+
+    # Failure-only mode has no sibling leg with which to prove an ambiguous startup
+    # crash is symmetric. Keep it inconclusive instead of crediting it as the expected
+    # baseline failure. Full A/B mode performs the pairwise classification later.
+    if ($result.SetupFailureIsAppCrash) {
+        $result.EnvError = $true
+        $result.PassCount = 0
+        $result.FailCount = 0
+        $result.Failed = 0
+        $result.Total = 0
+        $result.Error = "An app-startup crash prevented fixture setup, and failure-only mode has no with-fix leg that can disambiguate infrastructure from a deterministic crash."
+    }
+
+    $result.TestName = $TestEntry.TestName
+    $result.TestType = $TestEntry.Type
+    return $result
+}
+
 function Invoke-TestRunWithRetry {
     param(
         [hashtable]$TestEntry,
@@ -1040,7 +1102,7 @@ function Get-TestResultFromOutput {
         # Material3CarouselViewFeatureTests failed identically at OneTimeSetUp on an agent that had
         # also just flaked the emulator boot). Classify as env/INCONCLUSIVE only when the
         # authoritative result's failed-case blocks independently confirm fixture setup failures.
-        @{ Pattern = "(?i)the app did not recover after crash-recovery attempts"; Message = "The test app crashed on launch and did not recover after the harness's crash-recovery relaunch attempts, so the fixture's OneTimeSetUp timed out and NO test could run (agent/app-launch infrastructure, not a fix problem). Retry on a fresh agent."; SetupFailure = $true }
+        @{ Pattern = "(?i)the app did not recover after crash-recovery attempts"; Message = "The test app crashed on launch and did not recover after the harness's crash-recovery relaunch attempts, so the fixture's OneTimeSetUp timed out and NO test could run."; SetupFailure = $true; SetupFailureIsAppCrash = $true }
     )
 
     # ── First, check if tests actually ran and produced results ──
@@ -1139,12 +1201,16 @@ function Get-TestResultFromOutput {
                 # by an earlier retry or incidental test output cannot clear genuine failures.
                 $setupContextPattern = '(?im)^\s*OneTimeSetUp:|_GalleryUITest\.FixtureSetup|\bFixtureSetup\b|UITestBase\.(?:OneTimeSetup|TestSetup|UITestBaseTearDown)'
                 $setupEnvironmentFailureBlocks = [System.Collections.Generic.List[object]]::new()
+                $setupAppCrashFailureBlocks = [System.Collections.Generic.List[object]]::new()
                 $setupEnvironmentMessage = $null
                 foreach ($failedCaseBlock in $failedCaseBlocks) {
                     if ($failedCaseBlock.Value -notmatch $setupContextPattern) { continue }
                     foreach ($envErr in $envErrorPatterns) {
                         if ($envErr.SetupFailure -and $failedCaseBlock.Value -match $envErr.Pattern) {
                             $setupEnvironmentFailureBlocks.Add($failedCaseBlock)
+                            if ($envErr.SetupFailureIsAppCrash) {
+                                $setupAppCrashFailureBlocks.Add($failedCaseBlock)
+                            }
                             if (-not $setupEnvironmentMessage) { $setupEnvironmentMessage = $envErr.Message }
                             break
                         }
@@ -1156,6 +1222,17 @@ function Get-TestResultFromOutput {
                     $setupEnvironmentFailureBlocks.Count -eq $deviceFailCount
                 )
                 if ($allFailedCasesAreSetupEnvironment) {
+                    $allFailedCasesAreAppCrash = $setupAppCrashFailureBlocks.Count -eq $deviceFailCount
+                    if ($allFailedCasesAreAppCrash) {
+                        Write-Host "  ⚠️  All $deviceFailCount failing test case(s) hit the same app-startup crash during fixture setup — retaining FAILED until the sibling A/B leg proves the failure is symmetric." -ForegroundColor Yellow
+                        return @{
+                            Passed = $false; SetupOnlyFailure = $true; SetupFailureIsAppCrash = $true
+                            Error = "All $deviceFailCount failing test case(s) hit an app-startup crash during fixture setup: $setupEnvironmentMessage"
+                            PassCount = 0; FailCount = $deviceFailCount; Failed = $deviceFailCount
+                            Total = $deviceTotal; Skipped = 0
+                        }
+                    }
+
                     Write-Host "  ⚠️  All $deviceFailCount failing test case(s) failed during fixture/Appium setup — INCONCLUSIVE, not a fix failure" -ForegroundColor Yellow
                     return @{
                         Passed = $false; EnvError = $true; SetupOnlyFailure = $true
@@ -2006,9 +2083,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
         $TestLog = Join-Path $OutputPath "test-failure-$sanitizedName.log"
 
-        $testResult = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $TestLog
-        $testResult.TestName = $testEntry.TestName
-        $testResult.TestType = $testEntry.Type
+        $testResult = Invoke-FailureOnlyTestRun -TestEntry $testEntry -LogFile $TestLog
         $allResults += $testResult
     }
 
@@ -3591,6 +3666,19 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
         Write-Log "  [CleanRetry] $($retryEntry.TestName): compiled clean, tests failed — genuine failure"
     }
     $withFixResults[$ri] = $clean
+}
+
+# An app-startup crash during fixture setup is ambiguous in isolation. Downgrade it
+# only when the same failure occurs in both A/B legs; a with-fix-only crash remains
+# a genuine regression and blocks the gate.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    if (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $wo -WithFixResult $w) {
+        Write-Host "  ⚠️ $($t.TestName): the same app-startup fixture failure occurred in both A/B legs — reclassifying as INCONCLUSIVE." -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): symmetric A/B app-startup fixture failure — INCONCLUSIVE"
+    }
 }
 
 # A snapshot dimension mismatch is environmental only when the exact same file,

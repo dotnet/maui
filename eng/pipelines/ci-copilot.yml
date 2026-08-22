@@ -2119,7 +2119,18 @@ stages:
         ${{ else }}:
           pool: ${{ parameters.windowsPool }}
         timeoutInMinutes: 360
+        cancelTimeoutInMinutes: 10
         steps:
+          # Capture the outer job budget before checkout/provisioning consumes it.
+          # The deep-test loop later derives its hard stop from this timestamp so
+          # it cannot accidentally start a fresh 300-minute budget late in the job.
+          - pwsh: |
+              $startedAt = [DateTimeOffset]::UtcNow.ToString('o')
+              Write-Host "##vso[task.setvariable variable=deepJobStartedAtUtc]$startedAt"
+              Write-Host "Deep UI job budget started at $startedAt"
+            displayName: 'Capture deep UI job budget'
+            timeoutInMinutes: 2
+
           - checkout: self
             fetchDepth: 0
             persistCredentials: false
@@ -2989,14 +3000,30 @@ stages:
               # Tunable via DEEP_UITEST_CATEGORY_IDLE_MIN.
               $perCatIdleMin = 25
               if ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -and ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -as [int])) { $perCatIdleMin = [int]$env:DEEP_UITEST_CATEGORY_IDLE_MIN }
-              $loopStart    = Get-Date
-              $loopDeadline = $loopStart.AddMinutes($budgetMin)
-              $taskHardStop = $loopStart.AddMinutes($hardStopMin)
+              $loopStart = [DateTimeOffset]::UtcNow
+              $configuredLoopDeadline = $loopStart.AddMinutes($budgetMin)
+              $configuredTaskHardStop = $loopStart.AddMinutes($hardStopMin)
+
+              # The 360-minute job timeout starts before checkout, workload install,
+              # and provisioning. Bound this late-running loop by the actual remaining
+              # job budget and reserve 20 minutes for status/artifact publication.
+              $jobStartedAt = [DateTimeOffset]::MinValue
+              if (-not [DateTimeOffset]::TryParse($env:DEEP_JOB_STARTED_AT_UTC, [ref]$jobStartedAt)) {
+                Write-Host "##vso[task.logissue type=warning]Deep UI job start timestamp was unavailable; refusing to start long categories without a reliable outer-job budget."
+                $jobStartedAt = $loopStart.AddMinutes(-340)
+              }
+              $jobSafeStop = $jobStartedAt.AddMinutes(340)
+              $taskHardStop = if ($jobSafeStop -lt $configuredTaskHardStop) { $jobSafeStop } else { $configuredTaskHardStop }
+              $latestCategoryStart = $taskHardStop.AddMinutes(-3)
+              $loopDeadline = if ($latestCategoryStart -lt $configuredLoopDeadline) { $latestCategoryStart } else { $configuredLoopDeadline }
+              $jobBudgetConstrained = $jobSafeStop -lt $configuredTaskHardStop
+              $remainingJobBudgetMin = [int][math]::Floor(($jobSafeStop - $loopStart).TotalMinutes)
               Write-Host "Per-category loop budget: $budgetMin min (start-new-category deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
-              Write-Host "Hard stop: $hardStopMin min (every category must return by: $($taskHardStop.ToUniversalTime().ToString('u'))) · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
+              Write-Host "Effective hard stop: $($taskHardStop.ToUniversalTime().ToString('u')) ($remainingJobBudgetMin min of safe job budget remains; 20 min reserved to publish) · configured loop hard stop: $hardStopMin min · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
               $skippedCats = @()
 
               $hadFailure = $false
+              $jobBudgetExhausted = $false
               $catIdx = 0
               $needDeviceReset = $false
               # Signatures that mean the just-finished category left the shared
@@ -3012,10 +3039,11 @@ stages:
               $crashSig = 'investigate as possible crash|was expected to be running still|keeps stopping|OneTimeSetUp: System\.TimeoutException|AndroidRuntime: Process: com\.microsoft\.maui\.uitests|Process com\.microsoft\.maui\.uitests.*has died|Killing [0-9]+:com\.microsoft\.maui\.uitests'
               foreach ($cat in $catList) {
                 $catIdx++
-                $catStart = Get-Date
+                $catStart = [DateTimeOffset]::UtcNow
                 if ($catStart -gt $loopDeadline) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 320-min task timeout)."
+                  if ($jobBudgetConstrained) { $jobBudgetExhausted = $true }
+                  Write-Host "##[warning]Deep UI test time budget exhausted — not starting category '$cat' (preserves time for result publication before the outer job timeout)."
                   $hadFailure = $true
                   continue
                 }
@@ -3034,7 +3062,7 @@ stages:
                   if (Test-Path $resetScript) {
                     Write-Host "Prior category ended abnormally — resetting the shared $platform device before the next category…"
                     try { & $resetScript -Platform $platform -DeviceUdid $env:DEVICE_UDID } catch { Write-Host "(device reset failed: $_)" -ForegroundColor DarkGray }
-                    $catStart = Get-Date   # reboot consumed time; refresh the budget baseline
+                    $catStart = [DateTimeOffset]::UtcNow   # reboot consumed time; refresh the budget baseline
                   }
                 }
                 # Compute the category budget after any device reset so reset time
@@ -3042,7 +3070,8 @@ stages:
                 $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
                 if ($remainToHardStopMin -lt 3) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 320-min task timeout)."
+                  if ($jobBudgetConstrained) { $jobBudgetExhausted = $true }
+                  Write-Host "##[warning]Only $remainToHardStopMin min left before the effective hard stop — not starting category '$cat' (preserves final result publication)."
                   $hadFailure = $true
                   continue
                 }
@@ -3324,8 +3353,17 @@ stages:
                 }
               }
 
+              if ($jobBudgetExhausted) {
+                @(
+                  'Result=TIMEOUT'
+                  'Reason=OuterJobBudget'
+                  "SkippedCategories=$($skippedCats -join ',')"
+                  "JobSafeStopUtc=$($jobSafeStop.ToString('o'))"
+                ) | Set-Content -LiteralPath (Join-Path $outputRoot 'deep-run-status.txt') -Encoding UTF8
+              }
+
               if ($skippedCats.Count -gt 0) {
-                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started due to the $budgetMin-min time budget: $($skippedCats -join ', ')"
+                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started before the effective deadline: $($skippedCats -join ', ')"
               }
               if ($hadFailure) {
                 # Don't FAIL the stage — the AI summary review is the deliverable
@@ -3351,6 +3389,7 @@ stages:
               # with no length limit (mirrors the Post-AI-summary task's pattern).
               PARAM_PLATFORM: ${{ parameters.Platform }}
               DETECTED_CATEGORIES: $(detectedCategories)
+              DEEP_JOB_STARTED_AT_UTC: $(deepJobStartedAtUtc)
 
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
@@ -3372,7 +3411,7 @@ stages:
               targetPath: '$(Build.ArtifactStagingDirectory)/deep-uitests'
               artifact: 'drop-deep-uitests'
               publishLocation: 'pipeline'
-            condition: succeededOrFailed()
+            condition: always()
 
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: PostAISummaryComment
@@ -3388,7 +3427,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(not(canceled()), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(always(), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')))
     jobs:
       # Prompt-influenced analysis is intentionally isolated from the posting
       # credentials in the next job. Microsoft-hosted jobs use fresh agents, so
@@ -3485,7 +3524,7 @@ stages:
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
         dependsOn: AnalyzeUIFailures
-        condition: not(canceled())
+        condition: always()
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
         # this just makes the value available as $(aiSummaryReviewId)
@@ -3515,6 +3554,7 @@ stages:
           # it is the exact signal the deep stage itself gates on — download when
           # (and only when) the deep stage actually ran and published an artifact.
           detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
+          deepStageResult: $[ stageDependencies.RunDeepUITests.RunUITests.result ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -3706,6 +3746,20 @@ stages:
               . $ghRetryHelper
               $artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
               $prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
+              $deepStageResult = "$env:DEEP_STAGE_RESULT"
+              $deepRunStatusFile = Join-Path $artDir 'deep-run-status.txt'
+              $deepRunStatus = if (Test-Path -LiteralPath $deepRunStatusFile -PathType Leaf) {
+                Get-Content -LiteralPath $deepRunStatusFile -Raw -ErrorAction SilentlyContinue
+              } else { '' }
+              $deepJobBudgetTimedOut = $deepRunStatus -match '(?im)^Result=TIMEOUT\s*$' -and
+                $deepRunStatus -match '(?im)^Reason=OuterJobBudget\s*$'
+              $deepStageCanceled = $deepStageResult -eq 'Canceled'
+              $deepRunInterrupted = $deepJobBudgetTimedOut -or $deepStageCanceled
+              $deepInterruptionNote = if ($deepJobBudgetTimedOut) {
+                "The deep run reached the remaining outer-job budget and stopped before all categories could start; partial results were preserved and the omitted categories need a rerun."
+              } elseif ($deepStageCanceled) {
+                "The deep job was canceled before normal publication (for example, by the outer 360-minute job cap); results may be incomplete and the deep run needs a rerun."
+              } else { '' }
               $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewId = $env:AI_SUMMARY_REVIEW_ID
               if (-not [string]::IsNullOrWhiteSpace($reviewId) -and
@@ -3719,6 +3773,7 @@ stages:
               Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
               Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
+              Write-Host "  deepStageResult: '$deepStageResult'"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
               Write-Host "  bounded PRAgent exists: $(Test-Path $prAgentImportDir)"
               if (Test-Path $artDir) {
@@ -3733,7 +3788,7 @@ stages:
                 # Reviewer crashed before posting the initial review. If deep
                 # tests produced results, fall back to DEFERRED mode to post
                 # a degraded review with test results only.
-                if (Test-Path $artDir) {
+                if ((Test-Path $artDir) -or $deepRunInterrupted) {
                   Write-Host "No AI summary review ID but deep test artifacts exist — falling back to DEFERRED mode"
                   $reviewId = 'DEFERRED'
                   $isDeferred = $true
@@ -4642,13 +4697,16 @@ stages:
                 # crash note so a missing category is never silently dropped.
                 $headerLine = "$headerLine " + $crashedNote
               }
+              if ($deepRunInterrupted) {
+                $headerLine = "$headerLine $deepInterruptionNote"
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0)) {
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0 -or $deepRunInterrupted)) {
                 # No TRX anywhere (nothing produced results), but we DID detect
                 # compile failures, timeouts, app-crash (built-OK-but-no-TRX)
                 # runs, and/or an MT0180 Xcode/SDK mismatch. Render an honest deep
@@ -4661,6 +4719,7 @@ stages:
                 if ($timedOutCats.Count -gt 0) { $noteParts += $timedOutNote }
                 if ($crashTimedOutCats.Count -gt 0) { $noteParts += $crashTimedOutNote }
                 if ($crashedCats.Count -gt 0) { $noteParts += $crashedNote }
+                if ($deepRunInterrupted) { $noteParts += $deepInterruptionNote }
                 $headerLine  = "⚠️ **Deep UI tests** — " + ($noteParts -join ' ')
                 $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"
               }
@@ -4939,6 +4998,7 @@ stages:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
               BUILD_BUILDID: $(Build.BuildId)
+              DEEP_STAGE_RESULT: $(deepStageResult)
 
 
   - stage: CleanupReviewLock

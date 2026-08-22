@@ -539,7 +539,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CURRENT_HEAD.*EXPECTED_HEAD.*s/agent-review-incomplete'
     }
 
-    It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
+    It 'publishes an explicit deep cancellation result while always cleaning the review lock' {
         $postReviewJobStart = $pipelineContent.IndexOf("      - job: PostReview")
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
@@ -564,7 +564,12 @@ Describe 'Reviewer pipeline timeout containment' {
             "condition: in\(dependencies\.CopilotReview\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'\)")
         $deepBlock | Should -Match 'not\(canceled\(\)\)'
         $deepBlock | Should -Not -Match "'Canceled'"
-        $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
+        $postBlock | Should -Match "in\(dependencies\.RunDeepUITests\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'\)"
+        $postBlock | Should -Match 'condition: and\(always\(\)'
+        $postBlock | Should -Match ([regex]::Escape('deepStageResult: $[ stageDependencies.RunDeepUITests.RunUITests.result ]'))
+        $postBlock | Should -Match ([regex]::Escape('$deepStageCanceled = $deepStageResult -eq ''Canceled'''))
+        $postBlock | Should -Match 'The deep job was canceled before normal publication'
+        $postBlock | Should -Match '(?s)- job: UpdateComment.*?condition: always\(\)'
         $cleanupBlock | Should -Match 'condition: always\(\)'
         $cleanupBlock | Should -Match 'SYSTEM_ACCESSTOKEN: \$\(System\.AccessToken\)'
         $cleanupBlock | Should -Match '--oauth2-bearer "\$\{SYSTEM_ACCESSTOKEN\}"'
@@ -574,6 +579,25 @@ Describe 'Reviewer pipeline timeout containment' {
         $cleanupBlock | Should -Match 'Preserving s/agent-review-in-progress'
         $cleanupBlock.IndexOf('OTHER_ACTIVE=') | Should -BeLessThan $cleanupBlock.IndexOf('repos/dotnet/maui/issues/${PR_NUM}/labels')
         $analyzeBlock | Should -Match 'condition: not\(canceled\(\)\)'
+    }
+
+    It 'bounds the deep loop by the actual remaining outer-job budget' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $deepBlock = $pipelineContent.Substring($deepStart, $postStart - $deepStart)
+
+        $captureIndex = $deepBlock.IndexOf("displayName: 'Capture deep UI job budget'")
+        $checkoutIndex = $deepBlock.IndexOf('- checkout: self')
+        $captureIndex | Should -BeGreaterThan -1
+        $checkoutIndex | Should -BeGreaterThan $captureIndex
+        $deepBlock | Should -Match ([regex]::Escape('variable=deepJobStartedAtUtc'))
+        $deepBlock | Should -Match ([regex]::Escape('DEEP_JOB_STARTED_AT_UTC: $(deepJobStartedAtUtc)'))
+        $deepBlock | Should -Match ([regex]::Escape('$jobSafeStop = $jobStartedAt.AddMinutes(340)'))
+        $deepBlock | Should -Match ([regex]::Escape('$taskHardStop = if ($jobSafeStop -lt $configuredTaskHardStop)'))
+        $deepBlock | Should -Match ([regex]::Escape("'Reason=OuterJobBudget'"))
+        $deepBlock | Should -Match ([regex]::Escape("Join-Path `$outputRoot 'deep-run-status.txt'"))
+        $deepBlock | Should -Match 'cancelTimeoutInMinutes: 10'
+        $deepBlock | Should -Match "(?s)displayName: 'Publish drop-deep-uitests'.*?condition: always\(\)"
     }
 
     It 'gives every Android emulator retry group enough time and keeps setup non-blocking' {
@@ -807,7 +831,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $resetStart = $pipelineContent.IndexOf('if ($needDeviceReset)')
         $resetEnd = $pipelineContent.IndexOf('# Give each still-pending category', $resetStart)
         $resetBlock = $pipelineContent.Substring($resetStart, $resetEnd - $resetStart)
-        $refreshIndex = $resetBlock.IndexOf('$catStart = Get-Date')
+        $refreshIndex = $resetBlock.IndexOf('$catStart = [DateTimeOffset]::UtcNow')
         $remainingIndex = $resetBlock.IndexOf('$remainToHardStopMin =')
 
         $refreshIndex | Should -BeGreaterThan -1
