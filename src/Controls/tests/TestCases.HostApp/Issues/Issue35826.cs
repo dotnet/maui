@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 35826, "PickPhotosAsync hangs when called from a child activity", PlatformAffected.Android)]
 public class Issue35826 : ContentPage
 {
-	static WeakReference<Label> s_statusLabel;
+	static WeakReference<Label> s_statusLabel = null!;
 
 	public Issue35826()
 	{
