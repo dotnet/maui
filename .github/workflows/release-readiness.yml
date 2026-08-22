@@ -888,7 +888,7 @@ jobs:
   validate:
     name: Validate (PR)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.repository == 'dotnet/maui' && github.event_name == 'pull_request'
     permissions:
       contents: read
     steps:

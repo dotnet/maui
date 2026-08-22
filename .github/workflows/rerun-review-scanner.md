@@ -65,6 +65,8 @@ on:
         if-no-files-found: error
         retention-days: 1
 
+if: github.repository == 'dotnet/maui'
+
 permissions:
   contents: read
   issues: read
