@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -1238,6 +1238,37 @@ Describe 'Write-MarkdownReport — genuine failures outrank unrelated environmen
         $report | Should -Not -Match 'PASS without fix, PASS with fix'
         $report | Should -Match '<!-- GATE-RETRY-CLASS: definitive-failure -->'
     }
+
+    It 'reports FAILED when one test has a with-fix-only build error despite another baseline build error' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        $wo = @(
+            @{ TestName = 'BaselineBrokenProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'error CS0001: unrelated baseline failure' },
+            @{ TestName = 'FixRegressionProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 1; Error = 'assertion failed without fix' }
+        )
+        $w = @(
+            @{ TestName = 'BaselineBrokenProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'error CS0001: unrelated baseline failure' },
+            @{ TestName = 'FixRegressionProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'error CS0002: fix introduced compile failure' }
+        )
+        $tests = @(
+            [pscustomobject]@{ TestName = 'BaselineBrokenProject'; Type = 'UnitTest'; Filter = 'BaselineBrokenProject' },
+            [pscustomobject]@{ TestName = 'FixRegressionProject'; Type = 'UnitTest'; Filter = 'FixRegressionProject' }
+        )
+
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $true -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Core/src/Test.cs') -ReportNewFiles @()
+
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ❌ FAILED'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: definitive-failure -->'
+        $report | Should -Not -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+    }
 }
 
 Describe 'Invoke-TestRun — device diagnostics are retained with Gate logs' {
@@ -1456,8 +1487,7 @@ Describe 'Gate failure precedence' {
     It 'does not classify a mixed environment error and genuine with-fix failure as infrastructure-only' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 1 `
-            -WithFixBuildError:$false `
-            -BaselineBuildError:$false `
+            -WithFixOnlyBuildError:$false `
             -PrTestBuildError:$false |
             Should -BeTrue
     }
@@ -1465,8 +1495,7 @@ Describe 'Gate failure precedence' {
     It 'keeps an environment-only result non-definitive' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 0 `
-            -WithFixBuildError:$false `
-            -BaselineBuildError:$false `
+            -WithFixOnlyBuildError:$false `
             -PrTestBuildError:$false |
             Should -BeFalse
     }
@@ -1474,26 +1503,45 @@ Describe 'Gate failure precedence' {
     It 'treats a with-fix-only build error as definitive' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 0 `
-            -WithFixBuildError:$true `
-            -BaselineBuildError:$false `
+            -WithFixOnlyBuildError:$true `
             -PrTestBuildError:$false |
             Should -BeTrue
     }
 
-    It 'keeps a build error present in both baseline and with-fix non-definitive' {
+    It 'keeps a paired baseline and with-fix build error non-definitive' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 0 `
-            -WithFixBuildError:$true `
-            -BaselineBuildError:$true `
+            -WithFixOnlyBuildError:$false `
             -PrTestBuildError:$false |
             Should -BeFalse
+    }
+
+    It 'detects a with-fix build regression even when another test preserves a baseline build error' {
+        $withoutFix = @(
+            @{ TestName = 'BaselineBrokenProject'; BuildError = $true },
+            @{ TestName = 'FixRegressionProject'; BuildError = $false }
+        )
+        $withFix = @(
+            @{ TestName = 'BaselineBrokenProject'; BuildError = $true },
+            @{ TestName = 'FixRegressionProject'; BuildError = $true }
+        )
+
+        $withFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
+            -WithoutFixResults $withoutFix `
+            -WithFixResults $withFix
+
+        $withFixOnlyBuildError | Should -BeTrue
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixOnlyBuildError $withFixOnlyBuildError `
+            -PrTestBuildError:$false |
+            Should -BeTrue
     }
 
     It 'treats a PR-test build error as definitive' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 0 `
-            -WithFixBuildError:$false `
-            -BaselineBuildError:$false `
+            -WithFixOnlyBuildError:$false `
             -PrTestBuildError:$true |
             Should -BeTrue
     }

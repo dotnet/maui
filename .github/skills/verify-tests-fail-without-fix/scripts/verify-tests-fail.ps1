@@ -831,17 +831,34 @@ function Convert-WindowsTargetTimeoutToFailure {
     return $true
 }
 
+function Test-HasWithFixOnlyBuildError {
+    param(
+        [array]$WithoutFixResults,
+        [array]$WithFixResults
+    )
+
+    foreach ($withFixResult in @($WithFixResults | Where-Object { $_.BuildError })) {
+        $withoutFixResult = $WithoutFixResults |
+            Where-Object { $_.TestName -eq $withFixResult.TestName } |
+            Select-Object -First 1
+        if ($null -ne $withoutFixResult -and -not [bool]$withoutFixResult.BuildError) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-GateHasDefinitiveFailure {
     param(
         [int]$WithFixGenuineFailCount,
-        [bool]$WithFixBuildError,
-        [bool]$BaselineBuildError,
+        [bool]$WithFixOnlyBuildError,
         [bool]$PrTestBuildError
     )
 
     return (
         $WithFixGenuineFailCount -gt 0 -or
-        ($WithFixBuildError -and -not $BaselineBuildError) -or
+        $WithFixOnlyBuildError -or
         $PrTestBuildError
     )
 }
@@ -2786,11 +2803,8 @@ function Write-MarkdownReport {
     # Check for environment / build errors in results — a test that could not be built or
     # run never verified anything, so the gate is INCONCLUSIVE (not a genuine FAILED).
     $hasEnvError = ($WithoutFixResultsList | Where-Object { $_.EnvError }) -or ($WithFixResultsList | Where-Object { $_.EnvError })
-    # Only a BASELINE (without-fix) build error, or an env error, leaves the gate genuinely
-    # unable to verify → INCONCLUSIVE. A with-fix-ONLY build error (baseline compiles, the PR's
-    # own fix does not) is a definitive FAILED — mirror the exit-code split (see $gateInfraError)
-    # so the report headline and the Gate status chip don't frame a non-compiling fix as a
-    # non-blocking infra flake.
+    # A baseline build error only makes its paired test inconclusive. A separate test that
+    # compiles without the fix but fails to compile with it remains a definitive regression.
     $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
 
     # A baseline (without-fix) build error located in the PR's OWN detected test file is only a
@@ -2816,11 +2830,12 @@ function Write-MarkdownReport {
         if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFailCount++ }
     }
     $reportWithFixGenuineFail = $reportWithFixGenuineFailCount -gt 0
-    $reportWithFixBuildError = @($WithFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
+    $reportWithFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
+        -WithoutFixResults $WithoutFixResultsList `
+        -WithFixResults $WithFixResultsList
     $reportDefinitiveFailure = Test-GateHasDefinitiveFailure `
         -WithFixGenuineFailCount $reportWithFixGenuineFailCount `
-        -WithFixBuildError $reportWithFixBuildError `
-        -BaselineBuildError $baselineBuildError `
+        -WithFixOnlyBuildError $reportWithFixOnlyBuildError `
         -PrTestBuildError $prTestBuildError
 
     # Platform-affinity FALSE-FAILED guard (mirror of the exit-code $fixPlatformMismatch):
@@ -4378,13 +4393,16 @@ foreach ($t in $AllDetectedTests) {
 $verificationPassed = ($reproducingCount -gt 0) -and ($withFixGenuineFailCount -eq 0)
 
 # A test that hit an ENVIRONMENT error, or a BASELINE (without-fix) BUILD error, never
-# established whether the bug reproduces, so the gate could not verify anything — treat that
-# as INCONCLUSIVE (exit 3) so build/infra flakes don't masquerade as a broken fix.
+# established whether the bug reproduces, so that paired result is inconclusive. It must not
+# mask a different test that compiles without the fix but fails to compile with it.
 #
 # A with-fix-ONLY build error is different: the baseline compiles but the PR's own fix does
 # NOT, which is a definitive FAILED (exit 1), not infra noise — so it must not be downgraded.
 $baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
 $withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
+$withFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
+    -WithoutFixResults $withoutFixResults `
+    -WithFixResults $withFixResults
 $anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
 # A FILTER MISMATCH (the -filter expression matched 0 test cases) means the deciding test
 # never ran, so the gate verified NOTHING about it. This happens when the PR's test is
@@ -4435,8 +4453,7 @@ $fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevant
 # detected test is an image/rasterization class that can't load libSkiaSharp on the gate agent.)
 $hasDefinitiveGateFailure = Test-GateHasDefinitiveFailure `
     -WithFixGenuineFailCount $withFixGenuineFailCount `
-    -WithFixBuildError $withFixBuildError `
-    -BaselineBuildError $baselineBuildError `
+    -WithFixOnlyBuildError $withFixOnlyBuildError `
     -PrTestBuildError $prTestBuildError
 $gateInfraError = (-not $hasDefinitiveGateFailure) -and (
     $anyEnvError -or
@@ -4521,9 +4538,9 @@ if ($verificationPassed) {
         Write-Host "║  Tests FAILED with fix (should pass)                      ║" -ForegroundColor Red
         Write-Host "║  - Fix doesn't resolve the issue or test is broken        ║" -ForegroundColor Red
     }
-    if ($withFixBuildError -and -not $baselineBuildError) {
-        Write-Host "║  - Fix does NOT compile (baseline builds fine) — this is  ║" -ForegroundColor Red
-        Write-Host "║    a definitive failure, not a build/infra flake.         ║" -ForegroundColor Red
+    if ($withFixOnlyBuildError) {
+        Write-Host "║  - Fix does NOT compile for a test whose baseline does.   ║" -ForegroundColor Red
+        Write-Host "║    This is a definitive failure, not an infra flake.      ║" -ForegroundColor Red
     }
     Write-Host "║                                                           ║" -ForegroundColor Red
     Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
