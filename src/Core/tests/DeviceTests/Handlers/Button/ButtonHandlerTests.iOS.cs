@@ -149,6 +149,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task UnsupportedPaintDoesNotClearNativeBackground()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = new UIButton(UIButtonType.System)
+				{
+					BackgroundColor = UIColor.Cyan
+				};
+
+				platformButton.UpdateBackground(new PatternPaint { Pattern = new NoOpPattern() });
+				platformButton.UpdateBackground(null);
+
+				Assert.Equal(Colors.Cyan, platformButton.BackgroundColor.ToColor());
+			});
+		}
+
 		sealed class NativeStyledButtonHandler : ButtonHandler
 		{
 			protected override UIButton CreatePlatformView()
@@ -160,6 +177,15 @@ namespace Microsoft.Maui.DeviceTests
 
 				return button;
 			}
+		}
+
+		sealed class NoOpPattern : IPattern
+		{
+			public float Width => 1;
+			public float Height => 1;
+			public float StepX => 1;
+			public float StepY => 1;
+			public void Draw(ICanvas canvas) { }
 		}
 
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
