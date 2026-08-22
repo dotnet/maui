@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.App;
+using Android.Content.Res;
 using AndroidX.AppCompat.App;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using ContextThemeWrapper = Android.Views.ContextThemeWrapper;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -44,6 +46,50 @@ namespace Microsoft.Maui.DeviceTests
 					activity2.CreatePlatformWindow(app, null);
 				});
 
+			});
+		}
+
+		[Theory]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		public async Task Material3StatusBarAppearanceUsesSurfaceColor(bool isDarkTheme, bool expectedLightAppearance)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = (AppCompatActivity)MauiProgramDefaults.DefaultContext;
+				using var configuration = new Configuration(activity.Resources?.Configuration);
+				configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+					(isDarkTheme ? UiMode.NightYes : UiMode.NightNo);
+				using var configurationContext = activity.CreateConfigurationContext(configuration);
+				using var themedContext = new ContextThemeWrapper(
+					configurationContext,
+					Resource.Style.Maui_Material3_Theme_NoActionBar);
+
+				var appearance = WindowExtensions.GetStatusBarAppearance(
+					themedContext,
+					isLightTheme: isDarkTheme,
+					isMaterial3: true);
+
+				Assert.Equal(expectedLightAppearance, appearance);
+			});
+		}
+
+		[Fact]
+		public async Task Material2StatusBarAppearanceUsesPrimaryColor()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = (AppCompatActivity)MauiProgramDefaults.DefaultContext;
+				using var themedContext = new ContextThemeWrapper(
+					activity,
+					Resource.Style.Maui_MainTheme_NoActionBar);
+
+				var appearance = WindowExtensions.GetStatusBarAppearance(
+					themedContext,
+					isLightTheme: true,
+					isMaterial3: false);
+
+				Assert.False(appearance);
 			});
 		}
 
