@@ -60,8 +60,6 @@ namespace Microsoft.Maui.Platform
 		// TODO: Make this public in .NET 11
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
-			var updateState = BackgroundUpdateStates.GetValue(platformButton, static _ => new());
-
 			// Remove previous background gradient layer if any.
 			// Safe to call when MAUI has not applied a gradient because this is a no-op.
 			// Running it before the paint guard ensures any previously-applied gradient is cleaned
@@ -72,17 +70,17 @@ namespace Microsoft.Maui.Platform
 			{
 				// Preserve constructor or appearance-proxy styling until MAUI applies a background.
 				// This also covers handlers reconnected to another virtual view with no background.
-				if (updateState.HasMauiBackground)
+				if (BackgroundUpdateStates.TryGetValue(platformButton, out var updateState) && updateState.HasMauiBackground)
 				{
 					platformButton.BackgroundColor = UIColor.Clear;
-					updateState.HasMauiBackground = false;
+					BackgroundUpdateStates.Remove(platformButton);
 				}
 				return;
 			}
 
 			// Delegate to the standard view background update
 			ViewExtensions.UpdateBackground(platformButton, paint);
-			updateState.HasMauiBackground = true;
+			BackgroundUpdateStates.GetValue(platformButton, static _ => new()).HasMauiBackground = true;
 		}
 
 		sealed class BackgroundUpdateState
