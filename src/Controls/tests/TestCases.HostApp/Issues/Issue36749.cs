@@ -60,7 +60,7 @@ public class Issue36749 : ContentPage
 
 		// The native UIButton subclass sets BackgroundColor = UIColor.Cyan in its constructor.
 		// With the regression: initial null-Background mapping resets it to UIColor.Clear.
-		// With the fix:        the Window-null check skips the reset, preserving Cyan.
+		// With the fix:        no clear occurs until MAUI has applied a background, preserving Cyan.
 		backgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
 
 		// UIColor.Cyan = R:0, G:1, B:1, A:1

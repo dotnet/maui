@@ -61,34 +61,33 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
 			var updateState = BackgroundUpdateStates.GetValue(platformButton, static _ => new());
-			var isInitialUpdate = updateState.IsInitialUpdate;
-			updateState.IsInitialUpdate = false;
 
 			// Remove previous background gradient layer if any.
-			// Safe to call unconditionally during the initial mapping because MAUI has not yet
-			// inserted a named gradient layer, so this is a no-op.
-			// Running it before the Window/paint guard ensures any previously-applied gradient is
-			// cleaned up regardless of the new paint value.
+			// Safe to call when MAUI has not applied a gradient because this is a no-op.
+			// Running it before the paint guard ensures any previously-applied gradient is cleaned
+			// up regardless of the new paint value.
 			platformButton.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
 			{
-				// Preserve constructor or appearance-proxy styling only during the first property
-				// mapping. Later null updates must clear prior MAUI state even while detached.
-				if (!isInitialUpdate)
+				// Preserve constructor or appearance-proxy styling until MAUI applies a background.
+				// This also covers handlers reconnected to another virtual view with no background.
+				if (updateState.HasMauiBackground)
 				{
 					platformButton.BackgroundColor = UIColor.Clear;
+					updateState.HasMauiBackground = false;
 				}
 				return;
 			}
 
 			// Delegate to the standard view background update
 			ViewExtensions.UpdateBackground(platformButton, paint);
+			updateState.HasMauiBackground = true;
 		}
 
 		sealed class BackgroundUpdateState
 		{
-			public bool IsInitialUpdate { get; set; } = true;
+			public bool HasMauiBackground { get; set; }
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)

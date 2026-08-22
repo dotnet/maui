@@ -130,6 +130,38 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UIAccessibilityTrait.Button, trait);
 		}
 
+		[Fact]
+		public async Task NativeBackgroundIsPreservedWhenHandlerIsReused()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = new NativeStyledButtonHandler();
+				handler.SetMauiContext(MauiContext);
+				handler.SetVirtualView(new ButtonStub());
+
+				var platformButton = handler.PlatformView;
+				Assert.Equal(Colors.Cyan, platformButton.BackgroundColor.ToColor());
+
+				handler.SetVirtualView(new ButtonStub());
+
+				Assert.Same(platformButton, handler.PlatformView);
+				Assert.Equal(Colors.Cyan, platformButton.BackgroundColor.ToColor());
+			});
+		}
+
+		sealed class NativeStyledButtonHandler : ButtonHandler
+		{
+			protected override UIButton CreatePlatformView()
+			{
+				var button = new UIButton(UIButtonType.System)
+				{
+					BackgroundColor = UIColor.Cyan
+				};
+
+				return button;
+			}
+		}
+
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView.ImageView.Image != null;
 
