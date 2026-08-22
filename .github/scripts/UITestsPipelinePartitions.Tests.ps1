@@ -154,7 +154,7 @@ Describe 'filter selection logic in ui-tests-steps.yml' {
     }
 
     It 'uses the short matrix job name for partition result files' {
-        $script:uiSteps | Should -Match '\$env:TEST_RESULT_NAME\s*=\s*"\$\(Agent\.JobName\)"'
+        $script:uiSteps | Should -Match '\$env:TEST_RESULT_NAME\s*=\s*"\$\(System\.JobName\)"'
 
         foreach ($deviceScript in $script:deviceScripts) {
             $deviceScript | Should -Match 'GetTestResultsFilterName\(testFilter\)'
