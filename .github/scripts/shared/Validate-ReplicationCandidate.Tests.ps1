@@ -2719,14 +2719,18 @@ Describe 'The evidence allowlist knows every field the recorder writes' {
             $tables = $ast.FindAll({
                     param($node)
                     $node -is [System.Management.Automation.Language.HashtableAst] -and
-                    @($node.KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") }) -contains $MarkerKey
+                    # -contains is case-insensitive, so a marker of 'width'
+                    # also matches the internal media-info object's 'Width'
+                    # and the test then compares the wrong hashtable against
+                    # the allowlist. Case matters for JSON keys anyway.
+                    @($node.KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") }) -ccontains $MarkerKey
                 }, $true)
             if ($tables.Count -lt 1) { throw "No hashtable containing '$MarkerKey' in $Path." }
             return @($tables[0].KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") })
         }
 
         function Get-EvidenceAllowlist {
-            param([string]$Path)
+            param([string]$Path, [string]$Context = 'Evidence metadata')
 
             $ast = [System.Management.Automation.Language.Parser]::ParseFile(
                 $Path, [ref]$null, [ref]$null)
@@ -2734,9 +2738,13 @@ Describe 'The evidence allowlist knows every field the recorder writes' {
                     param($node)
                     $node -is [System.Management.Automation.Language.CommandAst] -and
                     $node.GetCommandName() -eq 'Assert-KnownProperties' -and
-                    $node.Extent.Text -match "Context\s+'Evidence metadata'"
+                    $node.Extent.Text -match ("Context\s+'" + [regex]::Escape($Context) + "'")
                 }, $true)
-            if ($calls.Count -lt 1) { throw 'No evidence-metadata allowlist found.' }
+            # 'Evidence metadata' is asserted twice, once with a populated
+            # allowlist and once without, so take the call that actually
+            # carries names rather than whichever parses first.
+            $calls = @($calls | Where-Object { $_.Extent.Text -match "AllowedNames" })
+            if ($calls.Count -lt 1) { throw "No allowlist found for '$Context'." }
             # Reading the call's raw text would also read its comments, and
             # the comment above this allowlist quotes 'decodedFrames' to
             # explain why it is there. That made the test pass while the
@@ -2762,13 +2770,25 @@ Describe 'The evidence allowlist knows every field the recorder writes' {
         $script:ValidatorPath = Join-Path $PSScriptRoot 'Validate-ReplicationCandidate.ps1'
     }
 
-    It 'allows every top-level key the recorder writes into the manifest' {
-        $written = Get-HashtableKeys -Path $script:RecorderPath -MarkerKey 'schemaVersion'
-        $allowed = Get-EvidenceAllowlist -Path $script:ValidatorPath
+    # Every strict allowlist has the same drift risk as the evidence manifest
+    # did, and the two largest are written in files the validator never
+    # references. Pair each one with the hashtable that produces it.
+    $script:Couplings = @(
+        @{ Context = 'Evidence metadata'; Writer = 'Record-Reproduction.ps1';            Marker = 'schemaVersion' }
+        @{ Context = 'Evidence dimensions'; Writer = 'Record-Reproduction.ps1';          Marker = 'width' }
+        @{ Context = 'Evidence files'; Writer = 'Record-Reproduction.ps1';               Marker = 'thumbnail' }
+        @{ Context = 'Verification result'; Writer = 'Invoke-ReplicationTestVerification.ps1'; Marker = 'verificationPassed' }
+    )
+
+    It 'allows every key <Writer> writes for "<Context>"' -ForEach $script:Couplings {
+        $writerPath = Join-Path $PSScriptRoot $Writer
+        $written = Get-HashtableKeys -Path $writerPath -MarkerKey $Marker
+        $allowed = Get-EvidenceAllowlist -Path $script:ValidatorPath -Context $Context
 
         $written | Should -Not -BeNullOrEmpty
+        $allowed | Should -Not -BeNullOrEmpty
         foreach ($key in $written) {
-            $allowed | Should -Contain $key -Because "the recorder writes '$key' and the publisher rejects anything unlisted"
+            $allowed | Should -Contain $key -Because "$Writer writes '$key' and the publisher rejects anything unlisted"
         }
     }
 
