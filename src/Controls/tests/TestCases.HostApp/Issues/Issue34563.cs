@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34563, "[iOS] Vertical SafeAreaEdge isn't respected when Top and Bottom constraints mismatch", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 34563, "[iOS] Vertical SafeAreaEdge isn't respected when Top and Bottom constraints mismatch", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue34563 : ContentPage
 {
 	readonly ContentView _parentSafeAreaContainer;
