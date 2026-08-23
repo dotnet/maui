@@ -154,7 +154,30 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
+			if (handler.PlatformView is PlatformView platformView)
+			{
+				InvalidateSafeArea(platformView);
+			}
+
 			view.InvalidateMeasure();
+		}
+
+		static void InvalidateSafeArea(PlatformView platformView)
+		{
+			if (platformView is MauiView mauiView)
+			{
+				mauiView.InvalidateSafeArea();
+			}
+			else if (platformView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.InvalidateSafeArea();
+			}
+
+			var subviews = platformView.Subviews;
+			for (int i = 0; i < subviews.Length; i++)
+			{
+				InvalidateSafeArea(subviews[i]);
+			}
 		}
 	}
 }
