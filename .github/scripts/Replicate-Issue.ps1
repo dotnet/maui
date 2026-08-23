@@ -3437,6 +3437,155 @@ function Get-ReplicationFixScopePathRejection {
     return $null
 }
 
+function Get-ReplicationFixComparisonSummary {
+    <#
+        .SYNOPSIS
+            Describes the publishable candidates for the comparison phase.
+
+        .DESCRIPTION
+            Only candidates the panel accepted are described. A blocked
+            candidate is not a weaker option to weigh against the others; it
+            has no evidence behind it at all, and including it would invite the
+            comparison to resurrect work that was rejected for cause.
+    #>
+    param([Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Results)
+
+    $passing = @($Results | Where-Object { $_ -and $_.Result -ceq 'Pass' })
+    if ($passing.Count -eq 0) { return '' }
+
+    $sections = foreach ($result in $passing) {
+        $approach = ConvertTo-ReplicationSafeLog ([string]$result.Approach) 1500
+        $analysis = ConvertTo-ReplicationSafeLog ([string]$result.Analysis) 1500
+        $diff = ConvertTo-ReplicationSafeLog ([string]$result.Diff) 6000
+        @"
+### Candidate $($result.Attempt)
+Files changed: $(@($result.ChangedPaths) -join ', ')
+
+Approach:
+$approach
+
+Analysis:
+$analysis
+
+Diff:
+``````diff
+$diff
+``````
+"@
+    }
+
+    return ($sections -join "`n`n")
+}
+
+function Read-ReplicationFixWinner {
+    <#
+        .SYNOPSIS
+            Reads and validates the comparison phase's winner.json.
+
+        .DESCRIPTION
+            The comparison phase chooses among candidates the panel already
+            accepted; it does not get to nominate anything else. So the winner
+            is checked against the panel's own list of passing attempts rather
+            than taken at its word, and a null winner is a valid, deliberate
+            answer meaning nothing here is worth publishing.
+    #>
+    param(
+        [string]$Path = $fixWinnerPath,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Results
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw 'The fix comparison agent did not write winner.json.'
+    }
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.Length -gt 64KB) {
+        throw 'The fix winner document is empty or oversized.'
+    }
+
+    $raw = Get-Content -LiteralPath $Path -Raw
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        throw 'The fix winner document is empty or oversized.'
+    }
+    Assert-NoDuplicateJsonProperties -Json $raw
+    $document = $raw | ConvertFrom-Json -Depth 10
+
+    $expectedProperties = @('rejected', 'schemaVersion', 'summary', 'winner')
+    $actualProperties = @($document.PSObject.Properties.Name | Sort-Object)
+    if (($actualProperties -join "`n") -cne (($expectedProperties | Sort-Object) -join "`n")) {
+        throw (
+            'The fix winner does not match the exact trusted schema (' +
+            (Get-ReplicationSchemaMismatchDetail `
+                -Expected $expectedProperties -Actual $actualProperties) + ').')
+    }
+
+    if ([int]$document.schemaVersion -ne 1) {
+        throw "Unsupported fix winner schemaVersion: $($document.schemaVersion)"
+    }
+
+    $summary = ConvertTo-BoundedAgentLine `
+        -Value $document.summary `
+        -Description 'Fix winner summary' `
+        -MaximumLength 4000
+    if ($summary.Length -lt 3) {
+        throw 'The fix winner has no summary.'
+    }
+
+    $passing = @($Results | Where-Object { $_ -and $_.Result -ceq 'Pass' })
+    $knownAttempts = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($result in $passing) { $knownAttempts.Add([string]$result.Attempt) | Out-Null }
+
+    $winner = $null
+    if ($null -ne $document.winner -and -not [string]::IsNullOrWhiteSpace([string]$document.winner)) {
+        # Accepts either the bare attempt number or the try-fix directory name,
+        # because the agent sees both and either identifies the same candidate.
+        $claimed = ([string]$document.winner).Trim() -replace '^(?:try-fix-|attempt-|candidate\s*)', ''
+        if (-not $knownAttempts.Contains($claimed)) {
+            throw (
+                "The fix winner names candidate '$($document.winner)', which is not one of " +
+                "the candidates that passed ($(($passing | ForEach-Object { $_.Attempt }) -join ', ')).")
+        }
+        $winner = $claimed
+    }
+
+    $rejected = [Collections.Generic.List[object]]::new()
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($entry in @($document.rejected | Where-Object { $_ })) {
+        $entryProperties = @($entry.PSObject.Properties.Name | Sort-Object)
+        if (($entryProperties -join "`n") -cne "candidate`nreason") {
+            throw (
+                'Each rejected fix candidate must have exactly candidate and reason (' +
+                (Get-ReplicationSchemaMismatchDetail `
+                    -Expected @('candidate', 'reason') -Actual $entryProperties) + ').')
+        }
+
+        $candidate = ([string]$entry.candidate).Trim()
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            throw 'A rejected fix candidate has no identifier.'
+        }
+        if ($null -ne $winner -and ($candidate -replace '^(?:try-fix-|attempt-|candidate\s*)', '') -ceq $winner) {
+            throw "The fix winner rejects candidate '$candidate', which it also selected."
+        }
+        if (-not $seen.Add($candidate)) {
+            throw "The fix winner rejects candidate '$candidate' more than once."
+        }
+
+        $rejected.Add([ordered]@{
+            candidate = $candidate
+            reason = ConvertTo-BoundedAgentLine `
+                -Value $entry.reason `
+                -Description 'Rejected fix candidate reason' `
+                -MaximumLength 1000
+        }) | Out-Null
+    }
+
+    return [pscustomobject]@{
+        Winner = $winner
+        Summary = $summary
+        Rejected = $rejected.ToArray()
+        HasWinner = $null -ne $winner
+    }
+}
+
 function Read-ReplicationFixScope {
     <#
         .SYNOPSIS

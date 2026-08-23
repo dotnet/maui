@@ -138,6 +138,8 @@ BeforeAll {
         'Get-ReplicationFixTamperedPaths',
         'Restore-ReplicationFixProtectedFiles',
         'Read-ReplicationFixScope',
+        'Read-ReplicationFixWinner',
+        'Get-ReplicationFixComparisonSummary',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
     )) {
@@ -8427,5 +8429,138 @@ Describe 'The one command a fix candidate may check its work with' {
     It 'tells the candidate the file is watched' {
         $content = New-ReplicationFixOracleRunnerContent @script:oracleArgs
         $content | Should -Match 'hashed before your attempt'
+    }
+}
+
+Describe 'Choosing which fix to publish' {
+    BeforeAll {
+        function New-FixResult {
+            param($Attempt, $Result = 'Pass', $Diff = 'diff text', $Approach = 'an approach')
+            [pscustomobject]@{
+                Attempt = $Attempt; Model = 'claude-opus-5'; Result = $Result
+                Rejection = ''; Approach = $Approach; Analysis = 'some analysis'
+                Diff = $Diff; ChangedPaths = @('src/Core/src/X.cs'); DurationMinutes = 4
+            }
+        }
+        function New-WinnerDocument {
+            param($Document)
+            $path = Join-Path $TestDrive ([guid]::NewGuid().ToString('N') + '.json')
+            Set-Content -LiteralPath $path -Value $Document
+            return $path
+        }
+    }
+
+    BeforeEach {
+        $script:results = @((New-FixResult -Attempt 1), (New-FixResult -Attempt 3),
+            (New-FixResult -Attempt 2 -Result 'Blocked'))
+        $script:valid = @'
+{ "schemaVersion": 1, "winner": "3", "summary": "Candidate 3 fixes the measurement, not the symptom.",
+  "rejected": [ { "candidate": "1", "reason": "special-cased the test's own values" } ] }
+'@
+    }
+
+    It 'accepts a well formed choice among the passing candidates' {
+        $winner = Read-ReplicationFixWinner -Path (New-WinnerDocument $script:valid) -Results $script:results
+        $winner.Winner | Should -Be '3'
+        $winner.HasWinner | Should -BeTrue
+        $winner.Rejected | Should -HaveCount 1
+    }
+
+    It 'accepts the try-fix directory name as an identifier' {
+        $document = $script:valid -replace '"winner": "3"', '"winner": "try-fix-3"'
+        (Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results).Winner |
+            Should -Be '3'
+    }
+
+    It 'treats publishing nothing as a real answer' {
+        $document = $script:valid -replace '"winner": "3"', '"winner": null'
+        $winner = Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results
+        $winner.HasWinner | Should -BeFalse
+        $winner.Winner | Should -BeNullOrEmpty
+    }
+
+    It 'refuses to resurrect a candidate the panel blocked' {
+        $document = $script:valid -replace '"winner": "3"', '"winner": "2"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*not one of the candidates that passed*'
+    }
+
+    It 'refuses a candidate that never ran at all' {
+        $document = $script:valid -replace '"winner": "3"', '"winner": "9"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*not one of the candidates that passed*'
+    }
+
+    It 'refuses a document that both selects and rejects the same candidate' {
+        $document = $script:valid -replace '"candidate": "1"', '"candidate": "3"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*which it also selected*'
+    }
+
+    It 'refuses the same rejection twice' {
+        $document = $script:valid -replace '"reason": "special-cased the test''s own values" } \]',
+            '"reason": "a" }, { "candidate": "1", "reason": "b" } ]'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*more than once*'
+    }
+
+    It 'refuses a document with an unexpected property' {
+        $document = $script:valid -replace '"schemaVersion": 1', '"schemaVersion": 1, "confidence": "high"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*exact trusted schema*'
+    }
+
+    It 'refuses a document missing a required property' {
+        $document = $script:valid -replace '"summary": "[^"]+",', ''
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*exact trusted schema*'
+    }
+
+    It 'refuses a future schema version' {
+        $document = $script:valid -replace '"schemaVersion": 1', '"schemaVersion": 2'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*Unsupported fix winner schemaVersion*'
+    }
+
+    It 'refuses a rejection entry with the wrong shape' {
+        $document = $script:valid -replace '"candidate": "1", "reason"', '"name": "1", "reason"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*exactly candidate and reason*'
+    }
+
+    It 'refuses a duplicated JSON key' {
+        $document = $script:valid -replace '"winner": "3"', '"winner": "1", "winner": "3"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*duplicate*'
+    }
+
+    It 'refuses an empty summary' {
+        $document = $script:valid -replace '"summary": "[^"]+"', '"summary": "ok"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*no summary*'
+    }
+
+    It 'reports a missing document rather than assuming no winner' {
+        { Read-ReplicationFixWinner -Path (Join-Path $TestDrive 'absent.json') -Results $script:results } |
+            Should -Throw '*did not write winner.json*'
+    }
+
+    It 'describes only the candidates worth comparing' {
+        $summary = Get-ReplicationFixComparisonSummary -Results $script:results
+        $summary | Should -Match 'Candidate 1'
+        $summary | Should -Match 'Candidate 3'
+        $summary | Should -Not -Match 'Candidate 2'
+    }
+
+    It 'says nothing when nothing passed' {
+        Get-ReplicationFixComparisonSummary -Results @((New-FixResult -Attempt 1 -Result 'Blocked')) |
+            Should -BeNullOrEmpty
+    }
+
+    It 'carries each candidate diff into the comparison' {
+        $results = @((New-FixResult -Attempt 1 -Diff '-  var x = 0;' -Approach 'clamp the offset'))
+        $summary = Get-ReplicationFixComparisonSummary -Results $results
+        $summary | Should -Match ([regex]::Escape('-  var x = 0;'))
+        $summary | Should -Match 'clamp the offset'
     }
 }
