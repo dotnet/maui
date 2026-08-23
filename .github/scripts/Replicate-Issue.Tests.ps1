@@ -147,6 +147,7 @@ BeforeAll {
         'Set-ReplicationVerificationOutputDirectory',
         'Get-ReplicationFixComparisonSummary',
         'New-CopilotPrompt',
+        'Get-ReplicationErrorOrigin',
         'Assert-ReplicationPromptIsDeliverable'
     )) {
         $function = $ast.Find({
@@ -9355,5 +9356,86 @@ Describe 'A control that fails for a new reason has not refuted anything' {
             'Singleline').Value
         $catchBlock | Should -Not -BeNullOrEmpty
         $catchBlock | Should -Match '\$controlBuildFailed -or \$controlChangedMode -or'
+    }
+}
+
+Describe 'A swallowed failure must still say where it came from' {
+    # The fix phase catches everything by design, so its single log line is the
+    # only record of a failure. Twenty runs reported a write-permission refusal
+    # that named no call site, and the phase asks for grants in four places.
+    BeforeAll {
+        function script:New-OriginError {
+            param([string]$FunctionName, [string]$Path, [int]$Line)
+            $stack = "at $FunctionName, ${Path}: line $Line" + [Environment]::NewLine +
+                'at <ScriptBlock>, /elsewhere/Outer.ps1: line 3'
+            $record = [System.Management.Automation.ErrorRecord]::new(
+                [InvalidOperationException]::new('boom'), 'boom', 'NotSpecified', $null)
+            $record | Add-Member -MemberType NoteProperty -Name ScriptStackTrace -Value $stack -Force
+            return $record
+        }
+    }
+
+    It 'names the function and line the error was thrown from' {
+        $origin = Get-ReplicationErrorOrigin (New-OriginError `
+            -FunctionName 'Invoke-ReplicationCopilot' `
+            -Path '/agent/_work/1/s/.github/scripts/Replicate-Issue.ps1' `
+            -Line 4871)
+
+        $origin | Should -BeExactly ' [Invoke-ReplicationCopilot, Replicate-Issue.ps1:4871]'
+    }
+
+    It 'reports the innermost frame, not the caller that is already obvious' {
+        $origin = Get-ReplicationErrorOrigin (New-OriginError `
+            -FunctionName 'Invoke-ReplicationCopilot' `
+            -Path '/agent/_work/1/s/.github/scripts/Replicate-Issue.ps1' `
+            -Line 4871)
+
+        $origin | Should -Not -Match 'Outer\.ps1'
+    }
+
+    It 'drops the build-agent directory, which locates nothing' {
+        $origin = Get-ReplicationErrorOrigin (New-OriginError `
+            -FunctionName 'Invoke-ReplicationFixPhase' `
+            -Path '/Users/cloudtest/vss/_work/1/s/.github/scripts/Replicate-Issue.ps1' `
+            -Line 5573)
+
+        $origin | Should -Not -Match 'cloudtest'
+        $origin | Should -Match 'Replicate-Issue\.ps1:5573'
+    }
+
+    It 'distinguishes two grant sites that raise the identical message' {
+        # This is the whole point: the message was identical at every site.
+        $first = Get-ReplicationErrorOrigin (New-OriginError `
+            -FunctionName 'Invoke-ReplicationFixPhase' -Path '/s/Replicate-Issue.ps1' -Line 5573)
+        $second = Get-ReplicationErrorOrigin (New-OriginError `
+            -FunctionName 'Invoke-ReplicationFixPanel' -Path '/s/Replicate-Issue.ps1' -Line 3211)
+
+        $first | Should -Not -BeExactly $second
+    }
+
+    It 'returns nothing rather than throwing when there is no stack to report' {
+        Get-ReplicationErrorOrigin $null | Should -BeExactly ''
+
+        $record = [System.Management.Automation.ErrorRecord]::new(
+            [InvalidOperationException]::new('boom'), 'boom', 'NotSpecified', $null)
+        $record | Add-Member -MemberType NoteProperty -Name ScriptStackTrace -Value '' -Force
+        Get-ReplicationErrorOrigin $record | Should -BeExactly ''
+    }
+
+    It 'keeps a frame it cannot parse instead of discarding the only clue' {
+        $record = [System.Management.Automation.ErrorRecord]::new(
+            [InvalidOperationException]::new('boom'), 'boom', 'NotSpecified', $null)
+        $record | Add-Member -MemberType NoteProperty -Name ScriptStackTrace `
+            -Value 'at Invoke-Something, <No file>: line 0' -Force
+
+        Get-ReplicationErrorOrigin $record | Should -Match 'Invoke-Something'
+    }
+
+    It 'is attached to the fix phase failure log, not merely defined' {
+        $catchText = [regex]::Match(
+            $script:Source,
+            'The fix phase failed, so the reproduction is published on its own[\s\S]{0,400}?\$fixOutcome = \$null').Value
+
+        $catchText | Should -Match 'Get-ReplicationErrorOrigin'
     }
 }

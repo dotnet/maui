@@ -263,6 +263,45 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationErrorOrigin {
+    <#
+        .SYNOPSIS
+            Names the script and line an error was thrown from.
+
+        .DESCRIPTION
+            The fix phase is best-effort and swallows every failure, so its one
+            log line is the entire account of what went wrong. Twenty runs
+            reported "Copilot write permissions must target exact regular
+            files: .../agent" and nothing else. The phase asks for write grants
+            at four separate call sites, the message named none of them, and
+            reading the current source could not explain it because the source
+            had since been fixed -- the runs were on an older commit. An origin
+            would have identified the line, and through it the commit, at once.
+
+            Only the innermost frame is reported. The rest of the stack is the
+            path back to a call site the log already makes obvious.
+    #>
+    param([AllowNull()]$ErrorRecord)
+
+    if (-not $ErrorRecord) {
+        return ''
+    }
+    $stack = [string]$ErrorRecord.ScriptStackTrace
+    if ([string]::IsNullOrWhiteSpace($stack)) {
+        return ''
+    }
+    $frame = @($stack -split '[\r\n]+' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })[0]
+    if (-not $frame) {
+        return ''
+    }
+    # PowerShell renders a frame as "at <function>, <path>: line <n>". The path
+    # is a build-agent temp path that says nothing a reader needs, and the file
+    # name plus line is what locates the code.
+    $frame = $frame.Trim() -replace '^at\s+', ''
+    $frame = $frame -replace ',\s*(?<path>[^,]*?)(?<sep>[\\/])(?<file>[^\\/,]+):\s*line\s*(?<line>\d+)\s*$', ', ${file}:${line}'
+    return " [$frame]"
+}
+
 function Get-ReplicationCauseExcerpt {
     <#
         .SYNOPSIS
@@ -6560,7 +6599,8 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
                 -VerificationDirectory $verificationDir
         } catch {
             Write-Host ('The fix phase failed, so the reproduction is published on its own. ' +
-                (ConvertTo-ReplicationSafeLog $_.Exception.Message 500))
+                (ConvertTo-ReplicationSafeLog $_.Exception.Message 500) +
+                (ConvertTo-ReplicationSafeLog (Get-ReplicationErrorOrigin $_) 200))
             $fixOutcome = $null
         }
     } else {
