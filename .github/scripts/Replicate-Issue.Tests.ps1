@@ -7918,3 +7918,81 @@ Describe 'A fix candidate grades itself, so its claim is checked against the tre
         $v.Result | Should -Be 'Blocked'
     }
 }
+
+Describe 'Every agent invocation names parameters that exist' {
+    # Issue 30532's reproduction published "Trigger removed: GREEN 3/3" as proof
+    # of causality while the control had never executed: the call passed a
+    # parameter Invoke-ReplicationCopilot does not declare, the resulting
+    # terminating error was absorbed, and "not run" was graded as if it were a
+    # green result. A misspelled parameter is a typo the parser can find, so it
+    # should never again be discoverable only by reading a published PR.
+    BeforeAll {
+        $script:orchestratorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
+
+        $script:declaredParameters = @{}
+        foreach ($function in $script:orchestratorAst.FindAll({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)) {
+            $names = [Collections.Generic.List[string]]::new()
+            $parameters = if ($function.Body.ParamBlock) {
+                $function.Body.ParamBlock.Parameters
+            } else { $function.Parameters }
+            # @($null) is a one-element array holding $null, not an empty one,
+            # so a parameterless function has to be skipped explicitly.
+            foreach ($parameter in @($parameters | Where-Object { $_ })) {
+                $names.Add($parameter.Name.VariablePath.UserPath)
+            }
+            $script:declaredParameters[$function.Name] = $names
+        }
+
+        # The predicate runs outside this scope, so it must not read state
+        # from it; filtering afterwards keeps the lookup where the state lives.
+        $known = $script:declaredParameters
+        $script:calls = @($script:orchestratorAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.CommandAst]
+        }, $true) | Where-Object {
+            $commandName = $_.GetCommandName()
+            $commandName -and $known.ContainsKey($commandName)
+        })
+    }
+
+    It 'declares Invoke-ReplicationCopilot parameters for every name its callers use' {
+        $target = 'Invoke-ReplicationCopilot'
+        $declared = $script:declaredParameters[$target]
+        $declared | Should -Not -BeNullOrEmpty
+
+        $offenders = [Collections.Generic.List[string]]::new()
+        foreach ($call in @($script:calls | Where-Object { $_.GetCommandName() -eq $target })) {
+            foreach ($element in $call.CommandElements) {
+                if ($element -isnot [System.Management.Automation.Language.CommandParameterAst]) { continue }
+                if ($declared -cnotcontains $element.ParameterName) {
+                    $offenders.Add("line $($element.Extent.StartLineNumber): -$($element.ParameterName)")
+                }
+            }
+        }
+        $offenders -join '; ' | Should -BeNullOrEmpty -Because (
+            "$target would throw at runtime, and an absorbed throw has already " +
+            'been published once as a passing control')
+    }
+
+    It 'names only declared parameters across every internal call in the orchestrator' {
+        # The same class of typo in any other helper is the same class of bug.
+        $offenders = [Collections.Generic.List[string]]::new()
+        foreach ($call in $script:calls) {
+            $name = $call.GetCommandName()
+            $declared = $script:declaredParameters[$name]
+            foreach ($element in $call.CommandElements) {
+                if ($element -isnot [System.Management.Automation.Language.CommandParameterAst]) { continue }
+                $used = $element.ParameterName
+                # PowerShell accepts unambiguous prefixes, so a shortened name
+                # is legal and must not be reported as a typo.
+                $matches = @($declared | Where-Object {
+                    $_.StartsWith($used, [StringComparison]::OrdinalIgnoreCase) })
+                if ($matches.Count -eq 0) {
+                    $offenders.Add("$name line $($element.Extent.StartLineNumber): -$used")
+                }
+            }
+        }
+        $offenders -join '; ' | Should -BeNullOrEmpty
+    }
+}
