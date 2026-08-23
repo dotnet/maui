@@ -393,7 +393,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		static BindableObject CreateSafeAreaBindable(Type safeAreaViewType)
 		{
-			return (BindableObject)Activator.CreateInstance(safeAreaViewType);
+			return (BindableObject)Activator.CreateInstance(safeAreaViewType, nonPublic: true);
 		}
 
 		[Fact]

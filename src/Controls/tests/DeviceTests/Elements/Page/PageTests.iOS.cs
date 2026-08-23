@@ -77,6 +77,24 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public void ReadingDefaultSafeAreaEdgesPreservesLegacySafeAreaFallback()
+		{
+			var page = new ContentPage();
+#pragma warning disable CS0618 // Type or member is obsolete
+			page.On<iOS>().SetUseSafeArea(true);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			_ = page.SafeAreaEdges;
+
+			var safeAreaView = (ISafeAreaView2)page;
+			Assert.False(safeAreaView.HasExplicitSafeAreaEdges);
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(0));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(1));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(2));
+			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(3));
+		}
+
 		//src/Compatibility/Core/tests/iOS/EmbeddingTests.cs
 		[Fact(DisplayName = "Can Create Platform View From ContentPage")]
 		public async Task CanCreateViewControllerFromContentPage()

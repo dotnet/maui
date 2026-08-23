@@ -4,11 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -20,6 +22,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ViewTests
 	{
+		[Fact]
+		public async Task CustomViewSafeAreaEdgesReachMauiView()
+		{
+			var view = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None)
+			};
+			var handler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(view);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = handler.PlatformView;
+				platformView.Frame = new CGRect(0, 0, 100, 100);
+				platformView.SafeAreaInsetsDidChange();
+				platformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 60, 90), view.LastArrangeBounds);
+			});
+		}
+
 		[Fact]
 		public async Task GestureRecognizersAttachToPlatformViewWhenNoContainerViewIsPresent()
 		{
@@ -76,5 +102,42 @@ namespace Microsoft.Maui.DeviceTests
 
 		static Type[] GetGestureRecognizerTypes(UIView view) =>
 			view?.GestureRecognizers?.Select(g => g.GetType()).ToArray() ?? Array.Empty<Type>();
+
+		sealed class CustomSafeAreaViewHandler : ViewHandler<CustomSafeAreaView, TestSafeAreaContentView>
+		{
+			static readonly IPropertyMapper<CustomSafeAreaView, CustomSafeAreaViewHandler> Mapper =
+				new PropertyMapper<CustomSafeAreaView, CustomSafeAreaViewHandler>(ViewHandler.ViewMapper);
+
+			public CustomSafeAreaViewHandler()
+				: base(Mapper)
+			{
+			}
+
+			protected override TestSafeAreaContentView CreatePlatformView() =>
+				new()
+				{
+					View = VirtualView,
+					CrossPlatformLayout = VirtualView
+				};
+
+			public override void SetVirtualView(IView view)
+			{
+				base.SetVirtualView(view);
+				PlatformView.View = view;
+				PlatformView.CrossPlatformLayout = VirtualView;
+			}
+
+			protected override void DisconnectHandler(TestSafeAreaContentView platformView)
+			{
+				platformView.View = null;
+				platformView.CrossPlatformLayout = null;
+				base.DisconnectHandler(platformView);
+			}
+		}
+
+		sealed class TestSafeAreaContentView : Microsoft.Maui.Platform.ContentView
+		{
+			public override UIEdgeInsets SafeAreaInsets => new(10, 20, 30, 40);
+		}
 	}
 }

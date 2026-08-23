@@ -4,7 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Views;
+using Android.Widget;
+using AndroidX.Core.Graphics;
+using AndroidX.Core.View;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -16,11 +20,59 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using AInsets = AndroidX.Core.Graphics.Insets;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ViewTests
 	{
+		[Fact]
+		public async Task CustomViewSafeAreaEdgesRefreshAndroidInsetListener()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new CustomSafeAreaView();
+				var handler = CreateHandler<CustomSafeAreaViewHandler>(view);
+				var platformView = handler.PlatformView;
+				var root = new FrameLayout(MauiContext.Context);
+				var recyclerView = new TestSafeAreaRecyclerView(MauiContext.Context);
+				root.AddView(recyclerView);
+				recyclerView.AddView(platformView);
+				MauiWindowInsetListener.RegisterParentForChildViews(root);
+
+				try
+				{
+					platformView.SetPadding(1, 2, 3, 4);
+					Assert.False(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+					Assert.Null(MauiWindowInsetListener.FindListenerForView(platformView));
+
+					view.SafeAreaEdges = SafeAreaEdges.All;
+
+					Assert.True(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+					Assert.NotNull(MauiWindowInsetListener.FindListenerForView(platformView));
+
+					var insets = new WindowInsetsCompat.Builder()
+						.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(20, 0, 0, 0))
+						.Build();
+					ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+					Assert.NotEqual(1, platformView.PaddingLeft);
+
+					view.ClearValue(CustomSafeAreaView.SafeAreaEdgesProperty);
+
+					Assert.False(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+					Assert.Null(MauiWindowInsetListener.FindListenerForView(platformView));
+					Assert.Equal(1, platformView.PaddingLeft);
+					Assert.Equal(2, platformView.PaddingTop);
+					Assert.Equal(3, platformView.PaddingRight);
+					Assert.Equal(4, platformView.PaddingBottom);
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
 		[Theory]
 		[InlineData(1)]
 		[InlineData(2)]
@@ -87,6 +139,43 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				});
 			});
+		}
+
+		sealed class CustomSafeAreaViewHandler : ViewHandler<CustomSafeAreaView, ContentViewGroup>
+		{
+			static readonly IPropertyMapper<CustomSafeAreaView, CustomSafeAreaViewHandler> Mapper =
+				new PropertyMapper<CustomSafeAreaView, CustomSafeAreaViewHandler>(ViewHandler.ViewMapper);
+
+			public CustomSafeAreaViewHandler()
+				: base(Mapper)
+			{
+			}
+
+			protected override ContentViewGroup CreatePlatformView() =>
+				new(Context)
+				{
+					CrossPlatformLayout = VirtualView
+				};
+
+			public override void SetVirtualView(IView view)
+			{
+				base.SetVirtualView(view);
+				PlatformView.CrossPlatformLayout = VirtualView;
+			}
+
+			protected override void DisconnectHandler(ContentViewGroup platformView)
+			{
+				platformView.CrossPlatformLayout = null;
+				base.DisconnectHandler(platformView);
+			}
+		}
+
+		sealed class TestSafeAreaRecyclerView : FrameLayout, IMauiRecyclerView
+		{
+			public TestSafeAreaRecyclerView(Context context)
+				: base(context)
+			{
+			}
 		}
 	}
 }

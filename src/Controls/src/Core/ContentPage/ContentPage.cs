@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Check if the developer has explicitly set SafeAreaEdges
-			if (IsSet(SafeAreaEdgesProperty))
+			if (SafeAreaElement.IsSafeAreaEdgesSet(this))
 			{
 				// Developer has explicitly set SafeAreaEdges, use it directly
 				return SafeAreaEdges.GetEdge(edge);

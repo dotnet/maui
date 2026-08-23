@@ -10,6 +10,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -67,6 +68,34 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(60, desiredSize.Width, 0.5d);
 				Assert.Equal(60, desiredSize.Height, 0.5d);
 			});
+		}
+
+		sealed class CustomSafeAreaView : View, ISafeAreaElement, ISafeAreaView2, ICrossPlatformLayout
+		{
+			public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
+			public SafeAreaEdges SafeAreaEdges
+			{
+				get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+				set => SetValue(SafeAreaEdgesProperty, value);
+			}
+
+			public Rect LastArrangeBounds { get; private set; }
+
+			bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+
+			SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge) => SafeAreaEdges.GetEdge(edge);
+
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Container;
+
+			Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
+				new(widthConstraint, heightConstraint);
+
+			Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+			{
+				LastArrangeBounds = bounds;
+				return bounds.Size;
+			}
 		}
 	}
 }
