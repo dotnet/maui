@@ -1165,6 +1165,26 @@ Describe 'A verdict rescued from the noise is classified as a verdict' {
 
         Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
     }
+
+    It 'still infers a termination from a bare abort with no verdict at all' {
+        # The safety property behind the noise filtering: when the runner dies
+        # before it can say anything, the exit code is the only witness left
+        # and it must survive into the summary. Losing this would make a hard
+        # native crash invisible.
+        $chatter = 1..40 | ForEach-Object {
+            "Maui.Controls.Sample.Sandbox[13383:e644] [com.apple.dt.xctest:Default] " +
+                "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout"
+            "Sending animations idle reply with error: (null)"
+        }
+        $raw = (@('Running issue 37440 Appium plan on catalyst.') + @($chatter) + @(
+            "$([char]0x274C) Test failed with exit code 134"
+        )) -join "`n"
+
+        $summary = Select-ReproductionDiagnosticLines -Text $raw
+
+        $summary | Should -Match 'exit code 134'
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+    }
 }
 
 Describe 'Kept footage stops where the scenario stopped' {
