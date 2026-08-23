@@ -587,7 +587,10 @@ namespace Microsoft.Maui.Controls
 					view._pendingPropertyChangedPropertyName == BadgeColorProperty.PropertyName ||
 					view._pendingPropertyChangedPropertyName == BadgeTextColorProperty.PropertyName)
 				{
-					UpdateTabBarItemBadge(changedHandler.ViewController?.TabBarItem, changedPage);
+					UpdateTabBarItemBadge(
+						changedHandler.ViewController?.TabBarItem,
+						changedPage,
+						view._pendingPropertyChangedPropertyName);
 					return;
 				}
 
@@ -812,34 +815,30 @@ namespace Microsoft.Maui.Controls
 			icons?.Item2?.Dispose();
 		}
 
-		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, Page page)
+		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, Page page, string propertyName = null)
 		{
 			if (tabBarItem is null)
 			{
 				return;
 			}
 
-			var badgeText = GetBadgeText(page);
-			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
+			tabBarItem.BadgeValue = GetBadgeText(page);
 
-			var badgeColor = GetBadgeColor(page);
-			tabBarItem.BadgeColor = badgeColor?.ToPlatform();
-
-			var badgeTextColor = GetBadgeTextColor(page);
-			if (badgeTextColor is not null)
+			if (page.IsSet(BadgeColorProperty) || propertyName == BadgeColorProperty.PropertyName)
 			{
-				var attributes = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.BadgeColor = GetBadgeColor(page)?.ToPlatform();
+			}
+
+			if (page.IsSet(BadgeTextColorProperty) || propertyName == BadgeTextColorProperty.PropertyName)
+			{
+				var badgeTextColor = GetBadgeTextColor(page);
+				var attributes = badgeTextColor is null
+					? null
+					: new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
 				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Normal);
 				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Selected);
 				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Disabled);
 				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Focused);
-			}
-			else
-			{
-				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
-				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Selected);
-				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Disabled);
-				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Focused);
 			}
 		}
 

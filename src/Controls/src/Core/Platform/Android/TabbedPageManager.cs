@@ -31,6 +31,8 @@ public class TabbedPageManager
 
 	readonly TabbedViewManager _tabbedViewManager;
 	readonly IMauiContext _context;
+	readonly Dictionary<int, Page> _bottomBadgePages = new();
+	readonly Dictionary<int, Page> _topBadgePages = new();
 	TabbedPageTabbedViewSourceAdapter _adapter;
 	bool _badgesNeedUpdate;
 
@@ -79,6 +81,8 @@ public class TabbedPageManager
 			ViewPager.LayoutChange -= OnLayoutChanged;
 		}
 
+		_bottomBadgePages.Clear();
+		_topBadgePages.Clear();
 		Element = tabbedPage;
 
 		if (Element is not null)
@@ -161,7 +165,7 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
 	{
-		_tabbedViewManager.SetTabLayout();
+		SetTabLayoutAndUpdateBadges();
 	}
 
 	protected virtual void RootViewChanged(object sender, EventArgs e)
@@ -169,8 +173,15 @@ public class TabbedPageManager
 		if (sender is NavigationRootManager rootManager)
 		{
 			rootManager.RootViewChanged -= RootViewChanged;
-			_tabbedViewManager.SetTabLayout();
+			SetTabLayoutAndUpdateBadges();
 		}
+	}
+
+	void SetTabLayoutAndUpdateBadges()
+	{
+		_tabbedViewManager.SetTabLayout();
+		_badgesNeedUpdate = true;
+		ViewPager.Post(TryUpdateAllBadges);
 	}
 
 	#endregion
@@ -187,6 +198,14 @@ public class TabbedPageManager
 		}
 
 		// TabbedViewManager handles the tab UI refresh via TabsChanged event on the adapter
+		foreach (var index in _bottomBadgePages.Keys.Where(index => index >= Element.Children.Count).ToArray())
+		{
+			_bottomBadgePages.Remove(index);
+		}
+		foreach (var index in _topBadgePages.Keys.Where(index => index >= Element.Children.Count).ToArray())
+		{
+			_topBadgePages.Remove(index);
+		}
 		_badgesNeedUpdate = true;
 		ViewPager.Post(TryUpdateAllBadges);
 		UpdateIgnoreContainerAreas();
@@ -265,7 +284,7 @@ public class TabbedPageManager
 			e.PropertyName == TabbedPage.BadgeColorProperty.PropertyName ||
 			e.PropertyName == TabbedPage.BadgeTextColorProperty.PropertyName)
 		{
-			UpdateBadge(page, index);
+			UpdateBadge(page, index, e.PropertyName);
 		}
 	}
 
@@ -341,12 +360,18 @@ public class TabbedPageManager
 		}
 		else
 		{
-			if (Element.Children.Count > 0 && TabLayout.TabCount == 0)
+			var tabLayout = TabLayout;
+			if (tabLayout is null)
 			{
 				return false;
 			}
 
-			for (var i = 0; i < Element.Children.Count && i < TabLayout.TabCount; i++)
+			if (Element.Children.Count > 0 && tabLayout.TabCount == 0)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < Element.Children.Count && i < tabLayout.TabCount; i++)
 			{
 				UpdateTopBadge(Element.Children[i], i);
 			}
@@ -355,7 +380,7 @@ public class TabbedPageManager
 		return true;
 	}
 
-	void UpdateBadge(Page page, int index)
+	void UpdateBadge(Page page, int index, string propertyName)
 	{
 		if (IsBottomTabPlacement)
 		{
@@ -367,15 +392,15 @@ public class TabbedPageManager
 				return;
 			}
 
-			UpdateBottomBadge(page, index);
+			UpdateBottomBadge(page, index, propertyName);
 		}
 		else
 		{
-			UpdateTopBadge(page, index);
+			UpdateTopBadge(page, index, propertyName);
 		}
 	}
 
-	void UpdateBottomBadge(Page page, int index)
+	void UpdateBottomBadge(Page page, int index, string propertyName = null)
 	{
 		var bottomNavigationView = BottomNavigationView;
 		if (bottomNavigationView is null)
@@ -384,6 +409,12 @@ public class TabbedPageManager
 		}
 
 		var badgeText = TabbedPage.GetBadgeText(page);
+		if (_bottomBadgePages.TryGetValue(index, out var previousBadgePage) && previousBadgePage != page)
+		{
+			bottomNavigationView.RemoveBadge(index);
+		}
+		_bottomBadgePages[index] = page;
+
 		if (badgeText is null)
 		{
 			bottomNavigationView.RemoveBadge(index);
@@ -392,7 +423,8 @@ public class TabbedPageManager
 
 		var badgeColor = TabbedPage.GetBadgeColor(page);
 		var badgeTextColor = TabbedPage.GetBadgeTextColor(page);
-		if (badgeColor is null || badgeTextColor is null)
+		if ((propertyName == TabbedPage.BadgeColorProperty.PropertyName && badgeColor is null) ||
+			(propertyName == TabbedPage.BadgeTextColorProperty.PropertyName && badgeTextColor is null))
 		{
 			bottomNavigationView.RemoveBadge(index);
 		}
@@ -419,7 +451,7 @@ public class TabbedPageManager
 		}
 	}
 
-	void UpdateTopBadge(Page page, int index)
+	void UpdateTopBadge(Page page, int index, string propertyName = null)
 	{
 		var tab = TabLayout?.GetTabAt(index);
 		if (tab is null)
@@ -428,6 +460,12 @@ public class TabbedPageManager
 		}
 
 		var badgeText = TabbedPage.GetBadgeText(page);
+		if (_topBadgePages.TryGetValue(index, out var previousBadgePage) && previousBadgePage != page)
+		{
+			tab.RemoveBadge();
+		}
+		_topBadgePages[index] = page;
+
 		if (badgeText is null)
 		{
 			tab.RemoveBadge();
@@ -436,7 +474,8 @@ public class TabbedPageManager
 
 		var badgeColor = TabbedPage.GetBadgeColor(page);
 		var badgeTextColor = TabbedPage.GetBadgeTextColor(page);
-		if (badgeColor is null || badgeTextColor is null)
+		if ((propertyName == TabbedPage.BadgeColorProperty.PropertyName && badgeColor is null) ||
+			(propertyName == TabbedPage.BadgeTextColorProperty.PropertyName && badgeTextColor is null))
 		{
 			tab.RemoveBadge();
 		}

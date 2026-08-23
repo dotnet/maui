@@ -110,6 +110,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Badge Properties Update NavigationView Item")]
+		public async Task BadgePropertiesUpdateNavigationViewItem()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			TabbedPage.SetBadgeText(firstPage, "New");
+			TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
+			TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
+			var tabbedPage = new TabbedPage { Children = { firstPage } };
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				var item = Assert.Single((IEnumerable<NavigationViewItemViewModel>)navView.MenuItemsSource);
+
+				Assert.Equal("New", item.BadgeText);
+				Assert.Equal(-1, item.BadgeValue);
+				Assert.Equal(Colors.Blue.ToPlatform(), Assert.IsType<WSolidColorBrush>(item.BadgeBackground).Color);
+				Assert.Equal(Colors.Yellow.ToPlatform(), Assert.IsType<WSolidColorBrush>(item.BadgeForeground).Color);
+
+				TabbedPage.SetBadgeText(firstPage, "42");
+				TabbedPage.SetBadgeColor(firstPage, null);
+				TabbedPage.SetBadgeTextColor(firstPage, null);
+
+				Assert.Equal("42", item.BadgeText);
+				Assert.Equal(42, item.BadgeValue);
+				Assert.Null(item.BadgeBackground);
+				Assert.Null(item.BadgeForeground);
+
+				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
+				Assert.Same(
+					Microsoft.UI.Xaml.DependencyProperty.UnsetValue,
+					converter.Convert(null, typeof(object), null, null));
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Adding and Removing Pages Propagates Correctly")]
 		public async Task AddingAndRemovingPagesPropagatesCorrectly()
 		{

@@ -86,6 +86,67 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgeTextUpdateDoesNotRecreateDefaultColoredBadge(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			TabbedPage.SetBadgeText(firstPage, "1");
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { firstPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				BadgeDrawable GetBadge() => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0)
+					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(0).Badge;
+
+				await AssertEventually(() => GetBadge()?.Text == "1");
+				var badge = GetBadge();
+
+				TabbedPage.SetBadgeText(firstPage, "2");
+
+				await AssertEventually(() => GetBadge()?.Text == "2");
+				Assert.Same(badge, GetBadge());
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgeColorsDoNotTransferWhenTabIndexIsReused(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var coloredPage = new ContentPage { Title = "Colored" };
+			TabbedPage.SetBadgeText(coloredPage, "1");
+			TabbedPage.SetBadgeColor(coloredPage, Colors.Orange);
+			TabbedPage.SetBadgeTextColor(coloredPage, Colors.Black);
+			var defaultPage = new ContentPage { Title = "Default" };
+			TabbedPage.SetBadgeText(defaultPage, "2");
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { coloredPage, defaultPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				BadgeDrawable GetBadge(int index) => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(index)
+					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(index).Badge;
+
+				await AssertEventually(() => GetBadge(0)?.Text == "1");
+				var coloredBadge = GetBadge(0);
+
+				tabbedPage.Children.RemoveAt(0);
+
+				await AssertEventually(() => GetBadge(0)?.Text == "2");
+				var defaultBadge = GetBadge(0);
+				Assert.NotSame(coloredBadge, defaultBadge);
+				Assert.NotEqual(Colors.Orange.ToPlatform(), defaultBadge.BackgroundColor);
+				Assert.NotEqual(Colors.Black.ToPlatform(), defaultBadge.BadgeTextColor);
+			});
+		}
+
 		[Fact]
 		public async Task BottomTabBadgesRespectOverflow()
 		{
