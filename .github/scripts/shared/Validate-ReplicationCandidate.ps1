@@ -2748,6 +2748,167 @@ function Test-LabeledExactValue {
     return $Text -match "(?m)^\s*(?:[-*]\s*)?(?:$labelPattern)\s*:\s*\x60{0,2}$valuePattern\x60{0,2}\s*$"
 }
 
+function Assert-ReplicationAuthoritativeResult {
+    <#
+        .SYNOPSIS
+            Reads the runner's own result document and requires it to show
+            exactly one executed test, which failed, and which is the test the
+            manifest claims.
+
+        .DESCRIPTION
+            Every other selection check in this gate reads a number some script
+            wrote down. This reads the document the test runner produced.
+
+            It exists because of a specific failure: an XHarness method filter
+            cannot express a display name containing a comma, so a theory test
+            selected nothing at all, the runner reported no count, and a
+            reproduction whose test never executed was published as evidence
+            that it failed. A count that is absent is indistinguishable from a
+            count of zero unless something reads the run itself.
+
+            Three formats appear here. xUnit v2 XML is what the device test
+            lanes emit, TRX is what VSTest emits, and NUnit v3 XML is what the
+            UI test lanes emit. All three are read the same way: find the test
+            elements, require exactly one, require it to have failed, and
+            require its identity to be the manifest's.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$VerificationRoot,
+        [Parameter(Mandatory = $true)][string]$TestClass,
+        [Parameter(Mandatory = $true)][string]$TestMethod
+    )
+
+    $candidates = @(
+        Get-ChildItem -LiteralPath $VerificationRoot -Force -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -cmatch '^verification-test-result\.(?:trx|xml)$' })
+    if ($candidates.Count -eq 0) {
+        throw ('The verification evidence has no authoritative test result document, so ' +
+            'there is no proof the named test executed at all.')
+    }
+    if ($candidates.Count -gt 1) {
+        throw 'The verification evidence has more than one authoritative test result document.'
+    }
+
+    $file = $candidates[0]
+    if ($file.Length -gt 4MB) {
+        throw 'The authoritative test result document exceeds the trusted size limit.'
+    }
+
+    $document = [System.Xml.XmlDocument]::new()
+    # A result document arrives from the untrusted job. Resolving a DTD or an
+    # external entity in it would let it read this machine or hang the gate.
+    $document.XmlResolver = $null
+    $readerSettings = [System.Xml.XmlReaderSettings]::new()
+    $readerSettings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+    $readerSettings.XmlResolver = $null
+    try {
+        $stream = [IO.File]::OpenRead($file.FullName)
+        try {
+            $reader = [System.Xml.XmlReader]::Create($stream, $readerSettings)
+            try { $document.Load($reader) } finally { $reader.Dispose() }
+        } finally { $stream.Dispose() }
+    } catch {
+        throw "The authoritative test result document could not be read as XML: $($_.Exception.Message)"
+    }
+
+    $observed = @(Get-ReplicationAuthoritativeTestEntries -Document $document)
+    if ($observed.Count -eq 0) {
+        throw ('The authoritative test result document records no executed test, so the ' +
+            'reported failure did not come from the named test. This is what a filter that ' +
+            'selects nothing looks like.')
+    }
+    if ($observed.Count -gt 1) {
+        throw ("The authoritative test result document records $($observed.Count) executed " +
+            'tests, so the failure is not attributable to the named test.')
+    }
+
+    $entry = $observed[0]
+    if (-not $entry.Failed) {
+        throw ('The authoritative test result document records the targeted test as ' +
+            "'$($entry.Outcome)', but the reproduction is published as a failing test.")
+    }
+
+    # The runner spells identity differently per format: a bare method name with
+    # a separate type, or one fully qualified string. Requiring both tokens to
+    # appear in the recorded identity covers all three without pinning any one
+    # runner's spelling of the separator.
+    $shortClass = ($TestClass -split '\.')[-1]
+    if ($entry.Name -cnotmatch [regex]::Escape($TestMethod)) {
+        throw ('The authoritative test result document records a test named ' +
+            "'$(Get-ReportableArtifactName -Name $entry.Name)', which is not the method the manifest claims.")
+    }
+    if (-not [string]::IsNullOrWhiteSpace($entry.Type)) {
+        if ($entry.Type -cnotmatch [regex]::Escape($shortClass)) {
+            throw ('The authoritative test result document records a test on type ' +
+                "'$(Get-ReportableArtifactName -Name $entry.Type)', which is not the class the manifest claims.")
+        }
+    } elseif ($entry.Name -cnotmatch [regex]::Escape($shortClass)) {
+        throw ('The authoritative test result document records a test named ' +
+            "'$(Get-ReportableArtifactName -Name $entry.Name)', which is not the class the manifest claims.")
+    }
+
+    return [pscustomobject]@{
+        Name = $entry.Name
+        Type = $entry.Type
+        Outcome = $entry.Outcome
+        Document = $file.Name
+    }
+}
+
+function Get-ReplicationAuthoritativeTestEntries {
+    <#
+        .SYNOPSIS
+            Extracts the executed tests from an xUnit, TRX or NUnit document.
+
+        .DESCRIPTION
+            Selection is by local name so that a namespaced document reads the
+            same as a bare one. TRX in particular is always namespaced, and a
+            namespace-sensitive query against it silently returns nothing --
+            which would read as "no test executed" and reject a valid run.
+    #>
+    param([Parameter(Mandatory = $true)][System.Xml.XmlDocument]$Document)
+
+    $entries = [System.Collections.Generic.List[object]]::new()
+
+    foreach ($node in @($Document.SelectNodes("//*[local-name()='test']"))) {
+        $result = [string]$node.GetAttribute('result')
+        $entries.Add([pscustomobject]@{
+            Name = [string]$node.GetAttribute('name')
+            Type = [string]$node.GetAttribute('type')
+            Outcome = $result
+            Failed = $result -imatch '^fail'
+        }) | Out-Null
+    }
+    if ($entries.Count -gt 0) { return $entries.ToArray() }
+
+    foreach ($node in @($Document.SelectNodes("//*[local-name()='UnitTestResult']"))) {
+        $outcome = [string]$node.GetAttribute('outcome')
+        $entries.Add([pscustomobject]@{
+            Name = [string]$node.GetAttribute('testName')
+            Type = ''
+            Outcome = $outcome
+            Failed = $outcome -imatch '^fail'
+        }) | Out-Null
+    }
+    if ($entries.Count -gt 0) { return $entries.ToArray() }
+
+    foreach ($node in @($Document.SelectNodes("//*[local-name()='test-case']"))) {
+        $result = [string]$node.GetAttribute('result')
+        $fullName = [string]$node.GetAttribute('fullname')
+        if ([string]::IsNullOrWhiteSpace($fullName)) {
+            $fullName = [string]$node.GetAttribute('name')
+        }
+        $entries.Add([pscustomobject]@{
+            Name = $fullName
+            Type = [string]$node.GetAttribute('classname')
+            Outcome = $result
+            Failed = $result -imatch '^fail'
+        }) | Out-Null
+    }
+
+    return $entries.ToArray()
+}
+
 function Get-ReplicationFixArmEvidenceFromRoot {
     param(
         [Parameter(Mandatory = $true)][string]$VerificationRoot,
@@ -3817,6 +3978,22 @@ function Invoke-ReplicationCandidateValidation {
                 -Manifest $manifest
         }
         $inventory = Get-ReplicationEvidenceInventory -Directory $EvidenceDir
+
+        # Read the run rather than a summary of it. Every other selection check
+        # here trusts a number some script wrote down, and a number that was
+        # never written is indistinguishable from a run that selected nothing --
+        # which is exactly how a test that never executed was once published as
+        # proof that it failed.
+        if ($manifest.TestType -ceq 'DeviceTest' -and
+            -not [string]::IsNullOrWhiteSpace($manifest.TestClassName) -and
+            -not [string]::IsNullOrWhiteSpace($manifest.TestMethodName)) {
+            $authoritative = Assert-ReplicationAuthoritativeResult `
+                -VerificationRoot $inventory.VerificationRoot `
+                -TestClass $manifest.TestClassName `
+                -TestMethod $manifest.TestMethodName
+            Write-Host ("The runner's own result document records exactly one executed test, " +
+                "'$($authoritative.Name)', which failed.")
+        }
 
         # A fix whose arms did not hold is discarded here rather than allowed to
         # drag the reproduction down with it. The grader treats a failed fix arm

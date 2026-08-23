@@ -1167,6 +1167,15 @@ function Get-TargetedTestFailureMessage {
             }
         }
         $messages = [Collections.Generic.List[string]]::new()
+        # The gate requires the runner's own document as proof the named test
+        # actually executed, so retain the first parseable one whether or not a
+        # failure message is extracted from it. Retaining only on extraction
+        # made the evidence conditional on where the message happened to come
+        # from, which would refuse a valid run whose message came from console
+        # output instead.
+        if ([string]::IsNullOrWhiteSpace($script:ReplicationAuthoritativeResultPath)) {
+            $script:ReplicationAuthoritativeResultPath = $fullPath
+        }
         foreach ($testNode in @($resultXml.SelectNodes('//test'))) {
             if (
                 $testNode.GetAttribute('type') -cne $TargetClass -or
@@ -1188,7 +1197,6 @@ function Get-TargetedTestFailureMessage {
             }
         }
         if ($messages.Count -gt 0) {
-            $script:ReplicationAuthoritativeResultPath = $fullPath
             return ($messages -join [Environment]::NewLine)
         }
 
@@ -1227,7 +1235,6 @@ function Get-TargetedTestFailureMessage {
             }
         }
         if ($messages.Count -gt 0) {
-            $script:ReplicationAuthoritativeResultPath = $fullPath
             return ($messages -join [Environment]::NewLine)
         }
     }

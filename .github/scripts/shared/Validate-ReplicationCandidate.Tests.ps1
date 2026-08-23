@@ -3472,3 +3472,234 @@ Describe 'A manifest cannot rename the fix patch out from under the gate' {
         { Invoke-FixtureValidation -Fixture $script:renameFixture } | Should -Not -Throw
     }
 }
+
+Describe 'Reading the run instead of a summary of the run' {
+    BeforeEach {
+        $script:resultRoot = Join-Path $TestDrive ([Guid]::NewGuid().ToString('n'))
+        New-Item -ItemType Directory -Path $script:resultRoot -Force | Out-Null
+
+        # Shaped after the document build 14988245 actually produced. Writing a
+        # document we invented would test our idea of xUnit rather than xUnit.
+        $script:xunitOne = @'
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="1" passed="0" failed="1" skipped="0">
+    <errors />
+    <collection total="1" passed="0" failed="1" name="Serialize test" time="0.377">
+      <test name="HtmlInsAndDelRenderWithTextDecorations" type="Microsoft.Maui.DeviceTests.Issue19519" method="HtmlInsAndDelRenderWithTextDecorations" time="0.37" result="Fail">
+        <traits><trait name="Category" value="Issue19519" /></traits>
+        <failure exception-type="Xunit.Sdk.TrueException">
+          <message><![CDATA[HTML ins text should render as an underline.]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+'@
+
+        function script:Write-ResultDocument {
+            param([string]$Content, [string]$Name = 'verification-test-result.xml')
+            $path = Join-Path $script:resultRoot $Name
+            Set-Content -LiteralPath $path -Value $Content -Encoding utf8NoBOM
+            return $path
+        }
+
+        function script:Assert-Result {
+            param(
+                [string]$Class = 'Microsoft.Maui.DeviceTests.Issue19519',
+                [string]$Method = 'HtmlInsAndDelRenderWithTextDecorations'
+            )
+            return Assert-ReplicationAuthoritativeResult `
+                -VerificationRoot $script:resultRoot `
+                -TestClass $Class `
+                -TestMethod $Method
+        }
+    }
+
+    It 'accepts a run that executed exactly the named test and saw it fail' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+        $result = script:Assert-Result
+
+        $result.Name | Should -Be 'HtmlInsAndDelRenderWithTextDecorations'
+        $result.Outcome | Should -Be 'Fail'
+    }
+
+    It 'refuses a run whose filter selected nothing at all' {
+        # This is the defect the whole check exists for. An XHarness method
+        # filter cannot express a display name containing a comma, so a theory
+        # selected no test, no count was recorded, and the reproduction was
+        # published as evidence of a failure that never ran.
+        $null = script:Write-ResultDocument -Content @'
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="0" passed="0" failed="0" skipped="0">
+    <errors />
+  </assembly>
+</assemblies>
+'@
+
+        { script:Assert-Result } | Should -Throw '*records no executed test*'
+    }
+
+    It 'refuses a run that executed more than the named test' {
+        $null = script:Write-ResultDocument -Content ($script:xunitOne -replace
+            '(?s)(<test name="HtmlIns.*?</test>)', '$1
+      <test name="SomethingElse" type="Microsoft.Maui.DeviceTests.Issue19519" method="SomethingElse" result="Fail" />')
+
+        { script:Assert-Result } | Should -Throw '*records 2 executed tests*'
+    }
+
+    It 'refuses a run whose named test passed' {
+        $null = script:Write-ResultDocument -Content ($script:xunitOne -replace 'result="Fail"', 'result="Pass"')
+
+        { script:Assert-Result } | Should -Throw '*published as a failing test*'
+    }
+
+    It 'refuses a run that executed a different method than the manifest claims' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+
+        { script:Assert-Result -Method 'SomeOtherMethod' } |
+            Should -Throw '*not the method the manifest claims*'
+    }
+
+    It 'refuses a run that executed the right method on a different class' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+
+        { script:Assert-Result -Class 'Microsoft.Maui.DeviceTests.Issue99999' } |
+            Should -Throw '*not the class the manifest claims*'
+    }
+
+    It 'refuses evidence with no authoritative document at all' {
+        { script:Assert-Result } | Should -Throw '*no authoritative test result document*'
+    }
+
+    It 'refuses evidence carrying two authoritative documents' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+        $null = script:Write-ResultDocument -Content $script:xunitOne -Name 'verification-test-result.trx'
+
+        { script:Assert-Result } | Should -Throw '*more than one authoritative test result document*'
+    }
+
+    It 'reads a namespaced TRX, which a namespace-sensitive query would read as empty' {
+        $null = script:Write-ResultDocument -Name 'verification-test-result.trx' -Content @'
+<?xml version="1.0" encoding="utf-8"?>
+<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Results>
+    <UnitTestResult testName="Microsoft.Maui.DeviceTests.Issue19519.HtmlInsAndDelRenderWithTextDecorations" outcome="Failed" />
+  </Results>
+</TestRun>
+'@
+
+        (script:Assert-Result).Outcome | Should -Be 'Failed'
+    }
+
+    It 'reads an NUnit document, which the UI test lanes emit' {
+        $null = script:Write-ResultDocument -Content @'
+<?xml version="1.0" encoding="utf-8"?>
+<test-run>
+  <test-suite type="TestFixture">
+    <test-case id="1000" name="HtmlInsAndDelRenderWithTextDecorations" fullname="Microsoft.Maui.DeviceTests.Issue19519.HtmlInsAndDelRenderWithTextDecorations" classname="Microsoft.Maui.DeviceTests.Issue19519" result="Failed" />
+  </test-suite>
+</test-run>
+'@
+
+        (script:Assert-Result).Outcome | Should -Be 'Failed'
+    }
+
+    It 'refuses a document that tries to read this machine through a DTD' {
+        $null = script:Write-ResultDocument -Content @'
+<?xml version="1.0"?>
+<!DOCTYPE assemblies [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<assemblies><assembly><collection><test name="&xxe;" type="X" result="Fail" /></collection></assembly></assemblies>
+'@
+
+        { script:Assert-Result } | Should -Throw '*could not be read as XML*'
+    }
+
+    It 'refuses a document too large to be a single test result' {
+        $path = script:Write-ResultDocument -Content $script:xunitOne
+        $stream = [IO.File]::OpenWrite($path)
+        try {
+            $stream.Seek(5MB, [IO.SeekOrigin]::Begin) | Out-Null
+            $stream.WriteByte(32)
+        } finally { $stream.Dispose() }
+
+        { script:Assert-Result } | Should -Throw '*exceeds the trusted size limit*'
+    }
+}
+
+Describe 'A device reproduction must carry the run that proves it' {
+    BeforeEach {
+        $script:deviceFixture = ConvertTo-ArtifactContractFixture -Fixture (
+            New-ValidationFixture -TestType 'DeviceTest')
+
+        function script:Add-AuthoritativeDocument {
+            param(
+                [object]$Fixture,
+                [string]$Method = 'ReproducesReportedFailure',
+                [string]$Type = 'Microsoft.Maui.DeviceTests.Issue12345',
+                [string]$Result = 'Fail',
+                [switch]$Twice
+            )
+
+            $body = if ($Twice) {
+                @"
+      <test name="$Method" type="$Type" method="$Method" result="$Result" />
+      <test name="AnotherOne" type="$Type" method="AnotherOne" result="$Result" />
+"@
+            } else {
+                "      <test name=`"$Method`" type=`"$Type`" method=`"$Method`" result=`"$Result`" />"
+            }
+
+            $document = @"
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll">
+    <errors />
+    <collection name="Serialize test">
+$body
+    </collection>
+  </assembly>
+</assemblies>
+"@
+            $target = Join-Path (Join-Path $Fixture.EvidenceDir 'verification') 'verification-test-result.xml'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
+            Set-Content -LiteralPath $target -Value $document -Encoding utf8NoBOM
+        }
+    }
+
+    It 'publishes a device reproduction whose run document shows the one test failing' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture
+
+        $result = Invoke-FixtureValidation -Fixture $script:deviceFixture
+        $result.validationPassed | Should -BeTrue
+    }
+
+    It 'refuses a device reproduction that ships no run document' {
+        # Without this the gate believes the summary, and a summary is written
+        # by the same run that is being judged.
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*no authoritative test result document*'
+    }
+
+    It 'refuses a device reproduction whose run selected two tests' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Twice
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*records 2 executed tests*'
+    }
+
+    It 'refuses a device reproduction whose run shows the test passing' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Result 'Pass'
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*published as a failing test*'
+    }
+
+    It 'refuses a device reproduction whose run executed a different test' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Method 'SomethingElseEntirely'
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*not the method the manifest claims*'
+    }
+}
