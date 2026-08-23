@@ -5600,8 +5600,10 @@ Describe 'Get-ReplicationBlockedCode control refutation' {
         # Build 15034006 ran its control, saw the test stay red without the
         # trigger, correctly refused the reproduction and then exited red,
         # which is indistinguishable from a broken pipeline.
+        # 'wrong-signature' is a verdict kind, so this also pins the precedence:
+        # without it the run is reported as an untrustworthy test instead.
         $kinds = [System.Collections.Generic.List[string]]::new()
-        $kinds.Add('reproduced')
+        $kinds.Add('wrong-signature')
         Get-ReplicationBlockedCode -RawReason 'The negative control ran and did not pass.' `
             -Stage 'test' -AttemptKinds $kinds -ControlRefutedReproduction |
             Should -Be 'control_refuted_reproduction'
@@ -5626,9 +5628,68 @@ Describe 'Get-ReplicationBlockedCode control refutation' {
     }
 }
 
+Describe 'A runtime that never opens must not be blamed on the test' {
+    # Build 15065398 hit 'The app representing com.microsoft.maui.uitests could
+    # not be found' in OneTimeSetUp on nine consecutive attempts. The harness
+    # retries absorbed three; the remaining six were spent asking the agent to
+    # repair a test that had never executed, and the test degraded from semantic
+    # assertions to hard-coded coordinates in the process.
+    It 'reports an unavailable runtime as its own outcome' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('build-failed')
+        Get-ReplicationBlockedCode -RawReason 'Replication test verification failed' `
+            -Stage 'test' -AttemptKinds $kinds -HarnessUnavailable |
+            Should -Be 'harness_unavailable'
+    }
+
+    It 'does not let an unavailable runtime masquerade as an untrustworthy test' {
+        # 'wrong-signature' is a real verdict kind, so without the precedence
+        # this returns verification_not_trustworthy and claims the test was
+        # judged and found wanting, which is the opposite of what happened.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('wrong-signature')
+        Get-ReplicationBlockedCode -RawReason 'boom' `
+            -Stage 'test' -AttemptKinds $kinds -HarnessUnavailable |
+            Should -Be 'harness_unavailable'
+    }
+
+    It 'still classifies normally when the runtime was available' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('build-failed')
+        Get-ReplicationBlockedCode -RawReason 'boom' -Stage 'test' -AttemptKinds $kinds |
+            Should -Be 'verification_inconclusive'
+    }
+
+    It 'reads the runtime fact from a flag, not from the exception text' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('build-failed')
+        Get-ReplicationBlockedCode `
+            -RawReason 'The app representing com.microsoft.maui.uitests could not be found.' `
+            -Stage 'test' -AttemptKinds $kinds |
+            Should -Be 'verification_inconclusive'
+    }
+
+    It 'stops the repair loop instead of charging the remaining attempts' {
+        # The old arm only rethrew on the very last attempt, so every attempt in
+        # between was still handed to the agent as a repairable test failure.
+        $script:Source | Should -Not -Match '(?s)Test harness retry \{0\}/\{1\}.{0,400}elseif \(\$attempt -eq \$MaxTestAttempts\)'
+        $script:Source | Should -Match 'Test harness unavailable after \{0\} retries'
+        $script:Source | Should -Match '\$script:ReplicationHarnessUnavailable = \$true'
+    }
+
+    It 'finishes the run cleanly so the outcome reaches the issue' {
+        # A runtime that never started is not a pipeline defect, and failing the
+        # task would skip the publication stage that reports it.
+        $script:Source | Should -Match "'control_refuted_reproduction', 'harness_unavailable'"
+    }
+
+    It 'starts every run assuming the runtime is available' {
+        $script:Source | Should -Match '\$script:ReplicationHarnessUnavailable = \$false'
+    }
+}
+
 Describe 'Get-ReplicationBlockedCode' {
-    It 'concludes non-reproduction from the recorded kinds alone' {
-        # The conclusion must not depend on the marker still being legible in a
+    It 'concludes non-reproduction from the recorded kinds alone' {        # The conclusion must not depend on the marker still being legible in a
         # message PowerShell has already rendered through a nested error view.
         $rendered = "Recording the on-device reproduction failed with exit code 1. | System.Invalid | actu | BUG:' | inner exc | ["
         Get-ReplicationBlockedCode -RawReason $rendered -Stage 'sandbox' `

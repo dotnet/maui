@@ -1057,17 +1057,24 @@ Describe 'every blocked code is deliberately classified as an answer or a defect
         # the decision is whether the run learned the answer or broke.
         $answers = @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy',
             'control_refuted_reproduction')
+        # A third case, and deliberately not folded into either of the others:
+        # the device runtime never opened, so the run learned nothing and the
+        # pipeline is not at fault. Calling it an answer would claim knowledge
+        # it does not have; calling it a defect would send someone looking for
+        # a bug in this code. It finishes green so the outcome still reaches
+        # the issue, labelled for what it is.
+        $runtimeBlocked = @('harness_unavailable')
         $defects = @(
             'copilot_cli_unavailable', 'copilot_service_unavailable',
             'sandbox_inconclusive', 'verification_inconclusive')
 
         foreach ($code in $script:ProducibleCodes) {
-            ($answers + $defects) | Should -Contain $code -Because `
+            ($answers + $runtimeBlocked + $defects) | Should -Contain $code -Because `
                 "'$code' is produced but neither finishes the run nor fails it deliberately"
         }
-        foreach ($code in $answers) {
+        foreach ($code in ($answers + $runtimeBlocked)) {
             $script:SuccessCodes | Should -Contain $code -Because `
-                "'$code' is an empirical answer and must not fail the build"
+                "'$code' must not fail the build"
         }
         foreach ($code in $defects) {
             $script:SuccessCodes | Should -Not -Contain $code -Because `

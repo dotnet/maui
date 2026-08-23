@@ -563,9 +563,17 @@ function Get-ReplicationBlockedCode {
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Stage,
         [Parameter(Mandatory = $true)][AllowNull()][AllowEmptyCollection()]
         [System.Collections.Generic.List[string]]$AttemptKinds,
-        [switch]$ControlRefutedReproduction
+        [switch]$ControlRefutedReproduction,
+        [switch]$HarnessUnavailable
     )
 
+    if ($HarnessUnavailable) {
+        # The device runtime never opened a session, so no attempt observed
+        # anything about the issue. That is a fact about the agent, not about
+        # the reported behaviour or about this pipeline, and it must not be
+        # reported as though a test had been judged untrustworthy.
+        return 'harness_unavailable'
+    }
     if ($ControlRefutedReproduction) {
         # Build 15034006 ran its control, watched the test stay red without the
         # trigger and correctly refused the reproduction, then finished red as
@@ -5170,6 +5178,7 @@ function Restore-TrackedVerificationSideEffects {
 # reproduction the device refused -- and StrictMode makes reading an unassigned
 # variable a terminating error, so the flag has to exist before any of them.
 $script:ReplicationControlRefutedReproduction = $false
+$script:ReplicationHarnessUnavailable = $false
 
 function Invoke-ReplicationNegativeControl {
     <#
@@ -6399,7 +6408,21 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                         Start-Sleep -Seconds (30 * $testHarnessRetries)
                         $attempt--
                     }
-                    elseif ($attempt -eq $MaxTestAttempts) {
+                    else {
+                        # Build 15065398 exhausted these retries against
+                        # 'The app representing com.microsoft.maui.uitests could
+                        # not be found', then spent every remaining attempt
+                        # asking the agent to repair a test that had never run.
+                        # Each round rewrote the test against an imagined
+                        # failure, and it degraded from semantic assertions to
+                        # hard-coded coordinates before the budget ran out.
+                        #
+                        # No edit to a test opens an Appium session, so once the
+                        # retries are gone the only honest move is to stop and
+                        # say the runtime was unavailable.
+                        $script:ReplicationHarnessUnavailable = $true
+                        Write-Host ("Test harness unavailable after {0} retries: the device session never opened, so no edit to the test can produce a verdict." -f
+                            $MaxTestHarnessRetries)
                         throw
                     }
                 }
@@ -6589,7 +6612,8 @@ catch {
         -RawReason $rawReason `
         -Stage $stage `
         -AttemptKinds $reportedAttemptKinds `
-        -ControlRefutedReproduction:([bool]$script:ReplicationControlRefutedReproduction)
+        -ControlRefutedReproduction:([bool]$script:ReplicationControlRefutedReproduction) `
+        -HarnessUnavailable:([bool]$script:ReplicationHarnessUnavailable)
     Write-BlockedCandidate -Stage $stage -Code $code -Reason $reason
     # Run 15013775 recorded three clean 'no defect' observations and still
     # finished red, and nothing in the log said which arm chose the code or
@@ -6603,10 +6627,12 @@ catch {
         Write-Warning "Sandbox cleanup also failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
     if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy',
-            'control_refuted_reproduction')) {
-        # These are conclusive empirical answers rather than pipeline defects.
-        # Failing the task here would skip the publication stage that reports the
-        # outcome on the issue, so finish successfully with the blocked candidate.
+            'control_refuted_reproduction', 'harness_unavailable')) {
+        # These are conclusive empirical answers rather than pipeline defects,
+        # except harness_unavailable, which is a conclusive fact about the
+        # agent: nothing was observed and nothing can be. Failing the task here
+        # would skip the publication stage that reports the outcome on the
+        # issue, so finish successfully with the blocked candidate.
         Write-Host "ISSUE REPLICATION CONCLUDED WITHOUT A CANDIDATE: $code"
         Write-Host $reason
         exit 0
