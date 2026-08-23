@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				BadgeDrawable GetBadge() => bottomTabs
 					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0)
-					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(0).Badge;
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(0)?.Badge;
 
 				await AssertEventually(() => GetBadge()?.Text == "7", message: "Initial badge text was not applied.");
 				var badge = GetBadge();
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 				TabbedPage.SetBadgeText(firstPage, null);
 				await AssertEventually(() => bottomTabs
 					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0) is null
-					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(0).Badge is null,
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(0) is { Badge: null },
 					message: "Badge was not removed.");
 			});
 		}
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				BadgeDrawable GetBadge() => bottomTabs
 					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0)
-					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(0).Badge;
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(0)?.Badge;
 
 				await AssertEventually(() => GetBadge()?.Text == "1");
 				var badge = GetBadge();
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				BadgeDrawable GetBadge(int index) => bottomTabs
 					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(index)
-					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(index).Badge;
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(index)?.Badge;
 
 				await AssertEventually(() => GetBadge(0)?.Text == "1");
 				var coloredBadge = GetBadge(0);
