@@ -2939,6 +2939,16 @@ stages:
                 exit 0
               }
 
+              $fixPatchPath = Join-Path $artifactRoot "fix.patch"
+              # A fix is optional. Only the runs that produced one hand the gate
+              # a patch to validate; every other run reaches the gate with the
+              # exact argument list it always had.
+              $fixPatchArgument = @{}
+              if (Test-Path -LiteralPath $fixPatchPath -PathType Leaf) {
+                $fixPatchArgument['FixPatchPath'] = $fixPatchPath
+                Write-Host "The candidate carries a proposed fix; validating it alongside the test."
+              }
+
               $validation = @(
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
                   -RepoRoot "$(Build.SourcesDirectory)" `
@@ -2947,7 +2957,8 @@ stages:
                   -EvidenceDir $artifactRoot `
                   -IssueNumber ${{ parameters.IssueNumber }} `
                   -Platform "${{ parameters.Platform }}" `
-                  -OutputPath (Join-Path $outputRoot "validated-candidate.json")
+                  -OutputPath (Join-Path $outputRoot "validated-candidate.json") `
+                  @fixPatchArgument
               )
               if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
                 throw "Replication candidate validation did not return one validated result."
@@ -3029,6 +3040,12 @@ stages:
                   throw "Migrating existing reproduction pull requests to the testing fork failed."
                 }
 
+                $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
+                $publishFixArgument = @{}
+                if (Test-Path -LiteralPath $publishFixPatch -PathType Leaf) {
+                  $publishFixArgument['FixPatchPath'] = $publishFixPatch
+                }
+
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
                   -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
                   -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
@@ -3040,7 +3057,8 @@ stages:
                   -TargetOwner "kubaflo" `
                   -TargetRepository "maui" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
-                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" `
+                  @publishFixArgument
                 if ($LASTEXITCODE -ne 0) {
                   throw "Publishing the replication pull request failed."
                 }

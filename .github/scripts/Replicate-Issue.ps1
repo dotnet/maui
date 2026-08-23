@@ -86,6 +86,12 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
+# Azure's step timeout has been counting since this script started, so the fix
+# panel's budget is measured against this rather than against the moment the
+# panel begins. A slow reproduction must cost the fix its time, not cost the
+# run its evidence.
+$replicationStartedUtc = [DateTimeOffset]::UtcNow
+
 $repoRoot = (& git rev-parse --show-toplevel).Trim()
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repoRoot)) {
     throw 'Replicate-Issue.ps1 must run inside a git worktree.'
@@ -125,6 +131,7 @@ $testProposalPath = Join-Path $agentDir 'test-proposal.json'
 $controlVariantPath = Join-Path $agentDir 'negative-control-variant.cs'
 $controlEditsPath = Join-Path $agentDir 'negative-control-edits.json'
 $fixDir = Join-Path $ArtifactRoot 'fix'
+$fixPatchPath = Join-Path $ArtifactRoot 'fix.patch'
 $fixScopePath = Join-Path $agentDir 'fix-scope.json'
 $fixWinnerPath = Join-Path $agentDir 'fix-winner.json'
 # try-fix requires a Test command as a mandatory input and explicitly forbids
@@ -5454,6 +5461,189 @@ function New-TestPatch {
         Set-Content -LiteralPath $patchPath -Encoding utf8NoBOM
 }
 
+function Invoke-ReplicationFixPhase {
+    <#
+        .SYNOPSIS
+            Drives the whole fix attempt: scope, panel, comparison, arms.
+
+        .DESCRIPTION
+            Runs only against a reproduction that is already certified, and is
+            best-effort at every step. Every way this can go wrong returns
+            $null, which publishes the reproduction exactly as every run before
+            the fix phase existed did. That is the whole contract: a fix is an
+            addition to a certified reproduction, never a risk to one.
+
+            The two arm results are normalised into the reproduction's own
+            verification directory under the names the publisher gate reads.
+            The arms write their raw results under the names the verification
+            script always writes, which are the negative control's and the
+            reproduction's names -- reusing them directly would let a fix arm
+            be mistaken for the evidence behind the reproduction itself.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string[]]$GeneratedFiles,
+        [Parameter(Mandatory = $true)][string[]]$BaseVerificationArguments,
+        [Parameter(Mandatory = $true)][string]$FailureSummary,
+        [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
+        [Parameter(Mandatory = $true)][string]$VerificationDirectory
+    )
+
+    $testRelativePath = @($GeneratedFiles)[0]
+    New-Item -ItemType Directory -Path $fixDir -Force | Out-Null
+
+    $budgetMinutes = Get-ReplicationFixPanelBudget `
+        -ConfiguredBudgetMinutes $FixPanelBudgetMinutes `
+        -StepTimeoutMinutes $StepTimeoutMinutes `
+        -ElapsedMinutes ([DateTimeOffset]::UtcNow - $replicationStartedUtc).TotalMinutes
+    if ($budgetMinutes -lt $FixCandidateTimeoutMinutes) {
+        Write-Host (
+            "No fix is attempted: $budgetMinutes minutes remain of the step budget, " +
+            "which is less than one candidate needs.")
+        return $null
+    }
+
+    $scopePrompt = New-CopilotPrompt `
+        -Phase 'fix-scope' `
+        -FailureSummary $FailureSummary `
+        -BaselineRelativePath $testRelativePath
+    Invoke-ReplicationCopilot `
+        -PhaseName 'fix-scope' `
+        -Prompt $scopePrompt `
+        -WritePaths @($agentDir) `
+        -Attempt 1 `
+        -TimeoutMinutesOverride 25 | Out-Null
+
+    $scope = Read-ReplicationFixScope -Path $fixScopePath
+    if ($scope.IsEmpty) {
+        Write-Host ('The expert scope named no product files, so no fix is attempted: ' +
+            $scope.RootCauseHypothesis)
+        return $null
+    }
+    Write-Host "Fix scope: $($scope.Files -join ', ')"
+
+    # Snapshot rather than revert. There is no author fix to undo here -- the
+    # defect is what this branch ships -- so this records the editable set and
+    # makes HEAD the restore point.
+    $baselineScript = Join-Path $repoRoot '.github/scripts/EstablishBrokenBaseline.ps1'
+    & $baselineScript -EditableFiles $scope.Files -SnapshotOnly | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host 'No fix is attempted: the editable scope could not be recorded.'
+        return $null
+    }
+
+    $verificationScript = Join-Path $TrustedScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1'
+    $oracleContent = New-ReplicationFixOracleRunnerContent `
+        -VerificationScriptPath $verificationScript `
+        -VerificationArguments (Set-ReplicationVerificationOutputDirectory `
+            -Arguments (@($BaseVerificationArguments) + '-ExpectPass') `
+            -Directory (Join-Path $fixDir 'oracle'))
+
+    $protectedPaths = @($GeneratedFiles | ForEach-Object { Join-Path $repoRoot $_ }) + $fixOracleRunnerPath
+
+    $results = @(Invoke-ReplicationFixPanel `
+        -ScopeFiles $scope.Files `
+        -ReproductionPaths $GeneratedFiles `
+        -ProtectedPaths $protectedPaths `
+        -OracleRunnerPath $fixOracleRunnerPath `
+        -OracleRunnerContent $oracleContent `
+        -BaselineRelativePath $testRelativePath `
+        -FailureSummary $FailureSummary `
+        -TrustedScriptRoot $TrustedScriptRoot `
+        -CandidateCount $FixCandidateCount `
+        -BudgetMinutes $budgetMinutes `
+        -CandidateTimeoutMinutes $FixCandidateTimeoutMinutes)
+    $passing = @($results | Where-Object { $_ -and $_.Result -ceq 'Pass' -and $_.Diff })
+    if ($passing.Count -eq 0) {
+        Write-Host 'No fix candidate passed the oracle, so the reproduction publishes on its own.'
+        return $null
+    }
+
+    $winnerAttempt = $passing[0]
+    $rejected = @()
+    if ($passing.Count -gt 1) {
+        # One survivor needs no comparison, and asking for one would invite the
+        # agent to reject the only candidate there is.
+        $comparePrompt = New-CopilotPrompt `
+            -Phase 'fix-compare' `
+            -FailureSummary (Get-ReplicationFixComparisonSummary -Results $results)
+        Invoke-ReplicationCopilot `
+            -PhaseName 'fix-compare' `
+            -Prompt $comparePrompt `
+            -WritePaths @($agentDir) `
+            -Attempt 1 `
+            -TimeoutMinutesOverride 20 | Out-Null
+
+        $winner = Read-ReplicationFixWinner -Path $fixWinnerPath -Results $results
+        if (-not $winner.HasWinner) {
+            Write-Host "The comparison selected no candidate: $($winner.Summary)"
+            return $null
+        }
+        $winnerAttempt = @($passing | Where-Object { [string]$_.Attempt -ceq $winner.Winner })[0]
+        $rejected = @($winner.Rejected | ForEach-Object { [string]$_.reason })
+    }
+
+    if (-not $winnerAttempt) {
+        Write-Host 'The comparison named a candidate that carries no diff, so no fix is published.'
+        return $null
+    }
+
+    $armEvidence = Invoke-ReplicationFixArms `
+        -WinnerDiff $winnerAttempt.Diff `
+        -ScopeFiles $scope.Files `
+        -BaseVerificationArguments $BaseVerificationArguments `
+        -TrustedScriptRoot $TrustedScriptRoot `
+        -PatchPath $fixPatchPath `
+        -FixOutputDirectory (Join-Path $fixDir 'fix-arm') `
+        -RestorationOutputDirectory (Join-Path $fixDir 'restoration-arm') `
+        -ReproductionPaths $GeneratedFiles
+    if (-not $armEvidence) {
+        Remove-Item -LiteralPath $fixPatchPath -Force -ErrorAction SilentlyContinue
+        return $null
+    }
+
+    Write-ReplicationFixArmResults `
+        -Evidence $armEvidence `
+        -VerificationDirectory $VerificationDirectory
+
+    return [pscustomobject]@{
+        Files = @($winnerAttempt.ChangedPaths)
+        RootCause = $scope.RootCauseHypothesis
+        Approach = (ConvertTo-ReplicationSafeLog $winnerAttempt.Approach 2000)
+        RejectedApproaches = @($rejected | Select-Object -First 8)
+    }
+}
+
+function Write-ReplicationFixArmResults {
+    <#
+        .SYNOPSIS
+            Publishes the two arm counts where the gate looks for them.
+
+        .DESCRIPTION
+            The arms run the ordinary verification script, so their raw results
+            carry that script's names and shapes. The gate reads two files with
+            names of their own precisely so that an arm result can never be
+            mistaken for the reproduction's own evidence.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Evidence,
+        [Parameter(Mandatory = $true)][string]$VerificationDirectory
+    )
+
+    [ordered]@{
+        schemaVersion = 1
+        runCount = [int]$Evidence.fixControlRuns
+        passCount = [int]$Evidence.fixControlPasses
+    } | ConvertTo-Json -Depth 5 |
+        Set-Content -LiteralPath (Join-Path $VerificationDirectory 'fix-control-result.json') -Encoding utf8NoBOM
+
+    [ordered]@{
+        schemaVersion = 1
+        runCount = [int]$Evidence.restorationRuns
+        failureCount = [int]$Evidence.restorationFailures
+    } | ConvertTo-Json -Depth 5 |
+        Set-Content -LiteralPath (Join-Path $VerificationDirectory 'restoration-result.json') -Encoding utf8NoBOM
+}
+
 function Write-BlockedCandidate {
     param(
         [Parameter(Mandatory = $true)][string]$Stage,
@@ -6246,6 +6436,30 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 
     New-TestPatch -Files $generatedFiles
 
+    # The reproduction is certified at this point and its patch is already
+    # written, so nothing the fix phase does can reach it. Any failure inside
+    # returns $null and publishes the reproduction alone.
+    $fixOutcome = $null
+    if ($negativeControl) {
+        try {
+            $fixOutcome = Invoke-ReplicationFixPhase `
+                -GeneratedFiles $generatedFiles `
+                -BaseVerificationArguments $verificationArgs `
+                -FailureSummary ([string]$verification.actualFailureMessage) `
+                -TrustedScriptRoot $trustedScripts `
+                -VerificationDirectory $verificationDir
+        } catch {
+            Write-Host ('The fix phase failed, so the reproduction is published on its own. ' +
+                (ConvertTo-ReplicationSafeLog $_.Exception.Message 500))
+            $fixOutcome = $null
+        }
+    } else {
+        Write-Host 'No negative control, so the reproduction is not certified and no fix is attempted.'
+    }
+    if (-not $fixOutcome) {
+        Remove-Item -LiteralPath $fixPatchPath -Force -ErrorAction SilentlyContinue
+    }
+
     # Replacing newlines after truncation left a trailing space, and the gate
     # rejects an untrimmed manifest step, so build 15030804 reproduced its issue
     # and was discarded for whitespace. Collapse and trim after the replacement.
@@ -6290,6 +6504,11 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
         verificationResult = 'verification/verification-result.json'
         negativeControl = $negativeControl
         patch = 'test.patch'
+        fixFiles = if ($fixOutcome) { @($fixOutcome.Files) } else { @() }
+        fixPatch = if ($fixOutcome) { 'fix.patch' } else { $null }
+        fixRootCause = if ($fixOutcome) { $fixOutcome.RootCause } else { $null }
+        fixApproach = if ($fixOutcome) { $fixOutcome.Approach } else { $null }
+        fixRejectedApproaches = if ($fixOutcome) { @($fixOutcome.RejectedApproaches) } else { @() }
     } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
 
     Write-Host "ISSUE REPLICATION CANDIDATE READY: $candidatePath"

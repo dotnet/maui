@@ -1100,6 +1100,29 @@ function Read-ReplicationManifest {
         }
     }
 
+    # The gate is handed the fix patch by path, so the manifest's own name for
+    # it is documentation. Pin it anyway: a manifest that claims a fix while
+    # naming some other artifact is describing a run that did not happen, and a
+    # manifest that names a patch while claiming no fix files is the same
+    # mismatch from the other side.
+    $fixPatchProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('fixPatch', 'fix_patch') `
+        -Context 'Candidate manifest'
+    $fixPatchName = if ($fixPatchProperty.Found -and $null -ne $fixPatchProperty.Value) {
+        ConvertTo-BoundedSingleLine `
+            -Value $fixPatchProperty.Value `
+            -Context 'Manifest fix patch path' `
+            -MaximumLength 128
+    } else { '' }
+    if ($fixFiles.Count -gt 0) {
+        if ($fixPatchName -cne 'fix.patch') {
+            throw 'Manifest fix patch path does not match the fixed artifact contract.'
+        }
+    } elseif (-not [string]::IsNullOrWhiteSpace($fixPatchName)) {
+        throw 'Manifest names a fix patch but no fix files.'
+    }
+
     return [pscustomobject]@{
         IssueNumber = $manifestIssue
         Platform = $manifestPlatform

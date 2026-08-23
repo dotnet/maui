@@ -3276,6 +3276,9 @@ index cc87be1f60..4791badc38 100644
             $declared = if ($PSBoundParameters.ContainsKey('DeclaredFiles')) { @($DeclaredFiles) } else { @($Target) }
             $manifest = Get-Content -LiteralPath $Fixture.ManifestPath -Raw | ConvertFrom-Json
             Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' -NotePropertyValue $declared -Force
+            if (@($declared).Count -gt 0) {
+                Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' -NotePropertyValue 'fix.patch' -Force
+            }
             Write-TestJson -Path $Fixture.ManifestPath -Value $manifest
 
             return $fixPatchPath
@@ -3432,5 +3435,40 @@ index cc87be1f60..4791badc38 100644
 
         { Invoke-FixtureValidation -Fixture $fixture } |
             Should -Throw
+    }
+}
+
+Describe 'A manifest cannot rename the fix patch out from under the gate' {
+    BeforeEach {
+        $script:renameFixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
+    }
+
+    It 'refuses a manifest that names a fix patch by some other name' {
+        # The gate is handed the patch by path, so this field is documentation.
+        # A manifest that documents a different artifact is describing a run
+        # that did not happen, and the PR would cite evidence nobody validated.
+        $manifest = Get-Content -LiteralPath $script:renameFixture.ManifestPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' `
+            -NotePropertyValue @('src/Controls/src/Core/Button/Button.cs') -Force
+        Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' `
+            -NotePropertyValue 'test.patch' -Force
+        Write-TestJson -Path $script:renameFixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $script:renameFixture } |
+            Should -Throw '*does not match the fixed artifact contract*'
+    }
+
+    It 'refuses a manifest that names a fix patch while claiming no fix files' {
+        $manifest = Get-Content -LiteralPath $script:renameFixture.ManifestPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' `
+            -NotePropertyValue 'fix.patch' -Force
+        Write-TestJson -Path $script:renameFixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $script:renameFixture } |
+            Should -Throw '*names a fix patch but no fix files*'
+    }
+
+    It 'accepts the reproduction-only manifest every run before the fix phase produced' {
+        { Invoke-FixtureValidation -Fixture $script:renameFixture } | Should -Not -Throw
     }
 }

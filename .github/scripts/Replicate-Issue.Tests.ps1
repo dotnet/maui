@@ -141,6 +141,7 @@ BeforeAll {
         'Read-ReplicationFixWinner',
         'Get-ReplicationFixArmEvidence',
         'Invoke-ReplicationFixArms',
+        'Write-ReplicationFixArmResults',
         'Set-ReplicationVerificationOutputDirectory',
         'Get-ReplicationFixComparisonSummary',
         'New-CopilotPrompt',
@@ -8784,5 +8785,74 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $script:restoreSucceeds = $false
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 1
+    }
+}
+
+Describe 'Handing the arm counts to the gate' {
+    BeforeEach {
+        $script:armRoot = Join-Path ([IO.Path]::GetTempPath()) ("armresults-" + [Guid]::NewGuid())
+        New-Item -ItemType Directory -Path $script:armRoot -Force | Out-Null
+    }
+
+    AfterEach {
+        Remove-Item -LiteralPath $script:armRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'writes both arms under the names the gate reads, not the names the runs produced' {
+        # The arms run the ordinary verification script, so their raw output is
+        # named for the negative control and the reproduction. Publishing those
+        # names would let an arm be read as the reproduction's own evidence.
+        Write-ReplicationFixArmResults `
+            -Evidence ([pscustomobject]@{
+                fixControlRuns = 2
+                fixControlPasses = 2
+                restorationRuns = 2
+                restorationFailures = 2
+            }) `
+            -VerificationDirectory $script:armRoot
+
+        $fix = Get-Content -LiteralPath (Join-Path $script:armRoot 'fix-control-result.json') -Raw | ConvertFrom-Json
+        $restoration = Get-Content -LiteralPath (Join-Path $script:armRoot 'restoration-result.json') -Raw | ConvertFrom-Json
+
+        $fix.schemaVersion | Should -Be 1
+        $fix.runCount | Should -Be 2
+        $fix.passCount | Should -Be 2
+        $restoration.schemaVersion | Should -Be 1
+        $restoration.runCount | Should -Be 2
+        $restoration.failureCount | Should -Be 2
+    }
+
+    It 'records a shortfall as a shortfall rather than rounding it up' {
+        Write-ReplicationFixArmResults `
+            -Evidence ([pscustomobject]@{
+                fixControlRuns = 3
+                fixControlPasses = 1
+                restorationRuns = 3
+                restorationFailures = 0
+            }) `
+            -VerificationDirectory $script:armRoot
+
+        $fix = Get-Content -LiteralPath (Join-Path $script:armRoot 'fix-control-result.json') -Raw | ConvertFrom-Json
+        $restoration = Get-Content -LiteralPath (Join-Path $script:armRoot 'restoration-result.json') -Raw | ConvertFrom-Json
+
+        $fix.passCount | Should -Be 1
+        $restoration.failureCount | Should -Be 0
+    }
+
+    It 'writes files the gate can parse without a schema of its own' {
+        Write-ReplicationFixArmResults `
+            -Evidence ([pscustomobject]@{
+                fixControlRuns = 2
+                fixControlPasses = 2
+                restorationRuns = 2
+                restorationFailures = 2
+            }) `
+            -VerificationDirectory $script:armRoot
+
+        foreach ($name in @('fix-control-result.json', 'restoration-result.json')) {
+            $raw = Get-Content -LiteralPath (Join-Path $script:armRoot $name) -Raw
+            { $raw | ConvertFrom-Json } | Should -Not -Throw
+            $raw | Should -Not -Match "`u{FEFF}"
+        }
     }
 }
