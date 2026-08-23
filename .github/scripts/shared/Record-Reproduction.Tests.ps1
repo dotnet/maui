@@ -1080,8 +1080,26 @@ Describe 'A late verdict outranks early chatter' {
         $selected | Should -Match 'REPLICATION_APP_TERMINATED'
     }
 
-    It 'still keeps generic signal lines when no sentinel is present' {
-        $text = @(
+    It 'keeps a verdict buried past both the signal window and the tail' {
+        # The noise filter only knows the narration it has been taught. A
+        # platform whose chatter is genuinely error-shaped still fills the
+        # signal window, and a verdict with enough output after it also falls
+        # out of the tail. Ranking is what keeps it, so this is the case that
+        # distinguishes ranking from filtering.
+        $before = 1..40 | ForEach-Object {
+            "W/GLSurfaceView( 4021): eglSwapBuffers failed on surface $_ (error 0x300d)"
+        }
+        $after = 1..25 | ForEach-Object { "Step $_ completed in $($_ * 7) ms" }
+        $raw = (@($before) + @(
+            "Unhandled exception. System.InvalidOperationException: REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+        ) + @($after)) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $raw
+
+        $selected | Should -Match 'REPLICATION_NOT_REPRODUCED'
+    }
+
+    It 'still keeps generic signal lines when no sentinel is present' {        $text = @(
             'Determining projects to restore...'
             'error CS0103: The name ''Foo'' does not exist in the current context'
             'Build FAILED.'
