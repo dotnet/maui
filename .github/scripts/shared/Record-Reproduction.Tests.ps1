@@ -1236,3 +1236,46 @@ Describe 'Kept footage stops where the scenario stopped' {
             Should -Be 1
     }
 }
+
+Describe 'The element inventory has to reach the agent that must act on it' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        $fn = $ast.FindAll({ param($x)
+            $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $x.Name -eq 'Select-ReproductionDiagnosticLines' }, $true) | Select-Object -First 1
+        . ([scriptblock]::Create($fn.Extent.Text))
+
+        # Build 15065067 lost this line and burned attempts 3, 4 and 5
+        # re-guessing the same absent locator. The inventory names no error, so
+        # it wins no slot on wording alone; it survives only because the runner's
+        # own sentinels outrank generic chatter.
+        $script:inventory = '<<<REPLICATION_VISIBLE_ELEMENTS text=Open bottom tabs pane | ' +
+            'content-desc=TabsButton | resource-id=navigation_bar_item_icon_view REPLICATION_VISIBLE_ELEMENTS>>>'
+    }
+
+    It 'keeps the inventory even when error-shaped chatter fills every slot' {
+        $noise = (1..30 | ForEach-Object {
+            "Appium request $_ could not complete: unable to reach the expected element, timed out" })
+        $blob = (@('Unhandled exception. WebDriverTimeoutException: Element was not visible.') +
+            $noise + @($script:inventory) + $noise) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $blob -MaximumTailLines 20
+
+        ($selected -join "`n") | Should -Match 'REPLICATION_VISIBLE_ELEMENTS'
+        ($selected -join "`n") | Should -Match 'content-desc=TabsButton'
+    }
+
+    It 'keeps the inventory when the app exposed nothing addressable' {
+        # The empty answer is the most actionable one of all: it tells the agent
+        # the page never rendered, so no locator would have worked.
+        $empty = '<<<REPLICATION_VISIBLE_ELEMENTS none: the app exposes no identifying ' +
+            'attributes on any element. REPLICATION_VISIBLE_ELEMENTS>>>'
+        $noise = (1..30 | ForEach-Object { "step $_ failed with an unexpected error and timed out" })
+        $blob = (@('Unhandled exception.') + $noise + @($empty) + $noise) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $blob -MaximumTailLines 20
+
+        ($selected -join "`n") | Should -Match 'exposes no identifying attributes'
+    }
+}
