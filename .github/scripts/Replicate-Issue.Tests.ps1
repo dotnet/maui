@@ -9053,3 +9053,164 @@ exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
         $result.RejectedApproaches | Should -Contain 'Candidate 1 masks the symptom in the view.'
     }
 }
+
+Describe 'A fix phase may only ask to write files that can be granted' {
+    # Invoke-ReplicationCopilot refuses a write permission that names an
+    # existing directory, and refuses one whose parent does not exist. Three
+    # call sites in the fix phase named directories, so the first live run of
+    # the phase died on its first step with "must target exact regular files"
+    # (build 15065075). These assert the two conditions the real validator
+    # applies, at the call sites that have to satisfy it.
+    BeforeEach {
+        $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:agentDir = Join-Path $script:repoRoot 'agent'
+        $script:fixDir = Join-Path $script:repoRoot 'fix'
+        New-Item -ItemType Directory -Path $script:agentDir -Force | Out-Null
+        $script:IssueNumber = 12345
+        $script:fixScopePath = Join-Path $script:agentDir 'fix-scope.json'
+        $script:fixWinnerPath = Join-Path $script:agentDir 'fix-winner.json'
+        $script:fixPatchPath = Join-Path $script:repoRoot 'fix.patch'
+        $script:fixOracleRunnerPath = Join-Path $script:repoRoot 'run-oracle.ps1'
+        $script:granted = [Collections.Generic.List[object]]::new()
+
+        function script:Assert-GrantableWritePaths {
+            param([string[]]$Paths)
+            foreach ($p in @($Paths)) {
+                $item = Get-Item -LiteralPath $p -Force -ErrorAction SilentlyContinue
+                if ($item -and $item.PSIsContainer) {
+                    throw "Write permission names an existing directory: $p"
+                }
+                $parent = Split-Path -Parent $p
+                if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+                    throw "Write permission parent does not exist: $p"
+                }
+            }
+        }
+    }
+
+    Context 'the candidate panel' {
+        BeforeEach {
+            $script:FixCandidateCount = 5
+            $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
+            function New-CopilotPrompt { param($Phase, $BaselineRelativePath, $FailureSummary) 'prompt' }
+            function Get-ReplicationGitStatus { @() }
+            function Restore-ReplicationFixTree { param($TrustedScriptRoot) $true }
+            function Invoke-ReplicationCopilot {
+                param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
+                      $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
+                $script:granted.Add([pscustomobject]@{ Attempt = $Attempt; Paths = @($WritePaths) })
+                Assert-GrantableWritePaths -Paths $WritePaths
+                # A real candidate leaves its output behind, which is what made
+                # the try-fix root exist for everyone after it.
+                foreach ($p in @($WritePaths)) {
+                    if ($p -like '*attempt-*') { Set-Content -LiteralPath $p -Value 'x' -NoNewline }
+                }
+            }
+            $script:panelArgs = @{
+                ScopeFiles = @('src/Core/src/Handlers/EntryHandler.cs')
+                BaselineRelativePath = 'src/Controls/tests/Issue12345.cs'
+                FailureSummary = 'Expected 10 but was 0'
+                TrustedScriptRoot = '/trusted/scripts'
+                CandidateTimeoutMinutes = 30
+                BudgetMinutes = 200
+            }
+        }
+
+        It 'grants every candidate files rather than the directory holding them' {
+            $null = Invoke-ReplicationFixPanel @script:panelArgs -CandidateCount 3
+
+            $script:granted.Count | Should -Be 3
+            foreach ($g in $script:granted) {
+                foreach ($p in $g.Paths) {
+                    (Test-Path -LiteralPath $p -PathType Container) | Should -BeFalse
+                }
+            }
+        }
+
+        It 'still grants the second candidate after the first has written its output' {
+            # The regression: naming the try-fix root passed only while it did
+            # not exist, so candidate 1 succeeded and 2 onwards were refused.
+            $null = Invoke-ReplicationFixPanel @script:panelArgs -CandidateCount 2
+
+            @($script:granted | Where-Object { $_.Attempt -eq 2 }).Count | Should -Be 1
+        }
+
+        It 'names the artifacts the panel later reads back' {
+            $null = Invoke-ReplicationFixPanel @script:panelArgs -CandidateCount 1
+
+            $leaves = @($script:granted[0].Paths | ForEach-Object { Split-Path -Leaf $_ })
+            foreach ($expected in @('result.txt', 'approach.md', 'analysis.md', 'fix.diff', 'reviewer-findings.json')) {
+                $leaves | Should -Contain $expected
+            }
+        }
+    }
+
+    Context 'the scope and comparison phases' {
+        BeforeEach {
+            $script:FixPanelBudgetMinutes = 120
+            $script:StepTimeoutMinutes = 210
+            $script:FixCandidateTimeoutMinutes = 30
+            $script:FixCandidateCount = 5
+            $script:replicationStartedUtc = [DateTimeOffset]::UtcNow
+
+            function New-CopilotPrompt { param($Phase, $FailureSummary, $BaselineRelativePath) 'prompt' }
+            function Invoke-ReplicationCopilot {
+                param($PhaseName, $Prompt, $WritePaths, $Attempt, $TimeoutMinutesOverride)
+                $script:granted.Add([pscustomobject]@{ Phase = $PhaseName; Paths = @($WritePaths) })
+                Assert-GrantableWritePaths -Paths $WritePaths
+            }
+            function Read-ReplicationFixScope {
+                param($Path)
+                [pscustomobject]@{
+                    IsEmpty = $false
+                    Files = @('src/Core/src/Handlers/EntryHandler.cs')
+                    RootCauseHypothesis = 'The handler drops the update.'
+                }
+            }
+            function New-ReplicationFixOracleRunnerContent {
+                param($VerificationScriptPath, $VerificationArguments) 'oracle'
+            }
+            function Set-ReplicationVerificationOutputDirectory { param($Arguments, $Directory) @($Arguments) }
+            function Invoke-ReplicationFixPanel {
+                @(
+                    [pscustomobject]@{ Attempt = 1; Result = 'Pass'; Diff = 'd1'; ChangedPaths = @('a.cs'); Approach = 'x' }
+                    [pscustomobject]@{ Attempt = 2; Result = 'Pass'; Diff = 'd2'; ChangedPaths = @('b.cs'); Approach = 'y' }
+                )
+            }
+            function Get-ReplicationFixComparisonSummary { param($Results) 'summary' }
+            function Read-ReplicationFixWinner {
+                param($Path, $Results)
+                [pscustomobject]@{ HasWinner = $true; Winner = '1'; Rejected = @() }
+            }
+            function Invoke-ReplicationFixArms {
+                [pscustomobject]@{
+                    Fix = [pscustomobject]@{ RunCount = 3; PassCount = 3 }
+                    Restoration = [pscustomobject]@{ RunCount = 3; FailureCount = 3 }
+                }
+            }
+            function Write-ReplicationFixArmResults { param($Evidence, $VerificationDirectory) }
+
+            $baselineDir = Join-Path $script:repoRoot '.github/scripts'
+            New-Item -ItemType Directory -Path $baselineDir -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $baselineDir 'EstablishBrokenBaseline.ps1') `
+                -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)
+exit 0' -Encoding utf8NoBOM
+        }
+
+        It 'asks to write the scope file and the winner file, never the agent directory' {
+            $result = Invoke-ReplicationFixPhase `
+                -GeneratedFiles @('src/Controls/tests/Issue12345.cs') `
+                -BaseVerificationArguments @('-Filter', 'Issue12345') `
+                -FailureSummary 'Expected 10 but was 0' `
+                -TrustedScriptRoot '/trusted/scripts' `
+                -VerificationDirectory (Join-Path $script:repoRoot 'verification')
+
+            # It got all the way through, which it cannot do if a grant threw.
+            $result | Should -Not -BeNullOrEmpty
+            $scopeGrant = @($script:granted | Where-Object { $_.Phase -eq 'fix-scope' })[0]
+            $scopeGrant.Paths | Should -Be @($script:fixScopePath)
+            $compareGrant = @($script:granted | Where-Object { $_.Phase -eq 'fix-compare' })[0]
+            $compareGrant.Paths | Should -Be @($script:fixWinnerPath)
+        }
+    }
+}

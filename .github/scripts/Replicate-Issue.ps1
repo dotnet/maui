@@ -3158,13 +3158,21 @@ function Invoke-ReplicationFixPanel {
             -FailureSummary (Get-ReplicationFixCrossPollination -Results $results.ToArray())
 
         $attemptDirectory = Join-Path $tryFixRoot "attempt-$attempt"
+        # Exact files, and the directory made first: a write permission must
+        # name a regular file, and its parent must already exist. Naming the
+        # try-fix root instead passed only while it did not exist, so candidate
+        # 1 ran and every candidate after it was refused.
+        New-Item -ItemType Directory -Path $attemptDirectory -Force | Out-Null
+        $candidateWritePaths = @($ScopeFiles | ForEach-Object { Join-Path $repoRoot $_ }) +
+            @('result.txt', 'approach.md', 'analysis.md', 'fix.diff', 'reviewer-findings.json' |
+                ForEach-Object { Join-Path $attemptDirectory $_ })
         $candidateStarted = [DateTimeOffset]::UtcNow
         $invocationError = $null
         try {
             Invoke-ReplicationCopilot `
                 -PhaseName "fix-$attempt" `
                 -Prompt $prompt `
-                -WritePaths (@($ScopeFiles | ForEach-Object { Join-Path $repoRoot $_ }) + $tryFixRoot) `
+                -WritePaths $candidateWritePaths `
                 -Attempt $attempt `
                 -AllowShell `
                 -ModelOverride $model `
@@ -5509,7 +5517,7 @@ function Invoke-ReplicationFixPhase {
     Invoke-ReplicationCopilot `
         -PhaseName 'fix-scope' `
         -Prompt $scopePrompt `
-        -WritePaths @($agentDir) `
+        -WritePaths @($fixScopePath) `
         -Attempt 1 `
         -TimeoutMinutesOverride 25 | Out-Null
 
@@ -5569,7 +5577,7 @@ function Invoke-ReplicationFixPhase {
         Invoke-ReplicationCopilot `
             -PhaseName 'fix-compare' `
             -Prompt $comparePrompt `
-            -WritePaths @($agentDir) `
+            -WritePaths @($fixWinnerPath) `
             -Attempt 1 `
             -TimeoutMinutesOverride 20 | Out-Null
 
