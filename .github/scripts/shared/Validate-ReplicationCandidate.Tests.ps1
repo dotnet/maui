@@ -3682,6 +3682,25 @@ $body
             Should -Throw '*no authoritative test result document*'
     }
 
+    It 'refuses a device reproduction whose run selected no test at all' {
+        # The exact shape the comma-bearing display name produced: a document
+        # exists, the run reported success in reaching the runner, and nothing
+        # executed. Without this the gate reads an absent count as a clean run.
+        $target = Join-Path (Join-Path $script:deviceFixture.EvidenceDir 'verification') 'verification-test-result.xml'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
+        Set-Content -LiteralPath $target -Encoding utf8NoBOM -Value @'
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="0" passed="0" failed="0" skipped="0">
+    <errors />
+  </assembly>
+</assemblies>
+'@
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*records no executed test*'
+    }
+
     It 'refuses a device reproduction whose run selected two tests' {
         script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Twice
 
