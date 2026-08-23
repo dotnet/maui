@@ -164,7 +164,44 @@ Describe 'Get-ReplicationCertification causal controls' {
             restorationFailures   = 3
         }
 
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'certified-oracle'
+    }
+
+    It 'stops at trigger-certified when no fix was authored' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 }
+
+        # Three arms is the honest ceiling without a fix: the failure is tied
+        # to the reported trigger, but nothing has shown a change repairs it.
         (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'stops at trigger-certified when the fix arm ran but the restoration arm did not' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            fixControlRuns        = 3
+            fixControlPasses      = 3
+        }
+
+        # Green with a fix applied is not attribution. Without the arm that
+        # takes the fix away again, a rebuild explains the result equally well.
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'stops at trigger-certified when the restoration arm ran but the fix arm did not' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            restorationRuns       = 3
+            restorationFailures   = 3
+        }
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'ranks a certified oracle above a trigger-certified reproduction' {
+        (Get-ReplicationCertificationRank -Level 'certified-oracle') |
+            Should -BeGreaterThan (Get-ReplicationCertificationRank -Level 'trigger-certified')
     }
 
     It 'treats a fix that does not turn the test green as decisive against the test' {

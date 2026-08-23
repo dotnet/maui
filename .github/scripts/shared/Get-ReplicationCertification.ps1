@@ -22,19 +22,29 @@ Set-StrictMode -Version Latest
       trigger-certified      Removing the reported trigger makes the same test
                              pass, so its failure is attributable to the trigger
                              rather than to an unrelated cause.
+      certified-oracle       A minimal product fix additionally makes the test
+                             pass, and taking that fix away makes it fail again,
+                             so the test is a regression oracle for the defect.
 
-    The name stops at 'trigger' deliberately. A full regression oracle would
-    also require a minimal product fix to turn the test green and reverting
-    that fix to turn it red again. Authoring product fixes is out of scope for
-    replicate mode, so those arms never run, and naming this level 'certified'
-    outright would claim causal evidence the run never gathered.
+    The name stops at 'trigger' deliberately. A full regression oracle also
+    requires a minimal product fix to turn the test green and reverting that
+    fix to turn it red again. When those arms did not run, naming this level
+    'certified' outright would claim causal evidence the run never gathered.
+
+    'certified-oracle' is the level that does claim it, and it is granted only
+    when all four arms are satisfied: the test fails as reported, passes with
+    the trigger removed, passes with a fix applied, and fails again when that
+    fix is taken away.
 #>
 
 $script:ReplicationCertificationLevels = @(
     'runtime-blocked',
     'candidate-scenario',
     'observed-reproduction',
-    'trigger-certified'
+    'trigger-certified',
+    # Rank is position in this array, not alphabetical order, so a stronger
+    # level has to be appended rather than merely named.
+    'certified-oracle'
 )
 
 function Get-ReplicationCertificationLevels {
@@ -311,8 +321,13 @@ function Get-ReplicationCertification {
         }
     }
 
+    # Every arm the run attempted was satisfied, or it would have returned
+    # above. So the only question left is whether the fix arms ran at all.
+    $fullyCertified = $fix.Attempted -and $fix.Satisfied -and
+        $restoration.Attempted -and $restoration.Satisfied
+
     return @{
-        Level              = 'trigger-certified'
+        Level              = $(if ($fullyCertified) { 'certified-oracle' } else { 'trigger-certified' })
         Publish            = $true
         ClaimsReproduction = $true
         Reasons            = @()
@@ -366,6 +381,7 @@ function Get-ReplicationCertificationSummary {
         'candidate-scenario'    = 'The source compiles. It has not been empirically validated.'
         'observed-reproduction' = 'The exact test repeatedly failed at the intended assertion.'
         'trigger-certified'     = 'Removing the reported trigger makes the same test pass, so the failure is attributable to the trigger. A minimal product fix was not authored, so this is not a full regression oracle.'
+        'certified-oracle'      = 'All four arms agree: the test fails as reported, passes with the reported trigger removed, passes with a minimal product fix applied, and fails again once that fix is taken away. Its failure is caused by the defect the fix repairs.'
     }
     if ($descriptions.ContainsKey($level)) {
         $lines.Add($descriptions[$level])
