@@ -1047,15 +1047,26 @@ stages:
                 # band-correctly before the gate runs.
                 New-Item -ItemType File -Force -Path (Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads') | Out-Null
               }
+              # Absolute, and fatal when it will not load. Build 15065790
+              # dot-sourced this by a relative path, failed to find it, and the
+              # catch downgraded that to a warning. Invoke-BuildTasksWatchdog was
+              # then undefined, so the step built nothing and still exited clean
+              # — and five sandbox builds later failed with 'the required MSBuild
+              # tasks are not yet built'. A step that cannot build must say so
+              # rather than reporting success for work it never did.
+              $resolverPath = Join-Path "$(Build.SourcesDirectory)" '.github/scripts/shared/Resolve-BuildShell.ps1'
               try {
-                . ./.github/scripts/shared/Resolve-BuildShell.ps1
+                if (-not (Test-Path -LiteralPath $resolverPath)) {
+                  throw "the file does not exist (working directory is '$((Get-Location).Path)')"
+                }
+                . $resolverPath
               } catch {
-                Write-Host "##[warning]Could not load the build shell resolver: $($_.Exception.Message)"
+                Write-Host "##[error]Could not load the build shell resolver from '$resolverPath': $($_.Exception.Message)"
+                New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
+                Set-BuildTasksFailed 1
+                exit 1
               }
-              $buildShell = $null
-              if (Get-Command -Name 'Resolve-BuildShellPath' -ErrorAction SilentlyContinue) {
-                $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
-              }
+              $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
               if ($buildShell) {
                 Write-Host "Build shell: $buildShell"
               } else {
@@ -1068,7 +1079,7 @@ stages:
                 -ShellPath $buildShell `
                 -ShellCommand $buildCommand `
                 -DirectFileName 'pwsh' `
-                -DirectArgument @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -DirectArgument @('-NoProfile','-File',(Join-Path "$(Build.SourcesDirectory)" 'build.ps1'),'--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
                 -TimeoutMinutes $timeoutMin
               if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $exitCode }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue; Remove-Item $btFailMarker -Force -ErrorAction SilentlyContinue }
@@ -3795,15 +3806,22 @@ stages:
                   try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
                 }
               }
+              # Absolute, and fatal when it will not load; see the gate-stage
+              # copy of this step. A relative dot-source that quietly fails
+              # leaves the watchdog undefined and the step reports success for a
+              # build it never ran.
+              $resolverPath = Join-Path "$(Build.SourcesDirectory)" '.github/scripts/shared/Resolve-BuildShell.ps1'
               try {
-                . ./.github/scripts/shared/Resolve-BuildShell.ps1
+                if (-not (Test-Path -LiteralPath $resolverPath)) {
+                  throw "the file does not exist (working directory is '$((Get-Location).Path)')"
+                }
+                . $resolverPath
               } catch {
-                Write-Host "##[warning]Could not load the build shell resolver: $($_.Exception.Message)"
+                Write-Host "##[error]Could not load the build shell resolver from '$resolverPath': $($_.Exception.Message)"
+                New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
+                exit 1
               }
-              $buildShell = $null
-              if (Get-Command -Name 'Resolve-BuildShellPath' -ErrorAction SilentlyContinue) {
-                $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
-              }
+              $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
               if ($buildShell) {
                 Write-Host "Build shell: $buildShell"
               } else {
@@ -3816,7 +3834,7 @@ stages:
                 -ShellPath $buildShell `
                 -ShellCommand $buildCommand `
                 -DirectFileName 'pwsh' `
-                -DirectArgument @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -DirectArgument @('-NoProfile','-File',(Join-Path "$(Build.SourcesDirectory)" 'build.ps1'),'--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
                 -TimeoutMinutes $timeoutMin
               if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue }

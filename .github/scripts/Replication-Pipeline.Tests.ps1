@@ -1224,3 +1224,67 @@ Describe 'Every gate reads a path something actually writes' {
         $script:Yaml | Should -Match 'The scope gate could not read the issue context'
     }
 }
+
+Describe 'A build step may not report success for work it never ran' {
+    BeforeAll {
+        $script:Yaml = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+        $script:BuildTaskSteps = @(
+            [regex]::Matches(
+                $script:Yaml,
+                "(?s)- pwsh: \|(.*?)displayName: 'Build MSBuild Tasks'") |
+                ForEach-Object { $_.Groups[1].Value })
+    }
+
+    It 'finds both copies of the step' {
+        # One serves the review gate and one serves replicate. A fix applied to
+        # only one of them is why Windows kept failing after the first attempt.
+        $script:BuildTaskSteps.Count | Should -Be 2
+    }
+
+    It 'loads the shell resolver by an absolute path' {
+        # Build 15065790 dot-sourced './.github/scripts/shared/Resolve-BuildShell.ps1',
+        # did not find it, and carried on. Every other script reference in this
+        # file is anchored to Build.SourcesDirectory.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match '\.\s+\./\.github/scripts'
+            $step | Should -Match 'Join-Path "\$\(Build\.SourcesDirectory\)" ''\.github/scripts/shared/Resolve-BuildShell\.ps1'''
+        }
+    }
+
+    It 'fails the step when the resolver will not load' {
+        # The warning-and-continue arm left Invoke-BuildTasksWatchdog undefined,
+        # so the step exited clean having built nothing at all.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Match '##\[error\]Could not load the build shell resolver'
+            $step | Should -Not -Match '##\[warning\]Could not load the build shell resolver'
+            $step | Should -Match '(?s)Could not load the build shell resolver.{0,400}exit 1'
+        }
+    }
+
+    It 'does not guard the watchdog call with a Get-Command probe' {
+        # The probe is what turned a missing function into a silent skip. If the
+        # resolver loaded, the function exists; if it did not, the step is over.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match "Get-Command -Name 'Resolve-BuildShellPath'"
+        }
+    }
+
+    It 'invokes the build script by an absolute path too' {
+        # Same failure mode, one line further down: a relative ./build.ps1 is
+        # only correct while the working directory happens to be the repo root.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match "'-File','\./build\.ps1'"
+            $step | Should -Match "Join-Path ""\$\(Build\.SourcesDirectory\)"" 'build\.ps1'"
+        }
+    }
+
+    It 'still records the gate failure marker when the resolver is missing' {
+        # The gate step is continueOnError, so downstream steps read a marker
+        # file rather than the task result. Exiting without setting it would
+        # tell them the tasks were built.
+        $gate = @($script:BuildTaskSteps | Where-Object { $_ -match 'Set-BuildTasksFailed' })
+        $gate.Count | Should -Be 1
+        $gate[0] | Should -Match '(?s)##\[error\]Could not load the build shell resolver.{0,300}Set-BuildTasksFailed 1'
+    }
+}
