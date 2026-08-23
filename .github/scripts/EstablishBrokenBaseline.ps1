@@ -26,10 +26,29 @@
 .PARAMETER Restore
     Restore previously reverted files from HEAD.
 
+.PARAMETER EditableFiles
+    Explicit list of files to treat as the fix set, bypassing auto-detection.
+
+.PARAMETER SnapshotOnly
+    Record the scope without reverting anything. Requires a scope from
+    -EditableFiles or the scope file. Used when the working tree is already in
+    the broken state and there is no author fix to undo -- issue replication,
+    where the defect is what HEAD ships. HEAD is then the restore point, so
+    -Restore is unchanged: it still discards the agent's edits.
+
+    Snapshot mode skips merge-base detection entirely, which also skips its
+    network fetches.
+
 .EXAMPLE
     # Establish baseline (revert fix files) - auto-detects what to revert
     $baseline = ./EstablishBrokenBaseline.ps1
     # Run tests...
+    ./EstablishBrokenBaseline.ps1 -Restore
+
+.EXAMPLE
+    # Scope an already-broken tree without reverting (issue replication).
+    $baseline = ./EstablishBrokenBaseline.ps1 -EditableFiles @('src/Core/src/Handler.cs') -SnapshotOnly
+    # Agent edits only those files, then:
     ./EstablishBrokenBaseline.ps1 -Restore
 
 .EXAMPLE
@@ -49,7 +68,13 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
-    [switch]$Restore
+    [switch]$Restore,
+
+    [Parameter(Mandatory = $false)]
+    [string[]]$EditableFiles,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$SnapshotOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -304,6 +329,60 @@ function Remove-BaselineState {
 }
 
 # ============================================================
+# Externally supplied scope (issue replication)
+# ============================================================
+# try-fix Step 2 runs this script with no arguments, so a caller that has no
+# author diff cannot pass its scope on the command line. It seeds this
+# environment variable instead and the skill's documented invocation keeps
+# working untouched.
+$script:BaselineScopeEnvVar = 'MAUI_BASELINE_SCOPE_FILE'
+
+function Get-BaselineScopeFromEnvironment {
+    $scopePath = [Environment]::GetEnvironmentVariable($script:BaselineScopeEnvVar)
+    if ([string]::IsNullOrWhiteSpace($scopePath)) {
+        return $null
+    }
+
+    if (-not (Test-Path -LiteralPath $scopePath -PathType Leaf)) {
+        throw "$script:BaselineScopeEnvVar points at '$scopePath', which does not exist."
+    }
+
+    $raw = Get-Content -LiteralPath $scopePath -Raw
+    try {
+        $parsed = $raw | ConvertFrom-Json
+    } catch {
+        throw "$script:BaselineScopeEnvVar points at '$scopePath', which is not valid JSON: $($_.Exception.Message)"
+    }
+
+    $files = @($parsed.files | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($files.Count -eq 0) {
+        throw "$script:BaselineScopeEnvVar points at '$scopePath', which names no files."
+    }
+
+    return $files
+}
+
+function Assert-BaselineScopeIsRestorable {
+    param([string[]]$Files)
+
+    # Restoring is 'git checkout HEAD -- <file>', so a path that HEAD does not
+    # track cannot be restored. Refusing here is far better than discovering it
+    # after an agent has already edited a tree we can no longer put back.
+    $missing = @()
+    foreach ($file in $Files) {
+        $tracked = git ls-tree -r HEAD --name-only -- $file 2>$null
+        if (-not $tracked) {
+            $missing += $file
+        }
+    }
+
+    if ($missing.Count -gt 0) {
+        throw ("Baseline scope names $($missing.Count) path(s) that HEAD does not track, " +
+            "so they could never be restored: $($missing -join ', ')")
+    }
+}
+
+# ============================================================
 # Main execution (only when run directly, not when dot-sourced)
 # ============================================================
 
@@ -392,6 +471,84 @@ if ($dirtyFiles) {
     throw "EstablishBrokenBaseline.ps1 failed: Working directory is not clean. Clean up before establishing baseline."
 }
 
+# ============================================================
+# SNAPSHOT MODE: the tree is already broken, so scope it and stop
+# ============================================================
+# Issue replication has no author fix to undo -- the defect is what HEAD
+# ships. There is nothing to revert, only a scope to record, so that try-fix
+# confines itself to the files the expert phase implicated and restores them
+# afterwards. HEAD is the restore point, which is what -Restore already uses.
+
+$scopedFiles = $EditableFiles
+$scopeCameFromEnvironment = $false
+if (-not $scopedFiles -or $scopedFiles.Count -eq 0) {
+    $scopedFiles = Get-BaselineScopeFromEnvironment
+    $scopeCameFromEnvironment = $null -ne $scopedFiles
+}
+
+# A scope discovered from the environment always means snapshot mode: only a
+# caller without an author diff seeds it. An explicit -EditableFiles keeps the
+# usual revert semantics unless -SnapshotOnly says otherwise, so no existing
+# caller changes behaviour.
+$useSnapshotMode = $SnapshotOnly.IsPresent -or $scopeCameFromEnvironment
+
+if ($SnapshotOnly.IsPresent -and (-not $scopedFiles -or $scopedFiles.Count -eq 0)) {
+    throw "EstablishBrokenBaseline.ps1 failed: -SnapshotOnly requires a scope from -EditableFiles or $script:BaselineScopeEnvVar."
+}
+
+if ($useSnapshotMode) {
+    $scopedFiles = @($scopedFiles | Select-Object -Unique)
+    Assert-BaselineScopeIsRestorable -Files $scopedFiles
+
+    $headSha = (git rev-parse HEAD 2>$null)
+
+    Write-Host "Snapshot mode: the tree is already in the broken state, nothing to revert." -ForegroundColor Cyan
+    Write-Host "Editable scope ($($scopedFiles.Count)):" -ForegroundColor Cyan
+    foreach ($file in $scopedFiles) {
+        Write-Host "  [editable] $file" -ForegroundColor White
+    }
+
+    if ($DryRun) {
+        Write-Host ""
+        Write-Host "[DRY RUN] Would record $($scopedFiles.Count) editable file(s) without reverting" -ForegroundColor Cyan
+        return @{
+            Success       = $true
+            DryRun        = $true
+            SnapshotOnly  = $true
+            MergeBase     = $headSha
+            BaseBranch    = 'HEAD'
+            WouldRevert   = @()
+            EditableFiles = $scopedFiles
+            NewFiles      = @()
+        }
+    }
+
+    # RevertedFiles is the key try-fix reads to decide what it may edit and
+    # what -Restore puts back. Writing the scope there is what lets the skill
+    # run unmodified against a tree that was never reverted.
+    Save-BaselineState @{
+        MergeBase     = $headSha
+        BaseBranch    = 'HEAD'
+        Mode          = 'snapshot'
+        RevertedFiles = $scopedFiles
+        NewFiles      = @()
+        Timestamp     = (Get-Date -Format "o")
+    }
+
+    Write-Host "Baseline scoped. $($scopedFiles.Count) file(s) editable, 0 reverted." -ForegroundColor Green
+    Write-Host "Run with -Restore to discard edits." -ForegroundColor Cyan
+
+    return @{
+        Success       = $true
+        SnapshotOnly  = $true
+        MergeBase     = $headSha
+        BaseBranch    = 'HEAD'
+        RevertedFiles = $scopedFiles
+        EditableFiles = $scopedFiles
+        NewFiles      = @()
+    }
+}
+
 # Find merge-base
 Write-Host "Detecting base branch and merge point..." -ForegroundColor Cyan
 
@@ -418,7 +575,12 @@ if ($baseInfo.Distance) {
 }
 
 # Get fix files
-$detectedFixFiles = Get-FixFiles -MergeBase $MergeBase
+if ($scopedFiles -and $scopedFiles.Count -gt 0) {
+    Write-Host "Using the explicitly supplied fix set, skipping auto-detection." -ForegroundColor Cyan
+    $detectedFixFiles = @($scopedFiles | Select-Object -Unique)
+} else {
+    $detectedFixFiles = Get-FixFiles -MergeBase $MergeBase
+}
 
 if ($detectedFixFiles.Count -eq 0) {
     Write-Host "" -ForegroundColor Red
