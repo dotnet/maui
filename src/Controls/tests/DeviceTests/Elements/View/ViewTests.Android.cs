@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 						.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(20, 0, 0, 0))
 						.Build();
 					ViewCompat.DispatchApplyWindowInsets(platformView, insets);
-					Assert.NotEqual(1, platformView.PaddingLeft);
+					Assert.Equal(20, platformView.PaddingLeft);
 
 					view.ClearValue(CustomSafeAreaView.SafeAreaEdgesProperty);
 
