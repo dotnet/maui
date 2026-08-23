@@ -132,6 +132,11 @@ BeforeAll {
         'Get-ReplicationFixCandidateChanges',
         'Read-ReplicationFixCandidateArtifacts',
         'Invoke-ReplicationFixPanel',
+        'ConvertTo-ReplicationPowerShellLiteral',
+        'New-ReplicationFixOracleRunnerContent',
+        'Get-ReplicationFixProtectedSnapshot',
+        'Get-ReplicationFixTamperedPaths',
+        'Restore-ReplicationFixProtectedFiles',
         'Read-ReplicationFixScope',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
@@ -8145,6 +8150,46 @@ Describe 'A failed fix never costs us a good reproduction' {
         }
     }
 
+    It 'blocks a candidate that edited the test it is graded by, and puts it back' {
+        $guarded = Join-Path $script:repoRoot 'Issue12345.cs'
+        Set-Content -LiteralPath $guarded -Value 'Assert.Equal(10, actual);' -NoNewline
+        # A candidate with a shell can reach the oracle whatever the write
+        # allowlist says, so the panel has to notice by content.
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
+                  $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
+            $script:invocations.Add([pscustomobject]@{ Attempt = $Attempt })
+            Set-Content -LiteralPath $guarded -Value 'Assert.True(true);' -NoNewline
+        }
+
+        $results = @(Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 1 -ProtectedPaths @($guarded))
+
+        $results[0].Result | Should -Be 'Blocked'
+        $results[0].Rejection | Should -Match 'protected'
+        Get-Content -LiteralPath $guarded -Raw | Should -Be 'Assert.Equal(10, actual);'
+    }
+
+    It 'hands every candidate a freshly written oracle runner' {
+        $runner = Join-Path $script:repoRoot 'run-oracle.ps1'
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
+                  $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
+            $script:invocations.Add([pscustomobject]@{
+                Attempt = $Attempt
+                RunnerSeen = (Get-Content -LiteralPath $runner -Raw) })
+            Set-Content -LiteralPath $runner -Value 'sabotaged' -NoNewline
+        }
+
+        Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 2 `
+            -OracleRunnerPath $runner -OracleRunnerContent 'trusted runner' | Out-Null
+
+        # The second candidate must not inherit the first one's sabotage.
+        $script:invocations[0].RunnerSeen | Should -Be 'trusted runner'
+        $script:invocations[1].RunnerSeen | Should -Be 'trusted runner'
+    }
+
     It 'attempts nothing when the expert scoped no product files' {
         $results = @(Invoke-ReplicationFixPanel @script:panelArgs -ScopeFiles @() -CandidateCount 5)
         $results.Count | Should -Be 0
@@ -8217,5 +8262,170 @@ Describe 'A failed fix never costs us a good reproduction' {
             -ReproductionPaths @('src/Controls/tests/Issue12345.cs') `
             -CandidateCount 1 -BudgetMinutes 150
         $results[0].Rejection | Should -Not -Match 'outside its scope'
+    }
+}
+
+Describe 'The oracle a fix candidate cannot edit' {
+    BeforeEach {
+        $script:protectedRoot = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString('n'))
+        New-Item -ItemType Directory -Path $script:protectedRoot -Force | Out-Null
+        $script:oraclePath = Join-Path $script:protectedRoot 'run-oracle.ps1'
+        $script:testPath = Join-Path $script:protectedRoot 'Issue12345.cs'
+        Set-Content -LiteralPath $script:oraclePath -Value 'original runner' -NoNewline
+        Set-Content -LiteralPath $script:testPath -Value 'Assert.Equal(10, actual);' -NoNewline
+    }
+
+    AfterEach {
+        Remove-Item -LiteralPath $script:protectedRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'sees nothing to report when the candidate left the oracle alone' {
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($script:oraclePath, $script:testPath)
+        Get-ReplicationFixTamperedPaths -Snapshot $snapshot | Should -HaveCount 0
+    }
+
+    It 'catches a candidate that weakened the assertion it is measured by' {
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($script:oraclePath, $script:testPath)
+        Set-Content -LiteralPath $script:testPath -Value 'Assert.True(true);' -NoNewline
+
+        $tampered = Get-ReplicationFixTamperedPaths -Snapshot $snapshot
+        $tampered | Should -HaveCount 1
+        @($tampered)[0] | Should -Be $script:testPath
+    }
+
+    It 'catches a change that keeps the file exactly the same length' {
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($script:testPath)
+        Set-Content -LiteralPath $script:testPath -Value 'Assert.Equal(11, actual);' -NoNewline
+
+        Get-ReplicationFixTamperedPaths -Snapshot $snapshot | Should -HaveCount 1
+    }
+
+    It 'catches a candidate that deleted the test rather than fixing the product' {
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($script:testPath)
+        Remove-Item -LiteralPath $script:testPath -Force
+
+        Get-ReplicationFixTamperedPaths -Snapshot $snapshot | Should -HaveCount 1
+    }
+
+    It 'catches a protected file that the candidate created' {
+        $absent = Join-Path $script:protectedRoot 'not-there-yet.cs'
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($absent)
+        Set-Content -LiteralPath $absent -Value 'surprise' -NoNewline
+
+        Get-ReplicationFixTamperedPaths -Snapshot $snapshot | Should -HaveCount 1
+    }
+
+    It 'restores tampered content byte for byte' {
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($script:testPath)
+        $before = [IO.File]::ReadAllBytes($script:testPath)
+        Set-Content -LiteralPath $script:testPath -Value 'Assert.True(true);' -NoNewline
+
+        Restore-ReplicationFixProtectedFiles -Snapshot $snapshot
+
+        [Linq.Enumerable]::SequenceEqual(
+            [byte[]]$before, [byte[]][IO.File]::ReadAllBytes($script:testPath)) | Should -BeTrue
+        Get-ReplicationFixTamperedPaths -Snapshot $snapshot | Should -HaveCount 0
+    }
+
+    It 'restores a deleted protected file' {
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($script:testPath)
+        Remove-Item -LiteralPath $script:testPath -Force
+
+        Restore-ReplicationFixProtectedFiles -Snapshot $snapshot
+
+        Test-Path -LiteralPath $script:testPath | Should -BeTrue
+        Get-ReplicationFixTamperedPaths -Snapshot $snapshot | Should -HaveCount 0
+    }
+
+    It 'removes a file the candidate created where none belonged' {
+        $absent = Join-Path $script:protectedRoot 'not-there-yet.cs'
+        $snapshot = Get-ReplicationFixProtectedSnapshot -Paths @($absent)
+        Set-Content -LiteralPath $absent -Value 'surprise' -NoNewline
+
+        Restore-ReplicationFixProtectedFiles -Snapshot $snapshot
+
+        Test-Path -LiteralPath $absent | Should -BeFalse
+    }
+}
+
+Describe 'The one command a fix candidate may check its work with' {
+    BeforeAll {
+        $script:oracleArgs = @{
+            VerificationScriptPath = '/trusted/shared/Invoke-ReplicationTestVerification.ps1'
+            VerificationArguments = @(
+                '-IssueNumber', '37440',
+                '-Platform', 'android',
+                '-TestFilter', 'Issue37440',
+                '-ExpectPass')
+        }
+    }
+
+    It 'runs the same verification that will grade the candidate' {
+        $content = New-ReplicationFixOracleRunnerContent @script:oracleArgs
+
+        $content | Should -Match ([regex]::Escape('Invoke-ReplicationTestVerification.ps1'))
+        $content | Should -Match ([regex]::Escape("'-ExpectPass'"))
+        $content | Should -Match ([regex]::Escape("'37440'"))
+    }
+
+    It 'is a script that actually runs and reports the verification result' {
+        $probeRoot = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString('n'))
+        New-Item -ItemType Directory -Path $probeRoot -Force | Out-Null
+        try {
+            # A stand-in verifier, so this proves the generated script is
+            # executable and reports honestly, not merely well-formed.
+            $stub = Join-Path $probeRoot 'verifier.ps1'
+            Set-Content -LiteralPath $stub -Value 'param([switch]$ExpectPass) if (-not $ExpectPass) { Write-Host "no ExpectPass"; exit 3 }'
+            $runner = Join-Path $probeRoot 'run-oracle.ps1'
+            Set-Content -LiteralPath $runner -NoNewline -Value (New-ReplicationFixOracleRunnerContent `
+                -VerificationScriptPath $stub -VerificationArguments @('-ExpectPass'))
+
+            $output = & pwsh -NoProfile -File $runner 2>&1 | Out-String
+            $output | Should -Match 'ORACLE RESULT: PASS'
+        } finally {
+            Remove-Item -LiteralPath $probeRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'reports a failing oracle as a failure instead of a crash' {
+        $probeRoot = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString('n'))
+        New-Item -ItemType Directory -Path $probeRoot -Force | Out-Null
+        try {
+            $stub = Join-Path $probeRoot 'verifier.ps1'
+            Set-Content -LiteralPath $stub -Value 'Write-Host "the test still fails"; exit 7'
+            $runner = Join-Path $probeRoot 'run-oracle.ps1'
+            Set-Content -LiteralPath $runner -NoNewline -Value (New-ReplicationFixOracleRunnerContent `
+                -VerificationScriptPath $stub -VerificationArguments @('-ExpectPass'))
+
+            $output = & pwsh -NoProfile -File $runner 2>&1 | Out-String
+            $LASTEXITCODE | Should -Be 1
+            $output | Should -Match 'ORACLE RESULT: FAIL'
+            $output | Should -Match 'the test still fails'
+        } finally {
+            Remove-Item -LiteralPath $probeRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'cannot be escaped through a quote in an embedded value' {
+        $hostile = "it's not 10'; whoami; '"
+        $content = New-ReplicationFixOracleRunnerContent `
+            -VerificationScriptPath '/trusted/verify.ps1' `
+            -VerificationArguments @('-ExpectedFailureSignature', $hostile)
+
+        $content | Should -Not -Match 'whoami;\s*$'
+        $errors = $null
+        [void][Management.Automation.Language.Parser]::ParseInput($content, [ref]$null, [ref]$errors)
+        $errors | Should -HaveCount 0
+
+        # The value must survive as data: read the literal back out and confirm
+        # it is still exactly what went in, quotes and all.
+        $roundTripped = [scriptblock]::Create(
+            (ConvertTo-ReplicationPowerShellLiteral $hostile)).Invoke()[0]
+        $roundTripped | Should -BeExactly $hostile
+    }
+
+    It 'tells the candidate the file is watched' {
+        $content = New-ReplicationFixOracleRunnerContent @script:oracleArgs
+        $content | Should -Match 'hashed before your attempt'
     }
 }
