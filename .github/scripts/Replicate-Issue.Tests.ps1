@@ -124,6 +124,8 @@ BeforeAll {
         'Resolve-ReplicationCopilotExecutable',
         'Get-ReplicationCopilotCapabilityArguments',
         'Get-ReplicationFixScopePathRejection',
+        'Test-ReplicationFixPanelCanStartCandidate',
+        'Get-ReplicationFixPanelBudget',
         'Read-ReplicationFixScope',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
@@ -7699,5 +7701,120 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
             New-Scope -Files @(@{ path = 'src/Controls/tests/Core.UnitTests/EntryTests.cs'; reason = 'r' })
             { Read-ReplicationFixScope } | Should -Throw '*EntryTests.cs*'
         }
+    }
+}
+
+Describe 'The fix panel stops before the step timeout kills the evidence' {
+    BeforeAll {
+        $script:start = [DateTimeOffset]::Parse('2025-01-01T00:00:00Z')
+    }
+
+    It 'starts the first candidate when the budget covers one' {
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start -PanelBudgetMinutes 150 -CandidateTimeoutMinutes 30 |
+            Should -BeTrue
+    }
+
+    It 'keeps starting candidates while a whole one still fits' {
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start.AddMinutes(119) -PanelBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 | Should -BeTrue
+    }
+
+    It 'refuses a candidate that cannot finish, rather than starting one that will be killed' {
+        # 121 + 30 exceeds 150. There are 29 minutes left, so a naive
+        # "is there time left" check would start it and lose everything.
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start.AddMinutes(121) -PanelBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 | Should -BeFalse
+    }
+
+    It 'allows the candidate that exactly fills the budget' {
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start.AddMinutes(120) -PanelBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 | Should -BeTrue
+    }
+
+    It 'treats a zero budget as the panel being switched off' {
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start -PanelBudgetMinutes 0 -CandidateTimeoutMinutes 30 |
+            Should -BeFalse
+    }
+
+    It 'refuses when a single candidate cannot fit in the whole budget' {
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start -PanelBudgetMinutes 20 -CandidateTimeoutMinutes 30 |
+            Should -BeFalse
+    }
+
+    It 'does not let a backwards clock authorise an overrun' {
+        Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
+            -Now $script:start.AddMinutes(-5) -PanelBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 | Should -BeFalse
+    }
+
+    It 'shrinks the budget to what the step has left, not what was configured' {
+        # A reproduction that took 150 of a 210-minute step leaves 35 usable
+        # minutes once the publishing tail is reserved, not the configured 150.
+        Get-ReplicationFixPanelBudget -ConfiguredBudgetMinutes 150 `
+            -StepTimeoutMinutes 210 -ElapsedMinutes 150 | Should -Be 35
+    }
+
+    It 'keeps the configured budget when the step has more room than it asks for' {
+        Get-ReplicationFixPanelBudget -ConfiguredBudgetMinutes 150 `
+            -StepTimeoutMinutes 210 -ElapsedMinutes 10 | Should -Be 150
+    }
+
+    It 'returns nothing when the step is already spent' {
+        Get-ReplicationFixPanelBudget -ConfiguredBudgetMinutes 150 `
+            -StepTimeoutMinutes 210 -ElapsedMinutes 200 | Should -Be 0
+    }
+
+    It 'never returns a negative budget however far over the step has run' {
+        Get-ReplicationFixPanelBudget -ConfiguredBudgetMinutes 150 `
+            -StepTimeoutMinutes 210 -ElapsedMinutes 900 | Should -Be 0
+    }
+
+    It 'falls back to the configured budget when no step timeout is known' {
+        Get-ReplicationFixPanelBudget -ConfiguredBudgetMinutes 150 `
+            -StepTimeoutMinutes 0 -ElapsedMinutes 400 | Should -Be 150
+    }
+
+    It 'reserves time for publishing, so a full panel cannot consume the step' {
+        # Without the reserve this would be 60 and the artifacts would be
+        # written after the step was already killed.
+        Get-ReplicationFixPanelBudget -ConfiguredBudgetMinutes 999 `
+            -StepTimeoutMinutes 210 -ElapsedMinutes 150 -ReserveMinutes 25 |
+            Should -Be 35
+    }
+
+    It 'derives a budget no candidate can overrun the step with' {
+        $yml = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+        $step = [regex]::Match($yml, "name: RunReplication[\s\S]{0,400}?timeoutInMinutes: (\d+)")
+        $step.Success | Should -BeTrue -Because 'the replicate step must declare a timeout'
+        $stepTimeout = [int]$step.Groups[1].Value
+
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $budget = [int][regex]::Match(
+            $orchestrator, '\$FixPanelBudgetMinutes = (\d+)').Groups[1].Value
+        $candidate = [int][regex]::Match(
+            $orchestrator, '\$FixCandidateTimeoutMinutes = (\d+)').Groups[1].Value
+
+        # The reproduction has to finish first, and the artifacts still have to
+        # be written afterwards, so the panel cannot claim the whole step.
+        $budget | Should -BeLessThan $stepTimeout
+        ($budget + $candidate) | Should -BeLessOrEqual $stepTimeout -Because (
+            'the last candidate must be able to overrun its own timeout ' +
+            'without the step being killed underneath it')
+
+        # The declared default must match what the step actually enforces,
+        # otherwise the derivation above is computed against a fiction.
+        $declaredStep = [int][regex]::Match(
+            $orchestrator, '\$StepTimeoutMinutes = (\d+)').Groups[1].Value
+        $declaredStep | Should -Be $stepTimeout -Because (
+            'the orchestrator budgets against this number and Azure kills ' +
+            'against the pipeline one')
     }
 }

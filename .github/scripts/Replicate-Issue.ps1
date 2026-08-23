@@ -61,6 +61,25 @@ param(
     [ValidateRange(1, 45)]
     [int]$CopilotServiceRetryBudgetMinutes = 20,
 
+    # The fix panel runs after a reproduction is already certified, and an
+    # Azure step timeout is a hard kill that would destroy those artifacts on
+    # its way out. So the panel is given an explicit budget well inside the
+    # step's own timeout and abandons cleanly when it runs out, rather than
+    # gambling the evidence we have already paid for on one more candidate.
+    [ValidateRange(0, 300)]
+    [int]$FixPanelBudgetMinutes = 150,
+
+    [ValidateRange(10, 90)]
+    [int]$FixCandidateTimeoutMinutes = 30,
+
+    [ValidateRange(1, 8)]
+    [int]$FixCandidateCount = 5,
+
+    # Lets the orchestrator measure its budget against the same deadline Azure
+    # will enforce, instead of against a clock that started when the panel did.
+    [ValidateRange(0, 600)]
+    [int]$StepTimeoutMinutes = 210,
+
     [string]$Model = ''
 )
 
@@ -2749,6 +2768,72 @@ function Assert-GeneratedTestContent {
             'category name, so with no test declaring it the run selects no categories ' +
             'and executes nothing.')
     }
+}
+
+function Get-ReplicationFixPanelBudget {
+    <#
+        .SYNOPSIS
+            Converts the configured panel budget into the minutes actually
+            available, given how much of the step has already been spent.
+
+        .DESCRIPTION
+            The panel's own budget is measured from when the panel starts, but
+            the step timeout has been running since the job began. A slow
+            reproduction can therefore leave far less room than the configured
+            budget claims, and taking the configured value on trust is how the
+            step gets killed with the certified evidence still unpublished.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][int]$ConfiguredBudgetMinutes,
+        [Parameter(Mandatory = $true)][int]$StepTimeoutMinutes,
+        [Parameter(Mandatory = $true)][double]$ElapsedMinutes,
+        # Publishing artifacts, restoring the tree and writing the manifest all
+        # happen after the panel and must not be squeezed out by it.
+        [int]$ReserveMinutes = 25
+    )
+
+    if ($StepTimeoutMinutes -le 0) {
+        return [Math]::Max(0, $ConfiguredBudgetMinutes)
+    }
+
+    $remaining = $StepTimeoutMinutes - $ElapsedMinutes - $ReserveMinutes
+    if ($remaining -le 0) {
+        return 0
+    }
+
+    return [int][Math]::Floor([Math]::Min($ConfiguredBudgetMinutes, $remaining))
+}
+
+function Test-ReplicationFixPanelCanStartCandidate {
+    <#
+        .SYNOPSIS
+            Decides whether another fix candidate fits in the panel's budget.
+
+        .DESCRIPTION
+            Starting a candidate that cannot finish is worse than not starting
+            it: it spends the remaining minutes and then gets killed with the
+            step, taking the certified reproduction's artifacts with it. So the
+            question is not "is there time left" but "is there time for a whole
+            candidate", measured against its own timeout rather than against
+            how long earlier candidates happened to take.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][DateTimeOffset]$PanelStarted,
+        [Parameter(Mandatory = $true)][DateTimeOffset]$Now,
+        [Parameter(Mandatory = $true)][int]$PanelBudgetMinutes,
+        [Parameter(Mandatory = $true)][int]$CandidateTimeoutMinutes
+    )
+
+    # A zero or negative budget needs no special case: no candidate has a zero
+    # timeout, so the comparison below already refuses one. Guarding it
+    # separately reads like load-bearing logic while being unreachable.
+    $elapsedMinutes = ($Now - $PanelStarted).TotalMinutes
+    if ($elapsedMinutes -lt 0) {
+        # A clock that moved backwards is not a reason to overrun a hard kill.
+        return $false
+    }
+
+    return (($elapsedMinutes + $CandidateTimeoutMinutes) -le $PanelBudgetMinutes)
 }
 
 function Get-ReplicationFixScopePathRejection {
