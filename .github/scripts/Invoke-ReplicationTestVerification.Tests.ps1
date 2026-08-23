@@ -27,6 +27,7 @@ BeforeAll {
         'Get-ReplicationSignatureTokens',
         'Test-ReplicationSignatureEquivalent',
         'Test-ReplicationExpectedFailureSignature',
+        'Test-ReplicationControlFailureModeChanged',
         'Test-ReplicationInfrastructureFailure',
         'ConvertTo-AzdoSafeReplicationOutput',
         'ConvertTo-BoundedVerificationFailureMessage',
@@ -757,3 +758,67 @@ Describe 'The negative control keeps its own console evidence' {
     }
 }
 
+
+Describe 'Telling a refuted reproduction apart from a broken control' {
+    It 'reports a refutation when the control failed the same way' {
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Expected 40 but was 20') `
+            -ReproductionMessages @('Expected 40 but was 20') |
+            Should -BeFalse
+    }
+
+    It 'reports a changed mode when the control failed a different way' {
+        # The reproduction measured a wrong size; the control could not even
+        # find the element. Nothing about attribution follows from that.
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Element BugLabel was not found') `
+            -ReproductionMessages @('Expected 40 but was 20') |
+            Should -BeTrue
+    }
+
+    It 'reports a refutation when any control run matched the reproduction' {
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Element BugLabel was not found', 'Expected 40 but was 20') `
+            -ReproductionMessages @('Expected 40 but was 20') |
+            Should -BeFalse
+    }
+
+    It 'reports a refutation when the reproduction itself varied and the control matched one' {
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Expected 40 but was 20') `
+            -ReproductionMessages @('Expected 40 but was 20', 'Expected 40 but was 21') |
+            Should -BeFalse
+    }
+
+    It 'never claims a changed mode when the control reported nothing' {
+        # A control that passed has no failure message at all, and a control
+        # with no message is an absent measurement, not a new failure mode.
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @() `
+            -ReproductionMessages @('Expected 40 but was 20') |
+            Should -BeFalse
+    }
+
+    It 'never claims a changed mode when the reproduction message is unknown' {
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Element BugLabel was not found') `
+            -ReproductionMessages @() |
+            Should -BeFalse
+    }
+
+    It 'ignores empty strings on either side rather than matching on them' {
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('', 'Element BugLabel was not found') `
+            -ReproductionMessages @('', 'Expected 40 but was 20') |
+            Should -BeTrue
+    }
+
+    It 'is not fooled by a message that merely contains the other' {
+        # Substring similarity is not sameness: an element-lookup failure that
+        # happens to quote the expected value is still a different failure.
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Element not found while asserting Expected 40 but was 20') `
+            -ReproductionMessages @('Expected 40 but was 20') |
+            Should -BeTrue
+    }
+}

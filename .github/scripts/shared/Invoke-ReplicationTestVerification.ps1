@@ -433,6 +433,40 @@ function Test-ReplicationFailureMessagesAreStable {
     return $distinct.Count -eq 1
 }
 
+function Test-ReplicationControlFailureModeChanged {
+    <#
+        .SYNOPSIS
+        Reports a negative control that failed for a reason the reproduction
+        never observed.
+
+        .DESCRIPTION
+        A control only refutes a reproduction when it stays red for the *same*
+        reason. If the edit meant to remove the trigger also removed the element
+        the oracle locates, the control fails for an unrelated cause and says
+        nothing about attribution.
+
+        Reporting that as a refutation is the most expensive mistake available
+        here, because it discards a reproduction whose device work and evidence
+        are already paid for. When either side is unknown the answer is 'not
+        changed', so a missing measurement never manufactures a verdict.
+    #>
+    param(
+        [Parameter(Mandatory)][AllowNull()][AllowEmptyCollection()][AllowEmptyString()]
+        [string[]]$ControlMessages,
+        [Parameter(Mandatory)][AllowNull()][AllowEmptyCollection()][AllowEmptyString()]
+        [string[]]$ReproductionMessages
+    )
+
+    $control = @(@($ControlMessages) | Where-Object { $_ })
+    $reproduction = @(@($ReproductionMessages) | Where-Object { $_ })
+    if ($control.Count -eq 0 -or $reproduction.Count -eq 0) {
+        return $false
+    }
+
+    $shared = @($control | Where-Object { $reproduction -contains $_ })
+    return $shared.Count -eq 0
+}
+
 $runOutcomes = New-Object 'System.Collections.Generic.List[object]'
 for ($run = 1; $run -le $RunCount; $run++) {
     # The control shares the reproduction's output directory so the gate can
@@ -464,6 +498,36 @@ if ($ExpectPass) {
     $controlInfrastructureFailure = @($runOutcomes |
         Where-Object { $_.InfrastructureFailure }).Count -gt 0
 
+    $controlFailureMessages = @($runOutcomes |
+        Where-Object { -not $_.TestPassed } |
+        ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
+        Where-Object { $_ } |
+        Sort-Object -Unique)
+
+    # A control that stays red only refutes the reproduction when it stays red
+    # for the *same* reason. If removing the trigger also removed the element
+    # the oracle looks for, or broke the scene some other way, the run failed
+    # for a reason the reproduction never observed and says nothing about
+    # attribution. Treating that as a refutation silently discards sound
+    # reproductions, so the two cases are separated here.
+    $reproductionMessages = @()
+    $reproductionResultPath = Join-Path $OutputDirectory 'verification-result.json'
+    if (Test-Path -LiteralPath $reproductionResultPath -PathType Leaf) {
+        try {
+            $reproductionResult = Get-Content -LiteralPath $reproductionResultPath -Raw |
+                ConvertFrom-Json
+            $reproductionMessages = @($reproductionResult.observedFailureMessages |
+                Where-Object { $_ } |
+                ForEach-Object { [string]$_ })
+        } catch {
+            $reproductionMessages = @()
+        }
+    }
+
+    $failureModeChanged = Test-ReplicationControlFailureModeChanged `
+        -ControlMessages $controlFailureMessages `
+        -ReproductionMessages $reproductionMessages
+
     $controlResult = [ordered]@{
         schemaVersion = 1
         issueNumber = $IssueNumber
@@ -476,6 +540,9 @@ if ($ExpectPass) {
         runCount = $controlRuns
         passCount = $controlPasses
         infrastructureFailure = $controlInfrastructureFailure
+        observedFailureMessages = @($controlFailureMessages)
+        reproductionFailureMessages = @($reproductionMessages)
+        failureModeChanged = $failureModeChanged
         logFiles = @($runOutcomes | ForEach-Object { $_.LogFiles } | Sort-Object -Unique)
     }
     $controlPath = Join-Path $OutputDirectory 'negative-control-result.json'
@@ -488,6 +555,14 @@ if ($ExpectPass) {
     if ($controlInfrastructureFailure) {
         throw ('The negative control failed for build or infrastructure reasons, so it cannot ' +
             'show that removing the reported trigger turns the test green.')
+    }
+    if ($failureModeChanged) {
+        Write-Host ('Negative control failure mode: ' +
+            ($controlFailureMessages -join ' | '))
+        Write-Host ('Reproduction failure mode: ' + ($reproductionMessages -join ' | '))
+        throw ('The negative control changed the failure mode instead of removing the trigger: ' +
+            'it failed for a reason the reproduction never observed, so it cannot show whether ' +
+            'the reproduction depends on the reported trigger.')
     }
     if ($controlRuns -ne $RunCount -or $controlPasses -ne $RunCount) {
         throw ("The negative control was expected to pass in all $RunCount run(s) but passed in " +

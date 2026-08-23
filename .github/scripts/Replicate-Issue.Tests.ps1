@@ -80,6 +80,7 @@ BeforeAll {
         'Get-ReplicationPlanVerdictPattern',
         'Test-ReplicationAppTerminated',
         'Test-ReplicationTestBuildFailure',
+        'Test-ReplicationControlChangedFailureMode',
         'Test-ReplicationRefundsTestAttempt',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
@@ -9212,5 +9213,49 @@ exit 0' -Encoding utf8NoBOM
             $compareGrant = @($script:granted | Where-Object { $_.Phase -eq 'fix-compare' })[0]
             $compareGrant.Paths | Should -Be @($script:fixWinnerPath)
         }
+    }
+}
+
+Describe 'A control that fails for a new reason has not refuted anything' {
+    It 'recognises a control that changed the failure mode' {
+        Test-ReplicationControlChangedFailureMode -FailureSummary (
+            'The negative control changed the failure mode instead of removing the trigger: ' +
+            'it failed for a reason the reproduction never observed.') |
+            Should -BeTrue
+    }
+
+    It 'does not mistake a genuine refutation for a changed failure mode' {
+        # This is the case that must still block: the control ran, the test
+        # stayed red for the very same reason, so the reproduction was never
+        # measuring the reported trigger.
+        Test-ReplicationControlChangedFailureMode -FailureSummary (
+            "The negative control was expected to pass in all 3 run(s) but passed in 0 of 1. " +
+            "The reproduction's failure therefore does not depend on the reported trigger alone.") |
+            Should -BeFalse
+    }
+
+    It 'does not mistake a compile break for a changed failure mode' {
+        Test-ReplicationControlChangedFailureMode -FailureSummary (
+            'The control did not compile. Fix these compiler diagnostics: ' +
+            'Issue1.cs(18,1) CS8999: Line does not start with the same whitespace.') |
+            Should -BeFalse
+    }
+
+    It 'treats an absent summary as no signal' {
+        Test-ReplicationControlChangedFailureMode -FailureSummary '' | Should -BeFalse
+        Test-ReplicationControlChangedFailureMode -FailureSummary $null | Should -BeFalse
+    }
+
+    It 'never lets a changed failure mode reach the refutation branch' {
+        # The refutation branch sets $script:ReplicationControlRefutedReproduction,
+        # which is what turns the run red and discards the reproduction. A
+        # changed failure mode must be caught by the guard above it.
+        $source = Get-Content -LiteralPath $script:ScriptPath -Raw
+        $catchBlock = [regex]::Match(
+            $source,
+            '\$controlChangedMode = Test-ReplicationControlChangedFailureMode.*?\$script:ReplicationControlRefutedReproduction = \$true',
+            'Singleline').Value
+        $catchBlock | Should -Not -BeNullOrEmpty
+        $catchBlock | Should -Match '\$controlBuildFailed -or \$controlChangedMode -or'
     }
 }

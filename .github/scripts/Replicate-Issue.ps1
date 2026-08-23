@@ -902,6 +902,34 @@ function Test-ReplicationTestBuildFailure {
     return [bool]($text -match '(?i)never ran because the build failed|failed for build or infrastructure reasons|\berror CS\d+\b|\bMSB\d+\b')
 }
 
+function Test-ReplicationControlChangedFailureMode {
+    <#
+        .SYNOPSIS
+        Reports a negative control that failed for a reason the reproduction
+        never observed.
+
+        .DESCRIPTION
+        A control only refutes a reproduction when it stays red for the *same*
+        reason. If the edit that was supposed to remove the trigger also removed
+        the element the oracle looks for, the run fails for an unrelated cause
+        and proves nothing about attribution.
+
+        Treating that as a refutation destroys sound reproductions, which is the
+        most expensive mistake this pipeline can make: the device work is
+        already spent and the evidence is already recorded. The control author
+        is told what changed and gets another round instead.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$FailureSummary
+    )
+
+    $text = [string]$FailureSummary
+    if (-not $text) {
+        return $false
+    }
+    return [bool]($text -match 'changed the failure mode instead of removing the trigger')
+}
+
 function Test-ReplicationTestElementLookupFailure {
     <#
         .SYNOPSIS
@@ -5355,7 +5383,8 @@ function Invoke-ReplicationNegativeControl {
         catch {
             $controlMessage = ConvertTo-ReplicationSafeLog $_.Exception.Message 2000
             $controlBuildFailed = Test-ReplicationTestBuildFailure -FailureSummary $controlMessage
-            if ($controlBuildFailed -and $round -lt $MaxControlAttempts) {
+            $controlChangedMode = Test-ReplicationControlChangedFailureMode -FailureSummary $controlMessage
+            if (($controlBuildFailed -or $controlChangedMode) -and $round -lt $MaxControlAttempts) {
                 # Build 15032126's control called a protected DisconnectHandler
                 # overload. The author can correct that when it is told which
                 # file, line and diagnostic, exactly as the reproduction test is
@@ -5365,6 +5394,18 @@ function Invoke-ReplicationNegativeControl {
                 # The control writes its own console log. Reading the shared
                 # directory's default name would hand the author the
                 # reproduction's diagnostics instead of the control's.
+                if ($controlChangedMode) {
+                    # This author did not write bad syntax; it wrote an edit that
+                    # removed more than the trigger. Handing it compiler advice
+                    # would be useless, so tell it what actually went wrong.
+                    $controlFailureSummary = ('The previous control edit changed why the test failed ' +
+                        'instead of removing the reported trigger. The test must still reach the same ' +
+                        'assertion it reached during the reproduction: keep every element the test ' +
+                        'locates, every AutomationId, and the whole navigation path intact, and remove ' +
+                        "only the reported trigger itself. $controlMessage")
+                    Write-Host "Negative control attempt ${round} changed the failure mode: $controlFailureSummary"
+                    continue
+                }
                 $diagnostics = Get-ReplicationCompilerDiagnostics `
                     -LogPath (Join-Path $controlDir 'negative-control-console.log')
                 $controlFailureSummary = if ($diagnostics) {
@@ -5375,8 +5416,11 @@ function Invoke-ReplicationNegativeControl {
                 Write-Host "Negative control attempt ${round} did not compile: $controlFailureSummary"
                 continue
             }
-            if ($controlBuildFailed -or
+            if ($controlBuildFailed -or $controlChangedMode -or
                 (Test-ReplicationTestHarnessFault -FailureSummary $controlMessage)) {
+                # An exhausted control is an absent measurement, not a negative
+                # one. The reproduction keeps whatever it proved on its own and
+                # simply never claims the trigger arm.
                 Write-Host "Negative control skipped: it did not run. $controlMessage"
                 return $null
             }
