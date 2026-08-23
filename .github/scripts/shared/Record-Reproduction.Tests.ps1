@@ -1023,6 +1023,132 @@ Describe 'Select-ReproductionDiagnosticLines native backtraces' {
     }
 }
 
+Describe 'A late verdict outranks early chatter' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        foreach ($name in @('Select-ReproductionDiagnosticLines')) {
+            $fn = $ast.FindAll({ param($x)
+                $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $x.Name -eq $name }, $true) | Select-Object -First 1
+            . ([scriptblock]::Create($fn.Extent.Text))
+        }
+
+        # Build 15064926, Catalyst. The XCTest bridge narrates continuously
+        # using the words the generic signal filter looks for, and the runner
+        # states its verdict only at the very end.
+        function script:New-NoisyCatalystOutput {
+            param([string]$Verdict)
+            $chatter = 1..40 | ForEach-Object {
+                "Maui.Controls.Sample.Sandbox[13383:e644] [com.apple.dt.xctest:Default] " +
+                    "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout"
+                "Sending animations idle reply with error: (null)"
+            }
+            $tail = @(
+                '[9ad78baf][Mac2Driver@4c3b] Driver proxy active, passing request on via HTTP proxy'
+                '[9ad78baf][AppiumDriver@578d] Removing session 9ad78baf from our master session list'
+            )
+            return (@($chatter) + @($Verdict) + @($tail) + @('X Test failed with exit code 134')) -join "`n"
+        }
+    }
+
+    It 'keeps the runner verdict that arrives after forty chatter lines' {
+        $verdict = "Unhandled exception. System.InvalidOperationException: " +
+            "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+
+        $selected = Select-ReproductionDiagnosticLines -Text (New-NoisyCatalystOutput -Verdict $verdict)
+
+        $selected | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        $selected | Should -Match "actual='NO BUG:'"
+    }
+
+    It 'discards the XCTest narration that used to fill every signal slot' {
+        $verdict = "Unhandled exception. System.InvalidOperationException: " +
+            "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+
+        $selected = Select-ReproductionDiagnosticLines -Text (New-NoisyCatalystOutput -Verdict $verdict)
+
+        $selected | Should -Not -Match 'XCTPerformOnMainRunLoop'
+        $selected | Should -Not -Match 'animations idle reply'
+    }
+
+    It 'keeps a termination sentinel that arrives just as late' {
+        $verdict = 'REPLICATION_APP_TERMINATED step=3 action=tap the app under test exited'
+
+        $selected = Select-ReproductionDiagnosticLines -Text (New-NoisyCatalystOutput -Verdict $verdict)
+
+        $selected | Should -Match 'REPLICATION_APP_TERMINATED'
+    }
+
+    It 'still keeps generic signal lines when no sentinel is present' {
+        $text = @(
+            'Determining projects to restore...'
+            'error CS0103: The name ''Foo'' does not exist in the current context'
+            'Build FAILED.'
+        ) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $text
+
+        $selected | Should -Match 'CS0103'
+        $selected | Should -Match 'Build FAILED'
+    }
+}
+
+Describe 'A verdict rescued from the noise is classified as a verdict' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        $fn = $ast.FindAll({ param($x)
+            $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $x.Name -eq 'Select-ReproductionDiagnosticLines' }, $true) | Select-Object -First 1
+        . ([scriptblock]::Create($fn.Extent.Text))
+
+        $replicate = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path (Split-Path -Parent $PSScriptRoot) 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
+        foreach ($name in @(
+            'Get-ReplicationAppTerminationPattern',
+            'Get-ReplicationAbortExitPattern',
+            'Get-ReplicationPlanVerdictPattern',
+            'Get-ReplicationDriverElementFailurePattern',
+            'Test-ReplicationAppTerminated')) {
+            $f = $replicate.FindAll({ param($x)
+                $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $x.Name -eq $name }, $true) | Select-Object -First 1
+            . ([scriptblock]::Create($f.Extent.Text))
+        }
+    }
+
+    It 'no longer calls a clean Catalyst negative an app termination' {
+        # End to end over the two units that produced the wrong answer: the
+        # summary the recorder keeps, fed to the classifier that reads it.
+        $chatter = 1..40 | ForEach-Object {
+            "Maui.Controls.Sample.Sandbox[13383:e644] [com.apple.dt.xctest:Default] " +
+                "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout"
+            "Sending animations idle reply with error: (null)"
+        }
+        $raw = (@($chatter) + @(
+            "Unhandled exception. System.InvalidOperationException: REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+            'X Test failed with exit code 134'
+        )) -join "`n"
+
+        $summary = Select-ReproductionDiagnosticLines -Text $raw
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+    }
+
+    It 'still calls a genuine termination a termination' {
+        $raw = @(
+            'Sending animations idle reply with error: (null)'
+            'REPLICATION_APP_TERMINATED step=2 action=tap the app under test exited'
+            'X Test failed with exit code 134'
+        ) -join "`n"
+
+        $summary = Select-ReproductionDiagnosticLines -Text $raw
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+    }
+}
+
 Describe 'Kept footage stops where the scenario stopped' {
     BeforeAll {
         # Define the bounding helper on its own; the recording harness cannot

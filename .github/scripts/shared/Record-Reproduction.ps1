@@ -218,6 +218,12 @@ function Select-ReproductionDiagnosticLines {
     #   "  3   WebDriverAgentLib  0x000000010... -[FBRoute mount:] + 168"
     $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|Caused by:\s|^\s*\d+\s+\S+\s+0x[0-9a-fA-F]{6,}\s)'
     $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|Logcat|Simulator|simctl)|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
+    # The XCTest bridge narrates itself continuously while the app is perfectly
+    # healthy, and it does so using the two words the signal filter below looks
+    # for: "Sending animations idle reply with error: (null)" and
+    # "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness
+    # timeout". Neither reports a fault, so both are noise.
+    $hostChatterPattern = '(?i)XCTPerformOnMainRunLoop|Sending animations idle reply|com\.apple\.dt\.xctest'
 
     # PowerShell renders a nested failure as a console display -- an
     # "OperationStopped:" header, a "Line |" gutter, a squiggle and a
@@ -237,6 +243,7 @@ function Select-ReproductionDiagnosticLines {
             $_ -notmatch $progressPattern -and
             $_ -notmatch $stackFramePattern -and
             $_ -notmatch $errorRenderNoise -and
+            $_ -notmatch $hostChatterPattern -and
             $_ -notmatch $wireNoisePattern
         })
     if ($quiet.Count -gt 0) {
@@ -244,9 +251,24 @@ function Select-ReproductionDiagnosticLines {
     }
 
     $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|no such element|\bMSB\d+\b|\bCS\d+\b)'
+    # Selecting signal lines in arrival order lets whatever is chatty early
+    # crowd out whatever is decisive late. The runner states its verdict last,
+    # so on a noisy platform the verdict never made the cut: build 15064926
+    # reported three Catalyst attempts as the app aborting when the runner had
+    # said REPLICATION_NOT_REPRODUCED, because the twelve signal slots were
+    # already full of benign XCTest chatter matching "error" and "timeout".
+    #
+    # Only the protocol sentinels and an unhandled exception state an outcome,
+    # so they claim slots before anything matched by generic wording. The total
+    # budget is unchanged.
+    $decisivePattern = '(?i)REPLICATION_[A-Z_]+|Unhandled exception|\u274C|^STEP \d+/\d+:'
+    $decisive = @($lines | Where-Object { $_ -match $decisivePattern })
+    $generic = @($lines |
+        Where-Object { $_ -notmatch $decisivePattern -and $_ -match $signalPattern })
+    $genericBudget = [Math]::Max(0, $MaximumSignalLines - $decisive.Count)
     $candidates = @(
-        $lines | Where-Object { $_ -match $signalPattern } |
-            Select-Object -First $MaximumSignalLines
+        $decisive | Select-Object -First $MaximumSignalLines
+        $generic | Select-Object -First $genericBudget
         $lines | Select-Object -Last $MaximumTailLines
     )
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
