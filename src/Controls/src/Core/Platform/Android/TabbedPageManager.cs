@@ -357,6 +357,11 @@ public class TabbedPageManager
 			{
 				bottomNavigationView.RemoveBadge(maxItems - 1);
 			}
+
+			foreach (var index in _bottomBadgePages.Keys.Where(index => index > lastIndexToUpdate).ToArray())
+			{
+				_bottomBadgePages.Remove(index);
+			}
 		}
 		else
 		{
@@ -366,7 +371,7 @@ public class TabbedPageManager
 				return false;
 			}
 
-			if (Element.Children.Count > 0 && tabLayout.TabCount == 0)
+			if (tabLayout.TabCount < Element.Children.Count)
 			{
 				return false;
 			}
