@@ -186,4 +186,80 @@ Describe 'Choosing a shell that can actually run the build' {
             Remove-VsoLoggingCommand -Line '' | Should -Be ''
         }
     }
+
+    Context 'Running the build under a wall-clock bound' {
+        BeforeAll {
+            $script:Pwsh = (Get-Process -Id $PID).Path
+        }
+
+        It 'propagates the exit code when a shell runs the build' {
+            $exit = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'exit 7' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', 'exit 7') `
+                -TimeoutMinutes 1
+
+            $exit | Should -Be 7
+        }
+
+        It 'propagates success when a shell runs the build' {
+            $exit = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'exit 0' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', 'exit 0') `
+                -TimeoutMinutes 1
+
+            $exit | Should -Be 0
+        }
+
+        It 'still runs the build when no shell is available' {
+            $exit = Invoke-BuildTasksWatchdog `
+                -ShellPath $null `
+                -ShellCommand 'exit 0' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', 'exit 5') `
+                -TimeoutMinutes 1
+
+            $exit | Should -Be 5
+        }
+
+        It 'filters logging commands out of the output it relays' {
+            $output = Invoke-BuildTasksWatchdog `
+                -ShellPath '' `
+                -ShellCommand 'true' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', "Write-Output 'a##vso[task.complete result=Failed;]b'") `
+                -TimeoutMinutes 1 6>&1 | Out-String
+
+            $output | Should -Match 'ab'
+            $output | Should -Not -Match '##vso'
+        }
+
+        It 'kills a build that outruns its wall clock and reports the timeout code' {
+            $exit = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'sleep 120' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', 'Start-Sleep -Seconds 120') `
+                -TimeoutMinutes 0.05 `
+                -WarningAction SilentlyContinue 6>&1 | Select-Object -Last 1
+
+            # A 3-second bound keeps the kill path honest without making the suite
+            # wait a real minute for it.
+            $exit | Should -Be 124
+        }
+
+        It 'kills a silent hang in the no-shell path instead of blocking forever' {
+            $exit = Invoke-BuildTasksWatchdog `
+                -ShellPath $null `
+                -ShellCommand 'true' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', 'Start-Sleep -Seconds 120') `
+                -TimeoutMinutes 0.05 6>&1 | Select-Object -Last 1
+
+            $exit | Should -Be 124
+        }
+    }
 }

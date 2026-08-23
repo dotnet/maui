@@ -185,3 +185,126 @@ function Remove-VsoLoggingCommand {
 
     return ($Line -replace '##vso\[[^\]]*\]', '') -replace "`r", ''
 }
+
+function Invoke-BuildTasksWatchdog {
+    <#
+    .SYNOPSIS
+        Runs a build under a wall-clock bound, killing the whole tree if it hangs.
+
+    .DESCRIPTION
+        Azure DevOps' own step timeout cannot kill a wedged dotnet/cake process
+        tree, so the bound is enforced here and the tree is killed from inside.
+
+        When a POSIX shell is available the build runs under it so its output can
+        be piped through `tr`/`sed`. When none is (a Windows agent whose only bash
+        is the WSL stub), the build runs directly and its stdout is filtered in
+        process, which preserves both the wall-clock bound and the guarantee that
+        build output cannot rewrite pipeline state.
+
+    .OUTPUTS
+        The child's exit code, or 124 if the wall clock expired.
+    #>
+    [CmdletBinding()]
+    [OutputType([int])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ShellCommand,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DirectFileName,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$DirectArgument,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$ShellPath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(0.001, 1440)]
+        [double]$TimeoutMinutes = 40
+    )
+
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.UseShellExecute = $false
+
+    $filterInProcess = [string]::IsNullOrWhiteSpace($ShellPath)
+    if ($filterInProcess) {
+        $psi.FileName = $DirectFileName
+        foreach ($argument in @($DirectArgument)) {
+            [void]$psi.ArgumentList.Add($argument)
+        }
+        # Only stdout is redirected. stderr keeps the inherited console handle, so
+        # there is no second pipe to drain and therefore no way to deadlock on a
+        # full buffer while this thread is blocked reading the first.
+        $psi.RedirectStandardOutput = $true
+    } else {
+        $psi.FileName = $ShellPath
+        foreach ($argument in @('-o', 'pipefail', '-c', $ShellCommand)) {
+            [void]$psi.ArgumentList.Add($argument)
+        }
+    }
+
+    $process = [System.Diagnostics.Process]::Start($psi)
+    $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
+
+    if ($filterInProcess) {
+        $reader = $process.StandardOutput
+        while ($true) {
+            $remainingMs = [int][Math]::Max(0, [Math]::Min(
+                    [int]::MaxValue,
+                    ($deadline - [DateTime]::UtcNow).TotalMilliseconds))
+            if ($remainingMs -le 0) {
+                return (Stop-BuildTasksProcessTree -Process $process -TimeoutMinutes $TimeoutMinutes)
+            }
+
+            $read = $reader.ReadLineAsync()
+            if (-not $read.Wait($remainingMs)) {
+                return (Stop-BuildTasksProcessTree -Process $process -TimeoutMinutes $TimeoutMinutes)
+            }
+
+            if ($null -eq $read.Result) {
+                break
+            }
+
+            Write-Host (Remove-VsoLoggingCommand -Line $read.Result)
+        }
+    }
+
+    $remainingMs = [int][Math]::Max(0, [Math]::Min(
+            [int]::MaxValue,
+            ($deadline - [DateTime]::UtcNow).TotalMilliseconds))
+    if (-not $process.WaitForExit($remainingMs)) {
+        return (Stop-BuildTasksProcessTree -Process $process -TimeoutMinutes $TimeoutMinutes)
+    }
+
+    return [int]$process.ExitCode
+}
+
+function Stop-BuildTasksProcessTree {
+    [CmdletBinding()]
+    [OutputType([int])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Diagnostics.Process]$Process,
+
+        [Parameter(Mandatory = $true)]
+        [double]$TimeoutMinutes
+    )
+
+    Write-Host "##[error]dotnet-buildtasks exceeded $TimeoutMinutes min wall-clock — killing the process tree so the retry can start on a fresh agent."
+    try {
+        $Process.Kill($true)
+    } catch {
+        try {
+            Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
+        } catch {
+        }
+    }
+
+    Start-Sleep -Seconds 3
+    return 124
+}
+
