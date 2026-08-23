@@ -5885,6 +5885,8 @@ try {
     $MaxInfrastructureRetries = 3
     $clericalRetries = 0
     $MaxClericalRetries = 3
+    $recordingRetries = 0
+    $MaxRecordingRetries = 2
     $compileRetries = 0
     $MaxCompileRetries = 3
     $sandboxSucceeded = $false
@@ -6110,6 +6112,33 @@ $sandboxFailureSummary
                 }
 
                 Write-Host 'Output retries exhausted; treating the missing output as a semantic attempt.'
+            }
+            # A dead recorder says nothing about the scenario, and the
+            # conclusiveness test vetoes the whole run on a single
+            # 'recording-failed' kind. Charged as a semantic attempt, one
+            # transient recorder fault therefore poisons a run permanently:
+            # build 15065383 observed 'not reproduced' cleanly twice and still
+            # finished red and unpublished, because attempt 1 never captured a
+            # frame and the kind stayed in the list for the rest of the run.
+            #
+            # Retry it the way a clerical miss is already retried, removing the
+            # recorded kind so the veto only fires for a recorder that stays
+            # broken. A fault that outlives the budget is a real infrastructure
+            # problem and must still veto.
+            if ($sandboxAttemptKinds.Count -gt 0 -and
+                $sandboxAttemptKinds[$sandboxAttemptKinds.Count - 1] -eq 'recording-failed') {
+                Write-ReplicationAgentDiagnostic -PhaseName 'sandbox' -Attempt $attempt
+                if ($recordingRetries -lt $MaxRecordingRetries) {
+                    $recordingRetries++
+                    Write-Host ("Sandbox attempt {0} recorded no usable video; retrying without consuming a semantic attempt ({1}/{2})." -f
+                        $attempt, $recordingRetries, $MaxRecordingRetries)
+                    $sandboxAttemptKinds.RemoveAt($sandboxAttemptKinds.Count - 1)
+                    $attempt--
+                    Restore-TransientSandbox
+                    continue
+                }
+
+                Write-Host 'Recording retries exhausted; treating the dead recorder as a semantic attempt.'
             }
             if ($sandboxFailureSummary -match
                 '^(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') {

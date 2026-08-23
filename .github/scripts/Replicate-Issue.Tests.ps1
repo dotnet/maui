@@ -1107,8 +1107,45 @@ public partial class MainPage : ContentPage
         $source | Should -Match '\$clericalRetries -lt \$MaxClericalRetries'
     }
 
-    It 'shows the agent transcript when a required output never appeared' {
-        # Run 15000213 failed five identical attempts on Windows and printed
+    It 'does not spend a semantic attempt on a dead recorder' {
+        # Build 15065383 observed 'not reproduced' cleanly twice and still
+        # finished red, because attempt 1 captured no frames and the
+        # conclusiveness test vetoes on a single 'recording-failed' kind.
+        $source = $script:Source
+        $source | Should -Match '\$MaxRecordingRetries = 2'
+        $source | Should -Match 'recorded no usable video; retrying without consuming a semantic attempt'
+        $source | Should -Match 'Recording retries exhausted'
+        # The budget must still be finite, or a permanently dead recorder loops.
+        $source | Should -Match '\$recordingRetries -lt \$MaxRecordingRetries'
+    }
+
+    It 'withdraws the vetoing kind when it refunds the recording attempt' {
+        # Refunding the attempt but leaving 'recording-failed' in the list
+        # changes nothing: the veto reads the list, so the run still cannot
+        # reach a conclusion no matter how many clean observations follow.
+        $source = $script:Source
+        $refundAt = $source.IndexOf('recorded no usable video; retrying without consuming a semantic attempt')
+        $refundAt | Should -BeGreaterThan 0
+        $window = $source.Substring($refundAt, 400)
+        $window | Should -Match '\$sandboxAttemptKinds\.RemoveAt\(\$sandboxAttemptKinds\.Count - 1\)'
+        $window | Should -Match '\$attempt--'
+    }
+
+    It 'still vetoes a recorder that stays broken' {
+        # The refund is bounded precisely so an unrecoverable recorder remains
+        # an infrastructure fault the run must not conclude past.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        'not-reproduced', 'not-reproduced', 'recording-failed' | ForEach-Object { $kinds.Add($_) }
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds | Should -BeFalse
+    }
+
+    It 'concludes once the transient recording faults are gone' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        'not-reproduced', 'not-reproduced' | ForEach-Object { $kinds.Add($_) }
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds | Should -BeTrue
+    }
+
+    It 'shows the agent transcript when a required output never appeared' {        # Run 15000213 failed five identical attempts on Windows and printed
         # nothing the agent said, so the cause could not be read from the log.
         $agentDir = Join-Path $TestDrive 'diag'
         New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
