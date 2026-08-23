@@ -1,8 +1,8 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
 Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
-~Microsoft.Maui.Controls.DropGestureRecognizer.SendDragLeave(Microsoft.Maui.Controls.DragEventArgs args) -> void
-~Microsoft.Maui.Controls.DropGestureRecognizer.SendDrop(Microsoft.Maui.Controls.DropEventArgs args) -> System.Threading.Tasks.Task
+Microsoft.Maui.Controls.DropGestureRecognizer.SendDragLeave(Microsoft.Maui.Controls.DragEventArgs! args) -> void
+Microsoft.Maui.Controls.DropGestureRecognizer.SendDrop(Microsoft.Maui.Controls.DropEventArgs! args) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerEntered(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerExited(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerMoved(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
