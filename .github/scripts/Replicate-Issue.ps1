@@ -2770,6 +2770,80 @@ function Assert-GeneratedTestContent {
     }
 }
 
+function Get-ReplicationFixCandidateVerdict {
+    <#
+        .SYNOPSIS
+            Turns one fix candidate's self-report plus the working tree's
+            actual state into a verdict the panel can act on.
+
+        .DESCRIPTION
+            A candidate reports its own result, and that report is the weakest
+            evidence in the run: it has a shell, it wants to succeed, and
+            nothing it writes is checked by anyone else. So the claim is only
+            ever allowed to make a candidate look worse, never better. What it
+            actually changed comes from git rather than from the diff file it
+            wrote, and a pass is refused outright when it is not backed by a
+            change and a self-review.
+
+            A refused candidate is not an error. The panel records it and moves
+            on, and the reproduction publishes regardless.
+    #>
+    param(
+        [string]$ResultText,
+        [string[]]$ChangedPaths = @(),
+        [string[]]$ScopeFiles = @(),
+        [bool]$HasSelfReview = $false
+    )
+
+    $changed = @($ChangedPaths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+
+    # Scope is checked before the claim, because a candidate that edited files
+    # it was not given is untrustworthy whatever it says about itself. With a
+    # shell in hand the write allowlist cannot enforce this, so the diff is
+    # where it is actually enforced.
+    $outOfScope = @($changed | Where-Object { $ScopeFiles -cnotcontains $_ })
+    if ($outOfScope.Count -gt 0) {
+        return [pscustomobject]@{
+            Result = 'Blocked'
+            Rejection = ('changed files outside its scope: ' +
+                (($outOfScope | Sort-Object) -join ', '))
+        }
+    }
+
+    $claim = ([string]$ResultText).Trim()
+    $normalised = switch -Regex ($claim) {
+        '^(?i)pass$' { 'Pass'; break }
+        '^(?i)fail$' { 'Fail'; break }
+        '^(?i)blocked$' { 'Blocked'; break }
+        default { $null }
+    }
+    if (-not $normalised) {
+        return [pscustomobject]@{
+            Result = 'Blocked'
+            Rejection = "did not report a usable result ('$(
+                if ($claim.Length -gt 60) { $claim.Substring(0, 60) + '…' } else { $claim })')"
+        }
+    }
+
+    if ($normalised -ceq 'Pass') {
+        if ($changed.Count -eq 0) {
+            return [pscustomobject]@{
+                Result = 'Blocked'
+                Rejection = ('reported a pass without changing any file, so ' +
+                    'either the test was already green or it was never run')
+            }
+        }
+        if (-not $HasSelfReview) {
+            return [pscustomobject]@{
+                Result = 'Blocked'
+                Rejection = 'reported a pass without the required self-review'
+            }
+        }
+    }
+
+    return [pscustomobject]@{ Result = $normalised; Rejection = $null }
+}
+
 function Get-ReplicationFixPanelBudget {
     <#
         .SYNOPSIS

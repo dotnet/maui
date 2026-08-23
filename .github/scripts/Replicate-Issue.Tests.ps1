@@ -126,6 +126,7 @@ BeforeAll {
         'Get-ReplicationFixScopePathRejection',
         'Test-ReplicationFixPanelCanStartCandidate',
         'Get-ReplicationFixPanelBudget',
+        'Get-ReplicationFixCandidateVerdict',
         'Read-ReplicationFixScope',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
@@ -7816,5 +7817,104 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
         $declaredStep | Should -Be $stepTimeout -Because (
             'the orchestrator budgets against this number and Azure kills ' +
             'against the pipeline one')
+    }
+}
+
+Describe 'A fix candidate grades itself, so its claim is checked against the tree' {
+    BeforeAll {
+        $script:scope = @('src/Core/src/Handlers/EntryHandler.cs', 'src/Core/src/Platform/View.cs')
+    }
+
+    It 'accepts a pass that changed a scoped file and reviewed itself' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText "Pass`n" `
+            -ChangedPaths @('src/Core/src/Handlers/EntryHandler.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Pass'
+        $v.Rejection | Should -BeNullOrEmpty
+    }
+
+    It 'refuses a pass that changed nothing, which cannot have fixed anything' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Pass' `
+            -ChangedPaths @() -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Blocked'
+        $v.Rejection | Should -Match 'without changing any file'
+    }
+
+    It 'refuses a pass with no self-review, which the skill requires every attempt' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Pass' `
+            -ChangedPaths @('src/Core/src/Handlers/EntryHandler.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $false
+        $v.Result | Should -Be 'Blocked'
+        $v.Rejection | Should -Match 'self-review'
+    }
+
+    It 'refuses any candidate that edited a file outside its scope' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Pass' `
+            -ChangedPaths @('src/Core/src/Handlers/EntryHandler.cs', 'src/Controls/src/Other.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Blocked'
+        $v.Rejection | Should -Match 'outside its scope'
+        $v.Rejection | Should -Match 'Other\.cs'
+    }
+
+    It 'checks scope even when the candidate admits it failed' {
+        # A shell makes the write allowlist advisory, so an out-of-scope edit
+        # matters regardless of what the candidate claims about itself.
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Fail' `
+            -ChangedPaths @('eng/Versions.props') `
+            -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Blocked'
+        $v.Rejection | Should -Match 'outside its scope'
+    }
+
+    It 'keeps an honest failure as a failure rather than promoting it' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Fail' `
+            -ChangedPaths @('src/Core/src/Handlers/EntryHandler.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Fail'
+        $v.Rejection | Should -BeNullOrEmpty
+    }
+
+    It 'accepts a self-declared block without needing a change or a review' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Blocked' `
+            -ChangedPaths @() -ScopeFiles $script:scope -HasSelfReview $false
+        $v.Result | Should -Be 'Blocked'
+        $v.Rejection | Should -BeNullOrEmpty
+    }
+
+    It 'blocks an unreadable result rather than guessing what it meant' -TestCases @(
+        @{ Text = '' }, @{ Text = '   ' }, @{ Text = 'Passed' }
+        @{ Text = 'Pass with caveats' }, @{ Text = 'PASS!' }, @{ Text = 'success' }
+    ) {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText $Text `
+            -ChangedPaths @('src/Core/src/Handlers/EntryHandler.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Blocked'
+        $v.Rejection | Should -Match 'usable result'
+    }
+
+    It 'reads the single word the skill specifies whatever its casing' -TestCases @(
+        @{ Text = 'pass'; Expected = 'Pass' }
+        @{ Text = 'PASS'; Expected = 'Pass' }
+        @{ Text = " Fail `n"; Expected = 'Fail' }
+        @{ Text = 'BLOCKED'; Expected = 'Blocked' }
+    ) {
+        (Get-ReplicationFixCandidateVerdict -ResultText $Text `
+            -ChangedPaths @('src/Core/src/Handlers/EntryHandler.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $true).Result |
+            Should -Be $Expected
+    }
+
+    It 'does not let a long claim flood the rejection message' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText ('x' * 5000) `
+            -ChangedPaths @() -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Rejection.Length | Should -BeLessThan 200
+    }
+
+    It 'compares scope case-sensitively, because the filesystem here does not forgive it' {
+        $v = Get-ReplicationFixCandidateVerdict -ResultText 'Pass' `
+            -ChangedPaths @('src/Core/src/Handlers/entryhandler.cs') `
+            -ScopeFiles $script:scope -HasSelfReview $true
+        $v.Result | Should -Be 'Blocked'
     }
 }
