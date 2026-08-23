@@ -129,6 +129,16 @@ param(
     [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification,
 
+    # What this run is being asked to prove. The mechanics are identical either
+    # way — run the test, report whether it failed — but the meaning of that
+    # result is inverted for a negative control, where a still-failing test is
+    # bad news. Only the console wording changes; exit codes and the machine
+    # report are deliberately untouched so every existing caller and validator
+    # keeps reading exactly what it reads today.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Reproduction", "NegativeControl")]
+    [string]$Purpose = "Reproduction",
+
     [Parameter(Mandatory = $false)]
     [ValidateSet("UITest", "UnitTest", "XamlUnitTest", "DeviceTest")]
     [string]$TestType
@@ -2383,22 +2393,43 @@ if ($DetectedFixFiles.Count -eq 0) {
     }
 
     if ($allFailed) {
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-        Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-        Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
-        Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        if ($Purpose -eq 'NegativeControl') {
+            # The trigger was removed and the test failed anyway, so this run
+            # establishes nothing about attribution. Saying "PASSED" here would
+            # tell a reader the exact opposite of what was measured.
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+            Write-Host "║              CONTROL DID NOT CLEAR ❌                     ║" -ForegroundColor Red
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+            Write-Host "║  All $($allResults.Count) test(s) FAILED with the trigger removed.        ║" -ForegroundColor Red
+            Write-Host "║  The failure is NOT attributable to the reported trigger. ║" -ForegroundColor Red
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        } else {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+            Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+            Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
+            Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        }
         Write-FailureOnlyReport -ReportStatus "✅ PASSED" -Results $allResults
         exit 0
     } else {
         $passedCount = ($allResults | Where-Object { $_.Passed }).Count
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-        Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
-        Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        if ($Purpose -eq 'NegativeControl') {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+            Write-Host "║              CONTROL CLEARED ✅                           ║" -ForegroundColor Green
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+            Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED with the trigger removed.         ║" -ForegroundColor Green
+            Write-Host "║  The failure is attributable to the reported trigger.     ║" -ForegroundColor Green
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        } else {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+            Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+            Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
+            Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        }
         Write-FailureOnlyReport -ReportStatus "❌ FAILED" -Results $allResults
         exit 1
     }

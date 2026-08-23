@@ -218,7 +218,13 @@ function Invoke-SingleVerificationRun {
             '-TestClass', $TestClass,
             '-TestMethod', $TestMethod,
             '-MachineResultPath', $machineResultPath,
-            '-PRNumber', [string]$IssueNumber
+            '-PRNumber', [string]$IssueNumber,
+            # Tell the verifier what it is being asked to prove. Without this it
+            # prints "VERIFICATION PASSED / This proves the tests correctly
+            # reproduce the bug" during a negative control, where a failing test
+            # means the exact opposite. The decision logic never read that banner,
+            # but a human reading the artifact did.
+            '-Purpose', $(if ($ExpectPass) { 'NegativeControl' } else { 'Reproduction' })
         )
         if (-not [string]::IsNullOrWhiteSpace($TestProject)) {
             $arguments += @('-TestProject', $TestProject)

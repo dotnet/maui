@@ -437,6 +437,73 @@ function Get-ValidatedFixFiles {
     return @($property.Value | ForEach-Object { ([string]$_).Replace('\', '/') } | Where-Object { $_ })
 }
 
+function New-ReplicationPullRequestTitle {
+    <#
+    .SYNOPSIS
+        Builds the pull request title.
+
+    .DESCRIPTION
+        A PR that carries a product fix is titled `[maui-bot-fix] Fix for #N - <issue title>`
+        so the bot's fixes are filterable at a glance.
+
+        A PR that carries only a reproduction keeps the platform-tagged
+        reproduction title. Claiming a fix that is not in the diff would overstate
+        the evidence in the one field every reader sees before opening anything,
+        which is exactly the failure mode the certification levels exist to avoid.
+
+        The issue title is treated as untrusted: control characters are stripped so
+        it cannot forge additional lines, and the whole title is bounded so it
+        stays legible in a PR list.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$IssueNumber,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Platform,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$IssueTitle,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$CarriesFix,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(40, 256)]
+        [int]$MaxLength = 120
+    )
+
+    if (-not $CarriesFix) {
+        return "[$Platform] Add failing reproduction for #$IssueNumber"
+    }
+
+    $prefix = "[maui-bot-fix] Fix for #$IssueNumber"
+
+    $summary = if ($null -eq $IssueTitle) { '' } else { $IssueTitle }
+    $summary = ($summary -replace '[\p{C}]', ' ').Trim()
+    $summary = $summary -replace '\s{2,}', ' '
+    if ([string]::IsNullOrWhiteSpace($summary)) {
+        return $prefix
+    }
+
+    $separator = ' - '
+    $available = $MaxLength - $prefix.Length - $separator.Length
+    if ($available -lt 12) {
+        # No room for a summary that would still mean anything.
+        return $prefix
+    }
+
+    if ($summary.Length -gt $available) {
+        $summary = $summary.Substring(0, $available - 1).TrimEnd() + '…'
+    }
+
+    return "$prefix$separator$summary"
+}
+
 function Assert-ReplicationStagedFix {
     param(
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][AllowNull()][string[]]$StagedLines,
@@ -583,7 +650,11 @@ $buildId = if ($env:BUILD_BUILDID) {
 }
 $branchName = New-ReplicationBranchName -IssueNumber $issueNumber -Platform $platform -BuildId $buildId
 $marker = Get-ReplicationPullRequestMarker -IssueNumber $issueNumber -Platform $platform
-$prTitle = "[$platform] Add failing reproduction for #$issueNumber"
+$prTitle = New-ReplicationPullRequestTitle `
+    -IssueNumber $issueNumber `
+    -Platform $platform `
+    -IssueTitle $issueTitle `
+    -CarriesFix:(@(Get-ValidatedFixFiles -Candidate $candidate).Count -gt 0)
 $prBody = New-ReplicationPullRequestBody `
     -Candidate $candidate `
     -Evidence $evidence `

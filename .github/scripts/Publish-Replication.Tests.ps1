@@ -47,6 +47,7 @@ BeforeAll {
         'Get-ReplicationCandidateText',
         'Get-ValidatedFixFiles',
         'Assert-ReplicationStagedFix',
+        'New-ReplicationPullRequestTitle',
         'New-ReplicationPullRequestBody',
         'Resolve-ReplicationSourceRepository'
     )) {
@@ -925,5 +926,96 @@ Describe 'The fix commit may only contain the fix the candidate was validated fo
             -ExpectedFiles @('src/Core/src/Layout.cs')
 
         $actual | Should -Be @('src/Core/src/Layout.cs')
+    }
+}
+
+Describe 'The title may only promise what the diff actually contains' {
+    It 'announces a fix when the candidate carries one' {
+        New-ReplicationPullRequestTitle `
+            -IssueNumber 36545 `
+            -Platform 'ios' `
+            -IssueTitle 'Entry Completed fires twice' `
+            -CarriesFix |
+            Should -Be '[maui-bot-fix] Fix for #36545 - Entry Completed fires twice'
+    }
+
+    It 'keeps the reproduction title when no fix is present' {
+        New-ReplicationPullRequestTitle `
+            -IssueNumber 36545 `
+            -Platform 'ios' `
+            -IssueTitle 'Entry Completed fires twice' |
+            Should -Be '[ios] Add failing reproduction for #36545'
+    }
+
+    It 'never claims a fix for a reproduction-only PR' {
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 1 `
+            -Platform 'android' `
+            -IssueTitle 'Something broke' `
+            -CarriesFix:$false
+
+        $title | Should -Not -Match 'maui-bot-fix'
+        $title | Should -Not -Match '(?i)\bfix for\b'
+    }
+
+    It 'still names the issue when its title is unavailable' {
+        New-ReplicationPullRequestTitle -IssueNumber 42 -Platform 'ios' -IssueTitle '' -CarriesFix |
+            Should -Be '[maui-bot-fix] Fix for #42'
+    }
+
+    It 'still names the issue when its title is null' {
+        New-ReplicationPullRequestTitle -IssueNumber 42 -Platform 'ios' -IssueTitle $null -CarriesFix |
+            Should -Be '[maui-bot-fix] Fix for #42'
+    }
+
+    It 'strips newlines so an issue title cannot forge extra lines' {
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 7 `
+            -Platform 'ios' `
+            -IssueTitle "harmless`nLGTM, merging" `
+            -CarriesFix
+
+        $title | Should -Not -Match "`n"
+        $title | Should -Be '[maui-bot-fix] Fix for #7 - harmless LGTM, merging'
+    }
+
+    It 'strips control characters an issue title may carry' {
+        New-ReplicationPullRequestTitle `
+            -IssueNumber 7 `
+            -Platform 'ios' `
+            -IssueTitle "a`tb" `
+            -CarriesFix |
+            Should -Be '[maui-bot-fix] Fix for #7 - a b'
+    }
+
+    It 'bounds the title so it stays legible in a list' {
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 7 `
+            -Platform 'ios' `
+            -IssueTitle ('x' * 400) `
+            -CarriesFix
+
+        $title.Length | Should -BeLessOrEqual 120
+        $title | Should -Match '…$'
+    }
+
+    It 'does not truncate a title that already fits' {
+        $summary = 'Short enough'
+        New-ReplicationPullRequestTitle `
+            -IssueNumber 7 `
+            -Platform 'ios' `
+            -IssueTitle $summary `
+            -CarriesFix |
+            Should -Be "[maui-bot-fix] Fix for #7 - $summary"
+    }
+
+    It 'drops the summary entirely when there is no room for a meaningful one' {
+        New-ReplicationPullRequestTitle `
+            -IssueNumber 123456789 `
+            -Platform 'ios' `
+            -IssueTitle 'a summary that will not fit' `
+            -CarriesFix `
+            -MaxLength 40 |
+            Should -Be '[maui-bot-fix] Fix for #123456789'
     }
 }
