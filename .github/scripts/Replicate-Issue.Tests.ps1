@@ -123,6 +123,8 @@ BeforeAll {
         'Get-UnsupportedReplicationCapability',
         'Resolve-ReplicationCopilotExecutable',
         'Get-ReplicationCopilotCapabilityArguments',
+        'Get-ReplicationFixScopePathRejection',
+        'Read-ReplicationFixScope',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
     )) {
@@ -3061,16 +3063,33 @@ PS-STEP-FAILED: step 3 did not find its target
             Should -Match 'casing or order'
     }
 
-    It 'reports the schema difference in both proposal validators' {
+    It 'reports the schema difference in every schema validator' {
         $orchestrator = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
-        # Neither validator may throw the bare message any more.
+        # No validator may throw the bare message.
         ([regex]::Matches(
             $orchestrator,
             "does not match the exact trusted schema\.'")).Count | Should -Be 0
-        ([regex]::Matches(
+
+        # Counting call sites only pins today's validators and silently stops
+        # covering the next one. The property that matters is that every
+        # schema rejection carries the difference with it, so assert that
+        # pairing directly and let it apply to validators not yet written.
+        # Anchor on the throw itself. A looser pattern also matches the comment
+        # that explains why the detail exists, which can never be followed by a
+        # call and would make this fail for the wrong reason.
+        $rejections = [regex]::Matches(
             $orchestrator,
-            'Get-ReplicationSchemaMismatchDetail `')).Count | Should -Be 2
+            "'(?:[^']*?)(?:match the exact trusted schema|exactly path and reason)[^']*?' \+")
+        $rejections.Count | Should -BeGreaterOrEqual 2
+        foreach ($rejection in $rejections) {
+            $following = $orchestrator.Substring(
+                $rejection.Index,
+                [Math]::Min(240, $orchestrator.Length - $rejection.Index))
+            $following | Should -Match 'Get-ReplicationSchemaMismatchDetail' -Because (
+                "the rejection at offset $($rejection.Index) tells an agent its " +
+                'output was wrong without telling it what differed')
+        }
     }
 
     It 'requires a device test to carry an issue-keyed category' {
@@ -7420,6 +7439,7 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
         $script:agentDir = '/tmp/artifacts/agent'
         $script:fixScopePath = '/tmp/artifacts/agent/fix-scope.json'
         $script:fixWinnerPath = '/tmp/artifacts/agent/fix-winner.json'
+        $script:fixOracleRunnerPath = '/tmp/artifacts/fix/run-oracle.ps1'
         $script:appiumPlanPath = '/tmp/repo/appium-plan.json'
         $script:sandboxProposalPath = '/tmp/artifacts/agent/sandbox-proposal.json'
         $script:sandboxBlockedPath = '/tmp/artifacts/agent/sandbox-blocked.json'
@@ -7517,5 +7537,167 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
         $body = $promptFunction.ScriptBlock.ToString()
 
         $body | Should -Match 'has no prompt for phase'
+    }
+}
+
+Describe 'The fix scope is the only writable set, so it is checked like one' {
+    BeforeAll {
+        # Pester 5 runs a Describe body only at discovery, so a function
+        # declared there does not exist when the tests run.
+        function New-Scope {
+            param($Files = @(@{ path = 'src/Core/src/Handlers/EntryHandler.cs'; reason = 'sets the text' }),
+                  $OutOfScope = @(), $Hypothesis = 'The handler drops the update.', $Version = 1)
+            $body = [ordered]@{
+                schemaVersion = $Version
+                rootCauseHypothesis = $Hypothesis
+                files = @($Files)
+                outOfScope = @($OutOfScope)
+            }
+            Set-Content -LiteralPath $script:fixScopePath -Value ($body | ConvertTo-Json -Depth 6)
+        }
+    }
+
+    BeforeEach {
+        $script:root = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src/Handlers') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Controls/tests/Core.UnitTests') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src/Handlers/Folder.cs') -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $root 'src/Core/src/Handlers/EntryHandler.cs') -Value 'class C {}'
+        Set-Content -LiteralPath (Join-Path $root 'src/Core/src/Handlers/View.xaml') -Value '<View/>'
+        Set-Content -LiteralPath (Join-Path $root 'src/Core/src/Core.csproj') -Value '<Project/>'
+        Set-Content -LiteralPath (Join-Path $root 'src/Controls/tests/Core.UnitTests/EntryTests.cs') -Value 'class T {}'
+        $script:repoRoot = $root
+        $script:fixScopePath = Join-Path $root 'fix-scope.json'
+    }
+
+    Context 'a path that is not product source cannot be made writable' {
+        It 'refuses <label>' -TestCases @(
+            @{ Path = 'src/Controls/tests/Core.UnitTests/EntryTests.cs'; Label = 'a test file'; Expect = 'is test code' }
+            @{ Path = 'src/Core/src/Core.csproj'; Label = 'a project file'; Expect = "extension '.csproj'" }
+            @{ Path = 'src/Core/src/Handlers/Missing.cs'; Label = 'a file that does not exist'; Expect = 'does not exist' }
+            @{ Path = 'src/Core/src/Handlers'; Label = 'a directory'; Expect = "extension ''" }
+            @{ Path = 'src/Core/src/Handlers/Folder.cs'; Label = 'a directory named like a source file'; Expect = 'is a directory' }
+            @{ Path = '../outside.cs'; Label = 'a parent traversal'; Expect = 'escapes the repository' }
+            @{ Path = 'src/../../etc/passwd.cs'; Label = 'a traversal hidden mid-path'; Expect = 'escapes the repository' }
+            @{ Path = '/etc/passwd.cs'; Label = 'an absolute path'; Expect = 'is absolute' }
+            @{ Path = 'C:\Windows\a.cs'; Label = 'a Windows absolute path'; Expect = 'backslash|is absolute' }
+            @{ Path = 'src\Core\a.cs'; Label = 'a backslash path'; Expect = 'backslash' }
+            @{ Path = '.github/workflows/ci.yml'; Label = 'a workflow'; Expect = 'outside src/' }
+            @{ Path = 'eng/Versions.props'; Label = 'a build property file'; Expect = 'outside src/' }
+            @{ Path = ' src/Core/src/Handlers/EntryHandler.cs'; Label = 'a padded path'; Expect = 'whitespace' }
+            @{ Path = ''; Label = 'an empty path'; Expect = 'is empty' }
+        ) {
+            $reason = Get-ReplicationFixScopePathRejection -Path $Path -RepositoryRoot $script:repoRoot
+            $reason | Should -Not -BeNullOrEmpty
+            $reason | Should -Match $Expect
+        }
+
+        It 'accepts real product source' {
+            Get-ReplicationFixScopePathRejection `
+                -Path 'src/Core/src/Handlers/EntryHandler.cs' `
+                -RepositoryRoot $script:repoRoot | Should -BeNullOrEmpty
+            Get-ReplicationFixScopePathRejection `
+                -Path 'src/Core/src/Handlers/View.xaml' `
+                -RepositoryRoot $script:repoRoot | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a symlink, because its target is outside the scope that was reviewed' {
+            $link = Join-Path $script:repoRoot 'src/Core/src/Handlers/Link.cs'
+            try {
+                New-Item -ItemType SymbolicLink -Path $link `
+                    -Target (Join-Path $script:repoRoot 'src/Core/src/Handlers/EntryHandler.cs') -EA Stop | Out-Null
+            } catch { Set-ItResult -Skipped -Because 'symlinks are not available here'; return }
+            Get-ReplicationFixScopePathRejection -Path 'src/Core/src/Handlers/Link.cs' `
+                -RepositoryRoot $script:repoRoot | Should -Match 'symlink'
+        }
+    }
+
+    Context 'the document as a whole' {
+        It 'returns the named files when it is well formed' {
+            New-Scope
+            $scope = Read-ReplicationFixScope
+            $scope.Files | Should -Be @('src/Core/src/Handlers/EntryHandler.cs')
+            $scope.RootCauseHypothesis | Should -Match 'drops the update'
+            $scope.IsEmpty | Should -BeFalse
+        }
+
+        It 'treats naming no files as a real answer rather than an error' {
+            New-Scope -Files @()
+            $scope = Read-ReplicationFixScope
+            $scope.IsEmpty | Should -BeTrue
+            $scope.Files.Count | Should -Be 0
+        }
+
+        It 'refuses a missing document' {
+            { Read-ReplicationFixScope } | Should -Throw '*did not write fix-scope.json*'
+        }
+
+        It 'refuses an empty document' {
+            Set-Content -LiteralPath $script:fixScopePath -Value ''
+            { Read-ReplicationFixScope } | Should -Throw '*empty or oversized*'
+        }
+
+        It 'refuses an unknown schema version, rather than guessing what it meant' {
+            New-Scope -Version 2
+            { Read-ReplicationFixScope } | Should -Throw '*schemaVersion*'
+        }
+
+        It 'refuses an extra top-level property, because it may be an instruction we do not read' {
+            New-Scope
+            $raw = Get-Content -LiteralPath $script:fixScopePath -Raw | ConvertFrom-Json
+            $raw | Add-Member -NotePropertyName 'alsoEdit' -NotePropertyValue 'src/x.cs'
+            Set-Content -LiteralPath $script:fixScopePath -Value ($raw | ConvertTo-Json -Depth 6)
+            { Read-ReplicationFixScope } | Should -Throw '*exact trusted schema*'
+        }
+
+        It 'refuses a duplicated JSON key, where a reader could disagree about which wins' {
+            # Both values must be individually valid. PowerShell silently keeps
+            # the last duplicate, so a variant whose second value is invalid is
+            # rejected by the later checks and would pass this test with the
+            # duplicate detector removed entirely.
+            Set-Content -LiteralPath $script:fixScopePath -Value @'
+{"schemaVersion":1,"rootCauseHypothesis":"first reading","files":[],"outOfScope":[],"rootCauseHypothesis":"second reading"}
+'@
+            { Read-ReplicationFixScope } | Should -Throw '*rootCauseHypothesis*'
+        }
+
+        It 'refuses a file entry with extra properties' {
+            New-Scope -Files @(@{ path = 'src/Core/src/Handlers/EntryHandler.cs'; reason = 'r'; force = $true })
+            { Read-ReplicationFixScope } | Should -Throw '*exactly path and reason*'
+        }
+
+        It 'refuses an empty hypothesis, because an unexplained scope cannot be reviewed' {
+            New-Scope -Hypothesis '  '
+            { Read-ReplicationFixScope } | Should -Throw '*root cause hypothesis*'
+        }
+
+        It 'refuses a hypothesis too short to be one' {
+            # The whitespace case above is caught by the shared line sanitiser,
+            # so only a short-but-present value exercises the length floor.
+            New-Scope -Hypothesis 'ab'
+            { Read-ReplicationFixScope } | Should -Throw '*root cause hypothesis*'
+        }
+
+        It 'refuses the same file twice' {
+            New-Scope -Files @(
+                @{ path = 'src/Core/src/Handlers/EntryHandler.cs'; reason = 'a' }
+                @{ path = 'src/Core/src/Handlers/EntryHandler.cs'; reason = 'b' })
+            { Read-ReplicationFixScope } | Should -Throw '*more than once*'
+        }
+
+        It 'refuses a scope so wide it is not a scope' {
+            $many = 1..9 | ForEach-Object {
+                $p = "src/Core/src/Handlers/F$_.cs"
+                Set-Content -LiteralPath (Join-Path $script:repoRoot $p) -Value 'class C {}'
+                @{ path = $p; reason = 'r' }
+            }
+            New-Scope -Files $many
+            { Read-ReplicationFixScope } | Should -Throw '*at most 8*'
+        }
+
+        It 'names the offending path so the failure can be acted on' {
+            New-Scope -Files @(@{ path = 'src/Controls/tests/Core.UnitTests/EntryTests.cs'; reason = 'r' })
+            { Read-ReplicationFixScope } | Should -Throw '*EntryTests.cs*'
+        }
     }
 }

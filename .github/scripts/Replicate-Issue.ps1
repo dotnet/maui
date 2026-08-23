@@ -108,7 +108,12 @@ $controlEditsPath = Join-Path $agentDir 'negative-control-edits.json'
 $fixDir = Join-Path $ArtifactRoot 'fix'
 $fixScopePath = Join-Path $agentDir 'fix-scope.json'
 $fixWinnerPath = Join-Path $agentDir 'fix-winner.json'
-$fixReviewerFindingsPath = Join-Path $fixDir 'reviewer-findings.json'
+# try-fix requires a Test command as a mandatory input and explicitly forbids
+# candidates from building by hand. This runner is written by trusted code and
+# executes the exact same verification the fix arm will grade with, so a
+# candidate cannot be optimising against a different oracle than the one that
+# judges it.
+$fixOracleRunnerPath = Join-Path $fixDir 'run-oracle.ps1'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
 $sandboxCodePath = Join-Path $sandboxDir 'MainPage.xaml.cs'
@@ -2746,6 +2751,187 @@ function Assert-GeneratedTestContent {
     }
 }
 
+function Get-ReplicationFixScopePathRejection {
+    <#
+        .SYNOPSIS
+            Explains why a proposed product path cannot be part of a fix scope,
+            or returns nothing when it can.
+
+        .DESCRIPTION
+            The scope becomes the only writable set for every fix candidate, so
+            a path that slips through here is a path an agent may rewrite. It
+            has to be product source, inside the repository, and already
+            tracked, because the restore path is 'git checkout HEAD -- <file>'.
+    #>
+    param(
+        [string]$Path,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return 'is empty'
+    }
+    if ($Path -ne $Path.Trim()) {
+        return 'has leading or trailing whitespace'
+    }
+    if ($Path -match '\\') {
+        return 'uses a backslash; paths must be repository-relative with forward slashes'
+    }
+    if ([IO.Path]::IsPathRooted($Path) -or $Path -match '^[A-Za-z]:') {
+        return 'is absolute; paths must be repository-relative'
+    }
+    if (($Path -split '/') -contains '..') {
+        return 'escapes the repository with a ".." segment'
+    }
+    if ($Path -notmatch '^src/') {
+        return 'is outside src/, so it is not product code'
+    }
+
+    # A fix that edits a test is a fix that moves the goalposts. The oracle and
+    # every other test have to be read-only for this to mean anything.
+    $testMarkers = @('/tests/', '/test/', '.UnitTests/', 'DeviceTests/', 'TestCases')
+    foreach ($marker in $testMarkers) {
+        if ($Path -like "*$marker*") {
+            return "is test code ('$marker')"
+        }
+    }
+
+    $extension = [IO.Path]::GetExtension($Path)
+    if ($extension -notin @('.cs', '.xaml')) {
+        return "has extension '$extension'; a fix may only change .cs or .xaml product source"
+    }
+
+    $fullPath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot $Path))
+    if (-not (Test-PathInsideRoot -Path $fullPath -Root $RepositoryRoot)) {
+        return 'resolves outside the repository'
+    }
+
+    $item = Get-Item -LiteralPath $fullPath -Force -ErrorAction SilentlyContinue
+    if (-not $item) {
+        return 'does not exist'
+    }
+    if ($item.PSIsContainer) {
+        return 'is a directory'
+    }
+    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        return 'is a symlink'
+    }
+
+    return $null
+}
+
+function Read-ReplicationFixScope {
+    <#
+        .SYNOPSIS
+            Reads and validates the expert phase's fix-scope.json.
+
+        .DESCRIPTION
+            Returns a normalised object whose Files array is the editable set
+            handed to every fix candidate. An empty Files array is a valid,
+            deliberate answer meaning no fix belongs in this repository.
+    #>
+    param([string]$Path = $fixScopePath)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw 'The fix scope agent did not write fix-scope.json.'
+    }
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.Length -gt 32KB) {
+        throw 'The fix scope is empty or oversized.'
+    }
+
+    $raw = Get-Content -LiteralPath $Path -Raw
+    # A file holding only a newline has a non-zero length but says nothing, and
+    # letting it through surfaces as an unreadable JSON parser error instead of
+    # the real problem.
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        throw 'The fix scope is empty or oversized.'
+    }
+    Assert-NoDuplicateJsonProperties -Json $raw
+    $scope = $raw | ConvertFrom-Json -Depth 10
+
+    $expectedProperties = @('files', 'outOfScope', 'rootCauseHypothesis', 'schemaVersion')
+    $actualProperties = @($scope.PSObject.Properties.Name | Sort-Object)
+    if (($actualProperties -join "`n") -cne (($expectedProperties | Sort-Object) -join "`n")) {
+        throw (
+            'The fix scope does not match the exact trusted schema (' +
+            (Get-ReplicationSchemaMismatchDetail `
+                -Expected $expectedProperties -Actual $actualProperties) + ').')
+    }
+
+    if ([int]$scope.schemaVersion -ne 1) {
+        throw "Unsupported fix scope schemaVersion: $($scope.schemaVersion)"
+    }
+
+    $hypothesis = ConvertTo-BoundedAgentLine `
+        -Value $scope.rootCauseHypothesis `
+        -Description 'Fix scope root cause hypothesis' `
+        -MaximumLength 2000
+    if ($hypothesis.Length -lt 3) {
+        throw 'The fix scope has no root cause hypothesis.'
+    }
+
+    $files = @($scope.files)
+    if ($files.Count -gt 8) {
+        throw "The fix scope names $($files.Count) files; at most 8 are allowed."
+    }
+
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $normalised = [Collections.Generic.List[string]]::new()
+    $reasons = [Collections.Generic.List[object]]::new()
+
+    foreach ($entry in $files) {
+        $entryProperties = @($entry.PSObject.Properties.Name | Sort-Object)
+        if (($entryProperties -join "`n") -cne "path`nreason") {
+            throw (
+                'Each fix scope file must have exactly path and reason (' +
+                (Get-ReplicationSchemaMismatchDetail `
+                    -Expected @('path', 'reason') -Actual $entryProperties) + ').')
+        }
+
+        $path = [string]$entry.path
+        $rejection = Get-ReplicationFixScopePathRejection -Path $path -RepositoryRoot $repoRoot
+        if ($rejection) {
+            throw "The fix scope names '$path', which $rejection."
+        }
+        if (-not $seen.Add($path)) {
+            throw "The fix scope names '$path' more than once."
+        }
+
+        $normalised.Add($path)
+        $reasons.Add([ordered]@{
+            path = $path
+            reason = (ConvertTo-BoundedAgentLine `
+                -Value $entry.reason `
+                -Description "Fix scope reason for $path" `
+                -MaximumLength 500)
+        })
+    }
+
+    $outOfScope = @($scope.outOfScope)
+    if ($outOfScope.Count -gt 8) {
+        throw "The fix scope rejects $($outOfScope.Count) files; at most 8 are allowed."
+    }
+    foreach ($entry in $outOfScope) {
+        $entryProperties = @($entry.PSObject.Properties.Name | Sort-Object)
+        if (($entryProperties -join "`n") -cne "path`nreason") {
+            throw (
+                'Each fix scope outOfScope entry must have exactly path and reason (' +
+                (Get-ReplicationSchemaMismatchDetail `
+                    -Expected @('path', 'reason') -Actual $entryProperties) + ').')
+        }
+    }
+
+    return [pscustomobject]@{
+        Files = $normalised.ToArray()
+        FileReasons = $reasons.ToArray()
+        RootCauseHypothesis = $hypothesis
+        # The expert is allowed to conclude no fix belongs here. That ends the
+        # fix attempt cleanly and still publishes the reproduction.
+        IsEmpty = ($normalised.Count -eq 0)
+    }
+}
+
 function Read-TestProposal {
     param(
         [string[]]$ActualFiles,
@@ -3375,7 +3561,11 @@ Never use git checkout, git restore, git reset, git clean, or git stash.
 Your oracle is the reproduction test at "$BaselineRelativePath". It fails today at the intended assertion:
 $(ConvertTo-ReplicationSafeLog $FailureSummary 1500)
 
-A fix is correct when that exact test passes and nothing else starts failing. Build the product and run it yourself; do not predict the outcome.
+A fix is correct when that exact test passes and nothing else starts failing.
+
+Check your work with exactly this command, which builds the product and runs that one test:
+    pwsh $fixOracleRunnerPath
+It is the same verification trusted code will grade you with, so its result is the real result. Do not build or run the test any other way, and never predict the outcome instead of observing it.
 
 Never edit, retarget, weaken, skip, or delete the reproduction test, and never make it pass by changing what it asserts. Changing the oracle to match your fix proves nothing, and trusted code re-runs the original test afterwards, so such an attempt is discarded.
 
