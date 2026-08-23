@@ -3586,6 +3586,210 @@ function Read-ReplicationFixWinner {
     }
 }
 
+function Get-ReplicationFixArmEvidence {
+    <#
+        .SYNOPSIS
+            Turns the two fix arm result files into the four numbers the
+            certification grader reads.
+
+        .DESCRIPTION
+            Both arms have to be counted the same way the baseline and negative
+            control are: requested runs against runs that behaved as intended.
+            Anything short of that - a partial run, an infrastructure failure,
+            a missing file - contributes zero rather than an optimistic count,
+            because the grader treats a shortfall as an ungranted control and
+            that is the safe direction to be wrong in.
+    #>
+    param(
+        [string]$FixResultPath,
+        [string]$RestorationResultPath
+    )
+
+    $evidence = [ordered]@{
+        fixControlRuns = 0
+        fixControlPasses = 0
+        restorationRuns = 0
+        restorationFailures = 0
+    }
+
+    if ($FixResultPath -and (Test-Path -LiteralPath $FixResultPath -PathType Leaf)) {
+        try {
+            $fix = Get-Content -LiteralPath $FixResultPath -Raw | ConvertFrom-Json -Depth 10
+            if (-not $fix.infrastructureFailure) {
+                $evidence.fixControlRuns = [int]$fix.runCount
+                $evidence.fixControlPasses = [int]$fix.passCount
+            }
+        } catch {
+            Write-Host "Could not read the fix arm result: $($_.Exception.Message)"
+        }
+    }
+
+    if ($RestorationResultPath -and (Test-Path -LiteralPath $RestorationResultPath -PathType Leaf)) {
+        try {
+            $restoration = Get-Content -LiteralPath $RestorationResultPath -Raw | ConvertFrom-Json -Depth 10
+            if (-not $restoration.infrastructureFailure) {
+                $evidence.restorationRuns = [int]$restoration.completedRunCount
+                # A restoration run counts only when the test failed as it did
+                # before the fix. verificationPassed is the verifier's word for
+                # exactly that: every run failed, at the intended assertion.
+                if ($restoration.verificationPassed) {
+                    $evidence.restorationFailures = [int]$restoration.completedRunCount
+                }
+            }
+        } catch {
+            Write-Host "Could not read the restoration arm result: $($_.Exception.Message)"
+        }
+    }
+
+    return $evidence
+}
+
+function Invoke-ReplicationFixArms {
+    <#
+        .SYNOPSIS
+            Proves the winning fix is what turns the reproduction green.
+
+        .DESCRIPTION
+            Two arms, in this order and no other:
+
+            The fix arm applies the winning change and requires the exact
+            certified test to pass every run. Green on its own is weak evidence
+            though - a rebuild, a device that settled, or a flaky assertion all
+            look identical to a fix.
+
+            The restoration arm removes the change again and requires the same
+            test to fail every run, at the same assertion. That is what
+            separates a fix from a coincidence, and it is the arm that lets a
+            reproduction become a certified regression oracle.
+
+            Failure at any point is a fix that does not get published. It never
+            costs the reproduction, which was certified before this ran.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$WinnerDiff,
+        [Parameter(Mandatory = $true)][string[]]$ScopeFiles,
+        [Parameter(Mandatory = $true)][string[]]$BaseVerificationArguments,
+        [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
+        [Parameter(Mandatory = $true)][string]$PatchPath,
+        [Parameter(Mandatory = $true)][string]$FixOutputDirectory,
+        [Parameter(Mandatory = $true)][string]$RestorationOutputDirectory,
+        [string[]]$ReproductionPaths = @(),
+        [int]$TimeoutSeconds = 7200
+    )
+
+    if ([string]::IsNullOrWhiteSpace($WinnerDiff)) {
+        Write-Host 'No fix arms were run: the winning candidate changed nothing.'
+        return $null
+    }
+
+    Set-Content -LiteralPath $PatchPath -Value $WinnerDiff -Encoding utf8NoBOM
+    & git apply --whitespace=nowarn -- $PatchPath
+    if ($LASTEXITCODE -ne 0) {
+        # The panel restores the tree between candidates, so the winner's work
+        # has to be replayed here. If it will not replay there is nothing to
+        # measure, and guessing at a merge would measure something else.
+        Write-Host 'No fix arms were run: the winning diff no longer applies to the tree.'
+        return $null
+    }
+
+    $applied = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths)
+    $outside = @($applied | Where-Object { $ScopeFiles -cnotcontains $_ })
+    if ($outside.Count -gt 0) {
+        # Belt and braces: the diff was captured from git rather than from the
+        # candidate, but applying a patch is a write primitive and this is the
+        # last moment before the fix is measured and published.
+        Write-Host ('No fix arms were run: applying the winning diff touched ' +
+            "files outside the scope ($($outside -join ', ')).")
+        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot | Out-Null
+        return $null
+    }
+
+    $fixResultPath = Join-Path $FixOutputDirectory 'negative-control-result.json'
+    $restorationResultPath = Join-Path $RestorationOutputDirectory 'verification-result.json'
+    $verificationScript = Join-Path $TrustedScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1'
+
+    try {
+        Invoke-LoggedChildProcess `
+            -ScriptPath $verificationScript `
+            -Arguments (Set-ReplicationVerificationOutputDirectory `
+                -Arguments (@($BaseVerificationArguments) + '-ExpectPass') `
+                -Directory $FixOutputDirectory) `
+            -LogPath (Join-Path $FixOutputDirectory 'fix-arm-wrapper.log') `
+            -Description 'Running the reproduction test with the fix applied' `
+            -TimeoutSeconds $TimeoutSeconds
+    } catch {
+        Write-Host ('The fix arm did not pass, so the fix is discarded and the ' +
+            "reproduction is published on its own. $($_.Exception.Message)")
+        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot | Out-Null
+        return $null
+    }
+
+    if (-not (Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot)) {
+        Write-Host 'The fix arm passed but the tree could not be restored, so the restoration arm cannot run.'
+        return $null
+    }
+
+    try {
+        Invoke-LoggedChildProcess `
+            -ScriptPath $verificationScript `
+            -Arguments (Set-ReplicationVerificationOutputDirectory `
+                -Arguments @($BaseVerificationArguments) `
+                -Directory $RestorationOutputDirectory) `
+            -LogPath (Join-Path $RestorationOutputDirectory 'restoration-arm-wrapper.log') `
+            -Description 'Running the reproduction test again with the fix removed' `
+            -TimeoutSeconds $TimeoutSeconds
+    } catch {
+        # The test did not come back red without the fix. Something other than
+        # the change made it green, so the fix arm proved nothing.
+        Write-Host ('The restoration arm did not reproduce the original failure, so the fix ' +
+            "arm cannot be attributed to the fix. $($_.Exception.Message)")
+        return $null
+    }
+
+    $evidence = Get-ReplicationFixArmEvidence `
+        -FixResultPath $fixResultPath `
+        -RestorationResultPath $restorationResultPath
+
+    Write-Host ("Fix arm passed {0} of {1} runs; restoration arm failed {2} of {3}." -f
+        $evidence.fixControlPasses, $evidence.fixControlRuns,
+        $evidence.restorationFailures, $evidence.restorationRuns)
+
+    return $evidence
+}
+
+function Set-ReplicationVerificationOutputDirectory {
+    <#
+        .SYNOPSIS
+            Retargets a verification argument list at a different output
+            directory.
+
+        .DESCRIPTION
+            Both arms reuse the reproduction's own argument list so that they
+            run the identical test, but they must not write over the
+            reproduction's verification artifacts, which are already the
+            evidence behind a certified reproduction.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$Directory
+    )
+
+    $result = [Collections.Generic.List[string]]::new()
+    for ($index = 0; $index -lt $Arguments.Count; $index++) {
+        if ($Arguments[$index] -ceq '-OutputDirectory') {
+            # Skip the flag and the value that follows it; the replacement is
+            # appended once at the end, so a list that never contained one
+            # still comes back correctly targeted.
+            $index++
+            continue
+        }
+        $result.Add($Arguments[$index]) | Out-Null
+    }
+    $result.Add('-OutputDirectory') | Out-Null
+    $result.Add($Directory) | Out-Null
+    return $result.ToArray()
+}
+
 function Read-ReplicationFixScope {
     <#
         .SYNOPSIS

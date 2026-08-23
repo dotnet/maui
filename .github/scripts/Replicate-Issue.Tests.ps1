@@ -139,6 +139,9 @@ BeforeAll {
         'Restore-ReplicationFixProtectedFiles',
         'Read-ReplicationFixScope',
         'Read-ReplicationFixWinner',
+        'Get-ReplicationFixArmEvidence',
+        'Invoke-ReplicationFixArms',
+        'Set-ReplicationVerificationOutputDirectory',
         'Get-ReplicationFixComparisonSummary',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
@@ -8562,5 +8565,224 @@ Describe 'Choosing which fix to publish' {
         $summary = Get-ReplicationFixComparisonSummary -Results $results
         $summary | Should -Match ([regex]::Escape('-  var x = 0;'))
         $summary | Should -Match 'clamp the offset'
+    }
+}
+
+Describe 'Retargeting a verification at a different output directory' {
+    It 'appends the directory when the list never named one' {
+        $result = Set-ReplicationVerificationOutputDirectory `
+            -Arguments @('-IssueNumber', '1', '-Platform', 'android') -Directory '/out/fix'
+        ($result -join ' ') | Should -Be '-IssueNumber 1 -Platform android -OutputDirectory /out/fix'
+    }
+
+    It 'replaces an existing directory rather than adding a second one' {
+        $result = Set-ReplicationVerificationOutputDirectory `
+            -Arguments @('-OutputDirectory', '/out/repro', '-Platform', 'ios') -Directory '/out/fix'
+        ($result -join ' ') | Should -Be '-Platform ios -OutputDirectory /out/fix'
+        @($result | Where-Object { $_ -eq '-OutputDirectory' }) | Should -HaveCount 1
+    }
+
+    It 'never leaves the reproduction directory behind for an arm to overwrite' {
+        $result = Set-ReplicationVerificationOutputDirectory `
+            -Arguments @('-OutputDirectory', '/out/repro') -Directory '/out/restore'
+        $result | Should -Not -Contain '/out/repro'
+    }
+
+    It 'keeps a value that merely looks like the flag' {
+        $result = Set-ReplicationVerificationOutputDirectory `
+            -Arguments @('-TestFilter', '-OutputDirectory') -Directory '/out/fix'
+        # The filter's value is consumed as the flag, which is unavoidable
+        # without a parameter model, but the retarget must still be correct.
+        ($result -join ' ') | Should -Be '-TestFilter -OutputDirectory /out/fix'
+    }
+}
+
+Describe 'Counting the two arms that turn a reproduction into an oracle' {
+    BeforeEach {
+        $script:armRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:armRoot -Force | Out-Null
+        $script:fixPath = Join-Path $script:armRoot 'fix.json'
+        $script:restorePath = Join-Path $script:armRoot 'restore.json'
+        Set-Content -LiteralPath $script:fixPath -Value '{ "runCount": 3, "passCount": 3, "infrastructureFailure": false }'
+        Set-Content -LiteralPath $script:restorePath -Value '{ "completedRunCount": 3, "verificationPassed": true, "infrastructureFailure": false }'
+    }
+
+    It 'counts both arms when both behaved as intended' {
+        $evidence = Get-ReplicationFixArmEvidence -FixResultPath $script:fixPath -RestorationResultPath $script:restorePath
+        $evidence.fixControlRuns | Should -Be 3
+        $evidence.fixControlPasses | Should -Be 3
+        $evidence.restorationRuns | Should -Be 3
+        $evidence.restorationFailures | Should -Be 3
+    }
+
+    It 'counts nothing when the fix arm failed for infrastructure reasons' {
+        Set-Content -LiteralPath $script:fixPath -Value '{ "runCount": 3, "passCount": 3, "infrastructureFailure": true }'
+        $evidence = Get-ReplicationFixArmEvidence -FixResultPath $script:fixPath -RestorationResultPath $script:restorePath
+        $evidence.fixControlRuns | Should -Be 0
+        $evidence.fixControlPasses | Should -Be 0
+    }
+
+    It 'counts nothing when the restoration arm failed for infrastructure reasons' {
+        Set-Content -LiteralPath $script:restorePath -Value '{ "completedRunCount": 3, "verificationPassed": true, "infrastructureFailure": true }'
+        (Get-ReplicationFixArmEvidence -FixResultPath $script:fixPath -RestorationResultPath $script:restorePath).restorationFailures |
+            Should -Be 0
+    }
+
+    It 'records a restoration run that did not fail as intended as no failure at all' {
+        Set-Content -LiteralPath $script:restorePath -Value '{ "completedRunCount": 3, "verificationPassed": false, "infrastructureFailure": false }'
+        $evidence = Get-ReplicationFixArmEvidence -FixResultPath $script:fixPath -RestorationResultPath $script:restorePath
+        $evidence.restorationRuns | Should -Be 3
+        $evidence.restorationFailures | Should -Be 0
+    }
+
+    It 'reports a partial fix arm honestly rather than rounding it up' {
+        Set-Content -LiteralPath $script:fixPath -Value '{ "runCount": 3, "passCount": 2, "infrastructureFailure": false }'
+        (Get-ReplicationFixArmEvidence -FixResultPath $script:fixPath -RestorationResultPath $script:restorePath).fixControlPasses |
+            Should -Be 2
+    }
+
+    It 'grants nothing when a result file is missing' {
+        $evidence = Get-ReplicationFixArmEvidence `
+            -FixResultPath (Join-Path $script:armRoot 'absent.json') `
+            -RestorationResultPath (Join-Path $script:armRoot 'absent.json')
+        $evidence.fixControlRuns | Should -Be 0
+        $evidence.restorationRuns | Should -Be 0
+    }
+
+    It 'grants nothing when a result file is unreadable, instead of throwing' {
+        Set-Content -LiteralPath $script:fixPath -Value 'not json at all {'
+        # Assigned into script scope: the scriptblock below has its own, so a
+        # plain $evidence would still be null out here.
+        $script:evidence = $null
+        { $script:evidence = Get-ReplicationFixArmEvidence -FixResultPath $script:fixPath -RestorationResultPath $script:restorePath } |
+            Should -Not -Throw
+        $evidence = $script:evidence
+        $evidence.fixControlRuns | Should -Be 0
+        # The other arm is still counted: one unreadable file is not a reason
+        # to discard evidence that was recorded correctly.
+        $evidence.restorationRuns | Should -Be 3
+    }
+}
+
+Describe 'Proving the fix is what turned the reproduction green' {
+    BeforeEach {
+        $script:armRepo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:armRepo -Force | Out-Null
+        $script:fixOut = Join-Path $script:armRepo 'fix-arm'
+        $script:restoreOut = Join-Path $script:armRepo 'restoration-arm'
+        New-Item -ItemType Directory -Path $script:fixOut -Force | Out-Null
+        New-Item -ItemType Directory -Path $script:restoreOut -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $script:fixOut 'negative-control-result.json') `
+            -Value '{ "runCount": 3, "passCount": 3, "infrastructureFailure": false }'
+        Set-Content -LiteralPath (Join-Path $script:restoreOut 'verification-result.json') `
+            -Value '{ "completedRunCount": 3, "verificationPassed": true, "infrastructureFailure": false }'
+
+        $script:childRuns = [Collections.Generic.List[object]]::new()
+        $script:failOnDescription = ''
+        $script:restoreCalls = 0
+        $script:restoreSucceeds = $true
+        $script:appliedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+        $script:gitApplySucceeds = $true
+
+        function Invoke-LoggedChildProcess {
+            param($ScriptPath, $Arguments, $LogPath, $Description, $TimeoutSeconds)
+            $script:childRuns.Add([pscustomobject]@{
+                Description = $Description; Arguments = @($Arguments) })
+            if ($script:failOnDescription -and $Description -like $script:failOnDescription) {
+                throw 'the arm did not behave as required'
+            }
+        }
+        function Restore-ReplicationFixTree {
+            param($TrustedScriptRoot)
+            $script:restoreCalls++
+            return $script:restoreSucceeds
+        }
+        function Get-ReplicationFixCandidateChanges {
+            param($ExcludePaths)
+            return @($script:appliedPaths)
+        }
+        function git {
+            if ($args[0] -eq 'apply') {
+                $global:LASTEXITCODE = if ($script:gitApplySucceeds) { 0 } else { 1 }
+            }
+        }
+
+        $script:armArgs = @{
+            WinnerDiff = 'diff --git a/x b/x'
+            ScopeFiles = @('src/Core/src/Handlers/EntryHandler.cs')
+            BaseVerificationArguments = @('-IssueNumber', '42', '-OutputDirectory', '/out/repro')
+            TrustedScriptRoot = '/trusted/scripts'
+            PatchPath = (Join-Path $script:armRepo 'winner.diff')
+            FixOutputDirectory = $script:fixOut
+            RestorationOutputDirectory = $script:restoreOut
+        }
+    }
+
+    It 'runs the fix arm and then the restoration arm, in that order' {
+        $evidence = Invoke-ReplicationFixArms @script:armArgs
+
+        $script:childRuns | Should -HaveCount 2
+        $script:childRuns[0].Description | Should -Match 'with the fix applied'
+        $script:childRuns[1].Description | Should -Match 'with the fix removed'
+        $evidence.fixControlPasses | Should -Be 3
+        $evidence.restorationFailures | Should -Be 3
+    }
+
+    It 'expects a pass with the fix applied and a failure without it' {
+        Invoke-ReplicationFixArms @script:armArgs | Out-Null
+        $script:childRuns[0].Arguments | Should -Contain '-ExpectPass'
+        $script:childRuns[1].Arguments | Should -Not -Contain '-ExpectPass'
+    }
+
+    It 'never lets an arm write over the reproduction evidence' {
+        Invoke-ReplicationFixArms @script:armArgs | Out-Null
+        foreach ($run in $script:childRuns) {
+            $run.Arguments | Should -Not -Contain '/out/repro'
+        }
+        $script:childRuns[0].Arguments | Should -Contain $script:fixOut
+        $script:childRuns[1].Arguments | Should -Contain $script:restoreOut
+    }
+
+    It 'removes the fix before the restoration arm runs' {
+        Invoke-ReplicationFixArms @script:armArgs | Out-Null
+        $script:restoreCalls | Should -Be 1
+    }
+
+    It 'runs nothing when the winner changed nothing' {
+        $args = $script:armArgs.Clone()
+        $args.WinnerDiff = '   '
+        Invoke-ReplicationFixArms @args | Should -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 0
+    }
+
+    It 'runs nothing when the winning diff no longer applies' {
+        $script:gitApplySucceeds = $false
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 0
+    }
+
+    It 'refuses a diff that turns out to touch a file outside the scope' {
+        $script:appliedPaths = @('src/Core/src/Handlers/EntryHandler.cs', 'eng/Versions.props')
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 0
+        $script:restoreCalls | Should -Be 1
+    }
+
+    It 'discards the fix, and restores the tree, when the fix arm does not pass' {
+        $script:failOnDescription = '*with the fix applied*'
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+        $script:restoreCalls | Should -Be 1
+    }
+
+    It 'discards the fix when the test does not go red again without it' {
+        $script:failOnDescription = '*with the fix removed*'
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 2
+    }
+
+    It 'does not claim a restoration arm it could not run' {
+        $script:restoreSucceeds = $false
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 1
     }
 }
