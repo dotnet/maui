@@ -103,7 +103,11 @@ on:
         retention-days: 7
 
 # Keep the deterministic pre-pass and every downstream job out of forks.
-if: github.repository == 'dotnet/maui'
+# A manual dispatch can select another ref, so only trusted main may reach
+# pre-activation.
+if: >-
+  github.repository == 'dotnet/maui' &&
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main')
 
 jobs:
   # Only invoke activation when the deterministic pre-pass found something to
