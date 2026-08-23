@@ -122,6 +122,8 @@ BeforeAll {
         'Test-ReplicationSandboxBuildFailure',
         'Get-UnsupportedReplicationCapability',
         'Resolve-ReplicationCopilotExecutable',
+        'Get-ReplicationCopilotCapabilityArguments',
+        'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
     )) {
         $function = $ast.Find({
@@ -2181,6 +2183,27 @@ InitializeComponent();
         $script:Source | Should -Match "'GH_TOKEN'"
         $script:Source | Should -Not -Match 'GH_REPLICATION_TOKEN'
         $script:Source | Should -Match 'Invoke-WithoutReplicationSecrets'
+    }
+
+    It 'grants a shell only where a fix has to build and run something' {
+        # A fix candidate cannot judge itself without building the product and
+        # running the certified test, so the fix phases get a shell. Every
+        # reproduction phase still authors files and runs nothing, and this
+        # function is the only place that distinction is made.
+        Get-ReplicationCopilotCapabilityArguments |
+            Should -Be @('--disallow-temp-dir', '--available-tools', 'view', 'rg', 'glob', 'apply_patch')
+
+        Get-ReplicationCopilotCapabilityArguments -AllowShell | Should -Be @('--allow-all')
+    }
+
+    It 'never lets a reproduction phase run a command' {
+        $reproductionCapabilities = @(Get-ReplicationCopilotCapabilityArguments)
+
+        $reproductionCapabilities | Should -Not -Contain '--allow-all'
+        $reproductionCapabilities | Should -Not -Contain 'bash'
+        $reproductionCapabilities | Should -Not -Contain 'shell'
+        # Authoring a file needs no temp directory; only a build does.
+        $reproductionCapabilities | Should -Contain '--disallow-temp-dir'
     }
 
     It 'plans exact new issue-specific test files before granting write access' {
@@ -7377,5 +7400,122 @@ Describe 'A recording that captured nothing is a lost attempt' {
 
         Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds |
             Should -BeTrue
+    }
+}
+
+Describe 'A fix phase is told a different truth than a reproduction phase' {
+    BeforeAll {
+        # New-CopilotPrompt reads its surroundings from script scope, so the
+        # tests supply the same handful of values the orchestrator would.
+        $script:BaseSha = 'abc1234'
+        $script:ContextPath = '/tmp/context.md'
+        $script:IssueNumber = 37440
+        $script:Platform = 'android'
+        $script:DeviceUdid = 'emulator-5554'
+        $script:ArtifactRoot = '/tmp/artifacts'
+        $script:trustedSkills = '/tmp/trusted/skills'
+        $script:trustedScripts = '/tmp/trusted/scripts'
+        $script:sandboxDir = '/tmp/repo/sandbox'
+        $script:repoRoot = '/tmp/repo'
+        $script:agentDir = '/tmp/artifacts/agent'
+        $script:fixScopePath = '/tmp/artifacts/agent/fix-scope.json'
+        $script:fixWinnerPath = '/tmp/artifacts/agent/fix-winner.json'
+        $script:appiumPlanPath = '/tmp/repo/appium-plan.json'
+        $script:sandboxProposalPath = '/tmp/artifacts/agent/sandbox-proposal.json'
+        $script:sandboxBlockedPath = '/tmp/artifacts/agent/sandbox-blocked.json'
+        $script:testProposalPath = '/tmp/artifacts/agent/test-proposal.json'
+        $script:controlVariantPath = '/tmp/artifacts/agent/negative-control-variant.cs'
+        $script:controlEditsPath = '/tmp/artifacts/agent/negative-control-edits.json'
+        $script:approvedTestRoots = @('src/Controls/tests/')
+    }
+
+    It 'tells a fix phase it has a shell and a reproduction phase it has none' {
+        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+        $control = New-CopilotPrompt -Phase 'control' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $fix | Should -Match 'You have a shell'
+        $control | Should -Match 'You have no shell or network tools'
+        $fix | Should -Not -Match 'You have no shell'
+    }
+
+    It 'lets a fix phase change product code and forbids every other phase from it' {
+        foreach ($phase in @('fix-scope', 'fix', 'fix-compare')) {
+            $prompt = New-CopilotPrompt -Phase $phase -BaselineRelativePath 'tests/Issue37440.cs'
+            $prompt | Should -Not -Match 'Do not modify product code'
+        }
+
+        $control = New-CopilotPrompt -Phase 'control' -BaselineRelativePath 'tests/Issue37440.cs'
+        $control | Should -Match 'Do not modify product code'
+    }
+
+    It 'forbids a fix candidate from touching the oracle it is measured against' {
+        # A candidate that edits, retargets, weakens, or deletes the
+        # reproduction test can turn any red run green while fixing nothing.
+        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $fix | Should -Match 'Never edit, retarget, weaken, skip, or delete the reproduction test'
+        $fix | Should -Match 'trusted code re-runs the original test'
+    }
+
+    It 'points a fix candidate at the only sanctioned way to undo its work' {
+        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $fix | Should -Match 'EstablishBrokenBaseline\.ps1 -Restore'
+        $fix | Should -Match 'Never use git checkout, git restore, git reset, git clean, or git stash'
+    }
+
+    It 'explains to a fix candidate why nothing was reverted for it' {
+        # try-fix's own documentation says the baseline script reverts an
+        # author fix. Left unsaid, a candidate reads an unreverted tree as a
+        # broken setup and reports Blocked without attempting anything.
+        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $fix | Should -Match 'there is no author fix'
+        $fix | Should -Match 'reverted nothing'
+    }
+
+    It 'passes earlier candidates to the next one and tells the first it is first' {
+        $first = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+        $later = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs' `
+            -FailureSummary 'Candidate 1 changed the arrange pass and the test still failed.'
+
+        $first | Should -Match 'You are the first candidate'
+        $later | Should -Match 'Do not repeat an approach that was rejected'
+        $later | Should -Match 'changed the arrange pass'
+    }
+
+    It 'keeps the scope phase from fixing anything' {
+        $scope = New-CopilotPrompt -Phase 'fix-scope' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $scope | Should -Match 'Your job is NOT to fix it'
+        $scope | Should -Match 'Do not edit any product file in this phase'
+        $scope | Should -Match ([regex]::Escape($script:fixScopePath))
+    }
+
+    It 'lets the scope phase answer that no fix belongs in this repository' {
+        # Forcing a file list produces a confident wrong answer, and every
+        # candidate then edits files that cannot carry the fix.
+        $scope = New-CopilotPrompt -Phase 'fix-scope' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $scope | Should -Match 'write files as an empty array'
+        $scope | Should -Match 'That is a valid answer'
+    }
+
+    It 'lets the comparison choose nobody' {
+        $compare = New-CopilotPrompt -Phase 'fix-compare' -BaselineRelativePath 'tests/Issue37440.cs'
+
+        $compare | Should -Match 'Choosing null is a real answer'
+        $compare | Should -Match 'must not win, however green it looks'
+        $compare | Should -Match ([regex]::Escape($script:fixWinnerPath))
+    }
+
+    It 'refuses a phase it has no prompt for' {
+        # The ValidateSet and this switch are edited separately, so a phase can
+        # reach one without the other. Returning $null there surfaces much
+        # later as an empty prompt, which is far harder to place than a name.
+        $promptFunction = Get-Command New-CopilotPrompt
+        $body = $promptFunction.ScriptBlock.ToString()
+
+        $body | Should -Match 'has no prompt for phase'
     }
 }
