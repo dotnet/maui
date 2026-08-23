@@ -1047,14 +1047,20 @@ stages:
                 # band-correctly before the gate runs.
                 New-Item -ItemType File -Force -Path (Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads') | Out-Null
               }
-              # Absolute, and fatal when it will not load. Build 15065790
-              # dot-sourced this by a relative path, failed to find it, and the
-              # catch downgraded that to a warning. Invoke-BuildTasksWatchdog was
-              # then undefined, so the step built nothing and still exited clean
-              # — and five sandbox builds later failed with 'the required MSBuild
-              # tasks are not yet built'. A step that cannot build must say so
-              # rather than reporting success for work it never did.
-              $resolverPath = Join-Path "$(Build.SourcesDirectory)" '.github/scripts/shared/Resolve-BuildShell.ps1'
+              # Read from the trusted capture, not the worktree. This job
+              # re-checkouts to another commit before this step runs, and that
+              # commit does not carry this resolver, so Build.SourcesDirectory
+              # does not have it by the time it is needed. The trusted copy was
+              # taken from $(Build.SourceVersion) and is immune to the switch.
+              #
+              # Fatal when it will not load. Build 15065790 dot-sourced this by a
+              # relative path, failed to find it, and the catch downgraded that
+              # to a warning. Invoke-BuildTasksWatchdog was then undefined, so the
+              # step built nothing and still exited clean — and five sandbox
+              # builds later failed with 'the required MSBuild tasks are not yet
+              # built'. A step that cannot build must say so rather than
+              # reporting success for work it never did.
+              $resolverPath = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Resolve-BuildShell.ps1'
               try {
                 if (-not (Test-Path -LiteralPath $resolverPath)) {
                   throw "the file does not exist (working directory is '$((Get-Location).Path)')"
@@ -3810,7 +3816,7 @@ stages:
               # copy of this step. A relative dot-source that quietly fails
               # leaves the watchdog undefined and the step reports success for a
               # build it never ran.
-              $resolverPath = Join-Path "$(Build.SourcesDirectory)" '.github/scripts/shared/Resolve-BuildShell.ps1'
+              $resolverPath = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Resolve-BuildShell.ps1'
               try {
                 if (-not (Test-Path -LiteralPath $resolverPath)) {
                   throw "the file does not exist (working directory is '$((Get-Location).Path)')"

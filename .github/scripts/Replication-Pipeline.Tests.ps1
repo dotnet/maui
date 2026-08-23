@@ -1244,11 +1244,45 @@ Describe 'A build step may not report success for work it never ran' {
 
     It 'loads the shell resolver by an absolute path' {
         # Build 15065790 dot-sourced './.github/scripts/shared/Resolve-BuildShell.ps1',
-        # did not find it, and carried on. Every other script reference in this
-        # file is anchored to Build.SourcesDirectory.
+        # did not find it, and carried on.
         foreach ($step in $script:BuildTaskSteps) {
             $step | Should -Not -Match '\.\s+\./\.github/scripts'
-            $step | Should -Match 'Join-Path "\$\(Build\.SourcesDirectory\)" ''\.github/scripts/shared/Resolve-BuildShell\.ps1'''
+            $step | Should -Match 'Join-Path "\$\(Build\.ArtifactStagingDirectory\)"'
+        }
+    }
+
+    It 'reads the resolver from the trusted capture, not the worktree' {
+        # Both jobs check out a different commit before this step runs, and that
+        # commit does not carry this resolver. Build 15066067 reported
+        # "the file does not exist" for
+        # /home/vsts/work/1/s/.github/scripts/shared/Resolve-BuildShell.ps1
+        # while the file was present and committed on the pipeline's own branch.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Match "trusted-github/scripts/shared/Resolve-BuildShell\.ps1"
+            $step | Should -Not -Match 'Build\.SourcesDirectory.{0,4}''\.github/scripts'
+        }
+    }
+
+    It 'captures the trusted scripts before the step that reads them' {
+        # The capture is what makes the trusted path valid. If a job ever reads
+        # the resolver without capturing first, the path is just a different way
+        # for the file to be missing.
+        foreach ($job in @('CopilotReview', 'RunUITests')) {
+            $jobStart = $script:Yaml.IndexOf("- job: $job")
+            $jobStart | Should -BeGreaterThan -1
+            $capture = $script:Yaml.IndexOf('cp -r .github/scripts "$TRUSTED/scripts"', $jobStart)
+            $reader = $script:Yaml.IndexOf('trusted-github/scripts/shared/Resolve-BuildShell.ps1', $jobStart)
+
+            $capture | Should -BeGreaterThan -1
+            $reader | Should -BeGreaterThan $capture
+        }
+    }
+
+    It 'still builds the product with the product tree''s own build script' {
+        # Only the resolver is a trusted helper. build.ps1 must come from the
+        # checked-out commit, because that is the tree being built.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Match "Join-Path ""\$\(Build\.SourcesDirectory\)"" 'build\.ps1'"
         }
     }
 
