@@ -437,6 +437,30 @@ function Get-ValidatedFixFiles {
     return @($property.Value | ForEach-Object { ([string]$_).Replace('\', '/') } | Where-Object { $_ })
 }
 
+function Assert-ReplicationStagedFix {
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][AllowNull()][string[]]$StagedLines,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][AllowNull()][string[]]$ExpectedFiles
+    )
+
+    $actual = @()
+    foreach ($line in @($StagedLines)) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -notmatch '^M\s+(.+)$') {
+            throw "The staged fix is not modification-only: $line"
+        }
+        $actual += $Matches[1].Trim().Replace('\', '/')
+    }
+
+    $expectedSorted = @(@($ExpectedFiles) | Where-Object { $_ } | Sort-Object -Unique)
+    $actualSorted = @($actual | Sort-Object -Unique)
+    if (($expectedSorted -join "`n") -ne ($actualSorted -join "`n")) {
+        throw 'The staged fix files do not exactly match the validated candidate manifest.'
+    }
+
+    return $actualSorted
+}
+
 function Invoke-ReplicationExternalCommand {
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
@@ -732,19 +756,8 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             if ($LASTEXITCODE -ne 0) {
                 throw 'Unable to inspect the staged product fix.'
             }
-            $actualFixFiles = @()
-            foreach ($line in $stagedFix) {
-                if ($line -notmatch '^M\s+(.+)$') {
-                    throw "The staged fix is not modification-only: $line"
-                }
-                $actualFixFiles += $Matches[1].Replace('\', '/')
-            }
 
-            $expectedFixFiles = @($plan.fixFiles | Sort-Object -Unique)
-            $actualFixFiles = @($actualFixFiles | Sort-Object -Unique)
-            if (($expectedFixFiles -join "`n") -ne ($actualFixFiles -join "`n")) {
-                throw 'The staged fix files do not exactly match the validated candidate manifest.'
-            }
+            Assert-ReplicationStagedFix -StagedLines $stagedFix -ExpectedFiles @($plan.fixFiles) | Out-Null
 
             $fixCommitMessage = @"
 Fix #$issueNumber so the reproduction passes

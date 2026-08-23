@@ -46,6 +46,7 @@ BeforeAll {
         'New-ReplicationBranchName',
         'Get-ReplicationCandidateText',
         'Get-ValidatedFixFiles',
+        'Assert-ReplicationStagedFix',
         'New-ReplicationPullRequestBody',
         'Resolve-ReplicationSourceRepository'
     )) {
@@ -855,5 +856,70 @@ Describe 'A pull request that carries a fix says so' {
         $body = script:Get-FixBody -Candidate $candidate
 
         $body | Should -Not -Match '##vso'
+    }
+}
+
+Describe 'The fix commit may only contain the fix the candidate was validated for' {
+    It 'accepts a staged fix that modifies exactly the manifested files' {
+        $actual = Assert-ReplicationStagedFix `
+            -StagedLines @("M`tsrc/Core/src/Layout.cs", "M`tsrc/Controls/src/Grid.cs") `
+            -ExpectedFiles @('src/Controls/src/Grid.cs', 'src/Core/src/Layout.cs')
+
+        $actual | Should -Be @('src/Controls/src/Grid.cs', 'src/Core/src/Layout.cs')
+    }
+
+    It 'rejects a fix that adds a file the candidate never declared' {
+        # An added file escapes the validator entirely: the manifest is built by
+        # walking the patch, so a file introduced afterwards was never checked
+        # against the expert-named scope.
+        { Assert-ReplicationStagedFix `
+            -StagedLines @("M`tsrc/Core/src/Layout.cs", "A`tsrc/Core/src/Sneak.cs") `
+            -ExpectedFiles @('src/Core/src/Layout.cs') } |
+            Should -Throw '*not modification-only*'
+    }
+
+    It 'rejects a fix that deletes a product file' {
+        { Assert-ReplicationStagedFix `
+            -StagedLines @("D`tsrc/Core/src/Layout.cs") `
+            -ExpectedFiles @('src/Core/src/Layout.cs') } |
+            Should -Throw '*not modification-only*'
+    }
+
+    It 'rejects a fix that renames a product file' {
+        { Assert-ReplicationStagedFix `
+            -StagedLines @("R100`tsrc/Core/src/Layout.cs`tsrc/Core/src/Renamed.cs") `
+            -ExpectedFiles @('src/Core/src/Layout.cs') } |
+            Should -Throw '*not modification-only*'
+    }
+
+    It 'rejects a fix that touches fewer files than the manifest promised' {
+        # Under-application is as dangerous as over-application: the arms were
+        # measured against the whole diff, so a partial apply was never proven.
+        { Assert-ReplicationStagedFix `
+            -StagedLines @("M`tsrc/Core/src/Layout.cs") `
+            -ExpectedFiles @('src/Core/src/Layout.cs', 'src/Controls/src/Grid.cs') } |
+            Should -Throw '*do not exactly match*'
+    }
+
+    It 'rejects a fix that touches more files than the manifest promised' {
+        { Assert-ReplicationStagedFix `
+            -StagedLines @("M`tsrc/Core/src/Layout.cs", "M`tsrc/Core/src/Extra.cs") `
+            -ExpectedFiles @('src/Core/src/Layout.cs') } |
+            Should -Throw '*do not exactly match*'
+    }
+
+    It 'rejects a fix that stages nothing at all' {
+        { Assert-ReplicationStagedFix `
+            -StagedLines @() `
+            -ExpectedFiles @('src/Core/src/Layout.cs') } |
+            Should -Throw '*do not exactly match*'
+    }
+
+    It 'compares Windows and posix separators as the same file' {
+        $actual = Assert-ReplicationStagedFix `
+            -StagedLines @("M`tsrc\Core\src\Layout.cs") `
+            -ExpectedFiles @('src/Core/src/Layout.cs')
+
+        $actual | Should -Be @('src/Core/src/Layout.cs')
     }
 }
