@@ -142,6 +142,7 @@ BeforeAll {
         'Get-ReplicationFixArmEvidence',
         'Invoke-ReplicationFixArms',
         'Write-ReplicationFixArmResults',
+        'Invoke-ReplicationFixPhase',
         'Set-ReplicationVerificationOutputDirectory',
         'Get-ReplicationFixComparisonSummary',
         'New-CopilotPrompt',
@@ -8854,5 +8855,201 @@ Describe 'Handing the arm counts to the gate' {
             { $raw | ConvertFrom-Json } | Should -Not -Throw
             $raw | Should -Not -Match "`u{FEFF}"
         }
+    }
+}
+
+Describe 'Every way the fix phase can fail still ships the reproduction' {
+    # The driver is the one part of the fix phase with no unit of its own, and
+    # it is where the contract lives: a fix is an addition to a certified
+    # reproduction, never a risk to one. Each arm of the degradation table in
+    # the plan gets a case here, and every one of them must return $null so the
+    # caller publishes exactly what it published before the fix phase existed.
+    BeforeEach {
+        $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:fixDir = Join-Path $script:repoRoot 'fix'
+        $script:agentDir = Join-Path $script:repoRoot 'agent'
+        New-Item -ItemType Directory -Path $script:repoRoot -Force | Out-Null
+        New-Item -ItemType Directory -Path $script:agentDir -Force | Out-Null
+
+        $script:fixScopePath = Join-Path $script:agentDir 'fix-scope.json'
+        $script:fixWinnerPath = Join-Path $script:agentDir 'winner.json'
+        $script:fixPatchPath = Join-Path $script:repoRoot 'fix.patch'
+        $script:fixOracleRunnerPath = Join-Path $script:repoRoot 'run-oracle.ps1'
+
+        $script:FixPanelBudgetMinutes = 120
+        $script:StepTimeoutMinutes = 210
+        $script:FixCandidateTimeoutMinutes = 30
+        $script:FixCandidateCount = 5
+        $script:replicationStartedUtc = [DateTimeOffset]::UtcNow
+
+        # Defaults describe the happy path; each test spoils exactly one step,
+        # so a test that stops returning $null is telling us the guard it names
+        # is the guard that broke.
+        $script:scope = [pscustomobject]@{
+            IsEmpty = $false
+            Files = @('src/Core/src/Handlers/EntryHandler.cs')
+            RootCauseHypothesis = 'The handler drops the update.'
+        }
+        $script:baselineExitCode = 0
+        $script:panelResults = @([pscustomobject]@{
+            Attempt = 1; Result = 'Pass'; Diff = 'diff --git a b'
+            ChangedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+            Approach = 'Re-raise the property change.'
+        })
+        $script:armEvidence = [pscustomobject]@{
+            Fix = [pscustomobject]@{ RunCount = 3; PassCount = 3 }
+            Restoration = [pscustomobject]@{ RunCount = 3; FailureCount = 3 }
+        }
+        $script:armResultsWritten = 0
+
+        function New-CopilotPrompt { param($Phase, $FailureSummary, $BaselineRelativePath) "prompt $Phase" }
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, $TimeoutMinutesOverride)
+        }
+        function Read-ReplicationFixScope { param($Path) $script:scope }
+        function New-ReplicationFixOracleRunnerContent {
+            param($VerificationScriptPath, $VerificationArguments) 'oracle'
+        }
+        function Set-ReplicationVerificationOutputDirectory {
+            param($Arguments, $Directory) @($Arguments)
+        }
+        function Invoke-ReplicationFixPanel {
+            param($ScopeFiles, $ReproductionPaths, $ProtectedPaths, $OracleRunnerPath,
+                  $OracleRunnerContent, $BaselineRelativePath, $FailureSummary,
+                  $TrustedScriptRoot, $CandidateCount, $BudgetMinutes, $CandidateTimeoutMinutes)
+            $script:panelResults
+        }
+        function Get-ReplicationFixComparisonSummary { param($Results) 'summary' }
+        function Read-ReplicationFixWinner { param($Path, $Results) $script:winner }
+        function Invoke-ReplicationFixArms {
+            param($WinnerDiff, $ScopeFiles, $BaseVerificationArguments, $TrustedScriptRoot,
+                  $PatchPath, $FixOutputDirectory, $RestorationOutputDirectory, $ReproductionPaths)
+            Set-Content -LiteralPath $script:fixPatchPath -Value 'patch' -NoNewline
+            $script:armEvidence
+        }
+        function Write-ReplicationFixArmResults {
+            param($Evidence, $VerificationDirectory) $script:armResultsWritten++
+        }
+        # The driver invokes the baseline script through the call operator, so
+        # a real file is the only way to control $LASTEXITCODE.
+        $baselineDir = Join-Path $script:repoRoot '.github/scripts'
+        New-Item -ItemType Directory -Path $baselineDir -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $baselineDir 'EstablishBrokenBaseline.ps1') `
+            -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)
+exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
+        $env:REPLICATION_TEST_BASELINE_EXIT = '0'
+
+        $script:phaseArgs = @{
+            GeneratedFiles = @('src/Controls/tests/Issue12345.cs')
+            BaseVerificationArguments = @('-Filter', 'Issue12345')
+            FailureSummary = 'Expected 10 but was 0'
+            TrustedScriptRoot = '/trusted/scripts'
+            VerificationDirectory = (Join-Path $script:repoRoot 'verification')
+        }
+    }
+
+    AfterEach { Remove-Item Env:REPLICATION_TEST_BASELINE_EXIT -ErrorAction SilentlyContinue }
+
+    It 'authors a fix when every step succeeds' {
+        # The control. Without it, a driver that returned $null unconditionally
+        # would pass every other test in this block.
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $result | Should -Not -BeNullOrEmpty
+        $result.Files | Should -Be @('src/Core/src/Handlers/EntryHandler.cs')
+        $result.RootCause | Should -Be 'The handler drops the update.'
+        $script:armResultsWritten | Should -Be 1
+    }
+
+    It 'declines when less than one candidate fits in what is left of the step' {
+        $script:replicationStartedUtc = [DateTimeOffset]::UtcNow.AddMinutes(-205)
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when the expert scope names no product file' {
+        $script:scope = [pscustomobject]@{
+            IsEmpty = $true; Files = @(); RootCauseHypothesis = 'Not enough detail.'
+        }
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when the editable scope cannot be recorded' {
+        $env:REPLICATION_TEST_BASELINE_EXIT = '1'
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when no candidate passed the oracle' {
+        $script:panelResults = @([pscustomobject]@{ Attempt = 1; Result = 'Blocked'; Diff = $null })
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines a candidate that passed but produced no diff' {
+        # 'Pass' with nothing to apply is the shape that would publish an empty
+        # fix commit, so it is excluded before the comparison, not after.
+        $script:panelResults = @([pscustomobject]@{ Attempt = 1; Result = 'Pass'; Diff = '' })
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when the comparison of several candidates picks none' {
+        $script:panelResults = @(
+            [pscustomobject]@{ Attempt = 1; Result = 'Pass'; Diff = 'd1'; ChangedPaths = @('a.cs'); Approach = 'x' }
+            [pscustomobject]@{ Attempt = 2; Result = 'Pass'; Diff = 'd2'; ChangedPaths = @('b.cs'); Approach = 'y' }
+        )
+        $script:winner = [pscustomobject]@{ HasWinner = $false; Summary = 'Both regress layout.'; Rejected = @() }
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when the comparison names a candidate that is not among the passing ones' {
+        $script:panelResults = @(
+            [pscustomobject]@{ Attempt = 1; Result = 'Pass'; Diff = 'd1'; ChangedPaths = @('a.cs'); Approach = 'x' }
+            [pscustomobject]@{ Attempt = 2; Result = 'Pass'; Diff = 'd2'; ChangedPaths = @('b.cs'); Approach = 'y' }
+        )
+        $script:winner = [pscustomobject]@{ HasWinner = $true; Winner = '7'; Rejected = @() }
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'discards the patch when the arms produce no evidence' {
+        function Invoke-ReplicationFixArms {
+            param($WinnerDiff, $ScopeFiles, $BaseVerificationArguments, $TrustedScriptRoot,
+                  $PatchPath, $FixOutputDirectory, $RestorationOutputDirectory, $ReproductionPaths)
+            # The arms write the patch before they run, so a failure has to take
+            # it back or the publisher would commit a fix nothing vouches for.
+            Set-Content -LiteralPath $script:fixPatchPath -Value 'patch' -NoNewline
+            $null
+        }
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+        Test-Path -LiteralPath $script:fixPatchPath | Should -BeFalse
+    }
+
+    It 'never writes arm results for a fix it declined' {
+        $script:panelResults = @([pscustomobject]@{ Attempt = 1; Result = 'Blocked'; Diff = $null })
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Out-Null
+
+        $script:armResultsWritten | Should -Be 0
+    }
+
+    It 'carries the rejected approaches of a contested comparison into the result' {
+        $script:panelResults = @(
+            [pscustomobject]@{ Attempt = 1; Result = 'Pass'; Diff = 'd1'; ChangedPaths = @('a.cs'); Approach = 'x' }
+            [pscustomobject]@{ Attempt = 2; Result = 'Pass'; Diff = 'd2'; ChangedPaths = @('b.cs'); Approach = 'y' }
+        )
+        $script:winner = [pscustomobject]@{
+            HasWinner = $true; Winner = '2'
+            Rejected = @(@{ reason = 'Candidate 1 masks the symptom in the view.' })
+        }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $result.Files | Should -Be @('b.cs')
+        $result.RejectedApproaches | Should -Contain 'Candidate 1 masks the symptom in the view.'
     }
 }

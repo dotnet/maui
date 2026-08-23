@@ -5578,7 +5578,13 @@ function Invoke-ReplicationFixPhase {
             Write-Host "The comparison selected no candidate: $($winner.Summary)"
             return $null
         }
-        $winnerAttempt = @($passing | Where-Object { [string]$_.Attempt -ceq $winner.Winner })[0]
+        # Select-Object rather than [0]: the comparison is free to name a
+        # candidate that is not among the passing ones, and indexing an empty
+        # result throws under StrictMode. That turned a declined fix into a
+        # thrown error and left the guard below unreachable.
+        $winnerAttempt = $passing |
+            Where-Object { [string]$_.Attempt -ceq $winner.Winner } |
+            Select-Object -First 1
         $rejected = @($winner.Rejected | ForEach-Object { [string]$_.reason })
     }
 
