@@ -861,9 +861,13 @@ Describe 'A pull request that carries a fix says so' {
 
 Describe 'The fix commit may only contain the fix the candidate was validated for' {
     It 'accepts a staged fix that modifies exactly the manifested files' {
+        # The manifest is a set, not a sequence: git reports staged paths in its
+        # own order, so a correct fix must be accepted whichever order either
+        # side happens to list. Both lists here are deliberately unsorted, and
+        # the manifest repeats a file, as a candidate diff legitimately can.
         $actual = Assert-ReplicationStagedFix `
             -StagedLines @("M`tsrc/Core/src/Layout.cs", "M`tsrc/Controls/src/Grid.cs") `
-            -ExpectedFiles @('src/Controls/src/Grid.cs', 'src/Core/src/Layout.cs')
+            -ExpectedFiles @('src/Core/src/Layout.cs', 'src/Controls/src/Grid.cs', 'src/Core/src/Layout.cs')
 
         $actual | Should -Be @('src/Controls/src/Grid.cs', 'src/Core/src/Layout.cs')
     }
