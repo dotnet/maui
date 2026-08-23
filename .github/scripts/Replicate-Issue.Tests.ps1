@@ -127,6 +127,11 @@ BeforeAll {
         'Test-ReplicationFixPanelCanStartCandidate',
         'Get-ReplicationFixPanelBudget',
         'Get-ReplicationFixCandidateVerdict',
+        'Get-ReplicationFixCandidateModel',
+        'Get-ReplicationFixCrossPollination',
+        'Get-ReplicationFixCandidateChanges',
+        'Read-ReplicationFixCandidateArtifacts',
+        'Invoke-ReplicationFixPanel',
         'Read-ReplicationFixScope',
         'New-CopilotPrompt',
         'Assert-ReplicationPromptIsDeliverable'
@@ -7994,5 +7999,223 @@ Describe 'Every agent invocation names parameters that exist' {
             }
         }
         $offenders -join '; ' | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'The fix panel is a panel, not a retry loop' {
+    BeforeAll {
+        # Take the configured list from the source rather than restating it, so
+        # this tests the rotation the run actually performs.
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $assignment = [regex]::Match($source, '\$script:FixPanelModels = @\([^)]*\)')
+        $assignment.Success | Should -BeTrue
+        Invoke-Expression $assignment.Value
+    }
+
+    It 'configures more than one model, or the rotation means nothing' {
+        $script:FixPanelModels.Count | Should -BeGreaterThan 1
+    }
+
+    It 'refuses to run a panel with no model configured' {
+        { Get-ReplicationFixCandidateModel -Attempt 1 -Models @() } |
+            Should -Throw '*No models are configured*'
+    }
+
+    It 'rotates models so five candidates are not five versions of one idea' {
+        $models = 1..5 | ForEach-Object { Get-ReplicationFixCandidateModel -Attempt $_ }
+        ($models | Select-Object -Unique).Count | Should -BeGreaterThan 1
+        for ($i = 1; $i -lt $models.Count; $i++) {
+            $models[$i] | Should -Not -Be $models[$i - 1] -Because (
+                'consecutive candidates repeating a model waste the rotation')
+        }
+    }
+
+    It 'keeps rotating past the end of the list rather than falling off it' {
+        { Get-ReplicationFixCandidateModel -Attempt 8 } | Should -Not -Throw
+        Get-ReplicationFixCandidateModel -Attempt 1 |
+            Should -Be (Get-ReplicationFixCandidateModel -Attempt 3)
+    }
+
+    It 'tells the first candidate nothing, because there is nothing to tell it' {
+        Get-ReplicationFixCrossPollination -Results @() | Should -BeNullOrEmpty
+    }
+
+    It 'passes on why an approach was rejected, not only that it was' {
+        $summary = Get-ReplicationFixCrossPollination -Results @(
+            [pscustomobject]@{
+                Attempt = 1; Model = 'claude-opus-5'; Result = 'Blocked'
+                Rejection = 'changed files outside its scope: eng/Versions.props'
+                Approach = 'Bump the dependency'; Analysis = 'The version was not the cause'
+            })
+        $summary | Should -Match 'Candidate 1'
+        $summary | Should -Match 'claude-opus-5'
+        $summary | Should -Match 'outside its scope'
+        $summary | Should -Match 'Bump the dependency'
+        $summary | Should -Match 'was not the cause'
+    }
+
+    It 'summarises every earlier candidate, not just the most recent' {
+        $summary = Get-ReplicationFixCrossPollination -Results @(
+            [pscustomobject]@{ Attempt = 1; Model = 'a'; Result = 'Fail'; Approach = 'first idea' }
+            [pscustomobject]@{ Attempt = 2; Model = 'b'; Result = 'Fail'; Approach = 'second idea' })
+        $summary | Should -Match 'first idea'
+        $summary | Should -Match 'second idea'
+    }
+}
+
+Describe 'A candidate output directory is read as documentation, never as proof' {
+    BeforeEach {
+        $script:attemptDir = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:attemptDir -Force | Out-Null
+    }
+
+    It 'reports an absent self-review rather than assuming one happened' {
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $script:attemptDir).HasSelfReview |
+            Should -BeFalse
+    }
+
+    It 'sees the self-review when the skill actually wrote it' {
+        Set-Content -LiteralPath (Join-Path $script:attemptDir 'reviewer-findings.json') -Value '[]'
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $script:attemptDir).HasSelfReview |
+            Should -BeTrue
+    }
+
+    It 'returns empty strings for a directory that was never created' {
+        $artifacts = Read-ReplicationFixCandidateArtifacts `
+            -AttemptDirectory (Join-Path $TestDrive 'no-such-attempt')
+        $artifacts.ResultText | Should -BeNullOrEmpty
+        $artifacts.HasSelfReview | Should -BeFalse
+    }
+
+    It 'does not let an enormous analysis flood the next candidate' {
+        Set-Content -LiteralPath (Join-Path $script:attemptDir 'analysis.md') -Value ('y' * 20000)
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $script:attemptDir).Analysis.Length |
+            Should -BeLessOrEqual 4000
+    }
+
+    It 'treats a whitespace-only result as no result at all' {
+        Set-Content -LiteralPath (Join-Path $script:attemptDir 'result.txt') -Value "   `n"
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $script:attemptDir).ResultText |
+            Should -BeNullOrEmpty
+    }
+}
+
+Describe 'A failed fix never costs us a good reproduction' {
+    BeforeEach {
+        $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:repoRoot -Force | Out-Null
+        $script:IssueNumber = 12345
+        $script:invocations = [Collections.Generic.List[object]]::new()
+        $script:restoreCalls = 0
+        $script:restoreSucceeds = $true
+        $script:throwOnAttempt = @()
+        $script:gitPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+
+        # Echoes the summary so the cross-pollination assertion is testing
+        # what was actually passed rather than a constant.
+        function New-CopilotPrompt {
+            param($Phase, $BaselineRelativePath, $FailureSummary)
+            "prompt for $Phase`n$FailureSummary"
+        }
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
+                  $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
+            $script:invocations.Add([pscustomobject]@{
+                Attempt = $Attempt; Model = $ModelOverride; AllowShell = [bool]$AllowShell
+                Summary = $Prompt; Timeout = $TimeoutMinutesOverride })
+            if ($script:throwOnAttempt -contains $Attempt) { throw 'copilot exploded' }
+        }
+        function Get-ReplicationGitStatus {
+            @($script:gitPaths | ForEach-Object { [pscustomobject]@{ Status = ' M'; Path = $_ } })
+        }
+        function Restore-ReplicationFixTree {
+            param($TrustedScriptRoot)
+            $script:restoreCalls++
+            return $script:restoreSucceeds
+        }
+
+        # Declared here, not in the Describe body: Pester 5 runs that body only
+        # at discovery, so anything set there is gone by the time a test runs.
+        $script:panelArgs = @{
+            BaselineRelativePath = 'src/Controls/tests/Issue12345.cs'
+            FailureSummary = 'Expected 10 but was 0'
+            TrustedScriptRoot = '/trusted/scripts'
+            CandidateTimeoutMinutes = 30
+        }
+    }
+
+    It 'attempts nothing when the expert scoped no product files' {
+        $results = @(Invoke-ReplicationFixPanel @script:panelArgs -ScopeFiles @() -CandidateCount 5)
+        $results.Count | Should -Be 0
+        $script:invocations.Count | Should -Be 0
+    }
+
+    It 'attempts nothing when the step has no room left for a whole candidate' {
+        $results = @(Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 5 -BudgetMinutes 5)
+        $results.Count | Should -Be 0
+        $script:invocations.Count | Should -Be 0 -Because (
+            'starting a candidate that cannot finish risks the whole run')
+    }
+
+    It 'records a crashed candidate and keeps going' {
+        $script:throwOnAttempt = @(1)
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 3 -BudgetMinutes 150
+        $results.Count | Should -Be 3
+        $results[0].Result | Should -Be 'Blocked'
+        $results[0].Rejection | Should -Match 'did not complete'
+        $results[0].Rejection | Should -Match 'exploded'
+        $script:invocations.Count | Should -Be 3
+    }
+
+    It 'stops when the tree cannot be restored, rather than polluting the next candidate' {
+        $script:restoreSucceeds = $false
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 5 -BudgetMinutes 150
+        $results.Count | Should -Be 1
+        $script:invocations.Count | Should -Be 1
+    }
+
+    It 'restores between candidates so each starts from the same tree' {
+        Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 3 -BudgetMinutes 150 | Out-Null
+        $script:restoreCalls | Should -Be 3
+    }
+
+    It 'gives every candidate a shell and its own model' {
+        Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 2 -BudgetMinutes 150 | Out-Null
+        $script:invocations | ForEach-Object { $_.AllowShell | Should -BeTrue }
+        $script:invocations[0].Model | Should -Not -Be $script:invocations[1].Model
+        $script:invocations | ForEach-Object { $_.Timeout | Should -Be 30 }
+    }
+
+    It 'tells later candidates what earlier ones did' {
+        $script:throwOnAttempt = @(1)
+        Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 2 -BudgetMinutes 150 | Out-Null
+        $script:invocations[0].Summary | Should -Not -Match 'Candidate 1'
+        $script:invocations[1].Summary | Should -Match 'Candidate 1'
+    }
+
+    It 'blocks a candidate that wandered outside its scope, without ending the panel' {
+        $script:gitPaths = @('src/Core/src/Handlers/EntryHandler.cs', 'eng/Versions.props')
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @('src/Core/src/Handlers/EntryHandler.cs') `
+            -CandidateCount 2 -BudgetMinutes 150
+        $results.Count | Should -Be 2
+        $results[0].Result | Should -Be 'Blocked'
+        $results[0].Rejection | Should -Match 'Versions\.props'
+    }
+
+    It 'does not mistake the reproduction test for a candidate edit' {
+        $script:gitPaths = @('src/Controls/tests/Issue12345.cs')
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @('src/Core/src/Handlers/EntryHandler.cs') `
+            -ReproductionPaths @('src/Controls/tests/Issue12345.cs') `
+            -CandidateCount 1 -BudgetMinutes 150
+        $results[0].Rejection | Should -Not -Match 'outside its scope'
     }
 }

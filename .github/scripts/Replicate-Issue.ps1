@@ -2770,6 +2770,280 @@ function Assert-GeneratedTestContent {
     }
 }
 
+$script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
+
+function Get-ReplicationFixCandidateModel {
+    <#
+        .SYNOPSIS
+            Picks the model for one candidate, rotating through the panel.
+
+        .DESCRIPTION
+            Running the same model five times mostly buys five versions of the
+            same idea, including the same blind spot. Rotating is what makes
+            the panel a panel rather than a retry loop.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][int]$Attempt,
+        # Defaulted rather than read from script state so the rotation can be
+        # reasoned about, and tested, without standing up the whole run.
+        [string[]]$Models = $script:FixPanelModels
+    )
+
+    $available = @($Models | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($available.Count -eq 0) {
+        throw 'No models are configured for the fix panel.'
+    }
+
+    return $available[($Attempt - 1) % $available.Count]
+}
+
+function Get-ReplicationFixCandidateChanges {
+    <#
+        .SYNOPSIS
+            Reports what a fix candidate actually changed, per git.
+
+        .DESCRIPTION
+            The reproduction test is an uncommitted change in this same tree,
+            so it shows up in every status listing and would otherwise be
+            attributed to whichever candidate happened to run. It is excluded
+            by path, leaving only what the candidate itself touched.
+    #>
+    param([string[]]$ExcludePaths = @())
+
+    $entries = Get-ReplicationGitStatus
+    return @(
+        $entries |
+            ForEach-Object { $_.Path } |
+            Where-Object { $ExcludePaths -cnotcontains $_ } |
+            Sort-Object -Unique)
+}
+
+function Get-ReplicationFixCrossPollination {
+    <#
+        .SYNOPSIS
+            Summarises earlier candidates for the next one to read.
+
+        .DESCRIPTION
+            The point is to stop candidate four rediscovering what candidate
+            one already disproved. Rejections are included as prominently as
+            successes, because knowing which approach fails is what keeps the
+            panel from converging on the same wrong idea five times.
+    #>
+    param([object[]]$Results = @())
+
+    $completed = @($Results | Where-Object { $_ })
+    if ($completed.Count -eq 0) {
+        return ''
+    }
+
+    $lines = [Collections.Generic.List[string]]::new()
+    foreach ($result in $completed) {
+        # Read defensively: these records are assembled in several places and
+        # under StrictMode a missing property is a terminating error, which
+        # would turn an incomplete summary into a failed panel.
+        $field = {
+            param([string]$Name)
+            $property = $result.PSObject.Properties[$Name]
+            if ($property) { [string]$property.Value } else { '' }
+        }
+
+        $lines.Add("Candidate $(& $field 'Attempt') using $(& $field 'Model'): $(& $field 'Result')")
+        $rejection = & $field 'Rejection'
+        if ($rejection) {
+            $lines.Add("  Rejected because it $rejection")
+        }
+        $approach = & $field 'Approach'
+        if ($approach) {
+            $lines.Add("  Approach: $(ConvertTo-BoundedAgentLine `
+                -Value $approach -Description 'Candidate approach' -MaximumLength 600)")
+        }
+        $analysis = & $field 'Analysis'
+        if ($analysis) {
+            $lines.Add("  Learned: $(ConvertTo-BoundedAgentLine `
+                -Value $analysis -Description 'Candidate analysis' -MaximumLength 600)")
+        }
+    }
+
+    return ($lines -join "`n")
+}
+
+function Read-ReplicationFixCandidateArtifacts {
+    <#
+        .SYNOPSIS
+            Reads what one candidate wrote into its try-fix output directory.
+
+        .DESCRIPTION
+            Everything here is documentation rather than evidence. It explains
+            a candidate to the next candidate and to a reviewer; it never
+            decides whether the fix worked, which only re-running the test can.
+            A missing file is therefore recorded, not thrown.
+    #>
+    param([Parameter(Mandatory = $true)][string]$AttemptDirectory)
+
+    $read = {
+        param([string]$Name, [int]$Limit)
+        $path = Join-Path $AttemptDirectory $Name
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return '' }
+        $content = Get-Content -LiteralPath $path -Raw -ErrorAction SilentlyContinue
+        if ([string]::IsNullOrWhiteSpace($content)) { return '' }
+        if ($content.Length -gt $Limit) { return $content.Substring(0, $Limit) }
+        return $content
+    }
+
+    return [pscustomobject]@{
+        ResultText = (& $read 'result.txt' 200)
+        Approach = (& $read 'approach.md' 4000)
+        Analysis = (& $read 'analysis.md' 4000)
+        Diff = (& $read 'fix.diff' 60000)
+        # try-fix writes this in its own Step 6 and its Step 8 gates on it, so
+        # its absence means the attempt skipped the self-review it claims.
+        HasSelfReview = (Test-Path -LiteralPath (
+            Join-Path $AttemptDirectory 'reviewer-findings.json') -PathType Leaf)
+    }
+}
+
+function Restore-ReplicationFixTree {
+    <#
+        .SYNOPSIS
+            Returns the tree to the scoped snapshot between candidates.
+
+        .DESCRIPTION
+            Each candidate must start from an identical tree or the panel is
+            comparing different starting points. try-fix permits exactly one
+            restoration mechanism, and using git directly here would contradict
+            the rule candidates are held to.
+    #>
+    param([Parameter(Mandatory = $true)][string]$TrustedScriptRoot)
+
+    $script = Join-Path $TrustedScriptRoot 'EstablishBrokenBaseline.ps1'
+    $arguments = Get-ReplicationPwshArguments -ScriptPath $script -Arguments @('-Restore')
+    $result = Invoke-BoundedProcess `
+        -FilePath (Get-Command pwsh).Source `
+        -Arguments $arguments `
+        -TimeoutSeconds 300
+    return ([int]$result.ExitCode -eq 0)
+}
+
+function Invoke-ReplicationFixPanel {
+    <#
+        .SYNOPSIS
+            Runs the sequential, cross-pollinated fix candidate panel.
+
+        .DESCRIPTION
+            Sequential is not a simplification. try-fix's own documentation is
+            explicit that parallel attempts corrupt each other: they share the
+            working tree, the device, and the baseline script.
+
+            The panel is best effort throughout. Every candidate may fail, the
+            budget may run out before any of them starts, and both outcomes
+            leave the certified reproduction exactly as it was.
+    #>
+    param(
+        # An empty scope is a real answer from the expert phase, not a missing
+        # argument, and PowerShell rejects an empty array here without this.
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$ScopeFiles,
+        [string[]]$ReproductionPaths = @(),
+        [Parameter(Mandatory = $true)][string]$BaselineRelativePath,
+        [Parameter(Mandatory = $true)][string]$FailureSummary,
+        [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
+        [int]$CandidateCount = 5,
+        [int]$BudgetMinutes = 150,
+        [int]$CandidateTimeoutMinutes = 30
+    )
+
+    $results = [Collections.Generic.List[object]]::new()
+    if ($ScopeFiles.Count -eq 0) {
+        Write-Host 'No product files were scoped, so no fix will be attempted.'
+        return $results.ToArray()
+    }
+
+    $panelStarted = [DateTimeOffset]::UtcNow
+    $tryFixRoot = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
+
+    for ($attempt = 1; $attempt -le $CandidateCount; $attempt++) {
+        if (-not (Test-ReplicationFixPanelCanStartCandidate `
+                -PanelStarted $panelStarted `
+                -Now ([DateTimeOffset]::UtcNow) `
+                -PanelBudgetMinutes $BudgetMinutes `
+                -CandidateTimeoutMinutes $CandidateTimeoutMinutes)) {
+            Write-Host (
+                "Stopping the fix panel before candidate ${attempt}: it could not " +
+                'finish inside the remaining budget, and overrunning the step ' +
+                'would discard the reproduction evidence already gathered.')
+            break
+        }
+
+        $model = Get-ReplicationFixCandidateModel -Attempt $attempt
+        $prompt = New-CopilotPrompt `
+            -Phase 'fix' `
+            -BaselineRelativePath $BaselineRelativePath `
+            -FailureSummary (Get-ReplicationFixCrossPollination -Results $results.ToArray())
+
+        $attemptDirectory = Join-Path $tryFixRoot "attempt-$attempt"
+        $candidateStarted = [DateTimeOffset]::UtcNow
+        $invocationError = $null
+        try {
+            Invoke-ReplicationCopilot `
+                -PhaseName "fix-$attempt" `
+                -Prompt $prompt `
+                -WritePaths (@($ScopeFiles | ForEach-Object { Join-Path $repoRoot $_ }) + $tryFixRoot) `
+                -Attempt $attempt `
+                -AllowShell `
+                -ModelOverride $model `
+                -TimeoutMinutesOverride $CandidateTimeoutMinutes | Out-Null
+        } catch {
+            # A candidate that crashes is one bad candidate, not a bad run.
+            $invocationError = $_.Exception.Message
+        }
+
+        $artifacts = Read-ReplicationFixCandidateArtifacts -AttemptDirectory $attemptDirectory
+        $changed = Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths
+        $verdict = if ($invocationError) {
+            [pscustomobject]@{
+                Result = 'Blocked'
+                Rejection = "did not complete: $(ConvertTo-BoundedAgentLine `
+                    -Value $invocationError -Description 'Fix candidate error' -MaximumLength 300)"
+            }
+        } else {
+            Get-ReplicationFixCandidateVerdict `
+                -ResultText $artifacts.ResultText `
+                -ChangedPaths $changed `
+                -ScopeFiles $ScopeFiles `
+                -HasSelfReview $artifacts.HasSelfReview
+        }
+
+        $results.Add([pscustomobject]@{
+            Attempt = $attempt
+            Model = $model
+            Result = $verdict.Result
+            Rejection = $verdict.Rejection
+            Approach = $artifacts.Approach
+            Analysis = $artifacts.Analysis
+            # Captured before the restore below, which is the only moment the
+            # candidate's work exists in the tree.
+            Diff = if ($verdict.Result -ceq 'Pass') {
+                (@(& git diff --binary --no-ext-diff -- @ScopeFiles) -join "`n")
+            } else { '' }
+            ChangedPaths = $changed
+            DurationMinutes = [Math]::Round(
+                ([DateTimeOffset]::UtcNow - $candidateStarted).TotalMinutes, 1)
+        })
+
+        Write-Host (
+            "Fix candidate $attempt ($model): $($verdict.Result)" +
+            $(if ($verdict.Rejection) { " - it $($verdict.Rejection)" } else { '' }))
+
+        if (-not (Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot)) {
+            # Without a clean tree the next candidate would inherit this one's
+            # edits and the comparison would be meaningless.
+            Write-Host 'Could not restore the tree, so the fix panel stops here.'
+            break
+        }
+    }
+
+    return $results.ToArray()
+}
+
 function Get-ReplicationFixCandidateVerdict {
     <#
         .SYNOPSIS
