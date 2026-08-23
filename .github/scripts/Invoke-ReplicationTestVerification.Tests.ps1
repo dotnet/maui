@@ -813,6 +813,23 @@ Describe 'Telling a refuted reproduction apart from a broken control' {
             Should -BeTrue
     }
 
+    It 'treats a control whose only message is blank as an absent measurement' {
+        # A blank message means the run told us nothing, not that it failed a
+        # new way. Calling it a changed mode would spend a control round
+        # rewriting an edit that may have been correct.
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('') `
+            -ReproductionMessages @('Expected 40 but was 20') |
+            Should -BeFalse
+    }
+
+    It 'treats a reproduction whose only message is blank as an absent measurement' {
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @('Element BugLabel was not found') `
+            -ReproductionMessages @('') |
+            Should -BeFalse
+    }
+
     It 'is not fooled by a message that merely contains the other' {
         # Substring similarity is not sameness: an element-lookup failure that
         # happens to quote the expected value is still a different failure.
