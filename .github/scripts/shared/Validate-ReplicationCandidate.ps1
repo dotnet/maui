@@ -15,6 +15,8 @@ param(
     [string]$CandidateManifestPath,
     [Parameter(ParameterSetName = 'Patch')]
     [string]$PatchPath,
+    [Parameter(ParameterSetName = 'Patch')]
+    [string]$FixPatchPath,
     [Parameter(ParameterSetName = 'Commit')]
     [string]$CandidateCommit,
     [Parameter(ParameterSetName = 'Commit')]
@@ -47,6 +49,9 @@ $script:PatchMaxBytes = 2MB
 $script:CandidateFileMaxBytes = 256KB
 $script:CandidateTotalMaxBytes = 1MB
 $script:CandidateFileMaxCount = 24
+$script:FixPatchMaxBytes = 512KB
+$script:FixFileMaxCount = 8
+$script:FixChangedLineMaxCount = 400
 $script:VerificationArtifactMaxBytes = 2MB
 # Reviewers repeatedly rejected reproductions proved by one execution, so a
 # candidate has to show the same failure in more than one independent run.
@@ -528,15 +533,15 @@ function Get-TestNameFromFilter {
         -MaximumLength 256
 }
 
-function Assert-CandidatePath {
+function Assert-CandidatePathShape {
     param(
         [AllowNull()][object]$Path,
-        [Parameter(Mandatory = $true)][string]$TestType
+        [Parameter(Mandatory = $true)][string]$Context
     )
 
     $candidatePath = ConvertTo-BoundedSingleLine `
         -Value $Path `
-        -Context 'Candidate path' `
+        -Context "$Context path" `
         -MaximumLength 240
     if (
         $candidatePath.StartsWith('/') -or
@@ -546,12 +551,12 @@ function Assert-CandidatePath {
         $candidatePath.Contains('%') -or
         $candidatePath -notmatch '^[A-Za-z0-9._+@()/{}\[\]-]+$'
     ) {
-        throw "Candidate path is absolute, non-normalized, or contains unsafe characters."
+        throw "$Context path is absolute, non-normalized, or contains unsafe characters."
     }
 
     $segments = $candidatePath.Split('/')
     if ($segments.Count -lt 2) {
-        throw 'Candidate path must be repository-relative.'
+        throw "$Context path must be repository-relative."
     }
     foreach ($segment in $segments) {
         if (
@@ -560,12 +565,30 @@ function Assert-CandidatePath {
             $segment.Length -gt 100 -or
             $segment -match '^(?i:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$'
         ) {
-            throw 'Candidate path contains traversal, an empty segment, or a reserved name.'
+            throw "$Context path contains traversal, an empty segment, or a reserved name."
         }
     }
     if ($segments -contains '.git' -or $segments -contains 'bin' -or $segments -contains 'obj') {
-        throw 'Candidate path targets a prohibited repository or build directory.'
+        throw "$Context path targets a prohibited repository or build directory."
     }
+
+    if (
+        $candidatePath -match '(?i)/(?:snapshots?|baselines?)/' -or
+        [System.IO.Path]::GetFileName($candidatePath) -match '(?i)^(?:Directory\.Build|AssemblyInfo|GlobalUsings)\.'
+    ) {
+        throw "$Context path targets generated, baseline, or project infrastructure content."
+    }
+
+    return $candidatePath
+}
+
+function Assert-CandidatePath {
+    param(
+        [AllowNull()][object]$Path,
+        [Parameter(Mandatory = $true)][string]$TestType
+    )
+
+    $candidatePath = Assert-CandidatePathShape -Path $Path -Context 'Candidate'
 
     $extension = [System.IO.Path]::GetExtension($candidatePath).ToLowerInvariant()
     $allowedExtensions = switch ($TestType) {
@@ -595,13 +618,6 @@ function Assert-CandidatePath {
     }
     if (-not $allowed) {
         throw "Candidate path is outside the established $TestType directories."
-    }
-
-    if (
-        $candidatePath -match '(?i)/(?:snapshots?|baselines?)/' -or
-        [System.IO.Path]::GetFileName($candidatePath) -match '(?i)^(?:Directory\.Build|AssemblyInfo|GlobalUsings)\.'
-    ) {
-        throw 'Candidate path targets generated, baseline, or project infrastructure content.'
     }
 
     return $candidatePath
@@ -667,7 +683,12 @@ function Read-ReplicationManifest {
         'evidenceManifest', 'evidence_manifest',
         'verificationResult', 'verification_result',
         'negativeControl', 'negative_control',
-        'patch'
+        'patch',
+        'fixFiles', 'fix_files',
+        'fixPatch', 'fix_patch',
+        'fixRootCause', 'fix_root_cause',
+        'fixApproach', 'fix_approach',
+        'fixRejectedApproaches', 'fix_rejected_approaches'
     )
     Assert-KnownProperties `
         -Object $manifest `
@@ -1048,6 +1069,37 @@ function Read-ReplicationManifest {
         $proposedFiles.Add($normalizedPath)
     }
 
+    # A fix is optional: a reproduction that reaches trigger-certified without one
+    # is still publishable, and is what every reproduction published before the
+    # fix phase existed looked like. When a fix is claimed, the files it may
+    # touch are pinned here so the patch cannot widen its own scope later.
+    $fixProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('fixFiles', 'fix_files') `
+        -Context 'Candidate manifest'
+    $fixFiles = [System.Collections.Generic.List[string]]::new()
+    if ($fixProperty.Found -and $null -ne $fixProperty.Value) {
+        $rawFix = @($fixProperty.Value)
+        if ($rawFix.Count -gt $script:FixFileMaxCount) {
+            throw "Manifest fix files must contain no more than $($script:FixFileMaxCount) entries."
+        }
+        $seenFix = [System.Collections.Generic.HashSet[string]]::new(
+            [System.StringComparer]::OrdinalIgnoreCase
+        )
+        foreach ($pathValue in $rawFix) {
+            $normalizedFix = Assert-ReplicationFixPath `
+                -Path $pathValue `
+                -AllowedPaths @($pathValue)
+            if (-not $seenFix.Add($normalizedFix)) {
+                throw 'Manifest fix files contain a duplicate path.'
+            }
+            if ($seen.Contains($normalizedFix)) {
+                throw 'Manifest fix files overlap the proposed test files.'
+            }
+            $fixFiles.Add($normalizedFix)
+        }
+    }
+
     return [pscustomobject]@{
         IssueNumber = $manifestIssue
         Platform = $manifestPlatform
@@ -1060,6 +1112,7 @@ function Read-ReplicationManifest {
         SourceMarker = $sourceMarker
         ReproductionMarker = 'UNCONDITIONAL_REPRODUCTION_TEST'
         ProposedFiles = @($proposedFiles.ToArray() | Sort-Object)
+        FixFiles = @($fixFiles.ToArray() | Sort-Object)
         BaseSha = $baseSha
         PublishedTestType = ConvertTo-PublishedTestType -TestType $testType
         ReproductionSteps = @($reproductionSteps)
@@ -1243,6 +1296,225 @@ function Get-CandidateFilesFromPatch {
 
     if ($files.Count -eq 0) {
         throw 'Candidate patch contains no added test files.'
+    }
+
+    return @($files.ToArray() | Sort-Object Path)
+}
+
+function Assert-ReplicationFixPath {
+    param(
+        [AllowNull()][object]$Path,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$AllowedPaths
+    )
+
+    $fixPath = Assert-CandidatePathShape -Path $Path -Context 'Fix'
+
+    $extension = [System.IO.Path]::GetExtension($fixPath).ToLowerInvariant()
+    if ($extension -notin @('.cs', '.xaml')) {
+        throw 'Fix path has an unexpected extension.'
+    }
+
+    $allowed = $fixPath -cmatch '^src/(?:(?:Controls|Core|Essentials|Graphics|BlazorWebView)/src|Compatibility/Core/src|SingleProject/Resizetizer/src)/'
+    if (-not $allowed) {
+        throw 'Fix path is outside the established product source directories.'
+    }
+
+    foreach ($segment in $fixPath.Split('/')) {
+        if ($segment -match '(?i)^(?:tests?|.*\.(?:unit|device|ui)?tests?|testcases.*)$') {
+            throw 'Fix path targets test code rather than product code.'
+        }
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($fixPath)
+    if ($fileName -match '(?i)\.(?:g|designer|generated)\.cs$') {
+        throw 'Fix path targets generated source.'
+    }
+
+    if ($fixPath -cnotin $AllowedPaths) {
+        throw 'Fix path is outside the reviewed fix scope.'
+    }
+
+    return $fixPath
+}
+
+function Get-ReplicationFixFilesFromPatch {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$AllowedPaths
+    )
+
+    $patchText = Read-BoundedUtf8File `
+        -Path $Path `
+        -MaximumBytes $script:FixPatchMaxBytes `
+        -Context 'Fix patch'
+    if ($patchText.Contains("`r`n")) {
+        $patchText = $patchText.Replace("`r`n", "`n")
+    }
+    if ($patchText.Contains("`r")) {
+        throw 'Fix patch contains non-normalized line endings.'
+    }
+    if ($patchText -match '(?m)^(?:GIT binary patch|Binary files .* differ|literal \d+|delta \d+)$') {
+        throw 'Fix patch contains a binary patch.'
+    }
+
+    if ($patchText.EndsWith("`n", [System.StringComparison]::Ordinal)) {
+        $patchText = $patchText.Substring(0, $patchText.Length - 1)
+    }
+    if ([string]::IsNullOrWhiteSpace($patchText)) {
+        throw 'Fix patch is empty.'
+    }
+    $lines = $patchText.Split([char]"`n")
+
+    $files = [System.Collections.Generic.List[object]]::new()
+    $seen = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    $totalChangedLines = 0
+    $index = 0
+    while ($index -lt $lines.Count) {
+        $header = $lines[$index]
+        if ($header -notmatch '^diff --git a/(?<old>[^\s]+) b/(?<new>[^\s]+)$') {
+            throw 'Fix patch contains an unexpected preamble or malformed diff header.'
+        }
+        $oldPath = $Matches['old']
+        $newPath = $Matches['new']
+        if ($oldPath -cne $newPath) {
+            throw 'Fix patch contains a rename or path mismatch.'
+        }
+        $fixPath = Assert-ReplicationFixPath -Path $newPath -AllowedPaths $AllowedPaths
+        if (-not $seen.Add($fixPath)) {
+            throw 'Fix patch contains a duplicate path.'
+        }
+
+        $index++
+        $block = [System.Collections.Generic.List[string]]::new()
+        while ($index -lt $lines.Count -and -not $lines[$index].StartsWith('diff --git ', [System.StringComparison]::Ordinal)) {
+            $block.Add($lines[$index])
+            $index++
+        }
+
+        $hasIndex = $false
+        $hasOldHeader = $false
+        $hasNewHeader = $false
+        $hunkCount = 0
+        $addedLines = 0
+        $removedLines = 0
+        $remainingOld = 0
+        $remainingNew = 0
+        $insideHunk = $false
+
+        for ($blockIndex = 0; $blockIndex -lt $block.Count; $blockIndex++) {
+            $line = $block[$blockIndex]
+            if ($insideHunk -and ($remainingOld -gt 0 -or $remainingNew -gt 0)) {
+                if ($line -ceq '\ No newline at end of file') {
+                    continue
+                }
+                $marker = if ([string]::IsNullOrEmpty($line)) { ' ' } else { $line.Substring(0, 1) }
+                switch ($marker) {
+                    ' ' {
+                        $remainingOld--
+                        $remainingNew--
+                    }
+                    '+' {
+                        $remainingNew--
+                        $addedLines++
+                    }
+                    '-' {
+                        $remainingOld--
+                        $removedLines++
+                    }
+                    default {
+                        throw 'Fix patch contains a malformed hunk body line.'
+                    }
+                }
+                if ($remainingOld -lt 0 -or $remainingNew -lt 0) {
+                    throw 'Fix patch hunk line counts do not match its content.'
+                }
+                continue
+            }
+
+            if ($insideHunk) {
+                $insideHunk = $false
+            }
+
+            if ($line -ceq '\ No newline at end of file') {
+                continue
+            }
+            if ($line -match '^index [0-9a-fA-F]{7,64}\.\.[0-9a-fA-F]{7,64}(?: 100644)?$') {
+                if ($line -match '^index 0{7,64}\.\.') {
+                    throw 'Fix patch adds rather than modifies a file.'
+                }
+                if ($hasIndex) {
+                    throw 'Fix patch repeats its index line.'
+                }
+                $hasIndex = $true
+                continue
+            }
+            if ($line -match '^(?:new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|similarity index|dissimilarity index|Submodule )') {
+                throw 'Fix patch contains an add, delete, rename, copy, mode change, or submodule change.'
+            }
+            if ($line -ceq "--- a/$fixPath") {
+                if ($hasOldHeader) {
+                    throw 'Fix patch repeats its source header.'
+                }
+                $hasOldHeader = $true
+                continue
+            }
+            if ($line -ceq "+++ b/$fixPath") {
+                if ($hasNewHeader) {
+                    throw 'Fix patch repeats its target header.'
+                }
+                $hasNewHeader = $true
+                continue
+            }
+            if ($line -match '^@@ -(?<oldStart>\d+)(?:,(?<oldCount>\d+))? \+(?<newStart>\d+)(?:,(?<newCount>\d+))? @@(?: .*)?$') {
+                if (-not $hasOldHeader -or -not $hasNewHeader) {
+                    throw 'Fix patch has a hunk before its file headers.'
+                }
+                $hunkCount++
+                $insideHunk = $true
+                $remainingOld = if ($Matches['oldCount']) { [int]$Matches['oldCount'] } else { 1 }
+                $remainingNew = if ($Matches['newCount']) { [int]$Matches['newCount'] } else { 1 }
+                if ($remainingOld -eq 0 -and $remainingNew -eq 0) {
+                    throw 'Fix patch contains an empty hunk.'
+                }
+                continue
+            }
+            if ([string]::IsNullOrEmpty($line) -and $blockIndex -eq ($block.Count - 1)) {
+                continue
+            }
+
+            throw 'Fix patch contains unsupported metadata or a malformed hunk.'
+        }
+
+        if ($remainingOld -gt 0 -or $remainingNew -gt 0) {
+            throw 'Fix patch hunk line counts do not match its content.'
+        }
+        if (-not $hasIndex -or -not $hasOldHeader -or -not $hasNewHeader -or $hunkCount -eq 0) {
+            throw 'Fix patch does not describe a complete modification to a tracked file.'
+        }
+        if (($addedLines + $removedLines) -eq 0) {
+            throw 'Fix patch changes no lines.'
+        }
+
+        $totalChangedLines += $addedLines + $removedLines
+        if ($totalChangedLines -gt $script:FixChangedLineMaxCount) {
+            throw 'Fix patch changes too many lines.'
+        }
+        if ($files.Count -ge $script:FixFileMaxCount) {
+            throw 'Fix patch modifies too many files.'
+        }
+
+        $files.Add([pscustomobject]@{
+            Path = $fixPath
+            AddedLines = $addedLines
+            RemovedLines = $removedLines
+            HunkCount = $hunkCount
+        })
+    }
+
+    if ($files.Count -eq 0) {
+        throw 'Fix patch contains no modified product files.'
     }
 
     return @($files.ToArray() | Sort-Object Path)
@@ -1508,6 +1780,25 @@ function Assert-ManifestMatchesCandidateFiles {
         if ($expected[$index] -cne $actual[$index]) {
             throw 'Manifest proposed files do not exactly match the candidate diff.'
         }
+    }
+}
+
+function Assert-ReplicationFixPathsExist {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Paths
+    )
+
+    $repositoryPath = [System.IO.Path]::GetFullPath($Repository)
+    foreach ($path in $Paths) {
+        $fullPath = Assert-PathWithinRoot `
+            -Path (Join-Path $repositoryPath $path) `
+            -Root $repositoryPath `
+            -Context 'Fix patch path'
+        if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+            throw 'Fix patch modifies a file that does not exist in the trusted checkout.'
+        }
+        Assert-NoLinkInExistingPath -Path $fullPath
     }
 }
 
@@ -1785,7 +2076,11 @@ function Get-ReplicationEvidenceInventory {
         'negative-control-oracle.cs',
         'negative-control-variant.cs',
         'negative-control-console.log',
-        'negative-control-result.json'
+        'negative-control-result.json',
+        'fix-control-result.json',
+        'fix-control-console.log',
+        'restoration-result.json',
+        'restoration-console.log'
     )
 
     # The runner's own result document is retained beside the machine result as
@@ -1849,7 +2144,7 @@ function Get-ReplicationEvidenceInventory {
     } else {
         @(Get-ChildItem -LiteralPath $verificationRoot -Force)
     }
-    if ($verificationItems.Count -gt 20) {
+    if ($verificationItems.Count -gt 26) {
         throw 'Verification directory contains too many artifacts.'
     }
     foreach ($item in $verificationItems) {
@@ -1889,7 +2184,11 @@ function Get-ReplicationEvidenceInventory {
                     'negative-control-oracle.cs',
                     'negative-control-variant.cs',
                     'negative-control-console.log',
-                    'negative-control-result.json') -and
+                    'negative-control-result.json',
+                    'fix-control-result.json',
+                    'fix-control-console.log',
+                    'restoration-result.json',
+                    'restoration-console.log') -and
                 $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
                 $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$' -and
                 $item.Name -cnotmatch $retainedResultPattern) {
@@ -2426,10 +2725,96 @@ function Test-LabeledExactValue {
     return $Text -match "(?m)^\s*(?:[-*]\s*)?(?:$labelPattern)\s*:\s*\x60{0,2}$valuePattern\x60{0,2}\s*$"
 }
 
+function Get-ReplicationFixArmEvidenceFromRoot {
+    param(
+        [Parameter(Mandatory = $true)][string]$VerificationRoot,
+        [switch]$Enabled
+    )
+
+    $evidence = [pscustomobject]@{
+        FixRuns = 0
+        FixPasses = 0
+        RestorationRuns = 0
+        RestorationFailures = 0
+    }
+
+    if (-not $Enabled) {
+        return $evidence
+    }
+
+    $fixPath = Join-Path $VerificationRoot 'fix-control-result.json'
+    $restorationPath = Join-Path $VerificationRoot 'restoration-result.json'
+    $hasFix = Test-Path -LiteralPath $fixPath -PathType Leaf
+    $hasRestoration = Test-Path -LiteralPath $restorationPath -PathType Leaf
+    if (-not $hasFix -and -not $hasRestoration) {
+        return $evidence
+    }
+    # Half a control is not a control. A run that reports the fix turning the
+    # test green without also proving that removing the fix turns it red again
+    # has shown nothing that a rebuild would not have shown.
+    if ($hasFix -xor $hasRestoration) {
+        throw ('A fix arm was reported without its restoration arm, so the green result cannot be ' +
+            'attributed to the fix: ' +
+            [System.IO.Path]::GetFileName($(if ($hasFix) { $restorationPath } else { $fixPath })) +
+            ' is missing.')
+    }
+
+    $fixValue = Read-BoundedUtf8File `
+        -Path $fixPath `
+        -MaximumBytes $script:CandidateFileMaxBytes `
+        -Root $VerificationRoot `
+        -Context 'Fix control result' |
+        ConvertFrom-Json
+    $fixRuns = ConvertTo-PositiveInteger `
+        -Value (Find-AliasedProperty `
+            -Object $fixValue `
+            -Names @('runCount') `
+            -Context 'Fix control' `
+            -Required).Value `
+        -Context 'Fix control run count'
+    $fixPasses = [int](Find-AliasedProperty `
+            -Object $fixValue `
+            -Names @('passCount') `
+            -Context 'Fix control' `
+            -Required).Value
+    if ($fixPasses -lt 0 -or $fixPasses -gt $fixRuns) {
+        throw 'The fix control reports more passes than runs.'
+    }
+
+    $restorationValue = Read-BoundedUtf8File `
+        -Path $restorationPath `
+        -MaximumBytes $script:CandidateFileMaxBytes `
+        -Root $VerificationRoot `
+        -Context 'Restoration result' |
+        ConvertFrom-Json
+    $restorationRuns = ConvertTo-PositiveInteger `
+        -Value (Find-AliasedProperty `
+            -Object $restorationValue `
+            -Names @('runCount') `
+            -Context 'Restoration' `
+            -Required).Value `
+        -Context 'Restoration run count'
+    $restorationFailures = [int](Find-AliasedProperty `
+            -Object $restorationValue `
+            -Names @('failureCount') `
+            -Context 'Restoration' `
+            -Required).Value
+    if ($restorationFailures -lt 0 -or $restorationFailures -gt $restorationRuns) {
+        throw 'The restoration arm reports more failures than runs.'
+    }
+
+    $evidence.FixRuns = $fixRuns
+    $evidence.FixPasses = $fixPasses
+    $evidence.RestorationRuns = $restorationRuns
+    $evidence.RestorationFailures = $restorationFailures
+    return $evidence
+}
+
 function Assert-ReplicationVerificationEvidence {
     param(
         [Parameter(Mandatory = $true)][object]$Inventory,
-        [Parameter(Mandatory = $true)][object]$Manifest
+        [Parameter(Mandatory = $true)][object]$Manifest,
+        [object]$FixArms
     )
 
     if ($Inventory.HasMachineResult) {
@@ -2837,6 +3222,17 @@ function Assert-ReplicationVerificationEvidence {
             Assert-ReplicationNegativeControlIsInformative @informativeArguments
         }
 
+        # The two arms that turn a reproduction into a regression oracle are read
+        # by the caller, which also decides whether the fix survived. Reading
+        # them here unconditionally would let a run claim 'the fix makes it
+        # green' while publishing no fix at all, which is the one claim nobody
+        # could check from the PR.
+        $arms = if ($FixArms) {
+            $FixArms
+        } else {
+            [pscustomobject]@{ FixRuns = 0; FixPasses = 0; RestorationRuns = 0; RestorationFailures = 0 }
+        }
+
         $certification = Get-ReplicationCertification -Evidence @{
             runtimeAvailable       = $true
             baselineRuns           = $completedRunCount
@@ -2845,6 +3241,10 @@ function Assert-ReplicationVerificationEvidence {
             exactlyOneTestExecuted = $exactlyOneTestExecuted
             negativeControlRuns    = $negativeRuns
             negativeControlPasses  = $negativePasses
+            fixControlRuns         = $arms.FixRuns
+            fixControlPasses       = $arms.FixPasses
+            restorationRuns        = $arms.RestorationRuns
+            restorationFailures    = $arms.RestorationFailures
         } -RequiredRuns $script:VerificationMinimumRunCount
 
         if (-not $certification.Publish) {
@@ -3266,6 +3666,7 @@ function Invoke-ReplicationCandidateValidation {
         [Parameter(Mandatory = $true)][string]$RepoRoot,
         [Parameter(Mandatory = $true)][string]$CandidateManifestPath,
         [string]$PatchPath,
+        [string]$FixPatchPath,
         [string]$CandidateCommit,
         [string]$BaseCommit,
         [Parameter(Mandatory = $true)][string]$EvidenceDir,
@@ -3359,18 +3760,75 @@ function Invoke-ReplicationCandidateValidation {
             -CandidateFiles $candidateFiles `
             -RepositoryRoot $repoPath
 
+        # The fix, if there is one, is a second artifact validated on its own
+        # terms: modification-only, product paths only, and no wider than the
+        # scope the manifest already committed to.
+        $fixFiles = @()
+        $hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath)
+        if ($hasFixPatch) {
+            if (-not $hasPatch) {
+                throw 'A fix patch may only accompany a patch candidate.'
+            }
+            if (@($manifest.FixFiles).Count -eq 0) {
+                throw 'A fix patch was provided but the manifest names no fix files.'
+            }
+            $fixFiles = @(Get-ReplicationFixFilesFromPatch `
+                -Path $FixPatchPath `
+                -AllowedPaths @($manifest.FixFiles))
+            $patchedPaths = @($fixFiles | ForEach-Object { $_.Path })
+            foreach ($declared in @($manifest.FixFiles)) {
+                if ($declared -cnotin $patchedPaths) {
+                    throw 'The manifest names a fix file the fix patch never modifies.'
+                }
+            }
+            Assert-ReplicationFixPathsExist `
+                -Repository $repoPath `
+                -Paths $patchedPaths
+        } elseif (@($manifest.FixFiles).Count -gt 0) {
+            throw 'The manifest names fix files but no fix patch was provided.'
+        }
+
         if ($manifest.ArtifactContract) {
             Assert-ReplicationExecutionResult `
                 -Directory $EvidenceDir `
                 -Manifest $manifest
         }
         $inventory = Get-ReplicationEvidenceInventory -Directory $EvidenceDir
+
+        # A fix whose arms did not hold is discarded here rather than allowed to
+        # drag the reproduction down with it. The grader treats a failed fix arm
+        # as decisive evidence against the test, which is correct when a fix is
+        # published; the right answer to a fix that did not work is to publish
+        # the reproduction alone, exactly as every run before the fix phase did.
+        $fixArms = Get-ReplicationFixArmEvidenceFromRoot `
+            -VerificationRoot $inventory.VerificationRoot `
+            -Enabled:$hasFixPatch
+        if ($hasFixPatch) {
+            $fixOutcome = Get-ReplicationControlOutcome `
+                -Requested $fixArms.FixRuns `
+                -Observed $fixArms.FixPasses `
+                -Required $script:VerificationMinimumRunCount
+            $restorationOutcome = Get-ReplicationControlOutcome `
+                -Requested $fixArms.RestorationRuns `
+                -Observed $fixArms.RestorationFailures `
+                -Required $script:VerificationMinimumRunCount
+            if (-not ($fixOutcome.Attempted -and $fixOutcome.Satisfied -and
+                    $restorationOutcome.Attempted -and $restorationOutcome.Satisfied)) {
+                Write-Host ('The fix did not satisfy both control arms, so it is discarded and the ' +
+                    'reproduction is published on its own.')
+                $hasFixPatch = $false
+                $fixFiles = @()
+                $fixArms = $null
+            }
+        }
+
         $null = Read-ReplicationEvidenceMetadata `
             -Inventory $inventory `
             -Manifest $manifest
         $verificationResult = Assert-ReplicationVerificationEvidence `
             -Inventory $inventory `
-            -Manifest $manifest
+            -Manifest $manifest `
+            -FixArms $fixArms
         if ($manifest.ArtifactContract -and $null -eq $verificationResult) {
             throw 'Verification evidence must include a trusted targeted failure message.'
         }
@@ -3417,6 +3875,8 @@ function Invoke-ReplicationCandidateValidation {
             reproductionMarker = $manifest.ReproductionMarker
             files = @($manifest.ProposedFiles)
             proposedFiles = @($manifest.ProposedFiles)
+            fixFiles = @($fixFiles | ForEach-Object { $_.Path })
+            fixPatch = if ($hasFixPatch) { 'fix.patch' } else { $null }
             reproductionSteps = @($manifest.ReproductionSteps)
             candidateSource = $candidateSource
             evidence = [ordered]@{
@@ -3442,6 +3902,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         -RepoRoot $RepoRoot `
         -CandidateManifestPath $CandidateManifestPath `
         -PatchPath $PatchPath `
+        -FixPatchPath $FixPatchPath `
         -CandidateCommit $CandidateCommit `
         -BaseCommit $BaseCommit `
         -EvidenceDir $EvidenceDir `

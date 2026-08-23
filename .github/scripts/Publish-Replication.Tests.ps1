@@ -45,6 +45,7 @@ BeforeAll {
         'Get-ReplicationPullRequestMarker',
         'New-ReplicationBranchName',
         'Get-ReplicationCandidateText',
+        'Get-ValidatedFixFiles',
         'New-ReplicationPullRequestBody',
         'Resolve-ReplicationSourceRepository'
     )) {
@@ -729,5 +730,130 @@ Describe 'Trusted replication PR migration' {
         $earlyExit = $script:PrSource.Substring($duplicateIndex, 400)
         $earlyExit | Should -Match 'Write-ReplicationPublicationManifest -Plan \$plan'
         $earlyExit | Should -Match 'exit 0'
+    }
+}
+
+Describe 'A pull request that carries a fix says so' {
+    BeforeAll {
+        function script:New-FixCandidate {
+            param([hashtable]$Extra)
+
+            $document = [ordered]@{
+                schemaVersion = 1
+                status = 'validated'
+                validationPassed = $true
+                issueNumber = 37440
+                platform = 'android'
+                baseSha = 'abc123'
+                testType = 'device'
+                verificationTestType = 'DeviceTest'
+                testName = 'Issue37440'
+                testFilter = 'Issue37440'
+                testClassName = 'Microsoft.Maui.DeviceTests.Issue37440'
+                testMethodName = 'ReproducesIssue37440'
+                expectedFailureSignature = 'Issue37440'
+                expectedFailurePattern = 'Issue37440'
+                actualFailureMessage = 'Xunit failure: Issue37440 expected red but was blue'
+                verificationRunCount = 2
+                certificationLevel = 'trigger-certified'
+                certificationSummary = '**Evidence level: `trigger-certified`**'
+                reproductionMarker = 'BUG REPRODUCED:'
+                files = @('src/Core/tests/DeviceTests/Handlers/Issue37440.cs')
+                reproductionSteps = @('Open the page', 'Tap the control')
+                evidence = [ordered]@{
+                    video = 'repro.mp4'
+                    preview = 'preview.gif'
+                    thumbnail = 'thumbnail.png'
+                }
+            }
+            if ($Extra) {
+                foreach ($key in $Extra.Keys) {
+                    $document[$key] = $Extra[$key]
+                }
+            }
+            return $document | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+        }
+
+        $script:fixEvidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+
+        function script:Get-FixBody {
+            param([Parameter(Mandatory = $true)]$Candidate)
+
+            return New-ReplicationPullRequestBody `
+                -Candidate $Candidate `
+                -Evidence $script:fixEvidence `
+                -IssueTitle 'Button ignores its padding' `
+                -IssueOwner 'dotnet' `
+                -IssueRepository 'maui' `
+                -BuildUrl 'https://example.com/build/1'
+        }
+    }
+
+    It 'says nothing about a fix when there is none' {
+        Set-StrictMode -Version 3.0
+        $body = script:Get-FixBody -Candidate (script:New-FixCandidate)
+
+        $body | Should -Not -Match 'Proposed fix'
+        $body | Should -Match 'not a merge-ready product fix'
+        $body | Should -Match 'The published patch is add-only'
+    }
+
+    It 'describes the fix, its files, and the two commits that carry it' {
+        Set-StrictMode -Version 3.0
+        $candidate = script:New-FixCandidate -Extra @{
+            certificationLevel = 'certified-oracle'
+            fixFiles = @('src/Controls/src/Core/Button/Button.cs')
+            fixPatch = 'fix.patch'
+            fixRootCause = 'Padding was applied before the handler measured the label.'
+            fixApproach = 'Invalidate the measure after padding changes instead of before.'
+            fixRejectedApproaches = @(
+                'Clamping the padding, which hid the symptom on one platform only.'
+            )
+        }
+
+        $body = script:Get-FixBody -Candidate $candidate
+
+        $body | Should -Match 'Proposed fix'
+        $body | Should -Match 'reproduction evidence with a proposed fix'
+        $body | Should -Not -Match 'not a merge-ready product fix'
+        $body | Should -Match 'src/Controls/src/Core/Button/Button\.cs'
+        $body | Should -Match 'Padding was applied before the handler measured the label'
+        $body | Should -Match 'Invalidate the measure after padding changes'
+        $body | Should -Match 'Clamping the padding'
+        $body | Should -Match 'two commits'
+        $body | Should -Match 'The reproduction commit is add-only'
+    }
+
+    It 'still describes a fix that carries no prose' {
+        Set-StrictMode -Version 3.0
+        $candidate = script:New-FixCandidate -Extra @{
+            fixFiles = @('src/Core/src/Handlers/Button/ButtonHandler.cs')
+            fixPatch = 'fix.patch'
+        }
+
+        $body = script:Get-FixBody -Candidate $candidate
+
+        $body | Should -Match 'Proposed fix'
+        $body | Should -Match 'src/Core/src/Handlers/Button/ButtonHandler\.cs'
+        $body | Should -Not -Match 'Approaches considered and rejected'
+    }
+
+    It 'refuses to let a fix file smuggle a pipeline command into the body' {
+        Set-StrictMode -Version 3.0
+        $candidate = script:New-FixCandidate -Extra @{
+            fixFiles = @('src/Core/src/Foo.cs')
+            fixPatch = 'fix.patch'
+            fixRootCause = "Root cause`n##vso[task.setvariable variable=X]bad"
+        }
+
+        $body = script:Get-FixBody -Candidate $candidate
+
+        $body | Should -Not -Match '##vso'
     }
 }

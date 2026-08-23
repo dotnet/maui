@@ -326,7 +326,8 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             [Parameter(Mandatory = $true)][object]$Fixture,
             [scriptblock]$Probe = $script:successfulProbe,
             [string]$CandidateCommit,
-            [string]$BaseCommit
+            [string]$BaseCommit,
+            [string]$FixPatchPath
         )
 
         $parameters = @{
@@ -343,6 +344,9 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             $parameters.BaseCommit = $BaseCommit
         } else {
             $parameters.PatchPath = $Fixture.PatchPath
+            if ($FixPatchPath) {
+                $parameters.FixPatchPath = $FixPatchPath
+            }
         }
 
         return Invoke-ReplicationCandidateValidation @parameters
@@ -2794,5 +2798,639 @@ Describe 'The evidence allowlist knows every field the recorder writes' {
 
     It 'still lists the frame count that build 15051402 was rejected for' {
         (Get-EvidenceAllowlist -Path $script:ValidatorPath) | Should -Contain 'decodedFrames'
+    }
+}
+
+Describe 'The fix patch is the inverse of the test patch' {
+    BeforeAll {
+        $script:fixScratch = Join-Path $script:scratchRoot 'fix-patch'
+        New-Item -ItemType Directory -Path $script:fixScratch -Force | Out-Null
+
+        $script:fixTarget = 'src/Controls/src/Core/Button/Button.cs'
+
+        function script:New-FixPatchFile {
+            param(
+                [Parameter(Mandatory = $true)][string]$Name,
+                [Parameter(Mandatory = $true)][string]$Value
+            )
+
+            $path = Join-Path $script:fixScratch "$Name.patch"
+            [System.IO.File]::WriteAllText(
+                $path,
+                $Value,
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            return $path
+        }
+
+        function script:New-FixPatchText {
+            param(
+                [string]$Target = 'src/Controls/src/Core/Button/Button.cs',
+                [string]$Hunk = @'
+@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
+ 	public partial class Button
+ 	{
+ 		void Update()
+-			=> Handler?.UpdateValue(nameof(Text));
++			=> Handler?.UpdateValue(nameof(Text), force: true);
+ 	}
+ }
+ 
+'@
+            )
+
+            return @"
+diff --git a/$Target b/$Target
+index cc87be1f60..4791badc38 100644
+--- a/$Target
++++ b/$Target
+$Hunk
+"@
+        }
+
+        # The most honest fixture is one git itself produced, so the parser is
+        # measured against real output rather than against our idea of it.
+        $script:gitFixRepo = Join-Path $script:fixScratch 'repo'
+        New-Item -ItemType Directory -Path (Join-Path $script:gitFixRepo (Split-Path $script:fixTarget -Parent)) -Force | Out-Null
+        Push-Location $script:gitFixRepo
+        try {
+            git init --quiet 2>&1 | Out-Null
+            git config user.email 'test@example.com' 2>&1 | Out-Null
+            git config user.name 'Test' 2>&1 | Out-Null
+            $original = (1..40 | ForEach-Object { "line $_" }) -join "`n"
+            [System.IO.File]::WriteAllText(
+                (Join-Path $script:gitFixRepo $script:fixTarget),
+                "$original`n",
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            git add -A 2>&1 | Out-Null
+            git commit --quiet -m 'base' 2>&1 | Out-Null
+
+            $edited = @($original -split "`n")
+            $edited[4] = 'line 5 changed'
+            $edited[30] = 'line 31 changed'
+            [System.IO.File]::WriteAllText(
+                (Join-Path $script:gitFixRepo $script:fixTarget),
+                (($edited -join "`n") + "`n"),
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            $script:realFixPatch = Join-Path $script:fixScratch 'real.patch'
+            git diff --binary -- $script:fixTarget |
+                Set-Content -LiteralPath $script:realFixPatch -Encoding utf8NoBOM
+        } finally {
+            Pop-Location
+        }
+    }
+
+    It 'accepts a modification patch git actually produced' {
+        $files = @(Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @($script:fixTarget))
+
+        $files | Should -HaveCount 1
+        $files[0].Path | Should -BeExactly $script:fixTarget
+        $files[0].AddedLines | Should -Be 2
+        $files[0].RemovedLines | Should -Be 2
+        $files[0].HunkCount | Should -Be 2
+    }
+
+    It 'refuses a file the reviewed scope never named' {
+        { Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @('src/Core/src/Handlers/Button/ButtonHandler.cs') } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'refuses a scope that differs only by case' {
+        { Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @($script:fixTarget.ToUpperInvariant()) } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'refuses an empty scope outright' {
+        { Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @() } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'accepts a hand-written patch of the same shape' {
+        $path = script:New-FixPatchFile -Name 'baseline' -Value (script:New-FixPatchText)
+        $files = @(Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget))
+
+        $files | Should -HaveCount 1
+        $files[0].AddedLines | Should -Be 1
+        $files[0].RemovedLines | Should -Be 1
+        $files[0].HunkCount | Should -Be 1
+    }
+
+    It 'refuses a patch that adds a file' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+new file mode 100644
+index 0000000000..4791badc38
+--- /dev/null
++++ b/$($script:fixTarget)
+@@ -0,0 +1 @@
++namespace X;
+"@
+        $path = script:New-FixPatchFile -Name 'add' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*add, delete, rename, copy, mode change, or submodule*'
+    }
+
+    It 'refuses a patch that deletes a file' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+deleted file mode 100644
+index cc87be1f60..0000000000
+--- a/$($script:fixTarget)
++++ /dev/null
+@@ -1 +0,0 @@
+-namespace X;
+"@
+        $path = script:New-FixPatchFile -Name 'delete' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*add, delete, rename, copy, mode change, or submodule*'
+    }
+
+    It 'refuses a patch that changes a file mode' {
+        $text = (script:New-FixPatchText) -replace 'index cc87be1f60', "old mode 100644`nnew mode 100755`nindex cc87be1f60"
+        $path = script:New-FixPatchFile -Name 'mode' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*add, delete, rename, copy, mode change, or submodule*'
+    }
+
+    It 'refuses a rename even when both paths are in scope' {
+        $other = 'src/Controls/src/Core/Button/Button2.cs'
+        $text = @"
+diff --git a/$($script:fixTarget) b/$other
+similarity index 98%
+rename from $($script:fixTarget)
+rename to $other
+"@
+        $path = script:New-FixPatchFile -Name 'rename' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget, $other) } |
+            Should -Throw '*rename or path mismatch*'
+    }
+
+    It 'refuses a binary patch' {
+        $text = (script:New-FixPatchText) -replace '@@ -10,7 \+10,7 @@.*', 'GIT binary patch'
+        $path = script:New-FixPatchFile -Name 'binary' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*binary patch*'
+    }
+
+    It 'refuses stray carriage returns' {
+        $text = (script:New-FixPatchText).Replace("`n", "`n") + "`rtrailing"
+        $path = script:New-FixPatchFile -Name 'cr' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*non-normalized line endings*'
+    }
+
+    It 'refuses an empty patch' {
+        $path = script:New-FixPatchFile -Name 'empty' -Value "   `n"
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*empty*'
+    }
+
+    It 'refuses anything before the first diff header' {
+        $text = "Here is my fix!`n" + (script:New-FixPatchText)
+        $path = script:New-FixPatchFile -Name 'preamble' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*unexpected preamble or malformed diff header*'
+    }
+
+    It 'refuses a hunk header that claims more lines than it carries' {
+        $text = (script:New-FixPatchText) -replace '@@ -10,7 \+10,7 @@', '@@ -10,9 +10,9 @@'
+        $path = script:New-FixPatchFile -Name 'overclaim' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*hunk line counts do not match*'
+    }
+
+    It 'refuses a hunk header that claims fewer lines than it carries' {
+        $text = (script:New-FixPatchText) -replace '@@ -10,7 \+10,7 @@', '@@ -10,5 +10,5 @@'
+        $path = script:New-FixPatchFile -Name 'underclaim' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*unsupported metadata or a malformed hunk*'
+    }
+
+    It 'refuses a hunk body line with an unrecognised marker' {
+        $text = (script:New-FixPatchText) -replace '(?m)^ (\tpublic partial class Button)$', '?$1'
+        $text | Should -Match '(?m)^\?' -Because 'the mutation must actually land or the test proves nothing'
+        $path = script:New-FixPatchFile -Name 'marker' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*malformed hunk body line*'
+    }
+
+    It 'refuses a patch that carries no hunk at all' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+index cc87be1f60..4791badc38 100644
+--- a/$($script:fixTarget)
++++ b/$($script:fixTarget)
+"@
+        $path = script:New-FixPatchFile -Name 'nohunk' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*complete modification to a tracked file*'
+    }
+
+    It 'refuses a patch that changes no lines' {
+        $hunk = @'
+@@ -10,3 +10,3 @@ namespace Microsoft.Maui.Controls
+ 	public partial class Button
+ 	{
+ 	}
+'@
+        $path = script:New-FixPatchFile -Name 'nochange' -Value (script:New-FixPatchText -Hunk $hunk)
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*changes no lines*'
+    }
+
+    It 'refuses a hunk that precedes its own file headers' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+index cc87be1f60..4791badc38 100644
+@@ -10,1 +10,1 @@
+-a
++b
+--- a/$($script:fixTarget)
++++ b/$($script:fixTarget)
+"@
+        $path = script:New-FixPatchFile -Name 'earlyhunk' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*hunk before its file headers*'
+    }
+
+    It 'refuses a target header that names a different file' {
+        $text = (script:New-FixPatchText) -replace [regex]::Escape("+++ b/$($script:fixTarget)"), '+++ b/src/Controls/src/Core/Other.cs'
+        $path = script:New-FixPatchFile -Name 'mismatch' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*unsupported metadata or a malformed hunk*'
+    }
+
+    It 'refuses the same file twice' {
+        $text = (script:New-FixPatchText) + "`n" + (script:New-FixPatchText)
+        $path = script:New-FixPatchFile -Name 'duplicate' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*duplicate path*'
+    }
+
+    It 'refuses a diff that touches more files than the ceiling allows' {
+        $targets = 1..($script:FixFileMaxCount + 1) | ForEach-Object {
+            "src/Controls/src/Core/Button/Probe$_.cs"
+        }
+        $text = ($targets | ForEach-Object { script:New-FixPatchText -Target $_ }) -join "`n"
+        $path = script:New-FixPatchFile -Name 'toomanyfiles' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths $targets } |
+            Should -Throw '*modifies too many files*'
+    }
+
+    It 'refuses a diff that rewrites more lines than the ceiling allows' {
+        $bodyLines = 1..($script:FixChangedLineMaxCount + 2) | ForEach-Object { "+line $_" }
+        $hunk = "@@ -10,0 +10,$($bodyLines.Count) @@`n" + ($bodyLines -join "`n")
+        $path = script:New-FixPatchFile -Name 'toomanylines' -Value (script:New-FixPatchText -Hunk $hunk)
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*changes too many lines*'
+    }
+
+    It 'accepts an empty context line that lost its leading space in transit' {
+        $hunk = "@@ -10,4 +10,4 @@ namespace Microsoft.Maui.Controls`n 	public partial class Button`n`n-	void A() { }`n+	void A() { return; }`n 	}"
+        $path = script:New-FixPatchFile -Name 'looseblank' -Value (script:New-FixPatchText -Hunk $hunk)
+        $files = @(Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget))
+
+        $files | Should -HaveCount 1
+        $files[0].AddedLines | Should -Be 1
+    }
+
+    It 'refuses a patch larger than the fix ceiling' {
+        $filler = ('x' * 1024)
+        $text = (script:New-FixPatchText) + "`n" + (($filler | ForEach-Object { $_ }) * 1)
+        $big = [System.Text.StringBuilder]::new()
+        [void]$big.Append((script:New-FixPatchText))
+        while ($big.Length -le $script:FixPatchMaxBytes) {
+            [void]$big.AppendLine($filler)
+        }
+        $path = script:New-FixPatchFile -Name 'huge' -Value $big.ToString()
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*Fix patch*'
+    }
+}
+
+Describe 'Which product files a fix is allowed to touch' {
+    It 'accepts every established product source root' {
+        $accepted = @(
+            'src/Controls/src/Core/Button/Button.cs',
+            'src/Core/src/Handlers/Button/ButtonHandler.Android.cs',
+            'src/Essentials/src/Types/Shared/Battery.cs',
+            'src/Graphics/src/Graphics/Canvas.cs',
+            'src/BlazorWebView/src/Maui/BlazorWebView.cs',
+            'src/Compatibility/Core/src/Foo.cs',
+            'src/SingleProject/Resizetizer/src/Foo.cs',
+            'src/Controls/src/Core/Templates/Bar.xaml'
+        )
+
+        foreach ($path in $accepted) {
+            Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) |
+                Should -BeExactly $path
+        }
+    }
+
+    It 'refuses test code, tooling, and infrastructure' {
+        $rejected = @(
+            'src/Controls/tests/DeviceTests/Elements/ButtonTests.cs',
+            'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs',
+            'src/Core/tests/UnitTests/Foo.cs',
+            'src/Templates/src/Foo.cs',
+            'src/Provisioning/Foo.cs',
+            'eng/scripts/Foo.cs',
+            '.github/workflows/ci.yml',
+            'src/Controls/src/Core/Button/Button.csproj',
+            'src/Controls/src/Core/Button/Button.g.cs',
+            'src/Controls/src/Core/Button/Button.designer.cs',
+            'src/Controls/src/Core/GlobalUsings.cs',
+            'src/Controls/src/Core/AssemblyInfo.cs',
+            'src/Controls/src/Core/obj/Generated.cs',
+            'src/Controls/src/Core/snapshots/Button.cs'
+        )
+
+        foreach ($path in $rejected) {
+            { Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) } |
+                Should -Throw -Because "$path must never be editable by a fix candidate"
+        }
+    }
+
+    It 'refuses absolute paths, traversal, and windows separators' {
+        foreach ($path in @(
+            '/etc/passwd',
+            'C:/Windows/System32/foo.cs',
+            'src/Controls/src/Core/../../../../etc/passwd.cs',
+            'src\Controls\src\Core\Button.cs',
+            'src/Controls/src/Core/%2e%2e/Button.cs'
+        )) {
+            { Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) } |
+                Should -Throw -Because "$path is not a repository-relative product path"
+        }
+    }
+}
+
+Describe 'What it takes to publish a fix alongside the reproduction' {
+    BeforeAll {
+        $script:oracleFixTarget = 'src/Controls/src/Core/Button/Button.cs'
+
+        $script:oracleControlBaseline = @'
+[Test]
+public void Issue12345()
+{
+    App.NavigateTo("PlainButtonGallery");
+    App.Tap("TriggerButton");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+        $script:oracleControlVariant = @'
+[Test]
+public void Issue12345()
+{
+    App.NavigateTo("PlainButtonGallery");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+
+        function script:Add-OracleControl {
+            param([Parameter(Mandatory = $true)][object]$Fixture)
+
+            $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+            Write-TestJson `
+                -Path (Join-Path $verificationRoot 'negative-control-result.json') `
+                -Value ([ordered]@{ schemaVersion = 1; runCount = 2; passCount = 2 })
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') `
+                -Value $script:oracleControlBaseline
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-variant.cs') `
+                -Value $script:oracleControlVariant
+            return $Fixture
+        }
+
+        function script:Add-OracleArms {
+            param(
+                [Parameter(Mandatory = $true)][object]$Fixture,
+                [int]$FixRuns = 2,
+                [int]$FixPasses = 2,
+                [int]$RestorationRuns = 2,
+                [int]$RestorationFailures = 2,
+                [switch]$OmitFix,
+                [switch]$OmitRestoration
+            )
+
+            $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+            if (-not $OmitFix) {
+                Write-TestJson `
+                    -Path (Join-Path $verificationRoot 'fix-control-result.json') `
+                    -Value ([ordered]@{ schemaVersion = 1; runCount = $FixRuns; passCount = $FixPasses })
+            }
+            if (-not $OmitRestoration) {
+                Write-TestJson `
+                    -Path (Join-Path $verificationRoot 'restoration-result.json') `
+                    -Value ([ordered]@{
+                        schemaVersion = 1
+                        runCount = $RestorationRuns
+                        failureCount = $RestorationFailures
+                    })
+            }
+            return $Fixture
+        }
+
+        function script:Add-OracleFixPatch {
+            param(
+                [Parameter(Mandatory = $true)][object]$Fixture,
+                [string]$Target = 'src/Controls/src/Core/Button/Button.cs',
+                [string[]]$DeclaredFiles,
+                [switch]$SkipProductFile
+            )
+
+            if (-not $SkipProductFile) {
+                Write-TestText `
+                    -Path (Join-Path $Fixture.RepoRoot $Target) `
+                    -Value "namespace Microsoft.Maui.Controls;`n"
+            }
+
+            $fixPatchPath = Join-Path $Fixture.Root 'fix.patch'
+            Write-TestText -Path $fixPatchPath -Value @"
+diff --git a/$Target b/$Target
+index cc87be1f60..4791badc38 100644
+--- a/$Target
++++ b/$Target
+@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
+ 	public partial class Button
+ 	{
+ 		void Update()
+-			=> Handler?.UpdateValue(nameof(Text));
++			=> Handler?.UpdateValue(nameof(Text), force: true);
+ 	}
+ }
+ 
+"@
+
+            $declared = if ($PSBoundParameters.ContainsKey('DeclaredFiles')) { @($DeclaredFiles) } else { @($Target) }
+            $manifest = Get-Content -LiteralPath $Fixture.ManifestPath -Raw | ConvertFrom-Json
+            Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' -NotePropertyValue $declared -Force
+            Write-TestJson -Path $Fixture.ManifestPath -Value $manifest
+
+            return $fixPatchPath
+        }
+
+        function script:New-OracleFixture {
+            return script:Add-OracleControl `
+                -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        }
+    }
+
+    It 'certifies a reproduction whose fix turns it green and whose removal turns it red' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+        $result.fixFiles | Should -Be @($script:oracleFixTarget)
+        $result.fixPatch | Should -BeExactly 'fix.patch'
+    }
+
+    It 'ignores fix arm results when no fix patch is published' {
+        # Without this the run could claim the fix made the test green while
+        # shipping no fix at all, which is the one claim a reviewer cannot check.
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        $result.fixFiles | Should -Be @()
+        $result.fixPatch | Should -BeNullOrEmpty
+    }
+
+    It 'refuses a fix arm reported without its restoration arm' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -OmitRestoration
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*without its restoration arm*'
+    }
+
+    It 'refuses a restoration arm reported without its fix arm' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -OmitFix
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*without its restoration arm*'
+    }
+
+    It 'still publishes a trigger-certified reproduction when the fix arm did not pass every run' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -FixPasses 1
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        $result.fixFiles | Should -Be @() -Because 'a fix that did not work must be discarded, not published'
+        $result.fixPatch | Should -BeNullOrEmpty
+    }
+
+    It 'still publishes a trigger-certified reproduction when removing the fix left it green' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -RestorationFailures 1
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        $result.fixFiles | Should -Be @() -Because 'an unattributable fix must be discarded, not published'
+        $result.fixPatch | Should -BeNullOrEmpty
+    }
+
+    It 'still publishes a trigger-certified reproduction when no fix was attempted at all' {
+        $fixture = script:New-OracleFixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+    }
+
+    It 'refuses a fix arm that reports more passes than runs' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -FixRuns 1 -FixPasses 2
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*more passes than runs*'
+    }
+
+    It 'refuses a restoration arm that reports more failures than runs' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -RestorationRuns 1 -RestorationFailures 2
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*more failures than runs*'
+    }
+
+    It 'refuses a manifest that names fix files without shipping a fix patch' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $null = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*names fix files but no fix patch*'
+    }
+
+    It 'refuses a fix patch the manifest never declared' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -DeclaredFiles @('src/Core/src/Handlers/Button/ButtonHandler.cs')
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'refuses a manifest that declares a file the fix patch never touches' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        Write-TestText `
+            -Path (Join-Path $fixture.RepoRoot 'src/Core/src/Handlers/Button/ButtonHandler.cs') `
+            -Value "namespace Microsoft.Maui.Handlers;`n"
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -DeclaredFiles @($script:oracleFixTarget, 'src/Core/src/Handlers/Button/ButtonHandler.cs')
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*names a fix file the fix patch never modifies*'
+    }
+
+    It 'refuses a fix that modifies a file the trusted checkout does not have' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture -SkipProductFile
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*does not exist in the trusted checkout*'
+    }
+
+    It 'refuses a manifest whose fix files overlap the test it is meant to turn green' {
+        $fixture = script:New-OracleFixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' `
+            -NotePropertyValue @($fixture.CandidatePath) -Force
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw
     }
 }

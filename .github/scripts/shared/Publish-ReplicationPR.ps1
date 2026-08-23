@@ -22,6 +22,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PatchPath,
 
+    [string]$FixPatchPath,
+
     [Parameter(Mandatory = $true)]
     [string]$RepositoryRoot,
 
@@ -296,11 +298,74 @@ function New-ReplicationPullRequestBody {
     $buildLine = if ($BuildUrl) { "- Pipeline run: $BuildUrl" } else { '- Pipeline run: unavailable' }
     $issueUrl = "https://github.com/$IssueOwner/$IssueRepository/issues/$issueNumber"
 
+    $fixFiles = @(Get-ValidatedFixFiles -Candidate $Candidate)
+    $fixBlock = if ($fixFiles.Count -gt 0) {
+        $fixRootCause = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixRootCause'
+        $fixApproach = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixApproach'
+        $rejected = @()
+        $rejectedProperty = $Candidate.PSObject.Properties['fixRejectedApproaches']
+        if ($rejectedProperty -and $null -ne $rejectedProperty.Value) {
+            foreach ($entry in @($rejectedProperty.Value)) {
+                $safeEntry = ConvertTo-ReplicationSingleLine -Value ([string]$entry) -MaximumLength 300
+                if ($safeEntry) {
+                    $rejected += "- $safeEntry"
+                }
+            }
+        }
+
+        $fixLines = @(
+            '## Proposed fix',
+            '',
+            ('This pull request carries two commits. The first adds the failing reproduction on its own, ' +
+             'so its parent can be checked out and the test watched to fail. The second changes product ' +
+             'code so the same test passes.'),
+            ''
+        )
+        if ($fixRootCause) {
+            $fixLines += ('**Root cause.** ' + (ConvertTo-ReplicationSingleLine -Value $fixRootCause -MaximumLength 600))
+            $fixLines += ''
+        }
+        if ($fixApproach) {
+            $fixLines += ('**Approach taken.** ' + (ConvertTo-ReplicationSingleLine -Value $fixApproach -MaximumLength 600))
+            $fixLines += ''
+        }
+        $fixLines += '**Files changed by the fix commit:**'
+        $fixLines += ''
+        foreach ($file in ($fixFiles | Sort-Object -Unique)) {
+            $fixLines += ('- `' + (ConvertTo-ReplicationSingleLine -Value $file -MaximumLength 240) + '`')
+        }
+        if ($rejected.Count -gt 0) {
+            $fixLines += ''
+            $fixLines += '**Approaches considered and rejected:**'
+            $fixLines += ''
+            $fixLines += $rejected
+        }
+        $fixLines -join [Environment]::NewLine
+    } else {
+        ''
+    }
+
+    $importantBanner = if ($fixFiles.Count -gt 0) {
+        ('> This is AI-generated **reproduction evidence with a proposed fix**. The first commit adds a test ' +
+         'that fails on the unfixed baseline; the second changes product code so it passes. Both the test and ' +
+         'the fix need human review before merge.')
+    } else {
+        ('> This is AI-generated **reproduction evidence**, not a merge-ready product fix. The added test ' +
+         'intentionally fails on the unfixed baseline. A product fix should make the test pass before this PR ' +
+         'is considered for merge.')
+    }
+    $patchScopeLine = if ($fixFiles.Count -gt 0) {
+        ('- The reproduction commit is add-only and restricted to approved MAUI test locations. The fix commit ' +
+         'modifies only the product files listed above, and adds, deletes, renames, and mode changes are refused.')
+    } else {
+        '- The published patch is add-only and restricted to approved MAUI test locations.'
+    }
+
     return @"
 $marker
 
 > [!IMPORTANT]
-> This is AI-generated **reproduction evidence**, not a merge-ready product fix. The added test intentionally fails on the unfixed baseline. A product fix should make the test pass before this PR is considered for merge.
+$importantBanner
 
 $certificationBlock
 
@@ -338,7 +403,9 @@ $($steps -join [Environment]::NewLine)
 - The pipeline reconstructed the scenario from issue text, inline snippets, and allowed raster screenshots.
 - No linked repository, archive, binary, script, package, or arbitrary external file was downloaded.
 $reproductionClaim
-- The published patch is add-only and restricted to approved MAUI test locations.
+$patchScopeLine
+
+$fixBlock
 "@
 }
 
@@ -358,6 +425,16 @@ function Get-ValidatedCandidateFiles {
         throw 'Validated candidate does not list any added files.'
     }
     return $files
+}
+
+function Get-ValidatedFixFiles {
+    param([Parameter(Mandatory = $true)]$Candidate)
+
+    $property = $Candidate.PSObject.Properties['fixFiles']
+    if (-not $property -or $null -eq $property.Value) {
+        return @()
+    }
+    return @($property.Value | ForEach-Object { ([string]$_).Replace('\', '/') } | Where-Object { $_ })
 }
 
 function Invoke-ReplicationExternalCommand {
@@ -513,6 +590,7 @@ $plan = [ordered]@{
     body = $prBody
     marker = $marker
     files = @(Get-ValidatedCandidateFiles -Candidate $candidate)
+    fixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
     url = $null
     duplicateOf = $null
 }
@@ -637,6 +715,48 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
 "@
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('commit', '-m', $commitMessage) -Description 'Committing reproduction test'
+
+        # The fix lands as a second commit so the red-to-green transition is
+        # legible: the first commit is the failing reproduction on its own, and
+        # anyone can check out its parent and watch the test fail.
+        if (@($plan.fixFiles).Count -gt 0) {
+            if ([string]::IsNullOrWhiteSpace($FixPatchPath)) {
+                throw 'The validated candidate names fix files but no fix patch was supplied.'
+            }
+            Invoke-ReplicationExternalCommand `
+                -FilePath 'git' `
+                -Arguments @('apply', '--index', '--whitespace=nowarn', $FixPatchPath) `
+                -Description 'Applying validated product fix'
+
+            $stagedFix = @(& git diff --cached --name-status --diff-filter=ACDMRTUXB)
+            if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to inspect the staged product fix.'
+            }
+            $actualFixFiles = @()
+            foreach ($line in $stagedFix) {
+                if ($line -notmatch '^M\s+(.+)$') {
+                    throw "The staged fix is not modification-only: $line"
+                }
+                $actualFixFiles += $Matches[1].Replace('\', '/')
+            }
+
+            $expectedFixFiles = @($plan.fixFiles | Sort-Object -Unique)
+            $actualFixFiles = @($actualFixFiles | Sort-Object -Unique)
+            if (($expectedFixFiles -join "`n") -ne ($actualFixFiles -join "`n")) {
+                throw 'The staged fix files do not exactly match the validated candidate manifest.'
+            }
+
+            $fixCommitMessage = @"
+Fix #$issueNumber so the reproduction passes
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
+"@
+            Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('commit', '-m', $fixCommitMessage) -Description 'Committing product fix'
+        } elseif (-not [string]::IsNullOrWhiteSpace($FixPatchPath)) {
+            throw 'A fix patch was supplied but the validated candidate names no fix files.'
+        }
+
         Invoke-ReplicationExternalCommand `
             -FilePath 'git' `
             -Arguments @('push', $sourceRemote, "HEAD:refs/heads/$branchName") `
