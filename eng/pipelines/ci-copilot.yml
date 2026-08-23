@@ -3793,27 +3793,31 @@ stages:
                 }
               }
               try {
-                $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'bash'
-                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
-                $psi.UseShellExecute = $false
-                $proc = [System.Diagnostics.Process]::Start($psi)
+                . ./.github/scripts/shared/Resolve-BuildShell.ps1
               } catch {
-                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
-                & bash -o pipefail -c $buildCommand
-                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
-                exit $LASTEXITCODE
+                Write-Host "##[warning]Could not load the build shell resolver: $($_.Exception.Message)"
               }
-              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
-                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
-                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
-                Start-Sleep -Seconds 3
-                New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
-                exit 1
+              $buildShell = $null
+              if (Get-Command -Name 'Resolve-BuildShellPath' -ErrorAction SilentlyContinue) {
+                $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
               }
-              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
+              if ($buildShell) {
+                Write-Host "Build shell: $buildShell"
+              } else {
+                # On a Windows agent the bare name `bash` is the WSL launcher in
+                # System32, which exits 1 without building anything. Running the
+                # build directly is the only way this platform builds at all.
+                Write-Host "##[warning]No POSIX shell on this agent — running dotnet-buildtasks directly and filtering its output in process."
+              }
+              $exitCode = Invoke-BuildTasksWatchdog `
+                -ShellPath $buildShell `
+                -ShellCommand $buildCommand `
+                -DirectFileName 'pwsh' `
+                -DirectArgument @('-NoProfile','-File','./build.ps1','--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -TimeoutMinutes $timeoutMin
+              if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue }
-              exit $proc.ExitCode
+              exit $exitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
             # Wall-clock watchdog (see the gate-stage copy for the full rationale):

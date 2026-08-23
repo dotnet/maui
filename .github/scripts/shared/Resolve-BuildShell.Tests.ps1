@@ -193,11 +193,13 @@ Describe 'Choosing a shell that can actually run the build' {
         }
 
         It 'propagates the exit code when a shell runs the build' {
+            # The shell and direct commands deliberately disagree, so the exit code
+            # identifies which path actually ran rather than merely that one did.
             $exit = Invoke-BuildTasksWatchdog `
                 -ShellPath '/bin/bash' `
                 -ShellCommand 'exit 7' `
                 -DirectFileName $script:Pwsh `
-                -DirectArgument @('-NoProfile', '-Command', 'exit 7') `
+                -DirectArgument @('-NoProfile', '-Command', 'exit 99') `
                 -TimeoutMinutes 1
 
             $exit | Should -Be 7
@@ -208,7 +210,7 @@ Describe 'Choosing a shell that can actually run the build' {
                 -ShellPath '/bin/bash' `
                 -ShellCommand 'exit 0' `
                 -DirectFileName $script:Pwsh `
-                -DirectArgument @('-NoProfile', '-Command', 'exit 0') `
+                -DirectArgument @('-NoProfile', '-Command', 'exit 99') `
                 -TimeoutMinutes 1
 
             $exit | Should -Be 0
@@ -217,12 +219,26 @@ Describe 'Choosing a shell that can actually run the build' {
         It 'still runs the build when no shell is available' {
             $exit = Invoke-BuildTasksWatchdog `
                 -ShellPath $null `
-                -ShellCommand 'exit 0' `
+                -ShellCommand 'exit 77' `
                 -DirectFileName $script:Pwsh `
                 -DirectArgument @('-NoProfile', '-Command', 'exit 5') `
                 -TimeoutMinutes 1
 
             $exit | Should -Be 5
+        }
+
+        It 'runs the shell command rather than the direct one whenever a shell exists' {
+            $output = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'echo FROM-SHELL' `
+                -DirectFileName $script:Pwsh `
+                -DirectArgument @('-NoProfile', '-Command', "Write-Output 'FROM-DIRECT'") `
+                -TimeoutMinutes 1 6>&1 | Out-String
+
+            # A shell run is not redirected, so nothing is relayed through the
+            # in-process filter; seeing the direct marker would mean the shell was
+            # resolved and then ignored.
+            $output | Should -Not -Match 'FROM-DIRECT'
         }
 
         It 'filters logging commands out of the output it relays' {
