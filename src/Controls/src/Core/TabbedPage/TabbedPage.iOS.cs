@@ -583,6 +583,14 @@ namespace Microsoft.Maui.Controls
 			var changedPage = view._pendingPropertyChangedPage;
 			if (changedPage is not null && changedPage.Handler is IPlatformViewHandler changedHandler)
 			{
+				if (view._pendingPropertyChangedPropertyName == BadgeTextProperty.PropertyName ||
+					view._pendingPropertyChangedPropertyName == BadgeColorProperty.PropertyName ||
+					view._pendingPropertyChangedPropertyName == BadgeTextColorProperty.PropertyName)
+				{
+					UpdateTabBarItemBadge(changedHandler.ViewController?.TabBarItem, changedPage);
+					return;
+				}
+
 				view.SetTabBarItem(changedHandler, manager);
 				return;
 			}
@@ -796,11 +804,43 @@ namespace Microsoft.Maui.Controls
 				Tag = Children.IndexOf(page),
 				AccessibilityIdentifier = page.AutomationId
 			};
+			UpdateTabBarItemBadge(renderer.ViewController.TabBarItem, page);
 
 			resizedImage?.Dispose();
 			resizedSelectedImage?.Dispose();
 			icons?.Item1?.Dispose();
 			icons?.Item2?.Dispose();
+		}
+
+		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, Page page)
+		{
+			if (tabBarItem is null)
+			{
+				return;
+			}
+
+			var badgeText = GetBadgeText(page);
+			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
+
+			var badgeColor = GetBadgeColor(page);
+			tabBarItem.BadgeColor = badgeColor?.ToPlatform();
+
+			var badgeTextColor = GetBadgeTextColor(page);
+			if (badgeTextColor is not null)
+			{
+				var attributes = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Focused);
+			}
+			else
+			{
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Focused);
+			}
 		}
 
 		Task<Tuple<UIImage, UIImage>> GetIcon(Page page)

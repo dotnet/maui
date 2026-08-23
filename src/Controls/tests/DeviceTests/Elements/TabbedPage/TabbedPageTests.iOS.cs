@@ -19,6 +19,75 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests
 	{
+		[Fact]
+		public async Task BadgePropertiesUpdateNativeTabBarItem()
+		{
+			SetupBuilder(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
+				});
+			});
+
+			var firstPage = new ContentPage { Title = "First" };
+			var secondPage = new ContentPage { Title = "Second" };
+			TabbedPage.SetBadgeText(firstPage, "7");
+			TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
+			TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
+
+			var tabbedPage = CreateBasicTabbedPage(pages: new[] { firstPage, secondPage });
+
+			await CreateHandlerAndAddToWindow<Microsoft.Maui.Handlers.TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await OnLoadedAsync(firstPage);
+				UITabBarItem GetFirstTabBarItem() => handler.Manager?.TabBar?.Items?.FirstOrDefault();
+
+				await AssertEventually(() => GetFirstTabBarItem()?.BadgeValue == "7");
+				var tabBarItem = GetFirstTabBarItem();
+				Assert.True(ColorComparison.ARGBEquivalent(Colors.Blue.ToPlatform(), tabBarItem.BadgeColor));
+				AssertBadgeTextColor(tabBarItem, Colors.Yellow);
+
+				TabbedPage.SetBadgeText(firstPage, "");
+				await AssertEventually(() => GetFirstTabBarItem()?.BadgeValue == "");
+
+				TabbedPage.SetBadgeText(firstPage, "New");
+				TabbedPage.SetBadgeColor(firstPage, Colors.Orange);
+				TabbedPage.SetBadgeTextColor(firstPage, Colors.Black);
+				await AssertEventually(() =>
+					GetFirstTabBarItem()?.BadgeValue == "New" &&
+					ColorComparison.ARGBEquivalent(Colors.Orange.ToPlatform(), GetFirstTabBarItem().BadgeColor));
+				tabBarItem = GetFirstTabBarItem();
+				AssertBadgeTextColor(tabBarItem, Colors.Black);
+
+				TabbedPage.SetBadgeTextColor(firstPage, null);
+				await AssertEventually(() =>
+					GetFirstTabBarItem() is { } item &&
+					item.GetBadgeTextAttributes(UIControlState.Normal)?.ForegroundColor is null);
+
+				TabbedPage.SetBadgeText(firstPage, null);
+				await AssertEventually(() =>
+					GetFirstTabBarItem() is { } item &&
+					item.BadgeValue is null);
+			});
+		}
+
+		static void AssertBadgeTextColor(UITabBarItem tabBarItem, Color expected)
+		{
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Normal)?.ForegroundColor));
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Selected)?.ForegroundColor));
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Disabled)?.ForegroundColor));
+			Assert.True(ColorComparison.ARGBEquivalent(
+				expected.ToPlatform(),
+				tabBarItem.GetBadgeTextAttributes(UIControlState.Focused)?.ForegroundColor));
+		}
+
 		UITabBar GetTabBar(TabbedPage tabbedPage)
 		{
 			var pagerParent = (tabbedPage.CurrentPage.Handler as IPlatformViewHandler)

@@ -14,6 +14,7 @@ using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Badge;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
@@ -31,6 +32,118 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgePropertiesUpdateNativeTab(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			var secondPage = new ContentPage { Title = "Second" };
+			TabbedPage.SetBadgeText(firstPage, "7");
+			TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
+			TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { firstPage, secondPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				BadgeDrawable GetBadge() => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0)
+					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(0).Badge;
+
+				await AssertEventually(() => GetBadge()?.Text == "7", message: "Initial badge text was not applied.");
+				var badge = GetBadge();
+				Assert.Equal(Colors.Blue.ToPlatform(), badge.BackgroundColor);
+				Assert.Equal(Colors.Yellow.ToPlatform(), badge.BadgeTextColor);
+
+				TabbedPage.SetBadgeText(firstPage, "");
+				await AssertEventually(() => string.IsNullOrEmpty(badge.Text), message: "Badge did not change to a dot.");
+
+				TabbedPage.SetBadgeText(firstPage, "New");
+				TabbedPage.SetBadgeColor(firstPage, Colors.Orange);
+				TabbedPage.SetBadgeTextColor(firstPage, Colors.Black);
+				await AssertEventually(() =>
+					badge.Text == "New" &&
+					badge.BackgroundColor == Colors.Orange.ToPlatform() &&
+					badge.BadgeTextColor == Colors.Black.ToPlatform(),
+					message: "Badge text or colors did not update.");
+
+				TabbedPage.SetBadgeTextColor(firstPage, null);
+				await AssertEventually(() =>
+					GetBadge() is { } resetBadge &&
+					!ReferenceEquals(resetBadge, badge) &&
+					resetBadge.Text == "New" &&
+					resetBadge.BackgroundColor == Colors.Orange.ToPlatform(),
+					message: "Clearing the badge text color did not restore the platform default.");
+
+				TabbedPage.SetBadgeText(firstPage, null);
+				await AssertEventually(() => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0) is null
+					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(0).Badge is null,
+					message: "Badge was not removed.");
+			});
+		}
+
+		[Fact]
+		public async Task BottomTabBadgesRespectOverflow()
+		{
+			SetupBuilder();
+
+			var pages = Enumerable.Range(0, 6)
+				.Select(index =>
+				{
+					var page = new ContentPage { Title = $"Page {index}" };
+					TabbedPage.SetBadgeText(page, index.ToString());
+					return page;
+				})
+				.ToArray();
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true, pages: pages);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavigationView = tabbedPage.TabbedPageManager.BottomNavigationView;
+
+				await AssertEventually(() =>
+					Enumerable.Range(0, 4).All(index =>
+						bottomNavigationView.GetBadge(index)?.Text == index.ToString()),
+					message: "Visible bottom tabs did not receive their badges.");
+
+				Assert.Null(bottomNavigationView.GetBadge(4));
+				Assert.Null(bottomNavigationView.GetBadge(5));
+				Assert.Null(bottomNavigationView.GetBadge(BottomNavigationViewUtils.MoreTabId));
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgeFollowsPageWhenTabIndexChanges(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			var badgedPage = new ContentPage { Title = "Badged" };
+			TabbedPage.SetBadgeText(badgedPage, "4");
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { firstPage, badgedPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				string GetBadgeText(int index) => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(index)?.Text
+					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(index)?.Badge?.Text;
+
+				await AssertEventually(() => GetBadgeText(1) == "4");
+
+				tabbedPage.Children.Insert(0, new ContentPage { Title = "Inserted" });
+				await AssertEventually(() =>
+					GetBadgeText(1) is null &&
+					GetBadgeText(2) == "4",
+					message: "The badge did not follow its page after inserting a tab.");
+			});
+		}
+
 		[Fact]
 		[Description("TabbedPage BarBackgroundColor should be applied to AppBar immediately after handler creation, before the fragment transaction completes")]
 		public async Task TopTabbedPageBarBackgroundColorAppliedOnInitialLoad()
