@@ -2304,10 +2304,28 @@ function Assert-ReplicationTestLifecycleSafety {
             Pattern = '(?m)^\s*(?:public|internal|protected|private)\s+(?!class\b|interface\b|enum\b|record\b)[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)'
         }
     )
+    # A bindable property has to be declared as a static readonly field: the
+    # MAUI type system offers no other way to write one, so demanding it move
+    # into the test body asks for something the language cannot express. Build
+    # 15066948 spent all five attempts failing that demand. Mask those
+    # declarations before the lifecycle rules run, preserving every newline so
+    # the reported line numbers still point at the real source.
+    $bindablePropertyDeclaration =
+        '(?ms)^[^\S\r\n]*(?:(?:public|internal|protected|private)[^\S\r\n]+)*' +
+        'static[^\S\r\n]+readonly[^\S\r\n]+Bindable(?:Property|PropertyKey)[^\S\r\n]+' +
+        '\w+\s*=\s*Bindable(?:Property|PropertyKey)\.Create\w*\s*\(.*?\)\s*;'
+    $lifecycleScanContent = [regex]::Replace(
+        $Content,
+        $bindablePropertyDeclaration,
+        {
+            param($bindableMatch)
+            ($bindableMatch.Value -replace '[^\r\n]', ' ')
+        })
+
     foreach ($rule in $lifecycleRules) {
-        $match = [regex]::Match($Content, $rule.Pattern)
+        $match = [regex]::Match($lifecycleScanContent, $rule.Pattern)
         if ($match.Success) {
-            throw "Candidate test source '$Path' contains $($rule.Reason): $(Get-ReplicationUnsafeMatchDetail -ScanText ($Content.Replace("`r`n", "`n")) -Match $match). Move the setup inside the test method body."
+            throw "Candidate test source '$Path' contains $($rule.Reason): $(Get-ReplicationUnsafeMatchDetail -ScanText ($lifecycleScanContent.Replace("`r`n", "`n")) -Match $match). Move the setup inside the test method body."
         }
     }
 

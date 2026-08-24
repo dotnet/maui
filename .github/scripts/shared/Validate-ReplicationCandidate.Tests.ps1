@@ -1015,6 +1015,86 @@ public static class Issue12345Bootstrap
             Should -Throw '*test lifecycle attribute*Move the setup inside the test method body.*'
     }
 
+    It 'allows a bindable property declaration the language cannot put in a method' {
+        # A bindable property is a static readonly field or it is nothing: the
+        # guard used to demand it move into the test body, which is impossible.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Probe
+{
+    public static readonly BindableProperty CurrentIconProperty =
+        BindableProperty.Create(
+            "CurrentIcon",
+            typeof(string),
+            typeof(Issue12345Probe),
+            null);
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+    }
+
+    It 'still rejects a static field initializer that is real setup' {
+        # The exemption is for the bindable property idiom only. Shared mutable
+        # state built outside the test still hides the setup the oracle depends
+        # on, which is the whole reason the rule exists.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Shared
+{
+    public static readonly System.Text.StringBuilder Log = new System.Text.StringBuilder();
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*field initializer that runs outside the test*'
+    }
+
+    It 'refuses to exempt a non-bindable field built by a Create call' {
+        # The exemption is keyed on the declared type as well as the call. A
+        # field of some other type is ordinary shared state no matter what
+        # initialises it.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Sneaky
+{
+    public static readonly object Cached =
+        BindableProperty.Create("X", typeof(string), typeof(object), null);
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*field initializer that runs outside the test*'
+    }
+
+    It 'refuses to exempt a bindable-typed field built by arbitrary code' {
+        # Declaring the type as BindableProperty is not a licence to run
+        # arbitrary setup at type-load time; only the Create idiom is exempt.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Sneakier
+{
+    public static readonly BindableProperty Cached = MakeTheProperty();
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*field initializer that runs outside the test*'
+    }
+
     It 'allows a UI HostApp companion constructor' {
         $fixture = New-ValidationFixture -TestType UITest
         $hostPath = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345Page.xaml.cs'
