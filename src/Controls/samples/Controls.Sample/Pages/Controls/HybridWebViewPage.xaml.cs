@@ -14,16 +14,16 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
+			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this), SampleInvokeJsContext.Default);
 		}
 
 		int count;
-		private void SendMessageButton_Clicked(object sender, EventArgs e)
+		private void SendMessageButton_Clicked(object? sender, EventArgs e)
 		{
 			hwv.SendRawMessage($"Hello from C#! #{count++}");
 		}
 
-		private async void InvokeJSMethodButton_Clicked(object sender, EventArgs e)
+		private async void InvokeJSMethodButton_Clicked(object? sender, EventArgs e)
 		{
 			var statusResult = "";
 
@@ -47,7 +47,7 @@ namespace Maui.Controls.Sample.Pages
 			Dispatcher.Dispatch(() => statusText.Text += statusResult);
 		}
 
-		private async void InvokeAsyncJSMethodButton_Clicked(object sender, EventArgs e)
+		private async void InvokeAsyncJSMethodButton_Clicked(object? sender, EventArgs e)
 		{
 			var statusResult = "";
 
@@ -69,12 +69,12 @@ namespace Maui.Controls.Sample.Pages
 			Dispatcher.Dispatch(() => statusText.Text += statusResult);
 		}
 
-		private void hwv_RawMessageReceived(object sender, HybridWebViewRawMessageReceivedEventArgs e)
+		private void hwv_RawMessageReceived(object? sender, HybridWebViewRawMessageReceivedEventArgs e)
 		{
 			Dispatcher.Dispatch(() => statusText.Text += Environment.NewLine + e.Message);
 		}
 
-		private async void InvokeJSExceptionButton_Clicked(object sender, EventArgs e)
+		private async void InvokeJSExceptionButton_Clicked(object? sender, EventArgs e)
 		{
 			var statusResult = "";
 
@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample.Pages
 			Dispatcher.Dispatch(() => statusText.Text += statusResult);
 		}
 
-		private async void InvokeJSAsyncExceptionButton_Clicked(object sender, EventArgs e)
+		private async void InvokeJSAsyncExceptionButton_Clicked(object? sender, EventArgs e)
 		{
 			var statusResult = "";
 
@@ -128,6 +128,8 @@ namespace Maui.Controls.Sample.Pages
 
 		[JsonSourceGenerationOptions(WriteIndented = true)]
 		[JsonSerializable(typeof(ComputationResult))]
+		[JsonSerializable(typeof(SyncReturn))]
+		[JsonSerializable(typeof(int))]
 		[JsonSerializable(typeof(double))]
 		[JsonSerializable(typeof(string))]
 		[JsonSerializable(typeof(Dictionary<string, string>))]

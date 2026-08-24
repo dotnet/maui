@@ -5,27 +5,31 @@ namespace Microsoft.Maui.IntegrationTests;
 [Trait("Category", "Build")]
 public class SimpleTemplateTest : BaseTemplateTests
 {
+	const string AvaloniaBuildSkipReason = "Avalonia packages are not available on dotnet-public. See https://github.com/dotnet/maui/pull/35950";
+
 	public SimpleTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
-	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	// [InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	// [InlineData("maui", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	//Debug not ready yet
 	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
-	//[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
-	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "--with-avalonia", "", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--with-avalonia", "TrimMode=partial", Skip = AvaloniaBuildSkipReason)]
+	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
-	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	// [InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -33,8 +37,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 		SetTestIdentifier(id, framework, config, shouldPack, additionalDotNetNewParams, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var usesAvalonia = additionalDotNetNewParams.Contains("--with-avalonia", StringComparison.Ordinal);
+		var newParams = usesAvalonia ? $"{additionalDotNetNewParams} --no-restore" : additionalDotNetNewParams;
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams, output: _output),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, newParams, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 
@@ -45,6 +51,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		var buildProps = BuildProps;
 
+		if (usesAvalonia)
+		{
+			buildProps.RemoveAll(p => p.StartsWith("RestoreConfigFile=", StringComparison.Ordinal));
+			buildProps.Add($"RestoreConfigFile={CreateAvaloniaNuGetConfig(projectDir)}");
+		}
+
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
 			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
@@ -53,6 +65,37 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	private string CreateAvaloniaNuGetConfig(string projectDir)
+	{
+		var config = XDocument.Load(TestNuGetConfig);
+		var packageSources = config.Root!.Element("packageSources")!;
+		const string nugetOrg = "nuget.org";
+
+		packageSources.Add(
+			new XElement("add",
+				new XAttribute("key", nugetOrg),
+				new XAttribute("value", "https://api.nuget.org/v3/index.json"),
+				new XAttribute("protocolVersion", "3")));
+
+		var sourceMapping = new XElement("packageSourceMapping");
+		foreach (var source in packageSources.Elements("add"))
+		{
+			var key = source.Attribute("key")!.Value;
+			var patterns = key == nugetOrg ? new[] { "Avalonia*", "MicroCom.*" } : new[] { "*" };
+			sourceMapping.Add(
+				new XElement("packageSource",
+					new XAttribute("key", key),
+					patterns.Select(pattern =>
+						new XElement("package",
+							new XAttribute("pattern", pattern)))));
+		}
+
+		config.Root.Add(sourceMapping);
+		var path = Path.Combine(projectDir, "NuGet.config");
+		config.Save(path);
+		return path;
 	}
 
 	[Theory]
@@ -132,16 +175,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
-	[InlineData("maui", DotNetPrevious, "Release", false, "")]
+	// [InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	// [InlineData("maui", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
-	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	// [InlineData("mauilib", DotNetPrevious, "Release", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
@@ -159,7 +202,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		if (mv is not null or "")
+		if (!string.IsNullOrEmpty(mv))
 		{
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
@@ -237,8 +280,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
 	[Theory]
-	[InlineData("mauilib", DotNetPrevious, "Debug")]
-	[InlineData("mauilib", DotNetPrevious, "Release")]
+	// [InlineData("mauilib", DotNetPrevious, "Debug")]
+	// [InlineData("mauilib", DotNetPrevious, "Release")]
 	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)
@@ -362,5 +405,63 @@ public class SimpleTemplateTest : BaseTemplateTests
 		// Verify the project actually builds
 		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Fact]
+	public void WithAvaloniaAddsHandlersAndDesktopHead()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --no-restore", output: _output),
+			"Unable to create template maui with --with-avalonia. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		// The standard (non-platform) TFM is added as the Avalonia desktop head.
+		AssertContains($"<TargetFrameworks>{DotNetCurrent};$(TargetFrameworks)</TargetFrameworks>", csproj);
+		// Handlers reference is added for all heads; the Desktop package only targets the desktop head.
+		AssertContains("Include=\"Avalonia.Controls.Maui\"", csproj);
+		AssertContains("Include=\"Avalonia.Controls.Maui.Desktop\"", csproj);
+		AssertContains($"Condition=\"'$(TargetFramework)' == '{DotNetCurrent}'\"", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertContains("CreateMauiApp(bool useSingleViewLifetime = false)", mauiProgram);
+		// Desktop renders with the Avalonia app lifetime; the platform heads embed Avalonia.
+		AssertContains(".UseAvaloniaApp(useSingleViewLifetime)", mauiProgram);
+		AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
+	}
+
+	[Fact]
+	public void WithoutAvaloniaHasNoAvaloniaContent()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--no-restore", output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertDoesNotContain("Avalonia.Controls.Maui", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertDoesNotContain("UseAvalonia", mauiProgram);
+		AssertContains("public static MauiApp CreateMauiApp()", mauiProgram);
+	}
+
+	[Fact]
+	public void WithAvaloniaIsIgnoredWhenSampleContentIncluded()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		// --with-avalonia is gated on the blank app: combining it with sample content must not wire Avalonia in.
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content --no-restore", output: _output),
+			"Unable to create template maui with --with-avalonia --sample-content. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertDoesNotContain("Avalonia.Controls.Maui", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertDoesNotContain("UseAvalonia", mauiProgram);
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Controls.Xaml;
@@ -190,9 +191,9 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				yield break;
 			}
 
-			if (double.TryParse(value, out double radius))
+			if (double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double radius))
 			{
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Rectangle"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), parameterTypes: null));
 				yield return Instruction.Create(OpCodes.Dup);
 
 				yield return Instruction.Create(OpCodes.Ldc_R8, radius);

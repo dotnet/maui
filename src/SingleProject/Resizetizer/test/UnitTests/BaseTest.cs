@@ -42,7 +42,35 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Output.WriteLine($"Cleaning up directories={DeleteDirectory}");
 
 			if (Directory.Exists(DeleteDirectory))
-				Directory.Delete(DeleteDirectory, true);
+				DeleteDirectoryWithRetries(DeleteDirectory);
+		}
+
+		void DeleteDirectoryWithRetries(string directory)
+		{
+			const int attempts = 3;
+
+			for (var attempt = 1; ; attempt++)
+			{
+				Exception cleanupException;
+				try
+				{
+					Directory.Delete(directory, true);
+					return;
+				}
+				catch (IOException ex) when (attempt < attempts)
+				{
+					cleanupException = ex;
+				}
+				catch (UnauthorizedAccessException ex) when (attempt < attempts)
+				{
+					cleanupException = ex;
+				}
+
+				Output.WriteLine($"Retrying cleanup for {directory} after attempt {attempt}: {cleanupException.Message}");
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				System.Threading.Thread.Sleep(100);
+			}
 		}
 
 		protected void AssertFileSize(string file, int width, int height)
@@ -60,6 +88,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			file = Path.Combine(DestinationDirectory, file);
 
 			Assert.True(File.Exists(file), $"File did not exist: {file}");
+		}
+
+		protected SKColor[] ReadPixels(string file)
+		{
+			file = Path.Combine(DestinationDirectory, file);
+			using var bitmap = SKBitmap.Decode(file);
+			Assert.NotNull(bitmap);
+			return bitmap.Pixels.ToArray();
+		}
+
+		protected internal static int AssertPixelsDiffer(SKColor[] expected, SKColor[] actual, string because)
+		{
+			Assert.Equal(expected.Length, actual.Length);
+
+			var differentPixels = expected.Where((pixel, index) => pixel != actual[index]).Count();
+			var minimumDifferentPixels = Math.Max(1, expected.Length / 100);
+
+			Assert.True(differentPixels > minimumDifferentPixels,
+				$"{because} Differing pixels: {differentPixels} of {expected.Length}; expected more than {minimumDifferentPixels}.");
+
+			return differentPixels;
 		}
 
 		protected void AssertFileNotExists(string file)
