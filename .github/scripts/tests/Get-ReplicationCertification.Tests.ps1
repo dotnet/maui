@@ -395,13 +395,33 @@ Describe 'Get-ReplicationCertification failure status' {
 }
 
 Describe 'The top level claims only the arms that ran' {
-    # The published matrix showed 'Baseline 3/3 OK | Trigger removed 3/3 OK |
-    # Minimal product fix: not run | Fix reverted: not run' under a level named
-    # 'certified-oracle'. Nothing in the table was false, but the name asserted
-    # causal certification the run never gathered, because a regression oracle
-    # is certified by the fix and restoration arms and those never execute.
-    It 'does not offer a level whose name claims a fix arm that never runs' {
-        Get-ReplicationCertificationLevels | Should -Not -Contain 'certified-oracle'
+    # This rule was written when the fix and restoration arms never executed,
+    # so a level named 'certified-oracle' claimed causality no run had
+    # gathered. The fix phase now runs both arms, and the level is offered
+    # again - awarded only when all four arms agree.
+    #
+    # The old assertion survived that reversal because it piped the accessor,
+    # which wrapped its array so the pipeline yielded one Object[] rather than
+    # five strings. It compared a collection against a string and passed
+    # whatever the levels were.
+    It 'offers the level the fix arms exist to earn' {
+        @(Get-ReplicationCertificationLevels) | Should -Contain 'certified-oracle'
+    }
+
+    It 'ranks that level above every other, so nothing outranks a full matrix' {
+        $levels = @(Get-ReplicationCertificationLevels)
+        $top = Get-ReplicationCertificationRank -Level 'certified-oracle'
+        foreach ($level in ($levels | Where-Object { $_ -ne 'certified-oracle' })) {
+            $top | Should -BeGreaterThan (Get-ReplicationCertificationRank -Level $level)
+        }
+    }
+
+    It 'enumerates the levels rather than yielding one nested collection' {
+        # The nesting is what made the assertion above vacuous for as long as
+        # it disagreed with the design, so it is asserted directly.
+        $piped = @(Get-ReplicationCertificationLevels | ForEach-Object { $_ })
+        $piped.Count | Should -BeGreaterThan 1
+        foreach ($level in $piped) { $level | Should -BeOfType ([string]) }
     }
 
     It 'names the top level for the trigger it actually controlled' {

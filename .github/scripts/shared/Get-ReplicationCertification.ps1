@@ -51,8 +51,14 @@ function Get-ReplicationCertificationLevels {
     <#
         .SYNOPSIS
         Returns the certification levels, weakest first.
+
+        .NOTES
+        The comma that used to wrap this array stopped the pipeline enumerating
+        it, so `Get-ReplicationCertificationLevels | Should -Not -Contain x`
+        compared one Object[] against a string and could never fail. A caller
+        that pipes this gets the levels, one at a time, as it reads.
     #>
-    return , @($script:ReplicationCertificationLevels)
+    return @($script:ReplicationCertificationLevels)
 }
 
 function Get-ReplicationCertificationRank {
