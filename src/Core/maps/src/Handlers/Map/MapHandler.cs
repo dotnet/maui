@@ -104,6 +104,15 @@ namespace Microsoft.Maui.Maps.Handlers
 				mapHandler.HideInfoWindow(pin);
 		}
 
+		// Android reclusters once the zoom has moved a full level away from the last clustering pass.
+		// The zoom buttons and double-tap move by exactly one level, so a strict "greater than"
+		// never fires for them; and the delta can land up to 2^-20 under 1.0f when the two values
+		// straddle a binade boundary, which is all the tolerance below is for.
+		internal const float ReclusterZoomStep = 0.9999f;
+
+		internal static bool ShouldRecluster(float currentZoom, float lastClusterZoom) =>
+			Math.Abs(currentZoom - lastClusterZoom) >= ReclusterZoomStep;
+
 		// Builds a stable cache key for a marker icon - cluster or pin - so logically identical images
 		// (same file, URI, or font glyph) share one decoded/rasterized bitmap even when the caller hands
 		// back a fresh ImageSource instance on every recluster. Returns null for sources that can't be

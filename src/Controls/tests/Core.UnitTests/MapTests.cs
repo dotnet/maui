@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -807,6 +807,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var map = new Map();
 			map.IsClusteringEnabled = true;
 			Assert.True(map.IsClusteringEnabled);
+		}
+
+		[Theory]
+		// One zoom-button press or double-tap moves exactly one level: the case that regressed.
+		[InlineData(11f, 10f, true)]
+		[InlineData(10f, 11f, true)]
+		// A one-level step can land a hair under 1.0f across a binade boundary.
+		[InlineData(16.03f, 15.03f, true)]
+		// Anything meaningfully short of a level must not tear down and rebuild every marker.
+		[InlineData(10.5f, 10f, false)]
+		[InlineData(10.9f, 10f, false)]
+		// The -1 seed means the first camera idle always clusters.
+		[InlineData(0f, -1f, true)]
+		[InlineData(11f, -1f, true)]
+		public void ShouldReclusterOnAFullZoomStep(float currentZoom, float lastClusterZoom, bool expected)
+		{
+			Assert.Equal(expected, MapHandler.ShouldRecluster(currentZoom, lastClusterZoom));
 		}
 
 		[Fact]
