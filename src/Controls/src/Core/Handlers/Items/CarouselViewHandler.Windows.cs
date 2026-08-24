@@ -107,6 +107,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ResetScrollState()
 		{
+			_loopableCollectionView?.CleanUp();
+			_loopableCollectionView = null;
+			_currentSize = default;
+			_isCarouselViewReady = false;
+			InitialPositionSet = false;
 			_positionUpdateFromScroll = -1;
 			_isPositionUpdateFromCollection = false;
 			_hasCurrentItemUpdateFromScroll = false;
@@ -114,6 +119,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_hasCurrentItemUpdateFromCollection = false;
 			_currentItemUpdateFromCollection = null;
 			ClearCollectionCurrentItemOverride();
+			DisposeCollectionCurrentItemOverrideRetryTimer();
 			_collectionItemsSource = null;
 			ResetRecenteringState();
 			_isScrollingForward = false;
@@ -801,6 +807,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var previousPositionUpdateFromScroll = _positionUpdateFromScroll;
 			_positionUpdateFromScroll = position;
 			try
 			{
@@ -815,7 +822,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			finally
 			{
-				_positionUpdateFromScroll = -1;
+				_positionUpdateFromScroll = previousPositionUpdateFromScroll;
 			}
 		}
 
@@ -1320,7 +1327,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			ListViewBase?.UpdateLayout();
 			if (position < 0
 				|| ListViewBase is null
 				|| position >= ItemCount
@@ -1406,11 +1412,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			_collectionCurrentItemOverrideRetryCount++;
-			StopCollectionCurrentItemOverrideRetryTimer();
-			_collectionCurrentItemOverrideRetryTimer = dispatcherQueue.CreateTimer();
-			_collectionCurrentItemOverrideRetryTimer.Interval = TimeSpan.FromMilliseconds(50);
-			_collectionCurrentItemOverrideRetryTimer.IsRepeating = false;
-			_collectionCurrentItemOverrideRetryTimer.Tick += OnCollectionCurrentItemOverrideRetryTimerTick;
+			if (_collectionCurrentItemOverrideRetryTimer is null)
+			{
+				_collectionCurrentItemOverrideRetryTimer = dispatcherQueue.CreateTimer();
+				_collectionCurrentItemOverrideRetryTimer.Interval = TimeSpan.FromMilliseconds(50);
+				_collectionCurrentItemOverrideRetryTimer.IsRepeating = false;
+				_collectionCurrentItemOverrideRetryTimer.Tick += OnCollectionCurrentItemOverrideRetryTimerTick;
+			}
+			else
+			{
+				_collectionCurrentItemOverrideRetryTimer.Stop();
+			}
+
 			_collectionCurrentItemOverrideRetryTimer.Start();
 		}
 
@@ -1429,6 +1442,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		void StopCollectionCurrentItemOverrideRetryTimer()
+		{
+			if (_collectionCurrentItemOverrideRetryTimer is null)
+				return;
+
+			_collectionCurrentItemOverrideRetryTimer.Stop();
+		}
+
+		void DisposeCollectionCurrentItemOverrideRetryTimer()
 		{
 			if (_collectionCurrentItemOverrideRetryTimer is null)
 				return;

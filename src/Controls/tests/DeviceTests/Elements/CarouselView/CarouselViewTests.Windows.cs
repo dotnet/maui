@@ -13,6 +13,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WPoint = Windows.Foundation.Point;
 using WScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using WSize = Windows.Foundation.Size;
 using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
 using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
 using WUIElement = Microsoft.UI.Xaml.UIElement;
@@ -1187,6 +1188,27 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task CollectionOverrideRetriesReuseDispatcherTimer()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				InvokePrivateMethod(handler, "ScheduleCollectionCurrentItemOverrideRetry");
+				var firstTimer = GetPrivateField<object>(handler, "_collectionCurrentItemOverrideRetryTimer");
+				InvokePrivateMethod(handler, "ScheduleCollectionCurrentItemOverrideRetry");
+				var secondTimer = GetPrivateField<object>(handler, "_collectionCurrentItemOverrideRetryTimer");
+
+				Assert.Same(firstTimer, secondTimer);
+				InvokePrivateMethod(handler, "ClearCollectionCurrentItemOverride");
+			});
+		}
+
+		[Fact]
 		public async Task ReplacingCurrentItemDoesNotRequestNativeScroll()
 		{
 			SetupBuilder();
@@ -1506,6 +1528,25 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task NestedNativeScrollRestoresOuterPositionAttribution()
+		{
+			SetupBuilder();
+			var carouselView = CreateCarouselView(CreateItems(), SnapPointsType.MandatorySingle, loop: false);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+				SetPrivateField(handler, "_positionUpdateFromScroll", 1);
+
+				handler.SetPositionFromScroll(2);
+
+				Assert.Equal(1, GetPrivateField<int>(handler, "_positionUpdateFromScroll"));
+				Assert.Equal(2, carouselView.Position);
+			});
+		}
+
+		[Fact]
 		public async Task DisconnectClearsTransientScrollState()
 		{
 			SetupBuilder();
@@ -1535,6 +1576,15 @@ namespace Microsoft.Maui.DeviceTests
 				SetPrivateField(handler, "_isCollectionChangeScrollPending", true);
 				SetPrivateField(handler, "_collectionChangeVersion", 1);
 				SetPrivateField(handler, "_isPointerPressed", true);
+				SetPrivateField(handler, "_isCarouselViewReady", true);
+				SetPrivateField(handler, "_currentSize", new WSize(100, 100));
+				SetPrivateProperty(handler, "InitialPositionSet", true);
+				var loopableCollectionView = GetPrivateField<object>(handler, "_loopableCollectionView");
+				InvokePrivateMethod(handler, "ScheduleCollectionCurrentItemOverrideRetry");
+				var collectionOverrideRetryTimer =
+					GetPrivateField<object>(handler, "_collectionCurrentItemOverrideRetryTimer");
+				Assert.NotNull(loopableCollectionView);
+				Assert.NotNull(collectionOverrideRetryTimer);
 
 				((IElementHandler)handler).DisconnectHandler();
 
@@ -1560,6 +1610,11 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(GetPrivateField<bool>(handler, "_isCollectionChangeScrollPending"));
 				Assert.Equal(2, GetPrivateField<int>(handler, "_collectionChangeVersion"));
 				Assert.False(GetPrivateField<bool>(handler, "_isPointerPressed"));
+				Assert.False(GetPrivateField<bool>(handler, "_isCarouselViewReady"));
+				Assert.Equal(default, GetPrivateField<WSize>(handler, "_currentSize"));
+				Assert.False(GetPrivateProperty<bool>(handler, "InitialPositionSet"));
+				Assert.Null(GetPrivateField<object>(handler, "_loopableCollectionView"));
+				Assert.Null(GetPrivateField<object>(handler, "_collectionCurrentItemOverrideRetryTimer"));
 
 				return Task.CompletedTask;
 			});
