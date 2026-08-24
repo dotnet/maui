@@ -122,6 +122,86 @@ function Get-ReplicationCandidateText {
     return [string]$property.Value
 }
 
+function Get-ReplicationFixRegressionSignal {
+    <#
+        .SYNOPSIS
+            Reports whether the fix deletes a line a previous bug-fix PR added.
+
+        .DESCRIPTION
+            The fix arms prove the fix repairs its own oracle. They say nothing
+            about what else it changes, so a fix that passes its own test by
+            reintroducing a bug someone already fixed is published today as
+            `certified-oracle`.
+
+            `Find-RegressionRisks.ps1` answers the sharpest form of that
+            question mechanically - no AI, no device - and `REVERT` is precisely
+            the shape of that failure.
+
+            It REPORTS. It never refuses. Every gate in this pipeline that could
+            destroy work eventually did, and a regression signal in the PR body
+            costs nothing when it is wrong, while withholding a sound fix on a
+            mechanical string comparison costs a reproduction, a device and four
+            certification arms. An unavailable or failing check therefore says
+            it was not measured, which is the truth, rather than CLEAN, which is
+            a claim.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$FixPatchPath,
+        [Parameter(Mandatory = $false)][AllowEmptyString()][string]$ScriptRoot,
+        [Parameter(Mandatory = $false)][string]$Repo = 'dotnet/maui'
+    )
+
+    if ([string]::IsNullOrWhiteSpace($FixPatchPath) -or
+        -not (Test-Path -LiteralPath $FixPatchPath)) {
+        return $null
+    }
+
+    # Resolved here rather than as a parameter default, because a default is
+    # evaluated on every call - including the ones that return above - so an
+    # empty $PSScriptRoot would make a check that exists to REPORT throw instead.
+    if ([string]::IsNullOrWhiteSpace($ScriptRoot)) {
+        if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) { return $null }
+        $ScriptRoot = Split-Path -Parent $PSScriptRoot
+    }
+
+    $checker = Join-Path $ScriptRoot 'Find-RegressionRisks.ps1'
+    if (-not (Test-Path -LiteralPath $checker)) { return $null }
+
+    $outputDir = Join-Path ([IO.Path]::GetTempPath()) ("regression-" + [guid]::NewGuid().ToString('N'))
+    $verdict = $null
+    try {
+        & pwsh -NoProfile -File $checker -DiffPath $FixPatchPath -Repo $Repo `
+            -OutputDir $outputDir 2>&1 | Out-Null
+        $resultPath = Join-Path $outputDir 'result.txt'
+        if (Test-Path -LiteralPath $resultPath) {
+            $verdict = (Get-Content -LiteralPath $resultPath -Raw).Trim()
+        }
+    } catch {
+        $verdict = $null
+    } finally {
+        Remove-Item -LiteralPath $outputDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    switch ($verdict) {
+        'CLEAN' {
+            '**Regression cross-reference.** No line this fix deletes was added by a recent bug-fix pull request.'
+        }
+        'OVERLAP' {
+            ('**Regression cross-reference.** This fix touches a file a recent bug-fix pull request also ' +
+             'changed, but deletes none of the lines that fix added.')
+        }
+        'REVERT' {
+            ('**⚠️ Regression cross-reference.** This fix deletes one or more lines that a recent **bug-fix** ' +
+             'pull request added to the same file. That is the shape of a fix that passes its own test by ' +
+             'reintroducing a defect someone already repaired. Review the fix commit against that history ' +
+             'before merging.')
+        }
+        default {
+            '**Regression cross-reference.** Not measured for this fix.'
+        }
+    }
+}
+
 function New-ReplicationPullRequestBody {
     param(
         [Parameter(Mandatory = $true)]$Candidate,
@@ -129,7 +209,8 @@ function New-ReplicationPullRequestBody {
         [Parameter(Mandatory = $true)][string]$IssueTitle,
         [Parameter(Mandatory = $true)][string]$IssueOwner,
         [Parameter(Mandatory = $true)][string]$IssueRepository,
-        [AllowEmptyString()][string]$BuildUrl
+        [AllowEmptyString()][string]$BuildUrl,
+        [AllowEmptyString()][string]$RegressionSignal
     )
 
     $issueNumber = [int]$Candidate.issueNumber
@@ -329,6 +410,10 @@ function New-ReplicationPullRequestBody {
         }
         if ($fixApproach) {
             $fixLines += ('**Approach taken.** ' + (ConvertTo-ReplicationSingleLine -Value $fixApproach -MaximumLength 600))
+            $fixLines += ''
+        }
+        if ($RegressionSignal) {
+            $fixLines += $RegressionSignal
             $fixLines += ''
         }
         $fixLines += '**Files changed by the fix commit:**'
@@ -657,7 +742,14 @@ $prTitle = New-ReplicationPullRequestTitle `
     -Platform $platform `
     -IssueTitle $issueTitle `
     -CarriesFix:(@(Get-ValidatedFixFiles -Candidate $candidate).Count -gt 0)
+# Computed here rather than inside the body builder, which stays free of child
+# processes and network so it can be tested directly. A null signal simply omits
+# the line: the check reports, it never withholds a fix.
+$regressionSignal = Get-ReplicationFixRegressionSignal -FixPatchPath $FixPatchPath
+if ($regressionSignal) { Write-Host "Regression cross-reference: $regressionSignal" }
+
 $prBody = New-ReplicationPullRequestBody `
+    -RegressionSignal $regressionSignal `
     -Candidate $candidate `
     -Evidence $evidence `
     -IssueTitle $issueTitle `

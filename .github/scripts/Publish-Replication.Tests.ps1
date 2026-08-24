@@ -49,6 +49,7 @@ BeforeAll {
         'Assert-ReplicationStagedFix',
         'New-ReplicationPullRequestTitle',
         'New-ReplicationPullRequestBody',
+        'Get-ReplicationFixRegressionSignal',
         'Resolve-ReplicationSourceRepository'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
@@ -1072,5 +1073,217 @@ Describe 'Superseding an existing reproduction pull request' {
 
         $declareIndex | Should -BeGreaterThan 0
         $readIndex | Should -BeGreaterThan $declareIndex
+    }
+}
+
+Describe 'The regression cross-reference reports and never refuses' {
+    BeforeAll {
+        $script:RegRoot = Join-Path ([IO.Path]::GetTempPath()) ("regsig-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:RegRoot -Force | Out-Null
+
+        # A stand-in for Find-RegressionRisks.ps1 that writes whatever verdict the
+        # test asks for. The real script needs `gh`, a network and a six-month
+        # history walk; what is under test here is how the publisher REACTS to a
+        # verdict, which is exactly the half that can destroy a fix.
+        function script:New-StubChecker {
+            param([string]$Verdict, [switch]$Fails, [switch]$WritesNothing)
+            $dir = Join-Path $script:RegRoot ([guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+            $body = if ($Fails) {
+                'param($PRNumber,$DiffPath,$Repo,$FilePaths,$MonthsBack,$OutputDir)' + "`n" +
+                'throw "the checker exploded"'
+            } elseif ($WritesNothing) {
+                'param($PRNumber,$DiffPath,$Repo,$FilePaths,$MonthsBack,$OutputDir)' + "`n" +
+                'exit 2'
+            } else {
+                'param($PRNumber,$DiffPath,$Repo,$FilePaths,$MonthsBack,$OutputDir)' + "`n" +
+                'New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null' + "`n" +
+                ('"' + $Verdict + '" | Set-Content (Join-Path $OutputDir "result.txt")')
+            }
+            Set-Content -LiteralPath (Join-Path $dir 'Find-RegressionRisks.ps1') -Value $body -Encoding utf8NoBOM
+            $dir
+        }
+
+        $script:RegPatch = Join-Path $script:RegRoot 'fix.patch'
+        Set-Content -LiteralPath $script:RegPatch -Value 'diff --git a/x b/x' -Encoding utf8NoBOM
+    }
+
+    AfterAll {
+        Remove-Item -LiteralPath $script:RegRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'names each verdict distinctly, and only REVERT warns' {
+        $clean = Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Verdict 'CLEAN')
+        $overlap = Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Verdict 'OVERLAP')
+        $revert = Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Verdict 'REVERT')
+
+        $clean | Should -Not -BeNullOrEmpty
+        $overlap | Should -Not -BeNullOrEmpty
+        $revert | Should -Not -BeNullOrEmpty
+        @($clean, $overlap, $revert) | Select-Object -Unique | Should -HaveCount 3
+
+        # The whole value of the check is that a reader can tell the dangerous
+        # verdict from the safe ones at a glance.
+        $revert | Should -Match '⚠️'
+        $clean | Should -Not -Match '⚠️'
+        $overlap | Should -Not -Match '⚠️'
+        $revert | Should -Match 'bug-fix'
+    }
+
+    It 'says it was not measured rather than claiming CLEAN when it could not run' {
+        # Each of these is an absent measurement, and this plan records four
+        # separate occasions on which an absent measurement was rendered as a
+        # verdict and destroyed work. CLEAN is a claim; silence is the truth.
+        $cases = @(
+            (Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Fails)),
+            (Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -WritesNothing)),
+            (Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Verdict 'something-else'))
+        )
+        foreach ($case in $cases) {
+            $case | Should -Match 'Not measured'
+            $case | Should -Not -Match 'No line this fix deletes'
+        }
+    }
+
+    It 'returns nothing at all when there is no fix to judge' {
+        Get-ReplicationFixRegressionSignal -FixPatchPath '' | Should -BeNullOrEmpty
+        Get-ReplicationFixRegressionSignal -FixPatchPath (Join-Path $script:RegRoot 'absent.patch') | Should -BeNullOrEmpty
+        # A checkout without the checker must publish exactly as it does today.
+        $bare = Join-Path $script:RegRoot 'bare'
+        New-Item -ItemType Directory -Path $bare -Force | Out-Null
+        Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot $bare | Should -BeNullOrEmpty
+    }
+
+    It 'leaves no temporary directory behind' {
+        $before = @(Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'regression-*' -ErrorAction SilentlyContinue).Count
+        Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Verdict 'CLEAN') | Out-Null
+        Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot (New-StubChecker -Fails) | Out-Null
+        @(Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'regression-*' -ErrorAction SilentlyContinue).Count |
+            Should -Be $before
+    }
+
+    It 'invokes the checker with the diff rather than a pull request number' {
+        # `-DiffPath` is the whole reason this is reusable: at the moment a
+        # replicate fix needs judging it exists only as a patch in a fork, so a
+        # call written around -PRNumber could never run here.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$null, [ref]$errors)
+        $fn = $ast.Find({ param($n)
+            $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $n.Name -eq 'Get-ReplicationFixRegressionSignal' }, $true)
+        $fn | Should -Not -BeNullOrEmpty
+        $fn.Extent.Text | Should -Match '-DiffPath'
+        $fn.Extent.Text | Should -Not -Match '-PRNumber'
+    }
+
+    It 'never lets the signal decide whether the fix is published' {
+        # The isolated tests above exercise the function; this reads the CALL
+        # SITE, which is where this plan repeatedly records the damage being
+        # done. `report, never refuse` is a property of how the value is USED,
+        # so a mutant adding `if ($regressionSignal -match ...) { throw }` has
+        # to fail something, and nothing that tests the function alone can.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$null, [ref]$errors)
+
+        $signalFn = $ast.Find({ param($n)
+            $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $n.Name -eq 'Get-ReplicationFixRegressionSignal' }, $true)
+        $signalFn | Should -Not -BeNullOrEmpty
+
+        # Everything outside the function that mentions the signal.
+        $uses = @($ast.FindAll({ param($n)
+            $n -is [System.Management.Automation.Language.VariableExpressionAst] -and
+            $n.VariablePath.UserPath -eq 'regressionSignal' }, $true) |
+            Where-Object {
+                # Top-level script code only. A same-named parameter inside a
+                # function is a different variable, and walking out from one
+                # reaches that whole function rather than the call site.
+                $enclosing = $_.Parent
+                while ($enclosing -and -not ($enclosing -is [System.Management.Automation.Language.FunctionDefinitionAst])) {
+                    $enclosing = $enclosing.Parent
+                }
+                -not $enclosing
+            })
+        $uses.Count | Should -BeGreaterThan 0
+
+        foreach ($use in $uses) {
+            # Take the OUTERMOST enclosing statement, not the nearest. An `if`
+            # condition is itself a statement, so stopping at the nearest one
+            # reads `$regressionSignal -match '...'` and never sees the `throw`
+            # in the branch it guards - which is precisely the mutant this test
+            # exists to kill, and it survived the first version of this loop.
+            $node = $use
+            $outermost = $null
+            while ($node) {
+                if ($node -is [System.Management.Automation.Language.StatementAst]) { $outermost = $node }
+                $node = $node.Parent
+            }
+            $outermost | Should -Not -BeNullOrEmpty
+            $outermost.Extent.Text | Should -Not -Match '\bthrow\b'
+            $outermost.Extent.Text | Should -Not -Match '\bexit\b'
+            $outermost.Extent.Text | Should -Not -Match 'Write-ReplicationBlocked|Write-BlockedCandidate'
+        }
+
+        # And it must actually reach the body. A signal that is computed,
+        # logged and dropped looks identical to a working one from every
+        # assertion above.
+        $bodyCall = $ast.Find({ param($n)
+            $n -is [System.Management.Automation.Language.CommandAst] -and
+            $n.GetCommandName() -eq 'New-ReplicationPullRequestBody' }, $true)
+        $bodyCall | Should -Not -BeNullOrEmpty
+        $bodyCall.Extent.Text | Should -Match '-RegressionSignal'
+
+        # And the reverse: no refusal anywhere in the script consults it.
+        foreach ($stop in @($ast.FindAll({ param($n)
+                $n -is [System.Management.Automation.Language.ThrowStatementAst] }, $true))) {
+            $stop.Extent.Text | Should -Not -Match 'regressionSignal'
+        }
+    }
+
+    It 'carries the signal into the body without ever gating publication on it' {
+        $candidate = [ordered]@{
+            schemaVersion = 1; status = 'validated'; validationPassed = $true
+            issueNumber = 37440; platform = 'android'; baseSha = 'abc123'
+            testType = 'device'; verificationTestType = 'DeviceTest'
+            testName = 'Issue37440'; testFilter = 'Issue37440'
+            expectedFailureSignature = 'Issue12345'
+            expectedFailurePattern = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: Issue12345 expected red but was blue'
+            verificationRunCount = 3; reproductionMarker = 'BUG REPRODUCED:'
+            files = @('src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue37440.cs')
+            fixFiles = @('src/Core/src/Platform/Android/Baz.cs')
+            fixRootCause = 'cause'; fixApproach = 'approach'
+            reproductionSteps = @('Open the page', 'Tap the control')
+            evidence = [ordered]@{ video = 'repro.mp4'; preview = 'preview.gif'; thumbnail = 'thumbnail.png' }
+            certificationLevel = 'certified-oracle'
+            certificationSummary = '**Evidence level: certified-oracle**'
+        } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+        $warning = '**⚠️ Regression cross-reference.** deletes a line a bug-fix PR added.'
+
+        $body = New-ReplicationPullRequestBody -Candidate $candidate -Evidence $evidence `
+            -IssueTitle 'T' -IssueOwner 'dotnet' -IssueRepository 'maui' -BuildUrl '' `
+            -RegressionSignal $warning
+
+        # Present...
+        $body | Should -Match 'Regression cross-reference'
+        # ...and the fix it warns about is still fully published beside it. This
+        # is the assertion that kills a mutant turning the report into a refusal.
+        $body | Should -Match 'Proposed fix'
+        $body | Should -Match 'Baz\.cs'
+
+        # Omitting it changes nothing else about the body.
+        $without = New-ReplicationPullRequestBody -Candidate $candidate -Evidence $evidence `
+            -IssueTitle 'T' -IssueOwner 'dotnet' -IssueRepository 'maui' -BuildUrl ''
+        $without | Should -Not -Match 'Regression cross-reference'
+        $without | Should -Match 'Baz\.cs'
     }
 }
