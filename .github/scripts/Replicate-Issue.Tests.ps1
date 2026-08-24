@@ -81,6 +81,7 @@ BeforeAll {
         'Test-ReplicationAppTerminated',
         'Test-ReplicationTestBuildFailure',
         'Test-ReplicationControlChangedFailureMode',
+        'Test-ReplicationControlInconclusive',
         'Test-ReplicationRefundsTestAttempt',
         'Get-ReplicationAppTermination',
         'Test-ReplicationTestDidNotReproduce',
@@ -9437,5 +9438,44 @@ Describe 'A swallowed failure must still say where it came from' {
             'The fix phase failed, so the reproduction is published on its own[\s\S]{0,400}?\$fixOutcome = \$null').Value
 
         $catchText | Should -Match 'Get-ReplicationErrorOrigin'
+    }
+}
+
+Describe 'An unmeasured negative control never refutes a reproduction' {
+    It 'recognises a control that stopped short of the requested runs' {
+        Test-ReplicationControlInconclusive -FailureSummary (
+            'The negative control completed only 1 of 3 run(s), so how the test behaves ' +
+            'without the reported trigger was never measured.') |
+            Should -BeTrue
+    }
+
+    It 'recognises a control that passed in some runs and failed in others' {
+        Test-ReplicationControlInconclusive -FailureSummary (
+            'The negative control is inconsistent: it passed in 2 of 3 run(s).') |
+            Should -BeTrue
+    }
+
+    It 'leaves a completed, repeatedly red control classified as a refutation' {
+        Test-ReplicationControlInconclusive -FailureSummary (
+            'The negative control was expected to pass in all 3 run(s) but passed in 0 of 3. ' +
+            "The reproduction's failure therefore does not depend on the reported trigger alone.") |
+            Should -BeFalse
+    }
+
+    It 'reports nothing for an empty summary' {
+        Test-ReplicationControlInconclusive -FailureSummary '' | Should -BeFalse
+        Test-ReplicationControlInconclusive -FailureSummary $null | Should -BeFalse
+    }
+
+    It 'routes an inconclusive control into the absent-measurement branch' {
+        $script:Source | Should -Match 'Test-ReplicationControlInconclusive -FailureSummary \$controlMessage'
+        $branch = $script:Source.IndexOf('Test-ReplicationControlInconclusive -FailureSummary $controlMessage')
+        $absent = $script:Source.IndexOf('Negative control skipped: it did not run.')
+        $refute = $script:Source.IndexOf('$script:ReplicationControlRefutedReproduction = $true')
+        $branch | Should -BeGreaterThan 0
+        # The classifier has to be consulted before the refutation is recorded,
+        # or an unmeasured control would still destroy the reproduction.
+        $branch | Should -BeLessThan $refute
+        $absent | Should -BeLessThan $refute
     }
 }

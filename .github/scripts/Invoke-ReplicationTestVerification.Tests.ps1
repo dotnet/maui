@@ -622,6 +622,7 @@ Describe 'Replication negative control' {
             param(
                 [Parameter(Mandatory = $true)][string]$Path,
                 [switch]$Infrastructure,
+                [switch]$NeverClears,
                 [int]$PassUntilRun = 0
             )
 
@@ -646,7 +647,7 @@ if ('$Infrastructure' -eq 'True') {
     Write-Host 'VERIFICATION FAILED'
     exit 1
 }
-if ($PassUntilRun -gt 0 -and `$run -gt $PassUntilRun) {
+if ('$NeverClears' -eq 'True' -or ($PassUntilRun -gt 0 -and `$run -gt $PassUntilRun)) {
     Write-Host 'VERIFY FAILURE ONLY MODE'
     Write-Host "[`$TestType] `$TestFilter FAILED"
     Write-Host 'VERIFICATION PASSED'
@@ -711,12 +712,33 @@ exit 1
         Test-Path -LiteralPath (Join-Path $output 'verification-result.json') | Should -BeFalse
     }
 
-    It 'rejects a control that still fails' {
-        # A control that stays red proves the reproduction does not depend on
-        # the reported trigger, which is the case worth catching.
+    It 'calls a control that passes once and fails once inconsistent, not refuting' {
+        # This stub passes run 1 and fails run 2. Before the control ran to
+        # completion that looked identical to a refutation, because the loop
+        # stopped on the red run and graded a single sample. A control that
+        # disagrees with itself measures flakiness, not attribution.
         $verifier = Join-Path $TestDrive 'control-red.ps1'
         $output = Join-Path $TestDrive 'control-red-out'
         New-ReplicationControlStub -Path $verifier -PassUntilRun 1
+
+        $log = Invoke-ReplicationControl -Verifier $verifier -Output $output
+        $LASTEXITCODE | Should -Not -Be 0
+        $log | Should -Match 'inconsistent'
+        $log | Should -Not -Match 'does not depend'
+
+        $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
+            ConvertFrom-Json
+        $control.runCount | Should -Be 2
+        $control.passCount | Should -Be 1
+    }
+
+    It 'rejects a control that stays red across every requested run' {
+        # A control that stays red proves the reproduction does not depend on
+        # the reported trigger, which is the case worth catching. It is only
+        # trustworthy once every requested run has been observed.
+        $verifier = Join-Path $TestDrive 'control-all-red.ps1'
+        $output = Join-Path $TestDrive 'control-all-red-out'
+        New-ReplicationControlStub -Path $verifier -NeverClears
 
         $log = Invoke-ReplicationControl -Verifier $verifier -Output $output
         $LASTEXITCODE | Should -Not -Be 0
@@ -724,8 +746,10 @@ exit 1
 
         $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
             ConvertFrom-Json
+        # The whole point of the change: the refutation rests on both runs, not
+        # on the first one to come back red.
         $control.runCount | Should -Be 2
-        $control.passCount | Should -Be 1
+        $control.passCount | Should -Be 0
     }
 
     It 'refuses to count a build break as a passing control' {
@@ -837,5 +861,52 @@ Describe 'Telling a refuted reproduction apart from a broken control' {
             -ControlMessages @('Element not found while asserting Expected 40 but was 20') `
             -ReproductionMessages @('Expected 40 but was 20') |
             Should -BeTrue
+    }
+}
+
+Describe 'A refutation is measured across every requested run' {
+    It 'stops early only when verifying the reproduction, never the control' {
+        # The reproduction repeats nothing after a red run because the
+        # orchestrator repairs the test and starts over. The control must not
+        # share that shortcut: its red run is evidence, and one sample of it was
+        # enough to destroy 43 sound reproductions in a single wave.
+        $script:Source | Should -Match '\$runSucceeded -and -not \$ExpectPass'
+        $breakIndex = $script:Source.IndexOf('$runSucceeded -and -not $ExpectPass')
+        $breakIndex | Should -BeGreaterThan 0
+    }
+
+    It 'keeps running the control after a red run' {
+        $script:Source | Should -Match 'the control keeps going'
+        $guard = $script:Source.IndexOf('$runSucceeded -and -not $ExpectPass')
+        $continue = $script:Source.IndexOf('the control keeps going')
+        $continue | Should -BeGreaterThan $guard
+    }
+
+    It 'calls an unfinished control unmeasured rather than refuting' {
+        $script:Source | Should -Match 'completed only \$controlRuns of \$RunCount run\(s\)'
+        $script:Source | Should -Match 'never measured'
+    }
+
+    It 'calls a control that disagrees with itself inconsistent rather than refuting' {
+        $script:Source | Should -Match '\$controlPasses -gt 0 -and \$controlPasses -lt \$RunCount'
+        $script:Source | Should -Match 'negative control is inconsistent'
+    }
+
+    It 'reaches the refutation only after both unmeasured cases are excluded' {
+        $incomplete = $script:Source.IndexOf('completed only $controlRuns of $RunCount run(s)')
+        $inconsistent = $script:Source.IndexOf('negative control is inconsistent')
+        $refutation = $script:Source.IndexOf('therefore does not depend')
+        $incomplete | Should -BeGreaterThan 0
+        $inconsistent | Should -BeGreaterThan 0
+        $refutation | Should -BeGreaterThan 0
+        $incomplete | Should -BeLessThan $refutation
+        $inconsistent | Should -BeLessThan $refutation
+    }
+
+    It 'no longer lets an incomplete run count trigger the refutation message' {
+        # The defect: '$controlRuns -ne $RunCount' sat in the refutation
+        # condition, so a control that completed 1 of 3 runs was reported as
+        # proof that the reproduction does not depend on the trigger.
+        $script:Source | Should -Not -Match '\$controlRuns -ne \$RunCount -or \$controlPasses -ne \$RunCount'
     }
 }

@@ -487,10 +487,20 @@ for ($run = 1; $run -le $RunCount; $run++) {
     $outcome = Invoke-SingleVerificationRun -Run $run -ConsoleLog $consoleLog
     $runOutcomes.Add($outcome)
     $runSucceeded = if ($ExpectPass) { $outcome.TestPassed } else { $outcome.Passed }
-    if (-not $runSucceeded) {
+    if (-not $runSucceeded -and -not $ExpectPass) {
         # Repeating a run that already failed only wastes device time; the
         # orchestrator repairs the test and verifies again from scratch.
         break
+    }
+    if (-not $runSucceeded) {
+        # A red control is the one result this loop must NOT stop on. Stopping
+        # here leaves a single sample, and that single sample is then used to
+        # refute the reproduction, which is the most destructive verdict the
+        # pipeline can reach: the device work and the recorded evidence are
+        # already spent. A verdict that expensive has to be measured across
+        # every requested run, so the control keeps going and lets the grading
+        # below tell a repeatedly red control apart from a flaky one.
+        continue
     }
 }
 
@@ -570,7 +580,23 @@ if ($ExpectPass) {
             'it failed for a reason the reproduction never observed, so it cannot show whether ' +
             'the reproduction depends on the reported trigger.')
     }
-    if ($controlRuns -ne $RunCount -or $controlPasses -ne $RunCount) {
+    if ($controlRuns -ne $RunCount) {
+        # Unreachable while the loop above runs every control run, and kept
+        # deliberately: it is the net under that loop. If an early exit is ever
+        # reintroduced, this turns the failure into a loud unmeasured verdict
+        # instead of a silent refutation drawn from one sample, which is how 43
+        # sound reproductions were destroyed in a single wave.
+        throw ("The negative control completed only $controlRuns of $RunCount run(s), so how the " +
+            'test behaves without the reported trigger was never measured. An unfinished control ' +
+            'cannot show whether the reproduction depends on that trigger.')
+    }
+    if ($controlPasses -gt 0 -and $controlPasses -lt $RunCount) {
+        throw ("The negative control is inconsistent: it passed in $controlPasses of " +
+            "$controlRuns run(s). A control that changes its mind between identical runs " +
+            'measures flakiness rather than attribution, so it can neither confirm nor ' +
+            'refute the reproduction.')
+    }
+    if ($controlPasses -ne $RunCount) {
         throw ("The negative control was expected to pass in all $RunCount run(s) but passed in " +
             "$controlPasses of $controlRuns. The reproduction's failure therefore does not depend " +
             'on the reported trigger alone.')

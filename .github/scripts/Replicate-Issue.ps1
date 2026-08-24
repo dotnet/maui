@@ -977,6 +977,33 @@ function Test-ReplicationControlChangedFailureMode {
     return [bool]($text -match 'changed the failure mode instead of removing the trigger')
 }
 
+function Test-ReplicationControlInconclusive {
+    <#
+        .SYNOPSIS
+        Reports a negative control that never produced a usable measurement.
+
+        .DESCRIPTION
+        Refuting a reproduction discards device work and evidence that are
+        already paid for, so it is the most expensive verdict available here and
+        it has to rest on a complete measurement. A control that stopped short of
+        the requested runs, or that passed in some runs and failed in others, has
+        measured nothing about attribution: the first is an unfinished
+        experiment, the second is flakiness.
+
+        Both are reported as an absent measurement so the reproduction publishes
+        uncertified instead of being destroyed by a result that was never taken.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$FailureSummary
+    )
+
+    $text = [string]$FailureSummary
+    if (-not $text) {
+        return $false
+    }
+    return [bool]($text -match 'completed only \d+ of \d+ run|negative control is inconsistent')
+}
+
 function Test-ReplicationTestElementLookupFailure {
     <#
         .SYNOPSIS
@@ -5465,6 +5492,7 @@ function Invoke-ReplicationNegativeControl {
                 continue
             }
             if ($controlBuildFailed -or $controlChangedMode -or
+                (Test-ReplicationControlInconclusive -FailureSummary $controlMessage) -or
                 (Test-ReplicationTestHarnessFault -FailureSummary $controlMessage)) {
                 # An exhausted control is an absent measurement, not a negative
                 # one. The reproduction keeps whatever it proved on its own and
