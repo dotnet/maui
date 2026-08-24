@@ -6458,6 +6458,21 @@ Describe 'Platform closure guard reads target framework lists' {
 }
 
 Describe 'Platform closure guard spares host-driven UI tests' {
+    BeforeAll {
+        # These three read the real repository layout, so they need the real
+        # repository root. Passing '.' made them depend on the caller's working
+        # directory: run from .github/scripts, no path resolves, and the two
+        # Should -Not -Throw cases pass for the wrong reason while the
+        # Should -Throw case fails. A test whose meaning depends on where it
+        # was launched is not evidence about the guard.
+        $script:realRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+    }
+
+    It 'reads a repository root that actually holds the product tree' {
+        Join-Path $script:realRepoRoot 'src/Controls/tests' |
+            Should -Exist -Because 'the three tests below assert nothing if these paths do not resolve'
+    }
+
     It 'allows an Appium UI test although its project targets no platform' {
         # Controls.TestCases.Shared.Tests targets $(_MauiDotNetTfm) because it
         # runs on the host and drives a real app over WebDriver, so its own
@@ -6465,19 +6480,19 @@ Describe 'Platform closure guard spares host-driven UI tests' {
         # the tier most reproductions use; rejecting it would block them all.
         { Assert-ReplicationTestRunsOnEvidencePlatform `
                 -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
-                -Platform 'ios' -TestType 'UITest' -RepositoryRoot '.' } | Should -Not -Throw
+                -Platform 'ios' -TestType 'UITest' -RepositoryRoot $script:realRepoRoot } | Should -Not -Throw
     }
 
     It 'allows a device test' {
         { Assert-ReplicationTestRunsOnEvidencePlatform `
                 -Path 'src/Controls/tests/DeviceTests/Elements/Issue1.cs' `
-                -Platform 'catalyst' -TestType 'DeviceTest' -RepositoryRoot '.' } | Should -Not -Throw
+                -Platform 'catalyst' -TestType 'DeviceTest' -RepositoryRoot $script:realRepoRoot } | Should -Not -Throw
     }
 
     It 'still rejects an in-process unit test in the real repository layout' {
         { Assert-ReplicationTestRunsOnEvidencePlatform `
                 -Path 'src/Controls/tests/Core.UnitTests/Issue6456Tests.cs' `
-                -Platform 'catalyst' -TestType 'UnitTest' -RepositoryRoot '.' } |
+                -Platform 'catalyst' -TestType 'UnitTest' -RepositoryRoot $script:realRepoRoot } |
             Should -Throw -ExpectedMessage '*not present in the tested closure*'
     }
 }
