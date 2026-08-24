@@ -3224,6 +3224,67 @@ function Get-ReplicationFixCrossPollination {
     return ($lines -join "`n")
 }
 
+function Get-ReplicationFixReportedResult {
+    <#
+        .SYNOPSIS
+            Reads the verdict out of the candidate's own Step 10 report.
+
+        .DESCRIPTION
+            The skill requires the verdict twice: as result.txt, and as a
+            "**Result:**" line in the final report. gpt-5.6-sol wrote the
+            second and not the first in ten of ten attempts, and the panel
+            recorded ten candidates as having reported nothing while their
+            reports sat in the transcript saying otherwise.
+
+            This is a self-report either way. It is not evidence, and nothing
+            here treats it as evidence: the fix arm re-runs the certified test.
+            The only question is whether the panel can hear an answer that was
+            given, and reading it from the wrong file is no more credulous than
+            reading it from the right one.
+    #>
+    param([string]$TranscriptPath)
+
+    if ([string]::IsNullOrWhiteSpace($TranscriptPath) -or
+        -not (Test-Path -LiteralPath $TranscriptPath -PathType Leaf)) {
+        return ''
+    }
+
+    $assistantText = ''
+    foreach ($line in (Get-Content -LiteralPath $TranscriptPath -ErrorAction SilentlyContinue)) {
+        try {
+            $event = ([string]$line) | ConvertFrom-Json -Depth 30 -ErrorAction Stop
+        } catch {
+            continue
+        }
+
+        if ($event.PSObject.Properties['type'] -and
+            $event.type -eq 'assistant.message' -and
+            $event.PSObject.Properties['data'] -and
+            $event.data.PSObject.Properties['content']) {
+            $assistantText = [string]$event.data.content
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($assistantText)) { return '' }
+
+    # Only the last report counts: an agent that revises its verdict has
+    # superseded the earlier one, exactly as a rewritten result.txt would.
+    $matches = [regex]::Matches(
+        $assistantText,
+        '(?im)^\s*\*\*Result:\*\*\s*(.+)$')
+    if ($matches.Count -eq 0) { return '' }
+
+    $claim = $matches[$matches.Count - 1].Groups[1].Value
+    # The skill's own template decorates the word with an emoji and offers both
+    # alternatives on one line, so a bare read returns "\u2705 PASS / \u274c FAIL" -
+    # which is not an answer, and must not be mistaken for one.
+    if ($claim -match '(?i)pass' -and $claim -match '(?i)fail') { return '' }
+    if ($claim -match '(?i)\bpass\b') { return 'Pass' }
+    if ($claim -match '(?i)\bfail\b') { return 'Fail' }
+    if ($claim -match '(?i)\bblocked\b') { return 'Blocked' }
+    return ''
+}
+
 function Read-ReplicationFixCandidateArtifacts {
     <#
         .SYNOPSIS
@@ -3235,11 +3296,19 @@ function Read-ReplicationFixCandidateArtifacts {
             decides whether the fix worked, which only re-running the test can.
             A missing file is therefore recorded, not thrown.
     #>
-    param([Parameter(Mandatory = $true)][string]$AttemptDirectory)
+    param(
+        [Parameter(Mandatory = $true)][string]$AttemptDirectory,
+        [string]$TranscriptPath = ''
+    )
 
     $read = {
         param([string]$Name, [int]$Limit)
         $path = Join-Path $AttemptDirectory $Name
+        # An agent that writes the right file into the wrong directory has done
+        # the work; only the delivery missed. The Sandbox phase already recovers
+        # from exactly this, and the fix panel needs it more, because a missing
+        # result.txt is recorded as a candidate that reported nothing at all.
+        if (-not (Resolve-MisplacedAgentOutput -CanonicalPath $path)) { return '' }
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return '' }
         $content = Get-Content -LiteralPath $path -Raw -ErrorAction SilentlyContinue
         if ([string]::IsNullOrWhiteSpace($content)) { return '' }
@@ -3247,8 +3316,17 @@ function Read-ReplicationFixCandidateArtifacts {
         return $content
     }
 
+    $resultText = (& $read 'result.txt' 200)
+    if ([string]::IsNullOrWhiteSpace($resultText)) {
+        # The skill also requires the verdict in its Step 10 report, so a
+        # candidate that reported honestly in the only place it was sure of has
+        # still said what happened. This reads the transcript this attempt
+        # wrote, in a path derived from this attempt's own number.
+        $resultText = Get-ReplicationFixReportedResult -TranscriptPath $TranscriptPath
+    }
+
     return [pscustomobject]@{
-        ResultText = (& $read 'result.txt' 200)
+        ResultText = $resultText
         Approach = (& $read 'approach.md' 4000)
         Analysis = (& $read 'analysis.md' 4000)
         Diff = (& $read 'fix.diff' 60000)
@@ -3502,10 +3580,6 @@ function Invoke-ReplicationFixPanel {
         $protectedSnapshot = Get-ReplicationFixProtectedSnapshot -Paths $ProtectedPaths
 
         $model = Get-ReplicationFixCandidateModel -Attempt $attempt
-        $prompt = New-CopilotPrompt `
-            -Phase 'fix' `
-            -BaselineRelativePath $BaselineRelativePath `
-            -FailureSummary (Get-ReplicationFixCrossPollination -Results $results.ToArray())
 
         $attemptDirectory = Join-Path $tryFixRoot "attempt-$attempt"
         # Exact files, and the directory made first: a write permission must
@@ -3513,6 +3587,15 @@ function Invoke-ReplicationFixPanel {
         # try-fix root instead passed only while it did not exist, so candidate
         # 1 ran and every candidate after it was refused.
         New-Item -ItemType Directory -Path $attemptDirectory -Force | Out-Null
+
+        # The directory is now known before the prompt is written, because the
+        # prompt has to say where it is. The skill's whole artifact contract is
+        # relative to $OUTPUT_DIR and nothing had ever defined that variable.
+        $prompt = New-CopilotPrompt `
+            -Phase 'fix' `
+            -BaselineRelativePath $BaselineRelativePath `
+            -OutputDirectory $attemptDirectory `
+            -FailureSummary (Get-ReplicationFixCrossPollination -Results $results.ToArray())
         $candidateWritePaths = @($ScopeFiles | ForEach-Object { Join-Path $repoRoot $_ }) +
             @('result.txt', 'approach.md', 'analysis.md', 'fix.diff', 'reviewer-findings.json' |
                 ForEach-Object { Join-Path $attemptDirectory $_ })
@@ -3543,7 +3626,9 @@ function Invoke-ReplicationFixPanel {
         }
 
         $tampered = @(Get-ReplicationFixTamperedPaths -Snapshot $protectedSnapshot)
-        $artifacts = Read-ReplicationFixCandidateArtifacts -AttemptDirectory $attemptDirectory
+        $artifacts = Read-ReplicationFixCandidateArtifacts `
+            -AttemptDirectory $attemptDirectory `
+            -TranscriptPath (Join-Path $agentDir "copilot-fix-$attempt-attempt-$attempt.jsonl")
         $changed = Get-ReplicationFixCandidateChanges -ExcludePaths ($ReproductionPaths + $inheritedDirt)
         $verdict = if ($tampered.Count -gt 0) {
             # Judged before anything else it reported: a candidate that edited
@@ -4894,7 +4979,8 @@ function New-CopilotPrompt {
         [string]$FailureSummary = '',
         [string[]]$ForbiddenTestTiers = @(),
         [string]$BaselineRelativePath = '',
-        [string]$BaselineSource = ''
+        [string]$BaselineSource = '',
+        [string]$OutputDirectory = ''
     )
 
     $replicationSkill = Join-Path $trustedSkills 'replicate-issue/SKILL.md'
@@ -5112,6 +5198,13 @@ Do not edit any product file in this phase. Do not run builds or tests. Write on
 "@
         }
         'fix' {
+            # A fix prompt that cannot say where OUTPUT_DIR is produces exactly
+            # the candidate this parameter exists to stop: one that does the
+            # work and writes its account somewhere nobody reads.
+            if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
+                throw 'A fix prompt requires -OutputDirectory: the skill writes every artifact relative to it.'
+            }
+
             $tryFixSkill = Join-Path $trustedSkills 'try-fix/SKILL.md'
             $priorApproaches = if ([string]::IsNullOrWhiteSpace($FailureSummary)) {
                 'You are the first candidate. No other approach has been tried.'
@@ -5125,6 +5218,13 @@ $(ConvertTo-ReplicationSafeLog $FailureSummary 4000)
             return $common + @"
 
 Read "$tryFixSkill" and follow it. This is a single try-fix attempt for issue $IssueNumber.
+
+Your OUTPUT_DIR is this exact absolute directory, and it already exists:
+    $OutputDirectory
+Everywhere the skill writes "`$OUTPUT_DIR", it means that path. Write every file the skill's required-files table lists into it, using the exact names the table gives, and write nothing of your own outside it. Two of those files are read by trusted code and are the only account of your attempt that reaches the panel:
+    $(Join-Path $OutputDirectory 'result.txt')    - one word: Pass, Fail or Blocked
+    $(Join-Path $OutputDirectory 'approach.md')   - what you tried, for the candidates after you
+An attempt that does its work and does not write result.txt is recorded as having reported nothing, however good the fix was, because nothing else in this pipeline can see what you did.
 
 One thing differs from the reviewer's usual try-fix run, and it changes how you must read the skill: there is no author fix. The defect is what this branch ships. The baseline script therefore reverted nothing; it only recorded which files you may edit. Everything else in the skill applies unchanged, including that you restore your work ONLY with:
     pwsh $(Join-Path $trustedScripts 'EstablishBrokenBaseline.ps1') -Restore

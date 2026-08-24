@@ -139,6 +139,7 @@ BeforeAll {
         'Get-ReplicationFixCrossPollination',
         'Get-ReplicationFixCandidateChanges',
         'Read-ReplicationFixCandidateArtifacts',
+        'Get-ReplicationFixReportedResult',
         'Invoke-ReplicationFixPanel',
         'ConvertTo-ReplicationPowerShellLiteral',
         'New-ReplicationFixOracleRunnerContent',
@@ -8172,7 +8173,7 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
     }
 
     It 'tells a fix phase it has a shell and a reproduction phase it has none' {
-        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+        $fix = New-CopilotPrompt -Phase 'fix' -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs'
         $control = New-CopilotPrompt -Phase 'control' -BaselineRelativePath 'tests/Issue37440.cs'
 
         $fix | Should -Match 'You have a shell'
@@ -8182,7 +8183,8 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
 
     It 'lets a fix phase change product code and forbids every other phase from it' {
         foreach ($phase in @('fix-scope', 'fix', 'fix-compare')) {
-            $prompt = New-CopilotPrompt -Phase $phase -BaselineRelativePath 'tests/Issue37440.cs'
+            $prompt = New-CopilotPrompt -Phase $phase `
+                -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs'
             $prompt | Should -Not -Match 'Do not modify product code'
         }
 
@@ -8193,14 +8195,14 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
     It 'forbids a fix candidate from touching the oracle it is measured against' {
         # A candidate that edits, retargets, weakens, or deletes the
         # reproduction test can turn any red run green while fixing nothing.
-        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+        $fix = New-CopilotPrompt -Phase 'fix' -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs'
 
         $fix | Should -Match 'Never edit, retarget, weaken, skip, or delete the reproduction test'
         $fix | Should -Match 'trusted code re-runs the original test'
     }
 
     It 'points a fix candidate at the only sanctioned way to undo its work' {
-        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+        $fix = New-CopilotPrompt -Phase 'fix' -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs'
 
         $fix | Should -Match 'EstablishBrokenBaseline\.ps1 -Restore'
         $fix | Should -Match 'Never use git checkout, git restore, git reset, git clean, or git stash'
@@ -8210,15 +8212,15 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
         # try-fix's own documentation says the baseline script reverts an
         # author fix. Left unsaid, a candidate reads an unreverted tree as a
         # broken setup and reports Blocked without attempting anything.
-        $fix = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
+        $fix = New-CopilotPrompt -Phase 'fix' -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs'
 
         $fix | Should -Match 'there is no author fix'
         $fix | Should -Match 'reverted nothing'
     }
 
     It 'passes earlier candidates to the next one and tells the first it is first' {
-        $first = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs'
-        $later = New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs' `
+        $first = New-CopilotPrompt -Phase 'fix' -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs'
+        $later = New-CopilotPrompt -Phase 'fix' -OutputDirectory '/w/try-fix/attempt-1' -BaselineRelativePath 'tests/Issue37440.cs' `
             -FailureSummary 'Candidate 1 changed the arrange pass and the test still failed.'
 
         $first | Should -Match 'You are the first candidate'
@@ -11164,5 +11166,129 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
         $gate.Success | Should -BeTrue
         $gate.Groups['set'].Value | Should -CMatch "'catalyst'"
         $gate.Groups['set'].Value | Should -Not -CMatch "'windows'"
+    }
+}
+
+Describe 'A candidate that reported its result is heard' {
+    BeforeEach {
+        $script:src = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        function New-Transcript {
+            param([string]$Path, [string]$Content)
+            @{ type = 'assistant.message'; data = @{ content = $Content } } |
+                ConvertTo-Json -Depth 5 -Compress | Set-Content -LiteralPath $Path -Encoding utf8NoBOM
+        }
+    }
+
+    It 'reads the transcript field the producer actually writes' {
+        # The consumer and the producer are 2300 lines apart and were written
+        # months apart. A hand-copied field name is how the banner drift
+        # happened, so the name is taken from the producer here.
+        $producer = [regex]::Match($script:src,
+            "assistant\.message' -and \`$event\.data\.PSObject\.Properties\['(?<field>\w+)'\]")
+        $producer.Success | Should -BeTrue
+        $consumer = [regex]::Match($script:src,
+            '\$assistantText = \[string\]\$event\.data\.(?<field>\w+)')
+        $consumer.Success | Should -BeTrue
+        $consumer.Groups['field'].Value | Should -BeExactly $producer.Groups['field'].Value
+    }
+
+    It 'hears a verdict given only in the Step 10 report' {
+        $t = Join-Path $TestDrive 'a.jsonl'
+        New-Transcript -Path $t -Content "## Try-Fix Result`n`n**Result:** PASS`n"
+        Get-ReplicationFixReportedResult -TranscriptPath $t | Should -BeExactly 'Pass'
+    }
+
+    It 'does not mistake the skill template for an answer' {
+        # The template offers both words on one line. Reading that as a verdict
+        # would invent a pass for a candidate that reported nothing.
+        $t = Join-Path $TestDrive 'b.jsonl'
+        New-Transcript -Path $t -Content "**Result:** PASS / FAIL`n"
+        Get-ReplicationFixReportedResult -TranscriptPath $t | Should -BeExactly ''
+    }
+
+    It 'takes the last verdict when a candidate revised it' {
+        $t = Join-Path $TestDrive 'c.jsonl'
+        New-Transcript -Path $t -Content "**Result:** PASS`nlater`n**Result:** FAIL`n"
+        Get-ReplicationFixReportedResult -TranscriptPath $t | Should -BeExactly 'Fail'
+    }
+
+    It 'stays silent when there is no transcript to read' {
+        Get-ReplicationFixReportedResult -TranscriptPath '' | Should -BeExactly ''
+        Get-ReplicationFixReportedResult -TranscriptPath (
+            Join-Path $TestDrive 'absent.jsonl') | Should -BeExactly ''
+    }
+
+    It 'prefers the file the skill requires over the report' {
+        $dir = Join-Path $TestDrive 'attempt'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        'Fail' | Set-Content -LiteralPath (Join-Path $dir 'result.txt') -Encoding utf8NoBOM
+        $t = Join-Path $TestDrive 'd.jsonl'
+        New-Transcript -Path $t -Content "**Result:** PASS`n"
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $dir -TranscriptPath $t).ResultText.Trim() |
+            Should -BeExactly 'Fail'
+    }
+
+    It 'uses the report when the required file is absent' {
+        # Calling the parser directly proves the parser. This proves the panel
+        # is wired to it, which is the half that decides ten candidates.
+        $dir = Join-Path $TestDrive 'wired'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        $t = Join-Path $TestDrive 'e.jsonl'
+        New-Transcript -Path $t -Content "**Result:** PASS`n"
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $dir -TranscriptPath $t).ResultText |
+            Should -BeExactly 'Pass'
+    }
+
+    It 'recovers a required file written one directory too high' {
+        $parent = Join-Path $TestDrive 'misplaced'
+        $dir = Join-Path $parent 'attempt-1'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        'Pass' | Set-Content -LiteralPath (Join-Path $parent 'result.txt') -Encoding utf8NoBOM
+        (Read-ReplicationFixCandidateArtifacts -AttemptDirectory $dir).ResultText.Trim() |
+            Should -BeExactly 'Pass'
+        Test-Path -LiteralPath (Join-Path $dir 'result.txt') | Should -BeTrue
+    }
+
+    It 'passes the directory to the prompt that has to name it' {
+        # Stating the path in the prompt template is worth nothing if the call
+        # site never supplies it, and the template reads '' just as happily.
+        $call = [regex]::Match($script:src,
+            "New-CopilotPrompt ``\r?\n\s*-Phase 'fix' ``(?<args>(?:.|\n)*?)\)\r?\n")
+        $call.Success | Should -BeTrue
+        $call.Groups['args'].Value | Should -Match '-OutputDirectory \$attemptDirectory'
+    }
+
+    It 'refuses to write a fix prompt that cannot say where OUTPUT_DIR is' {
+        # Producing it anyway is what the pipeline did for its whole life, and
+        # it cost every gpt-5.6-sol candidate the panel ever ran.
+        { New-CopilotPrompt -Phase 'fix' -BaselineRelativePath 'tests/Issue37440.cs' } |
+            Should -Throw '*requires -OutputDirectory*'
+        { New-CopilotPrompt -Phase 'fix' -OutputDirectory '   ' `
+                -BaselineRelativePath 'tests/Issue37440.cs' } |
+            Should -Throw '*requires -OutputDirectory*'
+    }
+
+    It 'tells the candidate where OUTPUT_DIR is' {
+        # The skill's whole artifact contract is relative to $OUTPUT_DIR, and
+        # nothing had ever defined it. gpt-5.6-sol wrote no result.txt in ten
+        # of ten attempts and was recorded as reporting nothing.
+        $fix = [regex]::Match($script:src,
+            "'fix' \{(?<body>(?:.|\n)*?)\n        'fix-compare'").Groups['body'].Value
+        $fix | Should -Match 'OUTPUT_DIR'
+        $fix | Should -Match 'result\.txt'
+        # The absolute path must be stated on a line of its own. Mentioning the
+        # variable while building other paths from it is not telling anyone
+        # where the directory is.
+        $fix | Should -Match '\r?\n\s*\$OutputDirectory\r?\n'
+    }
+
+    It 'knows the directory before it writes the prompt that names it' {
+        # Ordering is the whole fix: the prompt cannot state a path computed
+        # after it.
+        $panel = $script:src.IndexOf('$attemptDirectory = Join-Path $tryFixRoot')
+        $panel | Should -BeGreaterThan 0
+        $promptAt = $script:src.IndexOf("-Phase 'fix' ``", $panel)
+        $promptAt | Should -BeGreaterThan $panel
     }
 }
