@@ -1,0 +1,369 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "collectionview-items-update-android",
+      "title": "Android CollectionView item-update and scroll stability",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/Android/ItemsSources/",
+        "(^|/)src/Controls/src/Core/Handlers/Items/Android/MauiRecyclerView\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items/MauiRecyclerView\\.android\\.cs$"
+      ],
+      "platforms": [
+        "Android"
+      ],
+      "runner": "dedicated-device-or-emulator",
+      "automationStatus": "manual-device-ci-ready",
+      "resultScenario": "collectionview-keepitemsinview-update",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "android"
+        ]
+      },
+      "rationale": "RecyclerView observer, recycling, scrolling, and layout-manager behavior only execute on Android.",
+      "setup": [
+        "Use the PR's functional reproduction page and the same data volume on base and head.",
+        "Use one fixed emulator/device image and build configuration for both commits.",
+        "Warm the app and collection before recording measurements."
+      ],
+      "operations": [
+        "Apply the relevant collection mutation repeatedly.",
+        "Wait for scrolling and layout to settle after each mutation.",
+        "Verify the final visible item and offset so a faster but incorrect result cannot pass."
+      ],
+      "metrics": [
+        "mutation-to-stable-scroll latency: median and p95",
+        "frame time and jank count during update/scroll",
+        "layout and adapter-observer callback counts",
+        "managed allocation and GC counts when instrumentation is available"
+      ]
+    },
+    {
+      "id": "collectionview-items-update-ios",
+      "title": "iOS and MacCatalyst CollectionView item-update and scroll stability",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/iOS/ItemsViewLayout\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items/ItemsViewLayout\\.ios\\.cs$"
+      ],
+      "platforms": [
+        "iOS",
+        "MacCatalyst"
+      ],
+      "runner": "dedicated-simulator-or-device",
+      "automationStatus": "manual-device-ci-ready",
+      "resultScenario": "collectionview-keepitemsinview-update",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "ios",
+          "maccatalyst"
+        ]
+      },
+      "rationale": "ItemsViewLayout scroll-offset preservation executes inside UIKit collection updates.",
+      "setup": [
+        "Use a fixed-size CollectionView with KeepItemsInView and identical data on base and head.",
+        "Use one fixed simulator/device runtime and build configuration for both commits.",
+        "Warm realization and scrolling before recording measurements."
+      ],
+      "operations": [
+        "Scroll to a stable realized item and insert one item before the visible range.",
+        "Wait for collection updates and scrolling to settle after every insertion.",
+        "Record the first visible item so a faster jump to the beginning cannot be treated as equivalent."
+      ],
+      "metrics": [
+        "insertion-to-stable-scroll latency: median and p95",
+        "first visible item after each update",
+        "layout invalidation counts when instrumentation is available",
+        "managed/native allocation deltas when instrumentation is available"
+      ]
+    },
+    {
+      "id": "collectionview-scroll-ios",
+      "title": "iOS and MacCatalyst CollectionView layout/ScrollTo stability",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/iOS/ObservableGroupedSource\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/iOS/(ItemsViewController2|LayoutFactory2|TemplatedCell2)\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items/ObservableGroupedSource\\.ios\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/(ItemsViewController2|LayoutFactory2|TemplatedCell2)\\.ios\\.cs$"
+      ],
+      "platforms": [
+        "iOS",
+        "MacCatalyst"
+      ],
+      "runner": "dedicated-simulator-or-device",
+      "automationStatus": "manual-device-ci-ready",
+      "resultScenario": "collectionview-grouped-scrollto-makevisible",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "ios",
+          "maccatalyst"
+        ]
+      },
+      "rationale": "UICollectionView measurement, compositional-layout invalidation, and ScrollTo behavior require UIKit.",
+      "setup": [
+        "Use the PR's functional reproduction page with identical grouped data and cell sizes.",
+        "Use one fixed simulator/device runtime and build configuration for base and head.",
+        "Warm image/data loading before timing layout and scrolling."
+      ],
+      "operations": [
+        "Reset to the top and repeat ScrollTo(MakeVisible, animated) to item 2 in section 1 at least ten times.",
+        "Wait for animation and layout to settle after every operation.",
+        "Verify the target item is visible and record its viewport position spread against the first measured result."
+      ],
+      "metrics": [
+        "operation-to-settled-position latency: median and p95",
+        "target viewport-position spread and count outside the 30px tolerance",
+        "variance and worst-case latency",
+        "layout invalidation and section-provider invocation counts",
+        "frame time and jank count",
+        "managed/native allocation deltas when instrumentation is available"
+      ]
+    },
+    {
+      "id": "carouselview-swipe-disabled",
+      "title": "CarouselView disabled-swipe touch and layout handling",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items/iOS/MauiCollectionView\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/CarouselViewHandler2\\.iOS\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/CarouselViewHandler2\\.ios\\.cs$"
+      ],
+      "activationPathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/CarouselViewHandler2\\.(iOS|ios)\\.cs$"
+      ],
+      "platforms": [
+        "Android",
+        "iOS",
+        "MacCatalyst"
+      ],
+      "runner": "platform-matched-device",
+      "automationStatus": "manual-device-ci-ready",
+      "resultScenario": "carouselview-swipe-disabled",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "android",
+          "ios",
+          "maccatalyst"
+        ]
+      },
+      "rationale": "Android disabled-swipe interception and UIKit's embedded orthogonal scroller require native CarouselView handlers.",
+      "setup": [
+        "Create a non-looping CarouselView with swipe and bounce disabled from initial construction.",
+        "Use one fixed emulator/simulator/host and identical Release builds for base and head.",
+        "Warm native realization before recording measurements."
+      ],
+      "operations": [
+        "On Android, exercise the native CarouselView interception path with repeated down/move/up sequences.",
+        "On iOS and MacCatalyst, reset the embedded scroller to UIKit defaults and invoke repeated layout passes.",
+        "Verify the head intercepts no disabled-swipe touches on Android and reapplies disabled swipe/bounce state on every Apple layout pass."
+      ],
+      "metrics": [
+        "batched touch or layout-pass latency: median and p95",
+        "intercepted disabled-swipe touch count and final Android position",
+        "embedded Apple scroller count and state-reapplication failure count"
+      ]
+    },
+    {
+      "id": "carouselview-wheel-snap-windows",
+      "title": "Windows CarouselView wheel-scroll centering",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/CarouselViewHandler\\.Windows\\.cs$",
+        "(^|/)src/Controls/src/Core/Platform/Windows/CollectionView/LoopableCollectionView\\.cs$"
+      ],
+      "platforms": [
+        "Windows"
+      ],
+      "runner": "helix-windows-vm",
+      "automationStatus": "manual-device-ci-ready",
+      "resultScenario": "carouselview-wheel-snap-windows",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "windows"
+        ]
+      },
+      "rationale": "WinUI ScrollViewer centering and realized CarouselView containers require Windows.",
+      "setup": [
+        "Use a non-looping horizontal CarouselView with mandatory center snap points.",
+        "Use identical items, viewport, Windows App SDK, runtime, and Release settings for base and head.",
+        "Warm native realization and an initial centered position before measuring."
+      ],
+      "operations": [
+        "Apply repeated native horizontal offset changes that model wheel-scroll bursts.",
+        "Wait for ViewChanged and CarouselView position updates to settle.",
+        "Verify the closest realized item is centered and Position/CurrentItem remain consistent."
+      ],
+      "metrics": [
+        "offset-change-to-settled latency: median and p95",
+        "maximum final center error in pixels",
+        "positions outside the one-pixel center tolerance",
+        "Position and CurrentItem mismatch count",
+        "managed allocation and GC counts when instrumentation is available"
+      ]
+    },
+    {
+      "id": "collectionview-items-windows",
+      "title": "Windows CollectionView realization and scrolling",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items/Windows/",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/Windows/",
+        "(^|/)src/Controls/src/Core/Handlers/Items/.*\\.windows\\.cs$",
+        "(^|/)src/Controls/src/Core/Handlers/Items2/.*\\.windows\\.cs$"
+      ],
+      "platforms": [
+        "Windows"
+      ],
+      "runner": "dedicated-device-or-vm",
+      "automationStatus": "required-not-yet-automated",
+      "rationale": "ItemsRepeater realization, native scrolling, and WinUI layout require Windows.",
+      "setup": [
+        "Use the same item template, item count, and viewport on base and head.",
+        "Warm realization before recording steady-state measurements."
+      ],
+      "operations": [
+        "Repeat the affected mutation, realization, or scroll operation.",
+        "Verify the final realized range and scroll position."
+      ],
+      "metrics": [
+        "operation latency: median and p95",
+        "realized element count",
+        "frame time and jank count",
+        "managed allocation and GC counts"
+      ]
+    },
+    {
+      "id": "handler-property-update-android",
+      "title": "Android common control handler property-update batch",
+      "pathPatterns": [
+        "(^|/)src/Core/src/Handlers/(Button|Label|Entry|Picker|DatePicker|TimePicker)/.*\\.(Android|android)\\.cs$",
+        "(^|/)src/Core/src/Platform/Android/(Button|Label|Entry|Picker|DatePicker|TimePicker).*\\.cs$"
+      ],
+      "platforms": [
+        "Android"
+      ],
+      "runner": "platform-matched-device",
+      "automationStatus": "manual-device-ci-ready",
+      "coverageMode": "sampled",
+      "resultScenario": "handler-property-update-batch",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "android"
+        ]
+      },
+      "rationale": "Repeated property mapping and layout invalidation execute through native handlers for representative common controls.",
+      "setup": [
+        "Create Label, Button, Entry, Picker, DatePicker, and TimePicker controls in one realized layout.",
+        "Use identical runtime, device image, viewport, and Release configuration for base and head."
+      ],
+      "operations": [
+        "Update representative mapped properties on every control in one batch.",
+        "Measure and arrange the realized layout after each batch.",
+        "Verify native text/content values after every operation."
+      ],
+      "metrics": [
+        "property-update-and-layout latency: median and p95",
+        "completed update batches",
+        "native value mismatch count"
+      ]
+    },
+    {
+      "id": "handler-property-update-windows",
+      "title": "Windows common control handler property-update batch",
+      "pathPatterns": [
+        "(^|/)src/Core/src/Handlers/(Button|Label|Entry|Picker|DatePicker|TimePicker)/.*\\.(Windows|windows)\\.cs$",
+        "(^|/)src/Core/src/Platform/Windows/(Button|Label|Entry|Picker|DatePicker|TimePicker).*\\.cs$"
+      ],
+      "platforms": [
+        "Windows"
+      ],
+      "runner": "platform-matched-device",
+      "automationStatus": "manual-device-ci-ready",
+      "coverageMode": "sampled",
+      "resultScenario": "handler-property-update-batch",
+      "pipeline": {
+        "path": "eng/pipelines/ci-device-performance.yml",
+        "platforms": [
+          "windows"
+        ]
+      },
+      "rationale": "Repeated property mapping and layout invalidation execute through WinUI handlers for representative common controls.",
+      "setup": [
+        "Create Label, Button, Entry, Picker, DatePicker, and TimePicker controls in one realized layout.",
+        "Use identical Windows image, viewport, runtime, and Release configuration for base and head."
+      ],
+      "operations": [
+        "Update representative mapped properties on every control in one batch.",
+        "Measure and arrange the realized layout after each batch.",
+        "Verify native text/content values after every operation."
+      ],
+      "metrics": [
+        "property-update-and-layout latency: median and p95",
+        "completed update batches",
+        "native value mismatch count"
+      ]
+    },
+    {
+      "id": "collectionview-handler-device",
+      "title": "Cross-platform CollectionView handler scenario",
+      "pathPatterns": [
+        "(^|/)src/Controls/src/Core/Handlers/Items2?/"
+      ],
+      "platforms": [
+        "Android",
+        "iOS",
+        "MacCatalyst",
+        "Windows"
+      ],
+      "runner": "platform-matched-device",
+      "automationStatus": "required-not-yet-automated",
+      "rationale": "CollectionView handler behavior depends on native collection controls and is not exercised by the library-TFM benchmarks.",
+      "setup": [
+        "Choose the platform and scenario that execute the changed handler path.",
+        "Use identical app data, viewport, runtime, and build settings for base and head."
+      ],
+      "operations": [
+        "Repeat the affected scroll, update, or realization operation.",
+        "Assert functional equivalence before comparing performance."
+      ],
+      "metrics": [
+        "operation latency distribution",
+        "frame time and jank count",
+        "layout/realization callback counts",
+        "allocation and GC counts where available"
+      ]
+    },
+    {
+      "id": "platform-hot-path",
+      "title": "Platform handler/layout hot-path scenario",
+      "pathPatterns": [
+        "(^|/)(Android|iOS|MacCatalyst|Windows|Tizen)(/|$)",
+        "\\.(android|ios|maccatalyst|windows|tizen)\\.(cs|xaml)$"
+      ],
+      "platforms": [
+        "changed platform"
+      ],
+      "runner": "platform-matched-device",
+      "automationStatus": "static-review-only",
+      "rationale": "The changed code is excluded from the managed library TFM and requires its native platform.",
+      "setup": [
+        "Construct or reuse a functional scenario that repeatedly executes the changed path.",
+        "Keep the device/runtime and build settings identical for base and head."
+      ],
+      "operations": [
+        "Warm the scenario, then run interleaved base/head measurements.",
+        "Verify output and UI state after each operation."
+      ],
+      "metrics": [
+        "latency distribution",
+        "frame time and jank when UI-bound",
+        "allocation/GC counts",
+        "platform-specific callback or invalidation counts"
+      ]
+    }
+  ]
+}
