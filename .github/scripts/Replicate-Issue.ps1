@@ -6471,6 +6471,11 @@ function Invoke-ReplicationFixPhase {
     # what build 15073071 shows, and the script already reads
     # MAUI_BASELINE_SCOPE_FILE for exactly this reason.
     $baselineScopePath = Join-Path $ArtifactRoot 'fix-scope-baseline.json'
+    # Production runs under 'Stop', so writing into a directory that does not
+    # exist is fatal and takes the whole fix phase with it, after the run has
+    # already paid for the device, the reproduction and the certification.
+    New-Item -ItemType Directory -Path (Split-Path -Parent $baselineScopePath) -Force |
+        Out-Null
     @{ files = @($scope.Files) } | ConvertTo-Json -Depth 3 |
         Set-Content -LiteralPath $baselineScopePath -Encoding utf8
     $env:MAUI_BASELINE_SCOPE_FILE = $baselineScopePath

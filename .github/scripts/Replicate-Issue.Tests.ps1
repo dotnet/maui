@@ -1,6 +1,11 @@
 #!/usr/bin/env pwsh
 #Requires -Modules Pester
 
+# Production runs under 'Stop', so a non-terminating error is fatal there and
+# was invisible here for every test in this file. Twelve fix-phase tests passed
+# while the code they cover wrote into a directory that did not exist. Take the
+# preference from production rather than naming it, so the suite cannot drift
+# from the semantics it is meant to be testing.
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
     $issueAgentContextPath = Join-Path $PSScriptRoot '__missing-issue-agent-context.md'
@@ -9865,6 +9870,35 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $result.Files | Should -Be @('src/Core/src/Handlers/EntryHandler.cs')
         $result.RootCause | Should -Be 'The handler drops the update.'
         $script:armResultsWritten | Should -Be 1
+
+    }
+
+    It 'writes the scope file even when the artifact root does not exist yet' {
+        # Production runs under 'Stop', where writing into a missing directory
+        # is fatal and takes the whole fix phase with it, after the run has
+        # already paid for the device and the certification. The suite runs
+        # under 'Continue', so it saw nothing - and a preference pinned inside
+        # this file does not help, because Pester re-establishes it per block.
+        #
+        # The fixture's own '/tmp/artifacts' is shared and survives between
+        # runs, so it cannot tell a created directory from one an earlier run
+        # left behind. This root is fresh, so the assertion means what it says.
+        $freshRoot = Join-Path ([IO.Path]::GetTempPath()) ("fixroot-" + [Guid]::NewGuid())
+        $previousRoot = $script:ArtifactRoot
+        try {
+            $script:ArtifactRoot = $freshRoot
+            Test-Path -LiteralPath $freshRoot | Should -BeFalse
+
+            # Only the scope write is under test; a later stage failing against
+            # this bare root would say nothing about it.
+            try { Invoke-ReplicationFixPhase @script:phaseArgs | Out-Null } catch { }
+
+            Test-Path -LiteralPath (Join-Path $freshRoot 'fix-scope-baseline.json') |
+                Should -BeTrue
+        } finally {
+            $script:ArtifactRoot = $previousRoot
+            Remove-Item -LiteralPath $freshRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 
     It 'declines when less than one candidate fits in what is left of the step' {
