@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Platform
 				if (!child.Hidden)
 				{
 					var item = items[i];
-					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection);
+					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, child);
 
 					float swipeItemHeight = (float)swipeItemSize.Height;
 					float swipeItemWidth = (float)swipeItemSize.Width;
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Platform
 			_swipeTransitionMode = swipeTransitionMode;
 		}
 
-		static void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
+		internal static void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
 		{
 			if (button.ImageView?.Image == null)
 				return;
@@ -923,7 +923,8 @@ namespace Microsoft.Maui.Platform
 					{
 						if (GetIsVisible(swipeItem))
 						{
-							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection);
+							_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
+							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, platformSwipeItem as UIView);
 							swipeThreshold += swipeItemSize.Width;
 						}
 					}
@@ -954,7 +955,8 @@ namespace Microsoft.Maui.Platform
 
 				if (GetIsVisible(swipeItem))
 				{
-					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection);
+					_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
+					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, platformSwipeItem as UIView);
 					swipeItemsHeight += (float)swipeItemSize.Height;
 					swipeItemsWidth += (float)swipeItemSize.Width;
 				}

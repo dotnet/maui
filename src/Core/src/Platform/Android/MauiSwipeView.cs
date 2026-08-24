@@ -1196,11 +1196,23 @@ namespace Microsoft.Maui.Platform
 					return new Size(swipeItemWidth, contentHeight);
 				}
 
-				if (swipeItem is ISwipeItem)
+				if (swipeItem is ISwipeItemMenuItem)
 				{
+					double swipeItemWidth = SwipeViewExtensions.SwipeItemWidth;
+
+					if (_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem) && platformSwipeItem is AView platformView)
+					{
+						platformView.Measure(
+							MeasureSpec.MakeMeasureSpec(_contentView.Width, MeasureSpecMode.AtMost),
+							MeasureSpec.MakeMeasureSpec(_contentView.Height, MeasureSpecMode.AtMost));
+
+						if (platformView.MeasuredWidth > 0)
+							swipeItemWidth = _context.FromPixels(platformView.MeasuredWidth);
+					}
+
 					return new Size(
 						items.Mode == SwipeMode.Execute
-							? contentWidth / items.Count
+							? swipeItemWidth
 							: SwipeViewExtensions.SwipeItemWidth,
 						contentHeight);
 				}

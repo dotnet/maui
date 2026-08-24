@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Handlers
 				RestorationIdentifier = VirtualView.Text,
 				UserInteractionEnabled = false
 			};
+			swipeItemButton.SetTitleColor(UIColor.Label, UIControlState.Normal);
 
 			return swipeItemButton;
 		}
@@ -112,14 +113,14 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					var maxWidth = frame.Width * 0.5f;
-					var maxHeight = frame.Height * 0.5f;
+					var maxIconSize = (nfloat)(Math.Min((double)frame.Width, (double)frame.Height) * 0.5);
 
-					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxWidth, maxHeight);
+					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxIconSize, maxIconSize);
 
 					try
 					{
 						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+						MauiSwipeView.UpdateSwipeItemInsets(button);
 
 						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
 							button.TintColor = fontImageSource.Color.ToPlatform();

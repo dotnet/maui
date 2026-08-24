@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SwipeViewExtensions
 	{
-		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection)
+		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, UIView? platformSwipeItem)
 		{
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
 			if (items == null)
@@ -17,11 +18,23 @@ namespace Microsoft.Maui.Platform
 
 			if (swipeDirection.IsHorizontalSwipe())
 			{
-				if (swipeItem is ISwipeItemMenuItem)
+				if (swipeItem is ISwipeItemMenuItem menuItem)
 				{
+					double swipeItemWidth = SwipeItemWidth;
+
+					if (platformSwipeItem is not null)
+					{
+						var measuredSize = platformSwipeItem.SizeThatFits(new CGSize(contentWidth, contentHeight));
+						if (measuredSize.Width > 0)
+							swipeItemWidth = measuredSize.Width;
+					}
+
+					if (menuItem.Source is not null && platformSwipeItem is UIButton button && button.ImageView?.Image is null)
+						swipeItemWidth = System.Math.Max(swipeItemWidth, SwipeItemWidth);
+
 					return new Size(
 						items.Mode == SwipeMode.Execute
-							? contentWidth / items.Count
+							? swipeItemWidth
 							: SwipeItemWidth,
 						contentHeight);
 				}
