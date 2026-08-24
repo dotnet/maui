@@ -1356,7 +1356,31 @@ function Assert-ReplicationFixPath {
         throw 'Fix path has an unexpected extension.'
     }
 
-    $allowed = $fixPath -cmatch '^src/(?:(?:Controls|Core|Essentials|Graphics|BlazorWebView)/src|Compatibility/Core/src|SingleProject/Resizetizer/src)/'
+    # This list is an allowlist and stays one: it runs in the job that holds the
+    # credential, so "everything not named is allowed" is the wrong shape here.
+    #
+    # It was incomplete, and the omission cost a whole certified run. Build
+    # 15076525 cleared its control, scoped `src/Core/maps/src/...`, ran the
+    # panel, passed the fix arm 3 of 3 and the restoration arm 3 of 3 - a full
+    # four-arm `certified-oracle` - and was thrown away here, because Maps ships
+    # from three roots and none of them was named.
+    #
+    # The orchestrator's own scope validator asks only that a path be under
+    # `src/`, not test code, `.cs` or `.xaml`, and tracked. So the two halves of
+    # one system were reading different rules, and everything between scoping
+    # and publication was spent before they disagreed. A test reads the
+    # repository and fails when a shipping product root is missing from this
+    # list, because a hand-maintained enumeration drifts exactly once and then
+    # costs a certified run.
+    $allowed = $fixPath -cmatch ('^src/(?:' +
+        'Controls/(?:Maps/|Foldable/)?src' +
+        '|Core/(?:maps/)?src' +
+        '|Essentials/src' +
+        '|Graphics/src' +
+        '|BlazorWebView/src' +
+        '|Compatibility/(?:Core|Maps|Material|Android\.AppLinks)/src' +
+        '|SingleProject/Resizetizer/src' +
+        ')/')
     if (-not $allowed) {
         throw 'Fix path is outside the established product source directories.'
     }

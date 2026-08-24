@@ -3802,3 +3802,92 @@ $body
             Should -Throw '*not the method the manifest claims*'
     }
 }
+
+Describe 'The publisher accepts every product root the orchestrator will scope' {
+    # Build 15076525 earned a four-arm `certified-oracle` on
+    # src/Core/maps/src/... and lost it here, because the orchestrator's scope
+    # validator and this publisher's allowlist were two different rules. These
+    # tests read *both* validators and the real repository, so the next shipping
+    # library that appears fails a test instead of a certified run.
+
+    BeforeAll {
+        $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+
+        $orchestratorPath = Join-Path $script:repoRoot '.github/scripts/Replicate-Issue.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $orchestratorPath, [ref]$null, [ref]$null)
+        foreach ($name in @('Test-PathInsideRoot', 'Get-ReplicationFixScopePathRejection')) {
+            $fn = $ast.Find({
+                param($n)
+                $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name
+            }.GetNewClosure(), $true)
+            if (-not $fn) { throw "Orchestrator function '$name' not found." }
+            . ([scriptblock]::Create($fn.Extent.Text))
+        }
+
+        # Roots deliberately outside a fix scope: test infrastructure, project
+        # templates and AOT profile tooling are not runtime product code, so a
+        # device test could never validate a change to them.
+        $script:excludedRoots = @('src/TestUtils/', 'src/Templates/', 'src/ProfiledAot/')
+
+        Push-Location $script:repoRoot
+        try { $tracked = git ls-files 'src/*.cs' } finally { Pop-Location }
+
+        $script:sampleByRoot = @{}
+        foreach ($file in $tracked) {
+            if ($file -notmatch '^(src/(?:[^/]+/){1,2}src)/') { continue }
+            $root = $Matches[1]
+            if (-not $script:sampleByRoot.ContainsKey($root)) {
+                $script:sampleByRoot[$root] = $file
+            }
+        }
+    }
+
+    It 'finds product roots to check' {
+        $script:sampleByRoot.Count | Should -BeGreaterThan 10
+    }
+
+    It 'accepts every shipping root the orchestrator would allow into a scope' {
+        $drifted = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($entry in $script:sampleByRoot.GetEnumerator()) {
+            $root = $entry.Key
+            $sample = $entry.Value
+            if ($script:excludedRoots | Where-Object { $root.StartsWith($_, 'Ordinal') }) { continue }
+
+            $rejection = Get-ReplicationFixScopePathRejection -Path $sample -RepositoryRoot $script:repoRoot
+            if ($rejection) { continue }
+
+            try {
+                [void](Assert-ReplicationFixPath -Path $sample -AllowedPaths @($sample))
+            } catch {
+                $drifted.Add("$root (via $sample): $($_.Exception.Message)")
+            }
+        }
+
+        # A non-empty list is the exact loss that build 15076525 suffered.
+        $drifted -join "`n" | Should -BeNullOrEmpty
+    }
+
+    It 'still refuses the roots that are not runtime product code' {
+        foreach ($root in $script:excludedRoots) {
+            $sample = $script:sampleByRoot.Keys |
+                Where-Object { $_.StartsWith($root, 'Ordinal') } |
+                Select-Object -First 1
+            if (-not $sample) { continue }
+
+            { Assert-ReplicationFixPath -Path "$sample/Thing.cs" -AllowedPaths @("$sample/Thing.cs") } |
+                Should -Throw -ExpectedMessage '*outside the established product source directories*'
+        }
+    }
+
+    It 'refuses a src/ directory that does not ship' {
+        { Assert-ReplicationFixPath -Path 'src/Evil/src/Thing.cs' -AllowedPaths @('src/Evil/src/Thing.cs') } |
+            Should -Throw -ExpectedMessage '*outside the established product source directories*'
+    }
+
+    It 'matches product roots case-sensitively' {
+        { Assert-ReplicationFixPath -Path 'src/controls/src/Thing.cs' -AllowedPaths @('src/controls/src/Thing.cs') } |
+            Should -Throw -ExpectedMessage '*outside the established product source directories*'
+    }
+}
