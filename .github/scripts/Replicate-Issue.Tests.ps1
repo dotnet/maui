@@ -12142,6 +12142,31 @@ param([string[]]$EditableFiles)
         } finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
     }
 
+    It 'keeps the restore record out of what git reports as changed' {
+        # Get-ReplicationGitStatus runs with --untracked-files=all, and the
+        # record is written by the candidate's own restore - so an unignored
+        # record appears as an out-of-scope change on the candidate's watch and
+        # blocks it, which is a worse version of the defect it exists to fix.
+        # Its sibling .baseline-state.json has always been ignored for this
+        # reason. Both sides are read here so neither can move alone.
+        $recordPath = Get-ReplicationFixDiscardRecordPath -RepositoryRoot 'ROOT'
+        $relative = ($recordPath -replace '^ROOT[\\/]', '') -replace '\\', '/'
+
+        $repositoryRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+        $ignoreFile = Join-Path $repositoryRoot '.gitignore'
+        Test-Path -LiteralPath $ignoreFile | Should -BeTrue
+        $ignored = @(Get-Content -LiteralPath $ignoreFile |
+            ForEach-Object { $_.Trim() })
+        $ignored | Should -Contain $relative
+
+        # And that git agrees, rather than that the line merely looks right.
+        Push-Location $repositoryRoot
+        try {
+            & git check-ignore -q -- $relative
+            $LASTEXITCODE | Should -Be 0
+        } finally { Pop-Location }
+    }
+
     It 'points the baseline call at the scope file rather than at -EditableFiles' {
         $source = Get-Content -LiteralPath $script:ScriptPath -Raw
         # Parsed, not matched: the comment beside this code names the variable

@@ -16,6 +16,7 @@ templatesTest/
 /src/Controls/tests/TestCases.HostApp/MauiProgram.user.cs
 CustomAgentLogsTmp/
 .github/.baseline-state.json
+.github/.baseline-discarded.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
