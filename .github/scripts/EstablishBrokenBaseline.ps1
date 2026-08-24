@@ -328,6 +328,48 @@ function Remove-BaselineState {
     }
 }
 
+# A restore destroys the only copy of the agent's work. The reviewer never
+# needed it back, but replicate's fix panel judges a candidate by the diff it
+# left in the tree, and a candidate that obeys the skill's restoration rule
+# leaves none - so obeying was being recorded as having done nothing at all.
+# Every discard is therefore written down before it happens, and the panel
+# recovers from it. Only the last one is kept: that is the state the candidate
+# was in when it reported.
+$DiscardedFile = Join-Path $RepoRoot ".github/.baseline-discarded.json"
+
+function Save-DiscardedWork {
+    param([string[]]$Files)
+
+    $entries = @()
+    foreach ($file in $Files) {
+        $full = Join-Path $RepoRoot $file
+        if (-not (Test-Path -LiteralPath $full)) { continue }
+        try {
+            $bytes = [System.IO.File]::ReadAllBytes($full)
+        } catch {
+            continue
+        }
+        $entries += [pscustomobject]@{
+            Path = $file
+            ContentBase64 = [Convert]::ToBase64String($bytes)
+        }
+    }
+
+    if ($entries.Count -eq 0) {
+        if (Test-Path $DiscardedFile) { Remove-Item $DiscardedFile -Force }
+        return
+    }
+
+    $stateDir = Split-Path $DiscardedFile -Parent
+    if (-not (Test-Path $stateDir)) {
+        New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
+    }
+    [pscustomobject]@{
+        DiscardedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+        Files = $entries
+    } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $DiscardedFile
+}
+
 # ============================================================
 # Externally supplied scope (issue replication)
 # ============================================================
@@ -411,6 +453,8 @@ if ($Restore) {
     }
 
     Write-Host "Restoring $($state.RevertedFiles.Count) file(s) from HEAD..." -ForegroundColor Cyan
+
+    Save-DiscardedWork -Files @($state.RevertedFiles)
 
     foreach ($file in $state.RevertedFiles) {
         Write-Host "  Restoring: $file" -ForegroundColor Gray

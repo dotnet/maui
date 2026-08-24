@@ -3296,6 +3296,81 @@ function Get-ReplicationFixCandidateModel {
     return $available[($Attempt - 1) % $available.Count]
 }
 
+function Get-ReplicationFixDiscardRecordPath {
+    <#
+        .SYNOPSIS
+            Where EstablishBrokenBaseline.ps1 writes the work its restore threw away.
+    #>
+    param([string]$RepositoryRoot)
+
+    return (Join-Path $RepositoryRoot '.github/.baseline-discarded.json')
+}
+
+function Restore-ReplicationFixCandidateWork {
+    <#
+        .SYNOPSIS
+            Puts back a candidate's fix when the candidate restored it itself.
+
+        .DESCRIPTION
+            The skill's restoration rule tells a candidate to hand the tree back
+            clean, and the panel restores between candidates anyway, so a
+            candidate that obeys leaves nothing behind. The panel judges a
+            candidate by its diff, so obedience was being recorded as
+            'reported a pass without changing any file' - which is what happened
+            to all five candidates of build 15073835, every one of which had
+            written a real fix and one of which passed the oracle 3 of 3.
+
+            Instruction is not the remedy here; it is what failed. The restore
+            itself writes down what it discards, so the work is recovered from
+            the record rather than from the candidate's cooperation. Only files
+            inside the scope are put back, and only when they differ from HEAD,
+            so a restore that discarded nothing recovers nothing.
+
+        .OUTPUTS
+            The scope-relative paths actually put back.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$RepositoryRoot,
+        [string[]]$ScopeFiles = @()
+    )
+
+    $recordPath = Get-ReplicationFixDiscardRecordPath -RepositoryRoot $RepositoryRoot
+    if (-not (Test-Path -LiteralPath $recordPath)) { return @() }
+
+    try {
+        $record = Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json
+    } catch {
+        Write-Host "Could not read the discarded-work record: $($_.Exception.Message)"
+        return @()
+    }
+
+    $recovered = New-Object System.Collections.Generic.List[string]
+    foreach ($entry in @($record.Files)) {
+        $path = [string]$entry.Path
+        if ([string]::IsNullOrWhiteSpace($path)) { continue }
+        if ($ScopeFiles -cnotcontains $path) { continue }
+
+        $bytes = try { [Convert]::FromBase64String([string]$entry.ContentBase64) } catch { $null }
+        if ($null -eq $bytes) { continue }
+
+        # A record identical to HEAD means the restore discarded nothing, so
+        # putting it back would invent a change the candidate never made.
+        # -C, because a child of this process inherits a working directory the
+        # caller did not necessarily choose, and resolving HEAD in the wrong
+        # repository would compare the file against a stranger.
+        $head = @(& git -C $RepositoryRoot show "HEAD:$path" 2>$null)
+        $headText = ($head -join "`n")
+        $recordedText = [System.Text.Encoding]::UTF8.GetString($bytes)
+        if ($recordedText.TrimEnd("`r", "`n") -ceq $headText.TrimEnd("`r", "`n")) { continue }
+
+        $full = Join-Path $RepositoryRoot $path
+        [System.IO.File]::WriteAllBytes($full, $bytes)
+        $recovered.Add($path)
+    }
+
+    return @($recovered)
+}
+
 function Get-ReplicationFixCandidateChanges {
     <#
         .SYNOPSIS
@@ -3804,6 +3879,12 @@ function Invoke-ReplicationFixPanel {
         # and it has to stay visible.
         $inheritedDirt = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths |
             Where-Object { $ScopeFiles -cnotcontains $_ })
+
+        # Cleared first so the record can only describe this candidate's own
+        # restore, never the one before it.
+        $discardRecord = Get-ReplicationFixDiscardRecordPath -RepositoryRoot $repoRoot
+        if (Test-Path -LiteralPath $discardRecord) { Remove-Item -LiteralPath $discardRecord -Force }
+
         $invocationError = $null
         try {
             Invoke-ReplicationCopilot `
@@ -3823,7 +3904,27 @@ function Invoke-ReplicationFixPanel {
         $artifacts = Read-ReplicationFixCandidateArtifacts `
             -AttemptDirectory $attemptDirectory `
             -TranscriptPath (Join-Path $agentDir "copilot-fix-$attempt-attempt-$attempt.jsonl")
-        $changed = Get-ReplicationFixCandidateChanges -ExcludePaths ($ReproductionPaths + $inheritedDirt)
+        # Wrapped, like $inheritedDirt above: a function returning an empty
+        # array hands back nothing at all, and $null has no .Count. The old
+        # code only ever passed this to a [string[]] parameter, which absorbed
+        # the difference; reading .Count on it does not.
+        $changed = @(Get-ReplicationFixCandidateChanges `
+            -ExcludePaths ($ReproductionPaths + $inheritedDirt))
+        if ($changed.Count -eq 0) {
+            # The candidate handed the tree back clean. That is what the skill
+            # asks for, so it is not evidence that it did nothing - the work is
+            # recovered from what its own restore wrote down.
+            $recovered = @(Restore-ReplicationFixCandidateWork `
+                -RepositoryRoot $repoRoot -ScopeFiles $ScopeFiles)
+            if ($recovered.Count -gt 0) {
+                Write-Host (
+                    "Fix candidate $attempt restored its own work before reporting; " +
+                    "recovered $($recovered.Count) file(s) from the restore record: " +
+                    ($recovered -join ', '))
+                $changed = @(Get-ReplicationFixCandidateChanges `
+                    -ExcludePaths ($ReproductionPaths + $inheritedDirt))
+            }
+        }
         $verdict = if ($tampered.Count -gt 0) {
             # Judged before anything else it reported: a candidate that edited
             # the test or the runner has invalidated its own evidence, whatever
@@ -5420,9 +5521,11 @@ Everywhere the skill writes "`$OUTPUT_DIR", it means that path. Write every file
     $(Join-Path $OutputDirectory 'approach.md')   - what you tried, for the candidates after you
 An attempt that does its work and does not write result.txt is recorded as having reported nothing, however good the fix was, because nothing else in this pipeline can see what you did.
 
-One thing differs from the reviewer's usual try-fix run, and it changes how you must read the skill: there is no author fix. The defect is what this branch ships. The baseline script therefore reverted nothing; it only recorded which files you may edit. Everything else in the skill applies unchanged, including that you restore your work ONLY with:
+One thing differs from the reviewer's usual try-fix run, and it changes how you must read the skill: there is no author fix. The defect is what this branch ships. The baseline script therefore reverted nothing; it only recorded which files you may edit. Everything else in the skill applies unchanged, including that you undo work ONLY with:
     pwsh $(Join-Path $trustedScripts 'EstablishBrokenBaseline.ps1') -Restore
 Never use git checkout, git restore, git reset, git clean, or git stash.
+
+Leave your fix in the tree when you finish. The panel restores between candidates, so you do not have to, and the diff you leave behind is the only thing it can grade: a candidate that reports Pass on an empty tree cannot be told apart from one whose test was already green. Use -Restore to abandon an approach part-way through, never to tidy up at the end.
 
 Your oracle is the reproduction test at "$BaselineRelativePath". It fails today at the intended assertion:
 $(ConvertTo-ReplicationSafeLog $FailureSummary 1500)

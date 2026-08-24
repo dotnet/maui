@@ -143,6 +143,8 @@ BeforeAll {
         'Get-ReplicationFixCandidateModel',
         'Get-ReplicationFixCrossPollination',
         'Get-ReplicationFixCandidateChanges',
+        'Get-ReplicationFixDiscardRecordPath',
+        'Restore-ReplicationFixCandidateWork',
         'Read-ReplicationFixCandidateArtifacts',
         'Get-ReplicationFixReportedResult',
         'Get-ReplicationUnreachedAssertionAdvice',
@@ -8810,8 +8812,26 @@ Describe 'A candidate answers for the dirt it made, not the dirt it inherited' {
     }
 
     It 'excludes that inherited dirt when judging what the candidate changed' {
-        $script:panelBody |
-            Should -Match 'Get-ReplicationFixCandidateChanges -ExcludePaths \(\$ReproductionPaths \+ \$inheritedDirt\)'
+        # Read from the syntax tree rather than the text: the first form of this
+        # test matched one exact line, so wrapping the call for width broke an
+        # assertion about behaviour that had not changed.
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $script:panelBody, [ref]$null, [ref]$null)
+        $calls = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'Get-ReplicationFixCandidateChanges'
+        }, $true))
+        $calls.Count | Should -BeGreaterThan 1
+        # One call computes the inherited dirt and so cannot subtract it. Every
+        # other one must, because a call that forgets blames the candidate for
+        # what the tree already carried.
+        $withExclusion = @($calls | Where-Object {
+            $arguments = ($_.CommandElements | Select-Object -Skip 1 |
+                ForEach-Object { $_.Extent.Text }) -join ' '
+            $arguments -match '-ExcludePaths' -and $arguments -match '\$inheritedDirt'
+        })
+        $withExclusion.Count | Should -Be ($calls.Count - 1)
     }
 
     It 'still holds a candidate to account for dirt inside its own scope' {
@@ -9030,6 +9050,56 @@ Describe 'A failed fix never costs us a good reproduction' {
         $results.Count | Should -Be 0
         $script:invocations.Count | Should -Be 0 -Because (
             'starting a candidate that cannot finish risks the whole run')
+    }
+
+    It 'grades a candidate that restored its own work before reporting' {
+        # Every one of build 15073835's five candidates wrote a real fix, one of
+        # them passed the oracle 3 of 3, and all five were recorded as having
+        # changed no file - because the skill tells a candidate to hand the tree
+        # back clean and they obeyed. The panel was grading tidiness.
+        $file = 'src/Core/src/Handlers/EntryHandler.cs'
+        # Set here rather than inherited: the panel's model list is left behind
+        # by a test in an earlier Describe, so a filtered run would fail for a
+        # reason that has nothing to do with what this test measures.
+        $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
+        $script:agentDir = $script:repoRoot
+        $full = Join-Path $script:repoRoot $file
+        New-Item -ItemType Directory -Path (Split-Path $full -Parent) -Force | Out-Null
+        Set-Content -LiteralPath $full -Value 'original' -NoNewline
+        $record = Join-Path $script:repoRoot '.github/.baseline-discarded.json'
+        New-Item -ItemType Directory -Path (Split-Path $record -Parent) -Force | Out-Null
+
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
+                  $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
+            $script:invocations.Add([pscustomobject]@{ Attempt = $Attempt })
+            # Writes a fix, runs its oracle, then restores exactly as the skill
+            # instructs - which is what leaves the record behind and the tree clean.
+            @{ DiscardedAtUtc = ([DateTimeOffset]::UtcNow.ToString('o'))
+               Files = @(@{ Path = $file
+                            ContentBase64 = [Convert]::ToBase64String(
+                                [Text.Encoding]::UTF8.GetBytes('the candidate fix')) }) } |
+                ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $record
+            Set-Content -LiteralPath $full -Value 'original' -NoNewline
+        }
+        function Read-ReplicationFixCandidateArtifacts {
+            param($AttemptDirectory, $TranscriptPath)
+            [pscustomobject]@{ ResultText = 'Pass'; Approach = 'a'; Analysis = 'b'
+                               HasSelfReview = $true }
+        }
+        # Reports what the tree actually holds, so the recovery is what makes
+        # the candidate's work visible rather than the stub deciding it is.
+        function Get-ReplicationGitStatus {
+            if ((Get-Content -LiteralPath $full -Raw) -ceq 'original') { return @() }
+            @([pscustomobject]@{ Status = ' M'; Path = $file })
+        }
+
+        $results = @(Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @($file) -CandidateCount 1)
+
+        $results[0].Result | Should -Be 'Pass' -Because (
+            'a candidate that obeys the restoration rule must still be graded on its fix')
+        $results[0].ChangedPaths | Should -Be @($file)
     }
 
     It 'records a crashed candidate and keeps going' {
@@ -11977,6 +12047,99 @@ param([string[]]$EditableFiles)
                 }
             } finally { Remove-Item Env:MAUI_BASELINE_SCOPE_FILE -ErrorAction SilentlyContinue }
         } finally { Pop-Location; Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'writes down the work a restore is about to discard' {
+        $root = Join-Path ([IO.Path]::GetTempPath()) ("discard-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src') -Force | Out-Null
+        Push-Location $root
+        try {
+            & git init --quiet 2>&1 | Out-Null
+            & git config user.email 't@t.t' 2>&1 | Out-Null
+            & git config user.name 'T' 2>&1 | Out-Null
+            $file = 'src/Core/src/One.cs'
+            Set-Content -LiteralPath (Join-Path $root $file) -Value 'original' -NoNewline
+            & git add -A 2>&1 | Out-Null
+            & git commit -m 'baseline' --quiet 2>&1 | Out-Null
+
+            $scopePath = Join-Path $root 'fix-scope-baseline.json'
+            @{ files = @($file) } | ConvertTo-Json -Depth 3 |
+                Set-Content -LiteralPath $scopePath -Encoding utf8
+            $env:MAUI_BASELINE_SCOPE_FILE = $scopePath
+            try {
+                $baseline = Join-Path $PSScriptRoot 'EstablishBrokenBaseline.ps1'
+                & (Get-Command pwsh).Source -NoProfile -File $baseline -SnapshotOnly 2>&1 | Out-Null
+
+                Set-Content -LiteralPath (Join-Path $root $file) -Value 'the candidate fix' -NoNewline
+                & (Get-Command pwsh).Source -NoProfile -File $baseline -Restore 2>&1 | Out-Null
+
+                # The restore did its job...
+                (Get-Content -LiteralPath (Join-Path $root $file) -Raw) | Should -Be 'original'
+
+                # ...and the work it destroyed survives, because it is the only
+                # evidence the panel has that the candidate did anything.
+                $recordPath = Join-Path $root '.github/.baseline-discarded.json'
+                Test-Path -LiteralPath $recordPath | Should -BeTrue
+                $record = Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json
+                $entry = @($record.Files | Where-Object { $_.Path -eq $file })
+                $entry.Count | Should -Be 1
+                [Text.Encoding]::UTF8.GetString(
+                    [Convert]::FromBase64String($entry[0].ContentBase64)) |
+                    Should -Be 'the candidate fix'
+            } finally { Remove-Item Env:MAUI_BASELINE_SCOPE_FILE -ErrorAction SilentlyContinue }
+        } finally { Pop-Location; Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'puts a candidate fix back when the candidate restored it before reporting' {
+        $root = Join-Path ([IO.Path]::GetTempPath()) ("recover-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $root '.github') -Force | Out-Null
+        Push-Location $root
+        try {
+            & git init --quiet 2>&1 | Out-Null
+            & git config user.email 't@t.t' 2>&1 | Out-Null
+            & git config user.name 'T' 2>&1 | Out-Null
+            $inScope = 'src/Core/src/One.cs'
+            $outOfScope = 'src/Core/src/Two.cs'
+            $unchanged = 'src/Core/src/Three.cs'
+            foreach ($f in @($inScope, $outOfScope, $unchanged)) {
+                Set-Content -LiteralPath (Join-Path $root $f) -Value 'original' -NoNewline
+            }
+            & git add -A 2>&1 | Out-Null
+            & git commit -m 'baseline' --quiet 2>&1 | Out-Null
+
+            $enc = { param($t) [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($t)) }
+            @{
+                DiscardedAtUtc = ([DateTimeOffset]::UtcNow.ToString('o'))
+                Files = @(
+                    @{ Path = $inScope; ContentBase64 = (& $enc 'the candidate fix') },
+                    @{ Path = $outOfScope; ContentBase64 = (& $enc 'someone else') },
+                    @{ Path = $unchanged; ContentBase64 = (& $enc 'original') })
+            } | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath (Join-Path $root '.github/.baseline-discarded.json')
+
+            $recovered = @(Restore-ReplicationFixCandidateWork `
+                -RepositoryRoot $root -ScopeFiles @($inScope, $unchanged) 6>$null)
+
+            $recovered | Should -Be @($inScope)
+            (Get-Content -LiteralPath (Join-Path $root $inScope) -Raw) |
+                Should -Be 'the candidate fix'
+            # Out of scope is not this candidate's to put back, and a record
+            # that matches HEAD is a restore that discarded nothing - inventing
+            # a change there would manufacture a candidate's whole result.
+            (Get-Content -LiteralPath (Join-Path $root $outOfScope) -Raw) | Should -Be 'original'
+            (Get-Content -LiteralPath (Join-Path $root $unchanged) -Raw) | Should -Be 'original'
+        } finally { Pop-Location; Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'recovers nothing when no restore ever happened' {
+        $root = Join-Path ([IO.Path]::GetTempPath()) ("norec-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        try {
+            @(Restore-ReplicationFixCandidateWork `
+                -RepositoryRoot $root -ScopeFiles @('src/Core/src/One.cs') 6>$null).Count |
+                Should -Be 0
+        } finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
     }
 
     It 'points the baseline call at the scope file rather than at -EditableFiles' {
