@@ -2101,8 +2101,13 @@ function Read-GeneratedAppiumPlan {
         if ($action -ceq 'restartApp' -and $Platform -cnotin @('android', 'ios')) {
             throw "Generated Appium step $($index + 1) uses restartApp outside Android or iOS."
         }
-        if ($action -ceq 'dragPath' -and $Platform -cnotin @('android', 'ios')) {
-            throw "Generated Appium step $($index + 1) uses dragPath outside Android or iOS."
+        # Windows is still excluded: its adapter has no swipe at all, so a plan
+        # that drags there has no way to express the gesture it needs. Catalyst
+        # is not - the Mac2 driver implements the actions endpoint, and the
+        # runner now asks it rather than refusing on the author's behalf. Eight
+        # scenarios were turned away for gestures the drivers had all along.
+        if ($action -ceq 'dragPath' -and $Platform -cnotin @('android', 'ios', 'catalyst')) {
+            throw "Generated Appium step $($index + 1) uses dragPath outside Android, iOS or Mac Catalyst."
         }
         $null = ConvertTo-BoundedAgentLine `
             -Value $step.description `

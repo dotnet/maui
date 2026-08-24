@@ -980,7 +980,13 @@ Describe 'Replication orchestrator security boundary' {
 
         $Platform = 'windows'
         { Read-GeneratedAppiumPlan | Out-Null } |
-            Should -Throw '*uses dragPath outside Android or iOS*'
+            Should -Throw '*uses dragPath outside Android, iOS or Mac Catalyst*'
+
+        # Catalyst is allowed now that the runner asks the Mac2 driver instead
+        # of refusing for it. Asserted here rather than assumed, because the
+        # validator and the runner disagreeing is what produced the refusals.
+        $Platform = 'catalyst'
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
         $Platform = 'ios'
 
         $plan = Get-Content -LiteralPath $appiumPlanPath -Raw | ConvertFrom-Json -Depth 10
@@ -11077,5 +11083,86 @@ Describe 'A green tree at panel time is explained, not just reported' {
             'function Test-ReplicationFixBaselineStillRed \{(?<body>(?:.|\n)*?)\n\}\n')
         $probe.Success | Should -BeTrue
         $probe.Groups['body'].Value | Should -CMatch 'Get-ReplicationFixBaselineGreenCause'
+    }
+}
+
+Describe 'A gesture the driver supports is not refused on its behalf' {
+    BeforeAll {
+        $script:runnerSource = Get-Content -LiteralPath (Join-Path `
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+            '.github/scripts/templates/RunReplicationAppiumPlan.cs') -Raw
+        $script:runnerSource | Should -Match 'static void Swipe' `
+            -Because 'a canary: the wrong file would make every assertion below vacuous'
+    }
+
+    It 'sends Catalyst the command its own driver implements' {
+        # 'mobile: swipe' belongs to the XCUITest driver. Catalyst runs under
+        # Mac2, which implements 'macos: swipe' and rejects the other name.
+        $swipe = [regex]::Match($script:runnerSource,
+            'static void Swipe\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline)
+        $swipe.Success | Should -BeTrue
+        $body = $swipe.Value
+        $body | Should -CMatch '"macos: swipe"'
+        $catalystBranch = [regex]::Match($body,
+            'platform == "catalyst"(?<arm>(?:.|\n)*?)\n    \}')
+        $catalystBranch.Success | Should -BeTrue
+        $catalystBranch.Groups['arm'].Value | Should -CMatch '"macos: swipe"'
+        # The double quotes matter: the branch's comment names 'mobile: swipe'
+        # to explain why it is wrong here, and a bare substring test reads that
+        # explanation as the defect it describes.
+        $catalystBranch.Groups['arm'].Value | Should -Not -CMatch '"mobile: swipe"'
+    }
+
+    It 'still gives Mac2 the coordinate it requires' {
+        # macos: swipe takes elementId or x/y and has no implicit target, so a
+        # direction on its own is rejected by the driver.
+        $swipe = [regex]::Match($script:runnerSource,
+            'static void Swipe\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline).Value
+        $catalystArm = [regex]::Match($swipe, 'platform == "catalyst"(?<arm>(?:.|\n)*?)\n    \}').Groups['arm'].Value
+        $catalystArm | Should -CMatch '\["x"\]'
+        $catalystArm | Should -CMatch '\["y"\]'
+        $catalystArm | Should -CMatch '\["direction"\]'
+    }
+
+    It 'leaves iOS on the XCUITest command' {
+        $swipe = [regex]::Match($script:runnerSource,
+            'static void Swipe\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline).Value
+        $iosArm = [regex]::Match($swipe, 'platform == "ios"(?<arm>(?:.|\n)*?)\n    \}').Groups['arm'].Value
+        $iosArm | Should -CMatch 'mobile: swipe'
+    }
+
+    It 'drags with a mouse where there is no touchscreen' {
+        $drag = [regex]::Match($script:runnerSource,
+            'static void DragPath\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline).Value
+        $drag | Should -CMatch 'PointerKind\.Mouse'
+        $drag | Should -CMatch 'MouseButton\.Left'
+        $drag | Should -CMatch 'isDesktop'
+    }
+
+    It 'asks the driver rather than refusing before trying' {
+        $drag = [regex]::Match($script:runnerSource,
+            'static void DragPath\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline).Value
+        # The unconditional refusal must be gone, and the message it used to
+        # throw must survive as the fallback, so a driver that really cannot do
+        # this lands exactly where it landed before.
+        $drag | Should -Not -CMatch 'if \(platform is "windows" or "catalyst"\)'
+        # The catch must be unconditional. An exception filter would decide in
+        # advance which refusals count, which is the same "answer for the
+        # driver" this change exists to stop, wearing a narrower hat.
+        $drag | Should -CMatch 'catch \(WebDriverException \w+\)\s*\r?\n\s*\{'
+        $drag | Should -CMatch 'is not supported by the \{platform\} adapter'
+    }
+
+    It 'lets a Catalyst plan through the validator that the runner can now run' {
+        # The refusals came from the two sides disagreeing, so the platform sets
+        # are compared rather than each being trusted on its own.
+        $orchestrator = Get-Content -LiteralPath (Join-Path `
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+            '.github/scripts/Replicate-Issue.ps1') -Raw
+        $gate = [regex]::Match($orchestrator,
+            "dragPath' -and \`$Platform -cnotin @\((?<set>[^)]*)\)")
+        $gate.Success | Should -BeTrue
+        $gate.Groups['set'].Value | Should -CMatch "'catalyst'"
+        $gate.Groups['set'].Value | Should -Not -CMatch "'windows'"
     }
 }

@@ -1044,11 +1044,31 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
         throw new InvalidOperationException("Swipe is not supported by the Windows adapter.");
     }
 
-    if (platform == "ios" || platform == "catalyst")
+    if (platform == "ios")
     {
         driver.ExecuteScript(
             "mobile: swipe",
             new Dictionary<string, object> { ["direction"] = direction });
+        return;
+    }
+
+    if (platform == "catalyst")
+    {
+        // 'mobile: swipe' is the XCUITest driver's command. Catalyst runs under
+        // the Mac2 driver, which implements 'macos: swipe' and rejects the
+        // other name outright - build 15071938 was refused as an unsupported
+        // scenario for a gesture the driver has always had. Mac2 requires an
+        // element or a coordinate to swipe at, so the window centre is passed
+        // explicitly rather than relying on a default that does not exist.
+        var macSize = driver.Manage().Window.Size;
+        driver.ExecuteScript(
+            "macos: swipe",
+            new Dictionary<string, object>
+            {
+                ["x"] = macSize.Width / 2,
+                ["y"] = macSize.Height / 2,
+                ["direction"] = direction
+            });
         return;
     }
 
@@ -1075,12 +1095,6 @@ static void DragPath(
     // A SwipeView, pan, or drag defect is triggered by one pointer that stays
     // down while it changes direction, which a single cardinal swipe cannot
     // express. Issue 37089 was abandoned for exactly that reason.
-    if (platform is "windows" or "catalyst")
-    {
-        throw new InvalidOperationException(
-            $"dragPath is not supported by the {platform} adapter.");
-    }
-
     var segments = ParseDragSegments(path);
     var size = driver.Manage().Window.Size;
     var origin = element.Location;
@@ -1088,11 +1102,18 @@ static void DragPath(
     var x = origin.X + (extent.Width / 2);
     var y = origin.Y + (extent.Height / 2);
 
-    var finger = new PointerInputDevice(PointerKind.Touch, "finger");
+    // A desktop driver has no touchscreen, so a touch pointer is either
+    // rejected or silently does nothing there. The gesture is the same either
+    // way; only the input device that performs it differs.
+    var isDesktop = platform is "windows" or "catalyst";
+    var button = isDesktop ? MouseButton.Left : MouseButton.Touch;
+    var finger = new PointerInputDevice(
+        isDesktop ? PointerKind.Mouse : PointerKind.Touch,
+        isDesktop ? "mouse" : "finger");
     var sequence = new ActionSequence(finger);
     sequence.AddAction(finger.CreatePointerMove(
         CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
-    sequence.AddAction(finger.CreatePointerDown(MouseButton.Touch));
+    sequence.AddAction(finger.CreatePointerDown(button));
     sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(250)));
 
     foreach (var (dx, dy) in segments)
@@ -1104,8 +1125,23 @@ static void DragPath(
         sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(140)));
     }
 
-    sequence.AddAction(finger.CreatePointerUp(MouseButton.Touch));
-    driver.PerformActions(new List<ActionSequence> { sequence });
+    sequence.AddAction(finger.CreatePointerUp(button));
+
+    try
+    {
+        driver.PerformActions(new List<ActionSequence> { sequence });
+    }
+    catch (WebDriverException actionsUnsupported)
+    {
+        // Desktop drivers were refused outright before this, so the only way to
+        // learn whether they implement the actions endpoint was to ask them.
+        // Asking cannot regress: a driver that refuses lands on exactly the
+        // message that used to be thrown without trying.
+        throw new InvalidOperationException(
+            $"dragPath is not supported by the {platform} adapter: " +
+            actionsUnsupported.Message,
+            actionsUnsupported);
+    }
 }
 
 static List<(double Dx, double Dy)> ParseDragSegments(string path)
