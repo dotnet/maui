@@ -6712,6 +6712,44 @@ Describe 'Get-ReplicationTestAttemptKind' {
         $checked | Should -BeGreaterThan 20 -Because 'most guard refusals open with that phrase'
     }
 
+    It 'names the guards that refuse from the orchestrator itself' {
+        # 15075591 spent its first attempt on the Sandbox-verdict-text guard and
+        # filed it as 'other'. That guard lives in Replicate-Issue.ps1 rather
+        # than the guard script, and opens "Generated test '<path>' ..." instead
+        # of "Candidate source", so reading only one producer missed a whole
+        # family. Both are read now.
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Replicate-Issue.ps1'), [ref]$tokens, [ref]$errors)
+        $errors.Count | Should -Be 0
+
+        $openings = @($ast.FindAll({
+            param($node) $node -is [System.Management.Automation.Language.ThrowStatementAst]
+        }, $true) | ForEach-Object {
+            # A bare `throw` rethrows and carries no pipeline to read.
+            if ($null -eq $_.Pipeline) { return }
+            $text = ([string]$_.Pipeline.Extent.Text).TrimStart('(', '"', "'")
+            # The static prefix, up to the first interpolation.
+            ($text -split '\$')[0]
+        } | Where-Object {
+            $_ -match '^(?:Generated test|The generated test)' -and
+            $_ -notmatch 'Unable to expose'
+        } | Sort-Object -Unique)
+
+        $openings.Count | Should -BeGreaterThan 4 -Because 'this family has several members'
+        foreach ($opening in $openings) {
+            Get-ReplicationTestAttemptKind -FailureSummary "$opening'src/x.cs' broke a rule." |
+                Should -Be 'guard-refused' -Because "the guard opening '$opening' must be named"
+        }
+
+        # The one that is not a rule refusing. A sick harness is not an agent
+        # that broke a rule, and calling it one sends effort to the wrong place.
+        Get-ReplicationTestAttemptKind `
+            -FailureSummary 'Unable to expose generated test to the failure-only verifier: x.cs' |
+            Should -Be 'other'
+    }
+
     It 'never takes an attempt away from a kind that already had a name' {
         # Placed last in the classifier so it can only name what was unnamed. A
         # guard message that also mentions a build failure must stay build-failed.

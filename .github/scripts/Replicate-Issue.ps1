@@ -2619,14 +2619,24 @@ function Get-ReplicationTestAttemptKind {
     # outcome is unchanged - a broken machine still reaches no verdict - but the
     # operator can now tell a sick device from a failing agent.
     if ($FailureSummary -match 'infrastructureFailure=True') { return 'harness-error' }
-    # Every static guard refuses with "Candidate source '<path>'" or "Candidate
-    # test source '<path>'" - 26 throws, all sharing that opening. Those attempts
-    # were filed as 'other', so a run refused five times by five different rules
-    # reported attemptKinds=[other x 5] and charged the whole budget to nothing:
-    # build 15069709 spent every attempt on the relational-oracle guard and the
-    # census could not say so. Checked last, so it can only ever name an attempt
-    # that would otherwise be unnamed.
-    if ($FailureSummary -match "Candidate (?:test )?source '") { return 'guard-refused' }
+    # Every static guard refuses with "Candidate source '<path>'", "Candidate
+    # test source '<path>'" or one of the "Generated test ..." openings. Those
+    # attempts were filed as 'other', so a run refused five times by five
+    # different rules reported attemptKinds=[other x 5] and charged the whole
+    # budget to nothing: build 15069709 spent every attempt on the
+    # relational-oracle guard and the census could not say so, and 15075591
+    # spent its first attempt on the Sandbox-verdict-text guard, which opens
+    # with "Generated test" and so survived the first version of this branch.
+    # Checked last, so it can only ever name an attempt that would otherwise be
+    # unnamed. "Unable to expose generated test" is deliberately absent: that
+    # is the harness failing, not a rule refusing.
+    if ($FailureSummary -match (
+            "Candidate (?:test )?source '|" +
+            "Generated test (?:source )?'|" +
+            'Generated test (?:path|is not)|' +
+            'The generated test (?:breaks|does not exercise)')) {
+        return 'guard-refused'
+    }
     return 'other'
 }
 
