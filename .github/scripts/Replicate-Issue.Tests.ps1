@@ -9243,6 +9243,32 @@ Describe 'A fix phase may only ask to write files that can be granted' {
                 CandidateTimeoutMinutes = 30
                 BudgetMinutes = 200
             }
+            # The scope file has to exist, exactly as it does in a real
+            # checkout. Without it every candidate was refused for a parent
+            # that does not exist, and the assertions below still passed
+            # because the grant is recorded before it is validated.
+            foreach ($relative in $script:panelArgs.ScopeFiles) {
+                $absolute = Join-Path $script:repoRoot $relative
+                New-Item -ItemType Directory -Path (Split-Path -Parent $absolute) -Force | Out-Null
+                Set-Content -LiteralPath $absolute -Value '// product' -NoNewline
+            }
+        }
+
+        It 'grants every candidate a write permission the real validator accepts' {
+            # The assertion that matters: not that a grant was requested, but
+            # that requesting it did not throw. Recording happens before
+            # validation, so counting grants alone cannot tell a candidate that
+            # ran from one that was refused.
+            $results = @(Invoke-ReplicationFixPanel @script:panelArgs -CandidateCount 3)
+
+            @($results | Where-Object { $_.Rejection -like '*did not complete*' }).Count |
+                Should -Be 0
+            $script:granted.Count | Should -Be 3
+            foreach ($g in $script:granted) {
+                foreach ($p in $g.Paths) {
+                    (Test-Path -LiteralPath $p -PathType Container) | Should -BeFalse
+                }
+            }
         }
 
         It 'grants every candidate files rather than the directory holding them' {
@@ -9259,9 +9285,12 @@ Describe 'A fix phase may only ask to write files that can be granted' {
         It 'still grants the second candidate after the first has written its output' {
             # The regression: naming the try-fix root passed only while it did
             # not exist, so candidate 1 succeeded and 2 onwards were refused.
-            $null = Invoke-ReplicationFixPanel @script:panelArgs -CandidateCount 2
+            $results = @(Invoke-ReplicationFixPanel @script:panelArgs -CandidateCount 2)
 
             @($script:granted | Where-Object { $_.Attempt -eq 2 }).Count | Should -Be 1
+            @($results | Where-Object {
+                $_.Attempt -eq 2 -and $_.Rejection -like '*did not complete*'
+            }).Count | Should -Be 0
         }
 
         It 'names the artifacts the panel later reads back' {
