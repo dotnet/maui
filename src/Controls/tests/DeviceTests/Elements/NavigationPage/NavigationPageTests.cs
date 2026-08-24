@@ -33,6 +33,10 @@ namespace Microsoft.Maui.DeviceTests
 	// FlyoutViewHandler instead, so every test below runs against both variants.
 	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// NavigationPageTests_TabbedViewHandler subclass overrides registration to exercise
+	// TabbedViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()
@@ -54,9 +58,19 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 #if IOS || MACCATALYST
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+			RegisterTabbedPageHandler(handlers);
+		}
+
+		// The base class exercises TabbedRenderer on iOS/MacCatalyst;
+		// NavigationPageTests_TabbedViewHandler overrides this to exercise TabbedViewHandler instead.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
 			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
 		}
@@ -95,7 +109,6 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler<Shape, ShapeViewHandler>();
 			handlers.AddHandler<Window, WindowHandlerStub>();
 		}
-
 		[Fact]
 		public async Task PoppingNavigationPageDoesntCrash()
 		{

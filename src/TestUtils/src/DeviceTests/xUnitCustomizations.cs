@@ -215,9 +215,11 @@ namespace Microsoft.Maui
 
 		string? _reuseVariantPrefix;
 
-		// Renderer/handler subclasses reuse the same test bodies, so DisplayName alone can't
-		// distinguish variants. Android uses the "Variant" trait; iOS/MacCatalyst use distinct
-		// NavigationViewVariant and FlyoutViewVariant traits, which may both be present.
+		// Renderer/handler subclass pairs reuse the same test bodies, so DisplayName alone can't
+		// distinguish variants. Android uses the "Variant" trait ("[Renderer]"/"[Handler]"),
+		// NavigationPage uses "NavigationViewVariant" ("[NavigationRenderer]"/"[NavigationViewHandler]"),
+		// FlyoutPage uses "FlyoutViewVariant" ("[PhoneFlyoutPageRenderer]"/"[FlyoutViewHandler]"),
+		// and TabbedPage uses "TabbedViewVariant" ("[TabbedRenderer]"/"[TabbedViewHandler]").
 		string GetReuseVariantPrefix()
 		{
 			if (_reuseVariantPrefix == null)
@@ -252,6 +254,20 @@ namespace Microsoft.Maui
 						else if (flyoutViewVariants.Contains("PhoneFlyoutPageRenderer"))
 						{
 							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[PhoneFlyoutPageRenderer] ";
+						}
+					}
+
+					if (Traits.TryGetValue("TabbedViewVariant", out var tabbedViewVariants) && tabbedViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "TabbedRenderer" trait, so Traits may contain both values for this key.
+						if (tabbedViewVariants.Contains("TabbedViewHandler"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedViewHandler] ";
+						}
+						else if (tabbedViewVariants.Contains("TabbedRenderer"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedRenderer] ";
 						}
 					}
 #endif
