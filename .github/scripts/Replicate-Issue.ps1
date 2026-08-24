@@ -2031,6 +2031,65 @@ function Test-ReplicationTestOmitsReportedApi {
     return "the issue reports $reported but the generated test exercises $exercised"
 }
 
+function Get-ReplicationSandboxAutomationIdSurvey {
+    <#
+        .SYNOPSIS
+            Lists the AutomationIds the authored Sandbox actually declares.
+
+        .DESCRIPTION
+            The same agent writes the page and the plan, and when the two
+            disagree the disagreement is only discovered on a device, roughly
+            twenty minutes later, as "Element was not visible". 129 cached runs
+            hit a WebDriverTimeoutException; both cases where the failure
+            printed an element inventory show a plan naming an id the app never
+            exposed - GraphicsSurface against a page offering title and
+            ResultLabel, ExpectedColorSwatch against one offering ShowButton.
+
+            This is decidable before the build. It is deliberately conservative:
+            an id assigned from anything other than a plain string literal makes
+            the survey incomplete, and an incomplete survey must never be used
+            to refuse a plan, because a false refusal costs an attempt for a
+            page that was correct.
+    #>
+    param([string[]]$SourcePaths)
+
+    $ids = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal)
+    $complete = $true
+    $read = $false
+
+    foreach ($path in @($SourcePaths)) {
+        if ([string]::IsNullOrWhiteSpace($path) -or
+            -not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            continue
+        }
+
+        $text = Get-Content -LiteralPath $path -Raw -ErrorAction SilentlyContinue
+        if ($null -eq $text) { continue }
+        $read = $true
+
+        foreach ($match in [regex]::Matches($text, 'AutomationId\s*=\s*"(?<id>[^"]*)"')) {
+            [void]$ids.Add($match.Groups['id'].Value)
+        }
+
+        # Anything that is not AutomationId="literal" - an interpolated string,
+        # a variable, a binding, a concatenation - means ids exist that this
+        # survey cannot see.
+        foreach ($match in [regex]::Matches($text, 'AutomationId\s*=\s*(?<rhs>[^;>\r\n]+)')) {
+            if ($match.Groups['rhs'].Value.TrimStart() -notmatch '^"[^"]*"') {
+                $complete = $false
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        Ids = @($ids | Sort-Object)
+        # Only a survey that read a file and saw nothing but literals can say
+        # an id is absent rather than merely unseen.
+        IsComplete = ($complete -and $read -and $ids.Count -gt 0)
+    }
+}
+
 function Read-GeneratedAppiumPlan {
     Assert-BoundedGeneratedFile `
         -Path $appiumPlanPath `
@@ -2082,6 +2141,13 @@ function Read-GeneratedAppiumPlan {
         'className',
         'androidText'
     )
+
+    # A page this cannot read is a survey it cannot complete, never a refusal.
+    $surveyPaths = @('sandboxXamlPath', 'sandboxCodePath', 'sandboxShellXamlPath',
+        'sandboxShellCodePath') | ForEach-Object {
+            (Get-Variable -Name $_ -ValueOnly -ErrorAction SilentlyContinue)
+        }
+    $idSurvey = Get-ReplicationSandboxAutomationIdSurvey -SourcePaths $surveyPaths
 
     $enteredText = $false
     for ($index = 0; $index -lt $steps.Count; $index++) {
@@ -2152,6 +2218,21 @@ function Read-GeneratedAppiumPlan {
                 -Value $step.locator.value `
                 -Description "Generated Appium step $($index + 1) locator value" `
                 -MaximumLength 500
+            # Checked here rather than on a device: the page and the plan were
+            # written by the same agent in the same attempt, so a name that is
+            # in one and not the other is an internal contradiction, and every
+            # minute spent building and deploying to discover it is wasted.
+            if ($strategy -cin @('id', 'accessibilityId') -and
+                $idSurvey.IsComplete -and
+                $locatorValue -cnotin $idSurvey.Ids) {
+                throw ("Generated Appium step $($index + 1) waits for '$locatorValue', " +
+                    'which the Sandbox page it was written against never declares. ' +
+                    'The AutomationIds that page does declare are: ' +
+                    (($idSurvey.Ids | ForEach-Object { "'$_'" }) -join ', ') +
+                    '. Use one of those, or set that AutomationId on the element ' +
+                    'the step is meant to reach.')
+            }
+
             if ($strategy -ceq 'androidText') {
                 if ($Platform -cne 'android') {
                     throw "Generated Appium step $($index + 1) uses androidText outside Android."

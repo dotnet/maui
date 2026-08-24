@@ -141,6 +141,7 @@ BeforeAll {
         'Read-ReplicationFixCandidateArtifacts',
         'Get-ReplicationFixReportedResult',
         'Get-ReplicationUnreachedAssertionAdvice',
+        'Get-ReplicationSandboxAutomationIdSurvey',
         'Invoke-ReplicationFixPanel',
         'ConvertTo-ReplicationPowerShellLiteral',
         'New-ReplicationFixOracleRunnerContent',
@@ -11372,5 +11373,178 @@ Describe 'A test that stopped before its oracle is told so' {
         $selfPrintingAt = $body.IndexOf('$selfPrinting = ')
         $unreachedAt | Should -BeGreaterThan 0
         $selfPrintingAt | Should -BeGreaterThan $unreachedAt
+    }
+}
+
+Describe 'A plan is not sent to a device to learn the page it was written with' {
+    BeforeEach {
+        $script:pageDir = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:pageDir -Force | Out-Null
+        function New-Page {
+            param([string]$Name = 'MainPage.xaml', [string]$Body)
+            $p = Join-Path $script:pageDir $Name
+            Set-Content -LiteralPath $p -Value $Body -Encoding utf8NoBOM
+            return $p
+        }
+    }
+
+    It 'lists the ids the page declares' {
+        $p = New-Page -Body '<Label AutomationId="ResultLabel" /><Button AutomationId="ShowButton" />'
+        $survey = Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @($p)
+        $survey.Ids | Should -Be @('ResultLabel', 'ShowButton')
+        $survey.IsComplete | Should -BeTrue
+    }
+
+    It 'reads C# assignments as well as XAML attributes' {
+        $p = New-Page -Name 'MainPage.xaml.cs' -Body 'button.AutomationId = "CodeSetId";'
+        (Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @($p)).Ids |
+            Should -Be @('CodeSetId')
+    }
+
+    It 'refuses to call a survey complete when an id is computed' {
+        # A false refusal costs an attempt for a page that was correct, so an
+        # id this survey cannot see must silence it entirely.
+        foreach ($rhs in @('$"Item{i}"', 'someVariable', 'BuildId() + "x"')) {
+            $p = New-Page -Name "P$([guid]::NewGuid().ToString('N')).xaml.cs" `
+                -Body "a.AutomationId = `"Real`";`nb.AutomationId = $rhs;"
+            $survey = Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @($p)
+            $survey.IsComplete | Should -BeFalse
+            $survey.Ids | Should -Contain 'Real'
+        }
+    }
+
+    It 'is incomplete when there was nothing to read' {
+        (Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @()).IsComplete |
+            Should -BeFalse
+        (Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @(
+            Join-Path $script:pageDir 'absent.xaml')).IsComplete | Should -BeFalse
+        $empty = New-Page -Name 'NoIds.xaml' -Body '<Label Text="hi" />'
+        (Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @($empty)).IsComplete |
+            Should -BeFalse
+    }
+
+    It 'actually refuses the plan, and accepts one the page supports' {
+        # The source assertions below prove the guard is written; this proves
+        # the validator runs it.
+        $IssueNumber = 37440
+        $appiumPlanPath = Join-Path $script:pageDir 'appium-plan.json'
+        $sandboxXamlPath = Join-Path $script:pageDir 'MainPage.xaml'
+        $sandboxCodePath = Join-Path $script:pageDir 'MainPage.xaml.cs'
+        $sandboxShellXamlPath = Join-Path $script:pageDir 'SandboxShell.xaml'
+        $sandboxShellCodePath = Join-Path $script:pageDir 'SandboxShell.xaml.cs'
+        $Platform = 'android'
+        '<Label AutomationId="ResultLabel" />' |
+            Set-Content -LiteralPath $sandboxXamlPath -Encoding utf8NoBOM
+
+        $planText = @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 37440,
+  "steps": [
+    {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "__TARGET__"
+      },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the reported incorrect result",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "BUG REPRODUCED: Incorrect",
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@
+        $planText.Replace('__TARGET__', 'ResultLabel') |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+
+        $planText.Replace('__TARGET__', 'GraphicsSurface') |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw "*never declares*'ResultLabel'*"
+    }
+
+    It 'stays silent when it cannot read the page at all' {
+        # StrictMode makes an absent variable an exception, and an exception
+        # here would destroy a run over a check that exists to save attempts.
+        $IssueNumber = 37440
+        $appiumPlanPath = Join-Path $script:pageDir 'appium-plan.json'
+        $Platform = 'android'
+        $planText = @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 37440,
+  "steps": [
+    {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": { "strategy": "accessibilityId", "value": "AnythingAtAll" },
+      "value": "NO BUG: not yet triggered",
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the reported incorrect result",
+      "locator": { "strategy": "accessibilityId", "value": "AnythingAtAll" },
+      "value": "BUG REPRODUCED: Incorrect",
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@
+        $planText | Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+
+        Get-Variable -Name 'sandboxXamlPath' -ErrorAction SilentlyContinue |
+            Should -BeNullOrEmpty
+
+        # The suite runs under 'Continue' and production under 'Stop', so a
+        # non-terminating error is fatal there and invisible here. Take the
+        # preference from production rather than naming it.
+        $src = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $declared = [regex]::Match($src,
+            '(?m)^\$ErrorActionPreference\s*=\s*''(?<p>\w+)''')
+        $declared.Success | Should -BeTrue
+        $ErrorActionPreference = $declared.Groups['p'].Value
+
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+    }
+
+    It 'refuses a plan whose locator the page never declares, and says what it has' {
+        $src = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $guard = [regex]::Match($src,
+            "if \(\`$strategy -cin @\('id', 'accessibilityId'\)(?<b>(?:.|\n)*?)\n            \}")
+        $guard.Success | Should -BeTrue
+        # Only an id-based locator, only a complete survey, and the message
+        # must carry the inventory rather than repeating the missing name.
+        $guard.Groups['b'].Value | Should -Match '\$idSurvey\.IsComplete'
+        $guard.Groups['b'].Value | Should -Match '\$locatorValue -cnotin \$idSurvey\.Ids'
+        $guard.Groups['b'].Value | Should -Match 'AutomationIds that page does declare'
+    }
+
+    It 'surveys the pages the agent may actually write' {
+        $src = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $call = [regex]::Match($src,
+            "surveyPaths = @\((?<a>(?:.|\n)*?)\) \| ForEach-Object")
+        $call.Success | Should -BeTrue
+        $src | Should -BeLike '*-SourcePaths $surveyPaths*'
+        # A page the agent can edit but the survey never reads is a page whose
+        # ids look absent, which is how a correct plan gets refused.
+        foreach ($v in @('sandboxXamlPath', 'sandboxCodePath',
+                'sandboxShellXamlPath', 'sandboxShellCodePath')) {
+            $call.Groups['a'].Value | Should -BeLike "*'$v'*"
+            # and the name must be one production actually defines, since these
+            # are looked up by name and a typo would read as an empty page
+            $src | Should -BeLike "*`$$v = Join-Path*"
+        }
     }
 }
