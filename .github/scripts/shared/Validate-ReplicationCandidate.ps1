@@ -402,13 +402,31 @@ function ConvertTo-BoundedSingleLine {
         [AllowNull()][object]$Value,
         [Parameter(Mandatory = $true)][string]$Context,
         [int]$MinimumLength = 1,
-        [int]$MaximumLength = 512
+        [int]$MaximumLength = 512,
+        [switch]$Prose
     )
 
     if ($Value -isnot [string]) {
         throw "$Context must be a string."
     }
     $text = [string]$Value
+    if ($Prose) {
+        # Presentation-only text, shown to a reader and acted on by nothing.
+        # Build 15075319 passed every arm and was discarded here because a
+        # model wrote a reproduction step that was too long or spanned a line,
+        # which is the third time in this pipeline that a bound on how text
+        # looks has destroyed the work the text describes.
+        #
+        # Layout is corrected; meaning is still refused. A line break or a tab
+        # becomes a space, the value is trimmed and cut to fit, and everything
+        # below - a genuine control character, a URL, a mention, a logging
+        # directive - still throws, because those change what the text does
+        # rather than how it reads.
+        $text = [regex]::Replace($text, '[\r\n\t]+', ' ').Trim()
+        if ($text.Length -gt $MaximumLength) {
+            $text = $text.Substring(0, [Math]::Max(1, $MaximumLength - 1)).TrimEnd() + '…'
+        }
+    }
     if (
         $text.Length -lt $MinimumLength -or
         $text.Length -gt $MaximumLength -or
@@ -477,7 +495,8 @@ function ConvertTo-NormalizedPlainStep {
     $step = ConvertTo-BoundedSingleLine `
         -Value $Value `
         -Context 'Manifest reproduction step' `
-        -MaximumLength 300
+        -MaximumLength 300 `
+        -Prose
     if (
         $step -match '(?i)\b(?:https?|ftps?|wss?)://' -or
         $step -match '@' -or

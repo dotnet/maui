@@ -16,6 +16,8 @@ BeforeAll {
     $wanted = @(
         'Assert-ReplicationAuthoritativeResult',
         'Get-ReplicationAuthoritativeTestEntries',
+        'ConvertTo-BoundedSingleLine',
+        'ConvertTo-NormalizedPlainStep',
         'Get-ReportableArtifactName')
     foreach ($name in $wanted) {
         $found = $ast.FindAll({
@@ -161,5 +163,72 @@ Describe 'Get-ReplicationAuthoritativeTestEntries' {
             $entries.Count | Should -Be 1
             $entries[0].PSObject.Properties.Name | Should -Contain 'Method' -Because "the shape $shape must define it"
         }
+    }
+}
+
+Describe 'ConvertTo-NormalizedPlainStep' {
+    It 'keeps a certified run that wrote an over-long reproduction step' {
+        # Build 15075319 passed every arm and was discarded at this gate.
+        $long = 'Open the sample page and tap the button. ' * 12
+        $long.Length | Should -BeGreaterThan 300 -Because 'a canary: a short input would not exercise the cut'
+        $step = ConvertTo-NormalizedPlainStep -Value $long
+        $step.Length | Should -BeLessOrEqual 300
+        $step | Should -BeLike 'Open the sample page*'
+    }
+
+    It 'keeps a step that spans a line or carries padding' {
+        ConvertTo-NormalizedPlainStep -Value "  Tap the button.`nObserve the label.  " |
+            Should -Be 'Tap the button. Observe the label.'
+    }
+
+    It 'still refuses what a reproduction step must never carry' {
+        # Layout is corrected; meaning is not. These reach a PR body.
+        { ConvertTo-NormalizedPlainStep -Value 'See https://example.com for details.' } |
+            Should -Throw -ExpectedMessage '*URL, mention, or logging directive*'
+        { ConvertTo-NormalizedPlainStep -Value 'Ask @someone about it.' } |
+            Should -Throw -ExpectedMessage '*URL, mention, or logging directive*'
+        { ConvertTo-NormalizedPlainStep -Value 'Tap it ##vso[task.setvariable variable=x]y' } |
+            Should -Throw -ExpectedMessage '*URL, mention, or logging directive*'
+        { ConvertTo-NormalizedPlainStep -Value "Tap the button.`u{0000}" } |
+            Should -Throw -ExpectedMessage '*contains controls*'
+        { ConvertTo-NormalizedPlainStep -Value '   ' } | Should -Throw
+        { ConvertTo-NormalizedPlainStep -Value 42 } | Should -Throw -ExpectedMessage '*must be a string*'
+    }
+
+    It 'cuts a URL that sat beyond the limit rather than smuggling it through' {
+        $value = ('a' * 320) + ' https://example.com'
+        $step = ConvertTo-NormalizedPlainStep -Value $value
+        $step | Should -Not -Match 'https?://'
+        $step.Length | Should -BeLessOrEqual 300
+    }
+}
+
+Describe 'ConvertTo-BoundedSingleLine' {
+    It 'leaves every value that is acted on strict' {
+        # Only presentation text opts in. A test method name, a filter or a sha
+        # is used to select and to publish, so a silent trim there would change
+        # what runs.
+        { ConvertTo-BoundedSingleLine -Value ' SomeTest ' -Context 'Manifest test method' } |
+            Should -Throw -ExpectedMessage '*untrimmed*'
+        { ConvertTo-BoundedSingleLine -Value ('x' * 600) -Context 'Manifest test method' } |
+            Should -Throw -ExpectedMessage '*exceeds its length limit*'
+    }
+
+    It 'reserves the prose path for the one field that opts in' {
+        # Read the production call sites: exactly one passes -Prose, and it is
+        # the reproduction step. A second would be a new way to lose meaning.
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:SourcePath, [ref]$tokens, [ref]$errors)
+        $calls = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'ConvertTo-BoundedSingleLine'
+        }, $true))
+        $calls.Count | Should -BeGreaterThan 10 -Because 'the validator uses it widely'
+        $prose = @($calls | Where-Object { $_.Extent.Text -match '-Prose\b' })
+        $prose.Count | Should -Be 1
+        $prose[0].Extent.Text | Should -Match 'Manifest reproduction step'
     }
 }
