@@ -1041,7 +1041,51 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
 {
     if (platform == "windows")
     {
-        throw new InvalidOperationException("Swipe is not supported by the Windows adapter.");
+        // WinAppDriver has no 'mobile:' gesture vocabulary, and this used to
+        // throw without asking, so several scenarios were refused for a
+        // gesture that was never attempted. The W3C actions endpoint is the
+        // same one DragPath now uses successfully, so the swipe is expressed
+        // as a mouse press-move-release across the window. A driver that
+        // genuinely refuses lands on exactly the message thrown before.
+        var windowSize = driver.Manage().Window.Size;
+        var centreX = windowSize.Width / 2;
+        var centreY = windowSize.Height / 2;
+        var spanX = windowSize.Width / 3;
+        var spanY = windowSize.Height / 3;
+
+        var (startX, startY, endX, endY) = direction switch
+        {
+            "up" => (centreX, centreY + spanY, centreX, centreY - spanY),
+            "down" => (centreX, centreY - spanY, centreX, centreY + spanY),
+            "left" => (centreX + spanX, centreY, centreX - spanX, centreY),
+            "right" => (centreX - spanX, centreY, centreX + spanX, centreY),
+            _ => throw new InvalidOperationException(
+                $"Unknown swipe direction '{direction}'.")
+        };
+
+        var mouse = new PointerInputDevice(PointerKind.Mouse, "mouse");
+        var swipeSequence = new ActionSequence(mouse);
+        swipeSequence.AddAction(mouse.CreatePointerMove(
+            CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+        swipeSequence.AddAction(mouse.CreatePointerDown(MouseButton.Left));
+        swipeSequence.AddAction(mouse.CreatePause(TimeSpan.FromMilliseconds(250)));
+        swipeSequence.AddAction(mouse.CreatePointerMove(
+            CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(420)));
+        swipeSequence.AddAction(mouse.CreatePause(TimeSpan.FromMilliseconds(140)));
+        swipeSequence.AddAction(mouse.CreatePointerUp(MouseButton.Left));
+
+        try
+        {
+            driver.PerformActions(new List<ActionSequence> { swipeSequence });
+            return;
+        }
+        catch (WebDriverException actionsUnsupported)
+        {
+            throw new InvalidOperationException(
+                "Swipe is not supported by the Windows adapter: " +
+                actionsUnsupported.Message,
+                actionsUnsupported);
+        }
     }
 
     if (platform == "ios")

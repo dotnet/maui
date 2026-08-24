@@ -981,9 +981,11 @@ Describe 'Replication orchestrator security boundary' {
 
         { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
 
+        # Windows is accepted now for the same reason Catalyst is: the runner
+        # asks the driver rather than answering for it, and two of the measured
+        # unsupported_scenario reasons were held Windows pointer drags.
         $Platform = 'windows'
-        { Read-GeneratedAppiumPlan | Out-Null } |
-            Should -Throw '*uses dragPath outside Android, iOS or Mac Catalyst*'
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
 
         # Catalyst is allowed now that the runner asks the Mac2 driver instead
         # of refusing for it. Asserted here rather than assumed, because the
@@ -11099,6 +11101,65 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
             -Because 'a canary: the wrong file would make every assertion below vacuous'
     }
 
+    It 'asks the Windows driver for a swipe instead of answering for it' {
+        # Windows threw without attempting, and 'the bounded Windows adapter
+        # terminates on a held pointer drag' is a reason several scenarios were
+        # refused for a gesture never tried. DragPath already proved the W3C
+        # actions endpoint is the right question to ask a desktop driver.
+        $swipe = [regex]::Match($script:runnerSource,
+            'static void Swipe\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline)
+        $swipe.Success | Should -BeTrue
+        $windowsBranch = [regex]::Match($swipe.Value,
+            'if \(platform == "windows"\)(?<arm>.*?)\n    \}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $windowsBranch.Success | Should -BeTrue
+        $arm = $windowsBranch.Groups['arm'].Value
+
+        $arm | Should -Match 'PerformActions' `
+            -Because 'a refusal that never asked the driver is a report about the call'
+        $arm | Should -Match 'PointerKind\.Mouse' `
+            -Because 'a desktop driver has no touchscreen'
+        # The worst case must stay exactly the status quo, never a silent pass.
+        $arm | Should -Match 'Swipe is not supported by the Windows adapter'
+        $arm | Should -Match 'throw new InvalidOperationException'
+    }
+
+    It 'does not let an exception filter decide which refusals count' {
+        $swipe = [regex]::Match($script:runnerSource,
+            'static void Swipe\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline)
+        $windowsBranch = [regex]::Match($swipe.Value,
+            'if \(platform == "windows"\)(?<arm>.*?)\n    \}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        # Same covenant as DragPath: catching only some WebDriverExceptions is
+        # answering for the driver again, in a narrower hat.
+        $windowsBranch.Groups['arm'].Value |
+            Should -Match 'catch \(WebDriverException \w+\)\s*\r?\n\s*\{'
+    }
+
+    It 'covers every direction it accepts, so none falls through silently' {
+        $swipe = [regex]::Match($script:runnerSource,
+            'static void Swipe\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline)
+        $windowsBranch = [regex]::Match($swipe.Value,
+            'if \(platform == "windows"\)(?<arm>.*?)\n    \}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $arm = $windowsBranch.Groups['arm'].Value
+        # Every direction the plan schema permits must have an arm; the list
+        # is read out of the orchestrator so a widened schema cannot outrun it.
+        $orchestrator = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $schema = [regex]::Match($orchestrator,
+            "swipe[^\r\n]*?-cin @\((?<d>[^)]*)\)")
+        $directions = if ($schema.Success) {
+            [regex]::Matches($schema.Groups['d'].Value, "'(?<v>[a-z]+)'") |
+                ForEach-Object { $_.Groups['v'].Value }
+        } else { @('up', 'down', 'left', 'right') }
+        $directions.Count | Should -BeGreaterThan 1
+        foreach ($d in $directions) {
+            $arm | Should -Match ('"' + $d + '" =>')
+        }
+        # and an unknown direction must be named, not silently swallowed
+        $arm | Should -Match '_ =>\s*throw'
+    }
+
     It 'sends Catalyst the command its own driver implements' {
         # 'mobile: swipe' belongs to the XCUITest driver. Catalyst runs under
         # Mac2, which implements 'macos: swipe' and rejects the other name.
@@ -11157,18 +11218,29 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
         $drag | Should -CMatch 'is not supported by the \{platform\} adapter'
     }
 
-    It 'lets a Catalyst plan through the validator that the runner can now run' {
-        # The refusals came from the two sides disagreeing, so the platform sets
-        # are compared rather than each being trusted on its own.
+    It 'lets every plan through the validator that the runner can now run' {
+        # The refusals came from the validator and the runner disagreeing, so
+        # the two are compared rather than each being trusted on its own.
         $orchestrator = Get-Content -LiteralPath (Join-Path `
             (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
             '.github/scripts/Replicate-Issue.ps1') -Raw
-        $gate = [regex]::Match($orchestrator,
-            "dragPath' -and \`$Platform -cnotin @\((?<set>[^)]*)\)")
-        $gate.Success | Should -BeTrue
-        $gate.Groups['set'].Value | Should -CMatch "'catalyst'"
-        $gate.Groups['set'].Value | Should -Not -CMatch "'windows'"
+
+        # The runner handles every platform, so any surviving platform gate on
+        # dragPath could only refuse a gesture it can actually perform.
+        $orchestrator | Should -Not -CMatch "dragPath' -and[\s\S]{0,80}?-cnotin @\("
+        $desktop = [regex]::Match($script:runnerSource,
+            'isDesktop = platform is (?<d>[^;]*);')
+        $desktop.Success | Should -BeTrue
+        $desktop.Groups['d'].Value | Should -CMatch '"windows"'
+        $desktop.Groups['d'].Value | Should -CMatch '"catalyst"'
+
+        # and the prompt, the only thing the author reads, must not advertise a
+        # narrower set than the validator accepts.
+        $advertised = [regex]::Match($orchestrator, 'dragPath is available (?<scope>[^.]*)\.')
+        $advertised.Success | Should -BeTrue
+        $advertised.Groups['scope'].Value | Should -Match 'on every platform'
     }
+
 }
 
 Describe 'A candidate that reported its result is heard' {
