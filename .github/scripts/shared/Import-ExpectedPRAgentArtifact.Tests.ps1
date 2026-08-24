@@ -50,9 +50,12 @@ Describe 'Import-ExpectedPRAgentArtifact' {
 
     It 'tail-truncates an oversized diagnostic log without rejecting review content' {
         $log = Join-Path $script:ExpectedPRAgent 'pr-plus-reviewer/entry-validation.log'
+        $patch = Join-Path $script:ExpectedPRAgent 'pr-plus-reviewer/candidate.patch'
         New-Item -ItemType Directory -Path (Split-Path -Parent $log) -Force | Out-Null
         ('begin-' + ('x' * 1024) + '-FINAL-MARKER') |
             Set-Content -LiteralPath $log -NoNewline
+        ('patch-' + ('y' * 1024) + '-PATCH-END') |
+            Set-Content -LiteralPath $patch -NoNewline
         Set-Content -LiteralPath (Join-Path $script:ExpectedPRAgent 'winner.json') -Value '{}'
 
         $result = Import-ExpectedPRAgentArtifact `
@@ -63,11 +66,15 @@ Describe 'Import-ExpectedPRAgentArtifact' {
             -MaxTotalBytes 1024
         $copiedLog = Get-Content -Raw -LiteralPath (
             Join-Path $script:Destination 'pr-plus-reviewer/entry-validation.log')
+        $copiedPatch = Get-Content -Raw -LiteralPath (
+            Join-Path $script:Destination 'pr-plus-reviewer/candidate.patch')
 
-        $result.CopiedFiles | Should -Be 2
-        $result.TruncatedFiles | Should -Be 1
+        $result.CopiedFiles | Should -Be 3
+        $result.TruncatedFiles | Should -Be 2
         $copiedLog | Should -Match '^--- Diagnostic log truncated from '
         $copiedLog | Should -Match '-FINAL-MARKER$'
+        $copiedPatch | Should -Match '^--- Diagnostic log truncated from '
+        $copiedPatch | Should -Match '-PATCH-END$'
         Test-Path -LiteralPath (Join-Path $script:Destination 'winner.json') |
             Should -BeTrue
     }

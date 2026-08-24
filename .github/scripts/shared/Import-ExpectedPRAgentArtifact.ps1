@@ -29,7 +29,7 @@ function Import-ExpectedPRAgentArtifact {
 
         [Parameter(Mandatory = $false)]
         [AllowEmptyCollection()]
-        [string[]]$TruncateOversizedFileExtensions = @('.log')
+        [string[]]$TruncateOversizedFileExtensions = @('.log', '.patch', '.diff')
     )
 
     $rootItem = Get-Item -LiteralPath $ArtifactRoot -Force -ErrorAction Stop

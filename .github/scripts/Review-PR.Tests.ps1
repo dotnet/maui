@@ -871,7 +871,9 @@ Describe 'Reviewer pipeline timeout containment' {
         $postReviewBlock | Should -Match ([regex]::Escape(
             '-MaxTotalBytes $maxImportedLogBytes'))
         $postReviewBlock | Should -Match ([regex]::Escape(
-            '-TruncateOversizedFileExtensions $truncatedLogExtensions'))
+            "`$truncatedArtifactExtensions = @('.log', '.patch', '.diff')"))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-TruncateOversizedFileExtensions $truncatedArtifactExtensions'))
         $postReviewBlock | Should -Not -Match ([regex]::Escape(
             '-SourceDirectory $source'))
         $postReviewBlock | Should -Not -Match (
@@ -898,7 +900,9 @@ Describe 'Reviewer pipeline timeout containment' {
         $importBlock | Should -Match ([regex]::Escape(
             '-DestinationDirectory $destination'))
         $importBlock | Should -Match ([regex]::Escape(
-            '-TruncateOversizedFileExtensions $truncatedLogExtensions'))
+            "`$truncatedArtifactExtensions = @('.log', '.patch', '.diff')"))
+        $importBlock | Should -Match ([regex]::Escape(
+            '-TruncateOversizedFileExtensions $truncatedArtifactExtensions'))
         $postTaskBlock | Should -Match ([regex]::Escape(
             '$prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"'))
         $postTaskBlock | Should -Not -Match (
