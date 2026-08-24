@@ -72,6 +72,13 @@ param(
     [ValidateRange(10, 90)]
     [int]$FixCandidateTimeoutMinutes = 30,
 
+    # The expert scope phase runs between the budget being approved and the
+    # panel starting, so its cost has to be named rather than left implicit:
+    # spent unaccounted, it comes out of the reserve that publishes the
+    # certified evidence.
+    [ValidateRange(5, 60)]
+    [int]$FixScopeTimeoutMinutes = 25,
+
     [ValidateRange(1, 8)]
     [int]$FixCandidateCount = 5,
 
@@ -5625,10 +5632,15 @@ function Invoke-ReplicationFixPhase {
     $testRelativePath = @($GeneratedFiles)[0]
     New-Item -ItemType Directory -Path $fixDir -Force | Out-Null
 
+    # Asked twice on purpose. This first answer only decides whether the scope
+    # phase is worth paying for, so it has to include the scope phase's own
+    # timeout: without that it can approve a scope run that consumes every
+    # minute the panel was approved to use.
     $budgetMinutes = Get-ReplicationFixPanelBudget `
         -ConfiguredBudgetMinutes $FixPanelBudgetMinutes `
         -StepTimeoutMinutes $StepTimeoutMinutes `
-        -ElapsedMinutes ([DateTimeOffset]::UtcNow - $replicationStartedUtc).TotalMinutes
+        -ElapsedMinutes ([DateTimeOffset]::UtcNow - $replicationStartedUtc).TotalMinutes `
+        -ReserveMinutes (25 + $FixScopeTimeoutMinutes)
     if ($budgetMinutes -lt $FixCandidateTimeoutMinutes) {
         Write-Host (
             "No fix is attempted: $budgetMinutes minutes remain of the step budget, " +
@@ -5645,7 +5657,7 @@ function Invoke-ReplicationFixPhase {
         -Prompt $scopePrompt `
         -WritePaths @($fixScopePath) `
         -Attempt 1 `
-        -TimeoutMinutesOverride 25 | Out-Null
+        -TimeoutMinutesOverride $FixScopeTimeoutMinutes | Out-Null
 
     $scope = Read-ReplicationFixScope -Path $fixScopePath
     if ($scope.IsEmpty) {
@@ -5673,6 +5685,21 @@ function Invoke-ReplicationFixPhase {
             -Directory (Join-Path $fixDir 'oracle'))
 
     $protectedPaths = @($GeneratedFiles | ForEach-Object { Join-Path $repoRoot $_ }) + $fixOracleRunnerPath
+
+    # Asked again, now that the scope phase has actually been paid for. The
+    # first answer was a decision about whether to start; this one is the
+    # ceiling the panel runs against, and it has to be measured from the clock
+    # rather than from what the scope phase was allowed to take.
+    $budgetMinutes = Get-ReplicationFixPanelBudget `
+        -ConfiguredBudgetMinutes $FixPanelBudgetMinutes `
+        -StepTimeoutMinutes $StepTimeoutMinutes `
+        -ElapsedMinutes ([DateTimeOffset]::UtcNow - $replicationStartedUtc).TotalMinutes
+    if ($budgetMinutes -lt $FixCandidateTimeoutMinutes) {
+        Write-Host (
+            "No fix is attempted: scoping left $budgetMinutes minutes of the step budget, " +
+            "which is less than one candidate needs.")
+        return $null
+    }
 
     $results = @(Invoke-ReplicationFixPanel `
         -ScopeFiles $scope.Files `

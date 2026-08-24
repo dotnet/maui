@@ -7884,6 +7884,57 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
         $script:start = [DateTimeOffset]::Parse('2025-01-01T00:00:00Z')
     }
 
+    It 'leaves the publish reserve intact after a worst-case scope phase' {
+        # The scope phase runs between this budget being approved and the panel
+        # starting, so its minutes are spent after the measurement. Unaccounted,
+        # the panel can run right up to the step timeout and the certified
+        # evidence never gets published.
+        #
+        # Read from the orchestrator rather than restated here: a version of
+        # this test that did its own arithmetic on its own numbers passed
+        # against the defect it was written to catch.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $scopeRun = $source.IndexOf("-PhaseName 'fix-scope'")
+        $approval = $source.LastIndexOf('Get-ReplicationFixPanelBudget', $scopeRun)
+        $approval | Should -BeGreaterThan 0
+
+        $approvalCall = $source.Substring($approval, $scopeRun - $approval)
+        $approvalCall | Should -Match '-ReserveMinutes[^\r\n]*\$FixScopeTimeoutMinutes' `
+            -Because 'the scope phase is paid for after this measurement, out of the reserve'
+
+        $reserve = [int][regex]::Match($approvalCall, '-ReserveMinutes \((\d+) \+').Groups[1].Value
+        $stepTimeout = [int][regex]::Match($source, '\$StepTimeoutMinutes = (\d+)').Groups[1].Value
+        $scopeTimeout = [int][regex]::Match($source, '\$FixScopeTimeoutMinutes = (\d+)').Groups[1].Value
+        $configured = [int][regex]::Match($source, '\$FixPanelBudgetMinutes = (\d+)').Groups[1].Value
+
+        # Worst case: scope takes its whole timeout, then the panel uses every
+        # minute it was approved for.
+        $elapsedWhenAsked = 60
+        $approved = Get-ReplicationFixPanelBudget `
+            -ConfiguredBudgetMinutes $configured `
+            -StepTimeoutMinutes $stepTimeout `
+            -ElapsedMinutes $elapsedWhenAsked `
+            -ReserveMinutes ($reserve + $scopeTimeout)
+
+        $panelEnds = $elapsedWhenAsked + $scopeTimeout + $approved
+        ($stepTimeout - $panelEnds) | Should -BeGreaterOrEqual $reserve
+    }
+
+    It 'is re-measured after scoping, so a slow scope shortens the panel' {
+        # Approved before scoping and re-asked after it, against the clock
+        # rather than against what scoping was allowed to take.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $calls = [regex]::Matches($source, 'Get-ReplicationFixPanelBudget')
+        $calls.Count | Should -BeGreaterOrEqual 2
+
+        $scopeRun = $source.IndexOf("-PhaseName 'fix-scope'")
+        $panelRun = $source.IndexOf('Invoke-ReplicationFixPanel `')
+        $reMeasure = $source.IndexOf('Get-ReplicationFixPanelBudget', $scopeRun)
+        $scopeRun | Should -BeGreaterThan 0
+        $reMeasure | Should -BeGreaterThan $scopeRun
+        $reMeasure | Should -BeLessThan $panelRun
+    }
+
     It 'starts the first candidate when the budget covers one' {
         Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
             -Now $script:start -PanelBudgetMinutes 150 -CandidateTimeoutMinutes 30 |
@@ -9036,6 +9087,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         $script:FixPanelBudgetMinutes = 120
         $script:StepTimeoutMinutes = 210
         $script:FixCandidateTimeoutMinutes = 30
+        $script:FixScopeTimeoutMinutes = 25
         $script:FixCandidateCount = 5
         $script:replicationStartedUtc = [DateTimeOffset]::UtcNow
 
@@ -9336,6 +9388,7 @@ Describe 'A fix phase may only ask to write files that can be granted' {
             $script:FixPanelBudgetMinutes = 120
             $script:StepTimeoutMinutes = 210
             $script:FixCandidateTimeoutMinutes = 30
+            $script:FixScopeTimeoutMinutes = 25
             $script:FixCandidateCount = 5
             $script:replicationStartedUtc = [DateTimeOffset]::UtcNow
 
