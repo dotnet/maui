@@ -39,8 +39,9 @@ manifest ordering.
 The `NuGetReleaseAudit` artifact records the selected and exact staged package
 lists before manual approval. `pushPackages: false` performs the
 same resolution, gather, validation, filtering, and audit without promotion or
-publishing. A real release uses `1ES.PublishNuget@1` and verifies every selected
-package on NuGet.org afterward.
+publishing. Immediately before a real release, the pipeline filters the staged
+set again so packages published since preparation do not cause conflicts. It
+then uses `1ES.PublishNuget@1` and verifies every selected package on NuGet.org.
 
 Repository-specific policy remains at the pipeline boundary. For example,
 `dotnet/android-libraries` must match the public `.NET 10` channel exactly (ID

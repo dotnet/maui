@@ -63,6 +63,8 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match 'artifactName: NuGetReleaseAudit'
     $nonWorkloadTemplate | Should -Match '(?s)dependsOn: prepare_release.*ManualValidation@0'
     $pipeline | Should -Match "(?s)eq\(parameters\.pushPackages, true\).*non-workload-publish\.yml"
+    $nonWorkloadTemplate | Should -Match '(?s)-Action FilterExisting.*?1ES\.PublishNuget@1'
+    $nonWorkloadTemplate | Should -Match "eq\(variables\['NuGetPackagesToPublish'\], 'true'\)"
     $nonWorkloadTemplate | Should -Match '1ES\.PublishNuget@1'
     $nonWorkloadTemplate | Should -Match "publishFeedCredentials: 'nuget\.org \(dotnetframework\)'"
     $pipeline | Should -Not -Match '(?m)^- name: nugetPublishServiceConnection$'
