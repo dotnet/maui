@@ -2355,7 +2355,7 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "=========================================="
     Write-Host ""
 
-    $allFailed = ($allResults | Where-Object { $_.Passed }).Count -eq 0
+    $allFailed = @($allResults | Where-Object { $_.Passed }).Count -eq 0
     # Env/build/parse errors mean the gate could NOT verify the test's behaviour. Those
     # must surface as INCONCLUSIVE (exit 3), not FAILED, so infra/build flakes don't
     # masquerade as a broken test — mirroring the full-verification mode's classification.
@@ -2414,7 +2414,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-FailureOnlyReport -ReportStatus "✅ PASSED" -Results $allResults
         exit 0
     } else {
-        $passedCount = ($allResults | Where-Object { $_.Passed }).Count
+        $passedCount = @($allResults | Where-Object { $_.Passed }).Count
         if ($Purpose -eq 'NegativeControl') {
             Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
             Write-Host "║              CONTROL CLEARED ✅                           ║" -ForegroundColor Green
@@ -2791,9 +2791,9 @@ function Write-MarkdownReport {
         $woStates = @($WithoutFixResultsList | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
         $wStates  = @($WithFixResultsList    | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
 
-        $allWoPass   = ($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
-        $allWoFail   = ($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
-        $allWFail    = ($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWoPass   = @($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
+        $allWoFail   = @($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWFail    = @($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
         $hasRegression = $false
         # Regression: at least one test fixes (FAIL→PASS) AND at least one regresses (FAIL→FAIL)
         for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
@@ -3717,7 +3717,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
 # Combine into a single summary for backward compatibility
 $withoutFixResult = @{
-    Passed = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
+    Passed = @($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
     PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3914,7 +3914,7 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
 
 # Combine into a single summary for backward compatibility
 $withFixResult = @{
-    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3977,7 +3977,7 @@ foreach ($t in $AllDetectedTests) {
 # Refresh the aggregate objects after trusted Windows evidence conversion mutates the
 # per-test results. These aggregates feed the persisted Markdown report.
 $withoutFixResult = @{
-    Passed = ($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3985,7 +3985,7 @@ $withoutFixResult = @{
     Total = ($withoutFixResults | Measure-Object -Property Total -Sum).Sum
 }
 $withFixResult = @{
-    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -4004,8 +4004,8 @@ Write-Log "VERIFICATION RESULTS"
 $verificationPassed = $false
 # "Without fix" should FAIL and "with fix" should PASS. These two aggregates are kept for the
 # report/summary text, but the PASS/FAIL DECISION now uses the relaxed per-test rule below.
-$failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
-$passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+$failedWithoutFix = @($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
+$passedWithFix = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
 
 # Print a clear comparison table
 Write-Host ""

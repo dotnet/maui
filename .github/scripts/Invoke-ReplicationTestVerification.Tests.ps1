@@ -931,6 +931,20 @@ Describe 'The control pass marker still matches the verifier that prints it' {
             $recognised | Should -BeTrue -Because "the verifier prints '$banner', which no marker matches"
         }
     }
+
+    It 'counts matching results rather than the fields of a single result' {
+        # PowerShell does not wrap a one-element pipeline result in an array, so
+        # ($results | Where-Object {...}).Count on a single surviving hashtable
+        # returns its *key* count. That is why a cleared control reported
+        # "10/1 test(s) PASSED": one test passed, and the result hashtable has
+        # ten fields. Harmless in a banner, but the same expression decides
+        # whether every test passed, where 10 -eq 1 reads as "not all passed".
+        $verifier = Join-Path $PSScriptRoot '../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        $unwrapped = @(Get-Content -LiteralPath $verifier |
+            Where-Object { $_ -match '(?<!@)\(\$\w+\s*\|\s*Where-Object[^)]*\)\.Count' })
+
+        $unwrapped | Should -BeNullOrEmpty -Because 'each of these must be @(...) so .Count counts matches'
+    }
 }
 
 Describe 'A refutation is measured across every requested run' {
