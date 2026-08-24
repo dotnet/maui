@@ -198,14 +198,8 @@ public class TabbedPageManager
 		}
 
 		// TabbedViewManager handles the tab UI refresh via TabsChanged event on the adapter
-		foreach (var index in _bottomBadgePages.Keys.Where(index => index >= Element.Children.Count).ToArray())
-		{
-			_bottomBadgePages.Remove(index);
-		}
-		foreach (var index in _topBadgePages.Keys.Where(index => index >= Element.Children.Count).ToArray())
-		{
-			_topBadgePages.Remove(index);
-		}
+		RemoveBadgePageMappings(_bottomBadgePages, Element.Children.Count);
+		RemoveBadgePageMappings(_topBadgePages, Element.Children.Count);
 		_badgesNeedUpdate = true;
 		ViewPager.Post(TryUpdateAllBadges);
 		UpdateIgnoreContainerAreas();
@@ -358,10 +352,7 @@ public class TabbedPageManager
 				bottomNavigationView.RemoveBadge(maxItems - 1);
 			}
 
-			foreach (var index in _bottomBadgePages.Keys.Where(index => index > lastIndexToUpdate).ToArray())
-			{
-				_bottomBadgePages.Remove(index);
-			}
+			RemoveBadgePageMappings(_bottomBadgePages, lastIndexToUpdate + 1);
 		}
 		else
 		{
@@ -389,8 +380,15 @@ public class TabbedPageManager
 	{
 		if (IsBottomTabPlacement)
 		{
+			var bottomNavigationView = BottomNavigationView;
+			if (bottomNavigationView is null)
+			{
+				_badgesNeedUpdate = true;
+				return;
+			}
+
 			var maxItems = Math.Min(
-				BottomNavigationView?.MaxItemCount ?? 0,
+				bottomNavigationView.MaxItemCount,
 				BottomNavigationViewUtils.MaxBottomNavigationItems);
 			if (Element.Children.Count > maxItems && index >= maxItems - 1)
 			{
@@ -410,6 +408,7 @@ public class TabbedPageManager
 		var bottomNavigationView = BottomNavigationView;
 		if (bottomNavigationView is null)
 		{
+			_badgesNeedUpdate = true;
 			return;
 		}
 
@@ -461,6 +460,7 @@ public class TabbedPageManager
 		var tab = TabLayout?.GetTabAt(index);
 		if (tab is null)
 		{
+			_badgesNeedUpdate = true;
 			return;
 		}
 
@@ -504,6 +504,17 @@ public class TabbedPageManager
 		if (badgeTextColor is not null)
 		{
 			badge.BadgeTextColor = badgeTextColor.ToPlatform();
+		}
+	}
+
+	static void RemoveBadgePageMappings(Dictionary<int, Page> badgePages, int firstIndexToRemove)
+	{
+		foreach (var index in badgePages.Keys)
+		{
+			if (index >= firstIndexToRemove)
+			{
+				badgePages.Remove(index);
+			}
 		}
 	}
 

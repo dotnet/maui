@@ -128,8 +128,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal("New", item.BadgeText);
 				Assert.Equal(-1, item.BadgeValue);
-				Assert.Equal(Colors.Blue.ToPlatform(), Assert.IsType<WSolidColorBrush>(item.BadgeBackground).Color);
-				Assert.Equal(Colors.Yellow.ToPlatform(), Assert.IsType<WSolidColorBrush>(item.BadgeForeground).Color);
+				Assert.Equal(Colors.Blue.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeBackground).Color);
+				Assert.Equal(Colors.Yellow.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeForeground).Color);
 
 				TabbedPage.SetBadgeText(firstPage, "42");
 				TabbedPage.SetBadgeColor(firstPage, null);
