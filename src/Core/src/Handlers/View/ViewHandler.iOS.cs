@@ -170,6 +170,8 @@ namespace Microsoft.Maui.Handlers
 
 		static void InvalidateSafeArea(PlatformView platformView)
 		{
+			// Parent handling is edge-aware across the full ancestor chain, so intermediate
+			// safe-area views cannot shield deeper descendants from ancestor changes.
 			if (platformView is MauiView mauiView)
 			{
 				mauiView.InvalidateSafeArea();

@@ -91,6 +91,72 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ChangingAncestorSafeAreaEdgesInvalidatesEdgeDisjointGrandchild()
+		{
+			var top = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None);
+			var bottom = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container);
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = top
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = bottom
+			};
+			var grandchild = new CustomSafeAreaView
+			{
+				SafeAreaEdges = top
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+			var grandchildHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(grandchild);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				var grandchildPlatformView = grandchildHandler.PlatformView;
+
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				grandchildPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.AddSubview(childPlatformView);
+				childPlatformView.AddSubview(grandchildPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.SafeAreaInsetsDidChange();
+				grandchildPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.LayoutSubviews();
+				childPlatformView.LayoutSubviews();
+				grandchildPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 100), grandchild.LastArrangeBounds);
+
+				parent.SafeAreaEdges = SafeAreaEdges.None;
+				parentPlatformView.LayoutSubviews();
+				childPlatformView.LayoutSubviews();
+				grandchildPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 100, 90), grandchild.LastArrangeBounds);
+
+				parent.SafeAreaEdges = top;
+				parentPlatformView.LayoutSubviews();
+				childPlatformView.LayoutSubviews();
+				grandchildPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 100), grandchild.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
 		public async Task GestureRecognizersAttachToPlatformViewWhenNoContainerViewIsPresent()
 		{
 			var view = new Label()
