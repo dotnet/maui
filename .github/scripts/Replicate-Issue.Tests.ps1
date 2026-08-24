@@ -140,6 +140,7 @@ BeforeAll {
         'Get-ReplicationFixCandidateChanges',
         'Read-ReplicationFixCandidateArtifacts',
         'Get-ReplicationFixReportedResult',
+        'Get-ReplicationUnreachedAssertionAdvice',
         'Invoke-ReplicationFixPanel',
         'ConvertTo-ReplicationPowerShellLiteral',
         'New-ReplicationFixOracleRunnerContent',
@@ -11290,5 +11291,86 @@ Describe 'A candidate that reported its result is heard' {
         $panel | Should -BeGreaterThan 0
         $promptAt = $script:src.IndexOf("-Phase 'fix' ``", $panel)
         $promptAt | Should -BeGreaterThan $panel
+    }
+}
+
+Describe 'A test that stopped before its oracle is told so' {
+    BeforeEach {
+        $script:src = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+    }
+
+    It 'names the missing handler rather than the assertion' {
+        $advice = Get-ReplicationUnreachedAssertionAdvice `
+            -ActualFailure ('Microsoft.Maui.Platform.HandlerNotFoundException : Unable to find a ' +
+                'IElementHandler corresponding to Microsoft.Maui.Controls.CollectionView') `
+            -ExpectedSignature 'Items did not recycle:'
+        # The preamble quotes the failure verbatim, so a bare substring test
+        # is satisfied by the echo rather than by the extraction. Assert the
+        # name appears in the remedy, which only extraction can put there.
+        $advice | Should -Match 'A handler was requested for Microsoft\.Maui\.Controls\.CollectionView and none was registered'
+        $advice | Should -Match 'AddHandler'
+        $advice | Should -Match 'never reached the assertion'
+    }
+
+    It 'sends a timeout to the wait that expired, not to the oracle' {
+        $advice = Get-ReplicationUnreachedAssertionAdvice `
+            -ActualFailure 'System.TimeoutException : The operation has timed out.' `
+            -ExpectedSignature 'Animated ScrollTo reported incorrect previous values:'
+        $advice | Should -Match 'waited for something that never happened'
+        # Three runs each burned three or four attempts being told to rewrite
+        # an assertion that never ran.
+        $advice | Should -Match 'Waiting longer is not the remedy'
+    }
+
+    It 'withdraws the option that would certify an environment failure' {
+        # The general advice offers "declare the signature that the
+        # reproduction actually produces". For a timeout that publishes a
+        # timeout as the reported bug.
+        foreach ($failure in @(
+                'System.TimeoutException : The operation has timed out.',
+                'Microsoft.Maui.Platform.HandlerNotFoundException : no handler')) {
+            $advice = Get-ReplicationUnreachedAssertionAdvice `
+                -ActualFailure $failure -ExpectedSignature 'X did not Y:'
+            $advice | Should -Match 'must never be declared as the signature'
+            $advice | Should -Not -Match 'declare the signature that the reproduction actually produces'
+        }
+    }
+
+    It 'says nothing about a failure that did reach the assertion' {
+        Get-ReplicationUnreachedAssertionAdvice `
+            -ActualFailure 'Assert.Equal() Failure: Values differ' `
+            -ExpectedSignature 'X:' | Should -BeExactly ''
+        Get-ReplicationUnreachedAssertionAdvice -ActualFailure '' -ExpectedSignature 'X:' |
+            Should -BeExactly ''
+    }
+
+    It 'is classified as its own kind, not as a signature mismatch' {
+        $advice = Get-ReplicationUnreachedAssertionAdvice `
+            -ActualFailure 'System.TimeoutException : The operation has timed out.' `
+            -ExpectedSignature 'X did not Y:'
+        Get-ReplicationTestAttemptKind -FailureSummary $advice |
+            Should -BeExactly 'assertion-unreached'
+    }
+
+    It 'still escalates, because the escalation matches the older phrase' {
+        # Dropping that phrase once already filed attempts under the wrong kind
+        # and skipped the escalation entirely.
+        $advice = Get-ReplicationUnreachedAssertionAdvice `
+            -ActualFailure 'System.TimeoutException : The operation has timed out.' `
+            -ExpectedSignature 'X did not Y:'
+        $escalation = [regex]::Match($script:src,
+            "if \(\`$verificationDiagnosis -match '(?<p>[^']+)'\)")
+        $escalation.Success | Should -BeTrue
+        $advice | Should -Match $escalation.Groups['p'].Value
+    }
+
+    It 'is judged before the advice it would otherwise receive' {
+        $body = [regex]::Match($script:src,
+            'if \(\$result\.signatureMatched -ne \$true\) \{(?<b>(?:.|\n)*?)\n    \}').Groups['b'].Value
+        $unreachedAt = $body.IndexOf('Get-ReplicationUnreachedAssertionAdvice')
+        $selfPrintingAt = $body.IndexOf('$selfPrinting = ')
+        $unreachedAt | Should -BeGreaterThan 0
+        $selfPrintingAt | Should -BeGreaterThan $unreachedAt
     }
 }

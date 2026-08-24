@@ -1335,6 +1335,13 @@ function Get-ReplicationVerificationFailureSummary {
         # signature is unmatchable however correct the test is. Telling an
         # author to "assert the reported behavior directly" when it already
         # does buys nothing but another identical attempt.
+        # Judged first: a test that stopped before its assertion has no
+        # signature problem to fix, and the advice below would send it to
+        # rewrite an oracle that was never consulted.
+        $unreached = Get-ReplicationUnreachedAssertionAdvice `
+            -ActualFailure $actual -ExpectedSignature $expected
+        if ($unreached) { return $unreached }
+
         $selfPrinting = [regex]::Match($actual, '^Assert\.(\w+)\(\)')
         if ($selfPrinting.Success -and
             $selfPrinting.Groups[1].Value -notin @('Null', 'NotNull')) {
@@ -2375,6 +2382,66 @@ function Test-ReplicationTestDidNotReproduce {
     )
 }
 
+function Get-ReplicationUnreachedAssertionAdvice {
+    <#
+        .SYNOPSIS
+            Names a failure that happened before the oracle was ever consulted.
+
+        .DESCRIPTION
+            Measured over 323 cached runs, 27 of roughly 56 distinct
+            wrong-signature diagnoses were not signature problems: 15
+            System.TimeoutException and 12 HandlerNotFoundException. In every
+            one the test stopped before reaching its assertion, and the advice
+            told the author its assertion was wrong. Runs 15070659, 15070889
+            and 15071767 each spent three or four consecutive attempts there
+            and never escaped.
+
+            Worse, the general advice offers "declare the signature that the
+            reproduction actually produces". Taking that option for a timeout
+            declares a timeout as the reported bug, which is a false
+            reproduction the verifier would then have no way to refuse.
+
+            The phrase "declared expectedFailureSignature" is kept because the
+            two-failure escalation matches on it, and dropping it once already
+            filed attempts under the wrong kind.
+    #>
+    param(
+        [AllowEmptyString()][string]$ActualFailure,
+        [AllowEmptyString()][string]$ExpectedSignature
+    )
+
+    $preamble = "The test never reached the assertion: it failed with '$ActualFailure', " +
+        "which is not the declared expectedFailureSignature '$ExpectedSignature' because " +
+        'nothing evaluated the oracle at all. The declared signature is not the problem and ' +
+        'must not be changed, and this failure must never be declared as the signature - ' +
+        'that would publish an environment failure as the reported defect. '
+
+    if ($ActualFailure -match 'HandlerNotFoundException|Unable to find a[n]? IElementHandler') {
+        $type = ([regex]::Match($ActualFailure, 'corresponding to (?<t>[\w\.\+`]+)')).Groups['t'].Value
+        $named = if ($type) { "$type" } else { 'the control the test constructs' }
+        return $preamble +
+            "A handler was requested for $named and none was registered, so the control " +
+            'never got a platform view. Register it in the test class own handler setup, ' +
+            'as the existing device tests do - see ' +
+            'src/Controls/tests/DeviceTests/Elements/CollectionView/CollectionViewTests.cs, ' +
+            'which calls handlers.AddHandler<T, THandler>() for every type its test touches, ' +
+            'including the Page and Window it attaches to. Register a handler for every type ' +
+            'in the hierarchy the test builds, not only the control under test.'
+    }
+
+    if ($ActualFailure -match 'TimeoutException|TaskCanceledException|OperationCanceledException|Assertion timed out|The operation has timed out') {
+        return $preamble +
+            'The test waited for something that never happened. Find the wait that expired - ' +
+            'an awaited event, an eventual assertion, or a navigation or layout pass that was ' +
+            'never triggered - and prove the thing it waits for actually occurs, or arrange ' +
+            'the scenario so it does. Waiting longer is not the remedy: a wait that expires ' +
+            'once expires every time. If the transition genuinely cannot be observed at this ' +
+            'tier, say so and propose the tier that can, rather than weakening the oracle.'
+    }
+
+    return ''
+}
+
 function Get-ReplicationTestAttemptKind {
     <#
         .SYNOPSIS
@@ -2394,6 +2461,9 @@ function Get-ReplicationTestAttemptKind {
     if (-not $FailureSummary) { return 'other' }
     if (Test-ReplicationTestBuildFailure -FailureSummary $FailureSummary) { return 'build-failed' }
     if (Test-ReplicationTestDidNotReproduce $FailureSummary) { return 'test-passed' }
+    # Checked before the signature kind, whose phrase this advice deliberately
+    # keeps so the two-failure escalation still fires.
+    if ($FailureSummary -match 'never reached the assertion') { return 'assertion-unreached' }
     if ($FailureSummary -match 'declared expectedFailureSignature') { return 'wrong-signature' }
     if ($FailureSummary -match '(?i)reports a different value|stableFailureMessage=False') { return 'unstable-failure' }
     if ($FailureSummary -match 'cannot be attributed to the named test') { return 'ambiguous-selection' }
