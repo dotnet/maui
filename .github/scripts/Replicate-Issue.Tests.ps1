@@ -8409,6 +8409,49 @@ Describe 'Every agent invocation names parameters that exist' {
     }
 }
 
+Describe 'A candidate answers for the dirt it made, not the dirt it inherited' {
+    # The product build regenerates files of its own. Running the oracle
+    # rewrites src/Core/src/Handlers/HybridWebView/HybridWebView.js, so it is
+    # dirty again before the next candidate has done anything. In build
+    # 15069710 candidates 1 and 2 were both refused for "changed files outside
+    # its scope: HybridWebView.js" - two working fixes discarded for an edit
+    # neither had made. Candidate 3 diagnosed it exactly: the file "was already
+    # dirty before I started and reappeared after the oracle run".
+    BeforeAll {
+        $script:panelBody = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Invoke-ReplicationFixPanel\b.*?^}').Value
+    }
+
+    It 'has a body to inspect at all' {
+        $script:panelBody | Should -Not -BeNullOrEmpty
+    }
+
+    It 'records what was already dirty before the candidate is invoked' {
+        # Captured before, or it cannot distinguish inherited dirt from the
+        # candidate's own work.
+        $capture = [regex]::Match($script:panelBody, '\$inheritedDirt = @\(')
+        $invoke = [regex]::Match($script:panelBody, 'Invoke-ReplicationCopilot')
+
+        $capture.Success | Should -BeTrue
+        $invoke.Success | Should -BeTrue
+        $capture.Index | Should -BeLessThan $invoke.Index
+    }
+
+    It 'excludes that inherited dirt when judging what the candidate changed' {
+        $script:panelBody |
+            Should -Match 'Get-ReplicationFixCandidateChanges -ExcludePaths \(\$ReproductionPaths \+ \$inheritedDirt\)'
+    }
+
+    It 'still holds a candidate to account for dirt inside its own scope' {
+        # In-scope dirt means a restore did not happen, which is exactly the
+        # condition that must stay visible. Excusing it would let one
+        # candidate's fix be published under the next candidate's name.
+        $script:panelBody |
+            Should -Match '\$inheritedDirt = @\([^\r\n]*\r?\n[^\r\n]*Where-Object \{ \$ScopeFiles -cnotcontains \$_ \}'
+    }
+}
+
 Describe 'The fix panel is a panel, not a retry loop' {
     BeforeAll {
         # Take the configured list from the source rather than restating it, so
@@ -8518,6 +8561,9 @@ Describe 'A failed fix never costs us a good reproduction' {
         $script:restoreSucceeds = $true
         $script:throwOnAttempt = @()
         $script:gitPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+        # What the tree already carried when the panel started. Empty by
+        # default, so a candidate is answerable for everything the stub reports.
+        $script:gitPathsBefore = @()
 
         # Echoes the summary so the cross-pollination assertion is testing
         # what was actually passed rather than a constant.
@@ -8534,7 +8580,16 @@ Describe 'A failed fix never costs us a good reproduction' {
             if ($script:throwOnAttempt -contains $Attempt) { throw 'copilot exploded' }
         }
         function Get-ReplicationGitStatus {
-            @($script:gitPaths | ForEach-Object { [pscustomobject]@{ Status = ' M'; Path = $_ } })
+            # The panel asks twice per candidate: once before it runs, to learn
+            # what was already dirty, and once after, to learn what the
+            # candidate did. A stub that answers the same thing both times
+            # cannot tell those apart, and would report the candidate's own
+            # edits as pre-existing. Before the first candidate the tree holds
+            # whatever the panel inherited; after one has run it holds that too.
+            $paths = if ($script:invocations.Count -eq 0) {
+                $script:gitPathsBefore
+            } else { $script:gitPaths }
+            @($paths | ForEach-Object { [pscustomobject]@{ Status = ' M'; Path = $_ } })
         }
         function Restore-ReplicationFixTree {
             param($TrustedScriptRoot)
@@ -8666,6 +8721,37 @@ Describe 'A failed fix never costs us a good reproduction' {
         $results[0].Rejection | Should -Not -Match 'outside its scope'
     }
 
+    It 'does not blame a candidate for a file the product build regenerates' {
+        # Build 15069710: the oracle run rewrites HybridWebView.js, so it was
+        # dirty before any candidate touched anything. Candidates 1 and 2 were
+        # both refused for "changed files outside its scope: HybridWebView.js"
+        # and two working fixes were thrown away.
+        $generated = 'src/Core/src/Handlers/HybridWebView/HybridWebView.js'
+        $script:gitPathsBefore = @($generated)
+        $script:gitPaths = @($generated, 'src/Core/src/Handlers/EntryHandler.cs')
+
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @('src/Core/src/Handlers/EntryHandler.cs') `
+            -CandidateCount 1 -BudgetMinutes 150
+
+        $results[0].Rejection | Should -Not -Match 'outside its scope'
+        $results[0].ChangedPaths | Should -Not -Contain $generated
+    }
+
+    It 'still blames a candidate for out-of-scope dirt that was not there before' {
+        # The excuse must not become a licence: dirt that appears on the
+        # candidate's watch is still the candidate's.
+        $script:gitPathsBefore = @('src/Core/src/Handlers/HybridWebView/HybridWebView.js')
+        $script:gitPaths = @('src/Core/src/Handlers/HybridWebView/HybridWebView.js', 'eng/Versions.props')
+
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @('src/Core/src/Handlers/EntryHandler.cs') `
+            -CandidateCount 1 -BudgetMinutes 150
+
+        $results[0].Result | Should -Be 'Blocked'
+        $results[0].Rejection | Should -Match 'Versions\.props'
+        $results[0].Rejection | Should -Not -Match 'HybridWebView'
+    }
 }
 
 Describe 'The oracle a fix candidate cannot edit' {

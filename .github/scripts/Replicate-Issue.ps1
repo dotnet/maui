@@ -3307,6 +3307,16 @@ function Invoke-ReplicationFixPanel {
             @('result.txt', 'approach.md', 'analysis.md', 'fix.diff', 'reviewer-findings.json' |
                 ForEach-Object { Join-Path $attemptDirectory $_ })
         $candidateStarted = [DateTimeOffset]::UtcNow
+        # The product build regenerates files of its own. Running the oracle
+        # rewrites src/Core/src/Handlers/HybridWebView/HybridWebView.js, so from
+        # the second candidate onward that file is already dirty when a
+        # candidate starts, and blaming the candidate for it discarded two
+        # working fixes in build 15069710 before candidate 3 diagnosed it.
+        # A candidate can only be answerable for dirt that appears on its watch.
+        # In-scope dirt is deliberately not excused: that is a failed restore,
+        # and it has to stay visible.
+        $inheritedDirt = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths |
+            Where-Object { $ScopeFiles -cnotcontains $_ })
         $invocationError = $null
         try {
             Invoke-ReplicationCopilot `
@@ -3324,7 +3334,7 @@ function Invoke-ReplicationFixPanel {
 
         $tampered = @(Get-ReplicationFixTamperedPaths -Snapshot $protectedSnapshot)
         $artifacts = Read-ReplicationFixCandidateArtifacts -AttemptDirectory $attemptDirectory
-        $changed = Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths
+        $changed = Get-ReplicationFixCandidateChanges -ExcludePaths ($ReproductionPaths + $inheritedDirt)
         $verdict = if ($tampered.Count -gt 0) {
             # Judged before anything else it reported: a candidate that edited
             # the test or the runner has invalidated its own evidence, whatever
