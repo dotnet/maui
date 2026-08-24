@@ -117,19 +117,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			var firstPage = new ContentPage { Title = "First" };
 			TabbedPage.SetBadgeText(firstPage, "New");
-			TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
-			TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
 			var tabbedPage = new TabbedPage { Children = { firstPage } };
 
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var item = Assert.Single((IEnumerable<NavigationViewItemViewModel>)navView.MenuItemsSource);
+				var navItem = Assert.Single(GetNavigationViewItems(navView));
+				var infoBadge = navItem.InfoBadge;
+				Assert.NotNull(infoBadge);
+				var defaultBackgroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Background).Color;
+				var defaultForegroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Foreground).Color;
+				Assert.NotEqual(Colors.Blue.ToWindowsColor(), defaultBackgroundColor);
+				Assert.NotEqual(Colors.Yellow.ToWindowsColor(), defaultForegroundColor);
+
+				TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
+				TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
 
 				Assert.Equal("New", item.BadgeText);
 				Assert.Equal(-1, item.BadgeValue);
 				Assert.Equal(Colors.Blue.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeBackground).Color);
 				Assert.Equal(Colors.Yellow.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeForeground).Color);
+				await AssertEventually(() =>
+					infoBadge.Background is WSolidColorBrush background &&
+					infoBadge.Foreground is WSolidColorBrush foreground &&
+					background.Color == Colors.Blue.ToWindowsColor() &&
+					foreground.Color == Colors.Yellow.ToWindowsColor());
 
 				TabbedPage.SetBadgeText(firstPage, "42");
 				TabbedPage.SetBadgeColor(firstPage, null);
@@ -139,13 +152,16 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(42, item.BadgeValue);
 				Assert.Null(item.BadgeBackground);
 				Assert.Null(item.BadgeForeground);
+				await AssertEventually(() =>
+					infoBadge.Background is WSolidColorBrush background &&
+					infoBadge.Foreground is WSolidColorBrush foreground &&
+					background.Color == defaultBackgroundColor &&
+					foreground.Color == defaultForegroundColor);
 
 				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
 				Assert.Same(
 					Microsoft.UI.Xaml.DependencyProperty.UnsetValue,
 					converter.Convert(null, typeof(object), null, null));
-
-				return Task.CompletedTask;
 			});
 		}
 

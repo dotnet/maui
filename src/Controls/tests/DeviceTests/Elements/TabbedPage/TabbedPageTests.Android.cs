@@ -86,6 +86,22 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task BottomBadgeUpdateCompletesWithNoPages()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(
+				bottomTabs: true,
+				pages: new[] { new ContentPage { Title = "Only page" } });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				tabbedPage.Children.Clear();
+				Assert.True(tabbedPage.TabbedPageManager.UpdateAllBadges());
+				return Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
