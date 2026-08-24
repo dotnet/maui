@@ -6325,6 +6325,17 @@ Describe 'Elision keeps the cause rather than the chatter' {
 }
 
 Describe 'Prompt names the oracles reviewers proved cannot fail honestly' {
+    It 'teaches the arrangement and single-pixel rules the guard already enforces' {
+        # The guard refuses lifecycle attributes, fixture contracts, field
+        # initializers outside a test, and single-pixel oracles. None of those
+        # appeared in the prompt, so the author could only meet them by being
+        # refused first, which is what build 15066948 spent five attempts on.
+        $script:Source | Should -Match 'test lifecycle attribute such as \[SetUp\]'
+        $script:Source | Should -Match 'state built at type-load'
+        $script:Source | Should -Match 'the sole exception is a bindable property declaration'
+        $script:Source | Should -Match 'never rest on a single pixel'
+    }
+
     It 'teaches the relational-oracle rule the guard already enforces' {
         # Build 15067984 hit that guard twice in five attempts because the
         # prompt never stated it, so the author could only discover the rule by
