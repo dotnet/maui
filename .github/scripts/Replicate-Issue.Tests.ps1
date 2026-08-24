@@ -6325,6 +6325,15 @@ Describe 'Elision keeps the cause rather than the chatter' {
 }
 
 Describe 'Prompt names the oracles reviewers proved cannot fail honestly' {
+    It 'forbids a literal pixel sample coordinate' {
+        # Build 15068373 asserted a stroke pixel equals RGBA 144,238,144 at the
+        # literal point (41,63). With the trigger removed the point sat on the
+        # content instead of the stroke, so the control read 173,216,231 and the
+        # oracle failed in both worlds: no fix could ever turn it green.
+        $script:Source | Should -Match "measured native frame in the same run and never written as literal numbers"
+        $script:Source | Should -Match 'no correct fix can ever make it pass'
+    }
+
     It 'forbids reconstructing a rendered position from padding arithmetic' {
         # Pull request 237 was rejected because CompoundPaddingTop already
         # includes the drawable, so the icon and text centres differed by
