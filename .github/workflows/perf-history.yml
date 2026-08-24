@@ -1,0 +1,106 @@
+name: Persist Performance History
+
+on:
+  workflow_run:
+    workflows:
+      - Perf Check - dotnet/maui
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: persist-performance-history
+  cancel-in-progress: false
+
+jobs:
+  persist:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      github.event.workflow_run.path == '.github/workflows/perf-check.lock.yml' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download sealed performance evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/perf-evidence"
+          gh run download "$RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name perf-evidence \
+            --dir "$RUNNER_TEMP/perf-evidence" || exit 0
+
+      - name: Validate and persist benchmark history
+        env:
+          EVIDENCE: ${{ runner.temp }}/perf-evidence
+          DATA_ROOT: ${{ runner.temp }}/perf-data
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          [ -f "$EVIDENCE/evidence-seal.json" ] || exit 0
+          jq -e '.sealed == true and .format == 1' "$EVIDENCE/evidence-seal.json" >/dev/null || exit 0
+          [ -f "$EVIDENCE/pr-resolved.json" ] || exit 0
+          jq -e --arg sourceSha "$SOURCE_SHA" '.harnessSha == $sourceSha' \
+            "$EVIDENCE/pr-resolved.json" >/dev/null || exit 0
+          [ -f "$EVIDENCE/history-point.json" ] || exit 0
+          HEAD_SHA=$(jq -r .headRefOid "$EVIDENCE/pr-resolved.json")
+          jq -e --arg headSha "$HEAD_SHA" '.headSha == $headSha' \
+            "$EVIDENCE/history-point.json" >/dev/null || exit 0
+
+          git fetch --quiet origin perf-data:refs/remotes/origin/perf-data || true
+          if git show-ref --verify --quiet refs/remotes/origin/perf-data; then
+            git worktree add -B perf-data "$DATA_ROOT" refs/remotes/origin/perf-data
+          else
+            git worktree add --detach "$DATA_ROOT" HEAD
+            (
+              cd "$DATA_ROOT"
+              git switch --orphan perf-data
+            )
+          fi
+
+          mkdir -p "$DATA_ROOT/performance"
+          args=(
+            -PointPath "$EVIDENCE/history-point.json"
+            -OutputPath "$DATA_ROOT/performance/history.json"
+          )
+          if [ -f "$DATA_ROOT/performance/history.json" ]; then
+            cp "$DATA_ROOT/performance/history.json" "$RUNNER_TEMP/perf-history-before.json"
+            args+=(-HistoryPath "$RUNNER_TEMP/perf-history-before.json")
+          fi
+          pwsh -NoProfile \
+            -File .github/skills/perf-analysis/scripts/Update-PerformanceHistory.ps1 \
+            "${args[@]}"
+
+          (
+            cd "$DATA_ROOT"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add performance/history.json
+            if git diff --cached --quiet; then
+              exit 0
+            fi
+            git commit -m "Update performance history"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:perf-data; then
+                exit 0
+              fi
+              git fetch origin perf-data
+              git rebase origin/perf-data
+            done
+            exit 1
+          )
