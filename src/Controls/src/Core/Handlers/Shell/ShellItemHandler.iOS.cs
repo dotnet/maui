@@ -206,6 +206,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void ITabBarManagerDelegate.OnTabSelected(int index)
         {
+            // VirtualView (typed) throws if accessed after disconnect; check the interface
+            // member instead, which returns null. Guards against a selection callback that
+            // was already queued on the run loop landing after DisconnectHandler runs.
+            if (((IElementHandler)this).VirtualView is not ShellItem)
+            {
+                return;
+            }
+
             _nativeSelectionInProgress = true;
             try
             {
@@ -305,6 +313,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 throw new InvalidOperationException($"Content not found for active {VirtualView}. Title: {VirtualView.Title}. Route: {VirtualView.Route}.");
             }
 
+            if (_shellContext is null)
+            {
+                throw new InvalidOperationException($"{nameof(ShellItemHandler)} has no {nameof(IShellContext)}. The parent Shell's handler must be connected before creating tab renderers.");
+            }
+
             var items = ShellItemController.GetItems();
             var count = items.Count;
             int maxTabs = 5;
@@ -315,7 +328,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             foreach (var shellSection in items)
             {
-                var renderer = _shellContext!.CreateShellSectionRenderer(shellSection);
+                var renderer = _shellContext.CreateShellSectionRenderer(shellSection);
 
                 renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
                 renderer.ShellSection = shellSection;
@@ -463,15 +476,21 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             if (e.OldItems is not null)
             {
+                var removedViewControllers = new HashSet<UIViewController>();
                 foreach (ShellSection shellSection in e.OldItems)
                 {
                     var renderer = RendererForShellContent(shellSection);
-                    if (renderer is not null && _tabBarController.ViewControllers is not null)
+                    if (renderer is not null)
                     {
-                        _tabManager!.ViewControllers = _tabBarController.ViewControllers
-                            .Where(vc => vc != renderer.ViewController).ToArray();
+                        removedViewControllers.Add(renderer.ViewController);
                         RemoveRenderer(renderer);
                     }
+                }
+
+                if (removedViewControllers.Count > 0 && _tabManager is not null && _tabBarController.ViewControllers is not null)
+                {
+                    _tabManager.ViewControllers = _tabBarController.ViewControllers
+                        .Where(vc => !removedViewControllers.Contains(vc)).ToArray();
                 }
 
                 // Recompute IsInMoreTab after removals in case sections move across the 5-tab "More" threshold.

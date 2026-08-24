@@ -322,21 +322,6 @@ namespace Microsoft.Maui.Controls.Handlers
             _flyoutManager?.UpdateIsGestureEnabled(((IShellContext)this).AllowFlyoutGesture);
         }
 
-        static bool IsSwipeView(UIView? view)
-        {
-            if (view is null)
-            {
-                return false;
-            }
-
-            if (view is MauiSwipeView)
-            {
-                return true;
-            }
-
-            return IsSwipeView(view.Superview);
-        }
-
         #endregion
 
         #region Flow Direction

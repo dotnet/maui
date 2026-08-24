@@ -108,6 +108,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _shellContext = VirtualView.FindParentOfType<Shell>()?.Handler as IShellContext;
 
+            if (_shellContext is null)
+            {
+                throw new InvalidOperationException($"{nameof(ShellSectionHandler)} has no {nameof(IShellContext)}. The parent Shell's handler must be connected before connecting a shell section.");
+            }
+
             _appearanceTracker = _shellContext?.CreateNavBarAppearanceTracker();
 
             VirtualView.PropertyChanged += HandlePropertyChanged;
@@ -308,6 +313,13 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var shellStack = VirtualView?.Stack;
+
+            // Reset a possibly-stuck counter once the stacks are back in sync.
+            if (shellStack is not null && ActiveViewControllers().Length == shellStack.Count)
+            {
+                _pendingPushCount = 0;
+            }
+
             if (!wasInteractivePop &&
                 _pendingPushCount == 0 &&
                 shellStack is { Count: > 1 } &&
@@ -1090,9 +1102,14 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             ArgumentNullException.ThrowIfNull(popTask);
 
-            var poppedPage = VirtualView.Stack[VirtualView.Stack.Count - 1];
+            if (((IElementHandler)this).VirtualView is not ShellSection { Stack.Count: > 1 } section)
+            {
+                return;
+            }
 
-            ((IShellSectionController)VirtualView).SendPopping(popTask);
+            var poppedPage = section.Stack[section.Stack.Count - 1];
+
+            ((IShellSectionController)section).SendPopping(popTask);
 
             await popTask;
 
@@ -1619,7 +1636,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 _pendingPushCount++;
                 return _navManager.PushViewController(viewController, animated);
             }
-            return new TaskCompletionSource<bool>();
+
+            var taskSource = new TaskCompletionSource<bool>();
+            taskSource.TrySetResult(false);
+            return taskSource;
         }
 
         Task<bool> PopViewController(bool animated)

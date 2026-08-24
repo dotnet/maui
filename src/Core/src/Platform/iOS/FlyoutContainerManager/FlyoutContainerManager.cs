@@ -575,7 +575,7 @@ internal class FlyoutContainerManager
 		// dimming, so a custom FlyoutBackdrop isn't wiped out by this layout pass.
 		if (_clickOffView is not null)
 		{
-			_clickOffView.BackgroundColor = _dimDetailWithScrim ? ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f) : (_scrimColor ?? UIColor.Clear);
+			_clickOffView.BackgroundColor = _scrimColor ?? (_dimDetailWithScrim ? ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f) : UIColor.Clear);
 		}
 
 		// Animate or set detail frame
