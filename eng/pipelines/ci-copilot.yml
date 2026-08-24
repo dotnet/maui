@@ -34,6 +34,11 @@ parameters:
     type: boolean
     default: false
 
+  - name: SupersedeExisting
+    displayName: 'Replace an existing reproduction pull request for this issue and platform'
+    type: boolean
+    default: false
+
   - name: Platform
     displayName: 'Target Platform'
     type: string
@@ -663,10 +668,17 @@ stages:
                 Write-Host "##vso[task.logissue type=warning]Could not check for an existing reproduction pull request: $($_.Exception.Message)"
               }
 
-              if ($existing) {
+              $supersedeExisting = [bool]::Parse('${{ parameters.SupersedeExisting }}')
+              if ($existing -and -not $supersedeExisting) {
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
                 Write-Host "ISSUE REPLICATION SKIPPED: an open reproduction pull request already covers this issue and platform: $($existing.url)"
+              } elseif ($existing) {
+                # Re-running an already-covered issue is the only way to test a
+                # pipeline change against the reproductions that exercise it.
+                # The existing pull request is not touched here; the publisher
+                # retires it after its replacement is open.
+                Write-Host "An open reproduction pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
               } else {
                 Write-Host "No open reproduction pull request covers this issue and platform yet."
               }
@@ -3064,6 +3076,9 @@ stages:
                 $publishFixArgument = @{}
                 if (Test-Path -LiteralPath $publishFixPatch -PathType Leaf) {
                   $publishFixArgument['FixPatchPath'] = $publishFixPatch
+                }
+                if ([bool]::Parse('${{ parameters.SupersedeExisting }}')) {
+                  $publishFixArgument['SupersedeExisting'] = $true
                 }
 
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `

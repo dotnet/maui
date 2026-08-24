@@ -1019,3 +1019,58 @@ Describe 'The title may only promise what the diff actually contains' {
             Should -Be '[maui-bot-fix] Fix for #123456789'
     }
 }
+
+Describe 'Superseding an existing reproduction pull request' {
+    # Thirty-one certified reproductions reached the fix phase and every one of
+    # them died in it, and none could be re-run afterwards: an open pull request
+    # covered each issue and platform, so both the pre-check and the publisher
+    # refused. Re-running an already-covered issue is the only way to test a
+    # pipeline change against the reproductions that exercise it.
+
+    It 'refuses a duplicate only while it is not asked to supersede one' {
+        $script:PrSource | Should -Match '\[switch\]\$SupersedeExisting'
+        $script:PrSource | Should -Match 'if \(\$duplicate -and -not \$SupersedeExisting\)'
+    }
+
+    It 'retires the earlier pull request only after the replacement is open' {
+        # Closing first would leave the issue with no open reproduction at all
+        # if publication then failed. A duplicate is a far smaller problem than
+        # lost evidence, so the order here is the whole safety property.
+        $urlIndex = $script:PrSource.IndexOf('$plan.url = ([string]$prUrl).Trim()')
+        $closeIndex = $script:PrSource.IndexOf('gh pr close $supersededNumber')
+        $captureIndex = $script:PrSource.IndexOf('$supersededPull = $duplicate')
+
+        $captureIndex | Should -BeGreaterThan 0
+        $urlIndex | Should -BeGreaterThan $captureIndex
+        $closeIndex | Should -BeGreaterThan $urlIndex
+    }
+
+    It 'names the replacement in the retired pull request' {
+        $script:PrSource | Should -Match 'Superseded by \$\(\$plan\.url\)'
+        $script:PrSource | Should -Match 'gh pr comment \$supersededNumber'
+    }
+
+    It 'keeps a failed retirement from failing a published reproduction' {
+        # The reproduction is already on GitHub by this point. Throwing here
+        # would report a successful publication as a failed build.
+        $script:PrSource | Should -Match 'could not be retired, so it stays open'
+    }
+
+    It 'records what it superseded and whether it managed to close it' {
+        $script:PrSource | Should -Match 'supersedes = \$null'
+        $script:PrSource | Should -Match 'supersededClosed = \$false'
+        $script:PrSource | Should -Match '\$plan\.supersedes = \[string\]\$duplicate\.url'
+        $script:PrSource | Should -Match '\$plan\.supersededClosed = \$true'
+    }
+
+    It 'declares the superseded pull request before the branch it is read in' {
+        # StrictMode 3.0 turns an undeclared read into a terminating error, so
+        # the variable has to exist even on the ordinary path where nothing is
+        # superseded at all.
+        $declareIndex = $script:PrSource.IndexOf('$supersededPull = $null')
+        $readIndex = $script:PrSource.IndexOf('if ($supersededPull)')
+
+        $declareIndex | Should -BeGreaterThan 0
+        $readIndex | Should -BeGreaterThan $declareIndex
+    }
+}

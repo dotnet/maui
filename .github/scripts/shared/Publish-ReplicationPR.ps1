@@ -46,7 +46,9 @@ param(
 
     [string]$OutputPath = '',
 
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    [switch]$SupersedeExisting
 )
 
 $ErrorActionPreference = 'Stop'
@@ -688,6 +690,8 @@ $plan = [ordered]@{
     fixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
     url = $null
     duplicateOf = $null
+    supersedes = $null
+    supersededClosed = $false
 }
 
 if (-not $DryRun) {
@@ -712,6 +716,7 @@ if (-not $DryRun) {
             throw 'The trusted publishing checkout must be clean before applying the reproduction patch.'
         }
 
+        $supersededPull = $null
         $openPullsJson = & gh pr list `
             --repo "$TargetOwner/$TargetRepository" `
             --state open `
@@ -724,7 +729,7 @@ if (-not $DryRun) {
         $duplicate = @($openPullsJson | ConvertFrom-Json) | Where-Object {
             [string]$_.body -like "*$marker*"
         } | Select-Object -First 1
-        if ($duplicate) {
+        if ($duplicate -and -not $SupersedeExisting) {
             # Build 15001510 reproduced issue 37151 and authored its test while
             # an earlier run was publishing the same issue and platform. The
             # second run is redundant, not broken, so it reports what already
@@ -735,6 +740,17 @@ if (-not $DryRun) {
             Write-ReplicationPublicationManifest -Plan $plan
             Pop-Location
             exit 0
+        }
+
+        if ($duplicate) {
+            # Superseding is what lets an already-covered issue be re-run after
+            # the pipeline itself changes. The earlier pull request is retired
+            # only once its replacement exists, further down: a run that never
+            # gets that far leaves the existing evidence exactly where it was.
+            $supersededPull = $duplicate
+            $plan.supersedes = [string]$duplicate.url
+            Write-Host ("This run supersedes an open reproduction pull request: " +
+                "$($duplicate.url)")
         }
 
         # Reviewers verify the reproduction against the pull request's first
@@ -860,6 +876,25 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                 throw 'Creating the draft reproduction pull request failed.'
             }
             $plan.url = ([string]$prUrl).Trim()
+
+            if ($supersededPull) {
+                # Only now, with the replacement open, is retiring the earlier
+                # pull request safe. Closing it first would leave the issue with
+                # no open reproduction at all if anything above had failed, and
+                # a duplicate is a far smaller problem than lost evidence.
+                try {
+                    $supersededNumber = [string]$supersededPull.number
+                    $supersedeNote = "Superseded by $($plan.url), published by build $buildId."
+                    & gh pr comment $supersededNumber --repo "$TargetOwner/$TargetRepository" --body $supersedeNote | Out-Null
+                    & gh pr close $supersededNumber --repo "$TargetOwner/$TargetRepository" | Out-Null
+                    if ($LASTEXITCODE -eq 0) {
+                        $plan.supersededClosed = $true
+                    }
+                } catch {
+                    Write-Host ("The superseded pull request could not be retired, so it stays open: " +
+                        "$($_.Exception.Message)")
+                }
+            }
         }
         finally {
             Remove-Item -LiteralPath $bodyPath -Force -ErrorAction SilentlyContinue

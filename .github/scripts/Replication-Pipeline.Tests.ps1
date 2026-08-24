@@ -1322,3 +1322,44 @@ Describe 'A build step may not report success for work it never ran' {
         $gate[0] | Should -Match '(?s)##\[error\]Could not load the build shell resolver.{0,300}Set-BuildTasksFailed 1'
     }
 }
+
+Describe 'An already-covered issue may be re-run deliberately' {
+    # Every certified reproduction opens a pull request, and that pull request
+    # then blocks the issue from ever being replicated again. A pipeline change
+    # is therefore untestable against precisely the runs that exercise it.
+
+    It 'offers superseding as an explicit, off-by-default choice' {
+        $script:Pipeline | Should -Match "(?s)- name: SupersedeExisting.*?type: boolean.*?default: false"
+    }
+
+    It 'lets the pre-check skip only while superseding is off' {
+        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check | Should -BeGreaterThan 0
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('$supersedeExisting = [bool]::Parse(') | Should -BeTrue
+        $step.Contains('if ($existing -and -not $supersedeExisting)') | Should -BeTrue
+    }
+
+    It 'leaves the existing pull request untouched in the untrusted job' {
+        # The pre-check runs without the publishing credential, and closing the
+        # earlier pull request before this run has published anything would
+        # destroy the only evidence the issue has if the run then fails.
+        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('gh pr close') | Should -BeFalse
+    }
+
+    It 'passes the choice through to the publisher that acts on it' {
+        # A parameter the pre-check honours but the publisher never sees would
+        # spend a full device run and then refuse it at the last step.
+        $script:Pipeline | Should -Match "\`$publishFixArgument\['SupersedeExisting'\] = \`$true"
+        $publish = $script:Pipeline.IndexOf('Publish-ReplicationPR.ps1')
+        $splat = $script:Pipeline.IndexOf("`$publishFixArgument['SupersedeExisting']")
+        $publish | Should -BeGreaterThan 0
+        $splat | Should -BeGreaterThan 0
+    }
+}
