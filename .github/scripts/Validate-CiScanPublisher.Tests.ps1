@@ -674,6 +674,20 @@ Describe 'CI scanner twin inventory' {
 Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:DiscoveredTwins {
     BeforeAll {
         $script:TwinLock = Get-Content -LiteralPath $LockPath -Raw
+        $script:TwinSource = Get-Content -LiteralPath ($LockPath -replace '\.lock\.yml$', '.md') -Raw
+    }
+
+    <#
+        The agent prompt is runtime-imported from the sibling markdown, so prompt
+        contract drift between the twins never shows up in the compiled locks.
+        Production runs 32484732704 and 32484732312 both failed on identity that
+        the agent re-derived instead of reusing, so pin both rules here.
+    #>
+    It 'tells the agent to reuse a recorded fingerprint verbatim and to drop apostrophes' {
+        $script:TwinSource | Should -Match "Submit that\r?\n?\s*issue's recorded fingerprint verbatim"
+        $script:TwinSource | Should -Match 'ci-scan-fingerprint:'
+        $script:TwinSource | Should -Match 'Drop apostrophes'
+        $script:TwinSource | Should -Match 'doesnt leak'
     }
 
     It 'runs the trusted validator from the frozen publisher checkout' {
@@ -1477,6 +1491,80 @@ $evidenceLine
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*different or malformed trusted markers*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    <#
+        Production run 32484732312 also mapped the SafeArea keyboard failure onto
+        issue #37558 while re-deriving the test identity from the suite name
+        (`safeareaperedgevalidation`) instead of the failing test the marker was
+        created from (`safeareanowhitespaceafterkeyboarddismissandedgetoggle`).
+        Category and platform wording may drift, but the test/task identity is
+        the failure's identity: relaxing it would let one tracking issue absorb
+        every failure of a suite. The prompt contract closes this at the source
+        by requiring `existing` signatures to reuse the recorded canonical
+        fingerprint verbatim; the publisher stays fail-closed.
+    #>
+    It 'rejects a historical marker whose test identity was re-derived' {
+        $evidenceLine = '2026-08-16T16:38:41.9966349Z   Expected: less than 2705'
+        $matchPattern = 'Expected: less than'
+        $plan = New-ExistingPlan `
+            -IssueNumber 37558 `
+            -EvidenceLine $evidenceLine `
+            -FingerprintIdentity 'safeareaperedgevalidation' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'content-grid-does-not-shrink' `
+            -Platform 'android-api-36' `
+            -MatchPattern $matchPattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $historicalFingerprint = $entry.fingerprint.Replace(
+            '|safeareaperedgevalidation|content-grid-does-not-shrink|android-api-36',
+            '|safeareanowhitespaceafterkeyboarddismissandedgetoggle|contentgrid did not shrink with keyboard|android api 36')
+        $existing = New-ExistingIssueStub -Number 37558 -Body @"
+<!-- ci-scan-fingerprint: $historicalFingerprint -->
+<!-- ci-scan-match-count: 2 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+$evidenceLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37558' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*different or malformed trusted markers*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'reuses the exact issue 37558 marker when the recorded fingerprint is replayed verbatim' {
+        $evidenceLine = '2026-08-16T16:38:41.9966349Z   Expected: less than 2705'
+        $matchPattern = 'Expected: less than'
+        $plan = New-ExistingPlan `
+            -IssueNumber 37558 `
+            -EvidenceLine $evidenceLine `
+            -FingerprintIdentity 'safeareanowhitespaceafterkeyboarddismissandedgetoggle' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'contentgrid did not shrink with keyboard' `
+            -Platform 'android api 36' `
+            -MatchPattern $matchPattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $existing = New-ExistingIssueStub -Number 37558 -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 2 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+$evidenceLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37558' = $existing }
+
+        $result.ok | Should -BeTrue
+        $result.error | Should -BeNullOrEmpty
         @($result.created).Count | Should -Be 0
     }
 

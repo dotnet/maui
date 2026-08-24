@@ -1282,13 +1282,22 @@ Disposition-specific fields:
 - `filed` — also include `title` and the complete `body`.
 - `existing` — also include the positive integer `issue_number`. The referenced
   issue must already carry one publisher-owned fingerprint marker and one
-  well-formed historical match-count/evidence-key marker block. The scanner,
+  well-formed historical match-count/evidence-key marker block. **Submit that
+  issue's recorded fingerprint verbatim** as this signature's `fingerprint`. Read
+  it from the hidden scanner identity line near the top of the issue body — the
+  line whose payload starts with `ci-scan-fingerprint:` — and copy the whole
+  six-field value character for character. Never re-case, re-normalize, or
+  re-word it, and never substitute the fingerprint you derived from this run: a
+  freshly derived fingerprint belongs only to a `filed` payload. The scanner,
   branch, pipeline, and test/task identity fields of the historical marker must
-  exactly match this signature. The platform field must contain the same tokens
-  after normalizing runs of spaces and hyphens. Its failure-category field may
-  use older normalized wording when the stable identity and the distinctive raw
-  recurrence evidence still match; the publisher preserves that historical marker
-  as the canonical owner instead of creating a duplicate issue.
+  exactly match this signature, so re-deriving the test identity (for example the
+  suite name instead of the failing test the issue was filed from) makes the
+  publisher reject the entire batch. As a compatibility net for issues filed
+  before this rule, the platform field only has to contain the same tokens after
+  normalizing runs of spaces and hyphens, and the failure-category field may use
+  older normalized wording when the stable identity and the distinctive raw
+  recurrence evidence still match; the publisher then preserves that historical
+  marker as the canonical owner instead of creating a duplicate issue.
   Its evidence key binds the run that created the issue and is not expected to
   equal this run's evidence key. The trusted validator independently proves the
   recurrence against this run's frozen evidence. Select a `match_pattern` that
@@ -1340,6 +1349,10 @@ Before creating any issue, compute a deterministic fingerprint for each failure:
 
 Normalization rules:
 - Lowercase.
+- Drop apostrophes — straight `'` and curly `‘`/`’` alike. The trusted validator
+  removes them when it canonicalizes the fingerprint, so a test named
+  `Header doesn't leak` is recorded as `doesnt leak`. Search with the same
+  apostrophe-free spelling or you will not find the issue you already filed.
 - Replace URLs, build IDs, job IDs, GUIDs, paths, line numbers, durations, and timestamps with stable tokens.
 - Keep the test name, failed task name, pipeline, branch, platform/leg, and primary error category.
 - If two failures share the same suspected root cause and would be fixed by the same change, reuse the existing issue instead of filing a more specific duplicate.
@@ -1351,6 +1364,10 @@ Search existing issues before creating anything new — never duplicate:
 The fingerprint goes in the manifest signature's `fingerprint` field and nowhere
 else. The publisher derives the hidden fingerprint marker from that field; do not
 write the fingerprint, or any marker, into the issue body.
+
+When one of those searches matches an open issue that already carries a scanner
+identity line, that recorded fingerprint — not the one you just derived — is the
+value to submit for the `existing` signature (see the coverage contract).
 
 ### Match-count gate (mandatory before filing)
 
