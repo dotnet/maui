@@ -83,9 +83,10 @@ Describe 'ci-official-release.yml' {
   }
 
   It 'rejects workload-only filters for non-workload releases' {
-    $pipeline | Should -Match '(?s)else \{.*?\$unsupportedFilters = @\(.*?' +
+    $pipeline | Should -Match '(?s)else \{.*?\$unsupportedFilters = @\(@\(.*?' +
       'nugetIncludeFilters.*?nugetExcludeFilters.*?' +
       'nugetAlreadyAttemptedPackFilters.*?nugetAlreadyAttemptedManifestFilters.*?' +
+      '\) \| Where-Object \{ \$_.Values.Count -gt 0 \}\).*?' +
       'Non-workload releases do not support workload package filters'
     $pipeline | Should -Match 'NUGET_ALREADY_ATTEMPTED_PACK_FILTERS: \$\{\{ parameters\.nugetAlreadyAttemptedPackFilters \}\}'
     $pipeline | Should -Match 'NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS: \$\{\{ parameters\.nugetAlreadyAttemptedManifestFilters \}\}'

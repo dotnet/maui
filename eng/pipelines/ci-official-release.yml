@@ -308,12 +308,12 @@ extends:
                   )
                 }
                 else {
-                  $unsupportedFilters = @(
+                  $unsupportedFilters = @(@(
                     @{ Name = 'nugetIncludeFilters'; Values = @(Get-Filters $env:NUGET_INCLUDE_FILTERS) },
                     @{ Name = 'nugetExcludeFilters'; Values = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS) },
                     @{ Name = 'nugetAlreadyAttemptedPackFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_PACK_FILTERS) },
                     @{ Name = 'nugetAlreadyAttemptedManifestFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS) }
-                  ) | Where-Object { $_.Values.Count -gt 0 }
+                  ) | Where-Object { $_.Values.Count -gt 0 })
                   if ($unsupportedFilters.Count -gt 0) {
                     throw "Non-workload releases do not support workload package filters: $($unsupportedFilters.Name -join ', ')."
                   }
