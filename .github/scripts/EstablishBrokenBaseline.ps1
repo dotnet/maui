@@ -442,6 +442,25 @@ if ($existingState) {
     Write-Host "  Previous baseline restored." -ForegroundColor Green
 }
 
+# Resolve the scope before the cleanliness check, because snapshot mode
+# judges cleanliness differently: see below.
+$scopedFiles = $EditableFiles
+$scopeCameFromEnvironment = $false
+if (-not $scopedFiles -or $scopedFiles.Count -eq 0) {
+    $scopedFiles = Get-BaselineScopeFromEnvironment
+    $scopeCameFromEnvironment = $null -ne $scopedFiles
+}
+
+# A scope discovered from the environment always means snapshot mode: only a
+# caller without an author diff seeds it. An explicit -EditableFiles keeps the
+# usual revert semantics unless -SnapshotOnly says otherwise, so no existing
+# caller changes behaviour.
+$useSnapshotMode = $SnapshotOnly.IsPresent -or $scopeCameFromEnvironment
+
+if ($SnapshotOnly.IsPresent -and (-not $scopedFiles -or $scopedFiles.Count -eq 0)) {
+    throw "EstablishBrokenBaseline.ps1 failed: -SnapshotOnly requires a scope from -EditableFiles or $script:BaselineScopeEnvVar."
+}
+
 # ============================================================
 # FAIL-FAST: Require clean working directory
 # ============================================================
@@ -449,6 +468,33 @@ if ($existingState) {
 # something else is wrong (manual edits, uncommitted work, etc.).
 
 $dirtyFiles = git status --porcelain --untracked-files=no 2>$null
+if ($dirtyFiles -and $useSnapshotMode) {
+    # Snapshot mode runs on a tree that is dirty by design: issue replication
+    # has just authored the reproduction test into it, and that test is the
+    # whole point. Refusing here is what stopped build 15069249 from recording
+    # a scope at all, so the candidate got no allow-list, was blamed for a
+    # pre-existing edit it never made, and -Restore left its fix in place.
+    #
+    # Dirt outside the scope is therefore expected and must be preserved. Dirt
+    # inside the scope is not, because HEAD is the restore point and -Restore
+    # would silently discard those changes.
+    $scopedDirt = @($dirtyFiles -split "`n" | Where-Object {
+        $entry = $_.Trim()
+        if (-not $entry) { return $false }
+        $path = ($entry -replace '^\S+\s+', '') -replace '^.*? -> ', ''
+        $scopedFiles -contains $path.Trim('"')
+    })
+
+    if ($scopedDirt.Count -gt 0) {
+        Write-Host "Snapshot mode cannot scope a file that already has uncommitted changes:" -ForegroundColor Red
+        $scopedDirt | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
+        throw "EstablishBrokenBaseline.ps1 failed: scoped files have uncommitted changes, so HEAD is not their restore point."
+    }
+
+    Write-Host ("Snapshot mode: {0} file(s) already modified outside the scope; leaving them alone." -f
+        @($dirtyFiles -split "`n" | Where-Object { $_.Trim() }).Count) -ForegroundColor Cyan
+    $dirtyFiles = $null
+}
 if ($dirtyFiles) {
     Write-Host "" -ForegroundColor Red
     Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Red
@@ -479,22 +525,6 @@ if ($dirtyFiles) {
 # confines itself to the files the expert phase implicated and restores them
 # afterwards. HEAD is the restore point, which is what -Restore already uses.
 
-$scopedFiles = $EditableFiles
-$scopeCameFromEnvironment = $false
-if (-not $scopedFiles -or $scopedFiles.Count -eq 0) {
-    $scopedFiles = Get-BaselineScopeFromEnvironment
-    $scopeCameFromEnvironment = $null -ne $scopedFiles
-}
-
-# A scope discovered from the environment always means snapshot mode: only a
-# caller without an author diff seeds it. An explicit -EditableFiles keeps the
-# usual revert semantics unless -SnapshotOnly says otherwise, so no existing
-# caller changes behaviour.
-$useSnapshotMode = $SnapshotOnly.IsPresent -or $scopeCameFromEnvironment
-
-if ($SnapshotOnly.IsPresent -and (-not $scopedFiles -or $scopedFiles.Count -eq 0)) {
-    throw "EstablishBrokenBaseline.ps1 failed: -SnapshotOnly requires a scope from -EditableFiles or $script:BaselineScopeEnvVar."
-}
 
 if ($useSnapshotMode) {
     $scopedFiles = @($scopedFiles | Select-Object -Unique)

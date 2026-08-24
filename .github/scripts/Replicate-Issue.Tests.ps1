@@ -6055,6 +6055,70 @@ Describe 'a near-miss length does not discard completed work' {
     }
 }
 
+Describe 'a descriptive field is displayed, so it is cut rather than refused' {
+    # Build 15069249 was the first run ever to author a fix. Candidate 1 wrote a
+    # 1791-character approach into a 600-character field, the throw propagated
+    # out of the cross-pollination digest being built for candidate 2, and the
+    # whole panel died carrying a working fix. Nothing acts on these fields.
+    It 'cuts a value three times its limit instead of throwing' {
+        $value = 'a' * 1791
+
+        $result = ConvertTo-BoundedAgentLine `
+            -Value $value -Description 'Candidate approach' -MaximumLength 600 -Prose
+
+        $result.Length | Should -Be 600
+    }
+
+    It 'keeps enforcing every rule it would otherwise have thrown for' {
+        $value = "See https://example.com/x for`nthe ##vso[task.setvariable]cause"
+
+        $result = ConvertTo-BoundedAgentLine `
+            -Value $value -Description 'Candidate approach' -MaximumLength 600 -Prose
+
+        $result | Should -Not -Match '(?i)https?://'
+        $result | Should -Not -Match '##vso'
+        $result | Should -Not -Match '[\x00-\x1F\x7F]'
+        $result | Should -Be $result.Trim()
+    }
+
+    It 'returns an empty string rather than throwing on nothing at all' {
+        ConvertTo-BoundedAgentLine -Value $null -Description 'Candidate approach' -Prose |
+            Should -Be ''
+        ConvertTo-BoundedAgentLine -Value "   `n  " -Description 'Candidate approach' -Prose |
+            Should -Be ''
+    }
+
+    It 'leaves the strict behaviour alone for fields that are acted on' {
+        { ConvertTo-BoundedAgentLine -Value ('a' * 4000) `
+            -Description 'Reported issue trigger' -MaximumLength 2000 } |
+            Should -Throw -ExpectedMessage '*4000 characters and the limit is 2000*'
+    }
+
+    It 'passes -Prose at every fix-phase field that carries agent prose' {
+        # Each of these is written by a model and only ever displayed. Any one
+        # of them throwing takes the panel and its fix down with it.
+        $descriptions = @(
+            'Candidate approach'
+            'Candidate analysis'
+            'Fix candidate error'
+            'Fix winner summary'
+            'Rejected fix candidate reason'
+            'Fix scope root cause hypothesis'
+            'Fix scope reason for'
+        )
+
+        foreach ($description in $descriptions) {
+            $call = [regex]::Match(
+                $script:Source,
+                'ConvertTo-BoundedAgentLine[^\r\n]*(?:\r?\n[^\r\n]*){0,3}?' +
+                    [regex]::Escape($description) + '[^\r\n]*(?:\r?\n[^\r\n]*){0,2}')
+
+            $call.Success | Should -BeTrue -Because "$description should still be bounded"
+            $call.Value | Should -Match '-Prose' -Because "$description is prose, and throwing on it kills the panel"
+        }
+    }
+}
+
 Describe 'the test prompt names the compile traps runs actually hit' {
     It 'teaches the W-prefixed WinUI alias that resolves CS0104' {
         # 329 occurrences in src/ make this the repository's answer to a

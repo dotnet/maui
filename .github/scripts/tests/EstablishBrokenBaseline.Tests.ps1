@@ -93,6 +93,73 @@ BeforeAll {
     }
 }
 
+Describe 'Snapshot mode scopes a tree that is dirty by design' {
+    # Issue replication authors the reproduction test into the tree before it
+    # asks for a scope, so the tree is always dirty here and the fail-fast that
+    # protects the reviewer refused every replication run. Build 15069249 - the
+    # first ever to author a fix - recorded no scope at all, so the candidate
+    # got no allow-list, was blamed for a pre-existing edit it never made, and
+    # -Restore reported "No baseline state found" and left the fix in place.
+    BeforeEach {
+        # Both files are committed, so modifying one produces real dirt. An
+        # untracked new file is invisible to --untracked-files=no and would
+        # make these tests pass whether the tolerance exists or not.
+        $script:Repo = New-ScratchRepository -Files @{
+            'src/Handler.cs' = "BROKEN ORIGINAL`n"
+            'src/Other.cs'   = "UNRELATED ORIGINAL`n"
+        }
+        $script:Target = Join-Path $script:Repo 'src/Handler.cs'
+        $script:Unrelated = Join-Path $script:Repo 'src/Other.cs'
+        Set-Content -LiteralPath $script:Unrelated -Value '// the reproduction test' -Encoding utf8NoBOM
+    }
+
+    AfterEach {
+        if ($script:Repo -and (Test-Path $script:Repo)) {
+            Remove-Item -LiteralPath $script:Repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'proves the unrelated change really is dirt git reports' {
+        Push-Location $script:Repo
+        try {
+            $status = @(git status --porcelain --untracked-files=no 2>$null | Where-Object { $_.Trim() })
+        } finally {
+            Pop-Location
+        }
+
+        $status.Count | Should -Be 1
+        $status[0] | Should -Match 'src/Other\.cs'
+    }
+
+    It 'records the scope when an unrelated file has uncommitted changes' {
+        Invoke-BaselineScript -Root $script:Repo `
+            -ScriptArguments @('-EditableFiles', 'src/Handler.cs', '-SnapshotOnly') | Out-Null
+
+        Test-Path (Get-StatePath $script:Repo) | Should -BeTrue
+        $state = Get-Content -LiteralPath (Get-StatePath $script:Repo) -Raw | ConvertFrom-Json
+        @($state.RevertedFiles) | Should -Be @('src/Handler.cs')
+    }
+
+    It 'leaves that unrelated change exactly as it found it' {
+        $before = Get-FileHash -LiteralPath $script:Unrelated -Algorithm SHA256
+
+        Invoke-BaselineScript -Root $script:Repo `
+            -ScriptArguments @('-EditableFiles', 'src/Handler.cs', '-SnapshotOnly') | Out-Null
+
+        (Get-FileHash -LiteralPath $script:Unrelated -Algorithm SHA256).Hash | Should -Be $before.Hash
+    }
+
+    It 'still refuses a scoped file that is already modified, because HEAD is its restore point' {
+        Set-Content -LiteralPath $script:Target -Value '// edited before scoping' -Encoding utf8NoBOM
+
+        $output = Invoke-BaselineScript -Root $script:Repo `
+            -ScriptArguments @('-EditableFiles', 'src/Handler.cs', '-SnapshotOnly')
+
+        $output | Should -Match 'uncommitted changes'
+        Test-Path (Get-StatePath $script:Repo) | Should -BeFalse
+    }
+}
+
 Describe 'Snapshot mode records a scope without reverting anything' {
     BeforeEach {
         $script:Repo = New-ScratchRepository

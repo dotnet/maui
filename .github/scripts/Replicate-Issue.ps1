@@ -2414,13 +2414,38 @@ function ConvertTo-BoundedAgentLine {
     param(
         [AllowNull()][object]$Value,
         [Parameter(Mandatory = $true)][string]$Description,
-        [int]$MaximumLength = 500
+        [int]$MaximumLength = 500,
+        [switch]$Prose
     )
 
     if ($Value -isnot [string]) {
+        if ($Prose -and $null -eq $Value) {
+            return ''
+        }
         throw "$Description must be a string."
     }
     $line = [string]$Value
+    # A descriptive field is displayed, never acted on, so nothing downstream
+    # depends on its shape and refusing it only destroys the work it describes.
+    # Build 15069249 was the first run ever to author a fix; candidate 1 wrote a
+    # 1791-character approach for a 600-character field, and the throw killed
+    # the whole panel and discarded the fix. Sanitize prose to the same rules
+    # the checks below enforce, then cut it to length, and never throw.
+    if ($Prose) {
+        $line = $line -replace '\x1B\[[0-?]*[ -/]*[@-~]', ''
+        $line = $line -replace '##vso\[[^\]]*\]', '' -replace '##\[[^\]]*\]', ''
+        $line = $line -replace '##', '# #'
+        $line = $line -replace '(?i)\b(?:https?|ftps?|wss?)://\S+', '[link removed]'
+        $line = ($line -replace '[\x00-\x1F\x7F]', ' ') -replace '\s{2,}', ' '
+        $line = $line.Trim()
+        if ($line.Length -gt $MaximumLength) {
+            $line = $line.Substring(0, $MaximumLength).TrimEnd()
+        }
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            return ''
+        }
+        return $line
+    }
     # Length is a presentation bound, not a correctness rule. Runs 15014917 and
     # 15014925 threw away completed work because a descriptive field was 15 and
     # 13 characters over its limit, and every observed overage has been under a
@@ -2977,12 +3002,12 @@ function Get-ReplicationFixCrossPollination {
         $approach = & $field 'Approach'
         if ($approach) {
             $lines.Add("  Approach: $(ConvertTo-BoundedAgentLine `
-                -Value $approach -Description 'Candidate approach' -MaximumLength 600)")
+                -Value $approach -Description 'Candidate approach' -MaximumLength 600 -Prose)")
         }
         $analysis = & $field 'Analysis'
         if ($analysis) {
             $lines.Add("  Learned: $(ConvertTo-BoundedAgentLine `
-                -Value $analysis -Description 'Candidate analysis' -MaximumLength 600)")
+                -Value $analysis -Description 'Candidate analysis' -MaximumLength 600 -Prose)")
         }
     }
 
@@ -3312,7 +3337,7 @@ function Invoke-ReplicationFixPanel {
             [pscustomobject]@{
                 Result = 'Blocked'
                 Rejection = "did not complete: $(ConvertTo-BoundedAgentLine `
-                    -Value $invocationError -Description 'Fix candidate error' -MaximumLength 300)"
+                    -Value $invocationError -Description 'Fix candidate error' -MaximumLength 300 -Prose)"
             }
         } else {
             Get-ReplicationFixCandidateVerdict `
@@ -3655,7 +3680,7 @@ function Read-ReplicationFixWinner {
     $summary = ConvertTo-BoundedAgentLine `
         -Value $document.summary `
         -Description 'Fix winner summary' `
-        -MaximumLength 4000
+        -MaximumLength 4000 -Prose
     if ($summary.Length -lt 3) {
         throw 'The fix winner has no summary.'
     }
@@ -3704,7 +3729,7 @@ function Read-ReplicationFixWinner {
             reason = ConvertTo-BoundedAgentLine `
                 -Value $entry.reason `
                 -Description 'Rejected fix candidate reason' `
-                -MaximumLength 1000
+                -MaximumLength 1000 -Prose
         }) | Out-Null
     }
 
@@ -3966,7 +3991,7 @@ function Read-ReplicationFixScope {
     $hypothesis = ConvertTo-BoundedAgentLine `
         -Value $scope.rootCauseHypothesis `
         -Description 'Fix scope root cause hypothesis' `
-        -MaximumLength 2000
+        -MaximumLength 2000 -Prose
     if ($hypothesis.Length -lt 3) {
         throw 'The fix scope has no root cause hypothesis.'
     }
@@ -4004,7 +4029,7 @@ function Read-ReplicationFixScope {
             reason = (ConvertTo-BoundedAgentLine `
                 -Value $entry.reason `
                 -Description "Fix scope reason for $path" `
-                -MaximumLength 500)
+                -MaximumLength 500 -Prose)
         })
     }
 
