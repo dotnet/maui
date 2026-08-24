@@ -98,6 +98,7 @@ BeforeAll {
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
+        'Test-ReplicationPathChanged',
         'Assert-NoDuplicateJsonProperties',
         'Test-TimingSensitiveIssueContext',
         'Test-CrashReportingIssueContext',
@@ -1191,6 +1192,29 @@ Describe 'Replication orchestrator security boundary' {
         $repoRoot = $TestDrive
         $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
         $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        $sandboxAppCodePath = Join-Path $TestDrive 'App.xaml.cs'
+        $sandboxShellXamlPath = Join-Path $TestDrive 'SandboxShell.xaml'
+        $sandboxShellCodePath = Join-Path $TestDrive 'SandboxShell.xaml.cs'
+$script:SandboxRequiredPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+    'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+)
+$script:SandboxHostPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+)
+        $script:SandboxRequiredPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+            'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+        )
+        $script:SandboxHostPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+        )
         @'
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -1440,6 +1464,29 @@ public partial class MainPage : ContentPage
         $repoRoot = $TestDrive
         $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
         $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        $sandboxAppCodePath = Join-Path $TestDrive 'App.xaml.cs'
+        $sandboxShellXamlPath = Join-Path $TestDrive 'SandboxShell.xaml'
+        $sandboxShellCodePath = Join-Path $TestDrive 'SandboxShell.xaml.cs'
+$script:SandboxRequiredPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+    'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+)
+$script:SandboxHostPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+)
+        $script:SandboxRequiredPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+            'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+        )
+        $script:SandboxHostPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+        )
         @'
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -1512,6 +1559,29 @@ public partial class MainPage : ContentPage
         $repoRoot = $TestDrive
         $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
         $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        $sandboxAppCodePath = Join-Path $TestDrive 'App.xaml.cs'
+        $sandboxShellXamlPath = Join-Path $TestDrive 'SandboxShell.xaml'
+        $sandboxShellCodePath = Join-Path $TestDrive 'SandboxShell.xaml.cs'
+$script:SandboxRequiredPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+    'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+)
+$script:SandboxHostPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+)
+        $script:SandboxRequiredPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+            'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+        )
+        $script:SandboxHostPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+        )
         @'
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -2184,6 +2254,29 @@ public void Ok()
         $repoRoot = $TestDrive
         $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
         $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        $sandboxAppCodePath = Join-Path $TestDrive 'App.xaml.cs'
+        $sandboxShellXamlPath = Join-Path $TestDrive 'SandboxShell.xaml'
+        $sandboxShellCodePath = Join-Path $TestDrive 'SandboxShell.xaml.cs'
+$script:SandboxRequiredPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+    'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+)
+$script:SandboxHostPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+)
+        $script:SandboxRequiredPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+            'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+        )
+        $script:SandboxHostPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+        )
         @'
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -2266,6 +2359,19 @@ new Label().LoadFromXaml(xaml);
 $repoRoot = $TestDrive
 $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
 $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+$sandboxAppCodePath = Join-Path $TestDrive 'App.xaml.cs'
+$sandboxShellXamlPath = Join-Path $TestDrive 'SandboxShell.xaml'
+$sandboxShellCodePath = Join-Path $TestDrive 'SandboxShell.xaml.cs'
+$script:SandboxRequiredPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+    'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+)
+$script:SandboxHostPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+)
 @'
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -10384,4 +10490,106 @@ Describe 'An attempt is diagnosed by what it measured, not by what it found lyin
         $script:catchBody | Should -Match 'Get-ReplicationVerificationFailureSummary'
         $script:catchBody | Should -Match '-VerificationDirectory \$verificationDir'
     }
+}
+
+Describe 'A report about Shell is reproduced under a Shell' {
+    BeforeAll {
+    }
+
+    It 'offers the switch the sample itself documents' {
+        # The prompt tells the author that App.xaml.cs carries a useShell
+        # boolean and that SandboxShell hosts the page when it is true. That is
+        # a claim about someone else's source file, and it stops being true the
+        # moment the sample is rewritten - so it is checked against the sample
+        # rather than against the prompt's own wording.
+        $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
+        $appPath = Join-Path $repoRoot 'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+        Test-Path -LiteralPath $appPath -PathType Leaf | Should -BeTrue
+        $app = Get-Content -LiteralPath $appPath -Raw
+        # Case-sensitive and word-anchored: 'useShellRoot' is a different
+        # identifier the prompt would be wrong about, and PowerShell's -Match
+        # would happily accept it as a substring of the right name.
+        $app | Should -CMatch 'bool\s+useShell\b'
+        $app | Should -CMatch 'new\s+Window\s*\(\s*new\s+SandboxShell\s*\(\s*\)\s*\)'
+        $app | Should -CMatch 'new\s+Window\s*\(\s*new\s+NavigationPage\s*\('
+
+        Test-Path -LiteralPath (Join-Path $repoRoot 'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml') |
+            Should -BeTrue
+
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        # The prompt has to name the switch, and it has to name it the way the
+        # sample spells it. An unrelated 'UseShell' elsewhere in the file made
+        # the first version of this assertion pass with the guidance deleted.
+        $source | Should -CMatch '``useShell``\s+boolean'
+        $source | Should -CMatch 'SandboxShell\.xaml'
+        # The three host paths must be named together wherever the editable set
+        # is decided, or one site will quietly disagree with the others.
+        foreach ($site in @('SandboxRequiredPaths', 'SandboxHostPaths')) {
+            $source | Should -Match "\`$script:$site = @\("
+        }
+        foreach ($writable in @('sandboxAppCodePath', 'sandboxShellXamlPath', 'sandboxShellCodePath')) {
+            # Declared, granted write permission, safety-scanned, and copied
+            # into the evidence. Four sites, and a count is the cheapest way to
+            # notice one of them being dropped.
+            ([regex]::Matches($source, [regex]::Escape("`$$writable"))).Count |
+                Should -BeGreaterOrEqual 4 -Because "$writable must be declared, granted write permission, scanned, and published as evidence"
+        }
+    }
+
+    It 'lets a proposal declare the host files, and only those' {
+        $issueAgentContextPath = Join-Path $TestDrive 'shell-context.md'
+        'A Shell flyout item renders with the wrong background.' |
+            Set-Content -LiteralPath $issueAgentContextPath
+        $sandboxProposalPath = Join-Path $TestDrive 'shell-proposal.json'
+        $script:SandboxRequiredPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml',
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs',
+            'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+        )
+        $script:SandboxHostPaths = @(
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs',
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml',
+            'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+        )
+
+        $write = {
+            param([string[]]$Files)
+            $proposal = [ordered]@{
+                reproductionSteps = @('Open the flyout and read the item background.')
+                expectedBehavior = 'The flyout item uses the configured background.'
+                observedBehaviorCheck = 'The semantic result reports the wrong background.'
+                reportedTrigger = 'A Shell flyout item is displayed by a Shell-rooted application.'
+                sandboxTrigger = 'A Shell flyout item is displayed by a Shell-rooted application.'
+                scenarioDifferences = @()
+                files = $Files
+            }
+            $proposal | ConvertTo-Json -Depth 10 |
+                Set-Content -LiteralPath $sandboxProposalPath
+        }
+
+        # The shape every reproduction has always had still passes.
+        & $write $script:SandboxRequiredPaths
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+
+        # A Shell-rooted reproduction may add the host files.
+        & $write ($script:SandboxRequiredPaths + $script:SandboxHostPaths)
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+
+        # Some of them, rather than all, is equally fine: a report may need the
+        # root switched without the Shell itself being rewritten.
+        & $write ($script:SandboxRequiredPaths +
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs')
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+
+        # Widening the editable set must not have widened it any further.
+        & $write ($script:SandboxRequiredPaths + 'src/Core/src/Platform/Android/MauiView.cs')
+        { Read-SandboxProposal | Out-Null } | Should -Throw '*may not author*'
+
+        # And a host file can never stand in for a required one.
+        & $write (@($script:SandboxRequiredPaths |
+            Where-Object { $_ -cne 'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml' }) +
+            'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs')
+        { Read-SandboxProposal | Out-Null } | Should -Throw '*does not declare the required*'
+    }
+
 }

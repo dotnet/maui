@@ -150,6 +150,30 @@ $fixOracleRunnerPath = Join-Path $fixDir 'run-oracle.ps1'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
 $sandboxCodePath = Join-Path $sandboxDir 'MainPage.xaml.cs'
+$sandboxAppCodePath = Join-Path $sandboxDir 'App.xaml.cs'
+$sandboxShellXamlPath = Join-Path $sandboxDir 'SandboxShell.xaml'
+$sandboxShellCodePath = Join-Path $sandboxDir 'SandboxShell.xaml.cs'
+
+# The three artifacts every Sandbox has to produce, whatever it reproduces.
+$script:SandboxRequiredPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml',
+    'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs',
+    'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+)
+
+# The files that decide what hosts the page. Most scenarios never touch them,
+# but a report about Shell cannot be reproduced under a NavigationPage root at
+# all, and four scenarios were declared unsupported for exactly that reason.
+# The sample already ships SandboxShell beside its NavigationPage root, with a
+# comment in App.xaml.cs inviting the switch, so the capability was one boolean
+# away the whole time and only the editable set stood in front of it. These are
+# sample sources under Controls.Sample.Sandbox: they are never published, and
+# the reproduction that is published is still only the test.
+$script:SandboxHostPaths = @(
+    'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs',
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml',
+    'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+)
 $appiumPlanPath = Join-Path $sandboxAppiumDir 'appium-plan.json'
 $appiumScriptPath = Join-Path $sandboxAppiumDir 'RunWithAppiumTest.cs'
 $trustedAppiumRunnerPath = Join-Path $trustedScripts 'templates/RunReplicationAppiumPlan.cs'
@@ -1624,6 +1648,23 @@ function Assert-GeneratedSandboxXaml {
     }
 }
 
+function Test-ReplicationPathChanged {
+    <#
+        .SYNOPSIS
+            Reports whether the working tree carries a change to one
+            repository-relative path.
+
+        .DESCRIPTION
+            The host files are writable but usually untouched, and the sample
+            ships them already. Scanning an unchanged file would judge the
+            repository's own committed source by rules written for generated
+            source, so the safety pass asks git what the agent actually wrote.
+    #>
+    param([Parameter(Mandatory = $true)][string]$RelativePath)
+
+    return @(Get-ReplicationGitStatus | Where-Object { $_.Path -ceq $RelativePath }).Count -gt 0
+}
+
 function Assert-GeneratedSandboxSources {
     $combinedSource = [Text.StringBuilder]::new()
     foreach ($entry in @(
@@ -1665,6 +1706,37 @@ function Assert-GeneratedSandboxSources {
             }
         }
     }
+    # The host files became writable so that a Shell-rooted report can be
+    # reproduced at all, which means they are now agent-authored source and
+    # have to clear the same safety bar as the page. They get the bounded-size
+    # and forbidden-API checks and nothing else: the structural rules above are
+    # about MainPage specifically, and App.xaml.cs and SandboxShell.xaml are
+    # neither a page nor its code-behind. A file the agent left alone is
+    # skipped, because scanning the sample's own committed source would refuse
+    # things the repository already ships.
+    foreach ($hostEntry in @(
+        @{ Path = $sandboxAppCodePath; Name = 'Sandbox application root' },
+        @{ Path = $sandboxShellXamlPath; Name = 'Sandbox Shell XAML' },
+        @{ Path = $sandboxShellCodePath; Name = 'Sandbox Shell code-behind' }
+    )) {
+        if (-not (Test-Path -LiteralPath $hostEntry.Path -PathType Leaf)) {
+            continue
+        }
+        $relative = [IO.Path]::GetRelativePath($repoRoot, $hostEntry.Path).Replace('\', '/')
+        if (-not (Test-ReplicationPathChanged -RelativePath $relative)) {
+            continue
+        }
+        Assert-BoundedGeneratedFile -Path $hostEntry.Path -Description $hostEntry.Name
+        $hostSource = Get-Content -LiteralPath $hostEntry.Path -Raw
+        Assert-ReplicationGeneratedSourceSafety -Content $hostSource -Path $relative
+        if (
+            $hostSource -match '(?i)\b(?:DependencyService|ServiceProvider|GetService)\b' -or
+            $hostSource -match '(?i)\bMauiContext\s*\.\s*Services\b'
+        ) {
+            throw "$($hostEntry.Name) contains prohibited service-provider access."
+        }
+    }
+
     $allSource = $combinedSource.ToString()
     if (
         $allSource -match '"BUG REPRODUCED:[^"]*"' -and
@@ -2128,11 +2200,7 @@ function Read-GeneratedAppiumPlan {
 }
 
 function Assert-SandboxChanges {
-    $allowed = @(
-        'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml',
-        'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs',
-        'CustomAgentLogsTmp/Sandbox/appium-plan.json'
-    )
+    $allowed = @($script:SandboxRequiredPaths) + @($script:SandboxHostPaths)
     $ignoredPrefixes = @(
         "CustomAgentLogsTmp/IssueReplication/Issue$IssueNumber/"
     )
@@ -2151,7 +2219,7 @@ function Assert-SandboxChanges {
         throw "Sandbox generation changed an unauthorized path: $($entry.Path)"
     }
 
-    foreach ($required in $allowed) {
+    foreach ($required in $script:SandboxRequiredPaths) {
         if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $required) -PathType Leaf)) {
             throw "Sandbox generation did not create/update required path: $required"
         }
@@ -2758,14 +2826,23 @@ function Read-SandboxProposal {
         throw 'Timing-sensitive Sandbox proposals must preserve the reported race and describe bounded repeated trigger attempts within one device session.'
     }
 
-    $expectedFiles = @(
-        'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml',
-        'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs',
-        'CustomAgentLogsTmp/Sandbox/appium-plan.json'
-    ) | Sort-Object
+    # The three required paths must all be declared; the host files may be
+    # declared as well, and only those. An exact-set match was right while
+    # every Sandbox had the same shape, but it also made a Shell-rooted
+    # scenario undeclarable, so the rule is now "all of the required, none of
+    # the unknown" rather than "these three and nothing else".
+    $requiredFiles = @($script:SandboxRequiredPaths) | Sort-Object
+    $permittedFiles = @($script:SandboxRequiredPaths) + @($script:SandboxHostPaths)
     $actualFiles = @($proposal.files | ForEach-Object { ([string]$_).Replace('\', '/') } | Sort-Object -Unique)
-    if (($actualFiles -join "`n") -cne ($expectedFiles -join "`n")) {
-        throw 'The Sandbox proposal files do not match the exact authored paths.'
+    $missing = @($requiredFiles | Where-Object { $actualFiles -cnotcontains $_ })
+    if ($missing.Count -gt 0) {
+        throw ('The Sandbox proposal does not declare the required authored paths: ' +
+            ($missing -join ', '))
+    }
+    $unknown = @($actualFiles | Where-Object { $permittedFiles -cnotcontains $_ })
+    if ($unknown.Count -gt 0) {
+        throw ('The Sandbox proposal declares paths it may not author: ' +
+            ($unknown -join ', '))
     }
     return $proposal
 }
@@ -4561,7 +4638,8 @@ If the failure contains a compiler diagnostic, search and read the checked-out r
 
 Perform only the Sandbox-authoring portion:
 1. Read the sanitized local issue context.
-2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
+2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir", plus - only when the reported scenario requires a different application root - App.xaml.cs, SandboxShell.xaml, and SandboxShell.xaml.cs in the same directory.
+The Sandbox is hosted by ``new Window(new NavigationPage(new MainPage()))`` and App.xaml.cs carries a ``useShell`` boolean that switches it to ``new Window(new SandboxShell())``. Set that boolean to true, and edit SandboxShell.xaml, whenever the report is about Shell itself - a flyout, a TabBar, ShellContent, Shell navigation or routing, or a page whose behaviour depends on being hosted by Shell. Reproducing such a report under a NavigationPage root is not the reported scenario and will be rejected. Leave all three files untouched for every other report: changing the host when the report does not call for it is itself a scenario difference.
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind only after verifying the declaration or proven usage in the checked-out repository; do not guess namespaces.
 3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, assertAppClosed, back, restartApp, swipe, dragPath, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, and dragPath require a locator object; assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, dragPath, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertAppClosed, back, and restartApp require `"value": null`. restartApp is available only on Android and iOS. assertAppClosed is available on every platform, only as the final step, and only when the issue reports that the exact trigger crashes or closes the application; it succeeds only when the Sandbox stops running after a preceding ready-state check and trigger action. Never use it for ordinary navigation, element disappearance, window replacement, or a failure already present before recording. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. A mutable result/status element is the exception: give it a stable id or AutomationId and locate it independently of its current verdict. Never assign an AutomationId more than once on any element, because MAUI permits it to be set only once and reassigning it throws InvalidOperationException; change the result element's Text to signal progress instead. Never locate the final result by the expected `BUG REPRODUCED:` text itself. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: initialize the separate result/status element to a visible `PASS:` or `NO BUG:` value before the trigger, and change it to `BUG REPRODUCED:` only when the reported defect is observed. This initialized negative state is required so the trusted runner can distinguish completed non-reproduction from element lookup or infrastructure failure. Never replace the affected control's Text, Title, Content, geometry, or other visible state with the verdict. The recording must keep the affected control visible and, for transition defects, show its pre-trigger reference state before the action and its post-trigger failure state afterward. When the issue says the failure is timing-sensitive, intermittent, a race, or may require multiple attempts, preserve that prerequisite and perform 2-5 bounded reset-and-trigger cycles in the same Appium plan whenever the non-crashing state can be reset. Do not spend whole Sandbox regeneration attempts repeating an unchanged one-shot plan. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. For initial launch, OnAppearing, or OnNavigatedTo issues on Android/iOS, use restartApp or an in-app navigation step after recording begins; evidence that starts with the failure already latched is invalid. Before the step that triggers the defect, the plan MUST assert that same result element still holds its initialized `PASS:` or `NO BUG:` value, so the recording shows the caption changing rather than a verdict that was already latched when recording started; the only alternative is a restartApp step, for a defect that can latch solely during launch. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value against that independently located result element, except an exact Windows app-crash report may end with assertAppClosed. Swipe values are up|down|left|right. dragPath is available only on Android and iOS and presses the located element, then moves one pointer through two to four segments before releasing; its value is `dx,dy;dx,dy` with two to four `dx,dy` pairs expressed as signed fractions of the screen (at most three decimals, magnitude at most 1) applied one after another from the press point. Use dragPath, not swipe, whenever the reported trigger keeps a finger down while changing direction, leaves and re-enters a control, or is a pan, drag, or SwipeView gesture; for example "0.4,0;0,0.2;-0.35,0" swipes right, drags below the row, and returns. Orientation values are portrait|landscape.
@@ -4572,7 +4650,7 @@ When the issue reports a crash identified by a specific managed exception type, 
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 Sandbox XAML supports only x:Class on the root element plus x:Name, x:Key, and x:DataType. Do not use x:FactoryMethod, x:Arguments, x:Static, x:Type, x:Reference, or any other x: directive. Assign any value that needs a factory method or constructor arguments from code-behind instead, for example setting Keyboard with Keyboard.Create in the page constructor.
-5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps, and set files to exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json). That list describes the files you edited inside the repository; the proposal itself is a fourth required output and lives outside the repository at the absolute path above. Writing the three repository files without also writing the proposal fails the attempt before the device is ever touched.
+5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps, and set files to the repository-relative authored paths: MainPage.xaml, MainPage.xaml.cs, and appium-plan.json are always required, and App.xaml.cs, SandboxShell.xaml, and SandboxShell.xaml.cs are added only when you changed the application root for a Shell-hosted report. List every file you edited and nothing else. That list describes the files you edited inside the repository; the proposal itself is a fourth required output and lives outside the repository at the absolute path above. Writing the three repository files without also writing the proposal fails the attempt before the device is ever touched.
 Do not create an automated test yet and do not claim reproduction succeeded.
 If the reported defect genuinely cannot occur inside this bounded Sandbox, because it requires a host, packaging model, project type, or environment the Sandbox cannot be, write "$sandboxBlockedPath" as JSON with exactly a reason field naming that specific structural impossibility. Never use it for a scenario that is merely difficult, for an element you could not locate, or for a behavior that simply did not reproduce; those must be attempted properly instead. It is ignored before attempt 3.
 $retryGuidance
@@ -5259,6 +5337,23 @@ function Copy-SandboxEvidence {
     Copy-Item -LiteralPath $sandboxXamlPath -Destination (Join-Path $sandboxArtifactDir 'MainPage.xaml') -Force
     Copy-Item -LiteralPath $sandboxCodePath -Destination (Join-Path $sandboxArtifactDir 'MainPage.xaml.cs') -Force
     Copy-Item -LiteralPath $appiumPlanPath -Destination (Join-Path $sandboxArtifactDir 'appium-plan.json') -Force
+    # A Shell-hosted reproduction is not legible from MainPage alone: the file
+    # that decides what hosts the page is part of the scenario a reviewer has
+    # to be able to check. Copied only when it was changed, so an ordinary
+    # NavigationPage reproduction still ships the same two files it always did.
+    foreach ($hostEntry in @(
+        @{ Path = $sandboxAppCodePath; Name = 'App.xaml.cs' },
+        @{ Path = $sandboxShellXamlPath; Name = 'SandboxShell.xaml' },
+        @{ Path = $sandboxShellCodePath; Name = 'SandboxShell.xaml.cs' }
+    )) {
+        $relative = "src/Controls/samples/Controls.Sample.Sandbox/$($hostEntry.Name)"
+        if (
+            (Test-Path -LiteralPath $hostEntry.Path -PathType Leaf) -and
+            (Test-ReplicationPathChanged -RelativePath $relative)
+        ) {
+            Copy-Item -LiteralPath $hostEntry.Path -Destination (Join-Path $sandboxArtifactDir $hostEntry.Name) -Force
+        }
+    }
     foreach ($fileName in @('appium.log', "$Platform-device.log", "$Platform-device.log.stderr")) {
         $source = Join-Path $sandboxAppiumDir $fileName
         if (Test-Path -LiteralPath $source -PathType Leaf) {
@@ -6103,6 +6198,9 @@ try {
                 -WritePaths @(
                     $sandboxXamlPath,
                     $sandboxCodePath,
+                    $sandboxAppCodePath,
+                    $sandboxShellXamlPath,
+                    $sandboxShellCodePath,
                     $appiumPlanPath,
                     $sandboxProposalPath,
                     $sandboxBlockedPath
