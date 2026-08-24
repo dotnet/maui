@@ -4463,7 +4463,13 @@ function Read-ReplicationFixWinner {
     if ($null -ne $document.winner -and -not [string]::IsNullOrWhiteSpace([string]$document.winner)) {
         # Accepts either the bare attempt number or the try-fix directory name,
         # because the agent sees both and either identifies the same candidate.
-        $claimed = ([string]$document.winner).Trim() -replace '^(?:try-fix-|attempt-|candidate\s*)', ''
+        #
+        # The separator has to be part of the pattern rather than baked into
+        # each prefix. Build 15078841 passed all five candidates, scoped a real
+        # fix, and lost it here because the agent wrote 'candidate-1': the old
+        # pattern allowed 'candidate' followed by whitespace, so a hyphen left
+        # '-1' behind and matched no attempt at all.
+        $claimed = ([string]$document.winner).Trim() -replace '^(?:try-fix|attempt|candidate)[\s_:-]*', ''
         if (-not $knownAttempts.Contains($claimed)) {
             throw (
                 "The fix winner names candidate '$($document.winner)', which is not one of " +

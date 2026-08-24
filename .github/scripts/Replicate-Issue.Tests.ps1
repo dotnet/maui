@@ -9853,6 +9853,43 @@ Describe 'Choosing which fix to publish' {    BeforeAll {
             Should -Be '3'
     }
 
+    It 'accepts every separator the agent actually writes' {
+        # Build 15078841 passed all five candidates and lost its fix because
+        # the agent wrote 'candidate-1' and only 'candidate 1' was understood.
+        foreach ($form in @('candidate-3', 'candidate 3', 'candidate3',
+                'attempt-3', 'attempt3', 'try-fix3', 'try-fix-3',
+                'candidate_3', 'candidate:3', 'Candidate-3')) {
+            $document = $script:valid -replace '"winner": "3"', ('"winner": "' + $form + '"')
+            (Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results).Winner |
+                Should -Be '3' -Because "'$form' names candidate 3"
+        }
+    }
+
+    It 'still refuses an unknown candidate however it is spelled' {
+        foreach ($form in @('candidate-9', 'attempt-9', 'try-fix-9')) {
+            $document = $script:valid -replace '"winner": "3"', ('"winner": "' + $form + '"')
+            { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+                Should -Throw '*not one of the candidates that passed*'
+        }
+    }
+
+    It 'does not strip an unrecognised prefix to reach a passing candidate' {
+        # Normalising by "remove everything before the digits" would make any
+        # word at all name a candidate, which is how a lenient reader starts
+        # inventing winners.
+        foreach ($form in @('bogus-3', 'the third one 3', 'winner-3')) {
+            $document = $script:valid -replace '"winner": "3"', ('"winner": "' + $form + '"')
+            { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+                Should -Throw '*not one of the candidates that passed*'
+        }
+    }
+
+    It 'still refuses a blocked candidate however it is spelled' {
+        $document = $script:valid -replace '"winner": "3"', '"winner": "candidate-2"'
+        { Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results } |
+            Should -Throw '*not one of the candidates that passed*'
+    }
+
     It 'treats publishing nothing as a real answer' {
         $document = $script:valid -replace '"winner": "3"', '"winner": null'
         $winner = Read-ReplicationFixWinner -Path (New-WinnerDocument $document) -Results $script:results
