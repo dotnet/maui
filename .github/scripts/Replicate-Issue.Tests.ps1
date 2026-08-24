@@ -6325,6 +6325,14 @@ Describe 'Elision keeps the cause rather than the chatter' {
 }
 
 Describe 'Prompt names the oracles reviewers proved cannot fail honestly' {
+    It 'teaches the relational-oracle rule the guard already enforces' {
+        # Build 15067984 hit that guard twice in five attempts because the
+        # prompt never stated it, so the author could only discover the rule by
+        # spending attempts on it.
+        $script:Source | Should -Match 'uniformly wrong satisfies that relation'
+        $script:Source | Should -Match 'the value a correct layout produces'
+    }
+
     It 'forbids a literal pixel sample coordinate' {
         # Build 15068373 asserted a stroke pixel equals RGBA 144,238,144 at the
         # literal point (41,63). With the trigger removed the point sat on the
