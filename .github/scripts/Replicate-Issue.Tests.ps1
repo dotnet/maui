@@ -6325,6 +6325,15 @@ Describe 'Elision keeps the cause rather than the chatter' {
 }
 
 Describe 'Prompt names the oracles reviewers proved cannot fail honestly' {
+    It 'teaches how a device test reaches a platform view without reading null' {
+        # Build 15068577 spent attempts 4 and 5 asserting on a platform view
+        # that was null because no handler had been created, so the verifier
+        # refused a failure that did not match the reported symptom.
+        $script:Source | Should -Match 'InvokeOnMainThreadAsync, CreateHandlerAsync or'
+        $script:Source | Should -Match 'AttachAndRun as the existing device tests do'
+        $script:Source | Should -Match 'Assert the platform view is non-null first'
+    }
+
     It 'teaches the arrangement and single-pixel rules the guard already enforces' {
         # The guard refuses lifecycle attributes, fixture contracts, field
         # initializers outside a test, and single-pixel oracles. None of those
