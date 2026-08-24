@@ -152,7 +152,7 @@ Fixes #XXXXX
 | **Root cause** | Why the bug occurred | "Non-ISafeAreaView views falling through to return baseSafeArea" |
 | **Fix approach** | What the code now does | "Return SafeAreaPadding.Empty for views without interface" |
 | **Philosophy/model change** | If behavior model changed | "Before: opt-out. After: opt-in via interface" |
-| **Key interfaces/types** | Types agents need to know | "ISafeAreaView = legacy contract, ISafeAreaElement = modern opt-in contract" |
+| **Key interfaces/types** | Types agents need to know | "ISafeAreaView, ISafeAreaView2 = opt-in contract" |
 | **What NOT to do** | Failed approaches to avoid | "Don't use Element type in Platform layer" |
 | **Architectural constraints** | Layer boundaries, type availability | "Platform layer cannot reference Controls types" |
 | **Edge cases** | Known limitations or risks | "Legacy layouts are [Obsolete], custom views need interface" |
