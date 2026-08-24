@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView2, ISafeAreaInsets, IView, ITitledElement, IToolbarElement, ISafeAreaView, IConstrainedView
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaViewStrategy, ISafeAreaInsets, IView, ITitledElement, IToolbarElement, ISafeAreaView, IConstrainedView
 #if IOS
 	,IiOSPageSpecifics
 #endif
@@ -262,8 +262,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
-		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
 			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
 			if (ignoreSafeArea)
@@ -275,10 +275,6 @@ namespace Microsoft.Maui.Controls
 				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
 			}
 		}
-
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		// Base Page uses legacy IgnoreSafeArea behavior, not the SafeAreaEdges property.
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => false;
 
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.

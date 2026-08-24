@@ -8,35 +8,9 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
-	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
-		layout switch
-		{
-			ISafeAreaView2 sav2 => sav2,
-			IElementHandler { VirtualView: ISafeAreaView2 virtualSav2 } => virtualSav2,
-			_ => null
-		};
-
-	internal static ISafeAreaView? GetSafeAreaView(object? layout) =>
-		layout switch
-		{
-			ISafeAreaView sav => sav,
-			IElementHandler { VirtualView: ISafeAreaView virtualSav } => virtualSav,
-			_ => null
-		};
-
-
 	internal static SafeAreaRegions GetSafeAreaRegionForEdge(int edge, ICrossPlatformLayout crossPlatformLayout)
 	{
-		var layout = crossPlatformLayout;
-		var safeAreaView2 = GetSafeAreaView2(layout);
-
-		if (safeAreaView2 is not null)
-		{
-			return safeAreaView2.GetSafeAreaRegionsForEdge(edge);
-		}
-
-		var safeAreaView = GetSafeAreaView(layout);
-		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
+		return SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(crossPlatformLayout, edge);
 	}
 
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(
@@ -51,10 +25,10 @@ internal static class SafeAreaExtensions
 		var isKeyboardShowing = !keyboardInsets.IsEmpty;
 
 		var layout = crossPlatformLayout;
-		var safeAreaView2 = GetSafeAreaView2(layout);
-		var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
+		var hasSafeAreaStrategy = SafeAreaViewStrategy.IsModernSafeAreaView(layout);
+		var margins = (SafeAreaViewStrategy.ResolveVirtualView(layout) as IView)?.Margin ?? Thickness.Zero;
 
-		if (safeAreaView2 is not null)
+		if (hasSafeAreaStrategy)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);

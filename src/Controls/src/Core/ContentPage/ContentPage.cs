@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that displays a single view as its content.</summary>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement, ISafeAreaView2
+	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement, ISafeAreaViewStrategy
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -170,11 +170,11 @@ namespace Microsoft.Maui.Controls
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+		/// <inheritdoc cref="ISafeAreaElement.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
-		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
-		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Check if the developer has explicitly set SafeAreaEdges
 			if (SafeAreaElement.IsSafeAreaEdgesSet(this))

@@ -70,7 +70,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		sealed class CustomSafeAreaView : View, ISafeAreaElement, ISafeAreaView2, ICrossPlatformLayout
+		sealed class CustomSafeAreaView : View, ISafeAreaElement, ICrossPlatformLayout
 		{
 			public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
 
@@ -82,9 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Rect LastArrangeBounds { get; private set; }
 
-			bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
-
-			SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge) => SafeAreaEdges.GetEdge(edge);
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Container;
 

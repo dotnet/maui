@@ -1,11 +1,8 @@
 #nullable enable
 Microsoft.Maui.ISafeAreaElement
 Microsoft.Maui.ISafeAreaElement.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.ISafeAreaElement.HasExplicitSafeAreaEdges.get -> bool
 Microsoft.Maui.ISafeAreaElement.GetDefaultSafeAreaEdges() -> Microsoft.Maui.SafeAreaEdges
-Microsoft.Maui.ISafeAreaView2
-Microsoft.Maui.ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge) -> Microsoft.Maui.SafeAreaRegions
-Microsoft.Maui.ISafeAreaView2.HasExplicitSafeAreaEdges.get -> bool
-Microsoft.Maui.SafeAreaEdges.GetEdge(int edge) -> Microsoft.Maui.SafeAreaRegions
 Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
 Microsoft.Maui.FontManager.Dispose() -> void
 Microsoft.Maui.HybridWebViewInvoker

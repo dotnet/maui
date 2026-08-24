@@ -87,8 +87,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			_ = page.SafeAreaEdges;
 
-			var safeAreaView = (ISafeAreaView2)page;
-			Assert.False(safeAreaView.HasExplicitSafeAreaEdges);
+			var safeAreaView = (ISafeAreaViewStrategy)page;
+			Assert.False(((ISafeAreaElement)page).HasExplicitSafeAreaEdges);
 			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(0));
 			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(1));
 			Assert.Equal(SafeAreaRegions.Container, safeAreaView.GetSafeAreaRegionsForEdge(2));

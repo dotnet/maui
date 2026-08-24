@@ -11,23 +11,23 @@ This example shows a PR description optimized for future agent success.
 ```markdown
 ### Root Cause
 
-In `MauiView.GetAdjustedSafeAreaInsets()` on iOS, views that don't implement `ISafeAreaView` or `ISafeAreaView2` (such as `ContentPresenter`, `Border`) were falling through to return `baseSafeArea`. This applied full device safe area insets to views that never opted into safe area handling, causing double-padding when used inside ControlTemplates.
+In `MauiView.GetAdjustedSafeAreaInsets()` on iOS, views that don't implement `ISafeAreaView` or the modern safe-area contract (such as `ContentPresenter`, `Border`) were falling through to return `baseSafeArea`. This applied full device safe area insets to views that never opted into safe area handling, causing double-padding when used inside ControlTemplates.
 
 ### Description of Change
 
-Changed the fallback behavior in `GetAdjustedSafeAreaInsets()` to return `SafeAreaPadding.Empty` instead of `baseSafeArea` for views that don't implement `ISafeAreaView` or `ISafeAreaView2`.
+Changed the fallback behavior in `GetAdjustedSafeAreaInsets()` to return `SafeAreaPadding.Empty` instead of `baseSafeArea` for views that don't implement a safe-area contract.
 
 **This is a philosophy change:**
 - **Before:** Safe area applied by default (opt-out model)
 - **After:** Safe area only applies to views that implement the interfaces (opt-in model)
 
-This aligns iOS with Android, where `SafeAreaExtensions.GetSafeAreaView2()` returns `null` for non-safe-area views.
+This aligns iOS with Android, where non-safe-area views do not receive modern safe-area handling.
 
 ### Key Technical Details
 
 **Safe area interfaces (opt-in contract):**
 - `ISafeAreaView` - Legacy interface with `IgnoreSafeArea` property
-- `ISafeAreaView2` - Modern interface with per-edge `SafeAreaRegions` control
+- `ISafeAreaElement` - Modern interface with per-edge `SafeAreaRegions` control
 
 **Views that implement these interfaces (safe area works):**
 - `ContentPage`, `ContentView`, `Layout`, `ScrollView`, `Border`, `Page`
@@ -37,7 +37,7 @@ This aligns iOS with Android, where `SafeAreaExtensions.GetSafeAreaView2()` retu
 
 ### What NOT to Do (for future agents)
 
-- Don't use Element type in Platform layer - `src/Core/src/Platform/` cannot reference Controls-layer types like `Element`. Use `IView`, `ISafeAreaView`, `ISafeAreaView2` only.
+- Don't use Element type in Platform layer - `src/Core/src/Platform/` cannot reference Controls-layer types like `Element`. Use Core contracts such as `IView`, `ISafeAreaView`, and `ISafeAreaElement`.
 - Don't use type name string matching - Checking `View.GetType().Name.Contains("ContentPresenter")` is brittle
 - Don't check ancestor hierarchy for safe area - Performance cost and wrong abstraction (safe area is per-edge, not binary)
 

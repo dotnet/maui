@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaViewStrategy
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -555,11 +555,11 @@ namespace Microsoft.Maui.Controls
 			return SafeAreaEdges.Default;
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+		/// <inheritdoc cref="ISafeAreaElement.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
-		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
-		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Use direct property 
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// background, shape, padding, and more to create visually rich containers.
 	/// </remarks>
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaViewStrategy
 	{
 		float[]? _strokeDashPattern;
 
@@ -466,8 +466,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
-		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Use direct property
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);
@@ -482,8 +482,8 @@ namespace Microsoft.Maui.Controls
 			return regionForEdge;
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+		/// <inheritdoc cref="ISafeAreaElement.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 		/// <summary>
 		/// Provides the default value for the <see cref="SafeAreaEdges"/> property.

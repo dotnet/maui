@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaViewStrategy, ISafeAreaElement
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -409,11 +409,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+		/// <inheritdoc cref="ISafeAreaElement.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
-		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
-		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Use direct property first
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);

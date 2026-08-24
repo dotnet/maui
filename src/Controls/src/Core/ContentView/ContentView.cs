@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
+	public partial class ContentView : TemplatedView, IContentView, ISafeAreaViewStrategy, ISafeAreaElement
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -88,11 +88,11 @@ namespace Microsoft.Maui.Controls
 			return $"{base.GetDebuggerDisplay()}, {contentText}";
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+		/// <inheritdoc cref="ISafeAreaElement.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
-		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
-		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
+		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
+		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
 			// Use direct property
 			var regionForEdge = SafeAreaEdges.GetEdge(edge);

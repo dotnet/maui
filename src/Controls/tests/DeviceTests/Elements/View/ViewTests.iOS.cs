@@ -34,6 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 					SafeAreaRegions.None)
 			};
 			var handler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(view);
+			Assert.IsNotAssignableFrom<ISafeAreaViewStrategy>(view);
 
 			await InvokeOnMainThreadAsync(() =>
 			{

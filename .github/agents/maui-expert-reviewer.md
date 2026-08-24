@@ -279,11 +279,11 @@ Safe area adjustments, keyboard insets, and ancestor hierarchy walks. See `safe-
 - CHECK: Safe area comparison uses pixel-level tolerance to absorb sub-pixel animation noise
 - CHECK: Never gate per-view safe area callbacks on window-level insets (they diverge on MacCatalyst with custom TitleBar)
 - CHECK: Safe area caches are invalidated on inset changes and window transitions
-- CHECK: Only `ISafeAreaView`/`ISafeAreaView2` views receive safe area adjustments — non-safe-area views must return empty padding
+- CHECK: Only legacy `ISafeAreaView` or modern `ISafeAreaElement` views receive safe area adjustments — non-safe-area views must return empty padding
 - CHECK: Raw vs adjusted inset comparison — `_safeArea` is filtered by `GetSafeAreaForEdge`; raw `UIView.SafeAreaInsets` includes all edges; never compare across types
 - CHECK: Use constants for magic strings — property names like `"SafeAreaInsets"` must be constants, not bare strings
-- CHECK: New safe area types belong in `src/Core` so `ISafeAreaView2` can reference them — don't add core interface deps to `Controls.csproj`
-- CHECK: Before creating versioned interfaces (`ISafeAreaView2`), check if the existing interface can be extended with default interface methods
+- CHECK: New safe area types belong in `src/Core` so `ISafeAreaElement` can reference them — don't add core interface deps to `Controls.csproj`
+- CHECK: Prefer a capability-oriented contract such as `ISafeAreaElement` over publishing a numbered interface
 
 #### Platform notes
 - **iOS/MacCatalyst**: See `safe-area-ios.instructions.md` for `IsParentHandlingSafeArea`, `EqualsAtPixelLevel`, and the Window Guard anti-pattern. macCatalyst defaults `UseSafeArea` to `true` (unlike iOS where it's `false`).

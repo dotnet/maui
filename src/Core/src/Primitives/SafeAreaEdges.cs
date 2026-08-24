@@ -98,8 +98,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="edge">The edge index (0=Left, 1=Top, 2=Right, 3=Bottom).</param>
 		/// <returns>The <see cref="SafeAreaRegions"/> for the specified edge.</returns>
-		/// <remarks>Returns <see cref="SafeAreaRegions.None"/> when <paramref name="edge"/> is outside the supported range.</remarks>
-		public SafeAreaRegions GetEdge(int edge)
+		internal SafeAreaRegions GetEdge(int edge)
 		{
 			return edge switch
 			{

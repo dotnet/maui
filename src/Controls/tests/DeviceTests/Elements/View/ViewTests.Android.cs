@@ -39,16 +39,17 @@ namespace Microsoft.Maui.DeviceTests
 				root.AddView(recyclerView);
 				recyclerView.AddView(platformView);
 				MauiWindowInsetListener.RegisterParentForChildViews(root);
+				Assert.IsNotAssignableFrom<ISafeAreaViewStrategy>(view);
 
 				try
 				{
 					platformView.SetPadding(1, 2, 3, 4);
-					Assert.False(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+					Assert.False(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
 					Assert.Null(MauiWindowInsetListener.FindListenerForView(platformView));
 
 					view.SafeAreaEdges = SafeAreaEdges.All;
 
-					Assert.True(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+					Assert.True(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
 					Assert.NotNull(MauiWindowInsetListener.FindListenerForView(platformView));
 
 					var insets = new WindowInsetsCompat.Builder()
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					view.ClearValue(CustomSafeAreaView.SafeAreaEdgesProperty);
 
-					Assert.False(((ISafeAreaView2)view).HasExplicitSafeAreaEdges);
+					Assert.False(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
 					Assert.Null(MauiWindowInsetListener.FindListenerForView(platformView));
 					Assert.Equal(1, platformView.PaddingLeft);
 					Assert.Equal(2, platformView.PaddingTop);

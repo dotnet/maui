@@ -10,10 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (platformView != null)
-			{
-				platformView.FocusChange += OnPlatformViewFocusChange;
-			}
+			platformView?.FocusChange += OnPlatformViewFocusChange;
 		}
 
 		partial void DisconnectingHandler(PlatformView platformView)
@@ -257,6 +254,11 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
+			if (!SafeAreaViewStrategy.IsModernSafeAreaView(view))
+			{
+				return;
+			}
+
 			if (handler.IsConnectingHandler())
 			{
 				return;

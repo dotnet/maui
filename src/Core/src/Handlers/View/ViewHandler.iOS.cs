@@ -154,6 +154,9 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
+			if (!SafeAreaViewStrategy.IsModernSafeAreaView(view))
+				return;
+
 			if (handler.IsConnectingHandler())
 				return;
 

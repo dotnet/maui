@@ -273,7 +273,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
-					Assert.False(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.False(((ISafeAreaElement)layout).HasExplicitSafeAreaEdges);
 					Assert.False(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(itemView));
 					Assert.False(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
 					Assert.Null(MauiWindowInsetListener.FindListenerForView(itemView));
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
-					Assert.True(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.True(((ISafeAreaElement)layout).HasExplicitSafeAreaEdges);
 					Assert.True(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(itemView));
 					Assert.True(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
 					Assert.Same(listener, MauiWindowInsetListener.FindListenerForView(itemView));
@@ -326,7 +326,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
-					Assert.False(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.False(((ISafeAreaElement)layout).HasExplicitSafeAreaEdges);
 					Assert.True(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(itemView));
 					Assert.True(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
 					Assert.Same(listener, MauiWindowInsetListener.FindListenerForView(itemView));
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					layout.ClearValue(Layout.SafeAreaEdgesProperty);
 
-					Assert.False(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.False(((ISafeAreaElement)layout).HasExplicitSafeAreaEdges);
 					Assert.False(MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(itemView, MauiContext.Context));
 					Assert.Null(MauiWindowInsetListener.FindListenerForView(itemView));
 					Assert.Equal(1, itemView.PaddingLeft);
@@ -439,7 +439,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(itemLayout);
 				var itemPlatformView = Assert.IsType<LayoutViewGroup>(itemLayout.ToPlatform());
 				Assert.NotNull(MauiWindowInsetListener.FindRegisteredListenerForView(itemPlatformView));
-				Assert.False(((ISafeAreaView2)itemLayout).HasExplicitSafeAreaEdges);
+				Assert.False(((ISafeAreaElement)itemLayout).HasExplicitSafeAreaEdges);
 				Assert.Null(MauiWindowInsetListener.FindListenerForView(itemPlatformView));
 
 				itemPlatformView.SetPadding(1, 2, 3, 4);
@@ -450,7 +450,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				itemLayout.SafeAreaEdges = SafeAreaEdges.All;
 
-				Assert.True(((ISafeAreaView2)itemLayout).HasExplicitSafeAreaEdges);
+				Assert.True(((ISafeAreaElement)itemLayout).HasExplicitSafeAreaEdges);
 				Assert.NotNull(MauiWindowInsetListener.FindListenerForView(itemPlatformView));
 
 				ViewCompat.DispatchApplyWindowInsets(itemPlatformView, insets);
@@ -458,7 +458,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				itemLayout.ClearValue(Layout.SafeAreaEdgesProperty);
 
-				Assert.False(((ISafeAreaView2)itemLayout).HasExplicitSafeAreaEdges);
+				Assert.False(((ISafeAreaElement)itemLayout).HasExplicitSafeAreaEdges);
 				Assert.Null(MauiWindowInsetListener.FindListenerForView(itemPlatformView));
 				Assert.Equal(1, itemPlatformView.PaddingLeft);
 				Assert.Equal(2, itemPlatformView.PaddingTop);
