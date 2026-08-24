@@ -548,6 +548,19 @@ static bool IsSandboxRunning(AppiumDriver driver, string platform)
     return Convert.ToInt64(queried, System.Globalization.CultureInfo.InvariantCulture) >= 2;
 }
 
+// The ids Android gives the buttons of its own application-error dialogs. An
+// inventory listing any of them is describing the system, not the app under
+// test, and telling the author to address one of them would send the next
+// attempt to tap Close app.
+static string[] SystemDialogMarkers() => new[]
+{
+    "aerr_wait",
+    "aerr_close",
+    "aerr_restart",
+    "aerr_report",
+    "aerr_mute",
+};
+
 static IWebElement WaitForElement(
     AppiumDriver driver,
     string platform,
@@ -555,38 +568,31 @@ static IWebElement WaitForElement(
     TimeSpan timeout)
 {
     var candidates = CreateLocatorCandidates(locator, platform);
-    var wait = new WebDriverWait(driver, timeout);
-    IWebElement? found = null;
     try
     {
-        found = wait.Until(current =>
-        {
-            foreach (var by in candidates)
-            {
-                try
-                {
-                    var element = current.FindElement(by);
-                    if (element.Displayed)
-                    {
-                        return element;
-                    }
-                }
-                catch (NoSuchElementException)
-                {
-                }
-                catch (StaleElementReferenceException)
-                {
-                }
-                catch (InvalidSelectorException)
-                {
-                }
-            }
-
-            return null;
-        });
+        return WaitForElementOnce(driver, candidates, timeout);
     }
     catch (WebDriverTimeoutException timedOut)
     {
+        // A system dialog covers the app without closing it, so the locator was
+        // never wrong: it was unreachable. Build 15071060 lost four attempts to
+        // an ANR whose Wait button was reported as an app element. Clearing it
+        // and waiting again is the only reading under which the attempt is
+        // still about the reported behaviour.
+        if (TryDismissObstructingSystemDialog(driver, platform))
+        {
+            try
+            {
+                return WaitForElementOnce(driver, candidates, timeout);
+            }
+            catch (WebDriverTimeoutException stillMissing)
+            {
+                throw new WebDriverTimeoutException(
+                    DescribeMissingElement(driver, platform, locator, candidates),
+                    stillMissing);
+            }
+        }
+
         // WebDriverWait raises its own timeout, so a throw placed after the wait
         // never runs. Without this catch the inventory below never reached the
         // agent and every retry re-guessed the same absent identifier.
@@ -594,9 +600,81 @@ static IWebElement WaitForElement(
             DescribeMissingElement(driver, platform, locator, candidates),
             timedOut);
     }
+}
 
+static IWebElement WaitForElementOnce(
+    AppiumDriver driver,
+    IReadOnlyList<By> candidates,
+    TimeSpan timeout)
+{
+    var wait = new WebDriverWait(driver, timeout);
+    var found = wait.Until(current =>
+    {
+        foreach (var by in candidates)
+        {
+            try
+            {
+                var element = current.FindElement(by);
+                if (element.Displayed)
+                {
+                    return element;
+                }
+            }
+            catch (NoSuchElementException)
+            {
+            }
+            catch (StaleElementReferenceException)
+            {
+            }
+            catch (InvalidSelectorException)
+            {
+            }
+        }
+
+        return null;
+    });
+
+    // WebDriverWait returns null rather than raising when its condition never
+    // yields, depending on the overload, so both exits have to be a timeout or
+    // the caller cannot tell a miss from a hit.
     return found ?? throw new WebDriverTimeoutException(
-        DescribeMissingElement(driver, platform, locator, candidates));
+        $"No candidate locator became visible within {timeout.TotalSeconds:0.##}s.");
+}
+
+// Android puts an ANR or a crash dialog in front of the app rather than in it.
+// Its buttons carry ordinary resource ids, so a locator times out against an
+// app that is present and an inventory taken at that moment describes the
+// dialog. Only the ANR dialog can be cleared without ending the app: Wait
+// leaves the process running, whereas Close app and Restart terminate it,
+// which is a termination for the caller to report rather than an obstruction
+// to clear.
+static bool TryDismissObstructingSystemDialog(AppiumDriver driver, string platform)
+{
+    if (!string.Equals(platform, "android", StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    try
+    {
+        var waitButtons = driver.FindElements(MobileBy.Id("android:id/aerr_wait"));
+        if (waitButtons.Count == 0)
+        {
+            return false;
+        }
+
+        Console.WriteLine(
+            "⚠️  An Android \"isn't responding\" dialog was covering the app. " +
+            "Choosing Wait and looking for the element again.");
+        waitButtons[0].Click();
+        return true;
+    }
+    catch (WebDriverException)
+    {
+        // A dialog that cannot be clicked is not a dialog we can clear, and the
+        // caller's report is more useful than this exception.
+        return false;
+    }
 }
 
 static string DescribeMissingElement(
@@ -637,6 +715,16 @@ static string DescribeAddressableElements(AppiumDriver driver)
     if (source.Length == 0)
     {
         return $"{ElementInventoryStart} unavailable: the driver returned an empty page source. {ElementInventoryEnd}";
+    }
+
+    if (SystemDialogMarkers().Any(marker => source.Contains(marker, StringComparison.Ordinal)))
+    {
+        return $"{ElementInventoryStart} unavailable: an Android system " +
+            "application-error dialog was in front of the app, so the page source " +
+            "describes that dialog and not the Sandbox. The locator is not the " +
+            "problem: the app was unreachable, or wedged, at this moment. Keep the " +
+            "same identifiers and reduce the work done on the UI thread before this " +
+            $"step. {ElementInventoryEnd}";
     }
 
     var seen = new HashSet<string>(StringComparer.Ordinal);

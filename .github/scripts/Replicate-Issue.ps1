@@ -178,6 +178,15 @@ $appiumPlanPath = Join-Path $sandboxAppiumDir 'appium-plan.json'
 $appiumScriptPath = Join-Path $sandboxAppiumDir 'RunWithAppiumTest.cs'
 $trustedAppiumRunnerPath = Join-Path $trustedScripts 'templates/RunReplicationAppiumPlan.cs'
 
+# The plan runner opens its element inventory with a bare word and a colon when
+# what it read was not the app's own state: 'unavailable:' for a driver fault,
+# an empty page source or a system dialog in front of the app, and 'none:' when
+# nothing carried an identifying attribute. Neither is a list of locators to
+# choose from, and offering one as such is how build 15071060 spent four
+# attempts being handed an ANR dialog's Wait button. The runner's own wording is
+# the authority; a covenant test reads both sides so this cannot drift.
+$script:ElementInventoryAbsentPattern = '(?i)^(?:unavailable|none):'
+
 $approvedTestRoots = @(
     'src/Controls/tests/Core.UnitTests/',
     'src/Controls/tests/Core.Design.UnitTests/',
@@ -6462,9 +6471,26 @@ This issue reports a crash and the app did terminate, so the termination is the 
                     -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log") `
                     -FallbackText $sandboxFailureSummary
                 if ($inventory) {
+                    # The runner reports 'unavailable: <why>' when the page
+                    # source it read was not the app's - an empty source, a
+                    # driver fault, or a system dialog in front of it. Telling
+                    # the author to choose a locator from that would send the
+                    # next attempt at the reason itself; build 15071060 spent
+                    # four attempts being offered an ANR dialog's Wait button as
+                    # an app element.
+                    $advice = if ($inventory -match $script:ElementInventoryAbsentPattern) {
+                        'The app was not addressable at that moment, so the locator is not what to change. Keep the identifiers and address the reason above.'
+                    } else {
+                        'Choose the next locator from that inventory, or give the Sandbox element an explicit AutomationId and address it by that identifier. Do not re-guess a name that is absent from the inventory.'
+                    }
+                    $preamble = if ($inventory -match $script:ElementInventoryAbsentPattern) {
+                        'The Appium plan waited for an element and the app could not be read:'
+                    } else {
+                        'The Appium plan waited for an element that the running app never exposed. These are the identifying attributes the app actually exposed at that moment:'
+                    }
                     $sandboxFailureSummary = @"
-The Appium plan waited for an element that the running app never exposed. These are the identifying attributes the app actually exposed at that moment: $inventory
-Choose the next locator from that inventory, or give the Sandbox element an explicit AutomationId and address it by that identifier. Do not re-guess a name that is absent from the inventory.
+$preamble $inventory
+$advice
 
 $sandboxFailureSummary
 "@

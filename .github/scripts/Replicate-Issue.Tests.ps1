@@ -10666,3 +10666,94 @@ Describe 'A tier the repository rules out is never offered' {
         $source | Should -Not -Match 'This run has already proven'
     }
 }
+
+Describe 'A dialog in front of the app is not a list of things to tap' {
+    BeforeAll {
+        $script:repoRootForInventory = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        $script:runnerSource = Get-Content -LiteralPath (Join-Path $script:repoRootForInventory `
+            '.github/scripts/templates/RunReplicationAppiumPlan.cs') -Raw
+        $script:orchestratorSource = Get-Content -LiteralPath (Join-Path $script:repoRootForInventory `
+            '.github/scripts/Replicate-Issue.ps1') -Raw
+
+        # The canary the closure-guard tests learned to keep: a wrong root makes
+        # every assertion below vacuously true.
+        (Test-Path -LiteralPath (Join-Path $script:repoRootForInventory `
+            '.github/scripts/templates/RunReplicationAppiumPlan.cs')) | Should -BeTrue
+    }
+
+    It 'refuses to describe an Android application-error dialog as app state' {
+        # The dialog's buttons carry ordinary resource ids, so without this the
+        # inventory lists aerr_wait and aerr_close as elements the app exposed.
+        $script:runnerSource | Should -CMatch 'SystemDialogMarkers'
+        foreach ($marker in @('aerr_wait', 'aerr_close', 'aerr_restart')) {
+            $script:runnerSource | Should -CMatch ([regex]::Escape("`"$marker`""))
+        }
+
+        $guard = [regex]::Match(
+            $script:runnerSource,
+            'SystemDialogMarkers\(\)\.Any\([^;]*?\)\s*\)\s*\{(?<body>.*?)\n    \}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $guard.Success | Should -BeTrue -Because 'the inventory must short-circuit on a system dialog'
+        $guard.Groups['body'].Value | Should -CMatch 'ElementInventoryStart'
+        $guard.Groups['body'].Value | Should -CMatch 'unavailable:'
+    }
+
+    It 'clears a dialog it can clear and looks again before blaming the locator' {
+        $script:runnerSource | Should -CMatch 'TryDismissObstructingSystemDialog'
+
+        # Wait keeps the process; Close app and Restart end it, and a
+        # termination is for the caller to report, not for us to cause.
+        $script:runnerSource | Should -CMatch 'android:id/aerr_wait'
+        $dismiss = [regex]::Match(
+            $script:runnerSource,
+            'static bool TryDismissObstructingSystemDialog.*?\n\}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $dismiss.Success | Should -BeTrue
+        $dismiss.Groups[0].Value | Should -Not -CMatch 'aerr_close|aerr_restart'
+
+        # The retry has to be inside the timeout handler, or a cleared dialog
+        # still costs the attempt.
+        $timeoutHandler = [regex]::Match(
+            $script:runnerSource,
+            'catch \(WebDriverTimeoutException timedOut\)\s*\{(?<body>.*?)\n    \}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $timeoutHandler.Success | Should -BeTrue
+        $timeoutHandler.Groups['body'].Value | Should -CMatch 'TryDismissObstructingSystemDialog'
+        $timeoutHandler.Groups['body'].Value | Should -CMatch 'WaitForElementOnce'
+    }
+
+    It 'recognises every non-inventory the runner can emit' {
+        # This is the banner-drift remedy: read the producer's own wording and
+        # require the consumer's pattern to match it, so rewording one side
+        # cannot silently restore the misleading advice.
+        $prefixes = [regex]::Matches(
+            $script:runnerSource,
+            '\{ElementInventoryStart\}\s+(?<prefix>[a-z]+):') |
+            ForEach-Object { $_.Groups['prefix'].Value } |
+            Select-Object -Unique
+
+        $prefixes.Count | Should -BeGreaterThan 1 -Because 'the runner emits more than one kind of non-inventory'
+
+        $pattern = [regex]::Match(
+            $script:orchestratorSource,
+            "\`$script:ElementInventoryAbsentPattern\s*=\s*'(?<value>[^']+)'").Groups['value'].Value
+        $pattern | Should -Not -BeNullOrEmpty
+
+        foreach ($prefix in $prefixes) {
+            "${prefix}: whatever followed" | Should -Match $pattern -Because "the runner emits '${prefix}:'"
+        }
+
+        # And a real inventory must not be mistaken for one of them.
+        'resource-id=ResultStatus | text=Ready' | Should -Not -Match $pattern
+    }
+
+    It 'does not offer an absent inventory as a set of locators to choose from' {
+        $advice = [regex]::Match(
+            $script:orchestratorSource,
+            '\$advice = if \(\$inventory -match \$script:ElementInventoryAbsentPattern\) \{(?<body>.*?)\n                    \}',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $advice.Success | Should -BeTrue
+        $advice.Groups['body'].Value | Should -Not -CMatch 'Choose the next locator'
+        $advice.Groups['body'].Value | Should -CMatch 'locator is not what to change'
+    }
+}
