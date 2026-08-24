@@ -890,6 +890,90 @@ function Test-ReplicationReplayHarnessFault {
         'must be fully qualified\.\s*$'
 }
 
+function Get-ReplicationMissingIdentifierEvidence {
+    <#
+        .SYNOPSIS
+            Reports whether the identifiers a build break named exist anywhere in
+            the product tree.
+
+        .DESCRIPTION
+            Across 246 cached runs, 348 of roughly 570 compiler errors are
+            CS0103, CS1061, CS0117 and CS0246 - four different ways of saying
+            that an API the author used is not there. `build-failed` is the
+            largest attempt kind in the pipeline at 162 attempts, and the advice
+            for it repeated the diagnostic back, which the agent had already
+            read.
+
+            This is the element inventory in another language. A locator timeout
+            that only said what was searched for made the next attempt re-guess;
+            listing what the app actually exposed turned the guess into a
+            choice. The same answer applies here: say whether the name exists,
+            and if it does, where.
+
+            It reports appearances rather than declarations, because that is
+            what a text search measures, and claiming more would be the kind of
+            confident wrong answer this whole phase exists to stop.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Diagnostics,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [int]$MaximumIdentifiers = 4,
+        [int]$MaximumSitesPerIdentifier = 2
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Diagnostics)) {
+        return ''
+    }
+
+    $names = [Collections.Generic.List[string]]::new()
+    foreach ($pattern in @(
+            "does not contain a definition for '(?<name>[A-Za-z_][A-Za-z0-9_]*)'",
+            "The name '(?<name>[A-Za-z_][A-Za-z0-9_]*)' does not exist",
+            "The type or namespace name '(?<name>[A-Za-z_][A-Za-z0-9_]*)' could not be found")) {
+        foreach ($match in [regex]::Matches($Diagnostics, $pattern)) {
+            $name = $match.Groups['name'].Value
+            if (-not $names.Contains($name)) {
+                $names.Add($name) | Out-Null
+            }
+        }
+    }
+    if ($names.Count -eq 0) {
+        return ''
+    }
+
+    $lines = [Collections.Generic.List[string]]::new()
+    foreach ($name in @($names | Select-Object -First $MaximumIdentifiers)) {
+        $sites = @()
+        try {
+            # git grep is bounded by the index, so it does not walk artifacts or
+            # obj directories the way a filesystem search would.
+            $found = & git -C $RepositoryRoot grep --files-with-matches --word-regexp `
+                --fixed-strings -e $name -- 'src' 2>$null
+            $sites = @($found | Where-Object { $_ -like '*.cs' } |
+                Select-Object -First $MaximumSitesPerIdentifier)
+        } catch {
+            # A search that could not run says nothing about the identifier, and
+            # inventing an answer here is worse than staying silent about it.
+            continue
+        }
+
+        if ($sites.Count -eq 0) {
+            # Deliberately "no C# source", not "nowhere": the search was
+            # filtered to .cs, and a name living only in a csproj or a XAML
+            # file is still not an API this test body can call.
+            $lines.Add("'$name' appears in no C# source file under src/, so it does not exist as an API - do not use it again, and do not vary its spelling.") | Out-Null
+        } else {
+            $lines.Add("'$name' appears in $($sites -join ', '). Read one of those before using it; the member you want may be on a different type.") | Out-Null
+        }
+    }
+
+    if ($lines.Count -eq 0) {
+        return ''
+    }
+
+    return ($lines -join ' ')
+}
+
 function Get-ReplicationCompilerDiagnostics {
     <#
         .SYNOPSIS
@@ -1188,7 +1272,12 @@ function Get-ReplicationVerificationFailureSummary {
         it repeats the same mistake. The verifier already records exactly why
         the attempt was rejected, so state that instead.
     #>
-    param([Parameter(Mandatory = $true)][string]$VerificationDirectory)
+    param(
+        [Parameter(Mandatory = $true)][string]$VerificationDirectory,
+        # Optional so every existing caller and fixture keeps working; without
+        # it the identifier search is simply not offered.
+        [AllowEmptyString()][string]$RepositoryRoot = ''
+    )
 
     $resultPath = Join-Path $VerificationDirectory 'verification-result.json'
     if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
@@ -1210,7 +1299,12 @@ function Get-ReplicationVerificationFailureSummary {
         $diagnostics = Get-ReplicationCompilerDiagnostics `
             -VerificationDirectory $VerificationDirectory
         if ($diagnostics) {
-            return "The test never ran because the build failed. Fix these compiler diagnostics: $diagnostics. Note that this repository builds with warnings as errors, so a warning-level diagnostic such as CS0108 still fails the build."
+            $identifierEvidence = if ($RepositoryRoot) {
+                Get-ReplicationMissingIdentifierEvidence `
+                    -Diagnostics $diagnostics -RepositoryRoot $RepositoryRoot
+            } else { '' }
+            $apiNote = if ($identifierEvidence) { " $identifierEvidence" } else { '' }
+            return "The test never ran because the build failed. Fix these compiler diagnostics: $diagnostics. Note that this repository builds with warnings as errors, so a warning-level diagnostic such as CS0108 still fails the build.$apiNote"
         }
         if (Test-ReplicationTestElementLookupFailure -FailureSummary $actual) {
             return "The test compiled and ran, but an element it waited for never appeared: '$actual'. Do not change the build and do not simply raise the timeout. Set an explicit AutomationId on the element the test queries, confirm the test navigates to the page that hosts it, and wait for a state the app actually reaches. If the element only exists once the reported defect occurs, assert the observable state that exists in both cases instead."
@@ -6902,7 +6996,8 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 }
                 $verificationDiagnosis = if ($verificationRan) {
                     Get-ReplicationVerificationFailureSummary `
-                        -VerificationDirectory $verificationDir
+                        -VerificationDirectory $verificationDir `
+                        -RepositoryRoot $repoRoot
                 } else {
                     ''
                 }
@@ -7064,7 +7159,8 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
     $verification = Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw | ConvertFrom-Json
     if ($verification.verificationPassed -ne $true) {
         $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
-            -VerificationDirectory $verificationDir
+            -VerificationDirectory $verificationDir `
+            -RepositoryRoot $repoRoot
         if ($verificationDiagnosis) {
             throw "Trusted verification did not pass. $verificationDiagnosis"
         }

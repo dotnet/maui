@@ -98,7 +98,8 @@ BeforeAll {
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
-        'Set-ReplicationVerificationRunCount',
+        'Get-ReplicationMissingIdentifierEvidence',
+    'Set-ReplicationVerificationRunCount',
     'Test-ReplicationFixBaselineStillRed',
     'Get-ReplicationUnbuildableTestTiers',
         'Test-ReplicationPathChanged',
@@ -10903,5 +10904,107 @@ Describe 'A control arm measures every run it was asked for' {
         $arm.Groups['args'].Value | Should -CMatch 'CompleteAllRuns'
         # And it must still be the reproduction's question, not the control's.
         $arm.Groups['args'].Value | Should -Not -CMatch 'ExpectPass'
+    }
+}
+
+Describe 'An invented API is named as invented' {
+    BeforeAll {
+        $script:apiRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        # Canary: a wrong root makes every search below return nothing, which
+        # would turn the "does not exist" assertions into free passes.
+        (Test-Path -LiteralPath (Join-Path $script:apiRepoRoot 'src/Controls/src/Core/Picker/Picker.cs')) |
+            Should -BeTrue -Because 'the search must run against the real product tree'
+    }
+
+    It 'says nothing when the build break named no identifier' {
+        Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics 'error CS1002: ; expected' -RepositoryRoot $script:apiRepoRoot |
+            Should -BeNullOrEmpty
+        Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics '' -RepositoryRoot $script:apiRepoRoot | Should -BeNullOrEmpty
+    }
+
+    It 'tells the author an identifier that does not exist does not exist' {
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics ("error CS1061: 'Picker' does not contain a definition for " +
+                "'SelectedIndexChangedCommandZZZ'") `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match 'SelectedIndexChangedCommandZZZ'
+        $evidence | Should -Match 'appears in no C# source file under src/'
+        $evidence | Should -Match 'do not use it again'
+    }
+
+    It 'points at the file when the identifier is real' {
+        # ItemsSource is a real MAUI member, so the honest answer is where to
+        # read it, not that it is absent.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "error CS1061: 'Picker' does not contain a definition for 'ItemsSource'" `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match 'ItemsSource'
+        $evidence | Should -Not -Match 'appears nowhere'
+        $evidence | Should -Match '\.cs'
+    }
+
+    It 'reads all four ways the compiler says an API is missing' {
+        $diagnostics = @(
+            "error CS1061: 'X' does not contain a definition for 'AlphaOnlyMemberZZZ'"
+            "error CS0103: The name 'AlphaOnlyLocalZZZ' does not exist in the current context"
+            "error CS0246: The type or namespace name 'AlphaOnlyTypeZZZ' could not be found"
+        ) -join ' '
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics $diagnostics -RepositoryRoot $script:apiRepoRoot
+        foreach ($name in @('AlphaOnlyMemberZZZ', 'AlphaOnlyLocalZZZ', 'AlphaOnlyTypeZZZ')) {
+            $evidence | Should -Match $name -Because 'each diagnostic shape names a real identifier'
+        }
+    }
+
+    It 'matches whole words, so a prefix is not mistaken for the name' {
+        # --word-regexp is what stops 'ItemsSourceZZZ' being reported as present
+        # merely because 'ItemsSource' occurs everywhere.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "error CS0103: The name 'ItemsSourceZZZ' does not exist in the current context" `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match 'appears in no C# source file under src/'
+    }
+
+    It 'will not report a name present only as part of a longer one' {
+        # 'ItemsSourc' is a substring of ItemsSource in hundreds of files and a
+        # whole word in none, so a search without --word-regexp answers the
+        # opposite of the truth here.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "error CS0103: The name 'ItemsSourc' does not exist in the current context" `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match 'appears in no C# source file under src/'
+    }
+
+    It 'will not offer a csproj setting as an API' {
+        # ImplicitUsings is in 37 files under src/ and in no .cs file at all.
+        # Naming it as somewhere to read would send the author to MSBuild.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "error CS0103: The name 'ImplicitUsings' does not exist in the current context" `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match 'appears in no C# source file under src/'
+    }
+
+    It 'is offered to the author when a build break is diagnosed' {
+        $source = Get-Content -LiteralPath (Join-Path $script:apiRepoRoot `
+            '.github/scripts/Replicate-Issue.ps1') -Raw
+        $branch = [regex]::Match(
+            $source,
+            'The test never ran because the build failed.*?\n',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+        $branch.Success | Should -BeTrue
+        $source | Should -CMatch 'Get-ReplicationMissingIdentifierEvidence `\s*\r?\n\s*-Diagnostics \$diagnostics'
+        # And the caller must actually hand it a root, or it can never run.
+        # Every call site, not merely one: the advice is worth nothing at a
+        # caller that never hands it a tree to search.
+        $callSites = @([regex]::Matches($source,
+            '(?<!function )Get-ReplicationVerificationFailureSummary(?<args>(?:.|\n){0,200})'))
+        $callSites.Count | Should -BeGreaterThan 1 -Because 'both diagnosis paths call it'
+        foreach ($site in $callSites) {
+            $site.Groups['args'].Value |
+                Should -Match '-RepositoryRoot \$repoRoot' `
+                    -Because 'a caller without a root can never search'
+        }
     }
 }
