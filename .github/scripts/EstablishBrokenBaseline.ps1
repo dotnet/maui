@@ -386,9 +386,16 @@ function Assert-BaselineScopeIsRestorable {
 # Main execution (only when run directly, not when dot-sourced)
 # ============================================================
 
-# Check if script is being dot-sourced (imported) vs run directly
-# When dot-sourced, $MyInvocation.InvocationName is "." or "&"
-$script:IsBeingDotSourced = $MyInvocation.InvocationName -eq '.' -or $MyInvocation.InvocationName -eq '&'
+# Check if script is being dot-sourced (imported) vs run directly.
+# Only '.' means dot-sourced. '&' is the call operator - the ordinary way to
+# *invoke* a script - and treating it as an import made every such call a
+# silent no-op: no output, no error, no state file, and an untouched
+# $LASTEXITCODE. Replicate-Issue.ps1 established its fix-phase snapshot that
+# way, so the scope was never once recorded, every fix candidate reported "No
+# baseline state found", and each inherited the previous one's edits. The
+# Pester suite invoked the script with `pwsh -File`, which runs the body, so
+# it agreed with itself while production did nothing at all.
+$script:IsBeingDotSourced = $MyInvocation.InvocationName -eq '.'
 
 if ($script:IsBeingDotSourced) {
     # Script is being imported - just export the functions

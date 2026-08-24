@@ -9667,13 +9667,34 @@ Describe 'The fix phase runs the pipeline scripts, not the ones the product ship
         # allow-list and no restore point: every one reported "No baseline
         # state found", candidate 4 was refused for inheriting candidate 3's
         # edits, and the only passing fix of the run was nearly lost with them.
-        It 'does not decide the scope was recorded by reading $LASTEXITCODE' {
+        It 'does not invoke the establishing script with the call operator' {
+            # `& $script` is read by that script's dot-source guard as an
+            # import, so it returned without running its body: no output, no
+            # error, no state file. Restore-ReplicationFixTree always used a
+            # child process and always worked; this call site did not.
+            $script:fixPhaseBody | Should -Not -Match '& \$baselineScript'
             $establish = [regex]::Match(
                 $script:fixPhaseBody,
-                '(?ms)& \$baselineScript.*?\n\s*\}').Value
-
+                '(?ms)\$baselineResult = Invoke-BoundedProcess.*?\n\s*-TimeoutSeconds').Value
             $establish | Should -Not -BeNullOrEmpty
-            $establish | Should -Not -Match '\$LASTEXITCODE'
+            $establish | Should -Match '\$baselineScript'
+        }
+
+        It 'does not decide the scope was recorded by reading $LASTEXITCODE' {
+            $script:fixPhaseBody | Should -Not -Match '\$LASTEXITCODE[^\r\n]*baseline'
+            $script:fixPhaseBody | Should -Not -Match 'baseline[^\r\n]*\$LASTEXITCODE'
+        }
+
+        It 'is invoked in a way the script does not mistake for an import' {
+            # The two halves of this contract live in different files, so
+            # neither one alone can be trusted. This reads the guard itself.
+            $baselineSource = Get-Content -LiteralPath (
+                Join-Path $PSScriptRoot 'EstablishBrokenBaseline.ps1') -Raw
+            $guard = [regex]::Match(
+                $baselineSource, '\$script:IsBeingDotSourced = [^\r\n]*').Value
+
+            $guard | Should -Not -BeNullOrEmpty
+            $guard | Should -Not -Match "'&'"
         }
 
         It 'confirms the scope was recorded by testing for the state file the script writes' {
@@ -9696,12 +9717,16 @@ Describe 'The fix phase runs the pipeline scripts, not the ones the product ship
         It 'keeps the output that explains a refusal instead of discarding it' {
             # The one diagnostic that says why the fix phase was skipped was
             # piped into Out-Null, so a skipped phase left no evidence at all.
-            $script:fixPhaseBody | Should -Not -Match '& \$baselineScript[^\r\n]*Out-Null'
-            $script:fixPhaseBody | Should -Match '\$baselineOutput'
+            $script:fixPhaseBody | Should -Not -Match 'baselineScript[^\r\n]*Out-Null'
+            $script:fixPhaseBody | Should -Match '\$baselineResult\.Output'
         }
 
-        It 'treats the throw the script uses to say no as a refusal, not a crash' {
-            $script:fixPhaseBody | Should -Match '(?ms)\$baselineOutput = try \{.*?\} catch \{'
+        It 'treats a non-zero exit as a refusal as well as a missing state file' {
+            # A child process turns the script's throw into a non-zero exit, so
+            # both signals are available now and both are worth having: one
+            # says it objected, the other says it did not do the work.
+            $script:fixPhaseBody |
+                Should -Match '\[int\]\$baselineResult\.ExitCode -ne 0'
         }
     }
 }

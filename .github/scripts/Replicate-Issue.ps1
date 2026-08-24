@@ -5711,27 +5711,27 @@ function Invoke-ReplicationFixPhase {
     # defect is what this branch ships -- so this records the editable set and
     # makes HEAD the restore point.
     $baselineScript = Join-Path $TrustedScriptRoot 'EstablishBrokenBaseline.ps1'
-    # The script reports failure by throwing, never by exiting, so $LASTEXITCODE
-    # is whatever the last native command left behind - almost always 0. Build
-    # 15069710 therefore ran all five candidates against a scope that had never
-    # been recorded: every one of them reported "No baseline state found", each
-    # inherited the previous candidate's edits, and three were refused for it.
-    # Check the postcondition instead, which is true only if the script did the
-    # work, and keep its output rather than piping the one diagnostic that
-    # explains a failed phase into Out-Null.
-    $baselineOutput = try {
-        & $baselineScript -EditableFiles $scope.Files -SnapshotOnly 2>&1
-    } catch {
-        # The script's failures are terminating, so this is the ordinary way it
-        # says no. A refused scope is a reason to skip the fix, never a reason
-        # to lose the reproduction that has already been certified.
-        $_.Exception.Message
-    }
+    # Invoked as a child process, exactly as Restore-ReplicationFixTree does.
+    # Calling it with `&` returned silently for years: the script read the call
+    # operator as a dot-source and never ran its body, so no scope was ever
+    # recorded and $LASTEXITCODE - which it never sets either - stayed 0. Both
+    # halves are fixed, and this form is immune to the guard by construction.
+    $baselineResult = Invoke-BoundedProcess `
+        -FilePath (Get-Command pwsh).Source `
+        -Arguments (Get-ReplicationPwshArguments -ScriptPath $baselineScript `
+            -Arguments (@('-SnapshotOnly', '-EditableFiles') + $scope.Files)) `
+        -TimeoutSeconds 300
     $baselineStatePath = Join-Path $repoRoot '.github/.baseline-state.json'
-    if (-not (Test-Path -LiteralPath $baselineStatePath -PathType Leaf)) {
+    # Both are checked: a non-zero exit says the script objected, and a missing
+    # state file says it did not do the work whatever it claimed. Either way
+    # the panel would run with no allow-list and no way back to a clean tree.
+    if ([int]$baselineResult.ExitCode -ne 0 -or
+        -not (Test-Path -LiteralPath $baselineStatePath -PathType Leaf)) {
         Write-Host 'No fix is attempted: the editable scope could not be recorded.'
         Write-Host (ConvertTo-BoundedAgentLine `
-            -Value (@($baselineOutput) -join ' ') `
+            -Value ("exit $($baselineResult.ExitCode)" +
+                $(if ($baselineResult.TimedOut) { ' (timed out)' } else { '' }) +
+                ": $(@($baselineResult.Output) -join ' ')") `
             -Description 'Baseline output' -MaximumLength 600 -Prose)
         return $null
     }

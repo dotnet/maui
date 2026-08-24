@@ -46,9 +46,11 @@ BeforeAll {
         return $root
     }
 
-    # '&' makes $MyInvocation.InvocationName '&', which the script treats as a
-    # dot-source and returns early from. try-fix invokes it as a file, so the
-    # tests must too or they would exercise nothing at all.
+    # try-fix invokes the script as a file, so the tests do too. They used to
+    # avoid the call operator because `&` returned early - a bug this suite
+    # recorded as a fact of nature and worked around, while Replicate-Issue.ps1
+    # called it exactly that way and got a silent no-op every time. Both are
+    # fixed; 'The call operator runs the script' below holds the guard to it.
     function Invoke-BaselineScript {
         param(
             [string]$Root,
@@ -383,5 +385,68 @@ Describe 'An unusable scope is refused before an agent touches the tree' {
 
         $output | Should -Match 'does not exist'
         Test-Path (Get-StatePath $script:Repo) | Should -BeFalse
+    }
+}
+
+Describe 'The call operator runs the script rather than importing it' {
+    # Replicate-Issue.ps1 established its fix-phase snapshot with `& $script`.
+    # The dot-source guard counted '&' as an import, so the body never ran: no
+    # output, no error, no state file, and $LASTEXITCODE - which this script
+    # never sets - left reading 0. Build 15069710 ran all five fix candidates
+    # against a scope that had never been recorded, every one of them reported
+    # "No baseline state found", and each inherited the previous candidate's
+    # edits. This suite passed throughout because it invoked with `pwsh -File`.
+    BeforeEach {
+        $script:Repo = New-ScratchRepository
+    }
+
+    AfterEach {
+        if ($script:Repo -and (Test-Path $script:Repo)) {
+            Remove-Item -LiteralPath $script:Repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'records the scope when invoked with the call operator' {
+        Push-Location $script:Repo
+        try {
+            $target = Join-Path $script:Repo '.github/scripts/EstablishBrokenBaseline.ps1'
+            & $target -EditableFiles @('src/Handler.cs') -SnapshotOnly 2>&1 | Out-Null
+        } finally {
+            Pop-Location
+        }
+
+        Test-Path (Get-StatePath $script:Repo) | Should -BeTrue
+        $state = Get-Content (Get-StatePath $script:Repo) -Raw | ConvertFrom-Json
+        $state.RevertedFiles | Should -Contain 'src/Handler.cs'
+    }
+
+    It 'says something when invoked with the call operator' {
+        # The silence was as damaging as the inaction: a caller had no way to
+        # tell "did nothing" from "did the work". Whatever it decides, it talks.
+        Push-Location $script:Repo
+        try {
+            $target = Join-Path $script:Repo '.github/scripts/EstablishBrokenBaseline.ps1'
+            $output = & $target -EditableFiles @('src/Handler.cs') -SnapshotOnly 6>&1 | Out-String
+        } finally {
+            Pop-Location
+        }
+
+        $output.Trim() | Should -Not -BeNullOrEmpty
+    }
+
+    It 'still exports its functions without acting when dot-sourced' {
+        # The guard has a real job: the tests below and any helper that wants
+        # Get-BaselineState must be able to load the file without reverting a
+        # working tree. Narrowing it to '.' must not cost that.
+        Push-Location $script:Repo
+        try {
+            $target = Join-Path $script:Repo '.github/scripts/EstablishBrokenBaseline.ps1'
+            . $target -EditableFiles @('src/Handler.cs') -SnapshotOnly 2>&1 | Out-Null
+
+            Test-Path (Get-StatePath $script:Repo) | Should -BeFalse
+            (Get-Command Get-BaselineState -ErrorAction SilentlyContinue) | Should -Not -BeNullOrEmpty
+        } finally {
+            Pop-Location
+        }
     }
 }
