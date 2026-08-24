@@ -11927,6 +11927,20 @@ param([string[]]$EditableFiles)
                 Test-Path -LiteralPath $statePath | Should -BeTrue
                 $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
                 @($state.RevertedFiles).Count | Should -Be 3
+
+                # The panel depends on the whole cycle, not just the recording:
+                # a candidate edits several scoped files and the next candidate
+                # must be handed all of them back.
+                foreach ($f in $files) {
+                    Set-Content -LiteralPath (Join-Path $root $f) -Value 'candidate edit'
+                }
+                Restore-ReplicationFixTree `
+                    -TrustedScriptRoot $PSScriptRoot -ScopeFiles $files 6>$null |
+                    Should -BeTrue
+                foreach ($f in $files) {
+                    (Get-Content -LiteralPath (Join-Path $root $f) -Raw).Trim() |
+                        Should -Be 'original'
+                }
             } finally { Remove-Item Env:MAUI_BASELINE_SCOPE_FILE -ErrorAction SilentlyContinue }
         } finally { Pop-Location; Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
     }
