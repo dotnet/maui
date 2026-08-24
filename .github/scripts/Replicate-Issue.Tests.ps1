@@ -4907,6 +4907,60 @@ Describe 'The host page must report an observation, not decide the verdict' {
 }
 
 Describe 'A geometry oracle must pin a measurement to an expected value' {
+    It 'does not count an assertion failure message as a second measurement' {
+        # Build 15069709 lost all five attempts to this. The message argument
+        # interpolates the frame it is reporting, so the splitter saw two
+        # "measured" arguments and called a pinned assertion relational.
+        $source = @'
+    var nativeBottomButton = bottomButton.ToPlatform();
+    Assert.True(nativeBottomButton.Frame.Width > 0 && nativeBottomButton.Frame.Height > 0,
+        $"AbsoluteLayout native height reproduction: Bottom Button frame was {nativeBottomButton.Frame}.");
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue17673.iOS.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'accepts a measurement pinned to a constant inside the condition' {
+        # "Height collapses to zero" is exactly the reported symptom, so > 0 is
+        # the value a correct layout produces. The constant sits inside the
+        # expression rather than in its own argument.
+        $source = @'
+    Assert.True(view.Frame.Height > 0);
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'still refuses a relation between two measurements that carries a message' {
+        # The message must not become a way to smuggle a symmetry oracle past
+        # the rule: there is still no expected value anywhere in this file.
+        $source = @'
+    var top = scrollView.GetRect().Top - container.GetRect().Top;
+    var bottom = container.GetRect().Bottom - scrollView.GetRect().Bottom;
+    Assert.True(top == bottom, $"gaps were {top} and {bottom}");
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*uniformly wrong*'
+    }
+
+    It 'does not let a diagnostic message stand in for the pinned measurement' {
+        # The count assertion pins 3, but the only thing in it resembling a
+        # measurement is the frame its message reports. Reading that as the
+        # pinned measurement exempts the symmetry oracle above it.
+        $source = @'
+    var top = scrollView.GetRect().Top - container.GetRect().Top;
+    var bottom = container.GetRect().Bottom - scrollView.GetRect().Bottom;
+    Assert.Equal(top, bottom);
+    Assert.Equal(3, list.Count, $"frame was {view.Frame}");
+'@
+        {
+            Assert-ReplicationGeometryOracleIsPinned -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*uniformly wrong*'
+    }
+
     It 'rejects the symmetry oracle a reviewer satisfied with uniformly wrong geometry' {
         # PR 229: the oracle asserted the top and bottom safe-area gaps were
         # equal. The defect made them 79/62 so it did go red, but it also

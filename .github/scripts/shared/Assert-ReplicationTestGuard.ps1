@@ -1773,11 +1773,24 @@ function Assert-ReplicationGeometryOracleIsPinned {
         return $identifier.Success -and $measuredLocals.Contains($identifier.Groups['name'].Value)
     }
 
+    # The last argument of Assert.True(condition, message) reports the failure,
+    # it is not an operand. Build 15069709 spent all five attempts refused
+    # because its message interpolated the frame it was reporting, so the
+    # splitter counted a pinned assertion as a relation between two
+    # measurements. A message that happens to end in a digit would equally have
+    # been counted as the expected value and exempted a relational oracle, so
+    # dropping it removes a false accept as well as a false refusal.
+    $isMessage = {
+        param([string]$Argument)
+        return $Argument.Trim() -match '^[\$@]{0,2}"'
+    }
+
     $relational = $null
     foreach ($match in [regex]::Matches(
         $code,
         '(?:Assert|ClassicAssert)\s*\.\s*(?:Equal|AreEqual|True|IsTrue)\s*\((?<args>[^;]*?)\)\s*;')) {
-        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value)
+        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value |
+            Where-Object { -not (& $isMessage $_) })
 
         # Assert.True(a == b) carries both operands in a single argument.
         if ($arguments.Count -eq 1 -and $arguments[0] -match '==|!=') {
@@ -1806,7 +1819,8 @@ function Assert-ReplicationGeometryOracleIsPinned {
         $code,
         '(?:Assert|ClassicAssert)\s*\.\s*\w+\s*\((?<args>[^;]*?)\)\s*;')
     foreach ($match in $pinned) {
-        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value)
+        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value |
+            Where-Object { -not (& $isMessage $_) })
         $hasExpected = @($arguments | Where-Object {
             $_ -match '(?<![A-Za-z0-9_.])\d+(?:\.\d+)?\s*$' -and -not (& $isMeasured $_) }).Count -gt 0
         $hasMeasured = @($arguments | Where-Object { & $isMeasured $_ }).Count -gt 0
