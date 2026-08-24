@@ -9506,8 +9506,130 @@ Describe 'The one command a fix candidate may check its work with' {
     }
 }
 
-Describe 'Choosing which fix to publish' {
+Describe 'The base a winning fix is captured against' {
+    # Build 15073785 ran five Windows candidates, two of them passed, and the
+    # panel then printed "patch failed: src/Controls/src/Core/Toolbar/
+    # Toolbar.Windows.cs:6" and "No fix arms were run: the winning diff no
+    # longer applies to the tree". The restore had worked - the console shows
+    # it putting the scoped file back - so the tree was HEAD and the patch was
+    # the thing that did not fit it.
+    #
+    # The capture used `git diff -- <files>`, which compares the worktree with
+    # the INDEX, while every other part of the phase uses HEAD. A candidate
+    # that stages part of its work therefore produced a patch of only the
+    # unstaged hunks, whose context assumes the staged ones are applied.
+
     BeforeAll {
+        function New-StagedAndUnstagedRepo {
+            # A candidate that edits a file in two places and runs `git add`
+            # between the two - the ordinary thing an agent does to checkpoint
+            # itself, and the exact state that splits the index from HEAD.
+            $repo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $repo -Force | Out-Null
+            & git -C $repo init --quiet 2>&1 | Out-Null
+            & git -C $repo config user.email 'test@example.com' 2>&1 | Out-Null
+            & git -C $repo config user.name 'Test' 2>&1 | Out-Null
+
+            $file = Join-Path $repo 'Toolbar.Windows.cs'
+            Set-Content -LiteralPath $file -Value (1..20 | ForEach-Object { "line $_" })
+            & git -C $repo add -A 2>&1 | Out-Null
+            & git -C $repo commit --quiet -m 'baseline' 2>&1 | Out-Null
+
+            $lines = Get-Content -LiteralPath $file
+            $lines[4] = 'line 5 // first half of the fix'
+            Set-Content -LiteralPath $file -Value $lines
+            & git -C $repo add -- 'Toolbar.Windows.cs' 2>&1 | Out-Null
+
+            # Adjacent to the staged edit, and that adjacency is the whole
+            # mechanism: the unstaged hunk's context lines include line 5, which
+            # in the index already carries the first half. Two edits far apart
+            # would each have context HEAD still matches, so the stale patch
+            # would replay cleanly - which is why this defect is intermittent
+            # and why only one run since the restore fix ever hit it.
+            $lines = Get-Content -LiteralPath $file
+            $lines[5] = 'line 6 // second half of the fix'
+            Set-Content -LiteralPath $file -Value $lines
+
+            return $repo
+        }
+
+        function Test-PatchReplays {
+            # The panel's own sequence: capture, restore the scoped file to
+            # HEAD, then replay the captured patch onto that tree.
+            param($Repo, $Patch)
+            $path = Join-Path $TestDrive ([guid]::NewGuid().ToString('N') + '.patch')
+            Set-Content -LiteralPath $path -Value $Patch -Encoding utf8NoBOM
+            & git -C $Repo checkout HEAD -- 'Toolbar.Windows.cs' 2>&1 | Out-Null
+            & git -C $Repo apply --whitespace=nowarn -- $path 2>&1 | Out-Null
+            return ($LASTEXITCODE -eq 0)
+        }
+    }
+
+    It 'reproduces the failure the index-based capture caused' {
+        $repo = New-StagedAndUnstagedRepo
+        $indexBased = (@(& git -C $repo diff --binary --no-ext-diff -- 'Toolbar.Windows.cs') -join "`n")
+
+        # It is not empty, which is why the run got as far as trying to apply
+        # it, and it changes only the second edit.
+        $indexBased | Should -Not -BeNullOrEmpty
+        $indexBased | Should -Match '\+line 6 // second half of the fix'
+        $indexBased | Should -Not -Match '\+line 5 // first half of the fix'
+
+        # And this is the whole mechanism: the first edit appears as a CONTEXT
+        # line, because the index already carries it. HEAD does not, so the
+        # hunk cannot match the tree the restore produces.
+        $indexBased | Should -Match '(?m)^ line 5 // first half of the fix'
+
+        Test-PatchReplays -Repo $repo -Patch $indexBased | Should -BeFalse
+    }
+
+    It 'captures the whole fix and replays it when the base is HEAD' {
+        $repo = New-StagedAndUnstagedRepo
+        $headBased = (@(& git -C $repo diff --binary --no-ext-diff HEAD -- 'Toolbar.Windows.cs') -join "`n")
+
+        $headBased | Should -Match '\+line 5 // first half of the fix'
+        $headBased | Should -Match '\+line 6 // second half of the fix'
+
+        Test-PatchReplays -Repo $repo -Patch $headBased | Should -BeTrue
+
+        # And the replayed tree really holds both halves, so this is a fix that
+        # was applied rather than a patch that was merely accepted.
+        $replayed = Get-Content -LiteralPath (Join-Path $repo 'Toolbar.Windows.cs') -Raw
+        $replayed | Should -Match 'first half of the fix'
+        $replayed | Should -Match 'second half of the fix'
+    }
+
+    It 'agrees with the base the restore and the cleanliness check use' {
+        # The defect was two halves of one phase reading different references,
+        # so take both out of the source rather than trusting either. Reading
+        # the AST because a comment beside the code names HEAD too, and this
+        # repository has twice had a source-text test match prose instead.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path '.github/scripts/Replicate-Issue.ps1'),
+            [ref]$null, [ref]$null)
+
+        # The capture is the git command assigned to the candidate's Diff.
+        $diffProperty = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.CommandElements.Count -gt 3 -and
+            $node.CommandElements[0].Extent.Text -eq 'git' -and
+            $node.CommandElements[1].Extent.Text -eq 'diff' -and
+            ($node.CommandElements | Where-Object { $_.Extent.Text -eq '--binary' }) -and
+            ($node.CommandElements | Where-Object { $_.Extent.Text -eq '@ScopeFiles' })
+        }, $true)
+
+        $diffProperty | Should -Not -BeNullOrEmpty -Because 'the candidate diff capture must be findable'
+        foreach ($call in $diffProperty) {
+            @($call.CommandElements | ForEach-Object { $_.Extent.Text }) |
+                Should -Contain 'HEAD' -Because (
+                    'the restore puts the scoped files back to HEAD, so a patch ' +
+                    'captured against the index cannot be replayed onto it')
+        }
+    }
+}
+
+Describe 'Choosing which fix to publish' {    BeforeAll {
         function New-FixResult {
             param($Attempt, $Result = 'Pass', $Diff = 'diff text', $Approach = 'an approach')
             [pscustomobject]@{

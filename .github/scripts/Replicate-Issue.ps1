@@ -4046,8 +4046,21 @@ function Invoke-ReplicationFixPanel {
             Analysis = $artifacts.Analysis
             # Captured before the restore below, which is the only moment the
             # candidate's work exists in the tree.
+            #
+            # Against HEAD, not the index. `git diff` compares the worktree
+            # with the index, so a candidate that runs `git add` for part of
+            # its work yields a patch holding only the unstaged hunks - whose
+            # context lines assume the staged ones are already applied. The
+            # restore puts the scoped files back to HEAD, so replaying that
+            # patch fails, and build 15073785 lost two passing Windows
+            # candidates to `patch does not apply` at line 6 of the one file
+            # it had scoped.
+            #
+            # HEAD is also the base the restore and the cleanliness check
+            # already use, so this is the reference the rest of the phase
+            # agrees on, and it captures staged and unstaged work alike.
             Diff = if ($verdict.Result -ceq 'Pass') {
-                (@(& git diff --binary --no-ext-diff -- @ScopeFiles) -join "`n")
+                (@(& git diff --binary --no-ext-diff HEAD -- @ScopeFiles) -join "`n")
             } else { '' }
             ChangedPaths = $changed
             DurationMinutes = [Math]::Round(
