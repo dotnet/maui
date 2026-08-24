@@ -559,6 +559,101 @@ Describe 'Replication orchestrator security boundary' {
         $summary | Should -Match 'rather than one that drifts between runs'
     }
 
+    It 'tells an author which xUnit assertion can carry the signature it declared' {
+        # Build 15070739 spent attempts 3, 4 and 5 on byte-identical code. The
+        # test asserted the reported behaviour exactly and failed with
+        # 'Assert.Equal() Failure', but the diagnosis said to "assert the
+        # reported behavior directly", which it already did. In xUnit only
+        # Assert.True and Assert.False take a message, so a descriptive
+        # signature is unmatchable by any other assertion however correct the
+        # test is - and nothing said so.
+        $dir = Join-Path $TestDrive 'verification-selfprinting'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $false
+            infrastructureFailure = $false
+            stableFailureMessage = $true
+            expectedFailureSignature = 'DatePicker flow direction did not become right-to-left'
+            actualFailureMessage = 'Assert.Equal() Failure: Values differ. Expected: ForceRightToLeft Actual: Unspecified'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match 'only Assert\.True and Assert\.False accept a message'
+        $summary | Should -Match ([regex]::Escape('Assert.Equal prints its own text'))
+        # It must not repeat the advice that produced three identical attempts.
+        $summary | Should -Not -Match 'assert the reported behavior directly'
+        # And it must keep the reproduction, not send the author to write a
+        # different test: the behaviour asserted was right all along.
+        $summary | Should -Match 'Keep asserting the same behavior'
+    }
+
+    It 'tells an author who used Assert.True to pass the message it needs' {
+        $dir = Join-Path $TestDrive 'verification-nomessage'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $false
+            infrastructureFailure = $false
+            stableFailureMessage = $true
+            expectedFailureSignature = 'Bottom button collapsed to zero height'
+            actualFailureMessage = 'Assert.True() Failure Expected: True Actual: False'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match 'when it is given no message'
+        $summary | Should -Match ([regex]::Escape('Assert.True(<condition>'))
+        $summary | Should -Match 'measured values'
+    }
+
+    It 'keeps the general advice for a failure no assertion printed' {
+        # A NullReferenceException is the case the original text was written
+        # for, and it must survive the two branches added in front of it.
+        $dir = Join-Path $TestDrive 'verification-nonassert'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $false
+            infrastructureFailure = $false
+            stableFailureMessage = $true
+            expectedFailureSignature = 'Bottom button collapsed to zero height'
+            actualFailureMessage = 'System.NullReferenceException: Object reference not set'
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match 'assert the reported behavior directly'
+        $summary | Should -Not -Match 'only Assert\.True and Assert\.False accept a message'
+    }
+
+    It 'never tells an author to reprint the bug from a null precondition' {
+        # The dangerous half of the advice above. A test that fails at
+        # Assert.NotNull(platformView) never observed the reported behaviour,
+        # so rewriting it as Assert.True(platformView != null, "<signature>")
+        # would print the symptom for a run that only proved its own setup
+        # broke - the substitution this gate exists to refuse.
+        $dir = Join-Path $TestDrive 'verification-nullprecondition'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        foreach ($assertion in @('NotNull', 'Null')) {
+            @{
+                verifierPassed = $true
+                signatureMatched = $false
+                infrastructureFailure = $false
+                stableFailureMessage = $true
+                expectedFailureSignature = 'Native title color did not follow TextColor'
+                actualFailureMessage = "Assert.$assertion() Failure: Value is null"
+            } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+            $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+            $summary | Should -Match 'does not prove the reported bug'
+            $summary | Should -Not -Match 'Keep asserting the same behavior'
+            $summary | Should -Not -Match 'rewrite the assertion as Assert\.True'
+        }
+    }
+
     It 'stays silent when repeated runs agree' {
         $dir = Join-Path $TestDrive 'verification-stable'
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
