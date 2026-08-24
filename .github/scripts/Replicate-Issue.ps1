@@ -6463,6 +6463,17 @@ function Invoke-ReplicationFixPhase {
     # defect is what this branch ships -- so this records the editable set and
     # makes HEAD the restore point.
     $baselineScript = Join-Path $TrustedScriptRoot 'EstablishBrokenBaseline.ps1'
+    # The scope travels in a file rather than on the command line. `pwsh -File`
+    # passes every argument as a string and cannot bind an array at all: with
+    # separate arguments only the first reaches -EditableFiles and the rest are
+    # refused as positional, and a comma-joined value arrives as one literal
+    # path. So every scope naming more than one file failed to record, which is
+    # what build 15073071 shows, and the script already reads
+    # MAUI_BASELINE_SCOPE_FILE for exactly this reason.
+    $baselineScopePath = Join-Path $ArtifactRoot 'fix-scope-baseline.json'
+    @{ files = @($scope.Files) } | ConvertTo-Json -Depth 3 |
+        Set-Content -LiteralPath $baselineScopePath -Encoding utf8
+    $env:MAUI_BASELINE_SCOPE_FILE = $baselineScopePath
     # Invoked as a child process, exactly as Restore-ReplicationFixTree does.
     # Calling it with `&` returned silently for years: the script read the call
     # operator as a dot-source and never ran its body, so no scope was ever
@@ -6471,7 +6482,7 @@ function Invoke-ReplicationFixPhase {
     $baselineResult = Invoke-BoundedProcess `
         -FilePath (Get-Command pwsh).Source `
         -Arguments (Get-ReplicationPwshArguments -ScriptPath $baselineScript `
-            -Arguments (@('-SnapshotOnly', '-EditableFiles') + $scope.Files)) `
+            -Arguments @('-SnapshotOnly')) `
         -TimeoutSeconds 300 `
         -WorkingDirectory $repoRoot
     $baselineStatePath = Join-Path $repoRoot '.github/.baseline-state.json'

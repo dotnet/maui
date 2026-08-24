@@ -11882,3 +11882,85 @@ public class Issue3Tests
         } finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
     }
 }
+
+Describe 'A scope naming more than one file can be recorded' {
+    It 'cannot carry an array over pwsh -File, which is why the scope travels in a file' {
+        # Measured, not assumed: this is the binding that discarded every
+        # multi-file fix scope the pipeline ever produced.
+        $probe = Join-Path ([IO.Path]::GetTempPath()) ("argprobe-" + [guid]::NewGuid().ToString('N') + '.ps1')
+        Set-Content -LiteralPath $probe -Value @'
+param([string[]]$EditableFiles)
+"count=$($EditableFiles.Count)"
+'@
+        try {
+            $separate = & (Get-Command pwsh).Source -NoProfile -File $probe -EditableFiles 'a.cs' 'b.cs' 'c.cs' 2>&1
+            $joined = & (Get-Command pwsh).Source -NoProfile -File $probe -EditableFiles 'a.cs,b.cs,c.cs' 2>&1
+            # Neither form yields three. Separate arguments are refused as
+            # positional; a comma-joined value arrives as one literal path,
+            # which is worse because it records a scope nobody named.
+            ($separate -join ' ') | Should -Not -Match 'count=3'
+            ($joined -join ' ') | Should -Not -Match 'count=3'
+        } finally { Remove-Item -LiteralPath $probe -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'records every file of a multi-file scope through the scope file' {
+        $root = Join-Path ([IO.Path]::GetTempPath()) ("scope-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src') -Force | Out-Null
+        Push-Location $root
+        try {
+            & git init --quiet 2>&1 | Out-Null
+            & git config user.email 't@t.t' 2>&1 | Out-Null
+            & git config user.name 'T' 2>&1 | Out-Null
+            $files = @('src/Core/src/One.cs', 'src/Core/src/Two.cs', 'src/Core/src/Three.cs')
+            foreach ($f in $files) { Set-Content -LiteralPath (Join-Path $root $f) -Value 'original' }
+            & git add -A 2>&1 | Out-Null
+            & git commit -m 'baseline' --quiet 2>&1 | Out-Null
+
+            $scopePath = Join-Path $root 'fix-scope-baseline.json'
+            @{ files = $files } | ConvertTo-Json -Depth 3 |
+                Set-Content -LiteralPath $scopePath -Encoding utf8
+            $env:MAUI_BASELINE_SCOPE_FILE = $scopePath
+            try {
+                $baseline = Join-Path $PSScriptRoot 'EstablishBrokenBaseline.ps1'
+                & (Get-Command pwsh).Source -NoProfile -File $baseline -SnapshotOnly 2>&1 | Out-Null
+                $statePath = Join-Path $root '.github/.baseline-state.json'
+                Test-Path -LiteralPath $statePath | Should -BeTrue
+                $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+                @($state.RevertedFiles).Count | Should -Be 3
+            } finally { Remove-Item Env:MAUI_BASELINE_SCOPE_FILE -ErrorAction SilentlyContinue }
+        } finally { Pop-Location; Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'points the baseline call at the scope file rather than at -EditableFiles' {
+        $source = Get-Content -LiteralPath $script:ScriptPath -Raw
+        # Parsed, not matched: the comment beside this code names the variable
+        # too, so a search for the name is satisfied by prose alone.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$null, [ref]$null)
+        $assignments = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $node.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+            $node.Left.VariablePath.UserPath -eq 'env:MAUI_BASELINE_SCOPE_FILE'
+        }, $true))
+        $assignments.Count | Should -Be 1
+        # -EditableFiles over the command line is the form that cannot work.
+        $source | Should -Not -Match "'-SnapshotOnly',\s*'-EditableFiles'"
+    }
+
+    It 'writes every scoped file into the scope file, not just the first' {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$null, [ref]$null)
+        $written = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.HashtableAst] -and
+            @($node.KeyValuePairs | Where-Object {
+                $_.Item1.Extent.Text -eq 'files' -and
+                $_.Item2.Extent.Text -eq '@($scope.Files)'
+            }).Count -eq 1
+        }, $true))
+        # Writing only $scope.Files[0] would record a one-file scope and blame
+        # the candidates for touching everything else the expert named.
+        $written.Count | Should -Be 1
+    }
+}
