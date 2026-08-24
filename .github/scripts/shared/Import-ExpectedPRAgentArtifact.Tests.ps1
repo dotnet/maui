@@ -48,6 +48,30 @@ Describe 'Import-ExpectedPRAgentArtifact' {
         Test-Path -LiteralPath $script:Destination | Should -BeFalse
     }
 
+    It 'tail-truncates an oversized diagnostic log without rejecting review content' {
+        $log = Join-Path $script:ExpectedPRAgent 'pr-plus-reviewer/entry-validation.log'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $log) -Force | Out-Null
+        ('begin-' + ('x' * 1024) + '-FINAL-MARKER') |
+            Set-Content -LiteralPath $log -NoNewline
+        Set-Content -LiteralPath (Join-Path $script:ExpectedPRAgent 'winner.json') -Value '{}'
+
+        $result = Import-ExpectedPRAgentArtifact `
+            -ArtifactRoot $script:ArtifactRoot `
+            -PRNumber 36473 `
+            -DestinationDirectory $script:Destination `
+            -MaxFileBytes 256 `
+            -MaxTotalBytes 1024
+        $copiedLog = Get-Content -Raw -LiteralPath (
+            Join-Path $script:Destination 'pr-plus-reviewer/entry-validation.log')
+
+        $result.CopiedFiles | Should -Be 2
+        $result.TruncatedFiles | Should -Be 1
+        $copiedLog | Should -Match '^--- Diagnostic log truncated from '
+        $copiedLog | Should -Match '-FINAL-MARKER$'
+        Test-Path -LiteralPath (Join-Path $script:Destination 'winner.json') |
+            Should -BeTrue
+    }
+
     It 'rejects a lone PRAgent directory outside the expected PR path' {
         Remove-Item -LiteralPath $script:ExpectedPRAgent -Recurse -Force
         $wrong = Join-Path $script:ArtifactRoot 'CustomAgentLogsTmp/PRState/99999/PRAgent'

@@ -25,7 +25,11 @@ function Import-ExpectedPRAgentArtifact {
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, [long]::MaxValue)]
-        [long]$MaxTotalBytes = 128MB
+        [long]$MaxTotalBytes = 128MB,
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyCollection()]
+        [string[]]$TruncateOversizedFileExtensions = @('.log')
     )
 
     $rootItem = Get-Item -LiteralPath $ArtifactRoot -Force -ErrorAction Stop
@@ -82,5 +86,6 @@ function Import-ExpectedPRAgentArtifact {
         -MaxFileCount $MaxFileCount `
         -MaxDirectoryCount $MaxDirectoryCount `
         -MaxFileBytes $MaxFileBytes `
-        -MaxTotalBytes $MaxTotalBytes
+        -MaxTotalBytes $MaxTotalBytes `
+        -TruncateOversizedFileExtensions $TruncateOversizedFileExtensions
 }

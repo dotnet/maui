@@ -233,6 +233,43 @@ Describe 'Copy-BoundedRegularFileTree' {
         Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
     }
 
+    It 'tail-truncates an explicitly allowed oversized diagnostic file' {
+        $source = Join-Path $script:sourceDir 'entry-validation.log'
+        ('begin-' + ('x' * 1024) + '-FINAL-MARKER') |
+            Set-Content -LiteralPath $source -NoNewline
+
+        $result = Copy-BoundedRegularFileTree `
+            -SourceDirectory $script:sourceDir `
+            -DestinationDirectory $script:destinationDir `
+            -MaxFileBytes 256 `
+            -MaxTotalBytes 512 `
+            -TruncateOversizedFileExtensions @('.log')
+        $copied = Get-Content -Raw -LiteralPath (
+            Join-Path $script:destinationDir 'entry-validation.log')
+
+        $result.CopiedFiles | Should -Be 1
+        $result.CopiedBytes | Should -Be 256
+        $result.TruncatedFiles | Should -Be 1
+        $copied | Should -Match '^--- Diagnostic log truncated from '
+        $copied | Should -Match '-FINAL-MARKER$'
+        $copied | Should -Not -Match 'begin-'
+    }
+
+    It 'still rejects an oversized non-diagnostic file when log truncation is enabled' {
+        ('x' * 300) |
+            Set-Content -LiteralPath (Join-Path $script:sourceDir 'winner.json') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024 `
+                -TruncateOversizedFileExtensions @('.log')
+        } | Should -Throw '*winner.json*256-byte per-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
     It 'rejects an oversized snapshot diff before the posting tree is created' {
         ('x' * 300) |
             Set-Content -LiteralPath (Join-Path $script:sourceDir 'oversized-diff.png') -NoNewline

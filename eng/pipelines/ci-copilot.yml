@@ -1912,33 +1912,41 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $source = Join-Path "$(Pipeline.Workspace)/CopilotLogs" "CustomAgentLogsTmp"
+              $artifactRoot = Join-Path "$(Pipeline.Workspace)" "CopilotLogs"
               $target = Join-Path "$(System.DefaultWorkingDirectory)" "CustomAgentLogsTmp"
               if (Test-Path -LiteralPath $target) {
                 Remove-Item -LiteralPath $target -Recurse -Force
               }
 
-              if (Test-Path -LiteralPath $source -PathType Container) {
+              if (Test-Path -LiteralPath $artifactRoot -PathType Container) {
                 $boundedCopyScript = ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
-                if (-not (Test-Path -LiteralPath $boundedCopyScript -PathType Leaf)) {
-                  throw "Bounded CopilotLogs import helper is missing."
+                $expectedImportScript = ".github/scripts/shared/Import-ExpectedPRAgentArtifact.ps1"
+                foreach ($requiredScript in @($boundedCopyScript, $expectedImportScript)) {
+                  if (-not (Test-Path -LiteralPath $requiredScript -PathType Leaf)) {
+                    throw "Bounded CopilotLogs import helper is missing."
+                  }
                 }
                 . $boundedCopyScript
+                . $expectedImportScript
 
                 $maxImportedLogFiles = 2048
                 $maxImportedLogDirectories = 1024
                 $maxImportedLogFileBytes = 16MB
                 $maxImportedLogBytes = 128MB
-                $importResult = Copy-BoundedRegularFileTree `
-                  -SourceDirectory $source `
-                  -DestinationDirectory $target `
+                $truncatedLogExtensions = @('.log')
+                $targetPRAgent = Join-Path $target "PRState/$env:PARAM_PR_NUMBER/PRAgent"
+                $importResult = Import-ExpectedPRAgentArtifact `
+                  -ArtifactRoot $artifactRoot `
+                  -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                  -DestinationDirectory $targetPRAgent `
                   -MaxFileCount $maxImportedLogFiles `
                   -MaxDirectoryCount $maxImportedLogDirectories `
                   -MaxFileBytes $maxImportedLogFileBytes `
-                  -MaxTotalBytes $maxImportedLogBytes
-                Write-Host "Imported $($importResult.CopiedFiles) bounded Copilot log file(s) ($($importResult.CopiedBytes) bytes)."
+                  -MaxTotalBytes $maxImportedLogBytes `
+                  -TruncateOversizedFileExtensions $truncatedLogExtensions
+                Write-Host "Imported canonical bounded PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes, $($importResult.TruncatedFiles) truncated diagnostic log(s)."
               } else {
-                Write-Host "##vso[task.logissue type=warning]CustomAgentLogsTmp was not found in CopilotLogs."
+                Write-Host "##vso[task.logissue type=warning]CopilotLogs artifact was not found."
                 New-Item -ItemType Directory -Force -Path $target | Out-Null
               }
 
@@ -1956,6 +1964,8 @@ stages:
               Set-Content -LiteralPath (Join-Path $gateDir "gate-result.txt") -Value $gateResult -Encoding utf8 -NoNewline
               New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/copilot-logs" | Out-Null
             displayName: 'Prepare review results'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -3711,6 +3721,7 @@ stages:
               . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
               . ".github/scripts/shared/Import-ExpectedPRAgentArtifact.ps1"
               try {
+                $truncatedLogExtensions = @('.log')
                 $importResult = Import-ExpectedPRAgentArtifact `
                   -ArtifactRoot $artifactRoot `
                   -PRNumber ([int]$env:PARAM_PR_NUMBER) `
@@ -3718,8 +3729,9 @@ stages:
                   -MaxFileCount 2048 `
                   -MaxDirectoryCount 1024 `
                   -MaxFileBytes 16MB `
-                  -MaxTotalBytes 128MB
-                Write-Host "Imported canonical PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes."
+                  -MaxTotalBytes 128MB `
+                  -TruncateOversizedFileExtensions $truncatedLogExtensions
+                Write-Host "Imported canonical PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes, $($importResult.TruncatedFiles) truncated diagnostic log(s)."
               } catch {
                 Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
                 Write-Host "##[warning]PRAgent artifact was rejected: $($_.Exception.Message)"

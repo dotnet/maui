@@ -839,7 +839,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $resetBlock | Should -Match ([regex]::Escape('if ($remainToHardStopMin -lt 3)'))
     }
 
-    It 'bounds the Copilot log tree before the credentialed PostReview phase imports it' {
+    It 'imports only the canonical bounded PRAgent tree before the credentialed PostReview phase' {
         $postReviewStart = $pipelineContent.IndexOf("      - job: PostReview")
         $deepStageStart = $pipelineContent.IndexOf("- stage: RunDeepUITests", $postReviewStart)
         $postReviewBlock = $pipelineContent.Substring(
@@ -849,19 +849,31 @@ Describe 'Reviewer pipeline timeout containment' {
         $postReviewBlock | Should -Match ([regex]::Escape(
             '. $boundedCopyScript'))
         $postReviewBlock | Should -Match ([regex]::Escape(
+            '. $expectedImportScript'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
             '$maxImportedLogFiles = 2048'))
         $postReviewBlock | Should -Match ([regex]::Escape(
             '$maxImportedLogFileBytes = 16MB'))
         $postReviewBlock | Should -Match ([regex]::Escape(
             '$maxImportedLogBytes = 128MB'))
         $postReviewBlock | Should -Match ([regex]::Escape(
-            'Copy-BoundedRegularFileTree `'))
+            'Import-ExpectedPRAgentArtifact `'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-ArtifactRoot $artifactRoot'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-PRNumber ([int]$env:PARAM_PR_NUMBER)'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-DestinationDirectory $targetPRAgent'))
         $postReviewBlock | Should -Match ([regex]::Escape(
             '-MaxFileCount $maxImportedLogFiles'))
         $postReviewBlock | Should -Match ([regex]::Escape(
             '-MaxFileBytes $maxImportedLogFileBytes'))
         $postReviewBlock | Should -Match ([regex]::Escape(
             '-MaxTotalBytes $maxImportedLogBytes'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-TruncateOversizedFileExtensions $truncatedLogExtensions'))
+        $postReviewBlock | Should -Not -Match ([regex]::Escape(
+            '-SourceDirectory $source'))
         $postReviewBlock | Should -Not -Match (
             'Copy-Item\s+-LiteralPath\s+\$source\s+-Destination\s+\$target\s+-Recurse')
     }
@@ -885,6 +897,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $importBlock | Should -Match 'Import-ExpectedPRAgentArtifact'
         $importBlock | Should -Match ([regex]::Escape(
             '-DestinationDirectory $destination'))
+        $importBlock | Should -Match ([regex]::Escape(
+            '-TruncateOversizedFileExtensions $truncatedLogExtensions'))
         $postTaskBlock | Should -Match ([regex]::Escape(
             '$prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"'))
         $postTaskBlock | Should -Not -Match (
