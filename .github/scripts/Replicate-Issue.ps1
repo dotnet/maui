@@ -5670,7 +5670,7 @@ function Invoke-ReplicationFixPhase {
     # Snapshot rather than revert. There is no author fix to undo here -- the
     # defect is what this branch ships -- so this records the editable set and
     # makes HEAD the restore point.
-    $baselineScript = Join-Path $repoRoot '.github/scripts/EstablishBrokenBaseline.ps1'
+    $baselineScript = Join-Path $TrustedScriptRoot 'EstablishBrokenBaseline.ps1'
     & $baselineScript -EditableFiles $scope.Files -SnapshotOnly | Out-Null
     if ($LASTEXITCODE -ne 0) {
         Write-Host 'No fix is attempted: the editable scope could not be recorded.'

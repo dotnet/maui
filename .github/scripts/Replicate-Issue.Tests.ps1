@@ -9178,10 +9178,12 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
             param($Evidence, $VerificationDirectory) $script:armResultsWritten++
         }
         # The driver invokes the baseline script through the call operator, so
-        # a real file is the only way to control $LASTEXITCODE.
-        $baselineDir = Join-Path $script:repoRoot '.github/scripts'
-        New-Item -ItemType Directory -Path $baselineDir -Force | Out-Null
-        Set-Content -LiteralPath (Join-Path $baselineDir 'EstablishBrokenBaseline.ps1') `
+        # a real file is the only way to control $LASTEXITCODE. It must sit
+        # where production looks for it - the trusted script root - because the
+        # product checkout's own copy is the one that broke build 15068988.
+        $script:trustedScriptRoot = Join-Path $script:repoRoot 'trusted-scripts'
+        New-Item -ItemType Directory -Path $script:trustedScriptRoot -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $script:trustedScriptRoot 'EstablishBrokenBaseline.ps1') `
             -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)
 exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
         $env:REPLICATION_TEST_BASELINE_EXIT = '0'
@@ -9190,7 +9192,7 @@ exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
             GeneratedFiles = @('src/Controls/tests/Issue12345.cs')
             BaseVerificationArguments = @('-Filter', 'Issue12345')
             FailureSummary = 'Expected 10 but was 0'
-            TrustedScriptRoot = '/trusted/scripts'
+            TrustedScriptRoot = $script:trustedScriptRoot
             VerificationDirectory = (Join-Path $script:repoRoot 'verification')
         }
     }
@@ -9298,6 +9300,37 @@ exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
 
         $result.Files | Should -Be @('b.cs')
         $result.RejectedApproaches | Should -Contain 'Candidate 1 masks the symptom in the view.'
+    }
+}
+
+Describe 'The fix phase runs the pipeline scripts, not the ones the product ships' {
+    # $repoRoot is the checked-out product tree, and dotnet/maui carries its own
+    # older EstablishBrokenBaseline.ps1. Resolving the script from there ran a
+    # copy with no -EditableFiles parameter, so build 15068988 - the first run
+    # ever to clear its negative control 3 of 3 and reach this phase - died on
+    # "A parameter cannot be found that matches parameter name 'EditableFiles'".
+    # The sibling call site eight lines below it already used $TrustedScriptRoot.
+    BeforeAll {
+        $script:fixPhaseBody = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Invoke-ReplicationFixPhase\b.*?^}').Value
+    }
+
+    It 'has a body to inspect at all' {
+        $script:fixPhaseBody | Should -Not -BeNullOrEmpty
+    }
+
+    It 'takes the baseline script from the trusted script root' {
+        $script:fixPhaseBody |
+            Should -Match "Join-Path\s+\`$TrustedScriptRoot\s+'EstablishBrokenBaseline\.ps1'"
+    }
+
+    It 'executes no helper script resolved from the product checkout' {
+        $fromProductTree = [regex]::Matches(
+            $script:fixPhaseBody,
+            '(?m)Join-Path\s+\$repoRoot\s+[''"][^''"]*\.github/scripts/[^''"]*[''"]')
+
+        @($fromProductTree | ForEach-Object { $_.Value }) | Should -BeNullOrEmpty
     }
 }
 
@@ -9467,9 +9500,9 @@ Describe 'A fix phase may only ask to write files that can be granted' {
             }
             function Write-ReplicationFixArmResults { param($Evidence, $VerificationDirectory) }
 
-            $baselineDir = Join-Path $script:repoRoot '.github/scripts'
-            New-Item -ItemType Directory -Path $baselineDir -Force | Out-Null
-            Set-Content -LiteralPath (Join-Path $baselineDir 'EstablishBrokenBaseline.ps1') `
+            $script:trustedScriptRoot = Join-Path $script:repoRoot 'trusted-scripts'
+            New-Item -ItemType Directory -Path $script:trustedScriptRoot -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $script:trustedScriptRoot 'EstablishBrokenBaseline.ps1') `
                 -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)
 exit 0' -Encoding utf8NoBOM
         }
@@ -9479,7 +9512,7 @@ exit 0' -Encoding utf8NoBOM
                 -GeneratedFiles @('src/Controls/tests/Issue12345.cs') `
                 -BaseVerificationArguments @('-Filter', 'Issue12345') `
                 -FailureSummary 'Expected 10 but was 0' `
-                -TrustedScriptRoot '/trusted/scripts' `
+                -TrustedScriptRoot $script:trustedScriptRoot `
                 -VerificationDirectory (Join-Path $script:repoRoot 'verification')
 
             # It got all the way through, which it cannot do if a grant threw.
