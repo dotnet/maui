@@ -2009,6 +2009,25 @@ public void Ok()
         } | Should -Throw "*prohibited 'reflection' content: matched text 'Activator' on line 4*Activator.CreateInstance*"
     }
 
+    It 'allows the MAUI mapper API without mistaking it for reflection' {
+        # PropertyMapper.GetProperty is public MAUI API used throughout the
+        # framework. Build 15068573 spent an attempt being told it was
+        # reflection, on a rule that matched the bare method name.
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'MenuFlyoutItemHandler.Mapper.GetProperty("Text");' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'still refuses reflective GetProperty that is not a mapper lookup' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'var p = typeof(Label).GetProperty("Text");' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'reflection'*"
+    }
+
     It 'allows benign GetType name inspection but rejects reflective member access' {
         {
             Assert-ReplicationGeneratedSourceSafety `
