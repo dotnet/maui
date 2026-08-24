@@ -9612,10 +9612,15 @@ Describe 'A fix candidate that commits its own work' {
         & git -C $repo commit --quiet -m 'candidate fix' 2>&1 | Out-Null
 
         Push-Location $repo
+        # Pop-Location does not touch [Environment]::CurrentDirectory, and this
+        # repo is a temp directory that gets deleted. Leaving the process CWD
+        # dangling makes .NET report it as empty, and every later Process.Start
+        # in the session then fails with 'Unable to find the specified file'.
+        $previousProcessDirectory = [Environment]::CurrentDirectory
         try {
             [Environment]::CurrentDirectory = $repo
             Restore-ReplicationFixHead -ExpectedSha $baseline -Attempt 4 | Should -BeTrue
-        } finally { Pop-Location }
+        } finally { Pop-Location; [Environment]::CurrentDirectory = $previousProcessDirectory }
 
         (& git -C $repo rev-parse HEAD).Trim() | Should -Be $baseline
 
@@ -9633,10 +9638,11 @@ Describe 'A fix candidate that commits its own work' {
         Set-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Value 'an uncommitted fix'
 
         Push-Location $repo
+        $previousProcessDirectory = [Environment]::CurrentDirectory
         try {
             [Environment]::CurrentDirectory = $repo
             Restore-ReplicationFixHead -ExpectedSha $baseline -Attempt 1 | Should -BeFalse
-        } finally { Pop-Location }
+        } finally { Pop-Location; [Environment]::CurrentDirectory = $previousProcessDirectory }
 
         (& git -C $repo rev-parse HEAD).Trim() | Should -Be $baseline
         (Get-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Raw).Trim() |
