@@ -47,9 +47,10 @@ or uniqueness.
 
 - Names are case-sensitive. Parameters with null or empty names are ignored.
 - Null values are delivered as values rather than treated as removal.
-- Parameters supplied to `Shell.GoToAsync` take precedence over structured parameters,
-  which take precedence over `QueryString`.
-- `QueryString` values use URI query decoding. Both declarative forms use invariant
+- During a navigation, parameters supplied to `Shell.GoToAsync` take precedence over
+  structured parameters, which take precedence over `QueryString`. Selecting the content
+  again reapplies its declarative parameters.
+- `QueryString` values are URI-decoded once. Both declarative forms use invariant
   conversion when assigned through `QueryPropertyAttribute`; structured values retain
   their original CLR type when no conversion is required.
 - When names are duplicated, the last parameter in collection order wins. Removing or
@@ -61,7 +62,7 @@ or uniqueness.
 - Parameter objects inherit the `ShellContent` binding context, so `Name` and `Value` can use
   bindings. Removed and replaced objects are detached from that inherited context and no
   longer observed.
-- Parameters passed explicitly to `Shell.GoToAsync` take precedence over content parameters
-  with the same name. Content parameters supply values for keys not present in the navigation
-  data.
+- Parameters passed explicitly to `Shell.GoToAsync` take precedence over declarative parameters
+  with the same name for that navigation. Content parameters supply values for keys not present
+  in the navigation data, and are reapplied when the content is selected again.
 - Exceptions raised by the target's query handling are propagated unchanged.

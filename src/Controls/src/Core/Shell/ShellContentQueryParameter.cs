@@ -7,8 +7,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks>
 	/// Parameter names are case-sensitive. When a <see cref="ShellContent"/> contains duplicate names, the last parameter
-	/// in the collection supplies the value. A navigation parameter supplied to <c>GoToAsync</c> takes precedence over a
-	/// content parameter with the same name.
+	/// in the collection supplies the value. A navigation parameter supplied to <c>GoToAsync</c> takes precedence for
+	/// that navigation; selecting the content again reapplies its declarative parameters.
 	/// </remarks>
 	[ContentProperty(nameof(Value))]
 	public sealed class ShellContentQueryParameter : BindableObject

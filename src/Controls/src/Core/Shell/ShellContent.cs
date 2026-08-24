@@ -65,8 +65,10 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets an encoded query string supplied to this content's page when the content is selected.
 		/// </summary>
 		/// <remarks>
-		/// The leading <c>?</c> is optional. Values from <see cref="QueryParameters"/> take precedence over
-		/// values in this query string, while parameters supplied to Shell navigation take precedence over both.
+		/// The leading <c>?</c> is optional. The query string is URI-decoded once. Values from
+		/// <see cref="QueryParameters"/> take precedence over values in this query string. Parameters supplied
+		/// to Shell navigation take precedence for that navigation; selecting the content again reapplies its
+		/// declarative parameters.
 		/// </remarks>
 #nullable enable
 		public string? QueryString
@@ -81,7 +83,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// Changes to this collection or its parameters are applied immediately when this content is selected,
-		/// or the next time it is selected otherwise.
+		/// or the next time it is selected otherwise. Values in this collection take precedence over
+		/// <see cref="QueryString"/>. Parameters supplied to Shell navigation take precedence for that
+		/// navigation; selecting the content again reapplies its declarative parameters.
 		/// </remarks>
 		public IList<ShellContentQueryParameter> QueryParameters { get; }
 

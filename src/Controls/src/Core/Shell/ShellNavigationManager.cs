@@ -357,11 +357,14 @@ namespace Microsoft.Maui.Controls
 			// For non-destination items (isLastItem=false), skip entirely when there are no
 			// matching prefix params. This prevents stale QueryAttributesProperty stored from
 			// a prior cycle from propagating to pages that are not the navigation target.
-			if (!isLastItem &&
-				filteredQuery.Count == 0 &&
-				(baseShellItem is not ShellContent shellContent ||
-					(shellContent.QueryParameters.Count == 0 && string.IsNullOrEmpty(shellContent.QueryString))))
+			if (!isLastItem && filteredQuery.Count == 0)
 			{
+				if (baseShellItem is ShellContent shellContent &&
+					(shellContent.QueryParameters.Count > 0 || !string.IsNullOrEmpty(shellContent.QueryString)))
+				{
+					shellContent.ApplyQueryAttributes(new ShellRouteParameters());
+				}
+
 				return;
 			}
 

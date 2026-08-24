@@ -546,6 +546,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task RelativePopDoesNotReapplyStaleNavigationParametersToRootContent()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var content = CreateQueryStringContent("value=query-string");
+			var (shell, _) = CreateShell(content);
+			var page = GetPage<QueryAttributablePage>(content);
+
+			await shell.GoToAsync("//content/details?stale=previous");
+			Assert.DoesNotContain("stale", page.LastQuery);
+			await shell.GoToAsync("..");
+
+			Assert.Equal("query-string", page.Value);
+			Assert.DoesNotContain("stale", page.LastQuery);
+		}
+
+		[Fact]
 		public async Task StaticParameterCanUpdateAndBeRemovedAfterRelativePop()
 		{
 			Routing.RegisterRoute("details", typeof(ContentPage));
