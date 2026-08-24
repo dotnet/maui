@@ -6224,6 +6224,37 @@ Describe 'the test prompt names the compile traps runs actually hit' {
             Where-Object { $_ -match '<Nullable>\s*enable' -and $_ -notmatch '<!--' }) |
             Should -BeNullOrEmpty
     }
+
+    It 'names the assertion that can actually carry the declared signature' {
+        # Build 15069705 lost attempts 3 and 4 to 'Assert.True() Failure /
+        # Expected: True' and 'Assert.Equal() Failure: Values differ', neither
+        # of which is the signature the agent declared. xUnit's Assert.Equal
+        # takes no message, so an oracle written with it can never print one,
+        # and the run is refused for a mismatch its logic never caused.
+        $script:Source | Should -Match 'expectedFailureSignature must be text the assertion itself prints'
+        $script:Source | Should -Match 'only Assert\.True and Assert\.False take a message'
+    }
+
+    It 'still describes the assertion frameworks the tiers actually use' {
+        # The guidance above is only true while device tests are xUnit and UI
+        # tests are NUnit. Read the test sources rather than trusting the prose,
+        # so a migration cannot leave the agent following advice for a framework
+        # the repository no longer uses.
+        $repoRoot = Split-Path (Split-Path (Split-Path $script:ScriptPath))
+
+        $deviceUsings = @(Get-ChildItem -Recurse -Filter *.cs -LiteralPath (
+            Join-Path $repoRoot 'src/Controls/tests/DeviceTests') |
+            Select-Object -First 400 |
+            Get-Content -Raw)
+        ($deviceUsings -match '(?m)^using Xunit;').Count | Should -BeGreaterThan 0
+        ($deviceUsings -match '(?m)^using NUnit\.Framework;').Count | Should -Be 0
+
+        $uiUsings = @(Get-ChildItem -Recurse -Filter *.cs -LiteralPath (
+            Join-Path $repoRoot 'src/Controls/tests/TestCases.Shared.Tests') |
+            Select-Object -First 400 |
+            Get-Content -Raw)
+        ($uiUsings -match '(?m)^using NUnit\.Framework;').Count | Should -BeGreaterThan 0
+    }
 }
 
 Describe 'the orchestrator parses' {
