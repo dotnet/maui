@@ -137,8 +137,9 @@ internal class PathParser
 
 		var elementAccessSymbol = _context.SemanticModel.GetSymbolInfo(elementAccess).Symbol;
 		var elementType = _context.SemanticModel.GetTypeInfo(elementAccess).Type;
+		var receiverType = _context.SemanticModel.GetTypeInfo(elementAccess.Expression).Type;
 
-		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
+		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, receiverType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
 		if (elementAccessResult.HasDiagnostics)
 		{
 			return elementAccessResult;
@@ -182,8 +183,11 @@ internal class PathParser
 	{
 		var elementAccessSymbol = _context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
 		var elementType = _context.SemanticModel.GetTypeInfo(elementBinding).Type;
+		var receiverType = elementBinding.Parent is ConditionalAccessExpressionSyntax conditionalAccess
+			? _context.SemanticModel.GetTypeInfo(conditionalAccess.Expression).Type
+			: null;
 
-		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
+		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, receiverType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
 		if (elementAccessResult.HasDiagnostics)
 		{
 			return elementAccessResult;
@@ -240,7 +244,12 @@ internal class PathParser
 		return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(_context.Node.GetLocation()));
 	}
 
-	private Result<List<IPathPart>> CreateIndexAccess(ISymbol? elementAccessSymbol, ITypeSymbol? typeSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
+	private Result<List<IPathPart>> CreateIndexAccess(
+		ISymbol? elementAccessSymbol,
+		ITypeSymbol? typeSymbol,
+		ITypeSymbol? receiverType,
+		SeparatedSyntaxList<ArgumentSyntax> argumentList,
+		Location location)
 	{
 		if (argumentList.Count != 1)
 		{
@@ -256,7 +265,8 @@ internal class PathParser
 
 		var name = elementAccessSymbol.GetIndexerName();
 		var isReferenceType = typeSymbol?.IsReferenceType ?? false;
-		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType);
+		var isArrayElement = receiverType is IArrayTypeSymbol;
+		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType, IsArrayElement: isArrayElement);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
 	}
