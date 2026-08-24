@@ -116,7 +116,10 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
         $script:Pipeline | Should -Match 'Publish-ReplicationOutcome\.ps1'
-        $script:Pipeline | Should -Match "'Move-ReplicationPRsToTestingFork\.ps1'"
+        # Matched as a quoted staging entry rather than an exact literal, so
+        # that changing where a script is copied from cannot fail a test whose
+        # subject is that the script is staged at all.
+        $script:Pipeline | Should -Match "'[^']*Move-ReplicationPRsToTestingFork\.ps1'"
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish MauiBot non-reproduction outcome'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Match 's/try-latest-version'
         $script:Pipeline | Should -Match "(?s)displayName: 'Move existing PRs and create MauiBot testing draft PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
@@ -127,7 +130,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_(?:STORAGE|PUBLIC_BASE_URL|FORK)'
         $script:Pipeline | Should -Match 'git merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
-        $script:Pipeline | Should -Match "'Assert-ReplicationTestGuard\.ps1'"
+        $script:Pipeline | Should -Match "'[^']*Assert-ReplicationTestGuard\.ps1'"
         $script:Pipeline | Should -Match '\$validation\.Count -ne 1'
         $script:Pipeline | Should -Match '\$validation\[0\]\.validationPassed -ne \$true'
         $validationTask = $script:Pipeline.Substring(
@@ -526,34 +529,45 @@ Describe 'The trusted publisher stages every module its gate loads' {
         # it is compared against what the gate actually loads.
         $stagingBlock = [regex]::Match(
             $script:Pipeline,
-            "(?s)\`$trustedRoot = Join-Path.*?foreach \(\`$name in @\((.*?)\)\) \{").Groups[1].Value
+            "(?s)\`$trustedRoot = Join-Path.*?foreach \(\`$\w+ in @\((.*?)\)\) \{").Groups[1].Value
         $stagingBlock | Should -Not -BeNullOrEmpty
 
         # Build 15030627 reproduced its issue, passed the gate and then failed
         # in the publisher, so every staged script is checked, not just the gate.
-        $staged = @([regex]::Matches($stagingBlock, "'([A-Za-z0-9\-]+\.ps1)'") |
+        #
+        # Entries carry the path each script is copied from, because not every
+        # trusted script lives in shared/. This test used to assume they all did
+        # and resolve every entry as shared/<name>. That assumption is precisely
+        # why it could not see Find-RegressionRisks.ps1 going unstaged: a script
+        # outside shared/ was unrepresentable, so the regression cross-reference
+        # reported nothing from the day it landed and no test could say so.
+        $staged = @([regex]::Matches($stagingBlock, "'((?:[A-Za-z0-9\-]+/)?[A-Za-z0-9\-]+\.ps1)'") |
             ForEach-Object { $_.Groups[1].Value })
         $staged.Count | Should -BeGreaterThan 0
+        $stagedNames = @($staged | ForEach-Object { Split-Path -Leaf $_ })
 
         $required = [System.Collections.Generic.HashSet[string]]::new()
-        foreach ($stagedName in $staged) {
-            $stagedPath = Join-Path $PSScriptRoot "shared/$stagedName"
+        foreach ($stagedRelative in $staged) {
+            $stagedPath = Join-Path $PSScriptRoot $stagedRelative
             if (-not (Test-Path -LiteralPath $stagedPath -PathType Leaf)) {
-                throw "The pipeline stages $stagedName, but no such shared script exists."
+                throw "The pipeline stages $stagedRelative, but no such script exists."
             }
             $source = Get-Content -LiteralPath $stagedPath -Raw
             foreach ($match in [regex]::Matches($source, "(?m)^\s*\.\s+.*?['`"]?([A-Za-z0-9\-]+\.ps1)")) {
                 [void]$required.Add($match.Groups[1].Value)
             }
-            foreach ($match in [regex]::Matches($source, "Join-Path\s+\`$PSScriptRoot\s+'([A-Za-z0-9\-]+\.ps1)'")) {
+            # Any variable, not just $PSScriptRoot: the regression checker is
+            # probed through a search root, and requiring that one spelling is
+            # what let an unstaged invocation pass unnoticed.
+            foreach ($match in [regex]::Matches($source, "Join-Path\s+\`$\w+\s+'([A-Za-z0-9\-]+\.ps1)'")) {
                 [void]$required.Add($match.Groups[1].Value)
             }
         }
         $required.Count | Should -BeGreaterThan 0
 
         foreach ($name in $required) {
-            $stagingBlock | Should -Match ([regex]::Escape($name)) -Because `
-                "a staged publisher script dot-sources $name, so it must be staged too"
+            $stagedNames | Should -Contain $name -Because `
+                "a staged publisher script invokes $name, so it must be staged too"
         }
     }
 

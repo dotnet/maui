@@ -2815,21 +2815,27 @@ stages:
               $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
               Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
-              foreach ($name in @(
-                'Assert-ReplicationTestGuard.ps1',
-                'Get-ReplicationCertification.ps1',
-                'Get-ReplicationSignatureMatch.ps1',
-                'Get-ReplicationGitHubLogin.ps1',
-                'Validate-ReplicationCandidate.ps1',
-                'Publish-ReplicationOutcome.ps1',
-                'Publish-ReplicationEvidence.ps1',
-                'Publish-ReplicationPR.ps1',
-                'Move-ReplicationPRsToTestingFork.ps1'
+              # Paths are relative to .github/scripts because not every trusted
+              # script lives in shared/. Find-RegressionRisks.ps1 sits one level
+              # up, was therefore never staged, and the PR body's regression
+              # cross-reference silently reported nothing from the day it landed.
+              foreach ($relative in @(
+                'shared/Assert-ReplicationTestGuard.ps1',
+                'shared/Get-ReplicationCertification.ps1',
+                'shared/Get-ReplicationSignatureMatch.ps1',
+                'shared/Get-ReplicationGitHubLogin.ps1',
+                'shared/Validate-ReplicationCandidate.ps1',
+                'shared/Publish-ReplicationOutcome.ps1',
+                'shared/Publish-ReplicationEvidence.ps1',
+                'shared/Publish-ReplicationPR.ps1',
+                'shared/Move-ReplicationPRsToTestingFork.ps1',
+                'Find-RegressionRisks.ps1'
               )) {
-                $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared/$name"
+                $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/$relative"
                 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
                   throw "Trusted publisher script is missing: $source"
                 }
+                $name = Split-Path -Leaf $relative
                 Copy-Item -LiteralPath $source -Destination (Join-Path $trustedRoot $name) -Force
               }
               Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_PUBLISHER_ROOT]$trustedRoot"

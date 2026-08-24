@@ -1149,10 +1149,12 @@ Describe 'The regression cross-reference reports and never refuses' {
     It 'returns nothing at all when there is no fix to judge' {
         Get-ReplicationFixRegressionSignal -FixPatchPath '' | Should -BeNullOrEmpty
         Get-ReplicationFixRegressionSignal -FixPatchPath (Join-Path $script:RegRoot 'absent.patch') | Should -BeNullOrEmpty
-        # A checkout without the checker must publish exactly as it does today.
-        $bare = Join-Path $script:RegRoot 'bare'
-        New-Item -ItemType Directory -Path $bare -Force | Out-Null
-        Get-ReplicationFixRegressionSignal -FixPatchPath $script:RegPatch -ScriptRoot $bare | Should -BeNullOrEmpty
+        # Only the no-fix cases are silent. A reproduction-only PR has nothing
+        # to cross-reference, so it says nothing.
+        #
+        # A missing checker used to be silent too, and that is exactly what hid
+        # the cross-reference never running for its entire life. It now reports
+        # 'Not measured', which is asserted where the layouts are tested.
     }
 
     It 'leaves no temporary directory behind' {
@@ -1359,5 +1361,80 @@ Tap the thing.
         $between = $text.Substring($callIndex, $supersedeIndex - $callIndex)
         $between | Should -Match 'exit 0'
         $between | Should -Not -Match 'gh pr close'
+    }
+}
+
+Describe 'The regression cross-reference can be found in both layouts' {
+    # In the repository the checker sits one level above this script; in the
+    # publish job every trusted script is copied into one flat directory, so it
+    # sits beside it. Only the first was searched, which is why pull request
+    # 406 - published from the commit that added the cross-reference - carries
+    # no signal at all.
+
+    BeforeAll {
+        $script:layoutRoot = Join-Path ([IO.Path]::GetTempPath()) ("layout-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:layoutRoot -Force | Out-Null
+
+        $prPath = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $script:functionText = Get-ScriptFunctionText -Path $prPath -Name 'Get-ReplicationFixRegressionSignal'
+
+        $script:stubChecker = @'
+param([string]$DiffPath, [string]$Repo, [string]$OutputDir)
+New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+Set-Content -LiteralPath (Join-Path $OutputDir 'result.txt') -Value 'REVERT'
+'@
+    }
+
+    AfterAll {
+        Remove-Item -LiteralPath $script:layoutRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'finds a checker sitting beside it, as the publish job stages it' {
+        $flat = Join-Path $script:layoutRoot 'flat'
+        New-Item -ItemType Directory -Path $flat -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $flat 'Find-RegressionRisks.ps1') -Value $script:stubChecker
+
+        $diff = Join-Path $flat 'fix.diff'
+        Set-Content -LiteralPath $diff -Value 'diff --git a/x b/x'
+
+        $host1 = Join-Path $flat 'Host.ps1'
+        Set-Content -LiteralPath $host1 -Value ($script:functionText + "`n" +
+            "Get-ReplicationFixRegressionSignal -FixPatchPath '$diff'")
+
+        $output = & pwsh -NoProfile -File $host1
+        ($output -join ' ') | Should -Match 'deletes one or more lines'
+    }
+
+    It 'finds a checker one level up, as the repository lays it out' {
+        $nested = Join-Path $script:layoutRoot 'repo'
+        $shared = Join-Path $nested 'shared'
+        New-Item -ItemType Directory -Path $shared -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $nested 'Find-RegressionRisks.ps1') -Value $script:stubChecker
+
+        $diff = Join-Path $nested 'fix.diff'
+        Set-Content -LiteralPath $diff -Value 'diff --git a/x b/x'
+
+        $host2 = Join-Path $shared 'Host.ps1'
+        Set-Content -LiteralPath $host2 -Value ($script:functionText + "`n" +
+            "Get-ReplicationFixRegressionSignal -FixPatchPath '$diff'")
+
+        $output = & pwsh -NoProfile -File $host2
+        ($output -join ' ') | Should -Match 'deletes one or more lines'
+    }
+
+    It 'says it was not measured when no checker exists anywhere' {
+        $bare = Join-Path $script:layoutRoot 'bare'
+        New-Item -ItemType Directory -Path $bare -Force | Out-Null
+        $diff = Join-Path $bare 'fix.diff'
+        Set-Content -LiteralPath $diff -Value 'diff --git a/x b/x'
+
+        # An absent line cannot be told apart from a feature that was never
+        # wired up. A stated non-measurement is a claim someone can check.
+        Get-ReplicationFixRegressionSignal -FixPatchPath $diff -ScriptRoot $bare |
+            Should -Match 'Not measured'
+    }
+
+    It 'still says nothing at all when there is no fix to annotate' {
+        Get-ReplicationFixRegressionSignal -FixPatchPath '' | Should -BeNullOrEmpty
     }
 }

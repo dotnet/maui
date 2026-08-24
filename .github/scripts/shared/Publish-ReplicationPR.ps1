@@ -186,27 +186,47 @@ function Get-ReplicationFixRegressionSignal {
     # Resolved here rather than as a parameter default, because a default is
     # evaluated on every call - including the ones that return above - so an
     # empty $PSScriptRoot would make a check that exists to REPORT throw instead.
-    if ([string]::IsNullOrWhiteSpace($ScriptRoot)) {
-        if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) { return $null }
-        $ScriptRoot = Split-Path -Parent $PSScriptRoot
+    #
+    # Two layouts have to work. In the repository this script sits in
+    # .github/scripts/shared/ and the checker one level up in .github/scripts/.
+    # In production the publish job copies a fixed list of scripts into a flat
+    # trusted directory, so the checker sits beside this file instead. Looking
+    # only upwards is why the cross-reference silently never ran: pull request
+    # 406 was published from the commit that added it and carries no signal.
+    $searchRoots = @()
+    if (-not [string]::IsNullOrWhiteSpace($ScriptRoot)) {
+        $searchRoots += $ScriptRoot
+    } elseif (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $searchRoots += $PSScriptRoot
+        $searchRoots += (Split-Path -Parent $PSScriptRoot)
     }
 
-    $checker = Join-Path $ScriptRoot 'Find-RegressionRisks.ps1'
-    if (-not (Test-Path -LiteralPath $checker)) { return $null }
+    $checker = $null
+    foreach ($root in $searchRoots) {
+        if ([string]::IsNullOrWhiteSpace($root)) { continue }
+        $probe = Join-Path $root 'Find-RegressionRisks.ps1'
+        if (Test-Path -LiteralPath $probe -PathType Leaf) { $checker = $probe; break }
+    }
 
     $outputDir = Join-Path ([IO.Path]::GetTempPath()) ("regression-" + [guid]::NewGuid().ToString('N'))
     $verdict = $null
-    try {
-        & pwsh -NoProfile -File $checker -DiffPath $FixPatchPath -Repo $Repo `
-            -OutputDir $outputDir 2>&1 | Out-Null
-        $resultPath = Join-Path $outputDir 'result.txt'
-        if (Test-Path -LiteralPath $resultPath) {
-            $verdict = (Get-Content -LiteralPath $resultPath -Raw).Trim()
+    # A missing checker falls through to 'not measured' rather than returning
+    # nothing. Silence is what hid this: an absent line is indistinguishable
+    # from a feature that was never wired up, while a stated non-measurement is
+    # a claim someone can check.
+    if ($checker) {
+        try {
+            & pwsh -NoProfile -File $checker -DiffPath $FixPatchPath -Repo $Repo `
+                -OutputDir $outputDir 2>&1 | Out-Null
+            $resultPath = Join-Path $outputDir 'result.txt'
+            if (Test-Path -LiteralPath $resultPath) {
+                $verdict = (Get-Content -LiteralPath $resultPath -Raw).Trim()
+            }
+        } catch {
+            $verdict = $null
+        } finally {
+            Remove-Item -LiteralPath $outputDir -Recurse -Force -ErrorAction SilentlyContinue
         }
-    } catch {
-        $verdict = $null
-    } finally {
-        Remove-Item -LiteralPath $outputDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     switch ($verdict) {
