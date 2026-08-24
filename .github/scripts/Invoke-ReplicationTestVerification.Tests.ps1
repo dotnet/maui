@@ -28,6 +28,7 @@ BeforeAll {
         'Test-ReplicationSignatureEquivalent',
         'Test-ReplicationExpectedFailureSignature',
         'Test-ReplicationControlFailureModeChanged',
+        'Get-ReplicationControlPassMarker',
         'Test-ReplicationInfrastructureFailure',
         'ConvertTo-AzdoSafeReplicationOutput',
         'ConvertTo-BoundedVerificationFailureMessage',
@@ -674,7 +675,7 @@ if ('$NeverClears' -eq 'True' -or ($PassUntilRun -gt 0 -and `$run -gt $PassUntil
 }
 Write-Host 'VERIFY FAILURE ONLY MODE'
 Write-Host 'VERIFICATION FAILED'
-Write-Host '1/1 test(s) PASSED but should FAIL!'
+Write-Host '1/1 test(s) PASSED with the trigger removed.'
 exit 1
 "@ | Set-Content -LiteralPath $Path -Encoding utf8NoBOM
         }
@@ -905,6 +906,30 @@ Describe 'Telling a refuted reproduction apart from a broken control' {
             -ControlMessages @('Element not found while asserting Expected 40 but was 20') `
             -ReproductionMessages @('Expected 40 but was 20') |
             Should -BeTrue
+    }
+}
+
+Describe 'The control pass marker still matches the verifier that prints it' {
+    # This is the test that was missing. The verifier learned a -Purpose
+    # argument and started printing a different banner for a cleared control;
+    # the marker kept looking for the old one, so every control recorded zero
+    # passes and refuted the reproduction it was meant to confirm. Nothing
+    # failed, because the stub in this file printed the old banner too.
+    It 'recognises every passing-test banner the verifier can print' {
+        $verifier = Join-Path $PSScriptRoot '../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        (Test-Path -LiteralPath $verifier -PathType Leaf) | Should -BeTrue
+
+        $markers = @(Get-ReplicationControlPassMarker)
+        $markers.Count | Should -BeGreaterThan 0
+
+        $banners = @(Get-Content -LiteralPath $verifier |
+            Where-Object { $_ -match 'test\(s\) PASSED' })
+        $banners.Count | Should -BeGreaterThan 0
+
+        foreach ($banner in $banners) {
+            $recognised = @($markers | Where-Object { $banner.Contains($_) }).Count -gt 0
+            $recognised | Should -BeTrue -Because "the verifier prints '$banner', which no marker matches"
+        }
     }
 }
 

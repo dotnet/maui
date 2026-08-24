@@ -65,16 +65,28 @@ Set-StrictMode -Version 3.0
 function Get-ReplicationControlPassMarker {
     <#
         .SYNOPSIS
-        The verifier banner that reports a targeted test which ran and passed.
+        The verifier banners that report a targeted test which ran and passed.
 
         .DESCRIPTION
-        The failure-only verifier has no success path for a passing test: it
-        reports one as a rejection. A negative control wants exactly that
-        rejection, so the two read the same banner rather than each carrying its
-        own copy, which is how the tier-escalation detector previously drifted
-        away from the producer and stopped firing.
+        The failure-only verifier has no success path for a passing test, so it
+        reports one as a rejection - "test(s) PASSED but should FAIL". A negative
+        control wants exactly that rejection, so the two read the same banner
+        rather than each carrying its own copy, which is how the tier-escalation
+        detector previously drifted away from the producer and stopped firing.
+
+        It drifted again. The verifier learned a -Purpose argument, and under
+        'NegativeControl' it prints the honest banner for a control instead:
+        "CONTROL CLEARED ... test(s) PASSED with the trigger removed". The
+        control always passes that argument, so from the moment it was added no
+        cleared control could be recognised as having cleared - every control
+        recorded zero passes and refuted the reproduction it was meant to
+        confirm. Both banners are read here, so neither variant can silently
+        stop matching again.
     #>
-    return 'test(s) PASSED but should FAIL'
+    return @(
+        'test(s) PASSED with the trigger removed',
+        'test(s) PASSED but should FAIL'
+    )
 }
 
 function Test-ReplicationExpectedFailureSignature {
@@ -358,7 +370,9 @@ function Invoke-SingleVerificationRun {
     # "did not fail", and treating those as a passing control would certify the
     # very reproductions that never ran.
     $testPassed = (-not $infrastructureFailure) -and
-        $combined.Contains((Get-ReplicationControlPassMarker), [StringComparison]::Ordinal)
+        @(Get-ReplicationControlPassMarker | Where-Object {
+            $combined.Contains($_, [StringComparison]::Ordinal)
+        }).Count -gt 0
 
     return [pscustomobject]@{
         Run = $Run
