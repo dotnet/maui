@@ -3707,8 +3707,61 @@ function Restore-ReplicationFixTree {
     return $false
 }
 
-function Test-ReplicationScopeMatchesHead {
+function Get-ReplicationHeadSha {
     <#
+        .SYNOPSIS
+            The commit every part of the fix phase measures against.
+    #>
+    $sha = (& git rev-parse HEAD 2>&1 | Select-Object -First 1)
+    if ($LASTEXITCODE -ne 0) { return '' }
+    return ([string]$sha).Trim()
+}
+
+function Restore-ReplicationFixHead {
+    <#
+        .SYNOPSIS
+            Puts HEAD back where the panel left it, keeping the candidate's work.
+
+        .DESCRIPTION
+            The prompt forbids checkout, restore, reset, clean and stash, but it
+            has never forbidden commit, and an instruction is not a guarantee -
+            the panel already learned that when candidates obeyed a restoration
+            rule that made their fixes invisible.
+
+            A commit is the one action that moves all three of this phase's
+            references at once. `git diff HEAD` would report nothing, the
+            cleanliness check would call the tree restored, and the fix would
+            travel into every later candidate as though it were the product.
+
+            `git reset --soft` is the exact inverse: it moves HEAD back and
+            leaves the tree and index untouched, so the candidate's work is
+            still there to be captured and still there to be restored. That
+            turns a run-destroying action into a logged no-op.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ExpectedSha,
+        [Parameter(Mandatory = $true)][int]$Attempt
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedSha)) { return $false }
+
+    $current = Get-ReplicationHeadSha
+    if ($current -eq $ExpectedSha) { return $false }
+
+    Write-Host (
+        "Fix candidate $Attempt moved HEAD from $ExpectedSha to $current, " +
+        'which would have hidden its own work from the panel. Moving HEAD ' +
+        'back and keeping the tree, so the fix is graded normally.')
+    & git reset --soft $ExpectedSha 2>&1 | Out-Null
+
+    if ((Get-ReplicationHeadSha) -ne $ExpectedSha) {
+        Write-Host 'HEAD could not be put back, so this candidate is not trustworthy.'
+        return $false
+    }
+    return $true
+}
+
+function Test-ReplicationScopeMatchesHead {    <#
         .SYNOPSIS
             Answers whether every scoped file matches HEAD.
     #>
@@ -3916,6 +3969,12 @@ function Invoke-ReplicationFixPanel {
     }
 
     $panelStarted = [DateTimeOffset]::UtcNow
+    # Every reference this phase uses is HEAD: the restore checks out HEAD, the
+    # cleanliness check diffs against HEAD, and each candidate's fix is captured
+    # against HEAD. A candidate that commits would move all three at once - its
+    # diff would come back empty, its tree would look clean, and every later
+    # candidate would silently inherit the fix as though it were the product.
+    $panelHeadSha = Get-ReplicationHeadSha
     $tryFixRoot = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
 
     for ($attempt = 1; $attempt -le $CandidateCount; $attempt++) {
@@ -3991,6 +4050,10 @@ function Invoke-ReplicationFixPanel {
         }
 
         $tampered = @(Get-ReplicationFixTamperedPaths -Snapshot $protectedSnapshot)
+        # Assigned, not discarded: every value this function emits would
+        # otherwise land in the panel's own output stream, so the caller would
+        # receive booleans interleaved with the candidate records it returns.
+        $headWasRewound = Restore-ReplicationFixHead -ExpectedSha $panelHeadSha -Attempt $attempt
         $artifacts = Read-ReplicationFixCandidateArtifacts `
             -AttemptDirectory $attemptDirectory `
             -TranscriptPath (Join-Path $agentDir "copilot-fix-$attempt-attempt-$attempt.jsonl")
@@ -4063,6 +4126,10 @@ function Invoke-ReplicationFixPanel {
                 (@(& git diff --binary --no-ext-diff HEAD -- @ScopeFiles) -join "`n")
             } else { '' }
             ChangedPaths = $changed
+            # Recorded rather than discarded so a rewind is legible in the
+            # artifacts: a candidate that committed is one whose work only
+            # survived because HEAD was put back.
+            HeadRewound = $headWasRewound
             DurationMinutes = [Math]::Round(
                 ([DateTimeOffset]::UtcNow - $candidateStarted).TotalMinutes, 1)
         })
@@ -5626,7 +5693,7 @@ An attempt that does its work and does not write result.txt is recorded as havin
 
 One thing differs from the reviewer's usual try-fix run, and it changes how you must read the skill: there is no author fix. The defect is what this branch ships. The baseline script therefore reverted nothing; it only recorded which files you may edit. Everything else in the skill applies unchanged, including that you undo work ONLY with:
     pwsh $(Join-Path $trustedScripts 'EstablishBrokenBaseline.ps1') -Restore
-Never use git checkout, git restore, git reset, git clean, or git stash.
+Never use git checkout, git restore, git reset, git clean, or git stash. Never commit: `git commit`, `git rebase`, `git merge` and `git cherry-pick` all move HEAD, and HEAD is the point this panel restores your fix to and captures it against, so committing hides your own work from the grading.
 
 Leave your fix in the tree when you finish. The panel restores between candidates, so you do not have to, and the diff you leave behind is the only thing it can grade: a candidate that reports Pass on an empty tree cannot be told apart from one whose test was already green. Use -Restore to abandon an approach part-way through, never to tidy up at the end.
 

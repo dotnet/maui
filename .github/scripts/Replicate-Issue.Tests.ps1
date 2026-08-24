@@ -157,6 +157,8 @@ BeforeAll {
         'Get-ReplicationFixTamperedPaths',
         'Restore-ReplicationFixProtectedFiles',
         'Restore-ReplicationFixTree',
+        'Get-ReplicationHeadSha',
+        'Restore-ReplicationFixHead',
         'Test-ReplicationScopeMatchesHead',
         'Read-ReplicationFixScope',
         'Read-ReplicationFixWinner',
@@ -9095,6 +9097,8 @@ Describe 'A failed fix never costs us a good reproduction' {
         $script:IssueNumber = 12345
         $script:invocations = [Collections.Generic.List[object]]::new()
         $script:restoreCalls = 0
+        $script:headGuardCalls = 0
+        $script:headGuardShas = [Collections.Generic.List[object]]::new()
         $script:restoreSucceeds = $true
         $script:throwOnAttempt = @()
         $script:gitPaths = @('src/Core/src/Handlers/EntryHandler.cs')
@@ -9132,6 +9136,17 @@ Describe 'A failed fix never costs us a good reproduction' {
             param($TrustedScriptRoot, $ScopeFiles)
             $script:restoreCalls++
             return $script:restoreSucceeds
+        }
+        # Stubbed to a constant rather than reimplemented: what these Describes
+        # measure is that the panel asks once per candidate. The rewind itself
+        # is measured against a real repository in 'A fix candidate that
+        # commits its own work', which imports the production functions.
+        function Get-ReplicationHeadSha { 'a-recorded-head-sha' }
+        function Restore-ReplicationFixHead {
+            param($ExpectedSha, $Attempt)
+            $script:headGuardCalls++
+            $script:headGuardShas.Add($ExpectedSha)
+            return $false
         }
 
         # Declared here, not in the Describe body: Pester 5 runs that body only
@@ -9246,6 +9261,37 @@ Describe 'A failed fix never costs us a good reproduction' {
         $results[0].Result | Should -Be 'Pass' -Because (
             'a candidate that obeys the restoration rule must still be graded on its fix')
         $results[0].ChangedPaths | Should -Be @($file)
+    }
+
+    It 'returns candidate records and nothing else' {
+        # The HEAD guard returns a boolean, and a call whose value nobody
+        # captures emits it into the enclosing function's output stream. That
+        # is not cosmetic here: the panel's return value IS the candidate list
+        # the winner is selected from, so a stray $false per candidate doubles
+        # its length and shifts every index. Caught by the existing tests
+        # counting 6 where they expected 3.
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 3 -BudgetMinutes 150
+
+        foreach ($entry in $results) {
+            $entry.PSObject.Properties.Name | Should -Contain 'Attempt' -Because (
+                'anything in this collection without an Attempt is output that leaked ' +
+                "into it, and this one is '$entry'")
+        }
+        @($results).Count | Should -Be 3
+    }
+
+    It 'checks HEAD once for every candidate it runs, against the sha it recorded' {
+        # Wiring, not behaviour: a candidate that commits makes its own work
+        # invisible to every measurement the panel takes, so the question the
+        # panel must ask is asked for each candidate and against the commit the
+        # panel recorded before any of them ran.
+        $null = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths -CandidateCount 3 -BudgetMinutes 150
+
+        $script:headGuardCalls | Should -Be $script:invocations.Count
+        $script:headGuardCalls | Should -BeGreaterThan 0
+        @($script:headGuardShas | Sort-Object -Unique) | Should -Be @('a-recorded-head-sha')
     }
 
     It 'records a crashed candidate and keeps going' {
@@ -9503,6 +9549,139 @@ Describe 'The one command a fix candidate may check its work with' {
     It 'tells the candidate the file is watched' {
         $content = New-ReplicationFixOracleRunnerContent @script:oracleArgs
         $content | Should -Match 'hashed before your attempt'
+    }
+}
+
+Describe 'A fix candidate that commits its own work' {
+    # HEAD is the reference the whole fix phase agrees on: the restore checks
+    # out HEAD, the cleanliness check diffs HEAD, and the winning fix is now
+    # captured against HEAD. A commit moves all three at once, and the prompt
+    # has never forbidden one. The plan's own rule applies - the remedy cannot
+    # be another instruction, because an instruction is what failed before.
+
+    BeforeAll {
+        # Imported by AST, like the rest of this suite: the production script
+        # has a mandatory param() block, so dot-sourcing it would prompt.
+        $fixHeadAst = [System.Management.Automation.Language.Parser]::ParseInput(
+            $script:Source, [ref]$null, [ref]$null)
+        foreach ($name in @('Get-ReplicationHeadSha', 'Restore-ReplicationFixHead')) {
+            $definition = $fixHeadAst.Find({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq $name
+            }, $true)
+            if (-not $definition) { throw "Production function $name was not found." }
+            Invoke-Expression $definition.Extent.Text
+        }
+
+        function New-CommittedFixRepo {
+            $repo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $repo -Force | Out-Null
+            & git -C $repo init --quiet 2>&1 | Out-Null
+            & git -C $repo config user.email 'test@example.com' 2>&1 | Out-Null
+            & git -C $repo config user.name 'Test' 2>&1 | Out-Null
+            Set-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Value 'the product'
+            & git -C $repo add -A 2>&1 | Out-Null
+            & git -C $repo commit --quiet -m 'baseline' 2>&1 | Out-Null
+            return $repo
+        }
+    }
+
+    It 'is invisible to the panel when HEAD is left where the candidate put it' {
+        $repo = New-CommittedFixRepo
+        $baseline = (& git -C $repo rev-parse HEAD).Trim()
+
+        Set-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Value 'the fix'
+        & git -C $repo add -A 2>&1 | Out-Null
+        & git -C $repo commit --quiet -m 'candidate fix' 2>&1 | Out-Null
+
+        # This is the damage: the fix exists, and every measurement the phase
+        # makes reports a clean tree with nothing in it.
+        (& git -C $repo rev-parse HEAD).Trim() | Should -Not -Be $baseline
+        (@(& git -C $repo diff --binary --no-ext-diff HEAD -- 'Handler.cs') -join "`n") |
+            Should -BeNullOrEmpty
+        & git -C $repo diff --quiet HEAD -- 'Handler.cs' 2>&1 | Out-Null
+        $LASTEXITCODE | Should -Be 0 -Because 'the committed fix makes the tree look restored'
+    }
+
+    It 'is put back and graded normally' {
+        $repo = New-CommittedFixRepo
+        $baseline = (& git -C $repo rev-parse HEAD).Trim()
+
+        Set-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Value 'the fix'
+        & git -C $repo add -A 2>&1 | Out-Null
+        & git -C $repo commit --quiet -m 'candidate fix' 2>&1 | Out-Null
+
+        Push-Location $repo
+        try {
+            [Environment]::CurrentDirectory = $repo
+            Restore-ReplicationFixHead -ExpectedSha $baseline -Attempt 4 | Should -BeTrue
+        } finally { Pop-Location }
+
+        (& git -C $repo rev-parse HEAD).Trim() | Should -Be $baseline
+
+        # The work survives the rewind, which is the whole point of --soft, and
+        # is now visible to exactly the measurements that could not see it.
+        (@(& git -C $repo diff --binary --no-ext-diff HEAD -- 'Handler.cs') -join "`n") |
+            Should -Match '\+the fix'
+        (Get-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Raw).Trim() |
+            Should -Be 'the fix'
+    }
+
+    It 'does nothing at all when HEAD never moved' {
+        $repo = New-CommittedFixRepo
+        $baseline = (& git -C $repo rev-parse HEAD).Trim()
+        Set-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Value 'an uncommitted fix'
+
+        Push-Location $repo
+        try {
+            [Environment]::CurrentDirectory = $repo
+            Restore-ReplicationFixHead -ExpectedSha $baseline -Attempt 1 | Should -BeFalse
+        } finally { Pop-Location }
+
+        (& git -C $repo rev-parse HEAD).Trim() | Should -Be $baseline
+        (Get-Content -LiteralPath (Join-Path $repo 'Handler.cs') -Raw).Trim() |
+            Should -Be 'an uncommitted fix'
+    }
+
+    It 'runs before the candidate is measured, not after' {
+        # Ordering is the whole value: rewinding HEAD after the diff has been
+        # captured would capture the empty diff the commit produced. Read the
+        # AST so the assertion is about the code and not about a comment.
+        $source = Get-Content -LiteralPath (
+            Join-Path (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+                '.github/scripts/Replicate-Issue.ps1') -Raw
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $source, [ref]$null, [ref]$null)
+
+        $guard = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'Restore-ReplicationFixHead'
+        }, $true) | Select-Object -First 1
+        $guard | Should -Not -BeNullOrEmpty -Because 'the panel must call the guard'
+
+        $capture = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.CommandElements.Count -gt 3 -and
+            $node.CommandElements[0].Extent.Text -eq 'git' -and
+            $node.CommandElements[1].Extent.Text -eq 'diff' -and
+            ($node.CommandElements | Where-Object { $_.Extent.Text -eq '@ScopeFiles' }) -and
+            ($node.CommandElements | Where-Object { $_.Extent.Text -eq '--binary' })
+        }, $true) | Select-Object -First 1
+        $capture | Should -Not -BeNullOrEmpty
+
+        $guard.Extent.StartOffset | Should -BeLessThan $capture.Extent.StartOffset
+    }
+
+    It 'tells the candidate not to commit in the first place' {
+        # The guard is the backstop; the prompt should still say so, because a
+        # candidate that never commits costs nothing to rewind.
+        $source = Get-Content -LiteralPath (
+            Join-Path (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+                '.github/scripts/Replicate-Issue.ps1') -Raw
+        $source | Should -Match 'Never commit'
+        $source | Should -Match 'git rebase'
     }
 }
 
@@ -9873,6 +10052,8 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $script:childRuns = [Collections.Generic.List[object]]::new()
         $script:failOnDescription = ''
         $script:restoreCalls = 0
+        $script:headGuardCalls = 0
+        $script:headGuardShas = [Collections.Generic.List[object]]::new()
         $script:restoreSucceeds = $true
         $script:appliedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
         # What the tree carried before the winning diff was replayed. Empty by
@@ -9893,6 +10074,17 @@ Describe 'Proving the fix is what turned the reproduction green' {
             param($TrustedScriptRoot, $ScopeFiles)
             $script:restoreCalls++
             return $script:restoreSucceeds
+        }
+        # Stubbed to a constant rather than reimplemented: what these Describes
+        # measure is that the panel asks once per candidate. The rewind itself
+        # is measured against a real repository in 'A fix candidate that
+        # commits its own work', which imports the production functions.
+        function Get-ReplicationHeadSha { 'a-recorded-head-sha' }
+        function Restore-ReplicationFixHead {
+            param($ExpectedSha, $Attempt)
+            $script:headGuardCalls++
+            $script:headGuardShas.Add($ExpectedSha)
+            return $false
         }
         function Get-ReplicationFixCandidateChanges {
             param($ExcludePaths)
