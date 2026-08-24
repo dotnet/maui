@@ -179,28 +179,10 @@ namespace Microsoft.Maui.IntegrationTests
 			output?.WriteLine($"Running: '{DotnetTool}' with '{command}'");
 			output?.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
-			ConfigureDotnetEnvironment(pinfo);
-
-			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds, output: output);
-		}
-
-		public static string RunForOutput(IReadOnlyList<string> arguments, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT, ITestOutputHelper? output = null)
-		{
-			output?.WriteLine($"Running: '{DotnetTool}'");
-			output?.WriteLine($"Args list: {string.Join(" | ", arguments)}");
-			var pinfo = new ProcessStartInfo(DotnetTool);
-			foreach (var argument in arguments)
-				pinfo.ArgumentList.Add(argument);
-
-			ConfigureDotnetEnvironment(pinfo);
-
-			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds, output: output);
-		}
-
-		static void ConfigureDotnetEnvironment(ProcessStartInfo pinfo)
-		{
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
+
+			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds, output: output);
 		}
 
 	}
