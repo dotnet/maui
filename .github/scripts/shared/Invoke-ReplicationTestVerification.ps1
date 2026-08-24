@@ -597,6 +597,19 @@ if ($ExpectPass) {
             'refute the reproduction.')
     }
     if ($controlPasses -ne $RunCount) {
+        if ($controlFailureMessages.Count -eq 0 -or $reproductionMessages.Count -eq 0) {
+            # A control only refutes when it stayed red for the *same* reason,
+            # and that comparison needs both sides. With either side missing -
+            # an unsupported runner, an unparsed result document - the reason is
+            # unknown, and the failure-mode check answers 'not changed' for a
+            # comparison it could not make, which lands here. Refuting on that
+            # is an absent measurement destroying a paid-for reproduction, so it
+            # is reported as no comparable failure message instead.
+            throw ("The negative control stayed red in all $controlRuns run(s), but " +
+                'no comparable failure message was recorded on both sides, so whether it ' +
+                'failed for the same reason as the reproduction was never measured. An ' +
+                'unattributable control can neither confirm nor refute the reproduction.')
+        }
         throw ("The negative control was expected to pass in all $RunCount run(s) but passed in " +
             "$controlPasses of $controlRuns. The reproduction's failure therefore does not depend " +
             'on the reported trigger alone.')

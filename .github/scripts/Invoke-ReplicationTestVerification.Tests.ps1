@@ -623,6 +623,7 @@ Describe 'Replication negative control' {
                 [Parameter(Mandatory = $true)][string]$Path,
                 [switch]$Infrastructure,
                 [switch]$NeverClears,
+                [string]$FailureMessage = '',
                 [int]$PassUntilRun = 0
             )
 
@@ -648,6 +649,24 @@ if ('$Infrastructure' -eq 'True') {
     exit 1
 }
 if ('$NeverClears' -eq 'True' -or ($PassUntilRun -gt 0 -and `$run -gt $PassUntilRun)) {
+    if ('$FailureMessage' -ne '') {
+        `$machineFilter = if (`$TestType -in @('UnitTest', 'XamlUnitTest')) {
+            "FullyQualifiedName=`$TestClass.`$TestMethod"
+        } else {
+            `$TestFilter
+        }
+        [ordered]@{
+            schemaVersion = 1
+            failed = `$true
+            testType = `$TestType
+            testFilter = `$machineFilter
+            testProject = `$TestProject
+            testProjectPath = `$TestProjectPath
+            testClass = `$TestClass
+            testMethod = `$TestMethod
+            actualFailureMessage = '$FailureMessage'
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath `$MachineResultPath -Encoding utf8NoBOM
+    }
     Write-Host 'VERIFY FAILURE ONLY MODE'
     Write-Host "[`$TestType] `$TestFilter FAILED"
     Write-Host 'VERIFICATION PASSED'
@@ -738,7 +757,18 @@ exit 1
         # trustworthy once every requested run has been observed.
         $verifier = Join-Path $TestDrive 'control-all-red.ps1'
         $output = Join-Path $TestDrive 'control-all-red-out'
-        New-ReplicationControlStub -Path $verifier -NeverClears
+        New-ReplicationControlStub -Path $verifier -NeverClears `
+            -FailureMessage 'Expected 10 but was 0'
+        # Refutation needs both sides of the comparison: the control failing for
+        # the same reason the reproduction did. Without the reproduction's own
+        # message there is nothing to compare against, and the run is correctly
+        # reported as unattributable rather than as a refutation.
+        New-Item -ItemType Directory -Path $output -Force | Out-Null
+        [ordered]@{
+            schemaVersion = 1
+            observedFailureMessages = @('Expected 10 but was 0')
+        } | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $output 'verification-result.json') -Encoding utf8NoBOM
 
         $log = Invoke-ReplicationControl -Verifier $verifier -Output $output
         $LASTEXITCODE | Should -Not -Be 0
@@ -750,6 +780,20 @@ exit 1
         # on the first one to come back red.
         $control.runCount | Should -Be 2
         $control.passCount | Should -Be 0
+    }
+
+    It 'reports a red control with nothing to compare as unattributable, not a refutation' {
+        # The failure-mode check answers 'not changed' when either side is
+        # unknown, so before the guard this run fell through to the refutation
+        # and destroyed a reproduction on a comparison that was never made.
+        $verifier = Join-Path $TestDrive 'control-no-message.ps1'
+        $output = Join-Path $TestDrive 'control-no-message-out'
+        New-ReplicationControlStub -Path $verifier -NeverClears
+
+        $log = Invoke-ReplicationControl -Verifier $verifier -Output $output
+        $LASTEXITCODE | Should -Not -Be 0
+        $log | Should -Match 'no comparable'
+        $log | Should -Not -Match 'does not depend'
     }
 
     It 'refuses to count a build break as a passing control' {
@@ -880,6 +924,20 @@ Describe 'A refutation is measured across every requested run' {
         $guard = $script:Source.IndexOf('$runSucceeded -and -not $ExpectPass')
         $continue = $script:Source.IndexOf('the control keeps going')
         $continue | Should -BeGreaterThan $guard
+    }
+
+    It 'refuses to refute when neither side recorded a message to compare' {
+        # Refutation means the control stayed red for the *same* reason. The
+        # failure-mode check reports 'not changed' when either side is unknown,
+        # so without this the unknown case falls straight through to the
+        # refutation and destroys a reproduction on a comparison never made.
+        $script:Source | Should -Match '\$controlFailureMessages\.Count -eq 0 -or \$reproductionMessages\.Count -eq 0'
+        $script:Source | Should -Match 'no comparable failure message was recorded'
+
+        $guard = $script:Source.IndexOf('no comparable failure message was recorded')
+        $refutation = $script:Source.IndexOf('therefore does not depend')
+        $guard | Should -BeGreaterThan 0
+        $refutation | Should -BeGreaterThan $guard
     }
 
     It 'calls an unfinished control unmeasured rather than refuting' {

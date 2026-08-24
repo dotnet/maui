@@ -992,6 +992,11 @@ function Test-ReplicationControlInconclusive {
 
         Both are reported as an absent measurement so the reproduction publishes
         uncertified instead of being destroyed by a result that was never taken.
+
+        A third case joins them: a control that stayed red every run, but with no
+        failure message recorded on both sides to compare. Refutation requires
+        the control to have failed for the *same* reason as the reproduction, and
+        with either side unknown that comparison was never made.
     #>
     param(
         [AllowEmptyString()][AllowNull()][string]$FailureSummary
@@ -1001,7 +1006,8 @@ function Test-ReplicationControlInconclusive {
     if (-not $text) {
         return $false
     }
-    return [bool]($text -match 'completed only \d+ of \d+ run|negative control is inconsistent')
+    return [bool]($text -match ('completed only \d+ of \d+ run|negative control is inconsistent|' +
+        'no comparable failure message was recorded'))
 }
 
 function Test-ReplicationTestElementLookupFailure {

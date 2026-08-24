@@ -9508,6 +9508,24 @@ Describe 'A swallowed failure must still say where it came from' {
 }
 
 Describe 'An unmeasured negative control never refutes a reproduction' {
+    It 'recognises a control that stayed red with no failure message to compare' {
+        # The failure-mode check answers 'not changed' when either side is
+        # unknown, which lands on the refutation. Build 15068579 showed how
+        # close that sits to destroying a reproduction on an absent comparison.
+        Test-ReplicationControlInconclusive -FailureSummary (
+            'The negative control stayed red in all 3 run(s), but no comparable failure ' +
+            'message was recorded on both sides, so whether it failed for the same reason ' +
+            'as the reproduction was never measured.') |
+            Should -BeTrue
+    }
+
+    It 'still refutes when both sides recorded the same failure message' {
+        Test-ReplicationControlInconclusive -FailureSummary (
+            'The negative control was expected to pass in all 3 run(s) but passed in 0 of 3. ' +
+            "The reproduction's failure therefore does not depend on the reported trigger alone.") |
+            Should -BeFalse
+    }
+
     It 'recognises a control that stopped short of the requested runs' {
         Test-ReplicationControlInconclusive -FailureSummary (
             'The negative control completed only 1 of 3 run(s), so how the test behaves ' +
