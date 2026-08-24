@@ -73,6 +73,58 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ShiftTabFromScrollViewerMovesToPreviousControl()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, ScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var previousButton = new Button { Text = "Previous" };
+			var scrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 2000,
+					Children = { new Entry() }
+				}
+			};
+			var content = new VerticalStackLayout
+			{
+				Children =
+				{
+					scrollView
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = content }), async _ =>
+			{
+				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				Assert.Same(
+					platformScrollView,
+					Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(platformScrollView.XamlRoot));
+
+				content.Children.Insert(0, previousButton);
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+				var searchRoot = Assert.IsAssignableFrom<Microsoft.UI.Xaml.UIElement>(
+					platformScrollView.XamlRoot.Content);
+				Assert.True(Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
+					Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous,
+					new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = searchRoot }));
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+
+				Assert.True(previousButton.IsFocused);
+			});
+		}
+
+		[Fact]
 		public async Task ScrollViewerPreservesNativeTabStopDefaultAcrossHandlerLifecycle()
 		{
 			EnsureHandlerCreated(builder =>
@@ -553,6 +605,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task RemovingScrollViewDuringLoadingDoesNotStrandTemporaryTabStop()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, RemoveDuringLoadingScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var scrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 2000,
+					Children = { new Entry() }
+				}
+			};
+			var page = new ContentPage { Content = scrollView };
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(page), async _ =>
+			{
+				var handler = (RemoveDuringLoadingScrollViewHandler)scrollView.Handler;
+				var platformScrollView = handler.PlatformView;
+
+				await handler.Removed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				await WaitForDispatcherIdle(platformScrollView.DispatcherQueue);
+
+				Assert.False(platformScrollView.IsLoaded);
+				Assert.False(platformScrollView.IsTabStop);
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+			});
+		}
+
 		static Task WaitForDispatcherIdle(DispatcherQueue dispatcherQueue)
 		{
 			var idle = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -753,6 +844,39 @@ namespace Microsoft.Maui.DeviceTests
 				}) != true)
 				{
 					Disconnected.TrySetException(new InvalidOperationException("Unable to queue handler disconnect."));
+				}
+			}
+		}
+
+		sealed class RemoveDuringLoadingScrollViewHandler : ScrollViewHandler
+		{
+			public TaskCompletionSource Removed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			protected override void ConnectHandler(WScrollViewer platformView)
+			{
+				base.ConnectHandler(platformView);
+				platformView.Loading += OnLoading;
+			}
+
+			protected override void DisconnectHandler(WScrollViewer platformView)
+			{
+				platformView.Loading -= OnLoading;
+				base.DisconnectHandler(platformView);
+			}
+
+			void OnLoading(Microsoft.UI.Xaml.FrameworkElement sender, object args)
+			{
+				var parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(sender);
+				if (parent is Microsoft.Maui.Platform.MauiPanel panel &&
+					panel.CachedChildren.Remove(sender))
+				{
+					Removed.TrySetResult();
+				}
+				else
+				{
+					Removed.TrySetException(
+						new InvalidOperationException(
+							$"Unable to remove the ScrollViewer from its native parent during Loading. Parent: {parent?.GetType().FullName ?? "<null>"}."));
 				}
 			}
 		}

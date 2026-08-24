@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			BeginTemporaryTabStop(scrollViewer);
+			QueueTemporaryTabStopRestore(scrollViewer, restoreWhenLoaded: false);
 		}
 
 		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
@@ -95,21 +96,9 @@ namespace Microsoft.Maui.Handlers
 			if (!ReferenceEquals(_tabStopPlatformView, scrollViewer) || !_isTabStopTemporary)
 				return;
 
-			var generation = ++_tabStopGeneration;
 			// WinUI's load focus pass completes before Loaded handlers return. Keep the
 			// transient target through Loaded, then restore it on the next dispatcher turn.
-			if (scrollViewer.DispatcherQueue?.TryEnqueue(() =>
-			{
-				if (generation == _tabStopGeneration &&
-					ReferenceEquals(_tabStopPlatformView, scrollViewer) &&
-					scrollViewer.IsLoaded)
-				{
-					RestoreIsTabStop(scrollViewer);
-				}
-			}) != true)
-			{
-				RestoreIsTabStop(scrollViewer);
-			}
+			QueueTemporaryTabStopRestore(scrollViewer, restoreWhenLoaded: true);
 		}
 
 		void OnPlatformViewUnloaded(object sender, RoutedEventArgs e)
@@ -133,9 +122,36 @@ namespace Microsoft.Maui.Handlers
 			_isTabStopValue = scrollViewer.IsTabStop;
 			_isTabStopBinding = scrollViewer.GetBindingExpression(Control.IsTabStopProperty)?.ParentBinding;
 			_isTabStopTemporary = true;
+			// This binding both supplies the transient value and serves as an ownership
+			// token so restoration cannot overwrite a later native or mapper update.
 			_temporaryTabStopBinding = new Binding { Source = true };
 			scrollViewer.ClearValue(Control.IsTabStopProperty);
 			scrollViewer.SetBinding(Control.IsTabStopProperty, _temporaryTabStopBinding);
+		}
+
+		void QueueTemporaryTabStopRestore(ScrollViewer scrollViewer, bool restoreWhenLoaded)
+		{
+			var generation = ++_tabStopGeneration;
+			void RestoreIfCurrent()
+			{
+				if (generation == _tabStopGeneration &&
+					ReferenceEquals(_tabStopPlatformView, scrollViewer) &&
+					scrollViewer.IsLoaded == restoreWhenLoaded)
+				{
+					RestoreIsTabStop(scrollViewer);
+				}
+			}
+
+			var queued = restoreWhenLoaded
+				? scrollViewer.DispatcherQueue?.TryEnqueue(RestoreIfCurrent)
+				: scrollViewer.DispatcherQueue?.TryEnqueue(
+					Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+					RestoreIfCurrent);
+
+			if (queued != true && restoreWhenLoaded)
+			{
+				RestoreIsTabStop(scrollViewer);
+			}
 		}
 
 		void RestoreIsTabStop(ScrollViewer scrollViewer)
