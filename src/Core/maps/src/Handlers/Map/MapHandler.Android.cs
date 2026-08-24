@@ -24,6 +24,7 @@ using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using ACanvas = Android.Graphics.Canvas;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using ADrawable = Android.Graphics.Drawables.Drawable;
+using AHandler = Android.OS.Handler;
 using APaint = Android.Graphics.Paint;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
@@ -34,6 +35,11 @@ namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapHandler : ViewHandler<IMap, MapView>
 	{
+		// Created on first use rather than in a field initializer: a null MainLooper there would
+		// surface as a TypeInitializationException on every later MapHandler member access, which is
+		// a whole-map failure for a best-effort cleanup path. Same shape as MainThread.android.cs.
+		static volatile AHandler? s_mainHandler;
+
 		bool _init = true;
 
 		MapCallbackHandler? _mapReady;
@@ -1004,9 +1010,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		// Returns null on cancel/failure/no drawable.
 		static async Task<BitmapDescriptor?> LoadPinIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
 		{
+			IImageSourceServiceResult<ADrawable>? result = null;
+
 			try
 			{
-				using var result = await imageSource.GetPlatformImageAsync(mauiContext);
+				result = await imageSource.GetPlatformImageAsync(mauiContext);
 				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
 					return null;
 
@@ -1017,6 +1025,51 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
 				return null;
+			}
+			finally
+			{
+				ReleaseImageResult(result, mauiContext);
+			}
+		}
+
+		// The drawable is already copied into the descriptor by the time this runs, so releasing the
+		// image result must never be able to take the icon down with it. Glide also refuses a clear()
+		// issued from inside one of its own target callbacks - which is where the load continuation
+		// can resume - so hand the release to the next turn of the main loop: by then the callback
+		// has unwound and the Glide entry is released for real instead of being leaked.
+		static void ReleaseImageResult(IImageSourceServiceResult<ADrawable>? result, IMauiContext mauiContext)
+		{
+			if (result is null)
+				return;
+
+			try
+			{
+				// Resolved here rather than inside the post: the service provider can be gone by the
+				// time the release runs, and an exception raised from a looper callback takes the
+				// process down instead of faulting a task.
+				var logger = mauiContext.Services.GetService<ILogger<MapHandler>>();
+
+				var handler = s_mainHandler;
+				if (handler is null || handler.Looper != Looper.MainLooper)
+					s_mainHandler = handler = new AHandler(Looper.MainLooper!);
+
+				handler.Post(() =>
+				{
+					try
+					{
+						result.Dispose();
+					}
+					catch (System.Exception ex)
+					{
+						logger?.LogWarning(ex, "Failed to release a custom pin icon image result");
+					}
+				});
+			}
+			catch
+			{
+				// This runs from a finally, so it must not throw under any circumstance - resolving
+				// the logger from a disposed provider included. An exception here would replace the
+				// descriptor that was already built, which is the very failure this method prevents.
 			}
 		}
 
@@ -1071,9 +1124,23 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		static ABitmap? DrawableToBitmap(ADrawable drawable)
 		{
-			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap != null)
+			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is ABitmap source)
 			{
-				return ScaleBitmap(bitmapDrawable.Bitmap, 64, 64);  // 64x64 pixels
+				var sized = ScaleBitmap(source, 64, 64);  // 64x64 pixels
+				if (!ReferenceEquals(sized, source))
+					return sized;
+
+				// Bitmap.createScaledBitmap hands an immutable source straight back when the image
+				// already fits - the size Pin.ImageSource documents for Android - so the descriptor
+				// would be built over pixels the image result owns, and releasing that result lets
+				// them go. Copy instead, and never fall back to the source: a failed copy has to
+				// mean the default marker, not a descriptor over foreign pixels. Hardware bitmaps
+				// are the common immutable case here and cannot be read back, so retarget those.
+				var config = source.GetConfig();
+				if (config is null || (OperatingSystem.IsAndroidVersionAtLeast(26) && config == ABitmap.Config.Hardware))
+					config = ABitmap.Config.Argb8888!;
+
+				return source.Copy(config, false);
 			}
 
 			int width = drawable.IntrinsicWidth;
