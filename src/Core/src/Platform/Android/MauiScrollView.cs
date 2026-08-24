@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
 
-			if (ev == null || _scrollOrientation == ScrollOrientation.Horizontal)
+			if (ev == null)
 				return false;
 
 			// set the start point for the bidirectional scroll; 
@@ -329,7 +329,7 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnTouchEvent(MotionEvent? ev)
 		{
-			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither || _scrollOrientation == ScrollOrientation.Horizontal)
+			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither)
 				return false;
 
 			if (ShouldSkipOnTouch)
@@ -382,8 +382,10 @@ namespace Microsoft.Maui.Platform
 			// to be the same size as the NestedScrollView this way it can't be scrolled vertically
 			if (_hScrollView?.Parent == this && _content is not null && !_isBidirectional)
 			{
-				var hScrollViewHeight = this.MeasuredHeight;
-				var hScrollViewWidth = this.MeasuredWidth;
+				// Subtract padding (e.g. from SafeArea insets) so the child fits the content area exactly;
+				// otherwise NestedScrollView sees the overflow as vertical scroll range.
+				var hScrollViewHeight = this.MeasuredHeight - PaddingTop - PaddingBottom;
+				var hScrollViewWidth = this.MeasuredWidth - PaddingLeft - PaddingRight;
 
 				_hScrollView.Measure(MeasureSpec.MakeMeasureSpec(hScrollViewWidth, MeasureSpecMode.Exactly),
 					MeasureSpec.MakeMeasureSpec(hScrollViewHeight, MeasureSpecMode.Exactly));
@@ -397,13 +399,13 @@ namespace Microsoft.Maui.Platform
 			if (_hScrollView?.Parent == this && _content is not null)
 			{
 				var scrollViewContentHeight = _content.Height;
-				var hScrollViewHeight = bottom - top;
-				var hScrollViewWidth = right - left;
+				var hScrollViewHeight = (bottom - top) - PaddingTop - PaddingBottom;
+				var hScrollViewWidth = (right - left) - PaddingLeft - PaddingRight;
 
 				//if we are scrolling both ways we need to lay out our MauiHorizontalScrollView with more than the available height
 				//so its parent the NestedScrollView can scroll vertically
 				hScrollViewHeight = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
-				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
+				_hScrollView.Layout(PaddingLeft, PaddingTop, PaddingLeft + hScrollViewWidth, PaddingTop + hScrollViewHeight);
 			}
 
 			// Handle RTL initial positioning
