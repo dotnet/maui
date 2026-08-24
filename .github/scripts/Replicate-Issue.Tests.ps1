@@ -5228,8 +5228,8 @@ Describe 'The host page must report an observation, not decide the verdict' {
         # from the cross-file block or it protects nothing.
         $block = [regex]::Match(
             $script:Source,
-            'Assert-ReplicationOracleIsNotInitialState -Files \$candidateContents\s*\r?\n\s*' +
-            'Assert-ReplicationVerdictIsNotComputedByTheApp -Files \$candidateContents')
+            'Assert-ReplicationOracleIsNotInitialState -Files \$candidateContents[^\r\n]*\r?\n\s*' +
+            '[^\r\n]*Assert-ReplicationVerdictIsNotComputedByTheApp -Files \$candidateContents')
         $block.Success | Should -BeTrue
     }
 
@@ -11740,5 +11740,145 @@ Describe 'A restore that did nothing is not reported as a restored tree' {
             $argument | Should -BeOfType ([System.Management.Automation.Language.VariableExpressionAst])
             $argument.VariablePath.UserPath | Should -Be 'ScopeFiles'
         }
+    }
+}
+
+Describe 'Every broken rule is reported at once, not one per attempt' {
+    BeforeAll {
+        function New-GuardRepo {
+            param([string]$Content)
+            $root = Join-Path ([IO.Path]::GetTempPath()) ("guard-" + [guid]::NewGuid().ToString('N'))
+            $dir = Join-Path $root 'src/Controls/tests/DeviceTests/Xaml'
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $dir 'Issue1Tests.Android.cs') -Value $Content
+            return $root
+        }
+    }
+
+    It 'names several rules in one refusal instead of the first one' {
+        # Build 15073029 spent five attempts discovering five rules one at a
+        # time and never ran a test.
+        $content = @'
+#if ANDROID
+using Xunit;
+public class Issue1Tests
+{
+    static readonly int Cached = System.Environment.TickCount;
+    public Issue1Tests() { System.Console.WriteLine("setup"); }
+    [Fact]
+    public void Reproduces()
+    {
+        System.Threading.Thread.Sleep(500);
+        Assert.True(false, "BUG REPRODUCED: it broke");
+    }
+}
+#endif
+'@
+        $root = New-GuardRepo -Content $content
+        $repoRoot = $root
+        try {
+            $message = ''
+            try {
+                Assert-GeneratedTestContent `
+                    -Files @('src/Controls/tests/DeviceTests/Xaml/Issue1Tests.Android.cs') `
+                    -Issue 1 -TestType 'DeviceTest' -TargetPlatform 'android'
+            } catch { $message = $_.Exception.Message }
+
+            $message | Should -Match 'breaks \d+ rules'
+            # The [Category] rule is the last check in the function, so under
+            # the old one-throw-per-attempt behaviour it could not be reached
+            # until every other rule already passed.
+            $message | Should -Match 'Category'
+            $message | Should -Match 'static field initializer'
+            ([regex]::Matches($message, '(?m)^\d+\. ')).Count | Should -BeGreaterThan 2
+        } finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'still reports a single rule on its own, without the list preamble' {
+        $content = @'
+using Xunit;
+public class Issue2Tests
+{
+    [Fact]
+    [Trait("Category", "Issue2")]
+    public void Reproduces() { Assert.True(false, "BUG REPRODUCED: it broke"); }
+}
+'@
+        $root = New-GuardRepo -Content $content
+        Set-Content -LiteralPath (Join-Path $root 'src/Controls/tests/DeviceTests/Xaml/Issue1Tests.Android.cs') `
+            -Value ($content -replace 'Assert.True\(false, "BUG REPRODUCED: it broke"\)', 'System.Threading.Thread.Sleep(5)')
+        $repoRoot = $root
+        try {
+            $message = ''
+            try {
+                Assert-GeneratedTestContent `
+                    -Files @('src/Controls/tests/DeviceTests/Xaml/Issue1Tests.Android.cs') `
+                    -Issue 2 -TestType 'UnitTest' -TargetPlatform 'android'
+            } catch { $message = $_.Exception.Message }
+            $message | Should -Not -BeNullOrEmpty
+            $message | Should -Not -Match 'breaks \d+ rules'
+        } finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'still refuses every pattern the deleted second list used to catch' {
+        # The cruder list was removed as redundant, which is only true if each
+        # of its cases is still refused by the guard that explains itself.
+        $cases = [ordered]@{
+            'process'       = 'var p = System.Diagnostics.Process.GetCurrentProcess();'
+            'http'          = 'var c = new HttpClient();'
+            'webrequest'    = 'var w = WebRequest.Create(u);'
+            'socket'        = 'var s = new Socket(a, b, c);'
+            'dllimport'     = '[DllImport("libc")] static extern int f();'
+            'libraryimport' = '[LibraryImport("libc")] static partial int f();'
+            'assemblyload'  = 'Assembly.Load(name);'
+            'threadsleep'   = 'Thread.Sleep(5);'
+            'taskdelay'     = 'await Task.Delay(5);'
+            'vso'           = 'Console.WriteLine("##vso[task.complete]");'
+            'barelog'       = 'Console.WriteLine("##[warning] hi");'
+        }
+        foreach ($name in $cases.Keys) {
+            $refused = $false
+            try {
+                Assert-ReplicationGeneratedSourceSafety `
+                    -Content $cases[$name] `
+                    -Path 'src/Controls/tests/DeviceTests/X.cs'
+            } catch { $refused = $true }
+            if (-not $refused) { throw "'$name' is no longer refused by any guard." }
+        }
+    }
+
+    It 'answers a prohibited pattern with a remedy rather than a regex' {
+        $refusal = ''
+        try {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'Thread.Sleep(5);' `
+                -Path 'src/Controls/tests/DeviceTests/X.cs'
+        } catch { $refusal = $_.Exception.Message }
+        $refusal | Should -Match 'Dispatcher\.Dispatch'
+        $refusal | Should -Not -Match '\\b'
+    }
+
+    It 'says nothing about a candidate that breaks no rule' {
+        $content = @'
+using Xunit;
+public class Issue3Tests
+{
+    [Fact]
+    [Trait("Category", "Issue3")]
+    public void Reproduces()
+    {
+        var button = new Microsoft.Maui.Controls.Button();
+        Assert.True(button.Width > 0, $"BUG REPRODUCED: width was {button.Width}.");
+    }
+}
+'@
+        $root = New-GuardRepo -Content $content
+        Set-Content -LiteralPath (Join-Path $root 'src/Controls/tests/DeviceTests/Xaml/Issue1Tests.Android.cs') -Value $content
+        $repoRoot = $root
+        try {
+            { Assert-GeneratedTestContent `
+                -Files @('src/Controls/tests/DeviceTests/Xaml/Issue1Tests.Android.cs') `
+                -Issue 3 -TestType 'UnitTest' -TargetPlatform 'android' } | Should -Not -Throw
+        } finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
     }
 }

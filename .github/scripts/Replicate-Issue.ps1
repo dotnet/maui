@@ -3152,78 +3152,67 @@ function Assert-GeneratedTestContent {
     $targetTestFound = $false
     $deviceTestIsSelectable = $false
     $candidateContents = @{}
+    # Each guard used to throw on its own, so an author could only discover one
+    # rule per attempt. Build 15073029 spent all five attempts that way and
+    # never ran a test: the Sandbox verdict text, then unbalanced conditional
+    # compilation, then a static field initializer, then an unguarded
+    # constructor, then a missing [Category]. Every one of those is decidable
+    # from the same source at the same moment, and the last of them sits at the
+    # end of this function, so it cannot even be reached until all the others
+    # pass. Collecting them costs nothing and answers the whole gauntlet at once.
+    $guardFailures = [System.Collections.Generic.List[string]]::new()
+    $collect = {
+        param([scriptblock]$Guard)
+        try {
+            & $Guard
+        } catch {
+            $message = $_.Exception.Message
+            if (-not $guardFailures.Contains($message)) { $guardFailures.Add($message) }
+        }
+    }
     foreach ($file in $Files) {
         $content = Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
-        Assert-ReplicationGeneratedSourceSafety -Content $content -Path $file
-        Assert-ReplicationPlatformSourceSafety `
-            -Content $content `
-            -Path $file `
-            -Platform $TargetPlatform
-        # The font is named on the host page rather than in the test, so this
-        # runs for every candidate file and not only the test ones.
-        Assert-ReplicationFontIsAvailable `
-            -Content $content `
-            -Path $file `
-            -RepositoryRoot $repoRoot `
-            -Platform $TargetPlatform
+        foreach ($guard in @(
+            { Assert-ReplicationGeneratedSourceSafety -Content $content -Path $file },
+            { Assert-ReplicationPlatformSourceSafety -Content $content -Path $file -Platform $TargetPlatform },
+            # The font is named on the host page rather than in the test, so this
+            # runs for every candidate file and not only the test ones.
+            { Assert-ReplicationFontIsAvailable -Content $content -Path $file -RepositoryRoot $repoRoot -Platform $TargetPlatform }
+        )) { & $collect $guard }
         if ($file.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
-            Assert-ReplicationConditionalCompilationBalance `
-                -Content $content `
-                -Path $file
+            & $collect { Assert-ReplicationConditionalCompilationBalance -Content $content -Path $file }
             $normalizedPath = $file.Replace('\', '/')
             if ($normalizedPath -cnotmatch '^src/Controls/tests/TestCases\.HostApp/') {
-                Assert-ReplicationTestLifecycleSafety `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationLeakTestMethodology `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationGestureTravel `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationProbeGeometryIsMeasured `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationGestureIsSynchronized `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationPointerSequenceIsSelfContained `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationGeometryOracleIsPinned `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationHandlerRegistrationIsNotTautological `
-                    -Content $content `
-                    -Path $file `
-                    -RepositoryRoot $repoRoot
-                Assert-ReplicationWaitResultIsUsed `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationTestPlatformScope `
-                    -Content $content `
-                    -Path $file `
-                    -Platform $TargetPlatform
-                Assert-ReplicationTestRunsOnEvidencePlatform `
-                    -Path $file `
-                    -Platform $TargetPlatform `
-                    -TestType $TestType `
-                    -RepositoryRoot $repoRoot
-                Assert-ReplicationPlatformViewIdentity `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationVerdictIsNotSelfAnnounced `
-                    -Content $content `
-                    -Path $file
-                Assert-ReplicationEnvironmentGateSkips `
-                    -Content $content `
-                    -Path $file
-                if ($TestType -ceq 'DeviceTest' -and (
-                        Assert-ReplicationDeviceTestIsSelectable `
-                            -Content $content `
-                            -Path $file `
-                            -Issue $Issue)) {
-                    $deviceTestIsSelectable = $true
+                foreach ($guard in @(
+                    { Assert-ReplicationTestLifecycleSafety -Content $content -Path $file },
+                    { Assert-ReplicationLeakTestMethodology -Content $content -Path $file },
+                    { Assert-ReplicationGestureTravel -Content $content -Path $file },
+                    { Assert-ReplicationProbeGeometryIsMeasured -Content $content -Path $file },
+                    { Assert-ReplicationGestureIsSynchronized -Content $content -Path $file },
+                    { Assert-ReplicationPointerSequenceIsSelfContained -Content $content -Path $file },
+                    { Assert-ReplicationGeometryOracleIsPinned -Content $content -Path $file },
+                    { Assert-ReplicationHandlerRegistrationIsNotTautological -Content $content -Path $file -RepositoryRoot $repoRoot },
+                    { Assert-ReplicationWaitResultIsUsed -Content $content -Path $file },
+                    { Assert-ReplicationTestPlatformScope -Content $content -Path $file -Platform $TargetPlatform },
+                    { Assert-ReplicationTestRunsOnEvidencePlatform -Path $file -Platform $TargetPlatform -TestType $TestType -RepositoryRoot $repoRoot },
+                    { Assert-ReplicationPlatformViewIdentity -Content $content -Path $file },
+                    { Assert-ReplicationVerdictIsNotSelfAnnounced -Content $content -Path $file },
+                    { Assert-ReplicationEnvironmentGateSkips -Content $content -Path $file }
+                )) { & $collect $guard }
+                if ($TestType -ceq 'DeviceTest') {
+                    # try/catch shares the enclosing scope, so the flag this
+                    # guard sets is still visible after it.
+                    try {
+                        if (Assert-ReplicationDeviceTestIsSelectable `
+                                -Content $content `
+                                -Path $file `
+                                -Issue $Issue) {
+                            $deviceTestIsSelectable = $true
+                        }
+                    } catch {
+                        $message = $_.Exception.Message
+                        if (-not $guardFailures.Contains($message)) { $guardFailures.Add($message) }
+                    }
                 }
             }
             $testAttributeMatches = @([regex]::Matches(
@@ -3231,7 +3220,7 @@ function Assert-GeneratedTestContent {
                 '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*(?:Fact|Test)\b'
             ))
             if ($testAttributeMatches.Count -gt 1) {
-                throw "Generated test source '$file' adds more than one targeted test method."
+                $guardFailures.Add("Generated test source '$file' adds more than one targeted test method.")
             }
             if (
                 $testAttributeMatches.Count -eq 1 -and
@@ -3243,38 +3232,41 @@ function Assert-GeneratedTestContent {
                 $targetTestFound = $true
             }
         }
-        foreach ($pattern in @(
-            '(?i)\bSystem\.Diagnostics\.Process\b',
-            '(?i)\bHttpClient\b|\bWebRequest\b|\bSocket\b',
-            '(?i)\bDllImport\b|\bLibraryImport\b',
-            '(?i)\bAssembly\.(?:Load|LoadFrom|LoadFile)\b',
-            '(?i)\bThread\.Sleep\b|\bTask\.Delay\b',
-            '(?i)##vso\[|##\['
-        )) {
-            if ($content -match $pattern) {
-                throw "Generated test contains prohibited content in '$file': $pattern"
-            }
-        }
+        # There was a second, cruder list of prohibited patterns here. Measured
+        # against Assert-ReplicationGeneratedSourceSafety, ten of its eleven
+        # cases were already caught there with a remedy the author can act on,
+        # while this one answered with a bare regex. It only ever stayed
+        # invisible because the first throw won. Its one uncovered case, a bare
+        # '##[' logging command, now belongs to the verification-spoof rule, so
+        # prohibited content has a single authority that always explains itself.
 
         $candidateContents[$file] = $content
     }
 
     # The host page states what the screen shows before the test touches it, so
     # whether an oracle merely restates that can only be decided across files.
-    Assert-ReplicationOracleIsNotInitialState -Files $candidateContents
-    Assert-ReplicationVerdictIsNotComputedByTheApp -Files $candidateContents
+    & $collect { Assert-ReplicationOracleIsNotInitialState -Files $candidateContents }
+    & $collect { Assert-ReplicationVerdictIsNotComputedByTheApp -Files $candidateContents }
 
     if (-not $targetTestFound) {
-        throw 'Generated files do not contain a test method in the expected test project.'
+        $guardFailures.Add('Generated files do not contain a test method in the expected test project.')
     }
 
     if ($TestType -ceq 'DeviceTest' -and -not $deviceTestIsSelectable) {
-        throw (
+        $guardFailures.Add(
             'The generated device test cannot be selected on device: no file declares ' +
             "[Category(`"Issue$Issue`")]. The runner reads the bare filter token as a " +
             'category name, so with no test declaring it the run selects no categories ' +
             'and executes nothing.')
     }
+
+    if ($guardFailures.Count -eq 0) { return }
+    if ($guardFailures.Count -eq 1) { throw $guardFailures[0] }
+    # Numbered, because an author that fixes one and resubmits pays another
+    # attempt for the next one in the list.
+    $numbered = for ($i = 0; $i -lt $guardFailures.Count; $i++) { "$($i + 1). $($guardFailures[$i])" }
+    throw ("The generated test breaks $($guardFailures.Count) rules. Fix all of them " +
+        "before resubmitting, because each one is checked again:`n" + ($numbered -join "`n"))
 }
 
 $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
