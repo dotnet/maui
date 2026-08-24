@@ -2031,6 +2031,26 @@ function Test-ReplicationTestOmitsReportedApi {
     return "the issue reports $reported but the generated test exercises $exercised"
 }
 
+function Test-ReplicationSurveyLiteral {
+    <#
+        .SYNOPSIS
+            True when an assignment's right-hand side is a plain string the
+            survey can resolve without running anything.
+
+        .DESCRIPTION
+            A XAML markup extension is written inside quotes, so quoting alone
+            does not make a value literal: Text="{Binding Caption}" is a value
+            only the running app knows. Treating it as literal would let the
+            survey claim an inventory it cannot actually predict, and then
+            refuse a plan naming the caption the device really published.
+    #>
+    param([string]$Value)
+
+    $trimmed = ([string]$Value).TrimStart()
+    if ($trimmed -notmatch '^"(?<inner>[^"]*)"') { return $false }
+    return -not $Matches['inner'].TrimStart().StartsWith('{')
+}
+
 function Get-ReplicationSandboxAutomationIdSurvey {
     <#
         .SYNOPSIS
@@ -2050,10 +2070,20 @@ function Get-ReplicationSandboxAutomationIdSurvey {
             the survey incomplete, and an incomplete survey must never be used
             to refuse a plan, because a false refusal costs an attempt for a
             page that was correct.
+
+            An AutomationId is not the only thing a device answers to. MAUI
+            surfaces a literal Text, Placeholder or Title as the accessibility
+            name, and some controls never carry the id at all - a SearchBar on
+            iOS and Catalyst exposes its placeholder, so build 15075610 offered
+            'Search spacing' where the page declared 'Issue35624Search'. Those
+            literals are surveyed too, or this check contradicts the device
+            inventory the retry advice tells the agent to choose from.
     #>
     param([string[]]$SourcePaths)
 
     $ids = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal)
+    $names = [System.Collections.Generic.HashSet[string]]::new(
         [System.StringComparer]::Ordinal)
     $complete = $true
     $read = $false
@@ -2069,14 +2099,40 @@ function Get-ReplicationSandboxAutomationIdSurvey {
         $read = $true
 
         foreach ($match in [regex]::Matches($text, 'AutomationId\s*=\s*"(?<id>[^"]*)"')) {
-            [void]$ids.Add($match.Groups['id'].Value)
+            $id = $match.Groups['id'].Value
+            if (-not $id.TrimStart().StartsWith('{')) {
+                [void]$ids.Add($id)
+            }
+        }
+
+        # What the platform publishes as the accessibility name when the
+        # control does not carry its AutomationId through.
+        foreach ($match in [regex]::Matches(
+                $text, '\b(?:Text|Placeholder|Title)\s*=\s*"(?<value>[^"]*)"')) {
+            $value = $match.Groups['value'].Value
+            if (-not [string]::IsNullOrWhiteSpace($value) -and
+                -not $value.TrimStart().StartsWith('{')) {
+                [void]$names.Add($value)
+            }
         }
 
         # Anything that is not AutomationId="literal" - an interpolated string,
         # a variable, a binding, a concatenation - means ids exist that this
-        # survey cannot see.
+        # survey cannot see. In XAML a binding is itself a quoted string, so
+        # the quotes alone do not make a value literal; a markup extension is
+        # a value this survey cannot resolve just as a C# variable is.
         foreach ($match in [regex]::Matches($text, 'AutomationId\s*=\s*(?<rhs>[^;>\r\n]+)')) {
-            if ($match.Groups['rhs'].Value.TrimStart() -notmatch '^"[^"]*"') {
+            if (-not (Test-ReplicationSurveyLiteral -Value $match.Groups['rhs'].Value)) {
+                $complete = $false
+            }
+        }
+
+        # The same reasoning for the names. A bound or computed caption is a
+        # name this survey cannot predict, so it cannot then say a locator is
+        # absent - it can only say it did not see it.
+        foreach ($match in [regex]::Matches(
+                $text, '\b(?:Text|Placeholder|Title)\s*=\s*(?<rhs>[^;>\r\n]+)')) {
+            if (-not (Test-ReplicationSurveyLiteral -Value $match.Groups['rhs'].Value)) {
                 $complete = $false
             }
         }
@@ -2084,6 +2140,7 @@ function Get-ReplicationSandboxAutomationIdSurvey {
 
     return [pscustomobject]@{
         Ids = @($ids | Sort-Object)
+        Names = @($names | Sort-Object)
         # Only a survey that read a file and saw nothing but literals can say
         # an id is absent rather than merely unseen.
         IsComplete = ($complete -and $read -and $ids.Count -gt 0)
@@ -2223,11 +2280,18 @@ function Read-GeneratedAppiumPlan {
             # minute spent building and deploying to discover it is wasted.
             if ($strategy -cin @('id', 'accessibilityId') -and
                 $idSurvey.IsComplete -and
-                $locatorValue -cnotin $idSurvey.Ids) {
+                $locatorValue -cnotin $idSurvey.Ids -and
+                $locatorValue -cnotin $idSurvey.Names) {
+                $captions = 'none'
+                if ($idSurvey.Names.Count -gt 0) {
+                    $captions = ($idSurvey.Names | ForEach-Object { "'$_'" }) -join ', '
+                }
                 throw ("Generated Appium step $($index + 1) waits for '$locatorValue', " +
-                    'which the Sandbox page it was written against never declares. ' +
-                    'The AutomationIds that page does declare are: ' +
+                    'which the Sandbox page it was written against neither declares ' +
+                    'as an AutomationId nor shows as literal text. The AutomationIds ' +
+                    'that page declares are: ' +
                     (($idSurvey.Ids | ForEach-Object { "'$_'" }) -join ', ') +
+                    ". The captions it shows are: $captions" +
                     '. Use one of those, or set that AutomationId on the element ' +
                     'the step is meant to reach.')
             }

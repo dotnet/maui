@@ -149,6 +149,7 @@ BeforeAll {
         'Get-ReplicationFixReportedResult',
         'Get-ReplicationUnreachedAssertionAdvice',
         'Get-ReplicationSandboxAutomationIdSurvey',
+        'Test-ReplicationSurveyLiteral',
         'Invoke-ReplicationFixPanel',
         'ConvertTo-ReplicationPowerShellLiteral',
         'New-ReplicationFixOracleRunnerContent',
@@ -11628,6 +11629,29 @@ Describe 'A plan is not sent to a device to learn the page it was written with' 
             Should -Be @('CodeSetId')
     }
 
+    It 'lists the captions the device answers to as well as the ids' {
+        # Build 15075610 lost all five attempts here. A SearchBar on iOS and
+        # Catalyst publishes its placeholder as the accessibility name and not
+        # its AutomationId, so the device inventory offered 'Search spacing'
+        # while this survey knew only 'Issue35624Search' - and the retry advice
+        # tells the agent to choose from that inventory.
+        $p = New-Page -Name 'Issue35624.xaml' -Body (
+            '<SearchBar AutomationId="Issue35624Search" Placeholder="Search spacing" />' +
+            '<Label AutomationId="Issue35624Result" Text="NO BUG:" />')
+        $survey = Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @($p)
+        $survey.IsComplete | Should -BeTrue
+        $survey.Ids | Should -Be @('Issue35624Result', 'Issue35624Search')
+        $survey.Names | Should -Contain 'Search spacing'
+        $survey.Names | Should -Contain 'NO BUG:'
+    }
+
+    It 'cannot call a survey complete when a caption is computed' {
+        $p = New-Page -Name 'BoundCaption.xaml' -Body (
+            '<Label AutomationId="Real" Text="{Binding Caption}" />')
+        (Get-ReplicationSandboxAutomationIdSurvey -SourcePaths @($p)).IsComplete |
+            Should -BeFalse
+    }
+
     It 'refuses to call a survey complete when an id is computed' {
         # A false refusal costs an attempt for a page that was correct, so an
         # id this survey cannot see must silence it entirely.
@@ -11660,7 +11684,7 @@ Describe 'A plan is not sent to a device to learn the page it was written with' 
         $sandboxShellXamlPath = Join-Path $script:pageDir 'SandboxShell.xaml'
         $sandboxShellCodePath = Join-Path $script:pageDir 'SandboxShell.xaml.cs'
         $Platform = 'android'
-        '<Label AutomationId="ResultLabel" />' |
+        '<Label AutomationId="ResultLabel" /><SearchBar Placeholder="Search spacing" />' |
             Set-Content -LiteralPath $sandboxXamlPath -Encoding utf8NoBOM
 
         $planText = @'
@@ -11698,7 +11722,17 @@ Describe 'A plan is not sent to a device to learn the page it was written with' 
         $planText.Replace('__TARGET__', 'GraphicsSurface') |
             Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
         { Read-GeneratedAppiumPlan | Out-Null } |
-            Should -Throw "*never declares*'ResultLabel'*"
+            Should -Throw "*neither declares*'ResultLabel'*"
+
+        # A SearchBar publishes its placeholder rather than its AutomationId,
+        # so the device inventory offers the caption and the retry advice tells
+        # the agent to choose from that inventory. Refusing it here left build
+        # 15075610 with no legal answer for five attempts.
+        $captionPlan = $planText.Replace('__TARGET__', 'ResultLabel').Replace(
+            '"value": "ResultLabel"', '"value": "Search spacing"')
+        $captionPlan | Should -BeLike '*Search spacing*' -Because 'a canary: the plan must really name the caption'
+        $captionPlan | Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
     }
 
     It 'stays silent when it cannot read the page at all' {
@@ -11755,7 +11789,11 @@ Describe 'A plan is not sent to a device to learn the page it was written with' 
         # must carry the inventory rather than repeating the missing name.
         $guard.Groups['b'].Value | Should -Match '\$idSurvey\.IsComplete'
         $guard.Groups['b'].Value | Should -Match '\$locatorValue -cnotin \$idSurvey\.Ids'
-        $guard.Groups['b'].Value | Should -Match 'AutomationIds that page does declare'
+        # Both inventories, or this guard contradicts the device inventory the
+        # retry advice tells the agent to choose its next locator from.
+        $guard.Groups['b'].Value | Should -Match '\$locatorValue -cnotin \$idSurvey\.Names'
+        $guard.Groups['b'].Value | Should -Match 'AutomationIds'
+        $guard.Groups['b'].Value | Should -Match 'captions it shows'
     }
 
     It 'surveys the pages the agent may actually write' {
