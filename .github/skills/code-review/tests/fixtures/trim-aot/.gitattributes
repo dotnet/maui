@@ -1,0 +1,2 @@
+# Unified diff context lines intentionally preserve the source file's tab indentation.
+*.diff -whitespace

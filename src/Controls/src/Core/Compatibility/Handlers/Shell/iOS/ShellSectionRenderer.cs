@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
@@ -15,6 +16,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, IDisconnectable
 	{
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> TopViewController;
+#endif
+
 		#region IShellContentRenderer
 
 		public bool IsInMoreTab { get; set; }
@@ -185,12 +191,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
-						_sendPopPending = false;  // reset before returning
+						// Reset the iOS 26+ guard so subsequent back presses are not blocked.
+						_sendPopPending = false;
 						return false;
 					}
 
-					// Allow the page to intercept back navigation via OnBackButtonPressed
-					if (tracker.Value.Page?.SendBackButtonPressed() == true)
+					// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
+					// are invoked consistently for both the navigation bar back button and the
+					// hardware/system back button.
+					if (_context.Shell?.SendBackButtonPressed() == true)
 					{
 						_sendPopPending = false;  // reset before returning
 						return false;
@@ -298,6 +307,41 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_appearanceTracker?.SetAppearance(MoreNavigationController, _shellAppearance);
 			}
 			base.DidMoveToParentViewController(parent);
+		}
+
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+
+			// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame,
+			// so it does not automatically resize when the navigation bar changes width during rotation.
+			// Re-apply the frame for the pushed pages' TitleViews alongside the transition.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				coordinator.AnimateAlongsideTransition(_ =>
+				{
+					foreach (var tracker in _trackers.Values)
+					{
+						(tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+					}
+				}, null);
+			}
+		}
+
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+			if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+				previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					foreach (var tracker in _trackers.Values)
+					{
+						(tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+					}
+				}
+			}
 		}
 
 		public override void ViewDidLoad()
@@ -686,7 +730,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
-				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				// UINavigationItem.BackAction requires iOS 16.0+; UIAction.Create requires iOS 14.0+.
+				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+				{
+					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				}
 				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else

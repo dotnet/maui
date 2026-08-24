@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+			[Controls.CarouselView.LoopProperty.PropertyName] = MapLoop,
 		};
 	}
 
@@ -74,8 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		// TODO: Change the modifier to public in .NET 11.
-		internal static void MapIsEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
+		public static void MapIsEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
 			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
 		}

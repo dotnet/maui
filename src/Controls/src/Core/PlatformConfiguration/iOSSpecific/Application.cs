@@ -1,6 +1,7 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.Application;
 
 	/// <summary>Provides control over simultaneous recognition for pan gesture recognizers.</summary>
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to enable simultaneous recognition; otherwise, <see langword="false"/>.</param>
 		public static void SetPanGestureRecognizerShouldRecognizeSimultaneously(BindableObject element, bool value)
 		{
-			element.SetValue(PanGestureRecognizerShouldRecognizeSimultaneouslyProperty, value);
+			element.SetValue(PanGestureRecognizerShouldRecognizeSimultaneouslyProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether pan gesture recognizers can recognize gestures simultaneously with other gesture recognizers.</summary>
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to handle updates on the main thread; otherwise, <see langword="false"/>.</param>
 		public static void SetHandleControlUpdatesOnMainThread(BindableObject element, bool value)
 		{
-			element.SetValue(HandleControlUpdatesOnMainThreadProperty, value);
+			element.SetValue(HandleControlUpdatesOnMainThreadProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether control property updates are processed on the main thread on iOS.</summary>
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to enable accessibility scaling; otherwise, <see langword="false"/>.</param>
 		public static void SetEnableAccessibilityScalingForNamedFontSizes(BindableObject element, bool value)
 		{
-			element.SetValue(EnableAccessibilityScalingForNamedFontSizesProperty, value);
+			element.SetValue(EnableAccessibilityScalingForNamedFontSizesProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether named font sizes respond to iOS Dynamic Type accessibility settings.</summary>

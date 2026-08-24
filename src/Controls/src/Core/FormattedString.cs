@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,7 +15,13 @@ namespace Microsoft.Maui.Controls
 	public class FormattedString : Element
 	{
 		readonly SpanCollection _spans = new SpanCollection();
-		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged
+		{
+			add => _weakEventManager.AddEventHandler(value, nameof(SpansCollectionChanged));
+			remove => _weakEventManager.RemoveEventHandler(value, nameof(SpansCollectionChanged));
+		}
 
 		/// <summary>Initializes a new instance of the FormattedString class.</summary>
 		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
@@ -69,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnPropertyChanged(nameof(Spans));
-			SpansCollectionChanged?.Invoke(sender, e);
+			_weakEventManager.HandleEvent(sender, e, nameof(SpansCollectionChanged));
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
@@ -89,15 +96,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#nullable enable
 		private sealed class FormattedStringConverter : TypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(string);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> destinationType == typeof(string);
 
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 			{
 				if (value is string strValue)
 				{
@@ -107,7 +115,7 @@ namespace Microsoft.Maui.Controls
 				throw new NotSupportedException();
 			}
 
-			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+			public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
 			{
 				if (value is FormattedString formattedStr)
 				{

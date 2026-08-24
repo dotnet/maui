@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.ApplicationModel;
@@ -218,6 +219,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
+			if (animate && newItem?.CurrentItem?.CurrentItem is IShellContentController shellContent)
+			{
+				bool? isNavBarVisible = null;
+
+				if (shellContent is BindableObject bindable &&
+					bindable.IsSet(Shell.NavBarIsVisibleProperty))
+				{
+					isNavBarVisible = Shell.GetNavBarIsVisible(bindable);
+				}
+
+				if (isNavBarVisible == null)
+				{
+					var destinationPage = shellContent.GetOrCreateContent();
+
+					if (destinationPage != null)
+						isNavBarVisible = Shell.GetNavBarIsVisible(destinationPage);
+				}
+
+				if (isNavBarVisible == false)
+				{
+					var rootView = _flyoutView?.AndroidView;
+
+					if (rootView != null && rootView.IsSoftInputShowing())
+					{
+						rootView.HideSoftInput();
+					}
+				}
+			}
+
 			var previousView = _currentView;
 			_currentView = CreateShellItemRenderer(newItem);
 			_currentView.ShellItem = newItem;

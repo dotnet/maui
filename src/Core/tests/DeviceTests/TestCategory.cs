@@ -51,5 +51,7 @@
 		public const string View = "View";
 		public const string WebView = "WebView";
 		public const string Window = "Window";
+		public const string Animation = "Animation";
+		public const string Lifecycle = "Lifecycle";
 	}
 }

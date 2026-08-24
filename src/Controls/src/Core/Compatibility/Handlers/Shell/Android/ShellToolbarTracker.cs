@@ -68,6 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		float _appBarElevation;
 		GenericGlobalLayoutListener _globalLayoutListener;
 		DrawerArrowDrawable _drawerArrowDrawable;
+		DrawerArrowDrawable _backArrowDrawable;
 		FlyoutIconDrawerDrawable _flyoutIconDrawerDrawable;
 		IToolbar _toolbar;
 		protected IMauiContext MauiContext => _shell.Handler.MauiContext;
@@ -311,6 +312,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(Shell.ForegroundColorProperty))
 			{
 				UpdateLeftBarButtonItem();
+				UpdateToolbarItemsTintColors();
 			}
 		}
 
@@ -343,6 +345,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
 			{
 				UpdateLeftBarButtonItem();
+				UpdateToolbarItemsTintColors();
 			}
 		}
 
@@ -466,6 +469,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (customIcon != null)
 				{
+					// Mutate() clones the drawable's ConstantState into a private copy so that
+					// SetTint() calls in Draw() don't bleed into the shared drawable cache and
+					// corrupt the tint across navigation cycles.
+					customIcon = customIcon.Mutate();
+
 					if (fid == null)
 					{
 						fid = new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, customIcon, text);
@@ -473,7 +481,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						fid.TintColor = tintColor;
+						var previousIcon = fid.IconBitmap;
 						fid.IconBitmap = customIcon;
+						// Dispose the previous mutated drawable to release its native handle.
+						// The new customIcon is a fresh Mutate() clone so previousIcon != customIcon.
+						if (!ReferenceEquals(previousIcon, customIcon))
+						{
+							previousIcon?.Dispose();
+						}
+
 						fid.Text = text;
 					}
 
@@ -488,25 +504,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				icon = _flyoutIconDrawerDrawable;
 			}
 
-			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || (CanNavigateBack && backButtonVisible)))
+			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
 			{
 				_drawerArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
 				icon = _drawerArrowDrawable;
 				defaultDrawerArrowDrawable = true;
 			}
 
-			var canNav = CanNavigateBack && backButtonVisible;
+			var canNav = CanNavigateBack;
 			var progress = canNav ? 1 : 0;
 			icon?.Progress = progress;
 
-			if (command != null || (CanNavigateBack && backButtonVisible))
+			if (command != null || CanNavigateBack)
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
 				if (backButtonVisibleFromBehavior && (backButtonVisible || !defaultDrawerArrowDrawable))
-					toolbar.NavigationIcon = icon;
+				{
+					if (defaultDrawerArrowDrawable)
+					{
+						// Use a separate drawable for the back-arrow NavigationIcon so that
+						// OnDrawerSlide callbacks (which mutate _drawerToggle.DrawerArrowDrawable)
+						// cannot race with and clobber the visible icon's Progress value.
+						_backArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
+						_backArrowDrawable.Progress = progress;
+						toolbar.NavigationIcon = _backArrowDrawable;
+					}
+					else
+					{
+						toolbar.NavigationIcon = icon;
+					}
+				}
 			}
-			else if (_flyoutBehavior == FlyoutBehavior.Flyout || (!defaultDrawerArrowDrawable && backButtonVisible))
+			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
 			{
 				bool drawerEnabled = isEnabled && icon != null;
 				_drawerToggle.DrawerIndicatorEnabled = drawerEnabled;
@@ -522,7 +552,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
-				toolbar.NavigationIcon = null;
 			}
 
 			_drawerToggle.SyncState();
@@ -586,7 +615,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				if (CanNavigateBack && _toolbar?.BackButtonVisible == true)
+				if (CanNavigateBack)
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 				else
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
@@ -678,13 +707,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
 		}
 
+		Color GetSearchHandlerTintColor(Page page)
+		{
+			var foregroundColor = page is not null ? Shell.GetForegroundColor(page) : null;
+			return TintColor ?? foregroundColor ?? Shell.GetForegroundColor(_shell);
+		}
+
 		private void UpdateToolbarItemsTintColors(AToolbar toolbar)
 		{
 			var menu = toolbar.Menu;
 			if (menu.FindItem(_placeholderMenuItemId) is IMenuItem item)
 			{
 				using (var icon = item.Icon)
-					icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+					icon.SetColorFilter(GetSearchHandlerTintColor(Page).ToPlatform(Colors.White), FilterMode.SrcAtop);
 			}
 		}
 
@@ -740,7 +775,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
 					item.SetIcon(Resource.Drawable.abc_ic_search_api_material);
 					using (var icon = item.Icon)
-						icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+						icon.SetColorFilter(GetSearchHandlerTintColor(page).ToPlatform(Colors.White), FilterMode.SrcAtop);
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
 					if (_searchView.View.Parent is not null)
@@ -823,7 +858,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// we want the newly added button which will need layout
 					if (child.IsLayoutRequested)
 					{
-						button.SetColorFilter(TintColor.ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
+						button.SetColorFilter(GetSearchHandlerTintColor(Page).ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
 					}
 
 					button.Dispose();

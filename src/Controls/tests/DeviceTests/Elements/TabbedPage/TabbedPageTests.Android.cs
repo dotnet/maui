@@ -5,26 +5,56 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
+using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		[Description("TabbedPage BarBackgroundColor should be applied to AppBar immediately after handler creation, before the fragment transaction completes")]
+		public async Task TopTabbedPageBarBackgroundColorAppliedOnInitialLoad()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			// Set BarBackgroundColor before the handler is created to exercise the path where
+			// UpdateTopChrome is called during initialization (async fragment transaction).
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = Colors.LightGreen;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				// The AppBar background must be applied even on initial load (timing race fix).
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == Colors.LightGreen.ToPlatform().ToArgb());
+			});
+		}
+
 		[Fact(DisplayName = "Using SelectedTab Color doesnt crash")]
 		public async Task SelectedTabColorNoDoesntCrash()
 		{
@@ -211,6 +241,145 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("Top TabbedPage BarBackgroundColor should color the AppBar status bar area")]
+		public async Task TopTabbedPageBarBackgroundColorColorsAppBarStatusBarArea()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = firstColor;
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == firstColor.ToPlatform().ToArgb());
+
+				tabbedPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("Top TabbedPage BarBackground should restore the native AppBar drawable when changing from gradient to solid color")]
+		public async Task TopTabbedPageBarBackgroundRestoresNativeDrawableWhenChangingFromGradientToSolid()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var solidColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Orange, Offset = 0 },
+					new GradientStop { Color = Colors.Purple, Offset = 1 },
+				}
+			};
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => appBar.Background is GradientStrokeDrawable);
+
+				tabbedPage.BarBackground = new SolidColorBrush(solidColor);
+
+				await AssertEventually(() =>
+					appBar.Background is not GradientStrokeDrawable &&
+					GetAppBarBackgroundColor(appBar) == solidColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("Top TabbedPage BarBackgroundColor should still update after the active AppBar background drawable state is disposed")]
+		public async Task TopTabbedPageBarBackgroundColorUpdatesAfterAppBarBackgroundStateDisposed()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = firstColor;
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == firstColor.ToPlatform().ToArgb());
+
+				var activeBackground = appBar.Background;
+				var activeBackgroundState = activeBackground?.GetConstantState();
+				appBar.Background = null;
+				activeBackgroundState?.Dispose();
+				activeBackground?.Dispose();
+
+				tabbedPage.BarBackgroundColor = secondColor;
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("A bottom chrome update made before the native view is attached should be applied after attachment")]
+		public async Task BottomChromeUpdateBeforeAttachReplaysAfterAttachment()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || OperatingSystem.IsAndroidVersionAtLeast(35))
+				return;
+
+			SetupBuilder();
+
+			var expectedColor = Colors.Green;
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(new ContentPage()), async handler =>
+			{
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
+				var content = handler.PlatformView.FindViewById<global::Android.Views.ViewGroup>(global::Android.Resource.Id.Content);
+				Assert.NotNull(content);
+				var chromeView = new BottomNavigationView(handler.PlatformView);
+
+#pragma warning disable CA1422 // This test only runs where Android still honors system bar color APIs.
+				var originalColor = platformWindow.NavigationBarColor;
+				platformWindow.SetNavigationBarColor(Colors.Red.ToPlatform());
+
+				try
+				{
+					AndroidSystemChrome.UpdateBottomChrome(chromeView, new SolidColorBrush(expectedColor));
+					Assert.Equal(Colors.Red.ToPlatform().ToArgb(), platformWindow.NavigationBarColor);
+
+					content.AddView(chromeView);
+					await AssertEventually(() => platformWindow.NavigationBarColor == expectedColor.ToPlatform().ToArgb());
+				}
+				finally
+				{
+					content.RemoveView(chromeView);
+					platformWindow.SetNavigationBarColor(new global::Android.Graphics.Color(originalColor));
+					chromeView.Dispose();
+				}
+#pragma warning restore CA1422
+			});
+		}
+
+		[Fact]
 		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
 		public async Task BottomNavigationViewExtendsToScreenBottom()
 		{
@@ -252,12 +421,90 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Back-to-back PushAsync does not leak tabs (Issue 35331)")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task BackToBackPushAsyncDoesNotLeakTabs(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[]
+			{
+				new ContentPage() { Title = "Tab 1" },
+				new ContentPage() { Title = "Tab 2" }
+			});
+
+			var navPage = new NavigationPage(tabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				// Push two pages back-to-back. The first push triggers
+				// TabbedPage.Disappearing → RemoveTabs(). The second push
+				// must not break state even though _tabLayoutFragment is
+				// already null after the first RemoveTabs().
+				var page1 = new ContentPage { Title = "Detail 1" };
+				await navPage.PushAsync(page1);
+				await OnNavigatedToAsync(page1);
+
+				var page2 = new ContentPage { Title = "Detail 2" };
+				await navPage.PushAsync(page2);
+				await OnNavigatedToAsync(page2);
+
+				// Pop back to the first detail page
+				await navPage.PopAsync();
+				await OnNavigatedToAsync(page1);
+
+				// Pop back to the TabbedPage — tabs should be restored
+				await navPage.PopAsync();
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				// Verify tabs are visible again
+				if (bottomTabs)
+				{
+					var bottomNav = GetBottomNavigationView(tabbedPage.Handler as IPlatformViewHandler);
+					Assert.NotNull(bottomNav);
+					Assert.True(bottomNav.Visibility == global::Android.Views.ViewStates.Visible,
+						"BottomNavigationView should be visible after popping back to TabbedPage");
+				}
+			});
+		}
+
 		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
 			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
 				as CoordinatorLayout;
 
 			return layout.GetFirstChildOfType<BottomNavigationView>();
+		}
+
+		AppBarLayout GetAppBarLayout(IPlatformViewHandler tabViewHandler)
+		{
+			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
+				as CoordinatorLayout;
+
+			return layout.GetFirstChildOfType<AppBarLayout>();
+		}
+
+		static int GetAppBarBackgroundColor(AppBarLayout appBar)
+		{
+			if (ViewCompat.GetBackgroundTintList(appBar) is { } backgroundTint)
+			{
+				return backgroundTint.GetColorForState(
+					appBar.GetDrawableState(),
+					new global::Android.Graphics.Color(backgroundTint.DefaultColor));
+			}
+
+			return appBar.Background switch
+			{
+				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
+				MaterialShapeDrawable materialShapeDrawable when materialShapeDrawable.FillColor is not null =>
+					materialShapeDrawable.FillColor.GetColorForState(
+						appBar.GetDrawableState(),
+						new global::Android.Graphics.Color(materialShapeDrawable.FillColor.DefaultColor)),
+				_ => throw new XunitException($"Expected AppBar background to be {nameof(ColorDrawable)} or {nameof(MaterialShapeDrawable)}, but was {appBar.Background?.GetType().FullName ?? "null"}.")
+			};
 		}
 
 		async Task ValidateTabBarIconColor(

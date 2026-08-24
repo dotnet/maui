@@ -19,7 +19,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// </summary>
 		/// <param name="text">The text to put on the clipboard.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
-		/// <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns.</remarks>
+		/// <remarks>This method returns immediately and does not guarantee that the text is on the clipboard by the time this method returns.</remarks>
 		Task SetTextAsync(string? text);
 
 		/// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// </summary>
 		/// <param name="text">The text to put on the clipboard.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
-		/// <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns.</remarks>
+		/// <remarks>This method returns immediately and does not guarantee that the text is on the clipboard by the time this method returns.</remarks>
 		public static Task SetTextAsync(string? text)
 			=> Default.SetTextAsync(text ?? string.Empty);
 
@@ -76,10 +76,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IClipboard Default =>
-			defaultImplementation ??= new ClipboardImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ClipboardImplementation());
 
 		internal static void SetDefault(IClipboard? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	partial class ClipboardImplementation : IClipboard

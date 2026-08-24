@@ -1,14 +1,12 @@
 #nullable enable
-Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
-Microsoft.Maui.HybridWebViewInvoker
-Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
-Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
-Microsoft.Maui.IHybridWebView.Invoker.set -> void
-abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
-virtual Microsoft.Maui.Platform.StackNavigationManager.OnCreateNavigationAnimation(Android.Content.Context! context, bool isPopping, bool enter) -> Android.Views.Animations.Animation?
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Android.Views.View! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Android.Views.View!
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Android.Views.View! platformView) -> void
+*REMOVED*static Microsoft.Maui.Handlers.WebViewHandler.MapWebChromeClient(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+*REMOVED*static Microsoft.Maui.Handlers.WebViewHandler.MapWebViewClient(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2.ActivityIndicatorHandler2() -> void
 Microsoft.Maui.Handlers.DatePickerHandler2
@@ -49,11 +47,49 @@ Microsoft.Maui.Handlers.SwitchHandler2
 Microsoft.Maui.Handlers.SwitchHandler2.SwitchHandler2() -> void
 Microsoft.Maui.Handlers.TimePickerHandler2
 Microsoft.Maui.Handlers.TimePickerHandler2.TimePickerHandler2() -> void
+Microsoft.Maui.HybridWebViewInvoker
+Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
+Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.IHybridWebView.Invoker.set -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
+Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.Platform.MaterialActivityIndicator
 Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout
+Microsoft.Maui.Platform.MauiDrawerLayout.CloseFlyout(bool animate = true) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.ContentView.get -> Android.Views.View?
+Microsoft.Maui.Platform.MauiDrawerLayout.CurrentBehavior.get -> Microsoft.Maui.FlyoutBehavior
+Microsoft.Maui.Platform.MauiDrawerLayout.DefaultFlyoutWidth.get -> double
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.Flyout = 0 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.Padding = 2 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.SideBySide = 1 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutModeValue.get -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutModeValue.set -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutView.get -> Android.Views.View?
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutWidth.get -> double
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutWidth.set -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.GetLockedContentPadding() -> int
+Microsoft.Maui.Platform.MauiDrawerLayout.IsFlyoutOpen.get -> bool
+Microsoft.Maui.Platform.MauiDrawerLayout.IsGestureEnabled.get -> bool
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.OnPresentedChanged -> System.Action<bool>?
+Microsoft.Maui.Platform.MauiDrawerLayout.OnSlide -> System.Action<float>?
+Microsoft.Maui.Platform.MauiDrawerLayout.OpenFlyout(bool animate = true) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetBehavior(Microsoft.Maui.FlyoutBehavior behavior) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetContentView(Android.Views.View! contentView) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetFlyoutView(Android.Views.View! flyoutView) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetGestureEnabled(bool enabled) -> void
 Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper
 Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper.MauiMaterialContextThemeWrapper(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialDatePicker
@@ -102,6 +138,14 @@ Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Dark = 2 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
+abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MaterialActivityIndicator!
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler2.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.DatePickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialDatePicker! platformView) -> void
@@ -116,6 +160,9 @@ override Microsoft.Maui.Handlers.EntryHandler2.ConnectHandler(Microsoft.Maui.Pla
 override Microsoft.Maui.Handlers.EntryHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialTextInputLayout!
 override Microsoft.Maui.Handlers.EntryHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialTextInputLayout! platformView) -> void
 override Microsoft.Maui.Handlers.EntryHandler2.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDrawerLayout!
+override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler2.CreatePlatformView() -> Google.Android.Material.ImageView.ShapeableImageView!
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.LabelHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialTextView!
@@ -137,8 +184,14 @@ override Microsoft.Maui.Handlers.TimePickerHandler2.DisconnectHandler(Microsoft.
 override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.MaterialActivityIndicator.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiDrawerLayout.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.MauiDrawerLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
+override Microsoft.Maui.Platform.MauiHybridWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiHybridWebView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageStarted(Android.Webkit.WebView? view, string? url, Android.Graphics.Bitmap? favicon) -> void
 override Microsoft.Maui.Platform.MauiMaterialDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnSelectionChanged(int selStart, int selEnd) -> void
@@ -151,7 +204,12 @@ override Microsoft.Maui.Platform.MauiMaterialTextInputLayout.OnMeasure(int width
 override Microsoft.Maui.Platform.MauiMaterialTextView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiMaterialTextView.SetText(Java.Lang.ICharSequence? text, Android.Widget.TextView.BufferType? type) -> void
 override Microsoft.Maui.Platform.MauiMaterialTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiScrollView.OnVisibilityChanged(Android.Views.View! changedView, Android.Views.ViewStates visibility) -> void
+override Microsoft.Maui.Platform.MauiScrollView.SetOnTouchListener(Android.Views.View.IOnTouchListener? touchListener) -> void
+override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
+override Microsoft.Maui.Platform.MauiWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
@@ -216,6 +274,8 @@ static Microsoft.Maui.Handlers.PickerHandler2.MapTitleColor(Microsoft.Maui.Handl
 static Microsoft.Maui.Handlers.PickerHandler2.MapUnfocus(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker, object? args) -> void
 static Microsoft.Maui.Handlers.PickerHandler2.MapVerticalTextAlignment(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.PickerHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.PickerHandler2!>!
+static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapSelectionLength(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISearchBar!, Microsoft.Maui.Handlers.SearchBarHandler2!>!
 static Microsoft.Maui.Handlers.SearchBarHandler2.MapBackground(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler2.MapCancelButtonColor(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
@@ -240,6 +300,7 @@ static Microsoft.Maui.Handlers.SearchBarHandler2.MapText(Microsoft.Maui.Handlers
 static Microsoft.Maui.Handlers.SearchBarHandler2.MapTextColor(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler2.MapVerticalTextAlignment(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ISearchBar!, Microsoft.Maui.Handlers.SearchBarHandler2!>!
+static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.SliderHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISlider!, Microsoft.Maui.Handlers.SliderHandler2!>!
 static Microsoft.Maui.Handlers.SliderHandler2.MapMaximum(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Handlers.SliderHandler2.MapMaximumTrackColor(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
@@ -253,6 +314,7 @@ static Microsoft.Maui.Handlers.SwitchHandler2.CommandMapper -> Microsoft.Maui.Co
 static Microsoft.Maui.Handlers.SwitchHandler2.MapThumbColor(Microsoft.Maui.Handlers.ISwitchHandler! handler, Microsoft.Maui.ISwitch! view) -> void
 static Microsoft.Maui.Handlers.SwitchHandler2.MapTrackColor(Microsoft.Maui.Handlers.ISwitchHandler! handler, Microsoft.Maui.ISwitch! view) -> void
 static Microsoft.Maui.Handlers.SwitchHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ISwitch!, Microsoft.Maui.Handlers.SwitchHandler2!>!
+static Microsoft.Maui.Handlers.TimePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ITimePicker!, Microsoft.Maui.Handlers.TimePickerHandler2!>!
 static Microsoft.Maui.Handlers.TimePickerHandler2.MapBackground(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
@@ -262,6 +324,7 @@ static Microsoft.Maui.Handlers.TimePickerHandler2.MapIsOpen(Microsoft.Maui.Handl
 static Microsoft.Maui.Handlers.TimePickerHandler2.MapTextColor(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler2.MapTime(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ITimePicker!, Microsoft.Maui.Handlers.TimePickerHandler2!>!
+static Microsoft.Maui.Handlers.WindowHandler.MapStatusBarTheme(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Platform.DatePickerExtensions.UpdateDate(this Microsoft.Maui.Platform.MauiMaterialDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Platform.DatePickerExtensions.UpdateFormat(this Microsoft.Maui.Platform.MauiMaterialDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Platform.DatePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiMaterialDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
@@ -286,56 +349,17 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Google.Android.
 static Microsoft.Maui.Platform.SwitchExtensions.UpdateThumbColor(this Google.Android.Material.MaterialSwitch.MaterialSwitch! materialSwitch, Microsoft.Maui.ISwitch! view) -> void
 static Microsoft.Maui.Platform.SwitchExtensions.UpdateTrackColor(this Google.Android.Material.MaterialSwitch.MaterialSwitch! materialSwitch, Microsoft.Maui.ISwitch! view) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateFormat(this Microsoft.Maui.Platform.MauiMaterialTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextAlignment(this Microsoft.Maui.Platform.MauiTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiMaterialTimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTime(this Microsoft.Maui.Platform.MauiMaterialTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 virtual Microsoft.Maui.Handlers.DatePickerHandler2.CreateDatePickerDialog(int year, int month, int day) -> Google.Android.Material.DatePicker.MaterialDatePicker?
 virtual Microsoft.Maui.Handlers.TimePickerHandler2.CreateTimePickerDialog(int hour, int minute) -> Google.Android.Material.TimePicker.MaterialTimePicker?
-Microsoft.Maui.ITab
-Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
-Microsoft.Maui.ITab.IsEnabled.get -> bool
-Microsoft.Maui.ITab.Title.get -> string!
-Microsoft.Maui.Platform.MauiDrawerLayout
-Microsoft.Maui.Platform.MauiDrawerLayout.CloseFlyout(bool animate = true) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.ContentView.get -> Android.Views.View?
-Microsoft.Maui.Platform.MauiDrawerLayout.CurrentBehavior.get -> Microsoft.Maui.FlyoutBehavior
-Microsoft.Maui.Platform.MauiDrawerLayout.DefaultFlyoutWidth.get -> double
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.Flyout = 0 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.Padding = 2 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.SideBySide = 1 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutModeValue.get -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutModeValue.set -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutView.get -> Android.Views.View?
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutWidth.get -> double
-Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutWidth.set -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.GetLockedContentPadding() -> int
-Microsoft.Maui.Platform.MauiDrawerLayout.IsFlyoutOpen.get -> bool
-Microsoft.Maui.Platform.MauiDrawerLayout.IsGestureEnabled.get -> bool
-Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.OnPresentedChanged -> System.Action<bool>?
-Microsoft.Maui.Platform.MauiDrawerLayout.OnSlide -> System.Action<float>?
-Microsoft.Maui.Platform.MauiDrawerLayout.OpenFlyout(bool animate = true) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.SetBehavior(Microsoft.Maui.FlyoutBehavior behavior) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.SetContentView(Android.Views.View! contentView) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.SetFlyoutView(Android.Views.View! flyoutView) -> void
-Microsoft.Maui.Platform.MauiDrawerLayout.SetGestureEnabled(bool enabled) -> void
-Microsoft.Maui.TabBarPlacement
-Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
-Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
-*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Android.Views.View! platformView) -> void
-override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
-*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Android.Views.View!
-override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDrawerLayout!
-*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Android.Views.View! platformView) -> void
-override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
-override Microsoft.Maui.Platform.MauiDrawerLayout.Dispose(bool disposing) -> void
-override Microsoft.Maui.Platform.MauiDrawerLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.Disconnect() -> void
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutAsFlyout() -> void
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutSideBySide() -> void
-*REMOVED*virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView, AndroidX.Fragment.App.FragmentContainerView? fragmentContainerView = null) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.OnCreateNavigationAnimation(Android.Content.Context! context, bool isPopping, bool enter) -> Android.Views.Animations.Animation?
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void

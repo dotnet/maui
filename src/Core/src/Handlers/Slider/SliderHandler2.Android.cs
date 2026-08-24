@@ -1,4 +1,3 @@
-using Android.Views;
 using Google.Android.Material.Slider;
 
 namespace Microsoft.Maui.Handlers;
@@ -29,56 +28,43 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
         return new Slider(MauiMaterialContextThemeWrapper.Create(Context))
         {
             DuplicateParentStateEnabled = false,
+            LabelBehavior = LabelFormatter.LabelGone,
         };
     }
 
     protected override void ConnectHandler(Slider platformView)
     {
-        // TODO: Material3: Add listeners when https://github.com/dotnet/android-libraries/issues/230 is resolved
-        // Using Touch event as a workaround for missing addOnChangeListener binding
-        // See: https://github.com/dotnet/android-libraries/issues/230#issuecomment-891341936
-        platformView.Touch += Slider_Touch;
-    }
-
-    void Slider_Touch(object? sender, View.TouchEventArgs e)
-    {
-        if (sender is not Slider slider)
-        {
-            return;
-        }
-
-        switch (e.Event?.Action)
-        {
-            case MotionEventActions.Down:
-                {
-                    OnStartTrackingTouch(slider);
-                    break;
-                }
-            case MotionEventActions.Move:
-                {
-                    OnValueChanged(slider, slider.Value);
-                    break;
-                }
-            case MotionEventActions.Up:
-                {
-                    OnValueChanged(slider, slider.Value);
-                    OnStopTrackingTouch(slider);
-                    break;
-                }
-            case MotionEventActions.Cancel:
-                {
-                    OnStopTrackingTouch(slider);
-                    break;
-                }
-        }
-        // Pass through to Material3 Slider so it can update its own visual state
-        e.Handled = false;
+        base.ConnectHandler(platformView);
+        platformView.Change += OnChange;
+        platformView.StartTrackingTouch += OnStartTrackingTouch;
+        platformView.StopTrackingTouch += OnStopTrackingTouch;
     }
 
     protected override void DisconnectHandler(Slider platformView)
     {
-        // TODO: Material3: Cleanup listeners when implemented
-        platformView.Touch -= Slider_Touch;
+        platformView.Change -= OnChange;
+        platformView.StartTrackingTouch -= OnStartTrackingTouch;
+        platformView.StopTrackingTouch -= OnStopTrackingTouch;
+        base.DisconnectHandler(platformView);
+    }
+
+    // Slider.ChangeEventArgs: P0 = slider (Slider), P1 = value (float), P2 = fromUser (bool)
+    void OnChange(object? sender, Slider.ChangeEventArgs e)
+    {
+        if (e.P2 && VirtualView is not null && (float)VirtualView.Value != e.P1)
+        {
+            VirtualView.Value = e.P1;
+        }
+    }
+
+    void OnStartTrackingTouch(object? sender, Slider.StartTrackingTouchEventArgs e)
+    {
+        VirtualView?.DragStarted();
+    }
+
+    void OnStopTrackingTouch(object? sender, Slider.StopTrackingTouchEventArgs e)
+    {
+        VirtualView?.DragCompleted();
     }
 
     public static void MapValue(SliderHandler2 handler, ISlider slider)
@@ -117,24 +103,5 @@ public class SliderHandler2 : ViewHandler<ISlider, Slider>
 
         handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
             .FireAndForget(handler);
-    }
-
-    void OnStartTrackingTouch(Slider slider) =>
-        VirtualView?.DragStarted();
-
-    void OnStopTrackingTouch(Slider slider) =>
-        VirtualView?.DragCompleted();
-
-    void OnValueChanged(Slider slider, float value)
-    {
-        if (VirtualView is null)
-        {
-            return;
-        }
-
-        if ((float)VirtualView.Value != value)
-        {
-            VirtualView.Value = value;
-        }
     }
 }

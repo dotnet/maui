@@ -253,6 +253,19 @@ namespace Microsoft.Maui.Controls
 			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
+		/// <summary>
+		/// Determines whether a bindable property has been set by a local value, style, binding, or other non-default specificity.
+		/// Unlike IsSet, default-value creation does not count as explicit.
+		/// </summary>
+		/// <param name="targetProperty">The bindable property to check if a value is explicitly set.</param>
+		/// <returns><see langword="true"/> if the target property exists and has been explicitly set. Otherwise <see langword="false"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="targetProperty"/> is <see langword="null"/>.</exception>
+		internal bool IsSetExplicitly(BindableProperty targetProperty)
+		{
+			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
+			return bpcontext is not null && bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
+		}
+
 
 		/// <summary>
 		/// Removes a previously set binding from a bindable property.
@@ -778,20 +791,15 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property)
 		{
-#if NETSTANDARD
-			var context = GetContext(property);
-			if (context is null)
-			{
-				context = CreateContext(property);
-				_properties.Add(property.InternalId, context);
-			}
-#else
-			ref var context = ref CollectionsMarshal.GetValueRefOrAddDefault(_properties, property.InternalId, out var exists);
-			if (!exists)
-			{
-				context = CreateContext(property);
-			}
-#endif
+			if (_properties.TryGetValue(property.InternalId, out var context))
+				return context;
+
+			// Do not use CollectionsMarshal.GetValueRefOrAddDefault: CreateContext invokes
+			// DefaultValueCreator, which is arbitrary user code and may mutate other
+			// BindableProperties, resizing _properties and invalidating the returned ref.
+			// See dotnet/maui#36744.
+			context = CreateContext(property);
+			_properties[property.InternalId] = context;
 			return context;
 		}
 

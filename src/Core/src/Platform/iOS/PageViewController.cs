@@ -56,6 +56,23 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+#if !MACCATALYST
+		public override UIStatusBarStyle PreferredStatusBarStyle()
+		{
+			var application = Context?.Services.GetService(typeof(IApplication)) as IApplication;
+			var window = CurrentView?.FindParentOfType<IWindow>() ??
+				Context?.GetOptionalPlatformWindow().GetWindow(application);
+			var theme = window?.StatusBarTheme ?? StatusBarTheme.Default;
+
+			return theme switch
+			{
+				StatusBarTheme.Light => UIStatusBarStyle.DarkContent,
+				StatusBarTheme.Dark => UIStatusBarStyle.LightContent,
+				_ => base.PreferredStatusBarStyle()
+			};
+		}
+#endif
+
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 		{
 			if (CurrentView?.Handler is ElementHandler handler)
@@ -75,6 +92,16 @@ namespace Microsoft.Maui.Platform
 					var application = handler.GetRequiredService<IApplication>();
 					application.UpdateUserInterfaceStyle();
 					application.ThemeChanged();
+
+					// When the preferred content size category changes (Dynamic Type),
+					// re-apply fonts to all text elements so they reflect the new
+					// scaling immediately without an app restart. The font cache is
+					// cleared via ObserveContentSizeCategoryChanged in FontManager.
+					if (previousTraitCollection is not null &&
+						previousTraitCollection.PreferredContentSizeCategory != TraitCollection.PreferredContentSizeCategory)
+					{
+						InvalidateFontsOnContentSizeChanged(CurrentView as IView);
+					}
 				}
 				catch (ObjectDisposedException)
 				{
@@ -87,6 +114,30 @@ namespace Microsoft.Maui.Platform
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
+
+		static void InvalidateFontsOnContentSizeChanged(IView? view)
+		{
+			if (view is null)
+			{
+				return;
+			}
+
+			if (view is ITextStyle { Font.AutoScalingEnabled: true } && view.Handler is not null)
+			{
+				view.Handler.UpdateValue(nameof(ITextStyle.Font));
+				view.InvalidateMeasure();
+			}
+
+			if (view is IVisualTreeElement vte)
+			{
+				foreach (var child in vte.GetVisualChildren())
+				{
+					if (child is IView childView)
+					{
+						InvalidateFontsOnContentSizeChanged(childView);
+					}
+				}
+			}
+		}
 	}
 }
-

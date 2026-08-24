@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Android.Content;
 using Android.OS;
@@ -15,6 +16,7 @@ using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AAnimation = Android.Views.Animations.Animation;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -41,6 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers
         TabbedViewManager? _tabbedViewManager;
         ShellSectionTabbedViewAdapter? _shellSectionAdapter;
         ViewPagerPageChangeCallback? _pageChangedCallback;
+        List<ShellContent>? _subscribedItems; // Tracks exactly which ShellContents currently have OnShellContentPropertyChanged wired up
 
         /// <summary>
         /// Internal accessor for the ViewPager2 instance. Used by ViewPagerPageChangeCallback
@@ -146,28 +149,6 @@ namespace Microsoft.Maui.Controls.Handlers
             _rootLayout = rootView.FindViewById<LinearLayout>(Resource.Id.shellsection_coordinator);
             _viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellsection_viewpager);
 
-            // Create TabLayout programmatically (no longer from XML layout).
-            // It will be placed into navigationlayout_toptabs via PlaceTopTabs().
-            var context = MauiContext?.Context
-                ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
-
-            // Resolve ?attr/actionBarSize to match the old XML layout height.
-            // The old shellsectionlayout.axml used android:layout_height="?attr/actionBarSize"
-            // for the TabLayout. Using wrap_content would make tabs ~48dp instead of 56dp,
-            // shifting all content below and causing visual regressions.
-            var actionBarSizeAttribute = new int[] { global::Android.Resource.Attribute.ActionBarSize };
-            var typedArray = context.ObtainStyledAttributes(actionBarSizeAttribute);
-            int actionBarHeight = typedArray.GetDimensionPixelSize(0, LP.WrapContent);
-            typedArray.Recycle();
-
-            _contentTabLayout = new TabLayout(context)
-            {
-                Id = AView.GenerateViewId(),
-                LayoutParameters = new LP(LP.MatchParent, actionBarHeight),
-                Visibility = ViewStates.Gone,  // Hidden by default (shown when > 1 tab)
-                TabMode = TabLayout.ModeScrollable
-            };
-
             return rootView;
         }
 
@@ -198,6 +179,13 @@ namespace Microsoft.Maui.Controls.Handlers
             // Subscribe to visible items collection changes (fires on add/remove AND visibility changes)
             SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 
+            _subscribedItems ??= new List<ShellContent>();
+            _subscribedItems.Clear();
+            foreach (var item in SectionController.GetItems())
+            {
+                item.PropertyChanged += OnShellContentPropertyChanged;
+                _subscribedItems.Add(item);
+            }
             // Wait for the view to be attached before setting up the adapter
             // This ensures the parent fragment is set
             _rootLayout?.ViewAttachedToWindow += OnRootLayoutAttachedToWindow;
@@ -250,18 +238,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var visibleItems = SectionController.GetItems();
             _viewPager.OffscreenPageLimit = Math.Max(visibleItems.Count, 1);
 
-            // Setup TabbedViewManager for top tab management.
-            // Pre-assign Shell's TabLayout (specific sizing) before SetElement.
-            _shellSectionAdapter = new ShellSectionTabbedViewAdapter(VirtualView);
-            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager)
-            {
-                TabLayout = _contentTabLayout
-            };
-            _tabbedViewManager.SetElement(_shellSectionAdapter);
-
-            // Register page change callback (stored in field for cleanup in DisconnectHandler)
-            _pageChangedCallback = new ViewPagerPageChangeCallback(this);
-            _viewPager.RegisterOnPageChangeCallback(_pageChangedCallback);
+            SetupTabbedViewManager();
 
             // Update TabLayout visibility based on item count
             UpdateTabLayoutVisibility();
@@ -272,10 +249,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // Set initial position
             SetInitialPosition();
 
-            // Setup TabLayout appearance tracker
-            _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
-
-            // Register as appearance observer for TabLayout updates
             var shell = VirtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
@@ -302,6 +275,53 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        void SetupTabbedViewManager()
+        {
+            if (_tabbedViewManager is not null || VirtualView is null || _viewPager is null || MauiContext is null || _shellContext is null)
+            {
+                return;
+            }
+
+            if (SectionController.GetItems().Count <= 1)
+            {
+                return;
+            }
+
+            var context = MauiContext.Context
+                ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
+
+            _contentTabLayout = new TabLayout(context)
+            {
+                Id = AView.GenerateViewId(),
+                LayoutParameters = new LP(LP.MatchParent, context.GetActionBarHeight()),
+                Visibility = ViewStates.Gone,
+                TabMode = TabLayout.ModeScrollable
+            };
+
+            _shellSectionAdapter = new ShellSectionTabbedViewAdapter(VirtualView);
+            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager)
+            {
+                TabLayout = _contentTabLayout
+            };
+            _tabbedViewManager.SetElement(_shellSectionAdapter);
+
+            _pageChangedCallback = new ViewPagerPageChangeCallback(this);
+            _viewPager.RegisterOnPageChangeCallback(_pageChangedCallback);
+
+            _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
+
+            // Initial setup registers the appearance observer immediately afterward. When
+            // setup was deferred, replay the appearance for the newly-created TabLayout.
+            if (_registeredShell is not null && IsCurrentlyActiveSection() && VirtualView.CurrentItem is ShellContent currentContent)
+            {
+                var page = ((IShellContentController)currentContent).GetOrCreateContent();
+                if (page is not null)
+                {
+                    ((IShellController)_registeredShell).AppearanceChanged(page, false);
+                }
+            }
+        }
+
         void SetInitialPosition()
         {
             if (VirtualView?.CurrentItem is null || _viewPager is null)
@@ -319,7 +339,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabLayoutVisibility()
         {
-            if (_tabbedViewManager is null || VirtualView is null)
+            if (VirtualView is null)
             {
                 return;
             }
@@ -425,6 +445,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
+            if (_subscribedItems is not null)
+            {
+                foreach (var item in _subscribedItems)
+                {
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+                }
+                _subscribedItems.Clear();
+            }
             // Only remove top tabs from the shared container if this is the active section.
             // When inactive sections are disconnected (e.g., VP2 adapter updates recreate
             // fragments for bottom tabs that reappeared), their DisconnectHandler must NOT
@@ -488,6 +516,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (visibleItems is not null && currentItem is not null)
             {
+                handler.SafeNotifyDataSetChanged();
+
                 var targetIndex = visibleItems.IndexOf(currentItem);
                 if (targetIndex >= 0 && handler._viewPager.CurrentItem != targetIndex)
                 {
@@ -496,8 +526,106 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        void OnShellContentPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not ShellContent shellContent || _adapter is null)
+            {
+                return;
+            }
+
+            if (e.PropertyName == ShellContent.ContentProperty.PropertyName)
+            {
+                InvalidateShellContent(shellContent);
+
+                // Keep toolbar state in sync when the active tab's content page is replaced.
+                if (VirtualView?.CurrentItem == shellContent)
+                {
+                    var page = ((IShellContentController)shellContent).GetOrCreateContent();
+                    if (page is not null)
+                    {
+                        var toolbarTracker = ToolbarTracker;
+                        toolbarTracker?.Page = page;
+                    }
+                }
+            }
+        }
+
+        void InvalidateShellContent(ShellContent shellContent)
+        {
+            // The page inside this ShellContent changed — force ViewPager2 to recreate the
+            // fragment so it picks up the new content.
+            _adapter?.InvalidateShellContent(shellContent);
+            SafeNotifyDataSetChanged();
+        }
+
+        void SafeNotifyDataSetChanged()
+        {
+            var adapter = _adapter;
+            var viewPager = _viewPager;
+            if (adapter is null || viewPager is null || !viewPager.IsAlive())
+            {
+                return;
+            }
+
+            // https://stackoverflow.com/questions/43221847/cannot-call-this-method-while-recyclerview-is-computing-a-layout-or-scrolling-wh
+            // ViewPager2 is based on RecyclerView which really doesn't like NotifyDataSetChanged when a layout is happening
+            if (!viewPager.IsInLayout)
+            {
+                adapter.NotifyDataSetChanged();
+            }
+            else
+            {
+                viewPager.Post(() => adapter.NotifyDataSetChanged());
+            }
+        }
+
+        void UpdateContentPropertyChangedSubscriptions(NotifyCollectionChangedEventArgs e)
+        {
+            if (_subscribedItems is null)
+            {
+                return;
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                foreach (var item in _subscribedItems)
+                {
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+                }
+                _subscribedItems.Clear();
+
+                foreach (var item in SectionController.GetItems())
+                {
+                    item.PropertyChanged += OnShellContentPropertyChanged;
+                    _subscribedItems.Add(item);
+                }
+
+                return;
+            }
+
+            if (e.OldItems is not null)
+            {
+                foreach (ShellContent item in e.OldItems)
+                {
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+                    _subscribedItems.Remove(item);
+                }
+            }
+
+            if (e.NewItems is not null)
+            {
+                foreach (ShellContent item in e.NewItems)
+                {
+                    item.PropertyChanged += OnShellContentPropertyChanged;
+                    _subscribedItems.Add(item);
+                }
+            }
+        }
+
         void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            UpdateContentPropertyChangedSubscriptions(e);
+
             if (_adapter is null || _viewPager is null || _parentFragment is null || VirtualView is null || MauiContext is null)
             {
                 return;
@@ -528,13 +656,14 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             else
             {
-                _adapter.NotifyDataSetChanged();
+                SafeNotifyDataSetChanged();
             }
 
             // Update OffscreenPageLimit for new visible count
             var visibleCount = SectionController.GetItems().Count;
             _viewPager?.OffscreenPageLimit = Math.Max(visibleCount, 1);
 
+            SetupTabbedViewManager();
             UpdateTabLayoutVisibility();
             UpdateViewPagerUserInput();
         }
@@ -734,6 +863,16 @@ namespace Microsoft.Maui.Controls.Handlers
             _visibleItems = newItems;
         }
 
+        internal void InvalidateShellContent(ShellContent shellContent)
+        {
+            if (_visibleItems is null || !_visibleItems.Contains(shellContent))
+            {
+                return;
+            }
+
+            _contentIds.Remove(shellContent);
+        }
+
         public override Fragment CreateFragment(int position)
         {
             if (_visibleItems is null || position >= _visibleItems.Count)
@@ -896,7 +1035,7 @@ namespace Microsoft.Maui.Controls.Handlers
             toolbarTracker?.Page = page;
 
             // Update CurrentItem
-            virtualView.CurrentItem = newCurrentItem;
+            virtualView.SetValueFromRenderer(ShellSection.CurrentItemProperty, newCurrentItem);
 
             // Trigger appearance update
             if (shell is not null)
@@ -985,7 +1124,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // Disconnect the handler to unsubscribe from required events and clean up resources.
             ((IElementHandler)_handler).DisconnectHandler();
 
-            _wrapperFragment?.Dispose();
+            // Do not dispose the wrapper fragment here; AndroidX FragmentManager still owns
+            // it and will call OnDestroyView/OnDestroy on its own teardown schedule. Disposing
+            // the managed wrapper early crashes native callbacks that run after this point.
             _wrapperFragment = null;
         }
     }

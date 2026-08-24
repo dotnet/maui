@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -105,7 +105,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
-			_currentSearchHandler?.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+			if (_currentSearchHandler != null)
+			{
+				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+				_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+				_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+			}
 
 			UntrackAllBadgeSections();
 
@@ -200,8 +205,28 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (currentItem?.Title != shellContent.Title && currentItem != shellContent.Parent)
 				{
 					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
+					parentShell.CurrentItem = shellContent;
 				}
-				parentShell.CurrentItem = shellContent;
+				else if (shellContent.Parent is ShellSection existingSection && existingSection.CurrentItem != shellContent && existingSection.IsVisibleSection)
+				{
+					// Fire OnNavigatingFrom before CurrentItem changes, so it captures the correct outgoing page.
+					parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+						ShellNavigationSource.ShellContentChanged,
+						parentShell.CurrentItem,
+						existingSection,
+						shellContent,
+						existingSection.Stack,
+						canCancel: false,
+						isAnimated: true);
+
+					// Set ShellSection.CurrentItem directly (using SetValueFromRenderer) to avoid
+					// re-triggering the mistimed-navigation bug via CreateFromShellContent.
+					existingSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
+				}
+				else
+				{
+					parentShell.CurrentItem = shellContent;
+				}
 			}
 		}
 
@@ -367,7 +392,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			var newSearchHandler = shell.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
 			if (newSearchHandler != _currentSearchHandler)
 			{
-				_currentSearchHandler?.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+				if (_currentSearchHandler is not null)
+				{
+					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+					_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+					_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+				}
 
 				_currentSearchHandler = newSearchHandler;
 
@@ -386,6 +416,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
+					_currentSearchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
+					_currentSearchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.UpdateTextOnSelect = false;
@@ -399,7 +431,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
-					
+
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
@@ -443,6 +475,29 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnSearchBoxLostFocus(object sender, RoutedEventArgs e)
 		{
 			_currentSearchHandler?.SetIsFocused(false);
+		}
+
+		void OnShowSoftInputRequested(object? sender, EventArgs e)
+		{
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
+				return;
+
+			autoSuggestBox.Focus(FocusState.Programmatic);
+		}
+
+		void OnHideSoftInputRequested(object? sender, EventArgs e)
+		{
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
+				return;
+
+			if (!autoSuggestBox.IsEnabled)
+				return;
+
+			var isTabStop = autoSuggestBox.IsTabStop;
+			autoSuggestBox.IsTabStop = false;
+			autoSuggestBox.IsEnabled = false;
+			autoSuggestBox.IsEnabled = true;
+			autoSuggestBox.IsTabStop = isTabStop;
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
@@ -575,6 +630,12 @@ namespace Microsoft.Maui.Controls.Handlers
 				case nameof(SearchHandler.VerticalTextAlignment):
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					break;
+				case nameof(SearchHandler.QueryIcon):
+					UpdateQueryIcon();
+					break;
+					// TODO: ClearIcon and ClearPlaceholderIcon are not supported on Windows
+					// (AutoSuggestBox has no built-in clear/placeholder icon API).
+					// Tracked in: https://github.com/dotnet/maui/issues/28619
 			}
 		}
 

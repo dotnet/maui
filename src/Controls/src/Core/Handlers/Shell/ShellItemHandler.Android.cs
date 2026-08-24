@@ -27,15 +27,15 @@ namespace Microsoft.Maui.Controls.Handlers
         internal ViewPager2? _viewPager;
         internal BottomNavigationView? _bottomNavigationView;
         internal TabbedViewManager? _tabbedViewManager;
-        ShellItemTabbedViewAdapter? _shellItemAdapter;
-        ShellSectionFragmentAdapter? _adapter;
-        ShellItemPageChangeCallback? _pageChangeCallback;
+        internal ShellSectionFragmentAdapter? _adapter;
+        internal ShellItemTabbedViewAdapter? _shellItemAdapter;
+        internal ShellItemPageChangeCallback? _pageChangeCallback;
         IShellContext? _shellContext;
         Fragment? _parentFragment; // The wrapper fragment that hosts this handler
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
-        Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
-        ShellSection? _shellSection;
-        Page? _displayedPage;
+        internal Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
+        internal ShellSection? _shellSection;
+        internal Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
         bool _pendingAdapterUpdate; // After adapter rebuild, suppress next smooth scroll to avoid VP2 overshoot
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal Toolbar? _shellToolbar; // Virtual Toolbar view
         internal AToolbar? _toolbar; // Native platform toolbar
         internal IShellToolbarTracker? _toolbarTracker;
-        IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
+        internal IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
         internal AppBarLayout? _appBarLayout;
 
         /// <summary>
@@ -173,14 +173,15 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void SetupTabbedViewManager()
         {
-            if (_viewPager is null || VirtualView is null || MauiContext is null)
+            if (_tabbedViewManager is not null || _viewPager is null || VirtualView is null || MauiContext is null)
             {
                 return;
             }
 
-            var shellSections = ((IShellItemController)VirtualView).GetItems();
+            var shellItemController = (IShellItemController)VirtualView;
+            var shellSections = shellItemController.GetItems();
 
-            if (shellSections is null || shellSections.Count == 0)
+            if (shellSections is null || shellSections.Count == 0 || !shellItemController.ShowTabs)
             {
                 return;
             }
@@ -217,6 +218,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Get BNV reference for appearance tracker
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
+            RecreateBottomNavigationAppearanceTracker();
+
+            // Initial setup registers the appearance observer immediately afterward. When
+            // setup was deferred, replay state for the newly-created bottom tabs.
+            if (_registeredShell is not null && _displayedPage is not null)
+            {
+                UpdateAllBadges();
+                ((IShellController)_registeredShell).AppearanceChanged(_displayedPage, false);
+            }
+        }
+
+        void RecreateBottomNavigationAppearanceTracker()
+        {
+            _appearanceTracker?.Dispose();
+            _shellContext ??= GetShellContext();
+            _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
         }
 
         /// <summary>
@@ -236,6 +253,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Update BNV reference (SetElement creates a new BNV)
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
+            RecreateBottomNavigationAppearanceTracker();
+        }
+
+        void RemoveBottomNavigationInfrastructure()
+        {
+            _tabbedViewManager?.SetElement(null);
+            _tabbedViewManager = null;
+            _shellItemAdapter = null;
+            _bottomNavigationView = null;
         }
 
         /// <summary>
@@ -299,7 +325,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // Track the current section
             _shellSection = newSection;
 
-            // Track displayed page changes
+            // Remove before adding to guard against duplicate observers from re-entrant calls
+            // (SwitchToShellItem triggers SwitchToSection twice for the same section).
+            ((IShellSectionController)newSection).RemoveDisplayedPageObserver(this);
             ((IShellSectionController)newSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
         }
 
@@ -340,22 +368,26 @@ namespace Microsoft.Maui.Controls.Handlers
             // Rebuild ViewPager2 adapter for new ShellItem's sections
             SetupViewPagerAdapter();
 
-            // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
-            RebuildBottomNavigation();
-
-            // Apply badges to the rebuilt bottom navigation
-            UpdateAllBadges();
-
-            // Update tab visibility for new ShellItem (may need to show/hide bottom tabs)
             var showTabs = ((IShellItemController)newItem).ShowTabs;
 
             if (showTabs)
             {
+                if (_tabbedViewManager is null)
+                {
+                    SetupTabbedViewManager();
+                }
+                else
+                {
+                    // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
+                    RebuildBottomNavigation();
+                }
+
+                UpdateAllBadges();
                 _tabbedViewManager?.SetTabLayout();
             }
             else
             {
-                _tabbedViewManager?.RemoveTabs();
+                RemoveBottomNavigationInfrastructure();
             }
 
             // Re-register appearance observer with new ShellItem
@@ -614,7 +646,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabBarVisibility()
         {
-            if (_tabbedViewManager is null || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
+            if (_switchingShellItem || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
             {
                 return;
             }
@@ -623,11 +655,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (showTabs)
             {
-                _tabbedViewManager.SetTabLayout();
+                SetupTabbedViewManager();
+                _tabbedViewManager?.SetTabLayout();
             }
             else
             {
-                _tabbedViewManager.RemoveTabs();
+                _tabbedViewManager?.RemoveTabs();
             }
         }
 
@@ -725,9 +758,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 ((IShellItemController)VirtualView).ItemsCollectionChanged += OnShellItemsChanged;
             }
 
-            // Initialize shell context and appearance tracker early
+            // Initialize the Shell context early. The bottom navigation appearance tracker
+            // is created with the deferred TabbedViewManager when tabs are actually needed.
             _shellContext ??= GetShellContext();
-            _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
 
             // NOTE: Appearance observer registration is deferred to RegisterAppearanceObserver()
             // called from OnViewCreated in the wrapper fragment. At ConnectHandler time,
@@ -774,11 +807,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 // 0→N transition: adapter/manager were not created during initial setup
                 // because there were no sections. Now that sections exist, create them.
                 SetupViewPagerAdapter();
-                SetupTabbedViewManager();
             }
 
-            // Rebuild the bottom navigation menu for the updated sections via TabbedViewManager
-            _tabbedViewManager?.RefreshTabs();
+            var existingTabbedViewManager = _tabbedViewManager;
+            SetupTabbedViewManager();
+
+            // Rebuild an existing bottom navigation menu. A newly-created manager was
+            // already populated by SetElement in SetupTabbedViewManager.
+            existingTabbedViewManager?.RefreshTabs();
             UpdateTabBarVisibility();
 
             // Signal that the adapter was just rebuilt. The next SwitchToSection call
@@ -835,7 +871,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _registeredShell = null;
             }
 
-            // Dispose per-item appearance tracker (ConnectHandler recreates for new item)
+            // Dispose per-item appearance tracker; tab setup or rebuild recreates it as needed.
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
 
@@ -849,13 +885,7 @@ namespace Microsoft.Maui.Controls.Handlers
             if (!_preserveFragmentResources)
             {
                 // Full disconnect: fragment is being destroyed — clean everything
-                if (_tabbedViewManager is not null)
-                {
-                    _tabbedViewManager.RemoveTabs();
-                    _tabbedViewManager.SetElement(null);
-                    _tabbedViewManager = null;
-                }
-                _shellItemAdapter = null;
+                RemoveBottomNavigationInfrastructure();
 
                 _toolbarAppearanceTracker?.Dispose();
                 _toolbarAppearanceTracker = null;
@@ -1195,7 +1225,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // Disconnect the handler to unsubscribe from events and clean up resources.
             ((IElementHandler)_handler).DisconnectHandler();
 
-            _wrapperFragment?.Dispose();
+            // Do not dispose the wrapper fragment here; AndroidX FragmentManager still owns
+            // it and will call OnDestroyView/OnDestroy on its own teardown schedule. Disposing
+            // the managed wrapper early crashes native callbacks that run after this point.
             _wrapperFragment = null;
         }
     }

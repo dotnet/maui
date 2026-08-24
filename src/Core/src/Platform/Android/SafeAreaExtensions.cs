@@ -330,10 +330,6 @@ internal static class SafeAreaExtensions
 				// Return keyboard insets for any region that includes SoftInput
 				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
 					return keyBoardInsets.Bottom;
-
-				// if the keyboard is showing then we will just return 0 for the bottom inset
-				// because that part of the view is covered by the keyboard so we don't want to pad the view
-				return 0;
 			}
 		}
 

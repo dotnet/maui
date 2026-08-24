@@ -1123,6 +1123,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
+			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
+			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
+			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
+			// causing a UIKit VC / MAUI navigation stack desync.
+			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
+			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
+			// returns true for both "page handled it" and "SafePop handled it", making it
+			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
 			_uiRequestedPop = true;
 			return true;
 		}
@@ -1535,7 +1548,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var isTranslucent = false;
 				if (_navigation.TryGetTarget(out n))
 					isTranslucent = n.NavigationBar.Translucent;
-				EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
+				var edges = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
+				// On iOS/MacCatalyst 26+, the tab bar renders as a floating glass overlay.
+				// Extend behind it when inside a visible UITabBarController so content
+				// isn't clipped at the old tab bar boundary.
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					&& TabBarController is { } tbc
+					&& !tbc.TabBar.Hidden
+					&& tbc.TabBar.Translucent)
+				{
+					edges |= UIRectEdge.Bottom;
+				}
+
+				EdgesForExtendedLayout = edges;
 
 				base.ViewWillAppear(animated);
 			}
@@ -1697,15 +1724,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var rect = RectangleF.Empty;
 				var size = rect.Size;
 
-				UIGraphics.BeginImageContext(size);
-				var context = UIGraphics.GetCurrentContext();
-				context?.SetFillColor(1, 1, 1, 0);
-				context?.FillRect(rect);
-
-				var empty = UIGraphics.GetImageFromCurrentImageContext();
-				context?.Dispose();
-
-				return empty;
+				// UIGraphicsImageRenderer (iOS 10+) replaces the deprecated
+				// UIGraphics.BeginImageContext/GetImageFromCurrentImageContext APIs,
+				// which are unsupported on iOS 17.0+.
+				using var renderer = new UIGraphicsImageRenderer(size);
+				return renderer.CreateImage((UIGraphicsImageRendererContext rendererContext) =>
+				{
+					var context = rendererContext.CGContext;
+					context.SetFillColor(1, 1, 1, 0);
+					context.FillRect(rect);
+				});
 			}
 
 			/// <summary>
@@ -2057,7 +2085,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries.Reverse();
 				}
 
-				if (secondaries is not null && secondaries.Count > 0)
+				// UIBarButtonItem(UIImage, UIMenu) is only available on iOS/MacCatalyst 14.0+.
+				if (secondaries is not null && secondaries.Count > 0 &&
+					(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 				{
 					UIImage secondaryIcon = null;
 					if (_navigation.TryGetTarget(out NavigationRenderer navRenderer))
@@ -2170,6 +2200,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
+
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() =>
+			(Current.Handler as IPlatformViewHandler)?.ViewController;
+#endif
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
 			ChildViewControllerForStatusBarHidden();

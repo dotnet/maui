@@ -20,14 +20,14 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
 using Microsoft.Maui.Platform;
 using ABitmap = Android.Graphics.Bitmap;
+using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using ACanvas = Android.Graphics.Canvas;
-using APaint = Android.Graphics.Paint;
-using ARect = Android.Graphics.Rect;
 using ACircle = Android.Gms.Maps.Model.Circle;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using APaint = Android.Graphics.Paint;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
-using ADrawable = Android.Graphics.Drawables.Drawable;
-using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
+using ARect = Android.Graphics.Rect;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -44,9 +44,14 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<APolyline>? _polylines;
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
+		Dictionary<string, IMapElement>? _trackedMapElements;
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
+		const int MaxClusterIconCacheSize = 64;
+		readonly ClusterIconCache<BitmapDescriptor> _clusterIconCache = new(MaxClusterIconCacheSize);
+		WeakReference<IMap>? _clusterImageOwner;
+		int _clusterImageVersion = int.MinValue;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -84,29 +89,67 @@ namespace Microsoft.Maui.Maps.Handlers
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
 
-			if (Map != null)
-			{
-				Map.SetOnCameraMoveListener(null);
-				Map.SetOnPolygonClickListener(null);
-				Map.SetOnCircleClickListener(null);
-				Map.SetOnPolylineClickListener(null);
-				Map.MarkerClick -= OnMarkerClick;
-				Map.InfoWindowClick -= OnInfoWindowClick;
-				Map.MapClick -= OnMapClick;
-				Map.MapLongClick -= OnMapLongClick;
+			var map = Map;
+			Map = null;
 
-				Map.MyLocationChange -= OnMyLocationChange;
+			if (map != null)
+			{
+				try
+				{
+					map.MyLocationEnabled = false;
+				}
+				catch (Java.Lang.SecurityException)
+				{
+					// Location permission may have been revoked after the layer was enabled.
+				}
+
+				map.TrafficEnabled = false;
+				map.SetOnCameraMoveListener(null);
+				map.SetOnCameraIdleListener(null);
+				map.SetOnPolygonClickListener(null);
+				map.SetOnCircleClickListener(null);
+				map.SetOnPolylineClickListener(null);
+				map.MarkerClick -= OnMarkerClick;
+				map.InfoWindowClick -= OnInfoWindowClick;
+				map.MapClick -= OnMapClick;
+				map.MapLongClick -= OnMapLongClick;
+				map.MyLocationChange -= OnMyLocationChange;
 			}
 
+			_mapReady?.Dispose();
+			_mapReady = null;
+
+			if (_trackedMapElements != null)
+			{
+				foreach (var element in _trackedMapElements.Values)
+					element.MapElementId = null;
+
+				_trackedMapElements = null;
+			}
+
+			_markers = null;
+			_pins = null;
+			_elements = null;
+			_polylines = null;
+			_polygons = null;
+			_circles = null;
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
-			_mapReady = null;
+			_clusterIconCache.Clear();
+			_clusterImageOwner = null;
+			_clusterImageVersion = int.MinValue;
+			_init = true;
+
+			platformView.OnPause();
+			platformView.OnStop();
+			platformView.OnDestroy();
 		}
 
 		protected override MapView CreatePlatformView()
 		{
 			MapView mapView = new MapView(Context);
 			mapView.OnCreate(s_bundle);
+			mapView.OnStart();
 			mapView.OnResume();
 			return mapView;
 		}
@@ -336,6 +379,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
+				mapHandler.UpdateClusterImageVersion(map);
 				mapHandler.DisconnectPins();
 
 				if (mapHandler._markers != null)
@@ -358,6 +402,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
 		}
 
+		void UpdateClusterImageVersion(IMap map)
+		{
+			var version = map is IMapClusterImageProvider imageProvider
+				? imageProvider.ClusterImageVersion
+				: int.MinValue;
+			var sameOwner = _clusterImageOwner?.TryGetTarget(out var owner) == true && ReferenceEquals(owner, map);
+
+			if (sameOwner && _clusterImageVersion == version)
+				return;
+
+			_clusterImageOwner = new WeakReference<IMap>(map);
+			_clusterImageVersion = version;
+			_clusterIconCache.Clear();
+		}
+
 		/// <summary>
 		/// Clusters pins based on their proximity using a simple grid-based algorithm.
 		/// </summary>
@@ -371,7 +430,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			// At zoom 0 (world view), cluster radius is large
 			// At zoom 21 (street level), cluster radius is tiny
 			// The divisor controls how aggressively pins cluster - smaller = less clustering
-						// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
 			// Base cluster radius in approximate screen pixels at zoom 0.
 			// Pins whose projected positions fall within this radius are clustered.
 			const double clusterRadiusBasePixels = 50.0;
@@ -391,15 +450,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			foreach (var group in pinsByIdentifier.Values)
 			{
 				var remaining = new List<IMapPin>(group);
-				
+
 				while (remaining.Count > 0)
 				{
 					var seed = remaining[0];
 					remaining.RemoveAt(0);
-					
+
 					var cluster = new MapCluster(seed.Location.Latitude, seed.Location.Longitude);
 					cluster.Pins.Add(seed);
-					
+
 					// Find all pins within radius
 					for (int i = remaining.Count - 1; i >= 0; i--)
 					{
@@ -411,12 +470,12 @@ namespace Microsoft.Maui.Maps.Handlers
 						var distance = Math.Sqrt(
 							deltaLat * deltaLat +
 							adjustedDeltaLng * adjustedDeltaLng);
-						
+
 						if (distance <= clusterRadius)
 						{
 							cluster.Pins.Add(pin);
 							remaining.RemoveAt(i);
-							
+
 							// Update cluster center to be the centroid
 							double sumLat = 0, sumLng = 0;
 							foreach (var p in cluster.Pins)
@@ -428,7 +487,7 @@ namespace Microsoft.Maui.Maps.Handlers
 							cluster.CenterLongitude = sumLng / cluster.Pins.Count;
 						}
 					}
-					
+
 					clusters.Add(cluster);
 				}
 			}
@@ -440,6 +499,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (map == null)
 			{
+				return;
+			}
+
+			if (((IElementHandler)this).VirtualView is not IMap virtualView || _mapReady == null)
+			{
+				map.SetOnCameraMoveListener(null);
 				return;
 			}
 
@@ -458,15 +523,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			map.MyLocationChange += OnMyLocationChange;
 
-			if (VirtualView != null)
-			{
-				map.UpdateMapType(VirtualView);
-				map.UpdateIsShowingUser(VirtualView, MauiContext);
-				map.UpdateIsScrollEnabled(VirtualView);
-				map.UpdateIsTrafficEnabled(VirtualView);
-				map.UpdateIsZoomEnabled(VirtualView);
-				map.UpdateMapStyle(VirtualView);
-			}
+			map.UpdateMapType(virtualView);
+			map.UpdateIsShowingUser(virtualView, MauiContext);
+			map.UpdateIsScrollEnabled(virtualView);
+			map.UpdateIsTrafficEnabled(virtualView);
+			map.UpdateIsZoomEnabled(virtualView);
+			map.UpdateMapStyle(virtualView);
 
 			InitialUpdate();
 		}
@@ -495,19 +557,22 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		internal void UpdateVisibleRegion(LatLng pos)
 		{
-			if (Map == null)
+			var map = Map;
+			if (map == null ||
+				((IElementHandler)this).VirtualView is not IMap virtualView ||
+				((IElementHandler)this).PlatformView is not MapView platformView)
 				return;
 
-			Projection projection = Map.Projection;
-			int width = PlatformView.Width;
-			int height = PlatformView.Height;
+			Projection projection = map.Projection;
+			int width = platformView.Width;
+			int height = platformView.Height;
 			LatLng ul = projection.FromScreenLocation(new global::Android.Graphics.Point(0, 0));
 			LatLng ur = projection.FromScreenLocation(new global::Android.Graphics.Point(width, 0));
 			LatLng ll = projection.FromScreenLocation(new global::Android.Graphics.Point(0, height));
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
+			virtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
 		void MapViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
@@ -517,7 +582,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void InitialUpdate()
 		{
-			if (Map == null)
+			if (Map == null || ((IElementHandler)this).VirtualView is not IMap virtualView)
 				return;
 
 			if (_init && _lastMoveToRegion != null)
@@ -569,7 +634,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				var location = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
 				bool handled = VirtualView?.ClusterClicked(cluster.Pins, location) ?? false;
-				
+
 				if (!handled && Map != null)
 				{
 					// Default behavior: zoom in to show cluster pins
@@ -578,7 +643,7 @@ namespace Microsoft.Maui.Maps.Handlers
 					{
 						builder.Include(new LatLng(clusterPin.Location.Latitude, clusterPin.Location.Longitude));
 					}
-					
+
 					try
 					{
 						var bounds = builder.Build();
@@ -590,7 +655,7 @@ namespace Microsoft.Maui.Maps.Handlers
 						// Bounds couldn't be built
 					}
 				}
-				
+
 				e.Handled = true;
 				return;
 			}
@@ -611,11 +676,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
 		{
 			var marker = e.Marker;
-			
+
 			// Cluster markers don't have info windows
 			if (_clusterMarkers != null && _clusterMarkers.ContainsKey(marker.Id))
 				return;
-			
+
 			var pin = GetPinForMarker(marker);
 
 			if (pin == null)
@@ -633,8 +698,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
-			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e)
+		{
+			if (((IElementHandler)this).VirtualView is IMap virtualView)
+				virtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+		}
 
 		void OnMapLongClick(object? sender, GoogleMap.MapLongClickEventArgs e) =>
 			VirtualView.LongClicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
@@ -649,7 +717,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void AddPins(IList pins)
 		{
-			//Mapper could be called before we have a Map ready 
+			//Mapper could be called before we have a Map ready
 			_pins = pins;
 			if (Map == null || MauiContext == null)
 				return;
@@ -690,26 +758,11 @@ namespace Microsoft.Maui.Maps.Handlers
 					}
 					else
 					{
-						// Multiple pins - create cluster marker
-						var options = new MarkerOptions();
-						options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
-						options.SetTitle($"{cluster.Pins.Count} items");
-						options.Anchor(0.5f, 0.5f);
-						
-						// Create a circular cluster icon with count
-						var icon = CreateClusterIcon(cluster.Pins.Count);
-						if (icon != null)
-							options.SetIcon(icon);
-						
-						var marker = Map.AddMarker(options);
-						if (marker != null)
-						{
-							_markers.Add(marker);
-							_clusterMarkers[marker.Id] = cluster;
-						}
+						// Multiple pins - create a cluster marker (custom image if provided, else default bubble).
+						AddClusterMarkerAsync(cluster, ct).FireAndForget(this);
 					}
 				}
-				
+
 				_pins = null;
 				return;
 			}
@@ -806,35 +859,35 @@ namespace Microsoft.Maui.Maps.Handlers
 				var bitmap = ABitmap.CreateBitmap(size, size, ABitmap.Config.Argb8888!);
 				if (bitmap == null)
 					return null;
-					
+
 				using var canvas = new ACanvas(bitmap);
 				using var paint = new APaint();
-				
+
 				// Draw circle background
 				paint.AntiAlias = true;
 				paint.SetARGB(255, 66, 133, 244); // Google blue
 				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 2, paint);
-				
+
 				// Draw border
 				paint.SetStyle(APaint.Style.Stroke);
 				paint.StrokeWidth = 4;
 				paint.SetARGB(255, 255, 255, 255); // White border
 				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 4, paint);
-				
+
 				// Draw text
 				paint.SetStyle(APaint.Style.Fill);
 				paint.SetARGB(255, 255, 255, 255); // White text
 				paint.TextSize = count > 99 ? 28 : 36;
 				paint.TextAlign = APaint.Align.Center;
-				
+
 				var text = count > 99 ? "99+" : count.ToString();
 				var textBounds = new ARect();
 				paint.GetTextBounds(text, 0, text.Length, textBounds);
-				
+
 				float x = size / 2f;
 				float y = size / 2f + textBounds.Height() / 2f;
 				canvas.DrawText(text, x, y, paint);
-				
+
 				return BitmapDescriptorFactory.FromBitmap(bitmap);
 			}
 			catch
@@ -873,7 +926,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 			// associate pin with marker for later lookup in event handlers
 			pin.MarkerId = marker.Id;
-			
+
 			_markers ??= new List<Marker>();
 			_markers.Add(marker);
 		}
@@ -922,6 +975,62 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
 				return null;
+			}
+		}
+
+		async Task AddClusterMarkerAsync(MapCluster cluster, CancellationToken ct)
+		{
+			var map = Map;
+			var mauiContext = MauiContext;
+			var virtualView = VirtualView;
+			if (map == null || mauiContext == null || virtualView == null)
+				return;
+
+			var center = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+
+			var options = new MarkerOptions();
+			options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
+			options.SetTitle($"{cluster.Pins.Count} items");
+			options.Anchor(0.5f, 0.5f);
+
+			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
+			IImageSource? image = null;
+			if (virtualView is IMapClusterImageProvider imageProvider)
+			{
+				try
+				{
+					image = imageProvider.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
+				}
+				catch (System.Exception ex)
+				{
+					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Cluster image provider threw");
+				}
+			}
+
+			BitmapDescriptor? icon = null;
+			if (image != null)
+			{
+				var cacheKey = GetClusterIconCacheKey(image);
+				var loadToken = cacheKey is null ? ct : CancellationToken.None;
+				icon = await _clusterIconCache.GetOrCreateAsync(
+					cacheKey,
+					() => LoadPinIconAsync(image, mauiContext, loadToken),
+					() => GetClusterIconCacheExpiry(image));
+			}
+
+			if (ct.IsCancellationRequested || !ReferenceEquals(Map, map))
+				return;
+
+			icon ??= CreateClusterIcon(cluster.Pins.Count);
+			if (icon != null)
+				options.SetIcon(icon);
+
+			var marker = map.AddMarker(options);
+			if (marker != null)
+			{
+				_markers ??= new List<Marker>();
+				_markers.Add(marker);
+				_clusterMarkers?[marker.Id] = cluster;
 			}
 		}
 
@@ -975,9 +1084,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			IMapPin? targetPin = null;
 
-			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			if (((IElementHandler)this).VirtualView is not IMap virtualView)
+				return null;
+
+			for (int i = 0; i < virtualView.Pins.Count; i++)
 			{
-				var pin = VirtualView.Pins[i];
+				var pin = virtualView.Pins[i];
 				if (pin?.MarkerId is string markerId)
 				{
 					if (markerId == marker.Id)
@@ -1022,7 +1134,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polylines != null)
 			{
 				for (int i = 0; i < _polylines.Count; i++)
-					_polylines[i].Remove();
+				{
+					var polyline = _polylines[i];
+					ClearTrackedMapElementId(polyline.Id);
+					polyline.Remove();
+				}
 
 				_polylines = null;
 			}
@@ -1030,7 +1146,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polygons != null)
 			{
 				for (int i = 0; i < _polygons.Count; i++)
-					_polygons[i].Remove();
+				{
+					var polygon = _polygons[i];
+					ClearTrackedMapElementId(polygon.Id);
+					polygon.Remove();
+				}
 
 				_polygons = null;
 			}
@@ -1038,7 +1158,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_circles != null)
 			{
 				for (int i = 0; i < _circles.Count; i++)
-					_circles[i].Remove();
+				{
+					var circle = _circles[i];
+					ClearTrackedMapElementId(circle.Id);
+					circle.Remove();
+				}
 
 				_circles = null;
 			}
@@ -1081,12 +1205,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polylines == null)
 				_polylines = new List<APolyline>();
 
-			var options = polyline.ToHandler(MauiContext!)?.PlatformView as PolylineOptions;
-			if (options != null)
-			{
-				var nativePolyline = map.AddPolyline(options);
+			var nativePolyline = MapElementPlatformOptions.InvokeWithOptions<PolylineOptions, APolyline>(
+				polyline,
+				MauiContext!,
+				options => map.AddPolyline(options));
 
+			if (nativePolyline != null)
+			{
 				polyline.MapElementId = nativePolyline.Id;
+				TrackMapElement(nativePolyline.Id, polyline);
 				nativePolyline.Clickable = true;
 
 				if (polyline is IMapElement mapElement)
@@ -1108,14 +1235,18 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polygons == null)
 				_polygons = new List<APolygon>();
 
-			var options = polygon.ToHandler(MauiContext!)?.PlatformView as PolygonOptions;
-			if (options is null)
+			var nativePolygon = MapElementPlatformOptions.InvokeWithOptions<PolygonOptions, APolygon>(
+				polygon,
+				MauiContext!,
+				options => map.AddPolygon(options));
+
+			if (nativePolygon is null)
 			{
 				throw new System.Exception("PolygonOptions is null");
 			}
-			var nativePolygon = map.AddPolygon(options);
 
 			polygon.MapElementId = nativePolygon.Id;
+			TrackMapElement(nativePolygon.Id, polygon);
 			nativePolygon.Clickable = true;
 
 			if (polygon is IMapElement mapElement)
@@ -1136,14 +1267,18 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_circles == null)
 				_circles = new List<ACircle>();
 
-			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
-			if (options is null)
+			var nativeCircle = MapElementPlatformOptions.InvokeWithOptions<CircleOptions, ACircle>(
+				circle,
+				MauiContext!,
+				options => map.AddCircle(options));
+
+			if (nativeCircle is null)
 			{
 				throw new System.Exception("CircleOptions is null");
 			}
-			var nativeCircle = map.AddCircle(options);
 
 			circle.MapElementId = nativeCircle.Id;
+			TrackMapElement(nativeCircle.Id, circle);
 			nativeCircle.Clickable = true;
 
 			if (circle is IMapElement mapElement)
@@ -1153,6 +1288,20 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			_circles.Add(nativeCircle);
+		}
+
+		void TrackMapElement(string nativeId, IMapElement element)
+		{
+			_trackedMapElements ??= new Dictionary<string, IMapElement>();
+			_trackedMapElements[nativeId] = element;
+		}
+
+		void ClearTrackedMapElementId(string nativeId)
+		{
+			if (_trackedMapElements != null && _trackedMapElements.Remove(nativeId, out var element))
+			{
+				element.MapElementId = null;
+			}
 		}
 	}
 
@@ -1169,8 +1318,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public void OnMapReady(GoogleMap googleMap)
 		{
+			if (_handler == null)
+			{
+				googleMap.SetOnCameraMoveListener(null);
+				return;
+			}
+
 			_googleMap = googleMap;
-			_handler?.OnMapReady(googleMap);
+			_handler.OnMapReady(googleMap);
 		}
 
 		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
@@ -1197,7 +1352,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && _handler != null)
+			if (disposing)
 			{
 				_handler = null;
 				_googleMap = null;
