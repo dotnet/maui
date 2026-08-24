@@ -3496,17 +3496,69 @@ function Restore-ReplicationFixTree {
             Each candidate must start from an identical tree or the panel is
             comparing different starting points. try-fix permits exactly one
             restoration mechanism, and using git directly here would contradict
-            the rule candidates are held to.
+            the rule candidates are             held to.
+
+            The exit code alone cannot answer whether the restore happened. A
+            restore that finds no baseline state writes "Nothing to restore",
+            returns a result object and exits 0, which is indistinguishable
+            from a restore that did the work. Believing it hands the next
+            candidate the previous candidate's fix, and the cost is only paid
+            much later, when the restoration arm finds a tree that will not
+            reproduce and discards a fix that was real.
+
+            So the postcondition is checked instead. Snapshot mode refuses to
+            scope a file that is already dirty precisely because HEAD is its
+            restore point, so a restored tree is one whose scoped files match
+            HEAD again.
     #>
-    param([Parameter(Mandatory = $true)][string]$TrustedScriptRoot)
+    param(
+        [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$ScopeFiles
+    )
 
     $script = Join-Path $TrustedScriptRoot 'EstablishBrokenBaseline.ps1'
     $arguments = Get-ReplicationPwshArguments -ScriptPath $script -Arguments @('-Restore')
     $result = Invoke-BoundedProcess `
         -FilePath (Get-Command pwsh).Source `
         -Arguments $arguments `
-        -TimeoutSeconds 300
-    return ([int]$result.ExitCode -eq 0)
+        -TimeoutSeconds 300 `
+        -WorkingDirectory (& git rev-parse --show-toplevel)
+    if ([int]$result.ExitCode -ne 0) {
+        Write-Host "The restore refused, so the tree is not trustworthy. $($result.Output)"
+        return $false
+    }
+
+    # With no scope there is nothing this restore was meant to put back, so
+    # comparing the whole tree would report the reproduction test as failure.
+    if ($ScopeFiles.Count -eq 0) { return $true }
+
+    if (Test-ReplicationScopeMatchesHead -ScopeFiles $ScopeFiles) { return $true }
+
+    # The restore claimed success and left the edits in place. Restoring the
+    # scoped files to HEAD is exactly what the script documents itself as
+    # doing, so recovering here keeps the panel running rather than losing a
+    # run that has already paid for a device, while the console records that
+    # the script did not do it.
+    Write-Host ('The restore reported success but left changes in ' +
+        "$($ScopeFiles -join ', '), so its baseline state was missing. " +
+        'Restoring those files to HEAD directly.')
+    & git checkout HEAD -- @ScopeFiles 2>&1 | Out-Null
+
+    if (Test-ReplicationScopeMatchesHead -ScopeFiles $ScopeFiles) { return $true }
+
+    Write-Host 'The scoped files still differ from HEAD, so the tree cannot be restored.'
+    return $false
+}
+
+function Test-ReplicationScopeMatchesHead {
+    <#
+        .SYNOPSIS
+            Answers whether every scoped file matches HEAD.
+    #>
+    param([Parameter(Mandatory = $true)][string[]]$ScopeFiles)
+
+    & git diff --quiet HEAD -- @ScopeFiles 2>&1 | Out-Null
+    return ($LASTEXITCODE -eq 0)
 }
 
 function ConvertTo-ReplicationPowerShellLiteral {
@@ -3827,7 +3879,7 @@ function Invoke-ReplicationFixPanel {
         # files, so nothing else would put these back.
         Restore-ReplicationFixProtectedFiles -Snapshot $protectedSnapshot
 
-        if (-not (Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot)) {
+        if (-not (Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles)) {
             # Without a clean tree the next candidate would inherit this one's
             # edits and the comparison would be meaningless.
             Write-Host 'Could not restore the tree, so the fix panel stops here.'
@@ -4315,7 +4367,7 @@ function Invoke-ReplicationFixArms {
         # last moment before the fix is measured and published.
         Write-Host ('No fix arms were run: applying the winning diff touched ' +
             "files outside the scope ($($outside -join ', ')).")
-        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot | Out-Null
+        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
         return $null
     }
 
@@ -4335,11 +4387,11 @@ function Invoke-ReplicationFixArms {
     } catch {
         Write-Host ('The fix arm did not pass, so the fix is discarded and the ' +
             "reproduction is published on its own. $($_.Exception.Message)")
-        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot | Out-Null
+        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
         return $null
     }
 
-    if (-not (Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot)) {
+    if (-not (Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles)) {
         Write-Host 'The fix arm passed but the tree could not be restored, so the restoration arm cannot run.'
         return $null
     }
@@ -5795,7 +5847,8 @@ function Invoke-BoundedProcess {
         [Parameter(Mandatory = $true)][object[]]$Arguments,
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, 10800)]
-        [int]$TimeoutSeconds
+        [int]$TimeoutSeconds,
+        [string]$WorkingDirectory
     )
 
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
@@ -5803,6 +5856,14 @@ function Invoke-BoundedProcess {
     $startInfo.UseShellExecute = $false
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
+    if ($WorkingDirectory) {
+        # A child inherits [Environment]::CurrentDirectory, which PowerShell's
+        # own Set-Location does not update, so a caller that moved into the
+        # repository would still start the child somewhere else. Scripts that
+        # locate themselves with `git rev-parse --show-toplevel` then resolve a
+        # different repository than their caller meant.
+        $startInfo.WorkingDirectory = $WorkingDirectory
+    }
     foreach ($argument in $Arguments) {
         [void]$startInfo.ArgumentList.Add([string]$argument)
     }
@@ -6419,7 +6480,8 @@ function Invoke-ReplicationFixPhase {
         -FilePath (Get-Command pwsh).Source `
         -Arguments (Get-ReplicationPwshArguments -ScriptPath $baselineScript `
             -Arguments (@('-SnapshotOnly', '-EditableFiles') + $scope.Files)) `
-        -TimeoutSeconds 300
+        -TimeoutSeconds 300 `
+        -WorkingDirectory $repoRoot
     $baselineStatePath = Join-Path $repoRoot '.github/.baseline-state.json'
     # Both are checked: a non-zero exit says the script objected, and a missing
     # state file says it did not do the work whatever it claimed. Either way

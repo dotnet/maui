@@ -148,6 +148,8 @@ BeforeAll {
         'Get-ReplicationFixProtectedSnapshot',
         'Get-ReplicationFixTamperedPaths',
         'Restore-ReplicationFixProtectedFiles',
+        'Restore-ReplicationFixTree',
+        'Test-ReplicationScopeMatchesHead',
         'Read-ReplicationFixScope',
         'Read-ReplicationFixWinner',
         'Get-ReplicationFixArmEvidence',
@@ -8956,7 +8958,7 @@ Describe 'A failed fix never costs us a good reproduction' {
             @($paths | ForEach-Object { [pscustomobject]@{ Status = ' M'; Path = $_ } })
         }
         function Restore-ReplicationFixTree {
-            param($TrustedScriptRoot)
+            param($TrustedScriptRoot, $ScopeFiles)
             $script:restoreCalls++
             return $script:restoreSucceeds
         }
@@ -9545,7 +9547,7 @@ Describe 'Proving the fix is what turned the reproduction green' {
             }
         }
         function Restore-ReplicationFixTree {
-            param($TrustedScriptRoot)
+            param($TrustedScriptRoot, $ScopeFiles)
             $script:restoreCalls++
             return $script:restoreSucceeds
         }
@@ -10138,7 +10140,7 @@ Describe 'A fix phase may only ask to write files that can be granted' {
             $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
             function New-CopilotPrompt { param($Phase, $BaselineRelativePath, $FailureSummary) 'prompt' }
             function Get-ReplicationGitStatus { @() }
-            function Restore-ReplicationFixTree { param($TrustedScriptRoot) $true }
+            function Restore-ReplicationFixTree { param($TrustedScriptRoot, $ScopeFiles) $true }
             function Invoke-ReplicationCopilot {
                 param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
                       $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
@@ -11617,6 +11619,126 @@ Describe 'A plan is not sent to a device to learn the page it was written with' 
             # and the name must be one production actually defines, since these
             # are looked up by name and a typo would read as an empty page
             $src | Should -BeLike "*`$$v = Join-Path*"
+        }
+    }
+}
+
+Describe 'A restore that did nothing is not reported as a restored tree' {
+    BeforeAll {
+        function New-RestoreRepo {
+            param([string]$ScriptBody)
+
+            $root = Join-Path ([IO.Path]::GetTempPath()) ("restore-" + [guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $root -Force | Out-Null
+            Push-Location $root
+            try {
+                & git init --quiet 2>&1 | Out-Null
+                & git config user.email 't@t.t' 2>&1 | Out-Null
+                & git config user.name 'T' 2>&1 | Out-Null
+                Set-Content -LiteralPath (Join-Path $root 'product.cs') -Value 'broken'
+                & git add -A 2>&1 | Out-Null
+                & git commit -m 'baseline' --quiet 2>&1 | Out-Null
+            } finally { Pop-Location }
+
+            $scriptRoot = Join-Path $root 'trusted'
+            New-Item -ItemType Directory -Path $scriptRoot -Force | Out-Null
+            Set-Content -LiteralPath (Join-Path $scriptRoot 'EstablishBrokenBaseline.ps1') -Value $ScriptBody
+            return @{ Root = $root; ScriptRoot = $scriptRoot }
+        }
+    }
+
+    It 'refuses a restore that exits 0 without putting the scoped file back' {
+        # This is exactly what the real script does when its baseline state is
+        # missing: it writes "Nothing to restore" and exits 0.
+        $repo = New-RestoreRepo -ScriptBody 'Write-Host "No baseline state found. Nothing to restore."'
+        Push-Location $repo.Root
+        try {
+            Set-Content -LiteralPath (Join-Path $repo.Root 'product.cs') -Value 'candidate fix'
+            $output = Restore-ReplicationFixTree `
+                -TrustedScriptRoot $repo.ScriptRoot -ScopeFiles @('product.cs') 6>&1
+            # The tree is recovered, and the console says the script did not do it.
+            ($output | Where-Object { $_ -is [bool] }) | Should -Be $true
+            ($output -join ' ') | Should -Match 'baseline state was missing'
+            (Get-Content -LiteralPath (Join-Path $repo.Root 'product.cs') -Raw).Trim() |
+                Should -Be 'broken'
+        } finally { Pop-Location; Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'reports a restore that really restored without claiming it recovered one' {
+        $repo = New-RestoreRepo -ScriptBody 'git checkout HEAD -- product.cs'
+        Push-Location $repo.Root
+        try {
+            Set-Content -LiteralPath (Join-Path $repo.Root 'product.cs') -Value 'candidate fix'
+            $output = Restore-ReplicationFixTree `
+                -TrustedScriptRoot $repo.ScriptRoot -ScopeFiles @('product.cs') 6>&1
+            ($output | Where-Object { $_ -is [bool] }) | Should -Be $true
+            ($output -join ' ') | Should -Not -Match 'baseline state was missing'
+        } finally { Pop-Location; Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'refuses when the scoped file cannot be returned to HEAD' {
+        # The recovery is not guaranteed to work either, and a tree that still
+        # differs must be refused rather than handed to the next candidate.
+        Mock -CommandName Test-ReplicationScopeMatchesHead -MockWith { $false }
+        $repo = New-RestoreRepo -ScriptBody 'Write-Host "Nothing to restore."'
+        Push-Location $repo.Root
+        try {
+            $output = Restore-ReplicationFixTree `
+                -TrustedScriptRoot $repo.ScriptRoot -ScopeFiles @('product.cs') 6>&1
+            ($output | Where-Object { $_ -is [bool] }) | Should -Be $false
+            ($output -join ' ') | Should -Match 'cannot be restored'
+        } finally { Pop-Location; Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'does not read the whole tree when there is no scope' {
+        # Without paths git compares everything, and the reproduction test is
+        # always an uncommitted change, so an empty scope must not be a failure.
+        $repo = New-RestoreRepo -ScriptBody 'Write-Host "Nothing to restore."'
+        Push-Location $repo.Root
+        try {
+            Set-Content -LiteralPath (Join-Path $repo.Root 'ReproductionTest.cs') -Value 'authored'
+            Restore-ReplicationFixTree `
+                -TrustedScriptRoot $repo.ScriptRoot -ScopeFiles @() 6>$null | Should -Be $true
+        } finally { Pop-Location; Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'refuses a restore whose script exits non-zero' {
+        $repo = New-RestoreRepo -ScriptBody 'Write-Host "refused"; exit 3'
+        Push-Location $repo.Root
+        try {
+            Restore-ReplicationFixTree `
+                -TrustedScriptRoot $repo.ScriptRoot -ScopeFiles @('product.cs') 6>$null |
+                Should -Be $false
+        } finally { Pop-Location; Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    It 'passes the scope to every restore, so none of them can check nothing' {
+        # A call site that omitted the scope would silently fall back to the
+        # vacuous empty-scope case and report success for an unrestored tree.
+        # Parsed rather than matched: a comment naming the function and the
+        # function's own definition are not call sites.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$null, [ref]$null)
+        $calls = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'Restore-ReplicationFixTree'
+        }, $true))
+        $calls.Count | Should -BeGreaterThan 3
+        foreach ($call in $calls) {
+            $elements = @($call.CommandElements)
+            $index = -1
+            for ($i = 0; $i -lt $elements.Count; $i++) {
+                if ($elements[$i] -is [System.Management.Automation.Language.CommandParameterAst] -and
+                    $elements[$i].ParameterName -eq 'ScopeFiles') { $index = $i; break }
+            }
+            $index | Should -BeGreaterThan -1
+            # Naming the parameter is not enough: an empty scope reaches the
+            # vacuous branch and reports success for a tree nobody checked.
+            $argument = $elements[$index].Argument
+            if (-not $argument) { $argument = $elements[$index + 1] }
+            $argument | Should -BeOfType ([System.Management.Automation.Language.VariableExpressionAst])
+            $argument.VariablePath.UserPath | Should -Be 'ScopeFiles'
         }
     }
 }
