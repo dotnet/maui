@@ -98,6 +98,7 @@ BeforeAll {
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
+        'Get-ReplicationUnbuildableTestTiers',
         'Test-ReplicationPathChanged',
         'Assert-NoDuplicateJsonProperties',
         'Test-TimingSensitiveIssueContext',
@@ -10592,4 +10593,76 @@ Describe 'A report about Shell is reproduced under a Shell' {
         { Read-SandboxProposal | Out-Null } | Should -Throw '*does not declare the required*'
     }
 
+}
+
+Describe 'A tier the repository rules out is never offered' {
+    BeforeAll {
+        . $PSScriptRoot/shared/Assert-ReplicationTestGuard.ps1
+        $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+    }
+
+    It 'reads the answer out of the repository rather than out of a refusal' {
+        # Whether Core.UnitTests has an iOS build is a property of the checked
+        # out tree. Asserting it against the tree, not against a list written
+        # here, is the whole point: a hard-coded expectation would keep passing
+        # after someone gave those projects a platform target framework.
+        foreach ($platform in @('android', 'ios', 'catalyst', 'windows')) {
+            $excluded = @(Get-ReplicationUnbuildableTestTiers `
+                -Platform $platform -RepositoryRoot $script:RepoRoot)
+
+            foreach ($tier in @('unit', 'xaml')) {
+                $throws = $false
+                try {
+                    Assert-ReplicationTestRunsOnEvidencePlatform `
+                        -Path "src/Controls/tests/$(if ($tier -ceq 'xaml') { 'Xaml.UnitTests' } else { 'Core.UnitTests' })/Probe.cs" `
+                        -Platform $platform `
+                        -TestType (Get-VerifierTestType -TestType $tier) `
+                        -RepositoryRoot $script:RepoRoot
+                } catch {
+                    $throws = $true
+                }
+                if ($throws) {
+                    $excluded | Should -Contain $tier -Because "the guard refuses $tier on $platform, so an author must be told before choosing it"
+                }
+            }
+
+            # The tiers that do not claim to exercise platform code themselves
+            # are never excluded here, whatever the projects say.
+            $excluded | Should -Not -Contain 'device'
+            $excluded | Should -Not -Contain 'ui'
+        }
+    }
+
+    It 'leaves a tier selectable when any approved project builds for the platform' {
+        # A tier is only ruled out when every probe for it is refused. This is
+        # asserted through the function rather than by reasoning about it: with
+        # the repository as it stands, unit is excluded, and it must stop being
+        # excluded the moment one of its projects gains a platform target.
+        $excluded = @(Get-ReplicationUnbuildableTestTiers -Platform 'ios' -RepositoryRoot $script:RepoRoot)
+        $excluded | Should -Contain 'unit'
+
+        $fake = Join-Path $TestDrive 'faketree'
+        New-Item -ItemType Directory -Path (Join-Path $fake 'src/Controls/tests/Core.UnitTests') -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $fake 'src/Controls/tests/Core.UnitTests/Core.UnitTests.csproj') `
+            -Value '<Project><PropertyGroup><TargetFrameworks>net10.0-ios;net10.0-android</TargetFrameworks></PropertyGroup></Project>'
+        @(Get-ReplicationUnbuildableTestTiers -Platform 'ios' -RepositoryRoot $fake) |
+            Should -Not -Contain 'unit' -Because 'a project with an ios target framework builds for ios'
+    }
+
+    It 'is seeded before the first plan attempt, not after the first refusal' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $seed = [regex]::Match($source, '\$forbiddenTestTiers = @\(([^\r\n]*)\)')
+        $seed.Success | Should -BeTrue
+        $seed.Groups[1].Value | Should -Match 'Get-ReplicationUnbuildableTestTiers'
+
+        # The seed has to happen before the planning loop reads it, or it is
+        # just a slower way of learning the same thing the same way.
+        $seedIndex = $seed.Index
+        $loopIndex = $source.IndexOf('for ($planRound = 1;')
+        $loopIndex | Should -BeGreaterThan 0
+        $seedIndex | Should -BeLessThan $loopIndex
+
+        # And the guidance must not claim the run proved something it was told.
+        $source | Should -Not -Match 'This run has already proven'
+    }
 }

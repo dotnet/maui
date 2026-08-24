@@ -4550,19 +4550,97 @@ function Resolve-ReplicationVerifierMetadata {
     }
 }
 
+function Get-ReplicationUnbuildableTestTiers {
+    <#
+        .SYNOPSIS
+            The in-process tiers that have no build for the evidence platform,
+            worked out before an author is asked to choose one.
+
+        .DESCRIPTION
+            Whether Controls.Core.UnitTests has an iOS build is a property of
+            the repository, not of the run, and it is knowable the moment the
+            platform is known. It was nonetheless being discovered the
+            expensive way: build 15071061 proposed the xaml tier, was told it
+            has no ios build, proposed the unit tier, was told the same, and
+            reached the device tier with two of its attempts already spent.
+
+            Get-ReplicationTierExclusionGuidance has always been able to say
+            this - it just had nothing to say until a refusal had happened. The
+            forbidden set now starts with everything the repository already
+            rules out, so the guidance is a constraint from the first prompt
+            rather than a lesson bought one attempt at a time.
+
+            A tier is excluded only when no approved project for it builds for
+            the platform. If any one of them does, the tier stays selectable
+            and the per-file guard still judges the specific choice.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot
+    )
+
+    # Only the in-process tiers claim to exercise platform code themselves, so
+    # only they can be contradicted by a non-platform target framework. A UI
+    # test runs on the host and drives the app over WebDriver, and a device
+    # test is compiled into the app, so neither is ever excluded here.
+    $tierProbes = [ordered]@{
+        unit = @(
+            'src/Controls/tests/Core.UnitTests/Probe.cs',
+            'src/Core/tests/UnitTests/Probe.cs',
+            'src/Essentials/test/UnitTests/Probe.cs',
+            'src/Graphics/tests/Graphics.Tests/Probe.cs',
+            'src/Compatibility/Core/tests/Compatibility.UnitTests/Probe.cs'
+        )
+        xaml = @(
+            'src/Controls/tests/Xaml.UnitTests/Probe.cs'
+        )
+    }
+
+    $unbuildable = [Collections.Generic.List[string]]::new()
+    foreach ($tier in $tierProbes.Keys) {
+        $verifierType = Get-VerifierTestType -TestType $tier
+        $buildable = $false
+        foreach ($probe in $tierProbes[$tier]) {
+            try {
+                Assert-ReplicationTestRunsOnEvidencePlatform `
+                    -Path $probe `
+                    -Platform $Platform `
+                    -TestType $verifierType `
+                    -RepositoryRoot $RepositoryRoot
+                # No objection means the project either builds for the platform
+                # or could not be read; both leave the tier selectable, because
+                # this is an optimisation and the real guard still runs later.
+                $buildable = $true
+                break
+            } catch {
+                continue
+            }
+        }
+        if (-not $buildable) {
+            $unbuildable.Add($tier) | Out-Null
+        }
+    }
+
+    return $unbuildable.ToArray()
+}
+
 function Get-ReplicationTierExclusionGuidance {
     <#
         .SYNOPSIS
-        States which test tiers this run has already proven cannot be evidence.
+        States which test tiers cannot be evidence for this platform.
 
         .DESCRIPTION
         The test-plan prompt already names the three non-platform unit test
         projects, yet build 15032411 proposed Controls.Core.UnitTests three
         times in a row for a Catalyst recording and was rejected with the same
         sentence each time. Prose the agent may weigh against its tier
-        preference is not enough, so a tier the guard has already rejected is
-        removed from the selectable set and the removal is restated as a
-        constraint rather than as advice.
+        preference is not enough, so a tier that cannot be evidence is removed
+        from the selectable set and the removal is restated as a constraint
+        rather than as advice. The set arrives already holding everything the
+        repository rules out, so an author is told before it chooses rather
+        than after it is refused.
     #>
     param([string[]]$ForbiddenTiers = @())
 
@@ -4572,7 +4650,7 @@ function Get-ReplicationTierExclusionGuidance {
     $allowed = @('unit', 'xaml', 'device', 'ui') | Where-Object { $forbidden -notcontains $_ }
     return @"
 
-This run has already proven that the $(($forbidden | ForEach-Object { "``$_``" }) -join ' and ') tier cannot be evidence for a reproduction recorded on $Platform, because the project that compiles such a test has no $Platform build. Those tiers are no longer selectable. testType MUST be one of: $(($allowed | ForEach-Object { "``$_``" }) -join ', '). Proposing an excluded tier again fails the attempt without being read. Record the exclusion in lighterTypesRejected as required for the tier you do select.
+The $(($forbidden | ForEach-Object { "``$_``" }) -join ' and ') tier cannot be evidence for a reproduction recorded on $Platform, because the project that compiles such a test has no $Platform build. That is a fact about this repository, not a preference, and re-proposing the tier cannot change it. Those tiers are no longer selectable. testType MUST be one of: $(($allowed | ForEach-Object { "``$_``" }) -join ', '). Proposing an excluded tier again fails the attempt without being read. Record the exclusion in lighterTypesRejected as required for the tier you do select.
 "@
 }
 
@@ -6526,7 +6604,11 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
     # A tier that cannot observe the defect yields a passing test no matter how
     # often the same plan is repaired, so allow one re-plan at a tier that can.
     $tierEscalationSummary = ''
-    $forbiddenTestTiers = @()
+    $forbiddenTestTiers = @(Get-ReplicationUnbuildableTestTiers -Platform $Platform -RepositoryRoot $repoRoot)
+    foreach ($seeded in $forbiddenTestTiers) {
+        Write-Host ("The '{0}' tier has no {1} build, so it is excluded before planning starts." -f
+            $seeded, $Platform)
+    }
     $maxPlanRounds = 2
     for ($planRound = 1; $planRound -le $maxPlanRounds; $planRound++) {
         $finalPlanRound = ($planRound -eq $maxPlanRounds)
