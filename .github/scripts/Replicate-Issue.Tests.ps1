@@ -654,6 +654,35 @@ Describe 'Replication orchestrator security boundary' {
         }
     }
 
+    It 'writes every signature diagnosis so both consumers still recognise it' {
+        # The banner-drift class, one field over. Two consumers classify a
+        # signature mismatch by matching prose the diagnosis prints: the attempt
+        # kind that produces the wrong-signature telemetry, and the escalation
+        # that changes its advice after two failures. The Assert.True branch was
+        # first written as "can never match the declared expectedFailureSignature"
+        # and matched neither, so those attempts would have been filed as
+        # 'other' and never escalated. This reads both sides of the contract
+        # rather than trusting either to keep saying what the other expects.
+        $marker = 'declared expectedFailureSignature'
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+
+        $branch = [regex]::Match(
+            $source, '(?ms)if \(\$result\.signatureMatched -ne \$true\) \{.*?\n    \}').Value
+        $branch | Should -Not -BeNullOrEmpty
+
+        $returns = [regex]::Matches($branch, '(?m)^\s*return "([^"]*(?:""[^"]*)*)"')
+        $returns.Count | Should -BeGreaterOrEqual 3
+        foreach ($r in $returns) {
+            $r.Value | Should -Match ([regex]::Escape($marker))
+        }
+
+        # And the consumers must match that marker, not a longer sentence that
+        # only one of the branches happens to contain.
+        ([regex]::Matches($source,
+            [regex]::Escape("-match '$marker'"))).Count | Should -Be 2
+    }
+
     It 'stays silent when repeated runs agree' {
         $dir = Join-Path $TestDrive 'verification-stable'
         New-Item -ItemType Directory -Path $dir -Force | Out-Null

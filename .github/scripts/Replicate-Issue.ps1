@@ -2218,7 +2218,7 @@ function Get-ReplicationTestAttemptKind {
     if (-not $FailureSummary) { return 'other' }
     if (Test-ReplicationTestBuildFailure -FailureSummary $FailureSummary) { return 'build-failed' }
     if (Test-ReplicationTestDidNotReproduce $FailureSummary) { return 'test-passed' }
-    if ($FailureSummary -match 'instead of the declared expectedFailureSignature') { return 'wrong-signature' }
+    if ($FailureSummary -match 'declared expectedFailureSignature') { return 'wrong-signature' }
     if ($FailureSummary -match '(?i)reports a different value|stableFailureMessage=False') { return 'unstable-failure' }
     if ($FailureSummary -match 'cannot be attributed to the named test') { return 'ambiguous-selection' }
     if (Test-ReplicationAppTerminated -Text $FailureSummary) { return 'app-terminated' }
@@ -6563,7 +6563,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                     # that repeats one mistake looks identical to one that does
                     # not, which made run 15009971 unreadable after the fact.
                     Write-Host "Verification diagnosis for attempt ${verificationRound}: $verificationDiagnosis"
-                    if ($verificationDiagnosis -match 'instead of the declared expectedFailureSignature') {
+                    if ($verificationDiagnosis -match 'declared expectedFailureSignature') {
                         $script:SignatureMismatchAttempts++
                         if ($script:SignatureMismatchAttempts -ge 2) {
                             $verificationDiagnosis = @"
