@@ -945,6 +945,19 @@ Describe 'The control pass marker still matches the verifier that prints it' {
 
         $unwrapped | Should -BeNullOrEmpty -Because 'each of these must be @(...) so .Count counts matches'
     }
+
+    It 'still finds the reproduction banner it grades a reproduction run on' {
+        # The same coupling one purpose along. A reproduction run is graded on
+        # 'VERIFICATION PASSED', which only the Reproduction branch prints, and
+        # nothing declares that dependency where the banner is written. The
+        # control does not read it - it grades on TestPassed - so this is the
+        # cheap way to keep the drift from happening twice.
+        $verifier = Join-Path $PSScriptRoot '../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        $source = Get-Content -LiteralPath $verifier -Raw
+
+        $script:Source | Should -Match "'VERIFICATION PASSED'"
+        $source | Should -Match 'VERIFICATION PASSED'
+    }
 }
 
 Describe 'A refutation is measured across every requested run' {
