@@ -906,13 +906,46 @@ namespace Microsoft.Maui.Maps.Handlers
 				return;
 
 			var markerOptions = iMapPinHandler.PlatformView;
+			var mapPinHandler = pinHandler as MapPinHandler;
 
-			// Load custom image if specified
-			if (pin.ImageSource != null)
+			// Captured before the await: if ImageSource changes while the load is running, the key
+			// recorded below has to name the source the icon actually came from, or it would
+			// suppress the very reload that brings the pin back in line.
+			var requestedSource = pin.ImageSource;
+
+			if (requestedSource is null)
 			{
-				var icon = await LoadPinIconAsync(pin.ImageSource, MauiContext, ct);
-				if (icon != null)
-					markerOptions.SetIcon(icon);
+				// The MarkerOptions are reused, so a cleared ImageSource has to take the previous
+				// icon off them - null is Android's "use the default marker".
+				markerOptions.SetIcon(null);
+
+				if (mapPinHandler is not null)
+					mapPinHandler.AppliedImageSourceKey = null;
+			}
+			else
+			{
+				// Clustering re-runs AddPins on every zoom change, so without this the icon of every
+				// un-clustered pin is decoded and rescaled again on each pass. Keyed by value through
+				// the same helper the cluster icon cache uses, which returns null for a source that
+				// opted out of caching - those must not be frozen here either, so they always reload.
+				var requestedKey = GetClusterIconCacheKey(requestedSource);
+
+				if (requestedKey is null || mapPinHandler?.AppliedImageSourceKey != requestedKey)
+				{
+					var icon = await LoadPinIconAsync(requestedSource, MauiContext, ct);
+
+					// Re-checked after the await: UpdatePinImageSourceAsync can have applied a newer
+					// source in the meantime, and it guards its own write the same way. Without this
+					// the two writers race and the marker can be published with the older icon while
+					// the change notification that would fix it has already been consumed.
+					if (icon != null && ReferenceEquals(pin.ImageSource, requestedSource))
+					{
+						markerOptions.SetIcon(icon);
+
+						if (mapPinHandler is not null)
+							mapPinHandler.AppliedImageSourceKey = requestedKey;
+					}
+				}
 			}
 
 			// Re-check after async operation since handler may have been disconnected
@@ -955,6 +988,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (!ct.IsCancellationRequested && ReferenceEquals(pin.ImageSource, requestedSource) && (pin.MarkerId as string) == marker.Id)
 			{
 				marker.SetIcon(icon);
+
+				// The MarkerOptions are reused the next time this pin is added, so update them too -
+				// otherwise the next cluster pass would restore the previous icon. Reached through
+				// the non-throwing accessor: this resumes after an await, and the typed PlatformView
+				// throws once the handler has been disconnected.
+				if (pin.Handler is MapPinHandler mapPinHandler &&
+					((IElementHandler)mapPinHandler).PlatformView is MarkerOptions handlerOptions)
+				{
+					handlerOptions.SetIcon(icon);
+					mapPinHandler.AppliedImageSourceKey = GetClusterIconCacheKey(requestedSource);
+				}
 			}
 		}
 

@@ -5,6 +5,13 @@ namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapPinHandler : ElementHandler<IMapPin, MarkerOptions>
 	{
+		/// <summary>
+		/// Cache key of the image source whose icon is currently set on the handler's MarkerOptions,
+		/// or <see langword="null"/> when none is. The MarkerOptions instance outlives the markers
+		/// created from it, so this lets MapHandler skip a load it has already done.
+		/// </summary>
+		internal string? AppliedImageSourceKey { get; set; }
+
 		protected override MarkerOptions CreatePlatformElement() => new MarkerOptions();
 
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
@@ -25,11 +32,16 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.SetSnippet(mapPin.Address);
 		}
 
-		// Note: ImageSource is handled in MapHandler.AddPinAsync
-		// because the icon must be set on MarkerOptions BEFORE calling Map.AddMarker()
+		// Note: the icon itself is applied in MapHandler.AddPinAsync, because it must be set on
+		// MarkerOptions BEFORE calling Map.AddMarker(). This mapper only invalidates the record of
+		// which source the current icon came from: it runs whenever ImageSource is set and whenever
+		// the handler is attached to a pin, so it is the one place that always sees the icon on the
+		// MarkerOptions go stale - including a handler reconnected to a different pin, which keeps
+		// its PlatformView and would otherwise inherit the previous pin's key.
 		public static void MapImageSource(IMapPinHandler handler, IMapPin mapPin)
 		{
-			// No-op: Image is applied when the marker is created in MapHandler.AddPinAsync
+			if (handler is MapPinHandler mapPinHandler)
+				mapPinHandler.AppliedImageSourceKey = null;
 		}
 	}
 }
