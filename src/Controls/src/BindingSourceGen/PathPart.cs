@@ -15,13 +15,13 @@ public record MemberAccess(
 	bool IsSetterInaccessible = false) : IPathPart
 {
 	public string PropertyName => MemberName;
-	
+
 	/// <summary>
 	/// Indicates whether this member has any inaccessible accessor (getter or setter).
 	/// Used to determine if UnsafeAccessor methods need to be generated.
 	/// </summary>
 	public bool HasInaccessibleAccessor => IsGetterInaccessible || IsSetterInaccessible;
-	
+
 	/// <summary>
 	/// Compares this MemberAccess with another IPathPart for equality.
 	/// 
@@ -38,16 +38,16 @@ public record MemberAccess(
 	{
 		if (other is not MemberAccess memberAccess)
 			return false;
-		
+
 		// Core properties must always match
 		if (MemberName != memberAccess.MemberName || IsValueType != memberAccess.IsValueType)
 			return false;
-		
+
 		// For extended properties, only compare if both sides have them populated
 		// This allows tests to create simple MemberAccess instances without full metadata
 		bool hasExtendedMetadata = ContainingType != null || Kind != null;
 		bool otherHasExtendedMetadata = memberAccess.ContainingType != null || memberAccess.Kind != null;
-		
+
 		if (hasExtendedMetadata && otherHasExtendedMetadata)
 		{
 			return ContainingType == memberAccess.ContainingType
@@ -56,12 +56,17 @@ public record MemberAccess(
 				&& IsGetterInaccessible == memberAccess.IsGetterInaccessible
 				&& IsSetterInaccessible == memberAccess.IsSetterInaccessible;
 		}
-		
+
 		return true;
 	}
 }
 
-public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false) : IPathPart
+/// <param name="IsArrayElement">
+/// <see langword="true"/> when this indexes an array. Array element access yields a variable, so a
+/// value-type element can be assigned through directly. An indexer property instead returns a copy,
+/// which must be updated locally and assigned back through the indexer - see <see cref="Setter"/>.
+/// </param>
+public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false, bool IsArrayElement = false) : IPathPart
 {
 	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
 
@@ -70,7 +75,8 @@ public sealed record IndexAccess(string DefaultMemberName, object Index, bool Is
 		return other is IndexAccess indexAccess
 			&& DefaultMemberName == indexAccess.DefaultMemberName
 			&& Index.Equals(indexAccess.Index)
-			&& IsValueType == indexAccess.IsValueType;
+			&& IsValueType == indexAccess.IsValueType
+			&& IsArrayElement == indexAccess.IsArrayElement;
 	}
 }
 
