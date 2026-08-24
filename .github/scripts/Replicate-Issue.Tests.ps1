@@ -8665,6 +8665,7 @@ Describe 'A failed fix never costs us a good reproduction' {
             -CandidateCount 1 -BudgetMinutes 150
         $results[0].Rejection | Should -Not -Match 'outside its scope'
     }
+
 }
 
 Describe 'The oracle a fix candidate cannot edit' {
@@ -9327,15 +9328,24 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
             param($Evidence, $VerificationDirectory) $script:armResultsWritten++
         }
         # The driver invokes the baseline script through the call operator, so
-        # a real file is the only way to control $LASTEXITCODE. It must sit
-        # where production looks for it - the trusted script root - because the
+        # a real file is the only way to exercise the call. It must sit where
+        # production looks for it - the trusted script root - because the
         # product checkout's own copy is the one that broke build 15068988.
+        # It models the real script's contract, which is the postcondition and
+        # not an exit code: success writes the state file, failure throws. The
+        # earlier stub exited non-zero, a thing EstablishBrokenBaseline.ps1 has
+        # never done, so the fixture tested a signal that does not exist.
         $script:trustedScriptRoot = Join-Path $script:repoRoot 'trusted-scripts'
         New-Item -ItemType Directory -Path $script:trustedScriptRoot -Force | Out-Null
         Set-Content -LiteralPath (Join-Path $script:trustedScriptRoot 'EstablishBrokenBaseline.ps1') `
             -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)
-exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
-        $env:REPLICATION_TEST_BASELINE_EXIT = '0'
+if ($env:REPLICATION_TEST_BASELINE_FAILS -eq "1") { throw "refusing to snapshot a dirty tree" }
+$state = Join-Path $env:REPLICATION_TEST_REPO_ROOT ".github/.baseline-state.json"
+New-Item -ItemType Directory -Path (Split-Path -Parent $state) -Force | Out-Null
+Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } | ConvertTo-Json) -NoNewline' `
+            -Encoding utf8NoBOM
+        $env:REPLICATION_TEST_BASELINE_FAILS = '0'
+        $env:REPLICATION_TEST_REPO_ROOT = $script:repoRoot
 
         $script:phaseArgs = @{
             GeneratedFiles = @('src/Controls/tests/Issue12345.cs')
@@ -9346,7 +9356,10 @@ exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
         }
     }
 
-    AfterEach { Remove-Item Env:REPLICATION_TEST_BASELINE_EXIT -ErrorAction SilentlyContinue }
+    AfterEach {
+        Remove-Item Env:REPLICATION_TEST_BASELINE_FAILS -ErrorAction SilentlyContinue
+        Remove-Item Env:REPLICATION_TEST_REPO_ROOT -ErrorAction SilentlyContinue
+    }
 
     It 'authors a fix when every step succeeds' {
         # The control. Without it, a driver that returned $null unconditionally
@@ -9374,7 +9387,19 @@ exit $env:REPLICATION_TEST_BASELINE_EXIT' -Encoding utf8NoBOM
     }
 
     It 'declines when the editable scope cannot be recorded' {
-        $env:REPLICATION_TEST_BASELINE_EXIT = '1'
+        # The script says no by throwing, which is the only way it says no.
+        $env:REPLICATION_TEST_BASELINE_FAILS = '1'
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when the script claims success but records no scope' {
+        # The failure that cost build 15069710 its whole panel: nothing threw,
+        # nothing exited non-zero, and no state file was written, so five
+        # candidates ran with no allow-list and no way back to a clean tree.
+        Set-Content -LiteralPath (Join-Path $script:trustedScriptRoot 'EstablishBrokenBaseline.ps1') `
+            -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)' `
+            -Encoding utf8NoBOM
 
         Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
     }
@@ -9492,6 +9517,53 @@ Describe 'The fix phase runs the pipeline scripts, not the ones the product ship
         $script:Source | Should -Not -Match 'pwsh\s+\.github/scripts/EstablishBrokenBaseline\.ps1'
         $script:Source |
             Should -Match 'pwsh\s+\$\(Join-Path\s+\$trustedScripts\s+''EstablishBrokenBaseline\.ps1''\)\s+-Restore'
+    }
+
+    Context 'and it checks whether that script actually worked' {
+        # EstablishBrokenBaseline.ps1 reports every failure by throwing and
+        # never calls exit, so it cannot set $LASTEXITCODE. Reading that
+        # variable read whatever the previous native command left there, which
+        # is 0, so the phase believed a scope had been recorded when nothing
+        # had been written. Build 15069710 then ran all five candidates with no
+        # allow-list and no restore point: every one reported "No baseline
+        # state found", candidate 4 was refused for inheriting candidate 3's
+        # edits, and the only passing fix of the run was nearly lost with them.
+        It 'does not decide the scope was recorded by reading $LASTEXITCODE' {
+            $establish = [regex]::Match(
+                $script:fixPhaseBody,
+                '(?ms)& \$baselineScript.*?\n\s*\}').Value
+
+            $establish | Should -Not -BeNullOrEmpty
+            $establish | Should -Not -Match '\$LASTEXITCODE'
+        }
+
+        It 'confirms the scope was recorded by testing for the state file the script writes' {
+            $script:fixPhaseBody |
+                Should -Match "Join-Path\s+\`$repoRoot\s+'\.github/\.baseline-state\.json'"
+            $script:fixPhaseBody |
+                Should -Match '-not \(Test-Path -LiteralPath \$baselineStatePath -PathType Leaf\)'
+        }
+
+        It 'names the file the establishing script actually writes' {
+            # A postcondition asserted against the wrong path is worse than no
+            # postcondition, because it declines every healthy run instead.
+            $baselineSource = Get-Content -LiteralPath (
+                Join-Path $PSScriptRoot 'EstablishBrokenBaseline.ps1') -Raw
+
+            $baselineSource |
+                Should -Match "Join-Path\s+\`$RepoRoot\s+""\.github/\.baseline-state\.json"""
+        }
+
+        It 'keeps the output that explains a refusal instead of discarding it' {
+            # The one diagnostic that says why the fix phase was skipped was
+            # piped into Out-Null, so a skipped phase left no evidence at all.
+            $script:fixPhaseBody | Should -Not -Match '& \$baselineScript[^\r\n]*Out-Null'
+            $script:fixPhaseBody | Should -Match '\$baselineOutput'
+        }
+
+        It 'treats the throw the script uses to say no as a refusal, not a crash' {
+            $script:fixPhaseBody | Should -Match '(?ms)\$baselineOutput = try \{.*?\} catch \{'
+        }
     }
 }
 
@@ -9665,8 +9737,14 @@ Describe 'A fix phase may only ask to write files that can be granted' {
             New-Item -ItemType Directory -Path $script:trustedScriptRoot -Force | Out-Null
             Set-Content -LiteralPath (Join-Path $script:trustedScriptRoot 'EstablishBrokenBaseline.ps1') `
                 -Value 'param($EditableFiles, [switch]$SnapshotOnly, [switch]$Restore)
-exit 0' -Encoding utf8NoBOM
+$state = Join-Path $env:REPLICATION_TEST_REPO_ROOT ".github/.baseline-state.json"
+New-Item -ItemType Directory -Path (Split-Path -Parent $state) -Force | Out-Null
+Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } | ConvertTo-Json) -NoNewline' `
+                -Encoding utf8NoBOM
+            $env:REPLICATION_TEST_REPO_ROOT = $script:repoRoot
         }
+
+        AfterAll { Remove-Item Env:REPLICATION_TEST_REPO_ROOT -ErrorAction SilentlyContinue }
 
         It 'asks to write the scope file and the winner file, never the agent directory' {
             $result = Invoke-ReplicationFixPhase `

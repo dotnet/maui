@@ -5696,9 +5696,28 @@ function Invoke-ReplicationFixPhase {
     # defect is what this branch ships -- so this records the editable set and
     # makes HEAD the restore point.
     $baselineScript = Join-Path $TrustedScriptRoot 'EstablishBrokenBaseline.ps1'
-    & $baselineScript -EditableFiles $scope.Files -SnapshotOnly | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    # The script reports failure by throwing, never by exiting, so $LASTEXITCODE
+    # is whatever the last native command left behind - almost always 0. Build
+    # 15069710 therefore ran all five candidates against a scope that had never
+    # been recorded: every one of them reported "No baseline state found", each
+    # inherited the previous candidate's edits, and three were refused for it.
+    # Check the postcondition instead, which is true only if the script did the
+    # work, and keep its output rather than piping the one diagnostic that
+    # explains a failed phase into Out-Null.
+    $baselineOutput = try {
+        & $baselineScript -EditableFiles $scope.Files -SnapshotOnly 2>&1
+    } catch {
+        # The script's failures are terminating, so this is the ordinary way it
+        # says no. A refused scope is a reason to skip the fix, never a reason
+        # to lose the reproduction that has already been certified.
+        $_.Exception.Message
+    }
+    $baselineStatePath = Join-Path $repoRoot '.github/.baseline-state.json'
+    if (-not (Test-Path -LiteralPath $baselineStatePath -PathType Leaf)) {
         Write-Host 'No fix is attempted: the editable scope could not be recorded.'
+        Write-Host (ConvertTo-BoundedAgentLine `
+            -Value (@($baselineOutput) -join ' ') `
+            -Description 'Baseline output' -MaximumLength 600 -Prose)
         return $null
     }
 
