@@ -14,6 +14,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 	public class ControlsHeadlessTestRunner : AndroidApplicationEntryPoint
 	{
 		const string CategoriesFileName = "devicetestcategories.txt";
+		const string PerformanceCategoryPrefix = "Performance";
+		const string IncludePerformanceTestsEnvironmentVariable = "MAUI_INCLUDE_PERFORMANCE_TESTS";
 		readonly string _categoriesFilePath;
 
 		public static string? TestResultsFile;
@@ -148,7 +150,17 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 							framework.Find(false, sink, discoveryOptions);
 							sink.Finished.WaitOne();
 
-							result.AddRange(sink.TestCases.SelectMany(tc => tc.Traits["Category"]).Distinct());
+							var categories = sink.TestCases.SelectMany(tc => tc.Traits["Category"]).Distinct();
+							if (!string.Equals(
+								Environment.GetEnvironmentVariable(IncludePerformanceTestsEnvironmentVariable),
+								"1",
+								StringComparison.Ordinal))
+							{
+								categories = categories.Where(category =>
+									!category.StartsWith(PerformanceCategoryPrefix, StringComparison.Ordinal));
+							}
+
+							result.AddRange(categories);
 						}
 					}
 					catch (Exception e)

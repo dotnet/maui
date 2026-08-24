@@ -1,0 +1,120 @@
+parameters:
+- name: dependsOn
+  type: object
+  default: []
+- name: testPool
+  type: object
+- name: artifactName
+  type: string
+  default: device_performance_payload
+- name: payloadArchiveName
+  type: string
+  default: payload.zip
+- name: metadataFileName
+  type: string
+  default: payload.json
+- name: targetOS
+  type: string
+  values:
+  - ios
+  - maccatalyst
+  - android
+  - windows
+- name: runAsPublic
+  type: boolean
+  default: true
+- name: HelixAccessToken
+  type: string
+  default: ''
+- name: helixProject
+  type: string
+  default: eng/helix_device_performance.proj
+
+stages:
+- stage: deviceperformance_${{ parameters.targetOS }}
+  displayName: Device Performance ${{ parameters.targetOS }}
+  dependsOn: ${{ parameters.dependsOn }}
+  jobs:
+  - job: submit_device_performance_${{ parameters.targetOS }}
+    displayName: Submit ${{ parameters.targetOS }} device performance to Helix
+    timeoutInMinutes: 240
+    pool: ${{ parameters.testPool }}
+    workspace:
+      clean: all
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      clean: true
+      persistCredentials: false
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download paired device performance apps
+      inputs:
+        artifactName: ${{ parameters.artifactName }}
+        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+
+    - pwsh: |
+        $artifactRoot = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+        $archive = Resolve-Path (Join-Path $artifactRoot "${{ parameters.payloadArchiveName }}")
+        $metadataPath = Resolve-Path (Join-Path $artifactRoot "${{ parameters.metadataFileName }}")
+        $metadata = Get-Content $metadataPath -Raw | ConvertFrom-Json
+
+        if ($metadata.schemaVersion -ne 2) {
+          throw "Unsupported payload schema '$($metadata.schemaVersion)'."
+        }
+        if ($metadata.platform -ne "${{ parameters.targetOS }}") {
+          throw "Payload platform '$($metadata.platform)' does not match '${{ parameters.targetOS }}'."
+        }
+
+        Write-Host "##vso[task.setvariable variable=PerformancePayloadArchive]$archive"
+        Write-Host "##vso[task.setvariable variable=BaseAppRelativePath]$($metadata.baseAppRelativePath)"
+        Write-Host "##vso[task.setvariable variable=HeadAppRelativePath]$($metadata.headAppRelativePath)"
+        Write-Host "##vso[task.setvariable variable=BaseCommitSha]$($metadata.baseCommitSha)"
+        Write-Host "##vso[task.setvariable variable=HeadCommitSha]$($metadata.headCommitSha)"
+        Write-Host "##vso[task.setvariable variable=PerformanceExpectedScenario]$($metadata.expectedScenario)"
+        Write-Host "##vso[task.setvariable variable=PerformanceRepository]$($metadata.repository)"
+        Write-Host "##vso[task.setvariable variable=PerformancePullRequestNumber]$($metadata.pullRequestNumber)"
+        Write-Host "##vso[task.setvariable variable=PerformanceHarnessSha]$($metadata.harnessSha)"
+        Write-Host "##vso[task.setvariable variable=PerformanceAzdoBuildId]$($metadata.azdoBuildId)"
+        Write-Host "##vso[task.setvariable variable=PerformanceAzdoBuildUrl]$($metadata.azdoBuildUrl)"
+        Write-Host "##vso[task.setvariable variable=PerformanceBaseRuntimeVariant]$($metadata.baseRuntimeVariant)"
+        Write-Host "##vso[task.setvariable variable=PerformanceHeadRuntimeVariant]$($metadata.headRuntimeVariant)"
+        Write-Host "##vso[task.setvariable variable=PerformanceBaseSdkVersion]$($metadata.baseSdkVersion)"
+        Write-Host "##vso[task.setvariable variable=PerformanceHeadSdkVersion]$($metadata.headSdkVersion)"
+        Write-Host "##vso[task.setvariable variable=PerformanceExpectedVariantRuns]$($metadata.expectedVariantRuns)"
+      displayName: Read device performance payload metadata
+
+    - template: ${{ iif(eq(parameters.runAsPublic, true), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
+      parameters:
+        HelixProjectPath: ${{ parameters.helixProject }}
+        HelixProjectArguments: >-
+          /p:TargetOS=${{ parameters.targetOS }}
+          /p:PerformancePayloadArchive="$(PerformancePayloadArchive)"
+          /p:BaseAppRelativePath="$(BaseAppRelativePath)"
+          /p:HeadAppRelativePath="$(HeadAppRelativePath)"
+          /p:BaseCommitSha="$(BaseCommitSha)"
+          /p:HeadCommitSha="$(HeadCommitSha)"
+          /p:PerformanceExpectedScenario="$(PerformanceExpectedScenario)"
+          /p:PerformanceRepository="$(PerformanceRepository)"
+          /p:PerformancePullRequestNumber="$(PerformancePullRequestNumber)"
+          /p:PerformanceHarnessSha="$(PerformanceHarnessSha)"
+          /p:PerformanceAzdoBuildId="$(PerformanceAzdoBuildId)"
+          /p:PerformanceAzdoBuildUrl="$(PerformanceAzdoBuildUrl)"
+          /p:PerformanceBaseRuntimeVariant="$(PerformanceBaseRuntimeVariant)"
+          /p:PerformanceHeadRuntimeVariant="$(PerformanceHeadRuntimeVariant)"
+          /p:PerformanceBaseSdkVersion="$(PerformanceBaseSdkVersion)"
+          /p:PerformanceHeadSdkVersion="$(PerformanceHeadSdkVersion)"
+          /p:PerformanceExpectedVariantRuns="$(PerformanceExpectedVariantRuns)"
+          /p:HelixInternal=${{ iif(eq(parameters.runAsPublic, true), 'False', 'True') }}
+        HelixAccessToken: ${{ parameters.HelixAccessToken }}
+        HelixConfiguration: Release
+        IncludeDotNetCli: true
+        DisplayNamePrefix: DevicePerformance${{ parameters.targetOS }}
+        WorkItemTimeout: 03:00:00
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish device performance comparison
+      condition: always()
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/artifacts/helixresults
+        artifactName: device_performance_results_${{ parameters.targetOS }}

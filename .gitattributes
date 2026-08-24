@@ -4,6 +4,7 @@
 # Explicitly declare text files we want to always be normalized and converted 
 # to native line endings on checkout.
 *.cs text
+*.sh text eol=lf
 
 # Declare files that will always have CRLF line endings on checkout.
 *.sln text eol=crlf

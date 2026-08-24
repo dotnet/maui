@@ -1,0 +1,153 @@
+trigger: none
+pr: none
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
+
+parameters:
+- name: prNumber
+  displayName: Pull request number
+  type: number
+  default: 0
+- name: baseCommitSha
+  displayName: Merge-base commit SHA
+  type: string
+  default: ''
+- name: headCommitSha
+  displayName: Pull request head commit SHA
+  type: string
+  default: ''
+- name: platform
+  displayName: Platform
+  type: string
+  default: ios
+  values:
+  - ios
+  - maccatalyst
+  - android
+  - windows
+- name: expectedScenario
+  displayName: Expected emitted scenario
+  type: string
+  default: ''
+- name: macOSPool
+  type: object
+  default:
+    name: AcesShared
+    demands:
+    - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+- name: helixSubmissionPool
+  type: object
+  default:
+    name: NetCore-Public
+    demands:
+    - ImageOverride -equals 1es-windows-2022-open
+- name: windowsPool
+  type: object
+  default:
+    name: NetCore-Public
+    demands:
+    - ImageOverride -equals 1es-windows-2022-open
+
+stages:
+- stage: deviceperformance_build
+  displayName: Build base and head device performance apps
+  jobs:
+  - template: /eng/pipelines/common/device-performance-build-job.yml@self
+    parameters:
+      jobName: build_device_performance_base
+      displayName: Build merge-base performance app
+      variant: base
+      commitSha: ${{ parameters.baseCommitSha }}
+      prNumber: ${{ parameters.prNumber }}
+      platform: ${{ parameters.platform }}
+      pool:
+        ${{ if eq(parameters.platform, 'windows') }}:
+          ${{ insert }}: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          ${{ insert }}: ${{ parameters.macOSPool }}
+
+  - template: /eng/pipelines/common/device-performance-build-job.yml@self
+    parameters:
+      jobName: build_device_performance_head
+      displayName: Build PR-head performance app
+      variant: head
+      commitSha: ${{ parameters.headCommitSha }}
+      prNumber: ${{ parameters.prNumber }}
+      platform: ${{ parameters.platform }}
+      pool:
+        ${{ if eq(parameters.platform, 'windows') }}:
+          ${{ insert }}: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          ${{ insert }}: ${{ parameters.macOSPool }}
+
+- stage: deviceperformance_package
+  displayName: Package paired device performance apps
+  dependsOn: deviceperformance_build
+  jobs:
+  - job: package_device_performance
+    displayName: Create paired Helix payload
+    timeoutInMinutes: 30
+    pool:
+      ${{ if eq(parameters.platform, 'windows') }}:
+        ${{ insert }}: ${{ parameters.windowsPool }}
+      ${{ else }}:
+        ${{ insert }}: ${{ parameters.macOSPool }}
+    workspace:
+      clean: all
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      clean: true
+      persistCredentials: false
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download merge-base app
+      inputs:
+        artifactName: device_performance_base
+        targetPath: $(Pipeline.Workspace)/device_performance_base
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download PR-head app
+      inputs:
+        artifactName: device_performance_head
+        targetPath: $(Pipeline.Workspace)/device_performance_head
+
+    - pwsh: |
+        $buildUrl = "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+        ./eng/scripts/Prepare-DevicePerformancePayload.ps1 `
+          -BaseArtifacts "$(Pipeline.Workspace)/device_performance_base" `
+          -HeadArtifacts "$(Pipeline.Workspace)/device_performance_head" `
+          -Platform $env:DEVICE_PERFORMANCE_PLATFORM `
+          -BaseCommitSha $env:DEVICE_PERFORMANCE_BASE_SHA `
+          -HeadCommitSha $env:DEVICE_PERFORMANCE_HEAD_SHA `
+          -ExpectedScenario $env:DEVICE_PERFORMANCE_SCENARIO `
+          -Repository "dotnet/maui" `
+          -PullRequestNumber ([int]$env:DEVICE_PERFORMANCE_PR_NUMBER) `
+          -HarnessSha "$(Build.SourceVersion)" `
+          -AzdoBuildId "$(Build.BuildId)" `
+          -AzdoBuildUrl $buildUrl `
+          -OutputArchive "$(Build.ArtifactStagingDirectory)/payload.zip" `
+          -MetadataOut "$(Build.ArtifactStagingDirectory)/payload.json"
+      displayName: Prepare paired device performance payload
+      env:
+        DEVICE_PERFORMANCE_PLATFORM: ${{ parameters.platform }}
+        DEVICE_PERFORMANCE_BASE_SHA: ${{ parameters.baseCommitSha }}
+        DEVICE_PERFORMANCE_HEAD_SHA: ${{ parameters.headCommitSha }}
+        DEVICE_PERFORMANCE_SCENARIO: ${{ parameters.expectedScenario }}
+        DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+
+    - publish: $(Build.ArtifactStagingDirectory)
+      displayName: Publish paired device performance payload
+      artifact: device_performance_payload
+
+- template: /eng/pipelines/arcade/stage-device-performance.yml@self
+  parameters:
+    dependsOn:
+    - deviceperformance_package
+    testPool: ${{ parameters.helixSubmissionPool }}
+    artifactName: device_performance_payload
+    targetOS: ${{ parameters.platform }}
+    runAsPublic: true
