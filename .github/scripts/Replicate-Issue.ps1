@@ -4680,7 +4680,7 @@ $(ConvertTo-ReplicationSafeLog $FailureSummary 4000)
 Read "$tryFixSkill" and follow it. This is a single try-fix attempt for issue $IssueNumber.
 
 One thing differs from the reviewer's usual try-fix run, and it changes how you must read the skill: there is no author fix. The defect is what this branch ships. The baseline script therefore reverted nothing; it only recorded which files you may edit. Everything else in the skill applies unchanged, including that you restore your work ONLY with:
-    pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
+    pwsh $(Join-Path $trustedScripts 'EstablishBrokenBaseline.ps1') -Restore
 Never use git checkout, git restore, git reset, git clean, or git stash.
 
 Your oracle is the reproduction test at "$BaselineRelativePath". It fails today at the intended assertion:

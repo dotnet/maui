@@ -9450,6 +9450,18 @@ Describe 'The fix phase runs the pipeline scripts, not the ones the product ship
 
         @($fromProductTree | ForEach-Object { $_.Value }) | Should -BeNullOrEmpty
     }
+
+    It 'tells the candidate to restore with the trusted script, not a relative product path' {
+        # The skill forbids git checkout, restore, reset, clean and stash, so
+        # -Restore is the candidate's only way back to a clean tree. A relative
+        # path resolves inside the product checkout, where dotnet/maui's own
+        # copy knows nothing about the snapshot state file this phase writes -
+        # the same defect that killed the first run to reach the fix phase, one
+        # call site away.
+        $script:Source | Should -Not -Match 'pwsh\s+\.github/scripts/EstablishBrokenBaseline\.ps1'
+        $script:Source |
+            Should -Match 'pwsh\s+\$\(Join-Path\s+\$trustedScripts\s+''EstablishBrokenBaseline\.ps1''\)\s+-Restore'
+    }
 }
 
 Describe 'A fix phase may only ask to write files that can be granted' {
