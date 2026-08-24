@@ -2832,8 +2832,20 @@ function Assert-ReplicationAuthoritativeResult {
     # a separate type, or one fully qualified string. Requiring both tokens to
     # appear in the recorded identity covers all three without pinning any one
     # runner's spelling of the separator.
+    #
+    # 'name' is a display string, not an identity. A test carrying a DisplayName,
+    # or a runner that humanizes PascalCase into words, records a name that no
+    # method-name match can satisfy -- build 15073806 passed all four arms and
+    # was refused for a recorded name of 'Picker ItemsSource Does Not Retain
+    # Picker After Unload'. Where the document records the method itself, that is
+    # the identity and it must match exactly.
     $shortClass = ($TestClass -split '\.')[-1]
-    if ($entry.Name -cnotmatch [regex]::Escape($TestMethod)) {
+    if (-not [string]::IsNullOrWhiteSpace($entry.Method)) {
+        if ($entry.Method -cne $TestMethod) {
+            throw ('The authoritative test result document records a test method ' +
+                "'$(Get-ReportableArtifactName -Name $entry.Method)', which is not the method the manifest claims.")
+        }
+    } elseif ($entry.Name -cnotmatch [regex]::Escape($TestMethod)) {
         throw ('The authoritative test result document records a test named ' +
             "'$(Get-ReportableArtifactName -Name $entry.Name)', which is not the method the manifest claims.")
     }
@@ -2865,6 +2877,12 @@ function Get-ReplicationAuthoritativeTestEntries {
             same as a bare one. TRX in particular is always namespaced, and a
             namespace-sensitive query against it silently returns nothing --
             which would read as "no test executed" and reject a valid run.
+
+            'Name' is a display string and 'Method' is an identity. xUnit and
+            NUnit both record the runtime method separately, and a test that
+            carries a DisplayName -- or a runner that humanizes PascalCase --
+            makes the two differ. Callers matching a manifest must use Method
+            when it is present; Name is a fallback for formats without one.
     #>
     param([Parameter(Mandatory = $true)][System.Xml.XmlDocument]$Document)
 
@@ -2874,6 +2892,7 @@ function Get-ReplicationAuthoritativeTestEntries {
         $result = [string]$node.GetAttribute('result')
         $entries.Add([pscustomobject]@{
             Name = [string]$node.GetAttribute('name')
+            Method = [string]$node.GetAttribute('method')
             Type = [string]$node.GetAttribute('type')
             Outcome = $result
             Failed = $result -imatch '^fail'
@@ -2885,6 +2904,7 @@ function Get-ReplicationAuthoritativeTestEntries {
         $outcome = [string]$node.GetAttribute('outcome')
         $entries.Add([pscustomobject]@{
             Name = [string]$node.GetAttribute('testName')
+            Method = ''
             Type = ''
             Outcome = $outcome
             Failed = $outcome -imatch '^fail'
@@ -2900,6 +2920,7 @@ function Get-ReplicationAuthoritativeTestEntries {
         }
         $entries.Add([pscustomobject]@{
             Name = $fullName
+            Method = [string]$node.GetAttribute('methodname')
             Type = [string]$node.GetAttribute('classname')
             Outcome = $result
             Failed = $result -imatch '^fail'
