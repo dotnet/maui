@@ -4014,7 +4014,7 @@ function Invoke-ReplicationFixArms {
         Invoke-LoggedChildProcess `
             -ScriptPath $verificationScript `
             -Arguments (Set-ReplicationVerificationOutputDirectory `
-                -Arguments @($BaseVerificationArguments) `
+                -Arguments (@($BaseVerificationArguments) + '-CompleteAllRuns') `
                 -Directory $RestorationOutputDirectory) `
             -LogPath (Join-Path $RestorationOutputDirectory 'restoration-arm-wrapper.log') `
             -Description 'Running the reproduction test again with the fix removed' `
@@ -4069,6 +4069,87 @@ function Set-ReplicationVerificationOutputDirectory {
     $result.Add('-OutputDirectory') | Out-Null
     $result.Add($Directory) | Out-Null
     return $result.ToArray()
+}
+
+function Set-ReplicationVerificationRunCount {
+    <#
+        .SYNOPSIS
+            Returns the verification arguments with the run count replaced.
+
+        .DESCRIPTION
+            The panel's baseline probe asks one question - does this tree still
+            fail - and one run answers it. Paying the full repeat count to learn
+            that five candidates should not run would spend most of what the
+            probe exists to save.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][int]$RunCount
+    )
+
+    $result = [Collections.Generic.List[string]]::new()
+    for ($index = 0; $index -lt $Arguments.Count; $index++) {
+        if ($Arguments[$index] -ceq '-RunCount') {
+            $index++
+            continue
+        }
+        $result.Add($Arguments[$index]) | Out-Null
+    }
+    $result.Add('-RunCount') | Out-Null
+    $result.Add([string]$RunCount) | Out-Null
+    return $result.ToArray()
+}
+
+function Test-ReplicationFixBaselineStillRed {
+    <#
+        .SYNOPSIS
+            True when the certified test still fails on the tree the panel is
+            about to be handed.
+
+        .DESCRIPTION
+            Build 15071058 spent all five candidates on a tree that was already
+            green. Candidates 1 and 5 reported a pass without changing a file,
+            candidate 3 was selected for a pass it had not caused, and the
+            restoration arm then refused it - correctly - because removing a fix
+            that had done nothing changed nothing. Thirty-five minutes of device
+            time produced one honest verdict that a single run produces first.
+
+            The economy is the smaller half. A certified reproduction whose test
+            has stopped failing is not a deterministic oracle, and that is the
+            one thing the reproduction claims. Asking before the panel puts the
+            answer in the record either way.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$BaseVerificationArguments,
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][string]$VerificationScriptPath,
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+    )
+
+    New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
+    $arguments = Set-ReplicationVerificationRunCount `
+        -Arguments (Set-ReplicationVerificationOutputDirectory `
+            -Arguments $BaseVerificationArguments `
+            -Directory $OutputDirectory) `
+        -RunCount 1
+
+    try {
+        Invoke-LoggedChildProcess `
+            -ScriptPath $VerificationScriptPath `
+            -Arguments $arguments `
+            -LogPath (Join-Path $OutputDirectory 'fix-baseline-wrapper.log') `
+            -Description 'Confirming the reproduction test still fails before the fix panel runs' `
+            -TimeoutSeconds $TimeoutSeconds | Out-Null
+        return $true
+    } catch {
+        # A green test and a broken build both arrive here, and the panel must
+        # not run either way, so the message says what was observed rather than
+        # naming a cause the probe cannot distinguish.
+        Write-Host ('No fix is attempted: the reproduction test did not fail on the tree the ' +
+            'panel would have started from, so a candidate that changed nothing would be ' +
+            'recorded as its fix. ' + (ConvertTo-ReplicationSafeLog $_.Exception.Message 600))
+        return $false
+    }
 }
 
 function Read-ReplicationFixScope {
@@ -5983,6 +6064,17 @@ function Invoke-ReplicationFixPhase {
         Write-Host (
             "No fix is attempted: scoping left $budgetMinutes minutes of the step budget, " +
             "which is less than one candidate needs.")
+        return $null
+    }
+
+    # The scope snapshot is taken above, so this measures exactly the tree each
+    # candidate will be handed - after the negative control has restored, after
+    # the baseline has been recorded, and before anyone has edited anything.
+    if (-not (Test-ReplicationFixBaselineStillRed `
+            -BaseVerificationArguments $BaseVerificationArguments `
+            -OutputDirectory (Join-Path $fixDir 'baseline-probe') `
+            -VerificationScriptPath $verificationScript `
+            -TimeoutSeconds ($FixCandidateTimeoutMinutes * 60))) {
         return $null
     }
 

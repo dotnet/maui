@@ -98,7 +98,9 @@ BeforeAll {
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
-        'Get-ReplicationUnbuildableTestTiers',
+        'Set-ReplicationVerificationRunCount',
+    'Test-ReplicationFixBaselineStillRed',
+    'Get-ReplicationUnbuildableTestTiers',
         'Test-ReplicationPathChanged',
         'Assert-NoDuplicateJsonProperties',
         'Test-TimingSensitiveIssueContext',
@@ -9776,6 +9778,11 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
             param($PhaseName, $Prompt, $WritePaths, $Attempt, $TimeoutMinutesOverride)
         }
         function Read-ReplicationFixScope { param($Path) $script:scope }
+        # The panel is never started on a tree that has stopped failing, so
+        # every fixture that drives the phase has to answer that question. The
+        # probe's own refusal is covered where it is defined.
+        $script:baselineStillRed = $true
+        function Test-ReplicationFixBaselineStillRed { $script:baselineStillRed }
         function New-ReplicationFixOracleRunnerContent {
             param($VerificationScriptPath, $VerificationArguments) 'oracle'
         }
@@ -9874,6 +9881,19 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
             -Encoding utf8NoBOM
 
         Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+    }
+
+    It 'declines when the test no longer fails on the tree the panel would get' {
+        # Build 15071058: candidates 1 and 5 reported a pass without changing a
+        # file, candidate 3 was selected for a pass it had not caused, and the
+        # restoration arm refused it. The reproduction still shipped, and it
+        # must keep shipping now that the panel is refused instead.
+        $script:baselineStillRed = $false
+        try {
+            Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+        } finally {
+            $script:baselineStillRed = $true
+        }
     }
 
     It 'declines when no candidate passed the oracle' {
@@ -10207,7 +10227,12 @@ Describe 'A fix phase may only ask to write files that can be granted' {
                     RootCauseHypothesis = 'The handler drops the update.'
                 }
             }
-            function New-ReplicationFixOracleRunnerContent {
+            # The panel is never started on a tree that has stopped failing, so
+        # every fixture that drives the phase has to answer that question. The
+        # probe's own refusal is covered where it is defined.
+        $script:baselineStillRed = $true
+        function Test-ReplicationFixBaselineStillRed { $script:baselineStillRed }
+        function New-ReplicationFixOracleRunnerContent {
                 param($VerificationScriptPath, $VerificationArguments) 'oracle'
             }
             function Set-ReplicationVerificationOutputDirectory { param($Arguments, $Directory) @($Arguments) }
@@ -10755,5 +10780,128 @@ Describe 'A dialog in front of the app is not a list of things to tap' {
         $advice.Success | Should -BeTrue
         $advice.Groups['body'].Value | Should -Not -CMatch 'Choose the next locator'
         $advice.Groups['body'].Value | Should -CMatch 'locator is not what to change'
+    }
+}
+
+Describe 'A panel is not spent on a tree that already passes' {
+    BeforeAll {
+        $script:probeRoot = Join-Path ([IO.Path]::GetTempPath()) ("fixprobe-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Force -Path $script:probeRoot | Out-Null
+    }
+    AfterAll {
+        Remove-Item -LiteralPath $script:probeRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'is asked before the panel is started, not merely defined' {
+        # A probe nothing calls is the shape this project keeps rediscovering:
+        # the write-permission grant, the scope snapshot, the tier exclusion.
+        # Mutation proved the three behavioural tests below all pass with the
+        # call site deleted.
+        $source = Get-Content -LiteralPath (Join-Path `
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+            '.github/scripts/Replicate-Issue.ps1') -Raw
+
+        $probeAt = $source.IndexOf('if (-not (Test-ReplicationFixBaselineStillRed', [StringComparison]::Ordinal)
+        $panelAt = $source.IndexOf('$results = @(Invoke-ReplicationFixPanel', [StringComparison]::Ordinal)
+
+        $probeAt | Should -BeGreaterThan -1 -Because 'the panel path must consult the probe'
+        $panelAt | Should -BeGreaterThan -1
+        $probeAt | Should -BeLessThan $panelAt -Because 'asking after the panel has run saves nothing'
+    }
+
+    It 'asks for exactly one run, whatever the reproduction asked for' {
+        $withCount = Set-ReplicationVerificationRunCount `
+            -Arguments @('-IssueNumber', '7', '-RunCount', '3', '-Platform', 'android') -RunCount 1
+        # Replaced, not appended: a duplicate would make the child process throw.
+        @($withCount | Where-Object { $_ -ceq '-RunCount' }).Count | Should -Be 1
+        $withCount[([array]::IndexOf($withCount, '-RunCount')) + 1] | Should -Be '1'
+        $withCount | Should -Contain '-Platform'
+        $withCount | Should -Contain 'android'
+
+        # A list that never carried one still comes back targeted.
+        $withoutCount = Set-ReplicationVerificationRunCount -Arguments @('-IssueNumber', '7') -RunCount 1
+        @($withoutCount | Where-Object { $_ -ceq '-RunCount' }).Count | Should -Be 1
+    }
+
+    It 'lets the panel run when the tree still fails' {
+        function Invoke-LoggedChildProcess {
+            param($ScriptPath, $Arguments, $LogPath, $Description, $TimeoutSeconds)
+            $script:observedArgs = $Arguments
+            return @{ ExitCode = 0 }
+        }
+        $result = Test-ReplicationFixBaselineStillRed `
+            -BaseVerificationArguments @('-IssueNumber', '7', '-RunCount', '3') `
+            -OutputDirectory (Join-Path $script:probeRoot 'green') `
+            -VerificationScriptPath 'verify.ps1' `
+            -TimeoutSeconds 60
+        $result | Should -BeTrue
+
+        # It must ask the verifier the reproduction's own question - no
+        # -ExpectPass - or a green tree would read as success.
+        $script:observedArgs | Should -Not -Contain '-ExpectPass'
+        $script:observedArgs | Should -Contain '-RunCount'
+    }
+
+    It 'refuses the panel when the tree no longer fails' {
+        function Invoke-LoggedChildProcess {
+            param($ScriptPath, $Arguments, $LogPath, $Description, $TimeoutSeconds)
+            throw 'Replication test verification failed (verifierPassed=False)'
+        }
+        $script:said = @()
+        function Write-Host {
+            param([Parameter(ValueFromPipeline = $true, Position = 0)]$Object)
+            $script:said += ,([string]$Object)
+        }
+        $result = Test-ReplicationFixBaselineStillRed `
+            -BaseVerificationArguments @('-IssueNumber', '7') `
+            -OutputDirectory (Join-Path $script:probeRoot 'red') `
+            -VerificationScriptPath 'verify.ps1' `
+            -TimeoutSeconds 60
+        $result | Should -BeFalse
+
+        $joined = ($script:said -join ' ')
+        $joined | Should -Match 'No fix is attempted'
+        # A build break and a green test both land here, so it must not claim
+        # to know which.
+        $joined | Should -Not -Match 'the test passed'
+        $joined | Should -Match 'did not fail'
+    }
+}
+
+Describe 'A control arm measures every run it was asked for' {
+    BeforeAll {
+        $script:verifierSource = Get-Content -LiteralPath (Join-Path `
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+            '.github/scripts/shared/Invoke-ReplicationTestVerification.ps1') -Raw
+        $script:orchestratorText = Get-Content -LiteralPath (Join-Path `
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+            '.github/scripts/Replicate-Issue.ps1') -Raw
+        $script:verifierSource | Should -Not -BeNullOrEmpty
+    }
+
+    It 'stops early only for the reproduction, which the orchestrator repairs' {
+        $break = [regex]::Match(
+            $script:verifierSource,
+            'if \(-not \$runSucceeded(?<conditions>[^)]*)\) \{[^}]*?break')
+        $break.Success | Should -BeTrue
+        $break.Groups['conditions'].Value | Should -CMatch '-not \$ExpectPass'
+        $break.Groups['conditions'].Value | Should -CMatch '-not \$CompleteAllRuns'
+        $script:verifierSource | Should -CMatch '\[switch\]\$CompleteAllRuns'
+    }
+
+    It 'has the restoration arm ask for all of them' {
+        # Build 15071058 discarded a fix on completedRuns=1/3. The restoration
+        # arm runs without -ExpectPass, so it inherited the reproduction's early
+        # stop and rendered one sample as proof.
+        # Anchored to a single argument line: a lazy multi-line match walks
+        # back into the fix arm, which legitimately carries -ExpectPass, and
+        # then reports the wrong invocation.
+        $arm = [regex]::Match(
+            $script:orchestratorText,
+            "-Arguments (?<args>[^\r\n]*) ``\r?\n\s*-Directory \`$RestorationOutputDirectory")
+        $arm.Success | Should -BeTrue
+        $arm.Groups['args'].Value | Should -CMatch 'CompleteAllRuns'
+        # And it must still be the reproduction's question, not the control's.
+        $arm.Groups['args'].Value | Should -Not -CMatch 'ExpectPass'
     }
 }

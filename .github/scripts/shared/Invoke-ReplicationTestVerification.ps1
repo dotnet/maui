@@ -54,7 +54,15 @@ param(
     # pass. A red test only shows that something is wrong; the control is what
     # shows the red depends on the reported behaviour rather than on something
     # incidental to the scenario.
-    [switch]$ExpectPass
+    [switch]$ExpectPass,
+
+    # The negative control learned this the expensive way: a run that does not
+    # go the way an arm hopes is the arm's evidence, not a reason to stop
+    # measuring. The reproduction still stops early, because the orchestrator
+    # repairs the test and starts again, so repeating a known-red run buys
+    # nothing. A control arm has nothing to repair and its verdict discards work
+    # that is already paid for, so it measures every run it was asked for.
+    [switch]$CompleteAllRuns
 )
 
 $ErrorActionPreference = 'Stop'
@@ -501,7 +509,7 @@ for ($run = 1; $run -le $RunCount; $run++) {
     $outcome = Invoke-SingleVerificationRun -Run $run -ConsoleLog $consoleLog
     $runOutcomes.Add($outcome)
     $runSucceeded = if ($ExpectPass) { $outcome.TestPassed } else { $outcome.Passed }
-    if (-not $runSucceeded -and -not $ExpectPass) {
+    if (-not $runSucceeded -and -not $ExpectPass -and -not $CompleteAllRuns) {
         # Repeating a run that already failed only wastes device time; the
         # orchestrator repairs the test and verifies again from scratch.
         break
