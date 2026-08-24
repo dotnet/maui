@@ -4194,6 +4194,48 @@ function Set-ReplicationVerificationRunCount {
     return $result.ToArray()
 }
 
+function Get-ReplicationFixBaselineGreenCause {
+    <#
+        .SYNOPSIS
+            Names why the pre-panel probe did not see the reproduction fail.
+
+        .DESCRIPTION
+            The probe itself cannot tell a green test from a broken build, so it
+            reports only what it observed. That is the right answer to give the
+            run, and the wrong answer to leave in the log: build 15071058 spent
+            a whole fix phase on a green tree and the reason was never recorded,
+            so the next occurrence starts the same investigation again.
+
+            The distinction is already measured. This reads the result file the
+            probe's own run wrote, in the probe's own fresh directory, so it
+            cannot inherit an earlier round's verdict - the mistake that handed
+            two attempts of build 15070739 the diagnosis of a verification that
+            never happened.
+    #>
+    param([Parameter(Mandatory = $true)][string]$VerificationDirectory)
+
+    $resultPath = Join-Path $VerificationDirectory 'verification-result.json'
+    if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
+        return 'The probe wrote no result file, so the verifier did not get as far as running the test.'
+    }
+
+    try {
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+    } catch {
+        return 'The probe left an unreadable result file, so why it did not fail cannot be established.'
+    }
+
+    if ($result.infrastructureFailure -eq $true) {
+        return 'The test never ran: the probe reported an infrastructure failure, so this is a broken tree rather than a passing test.'
+    }
+    if ([string]::IsNullOrWhiteSpace([string]$result.actualFailureMessage)) {
+        return 'The test ran and passed. The reproduction was certified as failing earlier in this same run, so something between that certification and here made it stop failing.'
+    }
+    return ("The test ran and failed, but not as certified. Expected '" +
+        (ConvertTo-ReplicationSafeLog ([string]$result.expectedFailureSignature) 200) +
+        "', observed '" + (ConvertTo-ReplicationSafeLog ([string]$result.actualFailureMessage) 200) + "'.")
+}
+
 function Test-ReplicationFixBaselineStillRed {
     <#
         .SYNOPSIS
@@ -4242,6 +4284,7 @@ function Test-ReplicationFixBaselineStillRed {
         Write-Host ('No fix is attempted: the reproduction test did not fail on the tree the ' +
             'panel would have started from, so a candidate that changed nothing would be ' +
             'recorded as its fix. ' + (ConvertTo-ReplicationSafeLog $_.Exception.Message 600))
+        Write-Host (Get-ReplicationFixBaselineGreenCause -VerificationDirectory $OutputDirectory)
         return $false
     }
 }

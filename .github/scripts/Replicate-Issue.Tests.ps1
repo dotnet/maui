@@ -98,7 +98,8 @@ BeforeAll {
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
-        'Get-ReplicationMissingIdentifierEvidence',
+        'Get-ReplicationFixBaselineGreenCause',
+    'Get-ReplicationMissingIdentifierEvidence',
     'Set-ReplicationVerificationRunCount',
     'Test-ReplicationFixBaselineStillRed',
     'Get-ReplicationUnbuildableTestTiers',
@@ -11006,5 +11007,75 @@ Describe 'An invented API is named as invented' {
                 Should -Match '-RepositoryRoot \$repoRoot' `
                     -Because 'a caller without a root can never search'
         }
+    }
+}
+
+Describe 'A green tree at panel time is explained, not just reported' {
+    BeforeEach {
+        $script:causeDir = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Force -Path $script:causeDir | Out-Null
+        # Defined here rather than in the Describe body: Pester runs the body at
+        # discovery, so a function declared there does not exist when the It
+        # runs. Local scope, never global - a global stub deletes whichever
+        # fixture another Describe installed under the same name.
+        function Write-CauseResult([hashtable]$Fields) {
+            $Fields | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath (Join-Path $script:causeDir 'verification-result.json') -Encoding utf8NoBOM
+        }
+    }
+    AfterEach { Remove-Item -LiteralPath $script:causeDir -Recurse -Force -ErrorAction SilentlyContinue }
+
+    It 'says the verifier never got that far when no result was written' {
+        Get-ReplicationFixBaselineGreenCause -VerificationDirectory $script:causeDir |
+            Should -Match 'wrote no result file'
+    }
+
+    It 'separates a broken tree from a passing test' {
+        Write-CauseResult @{ infrastructureFailure = $true; actualFailureMessage = '' }
+        $cause = Get-ReplicationFixBaselineGreenCause -VerificationDirectory $script:causeDir
+        $cause | Should -Match 'never ran'
+        $cause | Should -Not -Match 'ran and passed'
+    }
+
+    It 'says the test passed, and that this contradicts the certification' {
+        Write-CauseResult @{ infrastructureFailure = $false; actualFailureMessage = '' }
+        $cause = Get-ReplicationFixBaselineGreenCause -VerificationDirectory $script:causeDir
+        $cause | Should -Match 'ran and passed'
+        $cause | Should -Match 'certified as failing earlier in this same run'
+    }
+
+    It 'reports both signatures when the failure changed rather than vanished' {
+        Write-CauseResult @{
+            infrastructureFailure    = $false
+            actualFailureMessage     = 'Assert.Equal() Failure: 3 versus 4'
+            expectedFailureSignature = 'Editor collapsed to zero height'
+        }
+        $cause = Get-ReplicationFixBaselineGreenCause -VerificationDirectory $script:causeDir
+        $cause | Should -Match 'not as certified'
+        $cause | Should -Match 'Editor collapsed to zero height'
+        $cause | Should -Match '3 versus 4'
+    }
+
+    It 'survives a result file that is not JSON' {
+        Set-Content -LiteralPath (Join-Path $script:causeDir 'verification-result.json') `
+            -Value '{ this is not json' -Encoding utf8NoBOM
+        { Get-ReplicationFixBaselineGreenCause -VerificationDirectory $script:causeDir } |
+            Should -Not -Throw
+        Get-ReplicationFixBaselineGreenCause -VerificationDirectory $script:causeDir |
+            Should -Match 'unreadable'
+    }
+
+    It 'is printed by the probe, and reads only the probe own directory' {
+        $source = Get-Content -LiteralPath (Join-Path `
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path `
+            '.github/scripts/Replicate-Issue.ps1') -Raw
+        # The call must be inside the probe's catch, and must be handed the
+        # directory the probe just wrote - a shared directory would hand it an
+        # earlier round's verdict, which is the defect build 15070739 paid for.
+        $source | Should -CMatch 'Get-ReplicationFixBaselineGreenCause -VerificationDirectory \$OutputDirectory'
+        $probe = [regex]::Match($source,
+            'function Test-ReplicationFixBaselineStillRed \{(?<body>(?:.|\n)*?)\n\}\n')
+        $probe.Success | Should -BeTrue
+        $probe.Groups['body'].Value | Should -CMatch 'Get-ReplicationFixBaselineGreenCause'
     }
 }
