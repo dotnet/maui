@@ -4145,10 +4145,29 @@ function Read-TestProposal {
         throw "Test proposal filter must be exactly '$expectedFilter'."
     }
 
-    $signature = ConvertTo-BoundedAgentLine `
-        -Value $proposal.expectedFailureSignature `
-        -Description 'Test expected failure signature' `
-        -MaximumLength 1000
+    $signature = try {
+        ConvertTo-BoundedAgentLine `
+            -Value $proposal.expectedFailureSignature `
+            -Description 'Test expected failure signature' `
+            -MaximumLength 1000
+    } catch {
+        # Build 15070739 lost two attempts here. Told its signature did not
+        # match, the agent did the sensible thing and declared what the test
+        # actually printed - 'Assert.Equal() Failure: Values differ\nExpected:
+        # ...' - which is multi-line, so this refused it. Between them the two
+        # rules leave no legal answer: the failure text cannot be declared, and
+        # the declared text cannot be printed. Name the way out, because the
+        # generic "must be a single line" does not imply it.
+        $raw = [string]$proposal.expectedFailureSignature
+        if ($raw -match '^\s*Assert\.\w+\(\)') {
+            throw ("$($_.Exception.Message) This is the assertion's own output, " +
+                'which xUnit prints on more than one line and which therefore cannot be ' +
+                'declared. Do not copy it. Rewrite the assertion as Assert.True(<the same ' +
+                'comparison>, $"<one-line signature naming the symptom and the measured ' +
+                'values>") and declare that message, which is the only text you control.')
+        }
+        throw
+    }
     if ($signature.Length -lt 3) {
         throw 'Test proposal has an invalid expected failure signature.'
     }
@@ -6501,6 +6520,21 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 -Attempt $attempt
 
             $intentToAddApplied = $false
+            # Everything from here to the verifier can throw before the verifier
+            # writes anything, and the catch below reads its result file. That
+            # file survives from the previous round, so a proposal refused for a
+            # line break re-printed the previous round's diagnosis and the agent
+            # never learned what was actually wrong. Build 15070739 lost
+            # attempts 4 and 5 that way, in 0.23s and with no device run, while
+            # being told about a verification that had happened two rounds
+            # earlier. Remember when the file was last written, so a diagnosis
+            # can only be drawn from a measurement this round produced.
+            $verificationResultPath = Join-Path $verificationDir 'verification-result.json'
+            $verificationResultStamp = if (Test-Path -LiteralPath $verificationResultPath -PathType Leaf) {
+                (Get-Item -LiteralPath $verificationResultPath).LastWriteTimeUtc
+            } else {
+                $null
+            }
             try {
                 $generatedFiles = @(Get-GeneratedTestFiles)
                 $testProposal = Read-TestProposal -ActualFiles $generatedFiles
@@ -6555,8 +6589,25 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
             }
             catch {
                 $repairFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 4000
-                $verificationDiagnosis = Get-ReplicationVerificationFailureSummary `
-                    -VerificationDirectory $verificationDir
+                $verificationRan = $true
+                $currentStamp = if (Test-Path -LiteralPath $verificationResultPath -PathType Leaf) {
+                    (Get-Item -LiteralPath $verificationResultPath).LastWriteTimeUtc
+                } else {
+                    $null
+                }
+                if ($null -eq $currentStamp -or $currentStamp -eq $verificationResultStamp) {
+                    # The verifier never wrote a result this round, so it never
+                    # ran. The exception is the only thing that happened, and
+                    # the stale file would describe a different attempt.
+                    $verificationRan = $false
+                    Write-Host "Attempt ${verificationRound} never reached verification: $repairFailureSummary"
+                }
+                $verificationDiagnosis = if ($verificationRan) {
+                    Get-ReplicationVerificationFailureSummary `
+                        -VerificationDirectory $verificationDir
+                } else {
+                    ''
+                }
                 if ($verificationDiagnosis) {
                     # Echo what the agent is about to be told. Without this the
                     # build log records only that verification failed, and a run

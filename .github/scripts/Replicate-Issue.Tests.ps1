@@ -2758,6 +2758,108 @@ public class Issue31059
             Should -Throw '*substitutes Arrange for a real device orientation change*'
     }
 
+    It 'names the way out when a signature copies the assertion own output' {
+        # Build 15070739 lost attempts 4 and 5 here, each in under a second and
+        # with no device run. Told its declared signature did not match, the
+        # agent declared what the test actually printed - which is xUnit's
+        # multi-line 'Assert.Equal() Failure: Values differ...' - and the
+        # single-line rule refused it. Between them the two rules left no legal
+        # answer: the printed text cannot be declared, and the declared text
+        # cannot be printed. The only way out is a different assertion, and
+        # nothing said so.
+        $repoRoot = $TestDrive
+        $IssueNumber = 30163
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Issue30163.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        @'
+public class Issue30163
+{
+    public void ReproducesIssue()
+    {
+        Assert.Equal(UISemanticContentAttribute.ForceRightToLeft, observed);
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue30163'
+            expectedFailureSignature = "Assert.Equal() Failure: Values differ`nExpected: ForceRightToLeft`nActual:   Unspecified"
+            files = @($relativePath)
+            reproductionSteps = @('Toggle FlowDirection at runtime and read the native attribute.')
+            expectedBehavior = 'The native DatePicker follows the runtime FlowDirection change.'
+            observedBehavior = 'The native semantic content attribute stays Unspecified.'
+            reportedTrigger = 'Toggle FlowDirection to RightToLeft after the page is attached.'
+            testTrigger = 'Toggle FlowDirection to RightToLeft after the handler is attached.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires the native UIDatePicker.'
+                xaml = 'Requires a runtime property transition.'
+                device = 'n/a'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+            Should -Throw '*Rewrite the assertion as Assert.True*'
+    }
+
+    It 'still refuses an ordinary multi-line signature without that advice' {
+        # The advice is for one shape only. A prose signature that happens to
+        # carry a newline is an ordinary mistake, and telling its author to
+        # change assertion would send them somewhere useless.
+        $repoRoot = $TestDrive
+        $IssueNumber = 30164
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Issue30164.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        @'
+public class Issue30164
+{
+    public void ReproducesIssue()
+    {
+        Assert.True(observed == expected, "message");
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue30164'
+            expectedFailureSignature = "Native flow direction did not change`nafter the toggle"
+            files = @($relativePath)
+            reproductionSteps = @('Toggle FlowDirection at runtime.')
+            expectedBehavior = 'The native control follows the change.'
+            observedBehavior = 'It does not.'
+            reportedTrigger = 'Toggle FlowDirection after attachment.'
+            testTrigger = 'Toggle FlowDirection after attachment.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires the native control.'
+                xaml = 'Requires a runtime property transition.'
+                device = 'n/a'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        $message = ''
+        try {
+            Read-TestProposal -ActualFiles @($relativePath) | Out-Null
+        } catch {
+            $message = $_.Exception.Message
+        }
+
+        $message | Should -Match 'must be a single line'
+        $message | Should -Not -Match 'Rewrite the assertion as Assert\.True'
+    }
+
     It 'rejects directly dispatched system insets as propagation evidence' {
         $repoRoot = $TestDrive
         $IssueNumber = 37418
@@ -10231,5 +10333,55 @@ Describe 'An unmeasured negative control never refutes a reproduction' {
         # or an unmeasured control would still destroy the reproduction.
         $branch | Should -BeLessThan $refute
         $absent | Should -BeLessThan $refute
+    }
+}
+
+Describe 'An attempt is diagnosed by what it measured, not by what it found lying around' {
+    # Build 15070739 spent attempts 4 and 5 in under a second each, with no
+    # device run at all, because Read-TestProposal refused the signature the
+    # agent had just written. The catch that builds the retry advice reads
+    # verification-result.json, which the previous round had left behind, so
+    # the agent was handed a diagnosis of a verification that never happened
+    # and repeated the same mistake. The rule is the one the baseline
+    # postcondition taught: believe evidence this round produced.
+    BeforeAll {
+        $script:loopSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $script:catchBody = [regex]::Match(
+            $script:loopSource,
+            '(?ms)\$repairFailureSummary = ConvertTo-ReplicationSafeLog \$_\.Exception\.Message 4000.*?\$repairFailureSummary = "\$verificationDiagnosis').Value
+    }
+
+    It 'reads the result file stamp before the attempt can overwrite it' {
+        $script:catchBody | Should -Not -BeNullOrEmpty
+        $script:loopSource |
+            Should -Match '\$verificationResultStamp = if \(Test-Path -LiteralPath \$verificationResultPath'
+        # It has to be captured before the try, or it records the very write it
+        # is meant to detect.
+        $stampIndex = $script:loopSource.IndexOf('$verificationResultStamp = if')
+        $tryIndex = $script:loopSource.IndexOf('$generatedFiles = @(Get-GeneratedTestFiles)')
+        $stampIndex | Should -BeGreaterThan 0
+        $stampIndex | Should -BeLessThan $tryIndex
+    }
+
+    It 'does not read a diagnosis from a result the attempt did not write' {
+        $script:catchBody | Should -Match '\$currentStamp -eq \$verificationResultStamp'
+        $script:catchBody | Should -Match '\$verificationRan = \$false'
+        # The summary call must be conditional, not unconditional as before.
+        $script:catchBody |
+            Should -Match '(?ms)if \(\$verificationRan\) \{\s*Get-ReplicationVerificationFailureSummary'
+    }
+
+    It 'says so when an attempt never reached verification' {
+        # Silence here is what let two attempts look like failed verifications
+        # in the console, which is how the run read back as five spent attempts
+        # rather than three.
+        $script:catchBody | Should -Match 'never reached verification'
+    }
+
+    It 'still diagnoses an attempt that did run' {
+        # The guard must not cost the ordinary case its advice.
+        $script:catchBody | Should -Match 'Get-ReplicationVerificationFailureSummary'
+        $script:catchBody | Should -Match '-VerificationDirectory \$verificationDir'
     }
 }
