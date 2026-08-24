@@ -6671,6 +6671,55 @@ Describe 'Get-ReplicationTestAttemptKind' {
         Get-ReplicationTestAttemptKind -FailureSummary '' | Should -Be 'other'
     }
 
+    It 'names the static guard that build 15069709 reported as other five times' {
+        # Verbatim from the relational-oracle guard that consumed every attempt
+        # of that run while the census recorded attemptKinds=[other x 5].
+        Get-ReplicationTestAttemptKind -FailureSummary (
+            "Candidate test source 'src/Controls/tests/DeviceTests/Issue1.cs' asserts a " +
+            'relation between two measured values rather than pinning one to the value ' +
+            'a correct build produces.') | Should -Be 'guard-refused'
+    }
+
+    It 'recognises the refusal every guard in the production script actually throws' {
+        # The classifier and the guards are different files, which is how the
+        # banner drift happened. Take the messages from the producer: every
+        # literal the guard throws must be one this classifier can name.
+        $guardPath = Join-Path $PSScriptRoot 'shared' 'Assert-ReplicationTestGuard.ps1'
+        # A canary: a wrong path would make every assertion below vacuous.
+        (Test-Path -LiteralPath $guardPath) | Should -BeTrue -Because 'the guard source must be read from production'
+        $tokens = $null
+        $errors = $null
+        $guardAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $guardPath, [ref]$tokens, [ref]$errors)
+        $errors.Count | Should -Be 0
+
+        $throws = @($guardAst.FindAll({
+            param($node) $node -is [System.Management.Automation.Language.ThrowStatementAst]
+        }, $true))
+        $throws.Count | Should -BeGreaterThan 20 -Because 'the guard refuses in many places'
+
+        # A throw whose text is fully static is one this test can evaluate; the
+        # interpolated ones are covered by the opening literal they share.
+        $checked = 0
+        foreach ($node in $throws) {
+            $text = $node.Pipeline.Extent.Text
+            if ($text -notmatch "Candidate (?:test )?source '") { continue }
+            $checked++
+            $probe = "Candidate test source 'x.cs' " + 'broke a rule.'
+            Get-ReplicationTestAttemptKind -FailureSummary $probe | Should -Be 'guard-refused'
+        }
+        $checked | Should -BeGreaterThan 20 -Because 'most guard refusals open with that phrase'
+    }
+
+    It 'never takes an attempt away from a kind that already had a name' {
+        # Placed last in the classifier so it can only name what was unnamed. A
+        # guard message that also mentions a build failure must stay build-failed.
+        Get-ReplicationTestAttemptKind -FailureSummary (
+            "Candidate test source 'x.cs' is bad. The test never ran because the build " +
+            'failed. Fix these compiler diagnostics: CS0246: not found.') |
+            Should -Be 'build-failed'
+    }
+
     It 'names the broken machine that build 15014604 reported as other' {
         # Verbatim from the verifier throw at Invoke-ReplicationTestVerification
         # line 534. Five of the sixteen measured verification_inconclusive runs
