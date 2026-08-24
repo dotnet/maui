@@ -122,6 +122,33 @@ function Get-ReplicationCandidateText {
     return [string]$property.Value
 }
 
+function Test-ReplicationWeakerThanOpenPullRequest {
+    <#
+        .SYNOPSIS
+            True when an incoming publication carries no fix while the open
+            pull request it would supersede does carry one.
+
+        .DESCRIPTION
+            Superseding exists so a re-run can refresh the evidence for an
+            issue after the pipeline changes. It is not licence for a weaker
+            publication to destroy a stronger one, which is what happened when
+            reproduction-only runs retired two pull requests that each carried
+            a four-arm certified fix.
+    #>
+    param(
+        [AllowNull()][AllowEmptyString()][string]$DuplicateBody,
+        [bool]$IncomingCarriesFix
+    )
+
+    if ($IncomingCarriesFix) { return $false }
+    if ([string]::IsNullOrWhiteSpace($DuplicateBody)) { return $false }
+
+    # The fix section is the only part of the body that a reproduction-only
+    # publication never writes, so it is the honest discriminator. Matching the
+    # title would trust a string the publisher does not control.
+    return [bool]($DuplicateBody -match '(?m)^## Proposed fix\s*$')
+}
+
 function Get-ReplicationFixRegressionSignal {
     <#
         .SYNOPSIS
@@ -821,6 +848,27 @@ if (-not $DryRun) {
         $duplicate = @($openPullsJson | ConvertFrom-Json) | Where-Object {
             [string]$_.body -like "*$marker*"
         } | Select-Object -First 1
+
+        # A reproduction is not a replacement for a fix. Builds 15075238 and
+        # 15076851 reproduced issues 36412 and 35624, found no fix, and retired
+        # pull requests 393 and 396 - which each carried a four-arm certified
+        # fix - replacing them with reproduction-only pull requests 398 and 403.
+        # Superseding exists so a re-run can refresh evidence, not so a weaker
+        # publication can destroy a stronger one, so an incoming run without a
+        # fix stands aside for an open pull request that has one.
+        $incomingCarriesFix = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
+            (Test-Path -LiteralPath $FixPatchPath)
+        $standsAside = $duplicate -and (Test-ReplicationWeakerThanOpenPullRequest `
+            -DuplicateBody ([string]$duplicate.body) -IncomingCarriesFix $incomingCarriesFix)
+        if ($standsAside) {
+            $plan.duplicateOf = [string]$duplicate.url
+            Write-Host ("An open pull request already carries a fix for this issue and platform, " +
+                "so this reproduction-only run stands aside: $($duplicate.url)")
+            Write-ReplicationPublicationManifest -Plan $plan
+            Pop-Location
+            exit 0
+        }
+
         if ($duplicate -and -not $SupersedeExisting) {
             # Build 15001510 reproduced issue 37151 and authored its test while
             # an earlier run was publishing the same issue and platform. The

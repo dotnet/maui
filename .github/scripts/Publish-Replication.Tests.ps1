@@ -50,6 +50,7 @@ BeforeAll {
         'New-ReplicationPullRequestTitle',
         'New-ReplicationPullRequestBody',
         'Get-ReplicationFixRegressionSignal',
+        'Test-ReplicationWeakerThanOpenPullRequest',
         'Resolve-ReplicationSourceRepository'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
@@ -1285,5 +1286,78 @@ Describe 'The regression cross-reference reports and never refuses' {
             -IssueTitle 'T' -IssueOwner 'dotnet' -IssueRepository 'maui' -BuildUrl ''
         $without | Should -Not -Match 'Regression cross-reference'
         $without | Should -Match 'Baz\.cs'
+    }
+}
+
+Describe 'A reproduction never retires a pull request that carries a fix' {
+    # Builds 15075238 and 15076851 reproduced issues 36412 and 35624, found no
+    # fix, and closed pull requests 393 and 396 - each carrying a four-arm
+    # certified fix - in favour of reproduction-only replacements.
+
+    BeforeAll {
+        $script:fixBody = @'
+## Reproduced issue
+Something is wrong.
+
+## Proposed fix
+
+This pull request carries two commits.
+'@
+        $script:reproBody = @'
+## Reproduced issue
+Something is wrong.
+
+## Reproduction steps
+Tap the thing.
+'@
+    }
+
+    It 'stands aside when the open pull request has a fix and this run has none' {
+        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:fixBody -IncomingCarriesFix $false |
+            Should -BeTrue
+    }
+
+    It 'supersedes normally when this run also carries a fix' {
+        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:fixBody -IncomingCarriesFix $true |
+            Should -BeFalse
+    }
+
+    It 'supersedes normally when the open pull request is reproduction-only' {
+        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:reproBody -IncomingCarriesFix $false |
+            Should -BeFalse
+    }
+
+    It 'treats an empty or absent body as nothing worth protecting' {
+        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody '' -IncomingCarriesFix $false |
+            Should -BeFalse
+        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $null -IncomingCarriesFix $false |
+            Should -BeFalse
+    }
+
+    It 'does not mistake prose that merely mentions a proposed fix' {
+        $prose = "We considered a fix.`n`nSee ## Proposed fix elsewhere for details."
+        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $prose -IncomingCarriesFix $false |
+            Should -BeFalse
+    }
+
+    It 'stands aside before the supersede branch can retire anything' {
+        $text = $script:PrSource
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$null, [ref]$null)
+
+        # The last occurrence is the call site; the first is the definition,
+        # and asserting against that would make the ordering check vacuous.
+        $callIndex = $text.LastIndexOf('Test-ReplicationWeakerThanOpenPullRequest')
+        $definitionIndex = $text.IndexOf('function Test-ReplicationWeakerThanOpenPullRequest')
+        $callIndex | Should -BeGreaterThan $definitionIndex
+
+        # The guard has to come first: once $supersededPull is set the earlier
+        # pull request is closed further down.
+        $supersedeIndex = $text.IndexOf('$supersededPull = $duplicate')
+        $supersedeIndex | Should -BeGreaterThan $callIndex
+
+        # And it has to leave without publishing rather than fall through.
+        $between = $text.Substring($callIndex, $supersedeIndex - $callIndex)
+        $between | Should -Match 'exit 0'
+        $between | Should -Not -Match 'gh pr close'
     }
 }
