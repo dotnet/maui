@@ -1343,22 +1343,30 @@ function Get-ReplicationVerificationFailureSummary {
         if ($unreached) { return $unreached }
 
         $selfPrinting = [regex]::Match($actual, '^Assert\.(\w+)\(\)')
-        if ($selfPrinting.Success -and
-            $selfPrinting.Groups[1].Value -notin @('Null', 'NotNull')) {
-            # The null family is deliberately excluded. Those failures are the
-            # setup case the general advice below was written for - the object
-            # under test never materialised - and rewriting one as
-            # Assert.True(x != null, "<the bug's signature>") would print the
-            # reported symptom for a test that never observed it. That is the
-            # exact substitution this gate exists to catch, so the wrong
-            # advice here would teach the author to defeat it.
+        # The direction decides, not the assertion's name. "Value is null" is
+        # the object under test never materialising - the setup case this gate
+        # exists to catch - and rewriting it as Assert.True(x != null, "<the
+        # bug's signature>") would print the reported symptom for a test that
+        # never observed it.
+        #
+        # "Value is not null" is the opposite: a real value observed where none
+        # should be. That cannot be a materialisation failure, because a missing
+        # object is exactly what makes it pass. Build 15075609 asserted that a
+        # native background returned to null after Background was set to null,
+        # observed an ImmutableBrush, and spent four consecutive attempts being
+        # told to rewrite an oracle that was already correct - or to declare a
+        # signature that cannot be declared.
+        $nullPrecondition =
+            ($selfPrinting.Success -and $selfPrinting.Groups[1].Value -eq 'NotNull') -or
+            ($actual -match '(?i)\bValue is null\b')
+        if ($selfPrinting.Success -and -not $nullPrecondition) {
             $assertion = $selfPrinting.Groups[1].Value
             if ($assertion -in @('True', 'False')) {
                 return "The test failed with '$actual', which is what Assert.$assertion prints when it is given no message, so it can never match the declared expectedFailureSignature '$expected'. Pass the signature as the second argument: Assert.$assertion(<condition>, `$`"$expected`: expected <value>, observed {<measured>}`"). The message must carry the measured values."
             }
             return "The test failed with '$actual' instead of the declared expectedFailureSignature '$expected'. The assertion itself is the problem, not what it asserts: in xUnit only Assert.True and Assert.False accept a message, and Assert.$assertion prints its own text and nothing else, so no declared signature can ever match it. Keep asserting the same behavior and rewrite the assertion as Assert.True(<the same comparison>, `$`"$expected`: expected <value>, observed {<measured>}`"), so the failure prints the signature you declared."
         }
-        return "The test failed, but with '$actual' instead of the declared expectedFailureSignature '$expected'. A failure such as a null or setup assertion does not prove the reported bug. Either assert the reported behavior directly so the declared signature is the failure, or declare the signature that the reproduction actually produces."
+        return "The test failed, but with '$actual' instead of the declared expectedFailureSignature '$expected'. A failure such as a null or setup assertion does not prove the reported bug. Assert the reported behavior directly so the declared signature is the failure. Do not declare what this run printed instead: xUnit prints its own text over several lines, and a declared signature must be a single line, so that answer is refused however accurately it describes the failure."
     }
     if ($result.PSObject.Properties['stableFailureMessage'] -and
         $result.stableFailureMessage -eq $false) {

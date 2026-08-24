@@ -653,6 +653,10 @@ Describe 'Replication orchestrator security boundary' {
         # so rewriting it as Assert.True(platformView != null, "<signature>")
         # would print the symptom for a run that only proved its own setup
         # broke - the substitution this gate exists to refuse.
+        #
+        # What decides is the direction the failure reports, not the name of
+        # the assertion: "Value is null" is the object never materialising,
+        # whichever assertion observed it.
         $dir = Join-Path $TestDrive 'verification-nullprecondition'
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
         foreach ($assertion in @('NotNull', 'Null')) {
@@ -670,6 +674,60 @@ Describe 'Replication orchestrator security boundary' {
             $summary | Should -Match 'does not prove the reported bug'
             $summary | Should -Not -Match 'Keep asserting the same behavior'
             $summary | Should -Not -Match 'rewrite the assertion as Assert\.True'
+        }
+    }
+
+    It 'does rewrite a null oracle that observed a real value' {
+        # Build 15075609 spent four consecutive wrong-signature attempts here.
+        # The issue is that a native background does not return to null when
+        # Background is set to null, so Assert.Null(view.BackgroundColor) is
+        # the correct oracle and its failure - "Value is not null", observing
+        # an ImmutableBrush - is the reported symptom itself, not a setup that
+        # broke. Excluding the whole null family sent it to advice offering an
+        # option this pipeline has already proved illegal.
+        $dir = Join-Path $TestDrive 'verification-nullobserved'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $true
+            signatureMatched = $false
+            infrastructureFailure = $false
+            stableFailureMessage = $true
+            expectedFailureSignature = 'Background remained set after Background = null'
+            actualFailureMessage =
+                "Assert.Null() Failure: Value is not null`nExpected: null`nActual: ImmutableBrush"
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match 'Keep asserting the same behavior'
+        $summary | Should -Match 'rewrite the assertion as Assert\.True'
+    }
+
+    It 'never offers to declare what the reproduction actually produced' {
+        # xUnit prints Assert.Equal's text on three lines and a declared
+        # signature must be one line, so that option cannot be taken: build
+        # 15070739 took it, Read-TestProposal threw, and the run was lost.
+        # It must not survive in any branch of this advice.
+        $dir = Join-Path $TestDrive 'verification-nodeclare'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        $failures = @(
+            "Assert.Null() Failure: Value is null",
+            "Assert.NotNull() Failure: Value is null",
+            "Assert.Null() Failure: Value is not null",
+            "Assert.Equal() Failure: Values differ`nExpected: 0`nActual: 169",
+            "Something entirely unfamiliar happened.")
+        foreach ($failure in $failures) {
+            @{
+                verifierPassed = $true
+                signatureMatched = $false
+                infrastructureFailure = $false
+                stableFailureMessage = $true
+                expectedFailureSignature = 'A declared one-line signature'
+                actualFailureMessage = $failure
+            } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+
+            Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir |
+                Should -Not -Match 'declare the signature that the reproduction actually produces'
         }
     }
 
