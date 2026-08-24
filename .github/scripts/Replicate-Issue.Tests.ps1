@@ -6068,6 +6068,44 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         $script:Source | Should -Match 'CS1061'
         $script:Source | Should -Match 'CS0122'
     }
+
+    It 'names both sides of the nullable split, not just one' {
+        # CS8604 (43), CS8602 (39), CS8632 (13) and CS8600 (12) are 107 of the
+        # compiler errors measured across this pipeline's runs. They come from
+        # two projects configured the opposite way, so guidance that names only
+        # one half sends the agent into the other.
+        foreach ($code in 'CS8632', 'CS8602', 'CS8604', 'CS8600') {
+            $script:Source | Should -Match $code
+        }
+
+        $script:Source | Should -Match 'Controls\.DeviceTests\.csproj'
+        $script:Source | Should -Match 'Controls\.TestCases\.Android\.Tests\.csproj'
+    }
+
+    It 'still describes the projects the way they are actually configured' {
+        # The prompt asserts a fact about four platform projects and the device
+        # test project. If anyone flips <Nullable> in either place the guidance
+        # silently becomes a lie, and the agent is taught to write code the
+        # compiler rejects. Read the projects rather than trusting the prose.
+        $repoRoot = Split-Path (Split-Path (Split-Path $script:ScriptPath))
+
+        foreach ($platform in 'Android', 'iOS', 'Mac', 'WinUI') {
+            $projectPath = Join-Path $repoRoot ("src/Controls/tests/TestCases.$platform.Tests/Controls.TestCases.$platform.Tests.csproj")
+            $projectPath | Should -Exist
+            $project = Get-Content -LiteralPath $projectPath -Raw
+
+            $project | Should -Match '<Nullable>enable</Nullable>'
+            $project | Should -Match 'TestCases\.Shared\.Tests'
+        }
+
+        $deviceTests = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
+        $deviceTests | Should -Not -Match '<Nullable>\s*enable\s*</Nullable>'
+
+        $deviceShared = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'src/Core/tests/DeviceTests.Shared/Core.DeviceTests.Shared.csproj')
+        ($deviceShared -split "`n" |
+            Where-Object { $_ -match '<Nullable>\s*enable' -and $_ -notmatch '<!--' }) |
+            Should -BeNullOrEmpty
+    }
 }
 
 Describe 'the orchestrator parses' {
