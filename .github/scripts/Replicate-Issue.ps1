@@ -3848,6 +3848,11 @@ function Invoke-ReplicationFixArms {
     }
 
     Set-Content -LiteralPath $PatchPath -Value $WinnerDiff -Encoding utf8NoBOM
+    # Recorded before the patch, for the same reason the panel records it
+    # before a candidate: the product build regenerates files of its own, and
+    # dirt that was already there is not something the winning diff did.
+    $inheritedDirt = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths |
+        Where-Object { $ScopeFiles -cnotcontains $_ })
     & git apply --whitespace=nowarn -- $PatchPath
     if ($LASTEXITCODE -ne 0) {
         # The panel restores the tree between candidates, so the winner's work
@@ -3857,7 +3862,7 @@ function Invoke-ReplicationFixArms {
         return $null
     }
 
-    $applied = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths)
+    $applied = @(Get-ReplicationFixCandidateChanges -ExcludePaths ($ReproductionPaths + $inheritedDirt))
     $outside = @($applied | Where-Object { $ScopeFiles -cnotcontains $_ })
     if ($outside.Count -gt 0) {
         # Belt and braces: the diff was captured from git rather than from the

@@ -9181,6 +9181,10 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $script:restoreCalls = 0
         $script:restoreSucceeds = $true
         $script:appliedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+        # What the tree carried before the winning diff was replayed. Empty by
+        # default, so the winner answers for everything the stub reports.
+        $script:appliedPathsBefore = @()
+        $script:gitApplied = $false
         $script:gitApplySucceeds = $true
 
         function Invoke-LoggedChildProcess {
@@ -9198,10 +9202,19 @@ Describe 'Proving the fix is what turned the reproduction green' {
         }
         function Get-ReplicationFixCandidateChanges {
             param($ExcludePaths)
-            return @($script:appliedPaths)
+            # The arms ask twice: once before applying the winning diff, to
+            # learn what the tree already carried, and once after. A stub that
+            # answers the same thing both times cannot tell the winner's work
+            # from the product build's, and it must honour ExcludePaths or the
+            # exclusion it is meant to exercise does nothing.
+            $paths = if ($script:gitApplied) {
+                $script:appliedPaths
+            } else { $script:appliedPathsBefore }
+            @($paths | Where-Object { @($ExcludePaths) -cnotcontains $_ })
         }
         function git {
             if ($args[0] -eq 'apply') {
+                $script:gitApplied = $script:gitApplySucceeds
                 $global:LASTEXITCODE = if ($script:gitApplySucceeds) { 0 } else { 1 }
             }
         }
@@ -9265,6 +9278,31 @@ Describe 'Proving the fix is what turned the reproduction green' {
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 0
         $script:restoreCalls | Should -Be 1
+    }
+
+    It 'measures the winner although the product build regenerated a file of its own' {
+        # The last gate before the fix is measured had the same blind spot the
+        # panel did. Build 15069710's oracle run rewrote HybridWebView.js, so
+        # even a winner whose diff applied cleanly would have been refused here
+        # for touching a file it never wrote.
+        $generated = 'src/Core/src/Handlers/HybridWebView/HybridWebView.js'
+        $script:appliedPathsBefore = @($generated)
+        $script:appliedPaths = @($generated, 'src/Core/src/Handlers/EntryHandler.cs')
+
+        $evidence = Invoke-ReplicationFixArms @script:armArgs
+
+        $evidence | Should -Not -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 2
+    }
+
+    It 'still refuses a winner that touched an unrelated file on its own watch' {
+        $script:appliedPathsBefore = @('src/Core/src/Handlers/HybridWebView/HybridWebView.js')
+        $script:appliedPaths = @(
+            'src/Core/src/Handlers/HybridWebView/HybridWebView.js',
+            'src/Core/src/Handlers/EntryHandler.cs', 'eng/Versions.props')
+
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 0
     }
 
     It 'discards the fix, and restores the tree, when the fix arm does not pass' {
