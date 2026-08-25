@@ -65,5 +65,26 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		[Fact]
+		public async Task LegacySafeAreaViewWithoutModernContractRemainsEdgeToEdge()
+		{
+			var behavior = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(new LegacySafeAreaScrollViewStub());
+				var platformView = Assert.IsType<MauiScrollView>(handler.PlatformView);
+
+				platformView.LayoutSubviews();
+
+				return platformView.ContentInsetAdjustmentBehavior;
+			});
+
+			Assert.Equal(UIScrollViewContentInsetAdjustmentBehavior.Never, behavior);
+		}
+
+		sealed class LegacySafeAreaScrollViewStub : ScrollViewStub, ISafeAreaView
+		{
+			public bool IgnoreSafeArea => false;
+		}
 	}
 }

@@ -193,6 +193,9 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
 		{
+			if (!SafeAreaViewStrategy.IsModernSafeAreaView(View))
+				return SafeAreaRegions.None;
+
 			return SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(View, edge);
 		}
 
