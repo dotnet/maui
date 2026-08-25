@@ -12782,7 +12782,7 @@ Describe 'A bare timeout never outranks a rule that names the cause' {
     # three times. Both runs reported attemptKinds=[element-missing ...], which
     # sends a reader to rewrite locators for an app that was never built and a
     # recorder that never started.
-    It 'calls a recorder that timed out a recording failure' {
+    It 'lets a named recording failure outrank a trailing bare timeout' {
         $summary = 'Recording the on-device reproduction failed with exit code 1. ' +
             'Reproduction failed: Run trusted reproduction script timed out after 179 seconds.'
 
@@ -12967,5 +12967,73 @@ Describe 'A verdict the length cap discarded is not a crash' {
 
         (ConvertTo-ReplicationAttemptFailureSummary $message 1000).Length |
             Should -BeLessThan 1400
+    }
+}
+
+Describe 'A recorder that timed out is the same fault as one that failed' {
+    BeforeAll {
+        # Every phrasing the Android recorder actually produced in the logs.
+        $script:RecorderTimeouts = @(
+            'Clean Android recording timed out after 15 seconds',
+            'Signal Android recorder timed out after 15 seconds',
+            'Wait for Android recording finalization timed out after 15 seconds'
+        )
+    }
+
+    It 'names a recorder timeout a recording failure' {
+        foreach ($summary in $script:RecorderTimeouts) {
+            Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+                Should -BeExactly 'recording-failed' -Because "'$summary' is the recorder"
+        }
+    }
+
+    It 'still names a recorder that failed outright' {
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'Recording the on-device reproduction failed with exit code 1' |
+            Should -BeExactly 'recording-failed'
+
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'Recorded MP4 does not contain a video stream' |
+            Should -BeExactly 'recording-failed'
+    }
+
+    It 'leaves a genuine locator failure alone' {
+        # The named locator rule runs first and has to keep winning.
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'no such element: the locator matched nothing' |
+            Should -BeExactly 'element-missing'
+    }
+
+    It 'leaves an unrelated bare timeout alone' {
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary 'Run trusted reproduction script timed out after 179 seconds' |
+            Should -BeExactly 'element-missing'
+    }
+
+    It 'stops a dead recorder from certifying a non-reproduction' {
+        # The whole point. 'element-missing' does not veto and 'recording-failed'
+        # does, so misfiling the recorder let a run reach its two clean
+        # observations beside a dead recorder and tell the reporter their
+        # verified issue does not reproduce.
+        foreach ($summary in $script:RecorderTimeouts) {
+            $kinds = [System.Collections.Generic.List[string]]::new()
+            $kinds.Add('not-reproduced')
+            $kinds.Add('not-reproduced')
+            $kinds.Add((Get-ReplicationAttemptFailureKind -FailureSummary $summary))
+
+            Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds |
+                Should -BeFalse -Because 'a run learns nothing from an attempt it never recorded'
+        }
+    }
+
+    It 'still lets two clean observations answer the question' {
+        # The veto must not swallow the conclusion it was written to protect.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('not-reproduced')
+        $kinds.Add('not-reproduced')
+        $kinds.Add('element-missing')
+
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds |
+            Should -BeTrue
     }
 }

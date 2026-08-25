@@ -622,7 +622,17 @@ function Get-ReplicationAttemptFailureKind {
     # summary said nothing about the only thing that went wrong. A recording
     # failure is an infrastructure fault, not a statement about the scenario,
     # and it has to be separable from an agent that simply could not reproduce.
-    if ($text -match '(?i)Recording the on-device reproduction failed|Recorded MP4 (does not contain a video stream|is not decodable|decoded \d+ frames)') {
+    #
+    # A recorder that *times out* is the same fault, and matching only on
+    # "failed" left it to the bare-timeout rule below, which calls it
+    # 'element-missing'. That is not a cosmetic mislabel: 'recording-failed'
+    # vetoes a non-reproduction conclusion and 'element-missing' does not, so a
+    # run could reach its two clean observations beside a dead recorder and tell
+    # the reporter their verified issue does not reproduce - precisely the
+    # outcome the veto was added to prevent.
+    if ($text -match ('(?i)Recording the on-device reproduction failed|' +
+        'Recorded MP4 (?:does not contain a video stream|is not decodable|decoded \d+ frames)|' +
+        '\b(?:recording|recorder)\b[^.\r\n]{0,80}\btimed out\b')) {
         return 'recording-failed'
     }
     if ($text -match '(?i)block declaration is not accepted on attempt') {
