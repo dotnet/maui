@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Maps.Platform
 
 		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
-		const int MaxClusterIconCacheSize = 64;
-		readonly ClusterIconCache<UIImage> _clusterIconCache = new(MaxClusterIconCacheSize, image => image.Dispose());
+		const int MaxIconCacheSize = 64;
+		readonly IconCache<UIImage> _iconCache = new(MaxIconCacheSize, image => image.Dispose());
 		WeakReference<IMap>? _clusterImageOwner;
 		int _clusterImageVersion = int.MinValue;
 
@@ -236,8 +236,8 @@ namespace Microsoft.Maui.Maps.Platform
 				customView.CanShowCallout = false;
 				customView.Annotation = clusterAnnotation;
 
-				var cacheKey = MapHandler.GetClusterIconCacheKey(clusterImage);
-				if (_clusterIconCache.TryGet(cacheKey, out var cached))
+				var cacheKey = MapHandler.GetIconCacheKey(clusterImage);
+				if (_iconCache.TryGet(cacheKey, out var cached))
 				{
 					customView.Image = cached;
 				}
@@ -434,7 +434,7 @@ namespace Microsoft.Maui.Maps.Platform
 			var disposeAfterUse = cacheKey is null;
 			try
 			{
-				scaledImage = await _clusterIconCache.GetOrCreateAsync(
+				scaledImage = await _iconCache.GetOrCreateAsync(
 					cacheKey,
 					async () =>
 					{
@@ -443,7 +443,7 @@ namespace Microsoft.Maui.Maps.Platform
 							? CreateOwnedScaledImage(image, new CoreGraphics.CGSize(32, 32), 0)
 							: null;
 					},
-					() => MapHandler.GetClusterIconCacheExpiry(imageSource));
+					() => MapHandler.GetIconCacheExpiry(imageSource));
 
 				// Verify the annotation view hasn't been reused for a different cluster.
 				if (annotationView.Annotation != targetAnnotation || Window == null)
@@ -588,7 +588,7 @@ namespace Microsoft.Maui.Maps.Platform
 				RemoveAnnotations(Annotations);
 
 			_lastTouchedView = null;
-			_clusterIconCache.Clear();
+			_iconCache.Clear();
 			_clusterImageOwner = null;
 			_clusterImageVersion = int.MinValue;
 		}
@@ -676,7 +676,7 @@ namespace Microsoft.Maui.Maps.Platform
 			// Annotations survive detach/reattach, so drop any pending click suppression to prevent it
 			// from swallowing the next real tap after navigation or a Shell tab switch.
 			_suppressClickForAnnotation = null;
-			_clusterIconCache.Clear();
+			_iconCache.Clear();
 			_clusterImageOwner = null;
 			_clusterImageVersion = int.MinValue;
 		}
@@ -693,7 +693,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 			_clusterImageOwner = new WeakReference<IMap>(map);
 			_clusterImageVersion = version;
-			_clusterIconCache.Clear();
+			_iconCache.Clear();
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
