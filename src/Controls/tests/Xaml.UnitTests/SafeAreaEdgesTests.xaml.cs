@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.SoftInput), layout.contentViewTest.SafeAreaEdges);
 				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.borderTest.SafeAreaEdges);
 				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.Default, SafeAreaRegions.All, SafeAreaRegions.None), layout.scrollViewTest.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.Container, SafeAreaRegions.SoftInput, SafeAreaRegions.All), layout.customControlTest.SafeAreaEdges);
 			}
 
 			[Theory]
@@ -75,4 +76,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 				Assert.Equal(SafeAreaRegions.Default, defaultGrid.SafeAreaEdges.Left);
 			}
 		}
+	}
+
+	public sealed class CustomSafeAreaElement : View, ISafeAreaElement
+	{
+		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
+		public SafeAreaEdges SafeAreaEdges
+		{
+			get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+			set => SetValue(SafeAreaEdgesProperty, value);
+		}
+
+		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+
+		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Container;
 	}

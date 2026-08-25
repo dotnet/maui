@@ -91,6 +91,59 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ParentOnlySuppressesOverlappingChildSafeAreaEdges()
+		{
+			var top = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None);
+			var topAndBottom = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container,
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container);
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = top
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = topAndBottom
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.AddSubview(childPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.LayoutSubviews();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 70), child.LastArrangeBounds);
+
+				parent.SafeAreaEdges = SafeAreaEdges.None;
+				parentPlatformView.LayoutSubviews();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 100, 60), child.LastArrangeBounds);
+
+				parent.SafeAreaEdges = top;
+				parentPlatformView.LayoutSubviews();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 70), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
 		public async Task ChangingAncestorSafeAreaEdgesInvalidatesEdgeDisjointGrandchild()
 		{
 			var top = new SafeAreaEdges(

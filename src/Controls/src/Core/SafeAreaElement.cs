@@ -16,8 +16,9 @@ namespace Microsoft.Maui.Controls
 		/// The backing store for the <see cref="ISafeAreaElement.SafeAreaEdges" /> bindable property.
 		/// </summary>
 		/// <remarks>
-		/// Types using this property must implement <see cref="ISafeAreaElement"/> and should expose this instance through
-		/// their own public <c>SafeAreaEdgesProperty</c> field.
+		/// Types using this property must implement <see cref="ISafeAreaElement"/>. To support XAML, they must expose this
+		/// instance through their own public static <c>SafeAreaEdgesProperty</c> field and a public instance
+		/// <c>SafeAreaEdges</c> property with a public setter.
 		/// </remarks>
 		/// <exception cref="InvalidOperationException">
 		/// Thrown when the property is read from a <see cref="BindableObject"/> that does not implement <see cref="ISafeAreaElement"/>.
