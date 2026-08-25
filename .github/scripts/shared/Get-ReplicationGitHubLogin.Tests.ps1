@@ -262,8 +262,17 @@ Describe 'Replication GitHub login probe' {
             $pipeline,
             "(?s)trusted-replication-publisher(?<body>.*?)displayName: 'Stage trusted replication publisher'")
         $stageBlock.Success | Should -BeTrue
-        $staged = @([regex]::Matches($stageBlock.Groups['body'].Value, "'(?<name>[\w-]+\.ps1)'") |
-            ForEach-Object { $_.Groups['name'].Value })
+        # Entries are relative to .github/scripts and most carry a 'shared/'
+        # prefix, so a pattern anchoring the quote directly to the file name
+        # matches only the one unprefixed entry. That is what this assertion
+        # did once Find-RegressionRisks.ps1 was added with a path beside the
+        # prefixed ones: $staged held a single name and the dependency check
+        # below had almost nothing to check. Capture the path, compare on the
+        # leaf, because the leaf is what Copy-Item writes into the trusted root.
+        $staged = @([regex]::Matches($stageBlock.Groups['body'].Value, "'(?<path>[\w./-]+\.ps1)'") |
+            ForEach-Object { Split-Path -Leaf $_.Groups['path'].Value })
+        $staged.Count | Should -BeGreaterThan 1 -Because (
+            'the publisher stages several scripts, so a single match means the pattern is wrong')
         $staged | Should -Contain 'Get-ReplicationGitHubLogin.ps1'
 
         # Anything a staged publisher dot-sources must itself be staged, or the
@@ -284,7 +293,9 @@ Describe 'Replication GitHub login probe' {
     It 'is staged into the trusted publisher root' {
         $pipeline = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml') -Raw
-        $pipeline | Should -Match "'Get-ReplicationGitHubLogin\.ps1',"
+        # The subject is that the script is staged, not the directory it is
+        # copied from, so the path prefix is optional here.
+        $pipeline | Should -Match "'(?:[\w./-]+/)?Get-ReplicationGitHubLogin\.ps1',"
     }
 }
 
