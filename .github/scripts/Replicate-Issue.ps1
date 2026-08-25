@@ -464,6 +464,47 @@ function Get-ReplicationDriverElementFailurePattern {
         'WebDriverTimeoutException|The element was never found'
 }
 
+function Test-ReplicationElementValueMismatch {
+    <#
+        .SYNOPSIS
+        Recognises an assertion that found its element and read a value that
+        differed from the expected one.
+
+        .DESCRIPTION
+        'g__AssertElementText' is a member of the driver-element pattern above,
+        because an assertion that never finds its element throws from the same
+        helper. But the failure it reports when it *does* find the element is a
+        different event entirely: the locator was right, the element was
+        present, and its text was read. Measured over the log archive, 71 of the
+        72 distinct messages carrying an element-text assertion were filed as
+        'element-missing', and every one of those attempts was handed the
+        element inventory and told to choose a different locator - advice to
+        change the one thing that demonstrably worked. That is the same defect
+        as the inventory fork, pointing the other way: not feedback withheld,
+        but feedback that actively misdirects.
+
+        An empty actual value is deliberately excluded. 'actual ..' means the
+        element was found but held no text, which really can be a locator that
+        matched a container, so that case stays with the locator rule. Only a
+        non-empty reading is treated as a genuine measurement.
+
+        This says nothing about whether the issue reproduces. A settled value
+        that contradicts the expectation ('Returned item count: 3' where the
+        plan wanted 0) and an unsettled one ('Ready' where the app still says
+        'Preparing') are both matched here, and only the first is evidence.
+        Telling them apart is not reliable from the text, so the kind stays
+        outside both the veto set and the clean-observation count: it changes
+        what the agent is told, not what the run concludes.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    return [bool]([string]$Text -match "(?i)Expected element text to (?:contain|equal) '[^']*', actual '[^'\r\n]")
+}
+
 function Test-ReplicationAppTerminated {
     param(
         [Parameter(Mandatory)]
@@ -612,6 +653,12 @@ function Get-ReplicationAttemptFailureKind {
     }
     if (Test-ReplicationObservedNegativeVerdict -Text $text) {
         return 'not-reproduced'
+    }
+    # An assertion that read a value is not a locator that failed. This has to
+    # be tested before the element rule, because g__AssertElementText is a
+    # member of the driver-element pattern and would otherwise swallow it.
+    if (Test-ReplicationElementValueMismatch -Text $text) {
+        return 'assertion-mismatch'
     }
     # Only the named locator faults belong here. A bare timeout is handled last,
     # because every step that can hang reports one.
@@ -7419,6 +7466,21 @@ This issue reports a crash and the app did terminate, so the termination is the 
 "@
                     }
                 }
+            }
+            elseif (Test-ReplicationElementValueMismatch -Text $sandboxFailureSummary) {
+                # The locator worked. Offering the element inventory here tells
+                # the author to change the one step that succeeded, which is how
+                # attempts were spent rewriting locators that were already
+                # correct while the real cause - a trigger that did not fire, or
+                # a plan that read the value before the app settled - went
+                # unmentioned.
+                $sandboxFailureSummary = @"
+The Appium plan found the element it was told to read, so the locator is correct and must not be changed. The value it read differed from the value the plan expected.
+
+Decide which of these it was, and change only that: the trigger did not take effect; the plan read the value before the app had settled, in which case wait for the settled state rather than sleeping; or the app genuinely behaved correctly, in which case say so with the plan's negative verdict instead of asserting the reproduced value.
+
+$sandboxFailureSummary
+"@
             }
             elseif ($sandboxFailureSummary -match (Get-ReplicationDriverElementFailurePattern)) {
                 $inventory = Get-ReplicationElementInventory `

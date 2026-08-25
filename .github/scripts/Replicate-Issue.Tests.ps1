@@ -85,6 +85,7 @@ BeforeAll {
         'Get-ReplicationAbortExitPattern',
         'Get-ReplicationPlanVerdictPattern',
         'Test-ReplicationAppTerminated',
+        'Test-ReplicationElementValueMismatch',
         'Test-ReplicationTestBuildFailure',
         'Test-ReplicationControlChangedFailureMode',
         'Test-ReplicationControlInconclusive',
@@ -7819,7 +7820,16 @@ Describe 'Replication failure summary truncation' {
         $safe | Should -Match 'characters omitted'
         $safe | Should -Match 'FIRST SCROLL: REQUESTED'
         $safe | Should -Match 'WebDriverTimeoutException'
-        Get-ReplicationAttemptFailureKind $safe | Should -Be 'element-missing'
+        # The kind is a proxy for "the cause survived the cap", and this fixture
+        # reports a value the assertion actually read, so the surviving cause is
+        # a mismatch rather than a locator that failed. That is a stricter check
+        # than the 'element-missing' this asserted before the mismatch rule
+        # existed: 'element-missing' is reachable from the WebDriverTimeoutException
+        # and the g__AssertElementText frames alone, both of which are repeated
+        # 20 times below the cap, so it could pass with the sentence elided -
+        # the very failure the test was written for. 'assertion-mismatch' is
+        # reachable only if "actual 'FIRST SCROLL: REQUESTED'" itself survived.
+        Get-ReplicationAttemptFailureKind $safe | Should -Be 'assertion-mismatch'
     }
 
     It 'keeps a negative verdict that would otherwise be elided' {
@@ -13127,5 +13137,80 @@ Describe 'One definition of a locator the driver could not find' {
         $kinds.Add((Get-ReplicationAttemptFailureKind -FailureSummary $script:RealLocatorFailure))
 
         Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds | Should -BeTrue
+    }
+}
+
+Describe 'An assertion that read a value is not a locator that failed' {
+    # Every fixture below is a verbatim string from the log archive.
+    It 'reads a settled contradicting value as a mismatch rather than a missing element' {
+        # Verbatim shape from the archive. The WebDriverTimeoutException and the
+        # g__AssertElementText frame are the point of the fixture, not noise:
+        # both are members of the driver-element pattern, so this string is
+        # classified 'element-missing' unless the mismatch rule is tested first.
+        # A fixture without them passes whatever the rule order is.
+        $text = "Unhandled exception. System.InvalidOperationException: Expected element text to equal " +
+            "'Returned item count: 0', actual 'Returned item count: 3'. ---> " +
+            "OpenQA.Selenium.WebDriverTimeoutException: Timed out after 10 seconds " +
+            "at Program.<<Main>`$>g__AssertElementText|0_21(AppiumDriver driver) in RunWithAppiumTest.cs:line 911"
+        Test-ReplicationElementValueMismatch -Text $text | Should -BeTrue
+        Get-ReplicationAttemptFailureKind $text | Should -Be 'assertion-mismatch'
+    }
+
+    It 'reads an unsettled value as a mismatch too, because the text cannot tell them apart' {
+        $text = "Unhandled exception. System.InvalidOperationException: Expected element text to contain " +
+            "'horizontal inset:', actual 'TitleView measurement pending'. ---> " +
+            "OpenQA.Selenium.WebDriverTimeoutException: Timed out after 10 seconds " +
+            "at Program.<<Main>`$>g__AssertElementText|0_21(AppiumDriver driver)"
+        Get-ReplicationAttemptFailureKind $text | Should -Be 'assertion-mismatch'
+    }
+
+    It 'leaves an empty actual value with the locator rule' {
+        # 'actual ""' can be a locator that matched a container, so it is not a
+        # reading and must keep the element inventory it would otherwise lose.
+        # The driver exception is part of the fixture because the real messages
+        # carry one: 24 of the 26 empty-actual messages in the archive are
+        # classified through WebDriverTimeoutException, not through the
+        # assertion text, and a fixture without it would pass for a reason the
+        # corpus never produces.
+        $text = "Unhandled exception. OpenQA.Selenium.WebDriverTimeoutException: Timed out after 10 seconds. " +
+            "---> System.InvalidOperationException: Expected element text to equal 'BUG REPRODUCED:', actual ''. " +
+            "at Program.<Main>g__AssertElementText|0_3(...)"
+        Test-ReplicationElementValueMismatch -Text $text | Should -BeFalse
+        Get-ReplicationAttemptFailureKind $text | Should -Be 'element-missing'
+    }
+
+    It 'leaves a genuine locator failure classified as a missing element' {
+        $text = 'An element could not be located on the page using the given search parameters."}} | ' +
+            'Full Appium log saved.'
+        Test-ReplicationElementValueMismatch -Text $text | Should -BeFalse
+        Get-ReplicationAttemptFailureKind $text | Should -Be 'element-missing'
+    }
+
+    It 'does not outrank a plan that left its own verdict' {
+        $text = "REPLICATION_NOT_REPRODUCED | Expected element text to equal 'PASS:', actual 'WAITING'"
+        Get-ReplicationAttemptFailureKind $text | Should -Be 'not-reproduced'
+    }
+
+    It 'does not outrank a build that never produced an app' {
+        $text = "Preparing the Sandbox app failed | Expected element text to equal 'A', actual 'B'"
+        Get-ReplicationAttemptFailureKind $text | Should -Be 'build-failed'
+    }
+
+    It 'is neither a veto nor a clean observation, so no conclusion moves' {
+        # The whole point of the kind is to change what the agent is told, not
+        # what the run decides. Three mismatches beside two clean observations
+        # must still conclude, exactly as three element-missing attempts did.
+        $kinds = [System.Collections.Generic.List[string]]@('assertion-mismatch', 'not-reproduced', 'assertion-mismatch', 'not-reproduced', 'assertion-mismatch')
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds | Should -BeTrue
+    }
+
+    It 'tells the author the locator is correct instead of offering the inventory' {
+        $mismatch = $script:Source.IndexOf('elseif (Test-ReplicationElementValueMismatch -Text $sandboxFailureSummary)')
+        $inventory = $script:Source.IndexOf('elseif ($sandboxFailureSummary -match (Get-ReplicationDriverElementFailurePattern))')
+        $mismatch | Should -BeGreaterThan 0
+        # Ordered after the inventory branch it could never run, because
+        # g__AssertElementText is a member of that pattern.
+        $mismatch | Should -BeLessThan $inventory
+        $script:Source | Should -Match 'the locator is correct and must not be changed'
     }
 }
