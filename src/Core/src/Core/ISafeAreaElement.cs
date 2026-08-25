@@ -12,6 +12,8 @@ namespace Microsoft.Maui
 	/// To support XAML, implementations must expose a public instance <c>SafeAreaEdges</c> property with a public setter,
 	/// backed by a public static <c>SafeAreaEdgesProperty</c> field. An explicit interface implementation alone is not
 	/// addressable from XAML.
+	/// When a view implements both <see cref="ISafeAreaElement"/> and the legacy <see cref="ISafeAreaView"/>,
+	/// this per-edge contract takes precedence.
 	/// </remarks>
 	public interface ISafeAreaElement
 	{

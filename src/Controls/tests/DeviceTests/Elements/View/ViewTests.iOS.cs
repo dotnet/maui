@@ -285,6 +285,92 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ParentContainerSafeAreaDoesNotSuppressChildKeyboardSafeArea()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container)
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.SoftInput)
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+
+				await parentPlatformView.AttachAndRun(() =>
+				{
+					var windowBounds = parentPlatformView.Window!.Bounds;
+					parentPlatformView.Frame = new CGRect(0, windowBounds.Height - 100, 100, 100);
+					childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+					parentPlatformView.AddSubview(childPlatformView);
+
+					parentPlatformView.SafeAreaInsetsDidChange();
+					childPlatformView.SafeAreaInsetsDidChange();
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.Frame = new CGRect(
+						parent.LastArrangeBounds.X,
+						parent.LastArrangeBounds.Y,
+						parent.LastArrangeBounds.Width,
+						parent.LastArrangeBounds.Height);
+					childPlatformView.LayoutSubviews();
+
+					Assert.Equal(new Rect(0, 0, 100, 70), child.LastArrangeBounds);
+
+					var keyboardFrame = new CGRect(0, windowBounds.Height - 50, windowBounds.Width, 50);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						parentPlatformView.LayoutSubviews();
+						childPlatformView.LayoutSubviews();
+
+						var childFrameInWindow = childPlatformView.Superview!
+							.ConvertRectToView(childPlatformView.Frame, childPlatformView.Window);
+						var keyboardOverlap = Math.Max(0, childFrameInWindow.Bottom - keyboardFrame.Y);
+
+						Assert.True(keyboardOverlap > 0);
+						Assert.Equal(
+							(double)keyboardFrame.Y,
+							childFrameInWindow.Y + child.LastArrangeBounds.Bottom,
+							precision: 5);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.LayoutSubviews();
+
+					Assert.Equal(new Rect(0, 0, 100, 70), child.LastArrangeBounds);
+				});
+			});
+		}
+
+		[Fact]
 		public async Task ParentOnlySuppressesOverlappingChildSafeAreaEdges()
 		{
 			var top = new SafeAreaEdges(
