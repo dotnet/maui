@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "platform": "android",
+  "device": "emulator-5554",
+  "durationSeconds": 23.2,
+  "dimensions": {
+    "width": 720,
+    "height": 1280
+  },
+  "sha256": "8555ec140dbf30b84772b527c949e80a064e1fceda1fd2092bf3d877dcc71c5f",
+  "decodedFrames": 348,
+  "videoBytes": 66679,
+  "files": {
+    "video": "repro.mp4",
+    "thumbnail": "thumbnail.png",
+    "preview": "preview.gif"
+  }
+}
