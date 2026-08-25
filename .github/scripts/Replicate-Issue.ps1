@@ -2629,7 +2629,15 @@ function Get-ReplicationTestAttemptKind {
     )
 
     if (-not $FailureSummary) { return 'other' }
-    if (Test-ReplicationTestBuildFailure -FailureSummary $FailureSummary) { return 'build-failed' }
+    # A named diagnostic is unambiguous and repairable, so it decides first.
+    # Build 15035188 raised infrastructureFailure=True five times, every one a
+    # compile error the repair loop then fixed, so the machine flag must never
+    # outrank a diagnostic the author can act on. Matched case-sensitively: the
+    # lowercase '.cs(38,20)' in every file name would otherwise read as an id.
+    if ($FailureSummary -match '(?i)never ran because the build failed|compiler diagnostics' -or
+        $FailureSummary -cmatch '\b(?:CS|MSB|CA|IDE)\d{3,5}\b') {
+        return 'build-failed'
+    }
     if (Test-ReplicationTestDidNotReproduce $FailureSummary) { return 'test-passed' }
     # Checked before the signature kind, whose phrase this advice deliberately
     # keeps so the two-failure escalation still fires.
@@ -2644,7 +2652,22 @@ function Get-ReplicationTestAttemptKind {
     # which reads exactly like an agent that could not author a test. The
     # outcome is unchanged - a broken machine still reaches no verdict - but the
     # operator can now tell a sick device from a failing agent.
-    if ($FailureSummary -match 'infrastructureFailure=True') { return 'harness-error' }
+    #
+    # It sits after every verdict branch on purpose: an attempt that reached a
+    # real answer carries the flag too, and promoting the flag would convert
+    # answers into pipeline defects. It sits *before* the build branch because
+    # "failed for build or infrastructure reasons" names both causes at once.
+    # Test-ReplicationTestBuildFailure is deliberately true for that phrase - it
+    # answers a budget question, and neither cause may be charged to the agent -
+    # but read as a label it renamed every infrastructure fault a build failure.
+    # Builds 15082198 and 15082224 each lost their device session three times,
+    # logged "harness unavailable after 3 retries", and still summed to
+    # attemptKinds=[build-failed x6], hiding the one fact that mattered: the
+    # machine never opened a session, so no edit to the test could have helped.
+    if ($FailureSummary -match '(?i)infrastructureFailure=True|harness unavailable after|lost its device session') {
+        return 'harness-error'
+    }
+    if (Test-ReplicationTestBuildFailure -FailureSummary $FailureSummary) { return 'build-failed' }
     # Every static guard refuses with "Candidate source '<path>'", "Candidate
     # test source '<path>'" or one of the "Generated test ..." openings. Those
     # attempts were filed as 'other', so a run refused five times by five

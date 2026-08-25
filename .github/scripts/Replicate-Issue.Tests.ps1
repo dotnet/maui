@@ -12828,3 +12828,65 @@ Describe 'A bare timeout never outranks a rule that names the cause' {
         }
     }
 }
+
+Describe 'A sick machine is not reported as an agent that cannot compile' {
+    # Builds 15082198 and 15082224 each lost their device session three times,
+    # logged "harness unavailable after 3 retries: the device session never
+    # opened, so no edit to the test can produce a verdict", and still reported
+    # attemptKinds=[build-failed x6]. The phrase "failed for build or
+    # infrastructure reasons" names both causes at once, and
+    # Test-ReplicationTestBuildFailure is deliberately true for both because it
+    # answers a budget question - neither cause may be charged to the agent.
+    # Reused as a label it renamed every infrastructure fault a build failure.
+    BeforeAll {
+        $script:HarnessSummary = 'Replication test verification attempt 1 failed for ' +
+            'build or infrastructure reasons. harness unavailable after 3 retries: the ' +
+            'device session never opened, so no edit to the test can produce a verdict. ' +
+            'infrastructureFailure=True'
+    }
+
+    It 'calls a device session that never opened a harness error' {
+        Get-ReplicationTestAttemptKind -FailureSummary $script:HarnessSummary |
+            Should -BeExactly 'harness-error'
+    }
+
+    It 'calls an attempt that lost its device session a harness error' {
+        $summary = 'Attempt 1 lost its device session before the test ran, so it ' +
+            'failed for build or infrastructure reasons.'
+
+        Get-ReplicationTestAttemptKind -FailureSummary $summary |
+            Should -BeExactly 'harness-error'
+    }
+
+    It 'still calls the ambiguous phrase alone a build failure' {
+        # Nothing names a machine here, so the previous reading stands and no
+        # existing behaviour moves.
+        Get-ReplicationTestAttemptKind `
+            -FailureSummary 'The attempt failed for build or infrastructure reasons.' |
+            Should -BeExactly 'build-failed'
+    }
+
+    It 'lets a named compiler diagnostic outrank every machine marker' {
+        # The ordering the suite already defends: a repairable compile error
+        # must not be renamed a sick machine, or the author loses the one
+        # diagnostic they can act on. The ambiguity is settled by whether a
+        # diagnostic is named, not by which check happens to run first.
+        foreach ($diagnostic in @(
+                'Issue1.cs(38,20) CS8602: Dereference of a possibly null reference.',
+                'error CS0246: The type or namespace name could not be found.',
+                'MSB3644: The reference assemblies were not found.',
+                'The test never ran because the build failed.')) {
+            $summary = "$($script:HarnessSummary) $diagnostic"
+
+            Get-ReplicationTestAttemptKind -FailureSummary $summary |
+                Should -BeExactly 'build-failed' -Because "'$diagnostic' is repairable"
+        }
+    }
+
+    It 'charges neither cause against the agent budget' {
+        # The predicate keeps its original subject. Splitting the label must not
+        # split the budget rule, or a sick machine starts consuming attempts.
+        Test-ReplicationTestBuildFailure -FailureSummary $script:HarnessSummary |
+            Should -BeTrue
+    }
+}
