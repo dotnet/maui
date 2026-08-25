@@ -285,10 +285,10 @@ extends:
                   throw "Package status script '$packageStatusScript' was not found."
                 }
                 $packageStatusScriptHash = (Get-FileHash -LiteralPath $packageStatusScript -Algorithm SHA256).Hash
+                $includeFilters = @(Get-Filters $env:NUGET_INCLUDE_FILTERS)
+                $excludeFilters = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS)
 
                 if ($releaseWorkload) {
-                  $includeFilters = @(Get-Filters $env:NUGET_INCLUDE_FILTERS)
-                  $excludeFilters = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS)
                   $packPackages = @($allPackages | Where-Object {
                     $_.Name -notlike '*Manifest*.nupkg' -and
                     ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
@@ -309,20 +309,25 @@ extends:
                 }
                 else {
                   $unsupportedFilters = @(@(
-                    @{ Name = 'nugetIncludeFilters'; Values = @(Get-Filters $env:NUGET_INCLUDE_FILTERS) },
-                    @{ Name = 'nugetExcludeFilters'; Values = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS) },
                     @{ Name = 'nugetAlreadyAttemptedPackFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_PACK_FILTERS) },
                     @{ Name = 'nugetAlreadyAttemptedManifestFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS) }
                   ) | Where-Object { $_.Values.Count -gt 0 })
                   if ($unsupportedFilters.Count -gt 0) {
-                    throw "Non-workload releases do not support workload package filters: $($unsupportedFilters.Name -join ', ')."
+                    throw "Non-workload releases do not support workload recovery filters: $($unsupportedFilters.Name -join ', ')."
                   }
 
                   if (@($allPackages | Where-Object Name -like '*Manifest*.nupkg').Count -gt 0) {
                     throw "A non-workload release cannot contain workload manifest packages."
                   }
+                  $selectedPackages = @($allPackages | Where-Object {
+                    ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                  })
+                  if ($selectedPackages.Count -eq 0) {
+                    throw "Package filtering selected no non-workload NuGet packages."
+                  }
                   $packageSets = @(
-                    @{ Name = 'NuGet packages'; Packages = $allPackages; Path = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease' }
+                    @{ Name = 'NuGet packages'; Packages = $selectedPackages; Path = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease' }
                   )
                 }
 

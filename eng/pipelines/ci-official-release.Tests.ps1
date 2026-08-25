@@ -79,17 +79,20 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match 'https://github\.com/dotnet/android'
     $pipeline | Should -Match 'https://github\.com/dotnet/macios'
     $pipeline | Should -Match 'non-workload release cannot contain workload manifest'
-    $pipeline | Should -Match 'Name = ''NuGet packages''; Packages = \$allPackages'
+    $pipeline | Should -Match 'Name = ''NuGet packages''; Packages = \$selectedPackages'
     $pipeline | Should -Match '(?s)-Action FilterExisting.*?selectedPackages.*?stagedPackages'
     $pipeline | Should -Match 'belongs to ''\$repository'', not ''\$sourceRepository'''
   }
 
-  It 'rejects workload-only filters for non-workload releases' {
+  It 'supports package selection and rejects workload recovery filters for non-workload releases' {
+    $pipeline | Should -Match '(?s)\$selectedPackages = @\(\$allPackages \| Where-Object \{.*?' +
+      'Test-AnyFilter \$_.Name \$includeFilters.*?' +
+      'Test-AnyFilter \$_.Name \$excludeFilters.*?' +
+      'Package filtering selected no non-workload NuGet packages'
     $pipeline | Should -Match '(?s)else \{.*?\$unsupportedFilters = @\(@\(.*?' +
-      'nugetIncludeFilters.*?nugetExcludeFilters.*?' +
       'nugetAlreadyAttemptedPackFilters.*?nugetAlreadyAttemptedManifestFilters.*?' +
       '\) \| Where-Object \{ \$_.Values.Count -gt 0 \}\).*?' +
-      'Non-workload releases do not support workload package filters'
+      'Non-workload releases do not support workload recovery filters'
     $pipeline | Should -Match 'NUGET_ALREADY_ATTEMPTED_PACK_FILTERS: \$\{\{ parameters\.nugetAlreadyAttemptedPackFilters \}\}'
     $pipeline | Should -Match 'NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS: \$\{\{ parameters\.nugetAlreadyAttemptedManifestFilters \}\}'
   }

@@ -23,7 +23,7 @@ The pipeline accepts:
 - `pushWorkloadSet`: adds the resolved BAR build to the matching .NET workload release channel.
 - `pushNugetOrg`: enables the NuGet.org release stages.
 - `pushPackages`: when `false`, gathers and publishes release artifacts without promoting a workload build, running approvals, or requesting the production NuGet service connection.
-- `nugetIncludeFilters` and `nugetExcludeFilters`: workload-only, semicolon-separated wildcard filters applied to package file names. Include filters select workload packs; workload manifests remain selected unless an exclude filter removes them, preserving the previous release behavior. Non-workload releases reject these parameters rather than silently ignoring them.
+- `nugetIncludeFilters` and `nugetExcludeFilters`: semicolon-separated wildcard filters applied to package file names. For workload releases, include filters select packs while manifests remain selected unless excluded, preserving the previous behavior. For non-workload releases, the filters select packages for the single release set.
 - `nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters`: workload-only recovery filters for pack or manifest files that a previous task invocation already submitted to NuGet.org. These packages stay in the expected verification set but are withheld from another push while NuGet.org validation is still pending. Use only the parameter for the affected publish stage; non-workload releases reject them.
 
 ### Non-workload NuGet packages
@@ -31,8 +31,9 @@ The pipeline accepts:
 For repositories outside the inferred workload set, the generic non-workload path validates the
 BAR build against the requested GitHub repository, runs one fail-fast
 `darc gather-drop --id <BAR ID>`, gathers only shipping NuGet packages, rejects
-malformed or duplicate packages, and filters exact ID/version pairs already on
-NuGet.org. All remaining `.nupkg` files form one release set. Workload manifests
+malformed or duplicate packages, applies the package filters, and filters exact
+ID/version pairs already on NuGet.org. All selected `.nupkg` files form one
+release set. Workload manifests
 are rejected so a workload build cannot accidentally bypass MAUI's pack-before-
 manifest ordering.
 
