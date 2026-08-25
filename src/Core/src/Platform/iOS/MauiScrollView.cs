@@ -647,11 +647,23 @@ namespace Microsoft.Maui.Platform
 					height = Bounds.Height + 1;
 				}
 			}
-			else if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			else if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
+				// UIKit is not currently reserving any space for the safe area on
+				// this scroll view - either because the adjustment behavior is set
+				// to Never, or because it is set to Always but UIKit has not yet
+				// assigned a system inset for the current layout pass. In either
+				// case, the content size must be padded manually to keep the
+				// content clear of the safe area. Once UIKit assigns a non-zero
+				// inset, the safe area is reserved natively instead, as described
+				// below.
 				width += _safeArea.HorizontalThickness;
 				height += _safeArea.VerticalThickness;
 			}
+			// UIKit is already reserving the safe area natively via a non-zero
+			// AdjustedContentInset, so the content size is intentionally left
+			// unmodified here. Padding it again would reserve the same safe area
+			// twice, producing a scrollable range larger than the actual content.
 
 			contentSize = new Size(width, height);
 
