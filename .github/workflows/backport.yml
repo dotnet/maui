@@ -14,5 +14,5 @@ permissions:
 
 jobs:
   backport:
-    if: github.repository_owner == 'dotnet'
+    if: github.repository == 'dotnet/maui'
     uses: dotnet/arcade/.github/workflows/backport-base.yml@main

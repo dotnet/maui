@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   DispatchScheduledRun:
-    if: github.event_name == 'schedule'
+    if: github.repository == 'dotnet/maui' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -96,7 +96,7 @@ jobs:
         run: gh workflow run merge-net11-to-release.yml --repo "$REPOSITORY" --ref net11.0
 
   CheckForOpenMergePullRequest:
-    if: github.event_name != 'schedule' && github.ref_name == 'net11.0'
+    if: github.repository == 'dotnet/maui' && github.event_name != 'schedule' && github.ref_name == 'net11.0'
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -2564,7 +2565,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// The binding should fail to convert "" to int
 			// and the source property should retain its last valid value (4)
 			entry.SetValueFromRenderer(Entry.TextProperty, "");
-			
+
 			// This is the key assertion - after clearing the Entry, the IntValue
 			// should still be 4 (the last successfully converted value)
 			Assert.Equal(4, vm.IntValue);
@@ -2883,10 +2884,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// The external viewModel.B should still be 101 (we didn't change it)
 			Assert.Equal(101, viewModel.B);
-			
+
 			// The control's Value (bindable property) should be 101
 			Assert.Equal(101, control.Value);
-			
+
 			// The internal ViewModel should also be synced to 101 - THIS IS THE BUG if it shows 0
 			Assert.Equal(101, control.ViewModel.Value);
 
@@ -2992,5 +2993,58 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		#endregion
 
+		// Regression tests for https://github.com/dotnet/maui/issues/37245.
+		// A plain static event would pin instance subscribers that never
+		// unsubscribe for the process lifetime.
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Control_NeverSubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: false, unsubscribe: false);
+
+			Assert.False(await reference.WaitForCollect(),
+				"Subject that never subscribed to BindingDiagnostics.BindingFailed should be collected.");
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Mitigation_SubscribedAndUnsubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: true, unsubscribe: true);
+
+			Assert.False(await reference.WaitForCollect(),
+				"Subject that unsubscribed from BindingDiagnostics.BindingFailed should be collected.");
+		}
+
+		// Regression: verifies BindingFailed does not strongly retain subscribers.
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Leaky_SubscribedButNotUnsubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: true, unsubscribe: false);
+
+			Assert.False(await reference.WaitForCollect(),
+				"BindingDiagnostics.BindingFailed leaks subscribers (issue #37245). " +
+				"Back the event with WeakEventManager (or expose a disposable subscription API) to fix.");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateBindingFailedSubscriber(bool subscribe, bool unsubscribe)
+		{
+			var subject = new BindingFailedSubscriber();
+
+			if (subscribe)
+				BindingDiagnostics.BindingFailed += subject.OnBindingFailed;
+
+			if (unsubscribe)
+				BindingDiagnostics.BindingFailed -= subject.OnBindingFailed;
+
+			return new WeakReference(subject);
+		}
+
+		sealed class BindingFailedSubscriber
+		{
+			public void OnBindingFailed(object sender, BindingBaseErrorEventArgs args)
+			{
+			}
+		}
 	}
 }

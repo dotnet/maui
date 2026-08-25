@@ -104,13 +104,22 @@ namespace Microsoft.Maui.Maps.Handlers
 				mapHandler.HideInfoWindow(pin);
 		}
 
-		// Builds a stable cache key for a cluster icon so logically identical images (same file, URI,
-		// or font glyph) share one decoded/rasterized bitmap even when the provider hands back a fresh
-		// ImageSource instance on every recluster. Returns null for sources that can't be keyed stably
-		// (e.g. streams), so those are simply loaded fresh instead of being cached forever.
+		// Android reclusters once the zoom has moved a full level away from the last clustering pass.
+		// The zoom buttons and double-tap move by exactly one level, so a strict "greater than"
+		// never fires for them; and the delta can land up to 2^-20 under 1.0f when the two values
+		// straddle a binade boundary, which is all the tolerance below is for.
+		internal const float ReclusterZoomStep = 0.9999f;
+
+		internal static bool ShouldRecluster(float currentZoom, float lastClusterZoom) =>
+			Math.Abs(currentZoom - lastClusterZoom) >= ReclusterZoomStep;
+
+		// Builds a stable cache key for a marker icon - cluster or pin - so logically identical images
+		// (same file, URI, or font glyph) share one decoded/rasterized bitmap even when the caller hands
+		// back a fresh ImageSource instance on every recluster. Returns null for sources that can't be
+		// keyed stably (e.g. streams), so those are simply loaded fresh instead of being cached forever.
 		// A URI source with CachingEnabled == false has explicitly opted out of caching, so it must not
 		// be frozen by this handler-level cache either.
-		internal static string? GetClusterIconCacheKey(IImageSource? source) =>
+		internal static string? GetIconCacheKey(IImageSource? source) =>
 			source switch
 			{
 				IFileImageSource file when !string.IsNullOrEmpty(file.File) => $"file:{file.File}",
@@ -124,7 +133,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		// URI sources carry an explicit CacheValidity; other stable sources never expire on their own
 		// (the cache is bounded and cleared during handler cleanup). Clamped so a large
 		// validity like TimeSpan.MaxValue ("cache forever") can't overflow DateTime arithmetic.
-		internal static DateTime GetClusterIconCacheExpiry(IImageSource? source)
+		internal static DateTime GetIconCacheExpiry(IImageSource? source)
 		{
 			if (source is not IUriImageSource uri)
 				return DateTime.MaxValue;
@@ -134,7 +143,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 	}
 
-	internal sealed class ClusterIconCache<T>
+	// Bounded LRU of decoded marker icons, shared by cluster and pin markers so one decode serves
+	// every marker naming the same image. Keys come from MapHandler.GetIconCacheKey; a null key
+	// bypasses the cache entirely rather than being stored under a fabricated one.
+	internal sealed class IconCache<T>
 		where T : class
 	{
 		readonly Dictionary<string, (T Value, DateTime ExpiresAtUtc, long AccessTick)> _entries = new();
@@ -145,7 +157,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		long _accessCounter;
 		int _generation;
 
-		internal ClusterIconCache(int capacity, Action<T>? disposeValue = null)
+		internal IconCache(int capacity, Action<T>? disposeValue = null)
 		{
 			if (capacity <= 0)
 				throw new ArgumentOutOfRangeException(nameof(capacity));
