@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -807,6 +807,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var map = new Map();
 			map.IsClusteringEnabled = true;
 			Assert.True(map.IsClusteringEnabled);
+		}
+
+		[Theory]
+		// One zoom-button press or double-tap moves exactly one level: the case that regressed.
+		[InlineData(11f, 10f, true)]
+		[InlineData(10f, 11f, true)]
+		// A one-level step lands *under* 1.0f when the two values straddle a binade boundary, which
+		// is the only thing ReclusterZoomStep's tolerance is for. This pair is the worst case in
+		// Google Maps' 1-22 zoom range: the delta is 0.9999990463f, exactly 2^-20 short. Keep a pair
+		// that actually falls short - 16.03f/15.03f rounds to 1.0000009537f, which the old strict
+		// "> 1.0f" already passed, so it pins nothing.
+		[InlineData(16.05f, 15.05f, true)]
+		// Anything meaningfully short of a level must not tear down and rebuild every marker.
+		[InlineData(10.5f, 10f, false)]
+		[InlineData(10.9f, 10f, false)]
+		// Just under the threshold (0.9997997284f), so the tolerance is pinned from below too: it
+		// has to stay an epsilon absorbing float noise, not grow into a sub-level recluster policy.
+		[InlineData(10.9998f, 10f, false)]
+		// The -1 seed means the first camera idle always clusters.
+		[InlineData(0f, -1f, true)]
+		[InlineData(11f, -1f, true)]
+		public void ShouldReclusterOnAFullZoomStep(float currentZoom, float lastClusterZoom, bool expected)
+		{
+			Assert.Equal(expected, MapHandler.ShouldRecluster(currentZoom, lastClusterZoom));
 		}
 
 		[Fact]
