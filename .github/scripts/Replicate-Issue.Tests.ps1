@@ -107,6 +107,7 @@ BeforeAll {
         'Assert-GeneratedSandboxSources',
         'Get-ReplicationFixBaselineGreenCause',
     'Get-ReplicationMissingIdentifierEvidence',
+    'Get-ReplicationIdentifierSiteRank',
     'Set-ReplicationVerificationRunCount',
     'Test-ReplicationFixBaselineStillRed',
     'Get-ReplicationUnbuildableTestTiers',
@@ -11636,6 +11637,35 @@ Describe 'An invented API is named as invented' {
             -Diagnostics "error CS0103: The name 'ImplicitUsings' does not exist in the current context" `
             -RepositoryRoot $script:apiRepoRoot
         $evidence | Should -Match 'appears in no C# source file under src/'
+    }
+
+    It 'ranks a real test above product source and legacy Compatibility' {
+        Get-ReplicationIdentifierSiteRank -Path 'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' |
+            Should -BeLessThan (Get-ReplicationIdentifierSiteRank -Path 'src/Core/src/Primitives/Thickness.cs')
+        Get-ReplicationIdentifierSiteRank -Path 'src/Core/src/Primitives/Thickness.cs' |
+            Should -BeLessThan (Get-ReplicationIdentifierSiteRank -Path 'src/Compatibility/Core/src/Android/AppCompat/FlyoutPageRenderer.cs')
+        Get-ReplicationIdentifierSiteRank -Path 'src/BlazorWebView/samples/App/Program.cs' |
+            Should -BeLessThan (Get-ReplicationIdentifierSiteRank -Path 'src/Compatibility/Core/src/Foo.cs')
+        # Windows-style separators must rank the same, or the ordering silently
+        # changes with the agent's platform.
+        Get-ReplicationIdentifierSiteRank -Path 'src\Compatibility\Core\src\Foo.cs' |
+            Should -Be (Get-ReplicationIdentifierSiteRank -Path 'src/Compatibility/Core/src/Foo.cs')
+    }
+
+    It 'does not send the author to legacy Compatibility to learn a common API' {
+        # git grep emits paths alphabetically, so src/BlazorWebView and
+        # src/Compatibility sorted ahead of src/Controls and src/Core on every
+        # lookup: 32 of 81 cached citations landed in src/Compatibility/Core and
+        # 11 in BlazorWebView samples. One run was told to read 'Colors' in a
+        # Compatibility *Android* renderer while authoring an *iOS* test and
+        # repeated the identical CS0103 five times.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "error CS0103: The name 'Colors' does not exist in the current context" `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match 'Colors'
+        $evidence | Should -Match '\.cs'
+        $evidence | Should -Not -Match 'src/Compatibility'
+        $evidence | Should -Not -Match '(?i)/samples?/'
     }
 
     It 'is offered to the author when a build break is diagnosed' {

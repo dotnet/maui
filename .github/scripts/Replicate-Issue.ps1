@@ -1049,6 +1049,37 @@ function Test-ReplicationReplayHarnessFault {
         'must be fully qualified\.\s*$'
 }
 
+function Get-ReplicationIdentifierSiteRank {
+    <#
+        .SYNOPSIS
+        Ranks a candidate source file by how well it teaches an identifier.
+
+        .DESCRIPTION
+        git grep emits paths in alphabetical order, and the caller used to take
+        the first two. Alphabetical order puts 'src/BlazorWebView' and
+        'src/Compatibility' ahead of 'src/Controls' and 'src/Core' every single
+        time, so the evidence systematically cited the least useful areas of the
+        tree: across the cached logs, 32 of 81 citations landed in
+        src/Compatibility/Core and 11 more in BlazorWebView samples - 53%
+        pointing somewhere a new MAUI test should not be modelled on. One run
+        was told to learn 'Colors' from a Compatibility *Android* renderer while
+        authoring an *iOS* test, and repeated the identical CS0103 five times.
+
+        Lower rank sorts first. A real test is the best model because it shows
+        the identifier used the way the generated file must use it; product
+        source is next; Compatibility is last because it is legacy
+        Xamarin.Forms code that should never be copied into a new test.
+    #>
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $normalized = ($Path -replace '\\', '/')
+    if ($normalized -like 'src/Compatibility/*') { return 4 }
+    if ($normalized -match '(?i)/samples?/') { return 3 }
+    if ($normalized -like 'src/Controls/tests/*') { return 0 }
+    if ($normalized -like 'src/Core/src/*' -or $normalized -like 'src/Controls/src/*') { return 1 }
+    return 2
+}
+
 function Get-ReplicationMissingIdentifierEvidence {
     <#
         .SYNOPSIS
@@ -1109,6 +1140,10 @@ function Get-ReplicationMissingIdentifierEvidence {
             $found = & git -C $RepositoryRoot grep --files-with-matches --word-regexp `
                 --fixed-strings -e $name -- 'src' 2>$null
             $sites = @($found | Where-Object { $_ -like '*.cs' } |
+                Sort-Object -Property `
+                    @{ Expression = { Get-ReplicationIdentifierSiteRank -Path $_ } }, `
+                    @{ Expression = { ($_ -split '/').Count } }, `
+                    @{ Expression = { $_ } } |
                 Select-Object -First $MaximumSitesPerIdentifier)
         } catch {
             # A search that could not run says nothing about the identifier, and
