@@ -181,22 +181,21 @@ namespace Microsoft.Maui.Maps.Platform
 			return mapPin;
 		}
 
-		// Native class of MKClusterAnnotation, used to detect clusters by their real ObjC class
-		// rather than the managed peer type (which binding skew can report as a generic wrapper).
-		static readonly ObjCRuntime.Class s_clusterAnnotationClass = new(typeof(MKClusterAnnotation));
-
-		// Resolves a cluster annotation, isolating the binding-skew workaround in one place so a
-		// better native check can be swapped in later. Checking the native class (not the managed
-		// type name) also avoids using exceptions for the common non-cluster case.
+		// Resolves a cluster annotation. MapKit hands the GetViewForAnnotation block its annotation as a
+		// marshalled protocol wrapper (MKAnnotationWrapper), which is an INativeObject but *not* an
+		// NSObject - so neither a managed `is MKClusterAnnotation` check nor an NSObject-based
+		// IsKindOfClass sees the cluster, and every cluster fell through to the default marker.
+		// Resolving the peer from the handle picks the managed type from the native class, which works
+		// for the wrapper and for an already-typed annotation (the selection callbacks pass the latter).
 		static MKClusterAnnotation? TryGetClusterAnnotation(IMKAnnotation annotation)
 		{
 			if (annotation is MKClusterAnnotation clusterAnnotation)
 				return clusterAnnotation;
 
-			if (annotation is Foundation.NSObject nsObject && nsObject.IsKindOfClass(s_clusterAnnotationClass))
-				return Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
+			if (annotation.Handle == IntPtr.Zero)
+				return null;
 
-			return null;
+			return Runtime.GetNSObject(annotation.Handle) as MKClusterAnnotation;
 		}
 
 		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
