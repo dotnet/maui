@@ -13,6 +13,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
