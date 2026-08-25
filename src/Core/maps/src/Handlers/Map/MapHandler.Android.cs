@@ -1019,7 +1019,16 @@ namespace Microsoft.Maui.Maps.Handlers
 					return null;
 
 				var bitmap = DrawableToBitmap(drawable);
-				return bitmap != null ? BitmapDescriptorFactory.FromBitmap(bitmap) : null;
+				if (bitmap is null)
+					return null;
+
+				// Every DrawableToBitmap path returns a bitmap this handler owns, and
+				// BitmapDescriptorFactory.FromBitmap copies the pixels into the descriptor, so the
+				// copy has no reader left once the descriptor exists. Recycling here frees it now
+				// instead of leaving one native buffer per load waiting on the GC bridge.
+				var descriptor = BitmapDescriptorFactory.FromBitmap(bitmap);
+				bitmap.Recycle();
+				return descriptor;
 			}
 			catch (System.Exception ex)
 			{
@@ -1083,11 +1092,15 @@ namespace Microsoft.Maui.Maps.Handlers
 					}
 				});
 			}
-			catch
+			catch (System.Exception ex)
 			{
 				// This runs from a finally, so it must not throw under any circumstance - resolving
 				// the logger from a disposed provider included. An exception here would replace the
 				// descriptor that was already built, which is the very failure this method prevents.
+				// Swallowed, but not silently: reaching here means the Glide entry is leaked for the
+				// rest of the process, and a cleanup path that fails invisibly looks like one that
+				// works. TryLogWarning cannot throw back into this catch.
+				TryLogWarning(mauiContext, ex, "Failed to schedule the release of a custom pin icon image result");
 			}
 		}
 
@@ -1152,13 +1165,15 @@ namespace Microsoft.Maui.Maps.Handlers
 				// already fits - the size Pin.ImageSource documents for Android - so the descriptor
 				// would be built over pixels the image result owns, and releasing that result lets
 				// them go. Copy instead, and never fall back to the source: a failed copy has to
-				// mean the default marker, not a descriptor over foreign pixels. Hardware bitmaps
-				// are the common immutable case here and cannot be read back, so retarget those.
-				var config = source.GetConfig();
-				if (config is null || (OperatingSystem.IsAndroidVersionAtLeast(26) && config == ABitmap.Config.Hardware))
-					config = ABitmap.Config.Argb8888!;
-
-				return source.Copy(config, false);
+				// mean the default marker, not a descriptor over foreign pixels.
+				//
+				// Always Argb8888 rather than preserving source.GetConfig(): at 64x64 a narrower
+				// config saves a few KB, which is not worth comparing Bitmap.Config values for.
+				// Those compare as JNI peers of a Java enum, and peer identity is not something the
+				// binding guarantees - a comparison that silently went false for a hardware bitmap
+				// would copy it as hardware, and BitmapDescriptorFactory cannot read those pixels
+				// back, which lands on the default marker this PR exists to prevent.
+				return source.Copy(ABitmap.Config.Argb8888!, false);
 			}
 
 			int width = drawable.IntrinsicWidth;
