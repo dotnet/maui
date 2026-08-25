@@ -288,6 +288,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(SafeAreaEdges.Container, view.SafeAreaEdges);
 			Assert.False(safeAreaElement.HasExplicitSafeAreaEdges);
 			Assert.Equal(SafeAreaRegions.Container, SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(view, 0));
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out var effectiveEdges));
+			Assert.Equal(SafeAreaEdges.Container, effectiveEdges);
 
 			view.SafeAreaEdges = new SafeAreaEdges(
 				SafeAreaRegions.None,
@@ -300,6 +302,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(SafeAreaRegions.Container, SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(view, 1));
 			Assert.Equal(SafeAreaRegions.None, SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(view, 2));
 			Assert.Equal(SafeAreaRegions.SoftInput, SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(view, 3));
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out effectiveEdges));
+			Assert.Equal(view.SafeAreaEdges, effectiveEdges);
 		}
 
 		[Fact]
@@ -310,11 +314,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(safeAreaElement.HasExplicitSafeAreaEdges);
 			Assert.Equal(SafeAreaRegions.None, SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(view, 0));
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out var effectiveEdges));
+			Assert.Equal(SafeAreaEdges.None, effectiveEdges);
 
 			view.SafeAreaEdges = SafeAreaEdges.Default;
 
 			Assert.True(safeAreaElement.HasExplicitSafeAreaEdges);
 			Assert.Equal(SafeAreaRegions.None, SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(view, 0));
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out effectiveEdges));
+			Assert.Equal(SafeAreaEdges.None, effectiveEdges);
 		}
 
 		[Fact]

@@ -7,6 +7,8 @@ namespace Microsoft.Maui
 	/// Controls implementations can use the shared safe area bindable property provided by Microsoft.Maui.Controls.
 	/// Implementations must also report whether the value is explicit and provide their control-specific default so
 	/// platform handlers can preserve the intended behavior when no value is configured.
+	/// Controls that use the shared property can implement <see cref="HasExplicitSafeAreaEdges"/> with
+	/// <c>SafeAreaElement.IsSafeAreaEdgesSet(this)</c>.
 	/// </remarks>
 	public interface ISafeAreaElement
 	{

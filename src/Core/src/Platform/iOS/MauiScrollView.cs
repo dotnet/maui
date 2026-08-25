@@ -191,56 +191,43 @@ namespace Microsoft.Maui.Platform
 			set => _reference = value == null ? null : new(value);
 		}
 
-		SafeAreaRegions GetSafeAreaRegionForEdge(int edge)
+		SafeAreaEdges GetSafeAreaEdges()
 		{
-			if (!SafeAreaViewStrategy.IsModernSafeAreaView(View))
-				return SafeAreaRegions.None;
-
-			return SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(View, edge);
+			SafeAreaViewStrategy.TryGetSafeAreaEdges(View, out var edges, includeLegacy: false);
+			return edges;
 		}
 
 		SafeAreaEdges? _previousEdges;
 
-		UIEdgeInsets GetInset()
+		UIEdgeInsets GetInset(SafeAreaEdges safeAreaEdges)
 		{
-			var leftRegion = GetSafeAreaRegionForEdge(0);
-			var topRegion = GetSafeAreaRegionForEdge(1);
-			var rightRegion = GetSafeAreaRegionForEdge(2);
-			var bottomRegion = GetSafeAreaRegionForEdge(3);
-
 			var safeAreaInsets = SafeAreaInsets;
 
 			var manualInset = new UIEdgeInsets(
-					top: GetManualInsetForEdge(topRegion, safeAreaInsets.Top),
-					left: GetManualInsetForEdge(leftRegion, safeAreaInsets.Left),
-					bottom: GetManualInsetForEdge(bottomRegion, safeAreaInsets.Bottom),
-					right: GetManualInsetForEdge(rightRegion, safeAreaInsets.Right)
+					top: GetManualInsetForEdge(safeAreaEdges.Top, safeAreaInsets.Top),
+					left: GetManualInsetForEdge(safeAreaEdges.Left, safeAreaInsets.Left),
+					bottom: GetManualInsetForEdge(safeAreaEdges.Bottom, safeAreaInsets.Bottom),
+					right: GetManualInsetForEdge(safeAreaEdges.Right, safeAreaInsets.Right)
 				);
 
 			return manualInset;
 		}
 
-		bool UpdateContentInsetAdjustmentBehavior()
+		bool UpdateContentInsetAdjustmentBehavior(SafeAreaEdges safeAreaEdges)
 		{
-			// Get SafeAreaRegions for all edges
-			var leftRegion = GetSafeAreaRegionForEdge(0);
-			var topRegion = GetSafeAreaRegionForEdge(1);
-			var rightRegion = GetSafeAreaRegionForEdge(2);
-			var bottomRegion = GetSafeAreaRegionForEdge(3);
-
-			SafeAreaEdges safeAreaEdges = new SafeAreaEdges(leftRegion, topRegion, rightRegion, bottomRegion);
-
 			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges))
 				return false;
 
 			_previousEdges = safeAreaEdges;
 
 			// Check if all edges have the same SafeAreaRegions value
-			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
+			if (safeAreaEdges.Left == safeAreaEdges.Top &&
+				safeAreaEdges.Top == safeAreaEdges.Right &&
+				safeAreaEdges.Right == safeAreaEdges.Bottom)
 			{
 				// All edges have the same value, use built-in iOS behavior
 				// Cache the region value to avoid redundant comparisons
-				var region = leftRegion;
+				var region = safeAreaEdges.Left;
 
 				ContentInsetAdjustmentBehavior = region switch
 				{
@@ -362,7 +349,8 @@ namespace Microsoft.Maui.Platform
 			//UpdateKeyboardSubscription();
 			// If nothing changed, we don't need to do anything
 
-			if (UpdateContentInsetAdjustmentBehavior())
+			var safeAreaEdges = GetSafeAreaEdges();
+			if (UpdateContentInsetAdjustmentBehavior(safeAreaEdges))
 			{
 				// Edges changed - invalidate and force re-evaluation
 				InvalidateConstraintsCache();
@@ -386,7 +374,7 @@ namespace Microsoft.Maui.Platform
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-				_safeArea = GetInset().ToSafeAreaInsets();
+				_safeArea = GetInset(safeAreaEdges).ToSafeAreaInsets();
 			else
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 

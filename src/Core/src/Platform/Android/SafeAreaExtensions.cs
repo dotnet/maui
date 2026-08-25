@@ -8,11 +8,6 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
-	internal static SafeAreaRegions GetSafeAreaRegionForEdge(int edge, ICrossPlatformLayout crossPlatformLayout)
-	{
-		return SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(crossPlatformLayout, edge);
-	}
-
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(
 		WindowInsetsCompat windowInsets,
 		ICrossPlatformLayout crossPlatformLayout,
@@ -25,16 +20,19 @@ internal static class SafeAreaExtensions
 		var isKeyboardShowing = !keyboardInsets.IsEmpty;
 
 		var layout = crossPlatformLayout;
-		var hasSafeAreaStrategy = SafeAreaViewStrategy.IsModernSafeAreaView(layout);
+		var hasSafeAreaStrategy = SafeAreaViewStrategy.TryGetSafeAreaEdges(
+			layout,
+			out var safeAreaEdges,
+			includeLegacy: false);
 		var margins = (SafeAreaViewStrategy.ResolveVirtualView(layout) as IView)?.Margin ?? Thickness.Zero;
 
 		if (hasSafeAreaStrategy)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
-			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-			var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+			var left = GetSafeAreaForEdge(safeAreaEdges.Left, baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
+			var top = GetSafeAreaForEdge(safeAreaEdges.Top, baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
+			var right = GetSafeAreaForEdge(safeAreaEdges.Right, baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
+			var bottom = GetSafeAreaForEdge(safeAreaEdges.Bottom, baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
 			bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;

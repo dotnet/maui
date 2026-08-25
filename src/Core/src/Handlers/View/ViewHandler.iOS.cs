@@ -172,8 +172,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			// Parent handling is edge-aware across the full ancestor chain, so intermediate
 			// safe-area views cannot shield deeper descendants from ancestor changes.
-			// Handler-backed descendants can be nested below native wrappers, so the walk
-			// intentionally covers the full native subtree.
+			// Changing an ancestor does not run descendant mappers, and handler-backed
+			// descendants can be nested below native wrappers, so the walk intentionally
+			// covers the full native subtree.
 			if (platformView is MauiView mauiView)
 			{
 				mauiView.InvalidateSafeArea();

@@ -27,6 +27,51 @@ namespace Microsoft.Maui
 			return view is ISafeAreaElement safeAreaElement && safeAreaElement.HasExplicitSafeAreaEdges;
 		}
 
+		internal static bool TryGetSafeAreaEdges(object? view, out SafeAreaEdges edges, bool includeLegacy = true)
+		{
+			view = ResolveVirtualView(view);
+
+			if (view is ISafeAreaViewStrategy strategy)
+			{
+				edges = new SafeAreaEdges(
+					strategy.GetSafeAreaRegionsForEdge(0),
+					strategy.GetSafeAreaRegionsForEdge(1),
+					strategy.GetSafeAreaRegionsForEdge(2),
+					strategy.GetSafeAreaRegionsForEdge(3));
+				return true;
+			}
+
+			if (view is ISafeAreaElement safeAreaElement)
+			{
+				var configuredEdges = safeAreaElement.SafeAreaEdges;
+				var defaultEdges =
+					configuredEdges.Left == SafeAreaRegions.Default ||
+					configuredEdges.Top == SafeAreaRegions.Default ||
+					configuredEdges.Right == SafeAreaRegions.Default ||
+					configuredEdges.Bottom == SafeAreaRegions.Default
+						? safeAreaElement.GetDefaultSafeAreaEdges()
+						: SafeAreaEdges.None;
+
+				edges = new SafeAreaEdges(
+					ResolveDefaultRegion(configuredEdges.Left, defaultEdges.Left),
+					ResolveDefaultRegion(configuredEdges.Top, defaultEdges.Top),
+					ResolveDefaultRegion(configuredEdges.Right, defaultEdges.Right),
+					ResolveDefaultRegion(configuredEdges.Bottom, defaultEdges.Bottom));
+				return true;
+			}
+
+			if (includeLegacy && view is ISafeAreaView legacySafeAreaView)
+			{
+				edges = legacySafeAreaView.IgnoreSafeArea
+					? SafeAreaEdges.None
+					: new SafeAreaEdges(SafeAreaRegions.Container);
+				return true;
+			}
+
+			edges = SafeAreaEdges.None;
+			return false;
+		}
+
 		internal static SafeAreaRegions GetSafeAreaRegionsForEdge(object? view, int edge)
 		{
 			view = ResolveVirtualView(view);
@@ -41,15 +86,23 @@ namespace Microsoft.Maui
 					return region;
 
 				var defaultRegion = safeAreaElement.GetDefaultSafeAreaEdges().GetEdge(edge);
-				return defaultRegion == SafeAreaRegions.Default
-					? SafeAreaRegions.Container
-					: defaultRegion;
+				return ResolveDefaultRegion(region, defaultRegion);
 			}
 
 			if (view is ISafeAreaView legacySafeAreaView)
 				return legacySafeAreaView.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
 
 			return SafeAreaRegions.None;
+		}
+
+		static SafeAreaRegions ResolveDefaultRegion(SafeAreaRegions region, SafeAreaRegions defaultRegion)
+		{
+			if (region != SafeAreaRegions.Default)
+				return region;
+
+			return defaultRegion == SafeAreaRegions.Default
+				? SafeAreaRegions.Container
+				: defaultRegion;
 		}
 
 		internal static object? ResolveVirtualView(object? view)

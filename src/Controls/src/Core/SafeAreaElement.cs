@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 		/// Types using this property must implement <see cref="ISafeAreaElement"/> and should expose this instance through
 		/// their own public <c>SafeAreaEdgesProperty</c> field.
 		/// </remarks>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown when the property is read from a <see cref="BindableObject"/> that does not implement <see cref="ISafeAreaElement"/>.
+		/// </exception>
 		public static readonly BindableProperty SafeAreaEdgesProperty =
 			BindableProperty.Create(nameof(ISafeAreaElement.SafeAreaEdges), typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
 									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
