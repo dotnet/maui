@@ -1115,6 +1115,56 @@ function Get-ReplicationMissingIdentifierEvidence {
         return ''
     }
 
+    # CS0117 and CS1061 name *both* the type and the member, and the member
+    # alone is the less useful half. Measured on the cached corpus, searching
+    # for the bare member behind "'SafeAreaEdges' does not contain a definition
+    # for 'Container'" matches 151 C# files and reports two of them, which is
+    # noise. Asking instead which type actually exposes that member answers it
+    # outright: SafeAreaRegions.Container, 21 uses, top hit. The same lookup
+    # resolves SoftInput to SafeAreaRegions and Request to SizeRequest - in
+    # each case the author had reached for a property name or a Xamarin.Forms
+    # type as though it were the enum.
+    $ownerLines = [Collections.Generic.List[string]]::new()
+    $ownerPattern = "'(?<type>[A-Za-z_][A-Za-z0-9_]*)' does not contain a definition for " +
+        "'(?<name>[A-Za-z_][A-Za-z0-9_]*)'"
+    $seenMembers = [Collections.Generic.HashSet[string]]::new()
+    foreach ($match in [regex]::Matches($Diagnostics, $ownerPattern)) {
+        if ($ownerLines.Count -ge $MaximumIdentifiers) { break }
+        $wrongType = $match.Groups['type'].Value
+        $member = $match.Groups['name'].Value
+        if (-not $seenMembers.Add($member)) { continue }
+
+        $owners = @()
+        try {
+            # -I skips binary files: the aotprofile blobs otherwise contribute a
+            # "Binary file ... matches" line that would be reported as a type.
+            $uses = & git -C $RepositoryRoot grep -hoPI `
+                "(?<![A-Za-z0-9_])[A-Z][A-Za-z0-9_]*\.$member(?![A-Za-z0-9_])" `
+                -- 'src/Controls/src' 'src/Core/src' 2>$null
+            $owners = @($uses |
+                ForEach-Object { ($_ -split '\.')[0] } |
+                Where-Object { $_ -and $_ -ne $wrongType } |
+                Group-Object |
+                Sort-Object -Property @{ Expression = { $_.Count } ; Descending = $true }, Name |
+                Select-Object -First 2)
+        } catch {
+            # A search that could not run says nothing, and inventing an owner
+            # here would be the confident wrong answer this phase exists to stop.
+            continue
+        }
+
+        if ($owners.Count -gt 0) {
+            $described = @($owners | ForEach-Object {
+                $unit = if ($_.Count -eq 1) { 'use' } else { 'uses' }
+                "$($_.Name) ($($_.Count) $unit)"
+            }) -join ', '
+            $ownerLines.Add(
+                "'$member' is not a member of '$wrongType'. In this repository " +
+                "'$member' is used on $described. Read that declaration and use " +
+                "the type that really owns the member instead of renaming it.") | Out-Null
+        }
+    }
+
     $names = [Collections.Generic.List[string]]::new()
     foreach ($pattern in @(
             "does not contain a definition for '(?<name>[A-Za-z_][A-Za-z0-9_]*)'",
@@ -1127,7 +1177,7 @@ function Get-ReplicationMissingIdentifierEvidence {
             }
         }
     }
-    if ($names.Count -eq 0) {
+    if ($names.Count -eq 0 -and $ownerLines.Count -eq 0) {
         return ''
     }
 
@@ -1161,11 +1211,13 @@ function Get-ReplicationMissingIdentifierEvidence {
         }
     }
 
-    if ($lines.Count -eq 0) {
+    if ($lines.Count -eq 0 -and $ownerLines.Count -eq 0) {
         return ''
     }
 
-    return ($lines -join ' ')
+    # The owner evidence goes first: it names the type to use, where the
+    # generic search only says whether a name exists somewhere.
+    return ((@($ownerLines) + @($lines)) -join ' ')
 }
 
 function Get-ReplicationCompilerDiagnostics {

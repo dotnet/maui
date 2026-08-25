@@ -11622,6 +11622,53 @@ Describe 'An invented API is named as invented' {
         $evidence | Should -Match 'do not use it again'
     }
 
+    It 'names the type that really owns the member' {
+        # Measured: the bare member behind "'SafeAreaEdges' does not contain a
+        # definition for 'Container'" matches 151 C# files, so reporting two of
+        # them is noise. SafeAreaRegions.Container is the answer, and it is the
+        # top hit by a wide margin. Run 15092216-class build breaks repeated the
+        # identical diagnostic across attempts; 34 of 65 build-failed runs did.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics ("error CS0117: 'SafeAreaEdges' does not contain a " +
+                "definition for 'Container'") `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Match "'Container' is not a member of 'SafeAreaEdges'"
+        $evidence | Should -Match 'SafeAreaRegions'
+    }
+
+    It 'ranks the owner that is actually used most first' {
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "error CS1061: 'Size' does not contain a definition for 'Request'" `
+            -RepositoryRoot $script:apiRepoRoot
+        $owners = [regex]::Match($evidence, "'Request' is used on (?<list>[^.]+)\.")
+        $owners.Success | Should -BeTrue
+        $owners.Groups['list'].Value | Should -Match '^SizeRequest'
+    }
+
+    It 'never suggests the type that just rejected the member' {
+        # Answering "use SafeAreaEdges.SoftInput" to "SafeAreaEdges does not
+        # contain SoftInput" is the one reply guaranteed to be wrong, and the
+        # name does occur on that type in source.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics ("error CS1061: 'SafeAreaEdges' does not contain a " +
+                "definition for 'SoftInput'") `
+            -RepositoryRoot $script:apiRepoRoot
+        $owners = [regex]::Match($evidence, "'SoftInput' is used on (?<list>[^.]+)\.")
+        $owners.Success | Should -BeTrue
+        $owners.Groups['list'].Value | Should -Not -Match 'SafeAreaEdges'
+    }
+
+    It 'claims no owner for a member that exists nowhere' {
+        # Silence is the honest answer here, and the generic search still says
+        # the name is absent.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics ("error CS1061: 'Picker' does not contain a definition " +
+                "for 'TotallyMadeUpZZZ'") `
+            -RepositoryRoot $script:apiRepoRoot
+        $evidence | Should -Not -Match 'is used on'
+        $evidence | Should -Match 'appears in no C# source file under src/'
+    }
+
     It 'points at the file when the identifier is real' {
         # ItemsSource is a real MAUI member, so the honest answer is where to
         # read it, not that it is absent.
