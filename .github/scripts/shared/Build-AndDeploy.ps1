@@ -473,7 +473,34 @@ if ($Platform -eq "android") {
             # a failed registration turns into an unexplained Appium error four
             # attempts later.
             if ($LASTEXITCODE -eq 0) {
-                Write-Success "Registered MacCatalyst app with LaunchServices"
+                # lsregister exiting 0 only means *an* app was registered. The
+                # mac2 driver resolves by bundleId, so registering the wrong
+                # bundle looks exactly like success here and surfaces four
+                # attempts later as "The app representing <id> could not be
+                # found". Build 15090165 spent a full catalyst run that way with
+                # only Maui.Controls.Sample.Sandbox.app ever registered, and the
+                # console said "Registered MacCatalyst app with LaunchServices".
+                # Reading the identifier back turns that into one honest line.
+                $registeredBundleId = ''
+                $infoPlist = Join-Path $catalystAppPath.FullName 'Contents/Info.plist'
+                if (Test-Path -LiteralPath $infoPlist) {
+                    $registeredBundleId = (& /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' $infoPlist 2>$null)
+                    if ($LASTEXITCODE -ne 0) { $registeredBundleId = '' }
+                }
+                $registeredBundleId = ([string]$registeredBundleId).Trim()
+
+                if ($registeredBundleId) {
+                    Write-Success "Registered MacCatalyst app with LaunchServices: $registeredBundleId"
+                } else {
+                    Write-Success "Registered MacCatalyst app with LaunchServices"
+                    Write-Warn "Could not read CFBundleIdentifier from $infoPlist; the bundle the driver resolves is unverified"
+                }
+
+                if ($BundleId -and $registeredBundleId -and $registeredBundleId -ne $BundleId) {
+                    Write-Warn ("Registered '$registeredBundleId' but the test driver resolves '$BundleId'; " +
+                        "the Appium session will fail with 'The app representing $BundleId " +
+                        "could not be found' until the right bundle is registered.")
+                }
             } else {
                 Write-Warn "lsregister exited $LASTEXITCODE; the mac2 driver may not resolve the bundle by id"
             }

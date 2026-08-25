@@ -1378,6 +1378,28 @@ Describe 'An already-covered issue may be re-run deliberately' {
     }
 }
 
+Describe 'Every pipeline script parses' {
+    # A one-character mistake (\" instead of `" inside a double-quoted string)
+    # left Build-AndDeploy.ps1 unparseable and wiped out all 890 tests in
+    # Replicate-Issue.Tests.ps1 at once. Nothing caught it at the point of
+    # damage: the tests covering that very block read the file with
+    # Get-Content -Raw, so they happily matched text in a file PowerShell
+    # could not load. Parsing is the cheapest possible check and the only one
+    # that fails on the broken file rather than somewhere downstream.
+    It 'parses <_> without errors' -ForEach @(
+        Get-ChildItem -Recurse -LiteralPath $PSScriptRoot -Filter *.ps1 |
+            ForEach-Object { $_.FullName }
+    ) {
+        $errors = $null
+        [System.Management.Automation.Language.Parser]::ParseFile(
+            $_, [ref]$null, [ref]$errors) | Out-Null
+        $messages = @($errors) | ForEach-Object {
+            "line $($_.Extent.StartLineNumber): $($_.Message)"
+        }
+        $messages -join "; " | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'The catalyst build registers its app where the mac2 driver looks' {
     # Every one of the 22 cached runs that failed with "The app representing
     # com.microsoft.maui.uitests could not be found" was catalyst, and every one
@@ -1395,6 +1417,55 @@ Describe 'The catalyst build registers its app where the mac2 driver looks' {
 
     It 'registers the built bundle with LaunchServices' {
         $script:CatalystBranch | Should -Match 'lsregister'
+    }
+
+    # Build 15090165 registered Maui.Controls.Sample.Sandbox.app, printed
+    # "Registered MacCatalyst app with LaunchServices", and then failed four
+    # attempts with "The app representing com.microsoft.maui.uitests could not
+    # be found". lsregister exiting 0 says an app was registered, never that it
+    # was the one the mac2 driver resolves by bundleId.
+    It 'reads back the identifier it actually registered' {
+        # Asserted on the PlistBuddy call itself, not on the file containing the
+        # word: a comment and a warning string both mention CFBundleIdentifier,
+        # so a looser check survived swapping the key for CFBundleName.
+        $script:CatalystBranch |
+            Should -Match "PlistBuddy[^\r\n]*Print :CFBundleIdentifier"
+    }
+
+    It 'warns when the registered bundle is not the one the driver resolves' {
+        $script:CatalystBranch | Should -Match '\$registeredBundleId -ne \$BundleId'
+    }
+
+    It 'names both identifiers so the warning is actionable on its own' {
+        $mismatch = [regex]::Match(
+            $script:CatalystBranch,
+            '(?s)\$registeredBundleId -ne \$BundleId.*?\}')
+        $mismatch.Success | Should -BeTrue
+        $mismatch.Value | Should -Match '\$registeredBundleId'
+        $mismatch.Value | Should -Match '\$BundleId'
+    }
+
+    # The comparison is worthless if the caller never says which bundle the
+    # tests will ask for, which was true for catalyst until this was fixed.
+    It 'is told which bundle the catalyst tests resolve' {
+        # Resolved through the AST so the guard reads the condition that really
+        # governs the assignment. A text window around it matched the ios-only
+        # form too, and that mutant survived.
+        $hostAppPath = Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1'
+        $errors = $null
+        $hostAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $hostAppPath, [ref]$null, [ref]$errors)
+        $errors | Should -BeNullOrEmpty
+
+        $ifs = $hostAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.IfStatementAst]
+        }, $true)
+
+        $governing = @($ifs | Where-Object {
+            $_.Clauses[0].Item2.Extent.Text -match '\$buildDeployParams\.BundleId'
+        })
+        $governing.Count | Should -Be 1
+        $governing[0].Clauses[0].Item1.Extent.Text | Should -Match 'catalyst'
     }
 
     It 'probes both known lsregister locations' {
