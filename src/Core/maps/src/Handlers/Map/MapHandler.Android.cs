@@ -1023,12 +1023,28 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 			catch (System.Exception ex)
 			{
-				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
+				TryLogWarning(mauiContext, ex, "Failed to load custom pin icon");
 				return null;
 			}
 			finally
 			{
 				ReleaseImageResult(result, mauiContext);
+			}
+		}
+
+		// Resolving a logger throws once the scoped service provider has been disposed - the window
+		// closing while a pin image load is in flight is enough - and this runs on a path where the
+		// descriptor has often already been built. An exception escaping the catch faults the task,
+		// so AddPinAsync never reaches Map.AddMarker and the pin is missing rather than un-iconed;
+		// under FireAndForget that failure is silent. Failing to log must never cost more than the log.
+		static void TryLogWarning(IMauiContext mauiContext, System.Exception exception, string message)
+		{
+			try
+			{
+				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(exception, message);
+			}
+			catch
+			{
 			}
 		}
 
@@ -1049,8 +1065,10 @@ namespace Microsoft.Maui.Maps.Handlers
 				// process down instead of faulting a task.
 				var logger = mauiContext.Services.GetService<ILogger<MapHandler>>();
 
+				// MainLooper is a process singleton, so one handler serves every release. A race here
+				// just builds a second one and discards it; both post to the same looper.
 				var handler = s_mainHandler;
-				if (handler is null || handler.Looper != Looper.MainLooper)
+				if (handler is null)
 					s_mainHandler = handler = new AHandler(Looper.MainLooper!);
 
 				handler.Post(() =>
@@ -1098,7 +1116,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 				catch (System.Exception ex)
 				{
-					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Cluster image provider threw");
+					TryLogWarning(mauiContext, ex, "Cluster image provider threw");
 				}
 			}
 
