@@ -10,8 +10,8 @@ using Microsoft.Maui.Storage;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	/// <summary>
-	/// Parses the static web assets endpoints manifest (<c>*.staticwebassets.endpoints.json</c>) that
-	/// is bundled with a hybrid app and exposes it as:
+	/// Loads the minimal fingerprinted-asset manifest that MAUI generates at build time (from the
+	/// static web assets endpoints) and bundles with a hybrid app, and exposes it as:
 	/// <list type="bullet">
 	/// <item><description>a <see cref="ResourceAssetCollection"/> so <c>@Assets["logical"]</c> resolves to the
 	/// fingerprinted URL at render time; and</description></item>
@@ -19,9 +19,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// fingerprinted request URL.</description></item>
 	/// </list>
 	/// Blazor Web Apps build this from endpoint metadata via <c>MapStaticAssets</c>; hybrid apps have no
-	/// server, so this reconstructs the same information from the bundled manifest. The manifest is
-	/// bundled outside the web root and read via the app package APIs, so it is never exposed to the
-	/// web view.
+	/// server, so MAUI reconstructs just the fingerprint mapping at build time. The manifest is bundled
+	/// outside the web root and read via the app package APIs, so it is never exposed to the web view.
+	/// Its content is derived entirely from asset fingerprints and logical names (no timestamps, absolute
+	/// paths, or runtime identifiers), so it is deterministic and identical across architectures - which
+	/// is required for universal (multi-RID) app bundles to merge.
 	/// </summary>
 	internal sealed class StaticWebAssetsManifest
 	{
@@ -41,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>Gets the fingerprint-aware asset collection used to resolve <c>@Assets</c>.</summary>
 		public ResourceAssetCollection Assets { get; }
 
-		/// <summary>Gets the map of request route (possibly fingerprinted) to the physical asset file.</summary>
+		/// <summary>Gets the map of fingerprinted request route to the physical asset file under the web root.</summary>
 		public IReadOnlyDictionary<string, string> RouteToPhysicalPath { get; }
 
 		/// <summary>
@@ -84,53 +86,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal static StaticWebAssetsManifest FromData(ManifestData? data)
 		{
 			var resources = new List<ResourceAsset>();
-			var seenLabels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			var routeToPhysical = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-			var endpoints = data?.Endpoints;
-			if (endpoints is null || endpoints.Count == 0)
+			var assets = data?.Assets;
+			if (assets is null || assets.Count == 0)
 			{
 				return new StaticWebAssetsManifest(ResourceAssetCollection.Empty, routeToPhysical);
 			}
 
-			foreach (var endpoint in endpoints)
+			foreach (var asset in assets)
 			{
-				var route = endpoint.Route;
-				var assetFile = endpoint.AssetFile;
-				if (route is null || assetFile is null)
+				var route = asset.Route;
+				var label = asset.Label;
+				if (route is null || label is null)
 				{
 					continue;
 				}
 
-				// Endpoints with selectors are alternative representations (for example gzip/brotli
-				// content negotiation). They are not distinct assets, so skip them - mirroring the
-				// framework's own ResourceCollectionResolver.
-				if (endpoint.Selectors is { Count: > 0 })
-				{
-					continue;
-				}
+				// @Assets resolution: the fingerprinted route is exposed under its logical label.
+				resources.Add(new ResourceAsset(route, new[] { new ResourceAssetProperty("label", label) }));
 
-				var isCompressed = assetFile.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
-					assetFile.EndsWith(".br", StringComparison.OrdinalIgnoreCase);
-
-				var (label, integrity) = ReadProperties(endpoint.EndpointProperties);
-
-				// @Assets resolution: map the human-readable label to the fingerprinted route. Skip
-				// compressed variants and duplicate labels to avoid collisions.
-				if (label is not null && !isCompressed && seenLabels.Add(label))
-				{
-					var properties = integrity is null
-						? new[] { new ResourceAssetProperty("label", label) }
-						: new[] { new ResourceAssetProperty("label", label), new ResourceAssetProperty("integrity", integrity) };
-					resources.Add(new ResourceAsset(route, properties));
-				}
-
-				// Serving: map the (possibly fingerprinted) route to the physical file on disk. Prefer
-				// the uncompressed asset and keep the first mapping for a given route.
-				if (!isCompressed)
-				{
-					routeToPhysical.TryAdd(NormalizePath(route), NormalizePath(assetFile));
-				}
+				// Serving: the physical file under the web root is the logical (non-fingerprinted) label.
+				routeToPhysical.TryAdd(NormalizePath(route), NormalizePath(label));
 			}
 
 			return new StaticWebAssetsManifest(new ResourceAssetCollection(resources), routeToPhysical);
@@ -157,72 +134,25 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return false;
 		}
 
-		private static (string? Label, string? Integrity) ReadProperties(List<EndpointProperty>? properties)
-		{
-			string? label = null;
-			string? integrity = null;
-
-			if (properties is not null)
-			{
-				foreach (var property in properties)
-				{
-					if (property.Name is null)
-					{
-						continue;
-					}
-
-					if (label is null && property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
-					{
-						label = property.Value;
-					}
-					else if (integrity is null && property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
-					{
-						integrity = property.Value;
-					}
-				}
-			}
-
-			return (label, integrity);
-		}
-
 		private static string NormalizePath(string path) =>
 			(path ?? string.Empty).Replace('\\', '/').TrimStart('/');
 
-		/// <summary>The subset of the endpoints manifest that hybrid asset resolution needs.</summary>
+		/// <summary>The minimal fingerprint manifest MAUI generates at build time.</summary>
 		internal sealed class ManifestData
 		{
-			[JsonPropertyName("Endpoints")]
-			public List<Endpoint>? Endpoints { get; set; }
+			[JsonPropertyName("Assets")]
+			public List<AssetEntry>? Assets { get; set; }
 		}
 
-		internal sealed class Endpoint
+		internal sealed class AssetEntry
 		{
+			/// <summary>The fingerprinted, served route (for example <c>_content/Pkg/app.abc123.css</c>).</summary>
 			[JsonPropertyName("Route")]
 			public string? Route { get; set; }
 
-			[JsonPropertyName("AssetFile")]
-			public string? AssetFile { get; set; }
-
-			[JsonPropertyName("Selectors")]
-			public List<EndpointSelector>? Selectors { get; set; }
-
-			[JsonPropertyName("EndpointProperties")]
-			public List<EndpointProperty>? EndpointProperties { get; set; }
-		}
-
-		internal sealed class EndpointSelector
-		{
-			[JsonPropertyName("Name")]
-			public string? Name { get; set; }
-		}
-
-		internal sealed class EndpointProperty
-		{
-			[JsonPropertyName("Name")]
-			public string? Name { get; set; }
-
-			[JsonPropertyName("Value")]
-			public string? Value { get; set; }
+			/// <summary>The logical, non-fingerprinted path used by <c>@Assets</c> and stored on disk under the web root.</summary>
+			[JsonPropertyName("Label")]
+			public string? Label { get; set; }
 		}
 	}
 

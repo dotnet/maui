@@ -70,17 +70,105 @@
   </Target>
 
   <!--
-    Bundle the static web assets endpoints manifest so that fingerprinted assets (@Assets, @ImportMap)
+    Generate a minimal, deterministic fingerprint manifest so that fingerprinted assets (@Assets)
     can be resolved at runtime. Blazor Web Apps get this from MapStaticAssets endpoint metadata; hybrid
-    apps have no server, so BlazorWebView loads this bundled manifest instead. It is bundled OUTSIDE
-    wwwroot so it is never exposed to the web view, and BlazorWebView reads it from the app package via
-    FileSystem.OpenAppPackageFileAsync.
+    apps have no server, so MAUI reconstructs just the fingerprint mapping (fingerprinted route -> logical
+    label) from the static web asset endpoints.
+
+    The generated file is bundled OUTSIDE wwwroot so it is never exposed to the web view, and BlazorWebView
+    reads it from the app package via FileSystem.OpenAppPackageFileAsync. Its content is derived entirely
+    from content fingerprints and logical names (no timestamps, absolute paths, or RIDs), so it is byte
+    identical across architectures - which the SDK requires when merging universal (multi-RID) app bundles.
   -->
+  <UsingTask TaskName="_GenerateMauiBlazorAssetManifest"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Endpoints ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <OutputFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        // Reduce the static web asset endpoints to the minimal fingerprint mapping BlazorWebView needs:
+        // the fingerprinted route and its logical, non-fingerprinted label. Only primary (non-compressed)
+        // endpoints that actually carry a fingerprint are relevant; everything else serves directly.
+        var byRoute = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        foreach (var endpoint in Endpoints)
+        {
+            var selectors = endpoint.GetMetadata("Selectors");
+            if (!string.IsNullOrEmpty(selectors) && selectors != "[]")
+            {
+                // Content-negotiated alternative (gzip/brotli); not a distinct asset.
+                continue;
+            }
+
+            var properties = endpoint.GetMetadata("EndpointProperties") ?? string.Empty;
+            if (!Regex.IsMatch(properties, "\"Name\"\\s*:\\s*\"fingerprint\""))
+            {
+                // Not a fingerprinted route (the plain route is served directly).
+                continue;
+            }
+
+            var labelMatch = Regex.Match(properties, "\"Name\"\\s*:\\s*\"label\"\\s*,\\s*\"Value\"\\s*:\\s*\"(?<v>(?:[^\"\\\\]|\\\\.)*)\"");
+            if (!labelMatch.Success)
+            {
+                continue;
+            }
+
+            var route = endpoint.ItemSpec;
+            var label = labelMatch.Groups["v"].Value;
+            if (!string.IsNullOrEmpty(route) && !string.IsNullOrEmpty(label))
+            {
+                byRoute[route] = label;
+            }
+        }
+
+        static string JsonEscape(string value) =>
+            value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+        var builder = new StringBuilder();
+        builder.Append("{\"Assets\":[");
+        var first = true;
+        foreach (var pair in byRoute)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+            first = false;
+            builder.Append("{\"Route\":\"").Append(JsonEscape(pair.Key))
+                   .Append("\",\"Label\":\"").Append(JsonEscape(pair.Value)).Append("\"}");
+        }
+        builder.Append("]}");
+
+        var content = builder.ToString();
+        Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+
+        // Only write when the content changes so incremental builds stay clean.
+        if (!File.Exists(OutputFile) || File.ReadAllText(OutputFile) != content)
+        {
+            File.WriteAllText(OutputFile, content);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
   <Target Name="_BundleMauiBlazorAssetManifest"
           AfterTargets="ConvertStaticWebAssetsToMauiAssets"
-          Condition="'$(StaticWebAssetEndpointsBuildManifestPath)' != '' and Exists('$(StaticWebAssetEndpointsBuildManifestPath)')">
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+          Condition="'@(StaticWebAssetEndpoint)' != ''">
+    <PropertyGroup>
+      <_MauiBlazorAssetManifestFile>$(IntermediateOutputPath)maui\blazor-asset-manifest.json</_MauiBlazorAssetManifestFile>
+    </PropertyGroup>
+    <_GenerateMauiBlazorAssetManifest Endpoints="@(StaticWebAssetEndpoint)"
+                                      OutputFile="$(_MauiBlazorAssetManifestFile)" />
     <ItemGroup>
-      <MauiAsset Include="$(StaticWebAssetEndpointsBuildManifestPath)">
+      <MauiAsset Include="$(_MauiBlazorAssetManifestFile)" Condition="Exists('$(_MauiBlazorAssetManifestFile)')">
         <Link>_maui/blazor-asset-manifest.json</Link>
         <TargetPath>_maui/blazor-asset-manifest.json</TargetPath>
       </MauiAsset>
