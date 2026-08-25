@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // In Catalyst, 'ScrollDown' isn't functioning correctly with Appium.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,3 +20,4 @@ public class Issue37335 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
