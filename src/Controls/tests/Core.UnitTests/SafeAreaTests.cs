@@ -326,6 +326,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CustomView_DefaultRegionsUseDeclaredEdges()
+		{
+			var view = new CustomMixedSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Default,
+			};
+			var safeAreaElement = (ISafeAreaElement)view;
+			var declaredDefaults = safeAreaElement.GetDefaultSafeAreaEdges();
+
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out var effectiveEdges));
+			Assert.Equal(declaredDefaults, effectiveEdges);
+		}
+
+		[Fact]
 		public void IsSafeAreaEdgesSet_NullBindableThrows()
 		{
 			Assert.Throws<ArgumentNullException>(() => SafeAreaElement.IsSafeAreaEdgesSet(null));
@@ -426,6 +440,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.None;
+		}
+
+		sealed class CustomMixedSafeAreaView : View, ISafeAreaElement
+		{
+			public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
+
+			public SafeAreaEdges SafeAreaEdges
+			{
+				get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+				set => SetValue(SafeAreaEdgesProperty, value);
+			}
+
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
+
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => new(
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container,
+				SafeAreaRegions.SoftInput,
+				SafeAreaRegions.All);
 		}
 
 		static BindableObject CreateSafeAreaBindable(Type safeAreaViewType)
