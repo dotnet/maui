@@ -2,6 +2,11 @@
 
 This example shows a PR description optimized for future agent success.
 
+> [!NOTE]
+> This is a historical PR example and intentionally preserves the interfaces and architecture that existed at the time.
+> Current safe-area work should use the public `ISafeAreaElement` contract and internal `ISafeAreaViewStrategy`;
+> `ISafeAreaView2` no longer exists, and ancestor suppression is now resolved per edge.
+
 ## Title
 ```
 [iOS] SafeArea: Return Empty for non-ISafeAreaView views (opt-in model)

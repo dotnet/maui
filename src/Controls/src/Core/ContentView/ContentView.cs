@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls
 		/// This property controls which edges of the content view should obey safe area insets.
 		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
 		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
+		/// SafeAreaRegions.Default resolves to SafeAreaRegions.None for each edge.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{

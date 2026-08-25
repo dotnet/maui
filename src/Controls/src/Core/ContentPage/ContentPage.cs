@@ -43,14 +43,18 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this content page.
-		/// The default value is SafeAreaEdges.None (edge-to-edge).
+		/// The default property value is <see cref="SafeAreaEdges.None"/>.
+		/// When this property is unset, the effective behavior preserves legacy platform defaults.
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the content page should obey safe area insets.
-		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
-		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
-		/// SafeAreaRegions.Default uses the platform's default safe area handling for that edge.
-		/// This can differ from leaving the property unset, which uses ContentPage's edge-to-edge default.
+		/// Use <see cref="SafeAreaRegions.None"/> for edge-to-edge content, <see cref="SafeAreaRegions.All"/> to obey all safe area insets,
+		/// <see cref="SafeAreaRegions.Container"/> for content that flows under the keyboard but stays out of bars and notches,
+		/// or <see cref="SafeAreaRegions.SoftInput"/> for keyboard-aware behavior.
+		/// An explicitly assigned <see cref="SafeAreaRegions.Default"/> preserves native platform handling for that edge.
+		/// This differs from leaving the property unset: a content page preserves the legacy <c>UseSafeArea</c> behavior,
+		/// which is edge-to-edge by default on iOS and safe-area-aware by default on Mac Catalyst.
+		/// Other platforms use edge-to-edge behavior when the property is unset.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{

@@ -608,8 +608,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-		    /// </summary>
+		/// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+		/// </summary>
 
 		internal void OnOrientationChanged()
 		{

@@ -23,9 +23,9 @@ Local macOS 26+ testing does NOT validate CI behavior. Fixes must pass CI on mac
 
 ## Architecture (PR #34024)
 
-**`GetParentHandledSafeAreaEdges`** — before applying adjustments, `MauiView`/`MauiScrollView` walk ancestors and resolve each ancestor's current safe-area inputs. Descendants suppress only overlapping edges, so a parent handling `Top` does not block a child handling `Bottom`. Results are cached in `SafeAreaEdges? _parentHandledSafeAreaEdges`; `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, and `MovedToWindow` clear the cache. Property and keyboard changes call `MauiView.InvalidateSafeArea(UIView)` to invalidate the full native subtree.
+**`GetParentHandledSafeAreaEdges`** — before applying adjustments, `MauiView`/`MauiScrollView` walk ancestors and resolve each ancestor's current safe-area inputs. Descendants suppress only overlapping edges, so a parent handling `Top` does not block a child handling `Bottom`. Insets are classified as zero or nonzero at device-pixel resolution, and traversal stops as soon as all four edges are handled. Results are cached in `SafeAreaEdges? _parentHandledSafeAreaEdges`; `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, and `MovedToWindow` clear the cache. Property and keyboard changes call `MauiView.InvalidateSafeArea(UIView)` to invalidate the full native subtree.
 
-**`EqualsAtPixelLevel`** — safe area compared at device-pixel resolution to absorb sub-pixel animation noise (`0.0000001pt` during `TranslateToAsync`), preventing oscillation loops (#32586, #33934).
+**Pixel-level comparisons** — use `IsZeroAtPixelLevel` when classifying ancestor insets and `EqualsAtPixelLevel` when comparing cached safe areas. Both operate at device-pixel resolution to absorb sub-pixel animation noise (`0.0000001pt` during `TranslateToAsync`), preventing false edge suppression and oscillation loops (#32586, #33934).
 
 ## Anti-Patterns
 

@@ -149,13 +149,13 @@ Fixes #XXXXX
 
 | Element | Purpose | Example |
 |---------|---------|---------|
-| **Root cause** | Why the bug occurred | "Non-ISafeAreaView views falling through to return baseSafeArea" |
-| **Fix approach** | What the code now does | "Return SafeAreaPadding.Empty for views without interface" |
-| **Philosophy/model change** | If behavior model changed | "Before: opt-out. After: opt-in via interface" |
-| **Key interfaces/types** | Types agents need to know | "ISafeAreaView, ISafeAreaView2 = opt-in contract" |
+| **Root cause** | Why the bug occurred | "Custom views had no public per-edge safe-area contract" |
+| **Fix approach** | What the code now does | "Expose ISafeAreaElement and resolve it through the shared strategy" |
+| **Philosophy/model change** | If behavior model changed | "Public opt-in for custom views while built-in defaults remain compatible" |
+| **Key interfaces/types** | Types agents need to know | "ISafeAreaElement; internal ISafeAreaViewStrategy; legacy ISafeAreaView" |
 | **What NOT to do** | Failed approaches to avoid | "Don't use Element type in Platform layer" |
 | **Architectural constraints** | Layer boundaries, type availability | "Platform layer cannot reference Controls types" |
-| **Edge cases** | Known limitations or risks | "Legacy layouts are [Obsolete], custom views need interface" |
+| **Edge cases** | Known limitations or risks | "Explicit Default and an unset ContentPage can resolve differently" |
 
 ### "What NOT to Do" Section (Critical)
 
@@ -181,7 +181,7 @@ When a fix changes the behavioral model (not just fixing a bug), call it out exp
 - **After:** [New behavior model]
 ```
 
-Example: "Before: Safe area applied by default (opt-out). After: Only views implementing ISafeAreaView get safe area (opt-in)."
+Example: "Before: custom views could not participate in per-edge safe-area handling. After: custom views can opt in through ISafeAreaElement while built-in defaults remain compatible."
 
 ## Common Issues
 
