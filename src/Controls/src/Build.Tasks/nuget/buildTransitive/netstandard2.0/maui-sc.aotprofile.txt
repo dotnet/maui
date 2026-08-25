@@ -3171,7 +3171,6 @@ Methods:
 	Microsoft.Maui.IPlatformViewHandler Microsoft.Maui.Controls.Handlers.Items.ItemContentView:CreateHandler (Microsoft.Maui.Controls.View,Microsoft.Maui.Controls.ItemsView)
 	Microsoft.Maui.IPlatformViewHandler Microsoft.Maui.Controls.Handlers.Items.TemplateHelpers:GetHandler (Microsoft.Maui.Controls.View,Microsoft.Maui.IMauiContext)
 	Microsoft.Maui.IPlatformViewHandler Microsoft.Maui.Platform.ViewExtensions:ToHandler (Microsoft.Maui.IView,Microsoft.Maui.IMauiContext)
-	Microsoft.Maui.SafeAreaRegions Microsoft.Maui.SafeAreaViewStrategy:GetSafeAreaRegionsForEdge (object,int)
 	Microsoft.Maui.IScrollView Microsoft.Maui.Handlers.ScrollViewHandler:Microsoft.Maui.Handlers.IScrollViewHandler.get_VirtualView ()
 	Microsoft.Maui.IShadow Microsoft.Maui.Controls.VisualElement:Microsoft.Maui.IView.get_Shadow ()
 	Microsoft.Maui.ITab Microsoft.Maui.Controls.Handlers.ShellItemTabbedViewAdapter:get_CurrentTab ()

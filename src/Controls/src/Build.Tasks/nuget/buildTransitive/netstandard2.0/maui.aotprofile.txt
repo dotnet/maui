@@ -2492,7 +2492,6 @@ Methods:
 	Microsoft.Maui.IMauiHandlersFactory Microsoft.Maui.MauiContext:<.ctor>b__7_0 ()
 	Microsoft.Maui.IMauiHandlersFactory Microsoft.Maui.MauiContext:get_Handlers ()
 	Microsoft.Maui.IPersistedState Microsoft.Maui.ActivationState:get_State ()
-	Microsoft.Maui.SafeAreaRegions Microsoft.Maui.SafeAreaViewStrategy:GetSafeAreaRegionsForEdge (object,int)
 	Microsoft.Maui.IShadow Microsoft.Maui.Controls.VisualElement:Microsoft.Maui.IView.get_Shadow ()
 	Microsoft.Maui.ITab Microsoft.Maui.Controls.Handlers.ShellItemTabbedViewAdapter:get_CurrentTab ()
 	Microsoft.Maui.ITab Microsoft.Maui.Controls.Handlers.ShellItemTabbedViewAdapter/<>c:<get_Tabs>b__3_0 (Microsoft.Maui.Controls.ShellSection)

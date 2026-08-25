@@ -2260,7 +2260,6 @@ Methods:
 	Microsoft.Maui.IMauiHandlersFactory Microsoft.Maui.MauiContext:<.ctor>b__7_0 ()
 	Microsoft.Maui.IMauiHandlersFactory Microsoft.Maui.MauiContext:get_Handlers ()
 	Microsoft.Maui.IPersistedState Microsoft.Maui.ActivationState:get_State ()
-	Microsoft.Maui.SafeAreaRegions Microsoft.Maui.SafeAreaViewStrategy:GetSafeAreaRegionsForEdge (object,int)
 	Microsoft.Maui.IShadow Microsoft.Maui.Controls.VisualElement:Microsoft.Maui.IView.get_Shadow ()
 	Microsoft.Maui.IToolbar Microsoft.Maui.Controls.Page:Microsoft.Maui.IToolbarElement.get_Toolbar ()
 	Microsoft.Maui.IToolbar Microsoft.Maui.Controls.Window:Microsoft.Maui.IToolbarElement.get_Toolbar ()
