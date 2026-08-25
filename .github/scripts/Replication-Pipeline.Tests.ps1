@@ -1377,3 +1377,50 @@ Describe 'An already-covered issue may be re-run deliberately' {
         $splat | Should -BeGreaterThan 0
     }
 }
+
+Describe 'The catalyst build registers its app where the mac2 driver looks' {
+    # Every one of the 22 cached runs that failed with "The app representing
+    # com.microsoft.maui.uitests could not be found" was catalyst, and every one
+    # was blocked with nothing published - 14% of all cached catalyst runs.
+    # BuildAndRunHostApp.ps1 documents the cause and registers the bundle, but
+    # the replication verification path never calls it: `lsregister` appeared
+    # zero times in all 22 logs. Build-AndDeploy.ps1 is the script that path
+    # does run, and it believed "no install step needed".
+    BeforeAll {
+        $script:DeploySource = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1')
+        $catalystStart = $script:DeploySource.IndexOf('$Platform -eq "catalyst"')
+        $windowsStart = $script:DeploySource.IndexOf('$Platform -eq "windows"')
+        $script:CatalystBranch = $script:DeploySource.Substring($catalystStart, $windowsStart - $catalystStart)
+    }
+
+    It 'registers the built bundle with LaunchServices' {
+        $script:CatalystBranch | Should -Match 'lsregister'
+    }
+
+    It 'probes both known lsregister locations' {
+        # A single hard-coded path silently skips registration on an agent whose
+        # framework symlink layout differs, which looks exactly like the bug.
+        ([regex]::Matches($script:CatalystBranch, 'LaunchServices\.framework')).Count |
+            Should -BeGreaterThan 1
+    }
+
+    It 'reports a failed registration instead of claiming success' {
+        # Claiming success unconditionally is how a failed registration becomes
+        # an unexplained Appium error several attempts later.
+        $success = $script:CatalystBranch.IndexOf('Registered MacCatalyst app with LaunchServices')
+        $check = $script:CatalystBranch.IndexOf('$LASTEXITCODE -eq 0')
+        $check | Should -BeGreaterThan 0
+        $check | Should -BeLessThan $success
+    }
+
+    It 'exposes the bundle path for the mac2 driver as well' {
+        # bundleId resolution is primary, but options.App still needs the path.
+        $script:CatalystBranch | Should -Match 'MAC_APP_PATH'
+    }
+
+    It 'does not fail the build when registration is unavailable' {
+        # On an agent where the bundle is already registered the run still
+        # works; hard-failing would break runs that pass today.
+        $script:CatalystBranch | Should -Not -Match 'lsregister not found[^\r\n]*\r?\n\s*exit 1'
+    }
+}
