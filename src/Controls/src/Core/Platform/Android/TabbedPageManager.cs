@@ -31,7 +31,10 @@ public class TabbedPageManager
 
 	readonly TabbedViewManager _tabbedViewManager;
 	readonly IMauiContext _context;
+	readonly Dictionary<int, Page> _bottomBadgePages = new();
+	readonly Dictionary<int, Page> _topBadgePages = new();
 	TabbedPageTabbedViewSourceAdapter _adapter;
+	bool _badgesNeedUpdate;
 
 	protected TabbedPage Element { get; set; }
 	protected Page previousPage;
@@ -78,6 +81,8 @@ public class TabbedPageManager
 			ViewPager.LayoutChange -= OnLayoutChanged;
 		}
 
+		_bottomBadgePages.Clear();
+		_topBadgePages.Clear();
 		Element = tabbedPage;
 
 		if (Element is not null)
@@ -98,6 +103,7 @@ public class TabbedPageManager
 			// Create adapter and delegate to TabbedViewManager
 			_adapter = new TabbedPageTabbedViewSourceAdapter(Element);
 			_tabbedViewManager.SetElement(_adapter);
+			ScheduleBadgeUpdate();
 
 			previousPage = tabbedPage.CurrentPage;
 		}
@@ -111,6 +117,10 @@ public class TabbedPageManager
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
 	{
 		Element.Arrange(e);
+		if (_badgesNeedUpdate)
+		{
+			TryUpdateAllBadges();
+		}
 	}
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
@@ -154,7 +164,7 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
 	{
-		_tabbedViewManager.SetTabLayout();
+		SetTabLayoutAndUpdateBadges();
 	}
 
 	protected virtual void RootViewChanged(object sender, EventArgs e)
@@ -162,8 +172,14 @@ public class TabbedPageManager
 		if (sender is NavigationRootManager rootManager)
 		{
 			rootManager.RootViewChanged -= RootViewChanged;
-			_tabbedViewManager.SetTabLayout();
+			SetTabLayoutAndUpdateBadges();
 		}
+	}
+
+	void SetTabLayoutAndUpdateBadges()
+	{
+		_tabbedViewManager.SetTabLayout();
+		ScheduleBadgeUpdate();
 	}
 
 	#endregion
@@ -180,6 +196,15 @@ public class TabbedPageManager
 		}
 
 		// TabbedViewManager handles the tab UI refresh via TabsChanged event on the adapter
+		RemoveBadgePageMappings(
+			_bottomBadgePages,
+			Element.Children.Count,
+			index => BottomNavigationView?.RemoveBadge(index));
+		RemoveBadgePageMappings(
+			_topBadgePages,
+			Element.Children.Count,
+			index => TabLayout?.GetTabAt(index)?.RemoveBadge());
+		ScheduleBadgeUpdate();
 		UpdateIgnoreContainerAreas();
 	}
 
@@ -252,6 +277,12 @@ public class TabbedPageManager
 		{
 			_tabbedViewManager.UpdateTabIcon(index);
 		}
+		else if (e.PropertyName == TabbedPage.BadgeTextProperty.PropertyName ||
+			e.PropertyName == TabbedPage.BadgeColorProperty.PropertyName ||
+			e.PropertyName == TabbedPage.BadgeTextColorProperty.PropertyName)
+		{
+			UpdateBadge(page, index, e.PropertyName);
+		}
 	}
 
 	void OnPagePropertyChangedInternal(object sender, PropertyChangedEventArgs e)
@@ -281,6 +312,257 @@ public class TabbedPageManager
 	internal void UpdateSwipePaging()
 	{
 		_tabbedViewManager.UpdateSwipePaging();
+	}
+
+	void TryUpdateAllBadges()
+	{
+		if (AreBadgeViewsReady() && UpdateAllBadges())
+		{
+			_badgesNeedUpdate = false;
+		}
+	}
+
+	void ScheduleBadgeUpdate()
+	{
+		_badgesNeedUpdate = true;
+		ViewPager?.Post(TryUpdateAllBadges);
+	}
+
+	bool AreBadgeViewsReady()
+	{
+		if (Element is null)
+		{
+			return false;
+		}
+
+		if (!IsBottomTabPlacement)
+		{
+			return TabLayout is { } tabLayout && tabLayout.TabCount >= Element.Children.Count;
+		}
+
+		var bottomNavigationView = BottomNavigationView;
+		var maxItems = Math.Min(
+			bottomNavigationView?.MaxItemCount ?? 0,
+			BottomNavigationViewUtils.MaxBottomNavigationItems);
+		var expectedItemCount = Math.Min(Element.Children.Count, maxItems);
+		return maxItems > 0 &&
+			bottomNavigationView is not null &&
+			bottomNavigationView.Menu.Size() >= expectedItemCount;
+	}
+
+	internal bool UpdateAllBadges()
+	{
+		if (Element is null)
+		{
+			return false;
+		}
+
+		if (Element.Children.Count == 0)
+		{
+			_bottomBadgePages.Clear();
+			_topBadgePages.Clear();
+			return true;
+		}
+
+		if (IsBottomTabPlacement)
+		{
+			var bottomNavigationView = BottomNavigationView;
+			var maxItems = Math.Min(
+				bottomNavigationView?.MaxItemCount ?? 0,
+				BottomNavigationViewUtils.MaxBottomNavigationItems);
+			if (maxItems <= 0 || bottomNavigationView.Menu.Size() == 0)
+			{
+				return false;
+			}
+
+			var hasOverflow = Element.Children.Count > maxItems;
+			var lastIndexToUpdate = hasOverflow
+				? maxItems - 2
+				: Math.Min(Element.Children.Count, maxItems) - 1;
+
+			for (var i = 0; i <= lastIndexToUpdate; i++)
+			{
+				UpdateBottomBadge(Element.Children[i], i);
+			}
+
+			if (hasOverflow)
+			{
+				// SetupMenu uses each child index as its menu item ID; Material badge APIs take IDs, not positions.
+				bottomNavigationView.RemoveBadge(maxItems - 1);
+			}
+
+			RemoveBadgePageMappings(
+				_bottomBadgePages,
+				lastIndexToUpdate + 1,
+				index => bottomNavigationView.RemoveBadge(index));
+		}
+		else
+		{
+			var tabLayout = TabLayout;
+			if (tabLayout is null)
+			{
+				return false;
+			}
+
+			if (tabLayout.TabCount < Element.Children.Count)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < Element.Children.Count && i < tabLayout.TabCount; i++)
+			{
+				UpdateTopBadge(Element.Children[i], i);
+			}
+		}
+
+		return true;
+	}
+
+	void UpdateBadge(Page page, int index, string propertyName)
+	{
+		if (IsBottomTabPlacement)
+		{
+			var bottomNavigationView = BottomNavigationView;
+			if (bottomNavigationView is null)
+			{
+				ScheduleBadgeUpdate();
+				return;
+			}
+
+			var maxItems = Math.Min(
+				bottomNavigationView.MaxItemCount,
+				BottomNavigationViewUtils.MaxBottomNavigationItems);
+			if (Element.Children.Count > maxItems && index >= maxItems - 1)
+			{
+				return;
+			}
+
+			UpdateBottomBadge(page, index, propertyName);
+		}
+		else
+		{
+			UpdateTopBadge(page, index, propertyName);
+		}
+	}
+
+	void UpdateBottomBadge(Page page, int index, string propertyName = null)
+	{
+		var bottomNavigationView = BottomNavigationView;
+		if (bottomNavigationView is null)
+		{
+			ScheduleBadgeUpdate();
+			return;
+		}
+
+		var badgeText = TabbedPage.GetBadgeText(page);
+		if (_bottomBadgePages.TryGetValue(index, out var previousBadgePage) && previousBadgePage != page)
+		{
+			bottomNavigationView.RemoveBadge(index);
+		}
+		_bottomBadgePages[index] = page;
+
+		if (badgeText is null)
+		{
+			bottomNavigationView.RemoveBadge(index);
+			return;
+		}
+
+		var badgeColor = TabbedPage.GetBadgeColor(page);
+		var badgeTextColor = TabbedPage.GetBadgeTextColor(page);
+		if ((propertyName == TabbedPage.BadgeColorProperty.PropertyName && badgeColor is null) ||
+			(propertyName == TabbedPage.BadgeTextColorProperty.PropertyName && badgeTextColor is null))
+		{
+			bottomNavigationView.RemoveBadge(index);
+		}
+
+		var badge = bottomNavigationView.GetOrCreateBadge(index);
+		if (badgeText.Length > 0)
+		{
+			badge.Text = badgeText;
+		}
+		else
+		{
+			badge.Text = null;
+			badge.ClearNumber();
+		}
+
+		if (badgeColor is not null)
+		{
+			badge.BackgroundColor = badgeColor.ToPlatform();
+		}
+
+		if (badgeTextColor is not null)
+		{
+			badge.BadgeTextColor = badgeTextColor.ToPlatform();
+		}
+	}
+
+	void UpdateTopBadge(Page page, int index, string propertyName = null)
+	{
+		var tab = TabLayout?.GetTabAt(index);
+		if (tab is null)
+		{
+			ScheduleBadgeUpdate();
+			return;
+		}
+
+		var badgeText = TabbedPage.GetBadgeText(page);
+		if (_topBadgePages.TryGetValue(index, out var previousBadgePage) && previousBadgePage != page)
+		{
+			tab.RemoveBadge();
+		}
+		_topBadgePages[index] = page;
+
+		if (badgeText is null)
+		{
+			tab.RemoveBadge();
+			return;
+		}
+
+		var badgeColor = TabbedPage.GetBadgeColor(page);
+		var badgeTextColor = TabbedPage.GetBadgeTextColor(page);
+		if ((propertyName == TabbedPage.BadgeColorProperty.PropertyName && badgeColor is null) ||
+			(propertyName == TabbedPage.BadgeTextColorProperty.PropertyName && badgeTextColor is null))
+		{
+			tab.RemoveBadge();
+		}
+
+		var badge = tab.OrCreateBadge;
+		if (badgeText.Length > 0)
+		{
+			badge.Text = badgeText;
+		}
+		else
+		{
+			badge.Text = null;
+			badge.ClearNumber();
+		}
+
+		if (badgeColor is not null)
+		{
+			badge.BackgroundColor = badgeColor.ToPlatform();
+		}
+
+		if (badgeTextColor is not null)
+		{
+			badge.BadgeTextColor = badgeTextColor.ToPlatform();
+		}
+	}
+
+	static void RemoveBadgePageMappings(
+		Dictionary<int, Page> badgePages,
+		int firstIndexToRemove,
+		Action<int> removeNativeBadge)
+	{
+		var indicesToRemove = badgePages.Keys
+			.Where(index => index >= firstIndexToRemove)
+			.ToArray();
+
+		foreach (var index in indicesToRemove)
+		{
+			removeNativeBadge(index);
+			badgePages.Remove(index);
+		}
 	}
 
 	#endregion

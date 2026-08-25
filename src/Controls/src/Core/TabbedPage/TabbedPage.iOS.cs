@@ -583,6 +583,17 @@ namespace Microsoft.Maui.Controls
 			var changedPage = view._pendingPropertyChangedPage;
 			if (changedPage is not null && changedPage.Handler is IPlatformViewHandler changedHandler)
 			{
+				if (view._pendingPropertyChangedPropertyName == BadgeTextProperty.PropertyName ||
+					view._pendingPropertyChangedPropertyName == BadgeColorProperty.PropertyName ||
+					view._pendingPropertyChangedPropertyName == BadgeTextColorProperty.PropertyName)
+				{
+					UpdateTabBarItemBadge(
+						changedHandler.ViewController?.TabBarItem,
+						changedPage,
+						view._pendingPropertyChangedPropertyName);
+					return;
+				}
+
 				view.SetTabBarItem(changedHandler, manager);
 				return;
 			}
@@ -796,11 +807,39 @@ namespace Microsoft.Maui.Controls
 				Tag = Children.IndexOf(page),
 				AccessibilityIdentifier = page.AutomationId
 			};
+			UpdateTabBarItemBadge(renderer.ViewController.TabBarItem, page);
 
 			resizedImage?.Dispose();
 			resizedSelectedImage?.Dispose();
 			icons?.Item1?.Dispose();
 			icons?.Item2?.Dispose();
+		}
+
+		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, Page page, string propertyName = null)
+		{
+			if (tabBarItem is null)
+			{
+				return;
+			}
+
+			tabBarItem.BadgeValue = GetBadgeText(page);
+
+			if (page.IsSet(BadgeColorProperty) || propertyName == BadgeColorProperty.PropertyName)
+			{
+				tabBarItem.BadgeColor = GetBadgeColor(page)?.ToPlatform();
+			}
+
+			if (page.IsSet(BadgeTextColorProperty) || propertyName == BadgeTextColorProperty.PropertyName)
+			{
+				var badgeTextColor = GetBadgeTextColor(page);
+				var attributes = badgeTextColor is null
+					? null
+					: new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(attributes, UIControlState.Focused);
+			}
 		}
 
 		Task<Tuple<UIImage, UIImage>> GetIcon(Page page)
