@@ -165,28 +165,25 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// Call into the platform-specific code to get that platform's asset file provider
 			var platformFileProvider = GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
 
-			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
-			// and fingerprinted-route serving work. The manifest lives outside the web root and is read
-			// from the app package, so it is never served to the web view. Absent (or on platforms
-			// without app-package access), fingerprinting simply stays off and behaviour is unchanged.
-			var manifest = StaticWebAssetsManifest.TryLoad();
-
-			string? hostPageRelativePath = null;
-			if (AppType is not null)
-			{
-				// When AppType is set, render the host document once. This also collects any interactive
-				// components declared with a render mode and registers them so they attach to the live
-				// document, and resolves @Assets using the manifest.
-				EnsureAppTypeRendered(manifest?.Assets);
-				hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
-			}
-
-			// If there is nothing to add (no AppType document and no manifest), return the platform
-			// provider unchanged to preserve existing behaviour exactly.
-			if (hostPageRelativePath is null && manifest is null)
+			// Everything below is opt-in via AppType. For the legacy HostPage (index.html) path, return
+			// the platform provider unchanged so existing behaviour - including the handler's own file
+			// provider instance - is preserved exactly.
+			if (AppType is null)
 			{
 				return platformFileProvider;
 			}
+
+			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
+			// and fingerprinted-route serving work. The manifest lives outside the web root and is read
+			// from the app package, so it is never served to the web view. Absent (or on platforms
+			// without app-package access), fingerprinting simply stays off.
+			var manifest = StaticWebAssetsManifest.TryLoad();
+
+			// Render the host document once. This also collects any interactive components declared with
+			// a render mode and registers them so they attach to the live document, and resolves @Assets
+			// using the manifest.
+			EnsureAppTypeRendered(manifest?.Assets);
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
 			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, manifest);
 		}
