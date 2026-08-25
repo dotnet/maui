@@ -11726,11 +11726,36 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
 
         $arm | Should -Match 'PerformActions' `
             -Because 'a refusal that never asked the driver is a report about the call'
-        $arm | Should -Match 'PointerKind\.Mouse' `
-            -Because 'a desktop driver has no touchscreen'
+        $arm | Should -Match 'PointerKind\.Touch' `
+            -Because 'WinAppDriver answers a mouse pointer with "Currently only pen and touch pointer input source types are supported"'
+        $arm | Should -Not -Match 'PointerKind\.Mouse' `
+            -Because 'builds 15077263, 15078178 and 15079789 were all lost to exactly that pointer kind'
         # The worst case must stay exactly the status quo, never a silent pass.
         $arm | Should -Match 'Swipe is not supported by the Windows adapter'
         $arm | Should -Match 'throw new InvalidOperationException'
+    }
+
+    It 'gives Windows and Catalyst the pointer each driver accepts' {
+        # One 'isDesktop' branch sent a mouse pointer to both, and WinAppDriver
+        # rejects a mouse pointer outright while Mac2 requires one. Every
+        # Windows drag and swipe failed for as long as they shared a branch.
+        $drag = [regex]::Match($script:runnerSource,
+            'static void DragPath\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline)
+        $drag.Success | Should -BeTrue
+
+        $drag.Value | Should -Not -Match 'platform is "windows" or "catalyst"' `
+            -Because 'the two desktop drivers disagree about pointer kinds'
+        $drag.Value | Should -Match 'PointerKind\.Mouse' `
+            -Because 'Mac2 has no touchscreen and takes a mouse'
+        $drag.Value | Should -Match 'PointerKind\.Touch'
+
+        # Whatever selects the mouse must select it for Catalyst alone.
+        $selector = [regex]::Match($drag.Value,
+            '(?<var>\w+) = platform == "catalyst"')
+        $selector.Success | Should -BeTrue `
+            -Because 'the mouse pointer belongs to exactly one platform'
+        $drag.Value | Should -Match (
+            $selector.Groups['var'].Value + ' \? PointerKind\.Mouse : PointerKind\.Touch')
     }
 
     It 'does not let an exception filter decide which refusals count' {
@@ -11835,13 +11860,22 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
             '.github/scripts/Replicate-Issue.ps1') -Raw
 
         # The runner handles every platform, so any surviving platform gate on
-        # dragPath could only refuse a gesture it can actually perform.
+        # dragPath could only refuse a gesture it can actually perform. This
+        # used to be read off an 'isDesktop' variable, which coupled it to one
+        # spelling: when Windows and Catalyst had to stop sharing a pointer
+        # kind, the variable went away and this failed while its subject was
+        # more true than before. What matters is that the pointer choice is
+        # total - every platform gets a device, so none is refused.
+        #
+        # The validator must not gate dragPath by platform either; these
+        # refusals came from the validator and the runner disagreeing.
         $orchestrator | Should -Not -CMatch "dragPath' -and[\s\S]{0,80}?-cnotin @\("
-        $desktop = [regex]::Match($script:runnerSource,
-            'isDesktop = platform is (?<d>[^;]*);')
-        $desktop.Success | Should -BeTrue
-        $desktop.Groups['d'].Value | Should -CMatch '"windows"'
-        $desktop.Groups['d'].Value | Should -CMatch '"catalyst"'
+        $drag = [regex]::Match($script:runnerSource,
+            'static void DragPath\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline)
+        $drag.Success | Should -BeTrue
+        $drag.Value | Should -CMatch 'PointerKind\.Mouse : PointerKind\.Touch' `
+            -Because 'a two-way choice leaves no platform without a pointer device'
+        $drag.Value | Should -CMatch '"catalyst"'
 
         # and the prompt, the only thing the author reads, must not advertise a
         # narrower set than the validator accepts.

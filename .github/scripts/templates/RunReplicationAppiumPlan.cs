@@ -1044,9 +1044,16 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
         // WinAppDriver has no 'mobile:' gesture vocabulary, and this used to
         // throw without asking, so several scenarios were refused for a
         // gesture that was never attempted. The W3C actions endpoint is the
-        // same one DragPath now uses successfully, so the swipe is expressed
-        // as a mouse press-move-release across the window. A driver that
-        // genuinely refuses lands on exactly the message thrown before.
+        // right question to ask.
+        //
+        // It must be asked with a touch pointer. WinAppDriver answers a mouse
+        // pointer with "Currently only pen and touch pointer input source
+        // types are supported" - it names what it accepts - so the previous
+        // assumption that a desktop driver has no touchscreen and therefore
+        // needs a mouse was refuted by the driver itself in builds 15077263,
+        // 15078178 and 15079789. Taps are unaffected because they go through
+        // Click() rather than the actions endpoint, which is why this stayed
+        // invisible: only swipes and drags were ever rejected.
         var windowSize = driver.Manage().Window.Size;
         var centreX = windowSize.Width / 2;
         var centreY = windowSize.Height / 2;
@@ -1063,16 +1070,16 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
                 $"Unknown swipe direction '{direction}'.")
         };
 
-        var mouse = new PointerInputDevice(PointerKind.Mouse, "mouse");
-        var swipeSequence = new ActionSequence(mouse);
-        swipeSequence.AddAction(mouse.CreatePointerMove(
+        var pointer = new PointerInputDevice(PointerKind.Touch, "finger");
+        var swipeSequence = new ActionSequence(pointer);
+        swipeSequence.AddAction(pointer.CreatePointerMove(
             CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
-        swipeSequence.AddAction(mouse.CreatePointerDown(MouseButton.Left));
-        swipeSequence.AddAction(mouse.CreatePause(TimeSpan.FromMilliseconds(250)));
-        swipeSequence.AddAction(mouse.CreatePointerMove(
+        swipeSequence.AddAction(pointer.CreatePointerDown(MouseButton.Touch));
+        swipeSequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(250)));
+        swipeSequence.AddAction(pointer.CreatePointerMove(
             CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(420)));
-        swipeSequence.AddAction(mouse.CreatePause(TimeSpan.FromMilliseconds(140)));
-        swipeSequence.AddAction(mouse.CreatePointerUp(MouseButton.Left));
+        swipeSequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(140)));
+        swipeSequence.AddAction(pointer.CreatePointerUp(MouseButton.Touch));
 
         try
         {
@@ -1146,14 +1153,16 @@ static void DragPath(
     var x = origin.X + (extent.Width / 2);
     var y = origin.Y + (extent.Height / 2);
 
-    // A desktop driver has no touchscreen, so a touch pointer is either
-    // rejected or silently does nothing there. The gesture is the same either
-    // way; only the input device that performs it differs.
-    var isDesktop = platform is "windows" or "catalyst";
-    var button = isDesktop ? MouseButton.Left : MouseButton.Touch;
+    // Catalyst runs under the Mac2 driver, which accepts a mouse pointer and
+    // has no touchscreen. WinAppDriver rejects a mouse pointer outright with
+    // "Currently only pen and touch pointer input source types are supported",
+    // so the two desktops need different devices; treating them as one
+    // "isDesktop" case is why every Windows drag and swipe failed.
+    var isMousePointer = platform == "catalyst";
+    var button = isMousePointer ? MouseButton.Left : MouseButton.Touch;
     var finger = new PointerInputDevice(
-        isDesktop ? PointerKind.Mouse : PointerKind.Touch,
-        isDesktop ? "mouse" : "finger");
+        isMousePointer ? PointerKind.Mouse : PointerKind.Touch,
+        isMousePointer ? "mouse" : "finger");
     var sequence = new ActionSequence(finger);
     sequence.AddAction(finger.CreatePointerMove(
         CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
