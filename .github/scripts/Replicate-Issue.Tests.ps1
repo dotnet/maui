@@ -62,6 +62,7 @@ BeforeAll {
 
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
+        'ConvertTo-ReplicationAttemptFailureSummary',
         'Get-ReplicationCauseExcerpt',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationFailureDetails',
@@ -12888,5 +12889,83 @@ Describe 'A sick machine is not reported as an agent that cannot compile' {
         # split the budget rule, or a sick machine starts consuming attempts.
         Test-ReplicationTestBuildFailure -FailureSummary $script:HarnessSummary |
             Should -BeTrue
+    }
+}
+
+Describe 'A verdict the length cap discarded is not a crash' {
+    BeforeAll {
+        # The shape build 15083826 hit: the plan ran to its own conclusion, and
+        # the driver kept logging teardown afterwards. The verdict therefore
+        # sits in the middle, which is the part the cap throws away.
+        $script:Head = 'Run trusted reproduction script failed with exit code 134. ' + ('x' * 700)
+        $script:Teardown = ' [DevCon Factory] Releasing connections for device on any port.' * 20
+        $script:LosesVerdict = {
+            param($verdict)
+            $script:Head + " $verdict actual='NO BUG: sizes matched' " + $script:Teardown
+        }
+    }
+
+    It 'keeps a verdict that the raw cap would have dropped' {
+        $message = & $script:LosesVerdict 'REPLICATION_NOT_REPRODUCED'
+
+        # The cap alone loses it - that is the defect being fixed.
+        ConvertTo-ReplicationSafeLog $message 1000 |
+            Should -Not -Match 'REPLICATION_NOT_REPRODUCED'
+
+        ConvertTo-ReplicationAttemptFailureSummary $message 1000 |
+            Should -Match 'REPLICATION_NOT_REPRODUCED'
+    }
+
+    It 'files the attempt as not reproduced rather than the app dying' {
+        $message = & $script:LosesVerdict 'REPLICATION_NOT_REPRODUCED'
+
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary (ConvertTo-ReplicationSafeLog $message 1000) |
+            Should -BeExactly 'app-terminated' -Because 'this is the behaviour being corrected'
+
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary (ConvertTo-ReplicationAttemptFailureSummary $message 1000) |
+            Should -BeExactly 'not-reproduced'
+    }
+
+    It 'keeps a positive verdict on the same terms' {
+        # A reproduction that aborts on the way out must not be discarded either.
+        $message = & $script:LosesVerdict 'REPLICATION_REPRODUCED'
+
+        ConvertTo-ReplicationAttemptFailureSummary $message 1000 |
+            Should -Match 'REPLICATION_REPRODUCED'
+    }
+
+    It 'adds nothing when the message never carried a verdict' {
+        $message = $script:Head + $script:Teardown
+
+        ConvertTo-ReplicationAttemptFailureSummary $message 1000 |
+            Should -BeExactly (ConvertTo-ReplicationSafeLog $message 1000)
+    }
+
+    It 'leaves a summary that already shows its verdict untouched' {
+        $message = "The plan finished. REPLICATION_NOT_REPRODUCED actual='NO BUG'"
+
+        ConvertTo-ReplicationAttemptFailureSummary $message 1000 |
+            Should -BeExactly (ConvertTo-ReplicationSafeLog $message 1000)
+    }
+
+    It 'still lets a termination marker outrank a recovered verdict' {
+        # Re-attaching the verdict must not let a genuinely dead app be read as
+        # a conclusion. That ordering lives in Test-ReplicationAppTerminated,
+        # and this holds it in place.
+        $message = $script:Head + ' REPLICATION_APP_TERMINATED ' +
+            " REPLICATION_NOT_REPRODUCED actual='NO BUG' " + $script:Teardown
+
+        Get-ReplicationAttemptFailureKind `
+            -FailureSummary (ConvertTo-ReplicationAttemptFailureSummary $message 1000) |
+            Should -BeExactly 'app-terminated'
+    }
+
+    It 'stays bounded so the recovered line cannot undo the cap' {
+        $message = $script:Head + ' REPLICATION_NOT_REPRODUCED ' + ('y' * 4000) + $script:Teardown
+
+        (ConvertTo-ReplicationAttemptFailureSummary $message 1000).Length |
+            Should -BeLessThan 1400
     }
 }

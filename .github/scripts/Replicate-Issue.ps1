@@ -509,6 +509,65 @@ function Test-ReplicationObservedNegativeVerdict {
     return [bool]([string]$Text -cmatch "(?:actual|result)=['\`"]?\s*(?:PASS:|NO BUG:)")
 }
 
+function ConvertTo-ReplicationAttemptFailureSummary {
+    <#
+        .SYNOPSIS
+        Shortens an attempt's failure message without discarding the plan's own
+        verdict.
+
+        .DESCRIPTION
+        The attempt classifier reads this string, and the token it most depends
+        on is the plan's own REPLICATION_NOT_REPRODUCED / REPLICATION_REPRODUCED
+        verdict. That verdict is printed when the plan finishes, and the driver
+        goes on logging teardown chatter afterwards. The length cap keeps a head
+        and a tail and drops the middle, so a long enough run of trailing
+        chatter pushes the verdict into the part that is thrown away.
+
+        The iOS device runner exits 134 for any failing test, so an attempt that
+        lost its verdict reads as a bare SIGABRT and is filed as the app dying.
+        Build 15083826 spent all five attempts that way: the plan had run to
+        completion and reported that the issue did not reproduce, every attempt
+        was reported as `app-terminated`, the agent was told to rewrite a
+        scenario that was fine, and the run ended `sandbox_inconclusive` instead
+        of answering `sandbox_not_reproduced`.
+
+        Truncating is for reading. Deciding what an attempt was is a separate
+        job, so the verdict is re-attached whenever the elision removed it.
+
+        A termination marker still outranks the verdict, because that ordering
+        lives in Test-ReplicationAppTerminated and is not touched here.
+    #>
+    param(
+        [AllowEmptyString()][AllowNull()][string]$Message,
+        [ValidateRange(1, 100000)][int]$MaximumLength = 1000
+    )
+
+    $raw = [string]$Message
+    $summary = ConvertTo-ReplicationSafeLog $raw $MaximumLength
+    # Both decisive markers are recovered, never just the verdict. Restoring
+    # the verdict alone would hand the classifier a message whose termination
+    # marker the cap had removed, and quietly invert the precedence that
+    # Test-ReplicationAppTerminated exists to hold: a genuinely dead app would
+    # start reading as a conclusion.
+    $recovered = @()
+    foreach ($pattern in @(
+            (Get-ReplicationAppTerminationPattern),
+            (Get-ReplicationPlanVerdictPattern))) {
+        if ($summary -match $pattern) {
+            continue
+        }
+        # Bounded so a pathological line cannot undo the cap it is appended to.
+        $match = [regex]::Match($raw, "(?:$pattern)[^\r\n]{0,160}")
+        if ($match.Success) {
+            $recovered += $match.Value.Trim()
+        }
+    }
+    if (-not $recovered) {
+        return $summary
+    }
+    return ($summary + [Environment]::NewLine + ($recovered -join [Environment]::NewLine))
+}
+
 function Get-ReplicationAttemptFailureKind {
     <#
         .SYNOPSIS
@@ -7291,7 +7350,7 @@ try {
             break
         }
         catch {
-            $sandboxFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
+            $sandboxFailureSummary = ConvertTo-ReplicationAttemptFailureSummary $_.Exception.Message 1000
             if (
                 $sandboxFailureSummary -match '(?i)Confirming the on-device reproduction repeats' -and
                 -not (Test-ReplicationReplayHarnessFault -Text $sandboxFailureSummary)
