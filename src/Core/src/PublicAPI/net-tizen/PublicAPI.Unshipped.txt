@@ -3,6 +3,8 @@ Microsoft.Maui.ISafeAreaElement
 Microsoft.Maui.ISafeAreaElement.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.ISafeAreaElement.HasExplicitSafeAreaEdges.get -> bool
 Microsoft.Maui.ISafeAreaElement.GetDefaultSafeAreaEdges() -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.SafeAreaElementExtensions
+static Microsoft.Maui.SafeAreaElementExtensions.GetEffectiveSafeAreaEdges(this Microsoft.Maui.ISafeAreaElement! safeAreaElement) -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme

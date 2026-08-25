@@ -375,6 +375,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out var effectiveEdges));
 			Assert.Equal(declaredDefaults, effectiveEdges);
+			Assert.Equal(declaredDefaults, safeAreaElement.GetEffectiveSafeAreaEdges());
+		}
+
+		[Fact]
+		public void GetEffectiveSafeAreaEdges_NullElementThrows()
+		{
+			Assert.Throws<ArgumentNullException>(
+				() => SafeAreaElementExtensions.GetEffectiveSafeAreaEdges(null));
 		}
 
 		[Fact]
@@ -597,9 +605,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				SafeAreaEdges = configuredEdges
 			};
+			var safeAreaElement = (ISafeAreaElement)page;
 
 			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(page, out var effectiveEdges));
 			Assert.Equal(configuredEdges, effectiveEdges);
+			Assert.Equal(configuredEdges, safeAreaElement.GetEffectiveSafeAreaEdges());
 		}
 
 		[Fact]
@@ -629,6 +639,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(SafeAreaRegions.None, safeAreaStrategy.GetSafeAreaRegionsForEdge(1));
 			Assert.Equal(SafeAreaRegions.None, safeAreaStrategy.GetSafeAreaRegionsForEdge(2));
 			Assert.Equal(SafeAreaRegions.None, safeAreaStrategy.GetSafeAreaRegionsForEdge(3));
+			Assert.Equal(SafeAreaEdges.None, ((ISafeAreaElement)page).GetEffectiveSafeAreaEdges());
 		}
 
 		// Tests based on existing iOS safe area usage patterns

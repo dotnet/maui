@@ -19,7 +19,11 @@ namespace Microsoft.Maui
 		/// Gets the safe area behavior for each edge of the element.
 		/// </summary>
 		/// <remarks>
-		/// An edge set to <see cref="SafeAreaRegions.Default"/> is resolved from <see cref="GetDefaultSafeAreaEdges"/>.
+		/// For custom implementations, an edge set to <see cref="SafeAreaRegions.Default"/> is resolved from
+		/// <see cref="GetDefaultSafeAreaEdges"/>. Built-in controls can preserve an explicit
+		/// <see cref="SafeAreaRegions.Default"/> to retain native platform behavior.
+		/// Use <see cref="SafeAreaElementExtensions.GetEffectiveSafeAreaEdges"/> to read the same per-edge strategy
+		/// consumed by MAUI platform handlers.
 		/// </remarks>
 		SafeAreaEdges SafeAreaEdges { get; }
 
@@ -40,5 +44,31 @@ namespace Microsoft.Maui
 		/// that edge is resolved as <see cref="SafeAreaRegions.Container"/>.
 		/// </remarks>
 		SafeAreaEdges GetDefaultSafeAreaEdges();
+	}
+
+	/// <summary>
+	/// Provides methods for reading the safe area strategy of an <see cref="ISafeAreaElement"/>.
+	/// </summary>
+	public static class SafeAreaElementExtensions
+	{
+		/// <summary>
+		/// Gets the per-edge safe area strategy consumed by MAUI platform handlers.
+		/// </summary>
+		/// <param name="safeAreaElement">The safe area element whose strategy to read.</param>
+		/// <returns>
+		/// The effective per-edge strategy. An edge can remain <see cref="SafeAreaRegions.Default"/> when native
+		/// platform behavior should be preserved.
+		/// </returns>
+		/// <exception cref="System.ArgumentNullException">
+		/// Thrown when <paramref name="safeAreaElement"/> is <see langword="null"/>.
+		/// </exception>
+		public static SafeAreaEdges GetEffectiveSafeAreaEdges(this ISafeAreaElement safeAreaElement)
+		{
+			if (safeAreaElement is null)
+				throw new System.ArgumentNullException(nameof(safeAreaElement));
+
+			SafeAreaViewStrategy.TryGetSafeAreaEdges(safeAreaElement, out var edges, includeLegacy: false);
+			return edges;
+		}
 	}
 }
