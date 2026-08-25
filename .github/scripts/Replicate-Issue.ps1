@@ -449,7 +449,19 @@ function Get-ReplicationDriverElementFailurePattern {
     # Build 15016645 spent all five attempts on this. Every attempt was
     # reported as the app aborting, so the agent kept rewriting a scenario
     # that was fine and never corrected the locator that was actually wrong.
-    return '(?i)no such element|An element could not be located|NoSuchElementException|g__WaitForElement|g__AssertElementText'
+    #
+    # This is the one definition of "the driver could not find an element".
+    # There used to be a second, narrower list inlined in the classifier, and
+    # the two disagreed: the classifier's list knew 'no such element' but not
+    # 'An element could not be located', which is the wording Appium actually
+    # produces. A locator failure phrased the way Appium phrases it therefore
+    # fell past the element-missing rule to 'recording-failed', which vetoes a
+    # non-reproduction conclusion and tells the retry agent the recorder broke
+    # when its locators were wrong. Measured over the 1724 attempt messages in
+    # the log archive: 56 locator failures were reported as recording faults.
+    return '(?i)no such element|An element could not be located|NoSuchElementException|' +
+        'g__WaitForElement|g__AssertElementText|Element was not visible|ElementNotFound|' +
+        'WebDriverTimeoutException'
 }
 
 function Test-ReplicationAppTerminated {
@@ -603,7 +615,7 @@ function Get-ReplicationAttemptFailureKind {
     }
     # Only the named locator faults belong here. A bare timeout is handled last,
     # because every step that can hang reports one.
-    if ($text -match '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException') {
+    if ($text -match (Get-ReplicationDriverElementFailurePattern)) {
         return 'element-missing'
     }
     if ($text -match '(?i)must locate a stable result element|Generated Appium step') {

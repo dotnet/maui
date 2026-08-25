@@ -13037,3 +13037,67 @@ Describe 'A recorder that timed out is the same fault as one that failed' {
             Should -BeTrue
     }
 }
+
+Describe 'One definition of a locator the driver could not find' {
+    BeforeAll {
+        # Taken verbatim from the logs, not invented. The wrapper reports its
+        # own exit code first and the real cause survives only in the tail,
+        # which is exactly why a narrower list missed it.
+        $script:RealLocatorFailure = 'Recording the on-device reproduction failed with exit code 1. ' +
+            'Reproduction failed: Run trusted reproduction script failed with exit code -532462766. ' +
+            'That code is an unhandled .NET exception terminated the process. Output: Unhandled ' +
+            'exception. OpenQA. ... [481 characters omitted] ... at Program.<<Main>$>g__WaitForElement|0_11' +
+            '(AppiumDriver driver, String platform, ReplicationLocator locator, TimeSpan timeout) | ' +
+            'element","message":"An element could not be located on the page using the given search parameters."'
+    }
+
+    It 'reads a real Appium locator failure as a missing element' {
+        Get-ReplicationAttemptFailureKind -FailureSummary $script:RealLocatorFailure |
+            Should -BeExactly 'element-missing' -Because 'the driver could not find an element'
+    }
+
+    It 'agrees with the abort veto about what a locator failure is' {
+        # The two used to disagree: this text vetoed the abort classification
+        # but did not satisfy the classifier's own narrower element list, so it
+        # fell through to 'recording-failed'.
+        Test-ReplicationAppTerminated -Text $script:RealLocatorFailure |
+            Should -BeFalse
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $script:RealLocatorFailure |
+            Should -BeExactly 'element-missing'
+    }
+
+    It 'reads each wording Appium actually produces' {
+        foreach ($wording in @(
+            'An element could not be located on the page using the given search parameters',
+            'OpenQA.Selenium.NoSuchElementException: no element found',
+            'at Program.<<Main>$>g__AssertElementText|0_12(AppiumDriver driver)',
+            'no such element: unable to locate element',
+            'Element was not visible after the step completed',
+            'OpenQA.Selenium.WebDriverTimeoutException: Element did not appear')) {
+            Get-ReplicationAttemptFailureKind -FailureSummary $wording |
+                Should -BeExactly 'element-missing' -Because "'$wording' is a locator failure"
+        }
+    }
+
+    It 'still reads a recorder that genuinely broke as a recording failure' {
+        # 132 of the real messages are the recorder script throwing, with no
+        # locator anywhere. Those must keep vetoing.
+        $recorder = 'Recording the on-device reproduction failed with exit code 1. Exception: ' +
+            '/Users/cloudtest/vss/_work/1/a/trusted-github/scripts/shared/Record-Reproduction.ps1:1488'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $recorder |
+            Should -BeExactly 'recording-failed'
+    }
+
+    It 'lets a locator failure stop vetoing the conclusion it never disproved' {
+        # A plan that pointed at the wrong element says nothing about whether
+        # the scenario reproduces, so it must not veto two clean observations
+        # the way a broken recorder does.
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('not-reproduced'); $kinds.Add('not-reproduced')
+        $kinds.Add((Get-ReplicationAttemptFailureKind -FailureSummary $script:RealLocatorFailure))
+
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds | Should -BeTrue
+    }
+}
