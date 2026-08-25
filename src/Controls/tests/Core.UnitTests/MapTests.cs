@@ -1442,13 +1442,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyForFileImageSourceIsStableAcrossInstances()
+		public void GetIconCacheKeyForFileImageSourceIsStableAcrossInstances()
 		{
 			var first = new FileImageSource { File = "icon.png" };
 			var second = new FileImageSource { File = "icon.png" };
 
-			var firstKey = MapHandler.GetClusterIconCacheKey(first);
-			var secondKey = MapHandler.GetClusterIconCacheKey(second);
+			var firstKey = MapHandler.GetIconCacheKey(first);
+			var secondKey = MapHandler.GetIconCacheKey(second);
 
 			Assert.NotNull(firstKey);
 			Assert.StartsWith("file:", firstKey, StringComparison.Ordinal);
@@ -1456,15 +1456,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyForUriImageSourceDependsOnCachingEnabled()
+		public void GetIconCacheKeyForUriImageSourceDependsOnCachingEnabled()
 		{
 			var uri = new Uri("https://example.com/icon.png");
 
 			var cachingEnabled = new UriImageSource { Uri = uri, CachingEnabled = true };
 			var cachingDisabled = new UriImageSource { Uri = uri, CachingEnabled = false };
 
-			var enabledKey = MapHandler.GetClusterIconCacheKey(cachingEnabled);
-			var disabledKey = MapHandler.GetClusterIconCacheKey(cachingDisabled);
+			var enabledKey = MapHandler.GetIconCacheKey(cachingEnabled);
+			var disabledKey = MapHandler.GetIconCacheKey(cachingDisabled);
 
 			Assert.NotNull(enabledKey);
 			Assert.StartsWith("uri:", enabledKey, StringComparison.Ordinal);
@@ -1472,7 +1472,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyForUriImageSourceRequiresPositiveValidity()
+		public void GetIconCacheKeyForUriImageSourceRequiresPositiveValidity()
 		{
 			var source = new UriImageSource
 			{
@@ -1481,22 +1481,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				CacheValidity = TimeSpan.Zero
 			};
 
-			Assert.Null(MapHandler.GetClusterIconCacheKey(source));
+			Assert.Null(MapHandler.GetIconCacheKey(source));
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyForFontImageSourceContainsGlyph()
+		public void GetIconCacheKeyForFontImageSourceContainsGlyph()
 		{
 			var font = new FontImageSource { Glyph = "A", FontFamily = "F", Size = 24, Color = Colors.White };
 
-			var key = MapHandler.GetClusterIconCacheKey(font);
+			var key = MapHandler.GetIconCacheKey(font);
 
 			Assert.NotNull(key);
 			Assert.Contains("A", key, StringComparison.Ordinal);
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyForFontImageSourceDistinguishesWeight()
+		public void GetIconCacheKeyForFontImageSourceDistinguishesWeight()
 		{
 			var regular = new FakeFontImageSource
 			{
@@ -1511,8 +1511,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Font = Font.OfSize("F", 24).WithWeight(FontWeight.Bold)
 			};
 
-			var regularKey = MapHandler.GetClusterIconCacheKey(regular);
-			var boldKey = MapHandler.GetClusterIconCacheKey(bold);
+			var regularKey = MapHandler.GetIconCacheKey(regular);
+			var boldKey = MapHandler.GetIconCacheKey(bold);
 
 			Assert.NotNull(regularKey);
 			Assert.NotNull(boldKey);
@@ -1520,7 +1520,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyForFontImageSourceDistinguishesAutoScaling()
+		public void GetIconCacheKeyForFontImageSourceDistinguishesAutoScaling()
 		{
 			var scalingEnabled = new FakeFontImageSource
 			{
@@ -1535,8 +1535,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Font = Font.OfSize("F", 24, enableScaling: false)
 			};
 
-			var enabledKey = MapHandler.GetClusterIconCacheKey(scalingEnabled);
-			var disabledKey = MapHandler.GetClusterIconCacheKey(scalingDisabled);
+			var enabledKey = MapHandler.GetIconCacheKey(scalingEnabled);
+			var disabledKey = MapHandler.GetIconCacheKey(scalingDisabled);
 
 			Assert.NotNull(enabledKey);
 			Assert.NotNull(disabledKey);
@@ -1544,18 +1544,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GetClusterIconCacheKeyIsNullForStreamOrMissingSource()
+		public void GetIconCacheKeyIsNullForStreamOrMissingSource()
 		{
 			var stream = new StreamImageSource();
 
-			Assert.Null(MapHandler.GetClusterIconCacheKey(stream));
-			Assert.Null(MapHandler.GetClusterIconCacheKey(null));
+			Assert.Null(MapHandler.GetIconCacheKey(stream));
+			Assert.Null(MapHandler.GetIconCacheKey(null));
 		}
 
 		[Fact]
-		public async Task ClusterIconCacheCoalescesConcurrentLoads()
+		public async Task IconCacheCoalescesConcurrentLoads()
 		{
-			var cache = new ClusterIconCache<object>(2);
+			var cache = new IconCache<object>(2);
 			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var loadCount = 0;
 
@@ -1576,9 +1576,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task ClusterIconCacheEvictsLeastRecentlyUsedEntry()
+		public async Task IconCacheEvictsLeastRecentlyUsedEntry()
 		{
-			var cache = new ClusterIconCache<object>(2);
+			var cache = new IconCache<object>(2);
 			var first = new object();
 			var second = new object();
 			var third = new object();
@@ -1593,6 +1593,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(cache.TryGet("third", out var cachedThird));
 			Assert.Same(first, cachedFirst);
 			Assert.Same(third, cachedThird);
+		}
+
+		// The recluster path re-runs AddPins on every zoom step, so this is what stops a pin's icon
+		// being decoded and rescaled again on each pass.
+		[Fact]
+		public async Task IconCacheDoesNotReloadAKeyedSourceOnALaterPass()
+		{
+			var cache = new IconCache<object>(2);
+			var icon = new object();
+			var loadCount = 0;
+
+			Task<object> Load()
+			{
+				loadCount++;
+				return Task.FromResult(icon);
+			}
+
+			var first = await cache.GetOrCreateAsync("file:pin.png", Load, () => DateTime.MaxValue);
+			var second = await cache.GetOrCreateAsync("file:pin.png", Load, () => DateTime.MaxValue);
+
+			Assert.Equal(1, loadCount);
+			Assert.Same(icon, first);
+			Assert.Same(second, first);
+		}
+
+		// GetIconCacheKey returns null for a source that can't be keyed stably, or that opted out of
+		// caching (see GetIconCacheKeyForUriImageSourceDependsOnCachingEnabled). Those must never be
+		// frozen by the handler-level cache - they reload on every pass instead.
+		[Fact]
+		public async Task IconCacheAlwaysReloadsWhenTheKeyIsNull()
+		{
+			var cache = new IconCache<object>(2);
+			var loadCount = 0;
+
+			Task<object> Load()
+			{
+				loadCount++;
+				return Task.FromResult(new object());
+			}
+
+			var first = await cache.GetOrCreateAsync(null, Load, () => DateTime.MaxValue);
+			var second = await cache.GetOrCreateAsync(null, Load, () => DateTime.MaxValue);
+
+			Assert.Equal(2, loadCount);
+			Assert.NotSame(first, second);
+			Assert.Equal(0, cache.Count);
 		}
 
 		class FakeFontImageSource : IFontImageSource
