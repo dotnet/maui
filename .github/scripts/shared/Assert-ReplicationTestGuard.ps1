@@ -2217,9 +2217,11 @@ function Assert-ReplicationDeviceTestIsSelectable {
         sibling from muddying the verdict.
 
         CategoryAttribute takes params string[] and allows multiples, so an
-        issue-keyed category sits alongside the conventional
+        issue-keyed category can sit alongside the conventional
         [Category(TestCategory.Entry)] without touching TestCategory -- which
-        matters, because editing that shared file is not add-only.
+        matters, because editing that shared file is not add-only. On the
+        skip-filtered platforms that second category makes the test
+        unselectable; Assert-ReplicationDeviceCategoryIsExclusive rejects it.
 
         With [Category("Issue<N>")] present, the token names a real discovered
         category, so the selector published in the pull request is one the
@@ -2240,6 +2242,63 @@ function Assert-ReplicationDeviceTestIsSelectable {
     $pattern = '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*Category\s*\([^)]*"' +
         [regex]::Escape($token) + '"'
     return [bool]([regex]::IsMatch($Content, $pattern))
+}
+
+function Assert-ReplicationDeviceCategoryIsExclusive {
+    <#
+        .SYNOPSIS
+        Reports a conventional category that makes an issue-keyed device test
+        unselectable on the skip-filtered platforms.
+
+        .DESCRIPTION
+        DeviceTestSharedHelpers.GetExcludedTestCategories implements
+        "TestFilter=Category=X" by *subtraction*: it lists the public static
+        string fields of TestCategory, removes X, and excludes everything that
+        is left. "Issue<N>" is deliberately not a TestCategory field, so
+        removing it removes nothing and every conventional category ends up in
+        the excluded list. A test that also declares [Category(TestCategory.Shape)]
+        therefore carries an excluded category and is skipped -- the published
+        selector selects it out rather than in.
+
+        Reviewers measured exactly this twice: PR 533 (Android, Shape +
+        Issue31330) reported 576 discovered / 3 passed / 573 ignored, and
+        PR 515 (Mac Catalyst, Accessibility + Issue37140) executed zero tests.
+        In both cases removing only the broad category made the exact test run.
+
+        Windows is exempt. Its runner filters by *discovered* traits
+        (ControlsHeadlessTestRunner collects tc.Traits["Category"]), so
+        "Issue<N>" is a real category there and a second one is harmless --
+        which is why PR 525 selected its single Windows test correctly.
+
+        Returns the offending category argument, or an empty string when the
+        issue-keyed category is the only one.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][int]$Issue,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Platform
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return '' }
+    if ($Platform -notin @('android', 'ios', 'catalyst')) { return '' }
+
+    # A commented-out attribute declares nothing.
+    $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $token = '"Issue' + $Issue + '"'
+
+    foreach ($match in [regex]::Matches(
+            $source,
+            '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*Category\s*\(([^)]*)\)')) {
+        foreach ($argument in ($match.Groups[1].Value -split ',')) {
+            $trimmed = $argument.Trim()
+            if (-not $trimmed) { continue }
+            if ($trimmed -ceq $token) { continue }
+            return $trimmed
+        }
+    }
+
+    return ''
 }
 
 function Get-ReplicationEnvironmentCapabilityPattern {

@@ -13595,3 +13595,94 @@ Describe 'A CS0104 ambiguity is resolved, not re-described' {
     }
 }
 
+
+Describe 'An issue-keyed device category is the only category on skip-filtered platforms' {
+    # DeviceTestSharedHelpers.GetExcludedTestCategories implements
+    # "Category=X" by subtraction over the public static string fields of
+    # TestCategory. "Issue<N>" is not one of those fields, so the removal is a
+    # no-op and every conventional category is excluded -- which excludes any
+    # test that also declares one. Measured on PR 533 (Android, Shape +
+    # Issue31330: 576 discovered, 3 passed, 573 ignored) and PR 515
+    # (Mac Catalyst, Accessibility + Issue37140: zero tests executed).
+
+    It 'reports the conventional category that hides the test on <platform>' -ForEach @(
+        @{ platform = 'android' }
+        @{ platform = 'ios' }
+        @{ platform = 'catalyst' }
+    ) {
+        $source = "public class T`n{`n`t[Category(TestCategory.Shape)]`n`t[Category(`"Issue31330`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 31330 -Platform $platform |
+            Should -Be 'TestCategory.Shape'
+    }
+
+    It 'reports a broad category written as a string literal' {
+        # PR 515's shape, verbatim: Accessibility alongside Issue37140.
+        $source = "public class T`n{`n`t[Category(`"Accessibility`")]`n`t[Category(`"Issue37140`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 37140 -Platform 'catalyst' |
+            Should -Be '"Accessibility"'
+    }
+
+    It 'reports a conventional category combined into one attribute' {
+        # The exact shape the old guidance recommended.
+        $source = "public class T`n{`n`t[Category(TestCategory.Entry, `"Issue37275`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 37275 -Platform 'android' |
+            Should -Be 'TestCategory.Entry'
+    }
+
+    It 'accepts the issue-keyed category on its own' {
+        $source = "public class T`n{`n`t[Category(`"Issue31330`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 31330 -Platform 'android' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'exempts windows, which selects from discovered traits' {
+        # ControlsHeadlessTestRunner collects tc.Traits["Category"], so
+        # "Issue31330" is a real category there. PR 525 selected its single
+        # Windows test correctly with a second category present.
+        $source = "public class T`n{`n`t[Category(TestCategory.Shape)]`n`t[Category(`"Issue31330`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 31330 -Platform 'windows' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'ignores a commented-out conventional category' {
+        $source = "public class T`n{`n`t// [Category(TestCategory.Shape)]`n`t[Category(`"Issue31330`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 31330 -Platform 'android' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'ignores a conventional category inside a block comment' {
+        # The line anchor alone cannot reject this one: the attribute does
+        # start its own line, so only comment stripping removes it.
+        $source = "public class T`n{`n/*`n[Category(TestCategory.Shape)]`n*/`n`t[Category(`"Issue31330`")]`n`tpublic void M() { }`n}"
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $source -Path 'a.cs' -Issue 31330 -Platform 'android' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'says nothing about empty content' {
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content '' -Path 'a.cs' -Issue 31330 -Platform 'android' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'is wired into the device-test authoring guards' {
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $orchestrator | Should -Match 'Assert-ReplicationDeviceCategoryIsExclusive'
+        # The remedy has to name the offending category, or the author cannot
+        # act on it without guessing which attribute to delete.
+        $orchestrator | Should -Match 'Declare the issue-keyed category on its'
+    }
+
+    It 'tells the author to keep the category alone' {
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $orchestrator | Should -Match 'that must be the ONLY category the test carries'
+    }
+}

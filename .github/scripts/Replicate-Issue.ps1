@@ -3703,6 +3703,24 @@ function Assert-GeneratedTestContent {
                                 -Issue $Issue) {
                             $deviceTestIsSelectable = $true
                         }
+                        $conflict = Assert-ReplicationDeviceCategoryIsExclusive `
+                            -Content $content `
+                            -Path $file `
+                            -Issue $Issue `
+                            -Platform $TargetPlatform
+                        if ($conflict) {
+                            $conflictMessage = (
+                                "Generated device test '$file' declares [Category($conflict)] " +
+                                "alongside [Category(`"Issue$Issue`")]. On $TargetPlatform the " +
+                                'runner implements "Category=X" by excluding every other ' +
+                                'TestCategory field, and "Issue' + $Issue + '" is not one of ' +
+                                "them, so [Category($conflict)] lands in the excluded list and " +
+                                'the test is skipped. Declare the issue-keyed category on its ' +
+                                'own so the published selector selects it.')
+                            if (-not $guardFailures.Contains($conflictMessage)) {
+                                $guardFailures.Add($conflictMessage)
+                            }
+                        }
                     } catch {
                         $message = $_.Exception.Message
                         if (-not $guardFailures.Contains($message)) { $guardFailures.Add($message) }
@@ -5963,7 +5981,7 @@ If the issue requests a new public event, property, method, or other API that do
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 Never assert an environment precondition. A test that calls Assert.True(OperatingSystem.IsIOSVersionAtLeast(26), ...) turns red on every device below that floor before its oracle runs, so the failure reports the lane rather than the defect and survives a complete product fix. When the reported behavior needs an OS floor, skip instead: "if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- the shape this repository uses at 49 sites. The same applies to throwing or Assert.Fail from an unmet version gate.
 
-A device test must also declare [Category("Issue$IssueNumber")] on its test class, in addition to any conventional TestCategory it already carries. CategoryAttribute takes params string[] and allows multiples, so this adds a category without editing the shared TestCategory file. The stock device-test runner honours only "Category=X" and "SkipCategories=X,Y", so without this category the published selector cannot isolate the reproduction and the whole suite runs instead.
+A device test must also declare [Category("Issue$IssueNumber")] on its test class, and on android, ios and catalyst that must be the ONLY category the test carries. Do not add a conventional TestCategory next to it. The stock device-test runner honours only "Category=X" and "SkipCategories=X,Y", and it implements "Category=X" by subtraction: it lists the public static string fields of TestCategory, removes X, and excludes every one that remains. "Issue$IssueNumber" is not a TestCategory field, so removing it removes nothing and every conventional category ends up excluded -- a test that also declares [Category(TestCategory.Shape)] then carries an excluded category and is skipped. Reviewers measured this twice: an Android reproduction reported 576 discovered / 3 passed / 573 ignored, and a Mac Catalyst one executed zero tests; deleting only the broad category made each exact test run. Windows selects from discovered traits instead, so a second category is harmless there, but keep the issue-keyed category alone on every platform for one publishable selector. Without this category the published selector cannot isolate the reproduction and the whole suite runs instead.
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
 $existingIssueGuidance

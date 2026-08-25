@@ -2056,6 +2056,30 @@ function Assert-ReplicationCandidateSources {
             ) {
                 $deviceTestIsSelectable = $true
             }
+            if ($Manifest.TestType -ceq 'DeviceTest') {
+                # A second category does not merely dilute the selector, it
+                # inverts it: "Category=Issue<N>" is implemented by excluding
+                # every other TestCategory field, so the conventional category
+                # this test also carries lands in the excluded list and the
+                # test is skipped. Publishing that selector ships a
+                # reproduction nobody can run.
+                $categoryConflict = Assert-ReplicationDeviceCategoryIsExclusive `
+                    -Content $file.Content `
+                    -Path $file.Path `
+                    -Issue ([int]$Manifest.IssueNumber) `
+                    -Platform ([string]$Manifest.Platform)
+                if ($categoryConflict) {
+                    throw (
+                        "Candidate device test '$($file.Path)' declares " +
+                        "[Category($categoryConflict)] alongside " +
+                        "[Category(`"Issue$($Manifest.IssueNumber)`")]. On " +
+                        "$($Manifest.Platform) the runner implements " +
+                        '"Category=X" by excluding every other TestCategory ' +
+                        'field, so that conventional category is excluded and ' +
+                        'the test is skipped. Declare the issue-keyed ' +
+                        'category on its own.')
+                }
+            }
         }
         Assert-SourceTextIsSafe `
             -Content $file.Content `
