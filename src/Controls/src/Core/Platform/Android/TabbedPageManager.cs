@@ -196,8 +196,14 @@ public class TabbedPageManager
 		}
 
 		// TabbedViewManager handles the tab UI refresh via TabsChanged event on the adapter
-		RemoveBadgePageMappings(_bottomBadgePages, Element.Children.Count);
-		RemoveBadgePageMappings(_topBadgePages, Element.Children.Count);
+		RemoveBadgePageMappings(
+			_bottomBadgePages,
+			Element.Children.Count,
+			index => BottomNavigationView?.RemoveBadge(index));
+		RemoveBadgePageMappings(
+			_topBadgePages,
+			Element.Children.Count,
+			index => TabLayout?.GetTabAt(index)?.RemoveBadge());
 		ScheduleBadgeUpdate();
 		UpdateIgnoreContainerAreas();
 	}
@@ -385,7 +391,10 @@ public class TabbedPageManager
 				bottomNavigationView.RemoveBadge(maxItems - 1);
 			}
 
-			RemoveBadgePageMappings(_bottomBadgePages, lastIndexToUpdate + 1);
+			RemoveBadgePageMappings(
+				_bottomBadgePages,
+				lastIndexToUpdate + 1,
+				index => bottomNavigationView.RemoveBadge(index));
 		}
 		else
 		{
@@ -540,26 +549,19 @@ public class TabbedPageManager
 		}
 	}
 
-	static void RemoveBadgePageMappings(Dictionary<int, Page> badgePages, int firstIndexToRemove)
+	static void RemoveBadgePageMappings(
+		Dictionary<int, Page> badgePages,
+		int firstIndexToRemove,
+		Action<int> removeNativeBadge)
 	{
-		while (true)
+		var indicesToRemove = badgePages.Keys
+			.Where(index => index >= firstIndexToRemove)
+			.ToArray();
+
+		foreach (var index in indicesToRemove)
 		{
-			var indexToRemove = -1;
-			foreach (var index in badgePages.Keys)
-			{
-				if (index >= firstIndexToRemove)
-				{
-					indexToRemove = index;
-					break;
-				}
-			}
-
-			if (indexToRemove < 0)
-			{
-				return;
-			}
-
-			badgePages.Remove(indexToRemove);
+			removeNativeBadge(index);
+			badgePages.Remove(index);
 		}
 	}
 

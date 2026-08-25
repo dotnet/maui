@@ -164,6 +164,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task BottomBadgeColorsDoNotTransferWhenTrailingIndexIsReused()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			var coloredPage = new ContentPage { Title = "Colored" };
+			TabbedPage.SetBadgeText(coloredPage, "1");
+			TabbedPage.SetBadgeColor(coloredPage, Colors.Orange);
+			TabbedPage.SetBadgeTextColor(coloredPage, Colors.Black);
+			var tabbedPage = CreateBasicTabbedPage(
+				bottomTabs: true,
+				pages: new[] { firstPage, coloredPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavigationView = tabbedPage.TabbedPageManager.BottomNavigationView;
+				await AssertEventually(() => bottomNavigationView.GetBadge(1)?.Text == "1");
+				var coloredBadge = bottomNavigationView.GetBadge(1);
+
+				tabbedPage.Children.RemoveAt(1);
+
+				var defaultPage = new ContentPage { Title = "Default" };
+				TabbedPage.SetBadgeText(defaultPage, "2");
+				tabbedPage.Children.Add(defaultPage);
+
+				await AssertEventually(() => bottomNavigationView.GetBadge(1)?.Text == "2");
+				var defaultBadge = bottomNavigationView.GetBadge(1);
+				Assert.NotSame(coloredBadge, defaultBadge);
+				Assert.NotEqual(Colors.Orange.ToPlatform(), defaultBadge.BackgroundColor);
+				Assert.NotEqual(Colors.Black.ToPlatform(), defaultBadge.BadgeTextColor);
+			});
+		}
+
+		[Fact]
 		public async Task BottomTabBadgesRespectOverflow()
 		{
 			SetupBuilder();
