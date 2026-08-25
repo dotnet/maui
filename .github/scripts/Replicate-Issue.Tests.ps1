@@ -107,6 +107,7 @@ BeforeAll {
         'Assert-GeneratedSandboxSources',
         'Get-ReplicationFixBaselineGreenCause',
     'Get-ReplicationMissingIdentifierEvidence',
+    'Get-ReplicationAmbiguousTypeEvidence',
     'Get-ReplicationIdentifierSiteRank',
     'Set-ReplicationVerificationRunCount',
     'Test-ReplicationFixBaselineStillRed',
@@ -13492,6 +13493,105 @@ Describe 'A verified reproduction survives a fix-phase timeout' {
         # show up as a malformed candidate on the timeout path.
         ([regex]::Matches($script:ReplSource,
             '\$writeCandidateManifest = \{')).Count | Should -Be 1
+    }
+}
+
+Describe 'A CS0104 ambiguity is resolved, not re-described' {
+    # Fifth most common Sandbox build error in the corpus. Runs that resolved it
+    # in one attempt mostly reached CANDIDATE READY; all three that reported it
+    # two or three times finished sandbox_inconclusive. The standing advice
+    # blamed a PlatformConfiguration import, which is 1 of the 10 distinct
+    # ambiguities actually observed. Every fixture below is corpus-verbatim.
+    It 'recommends the cross-platform type over a platform one' -ForEach @(
+        @{ D = "CS0104: 'Button' is an ambiguous reference between 'Microsoft.Maui.Controls.Button' and 'Android.Widget.Button'"
+           Want = 'Microsoft.Maui.Controls.Button' }
+        @{ D = "CS0104: 'ContentView' is an ambiguous reference between 'Microsoft.Maui.Controls.ContentView' and 'Microsoft.Maui.Platform.ContentView'"
+           Want = 'Microsoft.Maui.Controls.ContentView' }
+        @{ D = "CS0104: 'Map' is an ambiguous reference between 'Microsoft.Maui.ApplicationModel.Map' and 'Microsoft.Maui.Controls.Maps.Map'"
+           Want = 'Microsoft.Maui.Controls.Maps.Map' }
+        @{ D = "CS0104: 'Page' is an ambiguous reference between 'Microsoft.Maui.Controls.Page' and 'Microsoft.UI.Xaml.Controls.Page'"
+           Want = 'Microsoft.Maui.Controls.Page' }
+        @{ D = "CS0104: 'Rect' is an ambiguous reference between 'Android.Graphics.Rect' and 'Microsoft.Maui.Graphics.Rect'"
+           Want = 'Microsoft.Maui.Graphics.Rect' }
+        @{ D = "CS0104: 'ScrollView' is an ambiguous reference between 'Microsoft.Maui.Controls.ScrollView' and 'Android.Widget.ScrollView'"
+           Want = 'Microsoft.Maui.Controls.ScrollView' }
+        @{ D = "CS0104: 'TextChangedEventArgs' is an ambiguous reference between 'Microsoft.Maui.Controls.TextChangedEventArgs' and 'Microsoft.UI.Xaml.Controls.TextChangedEventArgs'"
+           Want = 'Microsoft.Maui.Controls.TextChangedEventArgs' }
+        @{ D = "CS0104: 'Visibility' is an ambiguous reference between 'Microsoft.Maui.Visibility' and 'Microsoft.UI.Xaml.Visibility'"
+           Want = 'Microsoft.Maui.Visibility' }
+    ) {
+        $evidence = Get-ReplicationAmbiguousTypeEvidence -Diagnostics $D
+        $evidence | Should -Match ([regex]::Escape("write '$Want' fully qualified"))
+    }
+
+    It 'prefers the control over a same-named PlatformConfiguration static class' {
+        # The one case the old advice did get right must not regress: this type
+        # lives *under* Microsoft.Maui.Controls, so a shortest-prefix test would
+        # invert the recommendation.
+        $evidence = Get-ReplicationAmbiguousTypeEvidence -Diagnostics (
+            "CS0104: 'ScrollView' is an ambiguous reference between " +
+            "'Microsoft.Maui.Controls.ScrollView' and " +
+            "'Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ScrollView'")
+        $evidence | Should -Match ([regex]::Escape(
+            "write 'Microsoft.Maui.Controls.ScrollView' fully qualified"))
+    }
+
+    It 'picks the control when both are cross-platform but only one is a control' {
+        # ApplicationModel.Map is the launcher API; only Controls.Maps.Map can
+        # be placed on a page, which is what a Sandbox scenario is doing.
+        $evidence = Get-ReplicationAmbiguousTypeEvidence -Diagnostics (
+            "CS0104: 'Map' is an ambiguous reference between " +
+            "'Microsoft.Maui.ApplicationModel.Map' and 'Microsoft.Maui.Controls.Maps.Map'")
+        $evidence | Should -Match ([regex]::Escape(
+            "write 'Microsoft.Maui.Controls.Maps.Map' fully qualified"))
+    }
+
+    It 'refuses to choose when both candidates are cross-platform' {
+        $evidence = Get-ReplicationAmbiguousTypeEvidence -Diagnostics (
+            "CS0104: 'Font' is an ambiguous reference between " +
+            "'Microsoft.Maui.Graphics.Font' and 'Microsoft.Maui.Font'")
+        $evidence | Should -Match 'do not assume'
+        $evidence | Should -Not -Match 'fully qualified,'
+    }
+
+    It 'treats Microsoft.Maui.Platform as platform, not cross-platform' {
+        # Synthetic, not corpus-verbatim: every observed Platform conflict is
+        # against a Controls type, which the control rule already resolves. The
+        # classification is still asserted here because Microsoft.Maui.Platform
+        # is platform-only by definition, and without this the prefix would be
+        # indistinguishable from its own absence.
+        $evidence = Get-ReplicationAmbiguousTypeEvidence -Diagnostics (
+            "CS0104: 'Insets' is an ambiguous reference between " +
+            "'Microsoft.Maui.Platform.Insets' and 'Microsoft.Maui.Graphics.Insets'")
+        $evidence | Should -Match ([regex]::Escape(
+            "write 'Microsoft.Maui.Graphics.Insets' fully qualified"))
+    }
+
+    It 'says nothing when no ambiguity is present' {
+        Get-ReplicationAmbiguousTypeEvidence -Diagnostics (
+            "MainPage.xaml.cs(33,11): error CS0103: The name 'Foo' does not exist"
+        ) | Should -BeNullOrEmpty
+        Get-ReplicationAmbiguousTypeEvidence -Diagnostics '' | Should -BeNullOrEmpty
+    }
+
+    It 'reports each distinct ambiguity once and stays bounded' {
+        $d = @(
+            "CS0104: 'Button' is an ambiguous reference between 'Microsoft.Maui.Controls.Button' and 'Android.Widget.Button'",
+            "CS0104: 'Button' is an ambiguous reference between 'Microsoft.Maui.Controls.Button' and 'Android.Widget.Button'",
+            "CS0104: 'Page' is an ambiguous reference between 'Microsoft.Maui.Controls.Page' and 'Microsoft.UI.Xaml.Controls.Page'",
+            "CS0104: 'Rect' is an ambiguous reference between 'Android.Graphics.Rect' and 'Microsoft.Maui.Graphics.Rect'",
+            "CS0104: 'Visibility' is an ambiguous reference between 'Microsoft.Maui.Visibility' and 'Microsoft.UI.Xaml.Visibility'"
+        ) -join ' '
+        $evidence = Get-ReplicationAmbiguousTypeEvidence -Diagnostics $d
+        ([regex]::Matches($evidence, "is ambiguous between")).Count | Should -Be 3
+        ([regex]::Matches($evidence, "'Button' is ambiguous")).Count | Should -Be 1
+    }
+
+    It 'is wired into the Sandbox build feedback the agent actually reads' {
+        $source = Get-Content -Raw -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1')
+        $source | Should -Match 'Get-ReplicationAmbiguousTypeEvidence `\r?\n\s*-Diagnostics \$prepareDiagnostics'
+        $source | Should -Match '\$ambiguityNote'
     }
 }
 

@@ -1080,6 +1080,132 @@ function Get-ReplicationIdentifierSiteRank {
     return 2
 }
 
+function Get-ReplicationAmbiguousTypeEvidence {
+    <#
+        .SYNOPSIS
+            Names the two types a CS0104 ambiguity is actually between, and
+            which one a Sandbox page almost certainly means.
+
+        .DESCRIPTION
+            CS0104 is the fifth most common Sandbox build error in the cached
+            corpus. Its cost is not the first occurrence but the repeat: of the
+            12 runs that hit one, the 8 that resolved it within a single attempt
+            mostly reached CANDIDATE READY, while all 3 that reported it two or
+            three times finished sandbox_inconclusive. A compile failure does
+            not consume a semantic attempt, so an unresolved ambiguity burns the
+            build retries and the run dies having never reached the device.
+
+            The advice it was given assumed one specific cause: an import of
+            Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific or a
+            sibling, each of which declares a static class sharing a control's
+            name. That is real, but it is 1 of the 10 distinct ambiguities in
+            the corpus. The other nine are Android.Widget, Microsoft.UI.Xaml,
+            Microsoft.Maui.Platform and neighbouring Microsoft.Maui namespaces,
+            for which "drop the platform-specific using" names the wrong cause -
+            the same misdirection already documented for element-text failures,
+            where feedback told the author to change the one thing that worked.
+
+            The diagnostic already carries the answer: it names both candidates
+            in full. So resolve rather than re-describe. A Sandbox page is
+            cross-platform MAUI UI, so when exactly one candidate sits in a
+            cross-platform MAUI namespace and the other in a platform or
+            interop one, the cross-platform type is the intended one and is
+            named as such. When both are cross-platform - 'Font' is ambiguous
+            between Microsoft.Maui.Graphics.Font and Microsoft.Maui.Font - there
+            is no basis to choose, so both are reported and neither is
+            recommended. Guessing there would be exactly the confident wrong
+            answer this phase exists to prevent.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Diagnostics,
+        [int]$MaximumAmbiguities = 3
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Diagnostics)) {
+        return ''
+    }
+
+    # A type is cross-platform when it sits under Microsoft.Maui and is not one
+    # of the two Maui namespaces that are platform-only. Every other namespace
+    # an ambiguity names - Android, Microsoft.UI.Xaml, UIKit, Java - is already
+    # not cross-platform by that test, so listing it would be configuration
+    # whose removal no test could detect. Ordered longest-prefix-first is not
+    # needed once the set is this small, but PlatformConfiguration must still be
+    # recognised: it sits under Microsoft.Maui.Controls and would otherwise be
+    # read as the control itself.
+    $platformPrefixes = @(
+        'Microsoft.Maui.Controls.PlatformConfiguration.',
+        'Microsoft.Maui.Platform.'
+    )
+    # One prefix suffices: Microsoft.Maui.Controls and Microsoft.Maui.Graphics
+    # are both under it, and listing them separately is configuration that no
+    # test can distinguish from its own absence.
+    $portablePrefixes = @(
+        'Microsoft.Maui.'
+    )
+
+    $isPlatform = {
+        param([string]$Type)
+        foreach ($prefix in $platformPrefixes) {
+            if ($Type.StartsWith($prefix, [System.StringComparison]::Ordinal)) { return $true }
+        }
+        return $false
+    }
+    $isPortable = {
+        param([string]$Type)
+        if (& $isPlatform $Type) { return $false }
+        foreach ($prefix in $portablePrefixes) {
+            if ($Type.StartsWith($prefix, [System.StringComparison]::Ordinal)) { return $true }
+        }
+        return $false
+    }
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $seen = New-Object System.Collections.Generic.HashSet[string]
+    $matches = [regex]::Matches(
+        [string]$Diagnostics,
+        "CS0104: '([^']+)' is an ambiguous reference between '([^']+)' and '([^']+)'")
+
+    foreach ($match in $matches) {
+        $name = $match.Groups[1].Value
+        $first = $match.Groups[2].Value
+        $second = $match.Groups[3].Value
+        if (-not $seen.Add($name)) { continue }
+        if ($lines.Count -ge $MaximumAmbiguities) { break }
+
+        $firstPortable = & $isPortable $first
+        $secondPortable = & $isPortable $second
+        # Between two cross-platform candidates there is still one honest
+        # discriminator: a Sandbox page authors UI, so a type under
+        # Microsoft.Maui.Controls is the control and the other is not.
+        # 'Map' is ambiguous between the ApplicationModel *launcher* and the
+        # Controls.Maps *control*, and only the control can be placed on a page.
+        # 'Font' has no such discriminator - Microsoft.Maui.Graphics.Font and
+        # Microsoft.Maui.Font are both plain cross-platform types - so it is
+        # left unresolved rather than guessed.
+        $controlsPrefix = 'Microsoft.Maui.Controls.'
+        if ($firstPortable -and $secondPortable) {
+            $firstControl = $first.StartsWith($controlsPrefix, [System.StringComparison]::Ordinal)
+            $secondControl = $second.StartsWith($controlsPrefix, [System.StringComparison]::Ordinal)
+            if ($firstControl -and -not $secondControl) { $secondPortable = $false }
+            elseif ($secondControl -and -not $firstControl) { $firstPortable = $false }
+        }
+        if ($firstPortable -and -not $secondPortable) {
+            $lines.Add(("'{0}' is ambiguous between '{1}' and '{2}'; a Sandbox page is cross-platform MAUI UI, so write '{1}' fully qualified, or alias it with 'using {3} = {1};', rather than removing either using." -f $name, $first, $second, ('M' + $name)))
+        } elseif ($secondPortable -and -not $firstPortable) {
+            $lines.Add(("'{0}' is ambiguous between '{1}' and '{2}'; a Sandbox page is cross-platform MAUI UI, so write '{2}' fully qualified, or alias it with 'using {3} = {2};', rather than removing either using." -f $name, $first, $second, ('M' + $name)))
+        } else {
+            $lines.Add(("'{0}' is ambiguous between '{1}' and '{2}'; both are cross-platform MAUI namespaces, so fully qualify whichever one the scenario needs - do not assume." -f $name, $first, $second))
+        }
+    }
+
+    if ($lines.Count -eq 0) {
+        return ''
+    }
+
+    return ('The diagnostic already names both candidates. ' + ($lines -join ' '))
+}
+
 function Get-ReplicationMissingIdentifierEvidence {
     <#
         .SYNOPSIS
@@ -7543,10 +7669,13 @@ $sandboxFailureSummary
             elseif ($sandboxFailureSummary -match '(?i)Preparing the Sandbox app failed') {
                 $prepareDiagnostics = Get-ReplicationCompilerDiagnostics -LogPath $prepareLog
                 if ($prepareDiagnostics) {
+                    $ambiguityEvidence = Get-ReplicationAmbiguousTypeEvidence `
+                        -Diagnostics $prepareDiagnostics
+                    $ambiguityNote = if ($ambiguityEvidence) { "`n$ambiguityEvidence" } else { '' }
                     $sandboxFailureSummary = @"
 The Sandbox build failed with these compiler diagnostics: $prepareDiagnostics
 Fix the authored Sandbox source so it compiles. This repository builds with warnings as errors. Resolve ambiguous type references such as ILayout by fully qualifying the intended type, match the exact overload signature of the API you call, and give collection expressions a constructible target type.
-A CS0104 ambiguity on VisualElement, Page, Application, Entry or similar usually means the file imports Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific, AndroidSpecific or WindowsSpecific, each of which declares its own static class with that name. Drop the platform-specific using and call the platform helper through its full namespace instead. Do not guess at member names on those helpers; use only members you have confirmed in this repository's source.
+A CS0104 ambiguity on VisualElement, Page, Application, Entry or similar usually means the file imports Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific, AndroidSpecific or WindowsSpecific, each of which declares its own static class with that name. Drop the platform-specific using and call the platform helper through its full namespace instead. Do not guess at member names on those helpers; use only members you have confirmed in this repository's source.$ambiguityNote
 
 $sandboxFailureSummary
 "@
