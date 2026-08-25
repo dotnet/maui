@@ -590,8 +590,19 @@ Describe 'The trusted publisher stages every module its gate loads' {
 
         # Only the manifest's own top-level keys are validated by the gate's
         # allowlist; nested hashtable keys are checked by their own rules.
+        # Derive the top-level indent rather than hard-coding it: the manifest
+        # moved into a scriptblock so it could be written before the fix phase,
+        # which shifted every key four columns and silently emptied this list.
+        $indent = [regex]::Match(
+            $manifestBlock, "(?m)^([ ]*)schemaVersion = 1").Groups[1].Value
+        if (-not $indent) {
+            $lineStart = $orchestrator.LastIndexOf("`n", $manifestStart)
+            $indent = $orchestrator.Substring(
+                $lineStart + 1, $manifestStart - $lineStart - 1)
+        }
+        $indent | Should -Match '^ +$'
         $written = @([regex]::Matches(
-                $manifestBlock, "(?m)^        ([A-Za-z][A-Za-z0-9]*) = ") |
+                $manifestBlock, "(?m)^$indent([A-Za-z][A-Za-z0-9]*) = ") |
             ForEach-Object { $_.Groups[1].Value })
         $written | Should -Contain 'negativeControl'
         $written.Count | Should -BeGreaterThan 10

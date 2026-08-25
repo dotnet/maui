@@ -8137,10 +8137,89 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 
     New-TestPatch -Files $generatedFiles
 
+    # A task timeout kills this process outright, so the guard above -
+    # which only survives the fix phase *failing* - cannot help: run 15089945
+    # reproduced its issue, verified it, cleared the negative control and
+    # picked a winning fix, then timed out before this manifest existed. The
+    # publisher then said "No replication candidate manifest was produced;
+    # nothing to validate." 7 of the 8 timeouts in the cached corpus had
+    # already passed verification, which makes this the most expensive way
+    # the pipeline loses work.
+    #
+    # Writing the manifest once before the fix phase and again after leaves a
+    # valid reproduction-only candidate on disk the whole time the fix panel
+    # runs. The artifact upload is succeededOrFailed, so it survives, and the
+    # manifest already models a fix-less candidate (fixFiles = @()).
+    $writeCandidateManifest = {
+        param([bool]$Announce)
+        # Replacing newlines after truncation left a trailing space, and the gate
+        # rejects an untrimmed manifest step, so build 15030804 reproduced its issue
+        # and was discarded for whitespace. Collapse and trim after the replacement.
+        $reproductionSteps = @($testProposal.reproductionSteps | ForEach-Object {
+            ([regex]::Replace(
+                ((ConvertTo-ReplicationSafeLog $_ 300) -replace '\r|\n', ' '),
+                '\s+',
+                ' ')).Trim()
+        } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 10)
+        [ordered]@{
+            schemaVersion = 1
+            issueNumber = $IssueNumber
+            platform = $Platform
+            baseSha = $BaseSha.ToLowerInvariant()
+            status = 'reproduced'
+            blocked = $null
+            selectedDevice = [ordered]@{
+                id = $selectedDeviceId
+                name = $DeviceName
+                osVersion = $DeviceOSVersion
+            }
+            attempts = [ordered]@{
+                sandbox = $sandboxAttempts
+                automatedTest = $testAttempts
+            }
+            reproductionSteps = $reproductionSteps
+            expectedBehavior = ConvertTo-ReplicationSafeLog ([string]$testProposal.expectedBehavior) 500
+            observedBehavior = ConvertTo-ReplicationSafeLog ([string]$testProposal.observedBehavior) 500
+            testType = [string]$testProposal.testType
+            testFilter = [string]$testProposal.testFilter
+            testClassName = [string]$verifierMetadata.ClassName
+            testMethodName = [string]$verifierMetadata.MethodName
+            expectedFailureSignature = [string]$testProposal.expectedFailureSignature
+            files = $generatedFiles
+            sandboxFiles = [ordered]@{
+                xaml = 'sandbox/MainPage.xaml'
+                codeBehind = 'sandbox/MainPage.xaml.cs'
+                appiumPlan = 'sandbox/appium-plan.json'
+            }
+            reproductionResult = 'reproduction-result.json'
+            evidenceManifest = 'evidence/evidence.json'
+            verificationResult = 'verification/verification-result.json'
+            negativeControl = $negativeControl
+            patch = 'test.patch'
+            fixFiles = if ($fixOutcome) { @($fixOutcome.Files) } else { @() }
+            fixPatch = if ($fixOutcome) { 'fix.patch' } else { $null }
+            fixRootCause = if ($fixOutcome) { $fixOutcome.RootCause } else { $null }
+            fixApproach = if ($fixOutcome) { $fixOutcome.Approach } else { $null }
+            fixRejectedApproaches = if ($fixOutcome) { @($fixOutcome.RejectedApproaches) } else { @() }
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
+
+        if ($Announce) {
+            Write-Host "ISSUE REPLICATION CANDIDATE READY: $candidatePath"
+        } else {
+            Write-Host "ISSUE REPLICATION CANDIDATE STAGED: $candidatePath"
+        }
+    }
+
+
+    # Stage the reproduction before the fix phase can time out. This writes the
+    # same manifest the run would publish with no fix, so a process killed
+    # during the panel leaves exactly what a fix-less run leaves.
+    $fixOutcome = $null
+    & $writeCandidateManifest $false
+
     # The reproduction is certified at this point and its patch is already
     # written, so nothing the fix phase does can reach it. Any failure inside
     # returns $null and publishes the reproduction alone.
-    $fixOutcome = $null
     if ($negativeControl) {
         try {
             $fixOutcome = Invoke-ReplicationFixPhase `
@@ -8162,58 +8241,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
         Remove-Item -LiteralPath $fixPatchPath -Force -ErrorAction SilentlyContinue
     }
 
-    # Replacing newlines after truncation left a trailing space, and the gate
-    # rejects an untrimmed manifest step, so build 15030804 reproduced its issue
-    # and was discarded for whitespace. Collapse and trim after the replacement.
-    $reproductionSteps = @($testProposal.reproductionSteps | ForEach-Object {
-        ([regex]::Replace(
-            ((ConvertTo-ReplicationSafeLog $_ 300) -replace '\r|\n', ' '),
-            '\s+',
-            ' ')).Trim()
-    } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 10)
-    [ordered]@{
-        schemaVersion = 1
-        issueNumber = $IssueNumber
-        platform = $Platform
-        baseSha = $BaseSha.ToLowerInvariant()
-        status = 'reproduced'
-        blocked = $null
-        selectedDevice = [ordered]@{
-            id = $selectedDeviceId
-            name = $DeviceName
-            osVersion = $DeviceOSVersion
-        }
-        attempts = [ordered]@{
-            sandbox = $sandboxAttempts
-            automatedTest = $testAttempts
-        }
-        reproductionSteps = $reproductionSteps
-        expectedBehavior = ConvertTo-ReplicationSafeLog ([string]$testProposal.expectedBehavior) 500
-        observedBehavior = ConvertTo-ReplicationSafeLog ([string]$testProposal.observedBehavior) 500
-        testType = [string]$testProposal.testType
-        testFilter = [string]$testProposal.testFilter
-        testClassName = [string]$verifierMetadata.ClassName
-        testMethodName = [string]$verifierMetadata.MethodName
-        expectedFailureSignature = [string]$testProposal.expectedFailureSignature
-        files = $generatedFiles
-        sandboxFiles = [ordered]@{
-            xaml = 'sandbox/MainPage.xaml'
-            codeBehind = 'sandbox/MainPage.xaml.cs'
-            appiumPlan = 'sandbox/appium-plan.json'
-        }
-        reproductionResult = 'reproduction-result.json'
-        evidenceManifest = 'evidence/evidence.json'
-        verificationResult = 'verification/verification-result.json'
-        negativeControl = $negativeControl
-        patch = 'test.patch'
-        fixFiles = if ($fixOutcome) { @($fixOutcome.Files) } else { @() }
-        fixPatch = if ($fixOutcome) { 'fix.patch' } else { $null }
-        fixRootCause = if ($fixOutcome) { $fixOutcome.RootCause } else { $null }
-        fixApproach = if ($fixOutcome) { $fixOutcome.Approach } else { $null }
-        fixRejectedApproaches = if ($fixOutcome) { @($fixOutcome.RejectedApproaches) } else { @() }
-    } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
-
-    Write-Host "ISSUE REPLICATION CANDIDATE READY: $candidatePath"
+    & $writeCandidateManifest $true
 }
 catch {
     $rawReason = [string]$_.Exception.Message

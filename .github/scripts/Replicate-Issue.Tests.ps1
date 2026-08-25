@@ -13439,3 +13439,59 @@ Describe 'An attempt classifier logs the text it classified' {
             'veto that cannot be attributed to an attempt cannot be audited')
     }
 }
+
+Describe 'A verified reproduction survives a fix-phase timeout' {
+    # Run 15089945 reproduced its issue, passed verification, cleared the
+    # negative control and selected a winning fix - then hit
+    # "##[error]The task has timed out." before the candidate manifest existed,
+    # so the publisher reported "No replication candidate manifest was
+    # produced; nothing to validate." and opened nothing. 7 of the 8 timeouts
+    # in the cached corpus had already passed verification. A task timeout
+    # kills the process, so the existing try/catch around the fix phase cannot
+    # help: the manifest has to be on disk before the panel starts.
+    BeforeAll {
+        $script:ReplSource = Get-Content -Raw -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1')
+        $script:StageAt = $script:ReplSource.IndexOf('& $writeCandidateManifest $false')
+        $script:FixAt = $script:ReplSource.IndexOf('$fixOutcome = Invoke-ReplicationFixPhase')
+        $script:FinalAt = $script:ReplSource.IndexOf('& $writeCandidateManifest $true')
+        $script:DefAt = $script:ReplSource.IndexOf('$writeCandidateManifest = {')
+    }
+
+    It 'writes the manifest before the fix phase starts' {
+        $script:StageAt | Should -BeGreaterThan 0
+        $script:FixAt | Should -BeGreaterThan 0
+        $script:StageAt | Should -BeLessThan $script:FixAt
+    }
+
+    It 'defines the writer above the call that stages it' {
+        # All four sites are top level, so source order is execution order.
+        $script:DefAt | Should -BeGreaterThan 0
+        $script:DefAt | Should -BeLessThan $script:StageAt
+    }
+
+    It 'writes it again after the fix phase, so a fix is not lost' {
+        $script:FinalAt | Should -BeGreaterThan $script:FixAt
+    }
+
+    It 'announces READY only once, after the fix phase' {
+        # The staged write must not claim READY: that marker is what the
+        # corpus census and the publisher key on.
+        ([regex]::Matches($script:ReplSource,
+            'ISSUE REPLICATION CANDIDATE READY')).Count | Should -Be 1
+        $readyAt = $script:ReplSource.IndexOf('ISSUE REPLICATION CANDIDATE READY')
+        $script:ReplSource.Substring($readyAt - 400, 400) | Should -Match '\$Announce'
+    }
+
+    It 'still records a staged manifest so the timeout case stays measurable' {
+        $script:ReplSource | Should -Match 'ISSUE REPLICATION CANDIDATE STAGED'
+    }
+
+    It 'stages the identical manifest the fix-less run would publish' {
+        # Two hand-written manifests would drift, and the drift would only ever
+        # show up as a malformed candidate on the timeout path.
+        ([regex]::Matches($script:ReplSource,
+            '\$writeCandidateManifest = \{')).Count | Should -Be 1
+    }
+}
+
