@@ -2373,9 +2373,23 @@ if ($DetectedFixFiles.Count -eq 0) {
         } elseif ($r.Error) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif (-not $r.Passed) {
-            Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+            if ($Purpose -eq 'NegativeControl') {
+                # A failing test is the expected result for the reproduction arm
+                # and the refutation for this one. Printing the reproduction's
+                # green "(expected)" here told a reader the exact opposite of
+                # what was measured, directly above the CONTROL DID NOT CLEAR
+                # banner that says so - the same mistake the banner below was
+                # already written to avoid.
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ❌ (control did not clear)" -ForegroundColor Red
+            } else {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+            }
         } else {
-            Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+            if ($Purpose -eq 'NegativeControl') {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ✅ (expected with the trigger removed)" -ForegroundColor Green
+            } else {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+            }
         }
     }
     Write-Host ""

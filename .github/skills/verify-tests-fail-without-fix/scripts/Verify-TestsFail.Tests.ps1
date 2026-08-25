@@ -1801,3 +1801,54 @@ Describe 'The authoritative test result is kept as evidence' {
             ConvertFrom-Json).resultFile | Should -BeExactly ''
     }
 }
+
+Describe 'The per-test line knows which control arm it is reporting' {
+    # The banner already refuses to say "PASSED" for a failing negative control,
+    # for the reason its own comment gives: it would tell a reader the exact
+    # opposite of what was measured. The per-test loop a few lines above it was
+    # not given the same treatment, so build 15085903 printed
+    #   [UITest] Issue31059: FAILED (expected)      <- green
+    #   CONTROL DID NOT CLEAR                       <- red
+    # one after the other, and only the second was true.
+    BeforeAll {
+        $script:PerTestBlock = $script:VerifierSource.Substring(
+            $script:VerifierSource.IndexOf('# Show per-test results'),
+            2200)
+    }
+
+    It 'reports a failing negative control as the refutation, not as the expectation' {
+        $script:PerTestBlock | Should -Match 'control did not clear'
+    }
+
+    It 'reports a passing negative control as the expected outcome' {
+        $script:PerTestBlock | Should -Match 'expected with the trigger removed'
+    }
+
+    It 'branches on Purpose for both the failing and the passing case' {
+        # Guarding both halves: a fix applied to only the failing branch leaves a
+        # passing control reported as "PASSED (should fail!)", which is the same
+        # inversion in the other direction.
+        ([regex]::Matches($script:PerTestBlock, "Purpose -eq 'NegativeControl'")).Count |
+            Should -BeGreaterOrEqual 2
+    }
+
+    It 'leaves the reproduction arm wording byte-identical' {
+        # Validate-ReplicationCandidate.Tests.ps1 builds a console fixture
+        # containing this exact string, and the report renderer is deliberately
+        # untouched so existing validators keep reading what they read today.
+        $script:PerTestBlock | Should -Match 'FAILED \u2705 \(expected\)'
+        $script:PerTestBlock | Should -Match 'PASSED \u274c \(should fail!\)'
+    }
+
+    It 'still classifies env and build errors before either verdict' {
+        # An infrastructure failure is neither arm's result, and it has to keep
+        # outranking both so a build break cannot be read as a cleared control.
+        $envAt   = $script:PerTestBlock.IndexOf('ENV ERROR')
+        $buildAt = $script:PerTestBlock.IndexOf('BUILD ERROR')
+        $verdict = $script:PerTestBlock.IndexOf("Purpose -eq 'NegativeControl'")
+        $envAt   | Should -BeGreaterThan 0
+        $buildAt | Should -BeGreaterThan 0
+        $envAt   | Should -BeLessThan $verdict
+        $buildAt | Should -BeLessThan $verdict
+    }
+}
