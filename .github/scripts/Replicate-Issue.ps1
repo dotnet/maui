@@ -461,7 +461,7 @@ function Get-ReplicationDriverElementFailurePattern {
     # the log archive: 56 locator failures were reported as recording faults.
     return '(?i)no such element|An element could not be located|NoSuchElementException|' +
         'g__WaitForElement|g__AssertElementText|Element was not visible|ElementNotFound|' +
-        'WebDriverTimeoutException'
+        'WebDriverTimeoutException|The element was never found'
 }
 
 function Test-ReplicationAppTerminated {
@@ -7420,8 +7420,7 @@ This issue reports a crash and the app did terminate, so the termination is the 
                     }
                 }
             }
-            elseif ($sandboxFailureSummary -match
-                '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException|The element was never found') {
+            elseif ($sandboxFailureSummary -match (Get-ReplicationDriverElementFailurePattern)) {
                 $inventory = Get-ReplicationElementInventory `
                     -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log") `
                     -FallbackText $sandboxFailureSummary

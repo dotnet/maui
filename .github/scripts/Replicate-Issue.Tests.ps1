@@ -2045,8 +2045,11 @@ public class Issue35516
         'Element was not visible: automationId=Group 1.' | Set-Content -LiteralPath $withoutMarker
         Get-ReplicationElementInventory -LogPath $withoutMarker | Should -BeNullOrEmpty
 
-        # The orchestrator must actually route locator failures through it.
-        $script:Source | Should -Match 'Element was not visible\|no such element\|ElementNotFound'
+        # The orchestrator must actually route locator failures through it, and
+        # it must do so via the one shared definition. This assertion used to
+        # name the inline copy of the list, which is exactly what let a third
+        # copy drift out of step with the other two.
+        $script:Source | Should -Match 'elseif \(\$sandboxFailureSummary -match \(Get-ReplicationDriverElementFailurePattern\)\)'
         $script:Source | Should -Match 'Do not re-guess a name that is absent from the inventory'
         # WebDriverWait reports its own timeout wording, and wave 17 lost every
         # iOS attempt because that wording never matched the inventory branch.
@@ -13088,6 +13091,31 @@ Describe 'One definition of a locator the driver could not find' {
 
         Get-ReplicationAttemptFailureKind -FailureSummary $recorder |
             Should -BeExactly 'recording-failed'
+    }
+
+    It 'gives the same locator failure the element inventory to act on' {
+        # The inventory guard carried a third copy of the list and missed the
+        # same wordings, so 61 real attempts were told the recorder broke and
+        # were denied the one piece of actionable feedback for a locator
+        # failure: the attributes the app actually exposed.
+        Get-ReplicationDriverElementFailurePattern | Should -Not -BeNullOrEmpty
+        foreach ($wording in @(
+            'The element was never found',
+            'An element could not be located on the page using the given search parameters',
+            'at Program.<<Main>$>g__WaitForElement|0_11(AppiumDriver driver)')) {
+            $wording -match (Get-ReplicationDriverElementFailurePattern) |
+                Should -BeTrue -Because "'$wording' must reach the inventory guard"
+        }
+    }
+
+    It 'keeps exactly one copy of the list in the source' {
+        # Three copies existed and all three disagreed. A fourth must not
+        # appear: this asserts the wordings live only in the shared pattern.
+        $source = Get-Content (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        ([regex]::Matches($source, 'Element was not visible\|no such element')).Count |
+            Should -Be 0 -Because 'the inline list must not come back'
+        ([regex]::Matches($source, "function Get-ReplicationDriverElementFailurePattern")).Count |
+            Should -Be 1
     }
 
     It 'lets a locator failure stop vetoing the conclusion it never disproved' {
