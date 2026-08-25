@@ -70,6 +70,15 @@ Set-StrictMode -Version 3.0
 
 . (Join-Path $PSScriptRoot 'Get-ReplicationSignatureMatch.ps1')
 
+# The publisher rejects a non-attributive oracle using the message the run
+# actually produced, but it does so after the run is already paid for: builds
+# 15069211 and 15082995 both spent a full device run on issue 36652 and died at
+# the gate. The same question asked here is answerable while repair attempts
+# remain. The guard raises strict mode, which this script does not want applied
+# to code written against 3.0, so the level is restored immediately.
+. (Join-Path $PSScriptRoot 'Assert-ReplicationTestGuard.ps1')
+Set-StrictMode -Version 3.0
+
 function Get-ReplicationControlPassMarker {
     <#
         .SYNOPSIS
@@ -708,12 +717,30 @@ $boundedFailureMessage = ConvertTo-BoundedVerificationFailureMessage `
     -Content $actualFailureMessage `
     -Signature $ExpectedFailureSignature
 $stableFailureMessage = Test-ReplicationFailureMessagesAreStable -Outcomes $runOutcomes.ToArray()
+
+# Asked of the message the run really produced, not the one the agent declared.
+# The declared signature was already screened at proposal time; a test can still
+# pass that screen and then fail for a harness or environment reason that no
+# product fix would ever turn green. A negative control is not run for the fix
+# oracle, where an empty message means the run passed as intended.
+$nonFalsifiableOracle = ''
+if (-not $ExpectPass -and -not [string]::IsNullOrWhiteSpace($actualFailureMessage)) {
+    try {
+        Assert-ReplicationOracleIsFalsifiable `
+            -ExpectedFailureSignature $actualFailureMessage `
+            -TestFilter $TestFilter
+    } catch {
+        $nonFalsifiableOracle = [string]$_.Exception.Message
+    }
+}
+
 $verificationPassed = $verifierPassed -and
     $signatureEquivalent -and
     -not $infrastructureFailure -and
     -not $selectionAmbiguous -and
     $consistentRuns -and
-    $stableFailureMessage
+    $stableFailureMessage -and
+    -not $nonFalsifiableOracle
 
 # The declared signature is the agent's prediction; the observed message came
 # from a validated machine-readable verifier result. Publish what actually
@@ -784,6 +811,13 @@ if (-not $verificationPassed) {
             "deterministic. Independent executions reported: " +
             (($observed | ForEach-Object { "'$_'" }) -join ' and ') +
             ". Assert on a value the defect fixes exactly rather than one that drifts between runs.")
+    }
+    if ($nonFalsifiableOracle) {
+        # Reported verbatim from the guard, which already names the reason and
+        # says what to assert instead. Reaching the agent here means the repair
+        # attempts that remain can be spent on the oracle rather than the run
+        # being abandoned at the publish gate.
+        throw $nonFalsifiableOracle
     }
     throw ("Replication test verification failed (verifierPassed=$verifierPassed, " +
         "signatureMatched=$signatureMatched, signatureEquivalent=$signatureEquivalent, " +

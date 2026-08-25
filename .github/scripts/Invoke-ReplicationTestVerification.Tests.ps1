@@ -1109,3 +1109,40 @@ Describe 'The compared failure messages are bounded for the publisher' {
         $checked | Should -BeGreaterOrEqual 3
     }
 }
+
+Describe 'A non-attributive oracle is refused while repairs are still possible' {
+    # Builds 15069211 and 15082995 both spent a full device run on issue 36652
+    # and were rejected at the publish gate, where nothing can be repaired. The
+    # publisher keeps its check; this one merely asks the same question early.
+    It 'loads the guard the publisher uses rather than restating its rules' {
+        $script:Source | Should -Match "Assert-ReplicationTestGuard\.ps1"
+    }
+
+    It 'restores strict mode after importing the guard, which raises it' {
+        $import = [regex]::Match(
+            $script:Source,
+            "(?m)^\. \(Join-Path \`$PSScriptRoot 'Assert-ReplicationTestGuard\.ps1'\)\r?\n(?<next>.*)$")
+        $import.Success | Should -BeTrue
+        $import.Groups['next'].Value | Should -Match 'Set-StrictMode -Version 3\.0'
+    }
+
+    It 'checks the message the run produced, not the signature it declared' {
+        $check = [regex]::Match(
+            $script:Source,
+            'Assert-ReplicationOracleIsFalsifiable\s*`?\s*\r?\n?\s*-ExpectedFailureSignature (?<arg>\S+)')
+        $check.Success | Should -BeTrue
+        $check.Groups['arg'].Value | Should -BeExactly '$actualFailureMessage'
+    }
+
+    It 'lets a non-falsifiable oracle veto an otherwise passing verification' {
+        $assignment = [regex]::Match(
+            $script:Source,
+            '(?m)^\$verificationPassed = (?<body>(.|\n)*?)\r?\n\r?\n')
+        $assignment.Success | Should -BeTrue
+        $assignment.Groups['body'].Value | Should -Match '-not \$nonFalsifiableOracle'
+    }
+
+    It 'never asks the question of the fix oracle, whose passing run has no message' {
+        $script:Source | Should -Match '-not \$ExpectPass -and -not \[string\]::IsNullOrWhiteSpace\(\$actualFailureMessage\)'
+    }
+}

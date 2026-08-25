@@ -2815,6 +2815,15 @@ function Get-ReplicationTestAttemptKind {
         return 'build-failed'
     }
     if (Test-ReplicationTestDidNotReproduce $FailureSummary) { return 'test-passed' }
+    # All eight reasons the guard can refuse for were measured classifying as
+    # 'other' before this branch existed, so it drains that bucket rather than
+    # competing with a neighbour: none of them matches any earlier or later
+    # rule, including app-terminated, despite several being phrased in terms of
+    # the app dying. The verifier now raises this while repair attempts remain,
+    # so the attempts need a name of their own.
+    if ($FailureSummary -match 'nominates a non-falsifiable oracle|nominates no expected failure signature') {
+        return 'non-falsifiable-oracle'
+    }
     # Checked before the signature kind, whose phrase this advice deliberately
     # keeps so the two-failure escalation still fires.
     if ($FailureSummary -match 'never reached the assertion') { return 'assertion-unreached' }

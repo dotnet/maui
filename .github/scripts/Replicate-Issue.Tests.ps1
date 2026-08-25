@@ -6723,6 +6723,41 @@ Describe 'Tier escalation recognises its own diagnosis' {
 }
 
 Describe 'Get-ReplicationTestAttemptKind' {
+    # Verbatim from build 15069211, which reached a finished reproduction for
+    # issue 36652 and was destroyed at the publish gate. The verifier now raises
+    # this while repair attempts remain, so the attempt needs its own name.
+    It 'names an attempt refused for a non-falsifiable oracle' {
+        $summary = "The reproduction 'Issue36652' nominates a non-falsifiable oracle: " +
+            'its expected failure is the harness teardown assertion in UITestBase, which ' +
+            'fires identically for a crash, a clean exit, and an automation session that ' +
+            'merely lost its window handle. Assert the reported behavior directly, so that ' +
+            'a product fix turns this exact test green.'
+        Get-ReplicationTestAttemptKind -FailureSummary $summary |
+            Should -BeExactly 'non-falsifiable-oracle'
+    }
+
+    It 'names an attempt that nominated no signature at all' {
+        Get-ReplicationTestAttemptKind -FailureSummary (
+            'The reproduction nominates no expected failure signature, so its red ' +
+            'cannot be attributed to the reported defect.') |
+            Should -BeExactly 'non-falsifiable-oracle'
+    }
+
+    # Driven from the guard's own table rather than a copy of it, so a reason
+    # added later is covered without anyone remembering to add a case. Measured
+    # before the branch existed, all eight reasons classified as 'other', which
+    # is the bucket this is meant to drain.
+    It 'names every reason the guard can refuse for' {
+        $oracles = @(Get-ReplicationNonAttributiveOracles)
+        $oracles.Count | Should -BeGreaterOrEqual 8
+        foreach ($oracle in $oracles) {
+            $summary = "The reproduction 'Issue1' nominates a non-falsifiable oracle: " +
+                "its expected failure is $($oracle.Reason)."
+            Get-ReplicationTestAttemptKind -FailureSummary $summary |
+                Should -BeExactly 'non-falsifiable-oracle' -Because $oracle.Reason
+        }
+    }
+
     It 'names the cause of each verification outcome seen in live runs' {
         Get-ReplicationTestAttemptKind -FailureSummary (Get-ReplicationTestPassedDiagnosis) |
             Should -Be 'test-passed'
