@@ -74,8 +74,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateGoBack(this WebView2 platformWebView, IWebView webView)
 		{
-			if (platformWebView == null)
+			if (!platformWebView.IsValid())
+			{
 				return;
+			}
 
 			if (platformWebView.CoreWebView2.CanGoBack)
 				platformWebView.CoreWebView2.GoBack();
@@ -85,8 +87,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateGoForward(this WebView2 platformWebView, IWebView webView)
 		{
-			if (platformWebView == null)
+			if (!platformWebView.IsValid())
+			{
 				return;
+			}
 
 			if (platformWebView.CoreWebView2.CanGoForward)
 				platformWebView.CoreWebView2.GoForward();
@@ -103,9 +107,11 @@ namespace Microsoft.Maui.Platform
 		{
 			// The WebView2 XAML control's CanGoBack/CanGoForward properties can become stale
 			// (e.g. remain true even when no history is left), so prefer CoreWebView2's values,
-			// which reflect the current navigation state synchronously.
-			if (platformWebView.CoreWebView2 is CoreWebView2 coreWebView2)
+			// which reflect the current navigation state synchronously. Guard with IsValid()
+			// since CoreWebView2 can throw if accessed after the control has been closed.
+			if (platformWebView.IsValid())
 			{
+				var coreWebView2 = platformWebView.CoreWebView2;
 				webView.CanGoBack = coreWebView2.CanGoBack;
 				webView.CanGoForward = coreWebView2.CanGoForward;
 			}

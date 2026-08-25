@@ -29,8 +29,6 @@ namespace Microsoft.Maui.DeviceTests
 
 				var handler = CreateHandler(webView);
 
-				var platformView = handler.PlatformView;
-
 				// Setup the view to be displayed/parented and run our tests on it
 				await AttachAndRun(webView, async (handler) =>
 				{
