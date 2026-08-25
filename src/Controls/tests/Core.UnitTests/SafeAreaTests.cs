@@ -581,6 +581,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(SafeAreaRegions.All, safeAreaStrategy.GetSafeAreaRegionsForEdge(3));  // Bottom = All
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ContentPage_ExplicitDefaultRegionsPreserveSentinel(bool partiallyDefault)
+		{
+			var configuredEdges = partiallyDefault
+				? new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Default,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.Default)
+				: SafeAreaEdges.Default;
+			var page = new ContentPage
+			{
+				SafeAreaEdges = configuredEdges
+			};
+
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(page, out var effectiveEdges));
+			Assert.Equal(configuredEdges, effectiveEdges);
+		}
+
 		[Fact]
 		public void ContentView_GetSafeAreaRegionsForEdge_DefaultsToNoneWhenNoPropertySet()
 		{

@@ -49,6 +49,8 @@ namespace Microsoft.Maui.Controls
 		/// This property controls which edges of the content page should obey safe area insets.
 		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
 		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
+		/// SafeAreaRegions.Default uses the platform's default safe area handling for that edge.
+		/// This can differ from leaving the property unset, which uses ContentPage's edge-to-edge default.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{
@@ -195,7 +197,11 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
-			return SafeAreaViewStrategy.GetSafeAreaRegionsForElement((ISafeAreaElement)this, edge);
+			var safeAreaElement = (ISafeAreaElement)this;
+			if (safeAreaElement.HasExplicitSafeAreaEdges)
+				return safeAreaElement.SafeAreaEdges.GetEdge(edge);
+
+			return SafeAreaViewStrategy.GetSafeAreaRegionsForElement(safeAreaElement, edge);
 		}
 
 		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges()

@@ -43,6 +43,9 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 			&& RoundToPixel(Bottom, scale) == RoundToPixel(other.Bottom, scale);
 	}
 
+	public static bool IsZeroAtPixelLevel(double value, double scale)
+		=> RoundToPixel(value, scale) == 0;
+
 	static double RoundToPixel(double value, double scale)
 		=> Math.Round(value * scale, MidpointRounding.AwayFromZero);
 }

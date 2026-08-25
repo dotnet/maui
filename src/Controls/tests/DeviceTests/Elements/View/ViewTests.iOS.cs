@@ -123,6 +123,95 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ResidualParentInsetDoesNotSuppressChildSafeArea()
+		{
+			var top = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.Container,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None);
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = top
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = top
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(10, 0, 0, 0);
+				childPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(10, 0, 0, 0);
+				parentPlatformView.AddSubview(childPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+
+				var residualInset = (nfloat)(0.25 / (double)UIScreen.MainScreen.Scale);
+				parentPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(residualInset, 0, 0, 0);
+				parentPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 100, 90), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
+		public async Task ParentHandledEdgeLookupStopsWhenAllEdgesAreResolved()
+		{
+			var grandparent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var grandparentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(grandparent);
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var grandparentPlatformView = grandparentHandler.PlatformView;
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				grandparentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				grandparentPlatformView.AddSubview(parentPlatformView);
+				parentPlatformView.AddSubview(childPlatformView);
+
+				childPlatformView.SafeAreaInsetsDidChange();
+				grandparentPlatformView.ResetSafeAreaInsetsReadCount();
+				parentPlatformView.ResetSafeAreaInsetsReadCount();
+				childPlatformView.LayoutSubviews();
+
+				Assert.True(
+					parentPlatformView.SafeAreaInsetsReadCount > 0,
+					"The direct parent's safe area must be evaluated.");
+				Assert.True(
+					grandparentPlatformView.SafeAreaInsetsReadCount == 0,
+					"The ancestor walk should stop after the parent resolves every edge.");
+			});
+		}
+
+		[Fact]
 		public async Task KeyboardSafeAreaChangesInvalidateDescendants()
 		{
 			var parent = new CustomSafeAreaView
@@ -460,7 +549,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class TestSafeAreaContentView : Microsoft.Maui.Platform.ContentView
 		{
-			public override UIEdgeInsets SafeAreaInsets => new(10, 20, 30, 40);
+			public UIEdgeInsets SafeAreaInsetsValue { get; set; } = new(10, 20, 30, 40);
+
+			public int SafeAreaInsetsReadCount { get; private set; }
+
+			public override UIEdgeInsets SafeAreaInsets
+			{
+				get
+				{
+					SafeAreaInsetsReadCount++;
+					return SafeAreaInsetsValue;
+				}
+			}
+
+			public void ResetSafeAreaInsetsReadCount() => SafeAreaInsetsReadCount = 0;
 		}
 
 		sealed class TestSafeAreaScrollViewHandler : ScrollViewHandler

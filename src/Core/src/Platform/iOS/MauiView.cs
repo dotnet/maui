@@ -495,6 +495,7 @@ namespace Microsoft.Maui.Platform
 			var top = SafeAreaRegions.None;
 			var right = SafeAreaRegions.None;
 			var bottom = SafeAreaRegions.None;
+			var displayScale = (double)UIScreen.MainScreen.Scale;
 
 			for (var ancestor = view.Superview; ancestor is not null; ancestor = ancestor.Superview)
 			{
@@ -504,14 +505,22 @@ namespace Microsoft.Maui.Platform
 				// Resolve directly from the ancestor's current inputs so suppression does not
 				// depend on whether the ancestor has already completed its layout pass.
 				var safeArea = mauiView.GetAdjustedSafeAreaInsets();
-				if (safeArea.Left != 0)
+				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Left, displayScale))
 					left = SafeAreaRegions.Container;
-				if (safeArea.Top != 0)
+				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Top, displayScale))
 					top = SafeAreaRegions.Container;
-				if (safeArea.Right != 0)
+				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Right, displayScale))
 					right = SafeAreaRegions.Container;
-				if (safeArea.Bottom != 0)
+				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Bottom, displayScale))
 					bottom = SafeAreaRegions.Container;
+
+				if (left != SafeAreaRegions.None &&
+					top != SafeAreaRegions.None &&
+					right != SafeAreaRegions.None &&
+					bottom != SafeAreaRegions.None)
+				{
+					break;
+				}
 			}
 
 			return new SafeAreaEdges(left, top, right, bottom);
