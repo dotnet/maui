@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "platform": "catalyst",
+  "device": "mac-catalyst-host",
+  "durationSeconds": 8.0,
+  "dimensions": {
+    "width": 1280,
+    "height": 800
+  },
+  "sha256": "b505180e8a74e8cc09ea38afa2f6d9d5a01b2d63e1edb721910c72d314d80764",
+  "decodedFrames": 120,
+  "videoBytes": 53713,
+  "files": {
+    "video": "repro.mp4",
+    "thumbnail": "thumbnail.png",
+    "preview": "preview.gif"
+  }
+}
