@@ -13330,4 +13330,30 @@ Describe 'An attempt classifier logs the text it classified' {
             $_.Contains('$repairfailuresummary') -and $_.Contains('classified as')
         }).Count | Should -BeGreaterThan 0
     }
+
+    It 'prints the kind the <_> call returned, not only the text it read' -ForEach @(
+        'Get-ReplicationAttemptFailureKind', 'Get-ReplicationTestAttemptKind'
+    ) {
+        # Logging the classified text is not sufficient on its own. That text
+        # goes through ConvertTo-ReplicationSafeLog, which elides the middle of
+        # 34% of sandbox attempt messages, and the deciding marker is usually in
+        # the middle: SIGABRT and REPLICATION_NOT_REPRODUCED both sit inside the
+        # elision in real logs. So the kind has to be printed as well, or a
+        # replay can only guess at what the classifier saw - which is how four
+        # separate hypotheses about the android sandbox were built on truncated
+        # text before any of them could be checked.
+        $kindVariable = @{
+            'Get-ReplicationAttemptFailureKind' = 'sandboxattemptkind'
+            'Get-ReplicationTestAttemptKind'    = 'testattemptkind'
+        }[$_]
+        @($script:LoggedText | Where-Object {
+            # Both forms occur: "$kind" and "${kind}" when a character that
+            # could extend the name follows it. Strip the braces so the
+            # assertion is about the variable, not about that formatting.
+            $_.Contains('classified as') -and
+            ($_ -replace '[{}]', '').Contains('$' + $kindVariable)
+        }).Count | Should -BeGreaterThan 0 -Because (
+            "$_ decides whether the attempt vetoes a non-reproduction, and a " +
+            'veto that cannot be attributed to an attempt cannot be audited')
+    }
 }

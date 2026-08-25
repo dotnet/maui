@@ -7560,7 +7560,20 @@ $sandboxFailureSummary
 "@
                 }
             }
-            $sandboxAttemptKinds.Add((Get-ReplicationAttemptFailureKind $sandboxFailureSummary))
+            # The kind decides everything downstream - build-failed,
+            # app-terminated and recording-failed each veto a non-reproduction
+            # outright - but it is computed from the full summary while the
+            # summary that reaches the log has already been through
+            # ConvertTo-ReplicationSafeLog. That elides the middle of 34% of
+            # sandbox attempt messages, and the middle is exactly where the
+            # deciding marker sits, so the classification cannot be recovered
+            # from the logged text. The verification stage records its kind for
+            # the same reason; every later withdrawal of a kind already prints
+            # its own "retrying without consuming a semantic attempt" line, so
+            # logging the addition is enough to reconstruct the final list.
+            $sandboxAttemptKind = Get-ReplicationAttemptFailureKind $sandboxFailureSummary
+            $sandboxAttemptKinds.Add($sandboxAttemptKind)
+            Write-Host "Sandbox attempt $attempt classified as ${sandboxAttemptKind}."
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
             # A missing output says nothing about whether the issue reproduces,
             # and run 15000674 produced it on the attempt after two misses. Do
