@@ -472,7 +472,6 @@ namespace Microsoft.Maui.Platform
 
 		/// <summary>
 		/// Returns whether this view is currently applying safe area adjustments to its layout.
-		/// Used by descendant views to avoid double-applying safe area when a parent already handles it.
 		/// </summary>
 		internal bool AppliesSafeAreaAdjustments => _appliesSafeAreaAdjustments;
 
@@ -487,12 +486,19 @@ namespace Microsoft.Maui.Platform
 			if (_parentHandledSafeAreaEdges is { } cachedEdges)
 				return cachedEdges;
 
+			var handledEdges = GetParentHandledSafeAreaEdges(this);
+			_parentHandledSafeAreaEdges = handledEdges;
+			return handledEdges;
+		}
+
+		internal static SafeAreaEdges GetParentHandledSafeAreaEdges(UIView view)
+		{
 			var left = SafeAreaRegions.None;
 			var top = SafeAreaRegions.None;
 			var right = SafeAreaRegions.None;
 			var bottom = SafeAreaRegions.None;
 
-			for (var ancestor = Superview; ancestor is not null; ancestor = ancestor.Superview)
+			for (var ancestor = view.Superview; ancestor is not null; ancestor = ancestor.Superview)
 			{
 				if (ancestor is not MauiView mauiView || !mauiView._appliesSafeAreaAdjustments)
 					continue;
@@ -507,12 +513,10 @@ namespace Microsoft.Maui.Platform
 					bottom = SafeAreaRegions.Container;
 			}
 
-			var handledEdges = new SafeAreaEdges(left, top, right, bottom);
-			_parentHandledSafeAreaEdges = handledEdges;
-			return handledEdges;
+			return new SafeAreaEdges(left, top, right, bottom);
 		}
 
-		static SafeAreaPadding ExcludeParentHandledSafeAreaEdges(SafeAreaPadding safeArea, SafeAreaEdges parentHandledEdges)
+		internal static SafeAreaPadding ExcludeParentHandledSafeAreaEdges(SafeAreaPadding safeArea, SafeAreaEdges parentHandledEdges)
 		{
 			return new SafeAreaPadding(
 				parentHandledEdges.Left != SafeAreaRegions.None ? 0 : safeArea.Left,

@@ -265,6 +265,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
+			if (this is ISafeAreaElement safeAreaElement)
+				return SafeAreaViewStrategy.GetSafeAreaRegionsForElement(safeAreaElement, edge);
+
 			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
 			if (ignoreSafeArea)
 			{

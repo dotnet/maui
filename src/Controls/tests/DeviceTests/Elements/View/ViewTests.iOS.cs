@@ -144,6 +144,61 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ParentOnlySuppressesOverlappingScrollViewSafeAreaEdges()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None)
+			};
+			var scrollView = new RecordingSafeAreaScrollView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container)
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var scrollViewHandler = await CreateHandlerAsync<TestSafeAreaScrollViewHandler>(scrollView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var scrollViewPlatformView = Assert.IsType<TestSafeAreaMauiScrollView>(scrollViewHandler.PlatformView);
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.AddSubview(scrollViewPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				scrollViewPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 70), scrollView.LastArrangeBounds);
+
+				parent.SafeAreaEdges = SafeAreaEdges.None;
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 100, 60), scrollView.LastArrangeBounds);
+
+				parent.SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None);
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 70), scrollView.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
 		public async Task ChangingAncestorSafeAreaEdgesInvalidatesEdgeDisjointGrandchild()
 		{
 			var top = new SafeAreaEdges(
@@ -301,6 +356,30 @@ namespace Microsoft.Maui.DeviceTests
 		sealed class TestSafeAreaContentView : Microsoft.Maui.Platform.ContentView
 		{
 			public override UIEdgeInsets SafeAreaInsets => new(10, 20, 30, 40);
+		}
+
+		sealed class TestSafeAreaScrollViewHandler : ScrollViewHandler
+		{
+			protected override UIScrollView CreatePlatformView() => new TestSafeAreaMauiScrollView();
+		}
+
+		sealed class TestSafeAreaMauiScrollView : MauiScrollView
+		{
+			public override UIEdgeInsets SafeAreaInsets => new(10, 20, 30, 40);
+		}
+
+		sealed class RecordingSafeAreaScrollView : ScrollView, ICrossPlatformLayout
+		{
+			public Rect LastArrangeBounds { get; private set; }
+
+			Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+			{
+				LastArrangeBounds = bounds;
+				return bounds.Size;
+			}
+
+			Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
+				new(widthConstraint, heightConstraint);
 		}
 	}
 }

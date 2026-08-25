@@ -80,19 +80,22 @@ namespace Microsoft.Maui
 				return strategy.GetSafeAreaRegionsForEdge(edge);
 
 			if (view is ISafeAreaElement safeAreaElement)
-			{
-				var region = safeAreaElement.SafeAreaEdges.GetEdge(edge);
-				if (region != SafeAreaRegions.Default)
-					return region;
-
-				var defaultRegion = safeAreaElement.GetDefaultSafeAreaEdges().GetEdge(edge);
-				return ResolveDefaultRegion(region, defaultRegion);
-			}
+				return GetSafeAreaRegionsForElement(safeAreaElement, edge);
 
 			if (view is ISafeAreaView legacySafeAreaView)
 				return legacySafeAreaView.IgnoreSafeArea ? SafeAreaRegions.None : SafeAreaRegions.Container;
 
 			return SafeAreaRegions.None;
+		}
+
+		internal static SafeAreaRegions GetSafeAreaRegionsForElement(ISafeAreaElement safeAreaElement, int edge)
+		{
+			var region = safeAreaElement.SafeAreaEdges.GetEdge(edge);
+			if (region != SafeAreaRegions.Default)
+				return region;
+
+			var defaultRegion = safeAreaElement.GetDefaultSafeAreaEdges().GetEdge(edge);
+			return ResolveDefaultRegion(region, defaultRegion);
 		}
 
 		static SafeAreaRegions ResolveDefaultRegion(SafeAreaRegions region, SafeAreaRegions defaultRegion)

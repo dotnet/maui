@@ -68,13 +68,13 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _safeAreaInvalidated = true;
 
-		// Cached result of whether a parent MauiView is already applying safe area adjustments.
+		// Cached edges already handled by ancestor MauiViews.
 		// Null means not yet determined. Invalidated when view hierarchy changes.
-		bool? _parentHandlesSafeArea;
+		SafeAreaEdges? _parentHandledSafeAreaEdges;
 
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
-		/// Only true when not nested in another scroll view, no parent MauiView handles it, and safe area is not empty.
+		/// Only true when not nested in another scroll view and its effective safe area is not empty.
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
@@ -127,17 +127,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Checks if any ancestor MauiView is already applying safe area adjustments.
-		/// When a parent already handles safe area, this scroll view should not double-apply insets,
-		/// which would otherwise cause infinite layout cycles (#33595).
+		/// Gets the edges for which an ancestor MauiView is already applying safe area adjustments.
 		/// </summary>
-		bool IsParentHandlingSafeArea()
+		SafeAreaEdges GetParentHandledSafeAreaEdges()
 		{
-			if (_parentHandlesSafeArea.HasValue)
-				return _parentHandlesSafeArea.Value;
+			if (_parentHandledSafeAreaEdges is { } cachedEdges)
+				return cachedEdges;
 
-			_parentHandlesSafeArea = this.FindParent(x => x is MauiView mv && mv.AppliesSafeAreaAdjustments) is not null;
-			return _parentHandlesSafeArea.Value;
+			var handledEdges = MauiView.GetParentHandledSafeAreaEdges(this);
+			_parentHandledSafeAreaEdges = handledEdges;
+			return handledEdges;
 		}
 
 		/// <summary>
@@ -166,7 +165,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
-			_parentHandlesSafeArea = null;
+			_parentHandledSafeAreaEdges = null;
 			_safeAreaInvalidated = true;
 		}
 
@@ -175,7 +174,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void InvalidateSafeArea()
 		{
-			_parentHandlesSafeArea = null;
+			_parentHandledSafeAreaEdges = null;
 			_safeAreaInvalidated = true;
 			SetNeedsLayout();
 		}
@@ -378,8 +377,10 @@ namespace Microsoft.Maui.Platform
 			else
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 
+			_safeArea = MauiView.ExcludeParentHandledSafeAreaEdges(_safeArea, GetParentHandledSafeAreaEdges());
+
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
+			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
 			{
@@ -700,7 +701,7 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
-			_parentHandlesSafeArea = null;
+			_parentHandledSafeAreaEdges = null;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;
