@@ -286,7 +286,7 @@ Safe area adjustments, keyboard insets, and ancestor hierarchy walks. See `safe-
 - CHECK: Prefer a capability-oriented contract such as `ISafeAreaElement` over publishing a numbered interface
 
 #### Platform notes
-- **iOS/MacCatalyst**: See `safe-area-ios.instructions.md` for `IsParentHandlingSafeArea`, `EqualsAtPixelLevel`, and the Window Guard anti-pattern. macCatalyst defaults `UseSafeArea` to `true` (unlike iOS where it's `false`).
+- **iOS/MacCatalyst**: See `safe-area-ios.instructions.md` for `GetParentHandledSafeAreaEdges`, `EqualsAtPixelLevel`, and the Window Guard anti-pattern. macCatalyst defaults `UseSafeArea` to `true` (unlike iOS where it's `false`).
 - **Android**: `WindowInsetsCompat` for keyboard and system bar; `fitsSystemWindows` behavior differs by API level
 
 ### 16. Complexity Reduction `[minor]`

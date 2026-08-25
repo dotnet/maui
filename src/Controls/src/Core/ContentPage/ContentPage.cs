@@ -173,36 +173,29 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaElement.HasExplicitSafeAreaEdges"/>
 		bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
+		/// <inheritdoc cref="ISafeAreaElement.SafeAreaEdges"/>
+		SafeAreaEdges ISafeAreaElement.SafeAreaEdges
+		{
+			get
+			{
+				var configuredEdges = SafeAreaEdges;
+				if (SafeAreaElement.IsSafeAreaEdgesSet(this))
+					return configuredEdges;
+
+#if IOS || MACCATALYST
+				return ((ISafeAreaView)this).IgnoreSafeArea
+					? SafeAreaEdges.None
+					: SafeAreaEdges.Container;
+#else
+				return SafeAreaEdges.None;
+#endif
+			}
+		}
+
 		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
-			// Check if the developer has explicitly set SafeAreaEdges
-			if (SafeAreaElement.IsSafeAreaEdgesSet(this))
-			{
-				// Developer has explicitly set SafeAreaEdges, use it directly
-				return SafeAreaEdges.GetEdge(edge);
-			}
-
-
-#if IOS || MACCATALYST
-
-			// Developer hasn't set SafeAreaEdges, fall back to legacy IgnoreSafeArea behavior
-			var ignoreSafeArea = ((ISafeAreaView)this).IgnoreSafeArea;
-			if (ignoreSafeArea)
-			{
-				return SafeAreaRegions.None; // If legacy says "ignore", return None (edge-to-edge)
-			}
-			else
-			{
-				return SafeAreaRegions.Container; // If legacy says "don't ignore", return Container
-			}
-
-#else
-
-			// Default to None (edge-to-edge) for consistent behavior across all platforms
-			return SafeAreaRegions.None;
-
-#endif
+			return SafeAreaViewStrategy.GetSafeAreaRegionsForElement((ISafeAreaElement)this, edge);
 		}
 
 		SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges()

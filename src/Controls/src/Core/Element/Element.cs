@@ -691,16 +691,26 @@ namespace Microsoft.Maui.Controls
 		}
 
 		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
-		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		private protected override void OnBindablePropertySet(
+			BindableProperty property,
+			object original,
+			object value,
+			bool changed,
+			bool willFirePropertyChanged,
+			bool specificityChanged)
 		{
 			if (willFirePropertyChanged)
 			{
 				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
 			}
 
-			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged, specificityChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
-			UpdateHandlerValue(property.PropertyName, changed);
+			// Equal SafeAreaEdges values can still change setter specificity and Android listener eligibility.
+			var handlerValueChanged =
+				changed ||
+				(specificityChanged && ReferenceEquals(property, SafeAreaElement.SafeAreaEdgesProperty));
+			UpdateHandlerValue(property.PropertyName, handlerValueChanged);
 
 		}
 

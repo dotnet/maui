@@ -23,7 +23,7 @@ Local macOS 26+ testing does NOT validate CI behavior. Fixes must pass CI on mac
 
 ## Architecture (PR #34024)
 
-**`IsParentHandlingSafeArea`** — before applying adjustments, `MauiView`/`MauiScrollView` walk ancestors to check if any ancestor handles the **same edges**. If so, descendant skips (avoids double-padding). Edge-aware: parent handling `Top` does not block child handling `Bottom`. Result cached in `bool? _parentHandlesSafeArea`; cleared on `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, `MovedToWindow`. `AppliesSafeAreaAdjustments` is `internal` for cross-type ancestor checks.
+**`GetParentHandledSafeAreaEdges`** — before applying adjustments, `MauiView`/`MauiScrollView` walk ancestors and resolve each ancestor's current safe-area inputs. Descendants suppress only overlapping edges, so a parent handling `Top` does not block a child handling `Bottom`. Results are cached in `SafeAreaEdges? _parentHandledSafeAreaEdges`; `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, and `MovedToWindow` clear the cache. Property and keyboard changes call `MauiView.InvalidateSafeArea(UIView)` to invalidate the full native subtree.
 
 **`EqualsAtPixelLevel`** — safe area compared at device-pixel resolution to absorb sub-pixel animation noise (`0.0000001pt` during `TranslateToAsync`), preventing oscillation loops (#32586, #33934).
 

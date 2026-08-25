@@ -561,11 +561,11 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
-			// Use direct property 
-			var regionForEdge = SafeAreaEdges.GetEdge(edge);
-
-			// For ScrollView, return Default behavior as-is (it's special)
-			return regionForEdge;
+			// ScrollView preserves an unresolved Default so the platform can retain native behavior.
+			return SafeAreaViewStrategy.GetSafeAreaRegionsForElement(
+				(ISafeAreaElement)this,
+				edge,
+				resolveUnspecifiedDefault: false);
 		}
 
 		private protected override string GetDebuggerDisplay()

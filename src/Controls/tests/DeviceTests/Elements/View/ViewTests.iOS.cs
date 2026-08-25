@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -87,6 +88,110 @@ namespace Microsoft.Maui.DeviceTests
 				childPlatformView.LayoutSubviews();
 
 				Assert.Equal(new Rect(20, 10, 40, 60), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
+		public async Task ParentSafeAreaSuppressionDoesNotDependOnLayoutOrder()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.AddSubview(childPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.SafeAreaInsetsDidChange();
+
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
+		public async Task KeyboardSafeAreaChangesInvalidateDescendants()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.SoftInput)
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container)
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+
+				await parentPlatformView.AttachAndRun(() =>
+				{
+					var windowBounds = parentPlatformView.Window!.Bounds;
+					parentPlatformView.Frame = new CGRect(0, windowBounds.Height - 100, 100, 100);
+					childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+					parentPlatformView.AddSubview(childPlatformView);
+
+					parentPlatformView.SafeAreaInsetsDidChange();
+					childPlatformView.SafeAreaInsetsDidChange();
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.LayoutSubviews();
+
+					Assert.Equal(new Rect(0, 0, 100, 70), child.LastArrangeBounds);
+
+					var keyboardFrame = new CGRect(0, windowBounds.Height - 50, windowBounds.Width, 50);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						parentPlatformView.LayoutSubviews();
+						childPlatformView.LayoutSubviews();
+
+						Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.LayoutSubviews();
+
+					Assert.Equal(new Rect(0, 0, 100, 70), child.LastArrangeBounds);
+				});
 			});
 		}
 

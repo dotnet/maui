@@ -74,6 +74,89 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task CustomViewSafeAreaEdgesEqualToDefaultAttachesAndroidInsetListener()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new CustomSafeAreaView();
+				var handler = CreateHandler<CustomSafeAreaViewHandler>(view);
+				var platformView = handler.PlatformView;
+				var root = new FrameLayout(MauiContext.Context);
+				var recyclerView = new TestSafeAreaRecyclerView(MauiContext.Context);
+				root.AddView(recyclerView);
+				recyclerView.AddView(platformView);
+				MauiWindowInsetListener.RegisterParentForChildViews(root);
+
+				try
+				{
+					platformView.SetPadding(1, 2, 3, 4);
+					var insets = new WindowInsetsCompat.Builder()
+						.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(20, 0, 0, 0))
+						.Build();
+
+					ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+					Assert.Equal(1, platformView.PaddingLeft);
+
+					view.SafeAreaEdges = SafeAreaEdges.Container;
+
+					Assert.True(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
+					ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+					Assert.Equal(20, platformView.PaddingLeft);
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
+		[Fact]
+		public async Task ClearingCustomViewSafeAreaEdgesEqualToDefaultDetachesAndroidInsetListener()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new CustomSafeAreaView
+				{
+					SafeAreaEdges = SafeAreaEdges.Container
+				};
+				var handler = CreateHandler<CustomSafeAreaViewHandler>(view);
+				var platformView = handler.PlatformView;
+				var root = new FrameLayout(MauiContext.Context);
+				var recyclerView = new TestSafeAreaRecyclerView(MauiContext.Context);
+				root.AddView(recyclerView);
+				recyclerView.AddView(platformView);
+				MauiWindowInsetListener.RegisterParentForChildViews(root);
+
+				try
+				{
+					platformView.SetPadding(1, 2, 3, 4);
+					Assert.True(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(platformView, MauiContext.Context));
+
+					var insets = new WindowInsetsCompat.Builder()
+						.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(20, 0, 0, 0))
+						.Build();
+					ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+					Assert.Equal(20, platformView.PaddingLeft);
+
+					view.ClearValue(CustomSafeAreaView.SafeAreaEdgesProperty);
+
+					Assert.False(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
+					Assert.Equal(1, platformView.PaddingLeft);
+					Assert.Equal(2, platformView.PaddingTop);
+					Assert.Equal(3, platformView.PaddingRight);
+					Assert.Equal(4, platformView.PaddingBottom);
+
+					ViewCompat.DispatchApplyWindowInsets(platformView, insets);
+					Assert.Equal(1, platformView.PaddingLeft);
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
 		[Theory]
 		[InlineData(1)]
 		[InlineData(2)]

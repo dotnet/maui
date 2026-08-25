@@ -415,33 +415,12 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
-			// Use direct property first
-			var regionForEdge = SafeAreaEdges.GetEdge(edge);
-
-			if (regionForEdge == SafeAreaRegions.Default)
-			{
 #pragma warning disable CS0618 // Type or member is obsolete
-				if (IgnoreSafeArea)
-				{
-					return SafeAreaRegions.None;
-				}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-				return SafeAreaRegions.Container;
-			}
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			// By default this is false so if someone sets this to true, we return None for all edges
 			if (IgnoreSafeArea)
-			{
-				// If IgnoreSafeArea is set, we return None for all edges
 				return SafeAreaRegions.None;
-			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			// For Layout views, never return the old Default - return None instead
-			// (since Default no longer exists in the new enum)
-			return regionForEdge;
+			return SafeAreaViewStrategy.GetSafeAreaRegionsForElement((ISafeAreaElement)this, edge);
 		}
 	}
 }

@@ -315,9 +315,15 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
 		}
 
-		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		private protected override void OnBindablePropertySet(
+			BindableProperty property,
+			object original,
+			object value,
+			bool changed,
+			bool willFirePropertyChanged,
+			bool specificityChanged)
 		{
-			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged, specificityChanged);
 
 			// When the same CursorPosition or SelectionLength value is re-set, the bindable property
 			// system detects no change (changed=false) and does not fire PropertyChanged, so the

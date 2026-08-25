@@ -21,6 +21,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				typeof(CustomSafeAreaView),
 			};
 
+		public static TheoryData<Type> DerivedSafeAreaElementTypes =>
+			new()
+			{
+				typeof(DerivedSafeAreaContentView),
+				typeof(DerivedSafeAreaLayout),
+				typeof(DerivedSafeAreaBorder),
+				typeof(DerivedSafeAreaScrollView),
+				typeof(DerivedSafeAreaContentPage),
+				typeof(DerivedDefaultSafeAreaContentPage),
+			};
+
 		[Fact]
 		public void GetEdges_DefaultValue_ReturnsDefault()
 		{
@@ -322,6 +333,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(page.SafeAreaEdges, effectiveEdges);
 		}
 
+		[Theory]
+		[MemberData(nameof(DerivedSafeAreaElementTypes))]
+		public void DerivedBuiltInContainer_CanOverrideInheritedSafeAreaStrategy(Type viewType)
+		{
+			var view = (ISafeAreaElement)Activator.CreateInstance(viewType, nonPublic: true);
+
+			Assert.IsAssignableFrom<ISafeAreaViewStrategy>(view);
+			Assert.True(SafeAreaViewStrategy.TryGetSafeAreaEdges(view, out var effectiveEdges));
+			Assert.Equal(DerivedSafeAreaDefault, effectiveEdges);
+		}
+
 		[Fact]
 		public void CustomView_DefaultRegionUsesDeclaredDefault()
 		{
@@ -456,6 +478,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 
 			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.None;
+		}
+
+		static readonly SafeAreaEdges DerivedSafeAreaDefault = new(
+			SafeAreaRegions.None,
+			SafeAreaRegions.Container,
+			SafeAreaRegions.SoftInput,
+			SafeAreaRegions.All);
+
+		sealed class DerivedSafeAreaContentView : ContentView, ISafeAreaElement
+		{
+			SafeAreaEdges ISafeAreaElement.SafeAreaEdges => DerivedSafeAreaDefault;
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => true;
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.None;
+		}
+
+		sealed class DerivedSafeAreaLayout : Grid, ISafeAreaElement
+		{
+			SafeAreaEdges ISafeAreaElement.SafeAreaEdges => DerivedSafeAreaDefault;
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => true;
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Container;
+		}
+
+		sealed class DerivedSafeAreaBorder : Border, ISafeAreaElement
+		{
+			SafeAreaEdges ISafeAreaElement.SafeAreaEdges => DerivedSafeAreaDefault;
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => true;
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.None;
+		}
+
+		sealed class DerivedSafeAreaScrollView : ScrollView, ISafeAreaElement
+		{
+			SafeAreaEdges ISafeAreaElement.SafeAreaEdges => DerivedSafeAreaDefault;
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => true;
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Default;
+		}
+
+		sealed class DerivedSafeAreaContentPage : ContentPage, ISafeAreaElement
+		{
+			SafeAreaEdges ISafeAreaElement.SafeAreaEdges => DerivedSafeAreaDefault;
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => true;
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.None;
+		}
+
+		sealed class DerivedDefaultSafeAreaContentPage : ContentPage, ISafeAreaElement
+		{
+			SafeAreaEdges ISafeAreaElement.SafeAreaEdges => SafeAreaEdges.Default;
+			bool ISafeAreaElement.HasExplicitSafeAreaEdges => false;
+			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => DerivedSafeAreaDefault;
 		}
 
 		sealed class CustomNoneSafeAreaView : View, ISafeAreaElement

@@ -149,7 +149,8 @@ namespace Microsoft.Maui.Controls
 			if (property.CoerceValue != null)
 				property.CoerceValue(this, newValue);
 
-			OnBindablePropertySet(property, original.Value, newValue, changed, changed);
+			var specificityChanged = original.Key != bpcontext.Values.GetSpecificity();
+			OnBindablePropertySet(property, original.Value, newValue, changed, changed, specificityChanged);
 		}
 
 		/// <summary>
@@ -680,6 +681,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			context.Values.SetValue(specificity, value);
+			var specificityChanged = originalSpecificity != context.Values.GetSpecificity();
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
@@ -697,15 +699,21 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 
-				OnBindablePropertySet(property, original, value, !sameValue, true);
+				OnBindablePropertySet(property, original, value, !sameValue, true, specificityChanged);
 			}
 			else
 			{
-				OnBindablePropertySet(property, original, value, !sameValue, false);
+				OnBindablePropertySet(property, original, value, !sameValue, false, specificityChanged);
 			}
 		}
 
-		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)
+		private protected virtual void OnBindablePropertySet(
+			BindableProperty property,
+			object original,
+			object value,
+			bool didChange,
+			bool willFirePropertyChanged,
+			bool specificityChanged)
 		{
 			if (willFirePropertyChanged)
 			{

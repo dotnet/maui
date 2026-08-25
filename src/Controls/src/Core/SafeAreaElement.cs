@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// The type must use <see cref="SafeAreaEdgesProperty"/> as the backing store for its safe area property.
 		/// </remarks>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 		public static bool IsSafeAreaEdgesSet(BindableObject bindable)
 		{
 			if (bindable is null)

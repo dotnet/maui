@@ -299,8 +299,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
 				_isKeyboardShowing = true;
-				_safeAreaInvalidated = true;
-				SetNeedsLayout();
+				InvalidateSafeArea(this);
 			}
 		}
 
@@ -352,7 +351,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_keyboardFrame = keyboardFrame.Value;
 				_isKeyboardShowing = true;
-				SetNeedsLayout();
+				InvalidateSafeArea(this);
 			}
 		}
 
@@ -360,10 +359,9 @@ namespace Microsoft.Maui.Platform
 
 		void ClearKeyboardState()
 		{
-			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
 			_isKeyboardShowing = false;
-			SetNeedsLayout();
+			InvalidateSafeArea(this);
 		}
 
 		static CGRect? GetKeyboardFrame(NSNotification notification)
@@ -500,16 +498,19 @@ namespace Microsoft.Maui.Platform
 
 			for (var ancestor = view.Superview; ancestor is not null; ancestor = ancestor.Superview)
 			{
-				if (ancestor is not MauiView mauiView || !mauiView._appliesSafeAreaAdjustments)
+				if (ancestor is not MauiView mauiView || !mauiView.RespondsToSafeArea())
 					continue;
 
-				if (mauiView._safeArea.Left != 0)
+				// Resolve directly from the ancestor's current inputs so suppression does not
+				// depend on whether the ancestor has already completed its layout pass.
+				var safeArea = mauiView.GetAdjustedSafeAreaInsets();
+				if (safeArea.Left != 0)
 					left = SafeAreaRegions.Container;
-				if (mauiView._safeArea.Top != 0)
+				if (safeArea.Top != 0)
 					top = SafeAreaRegions.Container;
-				if (mauiView._safeArea.Right != 0)
+				if (safeArea.Right != 0)
 					right = SafeAreaRegions.Container;
-				if (mauiView._safeArea.Bottom != 0)
+				if (safeArea.Bottom != 0)
 					bottom = SafeAreaRegions.Container;
 			}
 
@@ -881,6 +882,27 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = true;
 			_parentHandledSafeAreaEdges = null;
 			SetNeedsLayout();
+		}
+
+		/// <summary>
+		/// Invalidates safe area state for a native subtree.
+		/// </summary>
+		internal static void InvalidateSafeArea(UIView platformView)
+		{
+			if (platformView is MauiView mauiView)
+			{
+				mauiView.InvalidateSafeArea();
+			}
+			else if (platformView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.InvalidateSafeArea();
+			}
+
+			var subviews = platformView.Subviews;
+			for (int i = 0; i < subviews.Length; i++)
+			{
+				InvalidateSafeArea(subviews[i]);
+			}
 		}
 
 		/// <summary>

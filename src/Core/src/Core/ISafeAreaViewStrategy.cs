@@ -88,24 +88,33 @@ namespace Microsoft.Maui
 			return SafeAreaRegions.None;
 		}
 
-		internal static SafeAreaRegions GetSafeAreaRegionsForElement(ISafeAreaElement safeAreaElement, int edge)
+		internal static SafeAreaRegions GetSafeAreaRegionsForElement(
+			ISafeAreaElement safeAreaElement,
+			int edge,
+			bool resolveUnspecifiedDefault = true)
 		{
 			var region = safeAreaElement.SafeAreaEdges.GetEdge(edge);
 			if (region != SafeAreaRegions.Default)
 				return region;
 
 			var defaultRegion = safeAreaElement.GetDefaultSafeAreaEdges().GetEdge(edge);
-			return ResolveDefaultRegion(region, defaultRegion);
+			return ResolveDefaultRegion(region, defaultRegion, resolveUnspecifiedDefault);
 		}
 
-		static SafeAreaRegions ResolveDefaultRegion(SafeAreaRegions region, SafeAreaRegions defaultRegion)
+		static SafeAreaRegions ResolveDefaultRegion(
+			SafeAreaRegions region,
+			SafeAreaRegions defaultRegion,
+			bool resolveUnspecifiedDefault = true)
 		{
 			if (region != SafeAreaRegions.Default)
 				return region;
 
-			return defaultRegion == SafeAreaRegions.Default
+			if (defaultRegion != SafeAreaRegions.Default)
+				return defaultRegion;
+
+			return resolveUnspecifiedDefault
 				? SafeAreaRegions.Container
-				: defaultRegion;
+				: SafeAreaRegions.Default;
 		}
 
 		internal static object? ResolveVirtualView(object? view)
