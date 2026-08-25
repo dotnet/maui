@@ -166,6 +166,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void IDisconnectable.Disconnect()
         {
+            // No-op if already disconnected, to avoid a throw from ShellItemController's typed VirtualView.
+            if (((IElementHandler)this).VirtualView is null)
+            {
+                return;
+            }
+
+            // Also clear here, not just in DisconnectHandler, since this can run without it.
+            _tabBarController.ShouldSelectViewController = null;
+
             foreach (var kvp in _sectionRenderers.ToList())
             {
                 var renderer = kvp.Value as IDisconnectable;

@@ -189,6 +189,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void IDisconnectable.Disconnect()
         {
+            // No-op if already disconnected, to avoid a throw from the typed VirtualView below.
+            if (((IElementHandler)this).VirtualView is null)
+            {
+                return;
+            }
+
             _pageAnimation?.StopAnimation(true);
             _pageAnimation = null;
             _pendingPushCount = 0;
@@ -379,6 +385,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // If this section is removed from the view hierarchy (e.g. tab switch) mid-animation
             // and UIKit never delivers the final DidShowViewController, resolve any pending
             // navigation completion sources so awaiting Shell navigation calls don't hang.
+            // CompletePendingImmediately only drains the nav manager's own push/pop sources,
+            // so the separate interactive-pop TCS (started in OnInteractivePopCompleted) must
+            // be resolved here too, or SendPoppedOnCompletion's await never completes.
+            _interactivePopTcs?.TrySetResult(false);
+            _interactivePopTcs = null;
             _navManager?.CompletePendingImmediately(false);
             _displayedPage?.SendDisappearing();
         }
@@ -712,6 +723,9 @@ namespace Microsoft.Maui.Controls.Handlers
             var activeItem = VirtualView?.CurrentItem;
             if (activeItem is null)
             {
+                // Still release the animation gate even when there's no active item to
+                // reconcile against, otherwise LayoutContentRenderers stays blocked forever.
+                _isAnimatingOut = null;
                 return;
             }
 
