@@ -13,7 +13,16 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 	/// </summary>
 	public class BindingDiagnostics
 	{
-		public static event EventHandler<BindingBaseErrorEventArgs> BindingFailed;
+		// Backed by WeakEventManager so instance subscribers that forget to
+		// unsubscribe are not pinned by the multicast delegate for the process
+		// lifetime. See https://github.com/dotnet/maui/issues/37245.
+		static readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		public static event EventHandler<BindingBaseErrorEventArgs> BindingFailed
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		internal static void SendBindingFailure(BindingBase binding, string errorCode, string message, params object[] messageArgs)
 		{
@@ -21,10 +30,9 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			{
 				return;
 			}
-
 			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, message, messageArgs);
 
-			BindingFailed?.Invoke(null, new BindingBaseErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, errorCode, message, messageArgs));
+			_weakEventManager.HandleEvent(null, new BindingBaseErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, errorCode, message, messageArgs), nameof(BindingFailed));
 		}
 
 		internal static void SendBindingFailure(BindingBase binding, object source, BindableObject bo, BindableProperty bp, string errorCode, string message, params object[] messageArgs)
@@ -33,10 +41,9 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			{
 				return;
 			}
-
 			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, message, messageArgs);
 
-			BindingFailed?.Invoke(null, new BindingErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, source, bo, bp, errorCode, message, messageArgs));
+			_weakEventManager.HandleEvent(null, new BindingErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, source, bo, bp, errorCode, message, messageArgs), nameof(BindingFailed));
 		}
 	}
 }
