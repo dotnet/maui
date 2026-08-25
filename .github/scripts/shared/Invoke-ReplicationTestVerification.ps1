@@ -206,6 +206,48 @@ function ConvertTo-BoundedVerificationFailureMessage {
     return $head + $marker + $Content.Substring($signatureIndex, $tailLength)
 }
 
+function ConvertTo-BoundedComparableFailureMessage {
+    <#
+        .SYNOPSIS
+        Bounds a failure message that is stored for comparison rather than for
+        reading.
+
+        .DESCRIPTION
+        actualFailureMessage learned this bound long ago through
+        ConvertTo-BoundedVerificationFailureMessage; observedFailureMessages and
+        reproductionFailureMessages were added later for the negative-control
+        comparison and never did. The publisher rejects any JSON string over
+        4096 characters, so builds 15084787 and 15087788 - both holding a
+        finished reproduction - were destroyed at the last step by a 7469
+        character entry in an array nobody had bounded.
+
+        Truncation here must stay injective. These values are compared with
+        exact equality to decide whether the control failed for the same reason
+        as the reproduction, and a truncation that made two different messages
+        equal would report an unchanged failure mode and let the control refute
+        a sound reproduction. A digest of the full text is therefore appended,
+        so equal inputs stay equal and different inputs stay different.
+    #>
+    param(
+        [AllowEmptyString()][string]$Value,
+        [ValidateRange(256, 4096)][int]$MaximumLength = 4000
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+    if ($Value.Length -le $MaximumLength) {
+        return $Value
+    }
+
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
+    $digest = ([System.BitConverter]::ToString(
+        [System.Security.Cryptography.SHA256]::HashData($bytes)
+    ) -replace '-', '').Substring(0, 16).ToLowerInvariant()
+    $marker = " ... [truncated; sha256=$digest]"
+    return $Value.Substring(0, $MaximumLength - $marker.Length) + $marker
+}
+
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
 }
@@ -540,6 +582,7 @@ if ($ExpectPass) {
         Where-Object { -not $_.TestPassed } |
         ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
         Where-Object { $_ } |
+        ForEach-Object { ConvertTo-BoundedComparableFailureMessage -Value $_ } |
         Sort-Object -Unique)
 
     # A control that stays red only refutes the reproduction when it stays red
@@ -556,7 +599,7 @@ if ($ExpectPass) {
                 ConvertFrom-Json
             $reproductionMessages = @($reproductionResult.observedFailureMessages |
                 Where-Object { $_ } |
-                ForEach-Object { [string]$_ })
+                ForEach-Object { ConvertTo-BoundedComparableFailureMessage -Value ([string]$_) })
         } catch {
             $reproductionMessages = @()
         }
@@ -713,6 +756,7 @@ $result = [ordered]@{
     observedFailureMessages = @($runOutcomes |
         ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
         Where-Object { $_ } |
+        ForEach-Object { ConvertTo-BoundedComparableFailureMessage -Value $_ } |
         Sort-Object -Unique)
     logFiles = @($candidateLogs)
 }

@@ -32,6 +32,7 @@ BeforeAll {
         'Test-ReplicationInfrastructureFailure',
         'ConvertTo-AzdoSafeReplicationOutput',
         'ConvertTo-BoundedVerificationFailureMessage',
+        'ConvertTo-BoundedComparableFailureMessage',
         'Get-ReplicationVolatileFreeMessage',
         'Test-ReplicationFailureMessagesAreStable'
     )) {
@@ -1018,5 +1019,93 @@ Describe 'A refutation is measured across every requested run' {
         # condition, so a control that completed 1 of 3 runs was reported as
         # proof that the reproduction does not depend on the trigger.
         $script:Source | Should -Not -Match '\$controlRuns -ne \$RunCount -or \$controlPasses -ne \$RunCount'
+    }
+}
+
+Describe 'The compared failure messages are bounded for the publisher' {
+    # Builds 15084787 and 15087788 each held a finished reproduction and were
+    # destroyed at the publisher, which rejects any JSON string over 4096
+    # characters. actualFailureMessage was bounded; the arrays beside it were
+    # not. The cap here is the publisher's, so the two cannot drift apart.
+    It 'brings a real over-length observed message under the publisher cap' {
+        $long = 'A' * 7469
+        $bounded = ConvertTo-BoundedComparableFailureMessage -Value $long
+        $bounded.Length | Should -BeLessOrEqual 4096
+        $bounded | Should -Match 'truncated; sha256=[0-9a-f]{16}\]$'
+    }
+
+    It 'leaves a message that already fits exactly as it was' {
+        $short = 'Expected 40 but was 0.'
+        ConvertTo-BoundedComparableFailureMessage -Value $short |
+            Should -BeExactly $short
+    }
+
+    It 'is idempotent, so a re-read of a bounded file does not shrink again' {
+        $once = ConvertTo-BoundedComparableFailureMessage -Value ('B' * 9000)
+        ConvertTo-BoundedComparableFailureMessage -Value $once |
+            Should -BeExactly $once
+    }
+
+    # The refutation gate compares these values with exact equality. A
+    # truncation that collapsed two different failures into one string would
+    # report an unchanged failure mode and let the control refute a sound
+    # reproduction, which is the most expensive mistake this pipeline can make.
+    It 'keeps two long messages distinct when only their tails differ' {
+        $control = ConvertTo-BoundedComparableFailureMessage -Value (('x' * 5000) + 'ALPHA')
+        $reproduction = ConvertTo-BoundedComparableFailureMessage -Value (('x' * 5000) + 'BETA')
+        $control | Should -Not -BeExactly $reproduction
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @($control) `
+            -ReproductionMessages @($reproduction) | Should -BeTrue
+    }
+
+    It 'still reports an unchanged failure mode for one shared long message' {
+        $shared = ConvertTo-BoundedComparableFailureMessage -Value (('y' * 6000) + 'SAME')
+        Test-ReplicationControlFailureModeChanged `
+            -ControlMessages @($shared) `
+            -ReproductionMessages @($shared) | Should -BeFalse
+    }
+
+    # A guard on the wiring rather than the function: the arrays the publisher
+    # reads are the ones that must be bounded, and it was their omission - not a
+    # weak helper - that destroyed both runs.
+    It 'bounds every failure-message array the publisher validates' {
+        $names = @('observedFailureMessages', 'reproductionFailureMessages')
+        $call = 'ConvertTo-BoundedComparableFailureMessage'
+        $assignments = $ast.FindAll({
+            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst]
+        }, $true)
+        $tables = $ast.FindAll({
+            $args[0] -is [System.Management.Automation.Language.HashtableAst]
+        }, $true)
+
+        $checked = 0
+        foreach ($table in $tables) {
+            foreach ($entry in $table.KeyValuePairs) {
+                if ($names -notcontains [string]$entry.Item1.Extent.Text) { continue }
+                $checked++
+                $value = [string]$entry.Item2.Extent.Text
+                if ($value -match $call) { continue }
+
+                # The field may be filled from a variable that was bounded
+                # where it was built. Follow it rather than demanding the call
+                # sit inline, which would test formatting instead of the bound.
+                $referenced = $entry.Item2.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.VariableExpressionAst]
+                }, $true) | ForEach-Object { $_.VariablePath.UserPath }
+
+                $bounded = $false
+                foreach ($variable in $referenced) {
+                    foreach ($assignment in $assignments) {
+                        if ($assignment.Left.Extent.Text -ne ('$' + $variable)) { continue }
+                        if ($assignment.Right.Extent.Text -match $call) { $bounded = $true }
+                    }
+                }
+                $bounded | Should -BeTrue -Because (
+                    "$value reaches the publisher unbounded and a string over " +
+                    '4096 characters destroys the finished run')
+            }
+        }
+        $checked | Should -BeGreaterOrEqual 3
     }
 }

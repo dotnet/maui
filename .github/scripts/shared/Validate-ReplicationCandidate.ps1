@@ -295,7 +295,21 @@ function ConvertFrom-BoundedJson {
         if ($_.Exception.Message -like "$Context*") {
             throw
         }
-        throw "$Context is not valid bounded JSON."
+
+        # Every bound below throws a fixed literal that carries no data from the
+        # document, so the reason is safe to repeat. Collapsing them all into one
+        # generic sentence cost two finished runs and hours of artifact
+        # archaeology to learn that a single string was merely too long.
+        $reason = [string]$_.Exception.Message
+        if ($reason.Length -gt 200) {
+            $reason = $reason.Substring(0, 200)
+        }
+        $reason = ($reason -replace '[^\x20-\x7E]', ' ').Trim()
+        if ([string]::IsNullOrWhiteSpace($reason)) {
+            throw "$Context is not valid bounded JSON."
+        }
+
+        throw "$Context is not valid bounded JSON: $reason"
     } finally {
         if ($null -ne $document) {
             $document.Dispose()
