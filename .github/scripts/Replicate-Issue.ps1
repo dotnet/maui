@@ -529,7 +529,11 @@ function Get-ReplicationAttemptFailureKind {
     if (Test-ReplicationAppTerminated -Text $text) {
         return 'app-terminated'
     }
-    if ($text -match '(?i)compiler diagnostics|Preparing the Sandbox app failed|error CS\d+') {
+    # A preparation step that times out never produced an app, which is the
+    # same dead end as one that fails outright. Build 15077277 spent four of
+    # five attempts on "Preparing the Sandbox app timed out after 1800 seconds"
+    # and this rule matched none of them.
+    if ($text -match '(?i)compiler diagnostics|Preparing the Sandbox app (?:failed|timed out)|error CS\d+') {
         return 'build-failed'
     }
     if ($text -match '(?i)REPLICATION_NOT_REPRODUCED') {
@@ -538,7 +542,9 @@ function Get-ReplicationAttemptFailureKind {
     if (Test-ReplicationObservedNegativeVerdict -Text $text) {
         return 'not-reproduced'
     }
-    if ($text -match '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException|Timed out after \d+ seconds') {
+    # Only the named locator faults belong here. A bare timeout is handled last,
+    # because every step that can hang reports one.
+    if ($text -match '(?i)Element was not visible|no such element|ElementNotFound|WebDriverTimeoutException') {
         return 'element-missing'
     }
     if ($text -match '(?i)must locate a stable result element|Generated Appium step') {
@@ -565,6 +571,18 @@ function Get-ReplicationAttemptFailureKind {
     }
     if ($text -match '(?i)Unsupported replication scenario:') {
         return 'scenario-unsupported'
+    }
+    # A bare timeout is the weakest signal in this function. Every step that can
+    # hang reports one, so it names a symptom and not a cause, and it belongs
+    # after every rule that names a cause. Ordered first it silently shadowed
+    # them: build 15070232's recorder timed out three times and was filed as
+    # 'element-missing', so the 'recording-failed' kind added for build 15063014
+    # - whose whole purpose is to separate an infrastructure fault from a
+    # statement about the scenario - could never fire on a recorder that timed
+    # out, only on one that failed some other way. An Appium step waiting for an
+    # element is still the common bare timeout, so the name is unchanged.
+    if ($text -match '(?i)Timed out after \d+ seconds') {
+        return 'element-missing'
     }
     return 'other'
 }

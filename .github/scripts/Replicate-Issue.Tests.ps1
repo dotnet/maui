@@ -12774,3 +12774,57 @@ param([string[]]$EditableFiles)
         $written.Count | Should -Be 1
     }
 }
+
+Describe 'A bare timeout never outranks a rule that names the cause' {
+    # Build 15077277 spent four of five attempts on "Preparing the Sandbox app
+    # timed out after 1800 seconds" and build 15070232's recorder timed out
+    # three times. Both runs reported attemptKinds=[element-missing ...], which
+    # sends a reader to rewrite locators for an app that was never built and a
+    # recorder that never started.
+    It 'calls a recorder that timed out a recording failure' {
+        $summary = 'Recording the on-device reproduction failed with exit code 1. ' +
+            'Reproduction failed: Run trusted reproduction script timed out after 179 seconds.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -BeExactly 'recording-failed'
+    }
+
+    It 'calls a preparation step that timed out a build failure' {
+        $summary = 'Preparing the Sandbox app timed out after 1800 seconds. ' +
+            'Maui.Controls.Sample.Sandbox -> /home/vsts/work/1/s/artifacts/bin'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -BeExactly 'build-failed'
+    }
+
+    It 'still calls a timeout with no other cause a missing element' {
+        # The rule keeps its original subject: an Appium step waiting for an
+        # element is the common bare timeout, and nothing else names this one.
+        Get-ReplicationAttemptFailureKind -FailureSummary 'Timed out after 30 seconds' |
+            Should -BeExactly 'element-missing'
+    }
+
+    It 'lets every named cause win against a timeout in the same message' {
+        # The defect was ordering, not vocabulary, so assert the property that
+        # ordering is supposed to give: adding a timeout to a message that
+        # already names a cause must not change what the message is called.
+        # A per-kind assertion would have passed throughout the defect, because
+        # each kind was reachable - just not once a timeout was mentioned.
+        $named = @{
+            'recording-failed'     = 'Recording the on-device reproduction failed with exit code 1.'
+            'build-failed'         = 'Preparing the Sandbox app failed with compiler diagnostics'
+            'not-reproduced'       = "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+            'app-terminated'       = 'REPLICATION_APP_TERMINATED the process died'
+            'plan-rejected'        = 'The plan must locate a stable result element'
+            'block-declined'       = 'A block declaration is not accepted on attempt 1'
+            'scenario-unsupported' = 'Unsupported replication scenario: needs two devices'
+        }
+
+        foreach ($kind in $named.Keys) {
+            $withTimeout = "$($named[$kind]) Timed out after 60 seconds."
+
+            Get-ReplicationAttemptFailureKind -FailureSummary $withTimeout |
+                Should -BeExactly $kind -Because "'$withTimeout' names $kind"
+        }
+    }
+}
