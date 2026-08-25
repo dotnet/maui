@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows",
+  "device": "windows-host",
+  "durationSeconds": 6.067,
+  "dimensions": {
+    "width": 1280,
+    "height": 720
+  },
+  "sha256": "f3faae1ce46eb32b48dee3a7ba6321d1a323f80a1d107af2337a72643187eec5",
+  "decodedFrames": 91,
+  "videoBytes": 123263,
+  "files": {
+    "video": "repro.mp4",
+    "thumbnail": "thumbnail.png",
+    "preview": "preview.gif"
+  }
+}
