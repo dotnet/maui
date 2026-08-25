@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "platform": "ios",
+  "device": "E18309E1-037B-46D2-A8A0-D7EE5888AF8A",
+  "durationSeconds": 12.133,
+  "dimensions": {
+    "width": 590,
+    "height": 1280
+  },
+  "sha256": "09398945d36f1fc5c6a7fc31909393a9f199afed0d5b1fffa5081f37f7f3fb50",
+  "decodedFrames": 182,
+  "videoBytes": 82135,
+  "files": {
+    "video": "repro.mp4",
+    "thumbnail": "thumbnail.png",
+    "preview": "preview.gif"
+  }
+}
