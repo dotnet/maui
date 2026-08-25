@@ -223,9 +223,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
 		/// <param name="button">The button associated with the pointer event.</param>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
 				cmd.Execute(PointerEnteredCommandParameter);
@@ -241,9 +245,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
 		/// <param name="button">The button associated with the pointer event.</param>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			ICommand cmd = PointerExitedCommand;
 			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
 				cmd.Execute(PointerExitedCommandParameter);
@@ -259,9 +267,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
 		/// <param name="button">The button associated with the pointer event.</param>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			ICommand cmd = PointerMovedCommand;
 			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)
 				cmd.Execute(PointerMovedCommandParameter);
@@ -277,9 +289,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
 		/// <param name="button">The button associated with the pointer event.</param>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			ICommand cmd = PointerPressedCommand;
 			if (cmd?.CanExecute(PointerPressedCommandParameter) == true)
 				cmd.Execute(PointerPressedCommandParameter);
@@ -295,9 +311,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="getPosition">A function that returns the pointer position relative to a specified element.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the pointer event.</param>
 		/// <param name="button">The button associated with the pointer event.</param>
+		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null, ButtonsMask button = ButtonsMask.Primary)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			ICommand cmd = PointerReleasedCommand;
 			if (cmd?.CanExecute(PointerReleasedCommandParameter) == true)
 				cmd.Execute(PointerReleasedCommandParameter);

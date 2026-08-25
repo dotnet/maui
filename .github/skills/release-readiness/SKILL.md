@@ -4,7 +4,7 @@ description: Assesses ship-readiness for .NET MAUI release branches — Servicin
 metadata:
   author: dotnet-maui
   version: "2.0"
-compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. `az` CLI is optional but recommended for internal pipeline status. Preview installability uses NuGet v3 feeds; an optional short-lived Azure DevOps PAT with Packaging Read scope may be needed for an authenticated shipping feed. Run from a checkout of `dotnet/maui`.
+compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. Local net11 enrichment also uses `az` CLI with access to dnceng/internal; it fails open when unavailable and is always skipped in GitHub Actions. Preview installability uses NuGet v3 feeds; an optional short-lived Azure DevOps PAT with Packaging Read scope may be needed for an authenticated shipping feed. Run from a checkout of `dotnet/maui`.
 ---
 
 # Release Readiness
@@ -105,6 +105,7 @@ pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
 pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode in-flight \
+  '-PublicSafe:$false' \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6
 
@@ -113,6 +114,7 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode candidate \
   -SurveyRef net11.0 \
+  '-PublicSafe:$false' \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
 ```
@@ -141,6 +143,59 @@ It supports Preview and SR (including SR10) through one editorial renderer while
 preserving their different readiness semantics. It does not read or write Loop
 or SharePoint. Do not copy private source-page content into the evidence file;
 unknown fields must remain `TBD`.
+
+### Preview: local net11 official-build health
+
+For net11 preview runs through this skill from a local checkout, invoke
+`Get-PreviewReadiness.ps1 '-PublicSafe:$false'`. The script then automatically
+queries the internal official `dotnet-maui` pipeline (Azure DevOps definition
+`1095`, org `dnceng`, project `internal`) when the current Azure CLI identity has
+access. No build ID is required. It independently checks:
+
+1. `refs/heads/net11.0` — the inflight source/survey lane.
+2. `refs/heads/release/11.0.1xx-previewN` — the evaluated release branch, when
+   that branch exists.
+
+Candidate mode still checks `net11.0`; it adds the prospective release ref only
+after that ref exists. Identical refs are queried once. The local report includes
+each branch's health classification, build ID and number, pipeline status/result,
+source SHA, and internal build URL. A failed or canceled current build is `red`;
+a partially successful build is `partial-success`; a build behind the newest
+trigger-eligible commit is `stale`; a queued/running build is `in-progress`;
+missing or malformed evidence is `unknown`.
+
+Discovery examines a bounded five-build window. It prefers a build at exact branch
+HEAD, then scans by queue time and skips only candidates proven stale before
+accepting one proven current. Indeterminate candidates are buffered: disagreeing
+possible outcomes remain `unknown`, while a later proven-current failure remains
+`red` only when every buffered candidate is also a completed failure/cancellation.
+A terminal window containing only same-branch failed/canceled indeterminate builds
+also remains blocking as `failed-or-stale` because every candidate is either red
+or stale. Its rendering preserves that uncertainty and requires restoring currency
+evidence before choosing failure repair versus a current-HEAD rerun. This prevents
+both false readiness upgrades and loss of certain blocking evidence.
+
+The internal check is intentionally fail-open:
+
+- `GITHUB_ACTIONS=true` skips it before any Azure command runs.
+- Missing Azure CLI, expired login, or inaccessible dnceng/internal access yields
+  `skipped` and does not downgrade the public-data verdict.
+- Azure CLI and GitHub branch queries have bounded execution; a timeout yields
+  `unknown` rather than hanging the local readiness run.
+- Local `red`/`stale`/`failed-or-stale` maps to `BLOCKED`,
+  `in-progress`/`partial-success` to `WATCH`, and `unknown` to `UNKNOWN`.
+  For `failed-or-stale`, restore build-currency evidence first; then either repair
+  the failed build if it is current or run the official build at current HEAD if
+  it is stale.
+- `-PublicSafe:$true` omits all internal IDs, SHAs, URLs, and branch rows. The
+  public workflow uses this behavior and never receives internal credentials.
+
+The script remains public-safe by default. This skill and the release-readiness
+agent explicitly pass `'-PublicSafe:$false'` for enriched local net11 reports;
+never reuse those artifacts in a public tracker issue. `-IncludeInternal`
+remains an explicit compatibility override when a caller requests a sanitized
+internal classification, and `-InternalBuildId` remains a diagnostic override
+for the evaluated release branch.
 
 ### Preview: authoritative blessed-build source (.NET Release Tracker)
 
@@ -349,8 +404,9 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-TrackerKey` | No | derived | Canonical key (default: `net<major>-preview<N>`) embedded for idempotent issue lookup. |
 | `-OutputDir` | No | — | If set, writes `preview-readiness.{json,md}`. |
 | `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
-| `-IncludeInternal`, `-InternalBuildId` | No | — | Release-captain only — augments report with internal pipeline status when AzDO auth is available. |
-| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON. |
+| `-IncludeInternal` | No | off | Compatibility override that requests sanitized internal classification even with `-PublicSafe`; enriched local skill/agent runs pass `'-PublicSafe:$false'`. GitHub Actions still skips. |
+| `-InternalBuildId` | No | — | Diagnostic override for the evaluated release branch. Normal runs discover the latest definition-1095 build for each branch. |
+| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON, including internal IDs, SHAs, URLs, and branch rows. The local skill/agent explicitly sets `$false` for enriched net11 reports that will remain local. |
 | `-ConfirmedWorkloadSetVersion` | No | — | Exact release-owner-confirmed workload-set CLI version. Required before Consumer installability can become `READY`. |
 | `-AdditionalPackageSource` | No | — | Repeatable `name=https://...` authenticated dnceng Azure Artifacts source without user information, query parameters, or fragments. Credentials come from `NuGetPackageSourceCredentials_<name>`, never from the argument, and must explicitly select `ValidAuthenticationTypes=Basic`. |
 
@@ -362,7 +418,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `release-readiness.{json,md}` | Get-ReleaseReadiness | Full SR readiness report |
 | `sr-source-prs.txt` | Get-ReleaseReadiness | Flat newline-delimited source PR list; use `grep -qxF NNNNN file` for instant cherry-pick verification |
 | `sr-commits.json` | Get-ReleaseReadiness | Raw SR-only commit metadata |
-| `preview-readiness.{json,md}` | Get-PreviewReadiness | Full Preview readiness report |
+| `preview-readiness.{json,md}` | Get-PreviewReadiness | Full Preview readiness report. Local non-public-safe net11 JSON includes `InternalOfficialBuilds`; public-safe JSON omits that property. |
 
 ## Tracker refresh workflow
 
@@ -517,7 +573,7 @@ The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When d
 
 ## Methodology
 
-Seven critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Eight critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
@@ -532,6 +588,13 @@ Seven critical gotchas this skill encodes — see [references/methodology.md](re
 6. **Next-cycle main bump workflow**: After an SR branch is cut, `main` advances through a separate one-line `PatchVersion` PR. The report emits the exact old/new XML and title while preserving `SdkBandVersion` and CI prerelease settings.
 
 7. **Default-channel → per-build feed → ship Assessment**: An SR branch needs a BAR default-channel mapping so its build is promoted and generates the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed. The DevDiv ship **Assessment** must link that feed so CSI/customers can validate the exact candidate packages; without the mapping + promotion the feed never exists and the Assessment ships incomplete (the SR9 miss). The report derives and surfaces the exact feed URL once a promoted build exists.
+
+8. **Local internal official-build evidence stays local**: net11 readiness needs the
+   latest definition-1095 build for both `net11.0` and the evaluated release
+   branch, but GitHub Actions cannot access dnceng/internal. The preview engine
+   auto-queries both only in eligible local runs, compares each build SHA to
+   the newest trigger-eligible commit, fails open on unavailable auth, and
+   removes all internal identifiers from public-safe output.
 
 ## Shared module
 

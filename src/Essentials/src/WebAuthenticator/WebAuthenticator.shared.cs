@@ -22,9 +22,11 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="webAuthenticatorOptions">A <see cref="WebAuthenticatorOptions"/> instance containing additional configuration for this authentication call.</param>
 		/// <returns>A <see cref="WebAuthenticatorResult"/> object with the results of this operation.</returns>
 		/// <exception cref="TaskCanceledException">Thrown when the user canceled the authentication flow.</exception>
-		/// <exception cref="FeatureNotSupportedException">iOS/macOS: Thrown when iOS version is less than 13 is used or macOS less than 13.1 is used.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown when the platform cannot represent the requested callback, including HTTPS callbacks on iOS or Mac Catalyst before version 17.4.</exception>
 		/// <exception cref="InvalidOperationException">
+		/// <para>All platforms: Thrown when another authentication operation is already in progress.</para>
 		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
+		/// <para>iOS and Mac Catalyst: Thrown when the authentication or callback URL is unsupported, including an HTTPS callback with a non-default port, or when the native session cannot be started.</para>
 		/// <para>Windows: Thrown when the callback URL is invalid, its protocol is not registered, the browser cannot be launched, or another app instance is already waiting for the callback scheme.</para>
 		/// </exception>
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
@@ -36,9 +38,11 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="cancellationToken">A <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
 		/// <returns>A <see cref="WebAuthenticatorResult"/> object with the results of this operation.</returns>
 		/// <exception cref="TaskCanceledException">Thrown when the user canceled the authentication flow.</exception>
-		/// <exception cref="FeatureNotSupportedException">iOS/macOS: Thrown when iOS version is less than 13 is used or macOS less than 13.1 is used.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown when the platform cannot represent the requested callback, including HTTPS callbacks on iOS or Mac Catalyst before version 17.4.</exception>
 		/// <exception cref="InvalidOperationException">
+		/// <para>All platforms: Thrown when another authentication operation is already in progress.</para>
 		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
+		/// <para>iOS and Mac Catalyst: Thrown when the authentication or callback URL is unsupported, including an HTTPS callback with a non-default port, or when the native session cannot be started.</para>
 		/// <para>Windows: Thrown when the callback URL is invalid, its protocol is not registered, the browser cannot be launched, or another app instance is already waiting for the callback scheme.</para>
 		/// </exception>
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken);
@@ -91,8 +95,14 @@ namespace Microsoft.Maui.Authentication
 	/// A web navigation API intended to be used for Authentication with external web services such as OAuth.
 	/// </summary>
 	/// <remarks>
-	/// This API helps with navigating to a start URL and waiting for a callback URL to the app.  Your app must 
+	/// This API helps with navigating to a start URL and waiting for a callback URL to the app. Your app must
 	/// be registered to handle the callback scheme you provide in the call to authenticate.
+	/// Only one authentication operation can be active in the process. Starting another valid operation throws
+	/// <see cref="InvalidOperationException"/>. Lifecycle callbacks are offered to the active built-in request first,
+	/// but only a matching callback route is consumed; non-matching callbacks remain available to custom implementations
+	/// and other lifecycle handlers. Scheme and host comparisons ignore case, while the effective port and any non-root path
+	/// must match exactly. Query and fragment do not participate in route matching, and an expected root path does not
+	/// constrain the callback path. The app remains responsible for OAuth state, PKCE, nonce validation, and token exchange.
 	/// </remarks>
 	public static class WebAuthenticator
 	{
@@ -150,11 +160,6 @@ namespace Microsoft.Maui.Authentication
 			return platform;
 		}
 
-#if ANDROID
-		internal static bool IsAuthenticatingWithCustomTabs(this IWebAuthenticator webAuthenticator)
-			=> (webAuthenticator as WebAuthenticatorImplementation)?.AuthenticatingWithCustomTabs ?? false;
-#endif
-
 		/// <summary>
 		/// Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.
 		/// </summary>
@@ -178,8 +183,18 @@ namespace Microsoft.Maui.Authentication
 
 #if IOS || MACCATALYST || MACOS
 		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OpenUrlCallback(Uri)"/>
-		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri) =>
-			webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri)
+		{
+#if IOS || MACCATALYST
+			if (WebAuthenticatorImplementation.TryHandleBuiltInCallback(uri))
+				return true;
+
+			return webAuthenticator is not WebAuthenticatorImplementation &&
+				webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
+#else
+			return webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
+#endif
+		}
 
 		/// <inheritdoc cref="ApplicationModel.Platform.OpenUrl(UIKit.UIApplication, Foundation.NSUrl, Foundation.NSDictionary)"/>
 		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) 
@@ -203,12 +218,24 @@ namespace Microsoft.Maui.Authentication
 
 #elif ANDROID
 		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnResumeCallback(Intent)"/>
-		public static bool OnResume(this IWebAuthenticator webAuthenticator, Intent intent) =>
-			webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
+		public static bool OnResume(this IWebAuthenticator webAuthenticator, Intent intent)
+		{
+			if (WebAuthenticatorImplementation.TryHandleBuiltInCallback(intent))
+				return true;
+
+			return webAuthenticator is not WebAuthenticatorImplementation &&
+				webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
+		}
 #elif WINDOWS
 		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments)"/>
-		public static bool OnAppInstanceActivated(this IWebAuthenticator webAuthenticator, Microsoft.Windows.AppLifecycle.AppActivationArguments args) =>
-			webAuthenticator.AsPlatformCallback().OnAppInstanceActivatedCallback(args);
+		public static bool OnAppInstanceActivated(this IWebAuthenticator webAuthenticator, Microsoft.Windows.AppLifecycle.AppActivationArguments args)
+		{
+			if (WebAuthenticatorImplementation.TryHandleBuiltInActivation(args))
+				return true;
+
+			return webAuthenticator is not WebAuthenticatorImplementation &&
+				webAuthenticator.AsPlatformCallback().OnAppInstanceActivatedCallback(args);
+		}
 #endif
 	}
 
@@ -231,7 +258,7 @@ namespace Microsoft.Maui.Authentication
 		/// Gets or sets whether the browser used for the authentication flow is short-lived.
 		/// This means it will not share session nor cookies with the regular browser on this device if set the <see langword="true"/>. 
 		/// </summary>
-		/// <remarks>This setting only has effect on iOS.</remarks>
+		/// <remarks>Support varies by platform and browser. This setting is not guaranteed on Windows.</remarks>
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
 
 		/// <summary>
