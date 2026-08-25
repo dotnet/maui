@@ -844,13 +844,26 @@ function Test-ReplicationVerificationReachedAVerdict {
         learned something about the proposed oracle. The remaining kinds
         (build-failed, app-terminated, harness-error, other) mean no verdict was
         reached.
+
+        'ambiguous-selection' is deliberately not a verdict kind, because it is
+        the one kind that reports a failure to *select* rather than an outcome:
+        it is raised when the run executed more than one test, "so the failure
+        cannot be attributed to the named test". Nothing was learned about the
+        proposed oracle, which is the definition above. Counting it as a verdict
+        sent the run to verification_not_trustworthy, which exits 0 and reports
+        a conclusive empirical answer on the issue - telling the reporter their
+        oracle was refused when the run never ran their test on its own. Builds
+        15065071 (five ambiguous attempts out of five), 15080279 and 15087559
+        each concluded that way. As a selection failure it is repairable, and
+        the attempt message already tells the agent how, so an unrepaired one is
+        a pipeline defect and belongs in verification_inconclusive.
     #>
     param(
         [AllowNull()][AllowEmptyCollection()]
         [System.Collections.Generic.List[string]]$AttemptKinds
     )
 
-    $verdictKinds = @('test-passed', 'wrong-signature', 'unstable-failure', 'ambiguous-selection')
+    $verdictKinds = @('test-passed', 'wrong-signature', 'unstable-failure')
     foreach ($kind in @($AttemptKinds)) {
         if ($verdictKinds -contains [string]$kind) {
             return $true

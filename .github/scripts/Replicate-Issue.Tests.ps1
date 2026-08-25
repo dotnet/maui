@@ -8152,7 +8152,6 @@ Describe 'Get-ReplicationBlockedCode separates an answer from a defect at the te
         @{ Kinds = @('other', 'other', 'other', 'other', 'wrong-signature') }
         @{ Kinds = @('test-passed', 'test-passed') }
         @{ Kinds = @('unstable-failure') }
-        @{ Kinds = @('ambiguous-selection') }
     ) {
         Get-ReplicationBlockedCode -RawReason 'verification failed' -Stage 'test' -AttemptKinds ([System.Collections.Generic.List[string]]$Kinds) |
             Should -BeExactly 'verification_not_trustworthy'
@@ -8162,9 +8161,26 @@ Describe 'Get-ReplicationBlockedCode separates an answer from a defect at the te
         @{ Kinds = @('build-failed', 'build-failed', 'build-failed') }
         @{ Kinds = @('app-terminated') }
         @{ Kinds = @('other', 'other') }
+        # Verbatim from builds 15065071, 15080279 and 15087559. An ambiguous
+        # selection means the run executed more than one test, so the failure
+        # cannot be attributed to the named test and nothing was learned about
+        # the proposed oracle. Counted as a verdict it exited 0 and reported a
+        # conclusive empirical answer on the issue; 15065071 did so with five
+        # ambiguous attempts out of five, having never once run the named test
+        # on its own.
+        @{ Kinds = @('ambiguous-selection') }
+        @{ Kinds = @('ambiguous-selection', 'other', 'other', 'other', 'ambiguous-selection') }
     ) {
         Get-ReplicationBlockedCode -RawReason 'verification failed' -Stage 'test' -AttemptKinds ([System.Collections.Generic.List[string]]$Kinds) |
             Should -BeExactly 'verification_inconclusive'
+    }
+
+    It 'still calls a real verdict an answer when an ambiguous attempt sits beside it' {
+        # Excluding the selection failure must not make a genuine verdict
+        # unreachable: one real reading of the named test is still an answer.
+        Get-ReplicationBlockedCode -RawReason 'verification failed' -Stage 'test' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('ambiguous-selection', 'wrong-signature')) |
+            Should -BeExactly 'verification_not_trustworthy'
     }
 }
 
