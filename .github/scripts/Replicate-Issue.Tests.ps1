@@ -13214,3 +13214,74 @@ Describe 'An assertion that read a value is not a locator that failed' {
         $script:Source | Should -Match 'the locator is correct and must not be changed'
     }
 }
+
+Describe 'An attempt classifier logs the text it classified' {
+    # The sandbox has logged the exact summary it classified since run 15009971,
+    # which is what makes helpers/build-corpus.py able to replay real attempts
+    # and what caught two bad classifier changes. The verification phase never
+    # did: it printed $verificationDiagnosis, which is only one of the two
+    # halves Get-ReplicationTestAttemptKind reads, so 149 attempts filed 'other'
+    # could not be re-derived from their own logs. Assert the property for both
+    # phases rather than for one, because a lesson learned in one phase and not
+    # its sibling is how the banner drift, the display-name gate and the
+    # per-test control label all happened.
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
+
+        # Every string a Write-Host interpolates, lowercased for comparison.
+        $script:LoggedText = @(
+            $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                $args[0].GetCommandName() -eq 'Write-Host'
+            }, $true) | ForEach-Object { $_.Extent.Text.ToLowerInvariant() }
+        )
+
+        $script:ClassifiedVariable = @{}
+        foreach ($call in $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                $args[0].GetCommandName() -in @(
+                    'Get-ReplicationAttemptFailureKind', 'Get-ReplicationTestAttemptKind')
+            }, $true)) {
+            # The argument may be positional or named, so take the first
+            # variable the call mentions rather than assuming a parameter form.
+            $variable = $call.FindAll({
+                $args[0] -is [System.Management.Automation.Language.VariableExpressionAst] }, $true) |
+                Select-Object -First 1
+            if ($variable) {
+                $script:ClassifiedVariable[$call.GetCommandName()] =
+                    $variable.VariablePath.UserPath
+            }
+        }
+    }
+
+    It 'finds a call site for both the sandbox and the verification classifier' {
+        # Guards the harness itself: if a rename made either lookup return
+        # nothing, the assertions below would pass by having nothing to check.
+        $script:ClassifiedVariable.Keys | Should -Contain 'Get-ReplicationAttemptFailureKind'
+        $script:ClassifiedVariable.Keys | Should -Contain 'Get-ReplicationTestAttemptKind'
+    }
+
+    It 'logs the summary the <_> call classified' -ForEach @(
+        'Get-ReplicationAttemptFailureKind', 'Get-ReplicationTestAttemptKind'
+    ) {
+        $variableName = $script:ClassifiedVariable[$_]
+        $variableName | Should -Not -BeNullOrEmpty
+        $needle = ('$' + $variableName).ToLowerInvariant()
+        $matching = @($script:LoggedText | Where-Object { $_.Contains($needle) })
+        $matching.Count | Should -BeGreaterThan 0 -Because (
+            "the text handed to $_ is `$$variableName, and a classifier decision " +
+            'that is never printed cannot be diagnosed or replayed afterwards')
+    }
+
+    It 'records the kind beside the verification text it was derived from' {
+        # Printing the decision next to its evidence is what lets a replay be
+        # checked against ground truth instead of against another grep.
+        # @() because a Where-Object returning exactly one match is that match,
+        # not a collection of one, and .Count on it throws under StrictMode -
+        # the same shape as the eleven wrapped expressions in the verifier.
+        @($script:LoggedText | Where-Object {
+            $_.Contains('$repairfailuresummary') -and $_.Contains('classified as')
+        }).Count | Should -BeGreaterThan 0
+    }
+}

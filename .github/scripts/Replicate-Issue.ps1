@@ -7855,8 +7855,18 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                         throw 'Failed to clear generated-test intent-to-add state after verification.'
                     }
                 }
-                [void]$testAttemptKinds.Add(
-                    (Get-ReplicationTestAttemptKind -FailureSummary $repairFailureSummary))
+                $testAttemptKind = Get-ReplicationTestAttemptKind -FailureSummary $repairFailureSummary
+                [void]$testAttemptKinds.Add($testAttemptKind)
+                # The sandbox has logged the exact text it classified since run
+                # 15009971, which is what makes its attempts replayable. This
+                # phase never did. Only $verificationDiagnosis was printed, and
+                # that is one of the two halves the classifier reads - the raw
+                # exception is the other - so a verification attempt could not
+                # be re-derived from its own log. 149 attempts filed 'other',
+                # the second largest verification kind, are undiagnosable for
+                # exactly that reason. Log what was decided and the text it was
+                # decided from, together, so the two cannot drift apart.
+                Write-Host "Verification attempt ${verificationRound} classified as ${testAttemptKind}: $repairFailureSummary"
                 if (-not $finalPlanRound -and
                     (Test-ReplicationTestDidNotReproduce $repairFailureSummary)) {
                     $nonReproducingAttempts++
