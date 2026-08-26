@@ -405,11 +405,28 @@ function New-ReplicationPullRequestBody {
     # inferred from the run count.
     $certificationLevel = Get-ReplicationCandidateText -Candidate $Candidate -Name 'certificationLevel'
     $certificationSummary = Get-ReplicationCandidateText -Candidate $Candidate -Name 'certificationSummary'
+
+    # Three of the four most recent adversarial reviews refuted a fix not on its
+    # causality, which they each confirmed by hand, but on issue fidelity: the
+    # reporter's linked sample drives the bug down a different path than the one
+    # the test models. That evidence is unreachable from here by design - the
+    # only network read is the GitHub issue API, and the sanitizer replaces every
+    # URL in the body with [url removed] before the authoring agent sees it. A
+    # detector was measured against two known cases and could not separate them
+    # for exactly this reason, so the honest remedy is to declare the boundary
+    # rather than to gate on evidence that was never fetched.
+    $evidenceBoundary = 'This rests on the issue report as returned by the GitHub issues API. The ' +
+    'reporter''s linked reproduction project is never downloaded, and links are stripped from the ' +
+    'report before the test is authored, so a test faithful to the written report may still drive ' +
+    'the defect down a different path than the linked sample. Please check that first.'
+
     $certificationBlock = if ($certificationSummary) {
-        "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine + $certificationSummary
+        "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine + $certificationSummary +
+        [Environment]::NewLine + [Environment]::NewLine + $evidenceBoundary
     } elseif ($certificationLevel) {
         "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine +
-        ('**Evidence level: `' + $certificationLevel + '`**')
+        ('**Evidence level: `' + $certificationLevel + '`**') +
+        [Environment]::NewLine + [Environment]::NewLine + $evidenceBoundary
     } else {
         ''
     }

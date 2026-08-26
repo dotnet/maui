@@ -251,6 +251,101 @@ Describe 'Trusted replication pull request publishing' {
         $body | Should -Match 'Trigger removed'
     }
 
+    It 'declares the evidence boundary beside every level it reports' {
+        # Three of the four newest adversarial reviews refuted a fix on issue
+        # fidelity rather than causality, which each had confirmed by hand. The
+        # deciding evidence was the reporter's linked reproduction, which this
+        # pipeline never fetches, so the body must declare that limitation
+        # instead of leaving reviewers to rediscover it one PR at a time.
+        $base = [ordered]@{
+            schemaVersion = 1
+            status = 'validated'
+            validationPassed = $true
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue37440'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Issue12345'
+            expectedFailurePattern = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: Issue12345 expected red but was blue'
+            verificationRunCount = 2
+            reproductionMarker = 'BUG REPRODUCED:'
+            files = @('src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue37440.cs')
+            reproductionSteps = @('Open the page', 'Tap the control')
+            evidence = [ordered]@{
+                video = 'repro.mp4'
+                preview = 'preview.gif'
+                thumbnail = 'thumbnail.png'
+            }
+        }
+
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+
+        $build = {
+            param($Extra)
+            $candidate = [ordered]@{}
+            foreach ($key in $base.Keys) { $candidate[$key] = $base[$key] }
+            foreach ($key in $Extra.Keys) { $candidate[$key] = $Extra[$key] }
+            New-ReplicationPullRequestBody `
+                -Candidate ($candidate | ConvertTo-Json -Depth 10 | ConvertFrom-Json) `
+                -Evidence $evidence `
+                -IssueTitle 'Something is broken' `
+                -IssueOwner 'dotnet' `
+                -IssueRepository 'maui' `
+                -BuildUrl 'https://example.com/build/1'
+        }
+
+        $summaryBody = & $build ([ordered]@{
+                certificationLevel = 'certified-oracle'
+                certificationSummary = "**Evidence level: ``certified-oracle``**`n`n| Control | Result |`n| --- | --- |"
+            })
+        $summaryBody | Should -Match 'never downloaded'
+        $summaryBody | Should -Match 'different path than the linked sample'
+
+        # The level-only branch is the sibling that gets forgotten: every defect
+        # of this shape in this pipeline was a correct fix applied to exactly one
+        # of two places that needed it.
+        $levelOnlyBody = & $build ([ordered]@{ certificationLevel = 'trigger-certified' })
+        $levelOnlyBody | Should -Match 'never downloaded'
+
+        # With no evidence section there is nothing for the disclosure to
+        # qualify, and an orphaned caveat would claim a limitation on a
+        # certification the body never made.
+        $noLevelBody = & $build ([ordered]@{})
+        $noLevelBody | Should -Not -Match 'never downloaded'
+    }
+
+    It 'keeps the boundary claim true by measuring the sanitizer that enforces it' {
+        # The body asserts a fact about a different script. Left as prose it
+        # becomes a lie the moment that script changes, so the claim is measured
+        # against the real redaction rather than restated here.
+        $contextScript = Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1'
+        foreach ($name in @(
+                'Remove-UnsafeIssueCharacters',
+                'Remove-AzureLoggingCommands',
+                'Remove-IssueInstructionMarkers',
+                'Limit-IssueLine',
+                'ConvertTo-SafeIssueProse'
+            )) {
+            Invoke-Expression (Get-ScriptFunctionText -Path $contextScript -Name $name)
+        }
+
+        $sanitized = ConvertTo-SafeIssueProse `
+            -Text 'Repro here: https://github.com/someone/BugRepro please clone it'
+
+        $sanitized | Should -Not -Match 'github\.com/someone/BugRepro'
+        $sanitized | Should -Match '\[url removed\]'
+    }
+
     It 'omits the evidence level section when the gate reported none' {
         $validated = [ordered]@{
             schemaVersion = 1
