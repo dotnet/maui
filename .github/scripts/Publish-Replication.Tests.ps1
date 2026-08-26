@@ -45,6 +45,8 @@ BeforeAll {
         'Get-ReplicationPullRequestMarker',
         'New-ReplicationBranchName',
         'Get-ReplicationCandidateText',
+        'Get-ReplicationIndependentReviewBlock',
+        'Get-ReplicationFixPanelBlock',
         'Get-ValidatedFixFiles',
         'Assert-ReplicationStagedFix',
         'Remove-ReplicationPlatformTitlePrefix',
@@ -2167,5 +2169,190 @@ Describe 'The pre-flight upstream duplicate gate refuses only what it measured' 
             { Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot $root } |
                 Should -Not -Throw
         } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+    }
+}
+
+Describe 'The pull request body reports the independent review of the winning fix' {
+    BeforeAll {
+        $script:ReviewCandidate = [pscustomobject]@{
+            fixIndependentReview = [pscustomobject]@{
+                model = 'gpt-5.6-sol'
+                summary = 'The diff restores the null guard and the test covers it.'
+                findings = @(
+                    [pscustomobject]@{ severity = 'blocking'; detail = 'The guard is not applied on the Android path.' }
+                    [pscustomobject]@{ severity = 'minor'; detail = 'The new field could be readonly.' }
+                )
+            }
+        }
+    }
+
+    It 'attributes the review to a model that did not write the diff' {
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate
+
+        $block | Should -Match 'Independent review'
+        $block | Should -Match 'gpt-5\.6-sol'
+        $block | Should -Match 'without having written it'
+        $block | Should -Match 'restores the null guard'
+    }
+
+    It 'surfaces each finding with its severity' {
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate
+
+        $block | Should -Match '\*\*blocking\.\*\* The guard is not applied on the Android path\.'
+        $block | Should -Match '\*\*minor\.\*\* The new field could be readonly\.'
+    }
+
+    It 'says plainly that findings did not block publication' {
+        # The arm reports, never refuses: its false-positive rate is unmeasured
+        # because every reviewed pull request in the validating corpus carried a
+        # blocking finding, so there is no negative control. A wrong paragraph
+        # costs a reader a minute; a wrong refusal costs a certified fix.
+        Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate |
+            Should -Match 'did not block publication'
+    }
+
+    It 'caps the findings it renders so one verbose review cannot flood the body' {
+        $many = 1..12 | ForEach-Object { [pscustomobject]@{ severity = 'minor'; detail = "finding number $_" } }
+        $candidate = [pscustomobject]@{
+            fixIndependentReview = [pscustomobject]@{ model = 'gpt-5.6-sol'; summary = 'ok'; findings = $many }
+        }
+
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $candidate
+
+        @([regex]::Matches($block, '(?m)^- \*\*minor\.\*\*')).Count | Should -Be 6
+    }
+
+    It 'reports "Not measured" when the review is absent or unusable' {
+        # Silence is indistinguishable from a feature nobody wired up, which is
+        # exactly how the regression cross-reference stayed dead for its whole
+        # life while passing every behavioural test it had.
+        Get-ReplicationIndependentReviewBlock -Candidate ([pscustomobject]@{ fixFiles = @('a.cs') }) |
+            Should -Match 'Not measured'
+        Get-ReplicationIndependentReviewBlock -Candidate ([pscustomobject]@{ fixIndependentReview = $null }) |
+            Should -Match 'Not measured'
+        Get-ReplicationIndependentReviewBlock -Candidate ([pscustomobject]@{
+            fixIndependentReview = [pscustomobject]@{ model = 'gpt-5.6-sol'; summary = '   '; findings = @() } }) |
+            Should -Match 'Not measured'
+    }
+}
+
+Describe 'The pull request body records the try-fix panel, not only its winner' {
+    BeforeAll {
+        $script:PanelCandidate = [pscustomobject]@{
+            fixPanel = @(
+                [pscustomobject]@{ attempt = 1; model = 'claude-opus-5'; result = 'Blocked'; detail = 'reported a pass without changing any file'; won = $false }
+                [pscustomobject]@{ attempt = 2; model = 'gpt-5.6-sol'; result = 'Fail'; detail = 'oracle failed 1 of 3 runs'; won = $false }
+                [pscustomobject]@{ attempt = 3; model = 'claude-opus-5'; result = 'Pass'; detail = 'Guard the native flow-direction mapper'; won = $true }
+            )
+        }
+    }
+
+    It 'names every candidate that competed, with its model and result' {
+        $block = Get-ReplicationFixPanelBlock -Candidate $script:PanelCandidate
+
+        # The whole point of the disclosure: a reader can tell a fix selected
+        # from competing approaches from the one candidate that happened to run.
+        $block | Should -Match 'gpt-5\.6-sol'
+        $block | Should -Match 'claude-opus-5'
+        $block | Should -Match 'Blocked'
+        $block | Should -Match 'oracle failed 1 of 3 runs'
+    }
+
+    It 'marks exactly the candidate whose diff was published' {
+        $block = Get-ReplicationFixPanelBlock -Candidate $script:PanelCandidate
+
+        @([regex]::Matches($block, '\(selected\)')).Count | Should -Be 1
+        $block | Should -Match 'Pass \*\*\(selected\)\*\*'
+    }
+
+    It 'escapes a pipe in candidate prose so the table cannot silently shift its columns' {
+        $candidate = [pscustomobject]@{
+            fixPanel = @(
+                [pscustomobject]@{ attempt = 1; model = 'claude-opus-5'; result = 'Pass'; detail = 'restore the a|b fallback'; won = $true }
+            )
+        }
+
+        $block = Get-ReplicationFixPanelBlock -Candidate $candidate
+
+        # An unescaped pipe ends the cell, so every later column reports the
+        # wrong candidate's value. A row that misattributes a result is worse
+        # than no row at all.
+        $block | Should -Match 'a\\\|b'
+        $row = @($block -split "`n" | Where-Object { $_ -match 'claude-opus-5' })[0]
+        @($row -split '(?<!\\)\|').Count | Should -Be 6
+    }
+
+    It 'says the panel was not measured rather than rendering nothing' {
+        Get-ReplicationFixPanelBlock -Candidate ([pscustomobject]@{ fixFiles = @('a.cs') }) |
+            Should -Match 'Not measured'
+        Get-ReplicationFixPanelBlock -Candidate ([pscustomobject]@{ fixPanel = @() }) |
+            Should -Match 'Not measured'
+    }
+
+    It 'is actually invoked by the body builder, not merely defined' {
+        # A test that exercises a new function in isolation says nothing about
+        # the call site, and the call site is where this class of defect lives:
+        # the regression cross-reference passed every behavioural test it had
+        # while returning nothing in production for its entire life.
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'), [ref]$null, [ref]$errors)
+        $errors | Should -BeNullOrEmpty
+
+        $body = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'New-ReplicationPullRequestBody'
+        }, $true)
+        $body | Should -Not -BeNullOrEmpty
+
+        foreach ($name in @('Get-ReplicationFixPanelBlock', 'Get-ReplicationIndependentReviewBlock')) {
+            $calls = @($body.FindAll({
+                $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                $args[0].GetCommandName() -eq $name
+            }, $true))
+            $calls.Count | Should -BeGreaterThan 0 -Because "$name must be called by the body builder"
+        }
+    }
+}
+
+Describe 'The candidate gate allowlists every manifest field the orchestrator writes' {
+    It 'accepts each fix* key the orchestrator emits, so a new field cannot destroy a completed run' {
+        # This pipeline has already lost finished runs to exactly this: the
+        # orchestrator gains a manifest field, the gate does not know the name,
+        # and the run is refused after the reproduction, the fix, and every arm
+        # have already been paid for. Pinning the two together makes the next
+        # field fail here - in milliseconds, on a laptop - instead of there.
+        $validator = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($validator, [ref]$null, [ref]$errors)
+        $errors | Should -BeNullOrEmpty
+
+        $function = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Read-ReplicationManifest'
+        }, $true)
+        $function | Should -Not -BeNullOrEmpty
+
+        $assignment = $function.Find({
+            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $args[0].Left.Extent.Text -eq '$allowedProperties'
+        }, $true)
+        $assignment | Should -Not -BeNullOrEmpty
+
+        $allowed = & ([scriptblock]::Create($assignment.Right.Extent.Text))
+        $allowed.Count | Should -BeGreaterThan 20
+
+        $orchestrator = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+        $written = @([regex]::Matches(
+                (Get-Content -LiteralPath $orchestrator -Raw), '(?m)^\s{12}(fix[A-Za-z]+)\s*=') |
+            ForEach-Object { $_.Groups[1].Value } |
+            Sort-Object -Unique)
+
+        # Guards the guard: if the extraction stops matching, the comparison
+        # below passes vacuously and this test protects nothing.
+        $written.Count | Should -BeGreaterThan 4
+        $written | Should -Contain 'fixPanel'
+
+        @($written | Where-Object { $allowed -cnotcontains $_ }) | Should -BeNullOrEmpty
     }
 }

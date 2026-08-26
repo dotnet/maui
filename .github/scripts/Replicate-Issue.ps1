@@ -141,6 +141,7 @@ $fixDir = Join-Path $ArtifactRoot 'fix'
 $fixPatchPath = Join-Path $ArtifactRoot 'fix.patch'
 $fixScopePath = Join-Path $agentDir 'fix-scope.json'
 $fixWinnerPath = Join-Path $agentDir 'fix-winner.json'
+$fixReviewPath = Join-Path $agentDir 'fix-review.json'
 # try-fix requires a Test command as a mandatory input and explicitly forbids
 # candidates from building by hand. This runner is written by trusted code and
 # executes the exact same verification the fix arm will grade with, so a
@@ -4974,6 +4975,82 @@ $diff
     return ($sections -join "`n`n")
 }
 
+function Read-ReplicationFixReview {
+    <#
+        .SYNOPSIS
+            Reads the independent review of the winning fix, or reports that it
+            was not measured.
+
+        .DESCRIPTION
+            This is a disclosure, not a gate. It is published in the pull
+            request body for a human reader and nothing in the pipeline acts on
+            it, so no failure here may cost a run: a missing document, a
+            malformed one, an oversized one or a schema mismatch all return
+            $null, and the publisher renders that as "not measured" rather than
+            as nothing.
+
+            The distinction matters because silence is what hid the regression
+            cross-reference for its entire life - a checker returning $null was
+            indistinguishable from a feature nobody wired up.
+
+            Every field is bounded with -Prose. A presentation bound must never
+            be able to discard the work it describes, and this whole document is
+            presentation.
+    #>
+    param(
+        [string]$Path = $fixReviewPath,
+        [string]$Model = ''
+    )
+
+    try {
+        if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $null }
+        $item = Get-Item -LiteralPath $Path -Force
+        if ($item.Length -le 0 -or $item.Length -gt 64KB) { return $null }
+
+        $raw = Get-Content -LiteralPath $Path -Raw
+        if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
+        Assert-NoDuplicateJsonProperties -Json $raw
+        $document = $raw | ConvertFrom-Json -Depth 10
+
+        $expectedProperties = @('findings', 'schemaVersion', 'summary')
+        $actualProperties = @($document.PSObject.Properties.Name | Sort-Object)
+        if (($actualProperties -join "`n") -cne (($expectedProperties | Sort-Object) -join "`n")) {
+            return $null
+        }
+        if ([int]$document.schemaVersion -ne 1) { return $null }
+
+        $summary = ConvertTo-BoundedAgentLine `
+            -Value $document.summary `
+            -Description 'Fix review summary' `
+            -MaximumLength 600 -Prose
+        if ([string]::IsNullOrWhiteSpace($summary)) { return $null }
+
+        $findings = @()
+        foreach ($entry in @($document.findings | Where-Object { $_ })) {
+            $severity = ConvertTo-BoundedAgentLine `
+                -Value $entry.severity `
+                -Description 'Fix review severity' `
+                -MaximumLength 40 -Prose
+            $detail = ConvertTo-BoundedAgentLine `
+                -Value $entry.detail `
+                -Description 'Fix review detail' `
+                -MaximumLength 800 -Prose
+            if ([string]::IsNullOrWhiteSpace($detail)) { continue }
+            if ($severity -notin @('blocking', 'important', 'minor')) { $severity = 'important' }
+            $findings += [pscustomobject]@{ Severity = $severity; Detail = $detail }
+            if ($findings.Count -ge 6) { break }
+        }
+
+        return [pscustomobject]@{
+            Model = (ConvertTo-BoundedAgentLine -Value $Model -Description 'Fix review model' -MaximumLength 60 -Prose)
+            Summary = $summary
+            Findings = $findings
+        }
+    } catch {
+        return $null
+    }
+}
+
 function Read-ReplicationFixWinner {
     <#
         .SYNOPSIS
@@ -6095,7 +6172,7 @@ The $(($forbidden | ForEach-Object { "``$_``" }) -join ' and ') tier cannot be e
 function New-CopilotPrompt {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet('sandbox', 'test-plan', 'test', 'repair', 'control', 'fix-scope', 'fix', 'fix-compare')]
+        [ValidateSet('sandbox', 'test-plan', 'test', 'repair', 'control', 'fix-scope', 'fix', 'fix-compare', 'fix-review')]
         [string]$Phase,
         [string]$FailureSummary = '',
         [string[]]$ForbiddenTestTiers = @(),
@@ -6112,6 +6189,11 @@ function New-CopilotPrompt {
     # reproduction phase would invite exactly the behaviour the reproduction
     # phases exist to prevent.
     $isFixPhase = $Phase -in @('fix-scope', 'fix', 'fix-compare')
+
+    # 'fix-review' is deliberately absent from that list. It judges a diff that
+    # is already written and already proven by all four arms, so it needs to
+    # read the tree and nothing else. Granting it a shell would widen the
+    # blast radius for a phase whose only output is prose in the PR body.
 
     $executionRules = if ($isFixPhase) {
         @"
@@ -6396,6 +6478,36 @@ Write "$fixWinnerPath" as JSON with exactly: schemaVersion (1), winner, summary,
 Choosing null is a real answer. Publishing no fix is better than publishing one that only looks correct.
 
 Do not edit product code in this phase. Write only "$fixWinnerPath".
+"@
+        }
+        'fix-review' {
+            return $common + @"
+
+A fix for issue $IssueNumber has been selected and has already cleared all four certification arms: the reproduction test failed before it, passes with it, and fails again when it is reverted. Causality is established. Do not re-litigate it.
+
+Your job is the one the arms cannot do. The arms revert the whole fix at once, so they cannot see a fix that is broader than the defect, that repairs the symptom by a mechanism a maintainer would reject, or whose test measures fewer dimensions than the change makes. Read the change as a MAUI maintainer would and say what is wrong with it.
+
+The winning change:
+$(ConvertTo-ReplicationSafeLog $FailureSummary 12000)
+
+Read the surrounding product code before judging. A finding you cannot ground in a file and an expression is not worth reporting.
+
+Look hardest at these, in order:
+1. Scope. Does the change alter behaviour for callers the issue never mentioned? A defect reported for one control, fixed in a path every control shares, is the most common real fault here.
+2. Mechanism. Does it fix the cause, or pin a value that happens to be right for the reported case? Compare against how this repository, or Xamarin.Forms before it, solved the same problem.
+3. Regression. Does it drop a behaviour someone relied on - a dynamic value made static, a subscription removed, an equality comparison changed, a null path now returning early?
+4. Lifecycle. Are natives disposed, handlers disconnected once, observers removed, and is anything cached keyed so that it cannot outlive or mis-key its subject?
+5. Adjacent inputs. Boundary values, nulls, zero, negative, repeated application, detach and reattach.
+6. Oracle dimensionality. Does the reproduction test measure every dimension the change writes? Name any assignment the test could not notice if it were wrong.
+
+Write "$fixReviewPath" as JSON with exactly: schemaVersion (1), summary, findings.
+- summary is one sentence stating whether you would approve this change as written.
+- findings is an array, at most 6, each with exactly severity and detail. severity is "blocking", "important" or "minor". detail is one paragraph naming the file, the expression, what goes wrong, and what you would do instead.
+- An empty findings array is a real answer. Report it when the change is genuinely right.
+
+Nothing acts on your answer. It is published in the pull request body for a human reviewer, so write for that reader and do not soften a real fault to be agreeable.
+
+Do not edit any file in this phase. Write only "$fixReviewPath".
 "@
         }
         default {
@@ -7546,12 +7658,162 @@ function Invoke-ReplicationFixPhase {
         -Evidence $armEvidence `
         -VerificationDirectory $VerificationDirectory
 
+    $review = Invoke-ReplicationFixReview -WinnerAttempt $winnerAttempt
+
     return [pscustomobject]@{
         Files = @($winnerAttempt.ChangedPaths)
         RootCause = $scope.RootCauseHypothesis
         Approach = (ConvertTo-ReplicationSafeLog $winnerAttempt.Approach 2000)
         RejectedApproaches = @($rejected | Select-Object -First 8)
+        IndependentReview = $review
+        Panel = @(Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $winnerAttempt)
     }
+}
+
+function Get-ReplicationFixPanelRecord {
+    <#
+    .SYNOPSIS
+        Records what every fix candidate proposed and how it fared.
+
+    .DESCRIPTION
+        The panel runs five cross-pollinated try-fix candidates and publishes
+        one. Until now only the winner reached the pull request, so a reader
+        could not tell a fix selected from five competing approaches from the
+        one candidate that happened to run - and this plan has already measured
+        that exact difference: before the tidiness fix the panel was a
+        one-in-five lottery with no comparison in it at all, and the body read
+        identically either way.
+
+        Every field here is display-only. Nothing downstream parses it, so each
+        is converted with -Prose: a presentation bound must never be able to
+        discard the work it describes, which has destroyed completed runs four
+        times in this pipeline.
+    #>
+    param(
+        [Parameter(Mandatory)]$Results,
+        [Parameter(Mandatory)]$WinnerAttempt
+    )
+
+    $record = @()
+    foreach ($candidate in @($Results)) {
+        if (-not $candidate) { continue }
+
+        # Read through PSObject.Properties, never by dot. StrictMode turns a
+        # missing property into a thrown error, and a panel row is a display
+        # detail: it must never be able to abort a fix phase that has already
+        # produced a winning diff. The existing suite caught exactly that here.
+        $read = {
+            param($Object, $Name)
+            $property = $Object.PSObject.Properties[$Name]
+            if ($property -and $null -ne $property.Value) { return [string]$property.Value }
+            return ''
+        }
+
+        # The rejection explains a blocked or failed candidate; the approach
+        # explains one that ran. Preferring the rejection keeps the row
+        # informative for exactly the candidates whose approach is missing.
+        $rejection = & $read $candidate 'Rejection'
+        $approach = & $read $candidate 'Approach'
+        $detail = if ($rejection) { $rejection } else { $approach }
+
+        $attemptText = & $read $candidate 'Attempt'
+        $attempt = 0
+        [void][int]::TryParse($attemptText, [ref]$attempt)
+
+        $winnerText = if ($WinnerAttempt) { & $read $WinnerAttempt 'Attempt' } else { '' }
+
+        $record += [pscustomobject]@{
+            attempt = $attempt
+            model = (ConvertTo-BoundedAgentLine -Value (& $read $candidate 'Model') -Description 'Fix candidate model' -MaximumLength 60 -Prose)
+            result = (ConvertTo-BoundedAgentLine -Value (& $read $candidate 'Result') -Description 'Fix candidate result' -MaximumLength 40 -Prose)
+            detail = (ConvertTo-BoundedAgentLine -Value $detail -Description 'Fix candidate detail' -MaximumLength 300 -Prose)
+            won = ($attemptText -and $attemptText -ceq $winnerText)
+        }
+    }
+
+    return $record
+}
+
+function Invoke-ReplicationFixReview {
+    <#
+        .SYNOPSIS
+            Asks a model that did not write the fix to review it.
+
+        .DESCRIPTION
+            Runs after the four arms have passed, so the model call is only ever
+            spent on a fix that is going to be published, and the reviewer is
+            told causality is already proven so it spends its attention on what
+            the arms cannot see: scope breadth, mechanism, regression, lifecycle
+            and oracle dimensionality.
+
+            The reviewer is drawn from the panel's own model list, excluding the
+            model that wrote the winning fix. "Independent" is the whole point;
+            asking a model to review its own diff measures nothing.
+
+            It reports and never refuses. A blocking finding does not stop
+            publication, because the false-positive rate of this arm is
+            unmeasurable - every reviewed pull request in the corpus it was
+            validated against carries a blocking finding, so the corpus has no
+            negative control. A wrong paragraph in a body costs a reader a
+            minute; a wrong refusal costs a certified fix, and every gate in
+            this pipeline that could destroy work eventually did.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$WinnerAttempt
+    )
+
+    # Every read below is defensive on purpose. This arm publishes a paragraph
+    # and nothing acts on it, so no failure inside it may cost the certified fix
+    # it is describing. Under StrictMode a bare $WinnerAttempt.Model throws when
+    # the property is absent, and that throw would land in the fix phase rather
+    # than here.
+    $reviewModel = $null
+    try {
+        $winnerModel = ''
+        $modelProperty = $WinnerAttempt.PSObject.Properties['Model']
+        if ($modelProperty) { $winnerModel = [string]$modelProperty.Value }
+
+        $winnerDiff = ''
+        $diffProperty = $WinnerAttempt.PSObject.Properties['Diff']
+        if ($diffProperty) { $winnerDiff = [string]$diffProperty.Value }
+        if ([string]::IsNullOrWhiteSpace($winnerDiff)) {
+            Write-Host 'The independent review was not run: the winning candidate carries no diff to review.'
+            return $null
+        }
+
+        $reviewModel = @($script:FixPanelModels | Where-Object { $_ -cne $winnerModel }) |
+            Select-Object -First 1
+        if (-not $reviewModel) { $reviewModel = $script:FixPanelModels[0] }
+
+        Remove-Item -LiteralPath $fixReviewPath -Force -ErrorAction SilentlyContinue
+
+        Invoke-ReplicationCopilot `
+            -PhaseName 'fix-review' `
+            -Prompt (New-CopilotPrompt -Phase 'fix-review' -FailureSummary $winnerDiff) `
+            -WritePaths @($fixReviewPath) `
+            -Attempt 1 `
+            -ModelOverride $reviewModel `
+            -TimeoutMinutesOverride 20 | Out-Null
+    } catch {
+        # A reviewer that crashes costs a paragraph, never the fix it was
+        # reviewing. The publisher reports the absence rather than hiding it.
+        Write-Host "The independent review did not complete: $($_.Exception.Message)"
+    }
+
+    $review = $null
+    try {
+        $review = Read-ReplicationFixReview -Path $fixReviewPath -Model ([string]$reviewModel)
+    } catch {
+        Write-Host "The independent review could not be read: $($_.Exception.Message)"
+    }
+    if (-not $review) {
+        Write-Host 'The independent review produced no usable report; the body will say it was not measured.'
+        return $null
+    }
+
+    Write-Host ("Independent review ($reviewModel): " +
+        "$($review.Findings.Count) finding(s). $($review.Summary)")
+    return $review
 }
 
 function Write-ReplicationFixArmResults {
@@ -8582,6 +8844,26 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
             fixRootCause = if ($fixOutcome) { $fixOutcome.RootCause } else { $null }
             fixApproach = if ($fixOutcome) { $fixOutcome.Approach } else { $null }
             fixRejectedApproaches = if ($fixOutcome) { @($fixOutcome.RejectedApproaches) } else { @() }
+            fixPanel = if ($fixOutcome) {
+                @($fixOutcome.Panel | ForEach-Object {
+                    [ordered]@{
+                        attempt = [int]$_.attempt
+                        model = [string]$_.model
+                        result = [string]$_.result
+                        detail = [string]$_.detail
+                        won = [bool]$_.won
+                    }
+                })
+            } else { @() }
+            fixIndependentReview = if ($fixOutcome -and $fixOutcome.IndependentReview) {
+                [ordered]@{
+                    model = [string]$fixOutcome.IndependentReview.Model
+                    summary = [string]$fixOutcome.IndependentReview.Summary
+                    findings = @($fixOutcome.IndependentReview.Findings | ForEach-Object {
+                        [ordered]@{ severity = [string]$_.Severity; detail = [string]$_.Detail }
+                    })
+                }
+            } else { $null }
         } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
 
         if ($Announce) {

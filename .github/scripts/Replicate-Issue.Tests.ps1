@@ -167,6 +167,9 @@ BeforeAll {
         'Test-ReplicationScopeMatchesHead',
         'Read-ReplicationFixScope',
         'Read-ReplicationFixWinner',
+        'Read-ReplicationFixReview',
+        'Invoke-ReplicationFixReview',
+        'Get-ReplicationFixPanelRecord',
         'Get-ReplicationFixArmEvidence',
         'Invoke-ReplicationFixArms',
         'Write-ReplicationFixArmResults',
@@ -8810,6 +8813,7 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
         $script:agentDir = '/tmp/artifacts/agent'
         $script:fixScopePath = '/tmp/artifacts/agent/fix-scope.json'
         $script:fixWinnerPath = '/tmp/artifacts/agent/fix-winner.json'
+        $script:fixReviewPath = '/tmp/artifacts/agent/fix-review.json'
         $script:fixOracleRunnerPath = '/tmp/artifacts/fix/run-oracle.ps1'
         $script:appiumPlanPath = '/tmp/repo/appium-plan.json'
         $script:sandboxProposalPath = '/tmp/artifacts/agent/sandbox-proposal.json'
@@ -10908,6 +10912,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
 
         $script:fixScopePath = Join-Path $script:agentDir 'fix-scope.json'
         $script:fixWinnerPath = Join-Path $script:agentDir 'winner.json'
+        $script:fixReviewPath = Join-Path $script:agentDir 'review.json'
         $script:fixPatchPath = Join-Path $script:repoRoot 'fix.patch'
         $script:fixOracleRunnerPath = Join-Path $script:repoRoot 'run-oracle.ps1'
 
@@ -11293,6 +11298,7 @@ Describe 'A fix phase may only ask to write files that can be granted' {
         $script:IssueNumber = 12345
         $script:fixScopePath = Join-Path $script:agentDir 'fix-scope.json'
         $script:fixWinnerPath = Join-Path $script:agentDir 'fix-winner.json'
+        $script:fixReviewPath = Join-Path $script:agentDir 'fix-review.json'
         $script:fixPatchPath = Join-Path $script:repoRoot 'fix.patch'
         $script:fixOracleRunnerPath = Join-Path $script:repoRoot 'run-oracle.ps1'
         $script:granted = [Collections.Generic.List[object]]::new()
@@ -14348,5 +14354,148 @@ Describe 'A name that exists is a missing using, not a wrong name' {
         } finally {
             Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'The independent review cannot cost the fix it describes' {
+    BeforeAll {
+        $script:ReviewSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $script:ReviewAst = [System.Management.Automation.Language.Parser]::ParseInput(
+            $script:ReviewSource, [ref]$null, [ref]$null)
+        $script:FixPhaseFn = $script:ReviewAst.Find({
+            param($n)
+            $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $n.Name -eq 'Invoke-ReplicationFixPhase'
+        }, $true)
+    }
+
+    It 'writes the four-arm results before it asks for a review' {
+        # A step timeout KILLS the process, so no try/catch inside the review
+        # can contain it - and 23% of runs that reach the fix panel time out
+        # inside it. Were the review to run first, a timeout during the model
+        # call would destroy the fix-control and restoration evidence of a fix
+        # that had already passed every arm.
+        #
+        # This arm publishes a paragraph that nothing acts on. It must never be
+        # able to discard the work it describes.
+        $script:FixPhaseFn | Should -Not -BeNullOrEmpty
+
+        $calls = $script:FixPhaseFn.FindAll({
+            param($n) $n -is [System.Management.Automation.Language.CommandAst]
+        }, $true) | Where-Object {
+            $_.GetCommandName() -in @('Write-ReplicationFixArmResults', 'Invoke-ReplicationFixReview')
+        }
+
+        $writeAt = @($calls | Where-Object { $_.GetCommandName() -eq 'Write-ReplicationFixArmResults' } |
+            ForEach-Object { $_.Extent.StartOffset })
+        $reviewAt = @($calls | Where-Object { $_.GetCommandName() -eq 'Invoke-ReplicationFixReview' } |
+            ForEach-Object { $_.Extent.StartOffset })
+
+        $writeAt | Should -Not -BeNullOrEmpty
+        $reviewAt | Should -Not -BeNullOrEmpty
+        ($writeAt | Measure-Object -Maximum).Maximum |
+            Should -BeLessThan ($reviewAt | Measure-Object -Minimum).Minimum
+    }
+
+    It 'contains every failure inside the review rather than letting it reach the fix phase' {
+        $reviewFn = $script:ReviewAst.Find({
+            param($n)
+            $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $n.Name -eq 'Invoke-ReplicationFixReview'
+        }, $true)
+        $reviewFn | Should -Not -BeNullOrEmpty
+
+        # Every model call and every property read in this arm must sit inside a
+        # try, because StrictMode turns an absent property into a throw and that
+        # throw would land in the fix phase rather than here.
+        $copilotCalls = $reviewFn.FindAll({
+            param($n)
+            $n -is [System.Management.Automation.Language.CommandAst] -and
+            $n.GetCommandName() -eq 'Invoke-ReplicationCopilot'
+        }, $true)
+        @($copilotCalls) | Should -Not -BeNullOrEmpty
+
+        foreach ($call in $copilotCalls) {
+            $guarded = $false
+            $node = $call
+            while ($node) {
+                if ($node -is [System.Management.Automation.Language.TryStatementAst]) { $guarded = $true; break }
+                $node = $node.Parent
+            }
+            $guarded | Should -BeTrue -Because 'a throw here would cost a fix that has already passed all four arms'
+        }
+    }
+}
+
+Describe 'The fix panel record reaches the published manifest' {
+    It 'records every candidate that competed, not only the one that won' {
+        $results = @(
+            [pscustomobject]@{ Attempt = 1; Model = 'claude-opus-5'; Result = 'Blocked'; Rejection = 'changed no file'; Approach = '' }
+            [pscustomobject]@{ Attempt = 2; Model = 'gpt-5.6-sol'; Result = 'Fail'; Rejection = ''; Approach = 'widen the guard' }
+            [pscustomobject]@{ Attempt = 3; Model = 'claude-opus-5'; Result = 'Pass'; Rejection = ''; Approach = 'restore the null check' }
+        )
+
+        $record = @(Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $results[2])
+
+        $record.Count | Should -Be 3
+        @($record | Where-Object { $_.won }).Count | Should -Be 1
+        ($record | Where-Object { $_.won }).attempt | Should -Be 3
+        ($record | Where-Object { $_.attempt -eq 2 }).model | Should -Be 'gpt-5.6-sol'
+    }
+
+    It 'prefers the rejection for a blocked candidate, whose approach is empty' {
+        # A blocked candidate is the most informative row in the table - it is
+        # the one a reader cannot reconstruct from the published diff - and it
+        # is exactly the row whose approach field is empty.
+        $results = @(
+            [pscustomobject]@{ Attempt = 1; Model = 'claude-opus-5'; Result = 'Blocked'; Rejection = 'changed protected files'; Approach = '' }
+            [pscustomobject]@{ Attempt = 2; Model = 'gpt-5.6-sol'; Result = 'Pass'; Rejection = ''; Approach = 'restore the null check' }
+        )
+
+        $record = @(Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $results[1])
+
+        ($record | Where-Object { $_.attempt -eq 1 }).detail | Should -Be 'changed protected files'
+        ($record | Where-Object { $_.attempt -eq 2 }).detail | Should -Be 'restore the null check'
+    }
+
+    It 'bounds panel prose without discarding it, because nothing downstream parses it' {
+        # Four completed runs in this pipeline have been destroyed by a bound
+        # that refused instead of trimming. A presentation field must never be
+        # able to do that, so every panel string is converted with -Prose.
+        $results = @(
+            [pscustomobject]@{ Attempt = 1; Model = 'claude-opus-5'; Result = 'Pass'; Rejection = ''; Approach = ('x' * 5000) }
+        )
+
+        { Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $results[0] } | Should -Not -Throw
+
+        $record = @(Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $results[0])
+        $record[0].detail.Length | Should -BeLessOrEqual 300
+        $record[0].detail | Should -Not -BeNullOrEmpty
+    }
+
+    It 'survives a candidate record that carries none of the optional properties' {
+        # StrictMode turns a missing property into a thrown error, so reading
+        # by dot would let a display detail abort a fix phase that had already
+        # produced a winning diff. The panel is the last thing that should be
+        # able to destroy a fix, and the existing suite caught exactly this.
+        Set-StrictMode -Version Latest
+
+        $bare = @([pscustomobject]@{ Attempt = 1 })
+
+        { Get-ReplicationFixPanelRecord -Results $bare -WinnerAttempt $bare[0] } | Should -Not -Throw
+
+        $record = @(Get-ReplicationFixPanelRecord -Results $bare -WinnerAttempt $bare[0])
+        $record.Count | Should -Be 1
+        $record[0].attempt | Should -Be 1
+        $record[0].won | Should -BeTrue
+    }
+
+    It 'is written into the candidate manifest under fixPanel' {
+        # The renderer is worthless if the field never reaches the manifest the
+        # publisher reads. This is the call-site half of the panel disclosure.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+
+        $source | Should -Match '(?m)^\s{12}fixPanel\s*='
+        $source | Should -Match 'Panel = @\(Get-ReplicationFixPanelRecord'
     }
 }

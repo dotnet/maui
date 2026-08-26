@@ -105,6 +105,141 @@ function New-ReplicationBranchName {
     return "copilot/reproduce-$IssueNumber-$safePlatform-$safeBuildId"
 }
 
+function Get-ReplicationIndependentReviewBlock {
+    <#
+        .SYNOPSIS
+            Renders the independent review of the winning fix, or says plainly
+            that it was not measured.
+
+        .DESCRIPTION
+            Reports, never refuses. A blocking finding here does not stop
+            publication: the arm's false-positive rate is unmeasurable, because
+            every reviewed pull request in the corpus it was validated against
+            carries a blocking finding, so there is no negative control. A wrong
+            paragraph costs a reader a minute; a wrong refusal costs a certified
+            fix, and every gate in this pipeline that could destroy work
+            eventually did.
+
+            An absent review renders "Not measured" rather than nothing. Silence
+            is what hid the regression cross-reference for its entire life - a
+            checker returning nothing is indistinguishable from a feature nobody
+            wired up.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Candidate
+    )
+
+    $header = '**Independent review.**'
+    $notMeasured = "$header Not measured - a second model did not return a usable report on this fix."
+
+    $property = $Candidate.PSObject.Properties['fixIndependentReview']
+    if (-not $property -or $null -eq $property.Value) { return $notMeasured }
+    $review = $property.Value
+
+    $summary = ConvertTo-ReplicationSingleLine -Value ([string]$review.summary) -MaximumLength 600
+    if ([string]::IsNullOrWhiteSpace($summary)) { return $notMeasured }
+
+    $model = ConvertTo-ReplicationSingleLine -Value ([string]$review.model) -MaximumLength 60
+    $attribution = if ($model) { " A second model (``$model``) reviewed the winning diff without having written it." } else { '' }
+
+    $lines = @("$header$attribution $summary")
+
+    $findings = @()
+    $findingsProperty = $review.PSObject.Properties['findings']
+    if ($findingsProperty -and $null -ne $findingsProperty.Value) {
+        foreach ($entry in @($findingsProperty.Value | Where-Object { $_ })) {
+            $detail = ConvertTo-ReplicationSingleLine -Value ([string]$entry.detail) -MaximumLength 800
+            if ([string]::IsNullOrWhiteSpace($detail)) { continue }
+            $severity = ConvertTo-ReplicationSingleLine -Value ([string]$entry.severity) -MaximumLength 40
+            if ([string]::IsNullOrWhiteSpace($severity)) { $severity = 'important' }
+            $findings += ('- **' + $severity + '.** ' + $detail)
+            if ($findings.Count -ge 6) { break }
+        }
+    }
+
+    if ($findings.Count -gt 0) {
+        $lines += ''
+        $lines += $findings
+        $lines += ''
+        $lines += ('These findings did not block publication. They are reported so a maintainer sees them ' +
+                   'in the body rather than having to rediscover them, and any of them may be wrong.')
+    }
+
+    return ($lines -join "`n")
+}
+
+function Get-ReplicationFixPanelBlock {
+    <#
+        .SYNOPSIS
+            Renders the try-fix panel: every candidate that competed, what it
+            proposed, and which one was selected.
+
+        .DESCRIPTION
+            The fix phase runs five cross-pollinated try-fix candidates and
+            publishes one. Only the winner used to reach the body, so a reader
+            could not distinguish a fix chosen from five competing approaches
+            from the single candidate that happened to run. That difference is
+            not hypothetical: before the tidiness fix, four of five candidates
+            were routinely blocked for changing no file, and the published body
+            read identically whether the panel had compared five approaches or
+            none.
+
+            Reports, never refuses, like every other disclosure in this body. An
+            absent panel renders "Not measured" rather than nothing, because a
+            silent block is indistinguishable from a feature nobody wired up.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Candidate
+    )
+
+    $header = '**Try-fix panel.**'
+    $notMeasured = "$header Not measured - no per-candidate record was produced for this fix."
+
+    $property = $Candidate.PSObject.Properties['fixPanel']
+    if (-not $property -or $null -eq $property.Value) { return $notMeasured }
+
+    $rows = @()
+    foreach ($entry in @($property.Value | Where-Object { $_ })) {
+        $model = ConvertTo-ReplicationSingleLine -Value ([string]$entry.model) -MaximumLength 60
+        if ([string]::IsNullOrWhiteSpace($model)) { $model = 'unknown' }
+
+        $result = ConvertTo-ReplicationSingleLine -Value ([string]$entry.result) -MaximumLength 40
+        if ([string]::IsNullOrWhiteSpace($result)) { $result = 'unknown' }
+
+        $detail = ConvertTo-ReplicationSingleLine -Value ([string]$entry.detail) -MaximumLength 300
+
+        # A pipe in model-written prose ends the cell and silently shifts every
+        # column after it, so the row would misreport which candidate produced
+        # which result. Escaped rather than stripped: the character is often
+        # load-bearing in the C# the candidate is describing.
+        $model = $model -replace '\|', '\|'
+        $result = $result -replace '\|', '\|'
+        $detail = $detail -replace '\|', '\|'
+
+        $marker = if ($entry.won) { ' **(selected)**' } else { '' }
+        $rows += ('| ' + [int]$entry.attempt + ' | `' + $model + '` | ' + $result + $marker + ' | ' + $detail + ' |')
+    }
+
+    if ($rows.Count -eq 0) { return $notMeasured }
+
+    $selected = @($property.Value | Where-Object { $_ -and $_.won }).Count
+    $lead = ("$header " + $rows.Count + ' candidate(s) each ran the reviewer''s `try-fix` skill against this ' +
+             'reproduction, sequentially and cross-pollinated, so each saw the approaches the earlier ones ' +
+             'had already tried. ' +
+             $(if ($selected -gt 0) { 'The selected row is the fix published below.' } else { 'No row is marked selected.' }))
+
+    return (@(
+        $lead,
+        '',
+        '| # | Model | Result | Approach or rejection |',
+        '| --- | --- | --- | --- |'
+    ) + $rows + @(
+        '',
+        ('Only the selected candidate''s diff was applied and put through the fix and restoration arms. ' +
+         'The other rows are recorded so the comparison is visible rather than implied.')
+    )) -join "`n"
+}
+
 function Get-ReplicationCandidateText {
     <#
         .SYNOPSIS
@@ -702,6 +837,10 @@ function New-ReplicationPullRequestBody {
             $fixLines += $OracleSignal
             $fixLines += ''
         }
+        $fixLines += (Get-ReplicationFixPanelBlock -Candidate $Candidate)
+        $fixLines += ''
+        $fixLines += (Get-ReplicationIndependentReviewBlock -Candidate $Candidate)
+        $fixLines += ''
         $fixLines += '**Files changed by the fix commit:**'
         $fixLines += ''
         foreach ($file in ($fixFiles | Sort-Object -Unique)) {

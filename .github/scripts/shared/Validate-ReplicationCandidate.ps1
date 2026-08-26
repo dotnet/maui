@@ -721,7 +721,9 @@ function Read-ReplicationManifest {
         'fixPatch', 'fix_patch',
         'fixRootCause', 'fix_root_cause',
         'fixApproach', 'fix_approach',
-        'fixRejectedApproaches', 'fix_rejected_approaches'
+        'fixRejectedApproaches', 'fix_rejected_approaches',
+        'fixPanel', 'fix_panel',
+        'fixIndependentReview', 'fix_independent_review'
     )
     Assert-KnownProperties `
         -Object $manifest `
