@@ -39,15 +39,13 @@ internal static class SafeAreaExtensions
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
 	}
 
-	internal static bool HasSafeAreaRegions(ICrossPlatformLayout? crossPlatformLayout)
+	// #36269: a view qualifies for resize-triggered inset reapplication only if it explicitly set
+	// SafeAreaEdges to a non-None value, or is already tracked as padded — excluding default (Container)
+	// layouts and explicit "None" views from the hot path. Mirrors the explicit-opt-in gate in #35664.
+	internal static bool ShouldReapplyInsetsForResize(ICrossPlatformLayout? crossPlatformLayout, View view)
 	{
-		if (crossPlatformLayout is null)
-		{
-			return false;
-		}
-
-		var safeAreaView2 = GetSafeAreaView2(crossPlatformLayout);
-		if (safeAreaView2 is not null)
+		if (crossPlatformLayout is not null &&
+			GetSafeAreaView2(crossPlatformLayout) is { HasExplicitSafeAreaEdges: true } safeAreaView2)
 		{
 			for (var edge = 0; edge < 4; edge++)
 			{
@@ -56,11 +54,9 @@ internal static class SafeAreaExtensions
 					return true;
 				}
 			}
-
-			return false;
 		}
 
-		return GetSafeAreaView(crossPlatformLayout)?.IgnoreSafeArea == false;
+		return MauiWindowInsetListener.FindListenerForView(view)?.IsViewTracked(view) == true;
 	}
 
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(

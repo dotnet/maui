@@ -54,6 +54,14 @@ public class Issue36269FirstTab : ContentPage
 		};
 		hideTabBarButton.Clicked += (s, e) => Shell.SetTabBarIsVisible(this, false);
 
+		var showTabBarButton = new Button
+		{
+			Text = "Show TabBar",
+			AutomationId = "ShowTabBarButton",
+			Margin = new Thickness(0, 8, 0, 0)
+		};
+		showTabBarButton.Clicked += (s, e) => Shell.SetTabBarIsVisible(this, true);
+
 		var bottomBar = new VerticalStackLayout
 		{
 			BackgroundColor = Colors.MediumPurple,
@@ -70,7 +78,8 @@ public class Issue36269FirstTab : ContentPage
 					HorizontalTextAlignment = TextAlignment.Center,
 					Margin = new Thickness(0, 8, 0, 0)
 				},
-				hideTabBarButton
+				hideTabBarButton,
+				showTabBarButton
 			}
 		};
 

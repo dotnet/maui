@@ -169,13 +169,11 @@ namespace Microsoft.Maui.Platform
 				ClipBounds = null;
 			}
 
-			// Overlap-based safe-area padding is recomputed only on an inset dispatch, SafeAreaEdges change, or
-			// config change — never on a plain resize. Re-request insets when a safe-area view's bounds change so a
-			// view that started with zero padding isn't left clipped after it grows into the inset region.
-			// HasSafeAreaRegions is evaluated last so it only runs for changed, inset-tracked views. See #36269.
+			// Overlap-based safe-area padding is recomputed on an inset dispatch, a SafeAreaEdges change, or a
+			// config change — never on a plain resize. Re-request insets when an eligible safe-area view resizes. See #36269.
 			if (_isInsetListenerSet &&
 				(_didSafeAreaEdgeConfigurationChange ||
-					(changed && SafeAreaExtensions.HasSafeAreaRegions(CrossPlatformLayout))))
+					(changed && SafeAreaExtensions.ShouldReapplyInsetsForResize(CrossPlatformLayout, this))))
 			{
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;

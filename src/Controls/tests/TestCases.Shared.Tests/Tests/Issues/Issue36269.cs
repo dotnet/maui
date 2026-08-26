@@ -1,4 +1,4 @@
-#if ANDROID // Android-only: #36269 is a regression in Android's safe-area inset recompute path.
+#if ANDROID || IOS  // SafeAreaEdges not supported on Catalyst and Windows
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,6 +18,22 @@ public class Issue36269 : _IssuesUITest
 		App.WaitForElement("HideTabBarButton");
 		App.Tap("HideTabBarButton");
 
+		App.WaitForElement("BottomEdgeLabel");
+
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	// Reverse transition: showing the TabBar again must remove the bottom safe-area padding, since the
+	// TabBar now occupies that space. Together with the test above this exercises the hide/show round trip.
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void SafeAreaBottomPaddingIsRemovedWhenTabBarShownAgain()
+	{
+		App.WaitForElement("HideTabBarButton");
+		App.Tap("HideTabBarButton");
+		App.WaitForElement("BottomEdgeLabel");
+
+		App.Tap("ShowTabBarButton");
 		App.WaitForElement("BottomEdgeLabel");
 
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
