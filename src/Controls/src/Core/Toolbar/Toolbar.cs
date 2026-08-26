@@ -77,6 +77,13 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			backingStore = value;
+			NotifyPropertyChanged(propertyName);
+		}
+
+		// Used by derived toolbars that assign a backing field directly (to keep a specific update ordering)
+		// but still need the handler and PropertyChanged subscribers to observe the change afterwards.
+		private protected void NotifyPropertyChanged(string propertyName)
+		{
 			Handler?.UpdateValue(propertyName);
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

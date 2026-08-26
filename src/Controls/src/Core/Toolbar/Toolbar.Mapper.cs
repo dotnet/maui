@@ -27,6 +27,11 @@ namespace Microsoft.Maui.Controls
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BarBackground), MapBarBackground);
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BarTextColor), MapBarTextColor);
 #endif
+#if ANDROID || TIZEN
+			// Android and Tizen render the drawer (hamburger) affordance in the same navigation slot as the
+			// back button, so a drawer toggle change has to re-evaluate that slot.
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.DrawerToggleVisible), MapDrawerToggleVisible);
+#endif
 #if WINDOWS
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BackButtonEnabled), MapBackButtonEnabled);
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName, MapToolbarPlacement);
