@@ -75,16 +75,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var resolvedAssets = assets ?? ResourceAssetCollection.Empty;
 
 			// Render on a thread-pool thread so the renderer's dispatcher never contends with the UI
-			// synchronization context. The render is synchronous (interactive components are replaced
-			// with static placeholders), so this completes without real blocking.
+			// synchronization context.
 			return Task.Run(() =>
 			{
 				var renderer = new HybridHostPageRenderer(services, loggerFactory, resolvedAssets);
-				return renderer.Dispatcher.InvokeAsync(() =>
+				return renderer.Dispatcher.InvokeAsync(async () =>
 				{
-					var rootComponent = renderer.BeginRenderingComponent(appComponentType, ParameterView.Empty);
-					var html = rootComponent.ToHtmlString();
-					return new HybridHostPageResult(html, renderer._registrations);
+					try
+					{
+						var rootComponent = renderer.BeginRenderingComponent(appComponentType, ParameterView.Empty);
+
+						// Wait for the component tree to finish rendering - including any asynchronous
+						// initialization (for example OnInitializedAsync) - before serializing, otherwise
+						// async host content (and its render-mode registrations) could be omitted from the
+						// document. This mirrors how the framework's own static HTML rendering awaits quiescence.
+						await rootComponent.QuiescenceTask.ConfigureAwait(false);
+
+						var html = rootComponent.ToHtmlString();
+						return new HybridHostPageResult(html, renderer._registrations);
+					}
+					finally
+					{
+						// Dispose on the renderer's dispatcher (required by Renderer) to release the
+						// component tree and avoid leaking the renderer per host render.
+						renderer.Dispose();
+					}
 				});
 			}).GetAwaiter().GetResult();
 		}
