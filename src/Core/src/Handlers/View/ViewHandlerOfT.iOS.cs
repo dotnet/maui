@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using System;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -9,6 +10,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			get => (WrapperView?)base.ContainerView;
 			protected set => base.ContainerView = value;
+		}
+
+		private protected override void ValidateContainerView(UIView containerView)
+		{
+			if (containerView is not WrapperView)
+			{
+				throw new ArgumentException(
+					$"The container view must be a {nameof(WrapperView)} because {GetType().Name} exposes {nameof(ContainerView)} as a {nameof(WrapperView)}.",
+					nameof(containerView));
+			}
 		}
 
 		public UIViewController? ViewController { get; set; }

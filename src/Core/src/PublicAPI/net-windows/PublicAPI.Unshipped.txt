@@ -48,3 +48,4 @@ virtual Microsoft.Maui.MauiWinUIApplication.OnAppInstanceActivated(Microsoft.Win
 Microsoft.Maui.ISwipeItemMenuItemIconColor
 Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Microsoft.UI.Xaml.FrameworkElement? containerView) -> void

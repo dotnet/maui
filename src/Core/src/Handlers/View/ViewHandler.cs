@@ -144,13 +144,15 @@ namespace Microsoft.Maui.Handlers
 		/// <summary>
 		/// Constructs the <see cref="ContainerView"/> and adds <see cref="PlatformView"/> to a container.
 		/// </summary>
-		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="true"/>.</remarks>
+		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="true"/>.
+		/// Overrides should call <see cref="SetContainerView(PlatformView?)"/> to publish the container they created.</remarks>
 		protected abstract void SetupContainer();
 
 		/// <summary>
 		/// Deconstructs the <see cref="ContainerView"/> and removes <see cref="PlatformView"/> from its container. 
 		/// </summary>
-		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="false"/>.</remarks>
+		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="false"/>.
+		/// Overrides should call <see cref="SetContainerView(PlatformView?)"/> with <see langword="null"/> to clear the container they removed.</remarks>
 		protected abstract void RemoveContainer();
 
 		/// <summary>
@@ -158,6 +160,83 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <remarks>Note that this can be <see langword="null"/>. Especially when <see cref="HasContainer"/> is set to <see langword="false"/> this value might not be set.</remarks>
 		public PlatformView? ContainerView { get; private protected set; }
+
+		/// <summary>
+		/// Sets or clears the view returned by <see cref="ContainerView"/>.
+		/// </summary>
+		/// <param name="containerView">The platform view that wraps <see cref="PlatformView"/>, or <see langword="null"/> to clear the current container view.</param>
+		/// <remarks>
+		/// <para>This is the supported way for a handler that lives in another assembly - for example a platform backend that
+		/// ships outside of .NET MAUI - to participate in the container view lifecycle. Call it from
+		/// <see cref="SetupContainer"/> after the container has been created and the <see cref="PlatformView"/> has been
+		/// re-parented into it, and call it with <see langword="null"/> from <see cref="RemoveContainer"/> after the
+		/// <see cref="PlatformView"/> has been moved back to the original parent.</para>
+		/// <para>This method only records the container view; it never re-parents views, and it does not change
+		/// <see cref="HasContainer"/>. Attaching and detaching the platform views remains the responsibility of the
+		/// <see cref="SetupContainer"/> and <see cref="RemoveContainer"/> overrides, which .NET MAUI invokes when
+		/// <see cref="HasContainer"/> changes.</para>
+		/// <example>
+		/// A handler in an external backend assembly:
+		/// <code language="csharp">
+		/// public class MyBackendViewHandler&lt;TVirtualView, TPlatformView&gt; : ViewHandler&lt;TVirtualView, TPlatformView&gt;
+		///     where TVirtualView : class, IView
+		///     where TPlatformView : MyPlatformView
+		/// {
+		///     public override bool NeedsContainer =>
+		///         VirtualView?.Background is not null ||
+		///         VirtualView?.Clip is not null ||
+		///         VirtualView?.Shadow is not null ||
+		///         base.NeedsContainer;
+		///
+		///     protected override void SetupContainer()
+		///     {
+		///         if (PlatformView is null || ContainerView is not null)
+		///             return;
+		///
+		///         var wrapper = new MyWrapperView();
+		///         var parent = PlatformView.Parent;
+		///         parent?.Remove(PlatformView);
+		///         wrapper.Content = PlatformView;
+		///         parent?.Add(wrapper);
+		///
+		///         SetContainerView(wrapper);
+		///     }
+		///
+		///     protected override void RemoveContainer()
+		///     {
+		///         if (ContainerView is not MyWrapperView wrapper)
+		///         {
+		///             SetContainerView(null);
+		///             return;
+		///         }
+		///
+		///         var parent = wrapper.Parent;
+		///         parent?.Remove(wrapper);
+		///         wrapper.Content = null;
+		///         parent?.Add(PlatformView);
+		///
+		///         SetContainerView(null);
+		///     }
+		/// }
+		/// </code>
+		/// </example>
+		/// </remarks>
+		/// <exception cref="System.ArgumentException">Thrown when <paramref name="containerView"/> is not a container type that this handler supports.</exception>
+		protected void SetContainerView(PlatformView? containerView)
+		{
+			if (containerView is not null)
+			{
+				ValidateContainerView(containerView);
+			}
+
+			ContainerView = containerView;
+		}
+
+		// Lets a platform-specific handler reject container views that would break the strongly typed
+		// ContainerView property it shadows (for example the WrapperView-typed property on iOS and Tizen).
+		private protected virtual void ValidateContainerView(PlatformView containerView)
+		{
+		}
 
 		object? IViewHandler.ContainerView => ContainerView;
 
