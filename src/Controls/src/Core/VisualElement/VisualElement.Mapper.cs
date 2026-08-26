@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Controls
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
-			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
+			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColorForControls);
+			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSourceForControls);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
@@ -51,14 +51,38 @@ namespace Microsoft.Maui.Controls
 		public static void MapBackgroundImageSource(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
 
+		static void MapBackgroundColorForControls(IViewHandler handler, IView view)
+		{
+			if (!handler.IsConnectingHandler())
+			{
+				MapBackgroundColor(handler, view);
+			}
+		}
+
+		static void MapBackgroundImageSourceForControls(IViewHandler handler, IView view)
+		{
+			if (!handler.IsConnectingHandler())
+			{
+				MapBackgroundImageSource(handler, view);
+			}
+		}
+
 		static void MapSemanticPropertiesHeadingLevelProperty(IViewHandler handler, IView element) =>
-			(element as VisualElement)?.UpdateSemanticsFromMapper();
+			UpdateSemanticsFromMapper(handler, element);
 
 		static void MapSemanticPropertiesHintProperty(IViewHandler handler, IView element) =>
-			(element as VisualElement)?.UpdateSemanticsFromMapper();
+			UpdateSemanticsFromMapper(handler, element);
 
 		static void MapSemanticPropertiesDescriptionProperty(IViewHandler handler, IView element) =>
-			(element as VisualElement)?.UpdateSemanticsFromMapper();
+			UpdateSemanticsFromMapper(handler, element);
+
+		static void UpdateSemanticsFromMapper(IViewHandler handler, IView element)
+		{
+			if (!handler.IsConnectingHandler())
+			{
+				(element as VisualElement)?.UpdateSemanticsFromMapper();
+			}
+		}
 
 		void UpdateSemanticsFromMapper()
 		{
