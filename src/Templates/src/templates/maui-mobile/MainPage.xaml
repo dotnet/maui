@@ -7,8 +7,9 @@
             <Image
                 Source="dotnet_bot.png"
                 HeightRequest="185"
+                Margin="0,20,0,0"
                 Aspect="AspectFit"
-                SemanticProperties.Description="dot net bot in a submarine number ten" />
+                SemanticProperties.Description="dot net bot riding a rocket" />
 
             <Label
                 Text="Hello, World!"

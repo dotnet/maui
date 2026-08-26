@@ -34,6 +34,8 @@ on:
         default: true
   permissions: {}
 
+if: github.repository == 'dotnet/maui'
+
 model: gpt-5.6-sol
 engine:
   id: copilot

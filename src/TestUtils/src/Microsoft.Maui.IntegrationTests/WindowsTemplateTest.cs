@@ -132,7 +132,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var rid = usesRidGraph ? "win10-x64" : "win-x64";
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}/publish");
 
-		AssetExists("dotnet_bot.scale-100.png");
+		if (id == "maui")
+		{
+			AssetExists("dotnet_bot.scale-100.png");
+		}
+
 		AssetExists("appiconLogo.scale-100.png");
 		AssetExists("OpenSans-Regular.ttf");
 		AssetExists("splashSplashScreen.scale-100.png");
