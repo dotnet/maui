@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Multi-Project App",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI with multiple, separate app projects.",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Avalonia with multiple, separate app projects.",
   "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
   "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project",
   "symbols/Framework/description": "The target framework for the project.",
@@ -13,5 +13,8 @@
   "symbols/maccatalyst/displayName": "macOS using Mac Catalyst",
   "symbols/maccatalyst/description": "Include the macOS app head project (using Mac Catalyst)",
   "symbols/winui/displayName": "Windows using WinUI 3",
-  "symbols/winui/description": "Include the Windows app head project (using WinUI 3)"
+  "symbols/winui/description": "Include the Windows app head project (using WinUI 3)",
+  "symbols/avalonia/displayName": "Desktop using Avalonia",
+  "symbols/avalonia/description": "Include the Avalonia desktop app head project.",
+  "symbols/avaloniaControlsMauiVersion/description": "Overrides the Avalonia.Controls.Maui package version referenced when --avalonia is used."
 }

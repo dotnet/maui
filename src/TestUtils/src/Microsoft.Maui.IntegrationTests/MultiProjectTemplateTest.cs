@@ -76,12 +76,59 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData("Debug", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("Release", Skip = AvaloniaBuildSkipReason)]
+	public void BuildMultiProjectWithAvalonia(string config)
+	{
+		SetTestIdentifier(config);
+		var projectDir = TestDirectory;
+		var name = Path.GetFileName(projectDir);
+		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+		// --avalonia on its own produces the Avalonia desktop head and no native heads.
+		Assert.True(DotnetInternal.New("maui-multiproject --avalonia", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui-multiproject. Check test output for errors.");
+
+		var buildProps = BuildProps;
+		buildProps.RemoveAll(p => p.StartsWith("RestoreConfigFile=", StringComparison.Ordinal));
+		buildProps.Add($"RestoreConfigFile={CreateAvaloniaNuGetConfig(projectDir)}");
+
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Solution {name} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
+	[InlineData("Debug", "--android", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("Debug", "--macos", Skip = AvaloniaBuildSkipReason)]
+	public void BuildMultiProjectWithAvaloniaEmbedding(string config, string platformArg)
+	{
+		SetTestIdentifier(config, platformArg);
+		var projectDir = TestDirectory;
+		var name = Path.GetFileName(projectDir);
+		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+		// Combining --avalonia with a native head adds the desktop head and switches the
+		// native head to UseAvaloniaEmbedding.
+		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg} --avalonia", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui-multiproject. Check test output for errors.");
+
+		var buildProps = BuildProps;
+		buildProps.RemoveAll(p => p.StartsWith("RestoreConfigFile=", StringComparison.Ordinal));
+		buildProps.Add($"RestoreConfigFile={CreateAvaloniaNuGetConfig(projectDir)}");
+
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Solution {name} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
 	[InlineData("--android")]
 	[InlineData("--ios")]
 	[InlineData("--windows")]
 	[InlineData("--macos")]
+	[InlineData("--avalonia")]
+	[InlineData("--android --avalonia")]
 	[InlineData("")] // no platform arg means all platforms
-				   // https://github.com/dotnet/maui/issues/28695
+					 // https://github.com/dotnet/maui/issues/28695
 	public void VerifyIncludedPlatformsInSln(string platformArg)
 	{
 		SetTestIdentifier(platformArg);
@@ -102,6 +149,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		Assert.True(slnListOutput.Contains($"{name}.csproj", StringComparison.OrdinalIgnoreCase),
 			$"Expected shared project (with name {name}.csproj) to be included in the solution.");
 
+		// The Avalonia desktop head is opt-in only, so it is absent from the no-platform-arg default.
 		var expectedCsprojFiles = new List<string> { "Droid.csproj", "iOS.csproj", "Mac.csproj", "WinUI.csproj" };
 
 		switch (platformArg)
@@ -126,6 +174,23 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 				expectedCsprojFiles.Remove("iOS.csproj");
 				expectedCsprojFiles.Remove("WinUI.csproj");
 				break;
+			case "--avalonia":
+				expectedCsprojFiles.Clear();
+				expectedCsprojFiles.Add("Desktop.csproj");
+				break;
+			case "--android --avalonia":
+				expectedCsprojFiles.Clear();
+				expectedCsprojFiles.Add("Droid.csproj");
+				expectedCsprojFiles.Add("Desktop.csproj");
+				break;
+		}
+
+		// Every project not expected for this combination must be absent from the solution.
+		var allCsprojFiles = new[] { "Droid.csproj", "iOS.csproj", "Mac.csproj", "WinUI.csproj", "Desktop.csproj" };
+		foreach (var platformCsproj in allCsprojFiles.Except(expectedCsprojFiles))
+		{
+			Assert.False(slnListOutput.Contains(platformCsproj, StringComparison.Ordinal),
+				$"Expected {platformCsproj} to NOT be included in the solution.");
 		}
 
 		// Depending on the platform argument, we assert if the expected projects are included in the solution

@@ -8,12 +8,19 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseMaui>true</UseMaui>
+<!--#if (avalonia) -->
+		<!-- Generates the Avalonia application class that UseAvaloniaEmbedding hosts. -->
+		<AvaloniaControlsMauiGenerateBootstrap>true</AvaloniaControlsMauiGenerateBootstrap>
+<!--#endif -->
 
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
+<!--#if (avalonia) -->
+		<PackageReference Include="Avalonia.Controls.Maui" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
+<!--#endif -->
 	</ItemGroup>
 
 	<ItemGroup>

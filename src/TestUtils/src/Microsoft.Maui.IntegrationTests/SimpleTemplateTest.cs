@@ -5,8 +5,6 @@ namespace Microsoft.Maui.IntegrationTests;
 [Trait("Category", "Build")]
 public class SimpleTemplateTest : BaseTemplateTests
 {
-	const string AvaloniaBuildSkipReason = "Avalonia packages are not available on dotnet-public. See https://github.com/dotnet/maui/pull/35950";
-
 	public SimpleTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
 	[Theory]
@@ -65,37 +63,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
-	}
-
-	private string CreateAvaloniaNuGetConfig(string projectDir)
-	{
-		var config = XDocument.Load(TestNuGetConfig);
-		var packageSources = config.Root!.Element("packageSources")!;
-		const string nugetOrg = "nuget.org";
-
-		packageSources.Add(
-			new XElement("add",
-				new XAttribute("key", nugetOrg),
-				new XAttribute("value", "https://api.nuget.org/v3/index.json"),
-				new XAttribute("protocolVersion", "3")));
-
-		var sourceMapping = new XElement("packageSourceMapping");
-		foreach (var source in packageSources.Elements("add"))
-		{
-			var key = source.Attribute("key")!.Value;
-			var patterns = key == nugetOrg ? new[] { "Avalonia*", "MicroCom.*" } : new[] { "*" };
-			sourceMapping.Add(
-				new XElement("packageSource",
-					new XAttribute("key", key),
-					patterns.Select(pattern =>
-						new XElement("package",
-							new XAttribute("pattern", pattern)))));
-		}
-
-		config.Root.Add(sourceMapping);
-		var path = Path.Combine(projectDir, "NuGet.config");
-		config.Save(path);
-		return path;
 	}
 
 	[Theory]

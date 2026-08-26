@@ -1,12 +1,12 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Mobile" ],
+  "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Avalonia", "Mobile" ],
   "identity": "Microsoft.Maui.MultiProjectApp.CSharp.DOTNET_TFM_VERSION_VALUE",
   "groupIdentity": "Microsoft.Maui.MultiProjectApp",
   "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
   "name": ".NET MAUI Multi-Project App",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI with multiple, separate app projects.",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Avalonia with multiple, separate app projects.",
   "shortName": "maui-multiproject",
   "tags": {
     "language": "C#",
@@ -44,6 +44,10 @@
     {
       "condition": "(winui)",
       "path": "MauiApp.1.WinUI/MauiApp.1.WinUI.csproj"
+    },
+    {
+      "condition": "(avalonia)",
+      "path": "MauiApp.1.Desktop/MauiApp.1.Desktop.csproj"
     }
   ],
   "postActions": [
@@ -94,6 +98,12 @@
           "exclude": [
             "MauiApp.1.WinUI/**/*"
           ]
+        },
+        {
+          "condition": "(!avalonia)",
+          "exclude": [
+            "MauiApp.1.Desktop/**/*"
+          ]
         }
       ]
     }
@@ -105,7 +115,8 @@
     "7C064C71-30BE-4D8D-9B68-E7249ED18FA1",
     "9E30318E-74DD-491B-9BAF-814DC9E892B8",
     "E3338D37-FF50-4A34-96BD-2716ED93F1E2",
-    "20E6FD03-9002-4EBA-ABF2-9DDE2C488842"
+    "20E6FD03-9002-4EBA-ABF2-9DDE2C488842",
+    "82BD795B-6E22-406A-A4ED-56BCD4353E8F"
   ],
   "symbols": {
     "applicationId": {
@@ -164,9 +175,24 @@
       "displayName": "Windows using WinUI 3",
       "description": "Include the Windows app head project (using WinUI 3)"
     },
+    "avalonia": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "defaultIfOptionWithoutValue": "true",
+      "displayName": "Desktop using Avalonia",
+      "description": "Include the Avalonia desktop app head project (Windows, macOS, and Linux), and render the other app heads with embedded Avalonia content"
+    },
+    "avaloniaControlsMauiVersion": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "AVALONIA_CONTROLS_MAUI_VERSION",
+      "defaultValue": "AVALONIA_CONTROLS_MAUI_VERSION_VALUE",
+      "description": "Overrides the Avalonia.Controls.Maui package version referenced when --avalonia is used."
+    },
     "AllPlatforms": {
       "type": "computed",
-      "value": "(!android && !ios && !maccatalyst && !winui)"
+      "value": "(!android && !ios && !maccatalyst && !winui && !avalonia)"
     },
     "HostIdentifier": {
       "type": "bind",
