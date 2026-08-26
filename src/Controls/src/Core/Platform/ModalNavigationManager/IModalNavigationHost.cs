@@ -143,6 +143,12 @@ namespace Microsoft.Maui.Controls.Platform
 		/// this method returns. Do not call it while holding a lock, and finish mutating your own state
 		/// before calling it.
 		/// </para>
+		/// <para>
+		/// A marshalled request is bound to the window's current handler scope. If the window is
+		/// destroyed, or its handler is replaced, before the request runs, the request is dropped rather
+		/// than executed against a torn-down window or a service scope that no longer exists. Calling
+		/// this after disposal is therefore harmless but has no effect.
+		/// </para>
 		/// </remarks>
 		void RequestSync();
 	}

@@ -137,10 +137,10 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <see cref="IModalNavigationHost.PlatformModalStack"/>, because a failed dismissal means the
 		/// modal is presumed to still be on screen and dropping it would leave a visible modal that no
 		/// stack knows about. The cross-platform modal stack is left without the page, so the next
-		/// reconciliation pass retries the dismissal. As with
-		/// <see cref="PushModalAsync(Page, bool)"/>, the fault is rethrown to the caller of
-		/// <c>Navigation.PopModalAsync</c> only when the pop was applied inline; a deferred pop that
-		/// faults is logged instead.
+		/// reconciliation pass retries the dismissal — and <paramref name="animated"/> is preserved
+		/// across that retry. As with <see cref="PushModalAsync(Page, bool)"/>, the fault is rethrown to
+		/// the caller of <c>Navigation.PopModalAsync</c> only when the pop was applied inline; a
+		/// deferred pop that faults is logged instead.
 		/// </para>
 		/// </remarks>
 		Task PopModalAsync(Page modal, bool animated);
@@ -156,7 +156,11 @@ namespace Microsoft.Maui.Controls.Platform
 		/// a handler, so a backend that resolves late does not miss the notification.
 		/// </para>
 		/// <para>
-		/// The framework guarantees it is never delivered twice for the same page-handler attachment.
+		/// The framework guarantees it is never delivered twice for the same page-handler attachment,
+		/// and that the built-in platform is never notified for an attachment that this instance
+		/// handles. Notification is withheld until the window has a service scope — until then the
+		/// framework cannot tell whether a factory is registered, and notifying the built-in platform
+		/// early would leave its hooks installed alongside this instance's.
 		/// </para>
 		/// </remarks>
 		void PageAttached();

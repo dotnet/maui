@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NSubstitute;
 using Xunit;
 
@@ -52,6 +53,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		static void RegisterFactory(IServiceProvider services, IModalNavigationPlatformFactory factory) =>
 			services.GetService(Arg.Is<Type>(t => t == typeof(IModalNavigationPlatformFactory))).Returns(factory);
+
+		// Builds a fresh handler backed by its own service scope, which is what an Android activity
+		// recreation does.
+		static IElementHandler CreateHandler(IModalNavigationPlatformFactory factory)
+		{
+			var services = Substitute.For<IServiceProvider>();
+			if (factory is not null)
+				RegisterFactory(services, factory);
+
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+
+			var handler = Substitute.For<IElementHandler>();
+			handler.MauiContext.Returns(mauiContext);
+			return handler;
+		}
 
 		static ContentPage AttachRootPage(Window window)
 		{
@@ -328,6 +345,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task FailedPopRetryPreservesTheRequestedAnimationFlag()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			// Push unanimated so a leaked push flag cannot masquerade as the pop flag.
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal, animated: false);
+
+			// The pop is applied INLINE (the platform is ready), and fails. The animation intent must
+			// survive the failure, otherwise the retry silently downgrades to unanimated.
+			platform.PopBehavior = (_, _) => throw new InvalidOperationException("pop boom");
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync(animated: true));
+
+			Assert.Empty(platform.Popped);
+
+			platform.PopBehavior = null;
+			platform.Host.RequestSync();
+
+			Assert.True(Assert.Single(platform.Popped).Animated);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
 		public async Task FailedPopIsRetriedByTheNextSync()
 		{
 			var (window, _, factory) = CreateWindowWithPlatform();
@@ -460,10 +502,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Empty(Host(window).PlatformModalStack);
 		}
 
+		// Window.Dispatcher is captured from the creating thread in the BindableObject constructor, so
+		// these tests drive the thread's dispatcher stub rather than registering an IDispatcher in DI.
+		// That is the point of the change: RequestSync must not depend on the window handler's scope.
+		static IDisposable UseThreadDispatcher(Func<bool> isDispatchRequired, Action<Action> dispatch)
+		{
+			DispatcherProviderStubOptions.IsInvokeRequired = isDispatchRequired;
+			DispatcherProviderStubOptions.InvokeOnMainThread = dispatch;
+
+			return new ActionDisposable(() =>
+			{
+				DispatcherProviderStubOptions.IsInvokeRequired = null;
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			});
+		}
+
+		sealed class ActionDisposable : IDisposable
+		{
+			Action _action;
+
+			public ActionDisposable(Action action) => _action = action;
+
+			public void Dispose()
+			{
+				_action?.Invoke();
+				_action = null;
+			}
+		}
+
 		[Fact]
 		public void RequestSyncFromABackgroundThreadIsMarshalledToTheUIThread()
 		{
-			var dispatcher = new RecordingDispatcher();
+			bool dispatchRequired = false;
+			var queue = new List<Action>();
+
+			using var _ = UseThreadDispatcher(() => dispatchRequired, queue.Add);
 
 			RecordingModalNavigationPlatform platform = null;
 			var factory = new StubModalNavigationPlatformFactory(host =>
@@ -472,11 +545,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return platform;
 			});
 
-			var window = CreateWindow(services =>
-			{
-				RegisterFactory(services, factory);
-				services.GetService(Arg.Is<Type>(t => t == typeof(IDispatcher))).Returns(dispatcher);
-			});
+			var window = CreateWindow(services => RegisterFactory(services, factory));
 			AttachRootPage(window);
 
 			platform.IsReadyValue = false;
@@ -486,21 +555,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Empty(platform.Pushed);
 
 			platform.IsReadyValue = true;
-			platform.Operations.Clear();
 			platform.IsReadyReadThreadIds.Clear();
 
 			// Pretend the caller is on a background thread. The whole reconciliation entry — readiness
 			// checks, lifecycle events and the platform call — has to run through the dispatcher.
-			dispatcher.DispatchRequired = true;
+			dispatchRequired = true;
 			platform.Host.RequestSync();
 
 			// Nothing ran inline; it was queued instead.
 			Assert.Empty(platform.Pushed);
 			Assert.Empty(platform.IsReadyReadThreadIds);
-			Assert.Equal(1, dispatcher.DispatchCount);
+			Assert.Single(queue);
 
-			dispatcher.DispatchRequired = false;
-			dispatcher.DrainQueue();
+			dispatchRequired = false;
+			foreach (var action in queue.ToArray())
+				action();
 
 			Assert.Same(modal, Assert.Single(platform.Pushed).Page);
 		}
@@ -508,7 +577,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void RequestSyncOnTheUIThreadRunsInline()
 		{
-			var dispatcher = new RecordingDispatcher { DispatchRequired = false };
+			var queue = new List<Action>();
+
+			using var _ = UseThreadDispatcher(() => false, queue.Add);
 
 			RecordingModalNavigationPlatform platform = null;
 			var factory = new StubModalNavigationPlatformFactory(host =>
@@ -517,11 +588,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return platform;
 			});
 
-			var window = CreateWindow(services =>
-			{
-				RegisterFactory(services, factory);
-				services.GetService(Arg.Is<Type>(t => t == typeof(IDispatcher))).Returns(dispatcher);
-			});
+			var window = CreateWindow(services => RegisterFactory(services, factory));
 			AttachRootPage(window);
 
 			platform.IsReadyValue = false;
@@ -531,8 +598,142 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			platform.IsReadyValue = true;
 			platform.Host.RequestSync();
 
-			Assert.Equal(0, dispatcher.DispatchCount);
+			Assert.Empty(queue);
 			Assert.Same(modal, Assert.Single(platform.Pushed).Page);
+		}
+
+		[Fact]
+		public void RequestSyncStillMarshalsWhenTheWindowHandlerIsNull()
+		{
+			bool dispatchRequired = false;
+			var queue = new List<Action>();
+
+			using var _ = UseThreadDispatcher(() => dispatchRequired, queue.Add);
+
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			// Handler teardown takes the handler's MauiContext — and the IDispatcher registered in its
+			// scope — with it. Resolving the dispatcher from the handler would silently degrade the
+			// documented any-thread guarantee to inline execution exactly when it matters.
+			window.Handler = null;
+
+			dispatchRequired = true;
+			platform.Host.RequestSync();
+
+			Assert.Single(queue);
+		}
+
+		[Fact]
+		public void RequestSyncQueuedBeforeDestroyIsDroppedAfterTeardown()
+		{
+			bool dispatchRequired = false;
+			var queue = new List<Action>();
+
+			using var _ = UseThreadDispatcher(() => dispatchRequired, queue.Add);
+
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			platform.IsReadyValue = false;
+			var modal = new ContentPage();
+			window.Navigation.PushModalAsync(modal).Wait();
+
+			platform.IsReadyValue = true;
+
+			// Queue the sync from a "background thread", then let teardown overtake it.
+			dispatchRequired = true;
+			platform.Host.RequestSync();
+			Assert.Single(queue);
+
+			((IWindow)window).Destroying();
+
+			dispatchRequired = false;
+			foreach (var action in queue.ToArray())
+				action();
+
+			// The stale callback must not repopulate modal state on a torn-down window or drive
+			// presentation through a disposed scope.
+			Assert.Empty(platform.Pushed);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
+		public void RequestSyncQueuedBeforeAHandlerSwapIsDropped()
+		{
+			bool dispatchRequired = false;
+			var queue = new List<Action>();
+
+			using var _ = UseThreadDispatcher(() => dispatchRequired, queue.Add);
+
+			var factory = new StubModalNavigationPlatformFactory(host => new RecordingModalNavigationPlatform(host));
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+			var first = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			first.IsReadyValue = false;
+			window.Navigation.PushModalAsync(new ContentPage()).Wait();
+			first.IsReadyValue = true;
+
+			dispatchRequired = true;
+			first.Host.RequestSync();
+			Assert.Single(queue);
+
+			// The handler (and therefore the whole service scope) is replaced before the callback runs.
+			window.Handler = CreateHandler(factory);
+
+			dispatchRequired = false;
+			foreach (var action in queue.ToArray())
+				action();
+
+			// The queued callback belonged to the previous scope, so the disposed platform must not be
+			// driven by it.
+			Assert.Empty(first.Pushed);
+		}
+
+		[Fact]
+		public void HandlerChangeDoesNotResolveFromTheOutgoingScope()
+		{
+			var oldFactory = new StubModalNavigationPlatformFactory(host => new RecordingModalNavigationPlatform(host));
+			var newFactory = new StubModalNavigationPlatformFactory(host => new RecordingModalNavigationPlatform(host));
+
+			var window = CreateWindow(services => RegisterFactory(services, oldFactory));
+			AttachRootPage(window);
+
+			Assert.Equal(1, oldFactory.CallCount);
+
+			int oldCallsDuringTransition = -1;
+			window.HandlerChanging += (_, _) =>
+			{
+				// During HandlerChanging, Window.Handler still points at the OUTGOING handler. A reentrant
+				// resolution here must not latch an override built from the scope that is going away.
+				ForceResolvePlatform(window);
+				oldCallsDuringTransition = oldFactory.CallCount;
+			};
+
+			window.Handler = CreateHandler(newFactory);
+			ForceResolvePlatform(window);
+
+			Assert.Equal(1, oldCallsDuringTransition);
+			Assert.Equal(1, oldFactory.CallCount);
+
+			// Resolution happened once the new handler was actually installed, against the NEW scope.
+			Assert.Equal(1, newFactory.CallCount);
 		}
 
 		[Fact]
@@ -848,37 +1049,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public void Dispose()
 			{
 			}
-		}
-
-		sealed class RecordingDispatcher : IDispatcher
-		{
-			readonly List<Action> _queue = new();
-
-			public bool DispatchRequired { get; set; }
-
-			public int DispatchCount { get; private set; }
-
-			public bool IsDispatchRequired => DispatchRequired;
-
-			public bool Dispatch(Action action)
-			{
-				DispatchCount++;
-				_queue.Add(action);
-				return true;
-			}
-
-			public void DrainQueue()
-			{
-				var pending = new List<Action>(_queue);
-				_queue.Clear();
-
-				foreach (var action in pending)
-					action();
-			}
-
-			public bool DispatchDelayed(TimeSpan delay, Action action) => Dispatch(action);
-
-			public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
 		}
 
 		sealed class RecordingModalNavigationPlatform : IModalNavigationPlatform

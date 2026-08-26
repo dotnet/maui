@@ -245,6 +245,41 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(1, platform.DisposeCount);
 		}
 
+		[Fact]
+		public async Task FailedPopRetryPreservesTheRequestedAnimationFlag()
+		{
+			var factory = new RecordingModalNavigationPlatformFactory();
+			SetupBuilder(factory);
+
+			var windowPage = new ContentPage { Content = new Label { Text = "Root" } };
+			var modalPage = new ContentPage { Content = new Label { Text = "Modal" } };
+			var window = new Window(windowPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async _ =>
+			{
+				var platform = factory.Latest;
+
+				// Push unanimated so a leaked push flag cannot masquerade as the pop flag.
+				await windowPage.Navigation.PushModalAsync(modalPage, false);
+
+				// The inline pop fails. The animation intent has to survive the failure, otherwise the
+				// retry silently downgrades to unanimated.
+				platform.PopBehavior = (_, _) => throw new InvalidOperationException("pop boom");
+				await Assert.ThrowsAsync<InvalidOperationException>(
+					() => windowPage.Navigation.PopModalAsync(true));
+
+				Assert.Empty(platform.Popped);
+				Assert.Same(modalPage, Assert.Single(PlatformModalStack(window)));
+
+				platform.PopBehavior = null;
+				platform.Host.RequestSync();
+
+				await AssertEventually(() => platform.Popped.Count == 1);
+
+				Assert.True(platform.Popped[0].Animated);
+			});
+		}
+
 		sealed class RecordingModalNavigationPlatformFactory : IModalNavigationPlatformFactory
 		{
 			public List<RecordingModalNavigationPlatform> Created { get; } = new();

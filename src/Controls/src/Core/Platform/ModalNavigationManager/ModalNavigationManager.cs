@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 			InitializePlatform();
 
 			_window.HandlerChanging += OnWindowHandlerChanging;
+			_window.HandlerChanged += OnWindowHandlerChanged;
 			_window.Destroying += (_, _) =>
 			{
 				ClearModalPages(platform: true);
@@ -70,33 +71,38 @@ namespace Microsoft.Maui.Controls.Platform
 				// Teardown is terminal for the override: it must not come back to life on the next lazy
 				// access while the window is being torn down. Only attaching a new handler (which brings
 				// a new service scope, e.g. an Android activity recreation) re-enables resolution.
-				DisposePlatformOverride(allowRecreate: false);
+				_destroyed = true;
+				DisposePlatformOverride();
+				InvalidateWindowScope();
 			};
 		}
 
 		IModalNavigationPlatform? _platformOverride;
 
-		// Latched once resolution has been attempted so the factory is consulted exactly once per
-		// window scope. Also used as the terminal marker after teardown: it stays true with a null
-		// override so nothing can lazily recreate one.
+		// Latched once resolution has been attempted, so the factory is consulted exactly once per
+		// window scope. It is also set (with a null override) to *block* resolution while the window is
+		// between handlers, because during that window _window.Handler still points at the outgoing
+		// handler and resolving would latch the scope that is going away.
 		bool _platformOverrideResolved;
 
-		// The page handler the current override instance has already been notified about.
+		// Terminal after Window.Destroying. Cleared only when a new handler is installed.
+		bool _destroyed;
+
+		// Bumped whenever the window's service scope changes or goes away. Work queued against an older
+		// generation is stale and must be dropped rather than run against a disconnected scope.
+		int _scopeGeneration;
+
+		// The page handler the current override (or the built-in platform) has been notified about.
 		IElementHandler? _pageAttachedNotifiedForHandler;
 
-		// Delivers PageAttached at most once per (override instance, page handler) pair. Both the
-		// creation path and PageAttachedHandler can reach this, and the reconciliation triggered by a
-		// page change can resolve the override before PageAttachedHandler runs, so keying on the handler
-		// instance is what keeps the notification from being doubled or lost.
-		void NotifyPageAttached(IModalNavigationPlatform platformOverride)
+		void InvalidateWindowScope()
 		{
-			var pageHandler = _window.Page?.Handler;
+			_scopeGeneration++;
 
-			if (pageHandler is null || ReferenceEquals(_pageAttachedNotifiedForHandler, pageHandler))
-				return;
-
-			_pageAttachedNotifiedForHandler = pageHandler;
-			platformOverride.PageAttached();
+			// Block resolution until a new handler is actually installed.
+			_platformOverride = null;
+			_platformOverrideResolved = true;
+			_pageAttachedNotifiedForHandler = null;
 		}
 
 		// Resolved lazily because a Window is constructed long before it has a handler, and therefore
@@ -106,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				if (_platformOverrideResolved)
+				if (_platformOverrideResolved || _destroyed)
 					return _platformOverride;
 
 				// The window handler's IMauiContext is the per-window service scope, so the platform
@@ -138,25 +144,51 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				// The page handler may already have been attached before the window had a service scope
-				// to resolve from, in which case PageAttached was never delivered to this instance.
-				if (_platformOverride is not null)
-					NotifyPageAttached(_platformOverride);
+				// to resolve from, in which case PageAttached was never delivered.
+				DeliverPageAttached();
 
 				return _platformOverride;
 			}
 		}
 
-		void DisposePlatformOverride(bool allowRecreate)
+		// Delivers PageAttached at most once per page handler: to the override when one is registered,
+		// and to the built-in platform otherwise.
+		//
+		// The built-in notification is deliberately withheld until resolution has completed. Before the
+		// window has a service scope we cannot yet tell whether a factory is registered, and running the
+		// built-in hook then would leave an external backend with the built-in platform's hook installed
+		// (on Tizen, the back-button handler) in addition to its own. Resolution re-delivers.
+		void DeliverPageAttached()
+		{
+			var pageHandler = _window.Page?.Handler;
+
+			if (pageHandler is null || ReferenceEquals(_pageAttachedNotifiedForHandler, pageHandler))
+				return;
+
+			// Resolving calls back into this method, so re-check afterwards to avoid delivering twice.
+			var platformOverride = PlatformOverride;
+
+			if (ReferenceEquals(_pageAttachedNotifiedForHandler, pageHandler))
+				return;
+
+			if (platformOverride is null && !_platformOverrideResolved)
+				return;
+
+			_pageAttachedNotifiedForHandler = pageHandler;
+
+			if (platformOverride is not null)
+				platformOverride.PageAttached();
+			else
+				OnPageAttachedHandler();
+		}
+
+		void DisposePlatformOverride()
 		{
 			var platformOverride = _platformOverride;
 			_platformOverride = null;
 
 			// A replacement instance has to be told about the current page handler itself.
 			_pageAttachedNotifiedForHandler = null;
-
-			// When recreation isn't allowed the resolved latch stays set with a null override, which is
-			// what makes the destroyed state terminal.
-			_platformOverrideResolved = !allowRecreate;
 
 			platformOverride?.Dispose();
 		}
@@ -184,22 +216,51 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void IModalNavigationHost.RequestSync()
 		{
+			// Snapshot the scope this request belongs to. A request that is queued and then overtaken by
+			// teardown or a handler swap must not run against the replaced or disconnected scope.
+			var generation = _scopeGeneration;
+
 			// Documented as callable from any thread. The whole reconciliation entry — readiness checks,
 			// page lifecycle events and the platform push/pop calls — must run on the UI thread, so
 			// marshal the entire entry point when the caller isn't already there.
-			var dispatcher = _window.Handler?.MauiContext?.Services?.GetService<IDispatcher>();
+			var dispatcher = TryGetWindowDispatcher();
 
 			if (dispatcher is not null && dispatcher.IsDispatchRequired)
 			{
-				dispatcher.Dispatch(SyncModalStackFromPlatformRequest);
+				dispatcher.Dispatch(() => SyncModalStackFromPlatformRequest(generation));
 				return;
 			}
 
-			SyncModalStackFromPlatformRequest();
+			SyncModalStackFromPlatformRequest(generation);
 		}
 
-		// Named wrapper so the fire-and-forget logging reports a stable, meaningful caller.
-		void SyncModalStackFromPlatformRequest() => SyncModalStackWhenPlatformIsReady();
+		// Window.Dispatcher is public, non-null and independent of the window handler, so the any-thread
+		// guarantee still holds during handler teardown — at which point the handler's MauiContext, and
+		// the IDispatcher registered in its scope, are already gone.
+		IDispatcher? TryGetWindowDispatcher()
+		{
+			try
+			{
+				return _window.Dispatcher;
+			}
+			catch (InvalidOperationException)
+			{
+				// The window was created on a thread without a dispatcher and there is no application
+				// dispatcher to fall back to. Run inline rather than dropping the request.
+				return null;
+			}
+		}
+
+		void SyncModalStackFromPlatformRequest(int generation)
+		{
+			// Drop callbacks that were queued before the window was destroyed, or before its handler was
+			// replaced. Running them would repopulate modal state on a torn-down window, or drive
+			// presentation through resources belonging to a scope that no longer exists.
+			if (_destroyed || generation != _scopeGeneration)
+				return;
+
+			SyncModalStackWhenPlatformIsReady();
+		}
 
 		void OnWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
@@ -211,18 +272,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// The override was created against the old handler's service scope and most likely holds
 				// platform views owned by it, so drop it.
-				DisposePlatformOverride(allowRecreate: false);
+				DisposePlatformOverride();
 			}
 
-			// Attaching a new handler brings a new service scope, so a fresh override may be resolved
-			// from it. This is the only path that lifts the terminal state left behind by teardown.
-			if (e.NewHandler is not null)
-			{
-				_platformOverride = null;
-				_platformOverrideResolved = false;
-			}
+			// _window.Handler is still the OUTGOING handler at this point, so resolution stays blocked
+			// until OnWindowHandlerChanged confirms the new one is installed. Without this a reentrant
+			// sync could latch an override built from the scope that is going away.
+			InvalidateWindowScope();
 		}
 
+		void OnWindowHandlerChanged(object? sender, EventArgs e)
+		{
+			_scopeGeneration++;
+
+			if (_window.Handler is null)
+				return;
+
+			// A new handler brings a new service scope. This is the only path that lifts the blocked
+			// state set by OnWindowHandlerChanging, and the terminal state set by teardown.
+			_destroyed = false;
+			_platformOverride = null;
+			_platformOverrideResolved = false;
+			_pageAttachedNotifiedForHandler = null;
+		}
 		public Task<Page?> PopModalAsync()
 		{
 			return PopModalAsync(true);
@@ -392,9 +464,13 @@ namespace Microsoft.Maui.Controls.Platform
 						animated = pendingAnimated;
 					}
 
-					_pendingPopAnimations.Remove(platformModal);
+					// Record the intent for the duration of the attempt. It is only cleared once the
+					// dismissal actually succeeds, so a failed pop that gets retried by a later pass still
+					// animates the way the caller asked.
+					_pendingPopAnimations[platformModal] = animated;
 
 					var page = await PopModalPlatformAsync(animated);
+					_pendingPopAnimations.Remove(page);
 					page.Parent?.RemoveLogicalChild(page);
 					syncAgain = true;
 				}
@@ -474,17 +550,19 @@ namespace Microsoft.Maui.Controls.Platform
 			bool isPlatformReady = IsModalReady;
 			bool applyNow = isPlatformReady && !syncing;
 
-			if (!applyNow)
-			{
-				// The request has already been taken off the logical stack above, so reconciliation would
-				// have no way to recover how the caller wanted this dismissal animated. Remember it until
-				// the platform actually dismisses the modal.
-				_pendingPopAnimations[modal] = animated;
-			}
+			// The request has already been taken off the logical stack above, so reconciliation would
+			// otherwise have no way to recover how the caller wanted this dismissal animated. Record it
+			// unconditionally and only clear it once the platform has actually dismissed the modal, so
+			// both a deferred pop and a retry after a failed pop keep the caller's intent.
+			_pendingPopAnimations[modal] = animated;
 
 			Task popTask = applyNow ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
+
+			if (applyNow)
+				_pendingPopAnimations.Remove(modal);
+
 			modal.Parent?.RemoveLogicalChild(modal);
 			_window.OnModalPopped(modal);
 
@@ -602,20 +680,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		partial void OnPageAttachedHandler();
 
-		public void PageAttachedHandler()
-		{
-			// Resolving may create the override, and creation delivers PageAttached itself. NotifyPageAttached
-			// is idempotent per page handler, so calling it again here is a no-op in that case.
-			var platformOverride = PlatformOverride;
-
-			if (platformOverride is not null)
-			{
-				NotifyPageAttached(platformOverride);
-				return;
-			}
-
-			OnPageAttachedHandler();
-		}
+		public void PageAttachedHandler() => DeliverPageAttached();
 
 		void ClearModalPages(bool xplat = false, bool platform = false)
 		{
