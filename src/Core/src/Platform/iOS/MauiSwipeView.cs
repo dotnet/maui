@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Platform
 			_swipeTransitionMode = swipeTransitionMode;
 		}
 
-		internal static void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
+		static void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
 		{
 			if (button.ImageView?.Image == null)
 				return;

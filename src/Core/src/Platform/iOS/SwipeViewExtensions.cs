@@ -29,9 +29,6 @@ namespace Microsoft.Maui.Platform
 							swipeItemWidth = measuredSize.Width;
 					}
 
-					if (menuItem.Source is not null && platformSwipeItem is UIButton button && button.ImageView?.Image is null)
-						swipeItemWidth = System.Math.Max(swipeItemWidth, SwipeItemWidth);
-
 					return new Size(
 						items.Mode == SwipeMode.Execute
 							? swipeItemWidth
