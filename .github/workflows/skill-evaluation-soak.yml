@@ -28,6 +28,7 @@ env:
 jobs:
   code-review:
     name: code-review live soak (advisory)
+    if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
     environment: copilot-pat-pool
     timeout-minutes: 90
