@@ -8533,8 +8533,13 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 
 
     # Stage the reproduction before the fix phase can time out. This writes the
-    # same manifest the run would publish with no fix, so a process killed
-    # during the panel leaves exactly what a fix-less run leaves.
+    # same manifest the run would publish with no fix. It does NOT leave what a
+    # fix-less run leaves: the panel writes fix.patch itself, and the cleanup
+    # below only runs if this process survives, so a killed process orphans that
+    # patch beside a manifest that names no fix files. The manifest is the
+    # authority, and both consumers gate on it (ci-copilot.yml), so the orphan is
+    # ignored rather than read as a contradiction. Build 15102442 lost a
+    # certified reproduction to that contradiction.
     $fixOutcome = $null
     & $writeCandidateManifest $false
 

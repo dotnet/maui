@@ -1506,3 +1506,159 @@ Describe 'The catalyst build registers its app where the mac2 driver looks' {
         $script:CatalystBranch | Should -Not -Match 'lsregister not found[^\r\n]*\r?\n\s*exit 1'
     }
 }
+
+Describe 'The manifest, not the file system, decides whether a fix is published' {
+    # Build 15102442 reached a certified reproduction, passed two fix candidates,
+    # and was killed by the task timeout inside the panel. That orphans fix.patch
+    # beside the staged manifest, which names no fix files, and the publisher
+    # refused the whole candidate: "A fix patch was provided but the manifest
+    # names no fix files." A finished reproduction was destroyed by a
+    # contradiction it did not cause.
+    #
+    # These tests execute the pipeline's own guard rather than matching its text,
+    # because source text is present whether or not it works (see 'Every pipeline
+    # script parses').
+    BeforeAll {
+        $script:YmlText = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+
+        function script:Get-YmlRegion {
+            param([string]$StartsWith, [string]$EndsBefore)
+            $lines = $script:YmlText -split "`r?`n"
+            $start = -1
+            $end = -1
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+                if ($start -lt 0 -and $lines[$i].Trim().StartsWith($StartsWith)) { $start = $i; continue }
+                if ($start -ge 0 -and $lines[$i].Trim().StartsWith($EndsBefore)) { $end = $i; break }
+            }
+            if ($start -lt 0) { throw "Region starting '$StartsWith' was not found in ci-copilot.yml." }
+            if ($end -lt 0) { throw "Region ending before '$EndsBefore' was not found in ci-copilot.yml." }
+            ($lines[$start..($end - 1)] -join "`n")
+        }
+
+        # Azure substitutes $(Pipeline.Workspace) before pwsh ever sees the script.
+        # Left alone, PowerShell would read it as a subexpression and try to run
+        # 'Pipeline.Workspace' as a command, so the test must substitute it too.
+        function script:Invoke-FixPatchGuard {
+            param(
+                [string]$Region,
+                [string]$Workspace,
+                [hashtable]$Variables
+            )
+            $body = $Region.Replace('$(Pipeline.Workspace)', $Workspace)
+            # Which hashtable the region builds is a property of the region, so
+            # reading it from the region cannot drift from the code under test.
+            $resultVar = if ($body -match '\$publishFixArgument') { 'publishFixArgument' } else { 'fixPatchArgument' }
+            $prelude = (@($Variables.Keys) | ForEach-Object { "`$$_ = `$Vars['$_']" }) -join "`n"
+            $sb = [scriptblock]::Create("param(`$Vars)`n$prelude`n$body`n,@(`$$resultVar.Keys)")
+            , @((& $sb $Variables) | Select-Object -First 1)
+        }
+
+        function script:New-Workspace {
+            param([bool]$WritePatch)
+            $root = Join-Path ([System.IO.Path]::GetTempPath()) ("fixguard-" + [guid]::NewGuid().ToString('n'))
+            $null = New-Item -ItemType Directory -Path (Join-Path $root 'ReplicationArtifacts') -Force
+            $null = New-Item -ItemType Directory -Path (Join-Path $root 'ReplicationPublication') -Force
+            if ($WritePatch) {
+                Set-Content -LiteralPath (Join-Path $root 'ReplicationArtifacts/fix.patch') `
+                    -Value 'diff --git a/x b/x' -Encoding utf8NoBOM
+            }
+            $root
+        }
+    }
+
+    Context 'the validator is only handed a fix the manifest vouches for' {
+        BeforeAll {
+            $script:ValidatorRegion = script:Get-YmlRegion `
+                -StartsWith '$fixPatchPath = Join-Path $artifactRoot' `
+                -EndsBefore '$validation = @('
+        }
+
+        It 'validates the fix when the manifest names fix files' {
+            $ws = script:New-Workspace -WritePatch $true
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ fixFiles = @('src/Core/src/Platform/Windows/LabelHtmlHelper.cs') }
+                }
+                @($keys) | Should -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'ignores an orphan fix patch when the manifest names no fix files' {
+            $ws = script:New-Workspace -WritePatch $true
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ fixFiles = @() }
+                }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'ignores an orphan fix patch when the manifest has no fixFiles property at all' {
+            # A missing property is $null, and @($null).Count is 1, which a naive
+            # count reads as one named fix file.
+            $ws = script:New-Workspace -WritePatch $true
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ status = 'reproduced' }
+                }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'passes no fix argument when there is no fix patch on disk' {
+            $ws = script:New-Workspace -WritePatch $false
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ fixFiles = @('src/Core/src/X.cs') }
+                }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+    }
+
+    Context 'the publisher applies only a fix the validator vouched for' {
+        BeforeAll {
+            $script:PublisherRegion = script:Get-YmlRegion `
+                -StartsWith '$publishFixPatch =' `
+                -EndsBefore 'if ([bool]::Parse('
+        }
+
+        It 'applies the fix when the validated candidate names fix files' {
+            $ws = script:New-Workspace -WritePatch $true
+            Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
+                -Value '{"fixFiles":["src/Core/src/X.cs"]}' -Encoding utf8NoBOM
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                @($keys) | Should -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'never applies a fix patch the validator declined to look at' {
+            # Probing the file here as well let the two consumers disagree: the
+            # validator would ignore the orphan and the publisher would publish
+            # it as a fix nobody checked.
+            $ws = script:New-Workspace -WritePatch $true
+            Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
+                -Value '{"fixFiles":[]}' -Encoding utf8NoBOM
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'never applies a fix patch when the validated candidate has no fixFiles property' {
+            $ws = script:New-Workspace -WritePatch $true
+            Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
+                -Value '{"schemaVersion":1,"validationPassed":true}' -Encoding utf8NoBOM
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+    }
+}

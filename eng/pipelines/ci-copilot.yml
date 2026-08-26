@@ -2978,13 +2978,23 @@ stages:
               }
 
               $fixPatchPath = Join-Path $artifactRoot "fix.patch"
-              # A fix is optional. Only the runs that produced one hand the gate
-              # a patch to validate; every other run reaches the gate with the
-              # exact argument list it always had.
+              # A fix is optional, and the manifest is the authority on whether one
+              # was certified. A patch on disk the manifest does not name means the
+              # panel wrote it and the task was killed before the manifest could
+              # record it, so the fix phase never finished. That is an absent
+              # measurement, not a malformed candidate: the reproduction publishes
+              # on its own rather than being refused for a contradiction it did not
+              # cause. Build 15102442 lost a certified reproduction exactly that way.
               $fixPatchArgument = @{}
-              if (Test-Path -LiteralPath $fixPatchPath -PathType Leaf) {
+              $fixPatchPresent = Test-Path -LiteralPath $fixPatchPath -PathType Leaf
+              # Filtering rather than counting: a missing property is $null, and
+              # @($null).Count is 1, which would read as a named fix file.
+              $manifestFixFiles = @($candidate.fixFiles | Where-Object { $_ })
+              if ($fixPatchPresent -and $manifestFixFiles.Count -gt 0) {
                 $fixPatchArgument['FixPatchPath'] = $fixPatchPath
                 Write-Host "The candidate carries a proposed fix; validating it alongside the test."
+              } elseif ($fixPatchPresent) {
+                Write-Host "A fix patch is present but the manifest names no fix files, so the fix phase did not finish. Publishing the reproduction alone."
               }
 
               $validation = @(
@@ -3080,7 +3090,17 @@ stages:
 
                 $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
                 $publishFixArgument = @{}
-                if (Test-Path -LiteralPath $publishFixPatch -PathType Leaf) {
+                # The validator is the authority on what was validated. Probing the
+                # file here as well let the two consumers disagree: a patch the
+                # validator declined to look at would still be applied and
+                # published as a fix nobody checked. Both now read the same
+                # document. Filtering rather than counting, because a missing
+                # property is $null and @($null).Count is 1.
+                $validatedCandidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" -Raw |
+                  ConvertFrom-Json -Depth 20
+                $validatedFixFiles = @($validatedCandidate.fixFiles | Where-Object { $_ })
+                if ((Test-Path -LiteralPath $publishFixPatch -PathType Leaf) -and
+                    $validatedFixFiles.Count -gt 0) {
                   $publishFixArgument['FixPatchPath'] = $publishFixPatch
                 }
                 if ([bool]::Parse('${{ parameters.SupersedeExisting }}')) {
