@@ -128,8 +128,5 @@ public class Issue35826 : _IssuesUITest
 		Assert.That(availability, Is.EqualTo("Photo Picker: Available"),
 			"The regression test must exercise the AndroidX Photo Picker launcher path changed by this PR.");
 	}
-
-	void WaitForPhotoPicker() =>
-		App.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Cancel']"));
 }
 #endif
