@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Controls.Platform
 	/// reconciliation loop that keeps the platform stack in sync with the requested stack. A platform
 	/// implementation is only responsible for the visual presentation of a single push or pop.
 	/// </para>
+	/// <para>
+	/// Every member except <see cref="RequestSync"/> must be read on the UI thread.
+	/// </para>
 	/// </remarks>
 	public interface IModalNavigationHost
 	{
@@ -33,6 +36,12 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <summary>
 		/// Gets the <see cref="IMauiContext"/> scoped to <see cref="Window"/>.
 		/// </summary>
+		/// <remarks>
+		/// This context is tied to the window's current handler. It is not guaranteed to be usable once
+		/// the window has been torn down, so do not read it from
+		/// <see cref="System.IDisposable.Dispose"/>. Capture whatever cleanup needs while the platform
+		/// instance is still live.
+		/// </remarks>
 		/// <exception cref="System.InvalidOperationException">
 		/// Thrown when the window does not currently have a handler and therefore has no context.
 		/// </exception>
@@ -67,29 +76,73 @@ namespace Microsoft.Maui.Controls.Platform
 		Page CurrentPlatformPage { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether the framework considers the window ready to present modals
-		/// (the window and its page both have handlers, and <see cref="IModalNavigationPlatform.IsReady"/>
-		/// returned <see langword="true"/>).
+		/// Gets a value indicating whether the framework side of the window is ready for modal
+		/// presentation: the window and its page both have handlers.
 		/// </summary>
-		bool IsModalReady { get; }
+		/// <remarks>
+		/// <para>
+		/// This intentionally does <b>not</b> include
+		/// <see cref="IModalNavigationPlatform.IsReady"/>. Implementations are expected to combine it
+		/// with their own conditions, for example
+		/// <c>public bool IsReady =&gt; _host.IsWindowReady &amp;&amp; _nativeWindowIsRealized;</c>.
+		/// Because the framework folds <see cref="IModalNavigationPlatform.IsReady"/> into its own
+		/// overall readiness separately, a host property that already included it would recurse into an
+		/// uncatchable <see cref="System.StackOverflowException"/>.
+		/// </para>
+		/// <para>
+		/// Consulting this from <see cref="IModalNavigationPlatform.IsReady"/> is optional. The framework
+		/// never calls <see cref="IModalNavigationPlatform.PushModalAsync(Page, bool)"/> or
+		/// <see cref="IModalNavigationPlatform.PopModalAsync(Page, bool)"/> unless this is already
+		/// <see langword="true"/>.
+		/// </para>
+		/// </remarks>
+		bool IsWindowReady { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether several modals are being dismissed as a single batch, for
-		/// example during a <see cref="Shell"/> pop-to-root. Implementations can use this to dismiss
-		/// without animation or intermediate layout so that the modals in between do not flash on screen.
+		/// Gets a hint indicating that several modals are being dismissed as a single batch, for example
+		/// during a <see cref="Shell"/> pop-to-root.
 		/// </summary>
+		/// <remarks>
+		/// This is an optional optimization hint, not a contract. Implementations can use it to dismiss
+		/// without animation so the modals in between do not flash on screen. It is only ever
+		/// <see langword="true"/> while <see cref="Controls.Window.Page"/> is a <see cref="Shell"/> that
+		/// is popping its modal stack; other batch dismissals report <see langword="false"/>. An
+		/// implementation that ignores it stays correct.
+		/// </remarks>
 		bool IsBatchPopping { get; }
+
+		/// <summary>
+		/// Gets a hint indicating that several modals are being presented as a single batch, for example
+		/// while a <see cref="Shell"/> applies a navigation state that contains multiple modals.
+		/// </summary>
+		/// <remarks>
+		/// The counterpart to <see cref="IsBatchPopping"/>, with the same caveats: it is an optional
+		/// optimization hint that is only ever <see langword="true"/> for <see cref="Shell"/>, and an
+		/// implementation that ignores it stays correct.
+		/// </remarks>
+		bool IsBatchPushing { get; }
 
 		/// <summary>
 		/// Asks the framework to re-run the reconciliation loop that compares the requested modal stack
 		/// with <see cref="PlatformModalStack"/> and issues any push or pop that is still outstanding.
 		/// </summary>
 		/// <remarks>
+		/// <para>
 		/// Call this when <see cref="IModalNavigationPlatform.IsReady"/> transitions from
 		/// <see langword="false"/> to <see langword="true"/>. The framework does not poll
 		/// <see cref="IModalNavigationPlatform.IsReady"/>, so a platform that defers readiness must
 		/// notify the framework through this method or queued modals will never be presented.
-		/// The call is safe to make from any thread and does not block.
+		/// </para>
+		/// <para>
+		/// This is safe to call from any thread: when the caller is not already on the window's UI
+		/// thread the work is marshalled there and this method returns immediately. When called
+		/// <b>on</b> the UI thread the reconciliation starts synchronously, which means
+		/// <see cref="IModalNavigationPlatform.IsReady"/> and possibly
+		/// <see cref="IModalNavigationPlatform.PushModalAsync(Page, bool)"/> or
+		/// <see cref="IModalNavigationPlatform.PopModalAsync(Page, bool)"/> can be re-entered before
+		/// this method returns. Do not call it while holding a lock, and finish mutating your own state
+		/// before calling it.
+		/// </para>
 		/// </remarks>
 		void RequestSync();
 	}

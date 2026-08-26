@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Dispatching;
 using NSubstitute;
 using Xunit;
 
@@ -61,6 +62,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		static IModalNavigationHost Host(Window window) => window.ModalNavigationManager;
 
+		// Forces the lazy factory resolution through the same entry point the framework uses when the
+		// window's page handler is attached.
+		static void ForceResolvePlatform(Window window) => window.ModalNavigationManager.PageAttachedHandler();
+
 		[Fact]
 		public void ModalNavigationSeamInterfacesArePublic()
 		{
@@ -113,8 +118,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			AttachRootPage(window);
 			_ = window.Navigation.ModalStack;
-			_ = Host(window).IsModalReady;
-			_ = Host(window).IsModalReady;
+			ForceResolvePlatform(window);
+			ForceResolvePlatform(window);
 
 			Assert.Equal(1, factory.CallCount);
 		}
@@ -216,7 +221,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			RecordingModalNavigationPlatform platform = null;
 			var factory = new StubModalNavigationPlatformFactory(host =>
 			{
-				platform = new RecordingModalNavigationPlatform(host) { IsReady = false };
+				platform = new RecordingModalNavigationPlatform(host) { IsReadyValue = false };
 				return platform;
 			});
 
@@ -231,7 +236,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(modal, Assert.Single(window.Navigation.ModalStack));
 			Assert.Empty(Host(window).PlatformModalStack);
 
-			platform.IsReady = true;
+			platform.IsReadyValue = true;
 			platform.Host.RequestSync();
 
 			Assert.False(Assert.Single(platform.Pushed).Animated);
@@ -292,7 +297,382 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				() => window.Navigation.PushModalAsync(modal));
 
 			Assert.Equal("boom", exception.Message);
+
+			// Nothing was presented, so the platform stack must not claim it was. The requested stack
+			// keeps the page so a later reconciliation pass can retry.
 			Assert.Empty(Host(window).PlatformModalStack);
+			Assert.Same(modal, Assert.Single(window.Navigation.ModalStack));
+		}
+
+		[Fact]
+		public async Task FailedPopRestoresThePlatformStack()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			platform.PopBehavior = (_, _) => throw new InvalidOperationException("pop boom");
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+				() => window.Navigation.PopModalAsync());
+
+			Assert.Equal("pop boom", exception.Message);
+
+			// The dismissal failed so the modal is presumed to still be on screen. If the platform stack
+			// dropped it here it would be absent from BOTH stacks and unreachable forever.
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+			Assert.Empty(window.Navigation.ModalStack);
+		}
+
+		[Fact]
+		public async Task FailedPopIsRetriedByTheNextSync()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			platform.PopBehavior = (_, _) => throw new InvalidOperationException("pop boom");
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync());
+
+			// Recovery: with the modal restored on the platform stack and gone from the requested stack,
+			// reconciliation converges by dismissing it again.
+			platform.PopBehavior = null;
+			platform.Host.RequestSync();
+
+			Assert.Same(modal, Assert.Single(platform.Popped).Page);
+			Assert.Empty(Host(window).PlatformModalStack);
+			Assert.Empty(window.Navigation.ModalStack);
+		}
+
+		[Fact]
+		public async Task DeferredPopPreservesTheRequestedAnimationFlag()
+		{
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			var modal = new ContentPage();
+
+			// Push without animation so a leaked push flag can't masquerade as the pop flag.
+			await window.Navigation.PushModalAsync(modal, animated: false);
+
+			// Go not-ready so the pop has to be deferred. The pop request is taken off the logical stack
+			// immediately, so the animation flag has to be remembered separately.
+			platform.IsReadyValue = false;
+			await window.Navigation.PopModalAsync(animated: true);
+
+			Assert.Empty(platform.Popped);
+
+			platform.IsReadyValue = true;
+			platform.Host.RequestSync();
+
+			Assert.True(Assert.Single(platform.Popped).Animated);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
+		public async Task DeferredPopWithoutAnimationStaysUnanimated()
+		{
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal, animated: true);
+
+			platform.IsReadyValue = false;
+			await window.Navigation.PopModalAsync(animated: false);
+
+			platform.IsReadyValue = true;
+			platform.Host.RequestSync();
+
+			// The push was animated; the deferred pop must not inherit that.
+			Assert.False(Assert.Single(platform.Popped).Animated);
+		}
+
+		[Fact]
+		public void PlatformCanConsultWindowReadinessFromIsReadyWithoutRecursing()
+		{
+			// IModalNavigationHost.IsWindowReady must not fold IModalNavigationPlatform.IsReady back in.
+			// The natural implementation below would otherwise recurse into an uncatchable
+			// StackOverflowException that no test could observe as a failure.
+			SelfConsultingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new SelfConsultingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			var page = AttachRootPage(window);
+
+			Assert.True(platform.IsReady);
+			Assert.True(Host(window).IsWindowReady);
+
+			// And it tracks the framework state rather than being hardcoded.
+			window.Page = new ContentPage();
+
+			Assert.False(Host(window).IsWindowReady);
+			Assert.False(platform.IsReady);
+		}
+
+		[Fact]
+		public async Task PlatformInitiatedDismissalRoundTripsThroughNavigation()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			int modalPopped = 0;
+			window.ModalPopped += (_, _) => modalPopped++;
+
+			// The backend dismissed the modal natively and now tells the framework about it. Its
+			// PopModalAsync is still called for the page, so it has to tolerate an already-gone modal.
+			bool alreadyDismissed = true;
+			platform.PopBehavior = (_, _) => Assert.True(alreadyDismissed);
+
+			await window.Navigation.PopModalAsync(animated: false);
+
+			Assert.Same(modal, Assert.Single(platform.Popped).Page);
+			Assert.Equal(1, modalPopped);
+			Assert.Empty(window.Navigation.ModalStack);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
+		public void RequestSyncFromABackgroundThreadIsMarshalledToTheUIThread()
+		{
+			var dispatcher = new RecordingDispatcher();
+
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services =>
+			{
+				RegisterFactory(services, factory);
+				services.GetService(Arg.Is<Type>(t => t == typeof(IDispatcher))).Returns(dispatcher);
+			});
+			AttachRootPage(window);
+
+			platform.IsReadyValue = false;
+			var modal = new ContentPage();
+			window.Navigation.PushModalAsync(modal).Wait();
+
+			Assert.Empty(platform.Pushed);
+
+			platform.IsReadyValue = true;
+			platform.Operations.Clear();
+			platform.IsReadyReadThreadIds.Clear();
+
+			// Pretend the caller is on a background thread. The whole reconciliation entry — readiness
+			// checks, lifecycle events and the platform call — has to run through the dispatcher.
+			dispatcher.DispatchRequired = true;
+			platform.Host.RequestSync();
+
+			// Nothing ran inline; it was queued instead.
+			Assert.Empty(platform.Pushed);
+			Assert.Empty(platform.IsReadyReadThreadIds);
+			Assert.Equal(1, dispatcher.DispatchCount);
+
+			dispatcher.DispatchRequired = false;
+			dispatcher.DrainQueue();
+
+			Assert.Same(modal, Assert.Single(platform.Pushed).Page);
+		}
+
+		[Fact]
+		public void RequestSyncOnTheUIThreadRunsInline()
+		{
+			var dispatcher = new RecordingDispatcher { DispatchRequired = false };
+
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host);
+				return platform;
+			});
+
+			var window = CreateWindow(services =>
+			{
+				RegisterFactory(services, factory);
+				services.GetService(Arg.Is<Type>(t => t == typeof(IDispatcher))).Returns(dispatcher);
+			});
+			AttachRootPage(window);
+
+			platform.IsReadyValue = false;
+			var modal = new ContentPage();
+			window.Navigation.PushModalAsync(modal).Wait();
+
+			platform.IsReadyValue = true;
+			platform.Host.RequestSync();
+
+			Assert.Equal(0, dispatcher.DispatchCount);
+			Assert.Same(modal, Assert.Single(platform.Pushed).Page);
+		}
+
+		[Fact]
+		public void ThrowingFactoryFallsBackToTheBuiltInPlatformWithoutRetrying()
+		{
+			var factory = new StubModalNavigationPlatformFactory(_ => throw new InvalidOperationException("factory boom"));
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+
+			// The throw must not surface from whatever navigation code happened to trigger resolution.
+			var page = AttachRootPage(window);
+
+			Assert.Equal(1, factory.CallCount);
+
+			// And it must not be retried on every subsequent access.
+			ForceResolvePlatform(window);
+			ForceResolvePlatform(window);
+
+			Assert.Equal(1, factory.CallCount);
+		}
+
+		[Fact]
+		public async Task ThrowingFactoryStillAllowsModalNavigation()
+		{
+			var factory = new StubModalNavigationPlatformFactory(_ => throw new InvalidOperationException("factory boom"));
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			// Fell back to the built-in platform, which tracks the presentation itself.
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+
+			var popped = await window.Navigation.PopModalAsync();
+
+			Assert.Same(modal, popped);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
+		public void DestroyedWindowDoesNotResurrectThePlatform()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			((IWindow)window).Destroying();
+
+			Assert.Equal(1, platform.DisposeCount);
+
+			// Any lazy access after teardown must not build a new platform against a dying scope.
+			ForceResolvePlatform(window);
+			ForceResolvePlatform(window);
+			_ = Host(window).IsWindowReady;
+
+			Assert.Equal(1, factory.CallCount);
+			Assert.Equal(1, platform.DisposeCount);
+		}
+
+		[Fact]
+		public void DestroyedWindowRecreatesThePlatformOnlyWhenANewHandlerArrives()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var first = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			((IWindow)window).Destroying();
+			ForceResolvePlatform(window);
+
+			Assert.Equal(1, factory.CallCount);
+
+			// An Android activity recreation attaches a new handler, which brings a new service scope and
+			// is the only thing that lifts the terminal destroyed state.
+			var secondHandler = Substitute.For<IElementHandler>();
+			var secondContext = Substitute.For<IMauiContext>();
+			var secondServices = Substitute.For<IServiceProvider>();
+			RegisterFactory(secondServices, factory);
+			secondContext.Services.Returns(secondServices);
+			secondHandler.MauiContext.Returns(secondContext);
+
+			window.Handler = secondHandler;
+			ForceResolvePlatform(window);
+
+			Assert.Equal(2, factory.CallCount);
+			Assert.NotSame(first, factory.Created[1]);
+		}
+
+		[Fact]
+		public async Task TeardownWithPresentedModalsDoesNotCallPopAndOnlyDisposes()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			await window.Navigation.PushModalAsync(new ContentPage());
+			await window.Navigation.PushModalAsync(new ContentPage());
+
+			Assert.Equal(2, Host(window).PlatformModalStack.Count);
+
+			((IWindow)window).Destroying();
+
+			// Documented contract: teardown does NOT pop still-presented modals. Dispose is solely
+			// responsible for dismissing them.
+			Assert.Empty(platform.Popped);
+			Assert.Equal(1, platform.DisposeCount);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
+		public void LateResolutionDeliversPageAttachedExactlyOnce()
+		{
+			var factory = new StubModalNavigationPlatformFactory(host => new RecordingModalNavigationPlatform(host));
+
+			// Page handler attaches while the window has no service scope, so the override cannot exist
+			// yet and would otherwise never learn that the page is attached.
+			var window = new Window();
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.Equal(0, factory.CallCount);
+
+			var services = Substitute.For<IServiceProvider>();
+			RegisterFactory(services, factory);
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+			var handler = Substitute.For<IElementHandler>();
+			handler.MauiContext.Returns(mauiContext);
+
+			window.Handler = handler;
+			ForceResolvePlatform(window);
+
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			// Delivered by the late creation, and not doubled by the call that triggered it.
+			Assert.Equal(1, platform.PageAttachedCount);
+
+			// A genuinely new attachment still notifies.
+			AttachRootPage(window);
+
+			Assert.Equal(2, platform.PageAttachedCount);
 		}
 
 		[Fact]
@@ -326,7 +706,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, first.DisposeCount);
 
 			// The next access resolves a fresh instance from the new scope.
-			_ = Host(window).IsModalReady;
+			ForceResolvePlatform(window);
 
 			Assert.Equal(2, factory.CallCount);
 			Assert.NotSame(first, factory.Created[1]);
@@ -359,8 +739,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(window.Handler.MauiContext, host.MauiContext);
 			Assert.Same(root, host.CurrentPage);
 			Assert.Same(root, host.CurrentPlatformPage);
-			Assert.True(host.IsModalReady);
+			Assert.True(host.IsWindowReady);
 			Assert.False(host.IsBatchPopping);
+			Assert.False(host.IsBatchPushing);
 
 			var modal = new ContentPage();
 			await window.Navigation.PushModalAsync(modal);
@@ -408,7 +789,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// resolution must not latch on to "nothing registered" while the window is still bare.
 			var window = new Window();
 			_ = window.Navigation.ModalStack;
-			_ = Host(window).IsModalReady;
+			ForceResolvePlatform(window);
 
 			Assert.Equal(0, factory.CallCount);
 
@@ -444,6 +825,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		sealed record ModalOperation(Page Page, bool Animated, Page CurrentPlatformPage, IReadOnlyList<Page> PlatformStack);
 
+		// The shape a backend would naturally write. It exists to prove IsWindowReady is recursion-free.
+		sealed class SelfConsultingModalNavigationPlatform : IModalNavigationPlatform
+		{
+			readonly IModalNavigationHost _host;
+
+			public SelfConsultingModalNavigationPlatform(IModalNavigationHost host)
+			{
+				_host = host;
+			}
+
+			public bool IsReady => _host.IsWindowReady;
+
+			public Task PushModalAsync(Page modal, bool animated) => Task.CompletedTask;
+
+			public Task PopModalAsync(Page modal, bool animated) => Task.CompletedTask;
+
+			public void PageAttached()
+			{
+			}
+
+			public void Dispose()
+			{
+			}
+		}
+
+		sealed class RecordingDispatcher : IDispatcher
+		{
+			readonly List<Action> _queue = new();
+
+			public bool DispatchRequired { get; set; }
+
+			public int DispatchCount { get; private set; }
+
+			public bool IsDispatchRequired => DispatchRequired;
+
+			public bool Dispatch(Action action)
+			{
+				DispatchCount++;
+				_queue.Add(action);
+				return true;
+			}
+
+			public void DrainQueue()
+			{
+				var pending = new List<Action>(_queue);
+				_queue.Clear();
+
+				foreach (var action in pending)
+					action();
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) => Dispatch(action);
+
+			public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
+		}
+
 		sealed class RecordingModalNavigationPlatform : IModalNavigationPlatform
 		{
 			public RecordingModalNavigationPlatform(IModalNavigationHost host)
@@ -453,7 +890,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public IModalNavigationHost Host { get; set; }
 
-			public bool IsReady { get; set; } = true;
+			public bool IsReady
+			{
+				get
+				{
+					IsReadyReadThreadIds.Add(Environment.CurrentManagedThreadId);
+					return IsReadyValue;
+				}
+			}
+
+			public bool IsReadyValue { get; set; } = true;
+
+			public List<int> IsReadyReadThreadIds { get; } = new();
 
 			public List<string> Operations { get; } = new();
 
@@ -461,16 +909,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public List<ModalOperation> Popped { get; } = new();
 
+			public List<int> OperationThreadIds { get; } = new();
+
 			public int PageAttachedCount { get; private set; }
 
 			public int DisposeCount { get; private set; }
 
 			public Action<Page, bool> PushBehavior { get; set; }
 
+			public Action<Page, bool> PopBehavior { get; set; }
+
 			public Task PushModalAsync(Page modal, bool animated)
 			{
 				PushBehavior?.Invoke(modal, animated);
 
+				OperationThreadIds.Add(Environment.CurrentManagedThreadId);
 				Operations.Add($"Push:{Pushed.Count}");
 				Pushed.Add(new ModalOperation(modal, animated, Host.CurrentPlatformPage, new List<Page>(Host.PlatformModalStack)));
 
@@ -479,6 +932,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public Task PopModalAsync(Page modal, bool animated)
 			{
+				PopBehavior?.Invoke(modal, animated);
+
+				OperationThreadIds.Add(Environment.CurrentManagedThreadId);
 				Operations.Add($"Pop:{Pushed.Count - Popped.Count - 1}");
 				Popped.Add(new ModalOperation(modal, animated, Host.CurrentPlatformPage, new List<Page>(Host.PlatformModalStack)));
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
@@ -7,6 +8,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -155,6 +157,94 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Same(window, platform.Host.Window);
 		}
 
+		[Fact]
+		public async Task FailedPopLeavesTheModalOnThePlatformStack()
+		{
+			var factory = new RecordingModalNavigationPlatformFactory();
+			SetupBuilder(factory);
+
+			var windowPage = new ContentPage { Content = new Label { Text = "Root" } };
+			var modalPage = new ContentPage { Content = new Label { Text = "Modal" } };
+			var window = new Window(windowPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async _ =>
+			{
+				await windowPage.Navigation.PushModalAsync(modalPage);
+
+				factory.Latest.PopBehavior = (_, _) => throw new InvalidOperationException("pop boom");
+
+				await Assert.ThrowsAsync<InvalidOperationException>(
+					() => windowPage.Navigation.PopModalAsync());
+
+				// A failed dismissal means the modal is presumed still visible, so it has to stay on the
+				// platform stack — otherwise it would be absent from both stacks and unreachable.
+				Assert.Same(modalPage, Assert.Single(PlatformModalStack(window)));
+				Assert.Empty(window.Navigation.ModalStack);
+
+				// And the next reconciliation pass converges once the backend recovers.
+				factory.Latest.PopBehavior = null;
+				factory.Latest.Host.RequestSync();
+
+				await AssertEventually(() => PlatformModalStack(window).Count == 0);
+			});
+		}
+
+		[Fact]
+		public async Task DeferredPopPreservesTheRequestedAnimationFlag()
+		{
+			var factory = new RecordingModalNavigationPlatformFactory();
+			SetupBuilder(factory);
+
+			var windowPage = new ContentPage { Content = new Label { Text = "Root" } };
+			var modalPage = new ContentPage { Content = new Label { Text = "Modal" } };
+			var window = new Window(windowPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async _ =>
+			{
+				var platform = factory.Latest;
+
+				// Push unanimated so a leaked push flag can't masquerade as the pop flag.
+				await windowPage.Navigation.PushModalAsync(modalPage, false);
+
+				platform.IsReadyValue = false;
+				await windowPage.Navigation.PopModalAsync(true);
+
+				Assert.Empty(platform.Popped);
+
+				platform.IsReadyValue = true;
+				platform.Host.RequestSync();
+
+				await AssertEventually(() => platform.Popped.Count == 1);
+
+				Assert.True(platform.Popped[0].Animated);
+			});
+		}
+
+		[Fact]
+		public async Task TeardownWithPresentedModalsOnlyDisposes()
+		{
+			var factory = new RecordingModalNavigationPlatformFactory();
+			SetupBuilder(factory);
+
+			var windowPage = new ContentPage { Content = new Label { Text = "Root" } };
+			var window = new Window(windowPage);
+
+			RecordingModalNavigationPlatform platform = null;
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async _ =>
+			{
+				await windowPage.Navigation.PushModalAsync(new ContentPage());
+				platform = factory.Latest;
+				Assert.Single(PlatformModalStack(window));
+			});
+
+			((IWindow)window).Destroying();
+
+			// Documented contract: teardown does not pop still-presented modals, Dispose owns that.
+			Assert.Empty(platform.Popped);
+			Assert.Equal(1, platform.DisposeCount);
+		}
+
 		sealed class RecordingModalNavigationPlatformFactory : IModalNavigationPlatformFactory
 		{
 			public List<RecordingModalNavigationPlatform> Created { get; } = new();
@@ -185,7 +275,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			public IModalNavigationHost Host { get; }
 
-			public bool IsReady => true;
+			public bool IsReadyValue { get; set; } = true;
+
+			public bool IsReady => IsReadyValue && Host.IsWindowReady;
 
 			public List<string> Operations { get; } = new();
 
@@ -194,6 +286,8 @@ namespace Microsoft.Maui.DeviceTests
 			public List<(Page Page, bool Animated, Page CurrentPlatformPage)> Popped { get; } = new();
 
 			public int DisposeCount { get; private set; }
+
+			public Action<Page, bool> PopBehavior { get; set; }
 
 			public Task PushModalAsync(Page modal, bool animated)
 			{
@@ -204,6 +298,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Task PopModalAsync(Page modal, bool animated)
 			{
+				PopBehavior?.Invoke(modal, animated);
+
 				Operations.Add("Pop");
 				Popped.Add((modal, animated, Host.CurrentPlatformPage));
 				return Task.CompletedTask;

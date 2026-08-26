@@ -19,9 +19,19 @@ namespace Microsoft.Maui.Controls.Platform
 	/// lifecycle events and the push/pop reconciliation loop.
 	/// </para>
 	/// <para>
-	/// The factory itself is resolved from the window's service scope, so it may be registered with any
-	/// lifetime. The framework always calls it once per window and disposes the returned instance, so
-	/// return a new <see cref="IModalNavigationPlatform"/> for each call.
+	/// The factory is resolved from the window's service scope, so it may be registered with any
+	/// lifetime. The framework calls it once per window and disposes the returned instance, so return a
+	/// new <see cref="IModalNavigationPlatform"/> for each call. It is called again for the same window
+	/// only if the window gets a new handler, which brings a new service scope (for example an Android
+	/// activity recreation).
+	/// </para>
+	/// <para>
+	/// If this method throws, the framework logs the exception and permanently falls back to the
+	/// built-in platform for that window rather than rethrowing from whatever call site happened to
+	/// trigger resolution. Creation is not retried, so a failed registration fails deterministically and
+	/// visibly in the log instead of throwing repeatedly from arbitrary navigation code. Prefer
+	/// returning <see langword="null"/> over throwing when a backend deliberately does not want to
+	/// handle a window.
 	/// </para>
 	/// <example>
 	/// Registering a backend that presents modals with its own native window stack:
@@ -35,30 +45,44 @@ namespace Microsoft.Maui.Controls.Platform
 	/// public sealed class MyModalNavigationPlatform : IModalNavigationPlatform
 	/// {
 	///     readonly IModalNavigationHost _host;
+	///     readonly MyNativeModalStack _stack;
 	///
-	///     public MyModalNavigationPlatform(IModalNavigationHost host) =&gt; _host = host;
+	///     public MyModalNavigationPlatform(IModalNavigationHost host)
+	///     {
+	///         _host = host;
+	///         // Captured while the instance is live: Dispose must not depend on the MauiContext.
+	///         _stack = MyNativeModalStack.For(host.MauiContext);
+	///     }
 	///
-	///     public bool IsReady =&gt; true;
+	///     public bool IsReady =&gt; _host.IsWindowReady &amp;&amp; _stack.IsRealized;
 	///
 	///     public async Task PushModalAsync(Page modal, bool animated)
 	///     {
 	///         var nativeView = modal.ToPlatform(_host.MauiContext);
-	///         await MyNativeModalStack.For(_host.Window).PushAsync(nativeView, animated);
+	///         await _stack.PushAsync(nativeView, animated &amp;&amp; !_host.IsBatchPushing);
 	///     }
 	///
 	///     public async Task PopModalAsync(Page modal, bool animated)
 	///     {
-	///         await MyNativeModalStack.For(_host.Window).PopAsync(animated &amp;&amp; !_host.IsBatchPopping);
-	///         (modal.Handler as IPlatformViewHandler)?.Dispose();
+	///         // Idempotent: the modal may already be gone when the user dismissed it natively.
+	///         if (_stack.Contains(modal))
+	///             await _stack.PopAsync(animated &amp;&amp; !_host.IsBatchPopping);
+	///
+	///         modal.DisconnectHandlers();
 	///     }
 	///
-	///     public void PageAttached()
+	///     public void PageAttached() =&gt;
+	///         _stack.BackButtonPressed = () =&gt; _host.CurrentPage?.SendBackButtonPressed() ?? false;
+	///
+	///     // A native dismissal the framework can't see has to be routed back through Navigation so the
+	///     // cross-platform stack and the page lifecycle events stay in sync.
+	///     void OnDismissedNatively() =&gt; _host.Window.Navigation.PopModalAsync(animated: false);
+	///
+	///     public void Dispose()
 	///     {
-	///         MyNativeWindow.For(_host.Window).BackButtonPressed =
-	///             () =&gt; _host.CurrentPage?.SendBackButtonPressed() ?? false;
+	///         // Still-presented modals are NOT popped by the framework during teardown.
+	///         _stack.DismissAll();
 	///     }
-	///
-	///     public void Dispose() =&gt; MyNativeModalStack.Release(_host.Window);
 	/// }
 	///
 	/// // In MauiProgram:
