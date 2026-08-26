@@ -30,8 +30,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		public IDictionary<string, object?>? Parameters { get; set; }
 
-		internal Task AddToWebViewManagerAsync(WebViewManager webViewManager)
+		/// <summary>
+		/// Validates this root component and adds it to the specified <see cref="WebViewManager"/>.
+		/// </summary>
+		/// <param name="webViewManager">The <see cref="WebViewManager"/> to add this root component to.</param>
+		/// <returns>A <see cref="Task"/> that completes when the root component has been added.</returns>
+		/// <remarks>
+		/// This is intended for handlers implementing <see cref="IBlazorWebViewHandler"/> so that they can
+		/// apply the same validation and registration behavior as the built-in handlers. Call this on the
+		/// <see cref="WebViewManager.Dispatcher"/> thread.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webViewManager"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if <see cref="Selector"/> or <see cref="ComponentType"/> has not been set.</exception>
+		public Task AddToWebViewManagerAsync(WebViewManager webViewManager)
 		{
+			ArgumentNullException.ThrowIfNull(webViewManager);
+
 			// As a characteristic of XAML,we can't rely on non-default constructors. So we have to
 			// validate that the required properties were set. We could skip validating this and allow
 			// the lower-level renderer code to throw, but that would be harder for developers to understand.
@@ -50,8 +64,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return webViewManager.AddRootComponentAsync(ComponentType, Selector, parameterView);
 		}
 
-		internal Task RemoveFromWebViewManagerAsync(WebViewManager webviewManager)
+		/// <summary>
+		/// Validates this root component and removes it from the specified <see cref="WebViewManager"/>.
+		/// </summary>
+		/// <param name="webviewManager">The <see cref="WebViewManager"/> to remove this root component from.</param>
+		/// <returns>A <see cref="Task"/> that completes when the root component has been removed.</returns>
+		/// <remarks>
+		/// This is intended for handlers implementing <see cref="IBlazorWebViewHandler"/> so that they can
+		/// apply the same validation and removal behavior as the built-in handlers. Call this on the
+		/// <see cref="WebViewManager.Dispatcher"/> thread.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webviewManager"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if <see cref="Selector"/> has not been set.</exception>
+		public Task RemoveFromWebViewManagerAsync(WebViewManager webviewManager)
 		{
+			ArgumentNullException.ThrowIfNull(webviewManager);
+
 			if (string.IsNullOrWhiteSpace(Selector))
 			{
 				throw new InvalidOperationException($"{nameof(RootComponent)} requires a value for its {nameof(Selector)} property, but no value was set.");

@@ -13,3 +13,10 @@ Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest.B
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest.ContentType.get -> string!
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest.Uri.get -> System.Uri!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.StaticContentCacheControlProvider.get -> System.Func<Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentRequest!, string?>?
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.NativeWebView.get -> object?
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.NativeWebView.set -> void
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload
+Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.AddToWebViewManagerAsync(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.RemoveFromWebViewManagerAsync(Microsoft.AspNetCore.Components.WebView.WebViewManager! webviewManager) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.AttachToWebViewManagerIfEnabled(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> void
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(string! contentRootRelativePath, string! requestAbsoluteUri, ref int responseStatusCode, ref System.IO.Stream! responseContent, System.Collections.Generic.IDictionary<string!, string!>! responseHeaders) -> bool
