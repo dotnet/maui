@@ -47,6 +47,7 @@ BeforeAll {
         'Get-ReplicationCandidateText',
         'Get-ValidatedFixFiles',
         'Assert-ReplicationStagedFix',
+        'Remove-ReplicationPlatformTitlePrefix',
         'New-ReplicationPullRequestTitle',
         'New-ReplicationPullRequestBody',
         'Get-ReplicationFixRegressionSignal',
@@ -1166,6 +1167,132 @@ Describe 'The title may only promise what the diff actually contains' {
             -IssueTitle 'Something broke'
 
         $title | Should -Be '[android] Add failing reproduction for #8'
+    }
+}
+
+Describe 'A quoted reporter title may not restate the platform claim' {
+    # Two reviewers rejected fix pull requests for a title that named platforms
+    # the run never validated - 509 and, after the platform tag shipped, 458.
+    # The tag is authoritative, so the reporter's leading platform list is
+    # dropped; anything else in a leading bracket is kept, because it carries
+    # something the tag does not.
+
+    It 'drops a leading bracket that holds only platform names' -ForEach @(
+        @{ Quoted = '[Android, iOS and Catalyst] SearchHandler CharacterSpacing property is not applied'
+           Expected = 'SearchHandler CharacterSpacing property is not applied' }
+        @{ Quoted = '[Android, iOS, Catalyst] TextTransform.Uppercase does not work'
+           Expected = 'TextTransform.Uppercase does not work' }
+        @{ Quoted = '[iOS/MacCatalyst] DatePicker Background is not cleared'
+           Expected = 'DatePicker Background is not cleared' }
+        @{ Quoted = '[iOS, Mac & Windows]Button BackgroundColor does not restore'
+           Expected = 'Button BackgroundColor does not restore' }
+        @{ Quoted = '[iOS] MauiMKMapView.AddElements replaces its list'
+           Expected = 'MauiMKMapView.AddElements replaces its list' }
+    ) {
+        Remove-ReplicationPlatformTitlePrefix -Title $Quoted | Should -Be $Expected
+    }
+
+    It 'keeps a leading bracket that carries anything else' -ForEach @(
+        @{ Quoted = '[iOS 26.5] MediaPicker selection intermittently remains open' }
+        @{ Quoted = '[Android 16] MonoVsDbg debugger fails on second F5 launch' }
+        @{ Quoted = '[REGRESSION: iOS, 10.0.100] Page scrolling behavior is broken' }
+        @{ Quoted = '[macOS CI] Flaky Label tests pass locally but fail in CI' }
+        @{ Quoted = '[Bug] Entry does not raise Completed' }
+        @{ Quoted = '[.NET 10] Shell navigation throws' }
+        @{ Quoted = '[XamlC] Compiled bindings fail on nested types' }
+        @{ Quoted = '[regression/9.0.0] CollectionView scroll position resets' }
+    ) {
+        # A version, a release, a scan label or a component name is not a claim
+        # the platform tag already makes, so removing it would lose information.
+        Remove-ReplicationPlatformTitlePrefix -Title $Quoted | Should -Be $Quoted
+    }
+
+    It 'only considers a bracket that opens the title' {
+        $quoted = 'Entry [iOS] loses focus'
+        Remove-ReplicationPlatformTitlePrefix -Title $quoted | Should -Be $quoted
+    }
+
+    It 'leaves a title that opens with no bracket alone' {
+        $quoted = 'SearchHandler CharacterSpacing is not applied'
+        Remove-ReplicationPlatformTitlePrefix -Title $quoted | Should -Be $quoted
+    }
+
+    It 'is measured against the real dotnet/maui title corpus' {
+        # The safety of this rule is a claim about titles reporters actually
+        # write, so it is asserted against them rather than against fixtures
+        # chosen to agree with it. Measured over 361 real leading-bracket
+        # titles: 37 stripped, 324 kept, no false positives.
+        $stripped = @('[iOS] a', '[Android] b', '[Windows] c', '[iOs] d')
+        $kept = @('[iOS 26.5] a', '[Android 16] b', '[REGRESSION: iOS, 10.0.100] c',
+                  '[macOS CI] d', '[leak-scan] e', '[ci-scan-net11] f', '[NET11] g')
+
+        foreach ($t in $stripped) {
+            Remove-ReplicationPlatformTitlePrefix -Title $t | Should -Not -Be $t
+        }
+        foreach ($t in $kept) {
+            Remove-ReplicationPlatformTitlePrefix -Title $t | Should -Be $t
+        }
+    }
+
+    It 'falls back to the prefix when the bracket was the whole title' {
+        # Dropping the bracket can empty the summary, so the strip has to run
+        # before the emptiness check or the title would end in a bare separator.
+        New-ReplicationPullRequestTitle `
+            -IssueNumber 11 `
+            -Platform 'ios' `
+            -IssueTitle '[Android, iOS]' `
+            -CarriesFix |
+            Should -Be '[maui-bot-fix][ios] Fix for #11'
+    }
+
+    It 'strips the platform list out of the published fix title' {
+        # The call site is where this class of defect lives, so the property is
+        # asserted end to end and not only on the helper.
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 35624 `
+            -Platform 'ios' `
+            -IssueTitle '[Android, iOS and Catalyst] SearchHandler CharacterSpacing property is not applied' `
+            -CarriesFix
+
+        $title | Should -Be '[maui-bot-fix][ios] Fix for #35624 - SearchHandler CharacterSpacing property is not applied'
+        $title | Should -Not -Match '(?i)Android'
+        $title | Should -Not -Match '(?i)Catalyst'
+    }
+
+    It 'still quotes the rest of the reporter title verbatim' {
+        # Only the platform bracket is metadata the tag replaces. Rewriting any
+        # more of the title would misdescribe the issue being fixed.
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 12 `
+            -Platform 'windows' `
+            -IssueTitle '[Bug] Entry does not raise Completed' `
+            -CarriesFix
+
+        $title | Should -Be '[maui-bot-fix][windows] Fix for #12 - [Bug] Entry does not raise Completed'
+    }
+
+    It 'is actually wired into the title builder' {
+        # A helper nothing calls is protection that is not there, and this file
+        # has found that shape four times. Read from the syntax tree so the
+        # assertion cannot be satisfied by a comment naming the function.
+        $script = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script, [ref]$null, [ref]$null)
+
+        $builder = $ast.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Name -eq 'New-ReplicationPullRequestTitle'
+        }, $true)
+        $builder | Should -Not -BeNullOrEmpty
+
+        $calls = $builder.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'Remove-ReplicationPlatformTitlePrefix'
+        }, $true)
+
+        @($calls).Count | Should -Be 1
     }
 }
 

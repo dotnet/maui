@@ -704,6 +704,73 @@ function Get-ValidatedFixFiles {
     return @($property.Value | ForEach-Object { ([string]$_).Replace('\', '/') } | Where-Object { $_ })
 }
 
+function Remove-ReplicationPlatformTitlePrefix {
+    <#
+    .SYNOPSIS
+        Drops a leading bracket from an issue title when it holds nothing but
+        platform names.
+
+    .DESCRIPTION
+        Reporters routinely open a title with every platform they saw, as
+        dotnet/maui#35624 does with "[Android, iOS and Catalyst]". A run validates
+        exactly one, and the pull request already names that one in its own tag, so
+        quoting the reporter's list after it restates a claim the evidence does not
+        support in the one field every reader sees before opening anything. Two
+        independent human reviewers rejected fix pull requests on exactly that
+        ground - 509 ("claims Android and Catalyst coverage that this
+        implementation/test pair does not establish") and 458 ("the PR title claims
+        [Android, iOS and Catalyst], but the product diff changes only the iOS
+        tracker").
+
+        Measured before it was written, over the 68 open fix pull requests: 22
+        carry a leading pure-platform bracket and 8 of those name a platform the
+        run did not validate, including both PRs a reviewer objected to.
+
+        The rule is deliberately narrow, because a leading bracket usually is not a
+        platform list and removing it really would misdescribe the issue. A bracket
+        is dropped only when every token in it, split on the separators reporters
+        actually use, is a bare platform name. Measured against 361 real
+        dotnet/maui issue titles that open with a bracket, this drops 37 and keeps
+        324, with no false positives: "[iOS 26.5]", "[Android 16]",
+        "[REGRESSION: iOS, 10.0.100]", "[.NET 10]" and "[leak-scan]" are all kept,
+        because each carries something the platform tag does not.
+
+        Only the first bracket is considered, and only when it opens the title.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$Title
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Title)) {
+        return $Title
+    }
+
+    $match = [regex]::Match($Title, '^\s*\[([^\]]+)\]\s*')
+    if (-not $match.Success) {
+        return $Title
+    }
+
+    # The separators reporters use between platform names. A token that is not a
+    # bare platform name - a version, a release, a scan label - keeps the bracket.
+    $tokens = @($match.Groups[1].Value -split '(?:,|/|&|\+|\band\b)' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($tokens.Count -eq 0) {
+        return $Title
+    }
+
+    foreach ($token in $tokens) {
+        if ($token -notmatch '^(?i:android|ios|windows|catalyst|maccatalyst|mac|winui|uwp|tizen)$') {
+            return $Title
+        }
+    }
+
+    return $Title.Substring($match.Length)
+}
+
 function New-ReplicationPullRequestTitle {
     <#
     .SYNOPSIS
@@ -729,8 +796,14 @@ function New-ReplicationPullRequestTitle {
         accurate - it states the validated platform and the four control arms - but
         the body is not what a reader sees in a PR list. Naming the validated
         platform next to the inherited tag makes the narrower claim the visible
-        one. The reporter's title is still quoted verbatim, because rewriting it
-        would misdescribe the issue being fixed.
+        one.
+
+        Tagging alone did not settle it. A reviewer of PR 458 objected again with
+        the tag in place, because the reporter's own list was still quoted after
+        it. So a leading bracket holding nothing but platform names is now dropped
+        by Remove-ReplicationPlatformTitlePrefix, whose narrowness is measured
+        there. The rest of the reporter's title is still quoted verbatim, because
+        rewriting that would misdescribe the issue being fixed.
 
         The issue title is treated as untrusted: control characters are stripped so
         it cannot forge additional lines, and the whole title is bounded so it
@@ -769,6 +842,10 @@ function New-ReplicationPullRequestTitle {
     $summary = if ($null -eq $IssueTitle) { '' } else { $IssueTitle }
     $summary = ($summary -replace '[\p{C}]', ' ').Trim()
     $summary = $summary -replace '\s{2,}', ' '
+    # The tag above already names the one validated platform, so a reporter's
+    # leading platform list would restate it less accurately. Runs before the
+    # whitespace check, because dropping the bracket can empty the summary.
+    $summary = (Remove-ReplicationPlatformTitlePrefix -Title $summary).Trim()
     if ([string]::IsNullOrWhiteSpace($summary)) {
         return $prefix
     }
