@@ -30,6 +30,17 @@ internal sealed class FakeExternalBlazorWebViewHandler : ViewHandler<IBlazorWebV
 
 	public FakeExternalWebViewManager? WebViewManager { get; private set; }
 
+	/// <summary>
+	/// The task returned by the hot reload seam, or <see langword="null"/> when hot reload is disabled.
+	/// </summary>
+	public Task? HotReloadAttachTask { get; private set; }
+
+	/// <summary>
+	/// A real backend resolves this from <c>Services</c>; the fake supplies its own so the tests can run
+	/// without a <c>MauiContext</c>.
+	/// </summary>
+	public FakeExternalDispatcher Dispatcher { get; } = new();
+
 	public List<RootComponent> AddedRootComponents { get; } = new();
 
 	public IFileProvider CreateFileProvider(string contentRootDir) => new NullFileProvider();
@@ -56,15 +67,13 @@ internal sealed class FakeExternalBlazorWebViewHandler : ViewHandler<IBlazorWebV
 		var manager = new FakeExternalWebViewManager(
 			services,
 			virtualView.CreateFileProvider(FakeExternalWebViewManager.ContentRootRelativeToAppRoot),
-			virtualView.JSComponents);
+			virtualView.JSComponents,
+			Dispatcher);
 
-		BlazorWebViewStaticContentHotReload.AttachToWebViewManagerIfEnabled(manager);
+		HotReloadAttachTask = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
 
 		virtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
-		virtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-		{
-			NativeWebView = NativeControl,
-		});
+		virtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(NativeControl));
 
 		foreach (var rootComponent in virtualView.RootComponents)
 		{

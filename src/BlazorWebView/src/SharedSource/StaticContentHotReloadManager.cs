@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -41,6 +42,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(NotifyCssUpdatedScript)) }
 		};
 
+		private static readonly ConditionalWeakTable<WebViewManager, Task> s_attachedManagers = new();
+
 		/// <summary>
 		/// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
 		/// </summary>
@@ -58,31 +61,55 @@ namespace Microsoft.AspNetCore.Components.WebView
 			OnContentUpdated?.Invoke(assemblyName, relativePath);
 		}
 
-		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager)
+		public static Task? TryAttachToWebViewManager(WebViewManager manager)
 		{
-			if (MetadataUpdater.IsSupported)
+			if (!MetadataUpdater.IsSupported)
 			{
-				manager.AddRootComponentAsync(typeof(StaticContentChangeNotifier), "body::after", ParameterView.Empty);
+				return null;
 			}
+
+			// Attaching twice would throw from AddRootComponentAsync, because the notifier uses a fixed
+			// selector. Handlers can legitimately be asked to start more than once, so repeat calls for
+			// the same manager return the task from the first attach instead.
+			return s_attachedManagers.GetValue(
+				manager,
+				static m => m.AddRootComponentAsync(typeof(StaticContentChangeNotifier), "body::after", ParameterView.Empty));
 		}
 
-		public static bool TryReplaceResponseContent(string contentRootRelativePath, string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
+		/// <summary>
+		/// Looks up hot-reloaded content for a request without taking ownership of any response state.
+		/// </summary>
+		public static bool TryGetUpdatedContent(string contentRootRelativePath, string requestAbsoluteUri, out byte[]? content, out string? contentType)
 		{
 			if (MetadataUpdater.IsSupported)
 			{
 				var (assemblyName, relativePath) = GetAssemblyNameAndRelativePath(requestAbsoluteUri, contentRootRelativePath);
 				if (_updatedContent.TryGetValue((assemblyName, relativePath), out var values))
 				{
-					responseStatusCode = 200;
-					responseContent.Close();
-					responseContent = new MemoryStream(values.Content);
-					if (!string.IsNullOrEmpty(values.ContentType))
-					{
-						responseHeaders["Content-Type"] = values.ContentType;
-					}
-
+					content = values.Content;
+					contentType = string.IsNullOrEmpty(values.ContentType) ? null : values.ContentType;
 					return true;
 				}
+			}
+
+			content = null;
+			contentType = null;
+			return false;
+		}
+
+		public static bool TryReplaceResponseContent(string contentRootRelativePath, string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
+		{
+			if (TryGetUpdatedContent(contentRootRelativePath, requestAbsoluteUri, out var content, out var contentType))
+			{
+				responseStatusCode = 200;
+				responseContent.Close();
+				responseContent = new MemoryStream(content!);
+				if (contentType is not null)
+				{
+					responseHeaders["Content-Type"] = contentType;
+				}
+
+				return true;
 			}
 
 			return false;

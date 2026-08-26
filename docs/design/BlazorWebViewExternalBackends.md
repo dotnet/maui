@@ -23,24 +23,42 @@ Registration is last-registration-wins through the MAUI handler collection, so c
 `UsePlatformHandler` *after* `AddMauiBlazorWebView()` and after any downstream library that calls
 `AddMauiBlazorWebView()` again.
 
+## Dispatcher
+
+A `WebViewManager` needs a Blazor `Dispatcher`. Rather than writing an adapter, construct MAUI's
+public `MauiDispatcher` over the `IDispatcher` from the handler's services, so Blazor's thread
+affinity matches the rest of MAUI on that platform:
+
+```csharp
+var dispatcher = new MauiDispatcher(Services!.GetRequiredService<IDispatcher>());
+```
+
 ## Surfacing the native web view
 
 `BlazorWebViewInitializedEventArgs` declares a strongly typed `WebView` property only for the target
-frameworks that MAUI has a built-in backend for. A backend for any other platform sets the
-platform-neutral `NativeWebView` property instead:
+frameworks that MAUI has a built-in backend for. A backend for any other platform supplies the
+native control through the constructor instead:
 
 ```csharp
 VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
-VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-{
-    NativeWebView = PlatformView,
-});
+VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(PlatformView));
 ```
 
-On target frameworks where `WebView` exists, both properties are backed by the same value: assigning
-`WebView` assigns `NativeWebView`, and `WebView` returns whatever `NativeWebView` holds — or `null`
-if the stored value is not of the platform's web view type. Existing app code that reads
-`e.WebView` on Android, iOS, MacCatalyst or Windows is unaffected.
+App code then reads it from the platform-neutral, read-only `PlatformWebView` property:
+
+```csharp
+blazorWebView.BlazorWebViewInitialized += (s, e) =>
+{
+    var native = (MyPlatformWebView)e.PlatformWebView!;
+};
+```
+
+`PlatformWebView` is deliberately read-only and write-once: only the handler raising the event can
+supply the value, so one event subscriber cannot change what later subscribers observe. On target
+frameworks where the strongly typed `WebView` property exists, both properties report the same
+instance, and `WebView` reports `null` if the stored value is not of that platform's web view type.
+The property is scoped to the MAUI package; the WPF and WinForms BlazorWebView packages keep only
+their existing strongly typed `WebView` property.
 
 ## Root components
 
@@ -65,29 +83,58 @@ applied to the manager.
 
 Static content hot reload (serving updated `wwwroot` assets, most notably CSS, without restarting
 the app) is exposed through `BlazorWebViewStaticContentHotReload`. A backend participates in two
-places, mirroring what the built-in handlers do.
+places, mirroring what the built-in handlers do — the built-in MAUI handlers call this same public
+seam.
 
 Once, after creating the `WebViewManager` and before navigating:
 
 ```csharp
-BlazorWebViewStaticContentHotReload.AttachToWebViewManagerIfEnabled(_webViewManager);
+_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webViewManager);
 ```
 
-And while resolving each static content request, before the response is handed to the web view:
+`TryAttachToWebViewManager` returns `null` when hot reload is not supported by the current runtime
+and nothing was attached, or a `Task` that completes when the notifier root component has been
+registered. Awaiting it is optional when attaching before navigation, because registration completes
+synchronously until a page is attached. Attaching is idempotent per `WebViewManager` instance:
+repeat calls return the task from the first attach rather than failing on the notifier's fixed root
+component selector.
+
+And while resolving each static content request:
 
 ```csharp
-BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(
-    _contentRootRelativeToAppRoot,
-    requestAbsoluteUri,
-    ref statusCode,
-    ref content,
-    headers);
+if (BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+        _contentRootRelativeToAppRoot, requestAbsoluteUri, out var hotReloaded, out var hotReloadedContentType))
+{
+    originalContent?.Dispose();
+    statusCode = 200;
+    content = hotReloaded!;
+    if (hotReloadedContentType is not null)
+    {
+        headers["Content-Type"] = hotReloadedContentType;
+    }
+}
 ```
 
-Both members are no-ops when hot reload is unavailable — that is, when
+This is a query, not a mutation: it reports content and lets the handler apply it to whatever
+response state it owns. The returned stream is fresh per call and the caller is responsible for
+disposing it, along with any content it had already resolved.
+
+Both members are inert when hot reload is unavailable — that is, when
 `System.Reflection.Metadata.MetadataUpdater.IsSupported` is `false` — so they can be called
 unconditionally. Static content hot reload is distinct from Razor component hot reload, which needs
 no handler participation.
+
+## What is intentionally not public
+
+The static content **response cache** and its policy helpers (`StaticContentResponseCache`,
+`StaticContentResponseCachePolicy`, `StaticContentCacheControl`, `QueryStringHelper`) remain
+internal. They implement the caching behavior that `BlazorWebView.StaticContentCacheControlProvider`
+opts into, but the storage shape, eviction, entry-size limits and `Cache-Control`/`Pragma` parsing
+are implementation details we want to keep free to change. An external backend is expected to
+implement its own request caching, and to call
+`IBlazorWebView.StaticContentCacheControlProvider` — which *is* public — to let apps influence the
+`Cache-Control` header it emits. If you need the shared cache itself, please open an issue
+describing the scenario rather than duplicating the internals.
 
 ## Windows note
 

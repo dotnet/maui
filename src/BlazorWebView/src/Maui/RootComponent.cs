@@ -67,24 +67,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Validates this root component and removes it from the specified <see cref="WebViewManager"/>.
 		/// </summary>
-		/// <param name="webviewManager">The <see cref="WebViewManager"/> to remove this root component from.</param>
+		/// <param name="webViewManager">The <see cref="WebViewManager"/> to remove this root component from.</param>
 		/// <returns>A <see cref="Task"/> that completes when the root component has been removed.</returns>
 		/// <remarks>
 		/// This is intended for handlers implementing <see cref="IBlazorWebViewHandler"/> so that they can
 		/// apply the same validation and removal behavior as the built-in handlers. Call this on the
 		/// <see cref="WebViewManager.Dispatcher"/> thread.
 		/// </remarks>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webviewManager"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webViewManager"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if <see cref="Selector"/> has not been set.</exception>
-		public Task RemoveFromWebViewManagerAsync(WebViewManager webviewManager)
+		public Task RemoveFromWebViewManagerAsync(WebViewManager webViewManager)
 		{
-			ArgumentNullException.ThrowIfNull(webviewManager);
+			ArgumentNullException.ThrowIfNull(webViewManager);
 
 			if (string.IsNullOrWhiteSpace(Selector))
 			{
 				throw new InvalidOperationException($"{nameof(RootComponent)} requires a value for its {nameof(Selector)} property, but no value was set.");
 			}
-			return webviewManager.RemoveRootComponentAsync(Selector);
+			return webViewManager.RemoveRootComponentAsync(Selector);
 		}
 	}
 }

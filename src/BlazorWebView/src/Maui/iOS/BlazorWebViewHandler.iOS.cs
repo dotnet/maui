@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				hostPageRelativePath,
 				Logger);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			if (RootComponents != null)
 			{

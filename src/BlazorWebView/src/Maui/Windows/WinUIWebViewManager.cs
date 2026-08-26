@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			var hotReloadedContent = Stream.Null;
-			if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
+			if (BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
 			{
 				contentBytes = await ReadContentAsync(hotReloadedContent);
 			}

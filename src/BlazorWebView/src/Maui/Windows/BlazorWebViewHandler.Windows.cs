@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				this,
 				logger);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			if (RootComponents != null)
 			{

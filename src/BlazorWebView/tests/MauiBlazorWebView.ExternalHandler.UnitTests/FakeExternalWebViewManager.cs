@@ -2,12 +2,15 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Maui.Dispatching;
+using MauiBlazorDispatcher = Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher;
 
 namespace Microsoft.Maui.MauiBlazorWebView.ExternalHandler.UnitTests;
 
 /// <summary>
 /// Stands in for the <see cref="WebViewManager"/> an out-of-repo BlazorWebView backend would write.
-/// It only uses public API from <c>Microsoft.AspNetCore.Components.WebView</c>.
+/// It only uses public API, including MAUI's public <see cref="MauiBlazorDispatcher"/> adapter rather
+/// than a copied <see cref="AspNetCore.Components.Dispatcher"/> implementation.
 /// </summary>
 internal sealed class FakeExternalWebViewManager : WebViewManager
 {
@@ -18,8 +21,9 @@ internal sealed class FakeExternalWebViewManager : WebViewManager
 	public FakeExternalWebViewManager(
 		IServiceProvider services,
 		IFileProvider fileProvider,
-		JSComponentConfigurationStore jsComponents)
-		: base(services, Dispatcher.CreateDefault(), AppBaseUri, fileProvider, jsComponents, "index.html")
+		JSComponentConfigurationStore jsComponents,
+		IDispatcher dispatcher)
+		: base(services, new MauiBlazorDispatcher(dispatcher), AppBaseUri, fileProvider, jsComponents, "index.html")
 	{
 	}
 

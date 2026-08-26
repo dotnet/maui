@@ -23,32 +23,78 @@ public class ExternalStaticContentHotReloadTests
 		new(
 			new ServiceCollection().BuildServiceProvider(),
 			new NullFileProvider(),
-			new JSComponentConfigurationStore());
+			new JSComponentConfigurationStore(),
+			new FakeExternalDispatcher());
+
+	private static string RequestUri(string relativePath) =>
+		new Uri(FakeExternalWebViewManager.AppBaseUri, relativePath).AbsoluteUri;
 
 	[Fact]
-	public async Task AttachToWebViewManagerIfEnabled_MatchesHotReloadAvailability()
+	public async Task TryAttachToWebViewManager_ReportsWhetherItAttached()
 	{
 		await using var manager = CreateManager();
 
-		BlazorWebViewStaticContentHotReload.AttachToWebViewManagerIfEnabled(manager);
+		var attachTask = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
 
 		if (MetadataUpdater.IsSupported)
 		{
+			Assert.NotNull(attachTask);
+			await attachTask!;
+
 			// The notifier root component is registered under a fixed selector, so removing it succeeds.
 			await manager.RemoveRootComponentAsync("body::after");
 		}
 		else
 		{
+			Assert.Null(attachTask);
 			await Assert.ThrowsAsync<InvalidOperationException>(
 				() => manager.RemoveRootComponentAsync("body::after"));
 		}
 	}
 
 	[Fact]
-	public void AttachToWebViewManagerIfEnabled_Throws_WhenManagerIsNull()
+	public async Task TryAttachToWebViewManager_IsIdempotentForTheSameManager()
 	{
-		Assert.Throws<ArgumentNullException>(
-			() => BlazorWebViewStaticContentHotReload.AttachToWebViewManagerIfEnabled(null!));
+		await using var manager = CreateManager();
+
+		var first = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		var second = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+
+		// A second attach must not throw "there is already a root component with selector 'body::after'".
+		Assert.Same(first, second);
+	}
+
+	[Fact]
+	public async Task TryAttachToWebViewManager_AttachesEachManagerIndependently()
+	{
+		await using var first = CreateManager();
+		await using var second = CreateManager();
+
+		var firstTask = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(first);
+		var secondTask = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(second);
+
+		if (!MetadataUpdater.IsSupported)
+		{
+			Assert.Null(firstTask);
+			Assert.Null(secondTask);
+			return;
+		}
+
+		Assert.NotNull(firstTask);
+		Assert.NotNull(secondTask);
+
+		// Idempotence is scoped to a single manager, so each one really did get the notifier registered.
+		await first.RemoveRootComponentAsync("body::after");
+		await second.RemoveRootComponentAsync("body::after");
+	}
+
+	[Fact]
+	public void TryAttachToWebViewManager_Throws_WhenManagerIsNull()
+	{
+		Assert.Throws<ArgumentNullException>(() =>
+		{
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(null!);
+		});
 	}
 
 	[Fact]
@@ -62,108 +108,81 @@ public class ExternalStaticContentHotReloadTests
 
 		Assert.NotNull(manager);
 		Assert.Same(manager, handler.WebViewManager);
+		Assert.Equal(MetadataUpdater.IsSupported, handler.HotReloadAttachTask is not null);
 	}
 
 	[Fact]
-	public void TryReplaceResponseContent_ReturnsFalse_ForUnknownContent()
+	public void TryGetUpdatedStaticContent_ReturnsFalse_ForUnknownContent()
 	{
-		var originalContent = new MemoryStream(Encoding.UTF8.GetBytes("original"));
-		Stream content = originalContent;
-		var statusCode = 200;
-		var headers = new Dictionary<string, string>(StringComparer.Ordinal);
-
-		var replaced = BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(
+		var found = BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
 			FakeExternalWebViewManager.ContentRootRelativeToAppRoot,
-			new Uri(FakeExternalWebViewManager.AppBaseUri, "css/app.css").AbsoluteUri,
-			ref statusCode,
-			ref content,
-			headers);
+			RequestUri("css/app.css"),
+			out var content,
+			out var contentType);
 
-		Assert.False(replaced);
-		Assert.Same(originalContent, content);
-		Assert.Equal(200, statusCode);
-		Assert.Empty(headers);
+		Assert.False(found);
+		Assert.Null(content);
+		Assert.Null(contentType);
 	}
 
 	[Fact]
-	public void TryReplaceResponseContent_ServesHotReloadScript_WhenSupported()
+	public void TryGetUpdatedStaticContent_ServesHotReloadScript_WhenSupported()
 	{
-		var originalContent = new MemoryStream(Encoding.UTF8.GetBytes("original"));
-		Stream content = originalContent;
-		var statusCode = 404;
-		var headers = new Dictionary<string, string>(StringComparer.Ordinal);
-
-		var replaced = BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(
+		var found = BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
 			FakeExternalWebViewManager.ContentRootRelativeToAppRoot,
-			new Uri(FakeExternalWebViewManager.AppBaseUri, HotReloadScriptPath).AbsoluteUri,
-			ref statusCode,
-			ref content,
-			headers);
+			RequestUri(HotReloadScriptPath),
+			out var content,
+			out var contentType);
 
 		if (!MetadataUpdater.IsSupported)
 		{
-			Assert.False(replaced);
+			Assert.False(found);
+			Assert.Null(content);
 			return;
 		}
 
-		Assert.True(replaced);
-		Assert.Equal(200, statusCode);
-		Assert.NotSame(originalContent, content);
-		Assert.Equal("text/javascript", headers["Content-Type"]);
+		Assert.True(found);
+		Assert.Equal("text/javascript", contentType);
+		Assert.NotNull(content);
 
-		using var reader = new StreamReader(content);
-		Assert.Contains("notifyCssUpdated", reader.ReadToEnd(), StringComparison.Ordinal);
+		// The caller owns the stream, so it must be readable and independently disposable.
+		using (content!)
+		{
+			using var reader = new StreamReader(content, Encoding.UTF8);
+			Assert.Contains("notifyCssUpdated", reader.ReadToEnd(), StringComparison.Ordinal);
+		}
+	}
+
+	[Fact]
+	public void TryGetUpdatedStaticContent_ReturnsAFreshStreamPerCall()
+	{
+		if (!MetadataUpdater.IsSupported)
+		{
+			return;
+		}
+
+		var uri = RequestUri(HotReloadScriptPath);
+
+		Assert.True(BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+			FakeExternalWebViewManager.ContentRootRelativeToAppRoot, uri, out var first, out _));
+		Assert.True(BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+			FakeExternalWebViewManager.ContentRootRelativeToAppRoot, uri, out var second, out _));
+
+		Assert.NotSame(first, second);
+
+		// Disposing one must not affect the other; the caller owns each stream.
+		first!.Dispose();
+		Assert.NotEqual(0, second!.ReadByte());
+		second.Dispose();
 	}
 
 	[Theory]
 	[InlineData(null, "https://0.0.0.0/css/app.css")]
 	[InlineData("wwwroot", null)]
-	public void TryReplaceResponseContent_Throws_ForNullStringArguments(string? contentRoot, string? requestUri)
-	{
-		var headers = new Dictionary<string, string>(StringComparer.Ordinal);
-
-		Assert.Throws<ArgumentNullException>(() =>
-		{
-			Stream content = new MemoryStream();
-			var statusCode = 200;
-			BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(
-				contentRoot!,
-				requestUri!,
-				ref statusCode,
-				ref content,
-				headers);
-		});
-	}
-
-	[Fact]
-	public void TryReplaceResponseContent_Throws_WhenHeadersAreNull()
+	public void TryGetUpdatedStaticContent_Throws_ForNullArguments(string? contentRoot, string? requestUri)
 	{
 		Assert.Throws<ArgumentNullException>(() =>
-		{
-			Stream content = new MemoryStream();
-			var statusCode = 200;
-			BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(
-				FakeExternalWebViewManager.ContentRootRelativeToAppRoot,
-				new Uri(FakeExternalWebViewManager.AppBaseUri, "css/app.css").AbsoluteUri,
-				ref statusCode,
-				ref content,
-				null!);
-		});
-	}
-
-	[Fact]
-	public void TryReplaceResponseContent_Throws_WhenContentIsNull()
-	{
-		Assert.Throws<ArgumentNullException>(() =>
-		{
-			Stream? content = null;
-			var statusCode = 200;
-			BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(
-				FakeExternalWebViewManager.ContentRootRelativeToAppRoot,
-				new Uri(FakeExternalWebViewManager.AppBaseUri, "css/app.css").AbsoluteUri,
-				ref statusCode,
-				ref content!,
-				new Dictionary<string, string>(StringComparer.Ordinal));
-		});
+			BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+				contentRoot!, requestUri!, out _, out _));
 	}
 }

@@ -16,7 +16,8 @@ public class ExternalRootComponentTests
 		new(
 			new ServiceCollection().BuildServiceProvider(),
 			new NullFileProvider(),
-			new JSComponentConfigurationStore());
+			new JSComponentConfigurationStore(),
+			new FakeExternalDispatcher());
 
 	[Fact]
 	public async Task AddToWebViewManagerAsync_RegistersComponent()

@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
 		{
 			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
-			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+			var hotReloadedResult = BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
 			return defaultResult || hotReloadedResult;
 		}
 

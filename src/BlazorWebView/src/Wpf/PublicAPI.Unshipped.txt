@@ -6,5 +6,3 @@ Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2!
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControlProperty -> System.Windows.DependencyProperty!
-Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.NativeWebView.get -> object?
-Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.NativeWebView.set -> void
