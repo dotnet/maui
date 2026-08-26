@@ -16,13 +16,6 @@
       ],
       "rollForward": false
     },
-    "microsoft.dotnet.helix.jobmonitor": {
-      "version": "11.0.0-beta.26379.102",
-      "commands": [
-        "dotnet-helix-job-monitor"
-      ],
-      "rollForward": false
-    },
     "api-tools": {
       "version": "1.3.5",
       "commands": [
