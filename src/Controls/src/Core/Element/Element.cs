@@ -706,10 +706,9 @@ namespace Microsoft.Maui.Controls
 
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged, specificityChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
-			// Equal SafeAreaEdges values can still change setter specificity and Android listener eligibility.
 			var handlerValueChanged =
 				changed ||
-				(specificityChanged && ReferenceEquals(property, SafeAreaElement.SafeAreaEdgesProperty));
+				(specificityChanged && property.UpdateHandlerOnSpecificityChange);
 			UpdateHandlerValue(property.PropertyName, handlerValueChanged);
 
 		}

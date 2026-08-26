@@ -23,9 +23,19 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="InvalidOperationException">
 		/// Thrown when the property is read from a <see cref="BindableObject"/> that does not implement <see cref="ISafeAreaElement"/>.
 		/// </exception>
-		public static readonly BindableProperty SafeAreaEdgesProperty =
-			BindableProperty.Create(nameof(ISafeAreaElement.SafeAreaEdges), typeof(SafeAreaEdges), typeof(ISafeAreaElement), SafeAreaEdges.Default,
-									defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
+		public static readonly BindableProperty SafeAreaEdgesProperty = CreateSafeAreaEdgesProperty();
+
+		static BindableProperty CreateSafeAreaEdgesProperty()
+		{
+			var property = BindableProperty.Create(
+				nameof(ISafeAreaElement.SafeAreaEdges),
+				typeof(SafeAreaEdges),
+				typeof(ISafeAreaElement),
+				SafeAreaEdges.Default,
+				defaultValueCreator: SafeAreaEdgesDefaultValueCreator);
+			property.UpdateHandlerOnSpecificityChange = true;
+			return property;
+		}
 
 		static object SafeAreaEdgesDefaultValueCreator(BindableObject bindable)
 		{

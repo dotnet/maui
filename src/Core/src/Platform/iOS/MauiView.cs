@@ -153,6 +153,7 @@ namespace Microsoft.Maui.Platform
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
+		double? _lastSoftInputBottomOverlap;
 		WeakReference<NSObject>? _keyboardWillShowObserver;
 		WeakReference<NSObject>? _keyboardWillHideObserver;
 
@@ -373,6 +374,49 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static CGRect ConvertKeyboardFrameToWindow(UIWindow window, CGRect keyboardFrame) =>
+			window.ConvertRectFromCoordinateSpace(keyboardFrame, window.Screen.CoordinateSpace);
+
+		bool TryGetSoftInputBottomOverlap(SafeAreaEdges safeAreaEdges, out double overlap)
+		{
+			overlap = 0;
+
+			if (!_isKeyboardShowing ||
+				!SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom) ||
+				Window is not { } window ||
+				_keyboardFrame.IsEmpty)
+			{
+				return false;
+			}
+
+			var keyboardFrameInWindow = ConvertKeyboardFrameToWindow(window, _keyboardFrame);
+			if (CGRect.Intersect(keyboardFrameInWindow, window.Bounds).IsEmpty)
+				return true;
+
+			var viewFrameInWindow = ConvertRectToView(Bounds, window);
+			overlap = Math.Max(0, viewFrameInWindow.Bottom - keyboardFrameInWindow.Y);
+			return true;
+		}
+
+		bool HasSoftInputBottomOverlapChanged()
+		{
+			double? overlap = null;
+			if (SafeAreaViewStrategy.TryGetSafeAreaEdges(View, out var safeAreaEdges, includeLegacy: false) &&
+				TryGetSoftInputBottomOverlap(safeAreaEdges, out var currentOverlap))
+			{
+				overlap = currentOverlap;
+			}
+
+			var previousOverlap = _lastSoftInputBottomOverlap;
+			_lastSoftInputBottomOverlap = overlap;
+
+			if (!previousOverlap.HasValue || !overlap.HasValue)
+				return previousOverlap.HasValue != overlap.HasValue;
+
+			var displayScale = (double)(Window?.Screen.Scale ?? UIScreen.MainScreen.Scale);
+			return !SafeAreaPadding.IsZeroAtPixelLevel(overlap.Value - previousOverlap.Value, displayScale);
+		}
+
 		SafeAreaPadding GetAdjustedSafeAreaInsets() => GetAdjustedSafeAreaInsets(out _);
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets(out bool bottomIncludesKeyboardOverlap)
@@ -401,37 +445,14 @@ namespace Microsoft.Maui.Platform
 
 				if (needsKeyboardAdjustment)
 				{
-					// Get the keyboard frame and calculate its intersection with the current window
-					var window = this.Window;
-
-					if (window != null && !_keyboardFrame.IsEmpty)
+					if (TryGetSoftInputBottomOverlap(safeAreaEdges, out var overlap) &&
+						SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom))
 					{
-						var windowFrame = window.Frame;
-						var keyboardIntersection = CGRect.Intersect(_keyboardFrame, windowFrame);
-
-						// If keyboard is visible and intersects with window
-						if (!keyboardIntersection.IsEmpty)
-						{
-							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
-							// Bottom edge is most commonly affected by keyboard
-							if (SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom))
-							{
-								// Use this view's frame-relative overlap when positive; otherwise
-								// retain the current bottom safe area.
-								var viewBottomY = 0.0;
-								if (Window is not null)
-								{
-									var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
-									viewBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
-								}
-								var keyboardTopY = _keyboardFrame.Y;
-								var overlap = viewBottomY > keyboardTopY ? (viewBottomY - keyboardTopY) : 0.0;
-
-								var adjustedBottom = (overlap > 0) ? overlap : baseSafeArea.Bottom;
-								bottomIncludesKeyboardOverlap = overlap > 0;
-								baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
-							}
-						}
+						// Use this view's frame-relative overlap when positive; otherwise
+						// retain the current bottom safe area.
+						var adjustedBottom = overlap > 0 ? overlap : baseSafeArea.Bottom;
+						bottomIncludesKeyboardOverlap = overlap > 0;
+						baseSafeArea = new SafeAreaPadding(baseSafeArea.Left, baseSafeArea.Right, baseSafeArea.Top, adjustedBottom);
 					}
 				}
 			}
@@ -467,6 +488,7 @@ namespace Microsoft.Maui.Platform
 		internal static bool IsSoftInputHandledByParent(UIView view)
 		{
 			return view.FindParent(x => x is MauiView mv
+				&& mv.RespondsToSafeArea()
 				&& SafeAreaViewStrategy.IsModernSafeAreaView(mv.View)
 				&& SafeAreaEdges.IsSoftInput(SafeAreaViewStrategy.GetSafeAreaRegionsForEdge(mv.View, 3))) is not null;
 		}
@@ -767,11 +789,9 @@ namespace Microsoft.Maui.Platform
 			UpdateKeyboardSubscription();
 
 			// A SoftInput inset depends on this view's current frame in window coordinates.
-			// Re-evaluate it on every layout while the keyboard is visible so a parent arrange
-			// can remove a stale overlap without leaving the child double-padded.
-			if (_isKeyboardShowing &&
-				SafeAreaViewStrategy.TryGetSafeAreaEdges(View, out var safeAreaEdges, includeLegacy: false) &&
-				SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom))
+			// Revalidate only when the pixel-level overlap changes so stable layout passes
+			// retain the cached ancestor-edge classification.
+			if (HasSoftInputBottomOverlapChanged())
 			{
 				_safeAreaInvalidated = true;
 				_parentHandledSafeAreaEdges = null;
@@ -805,8 +825,14 @@ namespace Microsoft.Maui.Platform
 			// Return whether the way safe area interacts with our view has changed.
 			// Compare at device-pixel resolution to filter sub-pixel noise from animations
 			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
-			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+			var interactionUnchanged =
+				oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
+				(oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+
+			if (!interactionUnchanged)
+				InvalidateDescendantSafeAreas();
+
+			return interactionUnchanged;
 		}
 
 		/// <summary>
@@ -929,6 +955,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var subviews = platformView.Subviews;
+			for (int i = 0; i < subviews.Length; i++)
+			{
+				InvalidateSafeArea(subviews[i]);
+			}
+		}
+
+		void InvalidateDescendantSafeAreas()
+		{
+			var subviews = Subviews;
 			for (int i = 0; i < subviews.Length; i++)
 			{
 				InvalidateSafeArea(subviews[i]);
