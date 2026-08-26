@@ -50,5 +50,35 @@ namespace Microsoft.Maui.DeviceTests
 			// Verify the handler was collected
 			Assert.False(weakHandler.IsAlive, "CarouselViewHandler2 should have been garbage collected");
 		}
+
+		[Fact(DisplayName = "IsEnabled Updates Native Interaction State On Both Container And CollectionView")]
+		public async Task IsEnabledUpdatesNativeInteractionStateOnBothContainerAndCollectionView()
+		{
+			SetupBuilder();
+
+			var carouselView = new CarouselView
+			{
+				IsEnabled = false,
+				ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3" },
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			var handler = await CreateHandlerAsync<CarouselViewHandler2>(carouselView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.False(handler.Controller.CollectionView.UserInteractionEnabled);
+				Assert.False(handler.PlatformView.UserInteractionEnabled);
+
+				carouselView.IsEnabled = true;
+				handler.UpdateValue(nameof(IView.IsEnabled));
+
+				// Both the inner CollectionView and the outer Controller.View (handler.PlatformView)
+				// must become interactive - if only the inner one updates, swiping stays blocked
+				// because Controller.View is the outer view that gates touch delivery.
+				Assert.True(handler.Controller.CollectionView.UserInteractionEnabled);
+				Assert.True(handler.PlatformView.UserInteractionEnabled);
+			});
+		}
 	}
 }
