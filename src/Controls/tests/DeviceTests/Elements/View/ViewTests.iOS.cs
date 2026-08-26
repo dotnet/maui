@@ -521,6 +521,20 @@ namespace Microsoft.Maui.DeviceTests
 							childFrameInWindow.Y + child.LastArrangeBounds.Bottom,
 							precision: 5);
 
+						childPlatformView.Transform = CGAffineTransform.MakeTranslation(0, -50);
+						childPlatformView.LayoutSubviews();
+						childFrameInWindow = childPlatformView.Superview!
+							.ConvertRectToView(childPlatformView.Frame, childPlatformView.Window);
+						keyboardOverlap = Math.Max(0, childFrameInWindow.Bottom - keyboardFrame.Y);
+
+						Assert.Equal(0d, keyboardOverlap, precision: 5);
+						Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+
+						childPlatformView.Transform = CGAffineTransform.MakeIdentity();
+						childPlatformView.LayoutSubviews();
+
+						Assert.Equal(new Rect(0, 0, 100, 50), child.LastArrangeBounds);
+
 						childPlatformView.Frame = new CGRect(
 							parent.LastArrangeBounds.X,
 							parent.LastArrangeBounds.Y,
