@@ -232,6 +232,116 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void DisconnectingWithAnActiveContainerTearsTheContainerDown()
+		{
+			var view = new ViewStub();
+			var handler = CreateHandler(view);
+			var platformView = handler.PlatformView;
+
+			var parent = new ExternalViewGroup();
+			parent.Add(platformView);
+
+			handler.HasContainer = true;
+			var container = handler.ContainerView;
+			Assert.NotNull(container);
+
+			// Disconnect while the container is still installed.
+			((IElementHandler)handler).DisconnectHandler();
+
+			// The container must be unwound rather than left dangling on the handler.
+			Assert.Equal(1, handler.RemoveContainerCount);
+			Assert.True(container.IsDisposed);
+			Assert.Null(handler.ContainerView);
+			Assert.Null(((IViewHandler)handler).ContainerView);
+			Assert.False(handler.HasContainer);
+
+			// RemoveContainer ran while the platform view was still reachable, so the view tree is intact.
+			Assert.Same(parent, platformView.Parent);
+			Assert.Equal(new ExternalPlatformView[] { platformView }, parent.Children);
+		}
+
+		[Fact]
+		public void ReconnectingAfterDisconnectWithAnActiveContainerRebuildsTheContainer()
+		{
+			var view = new ViewStub { Background = new SolidPaint(Colors.Green) };
+			var handler = CreateHandler(view, ExternalBackendViewHandler.ExternalBackendMapper);
+
+			Assert.True(handler.HasContainer);
+			var firstContainer = handler.ContainerView;
+			Assert.NotNull(firstContainer);
+			Assert.Equal(1, handler.SetupContainerCount);
+
+			((IElementHandler)handler).DisconnectHandler();
+
+			Assert.False(handler.HasContainer);
+			Assert.Null(handler.ContainerView);
+
+			// Reconnect the same handler to a new virtual view that also needs a container.
+			var secondView = new ViewStub { Background = new SolidPaint(Colors.Purple) };
+			handler.SetVirtualView(secondView);
+
+			// Because the stale state was cleared, SetupContainer runs again instead of being skipped
+			// by the HasContainer equality short-circuit.
+			Assert.True(handler.HasContainer);
+			Assert.Equal(2, handler.SetupContainerCount);
+
+			var secondContainer = handler.ContainerView;
+			Assert.NotNull(secondContainer);
+			Assert.NotSame(firstContainer, secondContainer);
+			Assert.False(secondContainer.IsDisposed);
+
+			// The rebuilt container wraps the live platform view, not the stale one.
+			Assert.Same(handler.PlatformView, secondContainer.Content);
+		}
+
+		[Fact]
+		public void SetContainerViewRejectsAContainerOfTheWrongType()
+		{
+			var handler = CreateHandler(new ViewStub());
+
+			// A plain platform view is not the wrapper type this external backend shadows ContainerView with.
+			var wrongType = new ExternalPlatformView();
+
+			var ex = Assert.Throws<ArgumentException>(() => handler.SetContainerViewDirectly(wrongType));
+
+			Assert.Equal("containerView", ex.ParamName);
+			Assert.Contains(nameof(ExternalWrapperView), ex.Message, StringComparison.Ordinal);
+
+			// The rejected value must not have been stored.
+			Assert.Null(handler.ContainerView);
+			Assert.Null(((IViewHandler)handler).ContainerView);
+		}
+
+		[Fact]
+		public void SetContainerViewRejectionLeavesAnExistingContainerIntact()
+		{
+			var handler = CreateHandler(new ViewStub());
+
+			handler.HasContainer = true;
+			var container = handler.ContainerView;
+			Assert.NotNull(container);
+
+			Assert.Throws<ArgumentException>(() => handler.SetContainerViewDirectly(new ExternalPlatformView()));
+
+			Assert.Same(container, handler.ContainerView);
+			Assert.False(container.IsDisposed);
+		}
+
+		[Fact]
+		public void SetContainerViewStillAcceptsNullAfterValidationIsOverridden()
+		{
+			var handler = CreateHandler(new ViewStub());
+
+			handler.HasContainer = true;
+			Assert.NotNull(handler.ContainerView);
+
+			// null means "clear" and must bypass validation.
+			handler.SetContainerViewDirectly(null);
+
+			Assert.Null(handler.ContainerView);
+		}
+
+		[Fact]
 		public void FullViewMapperStillDrivesTheExternalContainer()
 		{
 			var view = new ViewStub

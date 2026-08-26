@@ -21,7 +21,8 @@ namespace Microsoft.Maui.Handlers
 			protected set => base.ContainerView = value;
 		}
 
-		private protected override void ValidateContainerView(NView containerView)
+		/// <inheritdoc/>
+		protected override void ValidateContainerView(NView containerView)
 		{
 			if (containerView is not WrapperView)
 			{
@@ -29,6 +30,8 @@ namespace Microsoft.Maui.Handlers
 					$"The container view must be a {nameof(WrapperView)} because {GetType().Name} exposes {nameof(ContainerView)} as a {nameof(WrapperView)}.",
 					nameof(containerView));
 			}
+
+			base.ValidateContainerView(containerView);
 		}
 
 		~ViewHandler()

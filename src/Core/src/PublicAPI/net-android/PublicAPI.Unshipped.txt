@@ -364,3 +364,4 @@ Microsoft.Maui.ISwipeItemMenuItemIconColor
 Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Android.Views.View? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Android.Views.View! containerView) -> void

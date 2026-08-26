@@ -51,6 +51,27 @@ namespace Microsoft.Maui.Core.ExternalBackend.TestSupport
 		/// </summary>
 		public new ExternalWrapperView? ContainerView => (ExternalWrapperView?)base.ContainerView;
 
+		/// <summary>
+		/// Rejects any container that is not an <see cref="ExternalWrapperView"/>, which is what keeps the
+		/// strongly typed <see cref="ContainerView"/> cast above safe.
+		/// </summary>
+		/// <remarks>
+		/// The parameter type is the <c>PlatformView</c> alias of the target framework. On the neutral (non-platform)
+		/// build that alias is <see cref="object"/>, which is why this override is declared with <see cref="object"/>
+		/// rather than <see cref="ExternalPlatformView"/>.
+		/// </remarks>
+		protected override void ValidateContainerView(object containerView)
+		{
+			if (containerView is not ExternalWrapperView)
+			{
+				throw new ArgumentException(
+					$"The container view must be an {nameof(ExternalWrapperView)}.",
+					nameof(containerView));
+			}
+
+			base.ValidateContainerView(containerView);
+		}
+
 		/// <inheritdoc/>
 		public override bool NeedsContainer
 		{

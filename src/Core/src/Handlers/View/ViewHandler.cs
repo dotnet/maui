@@ -145,14 +145,17 @@ namespace Microsoft.Maui.Handlers
 		/// Constructs the <see cref="ContainerView"/> and adds <see cref="PlatformView"/> to a container.
 		/// </summary>
 		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="true"/>.
-		/// Overrides should call <see cref="SetContainerView(PlatformView?)"/> to publish the container they created.</remarks>
+		/// An override that cannot reach the <see cref="ContainerView"/> setter - that is, one declared outside of this
+		/// assembly - should publish the container it created by calling <see cref="SetContainerView(PlatformView?)"/>.</remarks>
 		protected abstract void SetupContainer();
 
 		/// <summary>
 		/// Deconstructs the <see cref="ContainerView"/> and removes <see cref="PlatformView"/> from its container. 
 		/// </summary>
 		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="false"/>.
-		/// Overrides should call <see cref="SetContainerView(PlatformView?)"/> with <see langword="null"/> to clear the container they removed.</remarks>
+		/// An override that cannot reach the <see cref="ContainerView"/> setter - that is, one declared outside of this
+		/// assembly - should clear the container it removed by calling <see cref="SetContainerView(PlatformView?)"/> with
+		/// <see langword="null"/>.</remarks>
 		protected abstract void RemoveContainer();
 
 		/// <summary>
@@ -232,10 +235,55 @@ namespace Microsoft.Maui.Handlers
 			ContainerView = containerView;
 		}
 
-		// Lets a platform-specific handler reject container views that would break the strongly typed
-		// ContainerView property it shadows (for example the WrapperView-typed property on iOS and Tizen).
-		private protected virtual void ValidateContainerView(PlatformView containerView)
+		/// <summary>
+		/// Validates that <paramref name="containerView"/> is a container type this handler supports, throwing if it is not.
+		/// </summary>
+		/// <param name="containerView">The candidate container view. This is never <see langword="null"/>.</param>
+		/// <remarks>
+		/// <para>Called by <see cref="SetContainerView(PlatformView?)"/> before the value is stored. Override this when a derived
+		/// handler shadows <see cref="ContainerView"/> with a more specific type, so that an unsupported container is rejected
+		/// where the mistake is made instead of surfacing later as an <see cref="System.InvalidCastException"/> from the
+		/// shadowing getter.</para>
+		/// <para>The .NET MAUI iOS, Mac Catalyst and Tizen handlers use this to require a
+		/// <see cref="Platform.WrapperView"/>. An external backend that shadows <see cref="ContainerView"/> with its own
+		/// wrapper type should do the same.</para>
+		/// <example>
+		/// <code language="csharp">
+		/// public new MyWrapperView? ContainerView => (MyWrapperView?)base.ContainerView;
+		///
+		/// protected override void ValidateContainerView(MyPlatformView containerView)
+		/// {
+		///     if (containerView is not MyWrapperView)
+		///     {
+		///         throw new ArgumentException(
+		///             $"The container view must be a {nameof(MyWrapperView)}.",
+		///             nameof(containerView));
+		///     }
+		///
+		///     base.ValidateContainerView(containerView);
+		/// }
+		/// </code>
+		/// </example>
+		/// </remarks>
+		/// <exception cref="System.ArgumentException">Thrown by overrides when <paramref name="containerView"/> is not supported.</exception>
+		protected virtual void ValidateContainerView(PlatformView containerView)
 		{
+		}
+
+		private protected override void OnDisconnecting()
+		{
+			// The platform view is still reachable here, which is the same precondition RemoveContainer()
+			// runs under during normal operation, so existing overrides stay on their supported path.
+			// Without this, ContainerView and HasContainer would survive the disconnect and a later
+			// reconnect would skip SetupContainer() and keep pointing at the stale container.
+			if (HasContainer)
+			{
+				HasContainer = false;
+			}
+
+			ContainerView = null;
+
+			base.OnDisconnecting();
 		}
 
 		object? IViewHandler.ContainerView => ContainerView;
