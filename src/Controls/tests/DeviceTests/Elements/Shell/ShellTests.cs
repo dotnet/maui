@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
 		// every ShellTests test run against both the NavigationPage renderer and handler.
-		// See ShellNavigationRendererTests.iOS.cs and RendererHandlerVariant.cs.
+		// See ShellNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
 		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
 		{
 #if IOS || MACCATALYST

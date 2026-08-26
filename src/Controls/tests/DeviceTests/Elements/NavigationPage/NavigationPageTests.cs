@@ -21,7 +21,9 @@ namespace Microsoft.Maui.DeviceTests
 	// This base class exercises NavigationRenderer on iOS/MacCatalyst; the
 	// NavigationPageHandlerTests_NavigationPage subclass overrides registration to exercise
 	// NavigationViewHandler instead, so every test below runs against both variants.
+#if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()

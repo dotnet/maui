@@ -45,15 +45,13 @@ namespace Microsoft.Maui.DeviceTests
 							RegisterNavigationPageHandler(handlers);
 #if WINDOWS || ANDROID
 							handlers.AddHandler<Toolbar, ToolbarHandler>();
-#else
-							RegisterNavigationPageHandler(handlers);
 #endif
 						});
 			}
 
 			// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer,
 			// letting every NewWindowCollection test run against both the NavigationPage
-			// renderer and handler. See VisualElementNavigationRendererTests.iOS.cs and
+			// renderer and handler. See VisualElementNavigationHandlerTests.iOS.cs and
 			// RendererHandlerVariant.cs.
 			protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
 			{

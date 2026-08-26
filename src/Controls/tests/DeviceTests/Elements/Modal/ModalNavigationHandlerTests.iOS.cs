@@ -1,4 +1,7 @@
 using Xunit;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 namespace Microsoft.Maui.DeviceTests
 {
 	// Forces every ModalTests test method to exercise NavigationViewHandler instead of the
@@ -11,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationViewHandler)] // See RendererHandlerVariant.cs
 	public class ModalNavigationHandlerTests : ModalTests
 	{
-		protected override void SetupBuilder(bool includeNavigationViewHandler = false) =>
-			base.SetupBuilder(includeNavigationViewHandler: true);
+		protected override void RegisterNavigationPageHandler(IMauiHandlersCollection handlers) =>
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 	}
 }

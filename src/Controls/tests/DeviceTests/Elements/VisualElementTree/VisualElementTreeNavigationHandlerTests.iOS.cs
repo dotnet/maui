@@ -1,4 +1,6 @@
 using Xunit;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 namespace Microsoft.Maui.DeviceTests
 {
 	// Forces every VisualElementTreeTests test method to exercise NavigationViewHandler instead
@@ -9,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationViewHandler)] // See RendererHandlerVariant.cs
 	public class VisualElementTreeNavigationHandlerTests : VisualElementTreeTests
 	{
-		protected override void SetupBuilder(bool includeNavigationViewHandler = false) =>
-			base.SetupBuilder(includeNavigationViewHandler: true);
+		protected override void RegisterNavigationPageHandler(IMauiHandlersCollection handlers) =>
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 	}
 }

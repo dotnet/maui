@@ -26,10 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		// Default flipped to false so NavigationRenderer runs by default on iOS/MacCatalyst; the
-		// #else branch below is unaffected and always registers NavigationViewHandler on other
-		// platforms regardless of this parameter. See VisualElementTreeNavigationHandlerTests.iOS.cs.
-		protected virtual void SetupBuilder(bool includeNavigationViewHandler = false)
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -37,18 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-#if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
-					}
-#else
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-#endif
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
@@ -57,11 +43,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every VisualElementTreeTests test run against both the NavigationPage renderer
+		// and handler. See VisualElementTreeNavigationHandlerTests.iOS.cs and
+		// RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
 #if IOS || MACCATALYST
 		[Fact]
 		public async Task Handler_GetVisualTreeElements()
 		{
-			SetupBuilder(includeNavigationViewHandler: true);
+			// Handler-only: always exercises NavigationViewHandler, even when this test class
+			// is run as the base VisualElementTreeTests (Renderer-default) suite, since there is
+			// no separate handler-only subclass test for this scenario. Bypasses
+			// SetupBuilder/RegisterNavigationPageHandler so the subclass's default can't affect it.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.SetupShellHandlers();
+
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
 
 			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };
@@ -110,7 +125,28 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GetVisualTreeElements()
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+#if IOS || MACCATALYST
+			// Renderer-only: this test forces the old event-based NavigationImpl path
+			// (setForMaui:false) below, which NavigationRenderer supports but
+			// NavigationViewHandler does not implement via RequestNavigation (causes hangs).
+			// Register NavigationRenderer directly (not via SetupBuilder/RegisterNavigationPageHandler)
+			// so this stays Renderer-only even when inherited by VisualElementTreeNavigationHandlerTests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.SetupShellHandlers();
+
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
+#else
+			SetupBuilder();
+#endif
 
 			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };

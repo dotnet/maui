@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
 		// every CollectionViewTests test run against both the NavigationPage renderer and
-		// handler. See CollectionViewNavigationRendererTests.iOS.cs and RendererHandlerVariant.cs.
+		// handler. See CollectionViewNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
 		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
 		{
 #if IOS || MACCATALYST

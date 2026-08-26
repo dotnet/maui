@@ -51,6 +51,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// Handler-only: exercises NavigationViewHandler's programmatic pop path via
+		// PopViewController(animated:false). NavigationRenderer doesn't reliably fire
+		// NavigatedTo through this path (verified: times out), so this test is
+		// Handler-only, bypassing SetupBuilder to hardcode NavigationViewHandler.
+		[Fact]
+		public async Task Handler_NavigatingBackViaProgrammaticPopFiresNavigatedEvent()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterCommonHandlers(handlers);
+				});
+			});
+
+			var page = new ContentPage() { Title = "Root Page" };
+
+			var navPage = new NavigationPage(page) { Title = "App Page" };
+
+			await navPage.PushAsync(new ContentPage() { Title = "Second Page" });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(navPage.CurrentPage);
+
+				var navController = (navPage.Handler as IPlatformViewHandler)?.ViewController as UINavigationController;
+				Assert.NotNull(navController);
+
+				Assert.False(page.HasNavigatedTo);
+
+				// Pop via UIKit - this triggers the handler's OnNavigationComplete which calls OnNativePopCompleted
+				navController.PopViewController(animated: false);
+				await OnNavigatedToAsync(page, TimeSpan.FromSeconds(5));
+
+				Assert.True(page.HasNavigatedTo);
+			});
+		}
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
