@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationManager
+	internal partial class ModalNavigationManager : IModalNavigationHost
 	{
 		Window _window;
 		public IReadOnlyList<Page> ModalStack => _modalPages.Pages;
@@ -58,8 +59,62 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.Destroying += (_, _) =>
 			{
 				ClearModalPages(platform: true);
+				DisposePlatformOverride();
 			};
 		}
+
+		IModalNavigationPlatform? _platformOverride;
+		bool _platformOverrideResolved;
+
+		// Resolved lazily because a Window is constructed long before it has a handler, and therefore
+		// long before it has a service scope to resolve from. Resolution latches only once the window
+		// scope is available so that a factory registered by an external backend is always seen.
+		IModalNavigationPlatform? PlatformOverride
+		{
+			get
+			{
+				if (_platformOverrideResolved)
+					return _platformOverride;
+
+				// The window handler's IMauiContext is the per-window service scope, so the platform
+				// instance created here is inherently isolated to this window.
+				var services = _window.Handler?.MauiContext?.Services;
+				if (services is null)
+					return null;
+
+				_platformOverrideResolved = true;
+				_platformOverride = services
+					.GetService<IModalNavigationPlatformFactory>()?
+					.CreateModalNavigationPlatform(this);
+
+				return _platformOverride;
+			}
+		}
+
+		void DisposePlatformOverride()
+		{
+			var platformOverride = _platformOverride;
+			_platformOverride = null;
+			_platformOverrideResolved = false;
+			platformOverride?.Dispose();
+		}
+
+		Window IModalNavigationHost.Window => _window;
+
+		IMauiContext IModalNavigationHost.MauiContext => WindowMauiContext;
+
+		IReadOnlyList<Page> IModalNavigationHost.PlatformModalStack => _platformModalPages;
+
+		Page? IModalNavigationHost.CurrentPage => CurrentPage;
+
+		Page IModalNavigationHost.CurrentPlatformPage => CurrentPlatformPage;
+
+		bool IModalNavigationHost.IsModalReady => IsModalReady;
+
+		bool IModalNavigationHost.IsBatchPopping =>
+			_window.Page is Shell shell && shell.CurrentItem?.CurrentItem?.IsPoppingModalStack == true;
+
+		void IModalNavigationHost.RequestSync() => SyncModalStackWhenPlatformIsReady();
 
 		void OnWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
@@ -68,6 +123,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (e.OldHandler is not null)
 			{
 				ClearModalPages(platform: true);
+
+				// The override was created against the old handler's service scope and most likely holds
+				// platform views owned by it, so drop it and let the new scope produce a fresh instance.
+				DisposePlatformOverride();
 			}
 		}
 
@@ -91,6 +150,66 @@ namespace Microsoft.Maui.Controls.Platform
 					_window?.Page?.Handler is not null &&
 					_window.Handler is not null
 					&& IsModalPlatformReady;
+			}
+		}
+
+		// Routing layer between the cross-platform modal orchestration above and the actual
+		// presentation below. When an IModalNavigationPlatformFactory is registered the resolved
+		// override handles presentation; otherwise the built-in platform partials run unchanged.
+		bool IsModalPlatformReady => PlatformOverride?.IsReady ?? IsModalPlatformReadyCore;
+
+		Task SyncModalStackWhenPlatformIsReadyAsync()
+		{
+			if (PlatformOverride is not IModalNavigationPlatform platformOverride)
+				return SyncModalStackWhenPlatformIsReadyCoreAsync();
+
+			// An override that isn't ready is expected to call IModalNavigationHost.RequestSync when it
+			// becomes ready, so there's nothing to wait on here.
+			return platformOverride.IsReady ? SyncPlatformModalStackAsync() : Task.CompletedTask;
+		}
+
+		Task<Page> PopModalPlatformAsync(bool animated)
+		{
+			if (PlatformOverride is not IModalNavigationPlatform platformOverride)
+				return PopModalPlatformCoreAsync(animated);
+
+			return PopModalWithOverrideAsync(platformOverride, animated);
+		}
+
+		async Task<Page> PopModalWithOverrideAsync(IModalNavigationPlatform platformOverride, bool animated)
+		{
+			var modal = CurrentPlatformModalPage;
+
+			// Removed before dismissing so that CurrentPlatformPage already refers to the page being
+			// revealed while the override runs. This matches the ordering of the built-in platforms.
+			_platformModalPages.Remove(modal);
+
+			await platformOverride.PopModalAsync(modal, animated);
+			return modal;
+		}
+
+		Task PushModalPlatformAsync(Page modal, bool animated)
+		{
+			if (PlatformOverride is not IModalNavigationPlatform platformOverride)
+				return PushModalPlatformCoreAsync(modal, animated);
+
+			return PushModalWithOverrideAsync(platformOverride, modal, animated);
+		}
+
+		async Task PushModalWithOverrideAsync(IModalNavigationPlatform platformOverride, Page modal, bool animated)
+		{
+			_platformModalPages.Add(modal);
+
+			try
+			{
+				await platformOverride.PushModalAsync(modal, animated);
+			}
+			catch
+			{
+				// Keep the platform stack consistent with what is actually on screen so the next sync
+				// doesn't try to pop a modal that was never presented.
+				_platformModalPages.Remove(modal);
+				throw;
 			}
 		}
 
@@ -355,7 +474,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		partial void OnPageAttachedHandler();
 
-		public void PageAttachedHandler() => OnPageAttachedHandler();
+		public void PageAttachedHandler()
+		{
+			if (PlatformOverride is IModalNavigationPlatform platformOverride)
+			{
+				platformOverride.PageAttached();
+				return;
+			}
+
+			OnPageAttachedHandler();
+		}
 
 		void ClearModalPages(bool xplat = false, bool platform = false)
 		{
@@ -373,11 +501,11 @@ namespace Microsoft.Maui.Controls.Platform
 #if WINDOWS || ANDROID
 		IDisposable? _platformPageWatchingForLoaded;
 
-		async Task SyncModalStackWhenPlatformIsReadyAsync()
+		async Task SyncModalStackWhenPlatformIsReadyCoreAsync()
 		{
 			DisconnectPlatformPageWatchingForLoaded();
 
-			if (IsModalPlatformReady)
+			if (IsModalPlatformReadyCore)
 			{
 				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
@@ -438,7 +566,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_window.IsActivated;
 #endif
 
-		bool IsModalPlatformReady
+		bool IsModalPlatformReadyCore
 		{
 			get
 			{

@@ -10,17 +10,17 @@ namespace Microsoft.Maui.Controls.Platform
 		NavigationStack _modalStack => WindowMauiContext.GetModalStack();
 		IPageController CurrentPageController => CurrentPage!;
 
-		Task SyncModalStackWhenPlatformIsReadyAsync() =>
+		Task SyncModalStackWhenPlatformIsReadyCoreAsync() =>
 			SyncPlatformModalStackAsync();
 
-		bool IsModalPlatformReady => true;
+		bool IsModalPlatformReadyCore => true;
 
 		partial void OnPageAttachedHandler()
 		{
 			WindowMauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
 		}
 
-		async Task<Page> PopModalPlatformAsync(bool animated)
+		async Task<Page> PopModalPlatformCoreAsync(bool animated)
 		{
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return modal;
 		}
 
-		async Task PushModalPlatformAsync(Page modal, bool animated)
+		async Task PushModalPlatformCoreAsync(Page modal, bool animated)
 		{
 			CurrentPageController?.SendDisappearing();
 			_platformModalPages.Add(modal);
