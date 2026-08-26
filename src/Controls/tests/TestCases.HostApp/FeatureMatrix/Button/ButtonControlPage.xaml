@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.ButtonControlMainPage"
-             x:DataType="local:ButtonViewModal"
+             x:DataType="local:ButtonViewModel"
              Title="ButtonControlPage">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Options"
@@ -19,32 +19,35 @@
              ColumnSpacing="10">
               <Button Grid.Row="0"
                       Grid.ColumnSpan="2"
-                      BackgroundColor="SkyBlue"
-                      HeightRequest="100"
-                      Margin="0,50,0,0"
-                      WidthRequest="200"
-                      VerticalOptions="Center"
                       AutomationId="ButtonControl"
+                      Background="{Binding Background}"
                       BorderColor="{Binding BorderColor}"
                       BorderWidth="{Binding BorderWidth}"
                       CharacterSpacing="{Binding CharacterSpacing}"
                       Clicked="OnButtonClicked"
                       Command="{Binding Command}"
                       CommandParameter="{Binding Text}"
+                      ContentLayout="{Binding ContentLayout}"
                       CornerRadius="{Binding CornerRadius}"
                       FlowDirection="{Binding FlowDirection}"
                       FontAttributes="{Binding FontAttributes}"
                       FontFamily="{Binding FontFamily}"
                       FontSize="{Binding FontSize}"
+                      HeightRequest="{Binding HeightRequest}"
+                      HorizontalOptions="{Binding HorizontalOptions}"
+                      ImageSource="{Binding ImageSource}"
                       IsEnabled="{Binding IsEnabled}"
                       IsVisible="{Binding IsVisible}"
                       LineBreakMode="{Binding LineBreakMode}"
+                      Margin="0,50,0,0"
                       Padding="{Binding Padding}"
                       Pressed="OnButtonPressed"
                       Released="OnButtonReleased"
                       Text="{Binding Text}"
                       TextColor="{Binding TextColor}"
-                      TextTransform="{Binding TextTransform}">
+                      TextTransform="{Binding TextTransform}"
+                      VerticalOptions="{Binding VerticalOptions}"
+                      WidthRequest="{Binding WidthRequest}">
                      <Button.Shadow>
                             <Shadow x:Name="ButtonShadow"
                                     Brush="Blue"
@@ -59,6 +62,7 @@
               <Label Grid.Row="1"
                      Grid.Column="1"
                      x:Name="ClickedEventLabel"
+                     Text="{Binding ClickedEventLabelText}"
                      AutomationId="ClickedEventLabel"/>
 
               <Label Grid.Row="2"
@@ -66,6 +70,7 @@
               <Label Grid.Row="2"
                      Grid.Column="1"
                      x:Name="PressedEventLabel"
+                     Text="{Binding PressedEventLabelText}"
                      AutomationId="PressedEventLabel"/>
 
               <Label Grid.Row="3"
@@ -73,6 +78,7 @@
               <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="ReleasedEventLabel"
+                     Text="{Binding ReleasedEventLabelText}"
                      AutomationId="ReleasedEventLabel"/>
        </Grid>
 </ContentPage>
