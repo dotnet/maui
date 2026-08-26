@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Media
 					if (options.Volume.HasValue)
 						ss.Volume = NormalizeVolume(options.Volume);
 
-					if (options.Locale != null)
+					if (!string.IsNullOrEmpty(options.Locale?.Id))
 						ss.Voice = options.Locale.Id;
 
 					if (options.Rate.HasValue)
