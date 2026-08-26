@@ -588,7 +588,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (_disposed ||
 					registrationGeneration != _navigationRegistrationGeneration ||
-					!ReferenceEquals(Page, page))
+					!ReferenceEquals(Page, page) ||
+					!ReferenceEquals(_platformToolbar, toolbar) ||
+					!toolbar.IsAlive())
 				{
 					return;
 				}
@@ -602,6 +604,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				for (int index = 0; index < toolbar.ChildCount; index++)
 				{
 					if (toolbar.GetChildAt(index) is not AppCompatImageButton button ||
+						!button.IsAlive() ||
 						button.Drawable is null)
 					{
 						continue;
@@ -879,38 +882,52 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
 		{
-			// We only need to do this tint hack when using collapsed search handlers
-			if (SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Collapsible)
-				return;
-
-			for (int i = 0; i < _platformToolbar.ChildCount; i++)
+			// We only need to do this tint hack when using collapsed search handlers.
+			if (SearchHandler?.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 			{
-				var child = _platformToolbar.GetChildAt(i);
-				if (child is AppCompatImageButton button)
+				for (int i = 0; i < _platformToolbar.ChildCount; i++)
 				{
-					// we want the newly added button which will need layout
-					if (child.IsLayoutRequested)
+					var child = _platformToolbar.GetChildAt(i);
+					if (child is AppCompatImageButton button && button.IsAlive())
 					{
-						button.SetColorFilter(GetSearchHandlerTintColor(Page).ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
-					}
+						// we want the newly added button which will need layout
+						if (child.IsLayoutRequested)
+						{
+							button.SetColorFilter(GetSearchHandlerTintColor(Page).ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
+						}
 
-					button.Dispose();
+						button.Dispose();
+					}
 				}
 			}
 
-			_platformToolbar.Post(RefreshNativeToolbarRegistrations);
+			if (_platformToolbar?.IsAlive() == true)
+				_platformToolbar.Post(RefreshNativeToolbarRegistrations);
 		}
 
 		void OnSearchViewDetachedFromWindow(object sender, AView.ViewDetachedFromWindowEventArgs e)
 		{
-			if (SearchHandler?.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
+			if (_platformToolbar?.IsAlive() == true)
 				_platformToolbar.Post(RefreshNativeToolbarRegistrations);
 		}
 
 		void RefreshNativeToolbarRegistrations()
 		{
-			if (_disposed)
+			if (_disposed ||
+				_platformToolbar is null ||
+				!_platformToolbar.IsAlive())
 				return;
+
+			var searchExpanded =
+				SearchHandler?.SearchBoxVisibility == SearchBoxVisibility.Expanded &&
+				ReferenceEquals(_searchView?.View.Parent, _platformToolbar);
+			(_toolbar as Toolbar)?.RefreshNativeElementRegistrationsForSearch(searchExpanded);
+			if (searchExpanded)
+			{
+				_navigationRegistrationGeneration++;
+				_nativeNavigationRegistrations.Clear();
+				return;
+			}
 
 			var page = Page;
 			if (page is null)

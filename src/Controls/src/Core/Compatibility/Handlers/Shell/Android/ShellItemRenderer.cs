@@ -300,18 +300,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.OnShellSectionChanged();
 
 			var index = ((IShellItemController)ShellItem).GetItems().IndexOf(ShellSection);
-			using (var menu = _bottomView.Menu)
+			SetBottomMenuItemChecked(index);
+		}
+
+		void SetBottomMenuItemChecked(int index)
+		{
+			using var menu = _bottomView.Menu;
+			index = Math.Min(index, menu.Size() - 1);
+			if (index < 0)
+				return;
+
+			if (index < _registeredMenuItems.Count &&
+				_registeredMenuItems[index].IsAlive())
 			{
-				index = Math.Min(index, menu.Size() - 1);
-				if (index < 0)
-					return;
-				if (index < _registeredMenuItems.Count)
-					_registeredMenuItems[index].SetChecked(true);
-				else
-				{
-					using var menuItem = menu.GetItem(index);
+				_registeredMenuItems[index].SetChecked(true);
+				return;
+			}
+
+			var menuItem = menu.GetItem(index);
+			if (menuItem is null)
+				return;
+
+			var disposeMenuItem = !_registeredMenuItems.Any(
+				registeredMenuItem => ReferenceEquals(registeredMenuItem, menuItem));
+			try
+			{
+				if (menuItem.IsAlive())
 					menuItem.SetChecked(true);
-				}
+			}
+			finally
+			{
+				if (disposeMenuItem)
+					menuItem.Dispose();
 			}
 		}
 
@@ -389,10 +409,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				dialog.Dispose();
 		}
 
-		List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(ShellItem shellItem)
+		static List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(
+			IReadOnlyList<ShellSection> shellItems)
 		{
 			var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
-			var shellItems = ((IShellItemController)shellItem).GetItems();
 
 			for (int i = 0; i < shellItems.Count; i++)
 			{
@@ -557,8 +577,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellItemController.ShowTabs)
 			{
 				_menuSetup = true;
-				var currentIndex = ((IShellItemController)ShellItem).GetItems().IndexOf(ShellSection);
-				var items = CreateTabList(shellItem);
+				var shellSections = ShellItemController.GetItems().ToList();
+				var currentIndex = shellSections.IndexOf(ShellSection);
+				var items = CreateTabList(shellSections);
 
 				BottomNavigationViewUtils.SetupMenu(
 					menu,
@@ -567,15 +588,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					currentIndex,
 					_bottomView,
 					MauiContext,
-					RegisterBottomMenuItems);
+					menuItems => RegisterBottomMenuItems(menuItems, shellSections));
 			}
 
 			UpdateTabBarVisibility();
 		}
 
-		void RegisterBottomMenuItems(IReadOnlyList<IMenuItem> menuItems)
+		void RegisterBottomMenuItems(
+			IReadOnlyList<IMenuItem> menuItems,
+			IReadOnlyList<ShellSection> shellSections)
 		{
-			var shellSections = ShellItemController.GetItems();
 			var registrationItems = new List<(IMenuItem MenuItem, object Owner, bool IsMoreItem)>();
 			foreach (var previousMenuItem in _registeredMenuItems)
 			{
@@ -589,6 +611,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			foreach (var menuItem in menuItems)
 			{
 				var isMoreItem = menuItem.ItemId == MoreTabId;
+				if (!isMoreItem && (menuItem.ItemId < 0 || menuItem.ItemId >= shellSections.Count))
+					continue;
+
 				object owner = isMoreItem
 					? ShellItem
 					: shellSections[menuItem.ItemId];
@@ -635,7 +660,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateShellSectionIcon(ShellSection shellSection, IMenuItem menuItem)
 		{
-			BottomNavigationViewUtils.SetMenuItemIcon(menuItem, shellSection.Icon, MauiContext)
+			var source = shellSection.Icon;
+			var index = ShellItemController.GetItems().IndexOf(shellSection);
+			var iconUpdateIsCurrent = BottomNavigationViewUtils.BeginMenuIconUpdate(_bottomView, index);
+			BottomNavigationViewUtils.SetMenuItemIcon(
+				menuItem,
+				source,
+				MauiContext,
+				() =>
+					iconUpdateIsCurrent() &&
+					ReferenceEquals(shellSection.Icon, source) &&
+					index >= 0 &&
+					index < _registeredMenuItems.Count &&
+					ReferenceEquals(_registeredMenuItems[index], menuItem))
 				.FireAndForget(e => MauiContext?.CreateLogger<ShellItemRenderer>()?
 						.LogWarning(e, "Failed to Update Shell Section Icon"));
 		}

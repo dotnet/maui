@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				if (toolbar.FindViewById(itemId) is AView view)
+				if (toolbar.FindViewById(itemId) is AView view && view.IsAlive())
 				{
 					nativeElementRegistrations.RegisterExclusive(
 						toolbarItem,
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls.Platform
 			toolbar.Post(RegisterCurrentView);
 		}
 
-		static void RegisterToolbarChrome(
+		internal static void RegisterToolbarChrome(
 			AToolbar toolbar,
 			object owner,
 			NativeElementRegistrationSet nativeElementRegistrations)
@@ -536,7 +536,8 @@ namespace Microsoft.Maui.Controls.Platform
 				global::Android.Widget.TextView? titleView = null;
 				for (var index = 0; index < toolbar.ChildCount; index++)
 				{
-					if (toolbar.GetChildAt(index) is global::Android.Widget.TextView textView)
+					if (toolbar.GetChildAt(index) is global::Android.Widget.TextView textView &&
+						textView.IsAlive())
 					{
 						titleView = textView;
 						break;
@@ -583,6 +584,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static AView? FindToolbarOverflowButton(AView view)
 		{
+			if (!view.IsAlive())
+				return null;
+
 			var typeName = view.GetType().Name;
 			if (view.Parent is ActionMenuView
 				&& view.Clickable

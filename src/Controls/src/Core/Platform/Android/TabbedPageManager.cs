@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -510,9 +511,14 @@ public class TabbedPageManager
 		if (e.PropertyName == Page.TitleProperty.PropertyName)
 		{
 			var index = Element.Children.IndexOf(page);
+			if (index < 0)
+				return;
 
 			if (IsBottomTabPlacement)
 			{
+				if (index >= _bottomNavigationView.Menu.Size())
+					return;
+
 				IMenuItem tab = _bottomNavigationView.Menu.GetItem(index);
 				tab.SetTitle(page.Title);
 			}
@@ -525,15 +531,34 @@ public class TabbedPageManager
 		else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 		{
 			var index = Element.Children.IndexOf(page);
+			if (index < 0)
+				return;
+
 			if (IsBottomTabPlacement)
 			{
+				if (index >= _bottomNavigationView.Menu.Size())
+					return;
+
+				var element = Element;
 				var menuItem = _bottomNavigationView.Menu.GetItem(index);
-				page.IconImageSource.LoadImage(
+				var source = page.IconImageSource;
+				var iconUpdateIsCurrent = BottomNavigationViewUtils.BeginMenuIconUpdate(
+					_bottomNavigationView,
+					index);
+				BottomNavigationViewUtils.SetMenuItemIcon(
+					menuItem,
+					source,
 					_context,
-					result =>
-					{
-						menuItem.SetIcon(result.Value);
-					});
+					() =>
+						iconUpdateIsCurrent() &&
+						ReferenceEquals(Element, element) &&
+						element is not null &&
+						ReferenceEquals(page.IconImageSource, source) &&
+						element.Children.IndexOf(page) == index &&
+						index >= 0 &&
+						index < _registeredMenuItems.Count &&
+						ReferenceEquals(_registeredMenuItems[index], menuItem))
+					.FireAndForget();
 				SetupBottomNavigationViewIconColor(page, menuItem, index);
 			}
 			else
@@ -587,11 +612,17 @@ public class TabbedPageManager
 
 	List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
 	{
+		return CreateTabList(Element.Children.ToList());
+	}
+
+	static List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(
+		IReadOnlyList<Page> pages)
+	{
 		var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
 
-		for (int i = 0; i < Element.Children.Count; i++)
+		for (int i = 0; i < pages.Count; i++)
 		{
-			var item = Element.Children[i];
+			var item = pages[i];
 			items.Add((item.Title, item.IconImageSource, item.IsEnabled));
 		}
 
@@ -600,8 +631,9 @@ public class TabbedPageManager
 
 	protected virtual void SetupBottomNavigationView()
 	{
-		var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
-		var items = CreateTabList();
+		var pages = Element.Children.ToList();
+		var currentIndex = pages.IndexOf(Element.CurrentPage);
+		var items = CreateTabList(pages);
 
 		BottomNavigationViewUtils.SetupMenu(
 			_bottomNavigationView.Menu,
@@ -610,13 +642,15 @@ public class TabbedPageManager
 			currentIndex,
 			_bottomNavigationView,
 			Element.FindMauiContext(),
-			RegisterBottomMenuItems);
+			menuItems => RegisterBottomMenuItems(menuItems, pages));
 
 		if (Element.CurrentPage == null && Element.Children.Count > 0)
 			Element.CurrentPage = Element.Children[0];
 	}
 
-	void RegisterBottomMenuItems(IReadOnlyList<IMenuItem> menuItems)
+	void RegisterBottomMenuItems(
+		IReadOnlyList<IMenuItem> menuItems,
+		IReadOnlyList<Page> pages)
 	{
 		var registrationItems = new List<(IMenuItem MenuItem, object Owner, bool IsMoreItem)>();
 		foreach (var previousMenuItem in _registeredMenuItems)
@@ -641,7 +675,10 @@ public class TabbedPageManager
 		foreach (var menuItem in menuItems)
 		{
 			var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
-			object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
+			if (!isMoreItem && (menuItem.ItemId < 0 || menuItem.ItemId >= pages.Count))
+				continue;
+
+			object owner = isMoreItem ? Element : pages[menuItem.ItemId];
 			registrationItems.Add((menuItem, owner, isMoreItem));
 			_nativeTabRegistrations.Register(
 				owner,
@@ -952,19 +989,38 @@ public class TabbedPageManager
 		}
 
 		var index = Element.Children.IndexOf(Element.CurrentPage);
-		using (var menu = _bottomNavigationView.Menu)
+		SetBottomMenuItemChecked(index);
+	}
+
+	void SetBottomMenuItemChecked(int index)
+	{
+		using var menu = _bottomNavigationView.Menu;
+		index = Math.Min(index, menu.Size() - 1);
+		if (index < 0)
+			return;
+
+		if (index < _registeredMenuItems.Count &&
+			_registeredMenuItems[index].IsAlive())
 		{
-			index = Math.Min(index, menu.Size() - 1);
-			if (index >= 0)
-			{
-				if (index < _registeredMenuItems.Count)
-					_registeredMenuItems[index].SetChecked(true);
-				else
-				{
-					using var menuItem = menu.GetItem(index);
-					menuItem.SetChecked(true);
-				}
-			}
+			_registeredMenuItems[index].SetChecked(true);
+			return;
+		}
+
+		var menuItem = menu.GetItem(index);
+		if (menuItem is null)
+			return;
+
+		var disposeMenuItem = !_registeredMenuItems.Any(
+			registeredMenuItem => ReferenceEquals(registeredMenuItem, menuItem));
+		try
+		{
+			if (menuItem.IsAlive())
+				menuItem.SetChecked(true);
+		}
+		finally
+		{
+			if (disposeMenuItem)
+				menuItem.Dispose();
 		}
 	}
 
@@ -1275,15 +1331,7 @@ public class TabbedPageManager
 			}
 
 			if (IsBottomTabPlacement)
-			{
-				using var menu = _bottomNavigationView.Menu;
-				var visiblePosition = Math.Min(position, menu.Size() - 1);
-				if (visiblePosition >= 0)
-				{
-					using var menuItem = menu.GetItem(visiblePosition);
-					menuItem.SetChecked(true);
-				}
-			}
+				_tabbedPageManager.SetBottomMenuItemChecked(position);
 		}
 
 		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)

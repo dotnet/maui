@@ -110,6 +110,27 @@ namespace Microsoft.Maui.Controls
 				nativeToolbarOwner: Parent);
 		}
 
+		internal void RefreshNativeElementRegistrationsForSearch(bool searchExpanded)
+		{
+			if (searchExpanded)
+			{
+				_nativeMenuRegistrations.UnregisterDiscriminator(
+					NativeElementDiscriminators.TitleView);
+				_nativeMenuRegistrations.UnregisterDiscriminator(
+					NativeElementDiscriminators.RealizedView);
+				return;
+			}
+
+			if (Parent is null || Handler?.PlatformView is not AToolbar toolbar)
+				return;
+
+			_nativeMenuRegistrations.AdvanceLifecycle();
+			Controls.Platform.ToolbarExtensions.RegisterToolbarChrome(
+				toolbar,
+				Parent,
+				_nativeMenuRegistrations);
+		}
+
 		void UpdateTitleView()
 		{
 			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));

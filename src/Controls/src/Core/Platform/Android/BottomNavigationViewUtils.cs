@@ -1,7 +1,9 @@
 #nullable disable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -27,6 +29,8 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class BottomNavigationViewUtils
 	{
 		internal const int MoreTabId = 99;
+		static readonly ConditionalWeakTable<BottomNavigationView, MenuGeneration> s_menuGenerations =
+			new ConditionalWeakTable<BottomNavigationView, MenuGeneration>();
 
 		public static Drawable CreateItemBackgroundDrawable()
 		{
@@ -60,12 +64,17 @@ namespace Microsoft.Maui.Controls.Platform
 			int currentIndex,
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
+			Func<bool> isCurrent,
 			out IMenuItem menuItem)
 		{
 			Task returnValue;
 			using var title = new Java.Lang.String(item.title);
 			menuItem = menu.Add(0, index, 0, title);
-			returnValue = SetMenuItemIcon(menuItem, item.icon, mauiContext);
+			returnValue = SetMenuItemIcon(
+				menuItem,
+				item.icon,
+				mauiContext,
+				isCurrent);
 			UpdateEnabled(item.tabEnabled, menuItem);
 			if (index == currentIndex)
 			{
@@ -86,6 +95,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<IReadOnlyList<IMenuItem>> menuItemsUpdated = null)
 		{
 			Context context = mauiContext.Context;
+			var generation = s_menuGenerations.GetOrCreateValue(bottomView);
+			var generationValue = Interlocked.Increment(ref generation.Value);
 
 			while (items.Count < menu.Size())
 			{
@@ -101,22 +112,43 @@ namespace Microsoft.Maui.Controls.Platform
 			for (int i = 0; i < end; i++)
 			{
 				var item = items[i];
+				var isCurrent = CreateMenuIconValidator(generation, generationValue, i);
 
 				IMenuItem menuItem;
 				if (i >= menu.Size())
-					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+					loadTasks.Add(SetupMenuItem(
+						item,
+						menu,
+						i,
+						currentIndex,
+						bottomView,
+						mauiContext,
+						isCurrent,
+						out menuItem));
 				else
 				{
 					menuItem = menu.GetItem(i);
 					if (menuItem.ItemId != i)
 					{
 						menu.RemoveItem(menuItem.ItemId);
-						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+						loadTasks.Add(SetupMenuItem(
+							item,
+							menu,
+							i,
+							currentIndex,
+							bottomView,
+							mauiContext,
+							isCurrent,
+							out menuItem));
 					}
 					else
 					{
 						SetMenuItemTitle(menuItem, item.title);
-						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+						loadTasks.Add(SetMenuItemIcon(
+							menuItem,
+							item.icon,
+							mauiContext,
+							isCurrent));
 					}
 				}
 
@@ -159,9 +191,13 @@ namespace Microsoft.Maui.Controls.Platform
 			menuItem.SetTitle(jTitle);
 		}
 
-		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context)
+		internal static async Task SetMenuItemIcon(
+			IMenuItem menuItem,
+			ImageSource source,
+			IMauiContext context,
+			Func<bool> isCurrent = null)
 		{
-			if (!menuItem.IsAlive())
+			if (!menuItem.IsAlive() || isCurrent?.Invoke() == false)
 				return;
 
 			if (source is null)
@@ -175,10 +211,55 @@ namespace Microsoft.Maui.Controls.Platform
 				source,
 				context.Context);
 
-			if (menuItem.IsAlive())
+			if (menuItem.IsAlive() && isCurrent?.Invoke() != false)
 			{
 				menuItem.SetIcon(result?.Value);
 			}
+		}
+
+		internal static Func<bool> BeginMenuIconUpdate(
+			BottomNavigationView bottomView,
+			int itemId)
+		{
+			var generation = s_menuGenerations.GetOrCreateValue(bottomView);
+			var generationValue = Volatile.Read(ref generation.Value);
+			var itemGeneration = generation.ItemValues.AddOrUpdate(
+				itemId,
+				1,
+				static (_, current) => current + 1);
+			return CreateMenuIconValidator(
+				generation,
+				generationValue,
+				itemId,
+				itemGeneration);
+		}
+
+		static Func<bool> CreateMenuIconValidator(
+			MenuGeneration generation,
+			int generationValue,
+			int itemId)
+		{
+			var itemGeneration = generation.ItemValues.GetOrAdd(itemId, 0);
+			return CreateMenuIconValidator(generation, generationValue, itemId, itemGeneration);
+		}
+
+		static Func<bool> CreateMenuIconValidator(
+			MenuGeneration generation,
+			int generationValue,
+			int itemId,
+			int itemGeneration)
+		{
+			return () =>
+				Volatile.Read(ref generation.Value) == generationValue &&
+				generation.ItemValues.TryGetValue(itemId, out var currentItemGeneration) &&
+				currentItemGeneration == itemGeneration;
+		}
+
+		sealed class MenuGeneration
+		{
+			public int Value;
+			public ConcurrentDictionary<int, int> ItemValues { get; } =
+				new ConcurrentDictionary<int, int>();
 		}
 
 		public static BottomSheetDialog CreateMoreBottomSheet(
