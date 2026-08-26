@@ -6853,6 +6853,41 @@ Describe 'the test prompt names the compile traps runs actually hit' {
             Should -BeNullOrEmpty
     }
 
+    It 'states the Android API floor rule, which no analyzer is left to enforce' {
+        # PR 443 read the API 28 TextView.AccessibilityHeading in a device test
+        # whose project declares an android floor of 21.0 and suppresses CA1416.
+        # The analyzer that exists to catch exactly this is switched off, so the
+        # author gets no diagnostic and no refusal - the test simply ships and
+        # misreports on API 21 to 27. A bare-name detector cannot replace the
+        # analyzer: AccessibilityHeading is declared on hundreds of Android
+        # types, so resolving which one a `.Member` read targets needs a
+        # semantic model. The rule therefore has to be stated, or it cannot be
+        # learned at all.
+        $script:Source | Should -Match 'OperatingSystem\.IsAndroidVersionAtLeast\(28\)'
+        $script:Source | Should -Match 'CA1416'
+        $script:Source | Should -Match 'AccessibilityHeading'
+    }
+
+    It 'still describes the Android floor and the disabled analyzer accurately' {
+        # The rule above asserts three facts about files it does not own: the
+        # device test project's android floor, its CA1416 suppression, and the
+        # guard this repository already uses. Raise the floor, drop the NoWarn
+        # or move the helper and the guidance becomes a lie nobody is watching.
+        # Read the files rather than trusting the prose.
+        $repoRoot = Split-Path (Split-Path (Split-Path $script:ScriptPath))
+
+        $deviceTests = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
+        $deviceTests | Should -Match '== ''android''">21\.0<'
+        $deviceTests | Should -Match '<NoWarn>[^<]*CA1416'
+
+        $guardPath = Join-Path $repoRoot 'src/Core/tests/DeviceTests.Shared/HandlerTests/HandlerTestBasementOfT.Android.cs'
+        $guardPath | Should -Exist
+        $guard = Get-Content -Raw -LiteralPath $guardPath
+
+        $guard | Should -Match 'OperatingSystem\.IsAndroidVersionAtLeast\(28\)'
+        $guard | Should -Match 'AccessibilityHeading'
+    }
+
     It 'names the assertion that can actually carry the declared signature' {
         # Build 15069705 lost attempts 3 and 4 to 'Assert.True() Failure /
         # Expected: True' and 'Assert.Equal() Failure: Values differ', neither
