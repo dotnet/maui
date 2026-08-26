@@ -24,7 +24,6 @@ using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using ACanvas = Android.Graphics.Canvas;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using ADrawable = Android.Graphics.Drawables.Drawable;
-using AHandler = Android.OS.Handler;
 using APaint = Android.Graphics.Paint;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
@@ -35,11 +34,6 @@ namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapHandler : ViewHandler<IMap, MapView>
 	{
-		// Created on first use rather than in a field initializer: a null MainLooper there would
-		// surface as a TypeInitializationException on every later MapHandler member access, which is
-		// a whole-map failure for a best-effort cleanup path. Same shape as MainThread.android.cs.
-		static volatile AHandler? s_mainHandler;
-
 		bool _init = true;
 
 		MapCallbackHandler? _mapReady;
@@ -1022,13 +1016,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				if (bitmap is null)
 					return null;
 
-				// Every DrawableToBitmap path returns a bitmap this handler owns, and
-				// BitmapDescriptorFactory.FromBitmap copies the pixels into the descriptor, so the
-				// copy has no reader left once the descriptor exists. Recycling here frees it now
-				// instead of leaving one native buffer per load waiting on the GC bridge.
-				var descriptor = BitmapDescriptorFactory.FromBitmap(bitmap);
-				bitmap.Recycle();
-				return descriptor;
+				return BitmapDescriptorFactory.FromBitmap(bitmap);
 			}
 			catch (System.Exception ex)
 			{
@@ -1037,7 +1025,16 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 			finally
 			{
-				ReleaseImageResult(result, mauiContext);
+				// Guarded: the descriptor is already built by the time this runs, so a failing
+				// release must never be able to replace it with the default marker.
+				try
+				{
+					result?.Dispose();
+				}
+				catch (System.Exception ex)
+				{
+					TryLogWarning(mauiContext, ex, "Failed to release a custom pin icon image result");
+				}
 			}
 		}
 
@@ -1054,53 +1051,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 			catch
 			{
-			}
-		}
-
-		// The drawable is already copied into the descriptor by the time this runs, so releasing the
-		// image result must never be able to take the icon down with it. Glide also refuses a clear()
-		// issued from inside one of its own target callbacks - which is where the load continuation
-		// can resume - so hand the release to the next turn of the main loop: by then the callback
-		// has unwound and the Glide entry is released for real instead of being leaked.
-		static void ReleaseImageResult(IImageSourceServiceResult<ADrawable>? result, IMauiContext mauiContext)
-		{
-			if (result is null)
-				return;
-
-			try
-			{
-				// Resolved here rather than inside the post: the service provider can be gone by the
-				// time the release runs, and an exception raised from a looper callback takes the
-				// process down instead of faulting a task.
-				var logger = mauiContext.Services.GetService<ILogger<MapHandler>>();
-
-				// MainLooper is a process singleton, so one handler serves every release. A race here
-				// just builds a second one and discards it; both post to the same looper.
-				var handler = s_mainHandler;
-				if (handler is null)
-					s_mainHandler = handler = new AHandler(Looper.MainLooper!);
-
-				handler.Post(() =>
-				{
-					try
-					{
-						result.Dispose();
-					}
-					catch (System.Exception ex)
-					{
-						logger?.LogWarning(ex, "Failed to release a custom pin icon image result");
-					}
-				});
-			}
-			catch (System.Exception ex)
-			{
-				// This runs from a finally, so it must not throw under any circumstance - resolving
-				// the logger from a disposed provider included. An exception here would replace the
-				// descriptor that was already built, which is the very failure this method prevents.
-				// Swallowed, but not silently: reaching here means the Glide entry is leaked for the
-				// rest of the process, and a cleanup path that fails invisibly looks like one that
-				// works. TryLogWarning cannot throw back into this catch.
-				TryLogWarning(mauiContext, ex, "Failed to schedule the release of a custom pin icon image result");
 			}
 		}
 

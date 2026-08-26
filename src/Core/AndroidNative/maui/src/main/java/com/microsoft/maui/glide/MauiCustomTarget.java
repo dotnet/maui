@@ -70,29 +70,15 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
         if (logger.isVerboseLoggable) logger.v("onLoadCleared: " + resourceLogIdentifier);
     }
 
-    // NOTE: the inline branch below runs clear() inside onResourceReady when the caller is already
-    // on the main looper, and Glide rejects a clear() issued from one of its own target callbacks
-    // (SingleRequest.assertNotCallingCallbacks). ImageLoaderCallbackBase completes its
-    // TaskCompletionSource synchronously, so a C# consumer that disposes the result in its await
-    // continuation lands in exactly that state. MapHandler.ReleaseImageResult
-    // (src/Core/maps/src/Handlers/Map/MapHandler.Android.cs) works around it by posting the dispose
-    // itself. Dropping the inline branch here would make disposal safe for every C# caller and make
-    // that workaround redundant - see the TODO in clear() below.
-    private void post(Runnable runnable) {
-        Looper looper = Looper.getMainLooper();
-        if (looper.isCurrentThread()) {
-            runnable.run();
-            return;
-        }
-
-        Handler handler = new Handler(looper);
-        handler.post(runnable);
-    }
-
     private void clear() {
         // TODO: it looks like no one is really disposing the result on C# side
         // we must fix it there to release the Glide cache entry properly
-        post(() -> {
+
+        // Always enqueued, never run inline: clear() is handed to the C# side from inside
+        // onResourceReady, and Glide rejects a clear() issued from one of its own target callbacks
+        // (SingleRequest.assertNotCallingCallbacks). A consumer disposing the result in its await
+        // continuation is still on that callback stack, so running here would throw.
+        new Handler(Looper.getMainLooper()).post(() -> {
             if (PlatformInterop.isContextDestroyed(context)) {
                 if (logger.isVerboseLoggable) {
                     logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);

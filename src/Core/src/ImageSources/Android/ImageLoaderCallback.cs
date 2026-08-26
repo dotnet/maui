@@ -37,12 +37,6 @@ namespace Microsoft.Maui
 					? OnSuccess(drawable, disposeWrapper)
 					: OnFailure(drawable, disposeWrapper);
 
-				// NOTE: completed synchronously, and this runs inside MauiCustomTarget.onResourceReady,
-				// so an awaiting continuation resumes on Glide's own callback stack. A consumer that
-				// disposes the result there reaches MauiCustomTarget.clear(), which Glide rejects from
-				// inside a target callback. MapHandler.ReleaseImageResult posts its dispose to work
-				// around it; switching this to RunContinuationsAsynchronously would remove the need,
-				// but it moves every image-load continuation off the synchronous path.
 				_tcsResult.SetResult(result);
 			}
 			catch (Exception ex)
