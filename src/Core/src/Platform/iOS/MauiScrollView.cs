@@ -373,13 +373,15 @@ namespace Microsoft.Maui.Platform
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			{
 				_safeArea = GetInset(safeAreaEdges).ToSafeAreaInsets();
+				if (!_safeArea.IsEmpty)
+					_safeArea = MauiView.ExcludeParentHandledSafeAreaEdges(_safeArea, GetParentHandledSafeAreaEdges());
+			}
 			else
+			{
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
-
-			// This is a raw/system inset, not a frame-relative keyboard overlap, so ordinary
-			// ancestor suppression must remain in effect.
-			_safeArea = MauiView.ExcludeParentHandledSafeAreaEdges(_safeArea, GetParentHandledSafeAreaEdges());
+			}
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;

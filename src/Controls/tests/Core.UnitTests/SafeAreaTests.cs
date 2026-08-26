@@ -436,6 +436,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SafeAreaEdgesSpecificityChangesUpdateHandlerOnlyOnce()
+		{
+			var view = new CustomSafeAreaView();
+			var defaultEdges = view.SafeAreaEdges;
+			var styleSpecificity = new SetterSpecificity(
+				SetterSpecificity.StyleLocal,
+				id: 0,
+				@class: 0,
+				type: 0);
+
+			view.ResetSafeAreaHandlerUpdateCount();
+			view.SetValue(CustomSafeAreaView.SafeAreaEdgesProperty, defaultEdges, styleSpecificity);
+
+			Assert.True(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
+			Assert.Equal(1, view.SafeAreaHandlerUpdateCount);
+
+			view.SetValue(CustomSafeAreaView.SafeAreaEdgesProperty, defaultEdges, styleSpecificity);
+
+			Assert.Equal(1, view.SafeAreaHandlerUpdateCount);
+
+			view.SetValue(
+				CustomSafeAreaView.SafeAreaEdgesProperty,
+				defaultEdges,
+				SetterSpecificity.ManualValueSetter);
+
+			Assert.Equal(2, view.SafeAreaHandlerUpdateCount);
+
+			view.SetValue(
+				CustomSafeAreaView.SafeAreaEdgesProperty,
+				defaultEdges,
+				SetterSpecificity.ManualValueSetter);
+
+			Assert.Equal(2, view.SafeAreaHandlerUpdateCount);
+		}
+
+		[Fact]
 		public void HasExplicitSafeAreaEdges_BindingValueCountsAsExplicit()
 		{
 			var layout = new Grid();
@@ -462,10 +498,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
 
+			public int SafeAreaHandlerUpdateCount { get; private set; }
+
 			public SafeAreaEdges SafeAreaEdges
 			{
 				get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
 				set => SetValue(SafeAreaEdgesProperty, value);
+			}
+
+			public void ResetSafeAreaHandlerUpdateCount() => SafeAreaHandlerUpdateCount = 0;
+
+			private protected override void UpdateHandlerValue(string propertyName, bool valueChanged)
+			{
+				if (propertyName == SafeAreaEdgesProperty.PropertyName && valueChanged)
+					SafeAreaHandlerUpdateCount++;
+
+				base.UpdateHandlerValue(propertyName, valueChanged);
 			}
 
 			bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);

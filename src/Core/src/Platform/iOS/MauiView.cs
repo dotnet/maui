@@ -394,7 +394,13 @@ namespace Microsoft.Maui.Platform
 				return true;
 
 			var viewFrameInWindow = ConvertRectToView(Bounds, window);
-			overlap = Math.Max(0, viewFrameInWindow.Bottom - keyboardFrameInWindow.Y);
+			if (CGRect.Intersect(keyboardFrameInWindow, viewFrameInWindow).IsEmpty)
+				return true;
+
+			overlap = Math.Clamp(
+				viewFrameInWindow.Bottom - keyboardFrameInWindow.Y,
+				0,
+				viewFrameInWindow.Height);
 			return true;
 		}
 
@@ -417,9 +423,15 @@ namespace Microsoft.Maui.Platform
 			return !SafeAreaPadding.AreEqualAtPixelLevel(previousOverlap.Value, overlap.Value, displayScale);
 		}
 
-		SafeAreaPadding GetAdjustedSafeAreaInsets() => GetAdjustedSafeAreaInsets(out _);
+		SafeAreaPadding GetAdjustedSafeAreaInsets() => GetAdjustedSafeAreaInsets(includeKeyboardOverlap: true, out _);
 
-		SafeAreaPadding GetAdjustedSafeAreaInsets(out bool bottomIncludesKeyboardOverlap)
+		SafeAreaPadding GetAdjustedSafeAreaInsets(bool includeKeyboardOverlap) =>
+			GetAdjustedSafeAreaInsets(includeKeyboardOverlap, out _);
+
+		SafeAreaPadding GetAdjustedSafeAreaInsets(out bool bottomIncludesKeyboardOverlap) =>
+			GetAdjustedSafeAreaInsets(includeKeyboardOverlap: true, out bottomIncludesKeyboardOverlap);
+
+		SafeAreaPadding GetAdjustedSafeAreaInsets(bool includeKeyboardOverlap, out bool bottomIncludesKeyboardOverlap)
 		{
 			bottomIncludesKeyboardOverlap = false;
 			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
@@ -429,7 +441,7 @@ namespace Microsoft.Maui.Platform
 				includeLegacy: false);
 
 			// Check if keyboard-aware safe area adjustments are needed
-			if (hasModernSafeArea && _isKeyboardShowing)
+			if (includeKeyboardOverlap && hasModernSafeArea && _isKeyboardShowing)
 			{
 				// Check if any edge has SafeAreaRegions.SoftInput set
 				var needsKeyboardAdjustment = false;
@@ -521,7 +533,7 @@ namespace Microsoft.Maui.Platform
 			var top = SafeAreaRegions.None;
 			var right = SafeAreaRegions.None;
 			var bottom = SafeAreaRegions.None;
-			var displayScale = (double)UIScreen.MainScreen.Scale;
+			var displayScale = (double)(view.Window?.Screen.Scale ?? UIScreen.MainScreen.Scale);
 
 			for (var ancestor = view.Superview; ancestor is not null; ancestor = ancestor.Superview)
 			{
@@ -530,14 +542,19 @@ namespace Microsoft.Maui.Platform
 
 				// Resolve directly from the ancestor's current inputs so suppression does not
 				// depend on whether the ancestor has already completed its layout pass.
-				var safeArea = mauiView.GetAdjustedSafeAreaInsets();
-				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Left, displayScale))
+				var safeArea = mauiView.GetAdjustedSafeAreaInsets(
+					includeKeyboardOverlap: bottom == SafeAreaRegions.None);
+				if (left == SafeAreaRegions.None &&
+					!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Left, displayScale))
 					left = SafeAreaRegions.Container;
-				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Top, displayScale))
+				if (top == SafeAreaRegions.None &&
+					!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Top, displayScale))
 					top = SafeAreaRegions.Container;
-				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Right, displayScale))
+				if (right == SafeAreaRegions.None &&
+					!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Right, displayScale))
 					right = SafeAreaRegions.Container;
-				if (!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Bottom, displayScale))
+				if (bottom == SafeAreaRegions.None &&
+					!SafeAreaPadding.IsZeroAtPixelLevel(safeArea.Bottom, displayScale))
 					bottom = SafeAreaRegions.Container;
 
 				if (left != SafeAreaRegions.None &&
@@ -814,10 +831,12 @@ namespace Microsoft.Maui.Platform
 
 			var oldSafeArea = _safeArea;
 			var adjustedSafeArea = GetAdjustedSafeAreaInsets(out var bottomIncludesKeyboardOverlap);
-			_safeArea = ExcludeParentHandledSafeAreaEdges(
-				adjustedSafeArea,
-				GetParentHandledSafeAreaEdges(),
-				bottomIncludesKeyboardOverlap);
+			_safeArea = adjustedSafeArea.IsEmpty
+				? adjustedSafeArea
+				: ExcludeParentHandledSafeAreaEdges(
+					adjustedSafeArea,
+					GetParentHandledSafeAreaEdges(),
+					bottomIncludesKeyboardOverlap);
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;

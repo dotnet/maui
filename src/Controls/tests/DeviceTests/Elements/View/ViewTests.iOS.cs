@@ -92,6 +92,42 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task MeasureInvalidatedParentDoesNotBlockDescendantSafeAreaInvalidation()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.None
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.AddSubview(childPlatformView);
+
+				childPlatformView.SafeAreaInsetsDidChange();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(20, 10, 40, 60), child.LastArrangeBounds);
+
+				childPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(25, 20, 30, 40);
+				((IPlatformMeasureInvalidationController)parentPlatformView).InvalidateMeasure(isPropagating: true);
+				MauiView.InvalidateSafeArea(parentPlatformView);
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(20, 25, 40, 45), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
 		public async Task ParentSafeAreaSuppressionDoesNotDependOnLayoutOrder()
 		{
 			var parent = new CustomSafeAreaView
@@ -111,6 +147,8 @@ namespace Microsoft.Maui.DeviceTests
 				var childPlatformView = childHandler.PlatformView;
 				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
 				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				parentPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(47, 0, 34, 0);
+				childPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(47, 0, 34, 0);
 				parentPlatformView.AddSubview(childPlatformView);
 
 				parentPlatformView.SafeAreaInsetsDidChange();
@@ -119,6 +157,88 @@ namespace Microsoft.Maui.DeviceTests
 				childPlatformView.LayoutSubviews();
 
 				Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
+		public async Task ResolvedBottomEdgeSkipsFartherAncestorKeyboardGeometry()
+		{
+			var grandparent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.SoftInput)
+			};
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container)
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var grandparentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(grandparent);
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var grandparentPlatformView = grandparentHandler.PlatformView;
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+
+				await grandparentPlatformView.AttachAndRun(() =>
+				{
+					var window = grandparentPlatformView.Window!;
+					grandparentPlatformView.Frame = new CGRect(0, window.Bounds.Height - 100, 100, 100);
+					parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+					childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+					grandparentPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(47, 0, 0, 0);
+					parentPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(0, 0, 34, 0);
+					childPlatformView.SafeAreaInsetsValue = new UIEdgeInsets(47, 0, 34, 0);
+					grandparentPlatformView.AddSubview(parentPlatformView);
+					parentPlatformView.AddSubview(childPlatformView);
+
+					grandparentPlatformView.LayoutSubviews();
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.LayoutSubviews();
+
+					var keyboardFrameInWindow = new CGRect(
+						0,
+						window.Bounds.Height - 50,
+						window.Bounds.Width,
+						50);
+					var keyboardFrame = window.ConvertRectToCoordinateSpace(
+						keyboardFrameInWindow,
+						window.Screen.CoordinateSpace);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						grandparentPlatformView.ResetConvertRectToViewCount();
+						childPlatformView.LayoutSubviews();
+
+						Assert.Equal(0, grandparentPlatformView.ConvertRectToViewCount);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+				});
 			});
 		}
 
@@ -208,6 +328,70 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(
 					grandparentPlatformView.SafeAreaInsetsReadCount == 0,
 					"The ancestor walk should stop after the parent resolves every edge.");
+			});
+		}
+
+		[Fact]
+		public async Task EmptySafeAreaSkipsParentHandledEdgeLookup()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				childPlatformView.SafeAreaInsetsValue = UIEdgeInsets.Zero;
+				parentPlatformView.AddSubview(childPlatformView);
+
+				childPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.ResetSafeAreaInsetsReadCount();
+				childPlatformView.LayoutSubviews();
+
+				Assert.Equal(0, parentPlatformView.SafeAreaInsetsReadCount);
+				Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
+		public async Task EmptyManualScrollViewSafeAreaSkipsParentHandledEdgeLookup()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var scrollView = new RecordingSafeAreaScrollView
+			{
+				SafeAreaEdges = SafeAreaEdges.All
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var scrollViewHandler = await CreateHandlerAsync<TestSafeAreaScrollViewHandler>(scrollView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var scrollViewPlatformView = Assert.IsType<TestSafeAreaMauiScrollView>(scrollViewHandler.PlatformView);
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.SafeAreaInsetsValue = UIEdgeInsets.Zero;
+				parentPlatformView.AddSubview(scrollViewPlatformView);
+
+				scrollViewPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.ResetSafeAreaInsetsReadCount();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(0, parentPlatformView.SafeAreaInsetsReadCount);
+				Assert.Equal(new Rect(0, 0, 100, 100), scrollView.LastArrangeBounds);
 			});
 		}
 
@@ -819,6 +1003,81 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task FloatingKeyboardUsesClampedViewIntersection()
+		{
+			var view = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.SoftInput)
+			};
+			var handler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(view);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformView = handler.PlatformView;
+
+				await platformView.AttachAndRun(() =>
+				{
+					var window = platformView.Window!;
+					platformView.SafeAreaInsetsValue = UIEdgeInsets.Zero;
+					platformView.Frame = new CGRect(0, window.Bounds.Height - 100, 100, 100);
+					platformView.SafeAreaInsetsDidChange();
+					platformView.LayoutSubviews();
+
+					var viewFrameInWindow = platformView.ConvertRectToView(platformView.Bounds, window);
+					var lateralKeyboardFrameInWindow = new CGRect(
+						viewFrameInWindow.Right + 10,
+						viewFrameInWindow.Bottom - 50,
+						100,
+						50);
+
+					PostKeyboardWillShow(window, lateralKeyboardFrameInWindow);
+
+					try
+					{
+						platformView.LayoutSubviews();
+
+						Assert.Equal(new Rect(0, 0, 100, 100), view.LastArrangeBounds);
+
+						var oversizedKeyboardFrameInWindow = new CGRect(
+							viewFrameInWindow.X,
+							viewFrameInWindow.Y - 50,
+							viewFrameInWindow.Width,
+							viewFrameInWindow.Height + 100);
+						PostKeyboardWillShow(window, oversizedKeyboardFrameInWindow);
+						platformView.LayoutSubviews();
+
+						Assert.Equal(new Rect(0, 0, 100, 0), view.LastArrangeBounds);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+				});
+			});
+
+			static void PostKeyboardWillShow(UIWindow window, CGRect keyboardFrameInWindow)
+			{
+				var keyboardFrame = window.ConvertRectToCoordinateSpace(
+					keyboardFrameInWindow,
+					window.Screen.CoordinateSpace);
+				using var userInfo = NSDictionary.FromObjectAndKey(
+					NSValue.FromCGRect(keyboardFrame),
+					UIKeyboard.FrameEndUserInfoKey);
+
+				NSNotificationCenter.DefaultCenter.PostNotificationName(
+					UIKeyboard.WillShowNotification,
+					null,
+					userInfo);
+			}
+		}
+
+		[Fact]
 		public async Task NestedKeyboardSafeAreasUseCrossPlatformArrange()
 		{
 			var bottomSoftInput = new SafeAreaEdges(
@@ -1015,6 +1274,43 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task SystemAdjustedScrollViewInsetsAreNotSuppressedByParent()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None)
+			};
+			var scrollView = new RecordingSafeAreaScrollView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var scrollViewHandler = await CreateHandlerAsync<TestSafeAreaScrollViewHandler>(scrollView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var scrollViewPlatformView = Assert.IsType<TestSafeAreaMauiScrollView>(scrollViewHandler.PlatformView);
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.AdjustedContentInsetValue = new UIEdgeInsets(10, 20, 30, 40);
+				parentPlatformView.AddSubview(scrollViewPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				scrollViewPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 40, 60), scrollView.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
 		public async Task ChangingAncestorSafeAreaEdgesInvalidatesEdgeDisjointGrandchild()
 		{
 			var top = new SafeAreaEdges(
@@ -1173,6 +1469,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public UIEdgeInsets SafeAreaInsetsValue { get; set; } = new(10, 20, 30, 40);
 
+			public int ConvertRectToViewCount { get; private set; }
+
 			public int SafeAreaInsetsReadCount { get; private set; }
 
 			public override UIEdgeInsets SafeAreaInsets
@@ -1184,6 +1482,14 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
+			public override CGRect ConvertRectToView(CGRect rect, UIView view)
+			{
+				ConvertRectToViewCount++;
+				return base.ConvertRectToView(rect, view);
+			}
+
+			public void ResetConvertRectToViewCount() => ConvertRectToViewCount = 0;
+
 			public void ResetSafeAreaInsetsReadCount() => SafeAreaInsetsReadCount = 0;
 		}
 
@@ -1194,7 +1500,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class TestSafeAreaMauiScrollView : MauiScrollView
 		{
-			public override UIEdgeInsets SafeAreaInsets => new(10, 20, 30, 40);
+			public UIEdgeInsets? AdjustedContentInsetValue { get; set; }
+
+			public UIEdgeInsets SafeAreaInsetsValue { get; set; } = new(10, 20, 30, 40);
+
+			public override UIEdgeInsets AdjustedContentInset =>
+				AdjustedContentInsetValue ?? base.AdjustedContentInset;
+
+			public override UIEdgeInsets SafeAreaInsets => SafeAreaInsetsValue;
 		}
 
 		sealed class RecordingSafeAreaScrollView : ScrollView, ICrossPlatformLayout
