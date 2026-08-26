@@ -25,6 +25,8 @@ Local macOS 26+ testing does NOT validate CI behavior. Fixes must pass CI on mac
 
 **`GetParentHandledSafeAreaEdges`** — before applying adjustments, `MauiView`/`MauiScrollView` walk ancestors and resolve each ancestor's current safe-area inputs. Descendants suppress only overlapping edges, so a parent handling `Top` does not block a child handling `Bottom`. Insets are classified as zero or nonzero at device-pixel resolution, and traversal stops as soon as all four edges are handled. Results are cached in `SafeAreaEdges? _parentHandledSafeAreaEdges`; `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, and `MovedToWindow` clear the cache. Property and keyboard changes call `MauiView.InvalidateSafeArea(UIView)` to invalidate the full native subtree.
 
+**Nested keyboard overlap** — a `Bottom = SoftInput` inset is calculated from each `MauiView`'s current frame in window coordinates. A positive child overlap is preserved even when an ancestor also handles `Bottom`, because the ancestor's inset may not cover a non-uniform or not-yet-rearranged child frame. Once the parent arranges the child above the keyboard, the child's overlap becomes zero and ordinary ancestor suppression prevents double-padding. While the keyboard is visible, bottom-`SoftInput` views re-evaluate this frame-dependent value on every layout and clear the cached ancestor edges.
+
 **Pixel-level comparisons** — use `IsZeroAtPixelLevel` when classifying ancestor insets and `EqualsAtPixelLevel` when comparing cached safe areas. Both operate at device-pixel resolution to absorb sub-pixel animation noise (`0.0000001pt` during `TranslateToAsync`), preventing false edge suppression and oscillation loops (#32586, #33934).
 
 ## Anti-Patterns

@@ -377,6 +377,8 @@ namespace Microsoft.Maui.Platform
 			else
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 
+			// This is a raw/system inset, not a frame-relative keyboard overlap, so ordinary
+			// ancestor suppression must remain in effect.
 			_safeArea = MauiView.ExcludeParentHandledSafeAreaEdges(_safeArea, GetParentHandledSafeAreaEdges());
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;

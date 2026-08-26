@@ -371,6 +371,186 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ParentAndChildKeyboardSafeAreasDoNotDoublePadArrangedChild()
+		{
+			var bottomSoftInput = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.SoftInput);
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = bottomSoftInput
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = bottomSoftInput
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+
+				await parentPlatformView.AttachAndRun(() =>
+				{
+					var windowBounds = parentPlatformView.Window!.Bounds;
+					parentPlatformView.Frame = new CGRect(0, windowBounds.Height - 100, 100, 100);
+					childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+					parentPlatformView.AddSubview(childPlatformView);
+
+					parentPlatformView.SafeAreaInsetsDidChange();
+					childPlatformView.SafeAreaInsetsDidChange();
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.LayoutSubviews();
+
+					var parentFrameInWindow = parentPlatformView.Superview!
+						.ConvertRectToView(parentPlatformView.Frame, parentPlatformView.Window);
+					var keyboardFrame = new CGRect(
+						0,
+						parentFrameInWindow.Bottom - 50,
+						windowBounds.Width,
+						50);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						parentPlatformView.LayoutSubviews();
+						Assert.Equal(new Rect(0, 0, 100, 50), parent.LastArrangeBounds);
+
+						childPlatformView.Frame = new CGRect(
+							parent.LastArrangeBounds.X,
+							parent.LastArrangeBounds.Y,
+							parent.LastArrangeBounds.Width,
+							parent.LastArrangeBounds.Height);
+						childPlatformView.LayoutSubviews();
+
+						var childFrameInWindow = childPlatformView.Superview!
+							.ConvertRectToView(childPlatformView.Frame, childPlatformView.Window);
+						var keyboardOverlap = Math.Max(0, childFrameInWindow.Bottom - keyboardFrame.Y);
+
+						Assert.Equal(0d, keyboardOverlap, precision: 5);
+						Assert.Equal((double)keyboardFrame.Y, (double)childFrameInWindow.Bottom, precision: 5);
+						Assert.Equal(new Rect(0, 0, 100, 50), child.LastArrangeBounds);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+				});
+			});
+		}
+
+		[Fact]
+		public async Task ParentAndChildKeyboardSafeAreasProtectOverflowingChild()
+		{
+			var bottomSoftInput = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.SoftInput);
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = bottomSoftInput
+			};
+			var child = new CustomSafeAreaView
+			{
+				SafeAreaEdges = bottomSoftInput
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var childHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(child);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var childPlatformView = childHandler.PlatformView;
+
+				await parentPlatformView.AttachAndRun(() =>
+				{
+					var windowBounds = parentPlatformView.Window!.Bounds;
+					parentPlatformView.Frame = new CGRect(0, windowBounds.Height - 100, 100, 100);
+					childPlatformView.Frame = new CGRect(0, 0, 100, 100);
+					parentPlatformView.AddSubview(childPlatformView);
+
+					parentPlatformView.SafeAreaInsetsDidChange();
+					childPlatformView.SafeAreaInsetsDidChange();
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.LayoutSubviews();
+
+					var parentFrameInWindow = parentPlatformView.Superview!
+						.ConvertRectToView(parentPlatformView.Frame, parentPlatformView.Window);
+					var keyboardFrame = new CGRect(
+						0,
+						parentFrameInWindow.Bottom - 50,
+						windowBounds.Width,
+						50);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						parentPlatformView.LayoutSubviews();
+						childPlatformView.LayoutSubviews();
+
+						var childFrameInWindow = childPlatformView.Superview!
+							.ConvertRectToView(childPlatformView.Frame, childPlatformView.Window);
+						var keyboardOverlap = Math.Max(0, childFrameInWindow.Bottom - keyboardFrame.Y);
+
+						Assert.Equal(new Rect(0, 0, 100, 50), parent.LastArrangeBounds);
+						Assert.Equal(50d, keyboardOverlap, precision: 5);
+						Assert.Equal(new Rect(0, 0, 100, 50), child.LastArrangeBounds);
+						Assert.Equal(
+							(double)keyboardFrame.Y,
+							childFrameInWindow.Y + child.LastArrangeBounds.Bottom,
+							precision: 5);
+
+						childPlatformView.Frame = new CGRect(
+							parent.LastArrangeBounds.X,
+							parent.LastArrangeBounds.Y,
+							parent.LastArrangeBounds.Width,
+							parent.LastArrangeBounds.Height);
+						childPlatformView.LayoutSubviews();
+
+						Assert.Equal(new Rect(0, 0, 100, 50), child.LastArrangeBounds);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+
+					parentPlatformView.LayoutSubviews();
+					childPlatformView.Frame = new CGRect(
+						parent.LastArrangeBounds.X,
+						parent.LastArrangeBounds.Y,
+						parent.LastArrangeBounds.Width,
+						parent.LastArrangeBounds.Height);
+					childPlatformView.LayoutSubviews();
+
+					Assert.Equal(new Rect(0, 0, 100, 100), child.LastArrangeBounds);
+				});
+			});
+		}
+
+		[Fact]
 		public async Task ParentOnlySuppressesOverlappingChildSafeAreaEdges()
 		{
 			var top = new SafeAreaEdges(
@@ -475,6 +655,22 @@ namespace Microsoft.Maui.DeviceTests
 				scrollViewPlatformView.LayoutSubviews();
 
 				Assert.Equal(new Rect(0, 0, 100, 70), scrollView.LastArrangeBounds);
+
+				parent.SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container);
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 100, 90), scrollView.LastArrangeBounds);
+
+				parent.SafeAreaEdges = SafeAreaEdges.None;
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 10, 100, 60), scrollView.LastArrangeBounds);
 			});
 		}
 

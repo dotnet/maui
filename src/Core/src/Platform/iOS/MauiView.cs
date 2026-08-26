@@ -414,18 +414,18 @@ namespace Microsoft.Maui.Platform
 						{
 							// For SafeAreaRegions.SoftInput: Always pad so content doesn't go under the keyboard
 							// Bottom edge is most commonly affected by keyboard
-							if (SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom) && !IsSoftInputHandledByParent(this))
+							if (SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom))
 							{
-								// Use the larger of the current bottom safe area or the keyboard height
-								// Get the input control's bottom Y in window coordinates
-								var inputBottomY = 0.0;
+								// Use this view's frame-relative overlap when positive; otherwise
+								// retain the current bottom safe area.
+								var viewBottomY = 0.0;
 								if (Window is not null)
 								{
 									var viewFrameInWindow = this.Superview?.ConvertRectToView(this.Frame, Window) ?? this.Frame;
-									inputBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
+									viewBottomY = viewFrameInWindow.Y + viewFrameInWindow.Height;
 								}
 								var keyboardTopY = _keyboardFrame.Y;
-								var overlap = inputBottomY > keyboardTopY ? (inputBottomY - keyboardTopY) : 0.0;
+								var overlap = viewBottomY > keyboardTopY ? (viewBottomY - keyboardTopY) : 0.0;
 
 								var adjustedBottom = (overlap > 0) ? overlap : baseSafeArea.Bottom;
 								bottomIncludesKeyboardOverlap = overlap > 0;
@@ -459,9 +459,9 @@ namespace Microsoft.Maui.Platform
 
 		/// <summary>
 		/// Checks if any parent view in the hierarchy is a MauiView with a modern safe area strategy
-		/// and has SafeAreaEdges.SoftInput set for the bottom edge. This is used to determine if
-		/// keyboard overlap/padding is already being handled by an ancestor, so the current view
-		/// should not apply additional adjustments.
+		/// and has SafeAreaEdges.SoftInput set for the bottom edge. The keyboard auto-scroll manager
+		/// uses this to avoid competing with hierarchy-managed keyboard padding; each MauiView still
+		/// computes its own frame-relative overlap.
 		/// Returns true if a parent is handling soft input, false otherwise.
 		/// </summary>
 		internal static bool IsSoftInputHandledByParent(UIView view)
@@ -765,6 +765,17 @@ namespace Microsoft.Maui.Platform
 		bool ValidateSafeArea()
 		{
 			UpdateKeyboardSubscription();
+
+			// A SoftInput inset depends on this view's current frame in window coordinates.
+			// Re-evaluate it on every layout while the keyboard is visible so a parent arrange
+			// can remove a stale overlap without leaving the child double-padded.
+			if (_isKeyboardShowing &&
+				SafeAreaViewStrategy.TryGetSafeAreaEdges(View, out var safeAreaEdges, includeLegacy: false) &&
+				SafeAreaEdges.IsSoftInput(safeAreaEdges.Bottom))
+			{
+				_safeAreaInvalidated = true;
+				_parentHandledSafeAreaEdges = null;
+			}
 
 			// If nothing changed, we don't need to do anything
 			if (!_safeAreaInvalidated)
