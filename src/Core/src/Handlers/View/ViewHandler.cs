@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView is not PlatformView platformView)
 				return;
 
-			if (view.Background is ImageSourcePaint image)
+			if (view.Background is IImageSourcePaint image)
 			{
 				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 

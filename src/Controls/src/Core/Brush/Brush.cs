@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			if (paint is IImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
 				return new ImageBrush { ImageSource = imageSource };
 
 			return null;

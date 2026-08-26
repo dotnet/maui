@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this NView platformView, IView view)
 		{
-			if (view.Background is ImageSourcePaint image)
+			if (view.Background is IImageSourcePaint image)
 			{
 				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)

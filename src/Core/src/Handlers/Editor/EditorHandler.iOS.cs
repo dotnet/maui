@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView is not MauiTextView platformView)
 				return;
 
-			if (editor.Background is ImageSourcePaint image)
+			if (editor.Background is IImageSourcePaint image)
 			{
 				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
