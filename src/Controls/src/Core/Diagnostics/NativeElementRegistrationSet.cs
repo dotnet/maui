@@ -34,53 +34,20 @@ namespace Microsoft.Maui.Controls.Diagnostics
 					string.Equals(existing.Role, role, StringComparison.Ordinal) &&
 					string.Equals(existing.Discriminator, discriminator, StringComparison.Ordinal))
 				{
-					var registrationEnabled = NativeElementDiagnostics.IsRegistrationEnabled;
-					if (existing.IsActive && registrationEnabled)
-					{
-						existing.SubscriptionEpoch = NativeElementDiagnostics.ReplayRegistered(
-							owner,
-							nativeElement,
-							role,
-							discriminator,
-							existing.SubscriptionEpoch);
-						return;
-					}
-
-					if (existing.IsActive == registrationEnabled)
-						return;
-
-					existing.Dispose();
-					existing.Token = NativeElementDiagnostics.TryRegister(
-						owner,
-						nativeElement,
-						role,
-						discriminator,
-						out var token,
-						out var currentSubscriptionEpoch)
-							? token
-							: null;
-					existing.SubscriptionEpoch = currentSubscriptionEpoch;
+					existing.Refresh();
 					return;
 				}
 
 				existing.Dispose();
 			}
 
-			_registrations[nativeElement] = new Registration(
+			var registration = new Registration(
 				owner,
 				nativeElement,
 				role,
-				discriminator,
-				NativeElementDiagnostics.TryRegister(
-					owner,
-					nativeElement,
-					role,
-					discriminator,
-					out var registration,
-					out var subscriptionEpoch)
-						? registration
-						: null,
-				subscriptionEpoch);
+				discriminator);
+			_registrations[nativeElement] = registration;
+			registration.Refresh();
 		}
 
 		public void RegisterExclusive(
@@ -197,10 +164,10 @@ namespace Microsoft.Maui.Controls.Diagnostics
 		public void Clear()
 		{
 			AdvanceLifecycle();
-			foreach (var registration in _registrations.Values)
-				registration.Dispose();
-
+			var registrations = new List<Registration>(_registrations.Values);
 			_registrations.Clear();
+			foreach (var registration in registrations)
+				registration.Dispose();
 		}
 
 		public void Dispose()
@@ -210,46 +177,245 @@ namespace Microsoft.Maui.Controls.Diagnostics
 
 		sealed class Registration
 		{
+			readonly object _gate = new object();
+			IDisposable? _token;
+			long _subscriptionEpoch;
+			bool _disposed;
+			bool _disposeRequested;
+			bool _refreshing;
+			bool _refreshRequested;
+			int _operationThreadId;
+
 			public Registration(
 				object owner,
 				object nativeElement,
 				string role,
-				string? discriminator,
-				IDisposable? token,
-				long subscriptionEpoch)
+				string? discriminator)
 			{
 				Owner = owner;
 				NativeElement = nativeElement;
 				Role = role;
 				Discriminator = discriminator;
-				Token = token;
-				SubscriptionEpoch = subscriptionEpoch;
+				_subscriptionEpoch = NativeElementDiagnostics.SubscriptionEpoch;
+				NativeElementRegistrationTracker.Track(this);
 			}
 
 			public object Owner { get; }
 			public object NativeElement { get; }
 			public string Role { get; }
 			public string? Discriminator { get; }
-			public bool IsActive => Token is not null;
-			public IDisposable? Token { get; set; }
-			public long SubscriptionEpoch { get; set; }
 
-			public void Dispose()
+			public void Refresh()
 			{
-				if (Token is not null)
+				var currentThreadId = Environment.CurrentManagedThreadId;
+				lock (_gate)
 				{
-					SubscriptionEpoch = NativeElementDiagnostics.ReplayRegisteredAndDispose(
+					if (_disposed || _disposeRequested)
+						return;
+
+					if (_refreshing)
+					{
+						if (_operationThreadId == currentThreadId)
+						{
+							_refreshRequested = true;
+							return;
+						}
+
+						do
+						{
+							Monitor.Wait(_gate);
+						}
+						while (_refreshing);
+
+						if (_disposed || _disposeRequested)
+							return;
+					}
+
+					_refreshing = true;
+					_operationThreadId = currentThreadId;
+				}
+
+				ProcessPendingOperations();
+			}
+
+			void ProcessPendingOperations()
+			{
+				var disposed = false;
+				try
+				{
+					while (true)
+					{
+						bool dispose;
+						lock (_gate)
+						{
+							dispose = _disposeRequested;
+							_refreshRequested = false;
+						}
+
+						if (dispose)
+						{
+							DisposeToken();
+							disposed = true;
+							return;
+						}
+
+						RefreshCore();
+						lock (_gate)
+						{
+							if (_disposeRequested || _refreshRequested)
+								continue;
+
+							return;
+						}
+					}
+				}
+				finally
+				{
+					lock (_gate)
+					{
+						_disposed |= disposed;
+						_refreshing = false;
+						_operationThreadId = 0;
+						Monitor.PulseAll(_gate);
+					}
+				}
+			}
+
+			void RefreshCore()
+			{
+				var registrationEnabled = NativeElementDiagnostics.IsRegistrationEnabled;
+				if (_token is not null && registrationEnabled)
+				{
+					_subscriptionEpoch = NativeElementDiagnostics.ReplayRegistered(
 						Owner,
 						NativeElement,
 						Role,
 						Discriminator,
-						SubscriptionEpoch,
-						Token);
-					Token = null;
+						_subscriptionEpoch);
 					return;
 				}
 
-				Token = null;
+				if ((_token is not null) == registrationEnabled)
+					return;
+
+				DisposeToken();
+				if (!registrationEnabled)
+					return;
+
+				NativeElementDiagnostics.TryRegister(
+					Owner,
+					NativeElement,
+					Role,
+					Discriminator,
+					out var token,
+					out var subscriptionEpoch);
+				_subscriptionEpoch = subscriptionEpoch;
+				if (token is null)
+					return;
+
+				_token = token;
+			}
+
+			void DisposeToken()
+			{
+				var token = _token;
+				_token = null;
+				if (token is null)
+					return;
+
+				_subscriptionEpoch = NativeElementDiagnostics.ReplayRegisteredAndDispose(
+					Owner,
+					NativeElement,
+					Role,
+					Discriminator,
+					_subscriptionEpoch,
+					token);
+			}
+
+			public void Dispose()
+			{
+				var currentThreadId = Environment.CurrentManagedThreadId;
+				lock (_gate)
+				{
+					if (_disposed || _disposeRequested)
+						return;
+
+					_disposeRequested = true;
+					if (_refreshing)
+					{
+						if (_operationThreadId == currentThreadId)
+							return;
+
+						do
+						{
+							Monitor.Wait(_gate);
+						}
+						while (_refreshing);
+
+						if (_disposed)
+							return;
+					}
+
+					_refreshing = true;
+					_operationThreadId = currentThreadId;
+				}
+
+				ProcessPendingOperations();
+			}
+		}
+
+		static class NativeElementRegistrationTracker
+		{
+			static readonly object s_gate = new object();
+			static readonly List<WeakReference<Registration>> s_registrations =
+				new List<WeakReference<Registration>>();
+			static int s_registrationsSinceSweep;
+
+			static NativeElementRegistrationTracker()
+			{
+				NativeElementDiagnostics.SubscriptionAdded += ReplayRegistrations;
+			}
+
+			public static void Track(Registration registration)
+			{
+				lock (s_gate)
+				{
+					s_registrations.Add(new WeakReference<Registration>(registration));
+					if (++s_registrationsSinceSweep < 64)
+						return;
+
+					RemoveExpiredRegistrations();
+					s_registrationsSinceSweep = 0;
+				}
+			}
+
+			static void ReplayRegistrations()
+			{
+				List<Registration> registrations;
+				lock (s_gate)
+				{
+					registrations = new List<Registration>(s_registrations.Count);
+					for (var index = 0; index < s_registrations.Count; index++)
+					{
+						if (s_registrations[index].TryGetTarget(out var registration))
+							registrations.Add(registration);
+					}
+
+					RemoveExpiredRegistrations();
+					s_registrationsSinceSweep = 0;
+				}
+
+				foreach (var registration in registrations)
+					registration.Refresh();
+			}
+
+			static void RemoveExpiredRegistrations()
+			{
+				for (var index = s_registrations.Count - 1; index >= 0; index--)
+				{
+					if (!s_registrations[index].TryGetTarget(out _))
+						s_registrations.RemoveAt(index);
+				}
 			}
 		}
 
