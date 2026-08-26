@@ -5042,43 +5042,36 @@ function Invoke-ReplicationFixArms {
     # dirt that was already there is not something the winning diff did.
     $inheritedDirt = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths |
         Where-Object { $ScopeFiles -cnotcontains $_ })
+    # The winner's diff was captured against the scoped baseline, but the panel
+    # restores between candidates and not after the last one, so the tree still
+    # carries whatever the final candidate wrote. Build 15098930 proved two
+    # independent fixes for #27332 and published neither: candidate 4 was left
+    # in ItemsViewStyles.xaml and candidate 1's diff would no longer apply at
+    # line 82. Across the cached logs this discarded a passing candidate in 26
+    # of the 94 runs that produced one, and no apply failure ever lacked a fix
+    # to lose -- the largest single source of wasted work in the fix phase.
+    #
+    # Reproduced outside the pipeline before changing anything: with another
+    # candidate's edit still in the file, strict apply fails with exactly the
+    # "patch does not apply" the logs show, and the same diff applies after the
+    # scoped files are restored to HEAD, leaving only the winner's change. A
+    # three-way merge does not rescue this -- git refuses it with "does not
+    # match index" while the tree is dirty, which is precisely when it would be
+    # needed, and it refuses again on a CRLF checkout.
+    if (-not (Restore-ReplicationFixTree `
+                -TrustedScriptRoot $TrustedScriptRoot `
+                -ScopeFiles $ScopeFiles)) {
+        Write-Host ('No fix arms were run: the tree could not be returned to its ' +
+            'baseline before the winning diff was replayed.')
+        return $null
+    }
     & git apply --whitespace=nowarn -- $PatchPath
     if ($LASTEXITCODE -ne 0) {
-        # Strict apply is exact but brittle. The panel restores the tree
-        # between candidates, so by the time the winner is replayed the context
-        # around its change can have moved -- on Windows a restore routinely
-        # rewrites line endings, which is enough on its own. Measured over the
-        # cached logs, 26 of the 94 runs that produced a *passing* fix candidate
-        # died right here, and every run that failed to apply had a passing
-        # candidate to lose. It was the largest single source of discarded work
-        # in the fix phase.
-        #
-        # A three-way merge is not the guess the strict path was guarding
-        # against. It reconstructs the preimage from the blob ids the diff
-        # already carries and merges against that; when it cannot, it says so
-        # instead of inventing a resolution. And whatever it produces is still
-        # put through both arms below, so a merge that landed the wrong change
-        # cannot become a published fix -- it can only fail to reproduce.
-        & git apply --3way --whitespace=nowarn -- $PatchPath
-        if ($LASTEXITCODE -ne 0) {
-            # Unlike strict apply, which is all-or-nothing, a conflicted
-            # three-way leaves markers in the file and unmerged entries in the
-            # index. The reproduction is published from this tree, so it has to
-            # be put back before returning.
-            Restore-ReplicationFixTree `
-                -TrustedScriptRoot $TrustedScriptRoot `
-                -ScopeFiles $ScopeFiles | Out-Null
-            Write-Host 'No fix arms were run: the winning diff no longer applies to the tree.'
-            return $null
-        }
-        # --3way implies --index, so the merge lands staged. Nothing downstream
-        # is fooled by that -- status is porcelain and the winner diff is taken
-        # against HEAD -- but leaving the tree in a shape no other path produces
-        # invites a later reader to assume wrongly, so put it back to a plain
-        # working-tree edit. Best effort: if it fails the change is still there.
-        & git reset --quiet -- @ScopeFiles 2>&1 | Out-Null
-        Write-Host ('The winning diff needed a three-way merge to replay, because the ' +
-            'tree moved under it. Both arms still decide whether the fix is real.')
+        # Strict apply is all-or-nothing, so a refusal leaves the baseline the
+        # restore above just established. A diff that will not apply to its own
+        # baseline is not a tree that moved; it is a diff to abandon.
+        Write-Host 'No fix arms were run: the winning diff no longer applies to the tree.'
+        return $null
     }
 
     $applied = @(Get-ReplicationFixCandidateChanges -ExcludePaths ($ReproductionPaths + $inheritedDirt))

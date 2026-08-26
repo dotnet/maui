@@ -10165,18 +10165,20 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $script:headGuardCalls = 0
         $script:headGuardShas = [Collections.Generic.List[object]]::new()
         $script:restoreSucceeds = $true
+        # Which restore refuses, 1-based; 0 means none does. The arm restores
+        # twice for different reasons, so a test that needs one of them to fail
+        # has to say which.
+        $script:restoreFailsOnCall = 0
         $script:appliedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
         # What the tree carried before the winning diff was replayed. Empty by
         # default, so the winner answers for everything the stub reports.
         $script:appliedPathsBefore = @()
         $script:gitApplied = $false
         $script:gitApplySucceeds = $true
-        # Reality: the three-way fallback is only reached when strict apply
-        # already refused, so it defaults to the outcome that makes the winner
-        # replayable.
-        $script:gitThreeWaySucceeds = $true
-        $script:gitThreeWayAttempted = $false
-        $script:gitResetPaths = @()
+        # Order matters more than count here: the scope has to be back at its
+        # baseline *before* the winner is replayed onto it, which is the whole
+        # of the defect this arm lost 26 passing candidates to.
+        $script:eventOrder = [System.Collections.Generic.List[string]]::new()
 
         function Invoke-LoggedChildProcess {
             param($ScriptPath, $Arguments, $LogPath, $Description, $TimeoutSeconds)
@@ -10189,6 +10191,8 @@ Describe 'Proving the fix is what turned the reproduction green' {
         function Restore-ReplicationFixTree {
             param($TrustedScriptRoot, $ScopeFiles)
             $script:restoreCalls++
+            $script:eventOrder.Add('restore')
+            if ($script:restoreFailsOnCall -eq $script:restoreCalls) { return $false }
             return $script:restoreSucceeds
         }
         # Stubbed to a constant rather than reimplemented: what these Describes
@@ -10216,17 +10220,9 @@ Describe 'Proving the fix is what turned the reproduction green' {
         }
         function git {
             if ($args[0] -eq 'apply') {
-                $threeWay = @($args) -contains '--3way'
-                $succeeded = if ($threeWay) {
-                    $script:gitThreeWayAttempted = $true
-                    $script:gitThreeWaySucceeds
-                } else { $script:gitApplySucceeds }
-                if ($succeeded) { $script:gitApplied = $true }
-                $global:LASTEXITCODE = if ($succeeded) { 0 } else { 1 }
-            }
-            elseif ($args[0] -eq 'reset') {
-                $script:gitResetPaths = @(@($args) | Select-Object -Skip 1)
-                $global:LASTEXITCODE = 0
+                $script:eventOrder.Add('apply')
+                if ($script:gitApplySucceeds) { $script:gitApplied = $true }
+                $global:LASTEXITCODE = if ($script:gitApplySucceeds) { 0 } else { 1 }
             }
         }
 
@@ -10268,7 +10264,11 @@ Describe 'Proving the fix is what turned the reproduction green' {
 
     It 'removes the fix before the restoration arm runs' {
         Invoke-ReplicationFixArms @script:armArgs | Out-Null
-        $script:restoreCalls | Should -Be 1
+        # Twice now: once to put the scope back to baseline before the winner is
+        # replayed, and once to take the fix out again before the restoration
+        # arm measures the tree without it.
+        $script:restoreCalls | Should -Be 2
+        $script:eventOrder -join ',' | Should -Be 'restore,apply,restore'
     }
 
     It 'runs nothing when the winner changed nothing' {
@@ -10279,62 +10279,43 @@ Describe 'Proving the fix is what turned the reproduction green' {
     }
 
     It 'runs nothing when the winning diff no longer applies' {
-        # Both routes have to refuse before the winner is abandoned. Strict
-        # apply alone refusing is routine -- see the three-way test below.
         $script:gitApplySucceeds = $false
-        $script:gitThreeWaySucceeds = $false
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 0
     }
 
-    It 'replays a winner whose context moved by falling back to a three-way merge' {
-        # Build 15098930 proved two fixes for #27332 and published neither: the
-        # panel restored ItemsViewStyles.xaml to HEAD between candidates, and
-        # the winner's diff would no longer apply at line 82. Across the cached
-        # logs this destroyed a passing candidate 26 times in 94 fix runs.
-        $script:gitApplySucceeds = $false
-        $script:gitThreeWaySucceeds = $true
-
-        $evidence = Invoke-ReplicationFixArms @script:armArgs
-
-        $script:gitThreeWayAttempted | Should -BeTrue
-        $evidence | Should -Not -BeNullOrEmpty
-        $script:childRuns | Should -HaveCount 2
-    }
-
-    It 'does not reach for a three-way merge when the diff applied cleanly' {
+    It 'returns the scope to its baseline before replaying the winning diff' {
+        # Build 15098930 proved two fixes for #27332 and published neither. The
+        # panel restores between candidates but not after the last one, so
+        # candidate 4's edit was still in ItemsViewStyles.xaml when candidate
+        # 1's diff was replayed, and it would not apply at line 82. Replaying
+        # onto whatever the previous candidate happened to leave behind is the
+        # defect; restoring first is the fix.
         Invoke-ReplicationFixArms @script:armArgs | Out-Null
-        $script:gitThreeWayAttempted | Should -BeFalse
+
+        $script:eventOrder[0] | Should -Be 'restore'
+        $script:eventOrder[1] | Should -Be 'apply'
     }
 
-    It 'puts the tree back when a three-way merge conflicts' {
-        # A conflicted three-way is not all-or-nothing like strict apply: it
-        # leaves markers and unmerged index entries. The reproduction is
-        # published from this tree, so it cannot be left carrying them.
-        $script:gitApplySucceeds = $false
-        $script:gitThreeWaySucceeds = $false
+    It 'runs nothing when the tree cannot be returned to its baseline' {
+        # Replaying a baseline-relative diff onto a tree that refused to go back
+        # to baseline measures neither the winner nor the previous candidate.
+        $script:restoreSucceeds = $false
 
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
 
-        $script:restoreCalls | Should -Be 1
-    }
-
-    It 'unstages the scope a three-way merge staged behind it' {
-        # --3way implies --index, so the merge lands staged, which no other
-        # path in the phase produces.
-        $script:gitApplySucceeds = $false
-        $script:gitThreeWaySucceeds = $true
-
-        Invoke-ReplicationFixArms @script:armArgs | Out-Null
-
-        $script:gitResetPaths | Should -Contain 'src/Core/src/Handlers/EntryHandler.cs'
+        $script:gitApplied | Should -BeFalse
+        $script:eventOrder | Should -Not -Contain 'apply'
+        $script:childRuns | Should -HaveCount 0
     }
 
     It 'refuses a diff that turns out to touch a file outside the scope' {
         $script:appliedPaths = @('src/Core/src/Handlers/EntryHandler.cs', 'eng/Versions.props')
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 0
-        $script:restoreCalls | Should -Be 1
+        # The baseline restore before the replay, then the one that undoes the
+        # out-of-scope patch.
+        $script:restoreCalls | Should -Be 2
     }
 
     It 'measures the winner although the product build regenerated a file of its own' {
@@ -10365,7 +10346,9 @@ Describe 'Proving the fix is what turned the reproduction green' {
     It 'discards the fix, and restores the tree, when the fix arm does not pass' {
         $script:failOnDescription = '*with the fix applied*'
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
-        $script:restoreCalls | Should -Be 1
+        # One restore to reach the baseline the winner was measured against, one
+        # to take the failed fix back out.
+        $script:restoreCalls | Should -Be 2
     }
 
     It 'discards the fix when the test does not go red again without it' {
@@ -10375,7 +10358,9 @@ Describe 'Proving the fix is what turned the reproduction green' {
     }
 
     It 'does not claim a restoration arm it could not run' {
-        $script:restoreSucceeds = $false
+        # The restore that matters here is the one before the restoration arm,
+        # not the one that establishes the baseline for the replay.
+        $script:restoreFailsOnCall = 2
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 1
     }
