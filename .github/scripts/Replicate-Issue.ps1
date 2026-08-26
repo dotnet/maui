@@ -1206,6 +1206,87 @@ function Get-ReplicationAmbiguousTypeEvidence {
     return ('The diagnostic already names both candidates. ' + ($lines -join ' '))
 }
 
+function Get-ReplicationDeclaringNamespace {
+    <#
+        .SYNOPSIS
+            Names the namespace that declares an identifier, when the tree
+            answers unambiguously.
+
+        .DESCRIPTION
+            CS0103 says a name does not exist "in the current context", and
+            measured over 585 cached logs, 30 of the 35 runs that hit one named
+            an identifier that does exist in this repository. So the dominant
+            CS0103 is a missing using directive, not a misspelling, and the one
+            fact the agent cannot read off the diagnostic is which namespace to
+            import.
+
+            Ranking is by declaring file, not by the using directives of files
+            that merely call the name. That distinction was measured: ranking
+            callers' usings puts 'Xunit' top for AssertEventually at 38 of 40,
+            because a namespace common to every test file wins on frequency
+            alone - the same "popular value wins" artefact that made the
+            alphabetical citation sort useless.
+
+            A strict majority is required, so a name declared once per namespace
+            reports nothing rather than picking arbitrarily. It reports, never
+            refuses: an absent answer leaves the caller's existing advice intact.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [int]$MaximumDeclaringFiles = 6
+    )
+
+    # The name always arrives from a [A-Za-z_][A-Za-z0-9_]* capture, so it
+    # carries no regex metacharacter and can be interpolated safely.
+    if ($Name -notmatch '^[A-Za-z_][A-Za-z0-9_]*$') { return '' }
+
+    $declaring = @()
+    try {
+        $declaring = @(& git -C $RepositoryRoot grep --files-with-matches -I -E `
+                "(class|enum|struct|interface|record)[[:space:]]+$Name([^A-Za-z0-9_]|`$)|static[^(]*[[:space:]]$Name[[:space:]]*\(" `
+                -- 'src' 2>$null |
+            Where-Object { $_ -like '*.cs' } |
+            Select-Object -First $MaximumDeclaringFiles)
+    } catch {
+        # A search that could not run says nothing, and inventing a namespace
+        # here is the confident wrong answer this phase exists to stop.
+        return ''
+    }
+    if ($declaring.Count -eq 0) { return '' }
+
+    $namespaces = [Collections.Generic.List[string]]::new()
+    foreach ($relative in $declaring) {
+        $full = Join-Path $RepositoryRoot $relative
+        if (-not (Test-Path -LiteralPath $full -PathType Leaf)) { continue }
+        $text = ''
+        try {
+            $text = Get-Content -LiteralPath $full -Raw -ErrorAction Stop
+        } catch {
+            continue
+        }
+        # Measured: a UTF-8 BOM is stripped by the decoder, so the string never
+        # carries U+FEFF and an anchored "^\s*namespace" is safe on the BOM'd
+        # files under src/Controls/tests/TestCases.HostApp. Matching \uFEFF here
+        # would be dead configuration reading as protection.
+        $found = [regex]::Match($text, '(?m)^\s*namespace\s+(?<ns>[A-Za-z_][A-Za-z0-9_.]*)')
+        if ($found.Success) {
+            $namespaces.Add($found.Groups['ns'].Value) | Out-Null
+        }
+    }
+    if ($namespaces.Count -eq 0) { return '' }
+
+    $ranked = @($namespaces | Group-Object |
+        Sort-Object -Property @{ Expression = { $_.Count } ; Descending = $true }, Name)
+    if ($ranked.Count -gt 1 -and $ranked[0].Count -le $ranked[1].Count) {
+        # Tied, so there is no winner to name. Staying silent keeps the
+        # caller's "this name exists" advice, which is true either way.
+        return ''
+    }
+
+    return $ranked[0].Name
+}
+
 function Get-ReplicationMissingIdentifierEvidence {
     <#
         .SYNOPSIS
@@ -1292,12 +1373,22 @@ function Get-ReplicationMissingIdentifierEvidence {
     }
 
     $names = [Collections.Generic.List[string]]::new()
+    # CS0103 names are tracked apart from the other two patterns because they
+    # take the opposite advice. "does not contain a definition for" means the
+    # member is on the wrong type, so suggesting a different type is right;
+    # "The name 'X' does not exist" on a name that is present in the tree means
+    # the file is missing a using, and telling that author the member "may be on
+    # a different type" invites renaming a name that was already correct.
+    $scopeNames = [Collections.Generic.HashSet[string]]::new()
     foreach ($pattern in @(
             "does not contain a definition for '(?<name>[A-Za-z_][A-Za-z0-9_]*)'",
             "The name '(?<name>[A-Za-z_][A-Za-z0-9_]*)' does not exist",
             "The type or namespace name '(?<name>[A-Za-z_][A-Za-z0-9_]*)' could not be found")) {
         foreach ($match in [regex]::Matches($Diagnostics, $pattern)) {
             $name = $match.Groups['name'].Value
+            if ($pattern -like "The name '*") {
+                $scopeNames.Add($name) | Out-Null
+            }
             if (-not $names.Contains($name)) {
                 $names.Add($name) | Out-Null
             }
@@ -1332,6 +1423,17 @@ function Get-ReplicationMissingIdentifierEvidence {
             # filtered to .cs, and a name living only in a csproj or a XAML
             # file is still not an API this test body can call.
             $lines.Add("'$name' appears in no C# source file under src/, so it does not exist as an API - do not use it again, and do not vary its spelling.") | Out-Null
+        } elseif ($scopeNames.Contains($name)) {
+            $namespace = Get-ReplicationDeclaringNamespace -Name $name -RepositoryRoot $RepositoryRoot
+            $import = if ($namespace) {
+                " It is declared in the '$namespace' namespace, so add 'using $namespace;'."
+            } else {
+                ' Copy the using directives from that file rather than renaming the identifier.'
+            }
+            $lines.Add(
+                "'$name' does exist in this repository and appears in $($sites -join ', '). " +
+                "The name is therefore in scope somewhere and this is a missing using directive, " +
+                "not a wrong name - do not rename it or vary its spelling.$import") | Out-Null
         } else {
             $lines.Add("'$name' appears in $($sites -join ', '). Read one of those before using it; the member you want may be on a different type.") | Out-Null
         }

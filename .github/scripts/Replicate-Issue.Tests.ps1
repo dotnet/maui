@@ -107,6 +107,7 @@ BeforeAll {
         'Assert-GeneratedSandboxSources',
         'Get-ReplicationFixBaselineGreenCause',
     'Get-ReplicationMissingIdentifierEvidence',
+    'Get-ReplicationDeclaringNamespace',
     'Get-ReplicationAmbiguousTypeEvidence',
     'Get-ReplicationIdentifierSiteRank',
     'Set-ReplicationVerificationRunCount',
@@ -13768,5 +13769,165 @@ Describe 'An issue-keyed device category is the only category on skip-filtered p
         $orchestrator = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
         $orchestrator | Should -Match 'that must be the ONLY category the test carries'
+    }
+}
+
+Describe 'A name that exists is a missing using, not a wrong name' {
+    BeforeAll {
+        $script:scopeRepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        # Canary: a wrong root makes every search return nothing, which would
+        # turn each assertion below into a free pass.
+        (Test-Path -LiteralPath (Join-Path $script:scopeRepoRoot 'src/TestUtils/src/DeviceTests/AssertHelpers.cs')) |
+            Should -BeTrue -Because 'these assertions read the real product tree'
+
+        function script:New-ScopeRepo {
+            param([hashtable]$Files)
+            $repo = Join-Path ([IO.Path]::GetTempPath()) ("scope-" + [Guid]::NewGuid().ToString('N'))
+            $null = New-Item -ItemType Directory -Path (Join-Path $repo 'src') -Force
+            foreach ($relative in $Files.Keys) {
+                $full = Join-Path $repo $relative
+                $null = New-Item -ItemType Directory -Path (Split-Path -Parent $full) -Force
+                [IO.File]::WriteAllText($full, $Files[$relative])
+            }
+            Push-Location $repo
+            try {
+                & git init --quiet 2>&1 | Out-Null
+                & git add -A 2>&1 | Out-Null
+            } finally {
+                Pop-Location
+            }
+            return $repo
+        }
+    }
+
+    It 'tells the author to import the namespace instead of renaming the identifier' {
+        # Measured over 585 cached logs: 35 runs hit a CS0103 and 30 of them
+        # named an identifier that exists in this repository, so the dominant
+        # CS0103 is a missing using. AssertEventually is the single most
+        # repeated one (186 occurrences) and is declared in
+        # src/TestUtils/src/DeviceTests/AssertHelpers.cs.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "Issue1.cs(9,3): error CS0103: The name 'AssertEventually' does not exist in the current context" `
+            -RepositoryRoot $script:scopeRepoRoot
+        $evidence | Should -Match "'AssertEventually' does exist in this repository"
+        $evidence | Should -Match 'missing using directive'
+        $evidence | Should -Match "using Microsoft\.Maui\.DeviceTests;"
+        # The CS0117/CS1061 clause invites renaming a name that is already
+        # correct, which is the one reply guaranteed to be wrong here.
+        $evidence | Should -Not -Match 'may be on a different type'
+    }
+
+    It 'names the namespace for each of the three identifiers that dominate the corpus' {
+        # AssertEventually 186, AbsoluteLayoutFlags 88, Colors 76 - together
+        # 92% of every real CS0103 occurrence across 585 cached logs.
+        # AbsoluteLayoutFlags is the case that decided the design: ranking the
+        # using directives of calling files tied Microsoft.Maui.Layouts against
+        # Microsoft.Maui.Graphics at 10 each, while the declaration resolves it
+        # outright.
+        $expected = @{
+            'AssertEventually'    = 'Microsoft.Maui.DeviceTests'
+            'Colors'              = 'Microsoft.Maui.Graphics'
+            'AbsoluteLayoutFlags' = 'Microsoft.Maui.Layouts'
+        }
+        foreach ($name in $expected.Keys) {
+            $evidence = Get-ReplicationMissingIdentifierEvidence `
+                -Diagnostics "Issue1.cs(9,3): error CS0103: The name '$name' does not exist in the current context" `
+                -RepositoryRoot $script:scopeRepoRoot
+            $evidence | Should -Match "'$name' does exist in this repository"
+            $evidence | Should -Match ([regex]::Escape("using $($expected[$name]);"))
+            $evidence | Should -Not -Match 'may be on a different type'
+        }
+    }
+
+    It 'still says a name exists when no declaration can name its namespace' {
+        # TitleColor is a member rather than a type, so no declaration search
+        # can resolve a namespace for it. Staying silent about the namespace is
+        # safe; claiming the name is wrong is not.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "Issue1.cs(9,3): error CS0103: The name 'TitleColor' does not exist in the current context" `
+            -RepositoryRoot $script:scopeRepoRoot
+        $evidence | Should -Match "'TitleColor' does exist in this repository"
+        $evidence | Should -Match 'Copy the using directives from that file'
+        $evidence | Should -Not -Match 'may be on a different type'
+        # A namespace it could not resolve must not be invented.
+        $evidence | Should -Not -Match 'so add .using'
+    }
+
+    It 'leaves the wrong-member wording alone for CS0117 and CS1061' {
+        # That clause is correct there: the member really is on another type.
+        $evidence = Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "X.cs(1,1): error CS1061: 'SafeAreaEdges' does not contain a definition for 'Container'" `
+            -RepositoryRoot $script:scopeRepoRoot
+        $evidence | Should -Match 'may be on a different type'
+        $evidence | Should -Not -Match 'missing using directive'
+    }
+
+    It 'keeps calling an invented name invented' {
+        Get-ReplicationMissingIdentifierEvidence `
+            -Diagnostics "X.cs(1,1): error CS0103: The name 'TotallyMadeUpApiName' does not exist in the current context" `
+            -RepositoryRoot $script:scopeRepoRoot |
+            Should -Match 'appears in no C# source file under src/'
+    }
+
+    It 'resolves a namespace out of a file that carries a UTF-8 BOM' {
+        # src/Controls/tests/TestCases.HostApp carries BOM'd sources. The BOM is
+        # stripped by the decoder rather than reaching the regex, and this test
+        # pins that: it reads the real file's bytes so the fixture cannot
+        # quietly stop reproducing the condition it claims to test.
+        $bomFile = Join-Path $script:scopeRepoRoot 'src/Controls/tests/TestCases.HostApp/Utils/GarbageCollectionHelper.cs'
+        $bytes = [IO.File]::ReadAllBytes($bomFile)
+        @($bytes[0], $bytes[1], $bytes[2]) |
+            Should -Be @(0xEF, 0xBB, 0xBF) -Because 'the file must really carry a BOM or this proves nothing'
+        Get-ReplicationDeclaringNamespace -Name 'GarbageCollectionHelper' -RepositoryRoot $script:scopeRepoRoot |
+            Should -Be 'Maui.Controls.Sample'
+    }
+
+    It 'does not treat a prefix of a declared name as a declaration' {
+        # git's ERE does not support \b here, so the first draft's
+        # "class[[:space:]]+$Name\b" matched nothing at all and the class
+        # clause was silently blind - AssertEventually only ever resolved
+        # through the separate "static ... (" alternative. Dropping the
+        # boundary instead would make 'Widg' resolve from 'class Widget'.
+        $repo = script:New-ScopeRepo @{
+            'src/a/Widget.cs' = "namespace Contoso.Widgets;`npublic class Widget`n{`n}`n"
+        }
+        try {
+            Get-ReplicationDeclaringNamespace -Name 'Widget' -RepositoryRoot $repo |
+                Should -Be 'Contoso.Widgets' -Because 'a declaration ending the line must still be found'
+            Get-ReplicationDeclaringNamespace -Name 'Widg' -RepositoryRoot $repo |
+                Should -BeNullOrEmpty -Because 'a prefix is a different identifier'
+        } finally {
+            Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'names no namespace when the declarations tie' {
+        # Two namespaces declaring the same name once each is not an answer.
+        # Picking either would be the "popular value wins" artefact that made
+        # using-frequency ranking report Xunit for AssertEventually.
+        $repo = script:New-ScopeRepo @{
+            'src/a/Widget.cs' = "namespace Contoso.Alpha;`npublic class Widget { }`n"
+            'src/b/Widget.cs' = "namespace Contoso.Beta;`npublic class Widget { }`n"
+        }
+        try {
+            Get-ReplicationDeclaringNamespace -Name 'Widget' -RepositoryRoot $repo |
+                Should -BeNullOrEmpty
+        } finally {
+            Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'names the namespace that declares the name most often' {
+        $repo = script:New-ScopeRepo @{
+            'src/a/Widget.cs'  = "namespace Contoso.Alpha;`npublic class Widget { }`n"
+            'src/a2/Widget.cs' = "namespace Contoso.Alpha;`npublic class Widget { }`n"
+            'src/b/Widget.cs'  = "namespace Contoso.Beta;`npublic class Widget { }`n"
+        }
+        try {
+            Get-ReplicationDeclaringNamespace -Name 'Widget' -RepositoryRoot $repo |
+                Should -Be 'Contoso.Alpha'
+        } finally {
+            Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
