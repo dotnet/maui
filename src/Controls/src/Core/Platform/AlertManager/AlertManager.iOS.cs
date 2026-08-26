@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 			void PresentAlert(Page sender, AlertArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
-				var logicalActions = new Dictionary<UIAlertAction, MenuItem>();
+				var logicalActions = new Dictionary<UIAlertAction, LogicalDialogAction>();
 				var completed = 0;
 				bool Complete(Action setResult)
 				{
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 			void PresentPrompt(Page sender, PromptArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
-				var logicalActions = new Dictionary<UIAlertAction, MenuItem>();
+				var logicalActions = new Dictionary<UIAlertAction, LogicalDialogAction>();
 				var completed = 0;
 				bool Complete(Action setResult)
 				{
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Platform
 			void PresentActionSheet(Page sender, ActionSheetArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
-				var logicalActions = new Dictionary<UIAlertAction, MenuItem>();
+				var logicalActions = new Dictionary<UIAlertAction, LogicalDialogAction>();
 				var completed = 0;
 				bool Complete(string result)
 				{
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			static void AddDialogAction(
 				UIAlertController alert,
-				IDictionary<UIAlertAction, MenuItem> logicalActions,
+				IDictionary<UIAlertAction, LogicalDialogAction> logicalActions,
 				string title,
 				UIAlertActionStyle style,
 				Func<bool> complete,
@@ -259,19 +259,19 @@ namespace Microsoft.Maui.Controls.Platform
 				if (string.IsNullOrEmpty(logicalTitle))
 					return;
 
-				logicalActions[nativeAction] = new MenuItem
-				{
-					Text = logicalTitle,
-					Command = new Command(() =>
-						alert.BeginInvokeOnMainThread(() =>
-						{
-							if (!complete())
-								return;
+				logicalActions[nativeAction] = new LogicalDialogAction(logicalTitle, complete);
+			}
 
-							if (alert.PresentingViewController is not null && !alert.IsBeingDismissed)
-								alert.DismissViewController(true, null);
-						}))
-				};
+			readonly struct LogicalDialogAction
+			{
+				public LogicalDialogAction(string title, Func<bool> complete)
+				{
+					Title = title;
+					Complete = complete;
+				}
+
+				public string Title { get; }
+				public Func<bool> Complete { get; }
 			}
 
 			static void PresentPopUp(
@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Controls.Platform
 				UIWindow platformView,
 				UIAlertController alert,
 				ActionSheetArguments arguments = null,
-				IReadOnlyDictionary<UIAlertAction, MenuItem> logicalActions = null,
+				IReadOnlyDictionary<UIAlertAction, LogicalDialogAction> logicalActions = null,
 				Task completion = null)
 			{
 				UIWindow presentingWindow = platformView;
@@ -346,14 +346,7 @@ namespace Microsoft.Maui.Controls.Platform
 								if (task.IsFaulted || task.IsCanceled)
 									registration.Dispose();
 								else
-								{
-									registration.RegisterLogicalActions(
-										sender,
-										logicalActions);
-									registration.RegisterAlertActionViews(sender, alert);
-									if (alert.PresentationController is not null)
-										registration.Attach(sender, alert);
-								}
+									registration.Attach(sender, alert, logicalActions);
 							});
 						},
 						TaskScheduler.Default);
@@ -365,7 +358,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				readonly NativeElementRegistrationSet _actionViewRegistrations = new NativeElementRegistrationSet();
 				readonly NativeElementRegistrationSet _registrations = new NativeElementRegistrationSet();
+				readonly Dictionary<UIAlertAction, MenuItem> _logicalActionModels =
+					new Dictionary<UIAlertAction, MenuItem>();
+				IReadOnlyDictionary<UIAlertAction, LogicalDialogAction> _logicalActions;
 				NSTimer _lifecycleTimer;
+				object _owner;
+				WeakReference<UIAlertController> _presentedController;
+				bool _subscriptionHooked;
 				int _disposed;
 
 				public void Register(
@@ -374,8 +373,7 @@ namespace Microsoft.Maui.Controls.Platform
 					string role,
 					string discriminator)
 				{
-					if (Volatile.Read(ref _disposed) != 0 ||
-						!NativeElementDiagnostics.IsRegistrationEnabled)
+					if (Volatile.Read(ref _disposed) != 0)
 						return;
 
 					_registrations.Register(owner, nativeElement, role, discriminator);
@@ -423,23 +421,54 @@ namespace Microsoft.Maui.Controls.Platform
 					_actionViewRegistrations.Retain(retainedActionViews);
 				}
 
-				public void RegisterLogicalActions(
-					object owner,
-					IReadOnlyDictionary<UIAlertAction, MenuItem> logicalActions)
+				void RegisterLogicalActions()
 				{
 					if (Volatile.Read(ref _disposed) != 0 ||
-						logicalActions is null ||
+						_owner is null ||
+						_logicalActions is null ||
 						!NativeElementDiagnostics.IsRegistrationEnabled)
 						return;
 
-					foreach (var logicalAction in logicalActions.Values)
+					foreach (var logicalAction in _logicalActions)
 					{
+						if (!_logicalActionModels.TryGetValue(logicalAction.Key, out var model))
+						{
+							var nativeAction = logicalAction.Key;
+							model = new MenuItem
+							{
+								Text = logicalAction.Value.Title,
+								Command = new Command(() => InvokeLogicalAction(nativeAction))
+							};
+							_logicalActionModels[nativeAction] = model;
+						}
+
 						_registrations.Register(
-							owner,
-							logicalAction,
+							_owner,
+							model,
 							NativeElementRoles.DialogAction,
 							NativeElementDiscriminators.LogicalModel);
 					}
+				}
+
+				void InvokeLogicalAction(UIAlertAction nativeAction)
+				{
+					if (Volatile.Read(ref _disposed) != 0 ||
+						_logicalActions is null ||
+						!_logicalActions.TryGetValue(nativeAction, out var logicalAction) ||
+						_presentedController is null ||
+						!_presentedController.TryGetTarget(out var alert))
+					{
+						return;
+					}
+
+					alert.BeginInvokeOnMainThread(() =>
+					{
+						if (Volatile.Read(ref _disposed) != 0 || !logicalAction.Complete())
+							return;
+
+						if (alert.PresentingViewController is not null && !alert.IsBeingDismissed)
+							alert.DismissViewController(true, null);
+					});
 				}
 
 				static IEnumerable<UIView> FindAlertActionViews(
@@ -528,37 +557,60 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public void Attach(
 					object owner,
-					UIAlertController presentedController)
+					UIAlertController presentedController,
+					IReadOnlyDictionary<UIAlertAction, LogicalDialogAction> logicalActions)
 				{
-					if (Volatile.Read(ref _disposed) != 0 ||
-						!NativeElementDiagnostics.IsRegistrationEnabled)
+					if (Volatile.Read(ref _disposed) != 0)
 						return;
 
-					var weakController = new WeakReference<UIAlertController>(presentedController);
+					_owner = owner;
+					_logicalActions = logicalActions;
+					_presentedController = new WeakReference<UIAlertController>(presentedController);
+					if (!_subscriptionHooked)
+					{
+						NativeElementDiagnostics.SubscriptionAdded += OnSubscriptionAdded;
+						_subscriptionHooked = true;
+					}
+
 					_lifecycleTimer?.Invalidate();
 					_lifecycleTimer?.Dispose();
 					_lifecycleTimer = NSTimer.CreateRepeatingScheduledTimer(
 						TimeSpan.FromMilliseconds(250),
-						_ =>
-						{
-							if (Volatile.Read(ref _disposed) != 0)
-								return;
-							if (!NativeElementDiagnostics.IsRegistrationEnabled)
-							{
-								Dispose();
-								return;
-							}
-							if (weakController.TryGetTarget(out var controller)
-								&& controller.PresentingViewController is not null
-								&& controller.ViewIfLoaded?.Window is not null)
-							{
-								RegisterAlertActionViews(owner, controller);
-							}
-							else
-							{
-								Dispose();
-							}
-						});
+						_ => Refresh());
+					Refresh();
+				}
+
+				void OnSubscriptionAdded()
+				{
+					if (Volatile.Read(ref _disposed) != 0 ||
+						_presentedController is null ||
+						!_presentedController.TryGetTarget(out var controller))
+					{
+						return;
+					}
+
+					controller.BeginInvokeOnMainThread(Refresh);
+				}
+
+				void Refresh()
+				{
+					if (Volatile.Read(ref _disposed) != 0)
+						return;
+
+					if (_presentedController is null ||
+						!_presentedController.TryGetTarget(out var controller) ||
+						controller.PresentingViewController is null ||
+						controller.ViewIfLoaded?.Window is null)
+					{
+						Dispose();
+						return;
+					}
+
+					if (!NativeElementDiagnostics.IsRegistrationEnabled)
+						return;
+
+					RegisterLogicalActions();
+					RegisterAlertActionViews(_owner, controller);
 				}
 
 				public void Dispose()
@@ -569,8 +621,17 @@ namespace Microsoft.Maui.Controls.Platform
 					_lifecycleTimer?.Invalidate();
 					_lifecycleTimer?.Dispose();
 					_lifecycleTimer = null;
+					if (_subscriptionHooked)
+					{
+						NativeElementDiagnostics.SubscriptionAdded -= OnSubscriptionAdded;
+						_subscriptionHooked = false;
+					}
 					_actionViewRegistrations.Dispose();
 					_registrations.Dispose();
+					_logicalActionModels.Clear();
+					_logicalActions = null;
+					_owner = null;
+					_presentedController = null;
 				}
 			}
 

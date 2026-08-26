@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			this.DisableiOS18ToolbarTabs();
 			_viewHandlerWrapper = new ViewHandlerDelegator<TabbedPage>(Mapper, CommandMapper, this);
+			NativeElementDiagnostics.SubscriptionAdded += OnNativeElementSubscriptionAdded;
 		}
 
 		public override UIViewController SelectedViewController
@@ -180,6 +181,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_disposed = true;
 			if (disposing)
 			{
+				NativeElementDiagnostics.SubscriptionAdded -= OnNativeElementSubscriptionAdded;
 				_nativeTabBarRegistrations.Clear();
 				_nativeTabItemRegistrations.Clear();
 				_nativeVisibleTabRegistrations.Clear();
@@ -211,6 +213,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			base.Dispose(disposing);
+		}
+
+		void OnNativeElementSubscriptionAdded()
+		{
+			if (_disposed)
+				return;
+
+			BeginInvokeOnMainThread(() =>
+			{
+				if (_disposed)
+					return;
+
+				RegisterVisibleTabViews();
+				if (SelectedViewController == MoreNavigationController)
+					RegisterMoreRows();
+			});
 		}
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
