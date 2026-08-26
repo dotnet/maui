@@ -53,15 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (item != null && item is BindableObject bo)
 			{
-				BindableProperty? bp = null;
-				var bindableObjectWithTemplate = Shell.GetBindableObjectWithFlyoutItemTemplate(bo);
-
-				if (bo is IMenuItemController)
-					bp = Shell.MenuItemTemplateProperty;
-				else
-					bp = Shell.ItemTemplateProperty;
-
-				if (bindableObjectWithTemplate.IsSet(bp) || container.IsSet(bp))
+				if (Shell.IsFlyoutItemTemplateSet(container as Shell, bo))
 				{
 					DataTemplate? dataTemplate = (container as IShellController)?.GetFlyoutItemDataTemplate(bo);
 					template = dataTemplate.SelectDataTemplate(item, container);

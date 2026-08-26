@@ -731,23 +731,106 @@ namespace Microsoft.Maui.Controls
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
 
-		internal static BindableObject GetBindableObjectWithFlyoutItemTemplate(BindableObject bo)
+		/// <summary>
+		/// Gets the <see cref="BindableProperty"/> that Shell uses to look up the flyout <see cref="DataTemplate"/>
+		/// for <paramref name="flyoutItem"/>.
+		/// </summary>
+		/// <param name="flyoutItem">A flyout item produced by <see cref="IShellController.GenerateFlyoutGrouping"/>.</param>
+		/// <returns>
+		/// <see cref="MenuItemTemplateProperty"/> for menu items, otherwise <see cref="ItemTemplateProperty"/>.
+		/// </returns>
+		/// <exception cref="ArgumentNullException"><paramref name="flyoutItem"/> is <see langword="null"/>.</exception>
+		public static BindableProperty GetFlyoutItemTemplateProperty(BindableObject flyoutItem)
 		{
-			if (bo is IMenuItemController)
+			if (flyoutItem is null)
+				throw new ArgumentNullException(nameof(flyoutItem));
+
+			return flyoutItem is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
+		}
+
+		/// <summary>
+		/// Gets the <see cref="BindableObject"/> that carries the flyout <see cref="DataTemplate"/> for
+		/// <paramref name="flyoutItem"/>.
+		/// </summary>
+		/// <param name="flyoutItem">A flyout item produced by <see cref="IShellController.GenerateFlyoutGrouping"/>.</param>
+		/// <returns>
+		/// The object whose <see cref="MenuItemTemplateProperty"/> or <see cref="ItemTemplateProperty"/> value should be
+		/// inspected. This is usually <paramref name="flyoutItem"/> itself, but menu items are backed by a pair of objects
+		/// and the template may be set on either one, so the object that actually holds the template is returned.
+		/// </returns>
+		/// <exception cref="ArgumentNullException"><paramref name="flyoutItem"/> is <see langword="null"/>.</exception>
+		/// <remarks>
+		/// Custom Shell backends should use this method (rather than <paramref name="flyoutItem"/> directly) when resolving
+		/// the template, the <c>StyleClass</c> source, or the binding context for a flyout item, so that menu items behave
+		/// the same way they do on the built-in platform backends.
+		/// </remarks>
+		public static BindableObject GetFlyoutItemTemplateSource(BindableObject flyoutItem)
+		{
+			if (flyoutItem is null)
+				throw new ArgumentNullException(nameof(flyoutItem));
+
+			if (flyoutItem is IMenuItemController)
 			{
-				if (bo is MenuItem mi && mi.Parent != null && mi.Parent.IsSet(MenuItemTemplateProperty))
+				if (flyoutItem is MenuItem mi && mi.Parent != null && mi.Parent.IsSet(MenuItemTemplateProperty))
 					return mi.Parent;
-				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
+				else if (flyoutItem is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
 					return msi.MenuItem;
 			}
 
-			return bo;
+			return flyoutItem;
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether an application-defined flyout <see cref="DataTemplate"/> applies to
+		/// <paramref name="flyoutItem"/>.
+		/// </summary>
+		/// <param name="shell">The Shell that owns <paramref name="flyoutItem"/>, or <see langword="null"/> to only consider templates set on the item itself.</param>
+		/// <param name="flyoutItem">A flyout item produced by <see cref="IShellController.GenerateFlyoutGrouping"/>.</param>
+		/// <returns>
+		/// <see langword="true"/> when <see cref="IShellController.GetFlyoutItemDataTemplate(BindableObject)"/> returns an
+		/// application-defined template; <see langword="false"/> when it falls back to the default flyout item template.
+		/// </returns>
+		/// <exception cref="ArgumentNullException"><paramref name="flyoutItem"/> is <see langword="null"/>.</exception>
+		/// <remarks>
+		/// Custom Shell backends call this to decide whether to use their own platform-specific default flyout item view
+		/// instead of the template returned by <see cref="IShellController.GetFlyoutItemDataTemplate(BindableObject)"/>.
+		/// </remarks>
+		/// <example>
+		/// <code><![CDATA[
+		/// DataTemplate SelectFlyoutItemTemplate(Shell shell, BindableObject flyoutItem)
+		/// {
+		///     if (!Shell.IsFlyoutItemTemplateSet(shell, flyoutItem))
+		///         return _platformDefaultTemplate;
+		///
+		///     return ((IShellController)shell).GetFlyoutItemDataTemplate(flyoutItem);
+		/// }
+		///
+		/// View CreateFlyoutItemView(Shell shell, BindableObject flyoutItem)
+		/// {
+		///     var template = SelectFlyoutItemTemplate(shell, flyoutItem);
+		///     var view = (View)template.SelectDataTemplate(flyoutItem, shell).CreateContent();
+		///
+		///     // Menu items are backed by a pair of objects, so the binding context has to come from the
+		///     // same object that supplied the template.
+		///     view.BindingContext = Shell.GetFlyoutItemTemplateSource(flyoutItem);
+		///     return view;
+		/// }
+		/// ]]></code>
+		/// </example>
+		public static bool IsFlyoutItemTemplateSet(Shell shell, BindableObject flyoutItem)
+		{
+			BindableProperty bp = GetFlyoutItemTemplateProperty(flyoutItem);
+
+			if (GetFlyoutItemTemplateSource(flyoutItem).IsSet(bp))
+				return true;
+
+			return shell is not null && shell.IsSet(bp);
 		}
 
 		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
 		{
-			BindableProperty bp = bo is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
-			var bindableObjectWithTemplate = GetBindableObjectWithFlyoutItemTemplate(bo);
+			BindableProperty bp = GetFlyoutItemTemplateProperty(bo);
+			var bindableObjectWithTemplate = GetFlyoutItemTemplateSource(bo);
 
 			if (bindableObjectWithTemplate.IsSet(bp))
 			{
