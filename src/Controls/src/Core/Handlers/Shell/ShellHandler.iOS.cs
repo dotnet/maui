@@ -215,6 +215,8 @@ namespace Microsoft.Maui.Controls.Handlers
             if (appearance is null)
             {
                 _backdropBrush = Brush.Default;
+                if (_flyoutWidth != -1)
+                { _flyoutWidth = -1; _flyoutManager?.UpdateFlyoutWidth(-1); }
                 if (_flyoutHeight != -1)
                 { _flyoutHeight = -1; _flyoutManager?.UpdateFlyoutHeight(-1); }
             }

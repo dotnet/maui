@@ -423,6 +423,16 @@ namespace Microsoft.Maui.Controls.Handlers
                     return;
                 }
 
+                // TryGetTarget succeeding only means the handler object hasn't been GC'd yet;
+                // it doesn't mean it's still connected. The typed VirtualView throws once
+                // DisconnectHandler has run, so check the interface accessor instead — this can
+                // fire after disconnect if the Shell root is replaced while a More-item pick is
+                // still in flight.
+                if (((IElementHandler)handler).VirtualView is not ShellItem)
+                {
+                    return;
+                }
+
                 // UIKit bypasses our SelectedViewController override for More-item picks;
                 // read SelectedVC here — it is already updated to the section's nav controller.
                 var renderer = handler._tabBarController.SelectedViewController is { } selectedVC

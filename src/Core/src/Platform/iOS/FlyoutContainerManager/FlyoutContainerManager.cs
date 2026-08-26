@@ -430,7 +430,7 @@ internal class FlyoutContainerManager
 		}
 	}
 
-	/// <summary>Sets the scrim (click-off overlay) background color. Pass <c>null</c> to reset to transparent. Used by Shell.</summary>
+	/// <summary>Sets the scrim (click-off overlay) background color. Pass <c>null</c> to fall back to the default dim/clear behavior computed during layout (see <see cref="_dimDetailWithScrim"/>), which isn't always fully transparent. Used by Shell.</summary>
 	internal void SetScrimColor(UIColor? color)
 	{
 		_scrimColor = color;
