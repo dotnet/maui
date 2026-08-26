@@ -148,6 +148,9 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// Must be set every time to handle recycled containers correctly.
 			if (wrapper is not null)
 			{
+				var isHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
+				container.IsTabStop = !isHeaderOrFooter;
+
 				if (wrapper.VirtualView is View semanticView)
 				{
 					container.UpdateSemantics(semanticView);
@@ -162,8 +165,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// different purposes (header vs. item) if they share the same template. Without
 				// refreshing, the wrapper keeps its original role, causing incorrect template or
 				// selectability behavior.
-				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+				wrapper.IsHeaderOrFooter = isHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
 					// Cache the default template once for later restoration
@@ -308,6 +310,7 @@ internal partial class ElementWrapper : ContentControl
 	public ElementWrapper(IMauiContext context)
 	{
 		_context = context;
+		IsTabStop = false;
 	}
 
 	/// <summary>
