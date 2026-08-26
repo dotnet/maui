@@ -665,7 +665,11 @@ function Get-ReplicationAttemptFailureKind {
     if ($text -match (Get-ReplicationDriverElementFailurePattern)) {
         return 'element-missing'
     }
-    if ($text -match '(?i)must locate a stable result element|Generated Appium step') {
+    # 'step' and 'plan' are siblings from the same validator and only 'step' was
+    # matched, so a refusal of the plan as a whole fell through to 'other' while
+    # a refusal of one of its steps was named. Half a pattern is the shape that
+    # let the element-text and recorder-timeout families hide.
+    if ($text -match '(?i)must locate a stable result element|Generated Appium (?:step|plan)') {
         return 'plan-rejected'
     }
     # The two remaining shapes of 'other' are both decisions rather than
@@ -711,6 +715,28 @@ function Get-ReplicationAttemptFailureKind {
     # element is still the common bare timeout, so the name is unchanged.
     if ($text -match '(?i)Timed out after \d+ seconds') {
         return 'element-missing'
+    }
+    # A static guard refusing the generated Sandbox is a rule the agent broke,
+    # not a fault in the machine, and the sandbox classifier had no name for it
+    # at all - the sibling verification classifier learned this and this one was
+    # never taught. 53 of the 67 'other' messages in the log corpus are this one
+    # family, spread across two producers: this file's Sandbox proposal guards
+    # and Assert-ReplicationTestGuard's "Candidate source" throws.
+    #
+    # Anchored to a line start, because the deciding text is appended last after
+    # any preamble and a substring match anywhere would swallow infrastructure.
+    # That distinction is the whole point of the rule: the 14 messages this
+    # deliberately leaves as 'other' are unhandled driver exceptions and Sandbox
+    # *process* timeouts, and naming those a guard refusal would send effort to
+    # the agent when the machine is what broke.
+    #
+    # Positioned immediately before the fallback, so it can only rename 'other'
+    # and can never steal a named kind. Measured over the 1592-message corpus:
+    # 53 renamed, zero messages of any other kind matched at all.
+    if ($text -match ("(?m)^(?:Candidate (?:test )?source '|Generated Sandbox |" +
+        "Sandbox generation |The Sandbox (?:proposal|agent|block|trigger) |" +
+        "Timing-sensitive (?:Sandbox proposals|reproduction plans) )")) {
+        return 'guard-refused'
     }
     return 'other'
 }

@@ -8496,6 +8496,123 @@ Describe 'A sandbox attempt that decided something is not called other' {
         Get-ReplicationAttemptFailureKind -FailureSummary 'Something entirely unfamiliar happened.' |
             Should -Be 'other'
     }
+
+    It 'names a Sandbox proposal the orchestrator guards turned down' {
+        # Verbatim from the attempt corpus. 53 of the 67 messages that were
+        # still 'other' are this one family, so the largest repairable loss in
+        # the sandbox phase was being charged to nobody.
+        $summary = 'The Sandbox proposal does not declare the required authored paths: ' +
+            'CustomAgentLogsTmp/Sandbox/appium-plan.json, ' +
+            'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'guard-refused'
+    }
+
+    It 'names a refusal raised by the guard script rather than by the orchestrator' {
+        # The family has two producers in two files. A test built from only the
+        # orchestrator would leave the other half free to drift, which is how
+        # the banner and the display-name gate were both missed.
+        $summary = "Candidate source 'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs' " +
+            "contains prohibited 'device-external-access' content: matched text 'Connectivity.' on line 11"
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'guard-refused'
+    }
+
+    It 'still calls a guard refusal that also names a compiler diagnostic a build failure' {
+        # The branch is checked last, so a message carrying both must keep the
+        # kind that names the real fault. Moving it above the build test is the
+        # mutation this assertion exists to kill.
+        $summary = 'Generated Sandbox sources do not compile. ' +
+            'Fix these compiler diagnostics: MainPage.xaml.cs(11,9) error CS0103.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'build-failed'
+    }
+
+    It 'leaves an unhandled driver exception exactly where it was' {
+        # Verbatim. 13 messages stay 'other' on purpose: a driver that threw or
+        # a Sandbox process that would not exit is a sick machine, and naming it
+        # a guard refusal would send the next attempt to rewrite a correct test.
+        $summary = 'Unhandled exception. System.TimeoutException: Windows Sandbox process ' +
+            'remained open after the reported crash trigger.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'other'
+    }
+
+    It 'refuses to read a guard stem quoted inside an infrastructure failure' {
+        # The stem must open a line. Every one of the 13 infrastructure messages
+        # carries this wrapper, so a nested guard message is expressible in the
+        # exact shape production already produces - and unanchored it would be
+        # charged to the agent instead of to the machine.
+        $summary = 'Unhandled exception. System.InvalidOperationException: ' +
+            'The Sandbox proposal does not declare the required authored paths.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'other'
+    }
+
+    It 'names a refused Appium plan the same way it names a refused step' {
+        # 'step' and 'plan' come from the same validator. Only 'step' was
+        # matched, so a refusal of the plan as a whole fell through to 'other'.
+        $summary = 'Generated Appium plan must observe the result element holding its ' +
+            'initialized PASS: or NO BUG: value before the trigger.'
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary | Should -Be 'plan-rejected'
+    }
+
+    It 'leaves the run verdict exactly where it was for a guard refusal' {
+        # This renames a diagnosis. It must not turn a blocked run green or an
+        # answered one red, which is how 'other' behaved.
+        $before = [System.Collections.Generic.List[string]]::new()
+        $before.Add('other'); $before.Add('not-reproduced'); $before.Add('not-reproduced')
+
+        $after = [System.Collections.Generic.List[string]]::new()
+        $after.Add('guard-refused'); $after.Add('not-reproduced'); $after.Add('not-reproduced')
+
+        Test-ReplicationNonReproductionIsConclusive $after |
+            Should -Be (Test-ReplicationNonReproductionIsConclusive $before)
+
+        Get-ReplicationBlockedCode -RawReason 'x' -Stage 'sandbox' -AttemptKinds $after |
+            Should -Be (Get-ReplicationBlockedCode -RawReason 'x' -Stage 'sandbox' -AttemptKinds $before)
+    }
+
+    It 'leaves no guard in the sandbox guard functions able to go unnamed' {
+        # Read the refusals out of the producers' own syntax tree rather than
+        # hand-copying them, so a guard added later cannot quietly become
+        # 'other' - which is exactly how this whole family stayed invisible.
+        $guardFunctions = @(
+            'Assert-GeneratedSandboxXaml', 'Assert-GeneratedSandboxSources',
+            'Assert-SandboxChanges', 'Read-SandboxProposal', 'Read-GeneratedAppiumPlan')
+
+        $source = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($source, [ref]$null, [ref]$null)
+        $functions = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $guardFunctions -contains $node.Name
+            }, $true)
+        $functions.Count | Should -Be $guardFunctions.Count
+
+        $unnamed = foreach ($function in $functions) {
+            $throws = $function.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.ThrowStatementAst]
+                }, $true)
+            foreach ($throwStatement in $throws) {
+                if (-not $throwStatement.Pipeline) { continue }
+                $opening = [regex]::Match($throwStatement.Pipeline.Extent.Text, "['`"]([A-Z][^'`"]{25,})")
+                if (-not $opening.Success) { continue }
+                if ((Get-ReplicationAttemptFailureKind -FailureSummary $opening.Groups[1].Value) -eq 'other') {
+                    $opening.Groups[1].Value
+                }
+            }
+        }
+
+        # One refusal is deliberately left unnamed: it is a single observation in
+        # the whole corpus, and a rule built for one sighting is the unfounded
+        # move this pipeline refuses elsewhere. Pinned so the exclusion cannot
+        # silently grow, and so widening for it fails here rather than nowhere.
+        @($unnamed).Count | Should -Be 1
+        @($unnamed)[0] | Should -BeLike 'The app already crashed on a previous attempt*'
+    }
 }
 
 Describe 'The in-loop control check must read the source the control produced' {
