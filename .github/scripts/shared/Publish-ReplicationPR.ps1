@@ -249,6 +249,151 @@ function Get-ReplicationFixRegressionSignal {
     }
 }
 
+function Get-ReplicationUpstreamTestCasePresence {
+    <#
+        .SYNOPSIS
+            Answers whether a HostApp test case for an issue exists on a ref.
+
+        .DESCRIPTION
+            Three outcomes, deliberately distinct: 'present', 'absent', and
+            'unknown'. A 404 is a real measurement and must not be confused
+            with a call that failed, because `gh api` exits non-zero for both.
+            A zero produced by an exception is not a zero.
+
+            The single-file contents endpoint is used rather than a directory
+            listing, which caps at 1000 entries and gives no truncation signal -
+            post-filtering that listing reported the known positive as absent.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Ref,
+        [Parameter(Mandatory = $true)][string]$Repo
+    )
+
+    # A ref carrying '/' has to be encoded or the API reads it as more path.
+    $encodedRef = [uri]::EscapeDataString($Ref)
+    $output = ''
+    try {
+        $output = (& gh api "repos/$Repo/contents/$Path`?ref=$encodedRef" --jq '.sha' 2>&1 |
+            Out-String)
+    } catch {
+        return 'unknown'
+    }
+
+    if ($output -match '^[0-9a-f]{40}') { return 'present' }
+    if ($output -match 'HTTP 404' -or $output -match '"status":\s*"404"') {
+        # A missing repository, a missing branch and a missing file are all 404,
+        # so 'absent' has to be earned by proving the ref itself resolves. A
+        # measurement that could not be taken must never render as a clean
+        # "nothing found" - that is how an absent measurement becomes a finding.
+        $refOutput = ''
+        try {
+            $refOutput = (& gh api "repos/$Repo/commits/$encodedRef" --jq '.sha' 2>&1 | Out-String)
+        } catch {
+            return 'unknown'
+        }
+
+        if ($refOutput -match '^[0-9a-f]{40}') { return 'absent' }
+        return 'unknown'
+    }
+
+    return 'unknown'
+}
+
+function Get-ReplicationUpstreamFixSignal {
+    <#
+        .SYNOPSIS
+            Reports whether the project has already fixed this issue on a
+            branch the reproduction was not built against.
+
+        .DESCRIPTION
+            dotnet/maui merges bug fixes to `inflight/current` and the issue
+            stays open until release, so issue state carries no information:
+            all three cases this was validated against are OPEN and carry a
+            merged fix. The tree we build tracks `main`, so an upstream fix
+            living only on `inflight/current` is invisible to every other
+            signal - the issue is open, the defect genuinely reproduces, and
+            our red test is honest.
+
+            So the reproduction is sound and only its *redundancy to the
+            project* is undisclosed. This REPORTS. Refusing would destroy
+            sound reproductions on a mechanical string comparison, and every
+            gate in this pipeline that could destroy work eventually did.
+
+            Presence is asked of the upstream branch and absence of the exact
+            base commit under test, because "a commit touched this path" is
+            not "the file exists there" - the commits endpoint returns
+            deletions too, and a reverted test case is the opposite signal:
+            upstream tried a fix and backed it out.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$IssueNumber,
+        [Parameter(Mandatory = $false)][AllowEmptyString()][string]$BaseSha,
+        [Parameter(Mandatory = $false)][string]$Repo = 'dotnet/maui',
+        [Parameter(Mandatory = $false)][string]$UpstreamRef = 'inflight/current'
+    )
+
+    if ($IssueNumber -notmatch '^\d+$') {
+        return '**Upstream cross-reference.** Not measured for this reproduction.'
+    }
+
+    $candidatePaths = @(
+        "src/Controls/tests/TestCases.HostApp/Issues/Issue$IssueNumber.cs",
+        "src/Controls/tests/TestCases.HostApp/Issues/Issue$IssueNumber.xaml"
+    )
+
+    $sawUnknown = $false
+    foreach ($path in $candidatePaths) {
+        $upstream = Get-ReplicationUpstreamTestCasePresence `
+            -Path $path -Ref $UpstreamRef -Repo $Repo
+        if ($upstream -eq 'unknown') { $sawUnknown = $true; continue }
+        if ($upstream -eq 'absent') { continue }
+
+        # Present upstream. It is only news if the tree under test lacks it.
+        if ($BaseSha -match '^[0-9a-fA-F]{40,64}$') {
+            $local = Get-ReplicationUpstreamTestCasePresence `
+                -Path $path -Ref $BaseSha -Repo $Repo
+            if ($local -eq 'unknown') { $sawUnknown = $true; continue }
+            if ($local -eq 'present') { continue }
+        }
+
+        # Oldest commit touching the path is the one that introduced it; the
+        # newest may be a later edit that names an unrelated pull request.
+        $subject = ''
+        try {
+            $subject = (& gh api `
+                "repos/$Repo/commits?sha=$UpstreamRef&path=$path&per_page=100" `
+                --jq '[.[]|.commit.message|split("\n")[0]]|last' 2>$null | Out-String).Trim()
+        } catch {
+            $subject = ''
+        }
+
+        $introduced = ''
+        if ($subject) {
+            # Upstream text is uncontrolled, so it is sanitized inline rather
+            # than handed to a validator that throws. A presentation bound must
+            # never be able to discard the work it describes.
+            $clean = ($subject -replace '[^\x20-\x7E]', ' ') -replace '\s+', ' '
+            $clean = $clean.Trim()
+            if ($clean.Length -gt 160) { $clean = $clean.Substring(0, 157) + '...' }
+            if ($clean) { $introduced = " It was introduced by *$clean*." }
+        }
+        return ('**⚠️ Upstream cross-reference.** A test case for this issue already exists on ' +
+                "``$Repo``'s ``$UpstreamRef`` branch, which this reproduction was not built against." +
+                $introduced +
+                ' The defect is genuinely red on the tree under test, so the evidence above stands - ' +
+                'but a fix may already be queued for release, in which case this pull request is ' +
+                'redundant. Please check that branch before merging.')
+    }
+
+    if ($sawUnknown) {
+        return '**Upstream cross-reference.** Not measured: the upstream branch could not be read.'
+    }
+
+    return ("**Upstream cross-reference.** No test case for this issue exists on ``$Repo``'s " +
+            "``$UpstreamRef`` branch.")
+}
+
 function Get-ReplicationExpressionSkeleton {
     <#
         .SYNOPSIS
@@ -369,7 +514,8 @@ function New-ReplicationPullRequestBody {
         [Parameter(Mandatory = $true)][string]$IssueRepository,
         [AllowEmptyString()][string]$BuildUrl,
         [AllowEmptyString()][string]$RegressionSignal,
-        [AllowEmptyString()][string]$OracleSignal
+        [AllowEmptyString()][string]$OracleSignal,
+        [AllowEmptyString()][string]$UpstreamSignal
     )
 
     $issueNumber = [int]$Candidate.issueNumber
@@ -532,13 +678,23 @@ function New-ReplicationPullRequestBody {
     'report before the test is authored, so a test faithful to the written report may still drive ' +
     'the defect down a different path than the linked sample. Please check that first.'
 
+    # Joined once and used by both branches. The forgotten sibling is the
+    # documented trap here: every defect of that shape in this pipeline was a
+    # correct change applied to exactly one of two places that needed it, and
+    # this block has two branches that both report an evidence level.
+    $evidenceCaveats = if ($UpstreamSignal) {
+        $evidenceBoundary + [Environment]::NewLine + [Environment]::NewLine + $UpstreamSignal
+    } else {
+        $evidenceBoundary
+    }
+
     $certificationBlock = if ($certificationSummary) {
         "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine + $certificationSummary +
-        [Environment]::NewLine + [Environment]::NewLine + $evidenceBoundary
+        [Environment]::NewLine + [Environment]::NewLine + $evidenceCaveats
     } elseif ($certificationLevel) {
         "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine +
         ('**Evidence level: `' + $certificationLevel + '`**') +
-        [Environment]::NewLine + [Environment]::NewLine + $evidenceBoundary
+        [Environment]::NewLine + [Environment]::NewLine + $evidenceCaveats
     } else {
         ''
     }
@@ -1032,9 +1188,20 @@ if ($FixPatchPath -and (Test-Path -LiteralPath $FixPatchPath) -and
 }
 if ($oracleSignal) { Write-Host "Oracle independence: $oracleSignal" }
 
+# The project merges bug fixes to a branch this reproduction is not built
+# against, where they are invisible to every other signal: the issue stays
+# open and the defect still reproduces. Measured at 8 of 70 open fix pull
+# requests, so this reports a real population rather than a hypothetical one.
+$upstreamSignal = Get-ReplicationUpstreamFixSignal `
+    -IssueNumber $issueNumber `
+    -BaseSha (Get-ReplicationCandidateText -Candidate $candidate -Name 'baseSha') `
+    -Repo "$IssueOwner/$IssueRepository"
+if ($upstreamSignal) { Write-Host "Upstream cross-reference: $upstreamSignal" }
+
 $prBody = New-ReplicationPullRequestBody `
     -RegressionSignal $regressionSignal `
     -OracleSignal $oracleSignal `
+    -UpstreamSignal $upstreamSignal `
     -Candidate $candidate `
     -Evidence $evidence `
     -IssueTitle $issueTitle `

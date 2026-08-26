@@ -327,6 +327,181 @@ Describe 'Trusted replication pull request publishing' {
         $noLevelBody | Should -Not -Match 'never downloaded'
     }
 
+    It 'renders the upstream cross-reference beside every level it reports' {
+        # The project merges bug fixes to a branch this reproduction is not
+        # built against, so the issue stays open, the defect genuinely
+        # reproduces, and our red test is honest while the pull request is
+        # redundant. Measured at 8 of 70 open fix PRs. The signal reports and
+        # never refuses: refusing would destroy sound reproductions.
+        $base = [ordered]@{
+            schemaVersion = 1
+            status = 'validated'
+            validationPassed = $true
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue37440'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Issue12345'
+            expectedFailurePattern = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: Issue12345 expected red but was blue'
+            verificationRunCount = 2
+            reproductionMarker = 'BUG REPRODUCED:'
+            files = @('src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue37440.cs')
+            reproductionSteps = @('Open the page', 'Tap the control')
+            evidence = [ordered]@{
+                video = 'repro.mp4'
+                preview = 'preview.gif'
+                thumbnail = 'thumbnail.png'
+            }
+        }
+
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                video = 'https://example.com/repro.mp4'
+                preview = 'https://example.com/preview.gif'
+                manifest = 'https://example.com/evidence.json'
+            }
+        }
+
+        $signal = '**WARN Upstream cross-reference.** A test case already exists upstream.'
+
+        $build = {
+            param($Extra, $Upstream)
+            $candidate = [ordered]@{}
+            foreach ($key in $base.Keys) { $candidate[$key] = $base[$key] }
+            foreach ($key in $Extra.Keys) { $candidate[$key] = $Extra[$key] }
+            New-ReplicationPullRequestBody `
+                -Candidate ($candidate | ConvertTo-Json -Depth 10 | ConvertFrom-Json) `
+                -Evidence $evidence `
+                -IssueTitle 'Something is broken' `
+                -IssueOwner 'dotnet' `
+                -IssueRepository 'maui' `
+                -BuildUrl 'https://example.com/build/1' `
+                -UpstreamSignal $Upstream
+        }
+
+        $summaryBody = & $build ([ordered]@{
+                certificationLevel = 'certified-oracle'
+                certificationSummary = "**Evidence level: ``certified-oracle``**`n`n| Control | Result |`n| --- | --- |"
+            }) $signal
+        $summaryBody | Should -Match 'A test case already exists upstream'
+
+        # The level-only branch is the forgotten sibling, exactly as it is for
+        # the evidence boundary that sits beside this line.
+        $levelOnlyBody = & $build ([ordered]@{ certificationLevel = 'trigger-certified' }) $signal
+        $levelOnlyBody | Should -Match 'A test case already exists upstream'
+
+        # An orphaned caveat would qualify a certification the body never made.
+        $noLevelBody = & $build ([ordered]@{}) $signal
+        $noLevelBody | Should -Not -Match 'A test case already exists upstream'
+
+        # A signal that could not be computed omits the line rather than
+        # blocking the body: the check reports, it never withholds a fix.
+        $noSignalBody = & $build ([ordered]@{ certificationLevel = 'trigger-certified' }) ''
+        $noSignalBody | Should -Not -Match 'Upstream cross-reference'
+        $noSignalBody | Should -Match 'never downloaded'
+    }
+
+    It 'separates an unreadable upstream ref from a test case that is genuinely absent' {
+        # A missing repository, a missing branch and a missing file are all
+        # HTTP 404, and `gh api` exits non-zero for an auth failure too. An
+        # absent measurement rendered as a clean "nothing found" is the shape
+        # this pipeline has paid for five times.
+        $probe = Get-ScriptFunctionText `
+            -Path (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') `
+            -Name 'Get-ReplicationUpstreamTestCasePresence'
+        Invoke-Expression $probe
+        Get-Command Get-ReplicationUpstreamTestCasePresence -ErrorAction SilentlyContinue |
+            Should -Not -BeNullOrEmpty
+
+        # A function outranks an application, so this shadows the real gh.
+        function script:gh {
+            $joined = $args -join ' '
+            if ($joined -match '/commits/') { return $script:refReply }
+            return $script:fileReply
+        }
+
+        $script:fileReply = '0123456789abcdef0123456789abcdef01234567'
+        Get-ReplicationUpstreamTestCasePresence -Path 'a.cs' -Ref 'r' -Repo 'o/r' |
+            Should -Be 'present'
+
+        # File missing but the ref resolves: a real measurement.
+        $script:fileReply = 'gh: Not Found (HTTP 404)'
+        $script:refReply = 'fedcba9876543210fedcba9876543210fedcba98'
+        Get-ReplicationUpstreamTestCasePresence -Path 'a.cs' -Ref 'r' -Repo 'o/r' |
+            Should -Be 'absent'
+
+        # File missing AND the ref does not resolve: nothing was measured.
+        $script:refReply = 'gh: Not Found (HTTP 404)'
+        Get-ReplicationUpstreamTestCasePresence -Path 'a.cs' -Ref 'r' -Repo 'o/r' |
+            Should -Be 'unknown'
+
+        # An auth failure is not a 404 and must never read as absent.
+        $script:fileReply = 'gh: Bad credentials (HTTP 401)'
+        Get-ReplicationUpstreamTestCasePresence -Path 'a.cs' -Ref 'r' -Repo 'o/r' |
+            Should -Be 'unknown'
+    }
+
+    It 'attributes an upstream test case to the commit that introduced it' {
+        # The commits endpoint returns deletions too, and it is newest-first.
+        # Issue 24966's most recent toucher upstream is a Revert, so reading
+        # the newest commit reports "already fixed upstream" where upstream
+        # backed the fix out - the inverse of the truth, and a case where our
+        # reproduction is worth more rather than less.
+        $publisher = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        foreach ($name in @(
+                'Get-ReplicationUpstreamTestCasePresence',
+                'Get-ReplicationUpstreamFixSignal')) {
+            Invoke-Expression (Get-ScriptFunctionText -Path $publisher -Name $name)
+        }
+        Get-Command Get-ReplicationUpstreamFixSignal -ErrorAction SilentlyContinue |
+            Should -Not -BeNullOrEmpty
+
+        # Newest-first, exactly as the commits endpoint returns it.
+        $script:upstreamCommits = @(
+            'Revert "Fix DatePicker background not cleared"',
+            'Fix DatePicker background not cleared')
+
+        # Faithful to production: the file exists upstream and is absent on the
+        # commit under test, while BOTH refs resolve. An earlier shadow 404'd
+        # the base ref too, which correctly degraded the probe to "not
+        # measured" - a failing test caused by an unfaithful fixture, not by
+        # the code. The jq is modelled rather than ignored: a stub returning
+        # one scalar cannot tell `|last` from `|first`, so it could not express
+        # the very defect this test exists to catch.
+        function script:gh {
+            $joined = $args -join ' '
+            if ($joined -match 'commits\?sha=') {
+                if ($joined -match '\|\s*first') { return $script:upstreamCommits[0] }
+                if ($joined -match '\|\s*last') { return $script:upstreamCommits[-1] }
+                return ''
+            }
+            if ($joined -match 'commits/') { return '0123456789abcdef0123456789abcdef01234567' }
+            if ($joined -match 'contents/.*ref=inflight') { return '0123456789abcdef0123456789abcdef01234567' }
+            return 'gh: Not Found (HTTP 404)'
+        }
+
+        # `last` on a newest-first list is the oldest commit: the introducer.
+        $signal = Get-ReplicationUpstreamFixSignal -IssueNumber '36933' `
+            -BaseSha '1111111111111111111111111111111111111111'
+        $signal | Should -Match 'already exists'
+        $signal | Should -Match 'Fix DatePicker background not cleared'
+        # The load-bearing assertion: reading the newest commit would name the
+        # Revert, claiming "already fixed upstream" where upstream backed the
+        # fix out - the inverse of the truth.
+        $signal | Should -Not -Match 'Revert'
+
+        # Uncontrolled upstream text must be sanitized, never validated by a
+        # function that throws: a presentation bound should never be able to
+        # discard the work it describes.
+        $script:upstreamCommits = @('newer', "Fix`tthing https://evil.example `u{1F600} @someone")
+        { Get-ReplicationUpstreamFixSignal -IssueNumber '36933' `
+                -BaseSha '1111111111111111111111111111111111111111' } | Should -Not -Throw
+    }
+
     It 'keeps the boundary claim true by measuring the sanitizer that enforces it' {
         # The body asserts a fact about a different script. Left as prose it
         # becomes a lie the moment that script changes, so the claim is measured
@@ -1516,6 +1691,42 @@ Describe 'The regression cross-reference reports and never refuses' {
         foreach ($stop in @($ast.FindAll({ param($n)
                 $n -is [System.Management.Automation.Language.ThrowStatementAst] }, $true))) {
             $stop.Extent.Text | Should -Not -Match 'regressionSignal'
+        }
+    }
+
+    It 'computes the upstream cross-reference at the publish call site and never gates on it' {
+        # A test that exercises a function in isolation says nothing about the
+        # call site that uses it, and "report, never refuse" is a property of
+        # how a value is USED. Both siblings beside this one shipped a signal
+        # that was computed, logged and dropped.
+        $prPath = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $tokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($prPath, [ref]$tokens, [ref]$errors)
+        $errors.Count | Should -Be 0
+
+        $call = $ast.Find({ param($n)
+            $n -is [System.Management.Automation.Language.CommandAst] -and
+            $n.GetCommandName() -eq 'Get-ReplicationUpstreamFixSignal' }, $true)
+        $call | Should -Not -BeNullOrEmpty
+
+        # `$candidate` is parsed JSON, and under StrictMode a missing property
+        # THROWS - which at this point would destroy a certified run at the
+        # publish step. The file documents a reader for exactly this.
+        $call.Extent.Text | Should -Match 'Get-ReplicationCandidateText'
+        $call.Extent.Text | Should -Match "-Name\s+'baseSha'"
+        $call.Extent.Text | Should -Not -Match '\$candidate\.baseSha'
+
+        # And it must actually reach the body.
+        $bodyCall = $ast.Find({ param($n)
+            $n -is [System.Management.Automation.Language.CommandAst] -and
+            $n.GetCommandName() -eq 'New-ReplicationPullRequestBody' }, $true)
+        $bodyCall | Should -Not -BeNullOrEmpty
+        $bodyCall.Extent.Text | Should -Match '-UpstreamSignal'
+
+        # No refusal anywhere in the script may consult it.
+        foreach ($stop in @($ast.FindAll({ param($n)
+                $n -is [System.Management.Automation.Language.ThrowStatementAst] }, $true))) {
+            $stop.Extent.Text | Should -Not -Match 'upstreamSignal'
         }
     }
 
