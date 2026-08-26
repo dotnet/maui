@@ -144,59 +144,6 @@ preserving their different readiness semantics. It does not read or write Loop
 or SharePoint. Do not copy private source-page content into the evidence file;
 unknown fields must remain `TBD`.
 
-### Preview: local net11 official-build health
-
-For net11 preview runs through this skill from a local checkout, invoke
-`Get-PreviewReadiness.ps1 '-PublicSafe:$false'`. The script then automatically
-queries the internal official `dotnet-maui` pipeline (Azure DevOps definition
-`1095`, org `dnceng`, project `internal`) when the current Azure CLI identity has
-access. No build ID is required. It independently checks:
-
-1. `refs/heads/net11.0` — the inflight source/survey lane.
-2. `refs/heads/release/11.0.1xx-previewN` — the evaluated release branch, when
-   that branch exists.
-
-Candidate mode still checks `net11.0`; it adds the prospective release ref only
-after that ref exists. Identical refs are queried once. The local report includes
-each branch's health classification, build ID and number, pipeline status/result,
-source SHA, and internal build URL. A failed or canceled current build is `red`;
-a partially successful build is `partial-success`; a build behind the newest
-trigger-eligible commit is `stale`; a queued/running build is `in-progress`;
-missing or malformed evidence is `unknown`.
-
-Discovery examines a bounded five-build window. It prefers a build at exact branch
-HEAD, then scans by queue time and skips only candidates proven stale before
-accepting one proven current. Indeterminate candidates are buffered: disagreeing
-possible outcomes remain `unknown`, while a later proven-current failure remains
-`red` only when every buffered candidate is also a completed failure/cancellation.
-A terminal window containing only same-branch failed/canceled indeterminate builds
-also remains blocking as `failed-or-stale` because every candidate is either red
-or stale. Its rendering preserves that uncertainty and requires restoring currency
-evidence before choosing failure repair versus a current-HEAD rerun. This prevents
-both false readiness upgrades and loss of certain blocking evidence.
-
-The internal check is intentionally fail-open:
-
-- `GITHUB_ACTIONS=true` skips it before any Azure command runs.
-- Missing Azure CLI, expired login, or inaccessible dnceng/internal access yields
-  `skipped` and does not downgrade the public-data verdict.
-- Azure CLI and GitHub branch queries have bounded execution; a timeout yields
-  `unknown` rather than hanging the local readiness run.
-- Local `red`/`stale`/`failed-or-stale` maps to `BLOCKED`,
-  `in-progress`/`partial-success` to `WATCH`, and `unknown` to `UNKNOWN`.
-  For `failed-or-stale`, restore build-currency evidence first; then either repair
-  the failed build if it is current or run the official build at current HEAD if
-  it is stale.
-- `-PublicSafe:$true` omits all internal IDs, SHAs, URLs, and branch rows. The
-  public workflow uses this behavior and never receives internal credentials.
-
-The script remains public-safe by default. This skill and the release-readiness
-agent explicitly pass `'-PublicSafe:$false'` for enriched local net11 reports;
-never reuse those artifacts in a public tracker issue. `-IncludeInternal`
-remains an explicit compatibility override when a caller requests a sanitized
-internal classification, and `-InternalBuildId` remains a diagnostic override
-for the evaluated release branch.
-
 ### Preview: authoritative blessed-build source (.NET Release Tracker)
 
 For **Previews**, this skill's public survey (CI health + regression classification on `net<major>.0` or the preview branch) tells you whether the code is *ready*, but it **cannot on its own name which staged build is the official, blessed preview** — that designation lives in the private **.NET Release Tracker** plugin. So when answering *"run release readiness … is net11 preview6 ready?"* / *"which build is the official preview6?"*, consult that authoritative source **in addition to** running `Get-PreviewReadiness.ps1`:
