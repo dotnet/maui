@@ -8,7 +8,7 @@ Selects a random Copilot PAT from a numbered pool of secrets. This addresses lim
 
 To use Agentic Workflows in a dotnet org repository:
 
-1. Follow the instructions for [Configuring Your Repository | Agentic Authoring | GitHub Agentic Workflows][configure-repo]. Use `gh aw` **v0.80.9 or newer**, which supports the agent job dependencies required for this implementation.
+1. Follow the instructions for [Configuring Your Repository | Agentic Authoring | GitHub Agentic Workflows][configure-repo]. Use `gh aw` **v0.82.14 or newer**, which supports the agent job dependencies required for this implementation.
 2. Copy the `pat_pool.md` and `pat_pool.README.md` files into the repository under `.github/workflows/shared`.
 3. Merge those additions into the repository and then follow the instructions for the PAT Creation and Usage below.
 
@@ -25,9 +25,20 @@ Create an environment for the agentic workflows:
   - _Configuring these settings requires repo admin permission_
   - https://github.com/dotnet/{repo}/settings/environments
   - Recommended Name: **copilot-pat-pool**
-  - Recommended Deployment branches and tags: **Protected branches only**
+  - Recommended Deployment branches and tags: **Selected branches and tags**
+    - Add exact rules for each trusted branch that contains active workflow definitions.
+    - For `dotnet/maui`, allow `main` and `net11.0`.
 
-This environment is used for all agentic workflows, restricting agentic workflows to the repo's protected branches and preventing the workflows from accessing secrets defined for other environments.
+This environment is used for all agentic workflows, restricting agentic
+workflows to explicitly trusted branches and preventing the workflows from
+accessing secrets defined for other environments.
+
+Do not use **Protected branches only** when branch protection is provided by
+repository rulesets instead of classic branch protection. GitHub environment
+deployment protection does not recognize ruleset-only branches as protected,
+so it rejects the workflow before any job steps run. Exact selected-branch
+rules preserve the same trust boundary without relying on classic branch
+protection.
 
 ## PAT Management
 
@@ -94,23 +105,10 @@ environment: copilot-pat-pool
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: |
-      ${{ case(
-        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
-        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
-        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
-        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
-        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
-        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
-        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
-        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
-        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
-        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        'NO COPILOT PAT AVAILABLE')
-      }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 ```
 
-The `COPILOT_GITHUB_TOKEN` expression can be collapsed onto a single line if desired. `gh-aw compile` automatically wires `pat_pool` into the activation and agent jobs' `needs:` graph because of the `needs.pat_pool.` references within the `engine.env` property.
+Keep the `COPILOT_GITHUB_TOKEN` expression on one line. gh-aw v0.82.14 does not preserve YAML indentation when it materializes multiline `engine.env` expressions into generated jobs. `gh-aw compile` automatically wires `pat_pool` into the activation and agent jobs' `needs:` graph because of the `needs.pat_pool.` references within the `engine.env` property.
 
 ```sh
 gh aw compile <workflow-name> --schedule-seed <org>/<repo>

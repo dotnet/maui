@@ -85,6 +85,11 @@ steps:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
 
+  # Cache Gradle downloads to avoid transient network failures during Android binding builds
+  - template: /eng/pipelines/common/cache-gradle.yml@self
+    parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

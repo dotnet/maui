@@ -2166,7 +2166,7 @@ Read context from:
 
 ## Phase 1 — Expert reviewer evaluation of the PR fix
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
-- Always also write the raw inline findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (these are file:line findings against the PR's diff and feed the inline-comment posting step).
+- **REQUIRED — write the inline findings to a FILE; never paste them into your response.** Write the raw file:line findings as a JSON array to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (findings against the PR's diff that feed the inline-comment posting step). **If this file is not written to disk, the inline comments are silently dropped.** Writing this specific artifact is explicitly authorized and required — disregard any general guidance about "not writing review output to files"; that guidance does NOT apply to this required pipeline artifact. If the ``maui-expert-reviewer`` sub-agent reports it cannot write the file, YOU (the orchestrating agent) MUST write the JSON to that exact path yourself. Returning the JSON as chat text instead of writing the file is a failure.
 - Write candidate output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/expert-pr-eval/content.md``.
 
 ## Phase 2 — Comparative Report
@@ -2385,6 +2385,43 @@ if (-not $DryRun) {
     }
 } else {
     Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 5.5: Apply the Phase 4 (pr-finalize) title/description recommendation
+#  Deliberately outside the DEFER_COMMENT_TO_STAGE3 block below so the PR gets a
+#  descriptive title as soon as review finishes, rather than waiting on deep tests.
+#  Fully non-fatal: on any failure the recommendation still ships in the summary
+#  comment for a human to apply.
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║  STEP 5.5: APPLY PR TITLE/DESCRIPTION                     ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
+    Write-Host "  ⏭️ Skipped (SKIP_PR_FINALIZE_APPLY=true)" -ForegroundColor Gray
+} else {
+    $applyFinalizeScript = Join-Path $ScriptsDir "apply-pr-finalize.ps1"
+    if (Test-Path $applyFinalizeScript) {
+        try {
+            # Resolve content.md from $RepoRoot rather than letting the script fall back to
+            # the current directory — the Post phase's cwd is not guaranteed to be the repo.
+            $finalizeContent = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md"
+            $applyArgs = @{ PRNumber = $PRNumber; ContentFile = $finalizeContent }
+            if ($DryRun) { $applyArgs.DryRun = $true }
+            & $applyFinalizeScript @applyArgs
+        } catch {
+            # Backstop, not a live path: the child sanitizes its own console output and its
+            # one throw carries no PR-derived text today. Kept because a future throw that
+            # quotes the recommendation would otherwise reach stdout unsanitized, and every
+            # other console sink in this script already goes through the sanitizer.
+            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  ⚠️ apply-pr-finalize.ps1 not found — skipping" -ForegroundColor Yellow
+    }
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
