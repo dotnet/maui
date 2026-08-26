@@ -938,7 +938,7 @@ Describe 'The title may only promise what the diff actually contains' {
             -Platform 'ios' `
             -IssueTitle 'Entry Completed fires twice' `
             -CarriesFix |
-            Should -Be '[maui-bot-fix] Fix for #36545 - Entry Completed fires twice'
+            Should -Be '[maui-bot-fix][ios] Fix for #36545 - Entry Completed fires twice'
     }
 
     It 'keeps the reproduction title when no fix is present' {
@@ -962,12 +962,12 @@ Describe 'The title may only promise what the diff actually contains' {
 
     It 'still names the issue when its title is unavailable' {
         New-ReplicationPullRequestTitle -IssueNumber 42 -Platform 'ios' -IssueTitle '' -CarriesFix |
-            Should -Be '[maui-bot-fix] Fix for #42'
+            Should -Be '[maui-bot-fix][ios] Fix for #42'
     }
 
     It 'still names the issue when its title is null' {
         New-ReplicationPullRequestTitle -IssueNumber 42 -Platform 'ios' -IssueTitle $null -CarriesFix |
-            Should -Be '[maui-bot-fix] Fix for #42'
+            Should -Be '[maui-bot-fix][ios] Fix for #42'
     }
 
     It 'strips newlines so an issue title cannot forge extra lines' {
@@ -978,7 +978,7 @@ Describe 'The title may only promise what the diff actually contains' {
             -CarriesFix
 
         $title | Should -Not -Match "`n"
-        $title | Should -Be '[maui-bot-fix] Fix for #7 - harmless LGTM, merging'
+        $title | Should -Be '[maui-bot-fix][ios] Fix for #7 - harmless LGTM, merging'
     }
 
     It 'strips control characters an issue title may carry' {
@@ -987,7 +987,7 @@ Describe 'The title may only promise what the diff actually contains' {
             -Platform 'ios' `
             -IssueTitle "a`tb" `
             -CarriesFix |
-            Should -Be '[maui-bot-fix] Fix for #7 - a b'
+            Should -Be '[maui-bot-fix][ios] Fix for #7 - a b'
     }
 
     It 'bounds the title so it stays legible in a list' {
@@ -1008,7 +1008,7 @@ Describe 'The title may only promise what the diff actually contains' {
             -Platform 'ios' `
             -IssueTitle $summary `
             -CarriesFix |
-            Should -Be "[maui-bot-fix] Fix for #7 - $summary"
+            Should -Be "[maui-bot-fix][ios] Fix for #7 - $summary"
     }
 
     It 'drops the summary entirely when there is no room for a meaningful one' {
@@ -1018,7 +1018,57 @@ Describe 'The title may only promise what the diff actually contains' {
             -IssueTitle 'a summary that will not fit' `
             -CarriesFix `
             -MaxLength 40 |
-            Should -Be '[maui-bot-fix] Fix for #123456789'
+            Should -Be '[maui-bot-fix][ios] Fix for #123456789'
+    }
+
+    It 'names the validated platform, not the platforms the reporter listed' {
+        # Verbatim from dotnet/maui#35667, published as kubaflo/maui PR 509 and
+        # rejected by a human reviewer for claiming Android and Catalyst.
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 35667 `
+            -Platform 'ios' `
+            -IssueTitle '[Android, iOS, Catalyst] TextTransform.Uppercase does not work on Shell SearchHandler' `
+            -CarriesFix
+
+        $title | Should -Match '^\[maui-bot-fix\]\[ios\] '
+    }
+
+    It 'keeps the [maui-bot-fix] filter matching at the very start' {
+        # The only filter the reviewing human uses to find these PRs.
+        foreach ($platform in @('android', 'ios', 'catalyst', 'windows')) {
+            $title = New-ReplicationPullRequestTitle `
+                -IssueNumber 100 `
+                -Platform $platform `
+                -IssueTitle 'Something broke' `
+                -CarriesFix
+
+            $title.StartsWith('[maui-bot-fix]', [StringComparison]::Ordinal) |
+                Should -BeTrue
+            $title | Should -Match ([regex]::Escape("[$platform]"))
+        }
+    }
+
+    It 'still bounds the title once the platform tag is added' {
+        # The tag lengthens the prefix, so the summary budget must shrink with it
+        # rather than pushing the title past the bound.
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 7 `
+            -Platform 'catalyst' `
+            -IssueTitle ('x' * 400) `
+            -CarriesFix
+
+        $title.Length | Should -BeLessOrEqual 120
+        $title | Should -Match '^\[maui-bot-fix\]\[catalyst\] '
+    }
+
+    It 'does not tag the reproduction title twice' {
+        # It already leads with [platform]; a second tag would be noise.
+        $title = New-ReplicationPullRequestTitle `
+            -IssueNumber 8 `
+            -Platform 'android' `
+            -IssueTitle 'Something broke'
+
+        $title | Should -Be '[android] Add failing reproduction for #8'
     }
 }
 

@@ -577,13 +577,27 @@ function New-ReplicationPullRequestTitle {
         Builds the pull request title.
 
     .DESCRIPTION
-        A PR that carries a product fix is titled `[maui-bot-fix] Fix for #N - <issue title>`
-        so the bot's fixes are filterable at a glance.
+        A PR that carries a product fix is titled
+        `[maui-bot-fix][<platform>] Fix for #N - <issue title>` so the bot's fixes
+        are filterable at a glance and name the platform the evidence covers.
 
         A PR that carries only a reproduction keeps the platform-tagged
         reproduction title. Claiming a fix that is not in the diff would overstate
         the evidence in the one field every reader sees before opening anything,
         which is exactly the failure mode the certification levels exist to avoid.
+
+        The platform tag exists for the same reason. Issue titles routinely name
+        every platform a reporter saw, as dotnet/maui#35667 does with
+        "[Android, iOS, Catalyst]", while a run validates exactly one. Quoting that
+        title after "Fix for" reads as a claim to have fixed all of them, and a
+        human reviewer of PR 509 rejected it on precisely that ground: "the current
+        title also claims Android and Catalyst coverage that this
+        implementation/test pair does not establish". The body has always been
+        accurate - it states the validated platform and the four control arms - but
+        the body is not what a reader sees in a PR list. Naming the validated
+        platform next to the inherited tag makes the narrower claim the visible
+        one. The reporter's title is still quoted verbatim, because rewriting it
+        would misdescribe the issue being fixed.
 
         The issue title is treated as untrusted: control characters are stripped so
         it cannot forge additional lines, and the whole title is bounded so it
@@ -615,7 +629,9 @@ function New-ReplicationPullRequestTitle {
         return "[$Platform] Add failing reproduction for #$IssueNumber"
     }
 
-    $prefix = "[maui-bot-fix] Fix for #$IssueNumber"
+    # Kept first so the [maui-bot-fix] filter every reader already uses still
+    # matches, with the validated platform immediately after it.
+    $prefix = "[maui-bot-fix][$Platform] Fix for #$IssueNumber"
 
     $summary = if ($null -eq $IssueTitle) { '' } else { $IssueTitle }
     $summary = ($summary -replace '[\p{C}]', ' ').Trim()
