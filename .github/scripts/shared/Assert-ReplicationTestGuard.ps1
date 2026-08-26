@@ -2022,6 +2022,77 @@ function Get-ReplicationComparisonSelectedLiteral {
     return "the branch 'if ($(($condition.Trim() -replace '\s+', ' ')))'"
 }
 
+function Assert-ReplicationDisappearanceOracleProvesPresence {
+    <#
+    .SYNOPSIS
+        Rejects an oracle that proves an element went away without ever
+        proving the element was there.
+
+    .DESCRIPTION
+        kubaflo/maui#506 counted the native elements matching
+        "CustomBusyIndicator", kept only the ones answering IsDisplayed(), and
+        asserted the total was Is.Zero. The reviewer deleted a single line --
+        the AutomationId on the host page -- left the product bug untouched,
+        and the test went green: FindElements matched nothing, so the counter
+        never left 0. An oracle that passes when its own locator is broken
+        cannot distinguish a fixed product from an absent one.
+
+        The test looked well guarded because it asserted
+        "IndicatorAttachedAndVisible=True" first, but that string is a label
+        the host page assigns itself; it says the app believed the indicator
+        was attached, not that the runner could see it.
+
+        Asserting absence is not itself suspect. kubaflo/maui#545 asserts
+        FindElements(EmptyViewText) is empty, and there the emptiness is the
+        whole contract -- that view must never appear while items exist, so
+        there is no earlier moment at which it could be found. What separates
+        the two is the IsDisplayed() filter: counting *displayed* matches and
+        expecting none is a disappearance claim, and a disappearance
+        presupposes a prior appearance that the same locator has to witness.
+
+        So this fires only on the disappearance shape, and only when the
+        locator is never handed to a WaitForElement* call anywhere in the
+        file. Waiting on the same locator both proves it resolves and pins
+        the before-state the zero is measured against.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return }
+
+    $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    foreach ($match in [regex]::Matches(
+            $source,
+            'FindElements\s*\(\s*([^),]+?)\s*\)')) {
+        $locator = $match.Groups[1].Value.Trim()
+        if (-not $locator) { continue }
+
+        # The claim is read from the query forward: the filter and the zero
+        # belong to this call, not to some later unrelated assertion.
+        $start = $match.Index + $match.Length
+        $window = $source.Substring($start, [Math]::Min(600, $source.Length - $start))
+
+        if ($window -notmatch 'IsDisplayed\s*\(') { continue }
+        if ($window -notmatch '(?:Is\s*\.\s*Zero|Is\s*\.\s*EqualTo\s*\(\s*0\s*\)|Is\s*\.\s*Empty)') { continue }
+
+        if ([regex]::IsMatch($source, 'WaitForElement\w*\s*\(\s*' + [regex]::Escape($locator) + '\s*[),]')) { continue }
+
+        throw (
+            "$Path counts displayed elements matching $locator and asserts none remain, " +
+            "but nothing in the test ever proves that $locator resolves to an element. " +
+            "Breaking the locator alone would make this pass on unfixed product code -- " +
+            "kubaflo/maui#506 was refuted exactly that way, by deleting one AutomationId. " +
+            "Wait for $locator and assert it is displayed before the behaviour that is " +
+            "supposed to hide it, so the count is measured falling from a witnessed " +
+            "non-zero to zero. A status label the page assigns itself is not a witness."
+        )
+    }
+}
+
 function Assert-ReplicationVerdictIsNotComputedByTheApp {
     <#
     .SYNOPSIS

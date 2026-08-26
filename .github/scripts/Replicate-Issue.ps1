@@ -3691,6 +3691,7 @@ function Assert-GeneratedTestContent {
                     { Assert-ReplicationTestRunsOnEvidencePlatform -Path $file -Platform $TargetPlatform -TestType $TestType -RepositoryRoot $repoRoot },
                     { Assert-ReplicationPlatformViewIdentity -Content $content -Path $file },
                     { Assert-ReplicationVerdictIsNotSelfAnnounced -Content $content -Path $file },
+                    { Assert-ReplicationDisappearanceOracleProvesPresence -Content $content -Path $file },
                     { Assert-ReplicationEnvironmentGateSkips -Content $content -Path $file }
                 )) { & $collect $guard }
                 if ($TestType -ceq 'DeviceTest') {

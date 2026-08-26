@@ -1988,6 +1988,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationVerdictIsNotSelfAnnounced `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationDisappearanceOracleProvesPresence `
+            -Content $normalized `
+            -Path $Path
     }
 
     if ($RequireGuard) {

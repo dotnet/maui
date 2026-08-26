@@ -3891,3 +3891,105 @@ Describe 'The publisher accepts every product root the orchestrator will scope' 
             Should -Throw -ExpectedMessage '*outside the established product source directories*'
     }
 }
+
+Describe 'A disappearance oracle has to witness the appearance it claims ended' {
+    BeforeAll {
+        # Verbatim from kubaflo/maui#506, the PR a reviewer refuted by deleting
+        # the host AutomationId and nothing else. FindElements then matched
+        # nothing, displayedCount never left 0, and the test passed on unfixed
+        # product code.
+        $script:vacuous = @'
+public void CustomBusyIndicatorHidesAfterStopCallback()
+{
+    var navigationStatus = App.WaitForElement("NavigationStatus").GetText();
+    App.Tap("StartWizardButton");
+    App.WaitForElement("WizardPageLoadedLabel");
+    AssertStatus("IndicatorStatus", "IndicatorAttachedAndVisible=True");
+    App.RetryAssert(() =>
+    {
+        var displayedCount = 0;
+        foreach (var indicator in App.FindElements("CustomBusyIndicator"))
+        {
+            if (indicator.IsDisplayed())
+                displayedCount++;
+        }
+
+        Assert.That(
+            displayedCount,
+            Is.Zero,
+            $"Custom busy indicator remained visible after stop callback: observed {displayedCount} displayed native elements.");
+    }, timeout: TimeSpan.FromSeconds(2));
+}
+'@
+    }
+
+    It 'refuses a displayed-count-is-zero claim whose locator is never resolved' {
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $vacuous -Path 'Issue28300.cs' } |
+            Should -Throw -ExpectedMessage '*nothing in the test ever proves*'
+    }
+
+    It 'names the locator it could not find a witness for' {
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $vacuous -Path 'Issue28300.cs' } |
+            Should -Throw -ExpectedMessage '*"CustomBusyIndicator"*'
+    }
+
+    It 'accepts the same oracle once the locator is waited for and shown displayed' {
+        # The remedy the message asks for: the count now falls from a witnessed
+        # non-zero to zero, so breaking the locator fails the wait instead.
+        $remediated = $vacuous -replace 'App\.Tap\("StartWizardButton"\);', (
+            'App.Tap("StartWizardButton");' + [Environment]::NewLine +
+            '    var indicator = App.WaitForElement("CustomBusyIndicator");' + [Environment]::NewLine +
+            '    Assert.That(indicator.IsDisplayed(), Is.True, "visible before stop");')
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $remediated -Path 'Issue28300.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'leaves a plain absence contract alone' {
+        # kubaflo/maui#545 asserts an EmptyView is absent while items exist.
+        # That view must never appear, so no earlier moment could witness it --
+        # and without an IsDisplayed() filter it is not a disappearance claim.
+        $legitimate = @'
+public void EmptyViewHiddenWhileItemsExist()
+{
+    var item = App.WaitForElement("Baboon");
+    Assert.That(item.GetRect().Height, Is.GreaterThan(0));
+    Assert.That(App.FindElements(EmptyViewText), Is.Empty, "The EmptyView must not be present while items exist.");
+}
+'@
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $legitimate -Path 'Issue28023.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'does not read a claim out of a commented-out oracle' {
+        $commented = "// foreach (var x in App.FindElements(`"Ghost`")) { if (x.IsDisplayed()) c++; }" +
+            [Environment]::NewLine + "// Assert.That(c, Is.Zero);"
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $commented -Path 'Issue1.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'ignores a query with no displayed filter and no zero claim' {
+        $unrelated = 'var all = App.FindElements("Row"); Assert.That(all.Count, Is.GreaterThan(3));'
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $unrelated -Path 'Issue2.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'leaves a displayed-count claim alone when it expects elements, not none' {
+        # Same shape as the refuted oracle -- an IsDisplayed() filter over an
+        # unwaited locator -- but it asserts the elements are *there*. That
+        # claim already fails when the locator breaks, so it needs no witness.
+        $expectsPresence = @'
+public void AllRowsAreVisible()
+{
+    var displayedCount = 0;
+    foreach (var row in App.FindElements("Row"))
+    {
+        if (row.IsDisplayed())
+            displayedCount++;
+    }
+    Assert.That(displayedCount, Is.GreaterThan(3), "every row should be visible");
+}
+'@
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $expectsPresence -Path 'Issue3.cs' } |
+            Should -Not -Throw
+    }
+}
