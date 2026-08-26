@@ -113,14 +113,14 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					var maxIconSize = (nfloat)(Math.Min((double)frame.Width, (double)frame.Height) * 0.5);
+					var maxWidth = frame.Width * 0.5f;
+					var maxHeight = frame.Height * 0.5f;
 
-					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxIconSize, maxIconSize);
+					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxWidth, maxHeight);
 
 					try
 					{
 						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-						MauiSwipeView.UpdateSwipeItemInsets(button);
 
 						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
 							button.TintColor = fontImageSource.Color.ToPlatform();
