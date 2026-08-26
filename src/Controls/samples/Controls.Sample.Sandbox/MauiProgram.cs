@@ -1,13 +1,9 @@
-using System.Diagnostics.Metrics;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Maui.Controls.Sample;
+﻿namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
-	public static MauiApp CreateMauiApp()
-	{
-		var builder = MauiApp
+	public static MauiApp CreateMauiApp() =>
+		MauiApp
 			.CreateBuilder()
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
@@ -25,14 +21,6 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
 				fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
-			});
-
-		// MAUI already instruments every measure/arrange through
-		// src/Core/src/Diagnostics/Instrumentation/LayoutDiagnosticMetrics.cs, but the counters are only
-		// created when an IMeterFactory is present in DI. Registering one here lets the Sandbox read the
-		// framework's own maui.layout.measure_count / maui.layout.arrange_count without touching src/.
-		builder.Services.AddSingleton<IMeterFactory, LayoutMetrics.SandboxMeterFactory>();
-
-		return builder.Build();
-	}
+			})
+			.Build();
 }

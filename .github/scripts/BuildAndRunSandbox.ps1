@@ -148,33 +148,19 @@ Write-Success "Prerequisites validated"
 
 #region Platform-Specific Configuration
 
-# Resolve the repo's current .NET version (net10.0, net11.0, ...) from Directory.Build.props so the
-# script keeps working when the branch moves to a new TFM.
-$DotNetTfmVersion = "10.0"
-$directoryBuildProps = Join-Path $RepoRoot "Directory.Build.props"
-if (Test-Path $directoryBuildProps) {
-    $propsContent = Get-Content $directoryBuildProps -Raw
-    $majorMatch = [regex]::Match($propsContent, '<_MauiDotNetVersionMajor[^>]*>(\d+)<')
-    $minorMatch = [regex]::Match($propsContent, '<_MauiDotNetVersionMinor[^>]*>(\d+)<')
-    if ($majorMatch.Success -and $minorMatch.Success) {
-        $DotNetTfmVersion = "$($majorMatch.Groups[1].Value).$($minorMatch.Groups[1].Value)"
-    }
-}
-Write-Info "Using .NET TFM version: net$DotNetTfmVersion"
-
 # Set target framework and app identifiers
 if ($Platform -eq "android") {
-    $TargetFramework = "net$DotNetTfmVersion-android"
+    $TargetFramework = "net10.0-android"
     $AppPackage = "com.microsoft.maui.sandbox"
     $AppActivity = "com.microsoft.maui.sandbox.MainActivity"
 } elseif ($Platform -eq "ios") {
-    $TargetFramework = "net$DotNetTfmVersion-ios"
+    $TargetFramework = "net10.0-ios"
     $AppBundleId = "com.microsoft.maui.sandbox"
 } elseif ($Platform -eq "catalyst") {
-    $TargetFramework = "net$DotNetTfmVersion-maccatalyst"
+    $TargetFramework = "net10.0-maccatalyst"
     $AppBundleId = "com.microsoft.maui.sandbox"
 } elseif ($Platform -eq "windows") {
-    $TargetFramework = "net$DotNetTfmVersion-windows10.0.19041.0"
+    $TargetFramework = "net10.0-windows10.0.19041.0"
     $AppPackage = "com.microsoft.maui.sandbox"
 }
 
@@ -220,13 +206,7 @@ if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
     $buildDeployParams.BundleId = $AppBundleId
 }
 
-$previousHandlerInstrumentation = $env:EnableHandlerInstrumentation
-try {
-    $env:EnableHandlerInstrumentation = "true"
-    & "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
-} finally {
-    $env:EnableHandlerInstrumentation = $previousHandlerInstrumentation
-}
+& "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build or deployment failed"
@@ -411,11 +391,11 @@ try {
         Write-Info "Capturing iOS simulator logs for Sandbox app..."
         
         # Use log show to capture recent logs from Sandbox app
-        $logStartTime = (Get-Date).AddMinutes(-10).ToString("yyyy-MM-dd HH:mm:ss")
+        $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
         
         $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
         
-        Write-Info "Capturing logs from last 10 minutes..."
+        Write-Info "Capturing logs from last 2 minutes..."
         Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
         
         Write-Info "iOS logs saved to: $deviceLogFile"
@@ -442,7 +422,7 @@ try {
         
         if ($logFileSize -lt 100) {
             Write-Info "Console output was minimal, using os_log fallback..."
-            $logStartTime = (Get-Date).AddMinutes(-10).ToString("yyyy-MM-dd HH:mm:ss")
+            $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
             $catalystLogCommand = "log show --level debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
             Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
         }
