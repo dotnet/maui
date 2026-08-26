@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Diagnostics;
 using Xunit;
@@ -72,6 +75,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DirectRegistrationTeardownReplaysBeforeUnregisteringForReplacementObserver()
+		{
+			var owner = new object();
+			var nativeElement = new object();
+			var firstEvents = new List<KeyValuePair<string, object>>();
+			IDisposable registration;
+			using (NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(firstEvents)))
+			{
+				registration = NativeElementDiagnostics.Register(
+					owner,
+					nativeElement,
+					NativeElementRoles.Toolbar);
+			}
+
+			var replacementEvents = new List<KeyValuePair<string, object>>();
+			using var replacementSubscription = NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(replacementEvents));
+
+			registration.Dispose();
+
+			Assert.Collection(
+				replacementEvents,
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.RegisteredEventName, diagnosticEvent.Key),
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, diagnosticEvent.Key));
+		}
+
+		[Fact]
 		public void ObserverExceptionsDoNotBreakRegistrationLifecycle()
 		{
 			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new ThrowingObserver());
@@ -85,6 +115,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void EnablementPredicateExceptionsDoNotBreakRegistrationLifecycle()
+		{
+			var events = new List<KeyValuePair<string, object>>();
+			using var subscription = NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(events),
+				(_, _, _) => throw new InvalidOperationException("Enablement failure"));
+			using var registrations = new NativeElementRegistrationSet();
+
+			var exception = Record.Exception(() => registrations.Register(
+				new object(),
+				new object(),
+				NativeElementRoles.Toolbar));
+
+			Assert.Null(exception);
+			Assert.Empty(events);
+		}
+
+		[Fact]
+		public async Task ReentrantEnablementSubscriptionReceivesRegistrationExactlyOnce()
+		{
+			var firstEvents = new List<KeyValuePair<string, object>>();
+			var secondEvents = new List<KeyValuePair<string, object>>();
+			var subscriptionAdded = new TaskCompletionSource(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			IDisposable secondSubscription = null;
+			var predicateCalls = 0;
+			using var firstSubscription = NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(firstEvents),
+				(_, _, _) =>
+				{
+					if (Interlocked.Increment(ref predicateCalls) == 2)
+					{
+						secondSubscription = NativeElementDiagnostics.Listener.Subscribe(
+							new RecordingObserver(secondEvents));
+					}
+
+					return true;
+				});
+			void OnSubscriptionAdded() => subscriptionAdded.TrySetResult();
+			NativeElementDiagnostics.SubscriptionAdded += OnSubscriptionAdded;
+			try
+			{
+				using var registrations = new NativeElementRegistrationSet();
+				registrations.Register(
+					new object(),
+					new object(),
+					NativeElementRoles.ToolbarItem);
+
+				await subscriptionAdded.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				await Task.Delay(50);
+
+				Assert.Single(secondEvents);
+				Assert.Equal(NativeElementDiagnostics.RegisteredEventName, secondEvents[0].Key);
+
+				registrations.Clear();
+				Assert.Equal(2, secondEvents.Count);
+				Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, secondEvents[1].Key);
+			}
+			finally
+			{
+				NativeElementDiagnostics.SubscriptionAdded -= OnSubscriptionAdded;
+				secondSubscription?.Dispose();
+			}
 		}
 
 		[Fact]
@@ -209,12 +305,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var events = new List<KeyValuePair<string, object>>();
 			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(events));
 
-			registrations.Register(
-				owner,
-				nativeElement,
-				NativeElementRoles.ToolbarItem,
-				NativeElementDiscriminators.LogicalModel);
-
 			var registered = Assert.Single(events);
 			Assert.Equal(NativeElementDiagnostics.RegisteredEventName, registered.Key);
 
@@ -243,12 +333,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var events = new List<KeyValuePair<string, object>>();
 			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(events));
 
-			registrations.Register(
-				owner,
-				nativeElement,
-				NativeElementRoles.ToolbarItem,
-				NativeElementDiscriminators.RealizedView);
-
 			var registered = Assert.Single(events);
 			var payload = Assert.IsType<object[]>(registered.Value);
 			Assert.Equal(NativeElementDiscriminators.RealizedView, payload[4]);
@@ -267,10 +351,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
-
 			var secondEvents = new List<KeyValuePair<string, object>>();
 			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(secondEvents));
-			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 
 			Assert.Single(firstEvents);
 			Assert.Single(secondEvents);
@@ -278,7 +360,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void RegistrationSetReplaysForReplacementObserver()
+		public void RegistrationSetReplaysForReplacementObserverWithoutRefresh()
 		{
 			var owner = new object();
 			var nativeElement = new object();
@@ -288,13 +370,146 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 			}
-
 			var secondEvents = new List<KeyValuePair<string, object>>();
 			using var subscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(secondEvents));
-			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 
 			var registered = Assert.Single(secondEvents);
 			Assert.Equal(NativeElementDiagnostics.RegisteredEventName, registered.Key);
+		}
+
+		[Fact]
+		public void RegistrationSetReplaysAllStableRegistrationsForReplacementObserver()
+		{
+			const int RegistrationCount = 49;
+			var owner = new object();
+			var nativeElements = new object[RegistrationCount];
+			using var registrations = new NativeElementRegistrationSet();
+			using (NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(new List<KeyValuePair<string, object>>())))
+			{
+				for (var index = 0; index < RegistrationCount; index++)
+				{
+					nativeElements[index] = new object();
+					registrations.Register(
+						owner,
+						nativeElements[index],
+						NativeElementRoles.ToolbarItem);
+				}
+			}
+
+			var replacementEvents = new List<KeyValuePair<string, object>>();
+			using var replacementSubscription = NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(replacementEvents));
+
+			Assert.Equal(RegistrationCount, replacementEvents.Count);
+			for (var index = 0; index < RegistrationCount; index++)
+			{
+				Assert.Equal(NativeElementDiagnostics.RegisteredEventName, replacementEvents[index].Key);
+				var payload = Assert.IsType<object[]>(replacementEvents[index].Value);
+				Assert.Same(nativeElements[index], payload[2]);
+			}
+
+			registrations.Clear();
+
+			Assert.Equal(RegistrationCount * 2, replacementEvents.Count);
+			for (var index = RegistrationCount; index < replacementEvents.Count; index++)
+				Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, replacementEvents[index].Key);
+		}
+
+		[Fact]
+		public async Task RegistrationSetReplaysFromBackgroundSubscription()
+		{
+			var owner = new object();
+			var nativeElement = new object();
+			using var registrations = new NativeElementRegistrationSet();
+			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
+			var events = new List<KeyValuePair<string, object>>();
+
+			using var subscription = await Task.Run(
+				() => NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(events)));
+
+			var registered = Assert.Single(events);
+			Assert.Equal(NativeElementDiagnostics.RegisteredEventName, registered.Key);
+
+			registrations.Clear();
+
+			Assert.Equal(2, events.Count);
+			Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, events[1].Key);
+		}
+
+		[Fact]
+		public async Task RegistrationSetSerializesCrossThreadDisposeBeforeReplacementRegister()
+		{
+			var owner = new object();
+			var nativeElement = new object();
+			using var registrations = new NativeElementRegistrationSet();
+			using (NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(new List<KeyValuePair<string, object>>())))
+			{
+				registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
+			}
+
+			var replayEntered = new TaskCompletionSource(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			using var releaseReplay = new ManualResetEventSlim();
+			var secondEvents = new List<KeyValuePair<string, object>>();
+			var blockReplay = 0;
+			var subscriptionTask = Task.Run(() =>
+				NativeElementDiagnostics.Listener.Subscribe(
+					new CallbackObserver(diagnosticEvent =>
+					{
+						secondEvents.Add(diagnosticEvent);
+						if (diagnosticEvent.Key == NativeElementDiagnostics.RegisteredEventName &&
+							Interlocked.CompareExchange(ref blockReplay, 1, 0) == 0)
+						{
+							replayEntered.TrySetResult();
+							releaseReplay.Wait(TimeSpan.FromSeconds(5));
+						}
+					})));
+
+			await replayEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var mutationTask = Task.Run(() =>
+			{
+				registrations.Unregister(nativeElement);
+				registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
+			});
+
+			await Task.Delay(50);
+			var mutationCompletedBeforeReplay = mutationTask.IsCompleted;
+			releaseReplay.Set();
+			using var secondSubscription = await subscriptionTask.WaitAsync(TimeSpan.FromSeconds(5));
+			await mutationTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.False(mutationCompletedBeforeReplay);
+			Assert.Collection(
+				secondEvents,
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.RegisteredEventName, diagnosticEvent.Key),
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, diagnosticEvent.Key),
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.RegisteredEventName, diagnosticEvent.Key));
+		}
+
+		[Fact]
+		public void RegistrationSetTeardownReplaysBeforeUnregisteringForReplacementObserver()
+		{
+			var owner = new object();
+			var nativeElement = new object();
+			using var registrations = new NativeElementRegistrationSet();
+			using (NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(new List<KeyValuePair<string, object>>())))
+			{
+				registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
+			}
+
+			var replacementEvents = new List<KeyValuePair<string, object>>();
+			using var replacementSubscription = NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(replacementEvents));
+
+			registrations.Clear();
+
+			Assert.Collection(
+				replacementEvents,
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.RegisteredEventName, diagnosticEvent.Key),
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, diagnosticEvent.Key));
 		}
 
 		[Fact]
@@ -309,7 +524,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var secondEvents = new List<KeyValuePair<string, object>>();
 			using var secondSubscription = NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(secondEvents));
-			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 
 			Assert.Single(firstEvents);
 			Assert.Single(secondEvents);
@@ -337,14 +551,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			using var filteredSubscription = NativeElementDiagnostics.Listener.Subscribe(
 				new RecordingObserver(filteredEvents),
 				(_, _, _) => false);
-			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 
 			Assert.Single(filteredEvents);
 			Assert.Equal(NativeElementDiagnostics.RegisteredEventName, filteredEvents[0].Key);
+
+			firstSubscription.Dispose();
+			registrations.Clear();
+
+			Assert.Equal(2, filteredEvents.Count);
+			Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, filteredEvents[1].Key);
 		}
 
 		[Fact]
-		public void RegistrationSetDoesNotReplayToDisposedObserver()
+		public void RegistrationSetReplaysBeforeImmediateObserverDisposal()
 		{
 			var owner = new object();
 			var nativeElement = new object();
@@ -355,9 +574,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var disposedEvents = new List<KeyValuePair<string, object>>();
 			NativeElementDiagnostics.Listener.Subscribe(new RecordingObserver(disposedEvents)).Dispose();
-			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 
-			Assert.Empty(disposedEvents);
+			var registered = Assert.Single(disposedEvents);
+			Assert.Equal(NativeElementDiagnostics.RegisteredEventName, registered.Key);
 		}
 
 		[Fact]
@@ -384,8 +603,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 							new RecordingObserver(thirdEvents));
 					}
 				}));
-
-			registrations.Register(owner, nativeElement, NativeElementRoles.ToolbarItem);
 
 			Assert.Single(secondEvents);
 			Assert.Single(thirdEvents);
@@ -471,6 +688,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RegistrationSetClearAllowsObserverReentrancy()
+		{
+			var owner = new object();
+			var firstElement = new object();
+			var replacementElement = new object();
+			var events = new List<KeyValuePair<string, object>>();
+			using var registrations = new NativeElementRegistrationSet();
+			var registerReplacement = true;
+			using var subscription = NativeElementDiagnostics.Listener.Subscribe(
+				new CallbackObserver(diagnosticEvent =>
+				{
+					events.Add(diagnosticEvent);
+					if (registerReplacement &&
+						diagnosticEvent.Key == NativeElementDiagnostics.UnregisteredEventName)
+					{
+						registerReplacement = false;
+						registrations.Register(
+							owner,
+							replacementElement,
+							NativeElementRoles.ToolbarItem);
+					}
+				}));
+			registrations.Register(owner, firstElement, NativeElementRoles.ToolbarItem);
+
+			var exception = Record.Exception(registrations.Clear);
+
+			Assert.Null(exception);
+			Assert.True(registrations.HasRegistrations);
+			Assert.Collection(
+				events,
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.RegisteredEventName, diagnosticEvent.Key),
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, diagnosticEvent.Key),
+				diagnosticEvent => Assert.Equal(NativeElementDiagnostics.RegisteredEventName, diagnosticEvent.Key));
+
+			registrations.Clear();
+			Assert.False(registrations.HasRegistrations);
+		}
+
+		[Fact]
 		public void RegistrationSetAdvanceLifecyclePreservesRegistrations()
 		{
 			var owner = new object();
@@ -490,6 +746,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, events.Count);
 			Assert.Equal(NativeElementDiagnostics.UnregisteredEventName, events[1].Key);
+		}
+
+		[Fact]
+		public void RegistrationTrackerDoesNotRootRegistrationSet()
+		{
+			var references = CreateUnobservedRegistrationSet();
+
+			for (var attempt = 0;
+				attempt < 3 &&
+					(references.Registrations.IsAlive || references.Owner.IsAlive || references.NativeElement.IsAlive);
+				attempt++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+			}
+
+			Assert.False(references.Registrations.IsAlive);
+			Assert.False(references.Owner.IsAlive);
+			Assert.False(references.NativeElement.IsAlive);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static (WeakReference Registrations, WeakReference Owner, WeakReference NativeElement)
+			CreateUnobservedRegistrationSet()
+		{
+			var owner = new object();
+			var nativeElement = new object();
+			var registrations = new NativeElementRegistrationSet();
+			registrations.Register(
+				owner,
+				nativeElement,
+				NativeElementRoles.ToolbarItem);
+			return (
+				new WeakReference(registrations),
+				new WeakReference(owner),
+				new WeakReference(nativeElement));
 		}
 
 		sealed class RecordingObserver : IObserver<KeyValuePair<string, object>>

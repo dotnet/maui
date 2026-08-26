@@ -14,9 +14,12 @@ namespace Microsoft.Maui.Diagnostics
 		internal static readonly string UnregisteredEventName = $"{ListenerName}.Unregistered.v{ContractVersion}";
 
 		static readonly NativeElementDiagnosticListener s_listener = new NativeElementDiagnosticListener(ListenerName);
+		static int s_subscriptionNotificationRequested;
+		static int s_subscriptionNotificationWorkerScheduled;
 
 		internal static DiagnosticListener Listener => s_listener;
 		internal static long SubscriptionEpoch => s_listener.SubscriptionEpoch;
+		internal static event Action? SubscriptionAdded;
 
 		internal static bool IsRegistrationEnabled
 		{
@@ -77,7 +80,12 @@ namespace Microsoft.Maui.Diagnostics
 				discriminator,
 				out subscriptionEpoch))
 			{
-				registration = new Registration(nativeElement);
+				registration = new Registration(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					subscriptionEpoch);
 				return true;
 			}
 
@@ -119,6 +127,28 @@ namespace Microsoft.Maui.Diagnostics
 				registration);
 		}
 
+		internal static void ReplayRegisteredAndUnregister(
+			object owner,
+			object nativeElement,
+			string role,
+			string? discriminator,
+			long afterSubscriptionEpoch)
+		{
+			try
+			{
+				s_listener.ReplayRegisteredAndUnregister(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					afterSubscriptionEpoch);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Native element unregistration observer failed: {ex}");
+			}
+		}
+
 		internal static void ValidateRegistrationArguments(
 			object owner,
 			object nativeElement,
@@ -151,17 +181,95 @@ namespace Microsoft.Maui.Diagnostics
 
 		sealed class Registration : IDisposable
 		{
+			object? _owner;
 			object? _nativeElement;
+			string? _role;
+			string? _discriminator;
+			readonly long _subscriptionEpoch;
 
-			public Registration(object nativeElement)
+			public Registration(
+				object owner,
+				object nativeElement,
+				string role,
+				string? discriminator,
+				long subscriptionEpoch)
 			{
+				_owner = owner;
 				_nativeElement = nativeElement;
+				_role = role;
+				_discriminator = discriminator;
+				_subscriptionEpoch = subscriptionEpoch;
 			}
 
 			public void Dispose()
 			{
-				Unregister(Interlocked.Exchange(ref _nativeElement, null));
+				var nativeElement = Interlocked.Exchange(ref _nativeElement, null);
+				if (nativeElement is null)
+					return;
+
+				var owner = Interlocked.Exchange(ref _owner, null);
+				var role = Interlocked.Exchange(ref _role, null);
+				var discriminator = Interlocked.Exchange(ref _discriminator, null);
+				if (owner is null || role is null)
+					return;
+
+				ReplayRegisteredAndUnregister(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					_subscriptionEpoch);
 			}
+
+			public void DisposeWithoutReplay()
+			{
+				Interlocked.Exchange(ref _nativeElement, null);
+				Interlocked.Exchange(ref _owner, null);
+				Interlocked.Exchange(ref _role, null);
+				Interlocked.Exchange(ref _discriminator, null);
+			}
+		}
+
+		static void NotifySubscriptionAdded()
+		{
+			var handlers = SubscriptionAdded;
+			if (handlers is null)
+				return;
+
+			foreach (Action handler in handlers.GetInvocationList())
+			{
+				try
+				{
+					handler();
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Native element subscription callback failed: {ex}");
+				}
+			}
+		}
+
+		static void QueueSubscriptionAddedNotification()
+		{
+			Volatile.Write(ref s_subscriptionNotificationRequested, 1);
+			if (Interlocked.CompareExchange(ref s_subscriptionNotificationWorkerScheduled, 1, 0) != 0)
+				return;
+
+			ThreadPool.QueueUserWorkItem(static _ =>
+			{
+				while (true)
+				{
+					while (Interlocked.Exchange(ref s_subscriptionNotificationRequested, 0) != 0)
+						NotifySubscriptionAdded();
+
+					Interlocked.Exchange(ref s_subscriptionNotificationWorkerScheduled, 0);
+					if (Volatile.Read(ref s_subscriptionNotificationRequested) == 0 ||
+						Interlocked.CompareExchange(ref s_subscriptionNotificationWorkerScheduled, 1, 0) != 0)
+					{
+						return;
+					}
+				}
+			});
 		}
 
 		sealed class NativeElementDiagnosticListener : DiagnosticListener
@@ -180,8 +288,7 @@ namespace Microsoft.Maui.Diagnostics
 			{
 				get
 				{
-					lock (_subscriptionsLock)
-						return base.IsEnabled(RegisteredEventName);
+					return IsEnabledSafely(RegisteredEventName);
 				}
 			}
 
@@ -219,17 +326,25 @@ namespace Microsoft.Maui.Diagnostics
 				IObserver<KeyValuePair<string, object?>> observer,
 				Func<IDisposable> subscribe)
 			{
+				var deferNotification = Monitor.IsEntered(_subscriptionsLock);
+				TrackedSubscription trackedSubscription;
 				lock (_subscriptionsLock)
 				{
 					var subscription = subscribe();
-					var trackedSubscription = new TrackedSubscription(
+					trackedSubscription = new TrackedSubscription(
 						this,
 						observer,
 						Interlocked.Increment(ref _subscriptionEpoch));
 					trackedSubscription.Attach(subscription);
 					_subscriptions.Add(trackedSubscription);
-					return trackedSubscription;
 				}
+
+				if (deferNotification)
+					QueueSubscriptionAddedNotification();
+				else
+					NotifySubscriptionAdded();
+
+				return trackedSubscription;
 			}
 
 			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
@@ -241,25 +356,24 @@ namespace Microsoft.Maui.Diagnostics
 				string? discriminator,
 				out long subscriptionEpoch)
 			{
+				TrackedSubscription[] subscriptions;
 				lock (_subscriptionsLock)
 				{
-					subscriptionEpoch = _subscriptionEpoch;
-					if (!base.IsEnabled(RegisteredEventName))
+					if (!IsEnabledSafely(RegisteredEventName))
+					{
+						subscriptionEpoch = _subscriptionEpoch;
 						return false;
-
-					try
-					{
-						base.Write(
-							RegisteredEventName,
-							new object?[] { ContractVersion, owner, nativeElement, role, discriminator });
-					}
-					catch (Exception ex)
-					{
-						Debug.WriteLine($"Native element registration observer failed: {ex}");
 					}
 
-					return true;
+					subscriptions = _subscriptions.ToArray();
+					subscriptionEpoch = _subscriptionEpoch;
 				}
+
+				WriteCore(
+					subscriptions,
+					RegisteredEventName,
+					new object?[] { ContractVersion, owner, nativeElement, role, discriminator });
+				return true;
 			}
 
 			public long ReplayRegistered(
@@ -269,13 +383,12 @@ namespace Microsoft.Maui.Diagnostics
 				string? discriminator,
 				long afterSubscriptionEpoch)
 			{
-				lock (_subscriptionsLock)
-					return ReplayRegisteredCore(
-						owner,
-						nativeElement,
-						role,
-						discriminator,
-						afterSubscriptionEpoch);
+				return ReplayRegisteredCore(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					afterSubscriptionEpoch);
 			}
 
 			public long ReplayRegisteredAndDispose(
@@ -286,32 +399,60 @@ namespace Microsoft.Maui.Diagnostics
 				long afterSubscriptionEpoch,
 				IDisposable registration)
 			{
-				lock (_subscriptionsLock)
-				{
-					var subscriptionEpoch = ReplayRegisteredCore(
-						owner,
-						nativeElement,
-						role,
-						discriminator,
-						afterSubscriptionEpoch);
+				var subscriptionEpoch = ReplayRegisteredAndUnregisterCore(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					afterSubscriptionEpoch);
+				if (registration is Registration nativeRegistration)
+					nativeRegistration.DisposeWithoutReplay();
+				else
 					registration.Dispose();
-					return subscriptionEpoch;
-				}
+				return subscriptionEpoch;
+			}
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
+				Justification = "The fixed object-array payload is consumed by index and does not require reflected members.")]
+			public void ReplayRegisteredAndUnregister(
+				object owner,
+				object nativeElement,
+				string role,
+				string? discriminator,
+				long afterSubscriptionEpoch)
+			{
+				ReplayRegisteredAndUnregisterCore(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					afterSubscriptionEpoch);
 			}
 
 			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
 				Justification = "The fixed object-array payload is consumed by index and does not require reflected members.")]
 			public void WriteUnregistered(object nativeElement)
 			{
+				TrackedSubscription[] subscriptions;
 				lock (_subscriptionsLock)
-				{
-					if (base.IsEnabled(UnregisteredEventName))
-					{
-						base.Write(
-							UnregisteredEventName,
-							new object?[] { ContractVersion, nativeElement });
-					}
-				}
+					subscriptions = _subscriptions.ToArray();
+				WriteCore(
+					subscriptions,
+					UnregisteredEventName,
+					new object?[] { ContractVersion, nativeElement });
+			}
+
+			static void WriteCore(
+				IReadOnlyList<TrackedSubscription> subscriptions,
+				string eventName,
+				object?[] payload)
+			{
+				if (subscriptions.Count == 0)
+					return;
+
+				var diagnosticEvent = new KeyValuePair<string, object?>(eventName, payload);
+				foreach (var subscription in subscriptions)
+					subscription.Replay(diagnosticEvent);
 			}
 
 			long ReplayRegisteredCore(
@@ -321,23 +462,72 @@ namespace Microsoft.Maui.Diagnostics
 				string? discriminator,
 				long afterSubscriptionEpoch)
 			{
+				var replayedThroughEpoch = afterSubscriptionEpoch;
 				var payload = new object?[] { ContractVersion, owner, nativeElement, role, discriminator };
 				var diagnosticEvent = new KeyValuePair<string, object?>(RegisteredEventName, payload);
-				var replayedThroughEpoch = afterSubscriptionEpoch;
 				while (true)
 				{
-					var subscriptionEpoch = _subscriptionEpoch;
-					if (subscriptionEpoch == replayedThroughEpoch)
-						return subscriptionEpoch;
+					long subscriptionEpoch;
+					TrackedSubscription[] subscriptions;
+					lock (_subscriptionsLock)
+					{
+						subscriptionEpoch = _subscriptionEpoch;
+						if (subscriptionEpoch == replayedThroughEpoch)
+							return subscriptionEpoch;
 
-					var subscriptions = _subscriptions.FindAll(
-						subscription =>
-							subscription.Epoch > replayedThroughEpoch &&
-							subscription.Epoch <= subscriptionEpoch).ToArray();
+						subscriptions = _subscriptions.FindAll(
+							subscription =>
+								subscription.Epoch > replayedThroughEpoch &&
+								subscription.Epoch <= subscriptionEpoch).ToArray();
+					}
+
 					foreach (var subscription in subscriptions)
 						subscription.Replay(diagnosticEvent);
 
 					replayedThroughEpoch = subscriptionEpoch;
+				}
+			}
+
+			long ReplayRegisteredAndUnregisterCore(
+				object owner,
+				object nativeElement,
+				string role,
+				string? discriminator,
+				long afterSubscriptionEpoch)
+			{
+				long subscriptionEpoch;
+				TrackedSubscription[] subscriptions;
+				TrackedSubscription[] replaySubscriptions;
+				lock (_subscriptionsLock)
+				{
+					subscriptionEpoch = _subscriptionEpoch;
+					subscriptions = _subscriptions.ToArray();
+					replaySubscriptions = Array.FindAll(
+						subscriptions,
+						subscription => subscription.Epoch > afterSubscriptionEpoch);
+				}
+
+				WriteCore(
+					replaySubscriptions,
+					RegisteredEventName,
+					new object?[] { ContractVersion, owner, nativeElement, role, discriminator });
+				WriteCore(
+					subscriptions,
+					UnregisteredEventName,
+					new object?[] { ContractVersion, nativeElement });
+				return subscriptionEpoch;
+			}
+
+			bool IsEnabledSafely(string eventName)
+			{
+				try
+				{
+					return base.IsEnabled(eventName);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Native element diagnostics listener check failed: {ex}");
+					return false;
 				}
 			}
 
