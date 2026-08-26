@@ -1,12 +1,8 @@
 ﻿<ContentPage xmlns:local="clr-namespace:MauiApp._1"
-             xmlns:shared="clr-namespace:MauiApp._1.Shared;assembly=XmlEncodedAppName.Shared"
+             xmlns:components="clr-namespace:MauiApp._1.Components"
              x:Class="MauiApp._1.MainPage"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
-    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
-        <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+    <BlazorWebView x:Name="blazorWebView" AppType="{x:Type components:App}" />
 
 </ContentPage>
