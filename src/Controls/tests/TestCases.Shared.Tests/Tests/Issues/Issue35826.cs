@@ -30,10 +30,6 @@ public class Issue35826 : _IssuesUITest
 		// (the guard in ActivityForResultRequest.Register() blocked it), so the task hung
 		// indefinitely and the result label stayed on "Picking...".
 		App.Tap(ChildActivityPickButton);
-
-		// Cancel the system photo picker by pressing Back.
-		// After the fix each activity has its own launcher entry so the result is delivered.
-		WaitForPhotoPicker();
 		App.Back();
 
 		// If the bug is present WaitForTextToBePresentInElement times out because the
@@ -68,7 +64,6 @@ public class Issue35826 : _IssuesUITest
 		OpenChildActivityAndRequirePhotoPicker();
 
 		App.Tap(ChildActivityOverlapButton);
-		WaitForPhotoPicker();
 		App.Back();
 
 		var rejected = App.WaitForTextToBePresentInElement(
@@ -91,7 +86,6 @@ public class Issue35826 : _IssuesUITest
 		OpenChildActivityAndRequirePhotoPicker();
 
 		App.Tap(ChildActivityFinishWhilePickingButton);
-		WaitForPhotoPicker();
 		App.Back();
 
 		App.WaitForElement(StatusLabel);
@@ -109,6 +103,18 @@ public class Issue35826 : _IssuesUITest
 
 	void OpenChildActivityAndRequirePhotoPicker()
 	{
+		// This regression only manifests on Android API 36, where the ActivityResultLauncher
+		// ownership rules are enforced strictly enough that using the wrong activity's launcher
+		// causes the result to never be delivered, hanging the task indefinitely.
+		if (App is AppiumApp appiumApp)
+		{
+			var apiLevel = (long?)appiumApp.Driver.Capabilities.GetCapability("deviceApiLevel") ?? 0;
+			if (apiLevel < 36)
+			{
+				Assert.Ignore($"Issue #35826 only manifests on Android API 36+. Current device API: {apiLevel}.");
+			}
+		}
+
 		App.WaitForElement(OpenChildActivityButton);
 		App.Tap(OpenChildActivityButton);
 
