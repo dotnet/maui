@@ -23,8 +23,6 @@ public class Issue36269 : _IssuesUITest
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// Reverse transition: showing the TabBar again must remove the bottom safe-area padding, since the
-	// TabBar now occupies that space. Together with the test above this exercises the hide/show round trip.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaBottomPaddingIsRemovedWhenTabBarShownAgain()
