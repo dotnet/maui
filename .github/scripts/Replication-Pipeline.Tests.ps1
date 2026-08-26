@@ -4,6 +4,20 @@
 BeforeAll {
     $script:PipelinePath = Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml'
     $script:Pipeline = Get-Content -LiteralPath $script:PipelinePath -Raw
+
+    # One authority for "this text reads a pipeline script out of the worktree".
+    # Two consumers ask that question - the Build MSBuild Tasks step guard and
+    # the pipeline-wide ordering invariant - and a second copy of a pattern is a
+    # fork of the truth that drifts silently.
+    #
+    # The window is deliberately the looser '.{0,4}' rather than a class of
+    # quotes and separators. Both were measured against today's pipeline and
+    # agree exactly, so the tighter form is unexercised; and the error modes here
+    # are asymmetric in the opposite direction from a production gate. A false
+    # positive is a red suite somebody reads and resolves in a minute. A false
+    # negative is a step reading a script from a detached checkout, which is a
+    # lost run nobody is told about.
+    $script:WorktreeScriptReadPattern = 'Build\.SourcesDirectory.{0,4}[''"]?\.github/scripts'
 }
 
 Describe 'MAUI Copilot mode routing' {
@@ -1329,11 +1343,32 @@ Describe 'A build step may not report success for work it never ran' {
     BeforeAll {
         $script:Yaml = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+        # The tempered '(?!- pwsh: \|)' is what confines each capture to its own
+        # step. Without it the lazy '.*?' still begins at the *first* '- pwsh: |'
+        # in the file, because a regex takes the leftmost match, so the two
+        # captures spanned 1017 and 2754 lines and held 85 'displayName:' entries
+        # between them - this Describe was auditing 85 steps while claiming to
+        # audit 2. Narrowed they span 90 and 49 lines and hold none.
+        #
+        # Narrowing costs real protection: the over-broad span was measured to
+        # catch a step reading a pipeline script from the worktree after the
+        # checkout detaches, which is a defect that has cost this pipeline two
+        # runs. That property is now asserted directly, and pipeline-wide, by
+        # 'No job may read a pipeline script from the worktree after it detaches'
+        # below. Do not narrow one without the other.
         $script:BuildTaskSteps = @(
             [regex]::Matches(
                 $script:Yaml,
-                "(?s)- pwsh: \|(.*?)displayName: 'Build MSBuild Tasks'") |
+                "(?s)- pwsh: \|((?:(?!- pwsh: \|).)*?)displayName: 'Build MSBuild Tasks'") |
                 ForEach-Object { $_.Groups[1].Value })
+    }
+
+    It 'captures each step body rather than everything before it' {
+        # The whole point of the narrowing: a capture holding another step's
+        # displayName is a capture holding another step.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match 'displayName:'
+        }
     }
 
     It 'finds both copies of the step' {
@@ -1359,7 +1394,7 @@ Describe 'A build step may not report success for work it never ran' {
         # while the file was present and committed on the pipeline's own branch.
         foreach ($step in $script:BuildTaskSteps) {
             $step | Should -Match "trusted-github/scripts/shared/Resolve-BuildShell\.ps1"
-            $step | Should -Not -Match 'Build\.SourcesDirectory.{0,4}''\.github/scripts'
+            $step | Should -Not -Match $script:WorktreeScriptReadPattern
         }
     }
 
@@ -1420,6 +1455,90 @@ Describe 'A build step may not report success for work it never ran' {
         $gate = @($script:BuildTaskSteps | Where-Object { $_ -match 'Set-BuildTasksFailed' })
         $gate.Count | Should -Be 1
         $gate[0] | Should -Match '(?s)##\[error\]Could not load the build shell resolver.{0,300}Set-BuildTasksFailed 1'
+    }
+}
+
+Describe 'No job may read a pipeline script from the worktree after it detaches' {
+    # This is the property the over-broad 'Build MSBuild Tasks' capture was
+    # providing by accident. Every job that detaches its checkout is standing on
+    # a different commit from the one that carries these scripts, so a script
+    # read from $(Build.SourcesDirectory) after that point is a file that may
+    # not exist, or worse, a different file with the same name. Build 15066067
+    # reported "the file does not exist" for a resolver that was present and
+    # committed on the pipeline's own branch.
+    #
+    # Reads *before* the detach are correct and deliberate - that is the whole
+    # reason the trusted capture is taken while the worktree is still ours - so
+    # the assertion is about ordering within a job, not about the path.
+
+    BeforeAll {
+        $script:Yaml = $script:Pipeline
+
+        function Get-LateWorktreeScriptRead {
+            param([Parameter(Mandatory)][AllowEmptyString()][string]$Yaml)
+
+            $jobs = @([regex]::Matches($Yaml, '(?m)^\s*- job: (\S+)\s*$'))
+            $findings = @()
+
+            for ($i = 0; $i -lt $jobs.Count; $i++) {
+                $start = $jobs[$i].Index
+                $end = if ($i + 1 -lt $jobs.Count) { $jobs[$i + 1].Index } else { $Yaml.Length }
+                $body = $Yaml.Substring($start, $end - $start)
+
+                $detach = $body.IndexOf('git checkout --detach')
+                if ($detach -lt 0) { continue }
+
+                foreach ($read in [regex]::Matches($body, $script:WorktreeScriptReadPattern)) {
+                    if ($read.Index -gt $detach) {
+                        $findings += [pscustomobject]@{
+                            Job  = $jobs[$i].Groups[1].Value
+                            Line = ($Yaml.Substring(0, $start + $read.Index) -split "`n").Count
+                            Text = ($body.Substring($read.Index, [Math]::Min(90, $body.Length - $read.Index)) -split "`n")[0]
+                        }
+                    }
+                }
+            }
+
+            # Deliberately not ', $findings': that idiom preserves a
+            # single-element array but emits an *empty* one as a single object,
+            # so a clean pipeline would report one nameless finding. Every call
+            # site wraps with @(), which handles both ends correctly.
+            return $findings
+        }
+    }
+
+    It 'holds across every job in the pipeline' {
+        $findings = @(Get-LateWorktreeScriptRead -Yaml $script:Yaml)
+        $findings.Count | Should -Be 0 -Because (
+            "these read a pipeline script from the worktree after their job detached: " +
+            (($findings | ForEach-Object { "$($_.Job) line $($_.Line): $($_.Text)" }) -join '; '))
+    }
+
+    It 'fires on a step that loads the resolver from the worktree' {
+        # Proving the scan is not vacuous, on the real defect shape rather than a
+        # fixture: rewrite the trusted resolver load the way a careless edit
+        # would. Both jobs carry that line, so both must be named.
+        $trusted = 'Join-Path "$(Build.ArtifactStagingDirectory)" ' +
+            "'trusted-github/scripts/shared/Resolve-BuildShell.ps1'"
+        $script:Yaml | Should -BeLike "*$trusted*"
+
+        $mutated = $script:Yaml.Replace(
+            $trusted,
+            '"$(Build.SourcesDirectory)/.github/scripts/shared/Resolve-BuildShell.ps1"')
+        $mutated | Should -Not -Be $script:Yaml
+
+        $findings = @(Get-LateWorktreeScriptRead -Yaml $mutated)
+        @($findings | ForEach-Object { $_.Job }) | Should -Contain 'CopilotReview'
+        @($findings | ForEach-Object { $_.Job }) | Should -Contain 'RunUITests'
+    }
+
+    It 'does not object to a repository root passed as an argument' {
+        # The upstream-duplicate gate runs after the detach and passes
+        # -RepositoryRoot "$(Build.SourcesDirectory)" deliberately: after the
+        # detach that *is* the product tree the run will build. Only script
+        # loads are the defect.
+        $script:Yaml | Should -Match '-RepositoryRoot "\$\(Build\.SourcesDirectory\)"'
+        @(Get-LateWorktreeScriptRead -Yaml $script:Yaml).Count | Should -Be 0
     }
 }
 
