@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Platform
 				return previousOverlap.HasValue != overlap.HasValue;
 
 			var displayScale = (double)(Window?.Screen.Scale ?? UIScreen.MainScreen.Scale);
-			return !SafeAreaPadding.IsZeroAtPixelLevel(overlap.Value - previousOverlap.Value, displayScale);
+			return !SafeAreaPadding.AreEqualAtPixelLevel(previousOverlap.Value, overlap.Value, displayScale);
 		}
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets() => GetAdjustedSafeAreaInsets(out _);

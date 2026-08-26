@@ -644,9 +644,21 @@ namespace Microsoft.Maui.DeviceTests
 						childPlatformView.LayoutSubviews();
 
 						Assert.Equal(0, parentPlatformView.SafeAreaInsetsReadCount);
+
+						var subPixelStep = 0.4 / (double)parentPlatformView.Window!.Screen.Scale;
+						childPlatformView.Transform = CGAffineTransform.MakeTranslation(0, (nfloat)subPixelStep);
+						childPlatformView.LayoutSubviews();
+
+						Assert.Equal(0, parentPlatformView.SafeAreaInsetsReadCount);
+
+						childPlatformView.Transform = CGAffineTransform.MakeTranslation(0, (nfloat)(subPixelStep * 2));
+						childPlatformView.LayoutSubviews();
+
+						Assert.True(parentPlatformView.SafeAreaInsetsReadCount > 0);
 					}
 					finally
 					{
+						childPlatformView.Transform = CGAffineTransform.MakeIdentity();
 						NSNotificationCenter.DefaultCenter.PostNotificationName(
 							UIKeyboard.WillHideNotification,
 							null);

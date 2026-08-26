@@ -37,14 +37,17 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 	public bool EqualsAtPixelLevel(SafeAreaPadding other)
 	{
 		var scale = (double)UIScreen.MainScreen.Scale;
-		return RoundToPixel(Left, scale) == RoundToPixel(other.Left, scale)
-			&& RoundToPixel(Right, scale) == RoundToPixel(other.Right, scale)
-			&& RoundToPixel(Top, scale) == RoundToPixel(other.Top, scale)
-			&& RoundToPixel(Bottom, scale) == RoundToPixel(other.Bottom, scale);
+		return AreEqualAtPixelLevel(Left, other.Left, scale)
+			&& AreEqualAtPixelLevel(Right, other.Right, scale)
+			&& AreEqualAtPixelLevel(Top, other.Top, scale)
+			&& AreEqualAtPixelLevel(Bottom, other.Bottom, scale);
 	}
 
+	public static bool AreEqualAtPixelLevel(double first, double second, double scale)
+		=> RoundToPixel(first, scale) == RoundToPixel(second, scale);
+
 	public static bool IsZeroAtPixelLevel(double value, double scale)
-		=> RoundToPixel(value, scale) == 0;
+		=> AreEqualAtPixelLevel(value, 0, scale);
 
 	static double RoundToPixel(double value, double scale)
 		=> Math.Round(value * scale, MidpointRounding.AwayFromZero);
