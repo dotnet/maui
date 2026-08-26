@@ -5042,22 +5042,21 @@ function Invoke-ReplicationFixArms {
     # dirt that was already there is not something the winning diff did.
     $inheritedDirt = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths |
         Where-Object { $ScopeFiles -cnotcontains $_ })
-    # The winner's diff was captured against the scoped baseline, but the panel
-    # restores between candidates and not after the last one, so the tree still
-    # carries whatever the final candidate wrote. Build 15098930 proved two
-    # independent fixes for #27332 and published neither: candidate 4 was left
-    # in ItemsViewStyles.xaml and candidate 1's diff would no longer apply at
-    # line 82. Across the cached logs this discarded a passing candidate in 26
-    # of the 94 runs that produced one, and no apply failure ever lacked a fix
-    # to lose -- the largest single source of wasted work in the fix phase.
+    # Cheap and idempotent: the panel already restores after every candidate,
+    # so this normally changes nothing. It is kept because it is the only thing
+    # standing between the replay and any writer that runs after the panel, and
+    # a no-op restore costs nothing next to a discarded fix.
     #
-    # Reproduced outside the pipeline before changing anything: with another
-    # candidate's edit still in the file, strict apply fails with exactly the
-    # "patch does not apply" the logs show, and the same diff applies after the
-    # scoped files are restored to HEAD, leaving only the winner's change. A
-    # three-way merge does not rescue this -- git refuses it with "does not
-    # match index" while the tree is dirty, which is precisely when it would be
-    # needed, and it refuses again on a CRLF checkout.
+    # It is NOT, however, the cause of the apply failures. That was claimed
+    # here once and the log refutes it: in build 15100129 the panel's restore
+    # ran after the final candidate, repaired the leak it found, and the replay
+    # still failed. Three explanations have now been tested and killed --
+    # a leaked final candidate, a CRLF worktree, and an agent-rewritten diff
+    # (the winner's patch is captured by git, and every candidate in that run
+    # shared the pre-image blob 131c419b13, which is exactly what HEAD holds).
+    # The failure is Windows-only (5 of 5 there, 0 of 3 on Android) and has not
+    # been reproducible off Windows, so the next occurrence is instrumented
+    # below rather than guessed at again.
     if (-not (Restore-ReplicationFixTree `
                 -TrustedScriptRoot $TrustedScriptRoot `
                 -ScopeFiles $ScopeFiles)) {
@@ -5070,6 +5069,33 @@ function Invoke-ReplicationFixArms {
         # Strict apply is all-or-nothing, so a refusal leaves the baseline the
         # restore above just established. A diff that will not apply to its own
         # baseline is not a tree that moved; it is a diff to abandon.
+        #
+        # Everything below is evidence, not control flow. The cause is not yet
+        # known, it only shows itself on Windows, and it has cost a proven fix
+        # every time it has fired, so the next occurrence is made to say what
+        # the tree and the patch actually were rather than leaving another
+        # round of inference over a one-line error.
+        try {
+            Write-Host 'Apply diagnostics (the winning diff did not apply):'
+            $patchBytes = [System.IO.File]::ReadAllBytes($PatchPath)
+            $lead = ($patchBytes | Select-Object -First 4 |
+                ForEach-Object { $_.ToString('x2') }) -join ' '
+            Write-Host ("  patch: $($patchBytes.Length) bytes, first bytes [$lead], " +
+                "$(([regex]::Matches([System.Text.Encoding]::UTF8.GetString($patchBytes), "`r`n")).Count) CRLF, " +
+                "$(([regex]::Matches([System.Text.Encoding]::UTF8.GetString($patchBytes), "(?<!`r)`n")).Count) bare LF")
+            foreach ($scopeFile in $ScopeFiles) {
+                $onDisk = (& git hash-object -- $scopeFile 2>&1 | Select-Object -First 1)
+                $atHead = (& git rev-parse "HEAD:$scopeFile" 2>&1 | Select-Object -First 1)
+                $verdict = if ($onDisk -ceq $atHead) { 'matches HEAD' } else { 'DIFFERS FROM HEAD' }
+                Write-Host "  $scopeFile : worktree $onDisk vs HEAD $atHead - $verdict"
+            }
+            Write-Host '  git apply --check -v says:'
+            foreach ($line in @(& git apply --check -v -- $PatchPath 2>&1 | Select-Object -First 20)) {
+                Write-Host "    $line"
+            }
+        } catch {
+            Write-Host "  diagnostics unavailable: $($_.Exception.Message)"
+        }
         Write-Host 'No fix arms were run: the winning diff no longer applies to the tree.'
         return $null
     }
