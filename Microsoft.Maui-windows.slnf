@@ -46,6 +46,7 @@
       "src\\Core\\tests\\Benchmarks\\Core.Benchmarks.csproj",
       "src\\Core\\tests\\DeviceTests.Shared\\Core.DeviceTests.Shared.csproj",
       "src\\Core\\tests\\DeviceTests\\Core.DeviceTests.csproj",
+      "src\\Core\\tests\\ExternalBackend\\Core.ExternalBackend.csproj",
       "src\\Core\\tests\\UnitTests\\Core.UnitTests.csproj",
       "src\\Essentials\\samples\\Sample.Server.WebAuthenticator\\Essentials.Sample.Server.WebAuthenticator.csproj",
       "src\\Essentials\\samples\\Samples.Server.Passkeys\\Essentials.Samples.Server.Passkeys.csproj",

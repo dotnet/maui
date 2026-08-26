@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Core.ExternalBackend.TestAssembly</AssemblyName>
+    <RootNamespace>Microsoft.Maui.ExternalBackend</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <!--
+      This assembly deliberately stands in for a third-party platform backend that lives outside of
+      dotnet/maui. It is NOT listed in Core's InternalsVisibleTo, so everything it compiles against is
+      provably part of the public .NET MAUI API surface.
+
+      Warnings are errors here on purpose: an external backend must be able to implement the handler
+      contracts without nullability mismatches such as CS8766.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core.csproj" />
+  </ItemGroup>
+
+</Project>
