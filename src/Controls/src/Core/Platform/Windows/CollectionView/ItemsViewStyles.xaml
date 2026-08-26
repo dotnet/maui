@@ -350,7 +350,7 @@
                                       BorderBrush="{TemplateBinding BorderBrush}"
                                       BorderThickness="{TemplateBinding BorderThickness}"
                                       CornerRadius="{TemplateBinding CornerRadius}"
-                                      TabNavigation="{TemplateBinding TabNavigation}"
+                                      IsTabStop="False"
                                       HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                                       HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                                       VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
@@ -360,6 +360,7 @@
                                       AutomationProperties.AccessibilityView="Raw">
                                 <controls:StackPanel x:Name="PART_ContainerStack">
                                         <ContentControl x:Name="HeaderContentControl"
+                                                        IsTabStop="False"
                                                         HorizontalContentAlignment="Stretch"
                                                         VerticalContentAlignment="Stretch"/>
 
@@ -367,6 +368,7 @@
                                                                 ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
                                                                 HorizontalCacheLength="2"
                                                                 VerticalCacheLength="2"
+                                                                TabFocusNavigation="Once"
                                                                 ItemsSource="{TemplateBinding ItemsSource}"
                                                                 ItemTemplate="{TemplateBinding ItemTemplate}"
                                                                 Layout="{TemplateBinding Layout}"
@@ -381,12 +383,14 @@
                                      Its MinHeight/MinWidth is set in code-behind so it fills the remaining
                                      viewport space (matching CV1's "fill available space" behavior). -->
                                         <ContentControl x:Name="EmptyViewContentControl"
+                                                        IsTabStop="False"
                                                         HorizontalAlignment="Stretch"
                                                         VerticalAlignment="Stretch"
                                                         HorizontalContentAlignment="Stretch"
                                                         VerticalContentAlignment="Stretch"/>
 
                                         <ContentControl x:Name="FooterContentControl"
+                                                        IsTabStop="False"
                                                         HorizontalContentAlignment="Stretch"
                                                         VerticalContentAlignment="Stretch"/>
                                 </controls:StackPanel>

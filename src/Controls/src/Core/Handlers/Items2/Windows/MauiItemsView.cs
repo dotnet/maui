@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
@@ -44,6 +46,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
 
+		// This control is transparent to Tab (not a stop itself) so the single item
+		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
+		// or out of the collection; no extra intermediate stop on the owner itself.
+		IsTabStop = false;
+
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
 		// viewport during scroll. This is unexpected for a data list in MAUI.
@@ -54,6 +61,78 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	}
 
 	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
+
+	// Exposes exactly one candidate (the current, or first, item container) so Tab treats
+	// the whole collection as a single stop. Up/Down arrow navigation between items is
+	// handled natively via directional focus, independent of this Tab-specific order.
+	protected override IEnumerable<DependencyObject> GetChildrenInTabFocusOrder()
+	{
+		if (ItemsRepeaterControl is not ItemsRepeater repeater)
+		{
+			return base.GetChildrenInTabFocusOrder();
+		}
+
+		ItemContainer? firstContainer = null;
+		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (var childIndex = 0; childIndex < childCount; childIndex++)
+		{
+			if (VisualTreeHelper.GetChild(repeater, childIndex) is not ItemContainer container ||
+				!container.IsEnabled || container.Visibility != WVisibility.Visible ||
+				container.Child is not ElementWrapper wrapper || wrapper.IsHeaderOrFooter)
+			{
+				continue;
+			}
+
+			if (repeater.GetElementIndex(container) == CurrentItemIndex)
+			{
+				return new DependencyObject[] { container };
+			}
+
+			firstContainer ??= container;
+		}
+
+		return firstContainer is not null
+			? new DependencyObject[] { firstContainer }
+			: base.GetChildrenInTabFocusOrder();
+	}
+
+	/// <summary>
+	/// Fallback for the rare case this control receives focus directly (e.g. programmatic
+	/// Focus() or pointer interaction on its chrome) rather than via Tab: redirect to the
+	/// current item so arrow keys can navigate/interact immediately. Overridden rather than
+	/// subscribed to the GotFocus event so there is no handler to unsubscribe/leak.
+	/// </summary>
+	protected override void OnGotFocus(RoutedEventArgs e)
+	{
+		base.OnGotFocus(e);
+
+		if (!ReferenceEquals(e.OriginalSource, this) || ItemsRepeaterControl is not ItemsRepeater repeater)
+		{
+			return;
+		}
+
+		ItemContainer? firstContainer = null;
+		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (var childIndex = 0; childIndex < childCount; childIndex++)
+		{
+			if (VisualTreeHelper.GetChild(repeater, childIndex) is not ItemContainer container ||
+				!container.IsEnabled || container.Visibility != WVisibility.Visible ||
+				container.Child is not ElementWrapper wrapper || wrapper.IsHeaderOrFooter)
+			{
+				continue;
+			}
+
+			if (repeater.GetElementIndex(container) == CurrentItemIndex)
+			{
+				container.Focus(FocusState.Keyboard);
+				return;
+			}
+
+			firstContainer ??= container;
+		}
+
+		firstContainer?.Focus(FocusState.Keyboard);
+	}
 
 	/// <summary>
 	/// Overrides WinUI ItemContainer theme resources on this instance so that
