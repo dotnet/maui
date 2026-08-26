@@ -55,6 +55,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
 . (Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1')
+. (Join-Path $PSScriptRoot 'Get-ReplicationUpstreamFix.ps1')
 
 function ConvertTo-ReplicationSingleLine {
     param(
@@ -247,57 +248,6 @@ function Get-ReplicationFixRegressionSignal {
             '**Regression cross-reference.** Not measured for this fix.'
         }
     }
-}
-
-function Get-ReplicationUpstreamTestCasePresence {
-    <#
-        .SYNOPSIS
-            Answers whether a HostApp test case for an issue exists on a ref.
-
-        .DESCRIPTION
-            Three outcomes, deliberately distinct: 'present', 'absent', and
-            'unknown'. A 404 is a real measurement and must not be confused
-            with a call that failed, because `gh api` exits non-zero for both.
-            A zero produced by an exception is not a zero.
-
-            The single-file contents endpoint is used rather than a directory
-            listing, which caps at 1000 entries and gives no truncation signal -
-            post-filtering that listing reported the known positive as absent.
-    #>
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$Ref,
-        [Parameter(Mandatory = $true)][string]$Repo
-    )
-
-    # A ref carrying '/' has to be encoded or the API reads it as more path.
-    $encodedRef = [uri]::EscapeDataString($Ref)
-    $output = ''
-    try {
-        $output = (& gh api "repos/$Repo/contents/$Path`?ref=$encodedRef" --jq '.sha' 2>&1 |
-            Out-String)
-    } catch {
-        return 'unknown'
-    }
-
-    if ($output -match '^[0-9a-f]{40}') { return 'present' }
-    if ($output -match 'HTTP 404' -or $output -match '"status":\s*"404"') {
-        # A missing repository, a missing branch and a missing file are all 404,
-        # so 'absent' has to be earned by proving the ref itself resolves. A
-        # measurement that could not be taken must never render as a clean
-        # "nothing found" - that is how an absent measurement becomes a finding.
-        $refOutput = ''
-        try {
-            $refOutput = (& gh api "repos/$Repo/commits/$encodedRef" --jq '.sha' 2>&1 | Out-String)
-        } catch {
-            return 'unknown'
-        }
-
-        if ($refOutput -match '^[0-9a-f]{40}') { return 'absent' }
-        return 'unknown'
-    }
-
-    return 'unknown'
 }
 
 function Get-ReplicationUpstreamFixSignal {

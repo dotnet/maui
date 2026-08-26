@@ -360,6 +360,81 @@ Describe 'Replication issue outcome publication boundary' {
             Should -BeTrue
     }
 
+    It 'cross-references the upstream branch from the trusted capture, not the worktree' {
+        # The single most expensive defect available to this gate: by the time
+        # it runs, the worktree has been detached to the replication baseline,
+        # which carries the product tree and none of this pipeline's scripts.
+        # Reading the script from $(Build.SourcesDirectory) therefore finds
+        # nothing on every run, warns, and approves - the exact failure mode
+        # the platform gate beside it once shipped.
+        $check = $script:Pipeline.IndexOf(
+            'Check for an existing reproduction pull request')
+        $check | Should -BeGreaterThan 0
+        $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
+        $stepStart | Should -BeGreaterThan 0
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('Get-ReplicationUpstreamDuplicateVerdict') | Should -BeTrue
+        $step.Contains(
+            'trusted-github/scripts/shared/Get-ReplicationUpstreamFix.ps1') |
+            Should -BeTrue
+        # The script may never be loaded from the moved worktree.
+        $step | Should -Not -Match 'Build\.SourcesDirectory.{0,40}Get-ReplicationUpstreamFix'
+
+        # The repository root, by contrast, MUST be the worktree: after the
+        # detach that is the exact product tree this run will build, which is
+        # precisely the tree "do we already have this test case" asks about.
+        $step | Should -Match '-RepositoryRoot "\$\(Build\.SourcesDirectory\)"'
+
+        # Both forms, or the device job sees the refusal and the publish stage
+        # does not - the two read different variables.
+        #
+        # Scoped to THIS sub-gate's duplicate branch rather than to the step:
+        # all four sub-gates in this step emit the same two lines, so a
+        # step-wide Contains() is satisfied by a neighbour and says nothing
+        # about the gate under test. Mutation caught exactly that - removing
+        # this gate's isOutput line left a step-wide assertion green.
+        $duplicateBranch = $step.IndexOf("if (`$upstreamVerdict.Verdict -eq 'duplicate')")
+        $duplicateBranch | Should -BeGreaterThan 0
+        $branchEnd = $step.IndexOf('} elseif', $duplicateBranch)
+        $branchEnd | Should -BeGreaterThan $duplicateBranch
+        $branch = $step.Substring($duplicateBranch, $branchEnd - $duplicateBranch)
+
+        $branch.Contains(
+            '##vso[task.setvariable variable=replicationIssueIneligible]true') |
+            Should -BeTrue
+        $branch.Contains(
+            '##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true') |
+            Should -BeTrue
+        # The refusal has to say why, or a maintainer reads a skipped run with
+        # no account of what refused it.
+        $branch.Contains('ISSUE REPLICATION SKIPPED: $($upstreamVerdict.Reason)') |
+            Should -BeTrue
+    }
+
+    It 'lets an unmeasured upstream cross-reference proceed rather than refuse' {
+        $check = $script:Pipeline.IndexOf(
+            'Check for an existing reproduction pull request')
+        $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        # An absent measurement may not refuse, and may not report the run as
+        # cleared either. Both the missing-script and the unknown-verdict paths
+        # warn, and neither sets the ineligible variable.
+        $step | Should -Match 'Upstream cross-reference is missing'
+        $step | Should -Match 'Upstream cross-reference not measured'
+
+        $unknown = $step.IndexOf("Verdict -eq 'unknown'")
+        $unknown | Should -BeGreaterThan 0
+        $tail = $step.Substring($unknown)
+        $tail.Substring(0, $tail.IndexOf('} else {')) |
+            Should -Not -Match 'setvariable variable=replicationIssueIneligible'
+
+        # The whole gate is wrapped, because a pre-flight check that throws
+        # costs the run it was written to save.
+        $step | Should -Match 'Could not cross-reference the upstream branch'
+    }
+
     It 'accepts a publication that reports an already-covered issue' {
         # The publisher now reports a duplicate instead of throwing, so the
         # caller must not treat the absent pull request URL as a defect.

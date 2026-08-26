@@ -411,7 +411,7 @@ Describe 'Trusted replication pull request publishing' {
         # absent measurement rendered as a clean "nothing found" is the shape
         # this pipeline has paid for five times.
         $probe = Get-ScriptFunctionText `
-            -Path (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') `
+            -Path (Join-Path $PSScriptRoot 'shared/Get-ReplicationUpstreamFix.ps1') `
             -Name 'Get-ReplicationUpstreamTestCasePresence'
         Invoke-Expression $probe
         Get-Command Get-ReplicationUpstreamTestCasePresence -ErrorAction SilentlyContinue |
@@ -452,11 +452,11 @@ Describe 'Trusted replication pull request publishing' {
         # backed the fix out - the inverse of the truth, and a case where our
         # reproduction is worth more rather than less.
         $publisher = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
-        foreach ($name in @(
-                'Get-ReplicationUpstreamTestCasePresence',
-                'Get-ReplicationUpstreamFixSignal')) {
-            Invoke-Expression (Get-ScriptFunctionText -Path $publisher -Name $name)
-        }
+        $upstream = Join-Path $PSScriptRoot 'shared/Get-ReplicationUpstreamFix.ps1'
+        Invoke-Expression (Get-ScriptFunctionText -Path $upstream `
+            -Name 'Get-ReplicationUpstreamTestCasePresence')
+        Invoke-Expression (Get-ScriptFunctionText -Path $publisher `
+            -Name 'Get-ReplicationUpstreamFixSignal')
         Get-Command Get-ReplicationUpstreamFixSignal -ErrorAction SilentlyContinue |
             Should -Not -BeNullOrEmpty
 
@@ -2056,5 +2056,116 @@ Assert.Equal("BOTTOM PROBE", nativeProbe.Text);
                 }, $true)) {
             $node.Extent.Text | Should -Not -Match 'oracleSignal' -Because 'the check reports, it never refuses'
         }
+    }
+}
+
+Describe 'The pre-flight upstream duplicate gate refuses only what it measured' {
+    BeforeAll {
+        # Loaded in BeforeAll, which is the RUN phase. The first draft of this
+        # block called Get-ScriptFunctionText in the Describe body, which runs
+        # at DISCOVERY, where that helper does not exist yet - so the call
+        # threw, Pester dropped the whole Describe, and the suite reported the
+        # unchanged baseline rather than a failure. Every assertion below,
+        # including the one that checks this harness, silently did not run.
+        Invoke-Expression (Get-ScriptFunctionText `
+            -Path (Join-Path $PSScriptRoot 'shared/Get-ReplicationUpstreamFix.ps1') `
+            -Name 'Get-ReplicationUpstreamDuplicateVerdict')
+    }
+
+    It 'loads the function it claims to test' {
+        # A control that behaves identically to the positive indicts the
+        # harness, not the code, so the harness is asserted before it is used.
+        Get-Command Get-ReplicationUpstreamDuplicateVerdict -ErrorAction SilentlyContinue |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses an issue whose test case exists upstream and not in the tree under test' {
+        function script:Get-ReplicationUpstreamTestCasePresence { 'present' }
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("upgate-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Force -Path $root | Out-Null
+        try {
+            $verdict = Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot $root
+            $verdict.Verdict | Should -Be 'duplicate'
+            $verdict.Path | Should -Be 'src/Controls/tests/TestCases.HostApp/Issues/Issue36933.cs'
+            # The signal is the file's existence on a branch. Naming a commit
+            # is a second claim with its own, lower precision, so the refusal
+            # must not make it.
+            $verdict.Reason | Should -Match 'inflight/current'
+            $verdict.Reason | Should -Match 'Issue36933\.cs'
+            $verdict.Reason | Should -Not -Match '[0-9a-f]{7,}'
+        } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+    }
+
+    It 'stays silent when the tree under test already carries the test case' {
+        # Present locally means it is already in the tree this run will build,
+        # so upstream having it is not news and refusing would be wrong.
+        function script:Get-ReplicationUpstreamTestCasePresence { 'present' }
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("upgate-" + [guid]::NewGuid())
+        $issues = Join-Path $root 'src/Controls/tests/TestCases.HostApp/Issues'
+        New-Item -ItemType Directory -Force -Path $issues | Out-Null
+        Set-Content -LiteralPath (Join-Path $issues 'Issue36933.cs') -Value 'x'
+        Set-Content -LiteralPath (Join-Path $issues 'Issue36933.xaml') -Value 'x'
+        try {
+            (Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot $root).Verdict |
+                Should -Be 'clear'
+        } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+    }
+
+    It 'refuses on the xaml candidate as readily as on the cs one' {
+        # Each alternative is exercised separately: a correct answer from one
+        # hides a dead one beside it.
+        function script:Get-ReplicationUpstreamTestCasePresence {
+            param($Path, $Ref, $Repo)
+            if ($Path -like '*.xaml') { return 'present' }
+            return 'absent'
+        }
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("upgate-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Force -Path $root | Out-Null
+        try {
+            $verdict = Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot $root
+            $verdict.Verdict | Should -Be 'duplicate'
+            $verdict.Path | Should -Match '\.xaml$'
+        } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+    }
+
+    It 'never refuses on a measurement it could not take' {
+        # An absent measurement rendered as a finding is the most expensive
+        # shape this pipeline has recorded. Every unreadable case proceeds.
+        function script:Get-ReplicationUpstreamTestCasePresence { 'unknown' }
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("upgate-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Force -Path $root | Out-Null
+        try {
+            (Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot $root).Verdict |
+                Should -Be 'unknown'
+            # A root nothing ever wrote is how the platform gate beside this
+            # one silently approved every run it was added to stop.
+            (Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot '').Verdict |
+                Should -Be 'unknown'
+            (Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' `
+                -RepositoryRoot (Join-Path $root 'nope')).Verdict | Should -Be 'unknown'
+            (Get-ReplicationUpstreamDuplicateVerdict -IssueNumber 'not-a-number' -RepositoryRoot $root).Verdict |
+                Should -Be 'unknown'
+        } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+    }
+
+    It 'clears an issue upstream has no test case for' {
+        function script:Get-ReplicationUpstreamTestCasePresence { 'absent' }
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("upgate-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Force -Path $root | Out-Null
+        try {
+            (Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '99999' -RepositoryRoot $root).Verdict |
+                Should -Be 'clear'
+        } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+    }
+
+    It 'never throws, whatever the presence probe does' {
+        # A pre-flight gate that throws costs the run it was written to save.
+        function script:Get-ReplicationUpstreamTestCasePresence { throw 'gh exploded' }
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("upgate-" + [guid]::NewGuid())
+        New-Item -ItemType Directory -Force -Path $root | Out-Null
+        try {
+            { Get-ReplicationUpstreamDuplicateVerdict -IssueNumber '36933' -RepositoryRoot $root } |
+                Should -Not -Throw
+        } finally { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
     }
 }

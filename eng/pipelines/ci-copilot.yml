@@ -755,6 +755,55 @@ stages:
               } catch {
                 Write-Host "##vso[task.logissue type=warning]Could not read the declared platforms: $($_.Exception.Message)"
               }
+
+              # dotnet/maui merges bug fixes to `inflight/current` and leaves
+              # the issue open until release, so issue state carries no
+              # information here: PR 451 and PR 449 both reproduced, certified
+              # and published a fix for an issue the project had already fixed
+              # nineteen days earlier, and a human reviewer had to find it both
+              # times. Measured over the complete keying population, 37 of 37
+              # issues whose HostApp test case exists upstream and not on the
+              # tree under test are genuinely fixed there.
+              #
+              # This refuses where the publisher's identical cross-reference
+              # only discloses, and the difference is what a refusal costs. Here
+              # nothing has been spent yet; downstream a refusal would destroy a
+              # device run, a reproduction and a video that are already paid for.
+              # The worktree has already been detached to the replication
+              # baseline by this point, and that commit carries the product tree
+              # rather than this pipeline's scripts. Reading the cross-reference
+              # from `$(Build.SourcesDirectory)` therefore finds nothing, warns,
+              # and approves every run it was added to stop - which is exactly
+              # how the platform gate above once failed. The trusted capture is
+              # taken before the checkout, so it is the only copy that survives.
+              try {
+                $upstreamScript = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Get-ReplicationUpstreamFix.ps1'
+                if (-not (Test-Path -LiteralPath $upstreamScript -PathType Leaf)) {
+                  Write-Host "##vso[task.logissue type=warning]The upstream cross-reference is missing at '$upstreamScript', so this run was approved without checking."
+                } else {
+                  . $upstreamScript
+                  # The worktree is the replication baseline, which is the exact
+                  # product tree this run will build, so it answers "do we
+                  # already have this test case" precisely and for free.
+                  $upstreamVerdict = Get-ReplicationUpstreamDuplicateVerdict `
+                    -IssueNumber '${{ parameters.IssueNumber }}' `
+                    -RepositoryRoot "$(Build.SourcesDirectory)"
+                  if ($upstreamVerdict.Verdict -eq 'duplicate') {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: $($upstreamVerdict.Reason)"
+                  } elseif ($upstreamVerdict.Verdict -eq 'unknown') {
+                    # An absent measurement must never render as a finding, in
+                    # either direction: it may not refuse the run, and it may not
+                    # report the run as cleared either.
+                    Write-Host "##vso[task.logissue type=warning]Upstream cross-reference not measured: $($upstreamVerdict.Reason)"
+                  } else {
+                    Write-Host "Upstream cross-reference: $($upstreamVerdict.Reason)"
+                  }
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not cross-reference the upstream branch: $($_.Exception.Message)"
+              }
             name: ReplicationDuplicateCheck
             displayName: 'Check for an existing reproduction pull request'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
@@ -2824,6 +2873,7 @@ stages:
                 'shared/Get-ReplicationCertification.ps1',
                 'shared/Get-ReplicationSignatureMatch.ps1',
                 'shared/Get-ReplicationGitHubLogin.ps1',
+                'shared/Get-ReplicationUpstreamFix.ps1',
                 'shared/Validate-ReplicationCandidate.ps1',
                 'shared/Publish-ReplicationOutcome.ps1',
                 'shared/Publish-ReplicationEvidence.ps1',
