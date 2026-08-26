@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if HANDLER_INSTRUMENTATION
+using Microsoft.Maui.Diagnostics;
+#endif
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -60,7 +63,21 @@ namespace Microsoft.Maui
 			{
 				if (action is not null)
 				{
+#if HANDLER_INSTRUMENTATION
+					if (!HandlerInstrumentation.HasListeners)
+					{
+						action(viewHandler, virtualView);
+						return true;
+					}
+
+					using (HandlerInstrumentation.Start("MapProperty", viewHandler, virtualView, key))
+					{
+						action(viewHandler, virtualView);
+					}
+#else
 					action(viewHandler, virtualView);
+#endif
+
 					return true;
 				}
 
@@ -74,7 +91,21 @@ namespace Microsoft.Maui
 
 			if (mapper is not null)
 			{
+#if HANDLER_INSTRUMENTATION
+				if (!HandlerInstrumentation.HasListeners)
+				{
+					mapper(viewHandler, virtualView);
+					return true;
+				}
+
+				using (HandlerInstrumentation.Start("MapProperty", viewHandler, virtualView, key))
+				{
+					mapper(viewHandler, virtualView);
+				}
+#else
 				mapper(viewHandler, virtualView);
+#endif
+
 				return true;
 			}
 
@@ -121,10 +152,32 @@ namespace Microsoft.Maui
 				return;
 			}
 
+#if HANDLER_INSTRUMENTATION
+			if (!HandlerInstrumentation.HasListeners)
+			{
+				foreach (var mapper in UpdatePropertiesMappers)
+				{
+					mapper(viewHandler, virtualView);
+				}
+
+				return;
+			}
+
+			var keys = UpdatePropertiesKeys;
+			var mappers = UpdatePropertiesMappers;
+			for (int i = 0; i < mappers.Count; i++)
+			{
+				using (HandlerInstrumentation.Start("MapProperty", viewHandler, virtualView, keys[i]))
+				{
+					mappers[i](viewHandler, virtualView);
+				}
+			}
+#else
 			foreach (var mapper in UpdatePropertiesMappers)
 			{
 				mapper(viewHandler, virtualView);
 			}
+#endif
 		}
 
 		public IPropertyMapper[]? Chained

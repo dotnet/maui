@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView x:Class="Maui.Controls.Sample.HeavyFeedCardView"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:FeedItem">
+
+    <!--
+        Nested tile that mirrors the customer sample (Views/FeedCardView.xaml).
+        Structure depth from the cell root: ContentView > Border > Grid(8 rows) > Grid/ScrollView >
+        VerticalStackLayout/Border/HorizontalStackLayout > Label.
+        Everything is auto-sized: no row has a fixed height except the preview strip.
+    -->
+    <Border Margin="4,6"
+            Padding="12"
+            BackgroundColor="#1C263A"
+            Stroke="#304160"
+            StrokeShape="RoundRectangle 14"
+            StrokeThickness="1">
+
+        <Grid RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--  Row 0: seller + status badge  -->
+            <Grid Grid.Row="0" ColumnSpacing="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <VerticalStackLayout Grid.Column="0" Spacing="1">
+                    <Label FontAttributes="Bold"
+                           FontAutoScalingEnabled="False"
+                           FontSize="15"
+                           Text="{Binding Seller}"
+                           TextColor="White" />
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="12"
+                           Text="{Binding Location}"
+                           TextColor="#BFD0EA" />
+                </VerticalStackLayout>
+
+                <Border Grid.Column="1"
+                        Padding="10,4"
+                        BackgroundColor="{Binding StatusColor}"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0"
+                        VerticalOptions="Center">
+                    <Label FontAttributes="Bold"
+                           FontAutoScalingEnabled="False"
+                           FontSize="11"
+                           HorizontalTextAlignment="Center"
+                           Text="{Binding Status}"
+                           TextColor="White"
+                           VerticalTextAlignment="Center" />
+                </Border>
+            </Grid>
+
+            <!--  Row 1: title  -->
+            <Label Grid.Row="1"
+                   FontAttributes="Bold"
+                   FontAutoScalingEnabled="False"
+                   FontSize="{Binding TitleFontSize}"
+                   LineBreakMode="WordWrap"
+                   MaxLines="{Binding TitleMaxLines}"
+                   Text="{Binding Title}"
+                   TextColor="White" />
+
+            <!--  Row 2: description  -->
+            <Label Grid.Row="2"
+                   FontAutoScalingEnabled="False"
+                   FontSize="{Binding DescriptionFontSize}"
+                   LineBreakMode="WordWrap"
+                   MaxLines="{Binding DescriptionMaxLines}"
+                   Text="{Binding Description}"
+                   TextColor="#D7E0EF" />
+
+            <!--  Row 3: optional escalation details  -->
+            <Label Grid.Row="3"
+                   FontAutoScalingEnabled="False"
+                   FontSize="12"
+                   IsVisible="{Binding ShowExtraDetails}"
+                   LineBreakMode="WordWrap"
+                   MaxLines="12"
+                   Text="{Binding ExtraDetails}"
+                   TextColor="#BFD0EA" />
+
+            <!--  Row 4: 2x2 preview grid  -->
+            <Grid Grid.Row="4"
+                  ColumnSpacing="6"
+                  HeightRequest="{Binding PreviewHeight}"
+                  RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Row="0"
+                        Grid.Column="0"
+                        BackgroundColor="#5F6C88"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           HorizontalOptions="Center"
+                           Text="Preview"
+                           TextColor="#E6EEF9"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Border Grid.Row="0"
+                        Grid.Column="1"
+                        BackgroundColor="#6A5080"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           HorizontalOptions="Center"
+                           Text="Preview"
+                           TextColor="#E6EEF9"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Border Grid.Row="1"
+                        Grid.Column="0"
+                        BackgroundColor="#3A6060"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           HorizontalOptions="Center"
+                           Text="Preview"
+                           TextColor="#E6EEF9"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Border Grid.Row="1"
+                        Grid.Column="1"
+                        BackgroundColor="#7A5030"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           HorizontalOptions="Center"
+                           Text="Preview"
+                           TextColor="#E6EEF9"
+                           VerticalOptions="Center" />
+                </Border>
+            </Grid>
+
+            <!--  Row 5: tags  -->
+            <Label Grid.Row="5"
+                   FontAutoScalingEnabled="False"
+                   FontSize="11"
+                   LineBreakMode="WordWrap"
+                   Text="{Binding TagsDisplay}"
+                   TextColor="#CFE0FA" />
+
+            <!--  Row 6: optional nested horizontal ScrollView with a BindableLayout  -->
+            <ScrollView Grid.Row="6"
+                        HeightRequest="{Binding CarouselHeight}"
+                        IsVisible="{Binding ShowInlineCarousel}"
+                        Orientation="Horizontal">
+                <HorizontalStackLayout BindableLayout.ItemsSource="{Binding CarouselItems}" Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="{x:Type x:String}">
+                            <Border Padding="10"
+                                    BackgroundColor="#253148"
+                                    Stroke="#3E5478"
+                                    StrokeShape="RoundRectangle 10"
+                                    StrokeThickness="1"
+                                    WidthRequest="150">
+                                <Label FontAutoScalingEnabled="False"
+                                       FontSize="11"
+                                       LineBreakMode="WordWrap"
+                                       MaxLines="3"
+                                       Text="{Binding .}"
+                                       TextColor="#DCE6F7" />
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <!--  Row 7: metrics footer  -->
+            <Grid Grid.Row="7" ColumnSpacing="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           Text="Progress"
+                           TextColor="#99B5DE" />
+                    <Label FontAttributes="Bold"
+                           FontAutoScalingEnabled="False"
+                           FontSize="13"
+                           Text="{Binding Progress, StringFormat='{0}%'}"
+                           TextColor="White" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           Text="Price"
+                           TextColor="#99B5DE" />
+                    <Label FontAttributes="Bold"
+                           FontAutoScalingEnabled="False"
+                           FontSize="13"
+                           Text="{Binding Price, StringFormat='{0} PLN'}"
+                           TextColor="White" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           Text="Updated"
+                           TextColor="#99B5DE" />
+                    <Label FontAttributes="Bold"
+                           FontAutoScalingEnabled="False"
+                           FontSize="13"
+                           Text="{Binding Updated}"
+                           TextColor="White" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3"
+                                     IsVisible="{Binding ShowMetric4}"
+                                     Spacing="2">
+                    <Label FontAutoScalingEnabled="False"
+                           FontSize="10"
+                           Text="{Binding Metric4Label}"
+                           TextColor="#99B5DE" />
+                    <Label FontAttributes="Bold"
+                           FontAutoScalingEnabled="False"
+                           FontSize="13"
+                           Text="{Binding Metric4Value}"
+                           TextColor="White" />
+                </VerticalStackLayout>
+            </Grid>
+        </Grid>
+    </Border>
+</ContentView>

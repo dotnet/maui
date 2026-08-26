@@ -1,3 +1,55 @@
-﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Maui.Controls.Sample.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             BackgroundColor="#0B1220"
+             Title="Layout perf repro">
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="10">
+                <Label AutomationId="InstructionLabel"
+                       FontAttributes="Bold"
+                       FontSize="16"
+                       Text="MAUI layout / CollectionView performance repro"
+                       TextColor="White" />
+
+                <Label FontSize="12"
+                       LineBreakMode="WordWrap"
+                       Text="Reproduces the heavy-popup + CollectionView scenario from lukaszgrudzinski/MauiPerformanceHacks. 'Run all' walks the whole scenario matrix and prints SANDBOX-PERF lines to the device log."
+                       TextColor="#BFD0EA" />
+
+                <Button AutomationId="RunAllButton"
+                        Clicked="OnRunAllClicked"
+                        Text="Run all scenarios" />
+
+                <Button AutomationId="RunSingleButton"
+                        Clicked="OnRunSingleClicked"
+                        Text="Show heavy popup once (manual)" />
+
+                <Label x:Name="StatusLabel"
+                       AutomationId="StatusLabel"
+                       FontAttributes="Bold"
+                       FontSize="14"
+                       Text="Idle"
+                       TextColor="Lime" />
+
+                <Label x:Name="ResultsLabel"
+                       AutomationId="ResultsLabel"
+                       FontFamily="Monospace"
+                       FontSize="11"
+                       LineBreakMode="WordWrap"
+                       Text="(no results yet)"
+                       TextColor="#E6EEF9" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!--  Host used by the in-page overlay scenario (closest analogue of a popup library that
+              injects its content into the current page instead of presenting a new one).  -->
+        <Grid x:Name="OverlayHost"
+              AutomationId="OverlayHost"
+              BackgroundColor="#101828"
+              IsVisible="False" />
+    </Grid>
 </ContentPage>
