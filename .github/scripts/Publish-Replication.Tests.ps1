@@ -50,6 +50,8 @@ BeforeAll {
         'New-ReplicationPullRequestTitle',
         'New-ReplicationPullRequestBody',
         'Get-ReplicationFixRegressionSignal',
+        'Get-ReplicationExpressionSkeleton',
+        'Get-ReplicationOracleIndependenceSignal',
         'Test-ReplicationWeakerThanOpenPullRequest',
         'Resolve-ReplicationSourceRepository'
     )) {
@@ -1581,5 +1583,140 @@ Set-Content -LiteralPath (Join-Path $OutputDir 'result.txt') -Value 'REVERT'
 
     It 'still says nothing at all when there is no fix to annotate' {
         Get-ReplicationFixRegressionSignal -FixPatchPath '' | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'A test that restates its own fix is reported, never refused' {
+    BeforeAll {
+        # Verbatim from PR 469 (issue 36801) -- the case a human reviewer found
+        # and nothing in the pipeline could. The fix and the test compute the
+        # same ceiling, so the oracle cannot fail while the fix is present.
+        $script:fix469 = @'
+var adjustedInset = uiScrollView.AdjustedContentInset;
+var availableScrollHeight = Math.Max(uiScrollView.ContentSize.Height + adjustedInset.Bottom - uiScrollView.Bounds.Height, 0);
+'@
+        $script:test469 = @'
+var expectedMaximum = nativeScrollView.ContentSize.Height +
+    nativeScrollView.AdjustedContentInset.Bottom -
+    nativeScrollView.Bounds.Height;
+Assert.True(Math.Abs(observed - expectedMaximum) < 1.0, "offset");
+'@
+    }
+
+    It 'names the restated formula on the pull request that motivated it' {
+        $signal = Get-ReplicationOracleIndependenceSignal -TestSource $script:test469 -FixSource $script:fix469
+        $signal | Should -Not -BeNullOrEmpty
+        $signal | Should -Match 'Oracle independence'
+        $signal | Should -Match 'ContentSize Height \+ AdjustedContentInset Bottom - Bounds Height'
+    }
+
+    It 'is not fooled by renaming the local that holds the inset' {
+        # The formula is the same; only the variable spelling differs. Dropping
+        # the inlining pass would let a rename hide a restated implementation.
+        $renamed = @'
+var inset = nativeScrollView.AdjustedContentInset;
+var expectedMaximum = nativeScrollView.ContentSize.Height + inset.Bottom - nativeScrollView.Bounds.Height;
+'@
+        Get-ReplicationOracleIndependenceSignal -TestSource $renamed -FixSource $script:fix469 |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'stays silent when the test measures something the fix does not compute' {
+        # Measured over all 57 open fix pull requests: this fires on 469 and on
+        # nothing else, so a legitimate oracle must not trip it.
+        $independent = @'
+var visibleGap = nativeProbe.Frame.Top - nativeScrollView.Frame.Height;
+Assert.Equal("BOTTOM PROBE", nativeProbe.Text);
+'@
+        Get-ReplicationOracleIndependenceSignal -TestSource $independent -FixSource $script:fix469 |
+            Should -BeNullOrEmpty
+    }
+
+    It 'stays silent for arithmetic that names almost nothing' {
+        # Reachable but absent from the 57-PR corpus: four operator tokens and
+        # one member. Matching bare arithmetic with no member identity would
+        # call any two expressions of the same shape a restatement. Measured
+        # rather than assumed -- removing the floor changes nothing on real
+        # data, so this fixture is what keeps it from being protection that is
+        # not there.
+        $bare = 'var expected = a + b - c - view.Height;'
+        $fix = 'var limit = p + q - r - other.Height;'
+        Get-ReplicationOracleIndependenceSignal -TestSource $bare -FixSource $fix |
+            Should -BeNullOrEmpty
+    }
+
+    It 'still fires when each side is a single statement' {
+        # A one-statement source used to unroll to its bare tokens, so every
+        # skeleton read as length 1, nothing cleared the four-token gate, and
+        # the detector reported nothing. Silence for a reason unrelated to the
+        # source is the failure mode this whole plan exists to catch.
+        $fix = 'var availableScrollHeight = uiScrollView.ContentSize.Height + uiScrollView.AdjustedContentInset.Bottom - uiScrollView.Bounds.Height;'
+        $test = 'var expectedMaximum = nativeScrollView.ContentSize.Height + nativeScrollView.AdjustedContentInset.Bottom - nativeScrollView.Bounds.Height;'
+        Get-ReplicationOracleIndependenceSignal -TestSource $test -FixSource $fix |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'stays silent for a shared property path that computes nothing' {
+        # Reaching for the same API is not restating a formula. Without the
+        # operator requirement any test naming the chain the fix touches would
+        # be reported, which is the false-accept that makes a signal ignorable.
+        $test = 'var actual = view.Handler.PlatformView.Frame.Width;'
+        $fix = 'probe.Handler.PlatformView.Frame.Width = layout.Frame.Width;'
+        Get-ReplicationOracleIndependenceSignal -TestSource $test -FixSource $fix |
+            Should -BeNullOrEmpty
+    }
+
+    It 'stays silent for a reproduction that carries no fix at all' {
+        Get-ReplicationOracleIndependenceSignal -TestSource $script:test469 -FixSource '' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'renders the signal in the fix section of the body' {
+        # Reuses the file's own fix fixture rather than a second hand-built one:
+        # a fixture that hand-copies a producer is a second copy of one side of
+        # the contract, not a test of it.
+        $candidate = script:New-FixCandidate -Extra @{
+            fixFiles = @('src/Core/src/Platform/iOS/ScrollViewExtensions.cs')
+            fixPatch = 'fix.patch'
+        }
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence $script:fixEvidence `
+            -IssueTitle 'A scrolling defect' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl '' `
+            -RegressionSignal '' `
+            -OracleSignal '**WARN.** restated formula here'
+        $body | Should -Match 'restated formula here'
+    }
+
+    It 'reports without ever withholding the pull request' {
+        # The function cannot defend where it is called from, so this asserts
+        # the property at the call site: the signal is rendered, and nothing
+        # branches on it to throw or exit. Every gate in this plan that could
+        # destroy validated work eventually did.
+        $publisherPath = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($publisherPath, [ref]$null, [ref]$null)
+        $assignment = $ast.Find({
+                $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $args[0].Left.Extent.Text -eq '$oracleSignal' -and
+                $args[0].Right.Extent.Text -match 'Get-ReplicationOracleIndependenceSignal'
+            }, $true)
+        $assignment | Should -Not -BeNullOrEmpty -Because 'the publisher must compute the signal'
+
+        $passed = $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                $args[0].GetCommandName() -eq 'New-ReplicationPullRequestBody'
+            }, $true) | Where-Object { $_.Extent.Text -match '-OracleSignal\s+\$oracleSignal' }
+        @($passed).Count | Should -BeGreaterThan 0 -Because 'a signal that is computed and dropped is indistinguishable from one that works'
+
+        foreach ($node in $ast.FindAll({
+                    $args[0] -is [System.Management.Automation.Language.ThrowStatementAst] -or
+                    ($args[0] -is [System.Management.Automation.Language.CommandAst] -and
+                        $args[0].GetCommandName() -eq 'exit')
+                }, $true)) {
+            $node.Extent.Text | Should -Not -Match 'oracleSignal' -Because 'the check reports, it never refuses'
+        }
     }
 }

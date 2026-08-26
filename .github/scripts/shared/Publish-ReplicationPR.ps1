@@ -249,6 +249,117 @@ function Get-ReplicationFixRegressionSignal {
     }
 }
 
+function Get-ReplicationExpressionSkeleton {
+    <#
+        .SYNOPSIS
+        Reduces C# source to the ordered member-access and +/- operator tokens
+        of each statement, with single-assignment locals inlined.
+
+        .DESCRIPTION
+        Receivers and local names are dropped deliberately, so renaming a
+        variable cannot hide the fact that two expressions compute the same
+        thing. `var i = v.AdjustedContentInset; ... i.Bottom` and
+        `v.AdjustedContentInset.Bottom` therefore reduce to the same tokens.
+    #>
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Source)
+
+    if ([string]::IsNullOrWhiteSpace($Source)) { return @() }
+
+    $text = $Source -replace '\s+', ' '
+    foreach ($local in [regex]::Matches($text, '\bvar\s+(\w+)\s*=\s*([A-Za-z_]\w*(?:\.[A-Z]\w*)+)\s*;')) {
+        $name = $local.Groups[1].Value
+        $expr = $local.Groups[2].Value
+        $text = $text -replace ('\b' + [regex]::Escape($name) + '\.'), ($expr + '.')
+    }
+
+    $skeletons = @()
+    foreach ($statement in ($text -split ';')) {
+        $tokens = @()
+        foreach ($token in [regex]::Matches($statement, '\.([A-Z]\w*)|([+\-])')) {
+            if ($token.Groups[1].Success) { $tokens += $token.Groups[1].Value }
+            else { $tokens += ('OP' + $token.Groups[2].Value) }
+        }
+        if ($tokens.Count -gt 0) { $skeletons += , $tokens }
+    }
+    # Returned with a leading comma, and consumed with foreach rather than a
+    # pipeline: a one-statement source otherwise unrolls to its bare tokens,
+    # every "skeleton" reads as length 1, and the detector goes silent for a
+    # reason that has nothing to do with the source.
+    return , $skeletons
+}
+
+function Get-ReplicationOracleIndependenceSignal {
+    <#
+        .SYNOPSIS
+        Reports a test whose expected value is computed with the same
+        arithmetic the product fix introduces.
+
+        .DESCRIPTION
+        PR 469 asserted `ContentSize.Height + AdjustedContentInset.Bottom -
+        Bounds.Height` while the fix it validates computes exactly that. An
+        oracle that restates its implementation cannot fail while the
+        implementation is present, and cannot tell a correct formula from the
+        one this fix happens to use -- so all four control arms pass and prove
+        nothing about correctness. A reviewer found it; nothing in the pipeline
+        could.
+
+        Measured before shipping, over all 57 open fix pull requests: it fires
+        on PR 469 and on nothing else, so the false-positive rate on real
+        published work is 0 of 56. Prevalence that low is why this reports
+        rather than refuses -- a legitimate test may need the same API to state
+        a specification, and per section 120 a guard that refuses correct tests
+        is worse than the defect it prevents.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestSource,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$FixSource
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TestSource)) { return '' }
+    if ([string]::IsNullOrWhiteSpace($FixSource)) { return '' }
+
+    $fixSkeletons = @()
+    foreach ($skeleton in (Get-ReplicationExpressionSkeleton -Source $FixSource)) {
+        if ($skeleton.Count -ge 4) { $fixSkeletons += , $skeleton }
+    }
+    if ($fixSkeletons.Count -eq 0) { return '' }
+
+    foreach ($candidate in (Get-ReplicationExpressionSkeleton -Source $TestSource)) {
+        # Real arithmetic only: at least two members and one operator, or a
+        # bare property comparison would match everything.
+        if ($candidate.Count -lt 4) { continue }
+        $members = @($candidate | Where-Object { -not $_.StartsWith('OP') })
+        if ($members.Count -lt 2) { continue }
+        if (-not ($candidate | Where-Object { $_.StartsWith('OP') })) { continue }
+
+        foreach ($fixSkeleton in $fixSkeletons) {
+            $limit = $fixSkeleton.Count - $candidate.Count
+            for ($start = 0; $start -le $limit; $start++) {
+                $matched = $true
+                for ($offset = 0; $offset -lt $candidate.Count; $offset++) {
+                    if ($fixSkeleton[$start + $offset] -ne $candidate[$offset]) {
+                        $matched = $false
+                        break
+                    }
+                }
+                if ($matched) {
+                    $formula = ($candidate | ForEach-Object {
+                            if ($_.StartsWith('OP')) { $_.Substring(2) } else { $_ }
+                        }) -join ' '
+                    return ('**⚠️ Oracle independence.** The test computes its expected value with the ' +
+                        'same arithmetic this fix introduces (`' +
+                        (ConvertTo-ReplicationSingleLine -Value $formula -MaximumLength 200) +
+                        '`), so it restates the implementation rather than the behaviour a user ' +
+                        'observes. It cannot distinguish a correct formula from this one, and the ' +
+                        'control arms cannot see the difference. Please check the assertion against ' +
+                        'an independently observable symptom.')
+                }
+            }
+        }
+    }
+    return ''
+}
+
 function New-ReplicationPullRequestBody {
     param(
         [Parameter(Mandatory = $true)]$Candidate,
@@ -257,7 +368,8 @@ function New-ReplicationPullRequestBody {
         [Parameter(Mandatory = $true)][string]$IssueOwner,
         [Parameter(Mandatory = $true)][string]$IssueRepository,
         [AllowEmptyString()][string]$BuildUrl,
-        [AllowEmptyString()][string]$RegressionSignal
+        [AllowEmptyString()][string]$RegressionSignal,
+        [AllowEmptyString()][string]$OracleSignal
     )
 
     $issueNumber = [int]$Candidate.issueNumber
@@ -478,6 +590,10 @@ function New-ReplicationPullRequestBody {
         }
         if ($RegressionSignal) {
             $fixLines += $RegressionSignal
+            $fixLines += ''
+        }
+        if ($OracleSignal) {
+            $fixLines += $OracleSignal
             $fixLines += ''
         }
         $fixLines += '**Files changed by the fix commit:**'
@@ -827,9 +943,21 @@ $prTitle = New-ReplicationPullRequestTitle `
 # the line: the check reports, it never withholds a fix.
 $regressionSignal = Get-ReplicationFixRegressionSignal -FixPatchPath $FixPatchPath
 if ($regressionSignal) { Write-Host "Regression cross-reference: $regressionSignal" }
+# Both patches are already on disk and validated by this point, so the oracle
+# comparison needs no child process and no network. Read defensively: a missing
+# patch means there is nothing to compare, never a refusal.
+$oracleSignal = ''
+if ($FixPatchPath -and (Test-Path -LiteralPath $FixPatchPath) -and
+    $PatchPath -and (Test-Path -LiteralPath $PatchPath)) {
+    $oracleSignal = Get-ReplicationOracleIndependenceSignal `
+        -TestSource (Get-Content -LiteralPath $PatchPath -Raw) `
+        -FixSource (Get-Content -LiteralPath $FixPatchPath -Raw)
+}
+if ($oracleSignal) { Write-Host "Oracle independence: $oracleSignal" }
 
 $prBody = New-ReplicationPullRequestBody `
     -RegressionSignal $regressionSignal `
+    -OracleSignal $oracleSignal `
     -Candidate $candidate `
     -Evidence $evidence `
     -IssueTitle $issueTitle `
