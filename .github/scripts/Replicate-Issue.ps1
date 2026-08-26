@@ -3144,11 +3144,32 @@ function Get-ReplicationTestAttemptKind {
     # Checked last, so it can only ever name an attempt that would otherwise be
     # unnamed. "Unable to expose generated test" is deliberately absent: that
     # is the harness failing, not a rule refusing.
+    # The collected guards report through $guardFailures rather than by
+    # throwing, and only the two-or-more wrapper - "The generated test breaks N
+    # rules" - carried an opening this branch recognised. A single collected
+    # guard is thrown bare, and those openings qualify the noun: "Generated
+    # device test", "The generated device test cannot be selected", "Generated
+    # files do not contain". Measured over 726 complete logs: 21 of the 45
+    # verification attempts filed 'other' were exactly that shape, and the
+    # wrapper this branch did name has never once fired. So the classifier was
+    # naming the path that never happens and missing the one that always does.
+    #
+    # Widening here is safe by position rather than by argument: this is the
+    # last test before the fallback, so it can only ever rename 'other'.
+    #
+    # There is deliberately no 'The generated <qualifier> test' alternative.
+    # -match is unanchored and case-insensitive, so the clause below already
+    # matches the substring 'generated device test ' inside "The generated
+    # device test cannot be selected". A mutant that removed the longer form
+    # changed nothing, which is how it was found to be dead rather than
+    # load-bearing - protection that is not there reads as protection that is.
     if ($FailureSummary -match (
             "Candidate (?:test )?source '|" +
             "Generated test (?:source )?'|" +
             'Generated test (?:path|is not)|' +
-            'The generated test (?:breaks|does not exercise)')) {
+            'The generated test (?:breaks|does not exercise)|' +
+            'Generated [a-z][a-z-]* test |' +
+            'Generated files ')) {
         return 'guard-refused'
     }
     return 'other'

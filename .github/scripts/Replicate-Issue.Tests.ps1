@@ -6970,26 +6970,59 @@ Describe 'Get-ReplicationTestAttemptKind' {
         # than the guard script, and opens "Generated test '<path>' ..." instead
         # of "Candidate source", so reading only one producer missed a whole
         # family. Both are read now.
+        #
+        # This enumeration was itself the next blind spot. It walked only throw
+        # statements and filtered them to '^(?:Generated test|The generated
+        # test)', so two shapes were unrepresentable in the assertion: an
+        # opening that qualifies the noun ("Generated device test"), and a guard
+        # that reports by adding to $guardFailures instead of throwing. Build
+        # 15104059 was refused by exactly such a guard - the collected list
+        # throws its single entry bare - and was charged to 'other'. The
+        # collected sites are read with no prose filter at all, because every
+        # entry in that list is a guard failure by construction, which is a
+        # property of the code rather than of the wording someone chose.
         $tokens = $null
         $errors = $null
         $ast = [System.Management.Automation.Language.Parser]::ParseFile(
             (Join-Path $PSScriptRoot 'Replicate-Issue.ps1'), [ref]$tokens, [ref]$errors)
         $errors.Count | Should -Be 0
 
-        $openings = @($ast.FindAll({
+        $staticPrefix = {
+            param($Node)
+            $text = ([string]$Node.Extent.Text).TrimStart('(', '"', "'")
+            # The static prefix, up to the first interpolation.
+            ($text -split '\$')[0]
+        }
+
+        $thrown = @($ast.FindAll({
             param($node) $node -is [System.Management.Automation.Language.ThrowStatementAst]
         }, $true) | ForEach-Object {
             # A bare `throw` rethrows and carries no pipeline to read.
             if ($null -eq $_.Pipeline) { return }
-            $text = ([string]$_.Pipeline.Extent.Text).TrimStart('(', '"', "'")
-            # The static prefix, up to the first interpolation.
-            ($text -split '\$')[0]
+            & $staticPrefix $_.Pipeline
         } | Where-Object {
-            $_ -match '^(?:Generated test|The generated test)' -and
+            $_ -match '^(?:The )?[Gg]enerated (?:[a-z][a-z-]* )?(?:test|files)\b' -and
             $_ -notmatch 'Unable to expose'
-        } | Sort-Object -Unique)
+        })
 
-        $openings.Count | Should -BeGreaterThan 4 -Because 'this family has several members'
+        $collected = @($ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and
+            $node.Member.Extent.Text -eq 'Add' -and
+            $node.Expression.Extent.Text -match 'guardFailures'
+        }, $true) | ForEach-Object {
+            if ($null -eq $_.Arguments -or $_.Arguments.Count -eq 0) { return }
+            $prefix = & $staticPrefix $_.Arguments[0]
+            # A variable argument carries a message the guard script threw, and
+            # those openings are covered by the Candidate-source alternative.
+            if ([string]::IsNullOrWhiteSpace($prefix)) { return }
+            $prefix
+        })
+
+        $collected.Count | Should -BeGreaterThan 2 -Because 'the collected guards are a real family'
+
+        $openings = @($thrown + $collected | Sort-Object -Unique)
+        $openings.Count | Should -BeGreaterThan 9 -Because 'this family has several members'
         foreach ($opening in $openings) {
             Get-ReplicationTestAttemptKind -FailureSummary "$opening'src/x.cs' broke a rule." |
                 Should -Be 'guard-refused' -Because "the guard opening '$opening' must be named"
@@ -7000,6 +7033,38 @@ Describe 'Get-ReplicationTestAttemptKind' {
         Get-ReplicationTestAttemptKind `
             -FailureSummary 'Unable to expose generated test to the failure-only verifier: x.cs' |
             Should -Be 'other'
+    }
+
+    It 'names the verbatim refusal that build 15104059 was charged to nothing for' {
+        # Pinned from production rather than paraphrased. The guard is thrown at
+        # Replicate-Issue.ps1's collected-failure list, and this exact text was
+        # filed 'other' - the single largest opening in that bucket, 15 of the
+        # 45 real attempts it held.
+        Get-ReplicationTestAttemptKind -FailureSummary (
+            'The generated device test cannot be selected on device: no file declares ' +
+            '[Category("Issue32213")]. The runner reads the bare filter token as a ' +
+            'category name, so with no test declaring it the run selects no categories ' +
+            'and executes nothing.') |
+            Should -Be 'guard-refused'
+    }
+
+    It 'leaves the sandbox-phase guards to the sandbox classifier' {
+        # 'Generated Appium plan' and its Sandbox siblings are refused by
+        # Get-ReplicationAttemptFailureKind, which files them as plan-rejected.
+        # What keeps them out is the literal ' test ' / ' files ', NOT the
+        # lowercase qualifier class: -match is case-insensitive, so [a-z]
+        # matches 'Appium' perfectly well. Measured rather than assumed -
+        # "Generated Appium test x" does match the qualifier alternative, and
+        # only the absence of that noun in the real sandbox openings excludes
+        # them. Stated here because a comment justifying a pattern is read as
+        # the reason to keep it, and this one was wrong on the first draft.
+        foreach ($sandboxGuard in @(
+                "Generated Appium plan step 2 is invalid.",
+                "Generated Sandbox XAML must declare a stable AutomationId.",
+                "Generated Sandbox code-behind must not compute the verdict.")) {
+            Get-ReplicationTestAttemptKind -FailureSummary $sandboxGuard |
+                Should -Not -Be 'guard-refused' -Because "'$sandboxGuard' belongs to another phase"
+        }
     }
 
     It 'never takes an attempt away from a kind that already had a name' {
