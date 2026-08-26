@@ -6131,6 +6131,155 @@ public class Issue35889 : ControlsHandlerTestBase
         { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue3.cs' } |
             Should -Not -Throw
     }
+
+    # PR 464's committed test began with a bare `return;` under a lane guard.
+    # A reviewer measured it "PASS in 32 ms without opening the page" on an
+    # iOS 18.5 runner against a production-reverted build: NUnit scores a
+    # returned test as Passed, and one shared file is link-compiled into all
+    # four platform assemblies, so every excluded lane reports a green it
+    # never earned. The exactly-one-executed-test gate cannot see it, because
+    # the test really does execute and really does report success.
+    It 'refuses a UI test that returns without asserting under a driver lane guard' {
+        $content = @'
+	[Test]
+	public void Reproduces()
+	{
+		if (App is not AppiumIOSApp) return;
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue506.cs' -TestType 'UITest' } |
+            Should -Throw -ExpectedMessage '*returns without asserting*'
+    }
+
+    It 'refuses a UI test whose lane guard is a version helper rather than an OperatingSystem call' {
+        # The capability pattern used by the assert/throw clauses names none of
+        # these, so this clause needs its own; PR 464 is the motivating case.
+        $content = @'
+	[Test]
+	public void Reproduces()
+	{
+		if (App is not AppiumIOSApp iosApp || !HelperExtensions.IsIOS26OrHigher(iosApp))
+			return;
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue464.cs' -TestType 'UITest' } |
+            Should -Throw -ExpectedMessage '*returns without asserting*'
+    }
+
+    It 'refuses a UI test gated on a version helper alone, with no driver check' {
+        # Pins the second alternative of the lane pattern. PR 464 carries both
+        # forms, so a fixture copied from it fires through the driver check and
+        # leaves this one unexercised -- a mutation that dropped it survived
+        # until this case existed.
+        $content = @'
+	[Test]
+	public void Reproduces()
+	{
+		if (!HelperExtensions.IsIOS26OrHigher(app))
+			return;
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue7.cs' -TestType 'UITest' } |
+            Should -Throw -ExpectedMessage '*returns without asserting*'
+    }
+
+    It 'accepts the Assert.Ignore the UI tests really use' {
+        # 44 files under TestCases.Shared.Tests call it; a skip it records is
+        # a skip the runner reports, so no lane is credited with a pass.
+        $content = @'
+	[Test]
+	public void Reproduces()
+	{
+		if (App is not AppiumIOSApp)
+			Assert.Ignore("the reported defect needs iOS 26 or later");
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue1.cs' -TestType 'UITest' } |
+            Should -Not -Throw
+    }
+
+    It 'exempts a device test, where the early return is the repository idiom' {
+        # xUnit has no Assert.Ignore -- 0 uses in DeviceTests against 44 in the
+        # UI tier -- while 31 device-test sites gate exactly this way. Refusing
+        # it here would leave the author no legal answer.
+        $content = @'
+	[Fact]
+	public async Task Reproduces()
+	{
+		if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;
+		Assert.Equal(0, height);
+	}
+'@
+        { Assert-ReplicationEnvironmentGateSkips -Content $content -Path 'Issue2.cs' -TestType 'DeviceTest' } |
+            Should -Not -Throw
+    }
+
+    It 'names the tier-appropriate skip in the remedy it offers' {
+        # An earlier revision prescribed the early return to every tier on a
+        # count taken over the whole tree. Stratified, the UI tier uses that
+        # shape zero times, so advising it there is advising the defect.
+        $returning = @'
+	[Test]
+	public void Reproduces()
+	{
+		if (App is not AppiumIOSApp) return;
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+'@
+        $message = ''
+        try {
+            Assert-ReplicationEnvironmentGateSkips -Content $returning -Path 'Issue1.cs' -TestType 'UITest'
+        }
+        catch { $message = $_.Exception.Message }
+
+        $message | Should -Match 'Assert\.Ignore'
+        $message | Should -Not -Match 'the shape the device and unit test projects use'
+    }
+}
+
+Describe 'Every caller of the environment-gate guard states its tier' {
+    # The guard cannot defend where it is called from. Its whole correction is
+    # that the legal skip shape differs by tier -- Assert.Ignore in the 44 NUnit
+    # files, a bare return at the 31 xUnit sites -- so a call site that omits
+    # -TestType silently gets the device behaviour and the UI lane goes unjudged.
+    # Both call-site mutants survived every behavioural test until these existed.
+    # The table is assigned in the Describe body, not BeforeAll: -ForEach is
+    # evaluated at discovery and BeforeAll runs later, so a BeforeAll fixture
+    # expands to no test cases at all and the Describe passes having run nothing.
+    $script:GateCallSites = @(
+        @{ Rel = '.github/scripts/Replicate-Issue.ps1'; Why = 'the authoring loop' }
+        @{ Rel = '.github/scripts/shared/Validate-ReplicationCandidate.ps1'
+           Why = 'the credential-holding publisher' }
+    )
+
+    It 'passes -TestType from <Why>' -ForEach $script:GateCallSites {
+        $path = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path $Rel
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $path, [ref]$null, [ref]$null)
+
+        $calls = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst] -and
+            $node.GetCommandName() -eq 'Assert-ReplicationEnvironmentGateSkips'
+        }, $true)
+
+        $calls | Should -Not -BeNullOrEmpty -Because "$Why must call the guard"
+
+        foreach ($call in $calls) {
+            $named = $call.CommandElements | Where-Object {
+                $_ -is [System.Management.Automation.Language.CommandParameterAst] -and
+                $_.ParameterName -eq 'TestType'
+            }
+            $named | Should -Not -BeNullOrEmpty -Because (
+                "$Why calls the guard at line $($call.Extent.StartLineNumber) " +
+                'without naming the tier, so a UI test gated on a lane check ' +
+                'would be judged by the device rules and pass without asserting')
+        }
+    }
 }
 
 Describe 'Get-ReplicationBlockedCode control refutation' {

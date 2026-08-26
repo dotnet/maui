@@ -2377,27 +2377,68 @@ function Get-ReplicationEnvironmentCapabilityPattern {
     return '(?:OperatingSystem\.Is[A-Za-z]*VersionAtLeast|UIDevice\.CurrentDevice\.CheckSystemVersion|Build\.VERSION\.SdkInt)'
 }
 
+function Get-ReplicationUiLaneGuardPattern {
+    # UI-tier only. The lane a shared NUnit file landed in is decided by the
+    # driver type or by a version helper, not by the OperatingSystem APIs that
+    # Get-ReplicationEnvironmentCapabilityPattern names: across the 5 real
+    # offending fix PRs the guards were "App is not AppiumIOSApp" and
+    # "HelperExtensions.IsIOS26OrHigher", and neither matches that pattern. It
+    # is kept separate rather than folded in so the assert/throw clauses above
+    # keep their measured behaviour on the device tier.
+    return '(?:App\s+is\s+not\s+Appium[A-Za-z]*App' +
+        '|OperatingSystem\.Is[A-Za-z]*VersionAtLeast' +
+        '|UIDevice\.CurrentDevice\.CheckSystemVersion' +
+        '|Build\.VERSION\.SdkInt' +
+        '|\bIs(?:IOS|Android|Windows|MacCatalyst)[0-9]*OrHigher)'
+}
+
 function Assert-ReplicationEnvironmentGateSkips {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
-        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Path
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Path,
+        [Parameter(Mandatory = $false)][AllowEmptyString()][string]$TestType = ''
     )
 
     # A reproduction pinned to an OS floor is fine; nominating that floor as a
     # failure is not. PR 213 asserted `OperatingSystem.IsIOSVersionAtLeast(26)`
     # on line 25 and every one of its five runs died there in 1.8-3.0 ms,
     # before the oracle it advertised ever executed -- red for the lane, not
-    # for the defect, and still red after a complete product fix. Scanning
-    # 11,012 files, no Assert of any kind names one of these APIs and no
-    # version gate throws, while 49 sites gate with an early return, so this
+    # for the defect, and still red after a complete product fix. No Assert of
+    # any kind names one of these APIs and no version gate throws, so this
     # rejects a shape the repository never uses.
+    #
+    # The remedy is tier-specific, and saying otherwise caused a second defect.
+    # An earlier revision prescribed the early return unconditionally on the
+    # strength of "49 sites gate with an early return" -- a count taken over
+    # the whole tree. Stratified, those sites are 31 xUnit device tests and 31
+    # product/sample files; the NUnit UI tier uses the shape ZERO times and
+    # reaches for Assert.Ignore in 44 files instead. So the prescription had no
+    # precedent in the tier it was most often applied to, and there it is
+    # actively harmful: NUnit records a returned test as Passed, and a UI test
+    # is link-compiled into all four platform assemblies, so a lane the gate
+    # excludes reports a green it never earned. A reviewer measured exactly
+    # that on PR 464 -- "PASS in 32 ms without opening the page" on an iOS 18.5
+    # runner against a production-reverted build.
+    #
+    # xUnit has no Assert.Ignore (0 uses in DeviceTests), so device and unit
+    # tests keep the early return: refusing it there would leave the author no
+    # legal answer, which this pipeline has already paid for twice.
     $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
     $capability = Get-ReplicationEnvironmentCapabilityPattern
-    $remedy = ('Gate with the shape this repository uses instead -- ' +
-        '"if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- so an ' +
-        'unsupported lane skips quietly and the only red this test can ' +
-        'produce is the reported defect.')
+    $isUiTest = $TestType -ceq 'UITest'
+    $skipShape = if ($isUiTest) {
+        'Assert.Ignore("the reported defect needs iOS 26 or later") -- the ' +
+        'shape the UI tests use in 44 files -- so an unsupported lane is ' +
+        'recorded as skipped rather than as a pass it never earned'
+    }
+    else {
+        '"if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- the shape ' +
+        'the device and unit test projects use at 31 sites, and the only one ' +
+        'available to them, because xUnit has no Assert.Ignore'
+    }
+    $remedy = "Gate with the shape this tier supports instead -- $skipShape, " +
+        'so the only red this test can produce is the reported defect.'
 
     $asserted = [regex]::Match($source, "Assert\.[A-Za-z]+\s*\([^;]{0,400}?$capability")
     if ($asserted.Success) {
@@ -2416,6 +2457,26 @@ function Assert-ReplicationEnvironmentGateSkips {
             "precondition is unmet: '$($gatedFailure.Value.Trim())'. That red survives a " +
             'complete product fix, so it cannot be attributed to the reported defect. ' +
             $remedy)
+    }
+
+    if (-not $isUiTest) { return }
+
+    # NUnit only: a bare `return;` reached from an environment guard is scored
+    # Passed, so it is a false green rather than a skip. Assert.Ignore, a
+    # throw, and Assert.Inconclusive all record the truth, so none of them is
+    # matched here. Measured across 1,642 real files under
+    # TestCases.Shared.Tests: 0 firings.
+    $gatedReturn = [regex]::Match(
+        $source,
+        'if\s*\(\s*[^;{)]{0,200}?' + (Get-ReplicationUiLaneGuardPattern) +
+            '[^;{]{0,200}?\)\s*(?:\{\s*)?return\s*;'
+    )
+    if ($gatedReturn.Success) {
+        throw ("The reproduction in '$Path' returns without asserting when an " +
+            "environment precondition is unmet: '$($gatedReturn.Value.Trim())'. NUnit " +
+            'records a returned test as PASSED, and this file is link-compiled into the ' +
+            'Android, iOS, MacCatalyst and Windows assemblies alike, so every lane the ' +
+            'gate excludes reports a pass it never earned. ' + $remedy)
     }
 }
 

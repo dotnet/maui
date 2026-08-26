@@ -1981,7 +1981,8 @@ function Assert-SourceTextIsSafe {
             -RepositoryRoot $RepositoryRoot
         Assert-ReplicationEnvironmentGateSkips `
             -Content $normalized `
-            -Path $Path
+            -Path $Path `
+            -TestType ([string]$Manifest.TestType)
         Assert-ReplicationPlatformViewIdentity `
             -Content $normalized `
             -Path $Path
