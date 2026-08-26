@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		InnerGestureListener? _listener;
 		PointerGestureHandler? _pointerGestureHandler;
+		bool _hasClickablePlatformViewInHierarchy;
 
 		public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
 		{
@@ -46,9 +47,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_pointerGestureHandler != null && ev?.Action is
 				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Move or MotionEventActions.Cancel)
 			{
+				if (ev.Action == MotionEventActions.Down)
+					_hasClickablePlatformViewInHierarchy = _pointerGestureHandler.HasClickablePlatformViewInHierarchy;
+
 				_pointerGestureHandler.OnTouch(ev);
 				pointerHandled = _pointerGestureHandler.HasAnyPointerGestures() &&
-					!_pointerGestureHandler.HasClickablePlatformViewInHierarchy;
+					!_hasClickablePlatformViewInHierarchy;
+
+				if (ev.Action is MotionEventActions.Up or MotionEventActions.Cancel)
+					_hasClickablePlatformViewInHierarchy = false;
 			}
 
 			if (_listener != null && ev?.Action == MotionEventActions.Up)
