@@ -57,36 +57,39 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var platformView = GetPlatformControl(handler);
 
-			await platformView.AttachAndRun(async () =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				swipeView.Open(OpenSwipeItem.LeftItems, false);
+				await platformView.AttachAndRun(async () =>
+				{
+					swipeView.Open(OpenSwipeItem.LeftItems, false);
 
-				// The SwipeView adds subviews dynamically when opening it.
-				await AssertEventually(() => platformView.Subviews.Length > 1);
+					// The SwipeView adds subviews dynamically when opening it.
+					await AssertEventually(() => platformView.Subviews.Length > 1);
 
-				var actionView = platformView.Subviews.OfType<UIStackView>().FirstOrDefault();
-				Assert.NotNull(actionView);
+					var actionView = platformView.Subviews.OfType<UIStackView>().FirstOrDefault();
+					Assert.NotNull(actionView);
 
-				await AssertEventually(() => actionView.Subviews.Length > 0);
+					await AssertEventually(() => actionView.Subviews.Length > 0);
 
-				var nativeSwipeItem = actionView.Subviews.FirstOrDefault();
-				Assert.NotNull(nativeSwipeItem);
+					var nativeSwipeItem = actionView.Subviews.FirstOrDefault();
+					Assert.NotNull(nativeSwipeItem);
 
-				await AssertEventually(() => nativeSwipeItem.Frame.Width > 0);
+					await AssertEventually(() => nativeSwipeItem.Frame.Width > 0);
 
-				double contentWidth = platformView.Frame.Width;
-				double swipeItemWidth = nativeSwipeItem.Frame.Width;
+					double contentWidth = platformView.Frame.Width;
+					double swipeItemWidth = nativeSwipeItem.Frame.Width;
 
-				// Prior to the fix, a single Execute-mode SwipeItem used a fixed
-				// SwipeItemWidth (100pt), and Execute-mode threshold/measurement logic
-				// did not measure the native UIButton's actual content size. The fix
-				// measures the native menu button via SizeThatFits, so a single
-				// short-text item should be sized noticeably smaller than the full
-				// SwipeView content width.
-				Assert.True(swipeItemWidth < contentWidth,
-					$"Expected the Execute-mode SwipeItem width ({swipeItemWidth}pt) to be smaller " +
-					$"than the full SwipeView content width ({contentWidth}pt), matching the native " +
-					$"button's measured content size instead of the entire SwipeView width.");
+					// Prior to the fix, a single Execute-mode SwipeItem used a fixed
+					// SwipeItemWidth (100pt), and Execute-mode threshold/measurement logic
+					// did not measure the native UIButton's actual content size. The fix
+					// measures the native menu button via SizeThatFits, so a single
+					// short-text item should be sized noticeably smaller than the full
+					// SwipeView content width.
+					Assert.True(swipeItemWidth < contentWidth,
+						$"Expected the Execute-mode SwipeItem width ({swipeItemWidth}pt) to be smaller " +
+						$"than the full SwipeView content width ({contentWidth}pt), matching the native " +
+						$"button's measured content size instead of the entire SwipeView width.");
+				});
 			});
 		}
 
