@@ -10171,6 +10171,12 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $script:appliedPathsBefore = @()
         $script:gitApplied = $false
         $script:gitApplySucceeds = $true
+        # Reality: the three-way fallback is only reached when strict apply
+        # already refused, so it defaults to the outcome that makes the winner
+        # replayable.
+        $script:gitThreeWaySucceeds = $true
+        $script:gitThreeWayAttempted = $false
+        $script:gitResetPaths = @()
 
         function Invoke-LoggedChildProcess {
             param($ScriptPath, $Arguments, $LogPath, $Description, $TimeoutSeconds)
@@ -10210,8 +10216,17 @@ Describe 'Proving the fix is what turned the reproduction green' {
         }
         function git {
             if ($args[0] -eq 'apply') {
-                $script:gitApplied = $script:gitApplySucceeds
-                $global:LASTEXITCODE = if ($script:gitApplySucceeds) { 0 } else { 1 }
+                $threeWay = @($args) -contains '--3way'
+                $succeeded = if ($threeWay) {
+                    $script:gitThreeWayAttempted = $true
+                    $script:gitThreeWaySucceeds
+                } else { $script:gitApplySucceeds }
+                if ($succeeded) { $script:gitApplied = $true }
+                $global:LASTEXITCODE = if ($succeeded) { 0 } else { 1 }
+            }
+            elseif ($args[0] -eq 'reset') {
+                $script:gitResetPaths = @(@($args) | Select-Object -Skip 1)
+                $global:LASTEXITCODE = 0
             }
         }
 
@@ -10264,9 +10279,55 @@ Describe 'Proving the fix is what turned the reproduction green' {
     }
 
     It 'runs nothing when the winning diff no longer applies' {
+        # Both routes have to refuse before the winner is abandoned. Strict
+        # apply alone refusing is routine -- see the three-way test below.
         $script:gitApplySucceeds = $false
+        $script:gitThreeWaySucceeds = $false
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 0
+    }
+
+    It 'replays a winner whose context moved by falling back to a three-way merge' {
+        # Build 15098930 proved two fixes for #27332 and published neither: the
+        # panel restored ItemsViewStyles.xaml to HEAD between candidates, and
+        # the winner's diff would no longer apply at line 82. Across the cached
+        # logs this destroyed a passing candidate 26 times in 94 fix runs.
+        $script:gitApplySucceeds = $false
+        $script:gitThreeWaySucceeds = $true
+
+        $evidence = Invoke-ReplicationFixArms @script:armArgs
+
+        $script:gitThreeWayAttempted | Should -BeTrue
+        $evidence | Should -Not -BeNullOrEmpty
+        $script:childRuns | Should -HaveCount 2
+    }
+
+    It 'does not reach for a three-way merge when the diff applied cleanly' {
+        Invoke-ReplicationFixArms @script:armArgs | Out-Null
+        $script:gitThreeWayAttempted | Should -BeFalse
+    }
+
+    It 'puts the tree back when a three-way merge conflicts' {
+        # A conflicted three-way is not all-or-nothing like strict apply: it
+        # leaves markers and unmerged index entries. The reproduction is
+        # published from this tree, so it cannot be left carrying them.
+        $script:gitApplySucceeds = $false
+        $script:gitThreeWaySucceeds = $false
+
+        Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
+
+        $script:restoreCalls | Should -Be 1
+    }
+
+    It 'unstages the scope a three-way merge staged behind it' {
+        # --3way implies --index, so the merge lands staged, which no other
+        # path in the phase produces.
+        $script:gitApplySucceeds = $false
+        $script:gitThreeWaySucceeds = $true
+
+        Invoke-ReplicationFixArms @script:armArgs | Out-Null
+
+        $script:gitResetPaths | Should -Contain 'src/Core/src/Handlers/EntryHandler.cs'
     }
 
     It 'refuses a diff that turns out to touch a file outside the scope' {

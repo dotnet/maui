@@ -5044,11 +5044,41 @@ function Invoke-ReplicationFixArms {
         Where-Object { $ScopeFiles -cnotcontains $_ })
     & git apply --whitespace=nowarn -- $PatchPath
     if ($LASTEXITCODE -ne 0) {
-        # The panel restores the tree between candidates, so the winner's work
-        # has to be replayed here. If it will not replay there is nothing to
-        # measure, and guessing at a merge would measure something else.
-        Write-Host 'No fix arms were run: the winning diff no longer applies to the tree.'
-        return $null
+        # Strict apply is exact but brittle. The panel restores the tree
+        # between candidates, so by the time the winner is replayed the context
+        # around its change can have moved -- on Windows a restore routinely
+        # rewrites line endings, which is enough on its own. Measured over the
+        # cached logs, 26 of the 94 runs that produced a *passing* fix candidate
+        # died right here, and every run that failed to apply had a passing
+        # candidate to lose. It was the largest single source of discarded work
+        # in the fix phase.
+        #
+        # A three-way merge is not the guess the strict path was guarding
+        # against. It reconstructs the preimage from the blob ids the diff
+        # already carries and merges against that; when it cannot, it says so
+        # instead of inventing a resolution. And whatever it produces is still
+        # put through both arms below, so a merge that landed the wrong change
+        # cannot become a published fix -- it can only fail to reproduce.
+        & git apply --3way --whitespace=nowarn -- $PatchPath
+        if ($LASTEXITCODE -ne 0) {
+            # Unlike strict apply, which is all-or-nothing, a conflicted
+            # three-way leaves markers in the file and unmerged entries in the
+            # index. The reproduction is published from this tree, so it has to
+            # be put back before returning.
+            Restore-ReplicationFixTree `
+                -TrustedScriptRoot $TrustedScriptRoot `
+                -ScopeFiles $ScopeFiles | Out-Null
+            Write-Host 'No fix arms were run: the winning diff no longer applies to the tree.'
+            return $null
+        }
+        # --3way implies --index, so the merge lands staged. Nothing downstream
+        # is fooled by that -- status is porcelain and the winner diff is taken
+        # against HEAD -- but leaving the tree in a shape no other path produces
+        # invites a later reader to assume wrongly, so put it back to a plain
+        # working-tree edit. Best effort: if it fails the change is still there.
+        & git reset --quiet -- @ScopeFiles 2>&1 | Out-Null
+        Write-Host ('The winning diff needed a three-way merge to replay, because the ' +
+            'tree moved under it. Both arms still decide whether the fix is real.')
     }
 
     $applied = @(Get-ReplicationFixCandidateChanges -ExcludePaths ($ReproductionPaths + $inheritedDirt))
