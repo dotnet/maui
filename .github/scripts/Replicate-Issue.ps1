@@ -5036,7 +5036,24 @@ function Invoke-ReplicationFixArms {
         return $null
     }
 
-    Set-Content -LiteralPath $PatchPath -Value $WinnerDiff -Encoding utf8NoBOM
+    # Written byte-for-byte rather than with Set-Content, which ends a file with
+    # [Environment]::NewLine - CRLF on Windows. git produced this diff with LF
+    # endings, so that trailing CR lands on the patch's final line, and when
+    # that line is a context line rather than an addition git apply compares
+    # "}\r" against "}" and refuses the whole patch.
+    #
+    # That single character is the entire Windows fix loss. Among cached runs
+    # that proved a fix, Windows lost 25 of 28 while Android lost 0 of 12 and
+    # iOS 1 of 30, and none of the 33 open fix PRs is Windows. It is 89% rather
+    # than 100% because a diff whose last line happens to be an addition still
+    # applies - the stray CR is merely appended to a line being added.
+    #
+    # Reproduced byte-for-byte outside the pipeline against the real file at the
+    # real blob 131c419b13: the same diff written with a trailing "`n" applies,
+    # and written with "`r`n" fails with exactly the "patch does not apply" the
+    # logs show.
+    [System.IO.File]::WriteAllText(
+        $PatchPath, ($WinnerDiff + "`n"), (New-Object System.Text.UTF8Encoding($false)))
     # Recorded before the patch, for the same reason the panel records it
     # before a candidate: the product build regenerates files of its own, and
     # dirt that was already there is not something the winning diff did.
@@ -7141,8 +7158,13 @@ function New-TestPatch {
     if ($LASTEXITCODE -ne 0 -or $patch.Count -eq 0) {
         throw 'Unable to create an add-only reproduction test patch.'
     }
-    $patch -join [Environment]::NewLine |
-        Set-Content -LiteralPath $patchPath -Encoding utf8NoBOM
+    # LF, not [Environment]::NewLine, and written without Set-Content's trailing
+    # platform terminator. This patch is add-only so a stray CR would not refuse
+    # it the way it refuses the fix replay, but it would bake carriage returns
+    # into every line of a generated test file on Windows. A patch is bytes git
+    # wrote; nothing here should reformat it.
+    [System.IO.File]::WriteAllText(
+        $patchPath, (($patch -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
 }
 
 function Invoke-ReplicationFixPhase {

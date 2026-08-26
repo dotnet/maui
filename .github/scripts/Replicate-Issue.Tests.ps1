@@ -10247,6 +10247,44 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $evidence.restorationFailures | Should -Be 3
     }
 
+    It 'writes the winning diff as the bytes git produced, ending in a single LF' {
+        # Set-Content ends a file with [Environment]::NewLine, which is CRLF on
+        # Windows, so its terminator put a lone carriage return on the patch's
+        # final line. When that line is a context line git apply compares "}\r"
+        # against "}" and refuses the whole patch, which is why Windows lost 25
+        # of the 28 runs that proved a fix while Android lost 0 of 12. The 11%
+        # that survived are the diffs whose last line was an addition, where the
+        # stray CR is merely appended to a line being added.
+        $args = $script:armArgs.Clone()
+        $args.WinnerDiff = "diff --git a/x b/x`n@@ -1,2 +1,2 @@`n-a`n+b`n context"
+        Invoke-ReplicationFixArms @args | Out-Null
+
+        $bytes = [System.IO.File]::ReadAllBytes($args.PatchPath)
+        $bytes | Should -Not -Contain 13
+        $bytes[-1] | Should -Be 10
+        $bytes[-2] | Should -Not -Be 10
+    }
+
+    It 'never writes a patch through a cmdlet that appends the platform newline' {
+        # The byte assertion above cannot fail on Linux or macOS, where
+        # [Environment]::NewLine is already LF - it only bites on the Windows
+        # agents, which are exactly the ones no test runs on. So the guard that
+        # actually holds is on the source: a patch is bytes git wrote, and no
+        # cmdlet that terminates a file for us may be the thing that writes it.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$null, [ref]$null)
+        $offenders = $ast.FindAll({
+                param($node)
+                if ($node -isnot [System.Management.Automation.Language.CommandAst]) { return $false }
+                $name = $node.GetCommandName()
+                if ($name -notin @('Set-Content', 'Out-File', 'Add-Content')) { return $false }
+                $text = $node.Extent.Text
+                return ($text -match '\$\w*[Pp]atch[Pp]ath' -or $text -match '\$\w*[Pp]atch\b')
+            }, $true)
+
+        @($offenders | ForEach-Object { $_.Extent.Text }) | Should -BeNullOrEmpty
+    }
+
     It 'expects a pass with the fix applied and a failure without it' {
         Invoke-ReplicationFixArms @script:armArgs | Out-Null
         $script:childRuns[0].Arguments | Should -Contain '-ExpectPass'
@@ -10285,12 +10323,12 @@ Describe 'Proving the fix is what turned the reproduction green' {
     }
 
     It 'returns the scope to its baseline before replaying the winning diff' {
-        # Build 15098930 proved two fixes for #27332 and published neither. The
-        # panel restores between candidates but not after the last one, so
-        # candidate 4's edit was still in ItemsViewStyles.xaml when candidate
-        # 1's diff was replayed, and it would not apply at line 82. Replaying
-        # onto whatever the previous candidate happened to leave behind is the
-        # defect; restoring first is the fix.
+        # Cheap and idempotent: the panel already restores after every
+        # candidate, so this normally changes nothing. It is kept because it is
+        # the only thing between the replay and any writer that runs after the
+        # panel. It is not the cause of the apply failures - build 15100129
+        # shows the panel's restore running after the final candidate and the
+        # replay failing anyway. That was the patch's trailing CRLF.
         Invoke-ReplicationFixArms @script:armArgs | Out-Null
 
         $script:eventOrder[0] | Should -Be 'restore'
