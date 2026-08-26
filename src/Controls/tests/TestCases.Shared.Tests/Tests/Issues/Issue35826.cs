@@ -19,8 +19,10 @@ public class Issue35826 : _IssuesUITest
 	const string PhotoPickerAvailabilityLabel = "PhotoPickerAvailabilityLabel";
 	const string StatusLabel = "StatusLabel";
 
+	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
-	[Category(UITestCategories.Essentials)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
@@ -56,9 +58,11 @@ public class Issue35826 : _IssuesUITest
 		App.Back();
 		App.WaitForElement(OpenChildActivityButton);
 	}
-
+    
+	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
-	[Category(UITestCategories.Essentials)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void OverlappingPhotoPickerRequestsAreRejected()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
@@ -78,9 +82,11 @@ public class Issue35826 : _IssuesUITest
 		App.Back();
 		App.WaitForElement(OpenChildActivityButton);
 	}
-
+    
+	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
-	[Category(UITestCategories.Essentials)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void FinishingLaunchingActivityCancelsPendingPhotoPicker()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
@@ -103,18 +109,6 @@ public class Issue35826 : _IssuesUITest
 
 	void OpenChildActivityAndRequirePhotoPicker()
 	{
-		// This regression only manifests on Android API 36, where the ActivityResultLauncher
-		// ownership rules are enforced strictly enough that using the wrong activity's launcher
-		// causes the result to never be delivered, hanging the task indefinitely.
-		if (App is AppiumApp appiumApp)
-		{
-			var apiLevel = (long?)appiumApp.Driver.Capabilities.GetCapability("deviceApiLevel") ?? 0;
-			if (apiLevel < 36)
-			{
-				Assert.Ignore($"Issue #35826 only manifests on Android API 36+. Current device API: {apiLevel}.");
-			}
-		}
-
 		App.WaitForElement(OpenChildActivityButton);
 		App.Tap(OpenChildActivityButton);
 
