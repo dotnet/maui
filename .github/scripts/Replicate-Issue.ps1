@@ -5693,10 +5693,22 @@ function Read-TestProposal {
         throw 'The test proposal must contain 1-10 reproduction steps.'
     }
     for ($stepIndex = 0; $stepIndex -lt $steps.Count; $stepIndex++) {
+        # -Prose, unlike every sibling in this reader. A test reproduction step is
+        # read by nothing: Publish-ReplicationPR renders it into the PR body and no
+        # guard matches against it, unlike the sandbox reader's steps (which feed the
+        # timing-sensitive check) or the trigger and behavior fields below (which feed
+        # the orientation, safe-area and visual guards). Both stages downstream already
+        # trim it to exactly 300 without complaint - the manifest writer via
+        # ConvertTo-ReplicationSafeLog, and the publisher via ConvertTo-NormalizedPlainStep
+        # -Prose - and this call discards its result, so refusing here cannot protect
+        # anything a caller reads. It only destroys the attempt. Measured over 838
+        # complete logs: 4 attempts died on this bound at 380-398 characters, every one
+        # of them descriptive prose, and build 15105015 spent its final attempt on one.
         $null = ConvertTo-BoundedAgentLine `
             -Value $steps[$stepIndex] `
             -Description "Test reproduction step $($stepIndex + 1)" `
-            -MaximumLength 300
+            -MaximumLength 300 `
+            -Prose
     }
     $null = ConvertTo-BoundedAgentLine -Value $proposal.expectedBehavior -Description 'Test expected behavior'
     $null = ConvertTo-BoundedAgentLine -Value $proposal.observedBehavior -Description 'Test observed behavior'

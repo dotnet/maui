@@ -3711,6 +3711,59 @@ PS-STEP-FAILED: step 3 did not find its target
         $script:Source | Should -Match 'Test reproduction step \$\(\$stepIndex \+ 1\)'
     }
 
+    It 'reserves the prose path for the proposal field that nothing reads' {
+        # The identity of the opted-in site is the invariant, not the count: the fix
+        # panel legitimately marks eight of its own model-written fields prose, and a
+        # ninth may be added. What must never drift is the strict set below. Each of
+        # these is read: the verifier -match's the failure signature against the text
+        # the assertion prints; the orientation, safe-area and visual guards -match the
+        # trigger and behavior fields; and the sandbox step feeds the timing-sensitive
+        # -notmatch check. A silent trim there can remove a match and disable a guard
+        # without saying so, or add one and throw spuriously.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$null, [ref]$null)
+        $calls = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.CommandAst] -and
+                $node.GetCommandName() -eq 'ConvertTo-BoundedAgentLine'
+            }, $true)
+
+        $prose = @{}
+        foreach ($call in $calls) {
+            $elements = @($call.CommandElements)
+            $description = $null
+            for ($i = 0; $i -lt $elements.Count - 1; $i++) {
+                if ($elements[$i] -is [System.Management.Automation.Language.CommandParameterAst] -and
+                    $elements[$i].ParameterName -eq 'Description') {
+                    $description = $elements[$i + 1].Extent.Text.Trim("'", '"')
+                }
+            }
+            if ($null -ne $description) {
+                $prose[$description] = @($elements | Where-Object {
+                        $_ -is [System.Management.Automation.Language.CommandParameterAst] -and
+                        $_.ParameterName -eq 'Prose'
+                    }).Count -gt 0
+            }
+        }
+
+        $stepKey = @($prose.Keys | Where-Object { $_ -like 'Test reproduction step*' })
+        $stepKey.Count | Should -Be 1 -Because 'the test reader bounds its steps in one place'
+        $prose[$stepKey[0]] | Should -BeTrue -Because 'nothing reads a test reproduction step'
+
+        $guarded = @(
+            'Sandbox reproduction step'
+            'Test expected behavior'
+            'Test observed behavior'
+            'Reported issue trigger'
+            'Automated test trigger'
+            'Test expected failure signature'
+        )
+        foreach ($field in $guarded) {
+            $prose.ContainsKey($field) | Should -BeTrue -Because "$field must still be bounded"
+            $prose[$field] | Should -BeFalse -Because "a guard matches against $field"
+        }
+    }
+
     It 'neutralises a logging command it echoes back to the agent' {
         $message = { ConvertTo-BoundedAgentLine `
                 -Value 'a ##vso[task.setvariable variable=x]y' `
