@@ -47,6 +47,9 @@ parameters:
   default:
   - Debug
   - Release
+- name: helixJobMonitorTimeoutInMinutes
+  type: number
+  default: 360
 - name: helixPool
   type: object
  
@@ -99,7 +102,7 @@ stages:
 
   - job: HelixJobMonitor
     displayName: Monitor Helix Jobs
-    timeoutInMinutes: 360
+    timeoutInMinutes: ${{ parameters.helixJobMonitorTimeoutInMinutes }}
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
@@ -143,7 +146,7 @@ stages:
           --helix-base-uri 'https://helix.dot.net/' \
           --polling-interval-seconds 30 \
           --fail-on-failed-tests true \
-          --max-wait-minutes 355 \
+          --max-wait-minutes "$((${{ parameters.helixJobMonitorTimeoutInMinutes }} - 5))" \
           --stage-name '$(System.StageName)' \
           --organization dotnet \
           --repository maui \
