@@ -100,6 +100,20 @@ public partial class TemplateAndSelectorHotReloadTests
 		</ContentPage>
 		""";
 
+	static string CollectionViewItemTemplateXaml(string prefix) => $$"""
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestTemplates.MainPage">
+		  <CollectionView>
+		    <CollectionView.ItemTemplate>
+		      <DataTemplate>
+		        <Label Text="{Binding ., StringFormat='{{prefix}} {0}'}" />
+		      </DataTemplate>
+		    </CollectionView.ItemTemplate>
+		  </CollectionView>
+		</ContentPage>
+		""";
+
 	static string SelectorXaml(string oddText) => $$"""
 		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"

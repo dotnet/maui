@@ -73,7 +73,8 @@ static class UpdateComponentCodeWriter
 		Dictionary<ElementNode, string>? newIds = null,
 		SourceProductionContext sourceProductionContext = default,
 		ProjectItem? projectItem = null,
-		Dictionary<string, XmlType>? generatedFields = null)
+		Dictionary<string, XmlType>? generatedFields = null,
+		ISet<string>? templateNodeIds = null)
 	{
 		if (diff.IsEmpty)
 			return null;
@@ -127,7 +128,10 @@ static class UpdateComponentCodeWriter
 				continue;
 			}
 
-			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
+			if (templateNodeIds?.Contains(nodeDiff.NodeId) == true)
+				codeWriter.WriteLine($"foreach (var {varName} in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetTemplateComponents(this, \"{nodeDiff.NodeId}\"))");
+			else
+				codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
 			using (PrePost.NewBlock(codeWriter))
 			{
 				INamedTypeSymbol? nodeType = null;

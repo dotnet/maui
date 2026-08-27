@@ -36,6 +36,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<XmlType, INamedTypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
+	public IReadOnlyDictionary<ElementNode, string>? NodeIds { get; set; }
 	public void ReportDiagnostic(Diagnostic diagnostic)
 	{
 		if (ParentContext is not null)
@@ -129,6 +130,18 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	// redeclaring it. Returns true the first time a name is seen, false afterwards. See dotnet/maui#36682.
 	public bool TryReserveTemplateMethod(string name)
 		=> ParentContext != null ? ParentContext.TryReserveTemplateMethod(name) : _emittedTemplateMethods.Add(name);
+
+	public bool TryGetNodeId(ElementNode node, out string nodeId)
+	{
+		if (ParentContext != null)
+			return ParentContext.TryGetNodeId(node, out nodeId);
+
+		if (NodeIds != null && NodeIds.TryGetValue(node, out nodeId!))
+			return true;
+
+		nodeId = string.Empty;
+		return false;
+	}
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
 	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;

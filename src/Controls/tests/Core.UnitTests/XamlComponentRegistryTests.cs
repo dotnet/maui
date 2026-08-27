@@ -82,6 +82,35 @@ public class XamlComponentRegistryTests
 	}
 
 	[Fact]
+	public void RegisterTemplateComponent_MultipleInstances_AllRetrievable()
+	{
+		var page = new object();
+		var first = new object();
+		var second = new object();
+
+		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", first);
+		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", second);
+
+		var components = XamlComponentRegistry.GetTemplateComponents(page, "label_0");
+
+		Assert.Equal(2, components.Count);
+		Assert.Contains(first, components);
+		Assert.Contains(second, components);
+	}
+
+	[Fact]
+	public void RegisterTemplateComponent_SameInstance_DoesNotDuplicate()
+	{
+		var page = new object();
+		var label = new object();
+
+		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", label);
+		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", label);
+
+		Assert.Single(XamlComponentRegistry.GetTemplateComponents(page, "label_0"));
+	}
+
+	[Fact]
 	public void Register_TwoPagesWithSameNodeId_AreIndependent()
 	{
 		var page1 = new object();
@@ -296,6 +325,17 @@ public class XamlComponentRegistryTests
 		// Sibling preserved
 		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Button_1", out var found));
 		Assert.Same(sibling, found);
+	}
+
+	[Fact]
+	public void Unregister_RemovesTemplateComponentsForNode()
+	{
+		var page = new object();
+		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", new object());
+
+		XamlComponentRegistry.Unregister(page, "label_0");
+
+		Assert.Empty(XamlComponentRegistry.GetTemplateComponents(page, "label_0"));
 	}
 
 	[Fact]

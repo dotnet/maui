@@ -287,6 +287,15 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 						node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
 						node.Accept(new SetResourcesVisitor(templateContext), null);
 						node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
+						foreach (var entry in templateContext.Variables)
+						{
+							if (entry.Key is ElementNode element
+								&& Context.TryGetNodeId(element, out var nodeId)
+								&& !string.IsNullOrEmpty(nodeId))
+							{
+								Writer.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterTemplateComponent(this, \"{nodeId}\", {entry.Value.ValueAccessor});");
+							}
+						}
 						Writer.WriteLine($"return {templateContext.Variables[node].ValueAccessor};");
 					}
 				}

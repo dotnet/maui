@@ -12,6 +12,38 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 
 public partial class TemplateAndSelectorHotReloadTests
 {
+	// Regression for dotnet/maui#37890. Creating template content is the unit-level realization
+	// boundary used by CollectionView handlers; the same instances must receive the first accepted edit.
+	[MetadataUpdateFact]
+	public void CollectionViewItemTemplate_FirstEditUpdatesAlreadyRealizedContent()
+	{
+		using var harness = CreateHarness();
+		var generation = harness.Generate(
+			CollectionViewItemTemplateXaml("Cell"),
+			CollectionViewItemTemplateXaml("Row"));
+		Assert.Contains("RegisterTemplateComponent", generation[0].InitializeComponentSource, StringComparison.Ordinal);
+		Assert.Contains("GetTemplateComponents", generation[1].UpdateComponentSource, StringComparison.Ordinal);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var collectionView = Assert.IsType<CollectionView>(page.Content);
+			var template = Assert.IsType<DataTemplate>(collectionView.ItemTemplate);
+			var first = Assert.IsType<Label>(template.CreateContent());
+			var second = Assert.IsType<Label>(template.CreateContent());
+			first.BindingContext = "item 00";
+			second.BindingContext = "item 01";
+
+			Assert.Equal("Cell item 00", first.Text);
+			Assert.Equal("Cell item 01", second.Text);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Same(template, collectionView.ItemTemplate);
+			Assert.Equal("Row item 00", first.Text);
+			Assert.Equal("Row item 01", second.Text);
+		});
+	}
+
 	// Wave-2 · Templates · TS-01 (GREEN anchor)
 	// Provenance: MAUI §hot-reload DataTemplate realization; SetPropertiesVisitor.cs L245-296 (#36482);
 	//             UpdateComponent resource-replacement verified by dumping the generated V2 source.
