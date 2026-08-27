@@ -1624,7 +1624,8 @@ static class UpdateComponentCodeWriter
 					else if (kvp.Value is ElementNode referenceElement
 						&& referenceElement.XmlType.Name is "ReferenceExtension" or "Reference"
 						&& TryGetReferenceName(referenceElement, out var referenceName)
-						&& ownerType.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, ctx))
+						&& compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element") is { } elementType
+						&& ownerType.InheritsFrom(elementType, ctx))
 					{
 						var propLocalName = kvp.Key.LocalName;
 						var propSymbol = extVar.Type.GetAllProperties(propLocalName, ctx).FirstOrDefault();
