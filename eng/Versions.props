@@ -153,6 +153,7 @@
     <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26379.102</MicrosoftDotNetBuildTasksFeedVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26379.102</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26379.102</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26427.10</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26379.102</MicrosoftDotNetHelixSdkPackageVersion>
     <MicroBuildPluginsSwixBuildDotnetPackageVersion>1.1.87-gba258badda</MicroBuildPluginsSwixBuildDotnetPackageVersion>
     <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26379.102</MicrosoftDotNetRemoteExecutorPackageVersion>
