@@ -1408,6 +1408,71 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ScrollViewTransitionToSystemAdjustedInsetsDropsParentSuppression()
+		{
+			var parent = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None)
+			};
+			var scrollView = new RecordingSafeAreaScrollView
+			{
+				SafeAreaEdges = SafeAreaEdges.Container
+			};
+			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
+			var scrollViewHandler = await CreateHandlerAsync<TestSafeAreaScrollViewHandler>(scrollView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var parentPlatformView = parentHandler.PlatformView;
+				var scrollViewPlatformView = Assert.IsType<TestSafeAreaMauiScrollView>(scrollViewHandler.PlatformView);
+				parentPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.Frame = new CGRect(0, 0, 100, 100);
+				scrollViewPlatformView.AdjustedContentInsetValue = UIEdgeInsets.Zero;
+				parentPlatformView.AddSubview(scrollViewPlatformView);
+
+				parentPlatformView.SafeAreaInsetsDidChange();
+				scrollViewPlatformView.SafeAreaInsetsDidChange();
+				parentPlatformView.LayoutSubviews();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(20, 0, 40, 70), scrollView.LastArrangeBounds);
+
+				var initialArrangeCount = scrollView.ArrangeCount;
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(initialArrangeCount, scrollView.ArrangeCount);
+
+				scrollViewPlatformView.AdjustedContentInsetValue = new UIEdgeInsets(10, 20, 30, 40);
+				scrollViewPlatformView.AdjustedContentInsetDidChange();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 40, 60), scrollView.LastArrangeBounds);
+
+				var adjustedArrangeCount = scrollView.ArrangeCount;
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(adjustedArrangeCount, scrollView.ArrangeCount);
+				Assert.Equal(new Rect(0, 0, 40, 60), scrollView.LastArrangeBounds);
+
+				scrollViewPlatformView.AdjustedContentInsetValue = UIEdgeInsets.Zero;
+				scrollViewPlatformView.AdjustedContentInsetDidChange();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(20, 0, 40, 70), scrollView.LastArrangeBounds);
+
+				var restoredArrangeCount = scrollView.ArrangeCount;
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(restoredArrangeCount, scrollView.ArrangeCount);
+				Assert.Equal(new Rect(20, 0, 40, 70), scrollView.LastArrangeBounds);
+			});
+		}
+
+		[Fact]
 		public async Task ChangingAncestorSafeAreaEdgesInvalidatesEdgeDisjointGrandchild()
 		{
 			var top = new SafeAreaEdges(
@@ -1609,10 +1674,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class RecordingSafeAreaScrollView : ScrollView, ICrossPlatformLayout
 		{
+			public int ArrangeCount { get; private set; }
+
 			public Rect LastArrangeBounds { get; private set; }
 
 			Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 			{
+				ArrangeCount++;
 				LastArrangeBounds = bounds;
 				return bounds.Size;
 			}

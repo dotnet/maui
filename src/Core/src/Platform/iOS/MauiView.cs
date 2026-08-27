@@ -430,8 +430,6 @@ namespace Microsoft.Maui.Platform
 			return !SafeAreaPadding.AreEqualAtPixelLevel(previousOverlap.Value, overlap.Value, displayScale);
 		}
 
-		SafeAreaPadding GetAdjustedSafeAreaInsets() => GetAdjustedSafeAreaInsets(includeKeyboardOverlap: true, out _);
-
 		SafeAreaPadding GetAdjustedSafeAreaInsets(bool includeKeyboardOverlap) =>
 			GetAdjustedSafeAreaInsets(includeKeyboardOverlap, out _);
 
