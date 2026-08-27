@@ -74,7 +74,7 @@ internal static class MemberResolver
 	private const string ThisPrefix = "this.";
 	private const string BindingContextPrefix = "BindingContext.";
 	private const string DotPrefix = ".";
-	private static readonly ConditionalWeakTable<Compilation, HashSet<string>> GlobalUsingNamespaces = new();
+	private static readonly ConditionalWeakTable<Compilation, GlobalUsingScope> GlobalUsingScopes = new();
 
 	/// <summary>
 	/// Resolves a member expression to determine its location.
@@ -165,6 +165,9 @@ internal static class MemberResolver
 		if (string.IsNullOrEmpty(normalizedTypeName))
 			return false;
 
+		if (GetPredefinedType(compilation, normalizedTypeName) != null)
+			return true;
+
 		if (compilation.GetTypeByMetadataName(normalizedTypeName) != null)
 			return true;
 
@@ -174,7 +177,27 @@ internal static class MemberResolver
 			return true;
 		}
 
-		foreach (var ns in GetGlobalUsingNamespaces(compilation))
+		var globalUsings = GetGlobalUsingScope(compilation);
+		var firstSeparator = normalizedTypeName.IndexOf('.');
+		var rootIdentifier = firstSeparator < 0 ? normalizedTypeName : normalizedTypeName.Substring(0, firstSeparator);
+		if (globalUsings.Aliases.TryGetValue(rootIdentifier, out var aliasTarget))
+		{
+			if (firstSeparator < 0 && aliasTarget is INamedTypeSymbol)
+				return true;
+
+			if (firstSeparator >= 0 && aliasTarget is INamespaceSymbol namespaceAlias)
+			{
+				var aliasNamespace = GetNamespaceName(namespaceAlias);
+				if (!string.IsNullOrEmpty(aliasNamespace))
+				{
+					var aliasCandidate = aliasNamespace + normalizedTypeName.Substring(firstSeparator);
+					if (compilation.GetTypeByMetadataName(aliasCandidate) != null)
+						return true;
+				}
+			}
+		}
+
+		foreach (var ns in globalUsings.Namespaces)
 		{
 			var fullName = $"{ns}.{normalizedTypeName}";
 			if (compilation.GetTypeByMetadataName(fullName) != null)
@@ -184,30 +207,71 @@ internal static class MemberResolver
 		return false;
 	}
 
-	private static HashSet<string> GetGlobalUsingNamespaces(Compilation compilation)
+	private static GlobalUsingScope GetGlobalUsingScope(Compilation compilation)
 	{
-		return GlobalUsingNamespaces.GetValue(compilation, CreateGlobalUsingNamespaces);
+		return GlobalUsingScopes.GetValue(compilation, CreateGlobalUsingScope);
 	}
 
-	private static HashSet<string> CreateGlobalUsingNamespaces(Compilation compilation)
+	private static GlobalUsingScope CreateGlobalUsingScope(Compilation compilation)
 	{
 		var globalNamespaces = new HashSet<string>(StringComparer.Ordinal);
+		var globalAliases = new Dictionary<string, INamespaceOrTypeSymbol>(StringComparer.Ordinal);
+
 		foreach (var tree in compilation.SyntaxTrees)
 		{
-			var root = tree.GetRoot();
-			foreach (var usingDirective in root.DescendantNodes().OfType<UsingDirectiveSyntax>())
+			if (tree.GetRoot() is not CompilationUnitSyntax compilationUnit)
+				continue;
+
+			SemanticModel? semanticModel = null;
+			foreach (var usingDirective in compilationUnit.Usings)
 			{
 				if (!usingDirective.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword) ||
 					usingDirective.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))
 					continue;
 
-				var namespaceName = NormalizeTypeName(usingDirective.Name?.ToString() ?? string.Empty);
-				if (!string.IsNullOrEmpty(namespaceName))
+				var namespaceName = NormalizeTypeName(usingDirective.Name?.WithoutTrivia().ToString() ?? string.Empty);
+				if (string.IsNullOrEmpty(namespaceName))
+					continue;
+
+				if (usingDirective.Alias is { } alias)
+				{
+					semanticModel ??= compilation.GetSemanticModel(tree);
+					if (semanticModel.GetSymbolInfo(usingDirective.Name!).Symbol is INamespaceOrTypeSymbol target)
+						globalAliases[alias.Name.Identifier.ValueText] = target;
+				}
+				else
 					globalNamespaces.Add(namespaceName);
 			}
 		}
 
-		return globalNamespaces;
+		return new GlobalUsingScope(globalNamespaces, globalAliases);
+	}
+
+	private static INamedTypeSymbol? GetPredefinedType(Compilation compilation, string identifier)
+	{
+		var specialType = identifier switch
+		{
+			"bool" => SpecialType.System_Boolean,
+			"byte" => SpecialType.System_Byte,
+			"sbyte" => SpecialType.System_SByte,
+			"short" => SpecialType.System_Int16,
+			"ushort" => SpecialType.System_UInt16,
+			"int" => SpecialType.System_Int32,
+			"uint" => SpecialType.System_UInt32,
+			"long" => SpecialType.System_Int64,
+			"ulong" => SpecialType.System_UInt64,
+			"nint" => SpecialType.System_IntPtr,
+			"nuint" => SpecialType.System_UIntPtr,
+			"char" => SpecialType.System_Char,
+			"float" => SpecialType.System_Single,
+			"double" => SpecialType.System_Double,
+			"decimal" => SpecialType.System_Decimal,
+			"string" => SpecialType.System_String,
+			"object" => SpecialType.System_Object,
+			_ => SpecialType.None,
+		};
+
+		return specialType == SpecialType.None ? null : compilation.GetSpecialType(specialType);
 	}
 
 	public static string? GetContainingNamespace(ITypeSymbol? typeSymbol)
@@ -246,7 +310,7 @@ internal static class MemberResolver
 
 		var normalized = NormalizeTypeName(leadingMemberAccess);
 		var parts = normalized.Split('.');
-		for (var i = parts.Length; i >= 1; i--)
+		for (var i = parts.Length - 1; i >= 1; i--)
 			yield return string.Join(".", parts.Take(i));
 	}
 
@@ -289,6 +353,18 @@ internal static class MemberResolver
 			position++;
 
 		return true;
+	}
+
+	private sealed class GlobalUsingScope
+	{
+		public GlobalUsingScope(HashSet<string> namespaces, Dictionary<string, INamespaceOrTypeSymbol> aliases)
+		{
+			Namespaces = namespaces;
+			Aliases = aliases;
+		}
+
+		public HashSet<string> Namespaces { get; }
+		public Dictionary<string, INamespaceOrTypeSymbol> Aliases { get; }
 	}
 
 	/// <summary>
@@ -356,7 +432,6 @@ internal static class MemberResolver
 		if (type == null)
 			return false;
 
-		// Check this type and all base types
 		var currentType = type;
 		while (currentType != null)
 		{
@@ -367,6 +442,19 @@ internal static class MemberResolver
 			}
 			currentType = currentType.BaseType;
 		}
+
+		if (type.TypeKind == TypeKind.Interface)
+		{
+			foreach (var interfaceType in type.AllInterfaces)
+			{
+				foreach (var member in interfaceType.GetMembers(memberName))
+				{
+					if (member is IPropertySymbol || member is IFieldSymbol || (includeMethods && member is IMethodSymbol))
+						return true;
+				}
+			}
+		}
+
 		return false;
 	}
 }
