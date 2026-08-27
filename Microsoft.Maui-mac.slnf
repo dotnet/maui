@@ -46,6 +46,7 @@
       "src\\Essentials\\samples\\Samples\\Essentials.Sample.csproj",
       "src\\Essentials\\src\\Essentials.csproj",
       "src\\Essentials\\test\\DeviceTests\\Essentials.DeviceTests.csproj",
+      "src\\Essentials\\test\\ExternalBackendTests\\Essentials.ExternalBackend.UnitTests.csproj",
       "src\\Essentials\\test\\UnitTests\\Essentials.UnitTests.csproj",
       "src\\Graphics\\src\\Graphics.Skia\\Graphics.Skia.csproj",
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
