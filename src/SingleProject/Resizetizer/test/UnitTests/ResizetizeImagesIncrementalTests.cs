@@ -185,6 +185,47 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		/// <summary>
+		/// A link that has gone dangling between enumeration and cleanup must not be followed either. The
+		/// wildcard still names what it found, and by the time <c>&lt;Delete&gt;</c> runs the link may point
+		/// at something real again, so a path through it can never be treated as living inside the folder.
+		/// </summary>
+		[Fact]
+		public void CleanupNeverReachesThroughADanglingDirectoryLink()
+		{
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+			AssertGeneratedImageExists(project);
+
+			var outside = Path.Combine(project.PhysicalDirectory, "outside");
+			Directory.CreateDirectory(outside);
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			// Points at a directory that does not exist yet, so the link is dangling right now.
+			var future = Path.Combine(project.PhysicalDirectory, "outside-later");
+			var alias = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r", "alias");
+			if (!SymbolicLink.TryCreateDirectoryLink(alias, future, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			TouchSourceImage(project);
+
+			Build(project);
+
+			AssertGeneratedImageExists(project);
+			Assert.True(File.Exists(precious), $"Cleanup deleted a file outside the intermediate folder: {precious}");
+
+			// The link itself is still inside the folder, so removing it is fine; what must not happen is
+			// anything being deleted through it.
+			Assert.False(Directory.Exists(future), "The dangling link's target should never have been created.");
+		}
+
+		/// <summary>
 		/// The recursive wildcard that finds stale files walks through a directory link, so it can name a
 		/// file that is not really inside the intermediate folder. Deleting that would destroy the real
 		/// file rather than the link, so the cleanup has to leave it alone.
