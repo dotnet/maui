@@ -47,6 +47,9 @@ parameters:
   default:
   - Debug
   - Release
+- name: helixJobMonitorVersion
+  type: string
+  default: 11.0.0-beta.26425.2
 - name: helixJobMonitorTimeoutInMinutes
   type: number
   default: 360
@@ -119,9 +122,9 @@ stages:
 
         toolPath="$AGENT_TEMPDIRECTORY/helix-job-monitor"
         bash ./eng/common/dotnet.sh
-        toolVersion=$(bash ./eng/common/dotnet.sh msbuild eng/Versions.props -getProperty:MicrosoftDotNetHelixSdkPackageVersion -nologo | tail -n 1)
+        toolVersion='${{ parameters.helixJobMonitorVersion }}'
         if [[ -z "$toolVersion" || "$toolVersion" =~ [[:space:]] ]]; then
-          echo "Could not read the Helix SDK package version from eng/Versions.props." >&2
+          echo "The Helix Job Monitor package version is invalid." >&2
           exit 1
         fi
 
