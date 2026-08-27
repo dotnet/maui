@@ -18,6 +18,30 @@ public class Issue10445 : TestShell
 		};
 
 		Shell.SetBackground(this, gradientBrush);
+		var gradientInfoLabel = new Label
+		{
+			Text = "Shell.Background should display a gradient (Yellow to Green) in the navigation bar above.",
+			AutomationId = "GradientInfoLabel",
+			HorizontalTextAlignment = TextAlignment.Center
+		};
+		var isSolidBackground = false;
+		var toggleBackgroundGesture = new TapGestureRecognizer();
+		toggleBackgroundGesture.Tapped += (sender, args) =>
+		{
+			if (isSolidBackground)
+			{
+				ClearValue(Shell.BackgroundProperty);
+				gradientInfoLabel.Text = "Shell.Background should display the platform default in the navigation and tab bars.";
+			}
+			else
+			{
+				Shell.SetBackground(this, new SolidColorBrush(Colors.Blue));
+				gradientInfoLabel.Text = "Shell.Background should display solid blue in the navigation and tab bars.";
+			}
+
+			isSolidBackground = !isSolidBackground;
+		};
+		gradientInfoLabel.GestureRecognizers.Add(toggleBackgroundGesture);
 
 		var page = new ContentPage
 		{
@@ -30,12 +54,7 @@ public class Issue10445 : TestShell
 				HorizontalOptions = LayoutOptions.Center,
 				Children =
 				{
-					new Label
-					{
-						Text = "Shell.Background should display a gradient (Yellow to Green) in the navigation bar above.",
-						AutomationId = "GradientInfoLabel",
-						HorizontalTextAlignment = TextAlignment.Center
-					}
+					gradientInfoLabel
 				}
 			}
 		};
