@@ -8,7 +8,8 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 {
 	/// <summary>
 	/// Verifies the public <see cref="IImageSourcePaint"/> contract that out-of-tree platform backends
-	/// rely on to detect and render image-source backgrounds.
+	/// consume to detect and read image-source backgrounds. The contract is consumption-only, so these
+	/// tests never implement it outside of .NET MAUI.
 	/// </summary>
 	[Category(TestCategory.Core)]
 	public class ImageSourcePaintContractTests
@@ -61,18 +62,6 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
-		public void ExternalBackendCanReadImageSourceFromExternalPaint()
-		{
-			var imageSource = new ExternalImageSource();
-			var view = new ViewStub { Background = new ExternalImageSourcePaint(imageSource) };
-
-			var result = FakeExternalBackend.Describe(view);
-
-			Assert.Equal(FakeExternalBackend.PaintKind.Image, result.Kind);
-			Assert.Same(imageSource, result.ImageSource);
-		}
-
-		[Fact]
 		public void ExternalBackendDistinguishesSolidPaint()
 		{
 			var view = new ViewStub { Background = new SolidPaint(Colors.Red) };
@@ -105,25 +94,34 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.Null(result.ImageSource);
 		}
 
-		/// <summary>
-		/// A paint authored entirely outside of .NET MAUI. It only depends on public API, which proves a
-		/// third-party backend can both produce and consume image-source backgrounds.
-		/// </summary>
-		class ExternalImageSourcePaint : Paint, IImageSourcePaint
+		[Fact]
+		public void ExternalBackendReadsNullImageSourceAsAnImagePaint()
 		{
-			public ExternalImageSourcePaint(IImageSource imageSource) => ImageSource = imageSource;
+			// A null ImageSource still identifies an image background; it simply has nothing to draw.
+			var view = new ViewStub { Background = new ImageSourcePaint() };
 
-			public IImageSource ImageSource { get; }
+			var result = FakeExternalBackend.Describe(view);
+
+			Assert.Equal(FakeExternalBackend.PaintKind.Image, result.Kind);
+			Assert.Null(result.ImageSource);
 		}
 
-		class ExternalImageSource : IImageSource
+		[Fact]
+		public void ImagePaintIsNotAnImageSourcePaint()
 		{
-			public bool IsEmpty => false;
+			// Graphics.ImagePaint carries an already-loaded IImage and is a distinct concept.
+			var view = new ViewStub { Background = new ImagePaint() };
+
+			var result = FakeExternalBackend.Describe(view);
+
+			Assert.NotEqual(FakeExternalBackend.PaintKind.Image, result.Kind);
+			Assert.IsNotAssignableFrom<IImageSourcePaint>(view.Background);
 		}
 
 		/// <summary>
-		/// Stands in for an out-of-tree platform backend. Every member it touches is public .NET MAUI API and
-		/// the image source is retrieved through the contract - no reflection and no internals access.
+		/// Stands in for an out-of-tree platform backend. It only consumes the contract - it never implements
+		/// it - and every member it touches is public .NET MAUI API, so the image source is retrieved with no
+		/// reflection and no internals access.
 		/// </summary>
 		static class FakeExternalBackend
 		{

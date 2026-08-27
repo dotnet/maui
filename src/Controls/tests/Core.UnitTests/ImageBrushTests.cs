@@ -29,29 +29,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ExternalImageSourcePaintConvertsToImageBrush()
-		{
-			var imageSource = ImageSource.FromFile("background.png");
-
-			Brush brush = (Brush)new ExternalImageSourcePaint(imageSource);
-
-			var imageBrush = Assert.IsType<ImageBrush>(brush);
-			Assert.Same(imageSource, imageBrush.ImageSource);
-		}
-
-		[Fact]
 		public void SolidAndGradientPaintsAreNotImageSourcePaints()
 		{
 			Assert.IsNotAssignableFrom<IImageSourcePaint>((Paint)new SolidColorBrush(Colors.Red));
 			Assert.IsNotAssignableFrom<IImageSourcePaint>((Paint)new LinearGradientBrush());
 			Assert.IsNotAssignableFrom<IImageSourcePaint>((Paint)new RadialGradientBrush());
-		}
-
-		class ExternalImageSourcePaint : Paint, IImageSourcePaint
-		{
-			public ExternalImageSourcePaint(IImageSource imageSource) => ImageSource = imageSource;
-
-			public IImageSource ImageSource { get; }
 		}
 	}
 }

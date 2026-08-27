@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView is not MauiTextField platformView)
 				return;
 
-			if (entry.Background is IImageSourcePaint image)
+			if (entry.Background is ImageSourcePaint image)
 			{
 				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
