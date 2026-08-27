@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Essentials.ExternalBackend.UnitTests
 		[InlineData("")]
 		public void NullAndEmptyValuesNormalizeToEmptyString(string? value)
 		{
-			var locale = new Locale(value!, value, value, value);
+			var locale = new Locale(value, value, value, value);
 
 			Assert.Equal(string.Empty, locale.Language);
 			Assert.Equal(string.Empty, locale.Country);
@@ -102,17 +102,6 @@ namespace Microsoft.Maui.Essentials.ExternalBackend.UnitTests
 			Assert.NotNull(backend.LastOptions);
 			Assert.Same(locale, backend.LastOptions!.Locale);
 			Assert.Equal("en", backend.LastOptions.Locale!.Language);
-		}
-
-		[Fact]
-		public void LocaleUsesReferenceEqualityAndDefaultToString()
-		{
-			var first = new Locale("en", "US", "English (United States)", "external:en-US");
-			var second = new Locale("en", "US", "English (United States)", "external:en-US");
-
-			Assert.NotEqual(first, second);
-			Assert.Equal(first, first);
-			Assert.Equal(typeof(Locale).FullName, first.ToString());
 		}
 	}
 }

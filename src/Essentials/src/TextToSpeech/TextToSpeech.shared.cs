@@ -259,8 +259,9 @@ namespace Microsoft.Maui.Media
 	/// non-<see langword="null"/>.
 	/// </para>
 	/// <para>
-	/// Locales are immutable and use reference equality; two instances created with identical values are not
-	/// considered equal.
+	/// Locales are immutable. Although values are stored verbatim, the built-in platform backends treat a
+	/// property that is empty or entirely white-space as "not specified" and fall back accordingly — for
+	/// example, an empty <see cref="Id"/> causes a voice to be selected from <see cref="Language"/> instead.
 	/// </para>
 	/// </remarks>
 	public class Locale
