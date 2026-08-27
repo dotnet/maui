@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
+    <ProjectReference Include="..\ExternalBackend\Core.ExternalBackend.csproj" />
 
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.resx" Link="Resources\StringResources.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.cs.resx" Link="Resources\StringResources.cs.resx" />
