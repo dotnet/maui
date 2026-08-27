@@ -474,6 +474,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task RequestSyncQueuedBehindStaleFailureReconcilesReplacementPlatform()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var first = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			first.IsReadyValue = false;
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			var failure = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+			first.PushTaskBehavior = (_, _) => failure.Task;
+			first.IsReadyValue = true;
+			first.Host.RequestSync();
+
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+			Assert.Empty(first.Pushed);
+
+			window.Handler = CreateHandler(factory);
+			ForceResolvePlatform(window);
+			var second = (RecordingModalNavigationPlatform)factory.Created[1];
+			var secondPushed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+			second.PushBehavior = (_, _) => secondPushed.TrySetResult(null);
+
+			second.Host.RequestSync();
+			failure.SetException(new InvalidOperationException("push boom"));
+
+			await secondPushed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.Same(modal, Assert.Single(second.Pushed).Page);
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+		}
+
+		[Fact]
 		public async Task DeferredPopPreservesTheRequestedAnimationFlag()
 		{
 			RecordingModalNavigationPlatform platform = null;

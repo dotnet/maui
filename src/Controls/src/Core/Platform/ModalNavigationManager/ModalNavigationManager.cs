@@ -306,6 +306,8 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		bool syncing = false;
+		int syncingGeneration = -1;
+		int queuedSyncGeneration = -1;
 
 		// Framework-side readiness only: the window and its page both have handlers. Deliberately kept
 		// free of any IModalNavigationPlatform.IsReady contribution so it is safe for an override to
@@ -426,14 +428,28 @@ namespace Microsoft.Maui.Controls.Platform
 		// Typically it's always a good idea to re-evaluate after any async operation has completed
 		async Task SyncPlatformModalStackAsync()
 		{
-			if (!IsModalReady || syncing)
+			if (!IsModalReady)
 				return;
 
+			if (syncing)
+			{
+				// A handler replacement can request reconciliation while an operation from the outgoing
+				// scope is still awaiting. Remember requests from the newer scope so the old operation
+				// hands off even if it faults and therefore cannot set syncAgain. Same-scope requests
+				// retain the existing behavior and do not turn repeated platform failures into a retry loop.
+				if (_scopeGeneration != syncingGeneration)
+					queuedSyncGeneration = _scopeGeneration;
+
+				return;
+			}
+
 			bool syncAgain = false;
+			var generation = _scopeGeneration;
 
 			try
 			{
 				syncing = true;
+				syncingGeneration = generation;
 
 				int popTo;
 
@@ -501,15 +517,21 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			finally
 			{
+				var syncNewScope = queuedSyncGeneration >= 0 &&
+					queuedSyncGeneration != generation;
+				queuedSyncGeneration = -1;
+
 				// Code has multiple exit points during the sync operation.
 				// So we're using a try/finally to ensure that syncing always 
 				// gets transitioned to false. If more exit points are added at a later point  
 				// we don't have to always worry about the exit point setting syncing to false.
 				syncing = false;
+				syncingGeneration = -1;
 
 				// syncAgain is only set after a successful operation so we won't hit a case here
-				// where we hit an infinite loop of syncing.
-				if (syncAgain)
+				// where we hit an infinite loop of syncing. A newer scope's queued request is also safe
+				// to run because it reconciles a different platform instance.
+				if (syncAgain || syncNewScope)
 				{
 					await SyncModalStackWhenPlatformIsReadyAsync().ConfigureAwait(false);
 				}
