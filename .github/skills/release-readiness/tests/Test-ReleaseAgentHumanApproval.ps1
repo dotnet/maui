@@ -93,7 +93,7 @@ $selfApproval = Get-TestResult @(
 Assert-Equal 'PR author cannot satisfy the gate' $false $selfApproval.Approved
 
 $botApproval = Get-TestResult @(
-    (New-Review 4 'mauibot' 'APPROVED' '2026-01-01T00:03:00Z'),
+    (New-Review 4 'MaUiBoT' 'APPROVED' '2026-01-01T00:03:00Z'),
     $aliceApproval
 )
 Assert-Equal 'PAT-based bot account cannot satisfy the gate' $false $botApproval.Approved

@@ -67,12 +67,12 @@ function Get-ReleaseAgentHumanApproval {
         if ($login.Equals($PullRequestAuthor, [System.StringComparison]::OrdinalIgnoreCase)) {
             continue
         }
+        $key = $login.ToLowerInvariant()
         if ($login.EndsWith('[bot]', [System.StringComparison]::OrdinalIgnoreCase) -or
-            $knownBotLogins -contains $login) {
+            $knownBotLogins -contains $key) {
             continue
         }
 
-        $key = $login.ToLowerInvariant()
         if (-not $normalizedPermissions.ContainsKey($key) -or
             $normalizedPermissions[$key] -notin $trustedPermissions) {
             continue
