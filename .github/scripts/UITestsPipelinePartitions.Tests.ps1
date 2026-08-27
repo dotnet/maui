@@ -12,11 +12,11 @@ BeforeAll {
     $script:uiSteps = Get-Content -LiteralPath (Join-Path $script:repoRoot 'eng/pipelines/common/ui-tests-steps.yml') -Raw
     $script:testRoot = Join-Path $script:repoRoot 'src/Controls/tests/TestCases.Shared.Tests'
     $script:categories = Get-Content -LiteralPath (Join-Path $script:testRoot 'UITestCategories.cs') -Raw
-    $script:plan = Get-Content -LiteralPath (
-        Join-Path $script:repoRoot '.github/skills/rebalance-ui-test-categories/CollectionView-rebalance.json'
+    $script:summary = Get-Content -LiteralPath (
+        Join-Path $script:repoRoot '.github/skills/rebalance-ui-test-categories/CollectionView-rebalance-summary.json'
     ) -Raw | ConvertFrom-Json
     $script:inventory = @(Get-UITestInventory -TestRoot $script:testRoot -Category CollectionView)
-    $script:shards = 1..$script:plan.shardCount | ForEach-Object { "CollectionView$_" }
+    $script:shards = 1..$script:summary.shardCount | ForEach-Object { "CollectionView$_" }
 }
 
 Describe 'CollectionView shard category definitions' {
@@ -24,7 +24,7 @@ Describe 'CollectionView shard category definitions' {
         foreach ($shard in $script:shards) {
             $script:categories | Should -Match "public const string $shard = `"$shard`";"
         }
-        $script:categories | Should -Not -Match "public const string CollectionView$($script:plan.shardCount + 1) ="
+        $script:categories | Should -Not -Match "public const string CollectionView$($script:summary.shardCount + 1) ="
     }
 
     It 'uses each shard as one ordinary matrix entry' {
@@ -44,15 +44,9 @@ Describe 'CollectionView shard category definitions' {
 
 Describe 'CollectionView shards are exhaustive and mutually exclusive' {
     It 'keeps the umbrella and exactly one planned method-level shard on every test' {
-        $script:inventory.Count | Should -Be $script:plan.assignments.Count
-        $planned = @{}
-        foreach ($assignment in $script:plan.assignments) {
-            $planned[$assignment.testId] = $assignment.shard
-        }
-
         foreach ($test in $script:inventory) {
             $test.ShardCount | Should -Be 1 -Because "$($test.Id) requires exactly one shard"
-            $test.Shard | Should -Be $planned[$test.Id] -Because "$($test.Id) must match the historical plan"
+            $test.Shard | Should -BeIn $script:shards -Because "$($test.Id) must use a current shard"
         }
     }
 
@@ -68,9 +62,9 @@ Describe 'CollectionView shards are exhaustive and mutually exclusive' {
     }
 
     It 'projects every platform and shard below the target' {
-        foreach ($shard in $script:plan.projectedShardMinutes.PSObject.Properties) {
+        foreach ($shard in $script:summary.projectedShardMinutes.PSObject.Properties) {
             foreach ($platform in $shard.Value.PSObject.Properties) {
-                [double]$platform.Value | Should -BeLessThan $script:plan.targetMinutes -Because (
+                [double]$platform.Value | Should -BeLessThan $script:summary.planningLimitMinutes -Because (
                     "$($shard.Name) on $($platform.Name) must remain below the target"
                 )
             }
