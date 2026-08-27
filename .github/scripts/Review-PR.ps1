@@ -55,6 +55,21 @@ param(
     [ValidateSet('android', 'ios', 'windows', 'maccatalyst', 'catalyst')]
     [string]$Platform,
 
+    # Repository holding the pull request under review, in `owner/name` form.
+    # Defaults to the upstream project so every existing caller and the /review
+    # command keep their behaviour unchanged.
+    #
+    # The bot's own fix pull requests are published to the testing fork, and until
+    # this was a parameter the review path could not reach them at all: every
+    # `gh` call named dotnet/maui, so reviewing fork pull request 848 would have
+    # read, and posted to, whichever unrelated upstream pull request happened to
+    # carry the number 848. That is why 97 open fix pull requests had never been
+    # reviewed. Threaded into every repository-bound call in this script and into
+    # both posting scripts, so one value binds the whole review.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
+
     [Parameter(Mandatory = $false)]
     [ValidateSet('Setup', 'Gate', 'CopilotReview', 'Post')]
     [string]$Phase,
@@ -366,7 +381,7 @@ if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
 Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
 $prInfoJson = Invoke-GhCommandWithRetry `
-    -Arguments @('api', "repos/dotnet/maui/pulls/$PRNumber") `
+    -Arguments @('api', "repos/$Repository/pulls/$PRNumber") `
     -Description "read PR #$PRNumber metadata" `
     -AllowNotFound `
     -RequireOutput
@@ -555,7 +570,7 @@ if ($DryRun) {
 <!-- MAUI_BOT_MERGE_CONFLICT -->
 ⚠️ **Merge Conflict Detected** — This PR conflicts with its target branch ``$baseRefName``. Please rebase onto the target branch and resolve the conflicts.
 "@
-            try { gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null } catch { }
+            try { gh pr comment $PRNumber --repo $Repository --body $conflictBody 2>&1 | Out-Null } catch { }
             Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
             Write-Error "Merge conflicts between PR #$PRNumber head and latest '$baseRefName'. Review cannot proceed until conflicts are resolved."
             exit 1
@@ -635,7 +650,7 @@ if ($DryRun) {
 ⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts.
 "@
         try {
-            gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
+            gh pr comment $PRNumber --repo $Repository --body $conflictBody 2>&1 | Out-Null
             Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
         } catch {
             Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
@@ -2647,7 +2662,7 @@ if (Test-Path $prMetaPath) {
     } catch { Write-Host "  ⚠️ Could not read pr-metadata.json: $($_.Exception.Message)" -ForegroundColor Yellow }
 }
 if (-not $prCurrentTitle -or -not $prCurrentBody) {
-    $prMeta = gh pr view $PRNumber --json title,body 2>$null | ConvertFrom-Json
+    $prMeta = gh pr view $PRNumber --repo $Repository --json title,body 2>$null | ConvertFrom-Json
     if (-not $prMeta) { $prMeta = $prInfo }
     if (-not $prCurrentTitle -and $prMeta -and $prMeta.title) { $prCurrentTitle = [string]$prMeta.title }
     if (-not $prCurrentBody -and $prMeta -and $prMeta.body) { $prCurrentBody = [string]$prMeta.body }
@@ -3092,9 +3107,9 @@ if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
         if ($DryRun) {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit -DryRun
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -Repository $Repository -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit -DryRun
         } else {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -Repository $Repository -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit
         }
         # Capture review ID from script output (format: AI_SUMMARY_REVIEW_ID=<id>)
         $idLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_ID=' } | Select-Object -Last 1
@@ -3194,7 +3209,7 @@ if ($isPRWinner) {
             $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
             if (Test-Path $inlineScript) {
                 Write-Host "  📝 [DryRun] Previewing deferred inline review..." -ForegroundColor Cyan
-                try { & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -ReviewedCommit $ReviewedCommit -DryRun }
+                try { & $inlineScript -PRNumber $PRNumber -Repository $Repository -FindingsFile $findingsFile -ReviewedCommit $ReviewedCommit -DryRun }
                 catch { Write-Host "  ⚠️ Inline preview failed (non-fatal): $_" -ForegroundColor Yellow }
             }
         } else {
