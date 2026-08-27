@@ -15,19 +15,19 @@ internal enum MemberLocation
 {
 	/// <summary>Member exists only on the page/view type (this).</summary>
 	This,
-	
+
 	/// <summary>Member exists only on the x:DataType type (BindingContext).</summary>
 	DataType,
-	
+
 	/// <summary>Member exists on both types - ambiguous, requires explicit prefix.</summary>
 	Both,
-	
+
 	/// <summary>Member not found on either type.</summary>
 	Neither,
-	
+
 	/// <summary>Explicitly prefixed with 'this.' - forced to local.</summary>
 	ForcedThis,
-	
+
 	/// <summary>Explicitly prefixed with '.' or 'BindingContext.' - forced to binding.</summary>
 	ForcedDataType,
 }
@@ -38,13 +38,13 @@ internal enum MemberLocation
 internal readonly struct MemberResolutionResult
 {
 	public MemberLocation Location { get; }
-	
+
 	/// <summary>The expression with prefix stripped (if any).</summary>
 	public string Expression { get; }
-	
+
 	/// <summary>The first identifier in the expression (for member lookup).</summary>
 	public string RootIdentifier { get; }
-	
+
 	/// <summary>True if the root identifier matches a well-known static type name.</summary>
 	public bool ConflictsWithStaticType { get; }
 
@@ -59,7 +59,7 @@ internal readonly struct MemberResolutionResult
 		ConflictsWithStaticType = conflictsWithStaticType;
 		ResolvesToStaticType = resolvesToStaticType;
 	}
-	
+
 	public bool IsBinding => Location == MemberLocation.DataType || Location == MemberLocation.ForcedDataType;
 	public bool IsLocal => Location == MemberLocation.This || Location == MemberLocation.ForcedThis;
 	public bool IsAmbiguous => Location == MemberLocation.Both;
@@ -90,7 +90,7 @@ internal static class MemberResolver
 			return new MemberResolutionResult(MemberLocation.Neither, expression, string.Empty);
 
 		var trimmed = expression.Trim();
-		
+
 		// Check for explicit prefixes first
 		if (trimmed.StartsWith(ThisPrefix, StringComparison.Ordinal))
 		{
@@ -98,14 +98,14 @@ internal static class MemberResolver
 			var root = GetRootIdentifier(stripped);
 			return new MemberResolutionResult(MemberLocation.ForcedThis, stripped, root);
 		}
-		
+
 		if (trimmed.StartsWith(BindingContextPrefix, StringComparison.Ordinal))
 		{
 			var stripped = trimmed.Substring(BindingContextPrefix.Length);
 			var root = GetRootIdentifier(stripped);
 			return new MemberResolutionResult(MemberLocation.ForcedDataType, stripped, root);
 		}
-		
+
 		// "." prefix means BindingContext (shorthand)
 		if (trimmed.StartsWith(DotPrefix, StringComparison.Ordinal) && trimmed.Length > 1 && char.IsLetter(trimmed[1]))
 		{
@@ -121,7 +121,7 @@ internal static class MemberResolver
 
 		var onThis = thisType != null && HasMember(thisType, rootIdentifier);
 		var onDataType = dataType != null && HasMember(dataType, rootIdentifier);
-		
+
 		var resolvesToStaticType = false;
 		var conflictsWithStatic = false;
 		if (compilation != null)
@@ -144,7 +144,7 @@ internal static class MemberResolver
 
 		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic, resolvesToStaticType);
 	}
-	
+
 	/// <summary>
 	/// Checks if an identifier resolves to a type in the compilation (including via global usings).
 	/// </summary>
@@ -412,14 +412,14 @@ internal static class MemberResolver
 			return false;
 
 		var trimmed = expression.Trim();
-		
+
 		// Simple identifier: letters, digits, underscores only (and dots for member access)
 		foreach (char c in trimmed)
 		{
 			if (!char.IsLetterOrDigit(c) && c != '_' && c != '.')
 				return false;
 		}
-		
+
 		// Must start with letter or underscore
 		return char.IsLetter(trimmed[0]) || trimmed[0] == '_';
 	}

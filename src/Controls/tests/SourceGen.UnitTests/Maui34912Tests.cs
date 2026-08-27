@@ -111,6 +111,54 @@ public partial class InterfaceExpressionPage : ContentPage
 		Assert.Contains("\"Name\"", generated, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void MethodInheritedFromInterfaceIsNotCapturedFromPage()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterfaceMethodPage"
+             x:DataType="local:IChildViewModel">
+    <Label Text="{GetText() + Name}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public interface IBaseViewModel
+{
+	string Name { get; }
+	string GetText();
+}
+
+public interface IChildViewModel : IBaseViewModel
+{
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterfaceMethodPage : ContentPage
+{
+	public InterfaceMethodPage() => InitializeComponent();
+	public string GetText() => "page";
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, diagnostic => diagnostic.Id == "MAUIX2009");
+		Assert.NotNull(generated);
+		Assert.Contains("__source.GetText() + __source.Name", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("__capture_GetText", generated, StringComparison.Ordinal);
+	}
+
 	[Theory]
 	[InlineData("{DateTime}")]
 	[InlineData("{DateTimeProperty}")]
