@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <!--
+      This assembly deliberately mimics a platform backend that ships outside of dotnet/maui.
+      It must NOT be listed in src/Core/src/Properties/AssemblyInfo.cs, otherwise the tests that
+      consume it would no longer prove that the container view APIs are reachable from a
+      non-friend assembly.
+    -->
+    <AssemblyName>Microsoft.Maui.Core.ExternalBackend.TestSupport</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Core.ExternalBackend.TestSupport</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core.csproj" />
+  </ItemGroup>
+
+</Project>
