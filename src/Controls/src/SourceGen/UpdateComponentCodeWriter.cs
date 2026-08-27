@@ -580,10 +580,10 @@ static class UpdateComponentCodeWriter
 		}
 
 		if (element.Properties.TryGetValue(XmlName.xName, out var fieldNameNode)
-			&& fieldNameNode is ValueNode { Value: string fieldName }
-			&& existingNamedFields?.Contains(fieldName) == true)
+			&& fieldNameNode is ValueNode { Value: string fieldName })
 		{
-			codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(fieldName)} = {varName};");
+			if (existingNamedFields?.Contains(fieldName) == true)
+				codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(fieldName)} = {varName};");
 			codeWriter.WriteLine($"{varName}.StyleId ??= \"{EscapeString(fieldName)}\";");
 		}
 	}
