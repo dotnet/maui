@@ -637,6 +637,52 @@ the promote step reads them from `workloadSet` rather than from `stageDependenci
 `nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters` collapse into a
 single `--skip` on `release filter`, scoped to the set being published (§12).
 
+### Deliberate divergences from upstream
+
+The source pipeline moved after this design was drafted. Upstream commit `3013cd846f`,
+*"[ci] Remove repository-specific channel policy"*, changes what is being migrated *from*,
+so the differences below are design positions rather than parity gaps. Both were verified
+against that commit rather than taken on report.
+
+**1. Channel verification is kept here; upstream removed it.**
+
+`3013cd846f` deletes the `$requiredChannelName` / `$requiredChannelId` conditionals *and*
+the whole `$channelMatches` verification block, leaving only "resolve the commit to exactly
+one matching BAR build".
+
+This tool keeps the check, and `config/repositories.json` keeps the per-repository channel.
+The reasoning: **identity verification and channel verification answer different questions.**
+Commit and repository checks prove *which* build is being released. Channel membership
+proves that build *reached a quality bar* — someone promoted it deliberately. Dropping the
+second means any build for the right commit is releasable, including one that was never
+promoted.
+
+That is a real reduction in safety, not a simplification, so it is not adopted. It is
+recorded here as a divergence so a reviewer sees a decision rather than drift. If the
+channel requirement becomes genuinely burdensome the answer is to remove it from
+`repositories.json` — a reviewable config change with a test — not to delete the code path.
+
+**2. Resolution by BAR ID, and the null-repository guard, are ahead of upstream.**
+
+After `3013cd846f` the upstream prepare step resolves a build one way only:
+
+```powershell
+$buildJson = & $darc get-build --ci --repo $sourceRepository --commit "$env:COMMIT_HASH" ...
+$repository = ([Uri] $build.gitHubRepository).GetLeftPart([UriPartial]::Path)...
+```
+
+Two problems, on what is now the *only* path:
+
+- `--repo` + `--commit` cannot resolve a build BAR recorded without a GitHub URL. It exits
+  42. That is not theoretical — it is what a SkiaSharp dry run actually does.
+- `[Uri] $build.gitHubRepository` has no null guard, and that field *is* null in production
+  for BAR build 328857.
+
+So `--bar-id` resolution (§5) and `BarBuildMapper`'s boundary normalisation (§15) are not
+defensiveness against a hypothetical. They handle two cases the current pipeline cannot,
+one of which blocks a real release today. A reviewer comparing the two implementations
+should read them as fixes, not as extra machinery.
+
 ---
 
 ## 14. Arcade onboarding
