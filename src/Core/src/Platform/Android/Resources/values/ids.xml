@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<item name="maui_window_insets_scope" type="id" />
+</resources>
