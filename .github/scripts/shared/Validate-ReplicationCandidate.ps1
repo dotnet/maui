@@ -203,6 +203,102 @@ function Read-BoundedUtf8File {
     return $text
 }
 
+function Get-ReplicationManifestPropertyValue {
+    <#
+    .SYNOPSIS
+        Reads a manifest property without tripping StrictMode.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Manifest,
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    $property = $Manifest.PSObject.Properties[$Name]
+    if ($property -and $null -ne $property.Value) { return $property.Value }
+    return $null
+}
+
+function Get-ReplicationManifestDisclosure {
+    param(
+        [Parameter(Mandatory = $true)]$Manifest,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [int]$MaximumLength = 300
+    )
+
+    return (ConvertTo-ReplicationDisclosureText `
+        -Value (Get-ReplicationManifestPropertyValue -Manifest $Manifest -Name $Name) `
+        -MaximumLength $MaximumLength)
+}
+
+function Get-ReplicationManifestDisclosureList {
+    param(
+        [Parameter(Mandatory = $true)]$Manifest,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [int]$MaximumLength = 300
+    )
+
+    $value = Get-ReplicationManifestPropertyValue -Manifest $Manifest -Name $Name
+    if ($null -eq $value) { return @() }
+    return @(@($value) |
+        ForEach-Object { ConvertTo-ReplicationDisclosureText -Value $_ -MaximumLength $MaximumLength } |
+        Where-Object { $_ })
+}
+
+function ConvertTo-ReplicationDisclosureText {
+    <#
+    .SYNOPSIS
+        Sanitizes an agent-written disclosure string for display, dropping it
+        rather than throwing when it cannot be made safe.
+
+    .DESCRIPTION
+        The disclosure fields - the root cause, the winning approach, the
+        rejected approaches, the independent review, the try-fix panel - are
+        read by a human and acted on by nothing. They cross the trust boundary
+        like everything else the agent writes, so they must be sanitized; but a
+        disclosure is a courtesy to a reader and must never outrank the fix it
+        describes.
+
+        ConvertTo-BoundedSingleLine throws on text it cannot accept, and four
+        completed runs in this pipeline have already been destroyed by a bound
+        that refused instead of trimming. So this wrapper keeps the same
+        sanitizer and converts its refusal into an empty field: unsafe text is
+        still never emitted, and the run still ships.
+    #>
+    param(
+        [AllowNull()][object]$Value,
+        [int]$MaximumLength = 300
+    )
+
+    if ($Value -isnot [string]) { return '' }
+    if ([string]::IsNullOrWhiteSpace([string]$Value)) { return '' }
+
+    $text = [string]$Value
+
+    # Defanged here as well as at render time. The publisher strips these too,
+    # but this is the trust boundary, and a disclosure that reaches a log on
+    # some other path must not be able to set a pipeline variable.
+    $text = $text -replace '##vso\[[^\]]*\]', ''
+    $text = $text -replace '##\[[^\]]*\]', ''
+    $text = $text -replace '::(?:set-output|add-mask|error|warning|notice)[^\s]*', ''
+
+    # A mention in a pull request body notifies a real person. Nothing in this
+    # text was written by someone entitled to do that, so a plausible mention
+    # becomes a code span, which GitHub renders verbatim and does not link.
+    $text = [regex]::Replace($text, '(?<![\w`])@([A-Za-z0-9][\w-]*)', '`@$1`')
+
+    if ([string]::IsNullOrWhiteSpace($text)) { return '' }
+
+    try {
+        return ConvertTo-BoundedSingleLine `
+            -Value $text `
+            -Context 'Candidate disclosure' `
+            -MaximumLength $MaximumLength `
+            -Prose
+    } catch {
+        return ''
+    }
+}
+
 function Assert-JsonElementBounds {
     param(
         [Parameter(Mandatory = $true)][System.Text.Json.JsonElement]$Element,
@@ -1172,6 +1268,11 @@ function Read-ReplicationManifest {
         ProposedFiles = @($proposedFiles.ToArray() | Sort-Object)
         FixFiles = @($fixFiles.ToArray() | Sort-Object)
         BaseSha = $baseSha
+        FixRootCause = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRootCause' -MaximumLength 600)
+        FixApproach = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixApproach' -MaximumLength 600)
+        FixRejectedApproaches = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixRejectedApproaches' -MaximumLength 300)
+        FixPanel = @(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixPanel')
+        FixIndependentReview = (Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixIndependentReview')
         PublishedTestType = ConvertTo-PublishedTestType -TestType $testType
         ReproductionSteps = @($reproductionSteps)
         SelectedDeviceId = $selectedDeviceId
@@ -4185,6 +4286,50 @@ function Invoke-ReplicationCandidateValidation {
             proposedFiles = @($manifest.ProposedFiles)
             fixFiles = @($fixFiles | ForEach-Object { $_.Path })
             fixPatch = if ($hasFixPatch) { 'fix.patch' } else { $null }
+            # Everything the fix phase learned about its own work. Without
+            # these the publisher renders a fix with no root cause, no
+            # approach, and no panel - which is exactly what every fix pull
+            # request in the corpus looked like, because the fields stopped
+            # here and nothing noticed for the feature's entire life.
+            #
+            # Dropped entirely when the fix was discarded above, so a rejected
+            # fix cannot leave its reasoning attached to a reproduction that
+            # ships alone.
+            fixRootCause = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixRootCause -MaximumLength 600
+            } else { '' }
+            fixApproach = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixApproach -MaximumLength 600
+            } else { '' }
+            fixRejectedApproaches = if ($hasFixPatch) {
+                @(@($manifest.FixRejectedApproaches) |
+                    ForEach-Object { ConvertTo-ReplicationDisclosureText -Value $_ -MaximumLength 300 } |
+                    Where-Object { $_ } |
+                    Select-Object -First 8)
+            } else { @() }
+            fixPanel = if ($hasFixPatch) {
+                @(@($manifest.FixPanel) | Where-Object { $_ } | ForEach-Object {
+                    [ordered]@{
+                        attempt = [int]($_.attempt)
+                        model = ConvertTo-ReplicationDisclosureText -Value $_.model -MaximumLength 60
+                        result = ConvertTo-ReplicationDisclosureText -Value $_.result -MaximumLength 40
+                        detail = ConvertTo-ReplicationDisclosureText -Value $_.detail -MaximumLength 300
+                        won = [bool]($_.won)
+                    }
+                } | Select-Object -First 10)
+            } else { @() }
+            fixIndependentReview = if ($hasFixPatch -and $manifest.FixIndependentReview) {
+                [ordered]@{
+                    model = ConvertTo-ReplicationDisclosureText -Value $manifest.FixIndependentReview.model -MaximumLength 60
+                    summary = ConvertTo-ReplicationDisclosureText -Value $manifest.FixIndependentReview.summary -MaximumLength 600
+                    findings = @(@($manifest.FixIndependentReview.findings) | Where-Object { $_ } | ForEach-Object {
+                        [ordered]@{
+                            severity = ConvertTo-ReplicationDisclosureText -Value $_.severity -MaximumLength 40
+                            detail = ConvertTo-ReplicationDisclosureText -Value $_.detail -MaximumLength 800
+                        }
+                    } | Where-Object { $_.detail } | Select-Object -First 6)
+                }
+            } else { $null }
             reproductionSteps = @($manifest.ReproductionSteps)
             candidateSource = $candidateSource
             evidence = [ordered]@{

@@ -60,6 +60,16 @@ BeforeAll {
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
     }
+    $validatorScript = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
+    foreach ($name in @(
+        'ConvertTo-BoundedSingleLine',
+        'ConvertTo-ReplicationDisclosureText',
+        'Get-ReplicationManifestPropertyValue',
+        'Get-ReplicationManifestDisclosure',
+        'Get-ReplicationManifestDisclosureList'
+    )) {
+        Invoke-Expression (Get-ScriptFunctionText -Path $validatorScript -Name $name)
+    }
     foreach ($name in @(
         'Test-ReplicationPullRequestBody',
         'Get-ReplicationMigrationKey'
@@ -2354,5 +2364,164 @@ Describe 'The candidate gate allowlists every manifest field the orchestrator wr
         $written | Should -Contain 'fixPanel'
 
         @($written | Where-Object { $allowed -cnotcontains $_ }) | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Fix disclosures survive the validation boundary' {
+    It 'emits every fix disclosure the publisher reads' {
+        # For the whole life of these fields the publisher rendered nothing.
+        # The orchestrator wrote fixRootCause, fixApproach and the rejected
+        # approaches; the gate allowlisted them; and then the validated
+        # document - the only thing the publisher ever reads - listed just
+        # fixFiles and fixPatch, so the rest were dropped in silence. Every fix
+        # pull request in the corpus shipped with no root cause, no approach
+        # and no comparison, and no test noticed, because each half was correct
+        # on its own.
+        $publisher = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $validator = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
+
+        $publisherSource = Get-Content -LiteralPath $publisher -Raw
+        $read = @()
+        $read += @([regex]::Matches($publisherSource, "PSObject\.Properties\['(fix[A-Za-z]+)'\]") |
+            ForEach-Object { $_.Groups[1].Value })
+        $read += @([regex]::Matches($publisherSource, "-Name\s+'(fix[A-Za-z]+)'") |
+            ForEach-Object { $_.Groups[1].Value })
+        $read = @($read | Sort-Object -Unique)
+
+        # Guards the guard: an extraction that matches nothing would make the
+        # comparison below pass while protecting nothing at all.
+        $read.Count | Should -BeGreaterThan 3
+        $read | Should -Contain 'fixPanel'
+        $read | Should -Contain 'fixRootCause'
+
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($validator, [ref]$null, [ref]$parseErrors)
+        $parseErrors | Should -BeNullOrEmpty
+
+        $document = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $args[0].Left.Extent.Text -eq '$validatedDocument'
+        }, $true)
+        $document | Should -Not -BeNullOrEmpty
+
+        $emitted = @($document.Right.Extent.Text |
+            ForEach-Object { [regex]::Matches($_, '(?m)^\s{12}([A-Za-z][A-Za-z0-9_]*)\s*=') } |
+            ForEach-Object { $_.Groups[1].Value } |
+            Sort-Object -Unique)
+        $emitted.Count | Should -BeGreaterThan 10
+
+        @($read | Where-Object { $emitted -cnotcontains $_ }) | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'A disclosure is sanitized without ever costing the run' {
+    It 'never throws, whatever the agent wrote' {
+        # Four completed runs have been destroyed by a bound that refused
+        # instead of trimming. A disclosure is a courtesy to a reader and must
+        # never outrank the fix it describes.
+        foreach ($value in @($null, '', '   ', 42, ('x' * 20000), "a`nb`tc", [pscustomobject]@{ a = 1 })) {
+            { ConvertTo-ReplicationDisclosureText -Value $value } | Should -Not -Throw
+        }
+
+        (ConvertTo-ReplicationDisclosureText -Value ('x' * 20000)).Length | Should -BeLessOrEqual 300
+        ConvertTo-ReplicationDisclosureText -Value $null | Should -Be ''
+        ConvertTo-ReplicationDisclosureText -Value 42 | Should -Be ''
+    }
+
+    It 'never attaches a fix disclosure to a candidate that carries no fix' {
+        # A reproduction-only PR that printed a root cause would be describing a
+        # fix nobody authored. The gate is the only thing preventing it, and a
+        # surviving mutant showed nothing was asking.
+        $validator = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
+        $validatorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $validator, [ref]$null, [ref]$null)
+        $assignment = $validatorAst.Find({
+            param($node)
+            $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $node.Left.Extent.Text -eq '$validatedDocument'
+        }, $true)
+        $assignment | Should -Not -BeNullOrEmpty
+
+        $hashtable = $assignment.Right.Find({
+            param($node) $node -is [System.Management.Automation.Language.HashtableAst]
+        }, $true)
+
+        # fixFiles is deliberately exempt: it is an array that is empty by
+        # construction when no fix exists, and the degrade path in the yml
+        # reads exactly that emptiness.
+        $exempt = @('fixFiles')
+        $gated = @()
+        foreach ($pair in $hashtable.KeyValuePairs) {
+            $key = $pair.Item1.Extent.Text
+            if ($key -notlike 'fix*' -or $exempt -contains $key) { continue }
+            $gated += $key
+            $pair.Item2.Extent.Text | Should -Match '\$hasFixPatch' -Because "$key must not be published for a run with no fix"
+        }
+
+        # Guard the guard: an extraction that finds nothing would pass silently.
+        $gated.Count | Should -BeGreaterThan 4
+        $gated | Should -Contain 'fixRootCause'
+        $gated | Should -Contain 'fixPanel'
+    }
+
+    It 'swallows the refusal a control character still raises' {
+        # The bounded call genuinely throws on these - measured, not assumed -
+        # so the catch is the only thing standing between one stray byte in
+        # model-written prose and a certified run dying at the gate. Nothing
+        # exercised it until a surviving mutant asked the question.
+        foreach ($control in @([char]0, [char]7, [char]127)) {
+            $value = 'root cause' + $control + ' explained'
+
+            { ConvertTo-BoundedSingleLine -Value $value -Context 'Probe' -MaximumLength 300 -Prose } |
+                Should -Throw
+            { ConvertTo-ReplicationDisclosureText -Value $value } | Should -Not -Throw
+            ConvertTo-ReplicationDisclosureText -Value $value | Should -Be ''
+        }
+    }
+
+    It 'strips an Azure logging directive instead of emitting it' {
+        ConvertTo-ReplicationDisclosureText -Value '##vso[task.setvariable variable=x]y' |
+            Should -Not -Match '##vso\['
+        ConvertTo-ReplicationDisclosureText -Value '##[error]spoofed' |
+            Should -Not -Match '##\['
+    }
+
+    It 'defuses a mention so a pull request body cannot notify anyone' {
+        # Nothing that wrote this text was entitled to ping a maintainer.
+        $out = ConvertTo-ReplicationDisclosureText -Value 'Thanks @kubaflo for the report'
+
+        $out | Should -Be 'Thanks `@kubaflo` for the report'
+        $out | Should -Not -Match '(?<!`)@kubaflo'
+    }
+
+    It 'leaves technical prose alone' {
+        # Over-sanitizing is its own defect: these disclosures describe C#, and
+        # mangling them would make the panel useless to the reader it is for.
+        ConvertTo-ReplicationDisclosureText -Value 'Guard List<int> and Dictionary<string,int>' |
+            Should -Be 'Guard List<int> and Dictionary<string,int>'
+        ConvertTo-ReplicationDisclosureText -Value 'use @"literal" strings' |
+            Should -Be 'use @"literal" strings'
+        ConvertTo-ReplicationDisclosureText -Value 'reported by a.b@example.com' |
+            Should -Be 'reported by a.b@example.com'
+    }
+
+    It 'reads a manifest that carries none of the disclosure properties' {
+        Set-StrictMode -Version Latest
+        $bare = [pscustomobject]@{ issueNumber = 5 }
+
+        { Get-ReplicationManifestDisclosure -Manifest $bare -Name 'fixRootCause' } | Should -Not -Throw
+        Get-ReplicationManifestDisclosure -Manifest $bare -Name 'fixRootCause' | Should -Be ''
+        @(Get-ReplicationManifestDisclosureList -Manifest $bare -Name 'fixRejectedApproaches') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'drops list entries that sanitize away, keeping the rest' {
+        $manifest = [pscustomobject]@{ fixRejectedApproaches = @('widen the guard', '', $null, 'clamp the offset') }
+
+        $list = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixRejectedApproaches')
+
+        $list.Count | Should -Be 2
+        $list | Should -Contain 'widen the guard'
+        $list | Should -Contain 'clamp the offset'
     }
 }

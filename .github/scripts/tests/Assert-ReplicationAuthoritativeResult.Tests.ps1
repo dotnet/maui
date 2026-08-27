@@ -214,9 +214,13 @@ Describe 'ConvertTo-BoundedSingleLine' {
             Should -Throw -ExpectedMessage '*exceeds its length limit*'
     }
 
-    It 'reserves the prose path for the one field that opts in' {
-        # Read the production call sites: exactly one passes -Prose, and it is
-        # the reproduction step. A second would be a new way to lose meaning.
+    It 'reserves the prose path for the presentation fields that opt in' {
+        # Read the production call sites. The invariant is the *identity* of
+        # the sites, not their count: a count refuses the next legitimate
+        # disclosure rather than the next dangerous field. Only text rendered
+        # for a reader may opt in. A value that selects a test, filters a run
+        # or feeds a -match may not, because a silent trim there disables a
+        # guard instead of reporting one.
         $tokens = $null
         $errors = $null
         $ast = [System.Management.Automation.Language.Parser]::ParseFile(
@@ -227,8 +231,22 @@ Describe 'ConvertTo-BoundedSingleLine' {
             $node.GetCommandName() -eq 'ConvertTo-BoundedSingleLine'
         }, $true))
         $calls.Count | Should -BeGreaterThan 10 -Because 'the validator uses it widely'
+
         $prose = @($calls | Where-Object { $_.Extent.Text -match '-Prose\b' })
-        $prose.Count | Should -Be 1
-        $prose[0].Extent.Text | Should -Match 'Manifest reproduction step'
+        $proseContexts = @(
+            $prose | ForEach-Object {
+                if ($_.Extent.Text -match "-Context\s+'([^']+)'") { $Matches[1] } else { '<unnamed>' }
+            } | Sort-Object
+        )
+        $proseContexts | Should -Be @('Candidate disclosure', 'Manifest reproduction step')
+
+        foreach ($guarded in @('Manifest test class', 'Manifest test method')) {
+            $site = @($calls | Where-Object {
+                $_.Extent.Text -match [regex]::Escape("-Context '$guarded'")
+            })
+            $site.Count | Should -BeGreaterThan 0 -Because "$guarded must still be bounded"
+            @($site | Where-Object { $_.Extent.Text -match '-Prose\b' }).Count |
+                Should -Be 0 -Because "$guarded selects the test that runs"
+        }
     }
 }
