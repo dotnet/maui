@@ -6084,7 +6084,7 @@ stages:
                   if ($shouldPostInline -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
                     try {
                       Write-Host "Posting expert inline review (before the AI summary)..."
-                      & $inlineScript -PRNumber $prNumber -Repository "${{ parameters.ReviewRepository }}" -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
+                      & $inlineScript -PRNumber $prNumber -Repository "$env:PARAM_REVIEW_REPOSITORY" -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
                       Write-Host "✅ Expert inline review posted"
                     } catch {
                       Write-Host "⚠️ Expert inline review posting failed (non-fatal): $_"
@@ -6114,7 +6114,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -Repository "${{ parameters.ReviewRepository }}" -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
+                    $output = & $postScript -PRNumber $prNumber -Repository "$env:PARAM_REVIEW_REPOSITORY" -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }
@@ -6185,6 +6185,7 @@ stages:
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               BUILD_BUILDID: $(Build.BuildId)
               DEEP_STAGE_RESULT: $(deepStageResult)
 
