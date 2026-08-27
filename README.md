@@ -66,6 +66,25 @@ dotnet build DotNet.Release.slnx
 dotnet test DotNet.Release.slnx
 ```
 
+## Before first production use
+
+Two things must be confirmed by whoever first runs this against the real services. They are
+recorded here rather than only in the design doc so that a PR description can pick them up.
+
+1. **The missing-build path is unobserved.** That a lookup for a non-existent BAR ID
+   surfaces as `RestApiException` with `Response.Status == 404` is inferred from the typed
+   client's exception model and covered by a faked exception. No live BAR call was permitted
+   during development, so it has never been seen against the real service. Everything else
+   about the client surface was verified by reflection against the shipped package, and the
+   null-`gitHubRepository` case is confirmed from production build 328857.
+
+2. **A production release job on a non-production branch reports `partiallySucceeded`.**
+   Two non-blocking 1ES checks (`Branch Validation`, `Validate Source Build`) fail for any
+   `templateContext: type: releaseJob, isProduction: true` job that is not on `main`,
+   `release/*`, `internal/release/*` or a `netN.0` branch. This is expected during rehearsal
+   and is **not** a defect. Green is not the success signal — `release verify`'s own exit
+   code is.
+
 ## Layout
 
 ```

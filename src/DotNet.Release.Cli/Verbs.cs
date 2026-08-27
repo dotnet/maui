@@ -286,7 +286,24 @@ internal static class Verbs
         return ExitCodes.Success;
     }
 
-    /// <summary>Hashes the staged packages so they can be compared with the plan.</summary>
+    /// <summary>
+    /// Hashes the staged packages so they can be compared with the plan.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The <c>*.nupkg</c> filter is the unexpected-file rule's scope, not an
+    /// optimisation.</b> Only packages are observed, so the companion files that share the
+    /// directory — <c>release-plan.json</c> and <c>release-set.json</c> — are structurally
+    /// incapable of being reported as unexpected. Adding a further companion file later
+    /// requires no change here and no allow-list.
+    /// </para>
+    /// <para>
+    /// This matches how the pipeline being replaced scopes the same rule, and how
+    /// <c>1ES.PublishNuget@1</c> scopes its own <c>packagesToPush</c> glob: in build 3059242
+    /// the staged directory held 41 nupkgs plus a JSON manifest plus a PowerShell script,
+    /// and exactly 41 packages were pushed.
+    /// </para>
+    /// </remarks>
     internal static Dictionary<string, string> ReadStagedHashes(string directory)
     {
         var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

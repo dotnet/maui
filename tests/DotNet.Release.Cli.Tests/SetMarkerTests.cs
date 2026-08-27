@@ -216,4 +216,62 @@ public class SetMarkerTests : IDisposable
 
         Assert.Equal(ExitCodes.Success, await Filter(set: null));
     }
+
+    // ---- the companion files must not trip the unexpected-file rule ----
+
+    /// <summary>
+    /// `stage` deliberately places non-package files in a directory guarded by a fail-closed
+    /// unexpected-file rule. That rule is scoped by extension, so companion files are never
+    /// observed and cannot trip it.
+    /// </summary>
+    [Fact]
+    public async Task The_plan_and_marker_do_not_trip_the_unexpected_file_rule()
+    {
+        await StageWorkloadAsync();
+
+        var directory = SetDirectory(StagePlanner.PacksArtifactName);
+        Assert.True(File.Exists(Path.Combine(directory, Verbs.ReleasePlanFileName)));
+        Assert.True(File.Exists(Path.Combine(directory, ReleaseSetMarker.FileName)));
+
+        Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.PacksArtifactName));
+    }
+
+    /// <summary>
+    /// The scoping must hold for files nobody has thought of yet — otherwise the first new
+    /// companion file forces someone to widen the filter, which is how this kind of check
+    /// gets silently disabled.
+    /// </summary>
+    [Theory]
+    [InlineData("release-audit.md")]
+    [InlineData("_tool/release")]
+    [InlineData("some-future-file.txt")]
+    [InlineData("nupkg-lookalike.nupkg.txt")]
+    public async Task An_arbitrary_future_companion_file_does_not_trip_the_rule(string relativePath)
+    {
+        await StageWorkloadAsync();
+
+        var path = Path.Combine(SetDirectory(StagePlanner.PacksArtifactName), relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(path, "companion", CancellationToken.None);
+
+        Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.PacksArtifactName));
+    }
+
+    /// <summary>
+    /// The rule still does its job: a stray package sharing the directory with the companion
+    /// files is rejected, because it is a package.
+    /// </summary>
+    [Fact]
+    public async Task A_stray_package_alongside_the_companions_is_still_rejected()
+    {
+        await StageWorkloadAsync();
+
+        await File.WriteAllTextAsync(
+            Path.Combine(SetDirectory(StagePlanner.PacksArtifactName), "Sneaky.1.0.0.nupkg"),
+            "not reviewed",
+            CancellationToken.None);
+
+        Assert.Equal(ExitCodes.ReleaseError, await Filter(StagePlanner.PacksArtifactName));
+        Assert.Contains(ErrorCodes.PackageFileUnexpected, _console.AllErrors, StringComparison.Ordinal);
+    }
 }

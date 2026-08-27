@@ -24,7 +24,18 @@ public static class StagedSetIntegrity
     /// may be in the directory.
     /// </summary>
     /// <param name="set">The planned set.</param>
-    /// <param name="observed">Observed <c>.nupkg</c> file names mapped to their SHA-256.</param>
+    /// <param name="observed">
+    /// Observed <c>.nupkg</c> file names mapped to their SHA-256.
+    /// <para>
+    /// <b>Contract:</b> this must contain <i>only</i> the directory's <c>.nupkg</c> files.
+    /// The unexpected-file rule is scoped by extension at the point of enumeration, never by
+    /// allow-listing companion file names here. Companion files — <c>release-plan.json</c>,
+    /// <c>release-set.json</c>, and anything added later — are simply never observed, so
+    /// adding one can never require weakening this check. Allow-listing by name would work
+    /// today and rot the moment a third file appeared, and the tempting fix at that point is
+    /// to widen the filter, which silently disables the rule this exists to enforce.
+    /// </para>
+    /// </param>
     public static Result<bool> ValidateStaged(
         ReleasePackageSet set,
         IReadOnlyDictionary<string, string> observed) =>

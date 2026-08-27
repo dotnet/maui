@@ -130,6 +130,39 @@ public class StagedSetIntegrityTests
         Assert.True(StagedSetIntegrity.ValidateStaged(Set, Files(Skia, HarfBuzz)).IsSuccess);
     }
 
+    /// <summary>
+    /// The unexpected-file rule is scoped by extension where files are enumerated, not by
+    /// allow-listing companion names here.
+    /// </summary>
+    /// <remarks>
+    /// This is the anti-brittleness assertion: Core has no knowledge of
+    /// <c>release-plan.json</c> or <c>release-set.json</c> and <i>would</i> reject them if
+    /// they were ever observed. The safety comes from the caller only ever observing
+    /// <c>.nupkg</c> files, which is why adding a further companion file can never require
+    /// weakening this rule. Name allow-listing would work today and rot on the third file.
+    /// </remarks>
+    [Fact]
+    public void Companion_file_names_are_not_allow_listed_in_the_rule_itself()
+    {
+        var files = Files(Skia, HarfBuzz);
+        files["release-plan.json"] = TestData.Hash("plan");
+        files["release-set.json"] = TestData.Hash("marker");
+
+        var result = StagedSetIntegrity.ValidateStaged(Set, files);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PackageFileUnexpected));
+    }
+
+    [Fact]
+    public void A_stray_package_is_still_rejected_when_companions_are_absent()
+    {
+        var files = Files(Skia, HarfBuzz);
+        files["Sneaky.1.0.0.nupkg"] = TestData.Hash("sneaky");
+
+        Assert.True(StagedSetIntegrity.ValidateStaged(Set, files).HasError(ErrorCodes.PackageFileUnexpected));
+    }
+
     [Fact]
     public void Missing_pending_file_fails_closed()
     {
