@@ -194,6 +194,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.EnterText("MaxLength", "6");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
