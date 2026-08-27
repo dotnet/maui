@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 	/// </para>
 	/// <para>
 	/// This is distinct from <see cref="ImagePaint"/>. <see cref="ImagePaint"/> carries an already-loaded
-	/// <see cref="IImage"/> for drawing operations, whereas this contract carries an unresolved
+	/// <see cref="Microsoft.Maui.Graphics.IImage"/> for drawing operations, whereas this contract carries an unresolved
 	/// <see cref="IImageSource"/> that describes where an image comes from (a file, URI, stream, or font glyph)
 	/// and must be loaded through an image source service. A paint will not implement both.
 	/// </para>
