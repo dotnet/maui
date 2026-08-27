@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Platform
 
 		internal Func<bool>? IsActivityUnavailableOverride { get; set; }
 
+		MauiWindowInsetsScope? _windowInsetsScope;
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
 		internal event EventHandler? RootViewChanged;
@@ -467,21 +468,13 @@ namespace Microsoft.Maui.Platform
 					   .Inflate(Resource.Layout.navigationlayout, null)
 					   .JavaCast<CoordinatorLayout>();
 
-				if (navigationLayout is not null)
-					MauiWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
-
-				rootView = navigationLayout;
+				_rootView = navigationLayout;
 			}
 
-			if (_queuedRequest is not null)
+			if (_rootView is not null)
 			{
-				DiscardRoot(view, previousHandler, rootView, navigationLayout);
-				return false;
+				_windowInsetsScope = new MauiWindowInsetsScope(_rootView);
 			}
-
-			_rootView = rootView;
-			DrawerLayout = drawerLayout;
-			_managedCoordinatorLayout = navigationLayout;
 
 			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
@@ -583,83 +576,13 @@ namespace Microsoft.Maui.Platform
 
 		bool QuiesceOutgoingRoot(AView? outgoingRootView, bool includeActivityFragmentManager)
 		{
-			if (outgoingRootView is null || !outgoingRootView.IsAlive())
-				return true;
-
-			var context = _mauiContext.Context;
-			if (context is null)
-				return true;
-
-			var owningFragmentManager = _mauiContext.GetFragmentManager();
-			if (owningFragmentManager.IsDestroyed(context))
-				return true;
-
-			if (outgoingRootView.Parent is null)
-				return true;
-
-			_quiescingFragmentManagers = true;
-			_toolbarElementBeingQuiesced = _toolbarElement;
-			try
-			{
-				if (!TryExecutePendingTransactionsForRootSwap(owningFragmentManager, context))
-					return false;
-
-				// Replacement also drains the activity manager because compatibility Shell can
-				// commit there. Disconnect intentionally does not: modal dismissal already runs
-				// inside the activity manager and re-entering it throws.
-				if (includeActivityFragmentManager)
-				{
-					var activityFragmentManager = context.GetFragmentManager();
-					if (!ReferenceEquals(activityFragmentManager, owningFragmentManager))
-						return TryExecutePendingTransactionsForRootSwap(activityFragmentManager, context);
-				}
-
-				return true;
-			}
-			finally
-			{
-				_toolbarElementBeingQuiesced = null;
-				_quiescingFragmentManagers = false;
-			}
-		}
-
-		bool TryExecutePendingTransactionsForRootSwap(FragmentManager? fragmentManager, Context context) =>
-			TryExecutePendingTransactionsOverride?.Invoke(fragmentManager, context) ??
-			TryExecutePendingTransactions(fragmentManager, context);
-
-		static bool TryExecutePendingTransactions(FragmentManager? fragmentManager, Context context)
-		{
-			if (fragmentManager is null || fragmentManager.IsDestroyed(context))
-				return true;
-
-			try
-			{
-				fragmentManager.ExecutePendingTransactionsEx();
-				return true;
-			}
-			catch (Java.Lang.IllegalStateException ex) when (
-				ex.Message?.Contains("already executing transactions", StringComparison.OrdinalIgnoreCase) == true)
-			{
-				return false;
-			}
-		}
-
-		void ReleaseOutgoingRoot(AView? outgoingRootView, bool clearToolbarElement)
-		{
-			if (_managedCoordinatorLayout is not null)
-				MauiWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
-
-			if (outgoingRootView is ContainerView containerView && containerView.IsAlive())
-				containerView.CurrentView = null;
-
+			_windowInsetsScope?.Dispose();
+			_windowInsetsScope = null;
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
 			DrawerLayout = null;
-			if (clearToolbarElement)
-			{
-				_toolbarElement = null;
-				_toolbar = null;
-			}
-
-			_managedCoordinatorLayout = null;
+			_rootView = null;
+			_toolbarElement = null;
 		}
 
 		static void DiscardRoot(

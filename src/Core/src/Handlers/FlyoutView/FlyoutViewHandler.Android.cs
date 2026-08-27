@@ -205,13 +205,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDrawerLayout platformView)
 		{
-			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
-
-			if (_navigationRoot is CoordinatorLayout cl)
-			{
-				MauiWindowInsetListener.SetupViewWithLocalListener(cl);
-			}
-
 			// Subscribe to MauiDrawerLayout events
 			platformView.OnPresentedChanged += HandlePresentedChanged;
 			platformView.ViewAttachedToWindow += DrawerLayoutAttached;
@@ -221,10 +214,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			CancelPendingFragment();
 
-			MauiWindowInsetListener.UnregisterView(platformView);
-			if (_navigationRoot is CoordinatorLayout cl)
+			if (_navigationRoot is CoordinatorLayout)
 			{
-				MauiWindowInsetListener.UnregisterView(cl);
 				_navigationRoot = null;
 			}
 

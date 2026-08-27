@@ -1,9 +1,3 @@
-using System;
-using Android.Content;
-using Android.Views;
-using AndroidX.Core.View;
-using Google.Android.Material.AppBar;
-
 namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
@@ -11,8 +5,8 @@ internal static class SafeAreaExtensions
 	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
 		layout switch
 		{
-			ISafeAreaView2 sav2 => sav2,
-			IElementHandler { VirtualView: ISafeAreaView2 virtualSav2 } => virtualSav2,
+			ISafeAreaView2 safeAreaView => safeAreaView,
+			IElementHandler { VirtualView: ISafeAreaView2 virtualSafeAreaView } => virtualSafeAreaView,
 			_ => null
 		};
 
