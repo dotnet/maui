@@ -127,15 +127,8 @@ namespace Microsoft.Maui.DeviceTests
 				var navItem = Assert.Single(GetNavigationViewItems(navView));
 				var infoBadge = navItem.InfoBadge;
 				Assert.NotNull(infoBadge);
-				await AssertEventually(() =>
-					infoBadge.Background is WSolidColorBrush &&
-					infoBadge.Foreground is WSolidColorBrush,
-					timeout: 5000,
-					message: "Timed out waiting for the InfoBadge default brushes to be applied.");
-				var defaultBackgroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Background).Color;
-				var defaultForegroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Foreground).Color;
-				Assert.NotEqual(Colors.Blue.ToWindowsColor(), defaultBackgroundColor);
-				Assert.NotEqual(Colors.Yellow.ToWindowsColor(), defaultForegroundColor);
+				Assert.Null(infoBadge.Background);
+				Assert.Null(infoBadge.Foreground);
 
 				TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
 				TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
@@ -159,10 +152,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(item.BadgeBackground);
 				Assert.Null(item.BadgeForeground);
 				await AssertEventually(() =>
-					infoBadge.Background is WSolidColorBrush background &&
-					infoBadge.Foreground is WSolidColorBrush foreground &&
-					background.Color == defaultBackgroundColor &&
-					foreground.Color == defaultForegroundColor);
+					infoBadge.Background is null &&
+					infoBadge.Foreground is null);
 
 				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
 				Assert.Same(
