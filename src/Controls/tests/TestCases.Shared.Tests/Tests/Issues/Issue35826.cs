@@ -20,6 +20,7 @@ public class Issue35826 : _IssuesUITest
 	const string StatusLabel = "StatusLabel";
 
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+	// This test belongs to the Essentials category.
     // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
@@ -60,6 +61,7 @@ public class Issue35826 : _IssuesUITest
 	}
     
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+	// This test belongs to the Essentials category.
     // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
@@ -84,6 +86,7 @@ public class Issue35826 : _IssuesUITest
 	}
     
 	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+	// This test belongs to the Essentials category.
     // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
