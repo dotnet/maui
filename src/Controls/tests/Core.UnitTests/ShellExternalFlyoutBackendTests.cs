@@ -194,6 +194,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void BareMenuItemResolvesTemplateSetOnItsWrapper()
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+
+			var menuItem = new MenuItem { Text = "Menu" };
+			AddMenuShellItem(shell, menuItem);
+
+			// The wrapper is internal, but it is reachable as the MenuItem's parent, and a template set there
+			// has to be found when the backend is handed the bare MenuItem.
+			var template = new DataTemplate(() => new Label { Text = "OnWrapper" });
+			Shell.SetMenuItemTemplate(menuItem.Parent, template);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.False(menuItem.IsSet(Shell.MenuItemTemplateProperty));
+			Assert.Same(template, Shell.ResolveFlyoutItemTemplate(shell, menuItem));
+			Assert.Equal("OnWrapper", ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
+		}
+
+		[Fact]
+		public void BareMenuItemWithoutTemplateResolvesToNull()
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+
+			var menuItem = new MenuItem { Text = "Menu" };
+			AddMenuShellItem(shell, menuItem);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, menuItem));
+			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
+		}
+
+		[Fact]
 		public void MenuItemTemplateBindsTextAndCommandForShellContentMenuItems()
 		{
 			bool invoked = false;
