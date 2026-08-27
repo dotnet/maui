@@ -1,0 +1,481 @@
+using System;
+using System.IO;
+using System.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Microsoft.Maui.Resizetizer.Tests
+{
+	public class DetectStaleOutputFilesTaskTests : MSBuildTaskTestFixture<DetectStaleOutputFilesTask>
+	{
+		public DetectStaleOutputFilesTaskTests(ITestOutputHelper output)
+			: base(output)
+		{
+		}
+
+		DetectStaleOutputFilesTask GetNewTask(string[] files, string[] knownOutputs, string root = null) =>
+			new DetectStaleOutputFilesTask
+			{
+				Root = root ?? DestinationDirectory,
+				Files = files?.Select(f => (ITaskItem)new TaskItem(f)).ToArray(),
+				KnownOutputs = knownOutputs?.Select(f => (ITaskItem)new TaskItem(f)).ToArray(),
+				BuildEngine = this,
+			};
+
+		[Fact]
+		public void NoFilesProducesNoStaleFiles()
+		{
+			var task = GetNewTask(null, null);
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		[Fact]
+		public void EverythingIsStaleWhenNothingIsExpected()
+		{
+			var file = Path.Combine(DestinationDirectory, "camera.png");
+
+			var task = GetNewTask(new[] { file }, Array.Empty<string>());
+
+			Assert.True(task.Execute());
+			Assert.Equal(file, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		[Fact]
+		public void OnlyUnexpectedFilesAreStale()
+		{
+			var kept = Path.Combine(DestinationDirectory, "camera.png");
+			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+
+			var task = GetNewTask(new[] { kept, stale }, new[] { kept });
+
+			Assert.True(task.Execute());
+			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		[Fact]
+		public void StaleFilesKeepTheirOriginalItemSpecAndMetadata()
+		{
+			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+			var item = new TaskItem(stale);
+			item.SetMetadata("_ResizetizerDpiPath", "drawable-xhdpi");
+
+			var task = new DetectStaleOutputFilesTask
+			{
+				Root = DestinationDirectory,
+				Files = new ITaskItem[] { item },
+				KnownOutputs = Array.Empty<ITaskItem>(),
+				BuildEngine = this,
+			};
+
+			Assert.True(task.Execute());
+
+			var result = Assert.Single(task.StaleFiles);
+			Assert.Equal(stale, result.ItemSpec);
+			Assert.Equal("drawable-xhdpi", result.GetMetadata("_ResizetizerDpiPath"));
+		}
+
+		[Fact]
+		public void RedundantSegmentsDoNotMakeAFileStale()
+		{
+			var kept = Path.Combine(DestinationDirectory, "camera.png");
+			var spelledDifferently = Path.Combine(DestinationDirectory, ".", "obj", "..", "camera.png");
+
+			var task = GetNewTask(new[] { spelledDifferently }, new[] { kept });
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		[Fact]
+		public void FilesReachedThroughALinkedDirectoryAreNotStale()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var link = Path.Combine(DestinationDirectory, "link");
+			Directory.CreateDirectory(Path.Combine(physical, "drawable"));
+
+			if (!SymbolicLink.TryCreateDirectoryLink(link, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var kept = Path.Combine(physical, "drawable", "camera.png");
+			File.WriteAllText(kept, "image");
+
+			// This is the shape of the bug: MSBuild enumerates the directory through the link while the
+			// task reports the file it wrote through the physical path.
+			var task = GetNewTask(new[] { Path.Combine(link, "drawable", "camera.png") }, new[] { kept });
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		[Fact]
+		public void StaleFilesInALinkedDirectoryAreStillDetected()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var link = Path.Combine(DestinationDirectory, "link");
+			Directory.CreateDirectory(Path.Combine(physical, "drawable"));
+
+			if (!SymbolicLink.TryCreateDirectoryLink(link, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var kept = Path.Combine(physical, "drawable", "camera.png");
+			var stale = Path.Combine(link, "drawable", "orphan.png");
+			File.WriteAllText(kept, "image");
+			File.WriteAllText(stale, "image");
+
+			var task = GetNewTask(new[] { Path.Combine(link, "drawable", "camera.png"), stale }, new[] { kept });
+
+			Assert.True(task.Execute());
+			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// The item specs handed back are what <c>&lt;Delete&gt;</c> acts on, so they must be the exact
+		/// strings that came in. Returning the canonical spelling instead would let a delete reach
+		/// outside the intermediate directory the wildcard was rooted at.
+		/// </summary>
+		[Fact]
+		public void StaleFilesAreReturnedVerbatimEvenWhenCanonicalizationChangesTheSpelling()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var link = Path.Combine(DestinationDirectory, "link");
+			Directory.CreateDirectory(Path.Combine(physical, "drawable"));
+
+			if (!SymbolicLink.TryCreateDirectoryLink(link, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var stale = Path.Combine(link, "drawable", "orphan.png");
+			File.WriteAllText(stale, "image");
+
+			var canonicalizer = new PathCanonicalizer();
+			Assert.NotEqual(stale, canonicalizer.GetComparisonKey(stale), PathCanonicalizer.Comparer);
+
+			var task = GetNewTask(new[] { stale }, Array.Empty<string>());
+
+			Assert.True(task.Execute());
+			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// A file inside the intermediate directory that is itself a link to somewhere else is still
+		/// reported by its inside spelling, because only the directory part of a path is link resolved.
+		/// <c>&lt;Delete&gt;</c> then removes the link and never the file it points at.
+		/// </summary>
+		[Fact]
+		public void ALinkPointingOutsideTheDirectoryIsReportedByItsInsidePath()
+		{
+			var outside = Path.Combine(DestinationDirectory, "outside");
+			var intermediate = Path.Combine(DestinationDirectory, "intermediate");
+			Directory.CreateDirectory(outside);
+			Directory.CreateDirectory(intermediate);
+
+			var target = Path.Combine(outside, "source.png");
+			File.WriteAllText(target, "not a build output");
+
+			var inside = Path.Combine(intermediate, "linked.png");
+			if (!SymbolicLink.TryCreateFileLink(inside, target, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var task = GetNewTask(new[] { inside }, Array.Empty<string>(), root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Equal(inside, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// A recursive MSBuild wildcard walks through a directory link, so it can name a file that is not
+		/// actually inside the intermediate folder. Deleting it would destroy the real file rather than
+		/// the link, so it must never be reported.
+		/// </summary>
+		[Fact]
+		public void FilesReachedThroughADirectoryLinkOutOfTheRootAreNeverStale()
+		{
+			var outside = Path.Combine(DestinationDirectory, "outside");
+			var intermediate = Path.Combine(DestinationDirectory, "intermediate");
+			Directory.CreateDirectory(outside);
+			Directory.CreateDirectory(intermediate);
+
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(intermediate, "alias"), outside, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			// This is exactly what the wildcard yields once it descends through the link.
+			var throughTheLink = Path.Combine(intermediate, "alias", "precious.png");
+			var genuinelyStale = Path.Combine(intermediate, "orphan.png");
+			File.WriteAllText(genuinelyStale, "left over");
+
+			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// Only the directory part of a path is link resolved. If the file name were resolved too, a stale
+		/// alias of a live output would compare equal to it and survive cleanup forever.
+		/// </summary>
+		[Fact]
+		public void AStaleLinkToALiveOutputIsStillDeleted()
+		{
+			var intermediate = Path.Combine(DestinationDirectory, "intermediate");
+			Directory.CreateDirectory(intermediate);
+
+			var kept = Path.Combine(intermediate, "camera.png");
+			File.WriteAllText(kept, "image");
+
+			var alias = Path.Combine(intermediate, "orphan.png");
+			if (!SymbolicLink.TryCreateFileLink(alias, kept, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var task = GetNewTask(new[] { kept, alias }, new[] { kept }, root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Equal(alias, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		[Fact]
+		public void ASiblingOfTheRootIsNotTreatedAsBeingInsideIt()
+		{
+			var intermediate = Path.Combine(DestinationDirectory, "r");
+			var sibling = Path.Combine(DestinationDirectory, "r-backup");
+			Directory.CreateDirectory(intermediate);
+			Directory.CreateDirectory(sibling);
+
+			var outsideRoot = Path.Combine(sibling, "camera.png");
+			File.WriteAllText(outsideRoot, "image");
+
+			var task = GetNewTask(new[] { outsideRoot }, Array.Empty<string>(), root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		[Fact]
+		public void AnUnresolvableRootDisablesDetectionRatherThanDeleting()
+		{
+			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+
+			var task = GetNewTask(new[] { stale }, Array.Empty<string>(), root: "   ");
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		/// <summary>
+		/// On a case sensitive volume the root's case-only sibling is a different directory, so a link
+		/// inside the root that leads into it must not make its contents look contained. A recursive
+		/// MSBuild wildcard really does surface these: its own cycle detection compares paths case
+		/// insensitively, so it walks straight into the sibling believing it is still inside the root.
+		/// </summary>
+		[Fact]
+		public void FilesInACaseOnlySiblingOfTheRootAreNeverStale()
+		{
+			var root = Path.Combine(DestinationDirectory, "r");
+			var sibling = Path.Combine(DestinationDirectory, "R");
+			Directory.CreateDirectory(root);
+
+			if (!IsCaseSensitiveVolume(DestinationDirectory))
+			{
+				Output.WriteLine("Skipping: this volume is case insensitive, so the sibling is the root itself.");
+				return;
+			}
+
+			Directory.CreateDirectory(Path.Combine(sibling, "deep"));
+			var outside = Path.Combine(sibling, "deep", "secret.png");
+			File.WriteAllText(outside, "not a build output");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(root, "alias"), Path.Combine(sibling, "deep"), out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var throughTheLink = Path.Combine(root, "alias", "secret.png");
+			var genuinelyStale = Path.Combine(root, "orphan.png");
+			File.WriteAllText(genuinelyStale, "left over");
+
+			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: root);
+
+			Assert.True(task.Execute());
+			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// A host without <c>Directory.ResolveLinkTarget</c>, which is every .NET Framework host including
+		/// MSBuild.exe, cannot tell where a junction leads. It has to leave anything behind one alone
+		/// instead of assuming the lexical spelling is the real location.
+		/// </summary>
+		[Fact]
+		public void WithoutLinkResolutionFilesBehindAReparsePointAreNeverStale()
+		{
+			// Root the test where no ancestor is itself a link, so the only reparse point in play is the
+			// one the test creates. macOS temp directories live under /var, which is a link to /private/var.
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var root = Path.Combine(basePath, "r");
+			var outside = Path.Combine(basePath, "outside");
+			Directory.CreateDirectory(root);
+			Directory.CreateDirectory(outside);
+
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(root, "alias"), outside, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var throughTheLink = Path.Combine(root, "alias", "precious.png");
+			var genuinelyStale = Path.Combine(root, "orphan.png");
+			File.WriteAllText(genuinelyStale, "left over");
+
+			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: root);
+			task.AllowLinkResolution = false;
+
+			Assert.True(task.Execute());
+
+			// The file behind the junction is left alone, while ordinary cleanup still happens.
+			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// When the root itself sits behind a reparse point the fallback host cannot place anything, so it
+		/// detects nothing at all rather than deleting on a guess.
+		/// </summary>
+		[Fact]
+		public void WithoutLinkResolutionARootBehindAReparsePointDetectsNothing()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var link = Path.Combine(DestinationDirectory, "link");
+			Directory.CreateDirectory(physical);
+
+			if (!SymbolicLink.TryCreateDirectoryLink(link, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var stale = Path.Combine(physical, "orphan.png");
+			File.WriteAllText(stale, "left over");
+
+			var task = GetNewTask(new[] { Path.Combine(link, "orphan.png") }, Array.Empty<string>(), root: link);
+			task.AllowLinkResolution = false;
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		static bool IsCaseSensitiveVolume(string directory)
+		{
+			var probe = Path.Combine(directory, "CaseProbe");
+			Directory.CreateDirectory(probe);
+
+			return !Directory.Exists(Path.Combine(directory, "caseprobe"));
+		}
+
+		/// <summary>
+		/// Every returned item has to come from <see cref="DetectStaleOutputFilesTask.Files"/>. Nothing may
+		/// be invented, and nothing that was declared as an output may be returned.
+		/// </summary>
+		[Fact]
+		public void StaleFilesAreAlwaysASubsetOfTheInputFiles()
+		{
+			var files = new[]
+			{
+				Path.Combine(DestinationDirectory, "drawable", "camera.png"),
+				Path.Combine(DestinationDirectory, "drawable", "orphan.png"),
+				Path.Combine(DestinationDirectory, "drawable-xhdpi", "camera.png"),
+			};
+
+			var known = new[]
+			{
+				files[0],
+				// Declared as an output but not on disk, and a sibling that was never enumerated.
+				Path.Combine(DestinationDirectory, "drawable-hdpi", "camera.png"),
+			};
+
+			var task = GetNewTask(files, known);
+
+			Assert.True(task.Execute());
+
+			var stale = task.StaleFiles.Select(f => f.ItemSpec).ToArray();
+			Assert.All(stale, s => Assert.Contains(s, files));
+			Assert.Equal(new[] { files[1], files[2] }, stale);
+		}
+
+		[Fact]
+		public void EmptyAndWhitespaceItemSpecsAreIgnored()
+		{
+			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+
+			var task = GetNewTask(new[] { "", "   ", stale }, new[] { "", "   " });
+
+			Assert.True(task.Execute());
+			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		[Fact]
+		public void CaseOnlyDifferencesFollowThePlatformFileSystem()
+		{
+			var kept = Path.Combine(DestinationDirectory, "drawable", "camera.png");
+			var differentCase = Path.Combine(DestinationDirectory, "drawable", "CAMERA.png");
+
+			var task = GetNewTask(new[] { differentCase }, new[] { kept });
+
+			Assert.True(task.Execute());
+
+			if (OperatingSystem.IsLinux())
+			{
+				// Linux paths are case sensitive, so these really are two different files.
+				Assert.Equal(differentCase, Assert.Single(task.StaleFiles).ItemSpec);
+			}
+			else
+			{
+				// Windows and macOS are treated case insensitively. On a case sensitive macOS volume this
+				// can only ever keep a stale file, which is much safer than deleting a live one, and
+				// Resizetizer already rejects output names that differ only by case.
+				Assert.Empty(task.StaleFiles);
+			}
+		}
+
+		[Fact]
+		public void MSBuildNormalizesSeparatorsBeforeTheTaskSeesThem()
+		{
+			var kept = Path.Combine(DestinationDirectory, "drawable", "camera.png");
+
+			// MSBuild rewrites separators when it builds an item spec: on Unix a backslash becomes a
+			// forward slash, and on Windows both characters are separators anyway. Either way the task
+			// only ever receives paths that already use the platform separator, so canonicalization does
+			// not have to guess which character was meant.
+			var spelledWithBackslashes = kept.Replace(Path.DirectorySeparatorChar, '\\');
+
+			var task = GetNewTask(new[] { spelledWithBackslashes }, new[] { kept });
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+	}
+}

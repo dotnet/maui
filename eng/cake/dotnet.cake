@@ -276,6 +276,7 @@ Task("dotnet-test")
             "**/Controls.BindingSourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
+            "**/Essentials.ExternalBackend.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
             "**/MauiBlazorWebView.UnitTests.csproj",
