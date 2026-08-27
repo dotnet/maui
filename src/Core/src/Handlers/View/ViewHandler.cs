@@ -247,11 +247,15 @@ namespace Microsoft.Maui.Handlers
 		/// <para>The .NET MAUI iOS, Mac Catalyst and Tizen handlers use this to require a
 		/// <see cref="Platform.WrapperView"/>. An external backend that shadows <see cref="ContainerView"/> with its own
 		/// wrapper type should do the same.</para>
+		/// <para>Note that <paramref name="containerView"/> is typed as the platform view type of the target framework,
+		/// which is <see cref="object"/> on the non-platform (neutral) build. An override must therefore match that type
+		/// rather than the backend's own platform type, and test the concrete wrapper type with a pattern match.</para>
 		/// <example>
 		/// <code language="csharp">
 		/// public new MyWrapperView? ContainerView => (MyWrapperView?)base.ContainerView;
 		///
-		/// protected override void ValidateContainerView(MyPlatformView containerView)
+		/// // The parameter type is the target framework's platform view type - 'object' on the neutral build.
+		/// protected override void ValidateContainerView(object containerView)
 		/// {
 		///     if (containerView is not MyWrapperView)
 		///     {
