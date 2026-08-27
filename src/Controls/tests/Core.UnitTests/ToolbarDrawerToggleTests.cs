@@ -160,6 +160,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(ToolbarNavigationIconKind.TitleIcon, toolbar.NavigationIconKind);
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ForwardingNavigationSlotAvoidsInvalidIntermediateState(bool transitionToBackButton)
+		{
+			var source = new Toolbar(null)
+			{
+				TitleIcon = new FileImageSource { File = "custom.png" },
+				BackButtonVisible = transitionToBackButton,
+				DrawerToggleVisible = !transitionToBackButton,
+			};
+			var destination = new Toolbar(null)
+			{
+				TitleIcon = source.TitleIcon,
+				BackButtonVisible = !transitionToBackButton,
+				DrawerToggleVisible = transitionToBackButton,
+			};
+			var observedKinds = new List<ToolbarNavigationIconKind>();
+			destination.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(Toolbar.BackButtonVisible) ||
+					e.PropertyName == nameof(Toolbar.DrawerToggleVisible))
+				{
+					observedKinds.Add(destination.NavigationIconKind);
+				}
+			};
+
+			source.ForwardNavigationIconStateTo(destination);
+
+			Assert.NotEmpty(observedKinds);
+			Assert.DoesNotContain(ToolbarNavigationIconKind.None, observedKinds);
+			Assert.DoesNotContain(ToolbarNavigationIconKind.TitleIcon, observedKinds);
+			Assert.Equal(source.NavigationIconKind, destination.NavigationIconKind);
+		}
+
+		[Fact]
+		public async Task StaleTitleIconLoadIsRejectedAfterNavigationSlotChanges()
+		{
+			var toolbar = new Toolbar(null)
+			{
+				TitleIcon = new StreamImageSource(),
+			};
+			var source = toolbar.TitleIcon;
+			var generation = toolbar.BeginNavigationIconUpdate();
+			var releaseLoad = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			Assert.True(toolbar.IsCurrentTitleIconUpdate(generation, source));
+			Assert.False(toolbar.IsCurrentTitleIconUpdate(generation, new StreamImageSource()));
+
+			var delayedLoad = Task.Run(async () =>
+			{
+				await releaseLoad.Task;
+				return toolbar.IsCurrentTitleIconUpdate(generation, source);
+			});
+
+			toolbar.DrawerToggleVisible = true;
+			toolbar.BeginNavigationIconUpdate();
+			releaseLoad.SetResult();
+
+			Assert.False(await delayedLoad);
+			Assert.Equal(ToolbarNavigationIconKind.DrawerToggle, toolbar.NavigationIconKind);
+		}
+
 		[Fact]
 		public async Task BackButtonTakesPrecedenceOverDrawerToggleInShell()
 		{

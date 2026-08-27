@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Controls
 		bool _backButtonVisible;
 		bool _backButtonEnabled = true;
 		bool _drawerToggleVisible;
+		int _navigationIconUpdateGeneration;
 		Maui.IElement _parent;
 		IElementHandler _handler;
 
@@ -61,6 +63,33 @@ namespace Microsoft.Maui.Controls
 			DrawerToggleVisible ? ToolbarNavigationIconKind.DrawerToggle :
 			TitleIcon is not null ? ToolbarNavigationIconKind.TitleIcon :
 			ToolbarNavigationIconKind.None;
+
+		internal int BeginNavigationIconUpdate() =>
+			Interlocked.Increment(ref _navigationIconUpdateGeneration);
+
+		internal bool IsCurrentTitleIconUpdate(int generation, ImageSource source) =>
+			generation == Volatile.Read(ref _navigationIconUpdateGeneration) &&
+			ReferenceEquals(source, TitleIcon) &&
+			NavigationIconKind == ToolbarNavigationIconKind.TitleIcon;
+
+		internal void ForwardNavigationIconStateTo(Toolbar destination)
+		{
+			if (BackButtonVisible)
+			{
+				destination.BackButtonVisible = true;
+				destination.DrawerToggleVisible = DrawerToggleVisible;
+			}
+			else if (DrawerToggleVisible)
+			{
+				destination.DrawerToggleVisible = true;
+				destination.BackButtonVisible = false;
+			}
+			else
+			{
+				destination.BackButtonVisible = false;
+				destination.DrawerToggleVisible = false;
+			}
+		}
 
 		public IElementHandler Handler
 		{
