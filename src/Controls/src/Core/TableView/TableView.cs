@@ -87,8 +87,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_tableModel.Root != null)
 				{
-					_tableModel.Root.SectionCollectionChanged -= OnSectionCollectionChanged;
-					_tableModel.Root.PropertyChanged -= OnTableModelRootPropertyChanged;
 					VisualDiagnostics.OnChildRemoved(this, _tableModel.Root, 0);
 				}
 				_tableModel.Root = value ?? new TableRoot();
@@ -96,8 +94,6 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(_tableModel.Root, BindingContext);
 
 				Root.SelectMany(r => r).ForEach(cell => cell.Parent = this);
-				_tableModel.Root.SectionCollectionChanged += OnSectionCollectionChanged;
-				_tableModel.Root.PropertyChanged += OnTableModelRootPropertyChanged;
 				OnModelChanged();
 			}
 		}
@@ -192,11 +188,13 @@ namespace Microsoft.Maui.Controls
 			static readonly BindableProperty PathProperty = BindableProperty.Create("Path", typeof(Tuple<int, int>), typeof(Cell), null);
 
 			readonly TableView _parent;
+			readonly TableRootEventSubscription _rootEvents;
 			TableRoot _root;
 
 			public TableSectionModel(TableView tableParent, TableRoot tableRoot)
 			{
 				_parent = tableParent;
+				_rootEvents = new TableRootEventSubscription(tableParent);
 				Root = tableRoot ?? new TableRoot();
 			}
 
@@ -263,8 +261,7 @@ namespace Microsoft.Maui.Controls
 
 			void ApplyEvents(TableRoot tableRoot)
 			{
-				tableRoot.CollectionChanged += _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged += _parent.OnSectionCollectionChanged;
+				_rootEvents.Subscribe(tableRoot);
 			}
 
 			void RemoveEvents(TableRoot tableRoot)
@@ -272,8 +269,7 @@ namespace Microsoft.Maui.Controls
 				if (tableRoot == null)
 					return;
 
-				tableRoot.CollectionChanged -= _parent.CollectionChanged;
-				tableRoot.SectionCollectionChanged -= _parent.OnSectionCollectionChanged;
+				_rootEvents.Unsubscribe();
 			}
 
 			static void SetPath(Cell item, Tuple<int, int> index)
@@ -282,6 +278,70 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				item.SetValue(PathProperty, index);
+			}
+
+			sealed class TableRootEventSubscription
+			{
+				readonly NotifyCollectionChangedEventHandler _collectionChanged;
+				readonly EventHandler<ChildCollectionChangedEventArgs> _sectionCollectionChanged;
+				readonly PropertyChangedEventHandler _propertyChanged;
+				readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+				readonly WeakSectionCollectionChangedProxy _sectionCollectionChangedProxy = new();
+				readonly WeakNotifyPropertyChangedProxy _propertyChangedProxy = new();
+
+				public TableRootEventSubscription(TableView parent)
+				{
+					_collectionChanged = parent.CollectionChanged;
+					_sectionCollectionChanged = parent.OnSectionCollectionChanged;
+					_propertyChanged = parent.OnTableModelRootPropertyChanged;
+				}
+
+				~TableRootEventSubscription()
+				{
+					Unsubscribe();
+				}
+
+				public void Subscribe(TableRoot root)
+				{
+					_collectionChangedProxy.Subscribe(root, _collectionChanged);
+					_sectionCollectionChangedProxy.Subscribe(root, _sectionCollectionChanged);
+					_propertyChangedProxy.Subscribe(root, _propertyChanged);
+				}
+
+				public void Unsubscribe()
+				{
+					_collectionChangedProxy.Unsubscribe();
+					_sectionCollectionChangedProxy.Unsubscribe();
+					_propertyChangedProxy.Unsubscribe();
+				}
+			}
+
+			sealed class WeakSectionCollectionChangedProxy : WeakEventProxy<TableRoot, EventHandler<ChildCollectionChangedEventArgs>>
+			{
+				void OnSectionCollectionChanged(object sender, ChildCollectionChangedEventArgs e)
+				{
+					if (TryGetHandler(out var handler))
+						handler(sender, e);
+					else
+						Unsubscribe();
+				}
+
+				public override void Subscribe(TableRoot source, EventHandler<ChildCollectionChangedEventArgs> handler)
+				{
+					if (TryGetSource(out var oldSource))
+						oldSource.SectionCollectionChanged -= OnSectionCollectionChanged;
+
+					source.SectionCollectionChanged += OnSectionCollectionChanged;
+					base.Subscribe(source, handler);
+				}
+
+				public override void Unsubscribe()
+				{
+					if (TryGetSource(out var source))
+						source.SectionCollectionChanged -= OnSectionCollectionChanged;
+
+					base.Unsubscribe();
+				}
 			}
 		}
 	}

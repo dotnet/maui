@@ -1,4 +1,7 @@
+using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Xunit;
 
@@ -77,6 +80,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(table, viewCell.Parent);
 			Assert.Equal(viewCell, viewCell.View.Parent);
+		}
+
+		[Fact]
+		public async Task SharedRootDoesNotRetainTableView()
+		{
+			var sharedRoot = new TableRoot();
+			var reference = CreateTableViewReference(sharedRoot);
+
+			Assert.False(await reference.WaitForCollect(), "TableView should not be alive!");
+			GC.KeepAlive(sharedRoot);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateTableViewReference(TableRoot root)
+		{
+			var table = new TableView { Root = root };
+			return new WeakReference(table);
 		}
 	}
 }
