@@ -52,9 +52,9 @@ Describe 'historical timing aggregation' {
 Describe 'multiplatform assignment' {
 	BeforeEach {
 		$script:inventory = @(
-			[pscustomobject]@{ Id = 'N.C.A'; FullClassName = 'N.C'; MethodName = 'A'; RelativeFile = 'C.cs'; DisabledAllPlatforms = $false }
-			[pscustomobject]@{ Id = 'N.C.B'; FullClassName = 'N.C'; MethodName = 'B'; RelativeFile = 'C.cs'; DisabledAllPlatforms = $false }
-			[pscustomobject]@{ Id = 'N.C.C'; FullClassName = 'N.C'; MethodName = 'C'; RelativeFile = 'C.cs'; DisabledAllPlatforms = $false }
+			[pscustomobject]@{ Id = 'N.A.Test'; FullClassName = 'N.A'; MethodName = 'Test'; RelativeFile = 'A.cs'; DisabledAllPlatforms = $false; Ordered = $false }
+			[pscustomobject]@{ Id = 'N.B.Test'; FullClassName = 'N.B'; MethodName = 'Test'; RelativeFile = 'B.cs'; DisabledAllPlatforms = $false; Ordered = $false }
+			[pscustomobject]@{ Id = 'N.C.Test'; FullClassName = 'N.C'; MethodName = 'Test'; RelativeFile = 'C.cs'; DisabledAllPlatforms = $false; Ordered = $false }
 		)
 		$script:evidence = [pscustomobject]@{
 			category = 'Widget'
@@ -62,12 +62,12 @@ Describe 'multiplatform assignment' {
 			unmatchedResults = @()
 			fixedOverheadMinutes = [pscustomobject]@{ Android = 5; iOS = 5 }
 			samples = @(
-				[pscustomobject]@{ TestId = 'N.C.A'; Platform = 'Android'; DurationMinutes = 35 }
-				[pscustomobject]@{ TestId = 'N.C.A'; Platform = 'iOS'; DurationMinutes = 5 }
-				[pscustomobject]@{ TestId = 'N.C.B'; Platform = 'Android'; DurationMinutes = 5 }
-				[pscustomobject]@{ TestId = 'N.C.B'; Platform = 'iOS'; DurationMinutes = 35 }
-				[pscustomobject]@{ TestId = 'N.C.C'; Platform = 'Android'; DurationMinutes = 20 }
-				[pscustomobject]@{ TestId = 'N.C.C'; Platform = 'iOS'; DurationMinutes = 20 }
+				[pscustomobject]@{ TestId = 'N.A.Test'; Platform = 'Android'; DurationMinutes = 35 }
+				[pscustomobject]@{ TestId = 'N.A.Test'; Platform = 'iOS'; DurationMinutes = 5 }
+				[pscustomobject]@{ TestId = 'N.B.Test'; Platform = 'Android'; DurationMinutes = 5 }
+				[pscustomobject]@{ TestId = 'N.B.Test'; Platform = 'iOS'; DurationMinutes = 35 }
+				[pscustomobject]@{ TestId = 'N.C.Test'; Platform = 'Android'; DurationMinutes = 20 }
+				[pscustomobject]@{ TestId = 'N.C.Test'; Platform = 'iOS'; DurationMinutes = 20 }
 			)
 		}
 	}
@@ -89,11 +89,33 @@ Describe 'multiplatform assignment' {
 			Should -Throw '*unattainable*'
 	}
 
+	It 'keeps methods together when their fixture uses NUnit ordering' {
+		$inventory = @(
+			[pscustomobject]@{ Id = 'N.Ordered.Setup'; FullClassName = 'N.Ordered'; MethodName = 'Setup'; RelativeFile = 'Ordered.cs'; DisabledAllPlatforms = $false; Ordered = $true }
+			[pscustomobject]@{ Id = 'N.Ordered.Verify'; FullClassName = 'N.Ordered'; MethodName = 'Verify'; RelativeFile = 'Ordered.cs'; DisabledAllPlatforms = $false; Ordered = $false }
+			[pscustomobject]@{ Id = 'N.Other.Test'; FullClassName = 'N.Other'; MethodName = 'Test'; RelativeFile = 'Other.cs'; DisabledAllPlatforms = $false; Ordered = $false }
+		)
+		$evidence.samples = @(
+			[pscustomobject]@{ TestId = 'N.Ordered.Setup'; Platform = 'Android'; DurationMinutes = 10 }
+			[pscustomobject]@{ TestId = 'N.Ordered.Verify'; Platform = 'Android'; DurationMinutes = 10 }
+			[pscustomobject]@{ TestId = 'N.Other.Test'; Platform = 'Android'; DurationMinutes = 20 }
+		)
+		$evidence.fixedOverheadMinutes = [pscustomobject]@{ Android = 1 }
+
+		$plan = New-UITestShardPlan -Category Widget -Inventory $inventory -Evidence $evidence -TargetMinutes 30
+		$orderedShards = @($plan.assignments | Where-Object className -eq 'N.Ordered' | Select-Object -ExpandProperty shard -Unique)
+
+		$plan.shardCount | Should -Be 2
+		$orderedShards.Count | Should -Be 1
+		@($plan.assignments | Where-Object className -eq 'N.Ordered' | Where-Object fixtureCohesionRequired).Count | Should -Be 2
+	}
+
 	It 'can require more shards when the safety margin changes' {
 		$inventory = 1..4 | ForEach-Object {
 			[pscustomobject]@{
 				Id = "N.C.M$_"; FullClassName = 'N.C'; MethodName = "M$_"; RelativeFile = 'C.cs'
 				DisabledAllPlatforms = $false
+				Ordered = $false
 			}
 		}
 		$evidence.samples = @($inventory | ForEach-Object {
@@ -105,6 +127,13 @@ Describe 'multiplatform assignment' {
 			-TargetMinutes 45 -SafetyMarginMinutes 0).shardCount | Should -Be 2
 		(New-UITestShardPlan -Category Widget -Inventory $inventory -Evidence $evidence `
 			-TargetMinutes 45 -SafetyMarginMinutes 5).shardCount | Should -Be 4
+	}
+
+	It 'can preserve an existing shard count' {
+		$plan = New-UITestShardPlan -Category Widget -Inventory $inventory -Evidence $evidence `
+			-TargetMinutes 45 -MinimumShards 4 -MaxShards 4
+
+		$plan.shardCount | Should -Be 4
 	}
 }
 

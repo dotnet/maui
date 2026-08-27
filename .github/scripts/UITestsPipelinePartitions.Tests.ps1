@@ -73,6 +73,18 @@ Describe 'CollectionView shards are exhaustive and mutually exclusive' {
         }
     }
 
+    It 'keeps ordered fixtures in one shard while retaining method-level tags' {
+        $orderedFixtures = @(
+            $script:inventory | Group-Object FullClassName | Where-Object {
+                @($_.Group | Where-Object { $_.Ordered }).Count -gt 0
+            }
+        )
+        foreach ($fixture in $orderedFixtures) {
+            @($fixture.Group | Select-Object -ExpandProperty Shard -Unique).Count |
+                Should -Be 1 -Because "$($fixture.Name) uses ordered setup and shared state"
+        }
+    }
+
     It 'projects every platform and shard below the target' {
         foreach ($shard in $script:summary.projectedShardMinutes.PSObject.Properties) {
             foreach ($platform in $shard.Value.PSObject.Properties) {

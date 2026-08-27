@@ -25,7 +25,8 @@ matrix legs and each leg must fit a target duration.
 - Reserve a configurable safety margin (2 minutes by default), so every
   projection is strictly below `TargetMinutes - SafetyMarginMinutes`.
 - Assignment is deterministic multidimensional longest-processing-time
-  scheduling. It minimizes the worst projected platform/shard duration.
+  scheduling over individual methods and cohesive ordered fixtures. It
+  minimizes the worst projected platform/shard duration.
 - Fail if one test plus overhead exceeds the target or if `-MaxShards` cannot
   satisfy the target.
 - Applying a category maintains the analyzer's reusable shard-prefix set,
@@ -55,6 +56,9 @@ Use `-RecentBuildCount N` instead of `-BuildId` to query recent completed builds
 from pipeline definition 313. To work offline, explicitly pass
 `-EvidencePath path/to/evidence.json`; absence of Azure access or an evidence
 file is an error.
+
+Use `-MinimumShards N -MaxShards N` when rebalancing an existing matrix without
+changing its job count.
 
 Separate deterministic phases are also available:
 

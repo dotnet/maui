@@ -512,6 +512,7 @@ function New-UITestShardPlan {
 		[double]$TargetMinutes = 60,
 		[double]$SafetyMarginMinutes = 2,
 		[int]$MaxShards = 12,
+		[int]$MinimumShards = 1,
 		[ValidateSet('Fail', 'ClassPlatformMax')]
 		[string]$UnmeasuredTestPolicy = 'Fail'
 	)
@@ -565,27 +566,80 @@ function New-UITestShardPlan {
 		$overhead[$platform] = if ($null -eq $value) { 0.0 } else { [double]$value }
 	}
 
-	foreach ($test in $Inventory) {
+	$cohesiveClasses = @(
+		$Inventory | Group-Object FullClassName | Where-Object {
+			@($_.Group | Where-Object {
+				$_.PSObject.Properties['Ordered'] -and $_.Ordered
+			}).Count -gt 0
+		} | ForEach-Object Name
+	)
+	$planningGroups = @(
+		$Inventory | Group-Object {
+			if ($_.FullClassName -in $cohesiveClasses) { $_.FullClassName } else { $_.Id }
+		} | ForEach-Object {
+			[pscustomobject]@{
+				Id = $_.Name
+				Tests = @($_.Group)
+			}
+		}
+	)
+	$planningGroupWeights = @{}
+	foreach ($group in $planningGroups) {
+		$planningGroupWeights[$group.Id] = [ordered]@{}
+		$isCohesive = $group.Tests.Count -gt 1 -and $group.Id -in $cohesiveClasses
 		foreach ($platform in $platforms) {
-			$duration = if ($weights[$test.Id].Contains($platform)) { [double]$weights[$test.Id][$platform] } else { 0.0 }
-			if ($duration + $overhead[$platform] -ge $planningLimit) {
-				throw "Target $TargetMinutes minutes with a $SafetyMarginMinutes minute margin is unattainable: $($test.Id) projects to $([Math]::Round($duration + $overhead[$platform], 2)) minutes on $platform."
+			if ($isCohesive) {
+				$testIds = @($group.Tests.Id)
+				$runTotals = @(
+					$Evidence.samples | Where-Object {
+						$_.Platform -eq $platform -and $_.TestId -in $testIds
+					} | Group-Object BuildId, RunId | ForEach-Object {
+						[double](($_.Group.DurationMinutes | Measure-Object -Sum).Sum)
+					}
+				)
+				if ($runTotals.Count -gt 0) {
+					$planningGroupWeights[$group.Id][$platform] =
+						Get-Percentile -Values $runTotals -Percentile 0.8
+				}
+			}
+			else {
+				$test = $group.Tests[0]
+				if ($weights[$test.Id].Contains($platform)) {
+					$planningGroupWeights[$group.Id][$platform] = [double]$weights[$test.Id][$platform]
+				}
 			}
 		}
 	}
 
-	$orderedTests = @($Inventory | Sort-Object @{
+	foreach ($group in $planningGroups) {
+		foreach ($platform in $platforms) {
+			$duration = if ($planningGroupWeights[$group.Id].Contains($platform)) {
+				[double]$planningGroupWeights[$group.Id][$platform]
+			} else { 0.0 }
+			if ($duration + $overhead[$platform] -ge $planningLimit) {
+				throw "Target $TargetMinutes minutes with a $SafetyMarginMinutes minute margin is unattainable: $($group.Id) projects to $([Math]::Round($duration + $overhead[$platform], 2)) minutes on $platform."
+			}
+		}
+	}
+
+	$orderedGroups = @($planningGroups | Sort-Object @{
 		Expression = {
-			$id = $_.Id
+			$planningGroup = $_
 			[double](($platforms | ForEach-Object {
-				if ($weights[$id].Contains($_)) { $weights[$id][$_] } else { 0 }
+				$platform = $_
+				if ($planningGroupWeights[$planningGroup.Id].Contains($platform)) {
+					[double]$planningGroupWeights[$planningGroup.Id][$platform]
+				} else { 0.0 }
 			} | Measure-Object -Maximum).Maximum)
 		}
 		Descending = $true
 	}, Id)
 
 	$selected = $null
-	for ($shardCount = 1; $shardCount -le $MaxShards; $shardCount++) {
+	if ($MinimumShards -gt $MaxShards) {
+		throw "MinimumShards ($MinimumShards) cannot exceed MaxShards ($MaxShards)."
+	}
+	for ($shardCount = $MinimumShards; $shardCount -le $MaxShards; $shardCount++) {
 		$loads = @()
 		for ($i = 0; $i -lt $shardCount; $i++) {
 			$entry = [ordered]@{}
@@ -594,23 +648,27 @@ function New-UITestShardPlan {
 		}
 		$assignment = @{}
 
-		foreach ($test in $orderedTests) {
+		foreach ($group in $orderedGroups) {
 			$candidates = for ($i = 0; $i -lt $shardCount; $i++) {
 				$worst = 0.0
 				$total = 0.0
 				foreach ($platform in $platforms) {
-					$testDuration = if ($weights[$test.Id].Contains($platform)) { [double]$weights[$test.Id][$platform] } else { 0.0 }
-					$projected = $loads[$i][$platform] + $testDuration + $overhead[$platform]
+					$groupDuration = if ($planningGroupWeights[$group.Id].Contains($platform)) {
+						[double]$planningGroupWeights[$group.Id][$platform]
+					} else { 0.0 }
+					$projected = $loads[$i][$platform] + $groupDuration + $overhead[$platform]
 					$worst = [Math]::Max($worst, $projected)
 					$total += $projected
 				}
 				[pscustomobject]@{ Index = $i; Worst = $worst; Total = $total }
 			}
 			$choice = $candidates | Sort-Object Worst, Total, Index | Select-Object -First 1
-			$assignment[$test.Id] = $choice.Index
+			foreach ($test in $group.Tests) {
+				$assignment[$test.Id] = $choice.Index
+			}
 			foreach ($platform in $platforms) {
-				if ($weights[$test.Id].Contains($platform)) {
-					$loads[$choice.Index][$platform] += [double]$weights[$test.Id][$platform]
+				if ($planningGroupWeights[$group.Id].Contains($platform)) {
+					$loads[$choice.Index][$platform] += [double]$planningGroupWeights[$group.Id][$platform]
 				}
 			}
 		}
@@ -661,6 +719,7 @@ function New-UITestShardPlan {
 			shard = "$Category$([int]$selected.Assignment[$test.Id] + 1)"
 			platformMinutes = $platformWeights
 			disabledAllPlatforms = [bool]$test.DisabledAllPlatforms
+			fixtureCohesionRequired = $test.FullClassName -in $cohesiveClasses
 			imputedFromHistoricalClassMaximum = $imputedIds.Contains($test.Id)
 		}
 	}
@@ -706,6 +765,7 @@ function New-UITestShardPlan {
 			'Projections use historical per-test p80 durations and measured job overhead; they are estimates, not guarantees.'
 			"Assignments must project strictly below target minus the $SafetyMarginMinutes minute safety margin."
 			'Dedicated testConfigurationArgs stages are retained as separate evidence and do not reduce ordinary category-matrix projections.'
+			'Methods in fixtures containing NUnit Order attributes are assigned together so ordered setup and state remain available.'
 			'Tests without samples on a platform contribute zero to that platform because they were not executed there.'
 			'When explicitly enabled, unmeasured active tests use the maximum measured duration from their class/platform (or platform-wide maximum).'
 		)

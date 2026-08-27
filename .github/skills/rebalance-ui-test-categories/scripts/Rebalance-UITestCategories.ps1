@@ -16,6 +16,8 @@ param(
 	[string]$OutputPath,
 	[ValidateRange(1, 32)]
 	[int]$MaxShards = 12,
+	[ValidateRange(1, 32)]
+	[int]$MinimumShards = 1,
 	[ValidateSet('Fail', 'ClassPlatformMax')]
 	[string]$UnmeasuredTestPolicy = 'Fail',
 	[switch]$Apply,
@@ -73,7 +75,7 @@ if ($Mode -in @('Plan', 'All')) {
 	}
 	$plan = New-UITestShardPlan -Category $Category -Inventory $inventory -Evidence $evidence `
 		-TargetMinutes $TargetMinutes -SafetyMarginMinutes $SafetyMarginMinutes `
-		-MaxShards $MaxShards -UnmeasuredTestPolicy $UnmeasuredTestPolicy
+		-MaxShards $MaxShards -MinimumShards $MinimumShards -UnmeasuredTestPolicy $UnmeasuredTestPolicy
 	Write-JsonFile -Value $plan -Path $OutputPath
 	Write-Host "Planned $(@($plan.assignments).Count) tests across $($plan.shardCount) shards; worst projection $($plan.maxProjectedMinutes)m -> $OutputPath"
 }
