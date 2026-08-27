@@ -148,9 +148,9 @@ Use the manual path when Arcade cannot apply the change cleanly. It is also avai
 For a normal automation conflict, use the source PR's **merge commit** — not its head-branch tip:
 
 ```bash
-git fetch origin
+git fetch <dotnet-maui-upstream-remote>
 git switch -c release-agent/backport-pr-<source-pr>-to-sr<N> \
-  origin/release/<major>.0.1xx-sr<N>
+  <dotnet-maui-upstream-remote>/release/<major>.0.1xx-sr<N>
 git cherry-pick -x <source-merge-sha>
 # Resolve any conflicts, then test the resolved behavior.
 git push -u <authenticated-user-fork-remote> HEAD

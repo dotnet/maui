@@ -160,6 +160,13 @@ try {
 }
 Assert-Equal 'malformed review data fails closed' $true $malformedFailedClosed
 
+$workflowPath = Join-Path $PSScriptRoot '../../../workflows/release-agent-human-approval.yml'
+$workflow = Get-Content -LiteralPath $workflowPath -Raw
+Assert-Equal 'workflow never creates the repository tracking label' $false `
+    $workflow.Contains('gh api --method POST "repos/$REPOSITORY/labels"')
+Assert-Equal 'workflow fails closed when the tracking label is missing' $true `
+    $workflow.Contains("::error::Required repository label '`$TRACKING_LABEL' is missing")
+
 Write-Host "`nPassed: $script:passed   Failed: $script:failed" `
     -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

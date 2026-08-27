@@ -66,12 +66,8 @@ jobs:
           fi
 
           if ! gh api "repos/$REPOSITORY/labels/$TRACKING_LABEL" >/dev/null 2>&1; then
-            gh api --method POST "repos/$REPOSITORY/labels" \
-              -f name="$TRACKING_LABEL" \
-              -f color="8250df" \
-              -f description="Durable provenance for release-agent human approval" \
-              >/dev/null 2>&1 ||
-              gh api "repos/$REPOSITORY/labels/$TRACKING_LABEL" >/dev/null
+            echo "::error::Required repository label '$TRACKING_LABEL' is missing; an administrator must pre-create it."
+            exit 1
           fi
 
           gh api --paginate \
