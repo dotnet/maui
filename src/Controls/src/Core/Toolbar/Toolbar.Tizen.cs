@@ -41,6 +41,13 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(ToolbarHandler handler, Toolbar toolbar) =>
 			MapIsVisible((IToolbarHandler)handler, toolbar);
 
+		public static void MapBackButtonAccessibilityLabel(ToolbarHandler handler, Toolbar toolbar) =>
+			MapBackButtonAccessibilityLabel((IToolbarHandler)handler, toolbar);
+
+		public static void MapBackButtonAccessibilityLabel(IToolbarHandler handler, Toolbar toolbar)
+		{
+			// Tizen back button accessibility — not yet implemented
+		}
 
 		public static void MapBarTextColor(IToolbarHandler handler, Toolbar toolbar)
 		{

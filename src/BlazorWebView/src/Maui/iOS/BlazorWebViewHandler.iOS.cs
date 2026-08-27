@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
 		private IOSWebViewManager? _webviewManager;
+		private readonly StaticContentResponseCache _staticContentResponseCache = new();
 
 		internal static string AppOrigin { get; } = "app://" + BlazorWebView.AppHostAddress + "/";
 		internal static Uri AppOriginUri { get; } = new(AppOrigin);
@@ -98,12 +100,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (DeveloperTools.Enabled)
 			{
 				// Legacy Developer Extras setting.
-				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
-
-				if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
+				if (NSObject.FromObject(true) is NSObject trueValue)
 				{
-					// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
-					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
+					config.Preferences.SetValueForKey(trueValue, new NSString("developerExtrasEnabled"));
+
+					if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
+					{
+						// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
+						webview.SetValueForKey(trueValue, new NSString("inspectable"));
+					}
 				}
 			}
 
@@ -134,6 +139,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
 			platformView.StopLoading();
+			_staticContentResponseCache.Clear();
 
 			if (_webviewManager != null)
 			{
@@ -285,24 +291,72 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				// 2. If this is an app request, then assume the request is for a Blazor resource.
+				StaticContentCacheRequestBehavior? cacheRequestBehavior = null;
+				if (_webViewHandler._staticContentResponseCache.TryGet(url, out var cachedResponse))
+				{
+					cacheRequestBehavior = StaticContentResponseCachePolicy.GetRequestBehavior(
+						urlSchemeTask.Request.HttpMethod,
+						GetRequestHeaders(urlSchemeTask.Request));
+					if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Default)
+					{
+						var cachedRequestUri = QueryStringHelper.RemovePossibleQueryString(url);
+						logger.HandlingWebRequest(cachedRequestUri);
+						logger.ResponseContentBeingSent(cachedRequestUri, cachedResponse.StatusCode);
+						SendResponse(urlSchemeTask, cachedResponse);
+						return;
+					}
+
+					if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Refresh)
+					{
+						_webViewHandler._staticContentResponseCache.Remove(url);
+					}
+				}
+
 				var responseBytes = GetResponseBytes(url, out var contentType, statusCode: out var statusCode);
 				if (statusCode == 200)
 				{
-					using (var dic = new NSMutableDictionary<NSString, NSString>())
-					{
-						dic.Add((NSString)"Content-Length", (NSString)responseBytes.Length.ToString(CultureInfo.InvariantCulture));
-						dic.Add((NSString)"Content-Type", (NSString)contentType);
-						// Disable local caching. This will prevent user scripts from executing correctly.
-						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
-						if (urlSchemeTask.Request.Url != null)
-						{
-							using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-							urlSchemeTask.DidReceiveResponse(response);
-						}
+					// By default local caching is disabled so that user scripts are always re-executed. Applications can
+					// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
+					// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
+					// See https://github.com/dotnet/maui/issues/8279
+					var cacheControl = StaticContentCacheControl.ResolveOverride(_webViewHandler.VirtualView, url, contentType, logger)
+						?? StaticContentCacheControl.Default;
 
+					var cacheLifetime = default(TimeSpan);
+					var shouldCache = StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out cacheLifetime);
+					if (shouldCache)
+					{
+						cacheRequestBehavior ??= StaticContentResponseCachePolicy.GetRequestBehavior(
+							urlSchemeTask.Request.HttpMethod,
+							GetRequestHeaders(urlSchemeTask.Request));
+						shouldCache = cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled;
 					}
-					urlSchemeTask.DidReceiveData(NSData.FromArray(responseBytes));
-					urlSchemeTask.DidFinish();
+
+					if (shouldCache)
+					{
+						var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+						{
+							["Content-Type"] = contentType,
+							["Cache-Control"] = cacheControl,
+						};
+						var response = new StaticContentResponse(
+							url,
+							contentType,
+							statusCode,
+							"OK",
+							headers,
+							responseBytes,
+							StaticContentResponseCachePolicy.GetExpiration(cacheLifetime));
+
+						_webViewHandler._staticContentResponseCache.Set(response);
+						SendResponse(urlSchemeTask, response);
+					}
+					else
+					{
+						SendResponse(urlSchemeTask, statusCode, contentType, cacheControl, responseBytes);
+					}
+
+					return;
 				}
 
 				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
@@ -310,6 +364,56 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				//    from the internet or from the local cache.
 
 				logger.LogDebug("Request for {Url} was not handled.", url);
+			}
+
+			private static IEnumerable<KeyValuePair<string, string>> GetRequestHeaders(NSUrlRequest request)
+			{
+				var headers = request.Headers;
+				if (headers is null)
+				{
+					yield break;
+				}
+
+				foreach (var key in headers.Keys)
+				{
+					if (key?.ToString() is string keyString &&
+						headers[key]?.ToString() is string valueString)
+					{
+						yield return new KeyValuePair<string, string>(keyString, valueString);
+					}
+				}
+			}
+
+			private static void SendResponse(IWKUrlSchemeTask urlSchemeTask, StaticContentResponse response)
+				=> SendResponse(
+					urlSchemeTask,
+					response.StatusCode,
+					response.ContentType,
+					response.Headers["Cache-Control"],
+					response.Content);
+
+			private static void SendResponse(
+				IWKUrlSchemeTask urlSchemeTask,
+				int statusCode,
+				string contentType,
+				string cacheControl,
+				byte[] content)
+			{
+				using (var headers = new NSMutableDictionary<NSString, NSString>())
+				{
+					headers.Add((NSString)"Content-Length", (NSString)content.Length.ToString(CultureInfo.InvariantCulture));
+					headers.Add((NSString)"Content-Type", (NSString)contentType);
+					headers.Add((NSString)"Cache-Control", (NSString)cacheControl);
+					if (urlSchemeTask.Request.Url != null)
+					{
+						using var urlResponse = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", headers);
+						urlSchemeTask.DidReceiveResponse(urlResponse);
+					}
+				}
+
+				using var data = NSData.FromArray(content);
+				urlSchemeTask.DidReceiveData(data);
+				urlSchemeTask.DidFinish();
 			}
 
 			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)

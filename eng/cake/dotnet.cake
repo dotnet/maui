@@ -11,7 +11,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string officialBuildId = Argument("officialbuildid", "");
 
-string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
+string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net11.0");
 
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
@@ -209,7 +209,6 @@ Task("uitests-apphost")
         {
             Information("Building for CoreCLR");
             properties.Add("UseMonoRuntime", "false");
-            properties.Add("TargetFramework", $"{DefaultDotnetVersion}-android");
         }
 
         if (USE_NATIVE_AOT)
@@ -218,12 +217,19 @@ Task("uitests-apphost")
             properties.Add("_UseNativeAot", "true");
             properties.Add("RuntimeIdentifier", "iossimulator-x64");
         }
-        
+
         var useMaterial3 = Argument("usematerial3", false);
         if (useMaterial3)
         {
             Information("Building with Material3 enabled");
             properties.Add("UseMaterial3", "true");
+        }
+
+        var useWindowsCV1 = Argument("usewindowscv1", false);
+        if (useWindowsCV1)
+        {
+            Information("Building with UseWindowsCollectionView2Handler=false (CV1)");
+            properties.Add("UseWindowsCollectionView2Handler", "false");
         }
 
         if (useNuget)
@@ -272,7 +278,6 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
-            "**/Compatibility.Core.UnitTests.csproj",
             "**/MauiBlazorWebView.UnitTests.csproj",
         };
 
@@ -280,7 +285,7 @@ Task("dotnet-test")
 
         foreach (var test in tests)
         {
-            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests")))
+            if (!IsRunningOnWindows() && test.Contains("Controls.Core.Design.UnitTests"))
             {
                 continue;
             }
