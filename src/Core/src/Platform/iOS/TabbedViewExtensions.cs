@@ -42,13 +42,19 @@ namespace Microsoft.Maui.Platform
 			if (_tabBarAppearance == null)
 			{
 				_tabBarAppearance = new UITabBarAppearance();
-				_tabBarAppearance.ConfigureWithDefaultBackground();
 			}
+
+			// Reset to the platform default on every update so a previous gradient or solid
+			// background (a cleared blur effect or a stale BackgroundColor) does not survive a
+			// transition back to a solid or default background.
+			_tabBarAppearance.ConfigureWithDefaultBackground();
+			tabBar.RemoveBackgroundLayer();
 
 			var effectiveBarColor = barBackground switch
 			{
 				null => defaultBarColor,
-				SolidPaint solidPaint => solidPaint.Color?.ToPlatform(),
+				// A SolidPaint with a null Color (e.g. an empty brush) should behave like no brush at all.
+				SolidPaint solidPaint => solidPaint.Color?.ToPlatform() ?? defaultBarColor,
 				_ => null,
 			};
 
@@ -59,10 +65,6 @@ namespace Microsoft.Maui.Platform
 				tabBar.BackgroundColor = UIColor.Clear;
 				tabBar.UpdateBackground(barBackground);
 			}
-			else
-			{
-				tabBar.RemoveBackgroundLayer();
-			}
 
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
@@ -72,6 +74,11 @@ namespace Microsoft.Maui.Platform
 				{
 					tabBar.BackgroundColor = effectiveBarColor;
 				}
+			}
+			else
+			{
+				// Clear any native color (a solid color, or the gradient's transparent) applied during a previous update.
+				tabBar.BackgroundColor = null;
 			}
 
 			// Set BarTextColor

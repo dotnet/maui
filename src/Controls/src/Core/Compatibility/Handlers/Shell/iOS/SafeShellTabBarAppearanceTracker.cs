@@ -19,6 +19,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var tabBar = controller.TabBar;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			{
+				// Remove any gradient/solid background applied through SetAppearance so it does not survive the reset.
+				Microsoft.Maui.Platform.LayerExtensions.RemoveBackgroundLayer(tabBar);
+				tabBar.BackgroundColor = null;
+
+				_tabBarAppearance ??= new UITabBarAppearance();
+				_tabBarAppearance.ConfigureWithDefaultBackground();
+				tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = _tabBarAppearance;
+			}
+
 			tabBar.BarTintColor = _defaultBarTint;
 			tabBar.TintColor = _defaultTint;
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
@@ -71,13 +83,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 
-			var background = appearanceElement.EffectiveTabBarBackgroundColor is not null
-				? new SolidColorBrush(appearanceElement.EffectiveTabBarBackgroundColor)
-				: !Brush.IsNullOrEmpty(appearance.Background)
-					? appearance.Background
-					: appearance.BackgroundColor is not null
-						? new SolidColorBrush(appearance.BackgroundColor)
-						: null;
+			var background = appearance.EffectiveTabBarBackground;
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;

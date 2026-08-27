@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		ColorStateList _itemTextColor;
 		ColorStateList _itemIconTint;
+		Brush _lastAppliedBrush;
 
 		public ShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
 		{
@@ -51,15 +52,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
 			IShellAppearanceElement controller = appearance;
-			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
-			var shellAppearance = appearance as ShellAppearance;
-			var background = backgroundColor is not null
-				? new SolidColorBrush(backgroundColor)
-				: !Brush.IsNullOrEmpty(shellAppearance?.Background)
-					? shellAppearance.Background
-					: shellAppearance?.BackgroundColor is not null
-						? new SolidColorBrush(shellAppearance.BackgroundColor)
-						: null;
+			var background = (appearance as ShellAppearance)?.EffectiveTabBarBackground;
+			if (background is null && appearance.EffectiveTabBarBackgroundColor is Color backgroundColor)
+			{
+				background = new SolidColorBrush(backgroundColor);
+			}
+
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
 			var disabledColor = controller.EffectiveTabBarDisabledColor;
 			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
@@ -88,11 +86,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (brush is GradientBrush)
 			{
+				// Skip rebuilding the drawable when the same gradient is re-applied on a tab/section switch.
+				if (ReferenceEquals(brush, _lastAppliedBrush))
+					return;
+
+				_lastAppliedBrush = brush;
+
+				// Gradients render through GradientStrokeDrawable and intentionally skip the Material
+				// elevation overlay so the user's gradient isn't tinted by the dark-theme surface overlay.
 				bottomView.UpdateBackground(brush);
 				return;
 			}
 
-			var color = (brush as SolidColorBrush)?.Color;
+			_lastAppliedBrush = null;
+
+			// Route solid/null through SetBackgroundColor so existing subclass overrides still run.
+			SetBackgroundColor(bottomView, (brush as SolidColorBrush)?.Color);
+		}
+
+		void ApplySolidBackground(BottomNavigationView bottomView, Color color)
+		{
 #pragma warning disable XAOBS001 // Obsolete
 			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
 #pragma warning restore XAOBS001 // Obsolete
@@ -106,6 +119,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				newColor = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
 			else
 				newColor = color.ToPlatform();
+
+			// Coming from a gradient there's no meaningful color to reveal from, so apply the solid color
+			// directly (avoids a reveal-from-transparent flash) and dispose the outgoing gradient drawable,
+			// which ViewCompat.SetBackground would otherwise replace without disposing.
+			if (oldBackground is GradientStrokeDrawable)
+			{
+				var solidBackground = new MaterialShapeDrawable();
+				solidBackground.FillColor = ColorStateList.ValueOf(newColor);
+				solidBackground.InitializeElevationOverlay(bottomView.Context);
+
+#pragma warning disable CS0618 // Obsolete
+				ViewCompat.SetBackground(bottomView, solidBackground);
+#pragma warning restore CS0618 // Obsolete
+				oldBackground.Dispose();
+				return;
+			}
 
 			if (menuView == null)
 			{
@@ -145,10 +174,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		[Obsolete("Use SetBackground(BottomNavigationView, Brush) instead.")]
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
 		{
-			SetBackground(bottomView, color is not null ? new SolidColorBrush(color) : null);
+			ApplySolidBackground(bottomView, color);
 		}
 
 		static ColorStateList MakeDefaultColorStateList(Context context)
