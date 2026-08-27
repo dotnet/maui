@@ -1627,8 +1627,13 @@ static class UpdateComponentCodeWriter
 						&& ownerType.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, ctx))
 					{
 						var propLocalName = kvp.Key.LocalName;
-						var referenceLiteral = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(referenceName, quote: true);
-						captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ((global::Microsoft.Maui.Controls.Element){parentAccessor}).FindByName({referenceLiteral});");
+						var propSymbol = extVar.Type.GetAllProperties(propLocalName, ctx).FirstOrDefault();
+						if (propSymbol != null)
+						{
+							var castType = propSymbol.Type.ToFQDisplayString();
+							var referenceLiteral = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(referenceName, quote: true);
+							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})((global::Microsoft.Maui.Controls.Element){parentAccessor}).FindByName({referenceLiteral});");
+						}
 					}
 				}
 			}
