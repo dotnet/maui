@@ -171,6 +171,7 @@ BeforeAll {
         'Invoke-ReplicationFixReview',
         'Get-ReplicationFixPanelRecord',
         'Get-ReplicationFixArmEvidence',
+        'Get-ReplicationRegressionLaneCategory',
         'Invoke-ReplicationFixArms',
         'Write-ReplicationFixArmResults',
         'Invoke-ReplicationFixPhase',
@@ -11279,6 +11280,128 @@ Describe 'The fix phase runs the pipeline scripts, not the ones the product ship
             # says it objected, the other says it did not do the work.
             $script:fixPhaseBody |
                 Should -Match '\[int\]\$baselineResult\.ExitCode -ne 0'
+        }
+    }
+}
+
+Describe 'A fix is regression-checked against the lane its neighbours declare' {
+    # Five of the twenty-three human-reviewed fix pull requests repaired their
+    # own oracle and introduced a new defect (436, 441, 451, 452, 468), and in
+    # two of them the reviewer found it by running the tests already sitting
+    # beside ours. These pin the lane derivation, including its refusal to
+    # guess: a wrong lane misses the regression or blames an unrelated failure.
+
+    BeforeAll {
+        $script:LaneRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("lane-" + [guid]::NewGuid())
+        function New-LaneFile {
+            param([string]$Relative, [string]$Category)
+            $full = Join-Path $script:LaneRoot $Relative
+            New-Item -ItemType Directory -Path (Split-Path -Parent $full) -Force | Out-Null
+            $body = if ($Category) { "[Category(TestCategory.$Category)]`npublic class T { }" }
+                    else { "public class T { }" }
+            Set-Content -LiteralPath $full -Value $body -Encoding utf8NoBOM
+        }
+    }
+
+    AfterAll {
+        if ($script:LaneRoot -and (Test-Path -LiteralPath $script:LaneRoot)) {
+            Remove-Item -LiteralPath $script:LaneRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'names the single category its siblings agree on' {
+        New-LaneFile 'Elements/CollectionView/CollectionViewTests.cs' 'CollectionView'
+        New-LaneFile 'Elements/CollectionView/CarouselViewTests.cs' 'CollectionView'
+        New-LaneFile 'Elements/CollectionView/Issue35889.iOS.cs' ''
+
+        Get-ReplicationRegressionLaneCategory `
+            -TestPath 'Elements/CollectionView/Issue35889.iOS.cs' `
+            -RepositoryRoot $script:LaneRoot | Should -Be 'CollectionView'
+    }
+
+    It 'refuses to guess when the siblings name more than one category' {
+        New-LaneFile 'Elements/Grab/WindowTests.cs' 'Window'
+        New-LaneFile 'Elements/Grab/OverlayTests.cs' 'WindowOverlay'
+        New-LaneFile 'Elements/Grab/Issue1.iOS.cs' ''
+
+        Get-ReplicationRegressionLaneCategory `
+            -TestPath 'Elements/Grab/Issue1.iOS.cs' `
+            -RepositoryRoot $script:LaneRoot | Should -BeExactly ''
+    }
+
+    It 'reports nothing rather than a lane when no sibling declares one' {
+        New-LaneFile 'Elements/Lonely/Issue2.iOS.cs' ''
+
+        Get-ReplicationRegressionLaneCategory `
+            -TestPath 'Elements/Lonely/Issue2.iOS.cs' `
+            -RepositoryRoot $script:LaneRoot | Should -BeExactly ''
+    }
+
+    It 'never reads the authored test itself, whose only category is the issue' {
+        # The device-category guard requires our test to declare the issue
+        # category alone. If the reader counted its own file it would either
+        # find nothing to run or, once that guard is relaxed, name a lane of
+        # exactly one test - which cannot witness a regression in its
+        # neighbours, the very thing this measurement exists to find.
+        New-LaneFile 'Elements/Solo/EntryTests.cs' 'Entry'
+        $self = Join-Path $script:LaneRoot 'Elements/Solo/Issue30084.iOS.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $self) -Force | Out-Null
+        Set-Content -LiteralPath $self -Encoding utf8NoBOM -Value @'
+[Category(TestCategory.Issue30084)]
+public class T { }
+'@
+
+        Get-ReplicationRegressionLaneCategory `
+            -TestPath 'Elements/Solo/Issue30084.iOS.cs' `
+            -RepositoryRoot $script:LaneRoot | Should -Be 'Entry'
+    }
+
+    It 'reports nothing rather than throwing when the directory is absent' {
+        # This runs after a fix phase has already paid for a device, a
+        # reproduction and a certification. A measurement that cannot be taken
+        # must cost a paragraph, never the work it was describing.
+        #
+        # Taken under production's preference, not the suite's: the suite runs
+        # under 'Continue', where a non-terminating error is invisible, so an
+        # assertion written here would pass whether or not production survives.
+        $previous = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Stop'
+            { Get-ReplicationRegressionLaneCategory `
+                -TestPath 'Elements/Missing/Issue3.iOS.cs' `
+                -RepositoryRoot $script:LaneRoot } | Should -Not -Throw
+
+            Get-ReplicationRegressionLaneCategory `
+                -TestPath 'Elements/Missing/Issue3.iOS.cs' `
+                -RepositoryRoot $script:LaneRoot | Should -BeExactly ''
+        } finally {
+            $ErrorActionPreference = $previous
+        }
+    }
+
+    It 'resolves every regression-class pull request against the real tree' {
+        # Validated on cases known to need catching before its silence is
+        # believed. All five reviewer-found regressions resolve to the lane the
+        # reviewer chose by hand; a fixture could not have told us that.
+        $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        $deviceTests = Join-Path $repositoryRoot 'src/Controls/tests/DeviceTests'
+        if (-not (Test-Path -LiteralPath $deviceTests)) {
+            Set-ItResult -Skipped -Because 'the product tree is not checked out here'
+            return
+        }
+
+        $expected = @{
+            'Elements/CollectionView/Issue35889.iOS.cs' = 'CollectionView'
+            'Elements/Entry/Issue30084.iOS.cs' = 'Entry'
+            'Elements/DatePicker/Issue36933Tests.iOS.cs' = 'DatePicker'
+            'Elements/Layout/Issue17673Tests.iOS.cs' = 'Layout'
+            'Elements/CollectionView/Issue26526.iOS.cs' = 'CollectionView'
+        }
+        foreach ($relative in $expected.Keys) {
+            Get-ReplicationRegressionLaneCategory `
+                -TestPath "src/Controls/tests/DeviceTests/$relative" `
+                -RepositoryRoot $repositoryRoot |
+                Should -Be $expected[$relative] -Because "PR lane for $relative"
         }
     }
 }

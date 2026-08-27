@@ -816,6 +816,7 @@ function Read-ReplicationManifest {
         'fixFiles', 'fix_files',
         'fixPatch', 'fix_patch',
         'fixRootCause', 'fix_root_cause',
+        'fixRegressionLane', 'fix_regression_lane',
         'fixApproach', 'fix_approach',
         'fixRejectedApproaches', 'fix_rejected_approaches',
         'fixPanel', 'fix_panel',
@@ -1269,6 +1270,7 @@ function Read-ReplicationManifest {
         FixFiles = @($fixFiles.ToArray() | Sort-Object)
         BaseSha = $baseSha
         FixRootCause = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRootCause' -MaximumLength 600)
+        FixRegressionLane = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionLane' -MaximumLength 120)
         FixApproach = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixApproach' -MaximumLength 600)
         FixRejectedApproaches = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixRejectedApproaches' -MaximumLength 300)
         FixPanel = @(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixPanel')
@@ -4297,6 +4299,9 @@ function Invoke-ReplicationCandidateValidation {
             # ships alone.
             fixRootCause = if ($hasFixPatch) {
                 ConvertTo-ReplicationDisclosureText -Value $manifest.FixRootCause -MaximumLength 600
+            } else { '' }
+            fixRegressionLane = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixRegressionLane -MaximumLength 120
             } else { '' }
             fixApproach = if ($hasFixPatch) {
                 ConvertTo-ReplicationDisclosureText -Value $manifest.FixApproach -MaximumLength 600

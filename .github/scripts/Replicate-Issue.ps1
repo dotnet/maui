@@ -7667,6 +7667,9 @@ function Invoke-ReplicationFixPhase {
         RejectedApproaches = @($rejected | Select-Object -First 8)
         IndependentReview = $review
         Panel = @(Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $winnerAttempt)
+        RegressionLane = (Get-ReplicationRegressionLaneCategory `
+            -TestPath $testRelativePath `
+            -RepositoryRoot $repoRoot)
     }
 }
 
@@ -7814,6 +7817,61 @@ function Invoke-ReplicationFixReview {
     Write-Host ("Independent review ($reviewModel): " +
         "$($review.Findings.Count) finding(s). $($review.Summary)")
     return $review
+}
+
+function Get-ReplicationRegressionLaneCategory {
+    <#
+        .SYNOPSIS
+            Names the device-test category a fix should be regression-checked
+            against, or nothing when the tree does not say unambiguously.
+
+        .DESCRIPTION
+            Five of the twenty-three human-reviewed fix pull requests repaired
+            their own oracle and introduced a new defect, and in two of them the
+            reviewer found it the same way: by running the tests that already
+            sit beside ours. That lane cannot be read off our own test, because
+            the device-category guard requires it to declare the issue category
+            alone; and it cannot be read off the fix, because a product path is
+            not a category. It can be read off the neighbours.
+
+            Sibling files in the directory the test was authored into declare
+            the category their lane runs under. Measured over the real tree, 44
+            of 48 test directories name exactly one, and all five of the
+            regression cases resolve to the lane their reviewer chose by hand.
+
+            The four that name several are grab-bag directories, and there the
+            answer is nothing at all rather than the most popular guess: a wrong
+            lane either misses the regression or blames an unrelated failure,
+            and this plan already records what an absent measurement rendered as
+            a finding costs. Reporting nothing is a claim a reader can check.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$TestPath,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot
+    )
+
+    $resolved = Join-Path $RepositoryRoot $TestPath
+    $directory = Split-Path -Parent $resolved
+
+    # No Test-Path guard here: measured under production's 'Stop' preference,
+    # Get-ChildItem -ErrorAction SilentlyContinue returns nothing rather than
+    # throwing for an absent, bare or empty directory alike, so a guard would
+    # never change the answer. A guard that cannot fire reads as protection
+    # that is not there. The SilentlyContinue is what carries the postcondition,
+    # and a test asserts it under that same preference.
+    $self = Split-Path -Leaf $resolved
+    $categories = @{}
+    foreach ($sibling in @(Get-ChildItem -LiteralPath $directory -Filter '*.cs' -File -ErrorAction SilentlyContinue)) {
+        if ($sibling.Name -eq $self) { continue }
+        $content = ''
+        try { $content = Get-Content -LiteralPath $sibling.FullName -Raw -ErrorAction Stop } catch { continue }
+        foreach ($match in [regex]::Matches($content, '\[Category\(TestCategory\.(\w+)\)\]')) {
+            $categories[$match.Groups[1].Value] = $true
+        }
+    }
+
+    if ($categories.Keys.Count -ne 1) { return '' }
+    return ([string]@($categories.Keys)[0])
 }
 
 function Write-ReplicationFixArmResults {
@@ -8842,6 +8900,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
             fixFiles = if ($fixOutcome) { @($fixOutcome.Files) } else { @() }
             fixPatch = if ($fixOutcome) { 'fix.patch' } else { $null }
             fixRootCause = if ($fixOutcome) { $fixOutcome.RootCause } else { $null }
+            fixRegressionLane = if ($fixOutcome) { $fixOutcome.RegressionLane } else { $null }
             fixApproach = if ($fixOutcome) { $fixOutcome.Approach } else { $null }
             fixRejectedApproaches = if ($fixOutcome) { @($fixOutcome.RejectedApproaches) } else { @() }
             fixPanel = if ($fixOutcome) {

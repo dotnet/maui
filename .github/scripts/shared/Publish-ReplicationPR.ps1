@@ -801,6 +801,7 @@ function New-ReplicationPullRequestBody {
     $fixFiles = @(Get-ValidatedFixFiles -Candidate $Candidate)
     $fixBlock = if ($fixFiles.Count -gt 0) {
         $fixRootCause = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixRootCause'
+        $fixRegressionLane = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixRegressionLane'
         $fixApproach = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixApproach'
         $rejected = @()
         $rejectedProperty = $Candidate.PSObject.Properties['fixRejectedApproaches']
@@ -825,6 +826,16 @@ function New-ReplicationPullRequestBody {
             $fixLines += ('**Root cause.** ' + (ConvertTo-ReplicationSingleLine -Value $fixRootCause -MaximumLength 600))
             $fixLines += ''
         }
+        if ($fixRegressionLane) {
+            $fixLines += ('**Regression lane.** The device tests beside this one declare `' +
+                (ConvertTo-ReplicationSingleLine -Value $fixRegressionLane -MaximumLength 120) +
+                '`. This test declares only its issue category, because a second category makes ' +
+                'the advertised `Category=Issue<N>` selector match nothing on this runner.')
+        } else {
+            $fixLines += ('**Regression lane.** Not measured: the tests beside this one do not ' +
+                'agree on a single conventional category.')
+        }
+        $fixLines += ''
         if ($fixApproach) {
             $fixLines += ('**Approach taken.** ' + (ConvertTo-ReplicationSingleLine -Value $fixApproach -MaximumLength 600))
             $fixLines += ''
