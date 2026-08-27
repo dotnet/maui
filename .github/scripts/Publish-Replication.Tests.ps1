@@ -48,6 +48,7 @@ BeforeAll {
         'Get-ReplicationIndependentReviewBlock',
         'Get-ReplicationFixPanelBlock',
         'Get-ValidatedFixFiles',
+        'Test-ReplicationPublishableFix',
         'Assert-ReplicationStagedFix',
         'Remove-ReplicationPlatformTitlePrefix',
         'New-ReplicationPullRequestTitle',
@@ -2557,5 +2558,109 @@ Describe 'A disclosure is sanitized without ever costing the run' {
         $list.Count | Should -Be 2
         $list | Should -Contain 'widen the guard'
         $list | Should -Contain 'clamp the offset'
+    }
+}
+
+Describe 'Reproduction-only runs are never published' {
+    It 'reports a candidate that lists fix files as publishable' {
+        $candidate = [pscustomobject]@{ fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.iOS.cs') }
+
+        Test-ReplicationPublishableFix -Candidate $candidate | Should -BeTrue
+    }
+
+    It 'refuses a candidate that carries no fix at all' {
+        # The reproduction-only shape: a test was authored, nothing else.
+        $candidate = [pscustomobject]@{ files = @('src/Controls/tests/DeviceTests/Issue1Tests.cs') }
+
+        Test-ReplicationPublishableFix -Candidate $candidate | Should -BeFalse
+    }
+
+    It 'refuses a candidate whose fix list is present but empty or blank' {
+        # A run can emit the property and populate it with nothing. Counting the
+        # raw property would read @($null).Count as 1 and publish a reproduction
+        # as though it carried a fix.
+        foreach ($value in @(@(), @(''), @($null), @('', '   '))) {
+            $candidate = [pscustomobject]@{ fixFiles = $value }
+            Test-ReplicationPublishableFix -Candidate $candidate | Should -BeFalse
+        }
+    }
+
+    It 'withholds publication in the publisher body when no fix was validated' {
+        # The gate has to sit in the publisher, not only in the caller: the
+        # function above is inert unless the script consults it before opening
+        # a pull request.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1')).Path,
+            [ref]$null, [ref]$null)
+
+        # The call must be reached from the script body, not merely defined.
+        $topLevel = $ast.EndBlock.Statements | Where-Object {
+            $_ -isnot [System.Management.Automation.Language.FunctionDefinitionAst]
+        }
+        $gate = $topLevel | Where-Object {
+            $_.Extent.Text -match 'Test-ReplicationPublishableFix' -and
+            $_.Extent.Text -match 'withheldReason'
+        }
+        @($gate).Count | Should -BeGreaterThan 0
+
+        # And it must stand down rather than fall through into publication.
+        $gateText = ($gate | Select-Object -First 1).Extent.Text
+        $gateText | Should -Match 'exit 0'
+    }
+
+    It 'declares withheldReason on the manifest so a withheld run is distinguishable' {
+        # Without the property the manifest of a withheld run is shaped exactly
+        # like that of a publisher which crashed before returning a URL, and the
+        # pipeline would fail a green outcome.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
+        $source | Should -Match 'withheldReason\s*=\s*\$null'
+    }
+}
+
+Describe 'The review path can reach the repository holding the pull request' {
+    BeforeAll {
+        $script:ReviewPathScripts = @(
+            (Join-Path $PSScriptRoot 'Review-PR.ps1'),
+            (Join-Path $PSScriptRoot 'post-ai-summary-comment.ps1'),
+            (Join-Path $PSScriptRoot 'post-inline-review.ps1')
+        )
+    }
+
+    It 'declares a Repository parameter defaulting to the upstream project' {
+        foreach ($path in $script:ReviewPathScripts) {
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+                (Resolve-Path $path).Path, [ref]$null, [ref]$null)
+            $parameter = $ast.ParamBlock.Parameters | Where-Object {
+                $_.Name.VariablePath.UserPath -eq 'Repository'
+            }
+            @($parameter).Count | Should -Be 1 -Because "$([System.IO.Path]::GetFileName($path)) must accept -Repository"
+            # Defaulting matters as much as existing: /review and every queued
+            # upstream run pass no -Repository and must keep working.
+            $parameter.DefaultValue.Extent.Text.Trim("'", '"') | Should -Be 'dotnet/maui'
+        }
+    }
+
+    It 'binds every pull-request API path to that parameter instead of a fixed owner' {
+        # This is the defect that left 97 fix pull requests unreviewed: each gh
+        # call named dotnet/maui, so a fork pull request number would have been
+        # read from - and posted to - an unrelated upstream pull request.
+        foreach ($path in $script:ReviewPathScripts) {
+            $source = Get-Content -LiteralPath $path -Raw
+            $name = [System.IO.Path]::GetFileName($path)
+            $source | Should -Not -Match 'repos/dotnet/maui/(?:pulls|issues)/\$PRNumber' `
+                -Because "$name must not hardcode the upstream repository in an API path"
+        }
+    }
+
+    It 'passes the repository on to the scripts that post the review' {
+        # Review-PR resolves the repository once and both posting scripts must
+        # inherit it, or the review would be computed against the fork and
+        # posted against the upstream project.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Review-PR.ps1') -Raw
+        foreach ($line in ($source -split "`n" | Where-Object { $_ -match '\$reviewScript|\$inlineScript' })) {
+            if ($line -match '&\s+\$(reviewScript|inlineScript)\s+-PRNumber') {
+                $line | Should -Match '-Repository \$Repository'
+            }
+        }
     }
 }

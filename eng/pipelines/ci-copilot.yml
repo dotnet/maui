@@ -24,6 +24,15 @@ parameters:
     type: number
     default: 0
 
+  # Repository holding the pull request named by PRNumber. Defaults to the upstream
+  # project, so /review and every existing queued run behave exactly as before.
+  # Set this to the testing fork to review the bot's own fix pull requests, which
+  # live there and were previously unreachable by the review path.
+  - name: ReviewRepository
+    displayName: 'Repository holding the reviewed PR (owner/name)'
+    type: string
+    default: 'dotnet/maui'
+
   - name: IssueNumber
     displayName: 'Issue Number'
     type: number
@@ -2317,6 +2326,7 @@ stages:
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
+                -Repository "${{ parameters.ReviewRepository }}" \
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
                 -TrustedScriptsDir "$TRUSTED" \
@@ -2391,7 +2401,7 @@ stages:
               # exits SKIPPED (no emulator work), unit/XAML tests run without a device, and only
               # UI/device-test PRs use the emulator/simulator provisioned above. There is no
               # "skip the gate" toggle — every review verifies the fix (or reports SKIPPED).
-              GATE_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase Gate -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              GATE_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -Phase Gate -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${GATE_ARGS[@]}"
@@ -2507,7 +2517,7 @@ stages:
 
               echo "Review platform: ${{ parameters.Platform }}"
 
-              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${REVIEW_ARGS[@]}"
@@ -2729,6 +2739,7 @@ stages:
               $ErrorActionPreference = 'Stop'
               & pwsh -NoProfile -File ./.github/scripts/Review-PR.ps1 `
                 -PRNumber "${env:PARAM_PR_NUMBER}" `
+                -Repository "${{ parameters.ReviewRepository }}" `
                 -Platform "${{ parameters.Platform }}" `
                 -Phase Post `
                 -TrustedGateResult "$(effectiveTrustedGateResult)" `
@@ -3178,6 +3189,12 @@ stages:
                   ConvertFrom-Json
                 if (-not [string]::IsNullOrWhiteSpace([string]$result.duplicateOf)) {
                   Write-Host "This issue and platform are already covered by $($result.duplicateOf); nothing further to publish."
+                }
+                elseif (-not [string]::IsNullOrWhiteSpace([string]$result.withheldReason)) {
+                  # A reproduction without a fix is no longer published. The run did real
+                  # work and its evidence is in the artifacts, so this is a green outcome
+                  # with nothing to open - not a publisher that failed to return a URL.
+                  Write-Host "No pull request was opened ($($result.withheldReason)); only fixes are published."
                 }
                 elseif ([string]::IsNullOrWhiteSpace([string]$result.url)) {
                   throw "Replication publisher did not return a pull request URL."
@@ -5915,7 +5932,7 @@ stages:
                   if ($shouldPostInline -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
                     try {
                       Write-Host "Posting expert inline review (before the AI summary)..."
-                      & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
+                      & $inlineScript -PRNumber $prNumber -Repository "${{ parameters.ReviewRepository }}" -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
                       Write-Host "✅ Expert inline review posted"
                     } catch {
                       Write-Host "⚠️ Expert inline review posting failed (non-fatal): $_"
@@ -5945,7 +5962,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
+                    $output = & $postScript -PRNumber $prNumber -Repository "${{ parameters.ReviewRepository }}" -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }

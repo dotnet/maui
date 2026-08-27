@@ -966,6 +966,42 @@ function Get-ValidatedFixFiles {
     return @($property.Value | ForEach-Object { ([string]$_).Replace('\', '/') } | Where-Object { $_ })
 }
 
+function Test-ReplicationPublishableFix {
+    <#
+    .SYNOPSIS
+        Reports whether a validated candidate carries a fix worth publishing.
+
+    .DESCRIPTION
+        The pipeline publishes fixes. A run that reproduced an issue but found
+        no fix has produced a failing test and nothing else, and 122 of the 226
+        open pull requests on the testing fork were exactly that: a reproduction
+        the reader has to triage before learning it proposes no change to the
+        product. They crowd out the fixes they are meant to support, so the
+        publisher now stands down instead of opening one.
+
+        The authority is the validated candidate's fixFiles, the same document
+        the pipeline already consults before it decides whether to pass a fix
+        patch to this script. Reading the patch file instead would let the two
+        disagree: a patch the validator declined to look at would still count
+        as a fix here.
+
+        Whitespace is rejected explicitly rather than left to Get-ValidatedFixFiles,
+        whose `Where-Object { $_ }` drops '' and $null but keeps '   ' - a
+        non-empty string is truthy in PowerShell. A candidate whose only fix
+        entry is blank names no file, and must not be published as a fix.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory = $true)]
+        $Candidate
+    )
+
+    $named = @(Get-ValidatedFixFiles -Candidate $Candidate |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    return ($named.Count -gt 0)
+}
+
 function Remove-ReplicationPlatformTitlePrefix {
     <#
     .SYNOPSIS
@@ -1342,6 +1378,25 @@ $plan = [ordered]@{
     duplicateOf = $null
     supersedes = $null
     supersededClosed = $false
+    withheldReason = $null
+}
+
+# The pipeline exists to produce fixes. A run that reproduced the issue but found
+# no fix has authored a failing test and nothing else, and 122 of the 226 open
+# pull requests on the testing fork were exactly that - a reproduction the reader
+# must open and triage before learning it proposes no change to the product. They
+# buried the 97 that do carry a fix, so such a run now stands down.
+#
+# Withheld, not failed: the reproduction work was real and its evidence is still
+# in the build artifacts. The manifest records the reason so the pipeline can tell
+# this apart from a publisher that crashed before returning a URL, and reports it
+# the same way it already reports standing aside for a duplicate.
+if (-not (Test-ReplicationPublishableFix -Candidate $candidate)) {
+    $plan.withheldReason = 'no-validated-fix'
+    Write-Host ('This run reproduced the issue but produced no validated fix, so no ' +
+        'reproduction-only pull request will be opened.')
+    Write-ReplicationPublicationManifest -Plan $plan
+    exit 0
 }
 
 if (-not $DryRun) {

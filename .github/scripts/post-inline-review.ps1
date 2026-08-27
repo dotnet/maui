@@ -48,6 +48,15 @@ param(
     [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
     [string]$ReviewedCommit = '',
 
+    # Repository holding the pull request, in `owner/name` form. Defaults to the
+    # upstream project so every existing caller keeps its behaviour. The bot's own
+    # fix pull requests live on the testing fork, and a review that always posted
+    # to dotnet/maui would either 404 or, far worse, attach a review to whichever
+    # unrelated upstream pull request happens to carry the same number.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
+
     [Parameter(Mandatory = $false)]
     [switch]$DryRun
 )
@@ -219,7 +228,7 @@ if (Test-Path $SummaryFile) {
 # ============================================================================
 
 Write-Host "Fetching PR #$PRNumber head commit..." -ForegroundColor Cyan
-$prJson = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '{sha: .head.sha}' 2>&1
+$prJson = gh api "repos/$Repository/pulls/$PRNumber" --jq '{sha: .head.sha}' 2>&1
 if ($LASTEXITCODE -ne 0) {
     if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
         Write-Host "Could not verify the current PR head; skipping snapshot-bound inline findings." -ForegroundColor Yellow
@@ -278,7 +287,7 @@ foreach ($f in $findings) {
 # ============================================================================
 
 Write-Host "Fetching PR diff for line validation..." -ForegroundColor Cyan
-$filesJson = gh api --paginate "repos/dotnet/maui/pulls/$PRNumber/files" 2>&1
+$filesJson = gh api --paginate "repos/$Repository/pulls/$PRNumber/files" 2>&1
 if ($LASTEXITCODE -ne 0) {
     $filesError = ($filesJson | Out-String).Trim()
     Write-Host "  ⚠️ Could not fetch PR files for validation: $(ConvertTo-AzdoSafeConsole $filesError)" -ForegroundColor Yellow
@@ -382,7 +391,7 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($viewerLogin)) {
     throw "Could not resolve the authenticated GitHub identity before checking inline-review idempotency."
 }
 
-$existingReviewsJson = gh api --paginate --slurp "repos/dotnet/maui/pulls/$PRNumber/reviews?per_page=100" 2>&1
+$existingReviewsJson = gh api --paginate --slurp "repos/$Repository/pulls/$PRNumber/reviews?per_page=100" 2>&1
 if ($LASTEXITCODE -ne 0) {
     $reviewsError = ($existingReviewsJson | Out-String).Trim()
     throw "Could not query existing inline reviews before posting: $(ConvertTo-AzdoSafeConsole $reviewsError)"
@@ -413,7 +422,7 @@ $tempFile = [System.IO.Path]::GetTempFileName()
 try {
     $payloadJson | Set-Content -Path $tempFile -Encoding UTF8
 
-    $result = gh api --method POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tempFile 2>&1
+    $result = gh api --method POST "repos/$Repository/pulls/$PRNumber/reviews" --input $tempFile 2>&1
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to post review: $result"
     }
