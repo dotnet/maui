@@ -149,7 +149,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			FindAncestor<ItemContainer>(source) is ItemContainer container &&
 			ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), container) &&
 			!InputKeyboardSource.GetKeyStateForCurrentThread(WVirtualKey.Shift).HasFlag(WCoreVirtualKeyStates.Down) &&
-			TryFocusFirstTabStop(container))
+			container.Child is DependencyObject content &&
+			FocusManager.FindFirstFocusableElement(content) is Control firstFocusableElement &&
+			firstFocusableElement.Focus(FocusState.Keyboard))
 		{
 			e.Handled = true;
 			return;
@@ -198,28 +200,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 
 		return null;
-	}
-
-	static bool TryFocusFirstTabStop(DependencyObject parent)
-	{
-		var childCount = VisualTreeHelper.GetChildrenCount(parent);
-		for (var childIndex = 0; childIndex < childCount; childIndex++)
-		{
-			var child = VisualTreeHelper.GetChild(parent, childIndex);
-			if (child is Control { IsTabStop: true, IsEnabled: true, Visibility: WVisibility.Visible } control &&
-				child is not ElementWrapper &&
-				control.Focus(FocusState.Keyboard))
-			{
-				return true;
-			}
-
-			if (TryFocusFirstTabStop(child))
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/// <summary>
