@@ -5,7 +5,7 @@ The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
 | Mode | Target | Result |
 | --- | --- | --- |
 | `review` | Pull request number | Existing automated PR review and AI Summary |
-| `replicate` | GitHub issue number | On-device reproduction evidence and, when fully validated, a draft failing-test PR |
+| `replicate` | GitHub issue number | On-device reproduction evidence and, only when fully validated, a draft product-fix PR |
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
@@ -17,7 +17,7 @@ The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
 4. Set `IssueNumber` to the `dotnet/maui` issue number.
 5. Choose `android`, `ios`, `catalyst`, or `windows`. Android is the default.
 
-Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` reproduction PRs, and skips device reproduction.
+Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` replication PRs, and skips device reproduction. It does not create or migrate pull requests.
 
 Replication targets `main` in the first version. The issue must describe a scenario that can be reconstructed from its text, inline snippets, and allowed raster screenshots.
 
@@ -32,13 +32,14 @@ Replication targets `main` in the first version. The issue must describe a scena
    - device test when native/platform behavior is required;
    - UI test only when lower-level tests cannot prove the issue.
 6. Runs the exact test normally and confirms the expected assertion fails on the unfixed baseline.
-7. Validates that the patch is add-only and restricted to approved test locations.
-8. Publishes evidence to the repository's public, asset-only `review-tests-assets-v2` branch.
-9. Pushes the validated patch to `MauiBot/maui` and opens a draft PR against `kubaflo/maui:main` while the workflow is being tested.
+7. Authors a product fix and certifies the same exact test through four causal arms: baseline red, trigger-removed green, product-fix green, and fix-reverted red.
+8. Validates that the test patch is add-only and restricted to approved test locations and that the fix patch changes only the validated product files.
+9. Publishes evidence to the repository's public, asset-only `review-tests-assets-v2` branch.
+10. Pushes the validated test and product fix to `MauiBot/maui` and opens a `[maui-bot-fix]` draft PR against `kubaflo/maui:main` while the workflow is being tested.
 
 The PR embeds the GIF/thumbnail linked to the MP4. GitHub does not provide a supported API for uploading a video attachment directly into a PR body.
 
-To avoid test-rollout noise in `dotnet/maui`, the trusted publisher also recreates any open MauiBot reproduction PRs in `kubaflo/maui` and closes an upstream PR only after its testing-fork replacement exists.
+If no product fix completes all validation, the run retains the reproduction, diagnostics, and any incomplete fix material as pipeline artifacts only. It does not create or migrate a reproduction-only PR. An existing reproduction-only PR does not block a later validated fix; the fix publisher may replace it automatically. An existing fix PR remains protected unless `SupersedeExisting` is explicitly enabled.
 
 ## Test semantics
 
@@ -60,12 +61,13 @@ Tests of automatic bindable-property propagation must not call `Handler.UpdateVa
 
 Device tests that customize handler registration use the repository's `EnsureHandlerCreated` pattern and register standard handlers for every attached hierarchy family alongside the custom handler. Missing-handler exceptions are classified as setup failures, not product reproductions.
 
-The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
+The draft PR contains both the regression test and the validated product fix. A reproduction-only result is never published as a PR.
 
 Successful publication requires both:
 
 - empirical on-device reproduction with valid recording evidence; and
-- the exact resolved project, class, and method failing with the expected assertion signature in that test's parsed failure message.
+- the exact resolved project, class, and method failing with the expected assertion signature in that test's parsed failure message; and
+- a product fix that passes the exact test and completes all four causal control arms.
 
 A video alone, a test alone, a compilation error, a timeout, an infrastructure failure, or a missing snapshot baseline does not qualify.
 
@@ -97,7 +99,7 @@ Issue content and generated code are untrusted.
 - Generated Sandbox and test sources are capability-scanned before any credentialless execution.
 - Trusted scripts run builds, tests, Appium, recording, patch validation, uploads, and publication.
 - The publisher runs from a clean trusted checkout, validates artifacts before extracting the persisted checkout credential, and never executes generated code.
-- The checkout credential is scoped to immutable asset publication, reproduction-branch push, and draft PR creation, then cleared.
+- The checkout credential is scoped to immutable asset publication, fix-branch push, and draft PR creation, then cleared.
 
 See `.github/instructions/ci-copilot-pipeline-security.instructions.md` for mandatory implementation rules.
 
@@ -105,12 +107,14 @@ See `.github/instructions/ci-copilot-pipeline-security.instructions.md` for mand
 
 | Outcome | Publication behavior |
 | --- | --- |
-| Reproduced, exact failing test, valid media, safe patch | Upload evidence and create a draft PR |
+| Reproduced, exact failing test, valid media, and four-arm-certified product fix | Upload evidence and create a `[maui-bot-fix]` draft PR |
+| Reproduced but no complete validated product fix | Publish pipeline artifacts only; do not create or migrate a PR |
 | Issue not reproducible | Publish pipeline artifacts only |
 | Test passes or fails with a different signature | Publish diagnostics only |
 | Build, device, Appium, recording, or test infrastructure fails | Publish diagnostics only |
 | Patch or evidence validation fails | Do not expose publisher credentials; publish diagnostics only |
-| Matching open reproduction PR already exists | Do not create a duplicate |
+| Matching open fix PR already exists | Do not create a duplicate unless `SupersedeExisting` is enabled |
+| Matching open reproduction-only PR already exists | Continue fix generation; replace it only after a validated fix is open |
 
 Public evidence is stored under an immutable, build-specific path on
 `review-tests-assets-v2` similar to:
@@ -133,7 +137,7 @@ finishes before that credential is extracted.
 
 ## Initial pilot set
 
-Before each run, confirm the issue is still open, has no equivalent active fix/reproduction PR, and can be reconstructed without prohibited downloads:
+Before each run, confirm the issue is still open, has no equivalent active fix PR, and can be reconstructed without prohibited downloads:
 
 - Android: `#37440`
 - iOS: `#31059`

@@ -35,7 +35,7 @@ parameters:
     default: false
 
   - name: SupersedeExisting
-    displayName: 'Replace an existing reproduction pull request for this issue and platform'
+    displayName: 'Replace an existing fix pull request for this issue and platform'
     type: boolean
     default: false
 
@@ -136,25 +136,6 @@ stages:
             fetchDepth: 1
             persistCredentials: false
             sparseCheckoutDirectories: .github/scripts/shared
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
-              $feedbackRoot = Join-Path "$(Build.ArtifactStagingDirectory)" "ReplicationFeedback"
-              New-Item -ItemType Directory -Path $feedbackRoot -Force | Out-Null
-              & (Join-Path $sharedRoot "Move-ReplicationPRsToTestingFork.ps1") `
-                -SourceOwner "dotnet" `
-                -SourceRepository "maui" `
-                -TargetOwner "kubaflo" `
-                -TargetRepository "maui" `
-                -TargetBaseBranch "main" `
-                -OutputPath (Join-Path $feedbackRoot "migrated-prs.json")
-              if ($LASTEXITCODE -ne 0) {
-                throw 'Moving existing reproduction PRs to the testing fork failed.'
-              }
-            displayName: 'Move existing reproduction PRs to testing fork'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
@@ -662,27 +643,36 @@ stages:
                   --limit 200 `
                   --json 'body,url'
                 if ($LASTEXITCODE -eq 0) {
-                  $existing = @($openPulls | ConvertFrom-Json) |
-                    Where-Object { [string]$_.body -like "*$marker*" } |
+                  $matchingPulls = @(@($openPulls | ConvertFrom-Json) |
+                    Where-Object { [string]$_.body -like "*$marker*" })
+                  $existing = @($matchingPulls |
+                    Where-Object { ([string]$_.body) -match '(?m)^## Proposed fix\s*$' }) |
                     Select-Object -First 1
+                  if (-not $existing) {
+                    $existing = $matchingPulls | Select-Object -First 1
+                  }
                 }
               } catch {
-                Write-Host "##vso[task.logissue type=warning]Could not check for an existing reproduction pull request: $($_.Exception.Message)"
+                Write-Host "##vso[task.logissue type=warning]Could not check for an existing fix pull request: $($_.Exception.Message)"
               }
 
               $supersedeExisting = [bool]::Parse('${{ parameters.SupersedeExisting }}')
-              if ($existing -and -not $supersedeExisting) {
+              $existingCarriesFix = $existing -and
+                ([string]$existing.body) -match '(?m)^## Proposed fix\s*$'
+              if ($existingCarriesFix -and -not $supersedeExisting) {
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
-                Write-Host "ISSUE REPLICATION SKIPPED: an open reproduction pull request already covers this issue and platform: $($existing.url)"
-              } elseif ($existing) {
+                Write-Host "ISSUE FIX SKIPPED: an open fix pull request already covers this issue and platform: $($existing.url)"
+              } elseif ($existingCarriesFix) {
                 # Re-running an already-covered issue is the only way to test a
-                # pipeline change against the reproductions that exercise it.
+                # pipeline change against the fixes that exercise it.
                 # The existing pull request is not touched here; the publisher
                 # retires it after its replacement is open.
-                Write-Host "An open reproduction pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
+                Write-Host "An open fix pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
+              } elseif ($existing) {
+                Write-Host "An open reproduction-only pull request exists but does not block generation of a validated fix: $($existing.url)"
               } else {
-                Write-Host "No open reproduction pull request covers this issue and platform yet."
+                Write-Host "No open fix pull request covers this issue and platform yet."
               }
 
               # PR 199 reproduced dotnet/maui#37243 on a full device run and
@@ -807,7 +797,7 @@ stages:
                 Write-Host "##vso[task.logissue type=warning]Could not cross-reference the upstream branch: $($_.Exception.Message)"
               }
             name: ReplicationDuplicateCheck
-            displayName: 'Check for an existing reproduction pull request'
+            displayName: 'Check for an existing fix pull request'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
             timeoutInMinutes: 5
             env:
@@ -2825,12 +2815,12 @@ stages:
   # credential is exposed only after deterministic candidate validation, in a
   # clean job that never executes generated code.
   - stage: PublishReplication
-    displayName: 'Validate and publish issue replication'
+    displayName: 'Validate and publish issue fix'
     dependsOn: ReviewPR
     condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
     jobs:
       - job: PublishReplication
-        displayName: 'Publish validated reproduction'
+        displayName: 'Publish validated fix'
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -2842,7 +2832,7 @@ stages:
             clean: true
             fetchDepth: 0
             # Trusted-only publisher exception: reuse the existing checkout PAT
-            # for the public asset branch and reproduction branch. Generated
+            # for the public asset branch and fix branch. Generated
             # code is validated but never executed in this credentialed job.
             persistCredentials: true
 
@@ -2890,7 +2880,6 @@ stages:
                 'shared/Publish-ReplicationOutcome.ps1',
                 'shared/Publish-ReplicationEvidence.ps1',
                 'shared/Publish-ReplicationPR.ps1',
-                'shared/Move-ReplicationPRsToTestingFork.ps1',
                 'Find-RegressionRisks.ps1'
               )) {
                 $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/$relative"
@@ -3040,41 +3029,47 @@ stages:
               }
 
               $fixPatchPath = Join-Path $artifactRoot "fix.patch"
-              # A fix is optional, and the manifest is the authority on whether one
-              # was certified. A patch on disk the manifest does not name means the
-              # panel wrote it and the task was killed before the manifest could
-              # record it, so the fix phase never finished. That is an absent
-              # measurement, not a malformed candidate: the reproduction publishes
-              # on its own rather than being refused for a contradiction it did not
-              # cause. Build 15102442 lost a certified reproduction exactly that way.
               $fixPatchArgument = @{}
               $fixPatchPresent = Test-Path -LiteralPath $fixPatchPath -PathType Leaf
-              # Filtering rather than counting: a missing property is $null, and
-              # @($null).Count is 1, which would read as a named fix file.
               $manifestFixFiles = @($candidate.fixFiles | Where-Object { $_ })
-              if ($fixPatchPresent -and $manifestFixFiles.Count -gt 0) {
+              $fixReadyForPublication = $fixPatchPresent -and $manifestFixFiles.Count -gt 0
+              if ($fixReadyForPublication) {
                 $fixPatchArgument['FixPatchPath'] = $fixPatchPath
                 Write-Host "The candidate carries a proposed fix; validating it alongside the test."
-              } elseif ($fixPatchPresent) {
-                Write-Host "A fix patch is present but the manifest names no fix files, so the fix phase did not finish. Publishing the reproduction alone."
+              } elseif ($fixPatchPresent -or $manifestFixFiles.Count -gt 0) {
+                Write-Host "The fix phase did not finish with both a patch and named files; no pull request will be published."
+              } else {
+                Write-Host "No product fix was produced; keeping the reproduction in pipeline artifacts only."
               }
 
-              $validation = @(
-                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
-                  -RepoRoot "$(Build.SourcesDirectory)" `
-                  -CandidateManifestPath $candidatePath `
-                  -PatchPath (Join-Path $artifactRoot "test.patch") `
-                  -EvidenceDir $artifactRoot `
-                  -IssueNumber ${{ parameters.IssueNumber }} `
-                  -Platform "${{ parameters.Platform }}" `
-                  -OutputPath (Join-Path $outputRoot "validated-candidate.json") `
-                  @fixPatchArgument
-              )
-              if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
-                throw "Replication candidate validation did not return one validated result."
+              # No-fix candidates remain pipeline artifacts; only complete fixes reach validation.
+              if ($fixReadyForPublication) {
+                $validation = @(
+                  & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
+                    -RepoRoot "$(Build.SourcesDirectory)" `
+                    -CandidateManifestPath $candidatePath `
+                    -PatchPath (Join-Path $artifactRoot "test.patch") `
+                    -EvidenceDir $artifactRoot `
+                    -IssueNumber ${{ parameters.IssueNumber }} `
+                    -Platform "${{ parameters.Platform }}" `
+                    -OutputPath (Join-Path $outputRoot "validated-candidate.json") `
+                    @fixPatchArgument
+                )
+                if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
+                  throw "Replication candidate validation did not return one validated result."
+                }
+              } else {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'fix-not-available'
+                  validationPassed = $false
+                  issueNumber = $candidate.issueNumber
+                  platform = $candidate.platform
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath (Join-Path $outputRoot "validated-candidate.json") -Encoding utf8NoBOM
               }
-              Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]true"
-            displayName: 'Validate replication candidate without credentials'
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]$($fixReadyForPublication.ToString().ToLowerInvariant())"
+            displayName: 'Validate fix candidate without credentials'
             condition: succeededOrFailed()
 
           - pwsh: |
@@ -3123,7 +3118,7 @@ stages:
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
                 $checkoutToken = $null
               }
-            displayName: 'Publish reproduction evidence'
+            displayName: 'Publish fix evidence'
             condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
             env:
               BUILD_BUILDID: $(Build.BuildId)
@@ -3139,17 +3134,6 @@ stages:
               }
 
               try {
-                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Move-ReplicationPRsToTestingFork.ps1") `
-                  -SourceOwner "dotnet" `
-                  -SourceRepository "maui" `
-                  -TargetOwner "kubaflo" `
-                  -TargetRepository "maui" `
-                  -TargetBaseBranch "main" `
-                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/migrated-prs.json"
-                if ($LASTEXITCODE -ne 0) {
-                  throw "Migrating existing reproduction pull requests to the testing fork failed."
-                }
-
                 $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
                 $publishFixArgument = @{}
                 # The validator is the authority on what was validated. Probing the
@@ -3183,7 +3167,7 @@ stages:
                   -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" `
                   @publishFixArgument
                 if ($LASTEXITCODE -ne 0) {
-                  throw "Publishing the replication pull request failed."
+                  throw "Publishing the fix pull request failed."
                 }
 
                 $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw |
@@ -3202,7 +3186,7 @@ stages:
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
               }
             name: PublishReplicationPR
-            displayName: 'Move existing PRs and create MauiBot testing draft PR'
+            displayName: 'Create MauiBot fix draft PR'
             condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)

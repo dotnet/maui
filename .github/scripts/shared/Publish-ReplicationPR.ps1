@@ -1,11 +1,12 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Applies a validated reproduction patch and opens a draft pull request.
+    Applies validated reproduction and product-fix patches and opens a draft fix pull request.
 
 .DESCRIPTION
     Run only from a clean trusted checkout after candidate and evidence
-    validation. The GitHub token must be provided through GH_TOKEN.
+    validation. Reproduction-only candidates are refused. The GitHub token must
+    be provided through GH_TOKEN.
 #>
 
 [CmdletBinding()]
@@ -264,31 +265,20 @@ function Get-ReplicationCandidateText {
     return [string]$property.Value
 }
 
-function Test-ReplicationWeakerThanOpenPullRequest {
+function Test-ReplicationPullRequestCarriesFix {
     <#
         .SYNOPSIS
-            True when an incoming publication carries no fix while the open
-            pull request it would supersede does carry one.
-
-        .DESCRIPTION
-            Superseding exists so a re-run can refresh the evidence for an
-            issue after the pipeline changes. It is not licence for a weaker
-            publication to destroy a stronger one, which is what happened when
-            reproduction-only runs retired two pull requests that each carried
-            a four-arm certified fix.
+            True when a replication pull request body carries a proposed fix.
     #>
     param(
-        [AllowNull()][AllowEmptyString()][string]$DuplicateBody,
-        [bool]$IncomingCarriesFix
+        [AllowNull()][AllowEmptyString()][string]$Body
     )
 
-    if ($IncomingCarriesFix) { return $false }
-    if ([string]::IsNullOrWhiteSpace($DuplicateBody)) { return $false }
+    if ([string]::IsNullOrWhiteSpace($Body)) { return $false }
 
-    # The fix section is the only part of the body that a reproduction-only
-    # publication never writes, so it is the honest discriminator. Matching the
-    # title would trust a string the publisher does not control.
-    return [bool]($DuplicateBody -match '(?m)^## Proposed fix\s*$')
+    # The fix section is the publisher-controlled discriminator. Matching the
+    # title would trust a string that can be edited independently of the diff.
+    return [bool]($Body -match '(?m)^## Proposed fix\s*$')
 }
 
 function Get-ReplicationFixRegressionSignal {
@@ -1252,6 +1242,13 @@ if ($candidate.validationPassed -ne $true) {
     throw 'Candidate validation did not pass; a pull request will not be created.'
 }
 
+$validatedFixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
+$hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
+    (Test-Path -LiteralPath $FixPatchPath -PathType Leaf)
+if (-not $hasFixPatch -or $validatedFixFiles.Count -eq 0) {
+    throw 'A validated product fix is required; reproduction-only pull requests are not published.'
+}
+
 $evidence = Get-Content -LiteralPath $PublishedEvidencePath -Raw | ConvertFrom-Json -Depth 20
 $context = Get-Content -LiteralPath $IssueContextPath -Raw | ConvertFrom-Json -Depth 20
 $issueNumber = [int]$candidate.issueNumber
@@ -1276,7 +1273,7 @@ $prTitle = New-ReplicationPullRequestTitle `
     -IssueNumber $issueNumber `
     -Platform $platform `
     -IssueTitle $issueTitle `
-    -CarriesFix:(@(Get-ValidatedFixFiles -Candidate $candidate).Count -gt 0)
+    -CarriesFix
 # Computed here rather than inside the body builder, which stays free of child
 # processes and network so it can be tested directly. A null signal simply omits
 # the line: the check reports, it never withholds a fix.
@@ -1337,7 +1334,7 @@ $plan = [ordered]@{
     body = $prBody
     marker = $marker
     files = @(Get-ValidatedCandidateFiles -Candidate $candidate)
-    fixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
+    fixFiles = $validatedFixFiles
     url = $null
     duplicateOf = $null
     supersedes = $null
@@ -1346,7 +1343,7 @@ $plan = [ordered]@{
 
 if (-not $DryRun) {
     if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
-        throw 'GH_TOKEN is required to publish the reproduction pull request.'
+        throw 'GH_TOKEN is required to publish the fix pull request.'
     }
 
     $authenticatedLogin = Get-ReplicationGitHubLogin
@@ -1376,37 +1373,21 @@ if (-not $DryRun) {
             throw 'Unable to query existing reproduction pull requests.'
         }
 
-        $duplicate = @($openPullsJson | ConvertFrom-Json) | Where-Object {
+        $matchingPulls = @(@($openPullsJson | ConvertFrom-Json) | Where-Object {
             [string]$_.body -like "*$marker*"
-        } | Select-Object -First 1
-
-        # A reproduction is not a replacement for a fix. Builds 15075238 and
-        # 15076851 reproduced issues 36412 and 35624, found no fix, and retired
-        # pull requests 393 and 396 - which each carried a four-arm certified
-        # fix - replacing them with reproduction-only pull requests 398 and 403.
-        # Superseding exists so a re-run can refresh evidence, not so a weaker
-        # publication can destroy a stronger one, so an incoming run without a
-        # fix stands aside for an open pull request that has one.
-        $incomingCarriesFix = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
-            (Test-Path -LiteralPath $FixPatchPath)
-        $standsAside = $duplicate -and (Test-ReplicationWeakerThanOpenPullRequest `
-            -DuplicateBody ([string]$duplicate.body) -IncomingCarriesFix $incomingCarriesFix)
-        if ($standsAside) {
-            $plan.duplicateOf = [string]$duplicate.url
-            Write-Host ("An open pull request already carries a fix for this issue and platform, " +
-                "so this reproduction-only run stands aside: $($duplicate.url)")
-            Write-ReplicationPublicationManifest -Plan $plan
-            Pop-Location
-            exit 0
+        })
+        $duplicate = @($matchingPulls | Where-Object {
+            Test-ReplicationPullRequestCarriesFix -Body ([string]$_.body)
+        }) | Select-Object -First 1
+        if (-not $duplicate) {
+            $duplicate = $matchingPulls | Select-Object -First 1
         }
 
-        if ($duplicate -and -not $SupersedeExisting) {
-            # Build 15001510 reproduced issue 37151 and authored its test while
-            # an earlier run was publishing the same issue and platform. The
-            # second run is redundant, not broken, so it reports what already
-            # covers the issue instead of failing the build.
+        $duplicateCarriesFix = $duplicate -and
+            (Test-ReplicationPullRequestCarriesFix -Body ([string]$duplicate.body))
+        if ($duplicateCarriesFix -and -not $SupersedeExisting) {
             $plan.duplicateOf = [string]$duplicate.url
-            Write-Host ("An open reproduction pull request already covers this issue and platform: " +
+            Write-Host ("An open fix pull request already covers this issue and platform: " +
                 "$($duplicate.url)")
             Write-ReplicationPublicationManifest -Plan $plan
             Pop-Location
@@ -1414,13 +1395,13 @@ if (-not $DryRun) {
         }
 
         if ($duplicate) {
-            # Superseding is what lets an already-covered issue be re-run after
-            # the pipeline itself changes. The earlier pull request is retired
-            # only once its replacement exists, further down: a run that never
-            # gets that far leaves the existing evidence exactly where it was.
+            # A validated fix always replaces a reproduction-only pull request.
+            # SupersedeExisting additionally allows a refreshed fix to replace
+            # an older fix. The earlier pull request is retired only once its
+            # replacement exists.
             $supersededPull = $duplicate
             $plan.supersedes = [string]$duplicate.url
-            Write-Host ("This run supersedes an open reproduction pull request: " +
+            Write-Host ("This run supersedes an open replication pull request: " +
                 "$($duplicate.url)")
         }
 
@@ -1544,15 +1525,14 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                 --body-file $bodyPath `
                 --draft
             if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$prUrl)) {
-                throw 'Creating the draft reproduction pull request failed.'
+                throw 'Creating the draft fix pull request failed.'
             }
             $plan.url = ([string]$prUrl).Trim()
 
             if ($supersededPull) {
                 # Only now, with the replacement open, is retiring the earlier
-                # pull request safe. Closing it first would leave the issue with
-                # no open reproduction at all if anything above had failed, and
-                # a duplicate is a far smaller problem than lost evidence.
+                # pull request safe. Closing it first would discard the existing
+                # evidence if anything above failed.
                 try {
                     $supersededNumber = [string]$supersededPull.number
                     $supersedeNote = "Superseded by $($plan.url), published by build $buildId."

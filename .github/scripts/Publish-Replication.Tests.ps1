@@ -55,7 +55,7 @@ BeforeAll {
         'Get-ReplicationFixRegressionSignal',
         'Get-ReplicationExpressionSkeleton',
         'Get-ReplicationOracleIndependenceSignal',
-        'Test-ReplicationWeakerThanOpenPullRequest',
+        'Test-ReplicationPullRequestCarriesFix',
         'Resolve-ReplicationSourceRepository'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
@@ -794,7 +794,7 @@ Describe 'Trusted replication pull request publishing' {
         } | Should -Throw '*targeted failure message*'
     }
 
-    It 'uses an add-only staged diff and creates a MauiBot fork draft PR' {
+    It 'uses an add-only staged diff and creates a MauiBot fork draft fix PR' {
         $script:PrSource | Should -Match 'git diff --cached --name-status --diff-filter=ACDMRTUXB'
         $script:PrSource | Should -Match '\s--draft'
         $script:PrSource | Should -Match 'GH_TOKEN is required'
@@ -811,6 +811,32 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match '-ParentOwner \$IssueOwner'
         $script:PrSource | Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
+    }
+
+    It 'refuses a reproduction-only candidate before reading publication assets' {
+        $candidatePath = Join-Path $TestDrive 'reproduction-only-candidate.json'
+        [ordered]@{
+            validationPassed = $true
+            issueNumber = 12345
+            platform = 'android'
+            fixFiles = @()
+        } |
+            ConvertTo-Json |
+            Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
+
+        $publisher = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $output = @(& pwsh -NoProfile -File $publisher `
+            -ValidatedCandidatePath $candidatePath `
+            -PublishedEvidencePath (Join-Path $TestDrive 'missing-evidence.json') `
+            -IssueContextPath (Join-Path $TestDrive 'missing-context.json') `
+            -PatchPath (Join-Path $TestDrive 'missing-test.patch') `
+            -RepositoryRoot $TestDrive `
+            -DryRun 2>&1)
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $rendered = $output -join [Environment]::NewLine
+        $rendered | Should -Match 'reproduction-only pull requests are'
+        $rendered | Should -Match 'not published'
     }
 
     It 'opens the reproduction against the exact commit it was verified on' {
@@ -1483,16 +1509,11 @@ Describe 'A quoted reporter title may not restate the platform claim' {
     }
 }
 
-Describe 'Superseding an existing reproduction pull request' {
-    # Thirty-one certified reproductions reached the fix phase and every one of
-    # them died in it, and none could be re-run afterwards: an open pull request
-    # covered each issue and platform, so both the pre-check and the publisher
-    # refused. Re-running an already-covered issue is the only way to test a
-    # pipeline change against the reproductions that exercise it.
+Describe 'Superseding an existing replication pull request' {
 
-    It 'refuses a duplicate only while it is not asked to supersede one' {
+    It 'protects an existing fix unless it is asked to supersede one' {
         $script:PrSource | Should -Match '\[switch\]\$SupersedeExisting'
-        $script:PrSource | Should -Match 'if \(\$duplicate -and -not \$SupersedeExisting\)'
+        $script:PrSource | Should -Match 'if \(\$duplicateCarriesFix -and -not \$SupersedeExisting\)'
     }
 
     It 'retires the earlier pull request only after the replacement is open' {
@@ -1513,8 +1534,8 @@ Describe 'Superseding an existing reproduction pull request' {
         $script:PrSource | Should -Match 'gh pr comment \$supersededNumber'
     }
 
-    It 'keeps a failed retirement from failing a published reproduction' {
-        # The reproduction is already on GitHub by this point. Throwing here
+    It 'keeps a failed retirement from failing a published fix' {
+        # The fix is already on GitHub by this point. Throwing here
         # would report a successful publication as a failed build.
         $script:PrSource | Should -Match 'could not be retired, so it stays open'
     }
@@ -1788,10 +1809,7 @@ Describe 'The regression cross-reference reports and never refuses' {
     }
 }
 
-Describe 'A reproduction never retires a pull request that carries a fix' {
-    # Builds 15075238 and 15076851 reproduced issues 36412 and 35624, found no
-    # fix, and closed pull requests 393 and 396 - each carrying a four-arm
-    # certified fix - in favour of reproduction-only replacements.
+Describe 'A validated fix replaces reproduction-only pull requests safely' {
 
     BeforeAll {
         $script:fixBody = @'
@@ -1811,53 +1829,62 @@ Tap the thing.
 '@
     }
 
-    It 'stands aside when the open pull request has a fix and this run has none' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:fixBody -IncomingCarriesFix $false |
+    It 'recognizes a publisher-authored fix section' {
+        Test-ReplicationPullRequestCarriesFix -Body $script:fixBody |
             Should -BeTrue
     }
 
-    It 'supersedes normally when this run also carries a fix' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:fixBody -IncomingCarriesFix $true |
+    It 'does not classify a reproduction-only body as a fix' {
+        Test-ReplicationPullRequestCarriesFix -Body $script:reproBody |
             Should -BeFalse
     }
 
-    It 'supersedes normally when the open pull request is reproduction-only' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:reproBody -IncomingCarriesFix $false |
+    It 'treats an empty or absent body as not carrying a fix' {
+        Test-ReplicationPullRequestCarriesFix -Body '' |
             Should -BeFalse
-    }
-
-    It 'treats an empty or absent body as nothing worth protecting' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody '' -IncomingCarriesFix $false |
-            Should -BeFalse
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $null -IncomingCarriesFix $false |
+        Test-ReplicationPullRequestCarriesFix -Body $null |
             Should -BeFalse
     }
 
     It 'does not mistake prose that merely mentions a proposed fix' {
         $prose = "We considered a fix.`n`nSee ## Proposed fix elsewhere for details."
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $prose -IncomingCarriesFix $false |
+        Test-ReplicationPullRequestCarriesFix -Body $prose |
             Should -BeFalse
     }
 
-    It 'stands aside before the supersede branch can retire anything' {
+    It 'keeps an existing fix unless explicit superseding is enabled' {
         $text = $script:PrSource
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$null, [ref]$null)
-
-        # The last occurrence is the call site; the first is the definition,
-        # and asserting against that would make the ordering check vacuous.
-        $callIndex = $text.LastIndexOf('Test-ReplicationWeakerThanOpenPullRequest')
-        $definitionIndex = $text.IndexOf('function Test-ReplicationWeakerThanOpenPullRequest')
+        $callIndex = $text.LastIndexOf('Test-ReplicationPullRequestCarriesFix')
+        $definitionIndex = $text.IndexOf('function Test-ReplicationPullRequestCarriesFix')
         $callIndex | Should -BeGreaterThan $definitionIndex
 
-        # The guard has to come first: once $supersededPull is set the earlier
-        # pull request is closed further down.
         $supersedeIndex = $text.IndexOf('$supersededPull = $duplicate')
         $supersedeIndex | Should -BeGreaterThan $callIndex
 
-        # And it has to leave without publishing rather than fall through.
         $between = $text.Substring($callIndex, $supersedeIndex - $callIndex)
+        $between | Should -Match '\$duplicateCarriesFix -and -not \$SupersedeExisting'
         $between | Should -Match 'exit 0'
         $between | Should -Not -Match 'gh pr close'
+    }
+
+    It 'prioritizes an existing fix when reproduction-only duplicates also exist' {
+        $matchingIndex = $script:PrSource.IndexOf('$matchingPulls =')
+        $fixIndex = $script:PrSource.IndexOf(
+            'Test-ReplicationPullRequestCarriesFix -Body ([string]$_.body)',
+            $matchingIndex)
+        $fallbackIndex = $script:PrSource.IndexOf(
+            '$duplicate = $matchingPulls | Select-Object -First 1',
+            $fixIndex)
+
+        $matchingIndex | Should -BeGreaterThan 0
+        $fixIndex | Should -BeGreaterThan $matchingIndex
+        $fallbackIndex | Should -BeGreaterThan $fixIndex
+    }
+
+    It 'automatically replaces a reproduction-only pull request with a fix' {
+        $script:PrSource | Should -Match '\$duplicateCarriesFix = \$duplicate -and'
+        $script:PrSource | Should -Match 'if \(\$duplicateCarriesFix -and -not \$SupersedeExisting\)'
+        $script:PrSource | Should -Match 'if \(\$duplicate\)\s*\{'
     }
 }
 
