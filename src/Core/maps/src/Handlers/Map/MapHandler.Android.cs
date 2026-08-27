@@ -1012,7 +1012,11 @@ namespace Microsoft.Maui.Maps.Handlers
 				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
 					return null;
 
-				var bitmap = DrawableToBitmap(drawable);
+				// Every DrawableToBitmap path returns a bitmap this handler owns, so nothing else
+				// reads it once the descriptor exists. Disposed rather than recycled: this drops
+				// the JNI peer and leaves the pixels to the Java GC, which stays correct even if
+				// FromBitmap retained the source rather than copying it. Recycling would not.
+				using var bitmap = DrawableToBitmap(drawable);
 				if (bitmap is null)
 					return null;
 

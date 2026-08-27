@@ -20,6 +20,7 @@ import com.microsoft.maui.glide.MauiTarget;
 
 public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarget {
     private static final PlatformLogger logger = new PlatformLogger("MauiCustomTarget");
+    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
 
     private final Context context;
     private final ImageLoaderCallback callback;
@@ -78,16 +79,26 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
         // onResourceReady, and Glide rejects a clear() issued from one of its own target callbacks
         // (SingleRequest.assertNotCallingCallbacks). A consumer disposing the result in its await
         // continuation is still on that callback stack, so running here would throw.
-        new Handler(Looper.getMainLooper()).post(() -> {
-            if (PlatformInterop.isContextDestroyed(context)) {
-                if (logger.isVerboseLoggable) {
-                    logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);
+        MAIN_HANDLER.post(() -> {
+            // Deferring took this body out of the disposer's stack, so nothing catches it any more
+            // and a throw here would reach the looper as an unhandled exception. Releasing a cache
+            // entry must not be able to take the process down: fail as quietly as the inline path
+            // did, where the C# disposer logged and swallowed it.
+            try {
+                if (PlatformInterop.isContextDestroyed(context)) {
+                    if (logger.isVerboseLoggable) {
+                        logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);
+                    }
+                    return;
                 }
-                return;
+                Glide
+                    .with(context)
+                    .clear(this);
+            } catch (Throwable t) {
+                if (logger.isVerboseLoggable) {
+                    logger.v("clear() failed: " + resourceLogIdentifier);
+                }
             }
-            Glide
-                .with(context)
-                .clear(this);
         });
     }
 }
