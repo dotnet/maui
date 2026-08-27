@@ -5,14 +5,13 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IMauiSafeAreaParticipant
 	{
 		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
 		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
@@ -24,8 +23,7 @@ namespace Microsoft.Maui.Platform
 
 		IBorderStroke? _clip;
 		readonly Context _context;
-		bool _didSafeAreaEdgeConfigurationChange = true;
-		bool _isInsetListenerSet;
+		MauiWindowInsetsScope? _windowInsetsScope;
 
 		public ContentViewGroup(Context context) : base(context)
 		{
@@ -57,22 +55,15 @@ namespace Microsoft.Maui.Platform
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-
-			// If we're inside a ScrollView, we don't need to set the global listener
-			// ScrollViews handle their own insets
-			if (Parent is not MauiScrollView)
-			{
-				_isInsetListenerSet = MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(this, _context);
-			}
+			_windowInsetsScope = MauiWindowInsetsScope.FindForView(this);
+			_windowInsetsScope?.Register(this);
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			if (_isInsetListenerSet)
-				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(this, _context);
-			_didSafeAreaEdgeConfigurationChange = true;
-			_isInsetListenerSet = false;
+			_windowInsetsScope?.Unregister(this);
+			_windowInsetsScope = null;
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -152,19 +143,18 @@ namespace Microsoft.Maui.Platform
 
 			CrossPlatformArrange(destination);
 
-			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
+			if (changed && _windowInsetsScope is not null)
 			{
-				ViewCompat.RequestApplyInsets(this);
-				_didSafeAreaEdgeConfigurationChange = false;
+				_windowInsetsScope.Invalidate(SafeAreaInvalidationReason.BoundsChanged);
 			}
+
 		}
 
 		protected override void OnConfigurationChanged(Configuration? newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			MauiWindowInsetListener.FindListenerForView(this)?.ResetView(this);
-			_didSafeAreaEdgeConfigurationChange = true;
+			_windowInsetsScope?.Invalidate(SafeAreaInvalidationReason.OrientationChanged);
 		}
 
 		/// <summary>
@@ -173,9 +163,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void MarkSafeAreaEdgeConfigurationChanged()
 		{
-			_isInsetListenerSet = MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(this, _context);
-			_didSafeAreaEdgeConfigurationChange = true;
-			// Ensure a layout pass so that OnLayout will trigger InvalidateWindowInsets
+			_windowInsetsScope?.Invalidate(SafeAreaInvalidationReason.SafeAreaEdgesChanged);
 			RequestLayout();
 		}
 
@@ -224,32 +212,37 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		#region IHandleWindowInsets Implementation
+		#region IMauiSafeAreaParticipant Implementation
 
 		(int left, int top, int right, int bottom) _originalPadding;
 		bool _hasStoredOriginalPadding;
 
-		WindowInsetsCompat? IHandleWindowInsets.HandleWindowInsets(View view, WindowInsetsCompat insets)
+		View IMauiSafeAreaParticipant.PlatformView => this;
+
+		void IMauiSafeAreaParticipant.ApplySafeArea(in SafeAreaPadding safeArea)
 		{
-			if (CrossPlatformLayout is null || insets is null)
-			{
-				return insets;
-			}
-
-			if (!_hasStoredOriginalPadding)
-			{
-				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
-				_hasStoredOriginalPadding = true;
-			}
-
-			return SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
+			StoreOriginalPadding();
+			SetPadding(
+				_originalPadding.left + (int)safeArea.Left,
+				_originalPadding.top + (int)safeArea.Top,
+				_originalPadding.right + (int)safeArea.Right,
+				_originalPadding.bottom + (int)safeArea.Bottom);
 		}
 
-		void IHandleWindowInsets.ResetWindowInsets(View view)
+		void IMauiSafeAreaParticipant.ResetSafeArea()
 		{
 			if (_hasStoredOriginalPadding)
 			{
 				SetPadding(_originalPadding.left, _originalPadding.top, _originalPadding.right, _originalPadding.bottom);
+			}
+		}
+
+		void StoreOriginalPadding()
+		{
+			if (!_hasStoredOriginalPadding)
+			{
+				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
+				_hasStoredOriginalPadding = true;
 			}
 		}
 

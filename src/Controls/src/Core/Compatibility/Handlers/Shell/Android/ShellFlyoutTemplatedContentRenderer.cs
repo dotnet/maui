@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		HeaderContainer _headerView;
 		FrameLayout _headerFrameLayout;
 		ViewGroup _rootView;
+		IDisposable _insetsRouter;
 		Drawable _defaultBackgroundColor;
 		ImageView _bgImage;
 		AppBarLayout _appBar;
@@ -73,66 +74,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		// Temporary workaround:
-		// Android 15 / API 36 removed the prior opt‑out path for edge‑to‑edge
-		// (legacy "edge to edge ignore" + decor fitting). This placeholder exists
-		// so we can keep apps from regressing (content accidentally covered by
-		// system bars) until a proper, unified edge‑to‑edge + system bar inset
-		// configuration API is implemented in MAUI.
-		//
-		// NOTE:
-		// - Keep this minimal.
-		// - Will be replaced by the planned comprehensive window insets solution.
-		// - Do not extend; add new logic to the forthcoming implementation instead.
-		internal class ShellFlyoutWindowInsetListener : MauiWindowInsetListener
-		{
-			public override WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
-			{
-				if (insets == null || v == null)
-					return insets;
-
-				if (v is CoordinatorLayout)
-				{
-					// Apply all system bar and display-cutout insets as padding so flyout
-					// content (including the footer) stays within the safe area on all edges.
-					var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-					var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-					var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
-					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
-					var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
-					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-
-					// Only apply bottom padding if the view's bottom actually extends into
-					// the bottom safe area zone. If the view is fully above the safe area
-					// boundary, there is no overlap and no padding is needed.
-					if (bottomInset > 0 && v.Height > 0)
-					{
-						var location = new int[2];
-						v.GetLocationOnScreen(location);
-						var viewBottom = location[1] + v.Height;
-
-						var windowManager = v.Context?.GetSystemService(Context.WindowService) as IWindowManager;
-						if (windowManager?.DefaultDisplay is not null)
-						{
-							var realMetrics = new global::Android.Util.DisplayMetrics();
-							windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
-							var screenHeight = realMetrics.HeightPixels;
-
-							// View does not reach the bottom safe area zone — no bottom padding needed
-							if (viewBottom <= screenHeight - bottomInset)
-								bottomInset = 0;
-						}
-					}
-
-					v.SetPadding(leftInset, topInset, rightInset, bottomInset);
-					return WindowInsetsCompat.Consumed;
-				}
-
-
-				return base.OnApplyWindowInsets(v, insets);
-			}
-		}
-
 		protected virtual void LoadView(IShellContext shellContext)
 		{
 			var context = shellContext.AndroidContext;
@@ -164,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
-			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, new ShellFlyoutWindowInsetListener());
+			_insetsRouter = MauiWindowInsetsScope.RegisterFlyoutRouter(coordinator);
 
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
@@ -698,11 +639,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
-
-			if (_rootView is CoordinatorLayout coordinator)
-			{
-				MauiWindowInsetListener.RemoveViewWithLocalListener(coordinator);
-			}
+			_insetsRouter?.Dispose();
+			_insetsRouter = null;
 
 			if (_shellContext?.Shell != null)
 				_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
