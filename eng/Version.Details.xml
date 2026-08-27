@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Dependencies>
+  <ProductDependencies>
+    <!--
+      TODO (phase B): add Microsoft.DotNet.ProductConstructionService.Client here via
+
+          darc add-dependency --name Microsoft.DotNet.ProductConstructionService.Client \
+                              --type product --repo https://github.com/dotnet/arcade-services
+
+      It is deliberately absent rather than hand-written: a Dependency entry requires a real
+      Version and Sha, and neither could be resolved in the offline environment this
+      repository was scaffolded in. Inventing them would produce a manifest that looks
+      authoritative and is not. See docs/design.md section 14, open question 4.
+    -->
+  </ProductDependencies>
+  <ToolsetDependencies>
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.26070.104">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>455f1358f39b4d38fa3893c327a45027c4a81843</Sha>
+    </Dependency>
+  </ToolsetDependencies>
+</Dependencies>

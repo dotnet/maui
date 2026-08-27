@@ -1,0 +1,15 @@
+{
+  "tools": {
+    "dotnet": "10.0.301"
+  },
+  "sdk": {
+    "version": "10.0.301",
+    "paths": [
+      ".dotnet",
+      "$host$"
+    ]
+  },
+  "msbuild-sdks": {
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.26070.104"
+  }
+}

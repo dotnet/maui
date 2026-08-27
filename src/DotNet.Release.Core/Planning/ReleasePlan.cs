@@ -1,0 +1,119 @@
+using System.Text.Json.Serialization;
+
+namespace DotNet.Release.Core;
+
+/// <summary>A package identity read out of a gathered drop, before any policy is applied.</summary>
+/// <remarks>
+/// Produced by <see cref="IPackageIdentityReader"/>. <see cref="NormalizedVersion"/> comes
+/// from <c>NuGetVersion.ToNormalizedString()</c>, replacing the current pipeline's
+/// <c>fileName.Substring(id.Length + 1)</c> hack.
+/// </remarks>
+public sealed record DropPackage(
+    string FileName,
+    string Id,
+    string Version,
+    string NormalizedVersion,
+    string Sha256);
+
+/// <summary>A package that is going to be released.</summary>
+public sealed record PlannedPackage
+{
+    [JsonPropertyName("id")]
+    public required string Id { get; init; }
+
+    [JsonPropertyName("version")]
+    public required string Version { get; init; }
+
+    [JsonPropertyName("normalizedVersion")]
+    public required string NormalizedVersion { get; init; }
+
+    [JsonPropertyName("fileName")]
+    public required string FileName { get; init; }
+
+    /// <summary>
+    /// SHA-256 of the .nupkg as staged, so later jobs can prove the file they hold is the
+    /// one that was validated. The current pipeline hashes only its helper script.
+    /// </summary>
+    [JsonPropertyName("sha256")]
+    public required string Sha256 { get; init; }
+
+    /// <summary>Case-insensitive lookup key for NuGet.org availability checks.</summary>
+    [JsonIgnore]
+    public string IdentityKey => $"{Id.ToLowerInvariant()}/{NormalizedVersion.ToLowerInvariant()}";
+}
+
+/// <summary>One gated, independently published group of packages.</summary>
+public sealed record ReleasePackageSet
+{
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    /// <summary>
+    /// Publication order. Workload packs are 0 and manifests are 1, because manifests
+    /// reference packs. The pipeline also enforces this as a stage dependency; recording it
+    /// here makes the intent data rather than YAML topology, and testable.
+    /// </summary>
+    [JsonPropertyName("order")]
+    public required int Order { get; init; }
+
+    [JsonPropertyName("artifactName")]
+    public required string ArtifactName { get; init; }
+
+    [JsonPropertyName("packages")]
+    public required IReadOnlyList<PlannedPackage> Packages { get; init; }
+}
+
+/// <summary>The workload-set channel a workload build is promoted to.</summary>
+public sealed record WorkloadSetTarget(
+    [property: JsonPropertyName("band")] int Band,
+    [property: JsonPropertyName("channel")] string Channel,
+    [property: JsonPropertyName("feed")] string Feed);
+
+/// <summary>
+/// The tool binary that produced this plan.
+/// </summary>
+/// <remarks>
+/// Recording the tool's own hash inside the plan means hashing the plan transitively pins
+/// the tool, so the publish job needs one pinned pipeline variable instead of the twelve
+/// repeated hash-check blocks the current pipeline carries.
+/// </remarks>
+public sealed record ToolReference(
+    [property: JsonPropertyName("fileName")] string FileName,
+    [property: JsonPropertyName("sha256")] string Sha256);
+
+/// <summary>
+/// The single contract artifact, serialized as <c>release-plan.json</c>.
+/// </summary>
+/// <remarks>
+/// Replaces <c>expected-packages.json</c>, <c>release-audit.json</c> and four
+/// <c>##vso</c> output variables. It is immutable once written: <c>release filter</c>
+/// records dispositions in a sidecar rather than editing the plan, so the plan hash stays
+/// valid for the whole release.
+/// </remarks>
+public sealed record ReleasePlan
+{
+    [JsonPropertyName("schemaVersion")]
+    public int SchemaVersion { get; init; } = 1;
+
+    [JsonPropertyName("toolVersion")]
+    public required string ToolVersion { get; init; }
+
+    [JsonPropertyName("createdUtc")]
+    public required DateTimeOffset CreatedUtc { get; init; }
+
+    [JsonPropertyName("source")]
+    public required ResolvedRelease Source { get; init; }
+
+    [JsonPropertyName("workloadSet")]
+    public WorkloadSetTarget? WorkloadSet { get; init; }
+
+    [JsonPropertyName("tool")]
+    public required ToolReference Tool { get; init; }
+
+    [JsonPropertyName("sets")]
+    public required IReadOnlyList<ReleasePackageSet> Sets { get; init; }
+
+    /// <summary>Every package across every set, in publication order.</summary>
+    public IEnumerable<PlannedPackage> AllPackages =>
+        Sets.OrderBy(s => s.Order).SelectMany(s => s.Packages);
+}

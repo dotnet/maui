@@ -1,0 +1,36 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Product branding version for the release tooling itself. -->
+    <MajorVersion>1</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+
+    <!-- Opt out of Arcade features this repository does not use. -->
+    <UsingToolIbcOptimization>false</UsingToolIbcOptimization>
+    <UsingToolXliff>false</UsingToolXliff>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Arcade defaults xunit.runner.visualstudio to 3.1.3. Overriding it here is the
+      documented Arcade mechanism (its DefaultVersions.props properties are all
+      Condition="'$(X)' == ''"), rather than pinning the package by hand somewhere else.
+    -->
+    <XUnitRunnerVisualStudioVersion>3.1.5</XUnitRunnerVisualStudioVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      NuGet.Versioning is a pure parser with no I/O, so DotNet.Release.Core is allowed to
+      reference it (see docs/design.md §8). NuGet.Packaging and NuGet.Protocol are used
+      only by the adapter projects in phase B.
+    -->
+    <NuGetVersioningPackageVersion>6.14.0</NuGetVersioningPackageVersion>
+    <NuGetPackagingPackageVersion>6.14.0</NuGetPackagingPackageVersion>
+    <NuGetProtocolPackageVersion>6.14.0</NuGetProtocolPackageVersion>
+  </PropertyGroup>
+
+</Project>

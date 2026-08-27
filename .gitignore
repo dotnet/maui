@@ -1,0 +1,23 @@
+# Arcade / build output
+artifacts/
+.dotnet/
+.packages/
+.tools/
+.vs/
+.idea/
+
+# Build intermediates for any project not covered by Arcade's artifacts layout
+[Bb]in/
+[Oo]bj/
+
+# User-specific
+*.user
+*.suo
+*.userprefs
+.DS_Store
+
+# Local release staging. Nothing produced by `release stage` belongs in git.
+stage/
+*.nupkg
+release-plan.json
+release-filter.json

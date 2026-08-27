@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DotNet.Release.Core/DotNet.Release.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DotNet.Release.Core.Tests/DotNet.Release.Core.Tests.csproj" />
+  </Folder>
+</Solution>

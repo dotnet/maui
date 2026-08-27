@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <RootNamespace>DotNet.Release.Core.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNet.Release.Core\DotNet.Release.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The checked-in policy is exercised by tests so a bad edit fails the build. -->
+    <None Include="..\..\config\repositories.json" Link="repositories.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
