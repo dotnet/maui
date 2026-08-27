@@ -20,17 +20,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				CultureInfo expectedCulture;
-				try
-				{
-					var cultureName = NSLocale.CurrentLocale.LocaleIdentifier.Replace('_', '-');
-					expectedCulture = CultureInfo.GetCultureInfo(cultureName);
-				}
-				catch (CultureNotFoundException)
-				{
-					expectedCulture = CultureInfo.InvariantCulture;
-				}
-
 				var time = new TimeSpan(14, 30, 0);
 				var timePicker = new TimePickerStub
 				{
@@ -40,7 +29,29 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler(timePicker);
 
 				var actual = GetNativeTimePicker(handler).Text;
-				var expected = DateTime.Today.Add(time).ToString("t", expectedCulture);
+
+				// Use native iOS formatting because LocaleIdentifier can contain
+				// regional overrides that are not valid CultureInfo names.
+				var today = DateTime.Today.Add(time);
+				var components = new NSDateComponents
+				{
+					Year = today.Year,
+					Month = today.Month,
+					Day = today.Day,
+					Hour = today.Hour,
+					Minute = today.Minute,
+					Second = today.Second,
+					Calendar = NSCalendar.CurrentCalendar
+				};
+				var referenceDate = NSCalendar.CurrentCalendar.DateFromComponents(components);
+
+				var dateFormatter = new NSDateFormatter
+				{
+					Locale = NSLocale.CurrentLocale,
+					TimeStyle = NSDateFormatterStyle.Short,
+					DateStyle = NSDateFormatterStyle.None
+				};
+				var expected = dateFormatter.StringFor(referenceDate);
 
 				Assert.Equal(expected, actual);
 			});

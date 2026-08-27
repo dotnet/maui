@@ -40,13 +40,17 @@ namespace Microsoft.Maui.Platform
 						}
 						else
 						{
-							// iOS uses identifiers such as en_US, en_GB, ta_IN, etc.
-							var cultureName = identifier.Replace('_', '-');
+							// Remove ICU keyword suffixes, which are not valid .NET culture names.
+							var keywordIndex = identifier.IndexOf('@', StringComparison.Ordinal);
+							var normalizedIdentifier = keywordIndex >= 0 ? identifier[..keywordIndex] : identifier;
+							var cultureName = normalizedIdentifier.Replace('_', '-');
+
 							s_currentCulture = CultureInfo.GetCultureInfo(cultureName);
 						}
 					}
-					catch (CultureNotFoundException)
+					catch (ArgumentException)
 					{
+						// CultureNotFoundException and ArgumentNullException derive from ArgumentException.
 						s_currentCulture = CultureInfo.InvariantCulture;
 					}
 				}
