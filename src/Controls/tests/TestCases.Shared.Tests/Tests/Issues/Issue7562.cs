@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView1)]
 	public class Issue7562 : _IssuesUITest
 	{
 		public override string Issue => "MeasureFirstItem makes items disappear on Android";
@@ -13,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void MeasureFirstItemMakesItemsDisappearOnAndroid()
 		{
 			App.WaitForElement("Issue2");

@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue20294 : _IssuesUITest
 {
 	public Issue20294(TestDevice device) : base(device) { }
@@ -12,7 +13,6 @@ public class Issue20294 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void ScrollToEndDoesntCrash()
 	{
 		App.WaitForElement("ScrollToFooterButton");

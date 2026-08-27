@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView1)]
 	public class Issue4600 : _IssuesUITest
 	{
 		public Issue4600(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void InitiallyEmptySourceDisplaysAddedItem()
 		{
 			App.WaitForElement("Insert");

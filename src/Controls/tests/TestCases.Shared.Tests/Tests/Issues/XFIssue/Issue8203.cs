@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue8203 : _IssuesUITest
 {
 	public Issue8203(TestDevice testDevice) : base(testDevice)
@@ -16,7 +17,6 @@ public class Issue8203 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void SelectionChangedShouldBeRaisedOnceWhenSelectionChanges()
 	{
 		App.WaitForElement("one");

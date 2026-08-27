@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView2)]
 	public class Issue9929 : _IssuesUITest
 	{
 		public Issue9929(TestDevice testDevice) : base(testDevice)
@@ -16,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void Issue3884Test()
 		{
 			App.WaitForElement("entryUpdate_Spacing");

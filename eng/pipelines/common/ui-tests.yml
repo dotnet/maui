@@ -19,12 +19,14 @@ parameters:
     # we might want to improve this somehow depending on how much the categories change over time
     # Note: Material3 is intentionally excluded from this list and has its own dedicated build and test stages below with a separate test filter
     # CollectionView remains the umbrella category for local runs. CI uses the
-    # explicit CollectionView1 and CollectionView2 shard categories below.
+    # explicit CollectionView1-4 shard categories below.
     - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
     - 'Border,BoxView,Brush,Button'
     - 'CarouselView'
     - 'CollectionView1'
     - 'CollectionView2'
+    - 'CollectionView3'
+    - 'CollectionView4'
     - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
     - 'Entry'
     - 'Editor,Effects,Essentials,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'

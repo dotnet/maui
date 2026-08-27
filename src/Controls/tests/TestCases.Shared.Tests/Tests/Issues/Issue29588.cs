@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 internal class Issue29588 : _IssuesUITest
 {
 	public override string Issue => "CollectionView RemainingItemsThresholdReachedcommand should trigger on scroll near end";
@@ -14,7 +15,6 @@ internal class Issue29588 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void RemainingItemsThresholdReachedEventShouldTrigger()
 	{
 		App.WaitForElement("29588CollectionView");

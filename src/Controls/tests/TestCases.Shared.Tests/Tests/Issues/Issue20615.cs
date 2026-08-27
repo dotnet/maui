@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue20615 : _IssuesUITest
 {
 	public Issue20615(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue20615 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewSelectedItemBackgroundLost()
 	{
 		App.WaitForElement("CollectionView");

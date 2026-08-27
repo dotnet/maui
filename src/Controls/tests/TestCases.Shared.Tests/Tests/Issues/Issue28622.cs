@@ -7,6 +7,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue28622 : _IssuesUITest
 {
 	public Issue28622(TestDevice device) : base(device) { }
@@ -15,7 +16,6 @@ public class Issue28622 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void ItemsLayoutShouldRenderProperlyOnEmptyView()
 	{
 		App.WaitForElement("LayoutButton");

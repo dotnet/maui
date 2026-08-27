@@ -18,6 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string CollectionView = "CollectionView";
 		public const string CollectionView1 = "CollectionView1";
 		public const string CollectionView2 = "CollectionView2";
+		public const string CollectionView3 = "CollectionView3";
+		public const string CollectionView4 = "CollectionView4";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
 		public const string Dispatcher = "Dispatcher";

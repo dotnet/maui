@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue34897 : _IssuesUITest
 {
 	public Issue34897(TestDevice device) : base(device) { }
@@ -13,7 +14,6 @@ public class Issue34897 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewHeaderVisibleWithEmptyViewAndNullItemsSource()
 	{
 		App.WaitForElement("Issue34897EmptyView");

@@ -4,6 +4,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+[Category(UITestCategories.CollectionView2)]
 public class Issue29595 : _IssuesUITest
 {
 	public override string Issue => "iOS CV: GridItemsLayout not left-aligning a single item";
@@ -14,7 +15,6 @@ public class Issue29595 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void VerifyGridItemsLayoutLeftAlignsSingleItem()
 	{
 		App.WaitForElement("StubLabel");

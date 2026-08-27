@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue18389 : _IssuesUITest
 {
 	public Issue18389(TestDevice device) : base(device)
@@ -14,7 +15,6 @@ public class Issue18389 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void VerifyScrollToIndexWithHeader()
 	{
 		App.WaitForElement("Issue18389_ScrollToBtn");

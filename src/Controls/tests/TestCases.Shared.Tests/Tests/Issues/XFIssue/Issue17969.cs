@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue17969 : _IssuesUITest
 {
 
@@ -15,7 +16,6 @@ public class Issue17969 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewDuplicateViewsWhenAddItemToGroup()
 	{
 		App.WaitForElement("collectionView");
@@ -30,7 +30,6 @@ public class Issue17969 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewAddGroupWhenViewIsEmpty()
 	{
 		App.WaitForElement("collectionView");

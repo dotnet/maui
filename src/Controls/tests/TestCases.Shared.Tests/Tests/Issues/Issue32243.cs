@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 [Category(UITestCategories.CollectionView)]
 
-[Category(UITestCategories.CollectionView2)]
+[Category(UITestCategories.CollectionView4)]
 public class Issue32243 : _IssuesUITest
 {
 	public Issue32243(TestDevice testDevice) : base(testDevice) { }

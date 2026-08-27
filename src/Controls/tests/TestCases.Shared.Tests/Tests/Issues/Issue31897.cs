@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue31897 : _IssuesUITest
 {
 	public Issue31897(TestDevice testDevice) : base(testDevice)
@@ -13,7 +14,6 @@ public class Issue31897 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void EnsureCollectionViewLayoutOnItemsSourceChange()
 	{
 		App.WaitForElement("GetHeightButton");

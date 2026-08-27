@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	public class Issue13551 : _IssuesUITest
 	{
 		const string Success1 = "Success1";
@@ -17,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement(Success1);

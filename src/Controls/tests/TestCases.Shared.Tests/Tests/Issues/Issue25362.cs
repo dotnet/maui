@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue25362 : _IssuesUITest
 {
 	public override string Issue => "[iOS] CollectionView Items display issue when Header is resized";
@@ -13,7 +14,6 @@ public class Issue25362 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");

@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue7803 : _IssuesUITest
 {
 	public Issue7803(TestDevice testDevice) : base(testDevice)
@@ -15,7 +16,6 @@ public class Issue7803 : _IssuesUITest
 
 	//[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 	{
 		var collectionView = App.WaitForElement("CollectionView7803");

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 [Category(UITestCategories.CollectionView)]
 
-[Category(UITestCategories.CollectionView2)]
+[Category(UITestCategories.CollectionView3)]
 public class ScrollToGroup : _IssuesUITest
 {
 	public ScrollToGroup(TestDevice testDevice) : base(testDevice)

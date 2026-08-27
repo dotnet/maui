@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	public class Issue9580 : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -17,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void AllEmptyGroupsShouldNotCrashOnItemInsert()
 		{
 			App.WaitForElement(Test9580);

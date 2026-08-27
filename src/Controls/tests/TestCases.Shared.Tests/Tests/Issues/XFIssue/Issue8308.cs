@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue8308 : _IssuesUITest
 {
 	public Issue8308(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue8308 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void NavigatingBackToCollectionViewShouldNotCrash()
 	{
 		App.WaitForElement("Instructions");

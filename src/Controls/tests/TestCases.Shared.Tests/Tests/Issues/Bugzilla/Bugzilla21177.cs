@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Bugzilla21177 : _IssuesUITest
 {
     public Bugzilla21177(TestDevice testDevice) : base(testDevice)
@@ -15,7 +16,6 @@ public class Bugzilla21177 : _IssuesUITest
 
      [Test]
      [Category(UITestCategories.CollectionView)]
-     [Category(UITestCategories.CollectionView2)]
      [FailsOnIOSWhenRunningOnXamarinUITest]
      public void Bugzilla21177Test()
      {

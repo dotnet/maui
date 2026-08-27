@@ -2,7 +2,8 @@
 
 # Regression guard for the explicit CollectionView UI-test shard categories.
 # CollectionView remains the umbrella category for local runs, while CI runs
-# CollectionView1 and CollectionView2 as ordinary category matrix legs.
+# CollectionView1-4 as ordinary category matrix legs. Shard categories belong
+# on fixtures except when a fixture also contains non-CollectionView tests.
 
 BeforeAll {
     $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
@@ -17,23 +18,21 @@ BeforeAll {
         }
     }
 
-    $script:collectionView1Fixtures = @(
-        'CollectionView_EmptyViewFeatureTests'
-        'CollectionView_HeaderFooterFeatureTests'
-        'CollectionView_ScrollingFeatureTests'
-        'CollectionView_SelectionFeatureTests'
-    )
+    $script:shards = 1..4 | ForEach-Object { "CollectionView$_" }
+    $script:methodLevelExceptions = @('Issue7814.cs')
 }
 
 Describe 'CollectionView shard category definitions' {
-    It 'defines both explicit shard categories' {
-        $script:categories | Should -Match 'public const string CollectionView1 = "CollectionView1";'
-        $script:categories | Should -Match 'public const string CollectionView2 = "CollectionView2";'
+    It 'defines all explicit shard categories' {
+        foreach ($shard in $script:shards) {
+            $script:categories | Should -Match "public const string $shard = `"$shard`";"
+        }
     }
 
     It 'uses the shard categories as ordinary matrix entries' {
-        [regex]::Matches($script:uiTests, "(?m)^\s*-\s*'CollectionView1'\s*$").Count | Should -Be 1
-        [regex]::Matches($script:uiTests, "(?m)^\s*-\s*'CollectionView2'\s*$").Count | Should -Be 1
+        foreach ($shard in $script:shards) {
+            [regex]::Matches($script:uiTests, "(?m)^\s*-\s*'$shard'\s*$").Count | Should -Be 1
+        }
         [regex]::Matches($script:uiTests, "(?m)^\s*-\s*'CollectionView'\s*$").Count | Should -Be 0
     }
 
@@ -46,53 +45,77 @@ Describe 'CollectionView shard category definitions' {
 }
 
 Describe 'CollectionView shards are exhaustive and mutually exclusive' {
-    It 'tags only the four measured heavy fixtures as CollectionView1' {
-        $taggedFixtures = @(
-            foreach ($source in $script:testSources) {
-                foreach ($match in [regex]::Matches(
-                    $source.Text,
-                    '(?m)^\s*\[Category\(UITestCategories\.CollectionView1\)\]\s*\r?\n\s*public class\s+(?<class>\w+)')) {
-                    $match.Groups['class'].Value
-                }
-            }
-        ) | Sort-Object
-
-        $taggedFixtures | Should -Be ($script:collectionView1Fixtures | Sort-Object)
-    }
-
-    It 'assigns every non-CollectionView1 umbrella category to CollectionView2' {
+    It 'assigns each CollectionView fixture to exactly one shard' {
         foreach ($source in $script:testSources) {
             $umbrellaCount = [regex]::Matches($source.Text, 'Category\(UITestCategories\.CollectionView\)').Count
             if ($umbrellaCount -eq 0) {
                 continue
             }
 
-            $isShard1 = $source.Text -match 'Category\(UITestCategories\.CollectionView1\)'
-            $shard2Count = [regex]::Matches($source.Text, 'Category\(UITestCategories\.CollectionView2\)').Count
+            $shardAttributes = [regex]::Matches(
+                $source.Text,
+                'Category\(UITestCategories\.(?<shard>CollectionView[1-4])\)')
+            $fileName = Split-Path $source.Path -Leaf
 
-            if ($isShard1) {
-                $shard2Count | Should -Be 0 -Because "$($source.Path) belongs only to CollectionView1"
+            if ($fileName -in $script:methodLevelExceptions) {
+                $shardAttributes.Count | Should -Be $umbrellaCount -Because "$fileName requires method-level shard tags"
             }
             else {
-                $shard2Count | Should -Be $umbrellaCount -Because "$($source.Path) must tag every CollectionView test as CollectionView2"
+                $shardAttributes.Count | Should -Be 1 -Because "$fileName should use one class-level shard tag"
+                $source.Text | Should -Match '(?m)^\s*\[Category\(UITestCategories\.CollectionView[1-4]\)\]\s*\r?\n[ \t]*(?:(?:public|internal|private|protected)\s+)?(?:(?:sealed|abstract|static|partial)\s+)*class\s+'
             }
         }
     }
 
     It 'keeps the CollectionView umbrella category on every shard-tagged source' {
         foreach ($source in $script:testSources | Where-Object {
-            $_.Text -match 'Category\(UITestCategories\.CollectionView[12]\)'
+            $_.Text -match 'Category\(UITestCategories\.CollectionView[1-4]\)'
         }) {
             $source.Text | Should -Match 'Category\(UITestCategories\.CollectionView\)'
         }
     }
 
-    It 'never mixes CollectionView1 and CollectionView2 in one source file' {
+    It 'uses method-level shard tags only for mixed-category fixtures' {
+        $methodTaggedFiles = @(
+            foreach ($source in $script:testSources) {
+                if ($source.Text -match '(?m)^\s*\[Category\(UITestCategories\.CollectionView[1-4]\)\]\s*\r?\n[ \t]*public void') {
+                    Split-Path $source.Path -Leaf
+                }
+            }
+        ) | Sort-Object -Unique
+
+        $methodTaggedFiles | Should -Be ($script:methodLevelExceptions | Sort-Object)
+    }
+
+    It 'never mixes shard categories in one source file' {
         foreach ($source in $script:testSources) {
-            $hasShard1 = $source.Text -match 'Category\(UITestCategories\.CollectionView1\)'
-            $hasShard2 = $source.Text -match 'Category\(UITestCategories\.CollectionView2\)'
-            ($hasShard1 -and $hasShard2) | Should -BeFalse -Because "$($source.Path) must belong to exactly one shard"
+            $assignedShards = @(
+                [regex]::Matches($source.Text, 'Category\(UITestCategories\.(?<shard>CollectionView[1-4])\)') |
+                    ForEach-Object { $_.Groups['shard'].Value } |
+                    Sort-Object -Unique
+            )
+            $assignedShards.Count | Should -BeLessOrEqual 1 -Because "$($source.Path) must belong to exactly one shard"
         }
+    }
+
+    It 'keeps source test counts reasonably balanced' {
+        $counts = @{}
+        foreach ($shard in $script:shards) {
+            $counts[$shard] = 0
+        }
+
+        foreach ($source in $script:testSources) {
+            $umbrellaCount = [regex]::Matches($source.Text, 'Category\(UITestCategories\.CollectionView\)').Count
+            $match = [regex]::Match($source.Text, 'Category\(UITestCategories\.(?<shard>CollectionView[1-4])\)')
+            if ($umbrellaCount -gt 0 -and $match.Success) {
+                $counts[$match.Groups['shard'].Value] += $umbrellaCount
+            }
+        }
+
+        $values = @($counts.Values)
+        ($values | Measure-Object -Minimum).Minimum | Should -BeGreaterThan 0
+        (($values | Measure-Object -Maximum).Maximum - ($values | Measure-Object -Minimum).Minimum) |
+            Should -BeLessOrEqual 25
     }
 }
 

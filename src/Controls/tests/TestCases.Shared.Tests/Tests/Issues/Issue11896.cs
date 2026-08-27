@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView2)]
 	internal class Issue11896 : _IssuesUITest
 	{
 		public Issue11896(TestDevice device) : base(device) { }
@@ -14,8 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 
 		[Category(UITestCategories.CollectionView)]
-
-		[Category(UITestCategories.CollectionView2)]
 		public void CollectionviewFooterHideswhenDynamicallyAddorRemoveItems()
 		{
 			App.WaitForElement("AddButton");
@@ -30,7 +29,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewHeaderBlankWhenLastItemRemoved()
 		{
 			App.WaitForElement("AddButton");

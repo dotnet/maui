@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView2)]
 	public class Issue8715 : _IssuesUITest
 	{
 		public Issue8715(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void ReappearingCollectionViewShouldNotThrowNRE()
 		{
 			App.WaitForElement("8715 About");

@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	public class Issue7102 : _IssuesUITest
 	{
 		public Issue7102(TestDevice testDevice) : base(testDevice)
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void HeaderDoesNotBreakIndexes()
 		{
 			App.WaitForElement("entryInsert");

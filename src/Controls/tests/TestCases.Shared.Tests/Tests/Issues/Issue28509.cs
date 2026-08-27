@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue28509 : _IssuesUITest
 {
 	public override string Issue => "Dynamically Setting Header and Footer in CV2 Does Not Update Properly";
@@ -14,7 +15,6 @@ public class Issue28509 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void UpdateGroupHeaderAndFooterDynamically()
 	{
 		App.WaitForElement("GroupHeaderFooterButton");
@@ -29,7 +29,6 @@ public class Issue28509 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void UpdateHeaderFooterTemplateDynamically()
 	{
 		App.WaitForElement("ItemsViewTemplatedHeaderFooterButton");
@@ -44,7 +43,6 @@ public class Issue28509 : _IssuesUITest
 
 	[Test, Order(3)]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void UpdateHeaderFooterDynamically()
 	{
 		App.WaitForElement("ItemsViewHeaderFooterButton");

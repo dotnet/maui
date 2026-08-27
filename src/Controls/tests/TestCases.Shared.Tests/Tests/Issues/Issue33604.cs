@@ -6,6 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	public class Issue33604 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView does not respect content SafeAreaEdges choices";
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewItemsShouldRespectSafeAreaEdges()
 		{
 			App.WaitForElement("TestCollectionView");

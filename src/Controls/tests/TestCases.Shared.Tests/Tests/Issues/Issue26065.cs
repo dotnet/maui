@@ -5,6 +5,7 @@ using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView2)]
 	public class Issue26065 : _IssuesUITest
 	{
 		public Issue26065(TestDevice device) : base(device) { }
@@ -13,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewShouldUseFallBackItemsLayout()
 		{
 			App.WaitForElement("CollectionView");
@@ -21,7 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewWithFallbackVauleShouldUpdateAtRunTime()
 		{
 			App.WaitForElement("ToggleButton");

@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue28580 : _IssuesUITest
 {
 	public Issue28580(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue28580 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void FooterWithEmptyCVShouldHaveCorrectSize()
 	{
 		App.WaitForElement("labelInFooter");

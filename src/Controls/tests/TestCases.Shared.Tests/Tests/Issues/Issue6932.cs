@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView2)]
 	public class Issue6932 : _IssuesUITest
 	{
 		const string AddAutomationId = "AddButton";
@@ -17,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
 			App.WaitForAnyElement(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
@@ -28,7 +28,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			App.WaitForElement(ClearAutomationId);

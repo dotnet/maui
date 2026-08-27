@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+[Category(UITestCategories.CollectionView2)]
 public class Issue28716 : _IssuesUITest
 {
 	public Issue28716(TestDevice testDevice) : base(testDevice)
@@ -13,7 +14,6 @@ public class Issue28716 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void KeepLastItemInViewShouldWork()
 	{
 		App.WaitForElement("AddItemButton");
