@@ -1191,6 +1191,67 @@ Describe 'Write-MarkdownReport — persisted APP_CRASH gets an honest (non-"just
     }
 }
 
+Describe 'Write-MarkdownReport — A/B environment error retry classification' {
+    BeforeAll {
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+
+        function New-EnvironmentErrorReport {
+            param(
+                [array]$WithoutFixResults,
+                [array]$WithFixResults
+            )
+
+            $script:MarkdownReport = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+            $tests = @([pscustomobject]@{ TestName = 'DeviceCase'; Type = 'DeviceTest'; Filter = 'DeviceCase' })
+            Write-MarkdownReport `
+                -VerificationPassed $false -CompileCoupledVerified:$false `
+                -FailedWithoutFix $false -PassedWithFix $false `
+                -WithoutFixResult $WithoutFixResults[0] -WithFixResult $WithFixResults[0] `
+                -WithoutFixResultsList $WithoutFixResults -WithFixResultsList $WithFixResults `
+                -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+                -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Core/src/Test.cs') -ReportNewFiles @()
+
+            return Get-Content -LiteralPath $script:MarkdownReport -Raw
+        }
+    }
+
+    It 'skips whole-gate retries when the same test has an environment error on both sides' {
+        $withoutFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            Total = 0; Failed = 0; Error = 'ENV ERROR: app crashed without fix'
+        })
+        $withFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            Total = 0; Failed = 0; Error = 'ENV ERROR: app crashed with fix'
+        })
+
+        $report = New-EnvironmentErrorReport -WithoutFixResults $withoutFix -WithFixResults $withFix
+
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: skip-permanent -->'
+    }
+
+    It 'keeps a one-sided transient environment error retryable' {
+        $withoutFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            Total = 0; Failed = 0; Error = 'ENV ERROR: emulator unavailable'
+        })
+        $withFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $true
+            BuildError = $false; EnvError = $false; FilterMismatch = $false
+            Total = 1; Failed = 0; Error = ''
+        })
+
+        $report = New-EnvironmentErrorReport -WithoutFixResults $withoutFix -WithFixResults $withFix
+
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: retryable -->'
+    }
+}
+
 Describe 'Write-MarkdownReport — genuine failures outrank unrelated environment errors' {
     It 'persists FAILED and a definitive retry class for a confirmed with-fix target timeout' {
         $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")

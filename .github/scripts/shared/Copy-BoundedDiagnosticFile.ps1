@@ -325,7 +325,11 @@ function Copy-BoundedRegularFileTree {
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(1, [long]::MaxValue)]
-        [long]$MaxTotalBytes = 128MB
+        [long]$MaxTotalBytes = 128MB,
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyCollection()]
+        [string[]]$TruncateOversizedFileExtensions = @()
     )
 
     $sourceItem = Get-Item -LiteralPath $SourceDirectory -Force -ErrorAction Stop
@@ -366,6 +370,20 @@ function Copy-BoundedRegularFileTree {
     $pendingDirectories = [System.Collections.Generic.Stack[string]]::new()
     $pendingDirectories.Push($sourceRoot)
     $files = [System.Collections.Generic.List[object]]::new()
+    $truncatableExtensions = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($extension in @($TruncateOversizedFileExtensions)) {
+        if ([string]::IsNullOrWhiteSpace($extension)) {
+            continue
+        }
+
+        $normalizedExtension = if ($extension.StartsWith('.')) {
+            $extension
+        } else {
+            ".$extension"
+        }
+        [void]$truncatableExtensions.Add($normalizedExtension)
+    }
     $directoryCount = 0
     $totalBytes = 0L
 
@@ -409,29 +427,44 @@ function Copy-BoundedRegularFileTree {
             if ($files.Count -ge $MaxFileCount) {
                 throw "Bounded tree exceeded the $MaxFileCount-file limit."
             }
+
+            $copyLength = [long]$entry.Length
+            $truncate = $false
             if ($entry.Length -gt $MaxFileBytes) {
-                throw "Bounded tree file '$relativePath' exceeded the $MaxFileBytes-byte per-file limit."
+                $extension = [System.IO.Path]::GetExtension($entry.Name)
+                if (-not $truncatableExtensions.Contains($extension)) {
+                    throw "Bounded tree file '$relativePath' exceeded the $MaxFileBytes-byte per-file limit."
+                }
+                if ($MaxFileBytes -lt 256) {
+                    throw "Bounded tree cannot truncate '$relativePath' below 256 bytes."
+                }
+
+                $copyLength = $MaxFileBytes
+                $truncate = $true
             }
-            if ($entry.Length -gt ($MaxTotalBytes - $totalBytes)) {
+            if ($copyLength -gt ($MaxTotalBytes - $totalBytes)) {
                 throw "Bounded tree exceeded the $MaxTotalBytes-byte aggregate limit."
             }
 
-            $totalBytes += [long]$entry.Length
+            $totalBytes += $copyLength
             [void]$files.Add([pscustomobject]@{
                 SourcePath   = $entryFullPath
                 RelativePath = $relativePath
-                Length       = [long]$entry.Length
+                SourceLength = [long]$entry.Length
+                CopyLength   = $copyLength
+                Truncated    = $truncate
             })
         }
     }
 
+    $truncatedFiles = 0
     try {
         New-Item -ItemType Directory -Path $destinationRoot -Force -ErrorAction Stop | Out-Null
         foreach ($file in @($files | Sort-Object RelativePath)) {
             $current = Get-Item -LiteralPath $file.SourcePath -Force -ErrorAction Stop
             if ($current.PSIsContainer -or
                 ($current.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -or
-                $current.Length -ne $file.Length) {
+                $current.Length -ne $file.SourceLength) {
                 throw "Bounded tree source changed during import: '$($file.RelativePath)'."
             }
 
@@ -455,11 +488,25 @@ function Copy-BoundedRegularFileTree {
                 New-Item -ItemType Directory -Path $destinationParent -Force -ErrorAction Stop |
                     Out-Null
             }
-            Copy-Item `
-                -LiteralPath $current.FullName `
-                -Destination $destination `
-                -Force `
-                -ErrorAction Stop
+
+            if ($file.Truncated) {
+                $copyResult = Copy-BoundedDiagnosticFile `
+                    -Source $current.FullName `
+                    -Destination $destination `
+                    -MaxBytes $file.CopyLength
+                if ($copyResult.SourceBytes -ne $file.SourceLength -or
+                    $copyResult.CopiedBytes -ne $file.CopyLength -or
+                    -not $copyResult.Truncated) {
+                    throw "Bounded tree source changed during truncated import: '$($file.RelativePath)'."
+                }
+                $truncatedFiles++
+            } else {
+                Copy-Item `
+                    -LiteralPath $current.FullName `
+                    -Destination $destination `
+                    -Force `
+                    -ErrorAction Stop
+            }
         }
     } catch {
         if (Test-Path -LiteralPath $destinationRoot) {
@@ -472,5 +519,6 @@ function Copy-BoundedRegularFileTree {
         CopiedFiles       = $files.Count
         CopiedDirectories = $directoryCount
         CopiedBytes       = $totalBytes
+        TruncatedFiles    = $truncatedFiles
     }
 }
