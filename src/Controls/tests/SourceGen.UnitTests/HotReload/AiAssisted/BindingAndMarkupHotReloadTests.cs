@@ -7,16 +7,22 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
+using Microsoft.Maui.Dispatching;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 
 [Collection("XamlHotReloadTests")]
-public partial class BindingAndMarkupHotReloadTests
+public partial class BindingAndMarkupHotReloadTests : IDisposable
 {
+	public BindingAndMarkupHotReloadTests() => DispatcherProvider.SetCurrent(new StubDispatcherProvider());
+
+	public void Dispose() => DispatcherProvider.SetCurrent(null);
+
 	const string PageClass = "TestAiAssisted.MainPage";
 
 	const string PageStub = """
@@ -135,7 +141,9 @@ public partial class BindingAndMarkupHotReloadTests
 			Assert.NotNull(bindings);
 
 			var bindingCount = (int)bindings!.GetType().GetProperty("Count")!.GetValue(bindings)!;
-			var binding = bindings.GetType().GetMethod("GetValue")!.Invoke(bindings, null) as BindingBase;
+			var getValue = bindings.GetType().GetMethods()
+				.Single(method => method.Name == "GetValue" && !method.IsGenericMethod && method.GetParameters().Length == 0);
+			var binding = getValue.Invoke(bindings, null) as BindingBase;
 			return new TextRegistration(binding, bindingCount, attributes.Contains("IsDynamicResource", StringComparison.Ordinal));
 		}
 
@@ -143,4 +151,28 @@ public partial class BindingAndMarkupHotReloadTests
 	}
 
 	readonly record struct TextRegistration(BindingBase? Binding, int BindingCount, bool IsDynamicResource);
+
+	sealed class StubDispatcher : IDispatcher
+	{
+		public bool IsDispatchRequired => false;
+
+		public bool Dispatch(Action action)
+		{
+			action();
+			return true;
+		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action)
+		{
+			action();
+			return true;
+		}
+
+		public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
+	}
+
+	sealed class StubDispatcherProvider : IDispatcherProvider
+	{
+		public IDispatcher GetForCurrentThread() => new StubDispatcher();
+	}
 }

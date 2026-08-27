@@ -1621,6 +1621,15 @@ static class UpdateComponentCodeWriter
 							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.FindStaticResource({parentAccessor}, {Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(resourceKey, quote: true)})!;");
 						}
 					}
+					else if (kvp.Value is ElementNode referenceElement
+						&& referenceElement.XmlType.Name is "ReferenceExtension" or "Reference"
+						&& TryGetReferenceName(referenceElement, out var referenceName)
+						&& ownerType.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, ctx))
+					{
+						var propLocalName = kvp.Key.LocalName;
+						var referenceLiteral = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(referenceName, quote: true);
+						captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ((global::Microsoft.Maui.Controls.Element){parentAccessor}).FindByName({referenceLiteral});");
+					}
 				}
 			}
 
@@ -1676,6 +1685,29 @@ static class UpdateComponentCodeWriter
 		codeWriter.WriteLine("}");
 
 		return true;
+	}
+
+	static bool TryGetReferenceName(ElementNode referenceElement, out string referenceName)
+	{
+		foreach (var property in referenceElement.Properties)
+		{
+			if (property.Key.LocalName == "Name"
+				&& property.Value is ValueNode { Value: string name })
+			{
+				referenceName = name;
+				return true;
+			}
+		}
+
+		if (referenceElement.CollectionItems.Count == 1
+			&& referenceElement.CollectionItems[0] is ValueNode { Value: string contentName })
+		{
+			referenceName = contentName;
+			return true;
+		}
+
+		referenceName = string.Empty;
+		return false;
 	}
 
 	/// <summary>Simple IXmlLineInfoProvider for UC's ExpandMarkupForUC.</summary>
