@@ -95,6 +95,7 @@ If the user wants the raw deterministic report with no judgment layer (e.g. for 
 
 - `release/<major>.0.1xx-sr<N>` → **SR lane** → `Get-ReleaseReadiness.ps1` (`-Candidate` if the branch doesn't exist yet; `-Shipped` if that SR cycle has a stable tag)
 - `release/<major>.0.1xx-preview<N>` → **Preview lane** → `Get-PreviewReadiness.ps1` (`-Mode candidate -SurveyRef net<major>.0` if the preview branch doesn't exist yet)
+- `release/<major>.0.1xx-rc<N>` → **RC lane** → `Get-PreviewReadiness.ps1` (`-Mode candidate -SurveyRef net<major>.0` if the RC branch doesn't exist yet)
 
 **If the user asked a portfolio / cross-release question** (plural "releases", "status overview", "what needs attention across releases", "what's next" — no single branch named) → **Portfolio path (§0a)**. Do NOT ask "which release?" — the whole point is they may not know which releases exist.
 
