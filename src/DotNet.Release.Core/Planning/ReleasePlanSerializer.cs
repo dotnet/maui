@@ -33,11 +33,35 @@ public static class ReleasePlanSerializer
         return JsonSerializer.Serialize(report, PlanJsonContext.Default.FilterReport);
     }
 
-    public static Result<ReleasePlan> DeserializePlan(string json) =>
-        Deserialize(json, PlanJsonContext.Default.ReleasePlan, "release plan");
+    /// <summary>The only plan schema this tool understands.</summary>
+    public const int SupportedSchemaVersion = 1;
 
-    public static Result<ResolvedRelease> DeserializeResolved(string json) =>
-        Deserialize(json, PlanJsonContext.Default.ResolvedRelease, "resolved release");
+    public static Result<ReleasePlan> DeserializePlan(string json)
+    {
+        var plan = Deserialize(json, PlanJsonContext.Default.ReleasePlan, "release plan");
+
+        // Fail closed on a schema this tool does not understand. Without this an older tool
+        // reading a future plan would silently reinterpret the one file that gates a
+        // production push.
+        return plan.IsSuccess && plan.Value.SchemaVersion != SupportedSchemaVersion
+            ? Result<ReleasePlan>.Failure(
+                ErrorCodes.PlanSchemaInvalid,
+                $"Unsupported release plan schemaVersion '{plan.Value.SchemaVersion}'; " +
+                $"this tool understands {SupportedSchemaVersion}.")
+            : plan;
+    }
+
+    public static Result<ResolvedRelease> DeserializeResolved(string json)
+    {
+        var resolved = Deserialize(json, PlanJsonContext.Default.ResolvedRelease, "resolved release");
+
+        return resolved.IsSuccess && resolved.Value.SchemaVersion != SupportedSchemaVersion
+            ? Result<ResolvedRelease>.Failure(
+                ErrorCodes.PlanSchemaInvalid,
+                $"Unsupported resolved release schemaVersion '{resolved.Value.SchemaVersion}'; " +
+                $"this tool understands {SupportedSchemaVersion}.")
+            : resolved;
+    }
 
     public static string Serialize(ReleaseSetMarker marker)
     {
@@ -67,9 +91,22 @@ public static class ReleasePlanSerializer
     /// <summary>SHA-256 of the plan's canonical bytes, as lower-case hex.</summary>
     public static string ComputeHash(ReleasePlan plan) => ComputeHash(Serialize(plan));
 
-    /// <summary>SHA-256 of UTF-8 text, as lower-case hex.</summary>
+    /// <summary>
+    /// SHA-256 of UTF-8 text, as lower-case hex.
+    /// </summary>
+    /// <remarks>
+    /// The pipeline pins the plan with <c>Get-FileHash</c>, which hashes raw file bytes.
+    /// These agree only while the plan is written without a byte-order mark, so callers
+    /// verifying a file on disk should use <see cref="ComputeFileHash"/> rather than reading
+    /// it as text — <c>File.ReadAllText</c> strips a BOM and would produce a different hash
+    /// from the same bytes.
+    /// </remarks>
     public static string ComputeHash(string content) =>
         Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
+
+    /// <summary>SHA-256 of a file's raw bytes, matching PowerShell's <c>Get-FileHash</c>.</summary>
+    public static string ComputeFileHash(byte[] content) =>
+        Convert.ToHexStringLower(SHA256.HashData(content));
 
     /// <summary>
     /// Verifies that plan content matches the hash pinned by the preparing stage.

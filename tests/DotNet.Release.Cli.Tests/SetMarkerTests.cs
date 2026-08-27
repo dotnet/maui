@@ -37,7 +37,7 @@ public class SetMarkerTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            _workspace.Tool, Workspace.Now, "1.0.0-test", CancellationToken.None));
+            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
     }
 
     private Task<int> Filter(string? set) =>
@@ -198,7 +198,7 @@ public class SetMarkerTests : IDisposable
             _console, new FakeProbe(), _workspace.ReadPlan(),
             TimeSpan.FromMinutes(30), TimeSpan.FromSeconds(20),
             () => now, (d, _) => { now = now.Add(d); return Task.CompletedTask; },
-            StagePlanner.ManifestsArtifactName, _workspace.Out, CancellationToken.None);
+            StagePlanner.ManifestsArtifactName, _workspace.Out, null, CancellationToken.None);
 
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains(ErrorCodes.PackageSetMismatch, _console.AllErrors, StringComparison.Ordinal);

@@ -119,6 +119,7 @@ stages:
           --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
           --set "${{ parameters.artifactName }}" `
           --stage "$(Pipeline.Workspace)" `
+          --expected-plan-hash "$(ReleasePlanHash)" `
           --max-duration-minutes 30 `
           --poll-seconds 20
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

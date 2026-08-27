@@ -113,6 +113,34 @@ public class ReleasePlanSerializerTests
         Assert.Equal(original, restored.Value);
     }
 
+    /// <summary>
+    /// The plan gates a production push, so an unrecognised schema must fail rather than be
+    /// silently reinterpreted by an older tool.
+    /// </summary>
+    [Fact]
+    public void An_unsupported_plan_schema_version_fails_closed()
+    {
+        var json = ReleasePlanSerializer.Serialize(Plan())
+            .Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2", StringComparison.Ordinal);
+
+        var result = ReleasePlanSerializer.DeserializePlan(json);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PlanSchemaInvalid));
+    }
+
+    [Fact]
+    public void An_unsupported_resolved_schema_version_fails_closed()
+    {
+        var json = ReleasePlanSerializer.Serialize(TestData.Resolved())
+            .Replace("\"schemaVersion\": 1", "\"schemaVersion\": 99", StringComparison.Ordinal);
+
+        var result = ReleasePlanSerializer.DeserializeResolved(json);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PlanSchemaInvalid));
+    }
+
     [Fact]
     public void Malformed_plan_json_fails_closed()
     {

@@ -12,6 +12,9 @@ internal static class Verbs
     public const string ReleasePlanFileName = "release-plan.json";
     public const string FilterReportFileName = "release-filter.json";
 
+    /// <summary>Subdirectory holding the tool the publish job executes under `checkout: none`.</summary>
+    public const string ToolDirectoryName = "_tool";
+
     // ---- release plan ----
 
     /// <summary>
@@ -93,6 +96,7 @@ internal static class Verbs
         string outputDirectory,
         StageOptions options,
         ToolReference tool,
+        string toolFilePath,
         DateTimeOffset now,
         string toolVersion,
         CancellationToken cancellationToken)
@@ -144,8 +148,22 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, plan.Errors);
         }
 
-        var sourceByFileName = packageFiles.ToDictionary(
-            f => Path.GetFileName(f)!, f => f, StringComparer.OrdinalIgnoreCase);
+        // The drop is enumerated recursively, so two same-named packages can exist in
+        // different subdirectories. StagePlanner rejects duplicates within a *selected* set,
+        // but this lookup spans everything discovered, so a filter that removed one of the
+        // pair would otherwise reach ToDictionary and throw a raw ArgumentException.
+        var sourceByFileName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in packageFiles)
+        {
+            var name = Path.GetFileName(file);
+            if (!sourceByFileName.TryAdd(name, file))
+            {
+                return ConsoleReporting.Fail(console, [new ReleaseError(
+                    ErrorCodes.PackageDuplicateFileName,
+                    $"The gathered drop contains more than one '{name}': " +
+                    $"'{sourceByFileName[name]}' and '{file}'.")]);
+            }
+        }
 
         Directory.CreateDirectory(outputDirectory);
         var planJson = ReleasePlanSerializer.Serialize(plan.Value);
@@ -172,10 +190,31 @@ internal static class Verbs
                 Path.Combine(setDirectory, ReleaseSetMarker.FileName),
                 ReleasePlanSerializer.Serialize(ReleaseSetMarker.For(set, resolved.Value)),
                 cancellationToken).ConfigureAwait(false);
+
+            // The publish job runs `checkout: none`, so the tool it executes can only come
+            // from this artifact. Its hash is recorded in the plan, so verifying the plan
+            // transitively pins the binary that is about to run.
+            var toolDirectory = Path.Combine(setDirectory, ToolDirectoryName);
+            Directory.CreateDirectory(toolDirectory);
+            File.Copy(toolFilePath, Path.Combine(toolDirectory, tool.FileName), overwrite: true);
         }
 
         var planPath = Path.Combine(outputDirectory, ReleasePlanFileName);
         await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
+
+        // Self-check: the directories just written must satisfy the same invariant the
+        // publish job will enforce. Cheap here, and catches a staging bug before the
+        // artifact is published rather than inside a production release job.
+        foreach (var set in plan.Value.Sets)
+        {
+            var staged = StagedSetIntegrity.ValidateStaged(
+                set, ReadStagedHashes(Path.Combine(outputDirectory, set.ArtifactName)));
+
+            if (staged.IsFailure)
+            {
+                return ConsoleReporting.Fail(console, staged.Errors);
+            }
+        }
 
         ConsoleReporting.WriteSummary(console, plan.Value);
         console.WriteLine(string.Empty);
@@ -313,10 +352,15 @@ internal static class Verbs
             return hashes;
         }
 
-        foreach (var file in Directory.EnumerateFiles(directory, "*.nupkg", SearchOption.TopDirectoryOnly))
+        // AllDirectories, deliberately. The publish glob is `*.nupkg`, which does not cross a
+        // directory separator, so a nested package would be invisible to both the push and
+        // this check. Enumerating recursively means a nested package is reported as
+        // unexpected rather than silently ignored, and it decouples this rule from the exact
+        // glob written in the YAML.
+        foreach (var file in Directory.EnumerateFiles(directory, "*.nupkg", SearchOption.AllDirectories))
         {
             using var stream = File.OpenRead(file);
-            hashes[Path.GetFileName(file)] =
+            hashes[Path.GetRelativePath(directory, file)] =
                 Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(stream));
         }
 
@@ -415,9 +459,14 @@ internal static class Verbs
         Func<TimeSpan, CancellationToken, Task> delay,
         string? setName,
         string? stageDirectory,
+        string? expectedPlanHash,
         CancellationToken cancellationToken)
     {
-        var plan = ReleasePlanSerializer.DeserializePlan(planJson);
+        // `verify` is the authoritative "did the release succeed" signal, so it must not
+        // read an unpinned plan even though the same job already verified it.
+        var plan = expectedPlanHash is { Length: > 0 }
+            ? ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash)
+            : ReleasePlanSerializer.DeserializePlan(planJson);
         if (plan.IsFailure)
         {
             return ConsoleReporting.Fail(console, plan.Errors);
@@ -451,15 +500,28 @@ internal static class Verbs
         var packages = sets.Value.SelectMany(s => s.Packages).ToList();
         var deadline = clock() + maxDuration;
 
+        IReadOnlyList<PlannedPackage> missing = packages;
+
         while (true)
         {
-            var availability = await probe.GetAvailabilityAsync(packages, cancellationToken).ConfigureAwait(false);
-            var missing = VerificationEvaluator.GetMissing(packages, availability);
-
-            if (missing.Count == 0)
+            try
             {
-                console.WriteLine($"Verified all {packages.Count} packages on NuGet.org.");
-                return ExitCodes.Success;
+                var availability = await probe.GetAvailabilityAsync(packages, cancellationToken).ConfigureAwait(false);
+                missing = VerificationEvaluator.GetMissing(packages, availability);
+
+                if (missing.Count == 0)
+                {
+                    console.WriteLine($"Verified all {packages.Count} packages on NuGet.org.");
+                    return ExitCodes.Success;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // A transient feed failure must not fail the release. This is the
+                // authoritative "did it publish" signal, so it should be the most tolerant
+                // component, not the least: the recovery for a failed verify is a re-run,
+                // which is the path that risks a fatal 409. Only the deadline may fail it.
+                console.WriteError($"warning: NuGet.org query failed, will retry: {ex.Message}");
             }
 
             if (clock() + pollInterval >= deadline)

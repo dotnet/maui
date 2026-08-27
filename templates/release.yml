@@ -61,6 +61,22 @@ parameters:
   type: string
   default: nuget.org (dotnetframework)
 
+# The tool is published self-contained, so the publish agent's OS must match. Both jobs run
+# on the same 1ES Windows pool by default.
+- name: toolRuntimeIdentifier
+  type: string
+  default: win-x64
+
+- name: toolFileName
+  type: string
+  default: release.exe
+
+variables:
+- name: toolRuntimeIdentifier
+  value: ${{ parameters.toolRuntimeIdentifier }}
+- name: toolFileName
+  value: ${{ parameters.toolFileName }}
+
 stages:
 
 # ---------------------------------------------------------------------------------------
@@ -96,6 +112,25 @@ stages:
       clean: true
       persistCredentials: false
 
+    # The tool must be built here and travel in the artifact: the publish job runs
+    # `checkout: none`, so it has no other source for it. Self-contained single-file means
+    # the hash recorded in the plan covers the whole tool rather than a launcher stub.
+    - pwsh: |
+        $toolDirectory = "$(Build.StagingDirectory)/tool"
+        dotnet publish "$(Build.SourcesDirectory)/src/DotNet.Release.Cli/DotNet.Release.Cli.csproj" `
+          --configuration Release `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:RuntimeIdentifier=$(toolRuntimeIdentifier) `
+          --output $toolDirectory
+        if ($LASTEXITCODE -ne 0) { throw "Failed to publish the release tool." }
+
+        $toolFile = Join-Path $toolDirectory $(toolFileName)
+        if (!(Test-Path -LiteralPath $toolFile)) { throw "Published tool '$toolFile' was not found." }
+
+        Write-Host "##vso[task.setvariable variable=toolPath]$toolFile"
+      displayName: Build the release tool
+
     - task: AzureCLI@2
       name: releasePlan
       displayName: Resolve and verify the BAR build
@@ -107,7 +142,7 @@ stages:
         # That is the only pipeline variable the tool sets from this verb.
         inlineScript: |
           $barId = if ('${{ parameters.barBuildId }}' -ne 'skip') { '--bar-id', '${{ parameters.barBuildId }}' } else { @() }
-          & "$(toolPath)/release" plan `
+          & "$(toolPath)" plan `
             --config "$(Build.SourcesDirectory)/${{ parameters.policyPath }}" `
             --repo "${{ parameters.ghOwner }}/${{ parameters.ghRepo }}" `
             --commit "${{ parameters.commitHash }}" `
@@ -136,13 +171,14 @@ stages:
           if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
 
     - pwsh: |
-        & "$(toolPath)/release" stage `
+        & "$(toolPath)" stage `
           --config "$(Build.SourcesDirectory)/${{ parameters.policyPath }}" `
           --plan "$(Build.StagingDirectory)/stage/plan.json" `
           --drop "$(Build.StagingDirectory)/drop" `
           --out "$(Build.ArtifactStagingDirectory)" `
           --include '${{ parameters.nugetIncludeFilters }}' `
-          --exclude '${{ parameters.nugetExcludeFilters }}'
+          --exclude '${{ parameters.nugetExcludeFilters }}' `
+          --tool "$(toolPath)"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Validate and stage packages
 

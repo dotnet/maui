@@ -40,7 +40,7 @@ public class WorkloadStageScopingTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            _workspace.Tool, Workspace.Now, "1.0.0-test", CancellationToken.None));
+            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
 
         var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
         Assert.Equal(2, plan.Sets.Count);
@@ -73,6 +73,7 @@ public class WorkloadStageScopingTests : IDisposable
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             set,
             _workspace.Out,
+            null,
             CancellationToken.None);
     }
 
@@ -171,6 +172,22 @@ public class WorkloadStageScopingTests : IDisposable
         Assert.Contains(ErrorCodes.PackageSetNotFound, _console.AllErrors, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// A transient feed error must not fail the release. `verify` is the authoritative
+    /// success signal, and its recovery path is a re-run, which is the path that risks a
+    /// fatal 409 - so it must be the most tolerant component, not the least.
+    /// </summary>
+    [Fact]
+    public async Task Verify_keeps_polling_through_a_transient_feed_failure()
+    {
+        await StageWorkloadAsync();
+
+        var probe = new FlakyProbe(failUntilCall: 3, published: [$"{Pack.ToLowerInvariant()}/10.0.0"]);
+
+        Assert.Equal(ExitCodes.Success, await Verify(StagePlanner.PacksArtifactName, probe));
+        Assert.True(probe.Calls >= 3);
+    }
+
     [Fact]
     public async Task Packs_are_ordered_before_manifests_in_the_plan()
     {
@@ -218,7 +235,7 @@ public class VerificationBudgetTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            _workspace.Tool, Workspace.Now, "1.0.0-test", CancellationToken.None));
+            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
     }
 
     private Task<int> Verify(IPackageAvailabilityProbe probe, int deadlineMinutes, int pollSeconds = DefaultPollSeconds)
@@ -232,6 +249,7 @@ public class VerificationBudgetTests : IDisposable
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             null,
             _workspace.Out,
+            null,
             CancellationToken.None);
     }
 
@@ -316,5 +334,30 @@ public class VerificationBudgetTests : IDisposable
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains("not available from NuGet.org", _console.AllErrors, StringComparison.Ordinal);
         Assert.Contains("Package00 1.0.0", _console.AllErrors, StringComparison.Ordinal);
+    }
+}
+
+/// <summary>A probe that throws for the first few calls, then answers normally.</summary>
+internal sealed class FlakyProbe(int failUntilCall, string[] published) : IPackageAvailabilityProbe
+{
+    private readonly HashSet<string> _published = new(published, StringComparer.OrdinalIgnoreCase);
+
+    public int Calls { get; private set; }
+
+    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
+        IReadOnlyList<PlannedPackage> packages,
+        CancellationToken cancellationToken)
+    {
+        Calls++;
+
+        if (Calls < failUntilCall)
+        {
+            throw new HttpRequestException("transient feed failure");
+        }
+
+        IReadOnlyDictionary<string, bool> result = packages.ToDictionary(
+            p => p.IdentityKey, p => _published.Contains(p.IdentityKey), StringComparer.Ordinal);
+
+        return Task.FromResult(result);
     }
 }

@@ -23,7 +23,7 @@ public class VerbsTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, options ?? new StageOptions(),
-            _workspace.Tool, Workspace.Now, "1.0.0-test", CancellationToken.None);
+            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
     // ---- plan ----
 
@@ -314,6 +314,7 @@ public class VerbsTests : IDisposable
             },
             set,
             _workspace.Out,
+            null,
             CancellationToken.None);
     }
 

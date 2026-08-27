@@ -88,10 +88,20 @@ public sealed class MaestroBuildRegistry : IBuildRegistry
 
         // BAR records the repository as its GitHub URL, which is what the current pipeline
         // passes to `darc get-build --repo`.
+        //
+        // loadCollections MUST be true. The service only eager-loads BuildChannels when it
+        // is set:
+        //
+        //     if (loadCollections ?? false) { query = query.Include(b => b.BuildChannels)... }
+        //
+        // With it false, Build.Channels comes back empty and every required-channel check
+        // fails with BAR_CHANNEL_MISSING while BAR shows the build correctly assigned. It is
+        // a separate concern from includeAssetLocation on GetBuildAsync, which stays false
+        // because `darc gather-drop` downloads the assets.
         var page = _builds.ListBuildsAsync(
             commit: commit.Trim(),
             repository: repository.GitHubUrl,
-            loadCollections: false,
+            loadCollections: true,
             cancellationToken: cancellationToken);
 
         await foreach (var build in page.ConfigureAwait(false))

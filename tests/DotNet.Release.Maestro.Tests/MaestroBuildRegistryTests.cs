@@ -98,6 +98,54 @@ public class MaestroBuildRegistryTests
         Assert.Equal(BuildFactory.Commit, fake.LastCommit);
     }
 
+    /// <summary>
+    /// The service only eager-loads <c>BuildChannels</c> when <c>loadCollections</c> is true:
+    /// <code>if (loadCollections ?? false) { query = query.Include(b => b.BuildChannels)... }</code>
+    /// With it false, <c>Build.Channels</c> is empty and every required-channel check fails
+    /// with <c>BAR_CHANNEL_MISSING</c> while BAR shows the build correctly assigned — a
+    /// failure whose message points the operator at the wrong thing entirely.
+    /// </summary>
+    [Fact]
+    public async Task Channels_are_requested_because_the_service_omits_them_otherwise()
+    {
+        var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create()]);
+
+        await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
+
+        Assert.True(fake.LastLoadCollections);
+    }
+
+    /// <summary>
+    /// End to end on the repo+commit path: the channel the policy requires must survive the
+    /// adapter and satisfy `BuildResolver`. This is the path that was broken.
+    /// </summary>
+    [Fact]
+    public async Task Required_channel_verification_succeeds_on_the_repository_and_commit_path()
+    {
+        var policy = ReleasePolicy.Parse("""
+        {
+          "schemaVersion": 1,
+          "repositories": {
+            "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
+          }
+        }
+        """).Value;
+
+        var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create(channels: [(1648, ".NET Libraries")])]);
+
+        var builds = await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
+
+        var resolved = BuildResolver.Resolve(
+            new ReleaseRequest(Skia, BuildFactory.Commit, null),
+            policy.GetRepository(Skia).Value,
+            builds,
+            DateTimeOffset.UnixEpoch,
+            "1.0.0-test");
+
+        Assert.True(resolved.IsSuccess, string.Join("; ", resolved.Errors));
+        Assert.Equal(new ChannelReference(".NET Libraries", 1648), resolved.Value.Channel);
+    }
+
     [Fact]
     public async Task Every_page_entry_is_returned_so_Core_can_reject_an_ambiguous_match()
     {

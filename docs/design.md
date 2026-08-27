@@ -797,7 +797,96 @@ Any job using `templateContext: type: releaseJob, isProduction: true` inherits t
 
 ---
 
-## 17. Open questions
+## 17. Independent review findings
+
+An independent review (Claude Opus 5, read-only, with access to this branch, the pipeline
+being replaced, and the BAR service source) found **four blocking defects** that all 270
+tests passed straight through. They are recorded here because each says something about
+where this design's tests were weak, not merely that a line was wrong.
+
+| # | Defect | Root cause |
+|---|---|---|
+| D1 | `loadCollections: false` meant BAR returned **no channels**, so the required-channel check failed 100% of the time for `skiasharp` and `android-libraries` — the only two repositories it exists for | The test fake silently discarded the flag, so no test could see it |
+| D2 | `$(toolPath)` was never defined in `release.yml`, and the tool was never built | Templates were YAML-parsed, never executed |
+| D3 | The `_tool/` directory `publish-set.yml` reads was never produced | An open question was written as though it were closed |
+| D4 | `DescribeSelf()` hashed `Environment.ProcessPath` — the `dotnet` muxer or an apphost stub, never the managed code | The claim "hashing the plan transitively pins the tool" was untested |
+
+**D1 is the one worth dwelling on.** The failure message would have read *"must be assigned
+to '.NET Libraries' (channel 1648), but has 0 such assignment"* — sending an operator to BAR
+to inspect a build that is, in fact, correctly assigned. Verified against the service source
+at the exact commit the client package was built from:
+
+```csharp
+if (loadCollections ?? false) { query = query.Include(b => b.BuildChannels)... }
+```
+
+The lesson is about fakes, not flags. `FakeBuilds` recorded `LastIncludeAssetLocation` for
+one method but ignored `loadCollections` for the other. **A fake more permissive than the
+real service converts an integration bug into a passing test.** It now records the flag, and
+two tests assert it.
+
+**D4 invalidated a documented guarantee.** Section 6 claims hashing the plan transitively
+pins the tool. It did not: run as `dotnet release.dll` the hash was of the shared host; run
+via the apphost it was of a ~70 KB native stub containing none of the IL, so
+`DotNet.Release.Core.dll` could be swapped without changing it. `stage` now takes `--tool`
+pointing at the published single-file binary, hashes that, and copies it into each artifact
+`_tool/` directory — which also closes D3.
+
+### The architecture tests were largely theatre
+
+The review's sharpest structural point. `ArchitectureTests` scanned only
+`DotNet.Release.Core` — the one assembly that is I/O-free *by construction* and could not
+have violated the guarantee. The assembly that **can** publish is `DotNet.Release.NuGet`,
+which references `NuGet.Protocol` and therefore has `PackageUpdateResource.Push` one call
+away. Nothing scanned it. The only barrier was a comment in a `.csproj`.
+
+`WholeToolArchitectureTests` now drives the PE TypeRef scan over **all four** shipping
+assemblies, forbidding `PackageUpdateResource` and `System.Diagnostics.Process` everywhere,
+including non-public members. It also asserts `PackageUpdateResource` really is present in
+the dependency graph — otherwise the absence test would pass for the wrong reason and keep
+passing if the dependency were swapped.
+
+That is the difference between P1 and P2 being enforced and being aspirational.
+
+### Also fixed
+
+- **D6** — a transient NuGet.org error aborted `verify` instead of continuing to poll. Over
+  roughly a thousand requests to a public feed that is a likely event, and the recovery for a
+  failed verify is a re-run, which is the path that risks a fatal 409. It now logs and keeps
+  polling; only the deadline fails it.
+- **D7** — two same-named `.nupkg` files in different drop subdirectories could reach
+  `ToDictionary` and throw a raw `ArgumentException`, bypassing the coded-error contract.
+- **D8** — `schemaVersion` was never validated on the plan, so an older tool would silently
+  reinterpret a future schema in the one file that gates a push.
+- **R1** — `ReadStagedHashes` now enumerates `AllDirectories`. It previously agreed with the
+  `*.nupkg` push glob only by coincidence, and a nested package was invisible to both.
+  Recursive enumeration is strictly safer and decouples the rule from the YAML.
+- **R2** — the plan hash is documented as byte-domain-sensitive, since `Get-FileHash` hashes
+  raw bytes while `File.ReadAllText` strips a BOM.
+- `verify` now takes `--expected-plan-hash`; it is the authoritative success signal and was
+  reading an unpinned file.
+- `--set` is now **required** on both publish verbs, so the marker check cannot silently
+  degrade to unenforced.
+- `stage` now runs `ValidateStaged` as a self-check. It was tested but never called in
+  production — coverage that wasn't.
+
+### Confirmed sound by the review
+
+Pack-before-manifest ordering ("airtight"); `RepositoryId.FromGitHubUrl` host handling;
+`BarBuildMapper` null handling; `BuildResolver` verifying commit and repository on every
+path; `ReleaseSetMarker` being outside the plan hash (it can only turn a correct publish into
+a failure, never the reverse); and `SourceCacheContext.NoCache`.
+
+### Still open
+
+`promote_workload_set` runs in parallel with `publish_packs` — both `dependsOn:
+prepare_release`. Whether channel promotion must land before packages go live could not be
+established from the code. It matches the pipeline being replaced, so it is not a regression,
+but it is currently an accident of topology rather than a decision.
+
+---
+
+## 18. Open questions
 
 1. **Asset download without `gather-drop`.** Resolved for now — `gather-drop` stays (§4).
    The client does return asset locations, so a future native download is conceivable, but

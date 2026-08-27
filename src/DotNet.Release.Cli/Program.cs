@@ -90,13 +90,26 @@ public static class Program
         var output = new Option<DirectoryInfo>("--out") { Description = "Output directory.", Required = true };
         var include = new Option<string?>("--include") { Description = "Semicolon-separated include filters." };
         var exclude = new Option<string?>("--exclude") { Description = "Semicolon-separated exclude filters." };
+        var tool = new Option<FileInfo>("--tool")
+        {
+            Description = "The published single-file tool the publish job will execute. Its hash is recorded in the plan.",
+            Required = true,
+        };
 
         var command = new Command("stage", "Read the gathered drop, validate it, and write release-plan.json.")
         {
-            config, plan, drop, output, include, exclude,
+            config, plan, drop, output, include, exclude, tool,
         };
 
-        command.SetAction((parse, cancellationToken) => Verbs.StageAsync(
+        command.SetAction((parse, cancellationToken) =>
+        {
+            var toolReference = DescribeTool(parse.GetValue(tool));
+            if (toolReference.IsFailure)
+            {
+                return Task.FromResult(ConsoleReporting.Fail(console, toolReference.Errors));
+            }
+
+            return Verbs.StageAsync(
             console,
             new NupkgIdentityReader(),
             File.ReadAllText(parse.GetValue(config)!.FullName),
@@ -108,10 +121,12 @@ public static class Program
                 Include = PackageGlob.ParseList(parse.GetValue(include)),
                 Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
             },
-            DescribeSelf(),
+            toolReference.Value,
+            parse.GetValue(tool)!.FullName,
             DateTimeOffset.UtcNow,
             ToolVersion,
-            cancellationToken));
+            cancellationToken);
+        });
 
         return command;
     }
@@ -123,7 +138,11 @@ public static class Program
         var skip = new Option<string?>("--skip") { Description = "Semicolon-separated filters for packages a previous run already submitted." };
         var expectedHash = new Option<string?>("--expected-plan-hash") { Description = "Fail unless the plan matches this SHA-256." };
         var feed = new Option<string?>("--feed") { Description = "Feed index to query. Defaults to NuGet.org." };
-        var set = new Option<string?>("--set") { Description = "Artifact name of the package set this stage publishes. Omit to operate on every set." };
+        var set = new Option<string>("--set")
+        {
+            Description = "Artifact name of the package set this stage publishes.",
+            Required = true,
+        };
 
         var command = new Command("filter", "Remove already-published packages from the staging directory.")
         {
@@ -155,12 +174,17 @@ public static class Program
         var maxDuration = new Option<int>("--max-duration-minutes") { Description = "Verification deadline.", DefaultValueFactory = _ => 30 };
         var interval = new Option<int>("--poll-seconds") { Description = "Delay between polls.", DefaultValueFactory = _ => 20 };
         var feed = new Option<string?>("--feed") { Description = "Feed index to query. Defaults to NuGet.org." };
-        var set = new Option<string?>("--set") { Description = "Artifact name of the package set this stage published. Omit to verify every set." };
+        var set = new Option<string>("--set")
+        {
+            Description = "Artifact name of the package set this stage published.",
+            Required = true,
+        };
+        var expectedHash = new Option<string?>("--expected-plan-hash") { Description = "Fail unless the plan matches this SHA-256." };
         var stage = new Option<DirectoryInfo?>("--stage") { Description = "Directory containing the staged set directories. Defaults to the plan's directory." };
 
         var command = new Command("verify", "Poll until every package in scope is indexed on NuGet.org.")
         {
-            plan, maxDuration, interval, feed, set, stage,
+            plan, maxDuration, interval, feed, set, stage, expectedHash,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -178,6 +202,7 @@ public static class Program
                 Task.Delay,
                 parse.GetValue(set),
                 parse.GetValue(stage)?.FullName ?? planFile.DirectoryName,
+                parse.GetValue(expectedHash),
                 cancellationToken);
         });
 
@@ -185,20 +210,48 @@ public static class Program
     }
 
     /// <summary>
-    /// Describes the running tool so its hash can be recorded inside the plan.
+    /// Describes the tool binary so its hash can be recorded inside the plan.
     /// </summary>
     /// <remarks>
-    /// Hashing the plan then transitively pins the tool, which is what lets the publish job
-    /// verify one value instead of repeating a hash check at every step.
+    /// <para>
+    /// <b>Must be given an explicit path.</b> Inferring it from <c>Environment.ProcessPath</c>
+    /// does not work and silently produces a meaningless pin:
+    /// </para>
+    /// <list type="bullet">
+    /// <item>run as <c>dotnet release.dll</c>, <c>ProcessPath</c> is the <c>dotnet</c> muxer,
+    /// so the plan would record the hash of the shared host;</item>
+    /// <item>run via the apphost, <c>ProcessPath</c> is a ~70 KB native stub containing none
+    /// of the managed IL, so <c>DotNet.Release.Core.dll</c> could be swapped without changing
+    /// the hash.</item>
+    /// </list>
+    /// <para>
+    /// Either way the chain of trust would terminate at a launcher, making the design's claim
+    /// that hashing the plan transitively pins the tool false. <c>--tool</c> therefore points
+    /// at the self-contained single-file artifact that the publish job actually executes.
+    /// </para>
     /// </remarks>
-    private static ToolReference DescribeSelf()
+    private static Result<ToolReference> DescribeTool(FileInfo? toolFile)
     {
-        var path = Environment.ProcessPath ?? typeof(Program).Assembly.Location;
+        if (toolFile is null)
+        {
+            return Result<ToolReference>.Failure(
+                ErrorCodes.PackageFileMissing,
+                "--tool must point at the published single-file tool that the publish job will " +
+                "execute. It cannot be inferred from the running process: that resolves to the " +
+                "dotnet muxer or to an apphost stub, neither of which contains the managed code.");
+        }
 
-        using var stream = File.OpenRead(path);
-        return new ToolReference(
-            Path.GetFileName(path),
-            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(stream)));
+        if (!toolFile.Exists)
+        {
+            return Result<ToolReference>.Failure(
+                ErrorCodes.PackageFileMissing,
+                $"The tool file '{toolFile.FullName}' was not found.");
+        }
+
+        using var stream = toolFile.OpenRead();
+        return Result<ToolReference>.Success(new ToolReference(
+            toolFile.Name,
+            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(stream))));
     }
 
     private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>

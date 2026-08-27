@@ -37,6 +37,13 @@ internal sealed class FakeBuilds : IBuilds
 
     public bool? LastIncludeAssetLocation { get; private set; }
 
+    /// <summary>
+    /// Recorded because the real service only eager-loads channels when this is true, and a
+    /// fake that silently ignored it hid a blocking bug: channel verification failed for
+    /// every repository that required a channel.
+    /// </summary>
+    public bool? LastLoadCollections { get; private set; }
+
     public Task<PcsModels.Build> GetBuildAsync(int id, bool? includeAssetLocation = null, CancellationToken cancellationToken = default)
     {
         LastIncludeAssetLocation = includeAssetLocation;
@@ -64,6 +71,7 @@ internal sealed class FakeBuilds : IBuilds
     {
         LastCommit = commit;
         LastRepository = repository;
+        LastLoadCollections = loadCollections;
 
         var values = _list?.Invoke(repository, commit) ?? [];
         return AsyncPageable<PcsModels.Build>.FromPages(
