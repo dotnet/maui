@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private bool _appTypeRendered;
 		private bool _syntheticHostPageApplied;
 		private string? _renderedHostPageHtml;
+		private readonly List<RootComponent> _appTypeRootComponents = new();
 
 		/// <summary>
 		/// Gets or sets the type of a root component that renders the entire host HTML document (the
@@ -80,7 +82,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			get => _appType;
 			set
 			{
+				if (_appType == value)
+				{
+					return;
+				}
+
 				_appType = value;
+
+				// Any change to AppType invalidates a previous render: drop the rendered host page and
+				// remove the root components this class appended for it, so a subsequent start renders the
+				// new value cleanly instead of ignoring it (non-null -> non-null) or registering a
+				// duplicate selector (non-null -> null -> non-null).
+				ResetAppTypeRenderState();
 
 				if (value is not null)
 				{
@@ -93,20 +106,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						_syntheticHostPageApplied = true;
 					}
 				}
-				else
+				else if (_syntheticHostPageApplied && HostPage == AppTypeHostPage)
 				{
-					// Clearing AppType: undo the synthetic host page and reset the rendered state so the
-					// view does not keep claiming a host page it no longer serves (which would otherwise
-					// leave a blank web view).
-					if (_syntheticHostPageApplied)
-					{
-						HostPage = null;
-						_syntheticHostPageApplied = false;
-					}
-
-					_appTypeRendered = false;
-					_renderedHostPageHtml = null;
+					// Clearing AppType: undo the synthetic host page, but only if it is still the one we
+					// applied. A caller that set their own HostPage afterwards keeps it.
+					HostPage = null;
+					_syntheticHostPageApplied = false;
 				}
+			}
+		}
+
+		// Drops the rendered host page and removes any root components this class appended for the
+		// current AppType, so the next render (if any) starts from a clean slate.
+		private void ResetAppTypeRenderState()
+		{
+			_appTypeRendered = false;
+			_renderedHostPageHtml = null;
+
+			if (_appTypeRootComponents.Count > 0)
+			{
+				foreach (var rootComponent in _appTypeRootComponents)
+				{
+					RootComponents.Remove(rootComponent);
+				}
+
+				_appTypeRootComponents.Clear();
 			}
 		}
 
@@ -234,11 +258,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			foreach (var registration in result.Registrations)
 			{
-				RootComponents.Add(new RootComponent
+				var rootComponent = new RootComponent
 				{
 					Selector = registration.Selector,
 					ComponentType = registration.ComponentType,
-				});
+				};
+
+				RootComponents.Add(rootComponent);
+
+				// Track what we added so a later AppType change can remove exactly these entries.
+				_appTypeRootComponents.Add(rootComponent);
 			}
 
 			// Only latch success after the render and registration complete. If rendering throws (an

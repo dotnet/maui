@@ -97,7 +97,33 @@
         // Reduce the static web asset endpoints to the minimal fingerprint mapping BlazorWebView needs:
         // the fingerprinted route and its logical, non-fingerprinted label. Only primary (non-compressed)
         // endpoints that actually carry a fingerprint are relevant; everything else serves directly.
+        //
+        // EndpointProperties is a JSON array of { "Name": "...", "Value": "..." } objects. It is parsed
+        // by looking each property up by name independently, so the result does not depend on the member
+        // order the SDK serializes within an object.
+        static string ExtractProperty(string propertiesJson, string name)
+        {
+            foreach (Match obj in Regex.Matches(propertiesJson, "\\{[^{}]*\\}"))
+            {
+                var text = obj.Value;
+                var nameMatch = Regex.Match(text, "\"Name\"\\s*:\\s*\"(?<n>(?:[^\"\\\\]|\\\\.)*)\"");
+                if (!nameMatch.Success || nameMatch.Groups["n"].Value != name)
+                {
+                    continue;
+                }
+
+                var valueMatch = Regex.Match(text, "\"Value\"\\s*:\\s*\"(?<v>(?:[^\"\\\\]|\\\\.)*)\"");
+                if (valueMatch.Success)
+                {
+                    return valueMatch.Groups["v"].Value;
+                }
+            }
+
+            return null;
+        }
+
         var byRoute = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        var sawFingerprintEndpoint = false;
         foreach (var endpoint in Endpoints)
         {
             var selectors = endpoint.GetMetadata("Selectors");
@@ -108,20 +134,20 @@
             }
 
             var properties = endpoint.GetMetadata("EndpointProperties") ?? string.Empty;
-            if (!Regex.IsMatch(properties, "\"Name\"\\s*:\\s*\"fingerprint\""))
+            var fingerprint = ExtractProperty(properties, "fingerprint");
+            if (string.IsNullOrEmpty(fingerprint))
             {
-                // Not a fingerprinted route (the plain route is served directly).
+                // Not a fingerprinted route (the plain route is served directly). Fingerprinting being
+                // off for this endpoint is legitimate (for example StaticWebAssetsFingerprintContent=false).
                 continue;
             }
 
-            var labelMatch = Regex.Match(properties, "\"Name\"\\s*:\\s*\"label\"\\s*,\\s*\"Value\"\\s*:\\s*\"(?<v>(?:[^\"\\\\]|\\\\.)*)\"");
-            if (!labelMatch.Success)
-            {
-                continue;
-            }
+            // A fingerprinted endpoint was seen, so fingerprinting is on: from here a failure to extract
+            // the label is a real problem, not a "fingerprinting disabled" case.
+            sawFingerprintEndpoint = true;
 
             var route = endpoint.ItemSpec;
-            var label = labelMatch.Groups["v"].Value;
+            var label = ExtractProperty(properties, "label");
             if (!string.IsNullOrEmpty(route) && !string.IsNullOrEmpty(label))
             {
                 byRoute[route] = label;
@@ -148,12 +174,19 @@
 
         var content = builder.ToString();
 
-        // If endpoints were present but nothing was extracted, the SDK likely changed the shape of the
-        // EndpointProperties metadata this task parses. Fail loudly at build time rather than silently
-        // shipping an empty manifest that turns every @Assets fingerprint into a runtime 404.
-        if (Endpoints.Length > 0 && byRoute.Count == 0)
+        // Only warn when fingerprinting is actually on (a fingerprinted endpoint was seen) but nothing
+        // could be extracted - that signals the SDK changed the EndpointProperties metadata shape. This
+        // deliberately does not fire for the legitimate "no fingerprinting" case (no fingerprinted
+        // endpoints at all). The warning carries a real code so it can be suppressed via NoWarn.
+        if (sawFingerprintEndpoint && byRoute.Count == 0)
         {
-            Log.LogWarning("BLAZORHYBRID0001: {0} static web asset endpoint(s) were found but no fingerprinted entries could be extracted for the Blazor asset manifest. Asset fingerprinting (@Assets) will be disabled at runtime. This usually means the SDK changed the EndpointProperties metadata shape.", Endpoints.Length);
+            Log.LogWarning(
+                null,
+                "BLAZORHYBRID0001",
+                null,
+                OutputFile,
+                0, 0, 0, 0,
+                "Fingerprinted static web asset endpoints were found but no entries could be extracted for the Blazor asset manifest. Asset fingerprinting (@Assets) will be disabled at runtime. This usually means the SDK changed the shape of the EndpointProperties metadata.");
         }
 
         var outputDir = Path.GetDirectoryName(OutputFile);
