@@ -124,7 +124,7 @@ stages:
         bash ./eng/common/dotnet.sh
         toolVersion='${{ parameters.helixJobMonitorVersion }}'
         if [[ -z "$toolVersion" || "$toolVersion" =~ [[:space:]] ]]; then
-          echo "The Helix Job Monitor package version is invalid." >&2
+          printf 'The helixJobMonitorVersion parameter must be non-empty and contain no whitespace; received %q.\n' "$toolVersion" >&2
           exit 1
         fi
 
