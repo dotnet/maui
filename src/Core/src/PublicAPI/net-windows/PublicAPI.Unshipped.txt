@@ -50,3 +50,5 @@ Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graph
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 Microsoft.Maui.IImageSourcePaint
 Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Microsoft.UI.Xaml.FrameworkElement? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Microsoft.UI.Xaml.FrameworkElement! containerView) -> void
