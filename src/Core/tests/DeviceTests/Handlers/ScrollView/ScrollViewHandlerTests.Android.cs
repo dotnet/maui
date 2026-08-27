@@ -342,5 +342,35 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1000, measuredHeight);
 			});
 		}
+
+		[Fact]
+		[Category(TestCategory.ScrollView)]
+		public async Task MauiScrollViewHasNoVerticalScrollRangeWithPaddingInHorizontalOrientation()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var sv = new MauiScrollView(MauiContext.Context);
+				sv.SetContent(new Button(MauiContext.Context));
+				sv.SetOrientation(ScrollOrientation.Horizontal);
+				sv.SetPadding(10, 20, 30, 40);
+
+				var hsv = sv.FindViewWithTag("Microsoft.Maui.Android.HorizontalScrollView") as MauiHorizontalScrollView;
+				Assert.NotNull(hsv);
+
+				sv.Measure(
+					MeasureSpec.MakeMeasureSpec(1000, global::Android.Views.MeasureSpecMode.Exactly),
+					MeasureSpec.MakeMeasureSpec(1000, global::Android.Views.MeasureSpecMode.Exactly));
+
+				sv.Layout(0, 0, 1000, 1000);
+
+				Assert.Equal(960, hsv.MeasuredWidth);
+				Assert.Equal(940, hsv.MeasuredHeight);
+				Assert.Equal(10, hsv.Left);
+				Assert.Equal(20, hsv.Top);
+				Assert.Equal(970, hsv.Right);
+				Assert.Equal(960, hsv.Bottom);
+				Assert.False(sv.CanScrollVertically(1));
+			});
+		}
 	}
 }
