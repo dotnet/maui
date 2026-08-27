@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 
@@ -120,10 +121,22 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<LongPressingEventArgs>? LongPressing;
 
 		/// <summary>
-		/// Sends the long pressed event and executes the command.
+		/// Executes the associated <see cref="Command"/> and raises the <see cref="LongPressed"/> event.
 		/// </summary>
-		internal void SendLongPressed(View sender, Func<IElement?, Point?>? getPosition = null)
+		/// <param name="sender">The view on which the long press gesture was recognized.</param>
+		/// <param name="getPosition">A function that returns the long press position relative to a specified element.</param>
+		/// <remarks>
+		/// <para>This infrastructure method is intended for gesture platform managers.</para>
+		/// <para>Platform backends should raise this when the press completes successfully, immediately
+		/// followed by <see cref="SendLongPressing(View, GestureStatus, Func{IElement, Point?})"/> with
+		/// <see cref="GestureStatus.Completed"/>. It must be called on the UI thread.</para>
+		/// </remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendLongPressed(View sender, Func<IElement?, Point?>? getPosition = null)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			var cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))
 				cmd.Execute(CommandParameter);
@@ -132,10 +145,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Sends the long pressing event with state information.
+		/// Updates <see cref="State"/> and raises the <see cref="LongPressing"/> event.
 		/// </summary>
-		internal void SendLongPressing(View sender, GestureStatus status, Func<IElement?, Point?>? getPosition = null)
+		/// <param name="sender">The view on which the long press gesture is being recognized.</param>
+		/// <param name="status">The current status of the gesture.</param>
+		/// <param name="getPosition">A function that returns the long press position relative to a specified element.</param>
+		/// <remarks>
+		/// <para>This infrastructure method is intended for gesture platform managers.</para>
+		/// <para>Platform backends should raise <see cref="GestureStatus.Started"/> once the press is
+		/// recognized, <see cref="GestureStatus.Running"/> while it is held, and finish with either
+		/// <see cref="GestureStatus.Completed"/> or <see cref="GestureStatus.Canceled"/>. It must be
+		/// called on the UI thread.</para>
+		/// </remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendLongPressing(View sender, GestureStatus status, Func<IElement?, Point?>? getPosition = null)
 		{
+			_ = sender ?? throw new ArgumentNullException(nameof(sender));
+
 			State = status;
 			LongPressing?.Invoke(sender, new LongPressingEventArgs(status, getPosition));
 		}
