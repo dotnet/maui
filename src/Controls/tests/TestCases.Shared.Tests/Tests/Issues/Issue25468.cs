@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue25468 : _IssuesUITest
 	{
 		public Issue25468(TestDevice testDevice) : base(testDevice)
@@ -16,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView7)]
 		public void CollectionViewShouldHaveScrollBar()
 		{
 			App.WaitForElement("1");

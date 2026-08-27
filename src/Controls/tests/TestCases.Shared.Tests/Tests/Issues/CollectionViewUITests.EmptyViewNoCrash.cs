@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class EmptyViewNoCrashUITests : _IssuesUITest
 	{
 		public EmptyViewNoCrashUITests(TestDevice device)
@@ -17,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// EmptyViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue9196.xaml.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 		public void EmptyViewShouldNotCrash()
 		{
 			App.WaitForElement("Success");

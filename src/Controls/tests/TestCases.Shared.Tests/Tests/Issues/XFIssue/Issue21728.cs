@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class Issue21728 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView item alignment issue when a single item is present with a footer";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView5)]
 		public void CollectionViewSingleItemAlignmentWithFooter()
 		{
 			App.WaitForElement("collectionview");

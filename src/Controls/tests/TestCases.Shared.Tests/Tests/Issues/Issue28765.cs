@@ -9,7 +9,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue28765 : _IssuesUITest
 {
 	public override string Issue => "[Android] Inconsistent footer scrolling in CollectionView when EmptyView as string";
@@ -19,6 +18,7 @@ public class Issue28765 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void EmptyViewStringWithHeaderAndFooterAsView()
 	{
 		App.WaitForElement("Footer View");
@@ -26,6 +26,7 @@ public class Issue28765 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void EmptyViewStringWithHeaderAndFooterString()
 	{
 		App.WaitForElement("Footer String");

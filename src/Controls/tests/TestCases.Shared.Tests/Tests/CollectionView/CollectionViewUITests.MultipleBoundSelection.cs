@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class CollectionViewBoundMultiSelectionUITests : CollectionViewUITests
 	{
 		public CollectionViewBoundMultiSelectionUITests(TestDevice device)
@@ -16,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView3)]
 		public void ItemsFromViewModelShouldBeSelected()
 		{
 			// Navigate to the selection galleries

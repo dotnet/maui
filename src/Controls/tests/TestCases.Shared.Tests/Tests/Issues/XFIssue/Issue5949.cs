@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue5949 : _IssuesUITest
 {
 	public const string BackButton = "5949GoBack";
@@ -18,6 +17,7 @@ public class Issue5949 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView4)]
 	public void DoNotAccessDisposedCollectionView()
 	{
 		App.WaitForElement(ToolBarItem);

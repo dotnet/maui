@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue17400 : _IssuesUITest
 	{
 		public Issue17400(TestDevice device)
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView7)]
 		public void Issue17400Test()
 		{
 			// Is a Windows issue; see https://github.com/dotnet/maui/issues/17400

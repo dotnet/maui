@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class Issue25859 : _IssuesUITest
 	{
 		public override string Issue => "Item spacing not properly applied between items in CollectionView Horizontal LinearItemsLayout";
@@ -14,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView5)]
 		public void CVHorizontalLinearItemsLayoutItemSpacing()
 		{
 			App.WaitForElement("collectionView");

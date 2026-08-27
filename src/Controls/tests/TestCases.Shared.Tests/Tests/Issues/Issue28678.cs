@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue28678 : _IssuesUITest
 {
 	public Issue28678(TestDevice device) : base(device) { }
@@ -13,6 +12,7 @@ public class Issue28678 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void HeaderFooterSelectionAfterItemsLayoutChangeShouldNotCrash()
 	{
 		App.WaitForElement("Button");

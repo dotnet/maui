@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class Issue7338 : _IssuesUITest
 	{
 		const string Success = "success";
@@ -17,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void Issue7338Test()
 		{
 			// If the instructions are visible at all, then this has succeeded

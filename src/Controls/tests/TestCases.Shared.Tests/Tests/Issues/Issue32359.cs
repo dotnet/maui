@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue32359 : _IssuesUITest
 	{
 		public override string Issue => "FlowDirection RightToLeft not applied to CollectionView with VerticalGrid multi-column layout";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void VerticalGridCollectionViewRTLColumnMirroringShouldWork()
 		{
 			// Wait for CollectionView to load
@@ -37,6 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void VerticalGridCollectionViewLTRToRTLToggleShouldWork()
 		{
 			// Start in LTR (default)

@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue25181 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView item alignment issue in HorizontalGrid layout when only one item is present";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView3)]
 		public void SingleItemAlignmentInCollectionViewHorizontalGridLayout()
 		{
 			App.WaitForElement("collectionview");

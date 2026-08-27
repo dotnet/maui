@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue29192 : _IssuesUITest
 {
 	public override string Issue => "[Android] CollectionView MeasureFirstItem ItemSizingStrategy Not Applied in Horizontal Layouts";
@@ -14,6 +13,7 @@ public class Issue29192 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void ShouldMeasureFirstItemInHorizontalLayouts()
 	{
 		App.WaitForElement("CollectionView");

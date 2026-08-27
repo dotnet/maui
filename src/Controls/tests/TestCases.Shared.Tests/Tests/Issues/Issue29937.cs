@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue29937 : _IssuesUITest
 {
 	public Issue29937(TestDevice device) : base(device)
@@ -16,6 +15,7 @@ public class Issue29937 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void SettingSelectedItemAndItemSourceShouldNotCrash()
 	{
 		App.WaitForElement("MauiButton");

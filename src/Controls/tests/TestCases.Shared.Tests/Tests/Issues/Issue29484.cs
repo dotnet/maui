@@ -6,7 +6,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue29484 : _IssuesUITest
 {
 	public Issue29484(TestDevice testDevice) : base(testDevice)
@@ -17,6 +16,7 @@ public class Issue29484 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void PointerOverWithSelectedStateShouldWork()
 	{
 		App.WaitForElement("CollectionView");

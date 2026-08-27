@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue18751 : _IssuesUITest
 {
 	public Issue18751(TestDevice device) : base(device)
@@ -15,6 +14,7 @@ public class Issue18751 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void Issue18751Test()
 	{
 		App.WaitForElement("WaitForStubControl");

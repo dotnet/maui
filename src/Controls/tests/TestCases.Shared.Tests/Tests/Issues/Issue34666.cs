@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue34666 : _IssuesUITest
 {
 	public Issue34666(TestDevice device) : base(device)
@@ -15,6 +14,7 @@ public class Issue34666 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void CollectionViewDoesNotScrollWhenRefreshViewDisabled()
 	{
 		App.WaitForElement("Baboon");

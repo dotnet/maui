@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue31911 : _IssuesUITest
 {
     public Issue31911(TestDevice device) : base(device)
@@ -16,6 +15,7 @@ public class Issue31911 : _IssuesUITest
 
     [Test, Order(1)]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView4)]
     public void HeaderShouldBeRemovedWhenSetToNull()
     {
         App.WaitForElement("ToggleHeaderButton");
@@ -25,6 +25,7 @@ public class Issue31911 : _IssuesUITest
 
     [Test, Order(2)]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView4)]
     public void FooterShouldBeRemovedWhenSetToNull()
     {
         App.WaitForElement("ToggleFooterButton");

@@ -9,7 +9,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue20274 : _IssuesUITest
 	{
 		public override string Issue => "IsEnabled=False on CollectionView not working";
@@ -21,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void VerifyCollectionViewIsEnableState()
 		{
 			App.WaitForElement("Button");

@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue31551 : _IssuesUITest
 {
 	public Issue31551(TestDevice device) : base(device)
@@ -15,6 +14,7 @@ public class Issue31551 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView4)]
 	public void VerifyNoExceptionOnInvalidGroupIndex()
 	{
 		App.WaitForElement("Issue31551ScrollBtn");

@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue32404 : _IssuesUITest
 {
     public Issue32404(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class Issue32404 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView4)]
     public void FlowDirectionShouldWorkOnEmptyView()
     {
         App.WaitForElement("Issue32404ToggleButton");

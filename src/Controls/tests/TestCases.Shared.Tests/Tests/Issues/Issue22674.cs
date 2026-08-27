@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue22674 : _IssuesUITest
 {
 	public Issue22674(TestDevice device) : base(device) { }
@@ -13,6 +12,7 @@ public class Issue22674 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void RemoveItemWhenSelectionChanged()
 	{
 		App.WaitForElement("TestCollectionView");

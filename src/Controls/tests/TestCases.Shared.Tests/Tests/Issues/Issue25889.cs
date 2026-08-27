@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView1)]
 	public class Issue25889 : _IssuesUITest
 	{
 		public Issue25889(TestDevice device) : base(device)
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView3)]
 		public void RemainingItemsThresholdReachedCommandFired()
 		{
 			App.WaitForElement("collectionView");

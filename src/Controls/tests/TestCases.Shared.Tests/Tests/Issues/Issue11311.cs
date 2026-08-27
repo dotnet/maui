@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class Issue11311 : _IssuesUITest
 	{
 		public Issue11311(TestDevice testDevice) : base(testDevice)
@@ -16,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView5)]
 		public void CollectionViewWithFooterShouldNotNSRangeExceptionCrashOnDisplay()
 		{
 			// If this hasn't already crashed, the test is passing

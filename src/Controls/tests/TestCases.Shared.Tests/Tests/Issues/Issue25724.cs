@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	internal class Issue25724 : _IssuesUITest
 	{
 		public Issue25724(TestDevice device) : base(device) { }
@@ -14,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 		public void CollectionViewDynamicHeaderShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement("This Is A Header");

@@ -6,7 +6,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue32983 : _IssuesUITest
 {
 	public override string Issue => "CollectionView messes up Measure operation on Views";
@@ -15,6 +14,7 @@ public class Issue32983 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void BottomSheetDetentHeightIsCorrectWhenCollectionViewIsMeasuredBeforeMount()
 	{
 		App.WaitForElement("ShowBottomSheetButton");

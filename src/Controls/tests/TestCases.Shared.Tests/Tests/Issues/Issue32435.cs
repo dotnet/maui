@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue32435 : _IssuesUITest
 {
 	public Issue32435(TestDevice device) : base(device) { }
@@ -13,6 +12,7 @@ public class Issue32435 : _IssuesUITest
 	public override string Issue => "Rotating the Simulator causes the text on the collection view to disappear";
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void VerifyCollectionViewTextShouldAppearAfterRotatingTheDevice()
 	{
 		App.WaitForElement("InstructionLabel");

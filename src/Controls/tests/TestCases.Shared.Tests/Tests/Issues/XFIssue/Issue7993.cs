@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue7993 : _IssuesUITest
 {
 	public Issue7993(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class Issue7993 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 	public void CollectionViewVerticalOffset()
 	{
 		App.WaitForElement("CollectionView7993");

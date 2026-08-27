@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class Issue26997 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView should not crash on iOS 15 and 16";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 		public void CollectionViewShouldNotCrash()
 		{
 			App.WaitForElement("collectionView");

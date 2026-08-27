@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue34122 : _IssuesUITest
 {
 	const string BasicEmptyViewButtonId = "BasicEmptyViewButton";
@@ -17,6 +16,7 @@ public class Issue34122 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void EmptyViewSwapShouldNotRevealFilteredOutItems()
 	{
 		// Verify items are visible initially

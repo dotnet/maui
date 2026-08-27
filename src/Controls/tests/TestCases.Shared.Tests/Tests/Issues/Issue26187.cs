@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class Issue26187 : _IssuesUITest
 	{
 		public override string Issue => "[MAUI] Select items traces are preserved";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView5)]
 		public void SelectedItemVisualIsCleared()
 		{
 			App.WaitForElement("lblItem");

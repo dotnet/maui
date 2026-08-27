@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue15815 : _IssuesUITest
 {
 	public Issue15815(TestDevice device)
@@ -15,6 +14,7 @@ public class Issue15815 : _IssuesUITest
 	public override string Issue => "Horizontal CollectionView does not show the last element under some condition";
 
 	[Test, Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void LastItemIsVisilbe()
 	{
 		var lastItem = App.WaitForElement("id-2");

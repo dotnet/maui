@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue30868 : _IssuesUITest
 {
 	public Issue30868(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class Issue30868 : _IssuesUITest
 #if TEST_FAILS_ON_WINDOWS // Using AppThemeBinding and changing theme not working on Windows
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void CollectionViewSelectionModeOnDarkTheme()
 	{
 		try
@@ -33,6 +33,7 @@ public class Issue30868 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void CollectionViewSelectionModeOnLightTheme()
 	{
 		App.WaitForElement("Item 2");

@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue23014 : _IssuesUITest
 	{
 		public Issue23014(TestDevice device)
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView3)]
 		public void ScrollToOnUnloadedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement("ScrollToRemovedButton");

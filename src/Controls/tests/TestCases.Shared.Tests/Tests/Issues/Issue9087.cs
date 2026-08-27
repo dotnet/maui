@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class Issue9087 : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -17,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView7)]
 		public void BindablePropertiesAvailableAtOnElementChanged()
 		{
 			App.WaitForElement(Success);

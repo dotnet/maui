@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class CollectionViewSingleBoundSelectionUITests : CollectionViewUITests
 	{
 		public CollectionViewSingleBoundSelectionUITests(TestDevice device)
@@ -14,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		[Description("Single Selection Binding")]
 		public void SelectionShouldUpdateBinding()
 		{

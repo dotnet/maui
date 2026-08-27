@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue35313 : _IssuesUITest
 {
 	public Issue35313(TestDevice device) : base(device) { }
@@ -14,6 +13,7 @@ public class Issue35313 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void GroupedCollectionViewScrollToIndexZeroShouldScrollToStart()
 	{
 		App.WaitForElement("ScrollToEndButton");

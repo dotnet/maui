@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue29634 : _IssuesUITest
 {
 	public override string Issue => "iOS CV: Empty view not resizing when bounds change";
@@ -16,6 +15,7 @@ public class Issue29634 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void VerifyEmptyViewResizesWhenBoundsChange()
 	{
 		App.WaitForElement("RunTest");

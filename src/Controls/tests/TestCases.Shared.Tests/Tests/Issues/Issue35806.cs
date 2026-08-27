@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue35806 : _IssuesUITest
 {
 	public Issue35806(TestDevice device) : base(device) { }
@@ -14,6 +13,7 @@ public class Issue35806 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void KeepScrollOffsetWorksAfterReplacingItemsSource()
 	{
 		App.WaitForElement("CollectionView35806");

@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue20842 : _IssuesUITest
 	{
 		const string scrollUpButton = "ScrollUpButton";
@@ -18,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void VerifyCollectionViewItemsAfterScrolling()
 		{
 			App.WaitForElement(scrollUpButton);

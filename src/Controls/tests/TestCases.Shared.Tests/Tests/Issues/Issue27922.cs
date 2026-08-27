@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue27922 : _IssuesUITest
 {
 	public override string Issue => "[WinUI]CollectionView with GroupHeader enabled should scroll properly with groupheader";
@@ -15,6 +14,7 @@ public class Issue27922 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void ItemShouldbeScrolledbasedOnGroupHeader()
 	{
 		App.WaitForElement("27922GroupedCollection");
