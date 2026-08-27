@@ -44,6 +44,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 		private static readonly ConditionalWeakTable<WebViewManager, Task> s_attachedManagers = new();
 
+		private const string NotifierSelector = "body::after";
+
 		/// <summary>
 		/// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
 		/// </summary>
@@ -73,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 			// the same manager return the task from the first attach instead.
 			return s_attachedManagers.GetValue(
 				manager,
-				static m => m.AddRootComponentAsync(typeof(StaticContentChangeNotifier), "body::after", ParameterView.Empty));
+				static m => m.AddRootComponentAsync(typeof(StaticContentChangeNotifier), NotifierSelector, ParameterView.Empty));
 		}
 
 		public static Task? TryDetachFromWebViewManager(WebViewManager manager)
@@ -92,8 +94,18 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 		private static async Task RemoveNotifierAsync(WebViewManager manager, Task attachTask)
 		{
-			await attachTask.ConfigureAwait(false);
-			await manager.RemoveRootComponentAsync("body::after").ConfigureAwait(false);
+			try
+			{
+				await attachTask.ConfigureAwait(false);
+				await manager.RemoveRootComponentAsync(NotifierSelector).ConfigureAwait(false);
+			}
+			catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)
+			{
+				// The manager was disposed, or its renderer torn down, while this detach was in flight.
+				// Detaching only promises that the notifier is no longer registered, and a disposed manager
+				// satisfies that, so this completes successfully. Without this the caller would have to
+				// await the task purely to avoid an unobservable fault during teardown.
+			}
 		}
 
 		/// <summary>

@@ -99,17 +99,34 @@ synchronously until a page is attached. Attaching is idempotent per `WebViewMana
 repeat calls return the task from the first attach rather than failing on the notifier's fixed root
 component selector.
 
-And from the disconnect or disposal path, before disposing the `WebViewManager`:
+On teardown, **if your handler disposes its `WebViewManager` — as all the built-in handlers do — there
+is nothing to detach.** Disposing tears the notifier down along with the renderer, and a reconnected
+handler builds a new manager, which attaches cleanly. Do not call detach and then immediately dispose:
 
 ```csharp
+// DON'T: the detach is still in flight when disposal tears down the renderer underneath it.
 _ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webViewManager);
+await _webViewManager.DisposeAsync();
 ```
 
-`TryDetachFromWebViewManager` returns `null` when nothing was attached, so it is safe to call
-unconditionally and is idempotent. Detaching is not required purely to avoid a leak — the attachment
-is tracked weakly and the notifier unsubscribes when its root component is disposed — but it *is*
-required for a later `TryAttachToWebViewManager` on the same manager to take effect, which matters
-for handlers that can be disconnected and reconnected.
+`TryDetachFromWebViewManager` is for the narrower case of a handler that **keeps a manager alive** and
+wants to stop, and possibly later restart, hot reload on it — detaching is what allows a later
+`TryAttachToWebViewManager` on that same manager to take effect. Await it if you need the notifier to
+be gone before you continue:
+
+```csharp
+var detach = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webViewManager);
+if (detach is not null)
+{
+    await detach;
+}
+```
+
+It returns `null` when nothing was attached, so it is safe to call unconditionally and is idempotent.
+If the manager is disposed while a detach is still in flight, the returned task completes successfully
+rather than faulting, so discarding it cannot produce an unobserved exception. Detaching is never
+required to prevent a leak — the attachment is tracked weakly and the notifier unsubscribes when its
+root component is disposed.
 
 And while resolving each static content request:
 

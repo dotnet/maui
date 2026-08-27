@@ -1,10 +1,11 @@
 using Microsoft.Maui.Dispatching;
+using MauiBlazorDispatcher = Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher;
 
 namespace Microsoft.Maui.MauiBlazorWebView.ExternalHandler.UnitTests;
 
 /// <summary>
 /// Stands in for the MAUI <see cref="IDispatcher"/> an external backend resolves from its services and
-/// hands to <see cref="AspNetCore.Components.WebView.Maui.MauiDispatcher"/>. It runs everything inline.
+/// hands to <see cref="MauiBlazorDispatcher"/>. It runs everything inline.
 /// </summary>
 internal sealed class FakeExternalDispatcher : IDispatcher
 {

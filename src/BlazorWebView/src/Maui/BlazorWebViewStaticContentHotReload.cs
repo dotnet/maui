@@ -21,15 +21,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// Call <see cref="TryGetUpdatedStaticContent(string, string, out Stream, out string)"/> while resolving a
 	/// static content request, so hot-reloaded content replaces the on-disk content.
 	/// </description></item>
-	/// <item><description>
-	/// Call <see cref="TryDetachFromWebViewManager(WebViewManager)"/> from its disconnect or disposal path,
-	/// before disposing the <see cref="WebViewManager"/>, so a handler that is reconnected can attach again.
-	/// </description></item>
 	/// </list>
-	/// Both members are inert when hot reload is unavailable (that is, when
+	/// A handler that disposes its <see cref="WebViewManager"/> on teardown — as all the built-in handlers do
+	/// — does not need to detach, because disposing the manager tears the notifier down with the renderer.
+	/// <see cref="TryDetachFromWebViewManager(WebViewManager)"/> exists for the narrower case of a handler
+	/// that keeps a manager alive and wants to stop, and possibly later restart, hot reload on it.
+	/// <para>
+	/// All members are inert when hot reload is unavailable (that is, when
 	/// <see cref="System.Reflection.Metadata.MetadataUpdater.IsSupported"/> is <see langword="false"/>), so
 	/// handlers can call them unconditionally. Static content hot reload is a development-time feature and is
 	/// independent of Razor component hot reload, which does not require any handler participation.
+	/// </para>
 	/// </remarks>
 	public static class BlazorWebViewStaticContentHotReload
 	{
@@ -66,12 +68,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// when nothing was attached to this manager and there was nothing to remove.
 		/// </returns>
 		/// <remarks>
-		/// Handlers should call this from their disconnect or disposal path, before disposing the
-		/// <see cref="WebViewManager"/>, so a handler that is later reconnected can attach again. Detaching is
-		/// idempotent: calling it when nothing is attached returns <see langword="null"/> rather than throwing.
-		/// Detaching is not required purely to avoid a leak — the attachment is tracked weakly and the notifier
-		/// unsubscribes when the root component is disposed — but it is required for a subsequent
-		/// <see cref="TryAttachToWebViewManager(WebViewManager)"/> on the same manager to take effect.
+		/// This is only needed by a handler that keeps a <see cref="WebViewManager"/> alive and wants to stop,
+		/// and possibly later restart, hot reload on it — detaching is what allows a subsequent
+		/// <see cref="TryAttachToWebViewManager(WebViewManager)"/> on the same manager to take effect. A handler
+		/// that disposes its manager on teardown does not need to call this at all, because disposing tears the
+		/// notifier down with the renderer.
+		/// <para>
+		/// Detaching is idempotent: calling it when nothing is attached returns <see langword="null"/> rather
+		/// than throwing. If the manager is disposed while a detach is still in flight, the returned task still
+		/// completes successfully rather than faulting, so it is safe to discard. It is not required to prevent
+		/// a leak — the attachment is tracked weakly and the notifier unsubscribes when its root component is
+		/// disposed.
+		/// </para>
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webViewManager"/> is <see langword="null"/>.</exception>
 		public static Task? TryDetachFromWebViewManager(WebViewManager webViewManager)

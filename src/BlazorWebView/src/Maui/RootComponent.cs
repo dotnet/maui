@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			ArgumentNullException.ThrowIfNull(webViewManager);
 
-			// As a characteristic of XAML,we can't rely on non-default constructors. So we have to
+			// As a characteristic of XAML, we can't rely on non-default constructors. So we have to
 			// validate that the required properties were set. We could skip validating this and allow
 			// the lower-level renderer code to throw, but that would be harder for developers to understand.
 

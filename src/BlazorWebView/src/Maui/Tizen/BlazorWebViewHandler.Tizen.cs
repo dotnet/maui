@@ -84,13 +84,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void DisconnectHandler(NWebView platformView)
 		{
 			platformView.PageLoadFinished -= OnLoadFinished;
-
-			if (_webviewManager != null)
-			{
-				// Detach before teardown so a reconnected handler can attach the notifier again.
-				_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webviewManager);
-			}
-
 			base.DisconnectHandler(platformView);
 			s_webviewHandlerTable.Remove(GetHashCode().ToString());
 			_staticContentResponseCache.Clear();

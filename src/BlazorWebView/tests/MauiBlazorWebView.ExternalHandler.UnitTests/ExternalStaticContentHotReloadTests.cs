@@ -199,6 +199,65 @@ public class ExternalStaticContentHotReloadTests
 	}
 
 	[Fact]
+	public async Task TryDetachFromWebViewManager_DoesNotFault_WhenNotifierIsAlreadyGone()
+	{
+		await using var manager = CreateManager();
+
+		var attach = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		if (attach is null)
+		{
+			return;
+		}
+
+		await attach;
+
+		// Stands in for renderer teardown pulling the notifier out from under an in-flight detach:
+		// RemoveRootComponentAsync then reports that the selector is no longer registered.
+		await manager.RemoveRootComponentAsync("body::after");
+
+		var detach = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+
+		Assert.NotNull(detach);
+		await detach!;
+		Assert.True(detach.IsCompletedSuccessfully);
+	}
+
+	[Fact]
+	public async Task TryDetachFromWebViewManager_DoesNotFault_WhenDisposalFollowsImmediately()
+	{
+		var manager = CreateManager();
+		_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+
+		// The teardown ordering a handler could plausibly write: start the detach, then dispose without
+		// waiting for it. The detach must still complete successfully, so discarding it cannot leave an
+		// unobserved exception behind.
+		var detach = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+		await manager.DisposeAsync();
+
+		if (detach is not null)
+		{
+			await detach;
+			Assert.True(detach.IsCompletedSuccessfully);
+		}
+	}
+
+	[Fact]
+	public async Task TryDetachFromWebViewManager_DoesNotFault_AfterManagerIsDisposed()
+	{
+		var manager = CreateManager();
+		_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		await manager.DisposeAsync();
+
+		var detach = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+
+		if (detach is not null)
+		{
+			await detach;
+			Assert.True(detach.IsCompletedSuccessfully);
+		}
+	}
+
+	[Fact]
 	public async Task ExternalHandler_DetachesHotReload_OnTeardown()
 	{
 		var blazorWebView = new BlazorWebView();
@@ -210,6 +269,41 @@ public class ExternalStaticContentHotReloadTests
 
 		Assert.Null(handler.WebViewManager);
 		Assert.Equal(MetadataUpdater.IsSupported, handler.HotReloadDetachTask is not null);
+	}
+
+	[Fact]
+	public async Task ExternalHandler_Teardown_IsIdempotent()
+	{
+		var blazorWebView = new BlazorWebView();
+		var handler = new FakeExternalBlazorWebViewHandler();
+		handler.SetVirtualView(blazorWebView);
+
+		handler.StartWebViewCore();
+		await handler.StopWebViewCoreAsync();
+
+		// A second teardown has nothing left to release and must not throw.
+		await handler.StopWebViewCoreAsync();
+
+		Assert.Null(handler.WebViewManager);
+	}
+
+	[Fact]
+	public async Task ExternalHandler_CanRestartAfterTeardown()
+	{
+		var blazorWebView = new BlazorWebView();
+		var handler = new FakeExternalBlazorWebViewHandler();
+		handler.SetVirtualView(blazorWebView);
+
+		var first = handler.StartWebViewCore();
+		await handler.StopWebViewCoreAsync();
+
+		// A reconnected handler builds a new manager, which must attach cleanly.
+		var second = handler.StartWebViewCore();
+
+		Assert.NotSame(first, second);
+		Assert.Equal(MetadataUpdater.IsSupported, handler.HotReloadAttachTask is not null);
+
+		await handler.StopWebViewCoreAsync();
 	}
 
 	[Fact]

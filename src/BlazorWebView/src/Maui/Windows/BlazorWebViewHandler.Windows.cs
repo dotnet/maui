@@ -36,9 +36,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					winUIWebViewManager.ClearStaticContentCache();
 				}
 
-				// Detach before disposal so a reconnected handler can attach the notifier again.
-				_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webviewManager);
-
+				// Disposing the manager tears down the hot reload notifier along with the renderer, and
+				// this handler always builds a new manager on reconnect, so there is nothing to detach.
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()
