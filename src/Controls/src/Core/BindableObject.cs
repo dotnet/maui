@@ -149,7 +149,9 @@ namespace Microsoft.Maui.Controls
 			if (property.CoerceValue != null)
 				property.CoerceValue(this, newValue);
 
-			var specificityChanged = original.Key != bpcontext.Values.GetSpecificity();
+			var specificityChanged =
+				property.UpdateHandlerOnSpecificityChange &&
+				original.Key != bpcontext.Values.GetSpecificity();
 			OnBindablePropertySet(property, original.Value, newValue, changed, changed, specificityChanged);
 		}
 
@@ -681,7 +683,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			context.Values.SetValue(specificity, value);
-			var specificityChanged = originalSpecificity != context.Values.GetSpecificity();
+			var specificityChanged =
+				property.UpdateHandlerOnSpecificityChange &&
+				originalSpecificity != context.Values.GetSpecificity();
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
