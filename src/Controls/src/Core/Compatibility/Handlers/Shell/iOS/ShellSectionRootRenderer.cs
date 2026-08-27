@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
@@ -23,20 +24,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion IShellSectionRootRenderer
 
 		internal const int HeaderHeight = 35;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the root renderer lifetime and released in Dispose after Shell.PropertyChanged is unsubscribed.")]
 		IShellContext _shellContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The blur view is owned by this renderer and removed when the renderer is disposed.")]
 		UIView _blurView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The container view is owned by this renderer and removed when the renderer is disposed.")]
 		UIView _containerArea;
 		ShellContent _currentContent;
 		int _currentIndex = 0;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The header renderer is owned by this renderer and disposed in Dispose or when hidden.")]
 		IShellSectionRootHeader _header;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The outgoing page handler is retained only during animation and cleared after the transition or in Dispose.")]
 		IPlatformViewHandler _isAnimatingOut;
 		Dictionary<ShellContent, IPlatformViewHandler> _renderers = new Dictionary<ShellContent, IPlatformViewHandler>();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The page renderer tracker is owned by this renderer and disposed in Dispose.")]
 		IShellPageRendererTracker _tracker;
 		bool _didLayoutSubviews;
 		int _lastTabThickness = Int32.MinValue;
 		Thickness _lastInset;
 		bool _isDisposed;
 		bool _isRotating;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The page animation is stopped and cleared in Disconnect and whenever a replacement animation starts.")]
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
@@ -61,6 +69,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewDidLayoutSubviews()
 		{
+			if (_isDisposed)
+				return;
+
 			_didLayoutSubviews = true;
 			base.ViewDidLayoutSubviews();
 
@@ -76,6 +87,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewWillTransitionToSize(toSize, coordinator);
 			_isRotating = true;
+
+			// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame,
+			// so it does not automatically resize when the navigation bar changes width during rotation.
+			// Re-apply the frame alongside the transition so the TitleView fills the navigation bar.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				coordinator.AnimateAlongsideTransition(_ =>
+				{
+					(_tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+				}, null);
+			}
+		}
+
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+			if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+				previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					(_tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+				}
+			}
 		}
 
 		public override void ViewDidLoad()
@@ -190,6 +225,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_header?.Dispose();
 				_tracker?.Dispose();
+				_blurView?.RemoveFromSuperview();
+				_blurView?.Dispose();
+				_containerArea?.RemoveFromSuperview();
+				_containerArea?.Dispose();
 
 				foreach (var renderer in _renderers)
 				{
@@ -217,7 +256,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_header = null;
 			_tracker = null;
 			_currentContent = null;
+			_isAnimatingOut = null;
+			_blurView = null;
+			_containerArea = null;
+			_pageAnimation = null;
 			_isDisposed = true;
+
+			base.Dispose(disposing);
 		}
 
 		protected virtual void LayoutRenderers()
@@ -310,12 +355,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The Shell.PropertyChanged subscription is removed in Disconnect and Dispose before the shell context is released.")]
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSection.PropertyChanged subscription is removed in Disconnect before the shell section is released.")]
 		protected virtual void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_isDisposed)
@@ -518,6 +565,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellSectionController.ItemsCollectionChanged subscription is removed in Disconnect before the shell section is released.")]
 		void OnShellSectionItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (_isDisposed)
@@ -572,6 +620,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellContent.PropertyChanged subscriptions are removed in Disconnect and when items change before the shell section is released.")]
 		void OnShellContentPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (_isDisposed)

@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 			private set => SetValue(IsActivatedPropertyKey, value);
 		}
 
-		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
+		string? ITitledElement.Title => Title ?? (Page as Shell)?.GetUserSetTitle();
 
 		public Page? Page
 		{
@@ -826,6 +826,12 @@ namespace Microsoft.Maui.Controls
 			if (page is null)
 				return false;
 
+			// Framework containers are handled below based on their current navigation state.
+			// App and third-party overrides must always receive the back press because only
+			// invoking the override can determine whether it consumes the navigation.
+			if (page.HasBackButtonPressedOverride)
+				return true;
+
 			switch (page)
 			{
 				case Shell shell:
@@ -862,8 +868,8 @@ namespace Microsoft.Maui.Controls
 
 				default:
 					// Conservative default: return false for unknown page types.
-					// We cannot know whether a custom container's OnBackButtonPressed() returns true,
-					// so we avoid suppressing the back-to-home animation speculatively.
+					// Custom overrides were handled above, so the system can safely provide
+					// the back-to-home animation for pages with framework behavior.
 					return false;
 			}
 		}

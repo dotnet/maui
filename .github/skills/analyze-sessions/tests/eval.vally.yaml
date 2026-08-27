@@ -19,7 +19,7 @@
 # line — immune to "mentions the word" false-fails) with ONE LLM JUDGE
 # (scale_1_5, threshold 0.6) so the judge carries ~50% of every score.
 #
-# Scoring: this suite deliberately omits scoring.weights, so Vally 0.10 uses the
+# Scoring: this suite deliberately omits scoring.weights, so Vally 0.12 uses the
 # unweighted mean of grader [0,1] scores; a stimulus passes when the mean across
 # runs >= scoring.threshold (0.6). With a scale_1_5 judge (normalized =
 # (raw-1)/4):
@@ -43,8 +43,8 @@ type: capability
 defaults:
   runs: 3
   timeout: 5m
-  model: claude-opus-4.6
-  judge_model: claude-opus-4.6
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
   executor: copilot-sdk
 
 stimuli:
@@ -295,7 +295,7 @@ stimuli:
       reject_skills: [analyze-sessions]
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
   # unweighted mean of each stimulus's two graders
   # (one refutation-proof structural floor + one LLM judge), keeping the judge
   # at ~50% of every score per the house convention.

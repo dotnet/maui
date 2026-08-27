@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -2531,6 +2532,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+		}
+
+		// Regression tests for https://github.com/dotnet/maui/issues/37245.
+		// BindingDiagnostics.BindingFailed is a plain static event; instance
+		// subscribers that never unsubscribe are pinned by the multicast
+		// delegate for the process lifetime.
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Control_NeverSubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: false, unsubscribe: false);
+
+			Assert.False(await reference.WaitForCollect(),
+				"Subject that never subscribed to BindingDiagnostics.BindingFailed should be collected.");
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Mitigation_SubscribedAndUnsubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: true, unsubscribe: true);
+
+			Assert.False(await reference.WaitForCollect(),
+				"Subject that unsubscribed from BindingDiagnostics.BindingFailed should be collected.");
+		}
+
+		// Regression: FAILS on current code (issue #37245); passes once
+		// BindingFailed is backed by WeakEventManager or a weak-subscription API.
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Leaky_SubscribedButNotUnsubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: true, unsubscribe: false);
+
+			Assert.False(await reference.WaitForCollect(),
+				"BindingDiagnostics.BindingFailed leaks subscribers (issue #37245). " +
+				"Back the event with WeakEventManager (or expose a disposable subscription API) to fix.");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateBindingFailedSubscriber(bool subscribe, bool unsubscribe)
+		{
+			var subject = new BindingFailedSubscriber();
+
+			if (subscribe)
+				BindingDiagnostics.BindingFailed += subject.OnBindingFailed;
+
+			if (unsubscribe)
+				BindingDiagnostics.BindingFailed -= subject.OnBindingFailed;
+
+			return new WeakReference(subject);
+		}
+
+		sealed class BindingFailedSubscriber
+		{
+			public void OnBindingFailed(object sender, BindingBaseErrorEventArgs args)
+			{
+			}
 		}
 	}
 }

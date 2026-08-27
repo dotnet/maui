@@ -68,9 +68,14 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _safeAreaInvalidated = true;
 
-		// Cached result of whether a parent MauiView is already applying safe area adjustments.
-		// Null means not yet determined. Invalidated when view hierarchy changes.
-		bool? _parentHandlesSafeArea;
+		// Cached per-edge (Left=0, Top=1, Right=2, Bottom=3) result of whether an ancestor
+		// MauiView already applies a real, non-zero safe area inset for that edge. Reused
+		// across layout passes to avoid re-walking the ancestor chain (and the allocation that
+		// walk would otherwise require) on every LayoutSubviews call. Invalidated by the same
+		// events that previously invalidated the whole-view _parentHandlesSafeArea cache:
+		// SafeAreaInsetsDidChange, InvalidateSafeArea, and MovedToWindow.
+		readonly bool[] _blockedEdgesCache = new bool[4];
+		bool _blockedEdgesCacheValid;
 
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
@@ -127,18 +132,19 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Checks if any ancestor MauiView is already applying safe area adjustments.
-		/// When a parent already handles safe area, this scroll view should not double-apply insets,
-		/// which would otherwise cause infinite layout cycles (#33595).
+		/// Returns this scroll view's own, already-resolved safe area component for the given edge
+		/// (Left=0, Top=1, Right=2, Bottom=3), used by descendants (or, in principle, callers)
+		/// to determine whether this view has a real, non-zero inset for a specific edge.
 		/// </summary>
-		bool IsParentHandlingSafeArea()
+		double GetSafeAreaComponentForEdge(int edge) => edge switch
 		{
-			if (_parentHandlesSafeArea.HasValue)
-				return _parentHandlesSafeArea.Value;
+			0 => _safeArea.Left,
+			1 => _safeArea.Top,
+			2 => _safeArea.Right,
+			3 => _safeArea.Bottom,
+			_ => 0
+		};
 
-			_parentHandlesSafeArea = this.FindParent(x => x is MauiView mv && mv.AppliesSafeAreaAdjustments) is not null;
-			return _parentHandlesSafeArea.Value;
-		}
 
 		/// <summary>
 		/// Called by iOS when the adjusted content inset changes (e.g., when safe area changes).
@@ -155,6 +161,11 @@ namespace Microsoft.Maui.Platform
 				((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 				this.InvalidateAncestorsMeasures();
 			}
+
+			// UIKit does not raise Scrolled when the inset changes while the offset stays put
+			// (keyboard, rotation, an auto-hiding bar), and the reported scroll offsets are
+			// derived from the inset, so they would go stale by the delta
+			(CrossPlatformLayout as IScrollViewportProvider)?.NotifyInsetsChanged();
 		}
 
 		/// <summary>
@@ -166,7 +177,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
-			_parentHandlesSafeArea = null;
+			_blockedEdgesCacheValid = false;
 			_safeAreaInvalidated = true;
 		}
 
@@ -175,7 +186,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void InvalidateSafeArea()
 		{
-			_parentHandlesSafeArea = null;
+			_blockedEdgesCacheValid = false;
 			_safeAreaInvalidated = true;
 			SetNeedsLayout();
 		}
@@ -203,20 +214,30 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaEdges? _previousEdges;
 
-		UIEdgeInsets GetInset()
+		/// <summary>
+		/// Resolves the manual, per-edge inset to apply given a source set of raw insets.
+		/// Used both for the manual (mixed-edge) path, where <paramref name="sourceInsets"/> is
+		/// this view's SafeAreaInsets, and for the uniform-edge native path, where
+		/// <paramref name="sourceInsets"/> is <see cref="SystemAdjustedContentInset"/> — so both
+		/// paths get identical per-edge ancestor-blocking behavior and neither can double-apply
+		/// an inset a parent already handles (#33595, #32586, #34563).
+		/// </summary>
+		UIEdgeInsets GetInset(UIEdgeInsets sourceInsets)
 		{
 			var leftRegion = GetSafeAreaRegionForEdge(0);
 			var topRegion = GetSafeAreaRegionForEdge(1);
 			var rightRegion = GetSafeAreaRegionForEdge(2);
 			var bottomRegion = GetSafeAreaRegionForEdge(3);
 
-			var safeAreaInsets = SafeAreaInsets;
+			// Single ancestor walk resolves all 4 edges at once, cached until invalidated
+			// (see SafeAreaInsetsExtensions.ResolveParentBlockedEdges) to avoid re-walking on every layout pass.
+			var blockedEdges = this.ResolveParentBlockedEdges(_blockedEdgesCache, ref _blockedEdgesCacheValid);
 
 			var manualInset = new UIEdgeInsets(
-					top: GetManualInsetForEdge(topRegion, safeAreaInsets.Top),
-					left: GetManualInsetForEdge(leftRegion, safeAreaInsets.Left),
-					bottom: GetManualInsetForEdge(bottomRegion, safeAreaInsets.Bottom),
-					right: GetManualInsetForEdge(rightRegion, safeAreaInsets.Right)
+					top: GetManualInsetForEdge(topRegion, sourceInsets.Top, blockedEdges[1]),
+					left: GetManualInsetForEdge(leftRegion, sourceInsets.Left, blockedEdges[0]),
+					bottom: GetManualInsetForEdge(bottomRegion, sourceInsets.Bottom, blockedEdges[3]),
+					right: GetManualInsetForEdge(rightRegion, sourceInsets.Right, blockedEdges[2])
 				);
 
 			return manualInset;
@@ -263,10 +284,17 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		static nfloat GetManualInsetForEdge(SafeAreaRegions safeAreaRegion, nfloat safeAreaInset)
+		static nfloat GetManualInsetForEdge(SafeAreaRegions safeAreaRegion, nfloat safeAreaInset, bool isEdgeBlockedByParent)
 		{
 			// Edge-to-edge content - no safe area padding
 			if (safeAreaRegion == SafeAreaRegions.None)
+				return 0;
+
+			// If an ancestor already applies a real, non-zero safe area inset for this exact
+			// edge, defer to it and don't double-apply here (#33595, #32586). Edges are checked
+			// independently, so a parent handling only Top never blocks this scroll view from
+			// independently handling Bottom (#28986, #34563).
+			if (isEdgeBlockedByParent)
 				return 0;
 
 			return safeAreaInset;
@@ -387,13 +415,18 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-				_safeArea = GetInset().ToSafeAreaInsets();
+			if (!UIKitCompensatesForSafeArea)
+				_safeArea = GetInset(SafeAreaInsets).ToSafeAreaInsets();
 			else
-				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
+				_safeArea = GetInset(SystemAdjustedContentInset).ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
+			// Parent-edge blocking is now resolved per-edge inline while computing GetInset() above
+			// (see ResolveParentBlockedEdges/GetManualInsetForEdge) for BOTH the manual (mixed-edge)
+			// path and the uniform-edge native path (SystemAdjustedContentInset), so _safeArea
+			// already reflects the net, post-ancestor-arbitration state either way — no separate
+			// whole-view parent check is needed.
+			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
 			{
@@ -413,6 +446,108 @@ namespace Microsoft.Maui.Platform
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
 				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
 		}
+
+		/// <summary>
+		/// The content extent to clamp scrolling against: the trailing edge of the rect
+		/// <see cref="CrossPlatformArrange"/> actually arranged the content into, plus any
+		/// trailing safe-area padding it baked into the content coordinate space
+		/// (see <see cref="SafeAreaBakedIntoContent"/>).
+		/// </summary>
+		/// <remarks>
+		/// Measured from the recorded arrange rather than reconstructed from
+		/// <see cref="UIScrollView.ContentSize"/>, because that value is not authoritative:
+		/// depending on the inset mode the arrange pass pads it with a safe area UIKit is also
+		/// compensating through <see cref="UIScrollView.AdjustedContentInset"/>, inflates it to
+		/// keep UIKit in scrollable mode, or omits a non-zero safe-area origin the content was
+		/// arranged at. The arranged rect is correct in every mode (issue #36801).
+		/// </remarks>
+		internal CGSize ScrollableContentSize
+		{
+			get
+			{
+				// Content has not been arranged through CrossPlatformArrange (e.g. ContentSize
+				// was mapped directly), so the content size is the only extent available. The
+				// nullable keeps this distinct from content legitimately arranged to a zero
+				// size at the origin, whose extent really is empty.
+				if (_arrangedContentRect is not { } arranged)
+				{
+					return ContentSize;
+				}
+
+				var baked = SafeAreaBakedIntoContent;
+				var width = (double)arranged.Right + baked.Right;
+				var height = (double)arranged.Bottom + baked.Bottom;
+
+				// Mirror the orientation clamp LayoutSubviews applies to ContentSize: an axis the
+				// ScrollView doesn't scroll must not become reachable just because the arranged
+				// content overflows it
+				if (View is IScrollView scrollView)
+				{
+					var frameSize = Bounds.Size;
+					var orientation = scrollView.Orientation;
+
+					if (orientation is ScrollOrientation.Vertical && width > frameSize.Width)
+					{
+						width = frameSize.Width;
+					}
+
+					if (orientation is ScrollOrientation.Horizontal && height > frameSize.Height)
+					{
+						height = frameSize.Height;
+					}
+				}
+
+				return new CGSize(width, height);
+			}
+		}
+
+		/// <summary>
+		/// The rect the last <see cref="CrossPlatformArrange"/> placed the content into:
+		/// origin is the (possibly safe-area-inset) position the content was arranged at and
+		/// size is the arranged content size before any <see cref="UIScrollView.ContentSize"/>
+		/// padding or scrollable-mode inflation is applied. Null until the first arrange runs.
+		/// </summary>
+		CGRect? _arrangedContentRect;
+
+		/// <summary>
+		/// Whether UIKit is compensating for the safe area through
+		/// <see cref="UIScrollView.AdjustedContentInset"/>. When it is not
+		/// (<see cref="UIScrollViewContentInsetAdjustmentBehavior.Never"/>, or a zero system
+		/// inset), <see cref="CrossPlatformArrange"/> bakes the safe area into the content's
+		/// coordinate space instead. Shared by the arrange branch and the <c>_safeArea</c>
+		/// source selection in <see cref="ValidateSafeArea"/> so the two cannot desynchronize;
+		/// the arrange records the outcome in <see cref="SafeAreaBakedIntoContent"/> for
+		/// readers between arranges.
+		/// </summary>
+		bool UIKitCompensatesForSafeArea =>
+			SystemAdjustedContentInset != UIEdgeInsets.Zero
+			&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never;
+
+		/// <summary>
+		/// The safe area the last <see cref="CrossPlatformArrange"/> baked into the content's
+		/// coordinate space: when it applies the safe area while UIKit is not compensating
+		/// through <see cref="UIScrollView.AdjustedContentInset"/>, the content is arranged
+		/// inside safe-area-inset bounds, so element positions carry the padding and the
+		/// trailing padding still obscures the viewport without ever appearing in the
+		/// adjusted inset.
+		/// </summary>
+		/// <remarks>
+		/// Captured at arrange time rather than derived live from UIKit state, because the
+		/// two can legitimately disagree between arranges: under
+		/// <see cref="UIScrollViewContentInsetAdjustmentBehavior.Automatic"/> the arrange
+		/// that bakes the padding can push the content size past the bounds, at which point
+		/// UIKit turns the adjusted inset non-zero — the content still carries the padding
+		/// until the next arrange re-bases it, and this must keep saying so. Recorded
+		/// alongside <see cref="_arrangedContentRect"/>, which does the same for the rect
+		/// (issue #36801).
+		/// </remarks>
+		internal SafeAreaPadding SafeAreaBakedIntoContent => _bakedSafeArea;
+
+		/// <summary>
+		/// The value <see cref="SafeAreaBakedIntoContent"/> reports, set by
+		/// <see cref="CrossPlatformArrange"/> from the branch it actually took.
+		/// </summary>
+		SafeAreaPadding _bakedSafeArea = SafeAreaPadding.Empty;
 
 		UIEdgeInsets SystemAdjustedContentInset
 		{
@@ -447,12 +582,16 @@ namespace Microsoft.Maui.Platform
 
 			Size contentSize;
 
-
+			CGPoint contentOrigin;
+			SafeAreaPadding bakedSafeArea;
 			double width;
 			double height;
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			if (!UIKitCompensatesForSafeArea)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+				contentOrigin = bounds.Location;
+				// The inset bounds put the safe area into the content's coordinate space
+				bakedSafeArea = _appliesSafeAreaAdjustments ? _safeArea : SafeAreaPadding.Empty;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
@@ -460,10 +599,21 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+				contentOrigin = CGPoint.Empty;
+				// Re-based at the origin: UIKit's adjusted inset owns the compensation
+				bakedSafeArea = SafeAreaPadding.Empty;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
 			}
+
+			// Record what this arrange actually did, before the ContentSize adjustments below:
+			// ScrollableContentSize measures the scrollable extent from the rect, and
+			// SafeAreaBakedIntoContent reports the padding the content now carries. Both are
+			// captured rather than re-derived later, since UIKit's inset state can move
+			// between arranges (see SafeAreaBakedIntoContent).
+			_arrangedContentRect = new CGRect(contentOrigin, contentSize.ToCGSize());
+			_bakedSafeArea = bakedSafeArea;
 
 
 			// When using ContentInsetAdjustmentBehavior.Automatic, UIKit dynamically decides whether to apply 
@@ -497,11 +647,23 @@ namespace Microsoft.Maui.Platform
 					height = Bounds.Height + 1;
 				}
 			}
-			else if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Automatic)
+			else if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
+				// UIKit is not currently reserving any space for the safe area on
+				// this scroll view - either because the adjustment behavior is set
+				// to Never, or because it is set to Always but UIKit has not yet
+				// assigned a system inset for the current layout pass. In either
+				// case, the content size must be padded manually to keep the
+				// content clear of the safe area. Once UIKit assigns a non-zero
+				// inset, the safe area is reserved natively instead, as described
+				// below.
 				width += _safeArea.HorizontalThickness;
 				height += _safeArea.VerticalThickness;
 			}
+			// UIKit is already reserving the safe area natively via a non-zero
+			// AdjustedContentInset, so the content size is intentionally left
+			// unmodified here. Padding it again would reserve the same safe area
+			// twice, producing a scrollable range larger than the actual content.
 
 			contentSize = new Size(width, height);
 
@@ -617,7 +779,20 @@ namespace Microsoft.Maui.Platform
 			SetNeedsLayout();
 			InvalidateConstraintsCache();
 
-			return !isPropagating;
+			return true;
+		}
+
+		/// <summary>
+	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+	    /// </summary>
+
+		internal void OnOrientationChanged()
+		{
+			// Reset the previous layout direction to force re-evaluation of RTL layout
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				_previousEffectiveUserInterfaceLayoutDirection = null;
+			}
 		}
 
 		/// <summary>
@@ -701,7 +876,7 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
-			_parentHandlesSafeArea = null;
+			_blockedEdgesCacheValid = false;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;

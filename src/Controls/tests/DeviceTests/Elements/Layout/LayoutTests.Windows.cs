@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -28,13 +29,13 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(view.InputTransparent, !handler.PlatformView.IsHitTestVisible);
 			}
 		}
-
 		void SetupLayoutBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<HorizontalStackLayout, LayoutHandler>();
@@ -42,6 +43,42 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<FlexLayout, LayoutHandler>();
 					handlers.AddHandler<StackLayout, LayoutHandler>();
 				});
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task InputTransparentLayoutContainerRemainsHitTestVisible(bool cascadeInputTransparent)
+		{
+			SetupLayoutBuilder();
+
+			var button = new Button();
+			var grid = new Grid
+			{
+				CascadeInputTransparent = cascadeInputTransparent,
+				Clip = new EllipseGeometry(new Point(50, 50), 50, 50),
+				HeightRequest = 100,
+				InputTransparent = true,
+				WidthRequest = 100
+			};
+			grid.Add(button);
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var buttonHandler = Assert.IsType<ButtonHandler>(button.Handler);
+
+				Assert.True(container.IsHitTestVisible);
+				Assert.Equal(!cascadeInputTransparent, buttonHandler.PlatformView.IsHitTestVisible);
+
+				grid.InputTransparent = false;
+				Assert.True(container.IsHitTestVisible);
+				Assert.True(buttonHandler.PlatformView.IsHitTestVisible);
+
+				grid.InputTransparent = true;
+				Assert.True(container.IsHitTestVisible);
+				Assert.Equal(!cascadeInputTransparent, buttonHandler.PlatformView.IsHitTestVisible);
 			});
 		}
 
@@ -59,8 +96,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "LayoutPanel AutomationPeer control type is Pane")]
-		public async Task LayoutPanelAutomationPeerControlTypeIsPane()
+		[Fact(DisplayName = "LayoutPanel AutomationPeer default control type is Custom with lowercase class name as localized type")]
+		public async Task LayoutPanelAutomationPeerDefaultControlTypeIsCustom()
 		{
 			SetupLayoutBuilder();
 
@@ -69,7 +106,10 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(grid, (LayoutHandler handler) =>
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
-				Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+				Assert.Equal(AutomationControlType.Custom, peer.GetAutomationControlType());
+				// UIA spec requires Custom elements to have a non-empty LocalizedControlType.
+				// For anonymous layouts, we return the lowercase cross-platform type name.
+				Assert.Equal("grid", peer.GetLocalizedControlType());
 			});
 		}
 
@@ -104,10 +144,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "LayoutPanel with AutomationId is exposed in automation tree")]
+		[Theory(DisplayName = "LayoutPanel AutomationId is exposed via the automation peer")]
 		[InlineData(true)]
 		[InlineData(false)]
-		public async Task LayoutPanelWithAutomationIdIsExposedInTree(bool hasAutomationId)
+		public async Task LayoutPanelAutomationIdIsExposedViaPeer(bool hasAutomationId)
 		{
 			SetupLayoutBuilder();
 
@@ -118,7 +158,8 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(grid, (LayoutHandler handler) =>
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
-				Assert.Equal(hasAutomationId, peer.IsContentElement());
+				var expected = hasAutomationId ? "TestGrid" : string.Empty;
+				Assert.Equal(expected, peer.GetAutomationId());
 			});
 		}
 
@@ -136,7 +177,139 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "LayoutPanel IsControlElement and IsContentElement update when AutomationId is set at runtime")]
+		[Fact(DisplayName = "LayoutPanel without automation signals is excluded from Control and Content views")]
+		public async Task LayoutPanelWithoutAutomationSignalsIsExcludedFromControlAndContentViews()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.False(peer.IsControlElement());
+				Assert.False(peer.IsContentElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel with AutomationId is included in Control view only")]
+		public async Task LayoutPanelWithAutomationIdIsIncludedInControlViewOnly()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid { AutomationId = "TestGrid" };
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+
+				Assert.Equal("TestGrid", peer.GetAutomationId());
+				Assert.True(peer.IsControlElement());
+				Assert.False(peer.IsContentElement());
+				Assert.Equal(AutomationControlType.Custom, peer.GetAutomationControlType());
+				// UIA spec requires Custom elements to have a non-empty LocalizedControlType.
+				Assert.Equal("grid", peer.GetLocalizedControlType());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel opts into Control view when AutomationProperties.IsInAccessibleTree is true")]
+		public async Task LayoutPanelOptsIntoControlViewViaIsInAccessibleTree()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			AutomationProperties.SetIsInAccessibleTree(grid, true);
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.True(peer.IsControlElement());
+				Assert.True(peer.IsContentElement());
+				Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel opts into Control view when SemanticProperties.Description is set")]
+		public async Task LayoutPanelOptsIntoControlViewWhenDescriptionIsSet()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			SemanticProperties.SetDescription(grid, "Welcome card");
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.True(peer.IsControlElement());
+				Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel opts into Control view when SemanticProperties.Hint is set")]
+		public async Task LayoutPanelOptsIntoControlViewWhenHintIsSet()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			SemanticProperties.SetHint(grid, "Contains welcome card actions");
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.True(peer.IsControlElement());
+				Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel explicit accessible-tree opt out overrides AutomationId and SemanticProperties.Description")]
+		public async Task LayoutPanelAccessibleTreeOptOutOverridesAutomationIdAndDescription()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid { AutomationId = "TestGrid" };
+			SemanticProperties.SetDescription(grid, "Welcome card");
+			AutomationProperties.SetIsInAccessibleTree(grid, false);
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.Equal("TestGrid", peer.GetAutomationId());
+				Assert.False(peer.IsControlElement());
+				Assert.False(peer.IsContentElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel ignores whitespace-only SemanticProperties.Description")]
+		public async Task LayoutPanelDoesNotOptIntoControlViewWhenDescriptionIsWhitespace()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			SemanticProperties.SetDescription(grid, "   ");
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.False(peer.IsControlElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel ignores whitespace-only SemanticProperties.Hint")]
+		public async Task LayoutPanelDoesNotOptIntoControlViewWhenHintIsWhitespace()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			SemanticProperties.SetHint(grid, "   ");
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.False(peer.IsControlElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel AutomationId is exposed via the peer when set at runtime")]
 		public async Task LayoutPanelAutomationPeerUpdatesWhenAutomationIdChangesAtRuntime()
 		{
 			SetupLayoutBuilder();
@@ -147,17 +320,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
 
-				// Initially no AutomationId — should NOT be exposed
-				Assert.False(peer.IsContentElement());
+				// Initially no AutomationId.
+				Assert.Equal(string.Empty, peer.GetAutomationId());
 
-				// Set AutomationId at runtime — should now be exposed.
+				// Set AutomationId at runtime -- peer should reflect the new value.
 				// Note: MAUI AutomationId is write-once (Element.cs enforces this),
-				// so we can only test the transition from unset → set, not set → cleared.
+				// so we can only test the transition from unset -> set, not set -> cleared.
 				grid.AutomationId = "DynamicGrid";
-				Assert.True(peer.IsContentElement());
+				Assert.Equal("DynamicGrid", peer.GetAutomationId());
 			});
 		}
 	}
 }
-
-

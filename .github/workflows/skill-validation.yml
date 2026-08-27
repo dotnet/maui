@@ -6,7 +6,7 @@
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
 #      Requires the COPILOT_PAT_* secret pool in the `copilot-pat-pool`
 #      environment (Copilot API access). Jobs that need model auth declare
-#      `environment: copilot-pat-pool` and randomly pick one populated PAT.
+#      `environment: copilot-pat-pool` and rotate across populated PATs.
 #      NOTE: keep `copilot-pat-pool` free of required-reviewer / wait-timer
 #      protection rules. These jobs run on `pull_request_target`, so such a
 #      rule would pause every auto-eval pending manual approval and hang the
@@ -21,10 +21,21 @@
 #
 # Security model:
 #   - Workflow YAML: always from the default branch (enforced by both triggers)
-#   - Evaluator: @microsoft/vally-cli, pinned + run via npx from npm (trusted)
+#   - Evaluator: @microsoft/vally-cli, pinned and installed while tokenless by a
+#     workflow-SHA-pinned setup script; credentialed evals use that local binary.
 #   - Skill/test content: checked out from the PR (markdown/YAML data files;
 #     the evaluate job needs full history for frozen-worktree fixtures)
-#   - No PR code is compiled or executed
+#   - A workflow-SHA-pinned validator rejects PR-authored commands, process
+#     environment overrides, local MCP servers, executable graders, repository
+#     Copilot controls that differ from the trusted base, and file overlays
+#     outside approved inert fixture roots before model auth is selected.
+#     Synthetic git fixtures are prepared by that trusted script while the job
+#     is tokenless.
+#   - Candidate skill instructions are evaluated, so their tool calls are
+#     untrusted. Vally runs as a no-sudo OS user that cannot modify its root-owned
+#     runtime, while a trusted wrapper passes Copilot's --secret-env-vars
+#     boundary, stripping every GitHub/model token from shell and MCP tools.
+#     No PR code is compiled or executed with credentials in scope.
 #   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
 #     (COPILOT_GITHUB_TOKEN, a name `gh` does not read) and NO GITHUB_TOKEN /
 #     GH_TOKEN, so it cannot recite documented fixes via the live GitHub API.
@@ -40,6 +51,10 @@ on:
     paths:
       - '.github/skills/**'
       - '.github/plugin.json'
+      - '.github/scripts/PrepareVallyEvaluation.rb'
+      - '.github/scripts/SelectVallyToken.sh'
+      - '.github/scripts/TestPrepareVallyEvaluation.rb'
+      - '.github/scripts/SetupVallyRuntime.sh'
       - '.github/workflows/skill-validation.yml'
 
   issue_comment:
@@ -79,8 +94,8 @@ permissions:
 
 env:
   # Vally CLI is run via npx from npm. Pinned for reproducibility.
-  # Vally 0.10 requires Node >=22, so we pin Node 22 on the runners.
-  VALLY_VERSION: "0.10.0"
+  # Vally 0.12 requires Node >=22, so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.12.0"
   NODE_VERSION: "22"
 
 jobs:
@@ -248,6 +263,38 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Validate safe Vally specs
+        env:
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
+          TOKEN_SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
+          SETUP_RUNTIME="$RUNNER_TEMP/SetupVallyRuntime.sh"
+          SKILL_VALIDATION_WORKFLOW="$RUNNER_TEMP/skill-validation.yml"
+          RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
+          VERIFICATION_SPEC="$RUNNER_TEMP/eval.protocol.vally.yaml"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$TOKEN_SELECTOR"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP_RUNTIME"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/workflows/skill-validation.yml" > "$SKILL_VALIDATION_WORKFLOW"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
+          chmod 700 "$TOKEN_SELECTOR"
+          ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC" "$SETUP_RUNTIME" "$TOKEN_SELECTOR" "$SKILL_VALIDATION_WORKFLOW"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" --validate-mandatory-layout
+          while IFS= read -r tests_path; do
+            ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
+          done < <(find .github/skills -name '*.vally.yaml' -exec dirname {} \; | sort -u)
+
       # ── Lint eval specs with Vally ────────────────────────────────
       # Lint ONLY the explicitly enumerated *.vally.yaml eval specs. Vally's
       # directory discovery only recognizes eval.yaml/eval.yml, so pass each
@@ -381,9 +428,11 @@ jobs:
               --paginate --jq '.[].filename')
             SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
               sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-            # Workflow change ⇒ evaluate all skills with specs.
-            WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
-            if [ -n "$WORKFLOW_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
+            # Trusted evaluation-harness change => evaluate all skills with specs.
+            HARNESS_CHANGES=$(echo "$CHANGED" \
+              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb|scripts/(SelectVallyToken|SetupVallyRuntime)\.sh)$' \
+              || true)
+            if [ -n "$HARNESS_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
           fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
@@ -403,7 +452,7 @@ jobs:
           $evalAll = $env:EVAL_ALL -eq "true"
 
           if ($evalAll) {
-            Write-Host "Workflow changes detected - evaluating all skills with tests"
+            Write-Host "Evaluation harness changes detected - evaluating all skills with tests"
             $skills = @(Get-ChildItem -Path ".github/skills" -Directory |
               Select-Object -ExpandProperty Name)
           } else {
@@ -417,9 +466,9 @@ jobs:
             $testsDir = ".github/skills/$skill/tests"
             $specs = @()
             if (Test-Path $testsDir) {
-              # Capability suites only: eval*.vally.yaml. This deliberately
-              # EXCLUDES hermeticity.vally.yaml (the hermeticity gate),
-              # which is run by the dedicated hermeticity-gate job.
+              # Required deterministic suites only: eval*.vally.yaml. This
+              # deliberately EXCLUDES hermeticity.vally.yaml (its dedicated
+              # gate) and soak*.vally.yaml (scheduled/manual advisory runs).
               $specs = @(Get-ChildItem -Path $testsDir -Filter "eval*.vally.yaml" -File -ErrorAction SilentlyContinue)
             }
             if ($specs.Count -gt 0) {
@@ -427,18 +476,18 @@ jobs:
               $entries += @{
                 name = $skill
                 tests_path = $testsDir
+                spec_files = @($specs | Sort-Object -Property Name | Select-Object -ExpandProperty Name)
               }
             } else {
               Write-Host "  -> $skill has NO eval*.vally.yaml (static-only)"
             }
           }
-
           if ($entries.Count -eq 0) {
             Write-Host "No skills with eval tests to evaluate"
             echo "entries=[]" >> $env:GITHUB_OUTPUT
             echo "has_entries=false" >> $env:GITHUB_OUTPUT
           } else {
-            $json = $entries | ConvertTo-Json -Compress -AsArray
+            $json = $entries | ConvertTo-Json -Compress -AsArray -Depth 4
             Write-Host "Entries to evaluate: $json"
             echo "entries=$json" >> $env:GITHUB_OUTPUT
             echo "has_entries=true" >> $env:GITHUB_OUTPUT
@@ -447,6 +496,8 @@ jobs:
   # ==========================================================================
   # LLM EVALUATION (matrix)
   # Runs `vally eval` for each changed skill's capability specs (eval*.vally.yaml).
+  # Executor and judge models are owned by each spec so evaluations match the
+  # skill's production workload while using a cross-vendor judge.
   # ==========================================================================
   evaluate:
     name: evaluate (${{ matrix.entry.name }})
@@ -462,6 +513,10 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
+      # A full harness run currently contains hundreds of executor trials plus
+      # judge calls. Run one skill leg at a time so the PAT pool sees only this
+      # leg's bounded Vally workers instead of every skill stampeding it at once.
+      max-parallel: 1
       matrix:
         entry: ${{ fromJson(needs.discover-eval.outputs.entries || '[]') }}
     steps:
@@ -505,68 +560,102 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Validate specs and prepare trusted fixtures
+        env:
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
+
+      - name: Setup credential-isolated Vally runtime
+        id: vally-runtime
+        env:
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
+          chmod 700 "$SETUP"
+          "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
+
       # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
-          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
-          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
-          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
-          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
-          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
-          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
-          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
-          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          TOKEN_START_OFFSET: ${{ strategy.job-index }}
         run: |
-          TOKENS=()
-          NAMES=()
-          for i in 0 1 2 3 4 5 6 7 8 9; do
-            var="TOKEN_$i"
-            val="${!var}"
-            if [ -n "$val" ]; then
-              TOKENS+=("$val")
-              NAMES+=("COPILOT_PAT_$i")
-            fi
-          done
-
-          if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
-            exit 1
-          fi
-
-          JOB_INDEX="${{ strategy.job-index }}"
-          RUN_ID="${{ github.run_id }}"
-          if [ -n "$JOB_INDEX" ] && [ ${#TOKENS[@]} -gt 1 ]; then
-            IDX=$(( (JOB_INDEX + RUN_ID) % ${#TOKENS[@]} ))
-          elif [ -n "$JOB_INDEX" ]; then
-            IDX=0
-          else
-            IDX=$((RANDOM % ${#TOKENS[@]}))
-          fi
-          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available PATs, job-index=${JOB_INDEX:-random})"
-
-          echo "::add-mask::${TOKENS[$IDX]}"
-          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          REQUIRED_MODELS_OUTPUT=$(
+            ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH" \
+              --validate-only --list-models
+          )
+          mapfile -t REQUIRED_MODELS <<< "$REQUIRED_MODELS_OUTPUT"
+          SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$SELECTOR"
+          chmod 700 "$SELECTOR"
+          "$SELECTOR" \
+            "$GITHUB_OUTPUT" \
+            "${{ steps.vally-runtime.outputs.vally_runner }}" \
+            "$COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_HOME" \
+            "$RUNNER_TEMP/model-probe" \
+            "${REQUIRED_MODELS[@]}"
 
       # ── Run LLM evaluation (Vally) ───────────────────────────────
-      # ── Baseline (pre-PR) evaluation ─────────────────────────────
+      # ── Optional baseline (pre-PR) evaluation ────────────────────
       # Run the SAME specs against the skill's instruction files as they exist
       # on the PR base, so the results comment can show before → after and prove
       # a reviewer change actually moved the needle. Only reviewer instructions
       # (SKILL.md / *.md, NOT tests/) are reverted to base; the PR's eval specs
       # and frozen fixtures are kept. Informational only — it never gates (the
       # gate uses the authoritative "after" run below). Skipped when there is no
-      # base (manual dispatch), the skill is new on this branch, or its
+      # Explicit `/evaluate-skills --baseline` opt-in only: the baseline
+      # approximately doubles Copilot sessions while never affecting the gate,
+      # so automatic PR runs spend their limited quota on the authoritative
+      # result. Skipped when there is no base, the skill is new on this branch, or its
       # instructions are unchanged versus base, or non-Markdown reviewer assets
       # changed (either case cannot produce a useful comparison).
       - name: Run Vally evaluation (baseline)
         id: eval-baseline
+        if: >-
+          github.event_name == 'issue_comment' &&
+          contains(github.event.comment.body, '--baseline')
         continue-on-error: true
         env:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
-          RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/eval-results-baseline/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
           BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
@@ -644,11 +733,11 @@ jobs:
           echo "Reverting ${#INSTR[@]} instruction file(s) under ${SKILL_DIR} to base ${BASE_SHA} for the baseline run"
           # Always restore PR content when this step exits, even on error, so the
           # authoritative "after" run below never sees base content.
-          restore() { git restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
+          restore() { git --no-replace-objects restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
           trap restore EXIT
           for f in "${INSTR[@]}"; do
             if git cat-file -e "${BASE_SHA}:${f}" 2>/dev/null; then
-              git checkout "$BASE_SHA" -- "$f"
+              git --no-replace-objects checkout "$BASE_SHA" -- "$f"
             else
               # File was added by the PR; it did not exist pre-change.
               rm -f "$f"
@@ -672,17 +761,19 @@ jobs:
             [ -n "$RUNS_N" ] && RUNS_ARGS=(--runs "$RUNS_N")
           fi
 
+          mkdir -p "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
+
           # Advisory exit — the baseline number is informational; do not fail.
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval \
             "${SPECS[@]}" \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
-            --model claude-opus-4.6 \
-            --judge-model claude-opus-4.6 \
             "${RUNS_ARGS[@]}" \
-            --workers 4 \
+            --workers 3 \
             --verbose
           BASELINE_RC=$?
           set -e
@@ -716,7 +807,23 @@ jobs:
       # the authoritative run, regardless of how the baseline step exited.
       - name: Restore PR skill content
         if: always()
-        run: git restore --staged --worktree --source=HEAD -- .github/skills
+        run: git --no-replace-objects restore --staged --worktree --source=HEAD -- .github/skills
+
+      - name: Revalidate specs and restore trusted fixtures
+        env:
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
 
       - name: Run Vally evaluation
         id: eval-run
@@ -728,14 +835,19 @@ jobs:
           # deliberately NO GITHUB_TOKEN / GH_TOKEN here — that env-level
           # open-book leak was the legacy harness's hermeticity defect.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
-          RESULTS_PATH: eval-results/${{ matrix.entry.name }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/eval-results/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
         run: |
           # Collect this skill's capability specs. Pass every nonstandard
           # eval*.vally.yaml filename explicitly because Vally directory discovery
           # only recognizes eval.yaml/eval.yml. This EXCLUDES hermeticity.vally.yaml
-          # (run by its own gate job).
+          # (its own gate) and soak*.vally.yaml (advisory live evaluation).
           SPECS=()
           for f in "$TESTS_PATH"/eval*.vally.yaml; do
             [ -e "$f" ] || continue
@@ -762,54 +874,44 @@ jobs:
           fi
           [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
 
+          mkdir -p "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
+
           # Advisory exit: vally sets exit 1 on threshold miss / execution
-          # error. We capture it but DON'T propagate, deriving the real verdict
-          # from the JUnit report (preserves the legacy warn-only behavior).
+          # error. We capture it but DON'T propagate so every matrix artifact is
+          # still uploaded and the aggregate report can explain the failure.
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval \
             "${SPECS[@]}" \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
-            --model claude-opus-4.6 \
-            --judge-model claude-opus-4.6 \
             "${RUNS_ARGS[@]}" \
-            --workers 4 \
+            --workers 3 \
             --verbose
           EVAL_RC=$?
           set -e
           echo "vally exit code: $EVAL_RC (advisory)"
           echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$EVAL_RC" > "$RESULTS_PATH/eval-exit-code.txt"
 
-          # Verdict from JUnit (source of truth). The root <testsuites> element
-          # carries aggregate failures/errors across every suite produced for
-          # this matrix entry.
+          # The aggregate comment job consumes the uploaded artifacts and owns
+          # the gate verdict. Print per-matrix JUnit counts here only as an
+          # immediate diagnostic; individual trials may fail while Vally's
+          # aggregate suite verdict still passes.
           JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -n "$JUNIT" ]; then
             ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
-            if [ -z "$ROOT" ]; then
-              echo "::warning::JUnit file exists but contains no <testsuites> element — treating as failure"
-              echo "eval_passed=false" >> "$GITHUB_OUTPUT"
-            else
+            if [ -n "$ROOT" ]; then
               FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
               ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
-              echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
-              if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
-                # Guard: if Vally exited non-zero but JUnit shows no failures,
-                # an execution error may have been swallowed (partial output).
-                if [ "$EVAL_RC" -ne 0 ]; then
-                  echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as failure (possible partial output)"
-                  echo "eval_passed=false" >> "$GITHUB_OUTPUT"
-                else
-                  echo "eval_passed=true" >> "$GITHUB_OUTPUT"
-                fi
-              else
-                echo "eval_passed=false" >> "$GITHUB_OUTPUT"
-              fi
+              echo "JUnit trial diagnostics: failures=$FAILS errors=$ERRS"
+            else
+              echo "::warning::JUnit file contains no <testsuites> root"
             fi
           else
             echo "::warning::No JUnit report under $RESULTS_PATH"
-            echo "eval_passed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Upload results
@@ -817,7 +919,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skill-eval-results-${{ matrix.entry.name }}
-          path: eval-results/${{ matrix.entry.name }}/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/eval-results/${{ matrix.entry.name }}/
           include-hidden-files: true
           retention-days: 14
 
@@ -826,7 +928,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skill-eval-baseline-${{ matrix.entry.name }}
-          path: eval-results-baseline/${{ matrix.entry.name }}/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/eval-results-baseline/${{ matrix.entry.name }}/
           include-hidden-files: true
           retention-days: 14
 
@@ -867,33 +969,71 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Validate safe Vally specs
+        id: trusted-spec
+        env:
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" ".github/skills/code-review/tests" --validate-only
+          TRUSTED_SPEC_DIR=$(mktemp -d "$RUNNER_TEMP/hermeticity-spec.XXXXXX")
+          HERMETICITY_SPEC="$TRUSTED_SPEC_DIR/hermeticity.vally.yaml"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" > "$HERMETICITY_SPEC"
+          chmod a+rx "$TRUSTED_SPEC_DIR"
+          chmod a+r "$HERMETICITY_SPEC"
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$HERMETICITY_SPEC" --strict
+          echo "path=$HERMETICITY_SPEC" >> "$GITHUB_OUTPUT"
+
+      - name: Setup credential-isolated Vally runtime
+        id: vally-runtime
+        env:
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
+          chmod 700 "$SETUP"
+          "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
+
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
-          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
-          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
-          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
-          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
-          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
-          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
-          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
-          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
         run: |
-          TOKENS=()
-          for i in 0 1 2 3 4 5 6 7 8 9; do
-            var="TOKEN_$i"
-            val="${!var}"
-            [ -n "$val" ] && TOKENS+=("$val")
-          done
-          if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
-            exit 1
-          fi
-          IDX=$((RANDOM % ${#TOKENS[@]}))
-          echo "::add-mask::${TOKENS[$IDX]}"
-          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$SELECTOR"
+          chmod 700 "$SELECTOR"
+          "$SELECTOR" \
+            "$GITHUB_OUTPUT" \
+            "${{ steps.vally-runtime.outputs.vally_runner }}" \
+            "$COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_HOME" \
+            "$RUNNER_TEMP/hermeticity-model-probe" \
+            gpt-5.6-sol \
+            claude-opus-5
 
       - name: Run hermeticity control
         id: herm
@@ -903,22 +1043,28 @@ jobs:
           # If a GitHub-shaped token leaks in, the rate limit is elevated and
           # the assertion FAILS → hermeticity not verified.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/hermeticity-results
+          HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}
         run: |
-          SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
-          mkdir -p hermeticity-results
-          if [ ! -f "$SPEC" ]; then
-            echo "::warning::hermeticity spec not found at $SPEC"
-            echo "inconclusive" > hermeticity-results/verdict.txt
+          mkdir -p "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
+          if [ ! -f "$HERMETICITY_SPEC" ]; then
+            echo "::warning::trusted hermeticity spec not found"
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             exit 0
           fi
 
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval -e "$SPEC" \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval -e "$HERMETICITY_SPEC" \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
-            --output-dir hermeticity-results/out \
+            --output-dir "$RESULTS_PATH/out" \
             --junit \
-            --model claude-opus-4.6 \
-            --judge-model claude-opus-4.6 \
             --runs 1 \
             --workers 1 \
             --verbose
@@ -926,17 +1072,17 @@ jobs:
           set -e
           echo "vally exit code: $EVAL_RC (advisory)"
 
-          JUNIT=$(find hermeticity-results/out -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          JUNIT=$(find "$RESULTS_PATH/out" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -z "$JUNIT" ]; then
             echo "::warning::no JUnit produced by hermeticity run"
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             exit 0
           fi
 
           ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
           if [ -z "$ROOT" ]; then
             echo "::warning::Hermeticity JUnit contains no <testsuites> element"
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             exit 0
           fi
           FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
@@ -952,17 +1098,17 @@ jobs:
             # Guard: if Vally exited non-zero but JUnit shows no failures,
             # an execution error may have been swallowed (partial output).
             if [ "$EVAL_RC" -ne 0 ]; then
-              echo "inconclusive" > hermeticity-results/verdict.txt
+              echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
               echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as inconclusive (possible partial output)"
             else
-              echo "hermetic" > hermeticity-results/verdict.txt
+              echo "hermetic" > "$RESULTS_PATH/verdict.txt"
               echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
             fi
           elif [ "$ERRS" -ge 1 ]; then
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             echo "::warning::Hermeticity inconclusive (execution error in hermeticity control)."
           else
-            echo "broken" > hermeticity-results/verdict.txt
+            echo "broken" > "$RESULTS_PATH/verdict.txt"
             echo "::warning::Hermeticity BROKEN: agent did not report anonymous rate limit. A GitHub token may have leaked into the eval env. Non-blocking for now."
           fi
           # Non-blocking: never fail this job.
@@ -973,7 +1119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hermeticity-results
-          path: hermeticity-results/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/hermeticity-results/
           include-hidden-files: true
           retention-days: 14
 
@@ -1038,10 +1184,12 @@ jobs:
           STATIC_RESULT: ${{ needs.static-check.result }}
           EVAL_RESULT: ${{ needs.evaluate.result }}
           HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
+          EXPECTED_ENTRIES: ${{ needs.discover-eval.outputs.entries }}
           DISCOVER_RESULT: ${{ needs.discover-eval.result }}
           IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
           HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
         with:
+          retries: 3
           script: |
             const fs = require('fs');
             const path = require('path');
@@ -1086,6 +1234,14 @@ jobs:
             const staticResult = process.env.STATIC_RESULT;
             const evalResult = process.env.EVAL_RESULT;
             const hasEntries = process.env.HAS_ENTRIES === 'true';
+            let expectedEvalEntries = [];
+            let expectedEvalScopes = [];
+            try {
+              expectedEvalEntries = JSON.parse(process.env.EXPECTED_ENTRIES || '[]');
+              expectedEvalScopes = expectedEvalEntries.map(e => e && e.name).filter(Boolean);
+            } catch (e) {
+              console.log('Could not parse expected eval entries:', e.message);
+            }
             const discoverResult = process.env.DISCOVER_RESULT;
             const isContributor = process.env.IS_CONTRIBUTOR === 'true';
             const evalRan = discoverResult === 'success';
@@ -1181,12 +1337,29 @@ jobs:
                 .replace(/&amp;/g, '&');
             }
             function suiteProp(block, key) {
-              const m = block.match(new RegExp('<property name="' + key + '" value="([^"]*)"'));
-              return m ? xmlDecode(m[1]) : null;
+              const testcaseStart = block.search(/<testcase\b/);
+              const suiteHeader = testcaseStart >= 0 ? block.slice(0, testcaseStart) : block;
+              for (const property of elementBlocks(suiteHeader, 'property')) {
+                const openTag = (property.match(/<property\b[^>]*?(?:>|\/>)/) || [''])[0];
+                if (tagAttr(openTag, 'name') === key) return tagAttr(openTag, 'value');
+              }
+              return null;
+            }
+            function testcaseProps(testcase, key) {
+              const properties = (testcase.match(/<properties\b[^>]*>[\s\S]*?<\/properties>/) || [''])[0];
+              const values = [];
+              for (const property of elementBlocks(properties, 'property')) {
+                const openTag = (property.match(/<property\b[^>]*?(?:>|\/>)/) || [''])[0];
+                if (tagAttr(openTag, 'name') === key) values.push(tagAttr(openTag, 'value'));
+              }
+              return values;
+            }
+            function testcaseProp(testcase, key) {
+              return testcaseProps(testcase, key)[0] ?? null;
             }
             function tagAttr(tag, key) {
-              const m = (tag || '').match(new RegExp(key + '="([^"]*)"'));
-              return m ? xmlDecode(m[1]) : null;
+              const m = (tag || '').match(new RegExp("\\b" + key + "\\s*=\\s*([\"'])(.*?)\\1"));
+              return m ? xmlDecode(m[2]) : null;
             }
             function artifactScope(file, root, artifactPrefix) {
               const [artifact] = path.relative(root, file).split(path.sep);
@@ -1197,7 +1370,173 @@ jobs:
             function suiteKey(scope, label) {
               return `${scope}\u0000${label}`;
             }
-
+            function closingTagOutsideCdata(xml, tag, start) {
+              let cursor = start;
+              while (cursor < xml.length) {
+                const close = xml.indexOf(`</${tag}>`, cursor);
+                if (close < 0) return -1;
+                const cdata = xml.indexOf('<![CDATA[', cursor);
+                if (cdata < 0 || cdata > close) return close;
+                const cdataEnd = xml.indexOf(']]>', cdata + 9);
+                if (cdataEnd < 0) return -1;
+                cursor = cdataEnd + 3;
+              }
+              return -1;
+            }
+            function openingTagOutsideCdata(xml, tag, start) {
+              let cursor = start;
+              const token = `<${tag}`;
+              while (cursor < xml.length) {
+                const open = xml.indexOf(token, cursor);
+                if (open < 0) return null;
+                const cdata = xml.indexOf('<![CDATA[', cursor);
+                if (cdata >= 0 && cdata < open) {
+                  const cdataEnd = xml.indexOf(']]>', cdata + 9);
+                  if (cdataEnd < 0) return null;
+                  cursor = cdataEnd + 3;
+                  continue;
+                }
+                const match = xml.slice(open).match(new RegExp(`^<${tag}\\b[^>]*>`));
+                if (match) return { index: open, tag: match[0] };
+                cursor = open + token.length;
+              }
+              return null;
+            }
+            function elementBlocks(xml, tag) {
+              const out = [];
+              let cursor = 0;
+              while (cursor < xml.length) {
+                const opening = openingTagOutsideCdata(xml, tag, cursor);
+                if (!opening) break;
+                const openTag = opening.tag;
+                const start = opening.index;
+                if (openTag.endsWith('/>')) {
+                  out.push(openTag);
+                  cursor = start + openTag.length;
+                  continue;
+                }
+                const endTag = `</${tag}>`;
+                const end = closingTagOutsideCdata(xml, tag, start + openTag.length);
+                if (end < 0) break;
+                out.push(xml.slice(start, end + endTag.length));
+                cursor = end + endTag.length;
+              }
+              return out;
+            }
+            function testcaseBlocks(block) {
+              return elementBlocks(block, 'testcase');
+            }
+            function testsuiteBlocks(xml) {
+              return elementBlocks(xml, 'testsuite');
+            }
+            function hasFailedSkillInvocation(testcase) {
+              return testcaseProps(testcase, 'grader.skill-invocation.passed').includes('false');
+            }
+            function allStimuliRan(testsuite) {
+              const runText = suiteProp(testsuite, 'stimuliRun');
+              const totalText = suiteProp(testsuite, 'stimuliTotal');
+              const skippedText = suiteProp(testsuite, 'stimuliSkipped');
+              if (!/^\d+$/.test(runText || '') || !/^\d+$/.test(totalText || '')) return false;
+              const run = Number(runText);
+              const total = Number(totalText);
+              const skipped = skippedText === null ? 0 : Number(skippedText);
+              return total > 0 && run === total && Number.isInteger(skipped) && skipped === 0;
+            }
+            // Regression fixtures cover equivalent JUnit property serialization
+            // and ensure a self-closing child is not mistaken for its testcase.
+            const invocationVetoProperties = [
+              '<property name="grader.skill-invocation.passed" value="false"/>',
+              '<property name="grader.skill-invocation.passed" value="false" />',
+              '<property value="false" name="grader.skill-invocation.passed"></property>',
+            ];
+            for (const failedProperty of invocationVetoProperties) {
+              const invocationVetoFixture = [
+                '<testcase name="routing-violation">',
+                '<properties>',
+                '<property name="grader.other.passed" value="true"/>',
+                failedProperty,
+                '</properties>',
+                '<system-out><![CDATA[the transcript mentions </testcase> safely]]></system-out>',
+                '</testcase>',
+              ].join('');
+              const invocationVetoBlocks = testcaseBlocks(invocationVetoFixture);
+              if (invocationVetoBlocks.length !== 1 ||
+                  !hasFailedSkillInvocation(invocationVetoBlocks[0]) ||
+                  !invocationVetoBlocks[0].includes('safely]]></system-out></testcase>')) {
+                throw new Error('Internal JUnit parser failed a skill-invocation veto fixture.');
+              }
+            }
+            const duplicateInvocationVetoFixture = [
+              '<testcase name="duplicate-routing-graders"><properties>',
+              '<property name="grader.skill-invocation.passed" value="true"/>',
+              '<property name="grader.skill-invocation.passed" value="false"/>',
+              '</properties></testcase>',
+            ].join('');
+            if (!hasFailedSkillInvocation(duplicateInvocationVetoFixture)) {
+              throw new Error('Internal JUnit parser ignored a later failed skill-invocation property.');
+            }
+            const suiteBoundaryFixture = [
+              '<testsuites>',
+              '<testsuite name="routing-suite">',
+              '<properties>',
+              '<property name="evalName" value="routing-suite"/>',
+              '<property name="evalFilePath" value="/tmp/eval.vally.yaml"/>',
+              '<property name="passed" value="true"/>',
+              '</properties>',
+              '<testcase name="routing-violation">',
+              '<properties>',
+              '<property name="grader.skill-invocation.passed" value="false"/>',
+              '</properties>',
+              '<system-out><![CDATA[the transcript mentions </testsuite> safely]]></system-out>',
+              '</testcase>',
+              '</testsuite>',
+              '</testsuites>',
+            ].join('');
+            const suiteBoundaryBlocks = testsuiteBlocks(suiteBoundaryFixture);
+            if (suiteBoundaryBlocks.length !== 1 ||
+                testcaseBlocks(suiteBoundaryBlocks[0]).length !== 1 ||
+                !hasFailedSkillInvocation(testcaseBlocks(suiteBoundaryBlocks[0])[0]) ||
+                !suiteBoundaryBlocks[0].includes('safely]]></system-out></testcase></testsuite>')) {
+              throw new Error('Internal JUnit parser failed the CDATA suite-boundary fixture.');
+            }
+            const suitePropertyFixture = [
+              '<testsuite name="fallback-name">',
+              '<properties>',
+              "<property value='routing-suite' name='evalName' />",
+              '<property value="/tmp/eval.vally.yaml" name="evalFilePath"></property>',
+              "<property name = 'passed' value = 'true' />",
+              '</properties>',
+              '<testcase name="nested-property">',
+              '<properties><property name="passed" value="false"/></properties>',
+              '</testcase>',
+              '</testsuite>',
+            ].join('');
+            if (suiteProp(suitePropertyFixture, 'evalName') !== 'routing-suite' ||
+                suiteProp(suitePropertyFixture, 'evalFilePath') !== '/tmp/eval.vally.yaml' ||
+                suiteProp(suitePropertyFixture, 'passed') !== 'true') {
+              throw new Error('Internal JUnit parser failed a reordered suite-property fixture.');
+            }
+            const completedStimuliFixture = [
+              '<testsuite name="complete">',
+              '<properties>',
+              '<property name="stimuliRun" value="1"/>',
+              '<property name="stimuliTotal" value="1"/>',
+              '</properties>',
+              '</testsuite>',
+            ].join('');
+            const skippedStimuliFixture = [
+              '<testsuite name="skipped">',
+              '<properties>',
+              '<property name="passed" value="true"/>',
+              '<property name="stimuliRun" value="0"/>',
+              '<property name="stimuliSkipped" value="1"/>',
+              '<property name="stimuliTotal" value="1"/>',
+              '</properties>',
+              '</testsuite>',
+            ].join('');
+            if (!allStimuliRan(completedStimuliFixture) || allStimuliRan(skippedStimuliFixture)) {
+              throw new Error('Internal JUnit gate accepted skipped or incomplete stimuli.');
+            }
             const suites = [];
             let evalPassed = true;
             let hasResults = false;
@@ -1207,35 +1546,167 @@ jobs:
                 const scope = artifactScope(jf, 'eval-results', 'skill-eval-results-');
                 let xml = '';
                 try { xml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
-                const blocks = xml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                const blocks = testsuiteBlocks(xml);
                 for (const block of blocks) {
                   hasResults = true;
                   const openTag = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
                   const label = suiteProp(block, 'evalName') || tagAttr(openTag, 'name') || '(unnamed)';
+                  const specFile = path.basename(suiteProp(block, 'evalFilePath') || '');
                   const score = suiteProp(block, 'overallScore');
                   const threshold = suiteProp(block, 'threshold');
-                  const passed = suiteProp(block, 'passed') === 'true';
-                  if (!passed) evalPassed = false;
+                  const vallyPassed = suiteProp(block, 'passed') === 'true';
+                  const stimuliComplete = allStimuliRan(block);
+                  let skillInvocationFailures = 0;
+                  const suiteFailures = Number(tagAttr(openTag, 'failures') || 0);
+                  const suiteErrors = Number(tagAttr(openTag, 'errors') || 0);
                   // Failing/erroring stimuli, deduped by testcase name (runs>1
                   // flattens each stimulus into one testcase per trial).
                   const failures = new Map();
-                  const tcs = block.match(/<testcase\b[\s\S]*?(?:\/>|<\/testcase>)/g) || [];
+                  const tcs = testcaseBlocks(block);
                   for (const tc of tcs) {
                     const tcOpen = (tc.match(/<testcase\b[^>]*?(?:>|\/>)/) || [''])[0];
                     const tcName = tagAttr(tcOpen, 'name') || '(stimulus)';
                     const fm = tc.match(/<failure\b[^>]*message="([^"]*)"/);
                     const em = tc.match(/<error\b[^>]*message="([^"]*)"/);
+                    const skillInvocationFailed = hasFailedSkillInvocation(tc);
+                    if (skillInvocationFailed) skillInvocationFailures += 1;
                     if (fm || em) {
                       const kind = em ? 'error' : 'fail';
                       const msg = xmlDecode((em && em[1]) || (fm && fm[1]) || '')
                         .split('\n')[0].slice(0, 240);
                       if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
+                    } else if (skillInvocationFailed) {
+                      failures.set(tcName, {
+                        kind: 'skill',
+                        msg: 'required or disallowed skill invocation constraint failed',
+                      });
                     }
                   }
-                  suites.push({ scope, label, score, threshold, passed, failures: [...failures.entries()] });
+                  if (!stimuliComplete) {
+                    failures.set('(suite execution)', {
+                      kind: 'error',
+                      msg: 'not all configured stimuli ran, or one or more stimuli were skipped',
+                    });
+                  }
+                  const passed = vallyPassed &&
+                    stimuliComplete &&
+                    skillInvocationFailures === 0;
+                  if (!passed) evalPassed = false;
+                  suites.push({
+                    scope,
+                    label,
+                    specFile,
+                    score,
+                    threshold,
+                    passed,
+                    vallyPassed,
+                    stimuliComplete,
+                    skillInvocationFailures,
+                    suiteFailures,
+                    suiteErrors,
+                    failures: [...failures.entries()],
+                  });
                 }
               }
             }
+            function reconcileEvaluation(entries, observedSuites, exitCodes) {
+              const expectedKeys = new Set();
+              const expectedScopes = [];
+              const invalidExpectedScopes = [];
+              for (const entry of entries) {
+                const scope = entry && entry.name;
+                const files = entry && Array.isArray(entry.spec_files) ? entry.spec_files : [];
+                if (!scope || files.length === 0) {
+                  if (scope) invalidExpectedScopes.push(scope);
+                  continue;
+                }
+                expectedScopes.push(scope);
+                for (const file of files) expectedKeys.add(suiteKey(scope, file));
+              }
+
+              const observedCounts = new Map();
+              for (const suite of observedSuites) {
+                const key = suiteKey(suite.scope, suite.specFile);
+                observedCounts.set(key, (observedCounts.get(key) || 0) + 1);
+              }
+              const missingKeys = [...expectedKeys].filter(key => !observedCounts.has(key));
+              const unexpectedKeys = [...observedCounts.keys()].filter(key => !expectedKeys.has(key));
+              const duplicateKeys = [...observedCounts.entries()]
+                .filter(([, count]) => count !== 1)
+                .map(([key]) => key);
+              const missingExitScopes = expectedScopes.filter(scope => !exitCodes.has(scope));
+              const unexplainedExitScopes = expectedScopes.filter(scope => {
+                const exitCode = exitCodes.get(scope);
+                if (exitCode === 0 || exitCode == null) return false;
+                return !observedSuites.some(s => s.scope === scope && !s.passed);
+              });
+
+              return {
+                expectedKeys,
+                missingKeys,
+                unexpectedKeys,
+                duplicateKeys,
+                invalidExpectedScopes,
+                missingExitScopes,
+                unexplainedExitScopes,
+                complete: expectedKeys.size > 0 &&
+                  missingKeys.length === 0 &&
+                  unexpectedKeys.length === 0 &&
+                  duplicateKeys.length === 0 &&
+                  invalidExpectedScopes.length === 0 &&
+                  missingExitScopes.length === 0 &&
+                  unexplainedExitScopes.length === 0,
+              };
+            }
+
+            const evalExitCodes = new Map();
+            for (const scope of expectedEvalScopes) {
+              const exitFile = path.join(
+                'eval-results',
+                `skill-eval-results-${scope}`,
+                'eval-exit-code.txt'
+              );
+              try {
+                const raw = fs.readFileSync(exitFile, 'utf8').trim();
+                if (/^\d+$/.test(raw)) evalExitCodes.set(scope, Number(raw));
+              } catch { /* a missing result marker makes the evaluation incomplete */ }
+            }
+
+            // Regression fixture: one completed sibling suite must not satisfy a
+            // two-spec matrix leg after Vally exits nonzero with partial JUnit.
+            const fixtureEntries = [
+              { name: 'try-fix', spec_files: ['eval.restore.vally.yaml', 'eval.vally.yaml'] },
+            ];
+            const completeSuiteFixture = reconcileEvaluation(
+              fixtureEntries,
+              [
+                { scope: 'try-fix', specFile: 'eval.restore.vally.yaml', passed: true },
+                { scope: 'try-fix', specFile: 'eval.vally.yaml', passed: true },
+              ],
+              new Map([['try-fix', 0]])
+            );
+            const partialSuiteFixture = reconcileEvaluation(
+              fixtureEntries,
+              [{ scope: 'try-fix', specFile: 'eval.vally.yaml', passed: true }],
+              new Map([['try-fix', 1]])
+            );
+            if (!completeSuiteFixture.complete ||
+                partialSuiteFixture.complete ||
+                partialSuiteFixture.missingKeys.length !== 1 ||
+                !partialSuiteFixture.missingKeys[0].endsWith('\u0000eval.restore.vally.yaml')) {
+              throw new Error('Internal completeness check accepted a partial multi-spec JUnit result.');
+            }
+
+            const reconciliation = reconcileEvaluation(
+              expectedEvalEntries,
+              suites,
+              evalExitCodes
+            );
+            const missingEvalScopes = expectedEvalScopes.filter(scope =>
+              !suites.some(s => s.scope === scope)
+            );
+            const evalComplete = !hasEntries ||
+              (evalResult === 'success' && hasResults && reconciliation.complete);
 
             // ── LLM evaluation section ────────────────────────────
             if (!evalRan && !isContributor) {
@@ -1248,6 +1719,21 @@ jobs:
               lines.push('### ⏭️ LLM Evaluation: Skipped');
               lines.push('_No changed skills with eval specs found._');
               lines.push('');
+            } else if (!evalComplete) {
+              lines.push('### ⚠️ LLM Evaluation Incomplete');
+              if (missingEvalScopes.length > 0) {
+                lines.push(`_No valid JUnit suite results were found for: ${missingEvalScopes.map(s => `\`${s}\``).join(', ')}._`);
+              } else if (reconciliation.missingKeys.length > 0) {
+                const missing = reconciliation.missingKeys.map(key => `\`${key.split('\u0000')[1]}\``);
+                lines.push(`_Expected eval suite results are missing for: ${missing.join(', ')}._`);
+              } else if (reconciliation.missingExitScopes.length > 0) {
+                lines.push(`_Evaluation outcome markers are missing for: ${reconciliation.missingExitScopes.map(s => `\`${s}\``).join(', ')}._`);
+              } else if (reconciliation.unexplainedExitScopes.length > 0) {
+                lines.push(`_Vally exited nonzero without a corresponding failed suite for: ${reconciliation.unexplainedExitScopes.map(s => `\`${s}\``).join(', ')}._`);
+              } else {
+                lines.push('_Evaluation artifacts do not match the discovered matrix specs._');
+              }
+              lines.push('');
             } else if (hasResults) {
               if (evalPassed) {
                 lines.push('### ✅ LLM Evaluation Passed');
@@ -1255,7 +1741,7 @@ jobs:
                 lines.push('### ❌ LLM Evaluation Failed');
               }
               const passedCount = suites.filter(s => s.passed).length;
-              lines.push(`${passedCount}/${suites.length} eval suite(s) met threshold`);
+              lines.push(`${passedCount}/${suites.length} eval suite(s) passed`);
               lines.push('');
 
               // ── Per-suite results table ─────────────────────────
@@ -1268,7 +1754,7 @@ jobs:
                   const bScope = artifactScope(jf, 'eval-results-baseline', 'skill-eval-baseline-');
                   let bxml = '';
                   try { bxml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
-                  const bblocks = bxml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                  const bblocks = testsuiteBlocks(bxml);
                   for (const block of bblocks) {
                     const bOpen = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
                     const bLabel = suiteProp(block, 'evalName') || tagAttr(bOpen, 'name') || '(unnamed)';
@@ -1291,7 +1777,20 @@ jobs:
               for (const s of suites) {
                 const sc = s.score != null && s.score !== '' ? Number(s.score).toFixed(2) : '—';
                 const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
-                const v = s.passed ? '✅' : '❌';
+                let v = '❌';
+                if (s.skillInvocationFailures > 0) {
+                  v = `❌ ${s.skillInvocationFailures} skill invocation failure${s.skillInvocationFailures === 1 ? '' : 's'}`;
+                } else if (s.suiteErrors > 0) {
+                  // Vally hard-fails a suite on any execution error even when
+                  // its numeric aggregate still meets the score threshold.
+                  v = `❌ ${s.suiteErrors} execution error${s.suiteErrors === 1 ? '' : 's'}`;
+                } else if (s.passed) {
+                  v = s.suiteFailures > 0
+                    ? `✅ aggregate; ${s.suiteFailures} trial failure${s.suiteFailures === 1 ? '' : 's'}`
+                    : '✅';
+                } else if (s.suiteFailures > 0) {
+                  v = `❌ ${s.suiteFailures} failed trial${s.suiteFailures === 1 ? '' : 's'}`;
+                }
                 const label = (s.label || '').replace(/\|/g, '\\|');
                 if (hasBaseline) {
                   const b = baselineScores.get(suiteKey(s.scope, s.label));
@@ -1317,10 +1816,17 @@ jobs:
               for (const s of suites.filter(x => x.failures.length > 0)) {
                 const label = (s.label || '').replace(/\|/g, '\\|');
                 lines.push('<details>');
-                lines.push(`<summary>❌ ${label} — ${s.failures.length} failing stimulus(es)</summary>`);
+                lines.push(
+                  `<summary>${s.passed ? '⚠️' : '❌'} ${label} — ` +
+                  `${s.failures.length} stimulus(es) with failed trials</summary>`
+                );
                 lines.push('');
                 for (const [name, info] of s.failures) {
-                  const tag = info.kind === 'error' ? '🛑 error' : '❌ fail';
+                  const tag = info.kind === 'error'
+                    ? '🛑 error'
+                    : info.kind === 'skill'
+                      ? '❌ skill'
+                      : '❌ fail';
                   const safeName = String(name).replace(/\|/g, '\\|');
                   const safeMsg = (info.msg || '').replace(/\|/g, '\\|');
                   lines.push(`- **${safeName}** (${tag}): ${safeMsg}`);
@@ -1329,9 +1835,6 @@ jobs:
                 lines.push('</details>');
                 lines.push('');
               }
-            } else if (evalResult === 'success') {
-              lines.push('### ✅ LLM Evaluation Passed');
-              lines.push('');
             } else if (evalResult === 'failure') {
               lines.push('### ❌ LLM Evaluation Failed');
               lines.push('');
@@ -1411,10 +1914,12 @@ jobs:
               evalStatus = 'Needs attention';  // discovery job failed → can't tell if eval was needed; don't mask as Skipped/Passed
             } else if (!hasEntries) {
               evalStatus = 'Skipped';
+            } else if (!evalComplete) {
+              evalStatus = 'Needs attention';
             } else if (hasResults) {
               evalStatus = evalPassed ? 'Passed' : 'Failed';
             } else if (evalResult === 'success') {
-              evalStatus = 'Passed';
+              evalStatus = 'Needs attention';
             } else if (evalResult === 'failure') {
               evalStatus = 'Failed';
             } else if (evalResult === 'skipped') {
@@ -1498,42 +2003,52 @@ jobs:
               fs.appendFileSync(summaryPath, summaryLines.join('\n') + '\n');
             }
 
-            // Upsert comment (find existing with marker, update or create)
-            // Paginate to handle PRs with 100+ comments
-            const comments = await github.paginate(
-              github.rest.issues.listComments,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                per_page: 100,
-              }
-            );
-
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-              console.log(`Updated existing comment ${existing.id}`);
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body,
-              });
-              console.log('Created new PR comment');
-            }
-
-            // Save eval pass/fail for downstream jobs
+            // Persist the authoritative verdict before the optional comment
+            // side effect so a transient GitHub API failure cannot erase it.
             const outputPath = process.env.GITHUB_OUTPUT;
             if (outputPath) {
-              fs.appendFileSync(outputPath, `eval_passed=${hasResults ? evalPassed : 'na'}\n`);
+              fs.appendFileSync(outputPath, `eval_passed=${evalComplete ? evalPassed : 'na'}\n`);
+            }
+
+            try {
+              // Upsert comment (find existing with marker, update or create).
+              // Paginate to handle PRs with 100+ comments.
+              const comments = await github.paginate(
+                github.rest.issues.listComments,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  per_page: 100,
+                }
+              );
+
+              const existing = comments.find(c => c.body && c.body.includes(marker));
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body,
+                });
+                console.log(`Updated existing comment ${existing.id}`);
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body,
+                });
+                console.log('Created new PR comment');
+              }
+            } catch (err) {
+              const detail = err && err.stack ? err.stack : String(err);
+              console.error(`Failed to post Skill Validation PR comment: ${detail}`);
+              core.warning(
+                'Skill Validation results could not be posted to the PR; ' +
+                'the step summary and authoritative commit status still contain the verdict.'
+              );
             }
 
   # ==========================================================================
@@ -1581,8 +2096,8 @@ jobs:
               STATE="failure"
               DESC="LLM evaluation failed"
             elif [[ "$EVAL" == "failure" ]]; then
-              STATE="failure"
-              DESC="LLM evaluation failed"
+              STATE="error"
+              DESC="Evaluation infrastructure failed"
             else
               STATE="error"
               DESC="Evaluation incomplete ($EVAL)"
@@ -1633,10 +2148,10 @@ jobs:
               title = 'LLM evaluation failed';
             } else if (evalResult === 'failure') {
               conclusion = 'failure';
-              title = 'LLM evaluation failed';
+              title = 'Evaluation infrastructure failed';
             } else {
-              conclusion = 'neutral';
-              title = `Evaluation: ${evalResult}`;
+              conclusion = 'failure';
+              title = `Evaluation incomplete: ${evalResult}`;
             }
 
             await github.rest.checks.create({

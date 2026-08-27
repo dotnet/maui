@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Provider;
+using AndroidX.Activity;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
@@ -177,11 +178,14 @@ namespace Microsoft.Maui.Media
 
 		async Task<FileResult> PickUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
+			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
+				?? throw new InvalidOperationException("The current activity must inherit from AndroidX.Activity.ComponentActivity.");
+
 			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
 				.Build();
 
-			var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+			var androidUri = await PickVisualMediaForResult.Instance.Launch(launchingActivity, pickVisualMediaRequest);
 
 			if (androidUri?.Equals(AndroidUri.Empty) ?? true)
 			{
@@ -208,6 +212,9 @@ namespace Microsoft.Maui.Media
 
 		async Task<List<FileResult>> PickMultipleUsingPhotoPicker(MediaPickerOptions options, bool photo)
 		{
+			var launchingActivity = ActivityStateManager.Default.GetCurrentActivity(true) as ComponentActivity
+				?? throw new InvalidOperationException("The current activity must inherit from AndroidX.Activity.ComponentActivity.");
+
 			// Android has a limitation that you need to use a different request for single and multiple picks.
 			// If the selection limit is 1, we can use the single pick method,
 			// otherwise we need to use the multiple pick method.
@@ -230,7 +237,7 @@ namespace Microsoft.Maui.Media
 
 			var pickVisualMediaRequest = pickVisualMediaRequestBuilder.Build();
 
-			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+			var androidUris = await PickMultipleVisualMediaForResult.Instance.Launch(launchingActivity, pickVisualMediaRequest);
 
 			if (androidUris?.IsEmpty ?? true)
 			{

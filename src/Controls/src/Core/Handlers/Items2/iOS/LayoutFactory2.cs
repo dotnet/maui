@@ -85,6 +85,35 @@ internal static class LayoutFactory2
 		return [];
 	}
 
+	static void ApplyHeaderFooterBoundarySpacing(NSCollectionLayoutSection section, UICollectionViewScrollDirection scrollDirection, double verticalSpacing, double horizontalSpacing, bool hasHeader, bool hasFooter, bool applySpacing)
+	{
+		if (!applySpacing)
+		{
+			return;
+		}
+
+		if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+		{
+			var topInset = hasHeader ? new NFloat(verticalSpacing) : new NFloat(0);
+			var bottomInset = hasFooter ? new NFloat(verticalSpacing) : new NFloat(0);
+
+			if (topInset > 0 || bottomInset > 0)
+			{
+				section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
+			}
+		}
+		else
+		{
+			var leadingInset = hasHeader ? new NFloat(horizontalSpacing) : new NFloat(0);
+			var trailingInset = hasFooter ? new NFloat(horizontalSpacing) : new NFloat(0);
+
+			if (leadingInset > 0 || trailingInset > 0)
+			{
+				section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
+			}
+		}
+	}
+
 	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc, ItemsLayout itemsLayout)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
@@ -145,31 +174,14 @@ internal static class LayoutFactory2
 			// For grouped sections with a group header/footer, add content insets to create
 			// the gap between the header/footer supplementary item and the first/last item.
 			// InterSectionSpacing (set on layoutConfiguration above) handles the gap between sections.
-			if (groupingInfo.IsGrouped && itemSpacing > 0)
-			{
-				if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
-				{
-					var leadingInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
-					var trailingInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
-
-					if (leadingInset > 0 || trailingInset > 0)
-					{
-						section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
-					}
-				}
-				else
-				{
-					// Vertical: top inset creates gap between header and first item,
-					// bottom inset creates gap between last item and footer.
-					var topInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
-					var bottomInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
-
-					if (topInset > 0 || bottomInset > 0)
-					{
-						section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
-					}
-				}
-			}
+			ApplyHeaderFooterBoundarySpacing(
+				section,
+				scrollDirection,
+				itemSpacing,
+				itemSpacing,
+				groupingInfo.HasHeader,
+				groupingInfo.HasFooter,
+				groupingInfo.IsGrouped && itemSpacing > 0);
 
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
@@ -192,6 +204,15 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
+		var mainAxisSpacing = scrollDirection == UICollectionViewScrollDirection.Vertical
+			? verticalItemSpacing
+			: horizontalItemSpacing;
+
+		if (groupingInfo.IsGrouped && mainAxisSpacing > 0)
+		{
+			layoutConfiguration.InterSectionSpacing = new NFloat(mainAxisSpacing);
+		}
+
 		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
@@ -211,9 +232,13 @@ internal static class LayoutFactory2
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, columns);
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
 				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(horizontalItemSpacing));
+			}
 			else
+			{
 				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(verticalItemSpacing));
+			}
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
@@ -221,10 +246,22 @@ internal static class LayoutFactory2
 				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
 				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
+			}
 			else
+			{
 				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
+			}
 
+			ApplyHeaderFooterBoundarySpacing(
+				section,
+				scrollDirection,
+				verticalItemSpacing,
+				horizontalItemSpacing,
+				groupingInfo.HasHeader,
+				groupingInfo.HasFooter,
+				groupingInfo.IsGrouped && mainAxisSpacing > 0);
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
@@ -540,6 +577,7 @@ internal static class LayoutFactory2
 		ItemsLayout? _itemsLayout;
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
+		CGSize _currentSize;
 
 		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
 		{
@@ -591,6 +629,20 @@ internal static class LayoutFactory2
 				}
 			}
 		}
+
+		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
+        {
+            // If the size hasn't changed, use the base implementation
+			if (newBounds.Size.IsCloseTo(_currentSize))
+            {
+                return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
+            }
+ 
+            // Size has changed (e.g., rotation), so we need to invalidate the layout
+            // to ensure cells are properly measured and displayed
+            _currentSize = newBounds.Size;
+            return true;
+        }
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{

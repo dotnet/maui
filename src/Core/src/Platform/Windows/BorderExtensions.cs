@@ -75,6 +75,10 @@ namespace Microsoft.Maui.Platform
 					borderPath.StrokeDashArray.Add(value);
 				}
 			}
+			else if (borderDashArray is null || borderDashArray.Length == 0)
+			{
+				borderPath.StrokeDashArray = null;
+			}
 		}
 
 		public static void UpdateBorderDashOffset(this Path borderPath, double borderDashOffset)
@@ -113,7 +117,7 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 
-			borderPath.StrokeStartLineCap = borderPath.StrokeEndLineCap = wLineCap;
+			borderPath.StrokeStartLineCap = borderPath.StrokeEndLineCap = borderPath.StrokeDashCap = wLineCap;
 		}
 
 		public static void UpdateStrokeLineJoin(this Path borderPath, LineJoin strokeLineJoin)
