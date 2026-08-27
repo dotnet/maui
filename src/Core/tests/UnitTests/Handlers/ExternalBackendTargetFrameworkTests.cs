@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.Xml.Linq;
 using Xunit;
 
@@ -19,32 +19,34 @@ namespace Microsoft.Maui.UnitTests.Handlers
 	/// framework, and the gap would be silent.
 	/// </para>
 	/// <para>
-	/// These tests read both project files and compare them directly, so adding a target framework to
-	/// Core without adding it here fails the build rather than quietly reducing coverage.
+	/// The inputs are embedded into this assembly at build time (see the <c>EmbeddedResource</c> items in
+	/// Core.UnitTests.csproj) rather than read from the working tree, because unit tests run on Helix
+	/// from a payload directory with no repository on disk. Embedding still captures the live files on
+	/// every build, so real drift is caught, and the assertion is hermetic wherever it runs.
 	/// </para>
 	/// </remarks>
 	[Category(TestCategory.Core)]
 	public class ExternalBackendTargetFrameworkTests
 	{
-		const string CoreProjectPath = "src/Core/src/Core.csproj";
-		const string ExternalBackendProjectPath = "src/Core/tests/ExternalBackend/Core.ExternalBackend.csproj";
+		const string CoreProject = "ProjectFiles/Core.csproj";
+		const string ExternalBackendProject = "ProjectFiles/Core.ExternalBackend.csproj";
 
 		[Fact]
 		public void ExternalBackendMirrorsCoreTargetFrameworks()
 		{
-			var core = ReadTargetFrameworks(CoreProjectPath);
-			var externalBackend = ReadTargetFrameworks(ExternalBackendProjectPath);
+			var core = ReadTargetFrameworks(CoreProject);
+			var externalBackend = ReadTargetFrameworks(ExternalBackendProject);
 
 			// Compared as the raw MSBuild expression on purpose. Both sides expand the same
-			// $(MauiPlatforms), so keeping the expressions identical is what makes the platform set -
-			// including whether Tizen is currently enabled - impossible to drift between the two.
+			// $(MauiPlatforms), so keeping the expressions identical is what makes the platform set —
+			// including whether Tizen is currently enabled — impossible to drift between the two.
 			Assert.Equal(core, externalBackend);
 		}
 
 		[Fact]
 		public void ExternalBackendCompilesNetStandardTargetFrameworks()
 		{
-			var externalBackend = ReadTargetFrameworks(ExternalBackendProjectPath);
+			var externalBackend = ReadTargetFrameworks(ExternalBackendProject);
 
 			Assert.Contains("netstandard2.0", externalBackend, StringComparison.Ordinal);
 			Assert.Contains("netstandard2.1", externalBackend, StringComparison.Ordinal);
@@ -53,9 +55,9 @@ namespace Microsoft.Maui.UnitTests.Handlers
 		[Fact]
 		public void ExternalBackendInheritsThePlatformSetFromMauiPlatforms()
 		{
-			var externalBackend = ReadTargetFrameworks(ExternalBackendProjectPath);
+			var externalBackend = ReadTargetFrameworks(ExternalBackendProject);
 
-			// Every platform target framework - Android, iOS, Mac Catalyst, Windows and Tizen - reaches
+			// Every platform target framework — Android, iOS, Mac Catalyst, Windows and Tizen — reaches
 			// both projects through this one property. Tizen is therefore gated purely by
 			// IncludeTizenTargetFrameworks, identically for Core and for this guard project.
 			Assert.Contains("$(MauiPlatforms)", externalBackend, StringComparison.Ordinal);
@@ -71,13 +73,9 @@ namespace Microsoft.Maui.UnitTests.Handlers
 		{
 			// MultiTargeting.targets selects these by file suffix. A platform that is in the target
 			// framework list but has no sources would fail to compile the moment it is enabled, so the
-			// sources exist for every platform - including Tizen, which is currently gated off by
+			// sources exist for every platform — including Tizen, which is currently gated off by
 			// IncludeTizenTargetFrameworks rather than by missing source.
-			var path = Path.Combine(RepoRoot, "src", "Core", "tests", "ExternalBackend", fileName);
-
-			Assert.True(File.Exists(path), $"Missing external-backend platform source: {fileName}");
-
-			var source = File.ReadAllText(path);
+			var source = ReadEmbeddedText($"ProjectFiles/{fileName}");
 
 			foreach (var type in new[] { "FakeNativeView", "FakeNativeLabel", "FakeNativeContentView", "FakeNativeLayoutView" })
 			{
@@ -85,13 +83,9 @@ namespace Microsoft.Maui.UnitTests.Handlers
 			}
 		}
 
-		static string ReadTargetFrameworks(string relativeProjectPath)
+		static string ReadTargetFrameworks(string resourceName)
 		{
-			var path = Path.Combine(RepoRoot, relativeProjectPath.Replace('/', Path.DirectorySeparatorChar));
-
-			Assert.True(File.Exists(path), $"Could not find project: {relativeProjectPath}");
-
-			var project = XDocument.Load(path);
+			var project = XDocument.Parse(ReadEmbeddedText(resourceName));
 
 			// The unconditioned TargetFrameworks element. Core also has a second, conditioned one for
 			// IncludePreviousTfms, which is not part of the shipping set.
@@ -106,26 +100,19 @@ namespace Microsoft.Maui.UnitTests.Handlers
 			return targetFrameworks[0];
 		}
 
-		static string RepoRoot => FindRepoRoot(GetSourceDirectory());
-
-		static string FindRepoRoot(string start)
+		static string ReadEmbeddedText(string resourceName)
 		{
-			var directory = new DirectoryInfo(start);
+			var assembly = typeof(ExternalBackendTargetFrameworkTests).Assembly;
 
-			while (directory is not null)
-			{
-				if (File.Exists(Path.Combine(directory.FullName, "Microsoft.Maui.sln")))
-				{
-					return directory.FullName;
-				}
+			using var stream = assembly.GetManifestResourceStream(resourceName);
 
-				directory = directory.Parent;
-			}
+			Assert.True(
+				stream is not null,
+				$"Missing embedded resource '{resourceName}'. Available: {string.Join(", ", assembly.GetManifestResourceNames())}");
 
-			throw new InvalidOperationException($"Could not locate the repository root above '{start}'.");
+			using var reader = new StreamReader(stream!);
+
+			return reader.ReadToEnd();
 		}
-
-		static string GetSourceDirectory([CallerFilePath] string filePath = "") =>
-			Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException("Could not resolve the test source directory.");
 	}
 }
