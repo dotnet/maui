@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Parses eng/pipelines/release.yml so pipeline/policy drift is a build failure. -->
+    <PackageReference Include="YamlDotNet" Version="$(YamlDotNetPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- The CLI transitively references every shipping assembly, so the whole-tool
          architecture tests can scan all of them from here. -->
     <ProjectReference Include="..\..\src\DotNet.Release.Cli\DotNet.Release.Cli.csproj" />

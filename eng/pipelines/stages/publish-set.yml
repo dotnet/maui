@@ -1,5 +1,9 @@
 # One gated publish of one package set.
 #
+# INTERNAL to eng/pipelines/release.yml. This is not a consumer-facing template: nothing
+# outside this repository references it. It exists so the workload path (packs, then
+# manifests) and the non-workload path share one implementation instead of three copies.
+#
 # The three-step shape is fixed: `release filter` -> 1ES.PublishNuget@1 -> `release verify`.
 # Two tool invocations bracketing the compliance task, which owns the actual upload.
 
@@ -19,8 +23,11 @@ parameters:
 - name: approvalInstructions
   type: string
 
+# The one production connection this release system publishes through. Not operator-facing:
+# it is a property of the system, not of an individual release.
 - name: nugetServiceConnection
   type: string
+  default: nuget.org (dotnetframework)
 
 - name: recoveryFilters
   type: string

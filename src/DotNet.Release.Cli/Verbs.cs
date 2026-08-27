@@ -31,6 +31,7 @@ internal static class Verbs
         string repository,
         string commit,
         int? barBuildId,
+        bool? expectWorkload,
         string outputDirectory,
         DateTimeOffset now,
         string toolVersion,
@@ -52,6 +53,14 @@ internal static class Verbs
         if (repositoryPolicy.IsFailure)
         {
             return ConsoleReporting.Fail(console, repositoryPolicy.Errors);
+        }
+
+        // The pipeline chose its stage structure from its own repository list. If that
+        // disagrees with the checked-in policy, stop before anything is gathered.
+        var classification = ReleasePolicy.VerifyWorkloadClassification(repositoryPolicy.Value, expectWorkload);
+        if (classification.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, classification.Errors);
         }
 
         var request = new ReleaseRequest(repositoryId.Value, commit, barBuildId);

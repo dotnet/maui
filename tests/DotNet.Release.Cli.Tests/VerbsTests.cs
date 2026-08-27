@@ -15,7 +15,7 @@ public class VerbsTests : IDisposable
 
     private Task<int> Plan(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) =>
         Verbs.PlanAsync(
-            _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId,
+            _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, null,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
     private Task<int> Stage(StageOptions? options = null) =>
@@ -54,6 +54,24 @@ public class VerbsTests : IDisposable
 
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains(ErrorCodes.RepositoryNotAllowed, _console.AllErrors, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
+    }
+
+    /// <summary>
+    /// End to end: the pipeline's compile-time stage choice is verified against the policy
+    /// before anything is gathered.
+    /// </summary>
+    [Fact]
+    public async Task Plan_fails_closed_when_the_pipeline_misclassifies_the_repository()
+    {
+        var exit = await Verbs.PlanAsync(
+            _console, new FakeRegistry(Workspace.Build(channels: Libraries)),
+            Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null,
+            expectWorkload: true,
+            _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
+
+        Assert.Equal(ExitCodes.ReleaseError, exit);
+        Assert.Contains(ErrorCodes.WorkloadMismatch, _console.AllErrors, StringComparison.Ordinal);
         Assert.False(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
     }
 

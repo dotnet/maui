@@ -1,0 +1,345 @@
+# =============================================================================================
+# THE .NET package release pipeline.
+#
+# This is the shared release system. It is hooked up ONCE in Azure DevOps, and everyone
+# triggers *this* pipeline with parameters describing what to release. Nothing consumes this
+# repository as a template and no other repository copies it: releasing repositories do not
+# change, they are named by parameter.
+#
+#   Run pipeline -> choose the repository, give it a commit (or a BAR ID), review the audit
+#   at the manual gate, approve, done.
+#
+# What it does, in order:
+#   1. build the release tool from this repository
+#   2. `release plan`  - resolve and verify the BAR build for the requested repo/commit
+#   3. `darc gather-drop` - download that build's shipping packages
+#   4. `release stage`  - validate every package, write the hashed release plan, stage artifacts
+#   5. manual approval gate (agentless)
+#   6. `release filter` -> `1ES.PublishNuget@1` -> `release verify`
+#
+# Safety properties worth knowing before you press Run:
+#   - `publishPackages` defaults to FALSE. The default run is a dry run that publishes
+#     nothing and does not even emit the publish stages.
+#   - The tool cannot push. `1ES.PublishNuget@1` performs every upload.
+#   - Workload repositories publish packs and manifests as two separately gated stages, in
+#     that order, because manifests reference packs and NuGet.org packages are immutable.
+#
+# See docs/design.md for the full rationale.
+# =============================================================================================
+
+name: $(Date:yyyyMMdd)$(Rev:.r)-${{ parameters.ghOwner }}-${{ parameters.ghRepo }}
+
+trigger: none
+pr: none
+
+parameters:
+# ---- what to release -----------------------------------------------------------------------
+- name: ghOwner
+  displayName: GitHub owner
+  type: string
+  default: dotnet
+
+- name: ghRepo
+  displayName: GitHub repository (must be enabled in config/repositories.json)
+  type: string
+  default: skiasharp
+  values:
+  - maui
+  - android
+  - macios
+  - android-libraries
+  - skiasharp
+
+- name: commitHash
+  displayName: Commit to release (full SHA, as registered in BAR)
+  type: string
+
+- name: barBuildId
+  displayName: "[OPTIONAL] BAR build ID. Required when BAR has no GitHub URL for the build."
+  type: string
+  default: skip
+
+# ---- what to actually do --------------------------------------------------------------------
+- name: publishPackages
+  displayName: "PUBLISH to NuGet.org. Leave unchecked for a dry run."
+  type: boolean
+  default: false
+
+- name: promoteWorkloadSet
+  displayName: "Workload repos only: promote the build to its workload-set channel"
+  type: boolean
+  default: false
+
+# ---- selection and recovery -----------------------------------------------------------------
+- name: includeFilters
+  displayName: "[OPTIONAL] Semicolon-separated package file filters to include"
+  type: string
+  default: skip
+
+- name: excludeFilters
+  displayName: "[OPTIONAL] Semicolon-separated package file filters to exclude"
+  type: string
+  default: skip
+
+- name: recoveryFilters
+  displayName: "[RECOVERY] Packages a previous run already submitted to NuGet.org"
+  type: string
+  default: skip
+
+# ---- infrastructure --------------------------------------------------------------------------
+- name: pool
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    demands:
+    - ImageOverride -equals 1es-windows-2022
+    os: windows
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+
+# Workload classification is derived, never asked for, so an operator cannot set it wrong.
+# It must be known at COMPILE time because it decides which stages exist: workload releases
+# need two separately gated publishes in a fixed order.
+#
+# config/repositories.json remains authoritative, and `release plan` is given this value via
+# --expect-workload so it fails closed with WORKLOAD_MISMATCH if the two ever disagree — for
+# example if a repository is added to the policy but not to the list below.
+- name: isWorkload
+  value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'maui', 'android', 'macios')) }}
+
+- name: toolFileName
+  value: release.exe
+
+- name: toolRuntimeIdentifier
+  value: win-x64
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool: ${{ parameters.pool }}
+    sdl:
+      binskim:
+        scanOutputDirectoryOnly: true
+      codeql:
+        runSourceLanguagesInSourceAnalysis: true
+      policheck:
+        enabled: true
+      spotBugs:
+        enabled: false
+        justification: 'Not a Java repository.'
+
+    stages:
+
+    # -----------------------------------------------------------------------------------------
+    # Prepare. Resolve the build, gather its packages, validate them, stage the artifacts.
+    # This stage runs for a dry run too — that is the point of a dry run.
+    # -----------------------------------------------------------------------------------------
+    - stage: prepare_release
+      displayName: Prepare release
+      dependsOn: []
+      jobs:
+      - job: prepare_release
+        displayName: Resolve, gather and stage
+        timeoutInMinutes: 240
+        workspace:
+          clean: all
+        templateContext:
+          outputs:
+          - ${{ if eq(variables.isWorkload, 'true') }}:
+            - output: pipelineArtifact
+              displayName: Publish workload packs
+              targetPath: $(Build.ArtifactStagingDirectory)/ReleasePacks
+              artifactName: ReleasePacks
+            - output: pipelineArtifact
+              displayName: Publish workload manifests
+              targetPath: $(Build.ArtifactStagingDirectory)/ReleaseManifests
+              artifactName: ReleaseManifests
+          - ${{ else }}:
+            - output: pipelineArtifact
+              displayName: Publish release packages
+              targetPath: $(Build.ArtifactStagingDirectory)/ReleasePackages
+              artifactName: ReleasePackages
+        steps:
+        # `self` is this release-tooling repository. The repository being *released* is never
+        # checked out: its packages come from BAR via darc.
+        - checkout: self
+          clean: true
+          persistCredentials: false
+
+        - task: UseDotNet@2
+          displayName: Install the .NET SDK
+          inputs:
+            useGlobalJson: true
+
+        # The tool must be built here and travel inside the artifact: the publish job runs
+        # `checkout: none` and has no other source for it. Self-contained single-file means
+        # the hash recorded in the plan covers the whole tool, not a launcher stub.
+        - pwsh: |
+            $toolDirectory = "$(Agent.TempDirectory)/tool"
+            dotnet publish "$(Build.SourcesDirectory)/src/DotNet.Release.Cli/DotNet.Release.Cli.csproj" `
+              --configuration Release `
+              --self-contained true `
+              -p:PublishSingleFile=true `
+              -p:RuntimeIdentifier=$(toolRuntimeIdentifier) `
+              --output $toolDirectory
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to publish the release tool.' }
+
+            $toolFile = Join-Path $toolDirectory '$(toolFileName)'
+            if (!(Test-Path -LiteralPath $toolFile)) { throw "Published tool '$toolFile' was not found." }
+
+            Write-Host "##vso[task.setvariable variable=toolPath]$toolFile"
+          displayName: Build the release tool
+
+        - task: AzureCLI@2
+          name: releasePlan
+          displayName: Resolve and verify the BAR build
+          inputs:
+            azureSubscription: "Darc: Maestro Production"
+            scriptType: pscore
+            scriptLocation: inlineScript
+            # Emits the BarId output variable, which the gather step below consumes.
+            inlineScript: |
+              $barId = if ('${{ parameters.barBuildId }}' -ne 'skip') { @('--bar-id', '${{ parameters.barBuildId }}') } else { @() }
+
+              & "$(toolPath)" plan `
+                --config "$(Build.SourcesDirectory)/config/repositories.json" `
+                --repo "${{ parameters.ghOwner }}/${{ parameters.ghRepo }}" `
+                --commit "${{ parameters.commitHash }}" `
+                --expect-workload $(isWorkload) `
+                --out "$(Agent.TempDirectory)/stage" `
+                @barId
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+        - task: AzureCLI@2
+          displayName: Gather the drop
+          inputs:
+            azureSubscription: "Darc: Maestro Production"
+            scriptType: pscore
+            scriptLocation: inlineScript
+            # darc owns feed discovery, authentication, retries and --include-released.
+            # Invoked here so Azure DevOps owns the exit code and --verbose lands in this log.
+            inlineScript: |
+              . $(Build.SourcesDirectory)/eng/common/tools.ps1
+              $darc = Get-Darc
+              & $darc gather-drop --ci `
+                --id $(releasePlan.BarId) `
+                -o "$(Agent.TempDirectory)/drop" `
+                --azdev-pat $(System.AccessToken) `
+                --include-released `
+                --asset-filter '^[^/]+$' `
+                --verbose
+              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
+
+        - pwsh: |
+            & "$(toolPath)" stage `
+              --config "$(Build.SourcesDirectory)/config/repositories.json" `
+              --plan "$(Agent.TempDirectory)/stage/plan.json" `
+              --drop "$(Agent.TempDirectory)/drop" `
+              --out "$(Build.ArtifactStagingDirectory)" `
+              --include '${{ parameters.includeFilters }}' `
+              --exclude '${{ parameters.excludeFilters }}' `
+              --tool "$(toolPath)"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          displayName: Validate and stage packages
+
+        - pwsh: |
+            # The pipeline computes the pin itself rather than trusting the tool to declare
+            # the value that pins it.
+            $planPath = "$(Build.ArtifactStagingDirectory)/release-plan.json"
+            $hash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            Write-Host "Release plan SHA-256: $hash"
+            Write-Host "##vso[task.setvariable variable=ReleasePlanHash;isOutput=true]$hash"
+          name: pinPlan
+          displayName: Pin the release plan hash
+
+        - ${{ if eq(parameters.publishPackages, false) }}:
+          - pwsh: |
+              Write-Host 'DRY RUN. No publish stages exist in this run.'
+              Write-Host 'Review the staged artifacts and release-plan.json above.'
+            displayName: Dry run - nothing will be published
+
+    # -----------------------------------------------------------------------------------------
+    # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
+    # -----------------------------------------------------------------------------------------
+    - ${{ if and(eq(variables.isWorkload, 'true'), eq(parameters.promoteWorkloadSet, true), eq(parameters.publishPackages, true)) }}:
+      - stage: promote_workload_set
+        displayName: Promote to workload set channel
+        dependsOn: prepare_release
+        jobs:
+        - job: promote
+          displayName: Add build to workload set channel
+          timeoutInMinutes: 60
+          templateContext:
+            inputs:
+            - input: pipelineArtifact
+              artifactName: ReleaseManifests
+              targetPath: $(Pipeline.Workspace)/ReleaseManifests
+          steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+
+          - task: AzureCLI@2
+            displayName: Add build to channel
+            inputs:
+              azureSubscription: "Darc: Maestro Production"
+              scriptType: pscore
+              scriptLocation: inlineScript
+              # Channel and feed are read from the plan, so there is one source of truth.
+              inlineScript: |
+                . $(Build.SourcesDirectory)/eng/common/tools.ps1
+                $plan = Get-Content "$(Pipeline.Workspace)/ReleaseManifests/release-plan.json" -Raw | ConvertFrom-Json
+                $darc = Get-Darc
+                & $darc add-build-to-channel --ci `
+                  --channel "$($plan.workloadSet.channel)" `
+                  --id "$($plan.source.barBuildId)" `
+                  --skip-assets-publishing `
+                  --azdev-pat $(System.AccessToken) --verbose
+                if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
+
+    # -----------------------------------------------------------------------------------------
+    # Publish. These stages are emitted ONLY when publishPackages is true, so a dry run is
+    # structurally incapable of publishing rather than merely flag-gated.
+    # -----------------------------------------------------------------------------------------
+    - ${{ if eq(parameters.publishPackages, true) }}:
+      - ${{ if eq(variables.isWorkload, 'true') }}:
+        - template: /eng/pipelines/stages/publish-set.yml@self
+          parameters:
+            stageName: publish_packs
+            displayName: Release workload packs
+            artifactName: ReleasePacks
+            dependsOn: [prepare_release]
+            approvalInstructions: 'Review release-plan.json in the ReleasePacks artifact, then press "Resume" to push workload packs to NuGet.org.'
+            recoveryFilters: ${{ parameters.recoveryFilters }}
+
+        # A stage dependency, not a job dependency: manifests reference packs, so manifest
+        # approval must be unreachable until every pack is verified on NuGet.org.
+        - template: /eng/pipelines/stages/publish-set.yml@self
+          parameters:
+            stageName: publish_manifests
+            displayName: Release workload manifests
+            artifactName: ReleaseManifests
+            dependsOn: [prepare_release, publish_packs]
+            approvalInstructions: 'Packs are verified on NuGet.org. Press "Resume" to push workload manifests.'
+            recoveryFilters: ${{ parameters.recoveryFilters }}
+
+      - ${{ else }}:
+        - template: /eng/pipelines/stages/publish-set.yml@self
+          parameters:
+            stageName: publish_packages
+            displayName: Release NuGet packages
+            artifactName: ReleasePackages
+            dependsOn: [prepare_release]
+            approvalInstructions: 'Review release-plan.json in the ReleasePackages artifact, then press "Resume" to publish its exact staged package list.'
+            recoveryFilters: ${{ parameters.recoveryFilters }}

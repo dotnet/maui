@@ -5,8 +5,13 @@ Status: **draft**, first pass. Scope: replace the release logic currently carrie
 and `eng/scripts/nuget_release_packages.ps1` in `dotnet/maui` with a shared, testable
 tool that other repositories can consume.
 
-This repository is a staging ground. It is intended to graduate into a standalone
-team-wide "releasing" repository, so it contains release tooling and nothing else.
+**This repository is the release system**, not a library and not a template others extend.
+One Azure DevOps pipeline (`eng/pipelines/release.yml`) is hooked up to it once; everyone
+triggers that pipeline with parameters naming the repository and commit to release. The
+repositories being released do not change and do not reference this one.
+
+It is a staging ground intended to graduate into a standalone team-wide "releasing"
+repository, so it contains release tooling and nothing else.
 
 ---
 
@@ -418,6 +423,38 @@ None of these splits is stylistic:
   responsibility each are attributable on failure; today's single 304-line script can fail
   in about twenty ways behind one message.
 
+### One pipeline, many repositories
+
+This is a shared system: a single pipeline definition releases every enabled repository, so
+the repository is a parameter rather than a fork of the YAML. Two consequences follow.
+
+**Workload classification must be known at compile time.** It decides which stages exist — a
+workload release needs two separately gated publishes in a fixed order, and stage structure
+cannot be chosen at run time. So `eng/pipelines/release.yml` derives it from the parameters:
+
+```yaml
+- name: isWorkload
+  value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'maui', 'android', 'macios')) }}
+```
+
+Derived, not asked for, so an operator cannot set it wrong. But it is a *second* source of
+truth alongside `config/repositories.json`, which is authoritative. Rather than leave those to
+drift, they are pinned from both ends:
+
+- **at build time**, `PipelineDefinitionTests` fails if the pipeline's repository dropdown or
+  its workload list disagrees with the policy;
+- **at release time**, the pipeline passes its answer to `release plan --expect-workload`, and
+  `ReleasePolicy.VerifyWorkloadClassification` fails closed with `WORKLOAD_MISMATCH`.
+
+The failure being guarded against is specific: a workload repository misclassified as
+non-workload would publish packs and manifests through a single stage, losing the
+pack-before-manifest ordering — and NuGet.org packages are immutable, so that is
+unrecoverable.
+
+**The publish stages are emitted only when publishing.** `publishPackages` defaults to
+`false`, so the default run of a shared production pipeline is a dry run, and on a dry run the
+publish stages do not exist in the expanded YAML at all.
+
 ### Publish stages are scoped to one package set
 
 `release filter` and `release verify` both take `--set <artifactName>`, and the template
@@ -452,14 +489,19 @@ Two independent barriers, as required:
 ## 8. Code layout
 
 ```
+eng/pipelines/release.yml      THE pipeline — the entry point hooked up in Azure DevOps
+eng/pipelines/stages/          internal stage templates it includes
 src/DotNet.Release.Core/       pure policy, validation, planning — NO I/O
 src/DotNet.Release.Maestro/    typed BAR client adapter (interface impl)
 src/DotNet.Release.NuGet/      read-only feed + nupkg reading adapters
 src/DotNet.Release.Cli/        verbs and argument parsing
-tests/DotNet.Release.Core.Tests/
+tests/                         one test project per source project
 config/repositories.json
-templates/release.yml
 ```
+
+`eng/pipelines/stages/publish-set.yml` is an implementation detail of the pipeline, not a
+consumer-facing template. It exists so the workload path (packs, then manifests) and the
+non-workload path share one implementation rather than three copies.
 
 `Core` defines the interfaces (`IBuildRegistry`, `IPackageIdentityReader`,
 `IPackageAvailabilityProbe`); the adapters implement them. Interfaces are not I/O, so they

@@ -143,6 +143,41 @@ public sealed class ReleasePolicy
                 ErrorCodes.WorkloadSetNotConfigured,
                 $"No workload set channel is configured for .NET {band}.");
 
+    /// <summary>
+    /// Cross-checks the pipeline's compile-time workload classification against this policy.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The pipeline must decide at compile time whether a release is a workload release,
+    /// because that decides which stages exist: a workload release needs two separately gated
+    /// publishes in a fixed order, and stage structure cannot be chosen at run time.
+    /// </para>
+    /// <para>
+    /// That makes the YAML's repository list a second source of truth alongside this policy.
+    /// Rather than leave them to drift, the pipeline passes its answer in and this check fails
+    /// closed when they disagree — for example when a repository is added to the policy but
+    /// not to the YAML list, which would otherwise publish a workload build through a single
+    /// ungated-for-ordering stage and put manifests on NuGet.org before their packs.
+    /// </para>
+    /// </remarks>
+    public static Result<bool> VerifyWorkloadClassification(RepositoryPolicy policy, bool? expected)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+
+        if (expected is null || expected == policy.Workload)
+        {
+            return Result<bool>.Success(true);
+        }
+
+        return Result<bool>.Failure(
+            ErrorCodes.WorkloadMismatch,
+            $"The pipeline classified '{policy.Repository}' as " +
+            $"{(expected.Value ? "a workload" : "a non-workload")} release, but " +
+            $"config/repositories.json declares it as " +
+            $"{(policy.Workload ? "a workload" : "a non-workload")} release. The pipeline's " +
+            "repository list and the release policy must agree.");
+    }
+
     internal sealed class PolicyDocument
     {
         [JsonPropertyName("schemaVersion")]

@@ -34,6 +34,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Parses the release pipeline YAML in tests, so pipeline/policy drift fails the build. -->
+    <YamlDotNetPackageVersion>18.1.0</YamlDotNetPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Stable GA release; the CLI does not roll its own argument parsing. -->
     <SystemCommandLinePackageVersion>2.0.11</SystemCommandLinePackageVersion>
   </PropertyGroup>

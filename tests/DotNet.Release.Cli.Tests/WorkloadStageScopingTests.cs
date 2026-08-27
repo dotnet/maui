@@ -33,7 +33,7 @@ public class WorkloadStageScopingTests : IDisposable
         var registry = new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui"));
 
         Assert.Equal(ExitCodes.Success, await Verbs.PlanAsync(
-            _console, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
+            _console, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null, true,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None));
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
@@ -228,7 +228,7 @@ public class VerificationBudgetTests : IDisposable
         var registry = new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
 
         await Verbs.PlanAsync(
-            _console, registry, Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null,
+            _console, registry, Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null, false,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(

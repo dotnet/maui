@@ -42,6 +42,45 @@ public class ReleasePolicyTests
         Assert.True(TestData.Policy().GetRepository(TestData.Repo("DotNet/SkiaSharp")).IsSuccess);
     }
 
+    /// <summary>
+    /// The pipeline decides workload-ness at compile time because it decides which stages
+    /// exist. This check is what stops that second source of truth from drifting away from
+    /// the policy — a workload repo misclassified as non-workload would publish manifests
+    /// and packs through one stage, losing the ordering guarantee entirely.
+    /// </summary>
+    [Theory]
+    [InlineData("dotnet/maui", false)]
+    [InlineData("dotnet/skiasharp", true)]
+    public void A_pipeline_classification_disagreeing_with_the_policy_fails_closed(string repo, bool expected)
+    {
+        var policy = TestData.Policy().GetRepository(TestData.Repo(repo)).Value;
+
+        var result = ReleasePolicy.VerifyWorkloadClassification(policy, expected);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.WorkloadMismatch));
+        Assert.Contains("must agree", result.Errors[0].Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("dotnet/maui", true)]
+    [InlineData("dotnet/skiasharp", false)]
+    public void A_matching_classification_is_accepted(string repo, bool expected)
+    {
+        var policy = TestData.Policy().GetRepository(TestData.Repo(repo)).Value;
+
+        Assert.True(ReleasePolicy.VerifyWorkloadClassification(policy, expected).IsSuccess);
+    }
+
+    [Fact]
+    public void An_absent_classification_is_not_checked()
+    {
+        // Local runs need not assert one; only the pipeline does.
+        var policy = TestData.Policy().GetRepository(TestData.Repo("dotnet/maui")).Value;
+
+        Assert.True(ReleasePolicy.VerifyWorkloadClassification(policy, null).IsSuccess);
+    }
+
     [Fact]
     public void Unconfigured_workload_band_fails_closed()
     {

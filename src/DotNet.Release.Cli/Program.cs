@@ -50,13 +50,17 @@ public static class Program
         var commit = new Option<string>("--commit") { Description = "Exact source commit registered in BAR.", Required = true };
         var barId = new Option<int?>("--bar-id") { Description = "BAR build ID, for builds BAR records without a GitHub URL." };
         var output = new Option<DirectoryInfo>("--out") { Description = "Output directory.", Required = true };
+        var expectWorkload = new Option<bool?>("--expect-workload")
+        {
+            Description = "The pipeline's workload classification. Verified against the policy; a mismatch fails closed.",
+        };
         var barUri = new Option<string?>("--bar-uri") { Description = "Product Construction Service URI. Defaults to production." };
         var token = new Option<string?>("--bar-token") { Description = "Access token. Omit to use the ambient Azure identity." };
         var managedIdentity = new Option<string?>("--managed-identity") { Description = "Managed identity client ID." };
 
         var command = new Command("plan", "Resolve and verify the BAR build, then write plan.json.")
         {
-            config, repo, commit, barId, output, barUri, token, managedIdentity,
+            config, repo, commit, barId, expectWorkload, output, barUri, token, managedIdentity,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -73,6 +77,7 @@ public static class Program
                 parse.GetValue(repo)!,
                 parse.GetValue(commit)!,
                 parse.GetValue(barId),
+                parse.GetValue(expectWorkload),
                 parse.GetValue(output)!.FullName,
                 DateTimeOffset.UtcNow,
                 ToolVersion,
