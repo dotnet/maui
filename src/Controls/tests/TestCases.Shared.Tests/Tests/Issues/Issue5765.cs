@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView4)]
 	public class Issue5765 : _IssuesUITest
 	{
 		const string Target = "FirstLabel";
@@ -16,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
 		public void FlexLayoutsInFramesShouldSizeCorrectly()
 		{
 			// If the first label is visible at all, then this has succeeded

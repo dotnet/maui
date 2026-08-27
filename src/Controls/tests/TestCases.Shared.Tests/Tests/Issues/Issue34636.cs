@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue34636 : _IssuesUITest
 {
 	public Issue34636(TestDevice device)
@@ -15,7 +16,6 @@ public class Issue34636 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void VerticalItemsRemainFullyVisibleAfterChangingSpacing()
 	{
 		App.WaitForElement("ChangeSpacingButton");

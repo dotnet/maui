@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue33614 : _IssuesUITest
 {
     public override string Issue => "CollectionView Scrolled event reports incorrect FirstVisibleItemIndex after programmatic ScrollTo";
@@ -12,7 +13,6 @@ public class Issue33614 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    [Category(UITestCategories.CollectionView3)]
     public void FirstVisibleItemIndexShouldBeCorrectAfterScrollTo()
     {
         App.WaitForElement("ScrollToButton");

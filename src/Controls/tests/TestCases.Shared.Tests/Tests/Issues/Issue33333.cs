@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue33333 : _IssuesUITest
 {
 	public override string Issue => "CollectionView Scrolled event is triggered on the initial app load";
@@ -12,7 +13,6 @@ public class Issue33333 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
 	public void CollectionViewScrolledEventShouldNotFireOnInitialLoad()
 	{
 		App.WaitForElement("ScrollCountLabel");

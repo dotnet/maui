@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue27766 : _IssuesUITest
 {
 	public override string Issue => "The bottom content inset value does not need to be updated for CollectionView items when the editor is an inner element";
@@ -14,7 +15,6 @@ public class Issue27766 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void ShouldIgnoreBottomContentInsetForCollectionViewItems()
 	{
 		App.WaitForElement("Test 3");

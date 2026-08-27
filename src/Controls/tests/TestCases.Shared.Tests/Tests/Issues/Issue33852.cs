@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue33852 : _IssuesUITest
 {
     public Issue33852(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue33852 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    [Category(UITestCategories.CollectionView7)]
     public void ProgrammaticScrollToWorksWithHorizontalLayout()
     {
         App.WaitForElement("ScrollToButton");

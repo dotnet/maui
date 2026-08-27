@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue22320 : _IssuesUITest
 {
 	public Issue22320(TestDevice device) : base(device)
@@ -14,7 +15,6 @@ public class Issue22320 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void SelectionShouldNotMovedToTopWithGroupedCollection()
 	{
 		App.WaitForElement("CollectionView");

@@ -6,6 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 [Category(UITestCategories.CollectionView)]
 
+[Category(UITestCategories.CollectionView3)]
 public class ScrollToGroup : _IssuesUITest
 {
 	public ScrollToGroup(TestDevice testDevice) : base(testDevice)
@@ -15,7 +16,6 @@ public class ScrollToGroup : _IssuesUITest
 	public override string Issue => "CollectionView Scroll To Grouped Item";
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView2)]
 	public void CanScrollToGroupAndItemIndex()
 	{
 		App.WaitForElement("GroupIndexEntry");
@@ -32,7 +32,6 @@ public class ScrollToGroup : _IssuesUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView5)]
 	public void InvalidScrollToIndexShouldNotCrash()
 	{
 		App.WaitForElement("GroupIndexEntry");
@@ -49,7 +48,6 @@ public class ScrollToGroup : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.CollectionView2)]
 	public void CanScrollToGroupAndItem()
 	{
 		App.WaitForElement("GroupNameEntry");

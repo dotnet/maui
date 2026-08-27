@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+	[Category(UITestCategories.CollectionView1)]
 	public class VisitAndUpdateItemsSourceUITests : CollectionViewUITests
 	{
 		readonly string _collectionViewId = "collectionview";
@@ -36,7 +37,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[TestCase("DataTemplate", "VerticalGridCode", 19, 6)]
 		[TestCase("DataTemplate", "HorizontalGridCode", 19, 6)]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView3)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue.")]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
 		{

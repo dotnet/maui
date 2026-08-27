@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue32771 : _IssuesUITest
 {
     public Issue32771(TestDevice testDevice) : base(testDevice)
@@ -13,7 +14,6 @@ public class Issue32771 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    [Category(UITestCategories.CollectionView1)]
     public void FlowdirectionShouldWorkForHeaderFooter()
     {
         App.WaitForElement("ToggleFlowDirectionButton");

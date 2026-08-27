@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue35326 : _IssuesUITest
 {
 	public Issue35326(TestDevice device) : base(device) { }
@@ -12,7 +13,6 @@ public class Issue35326 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void GroupedCollectionViewScrollToIndexScrollsToCorrectItem()
 	{
 		// Initially the first item of the first group should be visible

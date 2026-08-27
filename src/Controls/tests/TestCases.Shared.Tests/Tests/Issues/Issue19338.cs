@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	public class Issue19338 : _IssuesUITest
 	{
 		public Issue19338(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
 		public void HeaderAndFooterShouldBeVisible()
 		{
 			App.WaitForElement("HeaderLabel");

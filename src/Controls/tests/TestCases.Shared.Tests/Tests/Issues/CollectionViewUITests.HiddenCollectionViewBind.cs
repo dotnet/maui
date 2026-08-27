@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView4)]
 	public class HiddenCollectionViewBindUITests : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -18,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionShouldInvalidateOnVisibilityChange (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13203.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView4)]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
 			App.WaitForElement(Success);

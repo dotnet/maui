@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue6077 : _IssuesUITest
 {
 	public Issue6077(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue6077 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
 	public void LastColumnShouldBeVisible()
 	{
 		// If the partial column shows up, then Item 5 will be in it

@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue35113 : _IssuesUITest
 {
 	public override string Issue => "CV2 header/footer view width is not expanded to its content width on iOS/macOS";
@@ -12,7 +13,6 @@ public class Issue35113 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void HorizontalGridHeaderExpandsToContentWidth()
 	{
 		// With the bug: the header's supplementary cell is constrained to ~30pt wide
@@ -30,7 +30,6 @@ public class Issue35113 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void HorizontalGridFooterExpandsToContentWidth()
 	{
 		App.WaitForElement("Issue35113CollectionView");

@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView2)]
 	public class Issue5535 : _IssuesUITest
 	{
 		public Issue5535(TestDevice testDevice) : base(testDevice)
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
 		public void SwappingEmptyViews()
 		{
 			App.WaitForElement("FilterItems");

@@ -7,6 +7,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	internal class Issue29130 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView2 ItemSizingStrategy should work for MeasureFirstItem";
@@ -16,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
 		public void ItemSizeShouldRespondForItemSizingStrategy()
 		{
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/29130
@@ -31,7 +31,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
 		public void ItemTemplateShouldUpdateDynamicallyWithCacheClear()
 		{
 			App.WaitForElement("29130Grid");

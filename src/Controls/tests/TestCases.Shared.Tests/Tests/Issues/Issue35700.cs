@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue35700 : _IssuesUITest
 {
 	public Issue35700(TestDevice device) : base(device) { }
@@ -13,7 +14,6 @@ public class Issue35700 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void GroupedCollectionViewGridLayoutRendersCorrectly()
 	{
 		App.WaitForElement("TestCollectionView");

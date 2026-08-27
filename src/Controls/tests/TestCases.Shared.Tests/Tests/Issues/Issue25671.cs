@@ -6,6 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView3)]
 	public class Issue25671 : _IssuesUITest
 	{
 		public Issue25671(TestDevice testDevice) : base(testDevice)
@@ -16,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
 		public async Task LayoutPassesShouldNotIncrease()
 		{
 			App.WaitForElement("RegenerateItems");

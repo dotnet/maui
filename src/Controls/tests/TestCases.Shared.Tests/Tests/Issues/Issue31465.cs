@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue31465 : _IssuesUITest
 {
 	public Issue31465(TestDevice device) : base(device) { }
@@ -11,7 +12,6 @@ public class Issue31465 : _IssuesUITest
 	public override string Issue => "The page can be dragged down, and it would cause an extra space between Header and EmptyView text.";
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
 	public void VerifyCollectionViewEmptyView()
 	{
 		App.WaitForElement("HeaderLabel");

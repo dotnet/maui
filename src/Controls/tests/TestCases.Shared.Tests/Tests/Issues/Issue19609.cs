@@ -7,6 +7,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue19609 : _IssuesUITest
 {
 	public Issue19609(TestDevice device) : base(device) { }
@@ -15,7 +16,6 @@ public class Issue19609 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void CanTapButtonOnEmptyView()
 	{
 		var btnElementId = "btnClick";

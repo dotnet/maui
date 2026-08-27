@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue17823 : _IssuesUITest
 {
 	public Issue17823(TestDevice device) : base(device)
@@ -14,7 +15,6 @@ public class Issue17823 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
 	public void ReorderingItemToEndWithHeaderDoesNotCrash()
 	{
 		// Verify header is present
@@ -30,7 +30,6 @@ public class Issue17823 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
 	public void ReorderingLastItemWithHeaderDoesNotCrash()
 	{
 		// Verify header is present

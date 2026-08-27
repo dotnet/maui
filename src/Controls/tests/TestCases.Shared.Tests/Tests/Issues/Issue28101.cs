@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue28101 : _IssuesUITest
 {
 	public Issue28101(TestDevice device) : base(device)
@@ -13,7 +14,6 @@ public class Issue28101 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
 	public void FooterTemplateShouldNotScrollWhenEmptyViewIsDisplayed()
 	{
 		App.WaitForElement("This Is A Footer");

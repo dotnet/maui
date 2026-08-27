@@ -6,6 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView4)]
 public class Issue28827 : _IssuesUITest
 {
 	public override string Issue => "[Android] Group Header/Footer set for all Items when IsGrouped is True for ObservableCollection";
@@ -15,7 +16,6 @@ public class Issue28827 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
 	public void CVGroupHFTemplateWithObservableCollection()
 	{
 		App.WaitForElement("collectionView");

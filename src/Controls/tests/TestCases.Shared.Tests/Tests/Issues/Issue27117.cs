@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView4)]
 	public class Issue27117 : _IssuesUITest
 	{
 		public Issue27117(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
 		public void ScrollToIndexZeroShowsFirstItemNotHeader()
 		{
 			// Wait for CollectionView to load

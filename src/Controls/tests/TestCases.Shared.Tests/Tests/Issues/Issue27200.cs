@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.CollectionView1)]
 	public class Issue27200 : _IssuesUITest
 	{
 		public override string Issue => "The size of the CollectionView header is incorrect when it contains a Binding on an IsVisible";
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView3)]
 		public void CollectionViewHeaderSizewithIsVisibleBinding()
 		{
 			App.WaitForElement("collectionView");

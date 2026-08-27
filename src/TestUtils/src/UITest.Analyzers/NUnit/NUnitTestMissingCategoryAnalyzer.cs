@@ -26,10 +26,6 @@ namespace UITest.Analyzers.NUnit
 
 		private const string Category = "Testing";
 
-		// Keep this list in sync through the rebalance-ui-test-categories skill.
-		private static readonly ImmutableArray<string> CiShardCategoryPrefixes =
-			ImmutableArray.Create("CollectionView");
-
 		private static readonly DiagnosticDescriptor MissingCategoryRule = new DiagnosticDescriptor(
 			MissingCategoryDiagnosticId,
 			MissingCategoryTitle,
@@ -152,17 +148,7 @@ namespace UITest.Analyzers.NUnit
 				return false;
 			}
 
-			foreach (var prefix in CiShardCategoryPrefixes)
-			{
-				if (category.Length > prefix.Length &&
-					category.StartsWith(prefix, StringComparison.Ordinal) &&
-					category.Skip(prefix.Length).All(char.IsDigit))
-				{
-					return true;
-				}
-			}
-
-			return false;
+			return category is "CollectionView1" or "CollectionView2" or "CollectionView3" or "CollectionView4";
 		}
 
 		/// <summary>

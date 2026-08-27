@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView1)]
 public class Issue29131 : _IssuesUITest
 {
 	public Issue29131(TestDevice device) : base(device) { }
@@ -14,7 +15,6 @@ public class Issue29131 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void KeepScrollOffsetShouldWork()
 	{
 		App.WaitForElement("CollectionView");

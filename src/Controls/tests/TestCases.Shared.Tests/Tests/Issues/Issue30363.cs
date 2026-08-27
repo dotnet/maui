@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue30363 : _IssuesUITest
 {
 	public override string Issue => "[iOS] CollectionView does not clear selection when SelectedItem is set to null";
@@ -14,7 +15,6 @@ public class Issue30363 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void CollectionViewSelectionShouldClear()
 	{
 		App.WaitForElement("cvItem");

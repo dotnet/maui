@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView3)]
 public class Issue27797 : _IssuesUITest
 {
 	public Issue27797(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue27797 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
 	public void AppShouldNotCrashWhenModifyingCollectionView()
 	{
 		App.WaitForElement("CleanHouse");

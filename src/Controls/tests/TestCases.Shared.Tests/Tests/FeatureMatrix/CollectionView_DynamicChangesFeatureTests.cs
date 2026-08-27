@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+[Category(UITestCategories.CollectionView4)]
 public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 {
 	public const string DynamicChangesFeatureMatrix = "CollectionView Feature Matrix";
@@ -18,7 +19,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void ValidateDynamicItemTemplateDisplayed()
 	{
 		App.WaitForElement("DynamicButton");
@@ -44,7 +44,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	//Dynamic Updates to CollectionView Header/Footer and Templates Are Not Displayed Issue Link: https://github.com/dotnet/maui/issues/28676
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
 	public void ValidateDynamicHeaderStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -63,7 +62,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
 	public void ValidateDynamicHeaderGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -82,7 +80,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void ValidateDynamicHeaderTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -101,7 +98,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
 	public void ValidateDynamicFooterStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -120,7 +116,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void ValidateDynamicFooterGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -139,7 +134,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void ValidateDynamicFooterTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -159,7 +153,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void ValidateDynamicGroupHeaderTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -182,7 +175,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void ValidateDynamicGroupFooterTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -208,7 +200,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void ValidateDynamicEmptyViewStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -229,7 +220,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
 	public void ValidateDynamicEmptyViewGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -250,7 +240,6 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
 	public void ValidateDynamicEmptyViewTemplateDisplayed()
 	{
 		App.WaitForElement(Options);

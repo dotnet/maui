@@ -7,6 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 
 
+	[Category(UITestCategories.CollectionView4)]
 	public class CollectionViewEmptyViewTests : CollectionViewUITests
 	{
 		protected override bool ResetAfterEachTest => true;
@@ -20,7 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView6)]
 		public void EmptyViewItemsSourceNullStringWorks()
 		{
 			VisitInitialGallery("EmptyView");
@@ -33,7 +33,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
 		public void EmptyViewItemsSourceNullViewWorks()
 		{
 			VisitInitialGallery("EmptyView");

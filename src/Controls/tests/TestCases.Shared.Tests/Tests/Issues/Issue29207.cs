@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue29207 : _IssuesUITest
 {
 	public Issue29207(TestDevice testDevice) : base(testDevice)
@@ -14,7 +15,6 @@ public class Issue29207 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
 	public void ScrollToLastItem()
 	{
 		App.WaitForElement("InsertItemButton");

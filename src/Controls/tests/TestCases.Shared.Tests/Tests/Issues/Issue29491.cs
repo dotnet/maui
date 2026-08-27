@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+[Category(UITestCategories.CollectionView1)]
 public class Issue29491 : _IssuesUITest
 {
 	public Issue29491(TestDevice testDevice) : base(testDevice)
@@ -13,7 +14,6 @@ public class Issue29491 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
 	public void VerifyDataTemplateParentIsNotNull()
 	{
 		App.WaitForElement("Button");

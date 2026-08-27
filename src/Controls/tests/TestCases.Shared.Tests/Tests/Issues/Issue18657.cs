@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.CollectionView2)]
 public class Issue18657 : _IssuesUITest
 {
 	public Issue18657(TestDevice testDevice) : base(testDevice)
@@ -13,7 +14,6 @@ public class Issue18657 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
 	public void RemoveEmptyViewAtRuntime()
 	{
 		App.WaitForElement("Issue18657Button");
