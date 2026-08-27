@@ -59,11 +59,13 @@ namespace Microsoft.Maui
 	public static class SafeAreaElementExtensions
 	{
 		/// <summary>
-		/// Gets the per-edge safe area strategy consumed by MAUI platform handlers.
+		/// Gets the resolved per-edge safe area configuration used as input by MAUI platform handlers.
 		/// </summary>
 		/// <param name="safeAreaElement">The safe area element whose strategy to read.</param>
 		/// <returns>
-		/// The effective per-edge strategy. An edge can remain <see cref="SafeAreaRegions.Default"/> when native
+		/// The effective per-edge configuration. Platform handlers can apply context-specific adjustments, such as
+		/// keyboard overlap and ancestor suppression, before arranging the view.
+		/// An edge can remain <see cref="SafeAreaRegions.Default"/> when native
 		/// platform behavior should be preserved. For built-in controls, compatibility behavior can make this
 		/// value differ from the control's <see cref="ISafeAreaElement.SafeAreaEdges"/> property.
 		/// </returns>
