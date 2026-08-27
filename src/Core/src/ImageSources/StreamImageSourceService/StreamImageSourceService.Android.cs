@@ -23,10 +23,11 @@ namespace Microsoft.Maui
 				try
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken);
+					var bytes = await GetStreamBytesAsync(stream, cancellationToken);
 
 					var callback = new ImageLoaderCallback();
 
-					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
+					PlatformInterop.LoadImageFromBytes(imageView, bytes, callback);
 
 					var result = await callback.Result;
 
@@ -60,10 +61,11 @@ namespace Microsoft.Maui
 				try
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+					var bytes = await GetStreamBytesAsync(stream, cancellationToken).ConfigureAwait(false);
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
+					PlatformInterop.LoadImageFromBytes(context, bytes, drawableCallback);
 
 					var result = await drawableCallback.Result.ConfigureAwait(false);
 
@@ -84,6 +86,13 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		static async Task<byte[]> GetStreamBytesAsync(Stream stream, CancellationToken cancellationToken)
+		{
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+			return memoryStream.ToArray();
 		}
 	}
 }
