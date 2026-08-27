@@ -25,4 +25,5 @@ override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync
 override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>!>! workItem) -> System.Threading.Tasks.Task<TResult>!
 override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync<TResult>(System.Func<TResult>! workItem) -> System.Threading.Tasks.Task<TResult>!
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task?
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task?
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(string! contentRootRelativePath, string! requestAbsoluteUri, out System.IO.Stream? content, out string? contentType) -> bool

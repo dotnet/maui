@@ -58,10 +58,24 @@ public class ExternalStaticContentHotReloadTests
 		await using var manager = CreateManager();
 
 		var first = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
-		var second = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
 
 		// A second attach must not throw "there is already a root component with selector 'body::after'".
-		Assert.Same(first, second);
+		var second = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+
+		if (!MetadataUpdater.IsSupported)
+		{
+			Assert.Null(first);
+			Assert.Null(second);
+			return;
+		}
+
+		Assert.NotNull(second);
+		await second!;
+
+		// Only one registration exists, so exactly one removal succeeds.
+		await manager.RemoveRootComponentAsync("body::after");
+		await Assert.ThrowsAsync<InvalidOperationException>(
+			() => manager.RemoveRootComponentAsync("body::after"));
 	}
 
 	[Fact]
@@ -95,6 +109,107 @@ public class ExternalStaticContentHotReloadTests
 		{
 			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(null!);
 		});
+	}
+
+	[Fact]
+	public async Task TryDetachFromWebViewManager_RemovesTheNotifier()
+	{
+		await using var manager = CreateManager();
+
+		var attachTask = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		var detachTask = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+
+		if (!MetadataUpdater.IsSupported)
+		{
+			Assert.Null(attachTask);
+			Assert.Null(detachTask);
+			return;
+		}
+
+		Assert.NotNull(detachTask);
+		await detachTask!;
+
+		// The notifier is gone, so removing it again fails.
+		await Assert.ThrowsAsync<InvalidOperationException>(
+			() => manager.RemoveRootComponentAsync("body::after"));
+	}
+
+	[Fact]
+	public async Task TryDetachFromWebViewManager_ReturnsNull_WhenNothingWasAttached()
+	{
+		await using var manager = CreateManager();
+
+		Assert.Null(BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager));
+	}
+
+	[Fact]
+	public async Task TryDetachFromWebViewManager_IsIdempotent()
+	{
+		await using var manager = CreateManager();
+
+		_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+
+		var first = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+		if (first is not null)
+		{
+			await first;
+		}
+
+		// A second detach has nothing left to remove and must not throw.
+		Assert.Null(BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager));
+	}
+
+	[Fact]
+	public async Task TryAttachToWebViewManager_CanReattachAfterDetach()
+	{
+		await using var manager = CreateManager();
+
+		var firstAttach = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		var detach = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+		if (detach is not null)
+		{
+			await detach;
+		}
+
+		var secondAttach = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+
+		if (!MetadataUpdater.IsSupported)
+		{
+			Assert.Null(firstAttach);
+			Assert.Null(secondAttach);
+			return;
+		}
+
+		Assert.NotNull(secondAttach);
+		await secondAttach!;
+
+		// The notifier really was registered again, so exactly one removal succeeds.
+		await manager.RemoveRootComponentAsync("body::after");
+		await Assert.ThrowsAsync<InvalidOperationException>(
+			() => manager.RemoveRootComponentAsync("body::after"));
+	}
+
+	[Fact]
+	public void TryDetachFromWebViewManager_Throws_WhenManagerIsNull()
+	{
+		Assert.Throws<ArgumentNullException>(() =>
+		{
+			_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(null!);
+		});
+	}
+
+	[Fact]
+	public async Task ExternalHandler_DetachesHotReload_OnTeardown()
+	{
+		var blazorWebView = new BlazorWebView();
+		var handler = new FakeExternalBlazorWebViewHandler();
+		handler.SetVirtualView(blazorWebView);
+
+		handler.StartWebViewCore();
+		await handler.StopWebViewCoreAsync();
+
+		Assert.Null(handler.WebViewManager);
+		Assert.Equal(MetadataUpdater.IsSupported, handler.HotReloadDetachTask is not null);
 	}
 
 	[Fact]

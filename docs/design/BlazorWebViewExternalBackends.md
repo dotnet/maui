@@ -99,6 +99,18 @@ synchronously until a page is attached. Attaching is idempotent per `WebViewMana
 repeat calls return the task from the first attach rather than failing on the notifier's fixed root
 component selector.
 
+And from the disconnect or disposal path, before disposing the `WebViewManager`:
+
+```csharp
+_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webViewManager);
+```
+
+`TryDetachFromWebViewManager` returns `null` when nothing was attached, so it is safe to call
+unconditionally and is idempotent. Detaching is not required purely to avoid a leak — the attachment
+is tracked weakly and the notifier unsubscribes when its root component is disposed — but it *is*
+required for a later `TryAttachToWebViewManager` on the same manager to take effect, which matters
+for handlers that can be disconnected and reconnected.
+
 And while resolving each static content request:
 
 ```csharp
@@ -117,7 +129,9 @@ if (BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
 
 This is a query, not a mutation: it reports content and lets the handler apply it to whatever
 response state it owns. The returned stream is fresh per call and the caller is responsible for
-disposing it, along with any content it had already resolved.
+disposing it, along with any content it had already resolved. The in-box Android, iOS, Tizen and
+Windows web view managers apply hot-reloaded content through exactly this call, so the public seam
+is the same code path MAUI itself ships on.
 
 Both members are inert when hot reload is unavailable — that is, when
 `System.Reflection.Metadata.MetadataUpdater.IsSupported` is `false` — so they can be called

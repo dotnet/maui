@@ -21,6 +21,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// Call <see cref="TryGetUpdatedStaticContent(string, string, out Stream, out string)"/> while resolving a
 	/// static content request, so hot-reloaded content replaces the on-disk content.
 	/// </description></item>
+	/// <item><description>
+	/// Call <see cref="TryDetachFromWebViewManager(WebViewManager)"/> from its disconnect or disposal path,
+	/// before disposing the <see cref="WebViewManager"/>, so a handler that is reconnected can attach again.
+	/// </description></item>
 	/// </list>
 	/// Both members are inert when hot reload is unavailable (that is, when
 	/// <see cref="System.Reflection.Metadata.MetadataUpdater.IsSupported"/> is <see langword="false"/>), so
@@ -50,6 +54,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			ArgumentNullException.ThrowIfNull(webViewManager);
 
 			return StaticContentHotReloadManager.TryAttachToWebViewManager(webViewManager);
+		}
+
+		/// <summary>
+		/// Removes the static content hot reload notifier from the specified <see cref="WebViewManager"/>,
+		/// when it was previously attached by <see cref="TryAttachToWebViewManager(WebViewManager)"/>.
+		/// </summary>
+		/// <param name="webViewManager">The <see cref="WebViewManager"/> to detach from.</param>
+		/// <returns>
+		/// A <see cref="Task"/> that completes when the notifier has been removed, or <see langword="null"/>
+		/// when nothing was attached to this manager and there was nothing to remove.
+		/// </returns>
+		/// <remarks>
+		/// Handlers should call this from their disconnect or disposal path, before disposing the
+		/// <see cref="WebViewManager"/>, so a handler that is later reconnected can attach again. Detaching is
+		/// idempotent: calling it when nothing is attached returns <see langword="null"/> rather than throwing.
+		/// Detaching is not required purely to avoid a leak — the attachment is tracked weakly and the notifier
+		/// unsubscribes when the root component is disposed — but it is required for a subsequent
+		/// <see cref="TryAttachToWebViewManager(WebViewManager)"/> on the same manager to take effect.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webViewManager"/> is <see langword="null"/>.</exception>
+		public static Task? TryDetachFromWebViewManager(WebViewManager webViewManager)
+		{
+			ArgumentNullException.ThrowIfNull(webViewManager);
+
+			return StaticContentHotReloadManager.TryDetachFromWebViewManager(webViewManager);
 		}
 
 		/// <summary>
@@ -94,38 +123,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			content = null;
 			return false;
-		}
-
-		/// <summary>
-		/// Applies hot-reloaded content to a response that a built-in MAUI web view manager is building.
-		/// </summary>
-		/// <remarks>
-		/// This deliberately routes through <see cref="TryGetUpdatedStaticContent(string, string, out Stream, out string)"/>
-		/// so the built-in handlers exercise the same public seam that external handlers use. It is not public
-		/// because a <see langword="ref"/>-mutating response API is not a shape we want third-party backends to
-		/// bind to; they own their response state and call the query API directly.
-		/// </remarks>
-		internal static bool TryReplaceResponseContent(
-			string contentRootRelativePath,
-			string requestAbsoluteUri,
-			ref int responseStatusCode,
-			ref Stream responseContent,
-			IDictionary<string, string> responseHeaders)
-		{
-			if (!TryGetUpdatedStaticContent(contentRootRelativePath, requestAbsoluteUri, out var content, out var contentType))
-			{
-				return false;
-			}
-
-			responseStatusCode = 200;
-			responseContent?.Dispose();
-			responseContent = content!;
-			if (contentType is not null)
-			{
-				responseHeaders["Content-Type"] = contentType;
-			}
-
-			return true;
 		}
 	}
 }

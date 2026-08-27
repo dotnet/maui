@@ -252,10 +252,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
-			var hotReloadedContent = Stream.Null;
-			if (BlazorWebViewStaticContentHotReload.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
+			// Deliberately goes through the same public seam an external backend uses, so the in-box
+			// handlers dogfood it. The caller owns the response, so applying the content is done here.
+			if (BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(
+					_contentRootRelativeToAppRoot, requestUri, out var hotReloadedContent, out var hotReloadedContentType))
 			{
-				contentBytes = await ReadContentAsync(hotReloadedContent);
+				using (hotReloadedContent)
+				{
+					statusCode = 200;
+					contentBytes = await ReadContentAsync(hotReloadedContent!);
+				}
+
+				if (hotReloadedContentType is not null)
+				{
+					headers["Content-Type"] = hotReloadedContentType;
+				}
 			}
 
 			if (contentBytes != null)

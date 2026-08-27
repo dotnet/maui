@@ -119,6 +119,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				// Dispose this component's contents so that user-written disposal logic and Blazor disposal logic will complete.
 
+				// Detach before disposal so a reconnected handler can attach the notifier again.
+				_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webviewManager);
+
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()

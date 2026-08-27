@@ -36,6 +36,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					winUIWebViewManager.ClearStaticContentCache();
 				}
 
+				// Detach before disposal so a reconnected handler can attach the notifier again.
+				_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(_webviewManager);
+
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()

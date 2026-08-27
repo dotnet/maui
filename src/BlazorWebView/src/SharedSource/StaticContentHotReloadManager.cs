@@ -76,6 +76,26 @@ namespace Microsoft.AspNetCore.Components.WebView
 				static m => m.AddRootComponentAsync(typeof(StaticContentChangeNotifier), "body::after", ParameterView.Empty));
 		}
 
+		public static Task? TryDetachFromWebViewManager(WebViewManager manager)
+		{
+			if (!s_attachedManagers.TryGetValue(manager, out var attachTask))
+			{
+				return null;
+			}
+
+			s_attachedManagers.Remove(manager);
+
+			// The attach may still be in flight, so the removal has to be sequenced after it. Removing a
+			// selector that was never registered throws, which is why this waits rather than racing.
+			return RemoveNotifierAsync(manager, attachTask);
+		}
+
+		private static async Task RemoveNotifierAsync(WebViewManager manager, Task attachTask)
+		{
+			await attachTask.ConfigureAwait(false);
+			await manager.RemoveRootComponentAsync("body::after").ConfigureAwait(false);
+		}
+
 		/// <summary>
 		/// Looks up hot-reloaded content for a request without taking ownership of any response state.
 		/// </summary>

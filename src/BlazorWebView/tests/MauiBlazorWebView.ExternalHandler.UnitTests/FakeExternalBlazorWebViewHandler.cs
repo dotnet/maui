@@ -36,6 +36,11 @@ internal sealed class FakeExternalBlazorWebViewHandler : ViewHandler<IBlazorWebV
 	public Task? HotReloadAttachTask { get; private set; }
 
 	/// <summary>
+	/// The task returned by the hot reload detach seam, or <see langword="null"/> when nothing was attached.
+	/// </summary>
+	public Task? HotReloadDetachTask { get; private set; }
+
+	/// <summary>
 	/// A real backend resolves this from <c>Services</c>; the fake supplies its own so the tests can run
 	/// without a <c>MauiContext</c>.
 	/// </summary>
@@ -85,6 +90,27 @@ internal sealed class FakeExternalBlazorWebViewHandler : ViewHandler<IBlazorWebV
 		WebViewManager = manager;
 		manager.Navigate(virtualView.StartPath);
 		return manager;
+	}
+
+	/// <summary>
+	/// Mirrors what a real backend does in its <c>DisconnectHandler</c>: detach the hot reload notifier
+	/// before disposing the manager, so a reconnected handler can attach again.
+	/// </summary>
+	public async Task StopWebViewCoreAsync()
+	{
+		if (WebViewManager is null)
+		{
+			return;
+		}
+
+		HotReloadDetachTask = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(WebViewManager);
+		if (HotReloadDetachTask is not null)
+		{
+			await HotReloadDetachTask;
+		}
+
+		await WebViewManager.DisposeAsync();
+		WebViewManager = null;
 	}
 }
 
