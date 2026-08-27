@@ -14499,3 +14499,56 @@ Describe 'The fix panel record reaches the published manifest' {
         $source | Should -Match 'Panel = @\(Get-ReplicationFixPanelRecord'
     }
 }
+
+Describe 'No prompt may smuggle a command call into an expandable string' {
+    It 'contains no bare-word subexpression that PowerShell would execute' {
+        # Build 15111609 reproduced issue 30958 twice on a real device, wrote a
+        # valid test proposal, and was then destroyed: the test-phase prompt
+        # described MSBuild's <NoWarn>$(NoWarn),CA1416</NoWarn> inside an
+        # expandable here-string, so PowerShell evaluated $(NoWarn) as a
+        # subexpression, could not find a command named NoWarn, and exited 1.
+        # The run reported verification_inconclusive with an empty attemptKinds
+        # list, which is how a crash disguises itself as a considered refusal.
+        #
+        # The prompts are full of MSBuild, XML, and shell syntax, so this will
+        # be written again. A bare word inside $(...) is never prompt text a
+        # human meant; it is always a command PowerShell is about to run.
+        $scripts = @(
+            (Join-Path $PSScriptRoot 'Replicate-Issue.ps1')
+        ) + @(Get-ChildItem -Path (Join-Path $PSScriptRoot 'shared') -Filter '*.ps1' -File |
+              Select-Object -ExpandProperty FullName)
+
+        $offenders = @()
+        foreach ($script in $scripts) {
+            $parseErrors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$null, [ref]$parseErrors)
+            $parseErrors | Should -BeNullOrEmpty -Because "$script must parse"
+
+            foreach ($string in $ast.FindAll({
+                $args[0] -is [System.Management.Automation.Language.ExpandableStringExpressionAst] }, $true)) {
+                foreach ($nested in $string.NestedExpressions) {
+                    if ($nested -isnot [System.Management.Automation.Language.SubExpressionAst]) { continue }
+                    $inner = $nested.SubExpression.Extent.Text
+                    if ($inner -match '^[A-Za-z][A-Za-z0-9_]*$') {
+                        $offenders += ('{0}:{1} -> $({2}) runs "{2}" as a command' -f
+                            (Split-Path $script -Leaf), $nested.Extent.StartLineNumber, $inner)
+                    }
+                }
+            }
+        }
+
+        $offenders | Should -BeNullOrEmpty
+    }
+
+    It 'still emits the MSBuild property as literal prompt text' {
+        # Escaping must not silently delete the guidance it protects: the agent
+        # needs to read the real <NoWarn>$(NoWarn),CA1416</NoWarn> to
+        # understand why the analyzer is off.
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+
+        $source | Should -Match '<NoWarn>`\$\(NoWarn\),CA1416</NoWarn>'
+
+        $rendered = & ([scriptblock]::Create('@"' + "`n" + 'x <NoWarn>`$(NoWarn),CA1416</NoWarn> y' + "`n" + '"@'))
+        $rendered | Should -Match '<NoWarn>\$\(NoWarn\),CA1416</NoWarn>'
+    }
+}
