@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <RootNamespace>DotNet.Release.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNet.Release\DotNet.Release.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Parses eng/pipelines/release.yml so pipeline/policy drift is a build failure. -->
+    <PackageReference Include="YamlDotNet" Version="$(YamlDotNetPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The checked-in policy is exercised by tests so a bad edit fails the build. -->
+    <None Include="..\..\config\repositories.json" Link="repositories.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

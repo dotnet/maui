@@ -1,0 +1,184 @@
+using System.Security.Cryptography;
+using Xunit;
+
+namespace DotNet.Release.Tests;
+
+public class NupkgIdentityReaderTests : IDisposable
+{
+    private readonly PackageFixture _fixture = new();
+    private readonly NupkgIdentityReader _reader = new();
+
+    public void Dispose() => _fixture.Dispose();
+
+    [Fact]
+    public async Task Reads_identity_from_the_nuspec()
+    {
+        var path = _fixture.WritePackage("SkiaSharp", "3.119.0");
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
+        Assert.Equal("SkiaSharp", result.Value.Id);
+        Assert.Equal("3.119.0", result.Value.Version);
+        Assert.Equal("3.119.0", result.Value.NormalizedVersion);
+        Assert.Equal("SkiaSharp.3.119.0.nupkg", result.Value.FileName);
+    }
+
+    /// <summary>
+    /// Identity comes from the nuspec, not the file name. The current pipeline derives the
+    /// version from the file name, which is why it can only be right when the file name
+    /// already agrees.
+    /// </summary>
+    [Fact]
+    public async Task Identity_comes_from_the_nuspec_not_the_file_name()
+    {
+        var path = _fixture.WritePackage("SkiaSharp", "3.119.0", fileName: "totally-different-name.nupkg");
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
+        Assert.Equal("SkiaSharp", result.Value.Id);
+        Assert.Equal("3.119.0", result.Value.Version);
+
+        // The file name is reported as-is; StagePlanner is what rejects the mismatch, so the
+        // reader stays a reader and the policy stays in Core.
+        Assert.Equal("totally-different-name.nupkg", result.Value.FileName);
+    }
+
+    [Theory]
+    [InlineData("3.119.0.0", "3.119.0")]
+    [InlineData("1.0", "1.0.0")]
+    [InlineData("8.3.1.5", "8.3.1.5")]
+    [InlineData("10.0.0-preview.1.25123.4", "10.0.0-preview.1.25123.4")]
+    public async Task Normalized_version_is_computed_by_NuGet_not_by_string_slicing(string version, string expected)
+    {
+        var path = _fixture.WritePackage("SkiaSharp", version, fileName: $"SkiaSharp.{version}.nupkg");
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
+        Assert.Equal(expected, result.Value.NormalizedVersion);
+    }
+
+    [Fact]
+    public async Task Content_hash_is_the_sha256_of_the_file()
+    {
+        var path = _fixture.WritePackage();
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        var expected = Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(path, CancellationToken.None)));
+        Assert.Equal(expected, result.Value.Sha256);
+    }
+
+    [Fact]
+    public async Task Two_packages_with_different_content_hash_differently()
+    {
+        var a = await _reader.ReadAsync(_fixture.WritePackage("A", "1.0.0"), CancellationToken.None);
+        var b = await _reader.ReadAsync(_fixture.WritePackage("B", "1.0.0"), CancellationToken.None);
+
+        Assert.NotEqual(a.Value.Sha256, b.Value.Sha256);
+    }
+
+    [Fact]
+    public async Task Missing_file_fails_closed()
+    {
+        var result = await _reader.ReadAsync(Path.Combine(_fixture.Root, "nope.nupkg"), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PackageFileMissing));
+    }
+
+    [Fact]
+    public async Task Corrupt_archive_fails_closed_rather_than_throwing()
+    {
+        var result = await _reader.ReadAsync(_fixture.WriteCorruptPackage(), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+    }
+
+    [Fact]
+    public async Task Package_without_a_nuspec_fails_closed()
+    {
+        var path = _fixture.WritePackage(nuspecEntryName: "not-a-nuspec.txt");
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+    }
+
+    [Fact]
+    public async Task Nuspec_with_malformed_xml_fails_closed()
+    {
+        var path = _fixture.WritePackage(nuspecOverride: "<package><metadata><id>Broken");
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+    }
+
+    [Fact]
+    public async Task Nuspec_without_a_version_fails_closed()
+    {
+        var path = _fixture.WritePackage(nuspecOverride: """
+            <?xml version="1.0" encoding="utf-8"?>
+            <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+              <metadata>
+                <id>SkiaSharp</id>
+                <authors>Test</authors>
+                <description>Test</description>
+              </metadata>
+            </package>
+            """);
+
+        var result = await _reader.ReadAsync(path, CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+    }
+
+    /// <summary>
+    /// End to end: a real package read off disk must satisfy the validation Core applies at
+    /// stage time, including the normalized-version agreement check.
+    /// </summary>
+    [Fact]
+    public async Task A_real_package_passes_Core_staging_validation()
+    {
+        var policy = ReleasePolicy.Parse("""
+        {
+          "schemaVersion": 1,
+          "repositories": { "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } } }
+        }
+        """).Value;
+
+        var read = await _reader.ReadAsync(_fixture.WritePackage("SkiaSharp", "3.119.0.0", fileName: "SkiaSharp.3.119.0.nupkg"), CancellationToken.None);
+        Assert.True(read.IsSuccess, string.Join("; ", read.Errors));
+
+        var resolved = new ResolvedRelease
+        {
+            ToolVersion = "1.0.0-test",
+            CreatedUtc = DateTimeOffset.UnixEpoch,
+            Repository = "dotnet/skiasharp",
+            RepositoryUrl = "https://github.com/dotnet/skiasharp",
+            Commit = new string('a', 40),
+            BarBuildId = 4242,
+            RepositoryOrigin = RepositoryOrigin.GitHubRepository,
+            Workload = false,
+            Channel = new ChannelReference(".NET Libraries", 1648),
+        };
+
+        var plan = StagePlanner.Create(
+            resolved, policy, [read.Value], new StageOptions(),
+            new ToolReference("release", new string('b', 64)),
+            DateTimeOffset.UnixEpoch, "1.0.0-test");
+
+        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
+
+        // The nuspec said 3.119.0.0; NuGet normalizes it to 3.119.0, which is what the
+        // availability query will use.
+        Assert.Equal("3.119.0", plan.Value.Sets[0].Packages[0].NormalizedVersion);
+    }
+}

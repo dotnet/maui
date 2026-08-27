@@ -1,14 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/DotNet.Release.Cli/DotNet.Release.Cli.csproj" />
-    <Project Path="src/DotNet.Release.Core/DotNet.Release.Core.csproj" />
-    <Project Path="src/DotNet.Release.Maestro/DotNet.Release.Maestro.csproj" />
-    <Project Path="src/DotNet.Release.NuGet/DotNet.Release.NuGet.csproj" />
+    <Project Path="src/DotNet.Release/DotNet.Release.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/DotNet.Release.Cli.Tests/DotNet.Release.Cli.Tests.csproj" />
-    <Project Path="tests/DotNet.Release.Core.Tests/DotNet.Release.Core.Tests.csproj" />
-    <Project Path="tests/DotNet.Release.Maestro.Tests/DotNet.Release.Maestro.Tests.csproj" />
-    <Project Path="tests/DotNet.Release.NuGet.Tests/DotNet.Release.NuGet.Tests.csproj" />
+    <Project Path="tests/DotNet.Release.Tests/DotNet.Release.Tests.csproj" />
   </Folder>
 </Solution>

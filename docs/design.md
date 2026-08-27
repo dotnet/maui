@@ -96,9 +96,10 @@ where Azure DevOps owns the exit code natively and `--verbose` output lands in t
 
 ### P3 — Pure policy first
 
-All policy and validation lives in `DotNet.Release.Core`, which performs no I/O. Decisions
-are pure functions over plain data. I/O lives in thin adapters behind interfaces. This is
-enforced by an architecture test (§8), not by convention.
+All policy and validation lives in `Policy/`, which performs no I/O. Decisions are pure
+functions over plain data; I/O lives in thin adapters behind interfaces, so tests never touch
+a network. Since the projects were merged this is a convention rather than an assembly
+boundary — see §8 for what that trade did and did not cost.
 
 ### P4 — Fail closed
 
@@ -488,34 +489,55 @@ Two independent barriers, as required:
 
 ## 8. Code layout
 
+One tool, one assembly. The layering that matters is expressed by folders:
+
 ```
 eng/pipelines/release.yml      THE pipeline — the entry point hooked up in Azure DevOps
 eng/pipelines/stages/          internal stage templates it includes
-src/DotNet.Release.Core/       pure policy, validation, planning — NO I/O
-src/DotNet.Release.Maestro/    typed BAR client adapter (interface impl)
-src/DotNet.Release.NuGet/      read-only feed + nupkg reading adapters
-src/DotNet.Release.Cli/        verbs and argument parsing
-tests/                         one test project per source project
-config/repositories.json
+
+src/DotNet.Release/
+  Cli/                         verbs and argument parsing
+  Policy/                      pure decisions over plain data — no I/O
+  Model/                       the data those decisions operate on, and its serialization
+  Adapters/                    the only I/O: read-only BAR and NuGet, reading .nupkg files
+  Abstractions/                the interfaces Policy and Cli depend on
+  Pipeline/                    Azure DevOps logging-command formatting
+
+tests/DotNet.Release.Tests/    one test project, zero network
+config/repositories.json       declarative release policy
 ```
 
-`eng/pipelines/stages/publish-set.yml` is an implementation detail of the pipeline, not a
-consumer-facing template. It exists so the workload path (packs, then manifests) and the
-non-workload path share one implementation rather than three copies.
+### Why one project rather than four
 
-`Core` defines the interfaces (`IBuildRegistry`, `IPackageIdentityReader`,
-`IPackageAvailabilityProbe`); the adapters implement them. Interfaces are not I/O, so they
-belong with the policy that consumes them.
+This started as `Core` / `Maestro` / `NuGet` / `Cli`. Three of those splits bought nothing:
+the adapters are I/O wrappers with exactly one consumer each, and separating them added
+project files, package plumbing and cross-assembly `using` statements without ever preventing
+a mistake. The tool only ever does one thing — prepare a release and hand it to 1ES — so it
+is one program.
 
-**The architecture test enforces P3 by reflection**, asserting that `DotNet.Release.Core`
-references none of `NuGet.Protocol`, `NuGet.Packaging`, `Microsoft.DotNet.*`, `Azure.*`,
-`System.Net.Http`, or `System.Diagnostics.Process`. That last one is how P2 ("no
-subprocesses") is kept honest rather than aspirational.
+**The abstractions that earn their place are kept.** `IBuildRegistry`,
+`IPackageIdentityReader` and `IPackageAvailabilityProbe` remain interfaces, because they are
+what allow every test to run with no network, no BAR account and no real feed. Removing them
+would not simplify anything; it would make the test suite impossible.
 
-`Core` does reference `NuGet.Versioning`, which is a pure parser with no I/O, because
-version normalization is policy and must not be a substring hack.
+### What the merge traded away, stated plainly
 
----
+The `Core` boundary enforced one real thing: an architecture test asserting that the pure
+policy assembly referenced no I/O-capable type. That enforcement is gone. "Policy performs no
+I/O" is now a convention, expressed by the `Policy/` and `Adapters/` folders and by a weaker
+test that checks policy types mention no file or network types in their public signatures.
+
+That is an acceptable trade because it was an *internal* discipline. The two guarantees that
+are externally load-bearing are unaffected, and are in fact now enforced **more** strongly:
+
+| Guarantee | Before | Now |
+|---|---|---|
+| The tool cannot push a package | Scanned only `Core` — the one assembly that could never have pushed. The assembly that references `NuGet.Protocol`, and therefore `PackageUpdateResource`, was not scanned at all. | Scans the whole tool. There is nowhere for a violation to hide. |
+| The tool cannot start a process | Scanned only `Core` | Scans the whole tool |
+| Policy performs no I/O | Assembly reference scan | Convention + public-signature check |
+
+The first row is the important one: the previous arrangement checked the assembly that could
+not break the rule and skipped the one that could. Merging removed that blind spot.
 
 ## 9. Declarative policy
 
@@ -870,23 +892,23 @@ two tests assert it.
 **D4 invalidated a documented guarantee.** Section 6 claims hashing the plan transitively
 pins the tool. It did not: run as `dotnet release.dll` the hash was of the shared host; run
 via the apphost it was of a ~70 KB native stub containing none of the IL, so
-`DotNet.Release.Core.dll` could be swapped without changing it. `stage` now takes `--tool`
+the tool's own managed code could be swapped without changing it. `stage` now takes `--tool`
 pointing at the published single-file binary, hashes that, and copies it into each artifact
 `_tool/` directory — which also closes D3.
 
 ### The architecture tests were largely theatre
 
 The review's sharpest structural point. `ArchitectureTests` scanned only
-`DotNet.Release.Core` — the one assembly that is I/O-free *by construction* and could not
-have violated the guarantee. The assembly that **can** publish is `DotNet.Release.NuGet`,
-which references `NuGet.Protocol` and therefore has `PackageUpdateResource.Push` one call
-away. Nothing scanned it. The only barrier was a comment in a `.csproj`.
+the then-separate `DotNet.Release.Core` project — the one assembly that was I/O-free *by
+construction* and could not have violated the guarantee. The assembly that **could** publish
+was the one referencing `NuGet.Protocol`, and therefore `PackageUpdateResource.Push`, and
+nothing scanned it. The only barrier was a comment in a `.csproj`.
 
-`WholeToolArchitectureTests` now drives the PE TypeRef scan over **all four** shipping
-assemblies, forbidding `PackageUpdateResource` and `System.Diagnostics.Process` everywhere,
-including non-public members. It also asserts `PackageUpdateResource` really is present in
-the dependency graph — otherwise the absence test would pass for the wrong reason and keep
-passing if the dependency were swapped.
+`ArchitectureTests` now drives the PE TypeRef scan over the whole tool, forbidding
+`PackageUpdateResource` and `System.Diagnostics.Process`, including non-public members. It
+also asserts `PackageUpdateResource` really is present in the dependency graph — otherwise the
+absence test would pass for the wrong reason and keep passing if the dependency were swapped.
+Merging the projects (§8) made this strictly stronger: there is now no assembly to forget.
 
 That is the difference between P1 and P2 being enforced and being aspirational.
 

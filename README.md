@@ -116,11 +116,13 @@ Point a new Azure DevOps pipeline at `eng/pipelines/release.yml`. It needs:
 ```
 eng/pipelines/release.yml       THE pipeline. Hook this up.
 eng/pipelines/stages/           internal stage templates used by it
-src/DotNet.Release.Core/        pure policy, validation, planning — no I/O
-src/DotNet.Release.Maestro/     read-only BAR client adapter (typed PCS client)
-src/DotNet.Release.NuGet/       read-only feed queries + nupkg reading
-src/DotNet.Release.Cli/         the four verbs (System.CommandLine)
-tests/                          one test project per source project, zero network
+src/DotNet.Release/             the tool - one project
+  Cli/                          the four verbs (System.CommandLine)
+  Policy/                       pure decisions over plain data - no I/O
+  Model/                        the data those decisions operate on
+  Adapters/                     the only I/O: read-only BAR + NuGet, reading .nupkg files
+  Abstractions/                 interfaces, so tests never touch a network
+tests/DotNet.Release.Tests/     one test project, zero network
 config/repositories.json        declarative release policy
 docs/design.md                  full rationale
 ```

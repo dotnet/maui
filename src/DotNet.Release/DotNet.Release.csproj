@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>release</AssemblyName>
+    <RootNamespace>DotNet.Release</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      One tool, one assembly. The layering that matters is expressed by folders:
+
+        Policy/      pure decisions over plain data - no I/O
+        Model/       the data those decisions operate on, and its serialization
+        Adapters/    the only I/O: read-only BAR and NuGet access, reading .nupkg files
+        Cli/         verbs and argument parsing
+        Abstractions/ the interfaces Policy and Cli depend on, so tests never touch a network
+
+      Dependencies are chosen for what they can do, not just what they provide:
+
+      - NuGet.Versioning is a pure parser. It is what makes normalized versions correct by
+        construction rather than by substring.
+      - NuGet.Packaging reads .nupkg identity, replacing hand-rolled zip + XML + XPath.
+      - NuGet.Protocol is used READ-ONLY, to ask whether an ID/version is already live. It
+        also contains PackageUpdateResource - the push API - which this tool must never use.
+        ArchitectureTests asserts its absence, so that is enforced rather than promised.
+      - The PCS client replaces `darc get-build`, whose failures went to stdout and were lost.
+    -->
+    <PackageReference Include="Microsoft.DotNet.ProductConstructionService.Client" Version="$(MicrosoftDotNetProductConstructionServiceClientPackageVersion)" />
+    <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingPackageVersion)" />
+    <PackageReference Include="NuGet.Protocol" Version="$(NuGetProtocolPackageVersion)" />
+    <PackageReference Include="NuGet.Versioning" Version="$(NuGetVersioningPackageVersion)" />
+    <PackageReference Include="System.CommandLine" Version="$(SystemCommandLinePackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotNet.Release.Tests" />
+  </ItemGroup>
+
+</Project>

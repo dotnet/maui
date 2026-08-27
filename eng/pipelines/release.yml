@@ -187,7 +187,7 @@ extends:
         # the hash recorded in the plan covers the whole tool, not a launcher stub.
         - pwsh: |
             $toolDirectory = "$(Agent.TempDirectory)/tool"
-            dotnet publish "$(Build.SourcesDirectory)/src/DotNet.Release.Cli/DotNet.Release.Cli.csproj" `
+            dotnet publish "$(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj" `
               --configuration Release `
               --self-contained true `
               -p:PublishSingleFile=true `
