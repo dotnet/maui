@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		/// <summary>
 		/// Stand-in for a platform flyout adaptor living outside of this repository. It mirrors what the in-box
 		/// backends do: use the application supplied template when there is one, otherwise use the backend's own
-		/// platform default view.
+		/// platform-native flyout item presentation.
 		/// </summary>
 		class FakeExternalShellFlyoutBackend
 		{
@@ -31,35 +32,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public IEnumerable<Element> GetFlyoutItems() => GetFlyoutGroups().SelectMany(g => g);
 
-			public DataTemplate SelectTemplate(BindableObject flyoutItem)
-			{
-				if (!Shell.IsFlyoutItemTemplateSet(_shell, flyoutItem))
-					return PlatformDefaultTemplate;
-
-				return ((IShellController)_shell).GetFlyoutItemDataTemplate(flyoutItem);
-			}
+			public bool UsesPlatformDefault(BindableObject flyoutItem) =>
+				Shell.ResolveFlyoutItemTemplate(_shell, flyoutItem) is null;
 
 			public View CreateFlyoutItemView(BindableObject flyoutItem)
 			{
-				var template = SelectTemplate(flyoutItem).SelectDataTemplate(flyoutItem, _shell);
-				var view = (View)template.CreateContent();
+				var template = Shell.ResolveFlyoutItemTemplate(_shell, flyoutItem);
 
-				// Menu items are backed by two objects; the binding context has to come from the same object
-				// that supplies the template, otherwise bindings inside the template resolve against the wrong item.
-				view.BindingContext = Shell.GetFlyoutItemTemplateSource(flyoutItem);
+				if (template is null)
+					return CreatePlatformDefaultView(flyoutItem);
+
+				var view = (View)template.SelectDataTemplate(flyoutItem, _shell).CreateContent();
+
+				// Matches what the built-in Android, iOS, and Windows backends do.
+				view.BindingContext = flyoutItem;
 				view.Parent = _shell;
 				return view;
 			}
 
-			public static DataTemplate PlatformDefaultTemplate { get; } =
-				new DataTemplate(() => new Label { Text = PlatformDefaultText });
+			static View CreatePlatformDefaultView(BindableObject flyoutItem) =>
+				new Label { Text = PlatformDefaultText, BindingContext = flyoutItem };
 
 			public const string PlatformDefaultText = "PlatformDefault";
 		}
 
 		static MenuItem AddMenuShellItem(Shell shell, MenuItem menuItem)
 		{
-			// This is the only public way to get at the internal MenuShellItem wrapper.
+			// Adding a MenuItem to Shell.Items wraps it in the internal MenuShellItem.
 			shell.Items.Add(menuItem);
 			return menuItem;
 		}
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			backend.GetFlyoutItems().Single(e => e == menuItem || e == menuItem.Parent);
 
 		[Fact]
-		public void ShellItemWithoutTemplateFallsBackToBackendDefault()
+		public void ShellItemWithoutTemplateResolvesToNull()
 		{
 			var shell = new Shell();
 			var shellItem = CreateShellItem();
@@ -76,8 +75,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 
-			Assert.False(Shell.IsFlyoutItemTemplateSet(shell, shellItem));
-			Assert.Same(FakeExternalShellFlyoutBackend.PlatformDefaultTemplate, backend.SelectTemplate(shellItem));
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, shellItem));
+			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
 		}
 
 		[Fact]
@@ -93,26 +92,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 
-			Assert.True(Shell.IsFlyoutItemTemplateSet(shell, shellItem));
+			Assert.Same(shell.ItemTemplate, Shell.ResolveFlyoutItemTemplate(shell, shellItem));
 			Assert.Equal("ItemTemplate", ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
 		}
 
 		[Fact]
-		public void ItemLevelItemTemplateIsUsedForShellItems()
+		public void ItemLevelItemTemplateWinsOverShellLevelItemTemplate()
 		{
-			var shell = new Shell();
+			var shell = new Shell
+			{
+				ItemTemplate = new DataTemplate(() => new Label { Text = "ShellLevel" })
+			};
+
 			var shellItem = CreateShellItem();
 			Shell.SetItemTemplate(shellItem, new DataTemplate(() => new Label { Text = "ItemLevel" }));
 			shell.Items.Add(shellItem);
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 
-			Assert.True(Shell.IsFlyoutItemTemplateSet(shell, shellItem));
 			Assert.Equal("ItemLevel", ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
 		}
 
 		[Fact]
-		public void MenuItemWithoutTemplateFallsBackToBackendDefault()
+		public void MenuItemWithoutTemplateResolvesToNull()
 		{
 			var shell = new Shell();
 			shell.Items.Add(CreateShellItem());
@@ -121,7 +123,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 			var flyoutItem = FindFlyoutItem(backend, menuItem);
 
-			Assert.False(Shell.IsFlyoutItemTemplateSet(shell, flyoutItem));
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, flyoutItem));
 			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(flyoutItem)).Text);
 		}
 
@@ -145,9 +147,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("ItemTemplate", ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
 		}
 
-		// This is the branch an external backend cannot reproduce without GetFlyoutItemTemplateSource:
-		// the template is set on the MenuItem, but the flyout item handed to the backend is the internal
-		// MenuShellItem wrapper, which does not have the property set.
+		// This is the branch an external backend cannot reproduce on its own: the template is set on the
+		// MenuItem, but the flyout item handed to the backend is the internal MenuShellItem wrapper, which does
+		// not have the property set.
 		[Fact]
 		public void MenuItemTemplateSetOnMenuItemIsFoundThroughMenuShellItem()
 		{
@@ -155,15 +157,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(CreateShellItem());
 
 			var menuItem = new MenuItem { Text = "Menu" };
-			Shell.SetMenuItemTemplate(menuItem, new DataTemplate(() => new Label { Text = "OnMenuItem" }));
+			var template = new DataTemplate(() => new Label { Text = "OnMenuItem" });
+			Shell.SetMenuItemTemplate(menuItem, template);
 			AddMenuShellItem(shell, menuItem);
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 			var flyoutItem = FindFlyoutItem(backend, menuItem);
 
 			Assert.NotSame(menuItem, flyoutItem);
-			Assert.Same(menuItem, Shell.GetFlyoutItemTemplateSource(flyoutItem));
-			Assert.True(Shell.IsFlyoutItemTemplateSet(shell, flyoutItem));
+			Assert.Same(template, Shell.ResolveFlyoutItemTemplate(shell, flyoutItem));
 			Assert.Equal("OnMenuItem", ((Label)backend.CreateFlyoutItemView(flyoutItem)).Text);
 		}
 
@@ -177,75 +179,243 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var menuItem = new MenuItem { Text = "Menu" };
 			shellContent.MenuItems.Add(menuItem);
-			Shell.SetMenuItemTemplate(shellContent, new DataTemplate(() => new Label { Text = "OnParent" }));
+
+			var template = new DataTemplate(() => new Label { Text = "OnParent" });
+			Shell.SetMenuItemTemplate(shellContent, template);
 
 			shell.Items.Add(shellContent);
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 
 			Assert.Contains(menuItem, backend.GetFlyoutItems());
-			Assert.Same(shellContent, Shell.GetFlyoutItemTemplateSource(menuItem));
-			Assert.True(Shell.IsFlyoutItemTemplateSet(shell, menuItem));
+			Assert.False(menuItem.IsSet(Shell.MenuItemTemplateProperty));
+			Assert.Same(template, Shell.ResolveFlyoutItemTemplate(shell, menuItem));
 			Assert.Equal("OnParent", ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
 		}
 
-		// Documents the failure mode this API exists to fix: an external backend that only inspects the flyout
-		// item itself concludes that no template is set and incorrectly falls back to its own default view.
 		[Fact]
-		public void InspectingTheFlyoutItemDirectlyMissesMenuItemTemplates()
+		public void MenuItemTemplateBindsTextAndCommandForShellContentMenuItems()
 		{
+			bool invoked = false;
+
 			var shell = new Shell();
-			shell.Items.Add(CreateShellItem());
+			var shellContent = CreateShellContent();
 
-			var menuItem = new MenuItem { Text = "Menu" };
-			Shell.SetMenuItemTemplate(menuItem, new DataTemplate(() => new Label { Text = "OnMenuItem" }));
-			AddMenuShellItem(shell, menuItem);
-
-			var backend = new FakeExternalShellFlyoutBackend(shell);
-			var flyoutItem = FindFlyoutItem(backend, menuItem);
-
-			Assert.False(flyoutItem.IsSet(Shell.MenuItemTemplateProperty));
-			Assert.True(Shell.IsFlyoutItemTemplateSet(shell, flyoutItem));
-		}
-
-		[Fact]
-		public void MenuItemTemplateSourceProvidesBindingContextForTemplate()
-		{
-			var shell = new Shell();
-			shell.Items.Add(CreateShellItem());
-
-			var menuItem = new MenuItem { Text = "Menu" };
-			Shell.SetMenuItemTemplate(menuItem, new DataTemplate(() =>
+			var menuItem = new MenuItem
 			{
-				var label = new Label();
-				label.SetBinding(Label.TextProperty, static (MenuItem item) => item.Text);
-				return label;
+				Text = "Menu",
+				Command = new Command(() => invoked = true)
+			};
+
+			shellContent.MenuItems.Add(menuItem);
+
+			Shell.SetMenuItemTemplate(shellContent, new DataTemplate(() =>
+			{
+				var button = new Button();
+				button.SetBinding(Button.TextProperty, static (MenuItem item) => item.Text);
+				button.SetBinding(Button.CommandProperty, static (MenuItem item) => item.Command);
+				return button;
 			}));
 
-			AddMenuShellItem(shell, menuItem);
+			shell.Items.Add(shellContent);
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
-			var flyoutItem = FindFlyoutItem(backend, menuItem);
+			var button = Assert.IsType<Button>(backend.CreateFlyoutItemView(menuItem));
 
-			Assert.Equal("Menu", ((Label)backend.CreateFlyoutItemView(flyoutItem)).Text);
+			Assert.Equal("Menu", button.Text);
+
+			Assert.NotNull(button.Command);
+			button.Command.Execute(null);
+			Assert.True(invoked);
 		}
 
 		[Fact]
-		public void TemplateSourceCarriesStyleClassForMenuItems()
+		public void MenuItemTemplateBindsTextAndCommandForShellLevelMenuItems()
 		{
+			bool invoked = false;
+
+			var shell = new Shell
+			{
+				MenuItemTemplate = new DataTemplate(() =>
+				{
+					var button = new Button();
+					button.SetBinding(Button.TextProperty, "Text");
+					button.SetBinding(Button.CommandProperty, "Command");
+					return button;
+				})
+			};
+
+			shell.Items.Add(CreateShellItem());
+
+			var menuItem = new MenuItem
+			{
+				Text = "Menu",
+				Command = new Command(() => invoked = true)
+			};
+
+			AddMenuShellItem(shell, menuItem);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+			var flyoutItem = FindFlyoutItem(backend, menuItem);
+			var button = Assert.IsType<Button>(backend.CreateFlyoutItemView(flyoutItem));
+
+			// The MenuShellItem wrapper mirrors Text from its MenuItem, so binding the created content to the
+			// flyout item works the same way it does on the built-in backends.
+			Assert.Equal("Menu", button.Text);
+		}
+
+		[Fact]
+		public void MenuItemFlyoutSelectionInvokesTheCommand()
+		{
+			bool invoked = false;
+
 			var shell = new Shell();
 			shell.Items.Add(CreateShellItem());
 
-			var menuItem = new MenuItem { Text = "Menu", StyleClass = new[] { "fooClass" } };
-			Shell.SetMenuItemTemplate(menuItem, new DataTemplate(() => new Label()));
+			var menuItem = new MenuItem
+			{
+				Text = "Menu",
+				Command = new Command(() => invoked = true)
+			};
+
 			AddMenuShellItem(shell, menuItem);
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 			var flyoutItem = FindFlyoutItem(backend, menuItem);
 
-			var styleSource = Assert.IsType<MenuItem>(Shell.GetFlyoutItemTemplateSource(flyoutItem));
+			((IShellController)shell).OnFlyoutItemSelected(flyoutItem);
 
-			Assert.Contains("fooClass", styleSource.StyleClass);
+			Assert.True(invoked);
+		}
+
+		[Fact]
+		public void ItemTemplateBindsTitleForShellItems()
+		{
+			var shell = new Shell
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, static (BaseShellItem item) => item.Title);
+					return label;
+				})
+			};
+
+			var shellItem = CreateShellItem();
+			shellItem.Title = "Cat";
+			shell.Items.Add(shellItem);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.Equal("Cat", ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
+		}
+
+		[Fact]
+		public void ExplicitNullItemTemplateOnItemOptsOutOfShellTemplate()
+		{
+			var shell = new Shell
+			{
+				ItemTemplate = new DataTemplate(() => new Label { Text = "ShellLevel" })
+			};
+
+			var shellItem = CreateShellItem();
+			Shell.SetItemTemplate(shellItem, null);
+			shell.Items.Add(shellItem);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.True(shellItem.IsSet(Shell.ItemTemplateProperty));
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, shellItem));
+			Assert.True(backend.UsesPlatformDefault(shellItem));
+			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
+		}
+
+		[Fact]
+		public void ExplicitNullTemplateStillProducesDefaultCellForBuiltInBackends()
+		{
+			var shell = new Shell
+			{
+				ItemTemplate = new DataTemplate(() => new Label { Text = "ShellLevel" })
+			};
+
+			var shellItem = CreateShellItem();
+			Shell.SetItemTemplate(shellItem, null);
+			shell.Items.Add(shellItem);
+
+			// The in-box path must never hand a null template to platform code.
+			Assert.NotNull(((IShellController)shell).GetFlyoutItemDataTemplate(shellItem));
+		}
+
+		[Fact]
+		public void ExplicitNullMenuItemTemplateOptsOutOfShellTemplate()
+		{
+			var shell = new Shell
+			{
+				MenuItemTemplate = new DataTemplate(() => new Label { Text = "ShellLevel" })
+			};
+
+			shell.Items.Add(CreateShellItem());
+
+			var menuItem = new MenuItem { Text = "Menu" };
+			Shell.SetMenuItemTemplate(menuItem, null);
+			AddMenuShellItem(shell, menuItem);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+			var flyoutItem = FindFlyoutItem(backend, menuItem);
+
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, flyoutItem));
+			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(flyoutItem)).Text);
+		}
+
+		[Fact]
+		public void NullBoundTemplateResolvesToNull()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem();
+
+			// A binding that resolves to null must behave like no template rather than throwing.
+			shellItem.BindingContext = new object();
+			shellItem.SetBinding(Shell.ItemTemplateProperty, "MissingTemplate");
+
+			shell.Items.Add(shellItem);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, shellItem));
+			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(shellItem)).Text);
+		}
+
+		[Fact]
+		public void DataTemplateSelectorIsReturnedAndResolvedByTheCaller()
+		{
+			var shell = new Shell
+			{
+				ItemTemplate = new TestFlyoutItemTemplateSelector()
+			};
+
+			var withTitle = CreateShellItem();
+			withTitle.Title = "Cat";
+
+			var withoutTitle = CreateShellItem();
+			withoutTitle.Title = null;
+
+			shell.Items.Add(withTitle);
+			shell.Items.Add(withoutTitle);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.IsType<TestFlyoutItemTemplateSelector>(Shell.ResolveFlyoutItemTemplate(shell, withTitle));
+			Assert.Equal("HasTitle", ((Label)backend.CreateFlyoutItemView(withTitle)).Text);
+			Assert.Equal("NoTitle", ((Label)backend.CreateFlyoutItemView(withoutTitle)).Text);
+		}
+
+		class TestFlyoutItemTemplateSelector : DataTemplateSelector
+		{
+			readonly DataTemplate _hasTitle = new DataTemplate(() => new Label { Text = "HasTitle" });
+			readonly DataTemplate _noTitle = new DataTemplate(() => new Label { Text = "NoTitle" });
+
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container) =>
+				item is BaseShellItem bsi && !string.IsNullOrEmpty(bsi.Title) ? _hasTitle : _noTitle;
 		}
 
 		[Fact]
@@ -269,11 +439,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void FlyoutHeaderTemplateIsAvailableToExternalBackends()
+		public void FlyoutHeaderAndFooterTemplatesAreAvailableToExternalBackends()
 		{
 			var shell = new Shell
 			{
-				FlyoutHeaderTemplate = new DataTemplate(() => new Label { Text = "HeaderTemplate" })
+				FlyoutHeaderTemplate = new DataTemplate(() => new Label { Text = "HeaderTemplate" }),
+				FlyoutFooterTemplate = new DataTemplate(() => new Label { Text = "FooterTemplate" })
 			};
 
 			shell.Items.Add(CreateShellItem());
@@ -281,49 +452,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 
 			Assert.Equal("HeaderTemplate", Assert.IsType<Label>(backend.Header).Text);
+			Assert.Equal("FooterTemplate", Assert.IsType<Label>(backend.Footer).Text);
 		}
 
 		[Fact]
-		public void TemplatePropertyMatchesItemKind()
+		public void HeadersAreNotFlyoutItems()
 		{
-			var shell = new Shell();
-			var shellItem = CreateShellItem();
-			shell.Items.Add(shellItem);
-			var menuItem = AddMenuShellItem(shell, new MenuItem { Text = "Menu" });
+			var shell = new Shell
+			{
+				FlyoutHeader = new Label { Text = "Header" },
+				ItemTemplate = new DataTemplate(() => new Label { Text = "ItemTemplate" })
+			};
+
+			shell.Items.Add(CreateShellItem());
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
-			var flyoutItem = FindFlyoutItem(backend, menuItem);
 
-			Assert.Same(Shell.ItemTemplateProperty, Shell.GetFlyoutItemTemplateProperty(shellItem));
-			Assert.Same(Shell.MenuItemTemplateProperty, Shell.GetFlyoutItemTemplateProperty(flyoutItem));
-			Assert.Same(Shell.MenuItemTemplateProperty, Shell.GetFlyoutItemTemplateProperty(menuItem));
+			Assert.DoesNotContain(backend.Header, backend.GetFlyoutItems());
 		}
 
 		[Fact]
-		public void TemplateSourceReturnsItemWhenNoTemplateIsSet()
-		{
-			var shell = new Shell();
-			var shellItem = CreateShellItem();
-			shell.Items.Add(shellItem);
-			var menuItem = AddMenuShellItem(shell, new MenuItem { Text = "Menu" });
-
-			var backend = new FakeExternalShellFlyoutBackend(shell);
-			var flyoutItem = FindFlyoutItem(backend, menuItem);
-
-			Assert.Same(shellItem, Shell.GetFlyoutItemTemplateSource(shellItem));
-			Assert.Same(flyoutItem, Shell.GetFlyoutItemTemplateSource(flyoutItem));
-		}
-
-		[Fact]
-		public void NullFlyoutItemThrows()
-		{
-			Assert.Throws<System.ArgumentNullException>(() => Shell.GetFlyoutItemTemplateSource(null));
-			Assert.Throws<System.ArgumentNullException>(() => Shell.GetFlyoutItemTemplateProperty(null));
-			Assert.Throws<System.ArgumentNullException>(() => Shell.IsFlyoutItemTemplateSet(new Shell(), null));
-		}
-
-		[Fact]
-		public void NullShellOnlyConsidersTemplatesSetOnTheItem()
+		public void OmittingShellResolvesItThroughTheFlyoutItem()
 		{
 			var shell = new Shell
 			{
@@ -333,8 +482,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellItem = CreateShellItem();
 			shell.Items.Add(shellItem);
 
-			Assert.True(Shell.IsFlyoutItemTemplateSet(shell, shellItem));
-			Assert.False(Shell.IsFlyoutItemTemplateSet(null, shellItem));
+			Assert.Same(shell.ItemTemplate, Shell.ResolveFlyoutItemTemplate(null, shellItem));
+		}
+
+		[Fact]
+		public void UnparentedItemWithoutTemplateResolvesToNull()
+		{
+			var shellItem = CreateShellItem();
+
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(null, shellItem));
+		}
+
+		[Fact]
+		public void UnparentedItemWithItemTemplateStillResolves()
+		{
+			var shellItem = CreateShellItem();
+			var template = new DataTemplate(() => new Label { Text = "ItemLevel" });
+			Shell.SetItemTemplate(shellItem, template);
+
+			Assert.Same(template, Shell.ResolveFlyoutItemTemplate(null, shellItem));
+		}
+
+		[Fact]
+		public void NullFlyoutItemThrows()
+		{
+			Assert.Throws<System.ArgumentNullException>(() => Shell.ResolveFlyoutItemTemplate(new Shell(), null));
+			Assert.Throws<System.ArgumentNullException>(() => Shell.ResolveFlyoutItemTemplate(null, null));
 		}
 	}
 }

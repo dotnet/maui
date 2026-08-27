@@ -615,7 +615,7 @@ namespace Microsoft.Maui.Controls
 					if (sender is Grid g)
 					{
 						var bo = g.BindingContext as BindableObject;
-						var styleClassSource = (bo is null ? null : Shell.GetFlyoutItemTemplateSource(bo)) as IStyleSelectable;
+						var styleClassSource = (bo is null ? null : Shell.GetBindableObjectWithFlyoutItemTemplate(bo)) as IStyleSelectable;
 						UpdateFlyoutItemStyles(g, styleClassSource);
 
 						// this means they haven't changed the BaseShellItemContext so we are

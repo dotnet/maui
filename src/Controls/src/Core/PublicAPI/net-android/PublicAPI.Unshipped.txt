@@ -319,6 +319,4 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedConte
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
-~static Microsoft.Maui.Controls.Shell.GetFlyoutItemTemplateProperty(Microsoft.Maui.Controls.BindableObject flyoutItem) -> Microsoft.Maui.Controls.BindableProperty
-~static Microsoft.Maui.Controls.Shell.GetFlyoutItemTemplateSource(Microsoft.Maui.Controls.BindableObject flyoutItem) -> Microsoft.Maui.Controls.BindableObject
-~static Microsoft.Maui.Controls.Shell.IsFlyoutItemTemplateSet(Microsoft.Maui.Controls.Shell shell, Microsoft.Maui.Controls.BindableObject flyoutItem) -> bool
+static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?
