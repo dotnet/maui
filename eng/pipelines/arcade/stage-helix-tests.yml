@@ -122,7 +122,7 @@ stages:
 
         toolPath="$AGENT_TEMPDIRECTORY/helix-job-monitor"
         bash ./eng/common/dotnet.sh
-        toolVersion="$HELIX_JOB_MONITOR_VERSION"
+        toolVersion="${HELIX_JOB_MONITOR_VERSION:-}"
         if [[ -z "$toolVersion" || "$toolVersion" =~ [[:space:]] ]]; then
           printf 'The helixJobMonitorVersion parameter must be non-empty and contain no whitespace; received %q.\n' "$toolVersion" >&2
           exit 1
