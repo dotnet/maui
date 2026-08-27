@@ -313,6 +313,7 @@ public class VerbsTests : IDisposable
                 return Task.CompletedTask;
             },
             set,
+            _workspace.Out,
             CancellationToken.None);
     }
 

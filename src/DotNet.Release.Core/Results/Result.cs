@@ -25,6 +25,7 @@ public static class ErrorCodes
     public const string PackageDuplicateIdentity = "PACKAGE_DUPLICATE_IDENTITY";
     public const string PackageSetEmpty = "PACKAGE_SET_EMPTY";
     public const string PackageSetNotFound = "PACKAGE_SET_NOT_FOUND";
+    public const string PackageSetMismatch = "PACKAGE_SET_MISMATCH";
     public const string ManifestInNonWorkload = "MANIFEST_IN_NON_WORKLOAD";
 
     public const string WorkloadBandUnresolved = "WORKLOAD_BAND_UNRESOLVED";

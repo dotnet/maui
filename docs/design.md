@@ -320,6 +320,68 @@ missing `Pending` file *and* any file the plan does not list.
 
 ---
 
+### What the single plan gave up, and how it is bought back
+
+Worth stating precisely, because it explains a bug this design had and the pipeline it
+replaces could not have.
+
+The current pipeline has **no central plan**. Each set gets its own directory containing its
+own `expected-packages.json`, written in the same loop that copies its packages, and the
+helper script resolves that manifest *from inside the path it is given*:
+
+```powershell
+$manifestPath = Join-Path $PackagesPath 'expected-packages.json'
+```
+
+`-PackagesPath` is the only input, and the manifest travels with the packages. Point it at
+the packs artifact and it is **structurally incapable** of reasoning about manifests — there
+is no other manifest in scope to be confused by. Cross-set contamination is unrepresentable,
+not merely untested.
+
+A single hashed plan is better for supply-chain integrity: one root of trust instead of *N*
+manifests to pin separately. But it means `filter` and `verify` must be **told** which set
+they are operating on. **That replaces a structural guarantee with a passed argument**, and
+passed arguments depend on the caller being right.
+
+That is not hypothetical. This design shipped with exactly that bug: both verbs operated on
+every set in the plan, so a workload packs stage looked for manifest files in a directory
+that did not exist and waited for manifests that had not been published yet. A workload
+release could never have succeeded; a non-workload one worked by accident, having only one
+set. `--set` (§7) fixes it, and `PACKAGE_SET_NOT_FOUND` catches a *misspelled* set.
+
+`PACKAGE_SET_NOT_FOUND` does **not** catch a *valid but wrong* set. Asking the packs
+directory for `ReleaseManifests` resolves cleanly and fails later as `PACKAGE_FILE_MISSING`
+— the same error a genuinely broken artifact upload produces, pointing an on-call engineer
+at the wrong problem. That is the diagnostic failure this project rejects elsewhere, when it
+refuses to flatten an HTTP 500 into "no such build".
+
+So `stage` writes two things into **each** set directory alongside its packages:
+
+| File | Purpose |
+|---|---|
+| `release-plan.json` | Identical bytes in every set, so **one hash still pins them all** |
+| `release-set.json` | The set's own name, artifact name, BAR build and commit |
+
+`filter` and `verify` then assert that the directory they were pointed at **declares itself
+to be the set they were asked for, for the release they were asked about**. A mismatch is
+`PACKAGE_SET_MISMATCH`, distinct from a missing file and worded to name the wiring rather
+than the symptom.
+
+Two properties follow:
+
+- The invariant holds even if a future template refactor gets the wiring wrong — which is
+  the actual residual risk, since the wiring is now the thing that has to be right.
+- Tampering with a marker can only cause a **failure**, never a silently wrong publish: the
+  package identities still come from the hashed plan.
+
+This also fixes a second bug with the same root cause. `stage` previously wrote
+`release-plan.json` to the *parent* of the set directories, while each set directory is
+published as its own pipeline artifact — so the plan never entered the artifact, and the
+publish job, running `checkout: none`, would have failed at its first integrity step. An
+artifact consumed without a checkout has to be self-contained.
+
+---
+
 ## 7. Pipeline shape, and why each split is forced
 
 ```
@@ -463,6 +525,8 @@ for in logs, and asserted in tests. Requirement 2's fail-closed list maps onto:
 | `PACKAGE_MALFORMED` | Missing/invalid nuspec identity, or file name disagrees with ID |
 | `PACKAGE_DUPLICATE_FILENAME` / `PACKAGE_DUPLICATE_IDENTITY` | Duplicates within a set |
 | `PACKAGE_SET_EMPTY` | Filters selected nothing |
+| `PACKAGE_SET_NOT_FOUND` | `--set` names a set the plan does not contain |
+| `PACKAGE_SET_MISMATCH` | A staged directory is not the set the stage asked for |
 | `MANIFEST_IN_NON_WORKLOAD` | Workload manifest in a non-workload release |
 | `WORKLOAD_BAND_UNRESOLVED` / `WORKLOAD_BAND_AMBIGUOUS` / `WORKLOAD_SET_NOT_CONFIGURED` | Band derivation |
 | `FILTER_UNMATCHED` | A recovery filter matched no planned package |

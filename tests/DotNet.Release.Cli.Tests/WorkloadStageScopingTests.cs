@@ -72,6 +72,7 @@ public class WorkloadStageScopingTests : IDisposable
             () => now,
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             set,
+            _workspace.Out,
             CancellationToken.None);
     }
 
@@ -230,6 +231,7 @@ public class VerificationBudgetTests : IDisposable
             () => now,
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             null,
+            _workspace.Out,
             CancellationToken.None);
     }
 

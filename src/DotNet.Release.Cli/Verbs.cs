@@ -147,6 +147,9 @@ internal static class Verbs
         var sourceByFileName = packageFiles.ToDictionary(
             f => Path.GetFileName(f)!, f => f, StringComparer.OrdinalIgnoreCase);
 
+        Directory.CreateDirectory(outputDirectory);
+        var planJson = ReleasePlanSerializer.Serialize(plan.Value);
+
         foreach (var set in plan.Value.Sets.OrderBy(s => s.Order))
         {
             var setDirectory = Path.Combine(outputDirectory, set.ArtifactName);
@@ -156,11 +159,22 @@ internal static class Verbs
             {
                 File.Copy(sourceByFileName[package.FileName], Path.Combine(setDirectory, package.FileName), overwrite: true);
             }
+
+            // Each set directory is published as its own pipeline artifact and consumed by a
+            // job running `checkout: none`, so the artifact has to be self-contained. The
+            // plan bytes are identical in every set, so one hash still pins them all.
+            await File.WriteAllTextAsync(Path.Combine(setDirectory, ReleasePlanFileName), planJson, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Makes the directory declare which set it is, so a publish stage wired to the
+            // wrong set is caught immediately instead of surfacing as missing files.
+            await File.WriteAllTextAsync(
+                Path.Combine(setDirectory, ReleaseSetMarker.FileName),
+                ReleasePlanSerializer.Serialize(ReleaseSetMarker.For(set, resolved.Value)),
+                cancellationToken).ConfigureAwait(false);
         }
 
-        Directory.CreateDirectory(outputDirectory);
         var planPath = Path.Combine(outputDirectory, ReleasePlanFileName);
-        var planJson = ReleasePlanSerializer.Serialize(plan.Value);
         await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
 
         ConsoleReporting.WriteSummary(console, plan.Value);
@@ -225,6 +239,12 @@ internal static class Verbs
         {
             var setDirectory = Path.Combine(stageDirectory, set.ArtifactName);
 
+            var marker = ValidateSetMarker(setDirectory, set, plan.Value.Source, setName);
+            if (marker.IsFailure)
+            {
+                return ConsoleReporting.Fail(console, marker.Errors);
+            }
+
             var availability = await probe.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
 
             var report = FilterPlanner.Plan(set, skipPatterns, availability);
@@ -287,6 +307,37 @@ internal static class Verbs
     }
 
     /// <summary>
+    /// Confirms a staged directory declares itself to be the set that was requested.
+    /// </summary>
+    /// <remarks>
+    /// Only enforced when a set was named explicitly. That is the case where the caller has
+    /// asserted something that can be wrong, and it is the case the pipeline always uses.
+    /// </remarks>
+    internal static Result<bool> ValidateSetMarker(
+        string setDirectory,
+        ReleasePackageSet set,
+        ResolvedRelease source,
+        string? requestedSetName)
+    {
+        if (string.IsNullOrWhiteSpace(requestedSetName))
+        {
+            return Result<bool>.Success(true);
+        }
+
+        var markerPath = Path.Combine(setDirectory, ReleaseSetMarker.FileName);
+        if (!File.Exists(markerPath))
+        {
+            return ReleaseSetMarker.Validate(null, set, source);
+        }
+
+        var marker = ReleasePlanSerializer.DeserializeSetMarker(File.ReadAllText(markerPath));
+
+        return marker.IsFailure
+            ? marker.ToFailure<bool>()
+            : ReleaseSetMarker.Validate(marker.Value, set, source);
+    }
+
+    /// <summary>
     /// Selects the sets a publish stage operates on.
     /// </summary>
     /// <remarks>
@@ -346,6 +397,7 @@ internal static class Verbs
         Func<DateTimeOffset> clock,
         Func<TimeSpan, CancellationToken, Task> delay,
         string? setName,
+        string? stageDirectory,
         CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.DeserializePlan(planJson);
@@ -358,6 +410,22 @@ internal static class Verbs
         if (sets.IsFailure)
         {
             return ConsoleReporting.Fail(console, sets.Errors);
+        }
+
+        // The same wiring risk applies here as in `filter`: a stage that verified the wrong
+        // set would poll for packages another stage is responsible for.
+        if (stageDirectory is { Length: > 0 })
+        {
+            foreach (var set in sets.Value)
+            {
+                var marker = ValidateSetMarker(
+                    Path.Combine(stageDirectory, set.ArtifactName), set, plan.Value.Source, setName);
+
+                if (marker.IsFailure)
+                {
+                    return ConsoleReporting.Fail(console, marker.Errors);
+                }
+            }
         }
 
         // Every package in scope, including ones `filter` removed: those were withheld on

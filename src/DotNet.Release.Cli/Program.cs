@@ -156,25 +156,28 @@ public static class Program
         var interval = new Option<int>("--poll-seconds") { Description = "Delay between polls.", DefaultValueFactory = _ => 20 };
         var feed = new Option<string?>("--feed") { Description = "Feed index to query. Defaults to NuGet.org." };
         var set = new Option<string?>("--set") { Description = "Artifact name of the package set this stage published. Omit to verify every set." };
+        var stage = new Option<DirectoryInfo?>("--stage") { Description = "Directory containing the staged set directories. Defaults to the plan's directory." };
 
         var command = new Command("verify", "Poll until every package in scope is indexed on NuGet.org.")
         {
-            plan, maxDuration, interval, feed, set,
+            plan, maxDuration, interval, feed, set, stage,
         };
 
         command.SetAction((parse, cancellationToken) =>
         {
+            var planFile = parse.GetValue(plan)!;
             using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
 
             return Verbs.VerifyAsync(
                 console,
                 new PackageAvailabilityProbe(checker),
-                File.ReadAllText(parse.GetValue(plan)!.FullName),
+                File.ReadAllText(planFile.FullName),
                 TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
                 TimeSpan.FromSeconds(parse.GetValue(interval)),
                 () => DateTimeOffset.UtcNow,
                 Task.Delay,
                 parse.GetValue(set),
+                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName,
                 cancellationToken);
         });
 

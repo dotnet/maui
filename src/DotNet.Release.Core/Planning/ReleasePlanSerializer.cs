@@ -39,6 +39,15 @@ public static class ReleasePlanSerializer
     public static Result<ResolvedRelease> DeserializeResolved(string json) =>
         Deserialize(json, PlanJsonContext.Default.ResolvedRelease, "resolved release");
 
+    public static string Serialize(ReleaseSetMarker marker)
+    {
+        ArgumentNullException.ThrowIfNull(marker);
+        return JsonSerializer.Serialize(marker, PlanJsonContext.Default.ReleaseSetMarker);
+    }
+
+    public static Result<ReleaseSetMarker> DeserializeSetMarker(string json) =>
+        Deserialize(json, PlanJsonContext.Default.ReleaseSetMarker, "release set marker");
+
     private static Result<T> Deserialize<T>(string json, JsonTypeInfo<T> typeInfo, string what)
         where T : class
     {
@@ -86,4 +95,5 @@ public static class ReleasePlanSerializer
 [JsonSerializable(typeof(ReleasePlan))]
 [JsonSerializable(typeof(ResolvedRelease))]
 [JsonSerializable(typeof(FilterReport))]
+[JsonSerializable(typeof(ReleaseSetMarker))]
 internal sealed partial class PlanJsonContext : JsonSerializerContext;
