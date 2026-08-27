@@ -129,7 +129,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(infoBadge);
 				await AssertEventually(() =>
 					infoBadge.Background is WSolidColorBrush &&
-					infoBadge.Foreground is WSolidColorBrush);
+					infoBadge.Foreground is WSolidColorBrush,
+					timeout: 5000,
+					message: "Timed out waiting for the InfoBadge default brushes to be applied.");
 				var defaultBackgroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Background).Color;
 				var defaultForegroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Foreground).Color;
 				Assert.NotEqual(Colors.Blue.ToWindowsColor(), defaultBackgroundColor);

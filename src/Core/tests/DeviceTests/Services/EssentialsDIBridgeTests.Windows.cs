@@ -341,7 +341,12 @@ public class EssentialsDIBridgeTests
 		{
 			releaseFirstTokenSetter.TrySetResult(true);
 			if (firstBuild is not null && firstApp is null)
-				firstApp = await firstBuild.WaitAsync(timeout);
+			{
+				await Record.ExceptionAsync(async () =>
+				{
+					firstApp = await firstBuild.WaitAsync(timeout);
+				});
+			}
 
 			secondApp?.Dispose();
 			firstApp?.Dispose();
