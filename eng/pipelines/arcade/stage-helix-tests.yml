@@ -147,16 +147,58 @@ stages:
     - bash: |
         set -euo pipefail
 
-        bash ./eng/common/dotnet.sh exec "$(HelixJobMonitorDll)" \
-          --helix-base-uri 'https://helix.dot.net/' \
-          --polling-interval-seconds 30 \
-          --fail-on-failed-tests true \
-          --max-wait-minutes "$((${{ parameters.helixJobMonitorTimeoutInMinutes }} - 5))" \
-          --stage-name '$(System.StageName)' \
-          --organization dotnet \
-          --repository maui \
-          --build-reason '$(Build.Reason)' \
-          --source-branch '$(Build.SourceBranch)'
+        monitorDeadline=$((SECONDS + (${{ parameters.helixJobMonitorTimeoutInMinutes }} - 5) * 60))
+        monitorAttempt=1
+        monitorResult=0
+
+        # Upload failures do not affect the upstream tool's exit code. Replay untagged jobs until every upload is durable.
+        while true; do
+          remainingSeconds=$((monitorDeadline - SECONDS))
+          if ((remainingSeconds <= 0)); then
+            echo "The Helix Job Monitor exhausted its retry window with untagged uploads remaining." >&2
+            exit 1
+          fi
+
+          remainingMinutes=$(((remainingSeconds + 59) / 60))
+          monitorLog="$AGENT_TEMPDIRECTORY/helix-job-monitor-attempt-$monitorAttempt.log"
+
+          set +e
+          bash ./eng/common/dotnet.sh exec "$(HelixJobMonitorDll)" \
+            --helix-base-uri 'https://helix.dot.net/' \
+            --polling-interval-seconds 30 \
+            --fail-on-failed-tests true \
+            --max-wait-minutes "$remainingMinutes" \
+            --stage-name '$(System.StageName)' \
+            --organization dotnet \
+            --repository maui \
+            --build-reason '$(Build.Reason)' \
+            --source-branch '$(Build.SourceBranch)' 2>&1 | tee "$monitorLog"
+          monitorExitCode=${PIPESTATUS[0]}
+          set -e
+
+          uploadSummary=$(grep -Eo '[0-9]+ job upload\(s\) remain untagged\.' "$monitorLog" | tail -n 1 || true)
+          if [[ ! "$uploadSummary" =~ ^([0-9]+)\ job\ upload\(s\)\ remain\ untagged\.$ ]]; then
+            if ((monitorExitCode != 0)); then
+              exit "$monitorExitCode"
+            fi
+
+            echo "The Helix Job Monitor did not report its durable upload state." >&2
+            exit 1
+          fi
+
+          if ((monitorExitCode != 0 && monitorResult == 0)); then
+            monitorResult=$monitorExitCode
+          fi
+
+          untaggedUploads=${BASH_REMATCH[1]}
+          if ((untaggedUploads == 0)); then
+            exit "$monitorResult"
+          fi
+
+          echo "##vso[task.logissue type=warning]Replaying $untaggedUploads untagged Helix job upload(s)."
+          monitorAttempt=$((monitorAttempt + 1))
+          sleep 30
+        done
       displayName: Monitor Helix Jobs
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
