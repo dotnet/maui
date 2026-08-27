@@ -14,6 +14,47 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 
 public partial class ResourceAndThemeHotReloadTests
 {
+	[MetadataUpdateFact]
+	public void LiteralToDynamicResource_AppliesResourceAndTracksChanges()
+	{
+		var xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <ContentPage.Resources>
+			    <x:String x:Key="PageCaption">Resource value</x:String>
+			  </ContentPage.Resources>
+			  <Label Text="Literal value" />
+			</ContentPage>
+			""";
+		var xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <ContentPage.Resources>
+			    <x:String x:Key="PageCaption">Resource value</x:String>
+			  </ContentPage.Resources>
+			  <Label Text="{DynamicResource PageCaption}" />
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness(nameof(LiteralToDynamicResource_AppliesResourceAndTracksChanges));
+		var generation = harness.Generate(xamlV1, xamlV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var label = Assert.IsType<Label>(page.Content);
+			Assert.Equal("Literal value", label.Text);
+
+			live.ApplyUpdate<ContentPage>(1);
+			Assert.Equal("Resource value", label.Text);
+
+			page.Resources["PageCaption"] = "Updated resource value";
+			Assert.Equal("Updated resource value", label.Text);
+		});
+	}
+
 	// Wave2 · Resources · P0-10 · RT-01
 	// Provenance: MAUI §1.4; public-app T6
 	// Faithfulness: reaches DynamicResource markup path (UpdateComponentCodeWriter ~L1548,

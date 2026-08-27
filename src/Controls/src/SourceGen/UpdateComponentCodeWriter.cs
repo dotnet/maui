@@ -1628,6 +1628,17 @@ static class UpdateComponentCodeWriter
 			// and falls back to runtime ProvideValue() for unknown IMarkupExtension implementors
 			elementNode.TryProvideValue(captureWriter, ctx);
 
+			// A DynamicResource value has lower specificity than a local value. When Hot Reload
+			// replaces a literal assignment, remove that local value before registering the
+			// resource; otherwise the resource resolves but remains hidden behind the old literal.
+			if (ctx.Variables.TryGetValue(elementNode, out var valueVar)
+				&& valueVar.Type.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!, ctx)
+				&& FindStaticField(ownerType, $"{propertyXmlName.LocalName}Property") is { } bindableProperty)
+			{
+				captureWriter.WriteLine($"{parentAccessor}.RemoveBinding({bindableProperty.ToFQDisplayString()});");
+				captureWriter.WriteLine($"{parentAccessor}.ClearValue({bindableProperty.ToFQDisplayString()});");
+			}
+
 			// Step 4: SetPropertyValue — emits the assignment to the parent
 			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], propertyXmlName, elementNode, ctx);
 		}
