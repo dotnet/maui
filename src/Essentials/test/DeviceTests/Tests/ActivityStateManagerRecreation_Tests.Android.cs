@@ -87,6 +87,56 @@ public class ActivityStateManagerRecreation_Tests
 	}
 
 	[Fact]
+	public async Task PendingRequest_FaultsWhenTaskPresenceCheckIsDenied()
+	{
+		var request = new RecreationActivityForResultRequest();
+		var manager = new ActivityStateManagerImplementation(request);
+		ActivityResultRecreationState.Begin(manager);
+
+		ActivityResultRecreationActivity? activity = null;
+
+		try
+		{
+			var hostActivity = MauiPlatform.CurrentActivity
+				?? throw new InvalidOperationException("The device-test host activity is unavailable.");
+
+			await MainThread.InvokeOnMainThreadAsync(() =>
+				hostActivity.StartActivity(new Intent(hostActivity, typeof(ActivityResultRecreationActivity))));
+			activity = await ActivityResultRecreationState.FirstActivity
+				.WaitAsync(TimeSpan.FromSeconds(15));
+
+			Task<JavaString>? pendingResult = null;
+			using var input = new JavaString("security-exception");
+			using var savedState = new Bundle();
+			await MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				pendingResult = request.Launch(activity, input);
+				request.SaveInstanceState(activity, savedState);
+				request.DenyTaskPresenceCheck = true;
+				request.ActivityDestroyed(activity);
+			});
+			var pending = pendingResult
+				?? throw new InvalidOperationException("The activity-result request was not started.");
+
+			var exception = await Assert.ThrowsAsync<global::Java.Lang.SecurityException>(
+				() => pending.WaitAsync(TimeSpan.FromSeconds(15)));
+			Assert.Contains("task presence denied", exception.Message, StringComparison.Ordinal);
+		}
+		finally
+		{
+			activity ??= manager.GetCurrentActivity() as ActivityResultRecreationActivity;
+			await MainThread.InvokeOnMainThreadAsync(() =>
+			{
+				if (activity is { IsDestroyed: false, IsFinishing: false })
+					activity.Finish();
+			});
+
+			manager.Dispose();
+			ActivityResultRecreationState.Reset();
+		}
+	}
+
+	[Fact]
 	public async Task PendingRequest_IsCanceledWhenOwningTaskIsRemoved()
 	{
 		var request = new RecreationActivityForResultRequest();
@@ -157,6 +207,8 @@ public class ActivityStateManagerRecreation_Tests
 sealed class RecreationActivityForResultRequest
 	: ActivityForResultRequest<RecreationActivityResultContract, JavaString>
 {
+	internal bool DenyTaskPresenceCheck { get; set; }
+
 	protected override ActivityResultLauncher RegisterForActivityResult(
 		ComponentActivity componentActivity,
 		RecreationActivityResultContract contract,
@@ -165,6 +217,11 @@ sealed class RecreationActivityForResultRequest
 		var activity = Assert.IsType<ActivityResultRecreationActivity>(componentActivity);
 		return activity.RegisterForActivityResult(contract, activity.ResultRegistry, callback);
 	}
+
+	protected override bool IsTaskPresent(ActivityManager activityManager, int taskId) =>
+		DenyTaskPresenceCheck
+			? throw new global::Java.Lang.SecurityException("task presence denied")
+			: base.IsTaskPresent(activityManager, taskId);
 }
 
 sealed class RecreationActivityResultContract : ActivityResultContract

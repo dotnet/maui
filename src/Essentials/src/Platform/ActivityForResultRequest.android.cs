@@ -178,10 +178,24 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		if (componentActivity.IsFinishing
 			|| !_savedRequestOwners.TryGetValue(componentActivity, out _)
-			|| componentActivity.GetSystemService(global::Android.Content.Context.ActivityService) is not global::Android.App.ActivityManager activityManager
-			|| !IsTaskPresent(activityManager, componentActivity.TaskId))
+			|| componentActivity.GetSystemService(global::Android.Content.Context.ActivityService) is not global::Android.App.ActivityManager activityManager)
 		{
 			CancelPendingRequest(componentActivity);
+			return;
+		}
+
+		try
+		{
+			if (!IsTaskPresent(activityManager, componentActivity.TaskId))
+			{
+				CancelPendingRequest(componentActivity);
+				return;
+			}
+		}
+		catch (global::Java.Lang.SecurityException ex)
+		{
+			if (_requestState.TrySetException(requestOwner, ex))
+				StopTaskRemovalMonitor(requestOwner);
 			return;
 		}
 
@@ -202,26 +216,28 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		int taskId)
 	{
 		var cancellation = new System.Threading.CancellationTokenSource();
+		var cancellationToken = cancellation.Token;
 		if (!_taskRemovalMonitors.TryAdd(requestOwner, cancellation))
 		{
 			cancellation.Dispose();
 			return;
 		}
 
-		_ = MonitorTaskPresenceAsync(requestOwner, activityManager, taskId, cancellation);
+		_ = MonitorTaskPresenceAsync(requestOwner, activityManager, taskId, cancellation, cancellationToken);
 	}
 
 	async Task MonitorTaskPresenceAsync(
 		string requestOwner,
 		global::Android.App.ActivityManager activityManager,
 		int taskId,
-		System.Threading.CancellationTokenSource cancellation)
+		System.Threading.CancellationTokenSource cancellation,
+		System.Threading.CancellationToken cancellationToken)
 	{
 		try
 		{
 			while (_requestState.HasPendingRequest(requestOwner))
 			{
-				await Task.Delay(TaskPresencePollInterval, cancellation.Token).ConfigureAwait(false);
+				await Task.Delay(TaskPresencePollInterval, cancellationToken).ConfigureAwait(false);
 				if (!IsTaskPresent(activityManager, taskId))
 				{
 					_requestState.TrySetCanceled(requestOwner);
@@ -229,7 +245,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 				}
 			}
 		}
-		catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 		{
 		}
 		catch (global::Java.Lang.SecurityException ex)
@@ -238,9 +254,11 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		finally
 		{
-			_taskRemovalMonitors.TryRemove(
-				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation));
-			cancellation.Dispose();
+			if (_taskRemovalMonitors.TryRemove(
+				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation)))
+			{
+				cancellation.Dispose();
+			}
 		}
 	}
 
@@ -248,11 +266,18 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	{
 		if (_taskRemovalMonitors.TryRemove(requestOwner, out var cancellation))
 		{
-			cancellation.Cancel();
+			try
+			{
+				cancellation.Cancel();
+			}
+			finally
+			{
+				cancellation.Dispose();
+			}
 		}
 	}
 
-	static bool IsTaskPresent(global::Android.App.ActivityManager activityManager, int taskId)
+	protected virtual bool IsTaskPresent(global::Android.App.ActivityManager activityManager, int taskId)
 	{
 		foreach (var appTask in activityManager.AppTasks ?? [])
 		{

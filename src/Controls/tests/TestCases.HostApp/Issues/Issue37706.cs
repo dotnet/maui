@@ -1,3 +1,5 @@
+namespace Maui.Controls.Sample.Issues;
+
 [Issue(
 	IssueTracker.Github,
 	37706,
@@ -33,7 +35,7 @@ public class Issue37706 : ContentPage
 	protected override bool OnBackButtonPressed()
 	{
 		_backPressCount++;
-		_statusLabel.Text = $"OnBackButtonPressed called {_backPressCount} time";
+		_statusLabel.Text = $"OnBackButtonPressed called {_backPressCount} {(_backPressCount == 1 ? "time" : "times")}";
 		return true;
 	}
 }
