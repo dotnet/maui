@@ -258,6 +258,74 @@ public class ExternalStaticContentHotReloadTests
 	}
 
 	[Fact]
+	public async Task DiscardedDetach_FollowedByDisposal_ProducesNoUnobservedTaskException()
+	{
+		// This is the regression for the reported symptom rather than for detach itself. The in-box
+		// handlers used to discard the detach task and dispose immediately; when the removal lost the
+		// race it faulted, and because nothing observed the task the fault surfaced later as an
+		// unobserved task exception. Faulted tasks only report as unobserved once finalized, which is
+		// why this forces a collection rather than just awaiting.
+		var unobserved = new List<Exception>();
+		void OnUnobserved(object? sender, UnobservedTaskExceptionEventArgs e)
+		{
+			lock (unobserved)
+			{
+				unobserved.Add(e.Exception);
+			}
+		}
+
+		TaskScheduler.UnobservedTaskException += OnUnobserved;
+		try
+		{
+			for (var i = 0; i < 25; i++)
+			{
+				await RunDiscardedDetachTeardownAsync();
+			}
+
+			for (var i = 0; i < 3; i++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+		}
+		finally
+		{
+			TaskScheduler.UnobservedTaskException -= OnUnobserved;
+		}
+
+		lock (unobserved)
+		{
+			Assert.Empty(unobserved);
+		}
+	}
+
+	/// <summary>
+	/// Reproduces the exact teardown shape the in-box handlers used to have, and that an external
+	/// author could still write: discard the detach task, then dispose the manager.
+	/// </summary>
+	private static async Task RunDiscardedDetachTeardownAsync()
+	{
+		var manager = CreateManager();
+
+		var attach = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		if (attach is null)
+		{
+			await manager.DisposeAsync();
+			return;
+		}
+
+		await attach;
+
+		// Stands in for the renderer having already dropped the notifier, which is what makes the
+		// removal throw. Without the guard in the seam, the discarded task below faults.
+		await manager.RemoveRootComponentAsync("body::after");
+
+		_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+
+		await manager.DisposeAsync();
+	}
+
+	[Fact]
 	public async Task ExternalHandler_DetachesHotReload_OnTeardown()
 	{
 		var blazorWebView = new BlazorWebView();
