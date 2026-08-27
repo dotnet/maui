@@ -141,7 +141,9 @@ namespace Microsoft.Maui.DeviceTests
 					infoBadge.Background is WSolidColorBrush background &&
 					infoBadge.Foreground is WSolidColorBrush foreground &&
 					background.Color == Colors.Blue.ToWindowsColor() &&
-					foreground.Color == Colors.Yellow.ToWindowsColor());
+					foreground.Color == Colors.Yellow.ToWindowsColor(),
+					timeout: 5000,
+					message: "Timed out waiting for the InfoBadge custom brushes to be applied.");
 
 				TabbedPage.SetBadgeText(firstPage, "42");
 				TabbedPage.SetBadgeColor(firstPage, null);
@@ -153,7 +155,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(item.BadgeForeground);
 				await AssertEventually(() =>
 					infoBadge.Background is null &&
-					infoBadge.Foreground is null);
+					infoBadge.Foreground is null,
+					timeout: 5000,
+					message: "Timed out waiting for the InfoBadge custom brushes to be cleared.");
 
 				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
 				Assert.Same(
