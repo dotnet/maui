@@ -63,21 +63,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			if (toolbar.BackButtonVisible)
+			if (toolbar.NavigationIconKind == ToolbarNavigationIconKind.BackButton)
 			{
 				var backButton = CreateBackButton(platformToolbar, toolbar);
 				backButton.Clicked += (s, e) => platformToolbar.SendIconPressed();
 				platformToolbar.Icon = backButton;
 			}
-			else if (toolbar.DrawerToggleVisible)
+			else if (toolbar.NavigationIconKind == ToolbarNavigationIconKind.DrawerToggle)
 			{
 				var menuButton = CreateMenuButton(platformToolbar, toolbar);
 				menuButton.Clicked += (s, e) => platformToolbar.SendIconPressed();
 				platformToolbar.Icon = menuButton;
 			}
-			else if (toolbar.TitleIcon == null)
+			else
 			{
-				platformToolbar.Icon = null;
+				platformToolbar.UpdateTitleIcon(toolbar);
 			}
 		}
 

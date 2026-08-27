@@ -8,6 +8,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	internal enum ToolbarNavigationIconKind
+	{
+		None,
+		TitleIcon,
+		DrawerToggle,
+		BackButton,
+	}
+
 	public partial class Toolbar : Maui.IToolbar, Maui.IToolbarDrawerToggleVisible, INotifyPropertyChanged
 	{
 		VisualElement _titleView;
@@ -48,6 +56,12 @@ namespace Microsoft.Maui.Controls
 		public bool BackButtonEnabled { get => _backButtonEnabled; set => SetProperty(ref _backButtonEnabled, value); }
 		public virtual bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
 		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
+		internal ToolbarNavigationIconKind NavigationIconKind =>
+			BackButtonVisible ? ToolbarNavigationIconKind.BackButton :
+			DrawerToggleVisible ? ToolbarNavigationIconKind.DrawerToggle :
+			TitleIcon is not null ? ToolbarNavigationIconKind.TitleIcon :
+			ToolbarNavigationIconKind.None;
+
 		public IElementHandler Handler
 		{
 			get => _handler;

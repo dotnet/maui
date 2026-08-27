@@ -145,6 +145,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TizenNavigationSlotRestoresTitleIconWhenDrawerToggleIsHidden()
+		{
+			var shell = CreateFlyoutShell();
+			var toolbar = shell.Toolbar;
+			toolbar.TitleIcon = new FileImageSource { File = "title.png" };
+
+			Assert.Equal(ToolbarNavigationIconKind.DrawerToggle, toolbar.NavigationIconKind);
+
+			shell.FlyoutBehavior = FlyoutBehavior.Disabled;
+
+			Assert.False(toolbar.BackButtonVisible);
+			Assert.False(toolbar.DrawerToggleVisible);
+			Assert.Equal(ToolbarNavigationIconKind.TitleIcon, toolbar.NavigationIconKind);
+		}
+
+		[Fact]
 		public async Task BackButtonTakesPrecedenceOverDrawerToggleInShell()
 		{
 			var shell = CreateFlyoutShell();
