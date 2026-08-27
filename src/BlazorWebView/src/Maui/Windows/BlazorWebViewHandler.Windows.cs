@@ -23,7 +23,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override WebView2Control CreatePlatformView()
 		{
-			return new WebView2Control();
+			return new WebView2Control
+			{
+				AllowDrop = true,
+			};
 		}
 
 		/// <inheritdoc />
