@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 namespace Microsoft.Maui.Resizetizer
 {
 	/// <summary>
-	/// Produces a canonical spelling of a file system path so that two differently spelled paths
-	/// which point at the same file compare as equal.
+	/// Produces a canonical spelling of a file system path so that two differently spelled paths which
+	/// point at the same file compare as equal.
 	/// </summary>
 	/// <remarks>
 	/// <para>
@@ -20,13 +20,18 @@ namespace Microsoft.Maui.Resizetizer
 	/// MSBuild items and task outputs wrongly reports freshly written files as stale.
 	/// </para>
 	/// <para>
-	/// The canonical form is only ever used for comparison. Callers keep the original item spec so the
-	/// paths surfaced to the rest of the build stay in the spelling the user provided.
+	/// Only the <em>directory</em> part of a path is link resolved. The file name is kept verbatim, so two
+	/// different names in one directory never collapse into one even when one of them is a link to the
+	/// other. Resolving the leaf as well would let a stale alias masquerade as a live output and survive
+	/// cleanup forever.
 	/// </para>
 	/// <para>
-	/// Canonicalization resolves the links of each path segment that already exists and appends the
-	/// segments that do not, so paths for files which have not been created yet can be canonicalized
-	/// without the failure a plain <c>realpath</c> would produce.
+	/// Directories that do not exist yet are appended unresolved, so a path for a file the build has not
+	/// written can be canonicalized without the failure a plain <c>realpath</c> would produce.
+	/// </para>
+	/// <para>
+	/// The canonical form is only ever used for comparison. Callers keep the original item spec so the
+	/// paths surfaced to the rest of the build stay in the spelling the user provided.
 	/// </para>
 	/// </remarks>
 	internal sealed class PathCanonicalizer
@@ -44,86 +49,122 @@ namespace Microsoft.Maui.Resizetizer
 				? StringComparer.Ordinal
 				: StringComparer.OrdinalIgnoreCase;
 
+		/// <summary>The <see cref="StringComparison"/> matching <see cref="Comparer"/>.</summary>
+		public static StringComparison Comparison { get; } =
+			RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+				? StringComparison.Ordinal
+				: StringComparison.OrdinalIgnoreCase;
+
 		static readonly MethodInfo ResolveDirectoryLinkTarget =
 			typeof(Directory).GetMethod("ResolveLinkTarget", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(bool) }, null);
 
-		static readonly MethodInfo ResolveFileLinkTarget =
-			typeof(File).GetMethod("ResolveLinkTarget", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(bool) }, null);
-
-		readonly Dictionary<string, string> directoryCache = new Dictionary<string, string>(Comparer);
+		// Cache keys are exact spellings. Two directories whose names differ only by case can be two
+		// different directories on a case sensitive volume, so a case insensitive key could hand back
+		// another directory's resolved target.
+		readonly Dictionary<string, string> directoryCache = new Dictionary<string, string>(StringComparer.Ordinal);
 
 		/// <summary>
-		/// Returns a canonical spelling of <paramref name="path"/>, or the input unchanged when it
-		/// cannot be canonicalized. Never throws.
+		/// Returns the key to compare <paramref name="path"/> by: its link resolved directory plus its
+		/// file name unchanged. Returns <see langword="null"/> when the path cannot be interpreted.
 		/// </summary>
-		public string Canonicalize(string path)
+		public string GetComparisonKey(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
-				return path;
+				return null;
 
 			string full;
 			try
 			{
-				full = Path.GetFullPath(path);
+				full = TrimTrailingSeparators(Path.GetFullPath(path));
 			}
 			catch (Exception)
 			{
-				// An item spec can contain characters that are not valid in a path; leave it alone.
-				return path;
+				// An item spec can contain characters that are not valid in a path.
+				return null;
 			}
 
-			return CanonicalizeFullPath(TrimTrailingSeparators(full), MaxLinkHops);
-		}
-
-		/// <summary>
-		/// Builds a set of canonical paths that can be probed with <see cref="Canonicalize"/> results.
-		/// </summary>
-		public HashSet<string> CreateSet(IEnumerable<string> paths)
-		{
-			var set = new HashSet<string>(Comparer);
-
-			if (paths is not null)
-			{
-				foreach (var path in paths)
-				{
-					if (!string.IsNullOrWhiteSpace(path))
-						set.Add(Canonicalize(path));
-				}
-			}
-
-			return set;
-		}
-
-		string CanonicalizeFullPath(string full, int hops)
-		{
 			var parent = Path.GetDirectoryName(full);
 			var name = Path.GetFileName(full);
 
-			// A root such as "/" or "C:\" has nothing left to resolve.
+			// A bare root such as "/" or "C:\" has no file name to keep.
 			if (string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(name))
-				return full;
+				return CanonicalizeDirectory(full);
 
-			return ResolveLink(Path.Combine(CanonicalizeDirectory(parent, hops), name), hops);
+			var directory = CanonicalizeDirectory(parent);
+
+			return directory is null ? null : Path.Combine(directory, name);
 		}
 
-		string CanonicalizeDirectory(string directory, int hops)
+		/// <summary>
+		/// Returns <paramref name="directory"/> with every link in it resolved, or <see langword="null"/>
+		/// when it cannot be interpreted. Segments that do not exist are kept as they are.
+		/// </summary>
+		public string CanonicalizeDirectory(string directory)
 		{
-			directory = TrimTrailingSeparators(directory);
+			if (string.IsNullOrWhiteSpace(directory))
+				return null;
 
-			if (directoryCache.TryGetValue(directory, out var cached))
+			string full;
+			try
+			{
+				full = TrimTrailingSeparators(Path.GetFullPath(directory));
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+
+			return Canonicalize(full, MaxLinkHops);
+		}
+
+		/// <summary>
+		/// Returns whether <paramref name="key"/> names something inside <paramref name="root"/>. Both
+		/// must already be comparison keys.
+		/// </summary>
+		public static bool IsUnder(string key, string root)
+		{
+			if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(root))
+				return false;
+
+			if (Comparer.Equals(key, root))
+				return true;
+
+			if (key.Length <= root.Length || !key.StartsWith(root, Comparison))
+				return false;
+
+			// A root that already ends in a separator, such as "/" or "C:\", has no separator to skip.
+			var last = root[root.Length - 1];
+			if (last == Path.DirectorySeparatorChar || last == Path.AltDirectorySeparatorChar)
+				return true;
+
+			// Guard against "…/r-backup" being treated as living inside "…/r".
+			var next = key[root.Length];
+			return next == Path.DirectorySeparatorChar || next == Path.AltDirectorySeparatorChar;
+		}
+
+		string Canonicalize(string full, int hops)
+		{
+			if (directoryCache.TryGetValue(full, out var cached))
 				return cached;
 
-			var canonical = CanonicalizeFullPath(directory, hops);
-			directoryCache[directory] = canonical;
+			var parent = Path.GetDirectoryName(full);
+			var name = Path.GetFileName(full);
+
+			// A root resolves to itself, which also terminates the walk.
+			var canonical = string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(name)
+				? full
+				: ResolveDirectoryLink(Path.Combine(Canonicalize(parent, hops), name), hops);
+
+			directoryCache[full] = canonical;
 			return canonical;
 		}
 
-		string ResolveLink(string path, int hops)
+		string ResolveDirectoryLink(string path, int hops)
 		{
 			if (hops <= 0)
 				return path;
 
-			var target = GetLinkTarget(path);
+			var target = GetDirectoryLinkTarget(path);
 			if (target is null)
 				return path;
 
@@ -131,27 +172,21 @@ namespace Microsoft.Maui.Resizetizer
 			if (Comparer.Equals(resolved, path))
 				return path;
 
-			// The target itself may live under directories that are links, so canonicalize it too.
-			return CanonicalizeFullPath(resolved, hops - 1);
+			// The target itself may live under directories that are links.
+			return Canonicalize(resolved, hops - 1);
 		}
 
-		static FileSystemInfo GetLinkTarget(string path)
+		static FileSystemInfo GetDirectoryLinkTarget(string path)
 		{
-			// Directory/File.ResolveLinkTarget only exist on .NET 6 and later. This assembly targets
+			// Directory.ResolveLinkTarget only exists on .NET 6 and later. This assembly targets
 			// netstandard2.0 so that it can also load into MSBuild.exe on .NET Framework, where link
-			// resolution is simply unavailable and comparison falls back to the lexical full path.
-			var resolve = Directory.Exists(path)
-				? ResolveDirectoryLinkTarget
-				: File.Exists(path)
-					? ResolveFileLinkTarget
-					: null;
-
-			if (resolve is null)
+			// resolution is unavailable and comparison falls back to the lexical full path.
+			if (ResolveDirectoryLinkTarget is null || !Directory.Exists(path))
 				return null;
 
 			try
 			{
-				return resolve.Invoke(null, new object[] { path, /* returnFinalTarget: */ true }) as FileSystemInfo;
+				return ResolveDirectoryLinkTarget.Invoke(null, new object[] { path, /* returnFinalTarget: */ true }) as FileSystemInfo;
 			}
 			catch (Exception)
 			{

@@ -815,9 +815,12 @@
         </ItemGroup>
 
         <!-- Compare canonical paths rather than item specs. The wildcard above and the collected images
-             can legitimately spell the same file differently (symlinked project paths, separators,
-             casing), and a textual Remove would then classify every generated image as stale. -->
+             can legitimately spell the same file differently (symlinked project paths, casing), and a
+             textual Remove would then classify every generated image as stale. Root also confines the
+             delete list to the intermediate folder, because the recursive wildcard descends through any
+             directory link it finds inside it. -->
         <DetectStaleOutputFilesTask
+            Root="$(_MauiIntermediateImagesFullPath)"
             Files="@(_ResizetizerExistingImages->'%(FullPath)')"
             KnownOutputs="@(_ResizetizerCollectedImages)">
             <Output TaskParameter="StaleFiles" ItemName="_ResizetizerImagesToDelete" />

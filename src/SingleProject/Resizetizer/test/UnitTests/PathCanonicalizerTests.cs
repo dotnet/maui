@@ -13,21 +13,24 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
-		public void NullAndEmptyPathsAreReturnedUnchanged()
+		public void NullAndEmptyPathsHaveNoKey()
 		{
 			var canonicalizer = new PathCanonicalizer();
 
-			Assert.Null(canonicalizer.Canonicalize(null));
-			Assert.Equal("", canonicalizer.Canonicalize(""));
-			Assert.Equal("   ", canonicalizer.Canonicalize("   "));
+			Assert.Null(canonicalizer.GetComparisonKey(null));
+			Assert.Null(canonicalizer.GetComparisonKey(""));
+			Assert.Null(canonicalizer.GetComparisonKey("   "));
+			Assert.Null(canonicalizer.CanonicalizeDirectory(null));
+			Assert.Null(canonicalizer.CanonicalizeDirectory(""));
 		}
 
 		[Fact]
-		public void InvalidPathsAreReturnedUnchanged()
+		public void InvalidPathsHaveNoKey()
 		{
 			var canonicalizer = new PathCanonicalizer();
 
-			Assert.Equal("bad\0path", canonicalizer.Canonicalize("bad\0path"));
+			Assert.Null(canonicalizer.GetComparisonKey("bad\0path"));
+			Assert.Null(canonicalizer.CanonicalizeDirectory("bad\0path"));
 		}
 
 		[Fact]
@@ -35,7 +38,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var canonicalizer = new PathCanonicalizer();
 
-			var canonical = canonicalizer.Canonicalize(Path.Combine("obj", "resizetizer", "r", "camera.png"));
+			var canonical = canonicalizer.GetComparisonKey(Path.Combine("obj", "resizetizer", "r", "camera.png"));
 
 			Assert.True(Path.IsPathRooted(canonical), $"Expected a rooted path, got '{canonical}'.");
 		}
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var messy = Path.Combine(DestinationDirectory, ".", "obj", "..", "images") + Path.DirectorySeparatorChar + Path.DirectorySeparatorChar;
 
-			Assert.Equal(canonicalizer.Canonicalize(directory), canonicalizer.Canonicalize(messy), PathCanonicalizer.Comparer);
+			Assert.Equal(canonicalizer.CanonicalizeDirectory(directory), canonicalizer.CanonicalizeDirectory(messy), PathCanonicalizer.Comparer);
 		}
 
 		[Fact]
@@ -58,11 +61,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var canonicalizer = new PathCanonicalizer();
 			var missing = Path.Combine(DestinationDirectory, "never", "created", "at", "all.png");
 
-			var canonical = canonicalizer.Canonicalize(missing);
+			var canonical = canonicalizer.GetComparisonKey(missing);
 
 			Assert.True(Path.IsPathRooted(canonical), $"Expected a rooted path, got '{canonical}'.");
 			Assert.EndsWith(Path.Combine("never", "created", "at", "all.png"), canonical, StringComparison.Ordinal);
-			Assert.Equal(canonical, canonicalizer.Canonicalize(canonical), PathCanonicalizer.Comparer);
+			Assert.Equal(canonical, canonicalizer.GetComparisonKey(canonical), PathCanonicalizer.Comparer);
 		}
 
 		[Fact]
@@ -74,7 +77,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var canonicalizer = new PathCanonicalizer();
 
-			Assert.Equal(canonicalizer.Canonicalize(physical), canonicalizer.Canonicalize(link), PathCanonicalizer.Comparer);
+			Assert.Equal(canonicalizer.CanonicalizeDirectory(physical), canonicalizer.CanonicalizeDirectory(link), PathCanonicalizer.Comparer);
 		}
 
 		[Fact]
@@ -89,8 +92,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var canonicalizer = new PathCanonicalizer();
 
 			Assert.Equal(
-				canonicalizer.Canonicalize(Path.Combine(physical, "camera.png")),
-				canonicalizer.Canonicalize(Path.Combine(link, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(physical, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(link, "camera.png")),
 				PathCanonicalizer.Comparer);
 		}
 
@@ -106,8 +109,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			// The stale-file comparison has to work for outputs that the build has not written yet, so
 			// canonicalization may only resolve the part of the path that already exists.
 			Assert.Equal(
-				canonicalizer.Canonicalize(Path.Combine(physical, "future", "camera.png")),
-				canonicalizer.Canonicalize(Path.Combine(link, "future", "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(physical, "future", "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(link, "future", "camera.png")),
 				PathCanonicalizer.Comparer);
 		}
 
@@ -116,10 +119,117 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var canonicalizer = new PathCanonicalizer();
 
-			var one = canonicalizer.Canonicalize(Path.Combine(DestinationDirectory, "drawable", "camera.png"));
-			var two = canonicalizer.Canonicalize(Path.Combine(DestinationDirectory, "drawable", "bicycle.png"));
+			var one = canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "drawable", "camera.png"));
+			var two = canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "drawable", "bicycle.png"));
 
 			Assert.NotEqual(one, two, PathCanonicalizer.Comparer);
+		}
+
+		/// <summary>
+		/// Only the directory is link resolved. Two names in one directory must stay distinct even when
+		/// one is a link to the other, otherwise a stale alias would look like a live output.
+		/// </summary>
+		[Fact]
+		public void ALinkToAFileInTheSameDirectoryKeepsItsOwnKey()
+		{
+			var directory = Path.Combine(DestinationDirectory, "drawable");
+			Directory.CreateDirectory(directory);
+
+			var target = Path.Combine(directory, "camera.png");
+			var alias = Path.Combine(directory, "orphan.png");
+			File.WriteAllText(target, "image");
+
+			if (!SymbolicLink.TryCreateFileLink(alias, target, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+
+			Assert.NotEqual(
+				canonicalizer.GetComparisonKey(target),
+				canonicalizer.GetComparisonKey(alias),
+				PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void IsUnderAcceptsTheRootItselfAndItsChildren()
+		{
+			var canonicalizer = new PathCanonicalizer();
+			var root = canonicalizer.CanonicalizeDirectory(DestinationDirectory);
+
+			Assert.True(PathCanonicalizer.IsUnder(root, root));
+			Assert.True(PathCanonicalizer.IsUnder(canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "camera.png")), root));
+			Assert.True(PathCanonicalizer.IsUnder(canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "a", "b", "camera.png")), root));
+		}
+
+		[Fact]
+		public void IsUnderRejectsSiblingsParentsAndEmptyInput()
+		{
+			var canonicalizer = new PathCanonicalizer();
+			var root = canonicalizer.CanonicalizeDirectory(Path.Combine(DestinationDirectory, "r"));
+
+			// A name that merely starts with the root's name is not inside it.
+			Assert.False(PathCanonicalizer.IsUnder(canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "r-backup", "camera.png")), root));
+			Assert.False(PathCanonicalizer.IsUnder(canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "camera.png")), root));
+			Assert.False(PathCanonicalizer.IsUnder(null, root));
+			Assert.False(PathCanonicalizer.IsUnder(root, null));
+		}
+
+		/// <summary>
+		/// A wildcard descends through a directory link, so the key of what it finds resolves outside the
+		/// root it was rooted at. That is what lets the caller refuse to delete it.
+		/// </summary>
+		[Fact]
+		public void APathReachedThroughADirectoryLinkResolvesOutOfTheRoot()
+		{
+			var root = Path.Combine(DestinationDirectory, "r");
+			var outside = Path.Combine(DestinationDirectory, "outside");
+			Directory.CreateDirectory(root);
+			Directory.CreateDirectory(outside);
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(root, "alias"), outside, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+			var canonicalRoot = canonicalizer.CanonicalizeDirectory(root);
+			var throughTheLink = canonicalizer.GetComparisonKey(Path.Combine(root, "alias", "precious.png"));
+
+			Assert.False(PathCanonicalizer.IsUnder(throughTheLink, canonicalRoot));
+		}
+
+		/// <summary>
+		/// The resolution cache is keyed on the exact spelling. On a case sensitive volume two directories
+		/// whose names differ only by case are two different directories, and a case insensitive cache key
+		/// would hand back the wrong one's target.
+		/// </summary>
+		[Fact]
+		public void DirectoriesDifferingOnlyByCaseAreCachedSeparately()
+		{
+			if (!OperatingSystem.IsLinux())
+				return;
+
+			var lower = Path.Combine(DestinationDirectory, "drawable");
+			var upper = Path.Combine(DestinationDirectory, "DRAWABLE");
+			var target = Path.Combine(DestinationDirectory, "elsewhere");
+			Directory.CreateDirectory(target);
+			Directory.CreateDirectory(upper);
+
+			if (!SymbolicLink.TryCreateDirectoryLink(lower, target, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+
+			// Resolve the link first so a bad cache would already be populated with its target.
+			Assert.Equal(canonicalizer.CanonicalizeDirectory(target), canonicalizer.CanonicalizeDirectory(lower), StringComparer.Ordinal);
+			Assert.Equal(upper, canonicalizer.CanonicalizeDirectory(upper), StringComparer.Ordinal);
 		}
 
 		[Fact]
@@ -132,9 +242,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.WriteAllText(Path.Combine(physical, "camera.png"), "image");
 
 			var canonicalizer = new PathCanonicalizer();
-			var once = canonicalizer.Canonicalize(Path.Combine(link, "camera.png"));
+			var once = canonicalizer.GetComparisonKey(Path.Combine(link, "camera.png"));
 
-			Assert.Equal(once, canonicalizer.Canonicalize(once), PathCanonicalizer.Comparer);
+			Assert.Equal(once, canonicalizer.GetComparisonKey(once), PathCanonicalizer.Comparer);
 		}
 
 		[Fact]
@@ -155,8 +265,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var canonicalizer = new PathCanonicalizer();
 
 			Assert.Equal(
-				canonicalizer.Canonicalize(Path.Combine(physical, "camera.png")),
-				canonicalizer.Canonicalize(Path.Combine(second, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(physical, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(second, "camera.png")),
 				PathCanonicalizer.Comparer);
 		}
 
@@ -176,7 +286,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var root = Path.GetPathRoot(Path.GetFullPath(DestinationDirectory));
 
 			Assert.False(string.IsNullOrEmpty(root));
-			Assert.Equal(root, canonicalizer.Canonicalize(root), PathCanonicalizer.Comparer);
+			Assert.Equal(root, canonicalizer.CanonicalizeDirectory(root), PathCanonicalizer.Comparer);
 		}
 
 		[Fact]
@@ -189,11 +299,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var path = Path.Combine(DestinationDirectory, "drawable", "camera.png");
 
 			Assert.Equal(
-				canonicalizer.Canonicalize(path),
-				canonicalizer.Canonicalize(path.Replace('\\', '/')),
+				canonicalizer.GetComparisonKey(path),
+				canonicalizer.GetComparisonKey(path.Replace('\\', '/')),
 				PathCanonicalizer.Comparer);
 
-			Assert.Equal(Path.GetPathRoot(path), Path.GetPathRoot(canonicalizer.Canonicalize(path)), StringComparer.OrdinalIgnoreCase);
+			Assert.Equal(Path.GetPathRoot(path), Path.GetPathRoot(canonicalizer.GetComparisonKey(path)), StringComparer.OrdinalIgnoreCase);
 		}
 
 		[Fact]
@@ -215,8 +325,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var canonicalizer = new PathCanonicalizer();
 
 			Assert.Equal(
-				canonicalizer.Canonicalize(Path.Combine(physical, "camera.png")),
-				canonicalizer.Canonicalize(Path.Combine(junction, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(physical, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(junction, "camera.png")),
 				PathCanonicalizer.Comparer);
 		}
 
@@ -228,8 +338,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var canonicalizer = new PathCanonicalizer();
 
-			var withBackslash = canonicalizer.Canonicalize(Path.Combine(DestinationDirectory, "drawable\\camera.png"));
-			var withSeparator = canonicalizer.Canonicalize(Path.Combine(DestinationDirectory, "drawable", "camera.png"));
+			var withBackslash = canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "drawable\\camera.png"));
+			var withSeparator = canonicalizer.GetComparisonKey(Path.Combine(DestinationDirectory, "drawable", "camera.png"));
 
 			Assert.NotEqual(withBackslash, withSeparator, PathCanonicalizer.Comparer);
 		}

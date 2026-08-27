@@ -15,9 +15,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 		}
 
-		DetectStaleOutputFilesTask GetNewTask(string[] files, string[] knownOutputs) =>
+		DetectStaleOutputFilesTask GetNewTask(string[] files, string[] knownOutputs, string root = null) =>
 			new DetectStaleOutputFilesTask
 			{
+				Root = root ?? DestinationDirectory,
 				Files = files?.Select(f => (ITaskItem)new TaskItem(f)).ToArray(),
 				KnownOutputs = knownOutputs?.Select(f => (ITaskItem)new TaskItem(f)).ToArray(),
 				BuildEngine = this,
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var task = new DetectStaleOutputFilesTask
 			{
+				Root = DestinationDirectory,
 				Files = new ITaskItem[] { item },
 				KnownOutputs = Array.Empty<ITaskItem>(),
 				BuildEngine = this,
@@ -158,18 +160,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.WriteAllText(stale, "image");
 
 			var canonicalizer = new PathCanonicalizer();
-			Assert.NotEqual(stale, canonicalizer.Canonicalize(stale), PathCanonicalizer.Comparer);
+			Assert.NotEqual(stale, canonicalizer.GetComparisonKey(stale), PathCanonicalizer.Comparer);
 
-			var task = GetNewTask(new[] { stale }, System.Array.Empty<string>());
+			var task = GetNewTask(new[] { stale }, Array.Empty<string>());
 
 			Assert.True(task.Execute());
 			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		/// <summary>
-		/// A file inside the intermediate directory that is itself a link to somewhere else canonicalizes
-		/// to a path outside that directory, but it is still reported by its inside spelling, so
-		/// <c>&lt;Delete&gt;</c> removes the link and never the file it points at.
+		/// A file inside the intermediate directory that is itself a link to somewhere else is still
+		/// reported by its inside spelling, because only the directory part of a path is link resolved.
+		/// <c>&lt;Delete&gt;</c> then removes the link and never the file it points at.
 		/// </summary>
 		[Fact]
 		public void ALinkPointingOutsideTheDirectoryIsReportedByItsInsidePath()
@@ -189,10 +191,97 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				return;
 			}
 
-			var task = GetNewTask(new[] { inside }, System.Array.Empty<string>());
+			var task = GetNewTask(new[] { inside }, Array.Empty<string>(), root: intermediate);
 
 			Assert.True(task.Execute());
 			Assert.Equal(inside, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// A recursive MSBuild wildcard walks through a directory link, so it can name a file that is not
+		/// actually inside the intermediate folder. Deleting it would destroy the real file rather than
+		/// the link, so it must never be reported.
+		/// </summary>
+		[Fact]
+		public void FilesReachedThroughADirectoryLinkOutOfTheRootAreNeverStale()
+		{
+			var outside = Path.Combine(DestinationDirectory, "outside");
+			var intermediate = Path.Combine(DestinationDirectory, "intermediate");
+			Directory.CreateDirectory(outside);
+			Directory.CreateDirectory(intermediate);
+
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(intermediate, "alias"), outside, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			// This is exactly what the wildcard yields once it descends through the link.
+			var throughTheLink = Path.Combine(intermediate, "alias", "precious.png");
+			var genuinelyStale = Path.Combine(intermediate, "orphan.png");
+			File.WriteAllText(genuinelyStale, "left over");
+
+			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// Only the directory part of a path is link resolved. If the file name were resolved too, a stale
+		/// alias of a live output would compare equal to it and survive cleanup forever.
+		/// </summary>
+		[Fact]
+		public void AStaleLinkToALiveOutputIsStillDeleted()
+		{
+			var intermediate = Path.Combine(DestinationDirectory, "intermediate");
+			Directory.CreateDirectory(intermediate);
+
+			var kept = Path.Combine(intermediate, "camera.png");
+			File.WriteAllText(kept, "image");
+
+			var alias = Path.Combine(intermediate, "orphan.png");
+			if (!SymbolicLink.TryCreateFileLink(alias, kept, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var task = GetNewTask(new[] { kept, alias }, new[] { kept }, root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Equal(alias, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		[Fact]
+		public void ASiblingOfTheRootIsNotTreatedAsBeingInsideIt()
+		{
+			var intermediate = Path.Combine(DestinationDirectory, "r");
+			var sibling = Path.Combine(DestinationDirectory, "r-backup");
+			Directory.CreateDirectory(intermediate);
+			Directory.CreateDirectory(sibling);
+
+			var outsideRoot = Path.Combine(sibling, "camera.png");
+			File.WriteAllText(outsideRoot, "image");
+
+			var task = GetNewTask(new[] { outsideRoot }, Array.Empty<string>(), root: intermediate);
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		[Fact]
+		public void AnUnresolvableRootDisablesDetectionRatherThanDeleting()
+		{
+			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+
+			var task = GetNewTask(new[] { stale }, Array.Empty<string>(), root: "   ");
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
 		}
 
 		/// <summary>

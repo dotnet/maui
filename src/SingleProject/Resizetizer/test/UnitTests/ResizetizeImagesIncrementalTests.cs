@@ -184,6 +184,42 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertGeneratedImageExists(project);
 		}
 
+		/// <summary>
+		/// The recursive wildcard that finds stale files walks through a directory link, so it can name a
+		/// file that is not really inside the intermediate folder. Deleting that would destroy the real
+		/// file rather than the link, so the cleanup has to leave it alone.
+		/// </summary>
+		[Fact]
+		public void CleanupNeverReachesThroughADirectoryLinkOutOfTheIntermediateFolder()
+		{
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+			AssertGeneratedImageExists(project);
+
+			var outside = Path.Combine(project.PhysicalDirectory, "outside");
+			Directory.CreateDirectory(outside);
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			var alias = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r", "alias");
+			if (!SymbolicLink.TryCreateDirectoryLink(alias, outside, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			// Touch the source image so the target is not skipped as up to date.
+			File.SetLastWriteTimeUtc(Path.Combine(project.ImagesDirectory, ImageName), DateTime.UtcNow);
+
+			Build(project);
+
+			AssertGeneratedImageExists(project);
+			Assert.True(File.Exists(precious), $"Cleanup deleted a file outside the intermediate folder: {precious}");
+		}
+
 		void AssertGeneratedImageExists(TestProject project)
 		{
 			var image = Path.Combine(project.PhysicalDirectory, GeneratedImage);
