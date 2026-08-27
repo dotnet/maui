@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue34336 : _IssuesUITest
 {
 	public override string Issue => "[iOS] CollectionView has excessive height if ObservableCollection source delayed in loading";
@@ -17,6 +16,7 @@ public class Issue34336 : _IssuesUITest
 	// shrinking to match its items once they arrive after a 3-second delay.
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView1)]
 	public void CollectionViewHeightIsCorrectAfterDelayedLoad()
 	{
 		// Wait for page to load

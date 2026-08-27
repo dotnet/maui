@@ -32,8 +32,9 @@ This document provides specific guidance for GitHub Copilot when writing UI test
    - Use the `AutomationId` values to locate and interact with UI elements
    - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
    - Include one functional `[Category(UITestCategories.XYZ)]` attribute per test
-   - CollectionView test classes also require exactly one CI shard category (`CollectionView1` through `CollectionView4`)
-   - Put shard categories on the class; use method-level shard categories only when a class mixes CollectionView and non-CollectionView tests
+   - CollectionView tests retain `[Category(UITestCategories.CollectionView)]` and also require exactly one numbered CI shard category
+   - Put the additive shard category on each test method, following the existing test-level `[Category(...)]` pattern; never put shard categories on the class
+   - Dedicated stages using `testConfigurationArgs` (for example `ios_ui_tests_mono_cv1`) are separate configuration coverage and are not ordinary category-matrix shard entries
    - Test should validate expected behavior through UI interactions and assertions
 
 ### Base Class and Infrastructure

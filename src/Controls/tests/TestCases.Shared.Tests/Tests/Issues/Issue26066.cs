@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 {
 	const string CV2Item1 = "CV2-Item1";
@@ -13,6 +12,7 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void CollectionView2ShouldFindAncestorType()
 	{
 		App.WaitForElement(CV2Item1);

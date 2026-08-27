@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class Issue12374 : _IssuesUITest
 	{
 		public Issue12374(TestDevice testDevice) : base(testDevice)
@@ -16,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView1)]
 		public void Issue12374Test()
 		{
 			App.WaitForElement("TestReady");

@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue28657 : _IssuesUITest
 {
     public override string Issue => "iOS - Rotating the simulator would cause clipping on the description text";
@@ -15,6 +14,7 @@ public class Issue28657 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView3)]
     public void CellLayoutUpdatesCorrectlyAfterDeviceOrientationChanges()
     {
         App.WaitForElement("StubLabel");

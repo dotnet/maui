@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView1)]
 	public class CollectionViewItemsSourceTypesUITests : _IssuesUITest
 	{
 		public CollectionViewItemsSourceTypesUITests(TestDevice device)
@@ -17,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionViewItemsSourceTypesDisplayAndDontCrash (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsSourceTypes.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 		public void CollectionViewItemsSourceTypesDisplayAndDontCrash()
 		{
 			if (Device == TestDevice.Android)

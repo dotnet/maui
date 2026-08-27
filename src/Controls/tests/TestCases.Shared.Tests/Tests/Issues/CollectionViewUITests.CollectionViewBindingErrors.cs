@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class CollectionViewBindingErrorsUITests : _IssuesUITest
 	{
 		public CollectionViewBindingErrorsUITests(TestDevice device)
@@ -17,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionViewBindingErrorsShouldBeZero (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBindingErrors.xaml.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView1)]
 		public void NoBindingErrors()
 		{
 			Assert.That(App.WaitForElement("WaitForStubControl").GetText(), Is.EqualTo("Binding Errors: 0"));

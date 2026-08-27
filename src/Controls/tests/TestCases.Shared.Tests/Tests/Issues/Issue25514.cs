@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class Issue25514 : _IssuesUITest
 	{
 		public Issue25514(TestDevice testDevice) : base(testDevice)
@@ -16,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView1)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky test on Windows https://github.com/dotnet/maui/issues/27059")]
 		public void AppShouldNotCrashAfterLoadingGroupedCollectionView()
 		{

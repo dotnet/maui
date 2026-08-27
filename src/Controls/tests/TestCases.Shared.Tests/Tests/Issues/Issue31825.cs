@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue31825 : _IssuesUITest
 {
 	public Issue31825(TestDevice device) : base(device) { }
@@ -12,6 +11,7 @@ public class Issue31825 : _IssuesUITest
 	public override string Issue => "[iOS, macOS]CollectionView KeepLastItemInView not updating correctly when items are added";
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void UpdateItemScrollModeDynamically()
 	{
 		App.WaitForElement("ItemsUpdatingScrollModeButton");

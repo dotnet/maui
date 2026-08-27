@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue35859 : _IssuesUITest
 {
 	public Issue35859(TestDevice device)
@@ -17,6 +16,7 @@ public class Issue35859 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView7)]
 	public void CollectionView2ShouldNotMeasureNonFirstItemsWithCachedFirstItemHeight()
 	{
 		App.WaitForElement("35859ResetButton");

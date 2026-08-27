@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue12008 : _IssuesUITest
 {
     public Issue12008(TestDevice testDevice) : base(testDevice)
@@ -16,6 +15,7 @@ public class Issue12008 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView6)]
     public void EmptyGroupCreationShouldWork()
     {
         App.WaitForElement("CreateEmptyGroupButton12008");
@@ -29,6 +29,7 @@ public class Issue12008 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView7)]
     public void DragItemIntoEmptyGroupShouldSucceed()
     {
         App.WaitForElement("CreateEmptyGroupButton12008");

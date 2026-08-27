@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView1)]
 	public class Issue11853 : _IssuesUITest
 	{
 		const string Run = "Run";
@@ -17,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void JustWhalingAwayOnTheCollectionViewWithAddsAndClearsShouldNotCrash()
 		{
 			App.WaitForElement(Run);

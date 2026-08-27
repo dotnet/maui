@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue8870 : _IssuesUITest
 {
 	const string Success = "Success";
@@ -19,6 +18,7 @@ public class Issue8870 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView4)]
 	[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 	[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 	public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()

@@ -4,7 +4,6 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-[Category(UITestCategories.CollectionView2)]
 public class Issue23377 : _IssuesUITest
 {
 	public Issue23377(TestDevice device) : base(device)
@@ -15,6 +14,7 @@ public class Issue23377 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView1)]
 	public void Issue23377ItemSpacing()
 	{
 		App.WaitForElement("ChangeItemSpace");

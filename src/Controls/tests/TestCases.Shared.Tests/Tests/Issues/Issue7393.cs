@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class Issue7393 : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -18,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{

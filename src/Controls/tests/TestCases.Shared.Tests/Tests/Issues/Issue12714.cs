@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class Issue12714 : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -18,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView7)]
 
 		public void InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense()
 		{

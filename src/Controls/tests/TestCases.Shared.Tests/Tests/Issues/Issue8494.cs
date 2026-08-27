@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue8494 : _IssuesUITest
 {
 	public Issue8494(TestDevice testDevice) : base(testDevice)
@@ -14,6 +13,7 @@ public class Issue8494 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void CheckEmptyViewMargin()
 	{
 		App.WaitForElement("EmptyViewDescriptionLabel");

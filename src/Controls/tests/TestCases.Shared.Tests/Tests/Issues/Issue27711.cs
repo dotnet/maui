@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue27711 : _IssuesUITest
 {
 	public Issue27711(TestDevice testDevice) : base(testDevice)
@@ -16,6 +15,7 @@ public class Issue27711 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void RightToLeftFlowDirectionShouldWork()
 	{
 		App.WaitForElement("switch");

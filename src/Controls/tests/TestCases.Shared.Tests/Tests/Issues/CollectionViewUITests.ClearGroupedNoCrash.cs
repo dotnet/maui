@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class ClearGroupedNoCrashUITests : _IssuesUITest
 	{
 		const string Go = "Go";
@@ -21,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Description("Clearing CollectionView IsGrouped=\"True\" no crashes application")]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView3)]
 		public void ClearingGroupedNoCrash()
 		{
 			App.WaitForElement(Go);

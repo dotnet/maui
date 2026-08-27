@@ -12,7 +12,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	internal class Issue27229 : _IssuesUITest
 	{
 		public Issue27229(TestDevice device) : base(device) { }
@@ -21,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewEmptyViewFillsAvailableSpaceByDefault()
 		{
 			App.WaitForElement("ReadyToTest");

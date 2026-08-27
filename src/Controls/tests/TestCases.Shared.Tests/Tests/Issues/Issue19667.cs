@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue19667 : _IssuesUITest
 {
 	public Issue19667(TestDevice device) : base(device)
@@ -16,6 +15,7 @@ public class Issue19667 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void CollectionViewItemsSizeCorrectlyAfterOrientationChange()
 	{
 		App.TapShellFlyoutIcon();

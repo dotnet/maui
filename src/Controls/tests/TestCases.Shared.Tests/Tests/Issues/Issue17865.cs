@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView1)]
 	public class Issue17865 : _IssuesUITest
 	{
 		const string ButtonId = "WaitForStubControl";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void Issue17865Test()
 		{
 			App.WaitForElement(ButtonId);

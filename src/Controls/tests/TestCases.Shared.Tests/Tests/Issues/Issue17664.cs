@@ -8,7 +8,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue17664 : _IssuesUITest
 {
 	public Issue17664(TestDevice device) : base(device)
@@ -19,6 +18,7 @@ public class Issue17664 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView4)]
 	public void VerifyGroupedCollectionViewVisibleItemIndices()
 	{
 		App.WaitForElement("Issue17664ScrollBtn");

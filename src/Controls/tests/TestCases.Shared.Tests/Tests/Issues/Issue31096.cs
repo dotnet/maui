@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class Issue31096 : _IssuesUITest
 {
 	public Issue31096(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class Issue31096 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void ChangingIsGroupedOnRuntime()
 	{
 		App.WaitForElement("Switch", timeout: TimeSpan.FromSeconds(15));

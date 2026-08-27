@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView1)]
 public class NestedCollectionView : _IssuesUITest
 {
 	public NestedCollectionView(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class NestedCollectionView : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView5)]
 	public void NestedCollectionViewsShouldNotCrash()
 	{
 		// If this page loaded and didn't crash, we're good.

@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue15778 : _IssuesUITest
 {
     public Issue15778(TestDevice testDevice) : base(testDevice)
@@ -14,6 +13,7 @@ public class Issue15778 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void SwipeViewInCollectionViewDoesNotTriggerSelection()
     {
         App.WaitForElement("Item 1");

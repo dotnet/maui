@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView3)]
 	public class CollectionViewDynamicallyLoadUITests : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -19,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionViewShouldSourceShouldUpdateWhileInvisible (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13126.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 		public void DynamicallyLoadCollectionView()
 		{
 			App.WaitForElement(Success);

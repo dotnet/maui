@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView2)]
 	public class Issue8899 : _IssuesUITest
 	{
 		const string Go = "Go";
@@ -18,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 		public void ClearingGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Go);

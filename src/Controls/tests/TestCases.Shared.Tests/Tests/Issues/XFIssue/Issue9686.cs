@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue9686 : _IssuesUITest
 {
 	const string Success = "Success";
@@ -18,6 +17,7 @@ public class Issue9686 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView6)]
 
 	public void AddRemoveEmptyGroupsShouldNotCrashOnInsert()
 	{

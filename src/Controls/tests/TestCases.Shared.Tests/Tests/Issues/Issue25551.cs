@@ -10,7 +10,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	internal class Issue25551 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView SelectedItem binding issue on initial loading";
@@ -21,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView4)]
 
 		public void CollectionViewPreSelectionShouldUpdate()
 		{

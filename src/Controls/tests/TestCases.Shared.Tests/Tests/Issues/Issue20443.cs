@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.CollectionView4)]
 	public class Issue20443 : _IssuesUITest
 	{
 		public override string Issue => "CollectionView item sizing wrong after refresh";
@@ -15,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView6)]
 		public void RefreshShouldNotChangeSize()
 		{
 			_ = App.WaitForElement("lblSmall");

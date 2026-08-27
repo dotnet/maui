@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue23702 : _IssuesUITest
 {
 	public Issue23702(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class Issue23702 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView1)]
 	public void CollectionViewItemsShouldResizeWhenWidthDecreases()
 	{
 		App.WaitForElement("SetWidthButton");

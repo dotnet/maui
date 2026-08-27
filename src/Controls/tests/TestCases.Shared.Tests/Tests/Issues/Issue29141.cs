@@ -7,7 +7,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView3)]
 public class Issue29141 : _IssuesUITest
 {
 	public override string Issue => "[iOS] Group Header/Footer Repeated for All Items When IsGrouped is True for ObservableCollection in CollectionView";
@@ -17,6 +16,7 @@ public class Issue29141 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCVGroupHFTemplateWithObservableCollection()
 	{
 		App.WaitForElement("collectionView");
@@ -29,6 +29,7 @@ public class Issue29141 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView4)]
 	public void VerifyCVGroupHFTemplateWithStringCollection()
 	{
 		App.WaitForElement("collectionView");
@@ -40,6 +41,7 @@ public class Issue29141 : _IssuesUITest
 
 	[Test, Order(3)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView3)]
 	public void VerifyCVNoSectionCrashOnAddFlatItem()
 	{
 		App.WaitForElement("collectionView");

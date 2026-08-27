@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView2)]
 public class Issue32223 : _IssuesUITest
 {
 	public Issue32223(TestDevice testDevice) : base(testDevice)
@@ -15,6 +14,7 @@ public class Issue32223 : _IssuesUITest
 	[Test]
 	[Retry(5)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CanReorderWithItemDataTemplateSelector()
 	{
 		App.WaitForElement("ReorderableCollectionView");

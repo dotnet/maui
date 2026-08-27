@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView4)]
 public class Issue19866 : _IssuesUITest
 {
 	public Issue19866(TestDevice testDevice) : base(testDevice) { }
@@ -14,6 +13,7 @@ public class Issue19866 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView4)]
 	public void StatusBarTapScrollsCollectionViewToTop()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))

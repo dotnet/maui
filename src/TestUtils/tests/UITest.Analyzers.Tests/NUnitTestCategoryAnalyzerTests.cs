@@ -255,11 +255,11 @@ public class NUnitTestCategoryAnalyzerTests
 
 			namespace TestNamespace
 			{
-				[NUnit.Framework.Category("CollectionView1")]
 				public class TestClass
 				{
 					[NUnit.Framework.Test]
 					[NUnit.Framework.Category("CollectionView")]
+					[NUnit.Framework.Category("CollectionView6")]
 					public void TestMethod() { }
 				}
 			}
@@ -275,6 +275,9 @@ public class NUnitTestCategoryAnalyzerTests
 	[InlineData("CollectionView2")]
 	[InlineData("CollectionView3")]
 	[InlineData("CollectionView4")]
+	[InlineData("CollectionView5")]
+	[InlineData("CollectionView6")]
+	[InlineData("CollectionView12")]
 	public async Task TestMethod_WithOnlyCollectionViewShardCategory_ReportsMissingCategory(string category)
 	{
 		var source = AnalyzerTestHelpers.NUnitAttributeStubs + $$"""
@@ -295,6 +298,27 @@ public class NUnitTestCategoryAnalyzerTests
 
 		Assert.Single(diagnostics);
 		Assert.Equal("MAUI0001", diagnostics[0].Id);
+	}
+
+	[Fact]
+	public async Task TestMethod_WithUnregisteredNumberedCategory_CountsAsFunctionalCategory()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[NUnit.Framework.Category("Widget7")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
+
+		Assert.Empty(diagnostics);
 	}
 
 	[Fact]
