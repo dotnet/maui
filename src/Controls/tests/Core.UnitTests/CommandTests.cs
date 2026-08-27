@@ -314,6 +314,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						break;
 					case BackButtonBehavior bbb:
 						bbb.Command = command;
+						break;
 				}
 
 				// Create a weak reference to the button
