@@ -2640,8 +2640,34 @@ Describe 'Reproduction-only runs are never published' {
         $gateText | Should -Match 'exit 0'
     }
 
-    It 'declares withheldReason on the manifest so a withheld run is distinguishable' {
-        # Without the property the manifest of a withheld run is shaped exactly
+    It 'stands down on the run WITHOUT a fix, not on the run with one' {
+        # Structure alone cannot tell the two apart: a gate that withholds every
+        # fix and publishes every reproduction mentions the same function, the
+        # same withheldReason and the same exit. So evaluate the real condition
+        # taken from the script body against both candidate shapes.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1')).Path,
+            [ref]$null, [ref]$null)
+
+        $gate = $ast.EndBlock.Statements | Where-Object {
+            $_ -is [System.Management.Automation.Language.IfStatementAst] -and
+            $_.Extent.Text -match 'Test-ReplicationPublishableFix'
+        } | Select-Object -First 1
+        $gate | Should -Not -BeNullOrEmpty
+
+        $condition = [scriptblock]::Create($gate.Clauses[0].Item1.Extent.Text)
+
+        # A reproduction with no fix: the condition must be TRUE, so the gate body
+        # (which withholds) runs.
+        $candidate = [pscustomobject]@{ files = @('tests/Issue1Tests.cs') }
+        & $condition | Should -BeTrue -Because 'a run without a fix must stand down'
+
+        # A real fix: the condition must be FALSE, so publication proceeds.
+        $candidate = [pscustomobject]@{ fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.iOS.cs') }
+        & $condition | Should -BeFalse -Because 'a run carrying a fix must still publish'
+    }
+
+    It 'declares withheldReason on the manifest so a withheld run is distinguishable' {        # Without the property the manifest of a withheld run is shaped exactly
         # like that of a publisher which crashed before returning a URL, and the
         # pipeline would fail a green outcome.
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
