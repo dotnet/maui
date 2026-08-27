@@ -56,7 +56,7 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Not -Match '(?m)^- name: barBuildId$'
     $pipeline | Should -Match '--repo \$sourceRepository --commit'
     $pipeline | Should -Match 'Expected exactly one BAR build'
-    $pipeline | Should -Match '\$requiredChannelId = if \(\$requiredChannelName\) \{ 5172 \}'
+    $pipeline | Should -Not -Match 'requiredChannel(Name|Id)|build\.channels|5172'
   }
 
   It 'publishes a generic audit before approval and supports dry runs' {

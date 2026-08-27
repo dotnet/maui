@@ -162,8 +162,6 @@ extends:
                 if ($sourceRepository -notin $allowedRepositories) {
                   throw "Repository '$sourceRepository' is not enabled for this release pipeline."
                 }
-                $requiredChannelName = if ($sourceRepository -eq 'https://github.com/dotnet/android-libraries') { '.NET 10' } else { '' }
-                $requiredChannelId = if ($requiredChannelName) { 5172 } else { 0 }
 
                 function Get-Filters([string] $value) {
                   if ([string]::IsNullOrWhiteSpace($value) -or $value -eq 'skip') {
@@ -248,15 +246,6 @@ extends:
                 $repository = $repository.Replace('://www.github.com/', '://github.com/')
                 if ($repository -ne $sourceRepository) {
                   throw "BAR build '$($build.id)' belongs to '$repository', not '$sourceRepository'."
-                }
-                if ($requiredChannelId -gt 0) {
-                  $channelMatches = @($build.channels | Where-Object {
-                    $_.name -ceq $requiredChannelName -and
-                    [int] $_.id -eq $requiredChannelId
-                  })
-                  if ($channelMatches.Count -ne 1) {
-                    throw "BAR build '$($build.id)' must be assigned to '$requiredChannelName' (channel $requiredChannelId)."
-                  }
                 }
                 $barId = $build.id
 

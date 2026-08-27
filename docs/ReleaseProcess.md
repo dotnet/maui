@@ -44,9 +44,7 @@ publishing. Immediately before a real release, the pipeline filters the staged
 set again so packages published since preparation do not cause conflicts. It
 then uses `1ES.PublishNuget@1` and verifies every selected package on NuGet.org.
 
-Repository-specific policy remains at the pipeline boundary. For example,
-`dotnet/android-libraries` must match the public `.NET 10` channel exactly (ID
-`5172`). Its BAR builds contain per-build deltas, not the union of channel
+Android-libraries BAR builds contain per-build deltas, not the union of channel
 assets, so release each pending build in commit order.
 Before the first push for any repository, verify that the existing
 `nuget.org (dotnetframework)` service connection owns every package ID in the
