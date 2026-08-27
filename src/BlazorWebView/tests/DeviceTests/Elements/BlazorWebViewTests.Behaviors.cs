@@ -11,6 +11,26 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
 public partial class BlazorWebViewTests
 {
+#if WINDOWS
+	[Fact]
+	public async Task ExternalFileDropIsEnabledByDefault()
+	{
+		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+		{
+			appBuilder.Services.AddMauiBlazorWebView();
+		});
+
+		var blazorWebView = new BlazorWebView();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var handler = CreateHandler<BlazorWebViewHandler>(blazorWebView);
+
+			Assert.True(handler.PlatformView.AllowDrop);
+		});
+	}
+#endif
+
 #if IOS || MACCATALYST
 	[Fact]
 	public async Task BlazorWebViewScrollBounceDisabledByDefault()
