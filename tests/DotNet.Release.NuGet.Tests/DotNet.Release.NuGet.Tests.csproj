@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <RootNamespace>DotNet.Release.NuGet.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DotNet.Release.NuGet\DotNet.Release.NuGet.csproj" />
+  </ItemGroup>
+
+</Project>

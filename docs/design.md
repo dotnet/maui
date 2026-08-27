@@ -167,10 +167,18 @@ workload classification. Writes `./stage/plan.json` (a `ResolvedRelease`).
 
 Emits exactly one pipeline variable:
 `##vso[task.setvariable variable=BarId;isOutput=true]<id>`, because the `gather-drop` step
-that follows needs the BAR ID that this step discovered. **This is the only
-pipeline-variable side effect in the entire tool**, and it is covered by a test.
+that follows needs the BAR ID that this step discovered.
 
 `plan` has no package-reading and no feed code compiled into it.
+
+> **Deviation from the original intent, recorded honestly.** The plan was for `BarId` to be
+> the tool's *only* pipeline-variable side effect. It emits **two**: `release filter` also
+> sets `NuGetPackagesToPublish`, because the publish task is skipped via an Azure DevOps
+> `condition`, and a condition can only read a variable. The alternative — handing
+> `1ES.PublishNuget@1` an empty directory and relying on its glob to match nothing — fails
+> the task rather than skipping it. Both variables are covered by tests, and they are the
+> only two. Notably the plan *hash* is not among them: the pipeline computes it with
+> `Get-FileHash` rather than trusting the tool to declare the value that pins it.
 
 ### `release stage`
 

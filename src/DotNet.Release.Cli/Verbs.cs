@@ -1,0 +1,330 @@
+using DotNet.Release.Core;
+
+namespace DotNet.Release.Cli;
+
+/// <summary>
+/// The verb bodies, expressed as pure-ish functions over injected collaborators so the whole
+/// CLI is testable without a network, a BAR account, or a real feed.
+/// </summary>
+internal static class Verbs
+{
+    public const string PlanFileName = "plan.json";
+    public const string ReleasePlanFileName = "release-plan.json";
+    public const string FilterReportFileName = "release-filter.json";
+
+    // ---- release plan ----
+
+    /// <summary>
+    /// Resolves and verifies the BAR build, then writes <c>plan.json</c>.
+    /// </summary>
+    /// <remarks>
+    /// Emits the <c>BarId</c> pipeline variable because the <c>darc gather-drop</c> step that
+    /// follows needs the ID this step discovered.
+    /// </remarks>
+    public static async Task<int> PlanAsync(
+        IReleaseConsole console,
+        IBuildRegistry registry,
+        string policyJson,
+        string repository,
+        string commit,
+        int? barBuildId,
+        string outputDirectory,
+        DateTimeOffset now,
+        string toolVersion,
+        CancellationToken cancellationToken)
+    {
+        var policy = ReleasePolicy.Parse(policyJson);
+        if (policy.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, policy.Errors);
+        }
+
+        var repositoryId = RepositoryId.Parse(repository);
+        if (repositoryId.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, repositoryId.Errors);
+        }
+
+        var repositoryPolicy = policy.Value.GetRepository(repositoryId.Value);
+        if (repositoryPolicy.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, repositoryPolicy.Errors);
+        }
+
+        var request = new ReleaseRequest(repositoryId.Value, commit, barBuildId);
+
+        var candidates = barBuildId is { } id
+            ? await registry.GetBuildAsync(id, cancellationToken).ConfigureAwait(false)
+            : await registry.GetBuildsAsync(repositoryId.Value, commit, cancellationToken).ConfigureAwait(false);
+
+        var resolved = BuildResolver.Resolve(request, repositoryPolicy.Value, candidates, now, toolVersion);
+        if (resolved.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, resolved.Errors);
+        }
+
+        Directory.CreateDirectory(outputDirectory);
+        var planPath = Path.Combine(outputDirectory, PlanFileName);
+        await File.WriteAllTextAsync(planPath, ReleasePlanSerializer.Serialize(resolved.Value), cancellationToken)
+            .ConfigureAwait(false);
+
+        console.WriteLine($"Resolved BAR build {resolved.Value.BarBuildId} for {resolved.Value.Repository} at {resolved.Value.Commit}.");
+        console.WriteLine($"Identity established from: {resolved.Value.RepositoryOrigin}.");
+        console.WriteLine($"Wrote {planPath}.");
+
+        // The only pipeline variable this tool emits from `plan`.
+        console.WriteLine(AzurePipelineCommand.SetBarId(resolved.Value.BarBuildId));
+
+        return ExitCodes.Success;
+    }
+
+    // ---- release stage ----
+
+    /// <summary>
+    /// Reads the gathered drop, validates it, stages the files, and writes the final
+    /// <c>release-plan.json</c>.
+    /// </summary>
+    public static async Task<int> StageAsync(
+        IReleaseConsole console,
+        IPackageIdentityReader reader,
+        string policyJson,
+        string resolvedPlanJson,
+        string dropDirectory,
+        string outputDirectory,
+        StageOptions options,
+        ToolReference tool,
+        DateTimeOffset now,
+        string toolVersion,
+        CancellationToken cancellationToken)
+    {
+        var policy = ReleasePolicy.Parse(policyJson);
+        if (policy.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, policy.Errors);
+        }
+
+        var resolved = ReleasePlanSerializer.DeserializeResolved(resolvedPlanJson);
+        if (resolved.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, resolved.Errors);
+        }
+
+        var packageFiles = FindShippingPackages(dropDirectory);
+        if (packageFiles.Count == 0)
+        {
+            return ConsoleReporting.Fail(console, [new ReleaseError(
+                ErrorCodes.PackageSetEmpty,
+                $"No shipping .nupkg files were found under '{dropDirectory}'. " +
+                "Check that `darc gather-drop` succeeded and produced 'shipping/packages'.")]);
+        }
+
+        var drop = new List<DropPackage>(packageFiles.Count);
+        var readErrors = new List<ReleaseError>();
+
+        foreach (var file in packageFiles)
+        {
+            var read = await reader.ReadAsync(file, cancellationToken).ConfigureAwait(false);
+            if (read.IsFailure)
+            {
+                readErrors.AddRange(read.Errors);
+                continue;
+            }
+
+            drop.Add(read.Value);
+        }
+
+        if (readErrors.Count > 0)
+        {
+            return ConsoleReporting.Fail(console, readErrors);
+        }
+
+        var plan = StagePlanner.Create(resolved.Value, policy.Value, drop, options, tool, now, toolVersion);
+        if (plan.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, plan.Errors);
+        }
+
+        var sourceByFileName = packageFiles.ToDictionary(
+            f => Path.GetFileName(f)!, f => f, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var set in plan.Value.Sets.OrderBy(s => s.Order))
+        {
+            var setDirectory = Path.Combine(outputDirectory, set.ArtifactName);
+            Directory.CreateDirectory(setDirectory);
+
+            foreach (var package in set.Packages)
+            {
+                File.Copy(sourceByFileName[package.FileName], Path.Combine(setDirectory, package.FileName), overwrite: true);
+            }
+        }
+
+        Directory.CreateDirectory(outputDirectory);
+        var planPath = Path.Combine(outputDirectory, ReleasePlanFileName);
+        var planJson = ReleasePlanSerializer.Serialize(plan.Value);
+        await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
+
+        ConsoleReporting.WriteSummary(console, plan.Value);
+        console.WriteLine(string.Empty);
+        console.WriteLine($"Wrote {planPath}.");
+        console.WriteLine($"Release plan SHA-256: {ReleasePlanSerializer.ComputeHash(planJson)}");
+
+        return ExitCodes.Success;
+    }
+
+    /// <summary>
+    /// Finds the shipping packages a <c>darc gather-drop</c> produced.
+    /// </summary>
+    /// <remarks>
+    /// Only <c>shipping/packages</c>. Non-shipping packages are build inputs, and symbol
+    /// blobs are excluded upstream by the gather's asset filter.
+    /// </remarks>
+    internal static List<string> FindShippingPackages(string dropDirectory)
+    {
+        var shipping = Path.Combine(dropDirectory, "shipping", "packages");
+        var root = Directory.Exists(shipping) ? shipping : dropDirectory;
+
+        return Directory.Exists(root)
+            ? [.. Directory.EnumerateFiles(root, "*.nupkg", SearchOption.AllDirectories).Order(StringComparer.Ordinal)]
+            : [];
+    }
+
+    // ---- release filter ----
+
+    /// <summary>
+    /// Removes already-published packages from the staging directory so the 1ES push glob
+    /// picks up only what still needs publishing.
+    /// </summary>
+    public static async Task<int> FilterAsync(
+        IReleaseConsole console,
+        IPackageAvailabilityProbe probe,
+        string planJson,
+        string stageDirectory,
+        IReadOnlyList<string> skipPatterns,
+        string? expectedPlanHash,
+        CancellationToken cancellationToken)
+    {
+        var plan = expectedPlanHash is { Length: > 0 }
+            ? ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash)
+            : ReleasePlanSerializer.DeserializePlan(planJson);
+
+        if (plan.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, plan.Errors);
+        }
+
+        var pending = 0;
+
+        foreach (var set in plan.Value.Sets.OrderBy(s => s.Order))
+        {
+            var setDirectory = Path.Combine(stageDirectory, set.ArtifactName);
+
+            var availability = await probe.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
+
+            var report = FilterPlanner.Plan(set, skipPatterns, availability);
+            if (report.IsFailure)
+            {
+                return ConsoleReporting.Fail(console, report.Errors);
+            }
+
+            foreach (var fileName in report.Value.FilesToRemove)
+            {
+                var path = Path.Combine(setDirectory, fileName);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                console.WriteLine($"Withheld {fileName}.");
+            }
+
+            // The directory is now the input to a production push, so it is checked against
+            // the plan before anything is handed to 1ES: a missing pending file, a tampered
+            // file, or an unlisted extra file all fail here.
+            var integrity = StagedSetIntegrity.ValidateFiltered(set, ReadStagedHashes(setDirectory), report.Value);
+            if (integrity.IsFailure)
+            {
+                return ConsoleReporting.Fail(console, integrity.Errors);
+            }
+
+            var reportPath = Path.Combine(setDirectory, FilterReportFileName);
+            await File.WriteAllTextAsync(reportPath, ReleasePlanSerializer.Serialize(report.Value), cancellationToken)
+                .ConfigureAwait(false);
+
+            console.WriteLine($"{set.Name}: {report.Value.PendingCount} of {set.Packages.Count} remain to publish.");
+            pending += report.Value.PendingCount;
+        }
+
+        console.WriteLine(AzurePipelineCommand.SetPackagesToPublish(pending > 0));
+
+        return ExitCodes.Success;
+    }
+
+    /// <summary>Hashes the staged packages so they can be compared with the plan.</summary>
+    internal static Dictionary<string, string> ReadStagedHashes(string directory)
+    {
+        var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        if (!Directory.Exists(directory))
+        {
+            return hashes;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(directory, "*.nupkg", SearchOption.TopDirectoryOnly))
+        {
+            using var stream = File.OpenRead(file);
+            hashes[Path.GetFileName(file)] =
+                Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(stream));
+        }
+
+        return hashes;
+    }
+
+    // ---- release verify ----
+
+    /// <summary>
+    /// Polls until every planned package is indexed on NuGet.org, or the deadline expires.
+    /// </summary>
+    public static async Task<int> VerifyAsync(
+        IReleaseConsole console,
+        IPackageAvailabilityProbe probe,
+        string planJson,
+        TimeSpan maxDuration,
+        TimeSpan pollInterval,
+        Func<DateTimeOffset> clock,
+        Func<TimeSpan, CancellationToken, Task> delay,
+        CancellationToken cancellationToken)
+    {
+        var plan = ReleasePlanSerializer.DeserializePlan(planJson);
+        if (plan.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, plan.Errors);
+        }
+
+        // Every planned package, including ones `filter` removed: those were withheld on the
+        // grounds that they were already live, so their absence here means that was wrong.
+        var packages = plan.Value.AllPackages.ToList();
+        var deadline = clock() + maxDuration;
+
+        while (true)
+        {
+            var availability = await probe.GetAvailabilityAsync(packages, cancellationToken).ConfigureAwait(false);
+            var missing = VerificationEvaluator.GetMissing(packages, availability);
+
+            if (missing.Count == 0)
+            {
+                console.WriteLine($"Verified all {packages.Count} packages on NuGet.org.");
+                return ExitCodes.Success;
+            }
+
+            if (clock() + pollInterval >= deadline)
+            {
+                return ConsoleReporting.Fail(console, [new ReleaseError(
+                    ErrorCodes.PackageFileMissing,
+                    VerificationEvaluator.DescribeMissing(missing))]);
+            }
+
+            console.WriteLine($"Waiting for {missing.Count} package(s) to become available on NuGet.org.");
+            await delay(pollInterval, cancellationToken).ConfigureAwait(false);
+        }
+    }
+}

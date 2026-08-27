@@ -34,6 +34,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Stable GA release; the CLI does not roll its own argument parsing. -->
+    <SystemCommandLinePackageVersion>2.0.11</SystemCommandLinePackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Read-only Maestro/BAR client. Flowed by darc; see eng/Version.Details.xml. -->
     <MicrosoftDotNetProductConstructionServiceClientPackageVersion>1.1.0-beta.26426.2</MicrosoftDotNetProductConstructionServiceClientPackageVersion>
   </PropertyGroup>

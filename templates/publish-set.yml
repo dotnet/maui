@@ -1,0 +1,122 @@
+# One gated publish of one package set.
+#
+# The three-step shape is fixed: `release filter` -> 1ES.PublishNuget@1 -> `release verify`.
+# Two tool invocations bracketing the compliance task, which owns the actual upload.
+
+parameters:
+- name: stageName
+  type: string
+
+- name: displayName
+  type: string
+
+- name: artifactName
+  type: string
+
+- name: dependsOn
+  type: object
+
+- name: approvalInstructions
+  type: string
+
+- name: nugetServiceConnection
+  type: string
+
+- name: recoveryFilters
+  type: string
+  default: skip
+
+stages:
+- stage: ${{ parameters.stageName }}
+  displayName: ${{ parameters.displayName }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: succeeded()
+  jobs:
+
+  # ManualValidation@0 requires `pool: server`, and an agentless job cannot download
+  # artifacts or run scripts. The gate therefore cannot live in the publishing job; the
+  # split is imposed by Azure DevOps, not a style choice.
+  - job: approval
+    displayName: Wait to publish
+    timeoutInMinutes: 240
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 120
+      inputs:
+        instructions: ${{ parameters.approvalInstructions }}
+        onTimeout: reject
+
+  - job: publish
+    displayName: Publish to NuGet.org
+    timeoutInMinutes: 90
+    dependsOn: approval
+    condition: eq(dependencies.approval.result, 'Succeeded')
+    variables:
+      ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+    templateContext:
+      type: releaseJob
+      isProduction: true
+      inputs:
+      - input: pipelineArtifact
+        artifactName: ${{ parameters.artifactName }}
+        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+    steps:
+    - checkout: none
+
+    # One verification block, not twelve. The plan hash is pinned by the preparing stage,
+    # and the tool's own hash lives inside the plan, so verifying the plan transitively
+    # pins the tool and the per-package hashes it records.
+    - pwsh: |
+        $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+        $planPath = "$root/release-plan.json"
+
+        $actual = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actual -ne $env:EXPECTED_PLAN_HASH) {
+          throw "Release plan hash '$actual' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
+        }
+
+        $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
+        $toolPath = "$root/_tool/$($plan.tool.fileName)"
+        $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($toolHash -ne $plan.tool.sha256) {
+          throw "Release tool hash '$toolHash' does not match the hash recorded in the plan."
+        }
+
+        Write-Host "##vso[task.setvariable variable=toolPath]$toolPath"
+      displayName: Verify artifact integrity
+      env:
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+
+    # Removes already-published packages in place, so the push glob below sees only what
+    # still needs publishing. Fails closed on a missing, tampered or unlisted file.
+    - pwsh: |
+        & "$(toolPath)" filter `
+          --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
+          --stage "$(Pipeline.Workspace)/${{ parameters.artifactName }}" `
+          --expected-plan-hash "$(ReleasePlanHash)" `
+          --skip '${{ parameters.recoveryFilters }}'
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      displayName: Filter already-published packages
+
+    # The compliance boundary. The tool has no push capability; this task performs the
+    # upload and carries the SBOM and provenance obligations.
+    - task: 1ES.PublishNuget@1
+      displayName: Push packages to NuGet.org
+      condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+      inputs:
+        useDotNetTask: false
+        packagesToPush: $(Pipeline.Workspace)/${{ parameters.artifactName }}/*.nupkg
+        packageParentPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+        nuGetFeedType: external
+        publishFeedCredentials: ${{ parameters.nugetServiceConnection }}
+
+    # Requires every identity in the plan, including ones filter withheld: those were
+    # withheld because they were already live, so their absence would disprove that.
+    - pwsh: |
+        & "$(toolPath)" verify `
+          --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
+          --max-duration-minutes 30 `
+          --poll-seconds 20
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      displayName: Verify packages on NuGet.org

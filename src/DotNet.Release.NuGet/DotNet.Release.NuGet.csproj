@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>DotNet.Release.NuGet</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNet.Release.Core\DotNet.Release.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      NuGet.Packaging: reads package identity out of a .nupkg, replacing hand-rolled zip +
+      XML + XPath. NuGet.Protocol: READ-ONLY feed queries only.
+
+      There is deliberately no push capability here. 1ES.PublishNuget@1 performs every
+      upload; see docs/design.md section 3.
+    -->
+    <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingPackageVersion)" />
+    <PackageReference Include="NuGet.Protocol" Version="$(NuGetProtocolPackageVersion)" />
+  </ItemGroup>
+
+</Project>

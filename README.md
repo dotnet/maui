@@ -70,12 +70,12 @@ dotnet test DotNet.Release.slnx
 
 ```
 src/DotNet.Release.Core/        pure policy, validation, planning — no I/O
-src/DotNet.Release.Maestro/     read-only BAR client adapter (typed client)
-src/DotNet.Release.NuGet/       read-only feed + nupkg adapters         (not yet implemented)
-src/DotNet.Release.Cli/         verbs and argument parsing              (not yet implemented)
-tests/DotNet.Release.Core.Tests/
-tests/DotNet.Release.Maestro.Tests/
+src/DotNet.Release.Maestro/     read-only BAR client adapter (typed PCS client)
+src/DotNet.Release.NuGet/       read-only feed queries + nupkg reading
+src/DotNet.Release.Cli/         the four verbs (System.CommandLine)
+tests/                          one test project per source project, zero network
 config/repositories.json        declarative release policy
-templates/                      thin ADO template consumers extend      (not yet implemented)
+templates/release.yml           thin ADO template consumers extend
+templates/publish-set.yml       one gated publish of one package set
 docs/design.md
 ```
