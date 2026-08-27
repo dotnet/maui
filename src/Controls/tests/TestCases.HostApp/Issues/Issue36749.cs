@@ -38,7 +38,6 @@ public class Issue36749 : ContentPage
             Text = "Test Button",
             AutomationId = "Issue36749Button"
         };
-		_button.Loaded += OnButtonLoaded;
 
         Content = new VerticalStackLayout
         {
@@ -48,8 +47,10 @@ public class Issue36749 : ContentPage
         };
     }
 
-	void OnButtonLoaded(object sender, EventArgs e)
+    protected override void OnAppearing()
     {
+        base.OnAppearing();
+
 #if IOS || MACCATALYST
 		if (_hasRunVerification)
 			return;
