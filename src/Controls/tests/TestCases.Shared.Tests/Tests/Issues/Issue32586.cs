@@ -19,7 +19,8 @@ public class Issue32586 : _IssuesUITest
 		while (DateTime.Now < endTime)
 		{
 			var text = App.WaitForElement(elementId).GetText();
-			if (text == expectedText) return;
+			if (text == expectedText)
+				return;
 			Thread.Sleep(100);
 		}
 		var finalText = App.WaitForElement(elementId).GetText();
@@ -34,14 +35,14 @@ public class Issue32586 : _IssuesUITest
 		// If the animation completes and the label updates, the cycle is broken.
 		App.WaitForElement("FooterButton");
 		App.Tap("FooterButton");
-		
+
 		// If the animation is stuck in an infinite loop, this will time out
 		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
-		
+
 		// Verify the footer is actually visible on screen
 		var footerRect = App.WaitForElement("FooterContentButton").GetRect();
 		Assert.That(footerRect.Height, Is.GreaterThan(0), "Footer should be visible with non-zero height");
-		
+
 		// Hide footer and verify
 		App.Tap("FooterButton");
 		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
@@ -144,9 +145,17 @@ public class Issue32586 : _IssuesUITest
 		var restoredY = topMarkerRect.Y;
 		Assert.That(restoredY, Is.GreaterThan(noSafeAreaY), "Parent should push content below safe area again");
 
-		// Step 5: Verify UI is still responsive
+		// Step 5: Verify UI is still responsive from either initial footer state.
+		var footerStatus = App.WaitForElement("TestLabel").GetText();
+		Assert.That(
+			footerStatus,
+			Is.AnyOf("Footer is not visible", "Footer is now visible", "Footer is now hidden"),
+			"Footer should report a known state before testing its animation");
+		var expectedFooterStatus = footerStatus == "Footer is now visible"
+			? "Footer is now hidden"
+			: "Footer is now visible";
 		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
+		WaitForText("TestLabel", expectedFooterStatus, timeoutSec: 10);
 	}
 
 	[Test, Order(4)]

@@ -29,8 +29,8 @@ namespace Microsoft.Maui
 		/// <see cref="SafeAreaRegions.Default"/> to retain native platform behavior.
 		/// When <see cref="HasExplicitSafeAreaEdges"/> is <see langword="false"/>, a built-in control can return
 		/// a compatibility-resolved value here instead of the value exposed by its concrete property.
-		/// Use <see cref="SafeAreaElementExtensions.GetEffectiveSafeAreaEdges"/> to read the same per-edge strategy
-		/// consumed by MAUI platform handlers.
+		/// Use <see cref="SafeAreaElementExtensions.GetEffectiveSafeAreaEdges"/> to read the resolved per-edge
+		/// configuration that MAUI platform handlers use as input.
 		/// </remarks>
 		SafeAreaEdges SafeAreaEdges { get; }
 
@@ -54,18 +54,19 @@ namespace Microsoft.Maui
 	}
 
 	/// <summary>
-	/// Provides methods for reading the safe area strategy of an <see cref="ISafeAreaElement"/>.
+	/// Provides methods for resolving the safe area configuration of an <see cref="ISafeAreaElement"/>.
 	/// </summary>
 	public static class SafeAreaElementExtensions
 	{
 		/// <summary>
-		/// Gets the per-edge safe area strategy consumed by MAUI platform handlers.
+		/// Gets the resolved per-edge safe area configuration used as input by MAUI platform handlers.
 		/// </summary>
 		/// <param name="safeAreaElement">The safe area element whose strategy to read.</param>
 		/// <returns>
-		/// The effective per-edge strategy. An edge can remain <see cref="SafeAreaRegions.Default"/> when native
+		/// The resolved per-edge configuration. An edge can remain <see cref="SafeAreaRegions.Default"/> when native
 		/// platform behavior should be preserved. For built-in controls, compatibility behavior can make this
-		/// value differ from the control's <see cref="ISafeAreaElement.SafeAreaEdges"/> property.
+		/// value differ from the control's <see cref="ISafeAreaElement.SafeAreaEdges"/> property. Platform handlers
+		/// can additionally account for native insets, keyboard geometry, and ancestor suppression when applying it.
 		/// </returns>
 		/// <exception cref="System.ArgumentNullException">
 		/// Thrown when <paramref name="safeAreaElement"/> is <see langword="null"/>.

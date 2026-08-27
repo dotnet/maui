@@ -39,6 +39,14 @@ public class Issue28986_ParentChildTest : _IssuesUITest
     [Category(UITestCategories.SafeAreaEdges)]
     public void VerifyInitialStateParentTopChildBottom()
     {
+        App.SetOrientationPortrait();
+        App.RetryAssert(() =>
+        {
+            var portraitBounds = App.WaitForElement("ParentGrid").GetRect();
+            Assert.That(portraitBounds.Height, Is.GreaterThan(portraitBounds.Width),
+                "Parent/child safe-area geometry must be measured after portrait layout settles");
+        });
+
         // Test: Parent handles TOP, Child handles BOTTOM
         // 
         // Verify that:

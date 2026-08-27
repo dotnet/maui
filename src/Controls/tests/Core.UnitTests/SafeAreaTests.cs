@@ -472,6 +472,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ClearingSafeAreaEdgesValueUpdatesHandlerWhenExplicitnessChanges()
+		{
+			var view = new CustomSafeAreaView();
+			var defaultEdges = view.SafeAreaEdges;
+
+			view.SetValue(
+				CustomSafeAreaView.SafeAreaEdgesProperty,
+				defaultEdges,
+				SetterSpecificity.ManualValueSetter);
+			Assert.True(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
+
+			view.ResetSafeAreaHandlerUpdateCount();
+			view.ClearValue(CustomSafeAreaView.SafeAreaEdgesProperty);
+
+			Assert.False(((ISafeAreaElement)view).HasExplicitSafeAreaEdges);
+			Assert.Equal(1, view.SafeAreaHandlerUpdateCount);
+		}
+
+		[Fact]
 		public void HasExplicitSafeAreaEdges_BindingValueCountsAsExplicit()
 		{
 			var layout = new Grid();

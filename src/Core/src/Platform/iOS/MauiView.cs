@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		bool HasSoftInputBottomOverlapChanged()
+		bool UpdateAndCheckSoftInputBottomOverlap()
 		{
 			if (!_isKeyboardShowing)
 			{
@@ -521,6 +521,7 @@ namespace Microsoft.Maui.Platform
 		/// <summary>
 		/// Gets the edges for which an ancestor MauiView is already applying safe area adjustments.
 		/// A child suppresses only these overlapping edges and continues to handle its other edges.
+		/// Suppression tracks the physical inset already consumed on an edge, regardless of the region that produced it.
 		/// This prevents double-padding when parent and child handle the same edges (#33595, #32586),
 		/// while allowing parent and child to handle DIFFERENT edges without conflict (#28986).
 		/// </summary>
@@ -819,7 +820,7 @@ namespace Microsoft.Maui.Platform
 			// A SoftInput inset depends on this view's current frame in window coordinates.
 			// Revalidate only when the pixel-level overlap changes so stable layout passes
 			// retain the cached ancestor-edge classification.
-			if (HasSoftInputBottomOverlapChanged())
+			if (UpdateAndCheckSoftInputBottomOverlap())
 			{
 				_safeAreaInvalidated = true;
 				_parentHandledSafeAreaEdges = null;
