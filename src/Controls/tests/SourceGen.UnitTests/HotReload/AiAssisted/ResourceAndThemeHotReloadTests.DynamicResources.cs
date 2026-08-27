@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
@@ -46,13 +47,74 @@ public partial class ResourceAndThemeHotReloadTests
 			var page = live.GetInstance<ContentPage>();
 			var label = Assert.IsType<Label>(page.Content);
 			Assert.Equal("Literal value", label.Text);
+			var observedValues = new List<string?>();
+			label.PropertyChanged += (_, args) =>
+			{
+				if (args.PropertyName == Label.TextProperty.PropertyName)
+					observedValues.Add(label.Text);
+			};
 
 			live.ApplyUpdate<ContentPage>(1);
 			Assert.Equal("Resource value", label.Text);
+			Assert.Equal(["Resource value"], observedValues);
 
 			page.Resources["PageCaption"] = "Updated resource value";
 			Assert.Equal("Updated resource value", label.Text);
 		});
+	}
+
+	[MetadataUpdateFact]
+	public void BindingToDynamicResource_RemovesBindingAndTracksChanges()
+	{
+		var xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <ContentPage.Resources>
+			    <x:String x:Key="PageCaption">Resource value</x:String>
+			  </ContentPage.Resources>
+			  <Label Text="{Binding Caption}" />
+			</ContentPage>
+			""";
+		var xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <ContentPage.Resources>
+			    <x:String x:Key="PageCaption">Resource value</x:String>
+			  </ContentPage.Resources>
+			  <Label Text="{DynamicResource PageCaption}" />
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness(nameof(BindingToDynamicResource_RemovesBindingAndTracksChanges));
+		var generation = harness.Generate(xamlV1, xamlV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var label = Assert.IsType<Label>(page.Content);
+			page.BindingContext = new CaptionSource();
+			Assert.Equal("Bound value", label.Text);
+			Assert.True(IsBound(label, Label.TextProperty));
+
+			live.ApplyUpdate<ContentPage>(1);
+			Assert.Equal("Resource value", label.Text);
+			Assert.False(IsBound(label, Label.TextProperty));
+
+			page.Resources["PageCaption"] = "Updated resource value";
+			Assert.Equal("Updated resource value", label.Text);
+		});
+	}
+
+	static bool IsBound(BindableObject bindable, BindableProperty property) =>
+		(bool)typeof(BindableObject)
+			.GetMethod("GetIsBound", BindingFlags.Instance | BindingFlags.NonPublic)!
+			.Invoke(bindable, [property])!;
+
+	sealed class CaptionSource
+	{
+		public string Caption { get; set; } = "Bound value";
 	}
 
 	// Wave2 · Resources · P0-10 · RT-01

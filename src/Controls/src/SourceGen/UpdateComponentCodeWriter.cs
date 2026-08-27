@@ -1628,9 +1628,12 @@ static class UpdateComponentCodeWriter
 			// and falls back to runtime ProvideValue() for unknown IMarkupExtension implementors
 			elementNode.TryProvideValue(captureWriter, ctx);
 
+			IFieldSymbol? dynamicResourceProperty = null;
 			// A DynamicResource value has lower specificity than a local value. When Hot Reload
-			// replaces a literal assignment, remove that local value before registering the
-			// resource; otherwise the resource resolves but remains hidden behind the old literal.
+			// replaces a literal or binding assignment, remove the binding first, register the
+			// resource, then clear the local value. Registering before the clear pre-stages a
+			// resolved resource so the visible value transitions directly without exposing a
+			// transient default or style value.
 			if (ctx.Variables.TryGetValue(elementNode, out var valueVar)
 				&& valueVar.Type.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!, ctx))
 			{
@@ -1638,13 +1641,16 @@ static class UpdateComponentCodeWriter
 				var bindableProperty = ownerType.GetBindableProperty(propertyXmlName.NamespaceURI, ref localName, out _, ctx, elementNode);
 				if (bindableProperty != null && compilation.IsSymbolAccessibleWithin(bindableProperty, rootType))
 				{
+					dynamicResourceProperty = bindableProperty;
 					captureWriter.WriteLine($"{parentAccessor}.RemoveBinding({bindableProperty.ToFQDisplayString()});");
-					captureWriter.WriteLine($"{parentAccessor}.ClearValue({bindableProperty.ToFQDisplayString()});");
 				}
 			}
 
 			// Step 4: SetPropertyValue — emits the assignment to the parent
 			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], propertyXmlName, elementNode, ctx);
+
+			if (dynamicResourceProperty != null)
+				captureWriter.WriteLine($"{parentAccessor}.ClearValue({dynamicResourceProperty.ToFQDisplayString()});");
 		}
 		catch (Exception)
 		{

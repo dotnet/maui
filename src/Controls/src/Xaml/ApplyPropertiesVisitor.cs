@@ -556,8 +556,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			bindable.RemoveBinding(property);
-			bindable.ClearValue(property);
 			bindable.SetDynamicResource(property, dynamicResource.Key);
+			bindable.ClearValue(property);
 			return true;
 		}
 
