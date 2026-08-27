@@ -138,7 +138,7 @@ Describe 'Setup PR metadata lookup' {
         $content | Should -Match ([regex]::Escape(
             'Invoke-GhCommandWithRetry `'))
         $content | Should -Match ([regex]::Escape(
-            '-Arguments @(''api'', "repos/dotnet/maui/pulls/$PRNumber")'))
+            '-Arguments @(''api'', "repos/$Repository/pulls/$PRNumber")'))
         $content | Should -Match 'PR #\$PRNumber not found \(GitHub returned HTTP 404\)'
         $content | Should -Not -Match ([regex]::Escape(
             '$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json'))
