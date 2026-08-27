@@ -41,13 +41,18 @@ namespace Microsoft.Maui.ExternalBackend
 		{
 		}
 
-		protected override FakeNativeLayoutView CreatePlatformView() => new FakeNativeLayoutView();
+		protected override FakeNativeLayoutView CreatePlatformView() =>
+#if MONOANDROID
+			new FakeNativeLayoutView(Context);
+#else
+			new FakeNativeLayoutView();
+#endif
 
 		public void Add(IView view)
 		{
 			if (GetNativeChild(view) is FakeNativeView child)
 			{
-				PlatformView.Children.Add(child);
+				PlatformView.FakeChildren.Add(child);
 			}
 		}
 
@@ -55,17 +60,17 @@ namespace Microsoft.Maui.ExternalBackend
 		{
 			if (view.Handler?.PlatformView is FakeNativeView child)
 			{
-				PlatformView.Children.Remove(child);
+				PlatformView.FakeChildren.Remove(child);
 			}
 		}
 
-		public void Clear() => PlatformView.Children.Clear();
+		public void Clear() => PlatformView.FakeChildren.Clear();
 
 		public void Insert(int index, IView view)
 		{
 			if (GetNativeChild(view) is FakeNativeView child)
 			{
-				PlatformView.Children.Insert(index, child);
+				PlatformView.FakeChildren.Insert(index, child);
 			}
 		}
 
@@ -73,7 +78,7 @@ namespace Microsoft.Maui.ExternalBackend
 		{
 			if (GetNativeChild(view) is FakeNativeView child)
 			{
-				PlatformView.Children[index] = child;
+				PlatformView.FakeChildren[index] = child;
 			}
 		}
 
@@ -81,7 +86,7 @@ namespace Microsoft.Maui.ExternalBackend
 		{
 			if (view.Handler?.PlatformView is FakeNativeView child)
 			{
-				List<FakeNativeView> children = PlatformView.Children;
+				List<FakeNativeView> children = PlatformView.FakeChildren;
 				children.Remove(child);
 				children.Insert(GetClampedZIndex(view, children.Count), child);
 			}

@@ -63,7 +63,7 @@ namespace Microsoft.Maui.ExternalBackend
 			ILabel virtualView = handler.VirtualView;
 			FakeNativeLabel platformView = handler.PlatformView;
 
-			return virtualView.Text ?? platformView.Text;
+			return virtualView.Text ?? platformView.FakeText;
 		}
 
 		/// <summary>

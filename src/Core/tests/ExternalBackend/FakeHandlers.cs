@@ -9,14 +9,16 @@ namespace Microsoft.Maui.ExternalBackend
 	/// <para>
 	/// This handler cannot implement <see cref="ILabelHandler"/>: that interface declares
 	/// <c>PlatformView</c> through a <c>using PlatformView = ...</c> alias that resolves to one of
-	/// .NET MAUI's own native types (or to <c>System.Object</c> on the platform-neutral target
-	/// framework), so an external native type produces <c>CS0738</c>/<c>CS9333</c>.
+	/// .NET MAUI's own native types on a platform target framework (<c>MauiLabel</c>,
+	/// <c>AppCompatTextView</c>, <c>TextBlock</c>), or to <c>System.Object</c> on the platform-neutral
+	/// one. An external native type therefore produces <c>CS0738</c> or <c>CS9333</c>.
 	/// </para>
 	/// <para>
 	/// It does not need to. <see cref="ViewHandler{TVirtualView, TPlatformView}"/> implements
 	/// <see cref="IViewHandler{TVirtualView, TPlatformView}"/>, so this type already satisfies
 	/// <c>IViewHandler&lt;ILabel, FakeNativeLabel&gt;</c> — and, through covariance,
-	/// <c>IViewHandler&lt;ILabel, object&gt;</c> — with no extra members at all.
+	/// <c>IViewHandler&lt;ILabel, object&gt;</c> — with no extra members at all, on every target
+	/// framework.
 	/// </para>
 	/// </remarks>
 	public class FakeLabelHandler : ViewHandler<ILabel, FakeNativeLabel>
@@ -33,13 +35,18 @@ namespace Microsoft.Maui.ExternalBackend
 		{
 		}
 
-		protected override FakeNativeLabel CreatePlatformView() => new FakeNativeLabel();
+		protected override FakeNativeLabel CreatePlatformView() =>
+#if MONOANDROID
+			new FakeNativeLabel(Context);
+#else
+			new FakeNativeLabel();
+#endif
 
 		public static void MapText(FakeLabelHandler handler, ILabel label) =>
-			handler.PlatformView.Text = label.Text;
+			handler.PlatformView.FakeText = label.Text;
 
 		public static void MapOpacity(FakeLabelHandler handler, ILabel label) =>
-			handler.PlatformView.Opacity = label.Opacity;
+			handler.PlatformView.FakeOpacity = label.Opacity;
 	}
 
 	/// <summary>
@@ -58,11 +65,16 @@ namespace Microsoft.Maui.ExternalBackend
 		{
 		}
 
-		protected override FakeNativeContentView CreatePlatformView() => new FakeNativeContentView();
+		protected override FakeNativeContentView CreatePlatformView() =>
+#if MONOANDROID
+			new FakeNativeContentView(Context);
+#else
+			new FakeNativeContentView();
+#endif
 
 		public static void MapContent(FakeContentViewHandler handler, IContentView contentView)
 		{
-			handler.PlatformView.Content =
+			handler.PlatformView.FakeContent =
 				(contentView.PresentedContent as IView)?.Handler?.PlatformView as FakeNativeView;
 		}
 	}
@@ -91,6 +103,6 @@ namespace Microsoft.Maui.ExternalBackend
 		protected override FakeNativeWindow CreatePlatformElement() => new FakeNativeWindow();
 
 		public static void MapTitle(FakeWindowHandler handler, IWindow window) =>
-			handler.PlatformView.Title = window.Title;
+			handler.PlatformView.FakeTitle = window.Title;
 	}
 }

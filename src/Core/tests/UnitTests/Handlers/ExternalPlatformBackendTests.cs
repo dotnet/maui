@@ -168,12 +168,12 @@ namespace Microsoft.Maui.UnitTests.Handlers
 
 			var handler = (FakeLabelHandler)label.ToHandler(context);
 
-			Assert.Equal("hello", handler.PlatformView.Text);
+			Assert.Equal("hello", handler.PlatformView.FakeText);
 
 			label.Text = "goodbye";
 			handler.UpdateValue(nameof(ILabel.Text));
 
-			Assert.Equal("goodbye", handler.PlatformView.Text);
+			Assert.Equal("goodbye", handler.PlatformView.FakeText);
 		}
 
 		[Fact]
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.UnitTests.Handlers
 			var handler = (FakeLabelHandler)label.ToHandler(context);
 
 			// Opacity is chained off Core's ViewMapper, proving mapper composition still works.
-			Assert.Equal(0.5, handler.PlatformView.Opacity);
+			Assert.Equal(0.5, handler.PlatformView.FakeOpacity);
 		}
 
 		[Fact]
@@ -212,20 +212,20 @@ namespace Microsoft.Maui.UnitTests.Handlers
 
 			layout.Add(new Label { Text = "first" });
 			layout.Add(new Label { Text = "second" });
-			Assert.Equal(2, handler.PlatformView.Children.Count);
+			Assert.Equal(2, handler.PlatformView.FakeChildren.Count);
 
 			layout.Insert(0, new Label { Text = "inserted" });
-			Assert.Equal(3, handler.PlatformView.Children.Count);
-			Assert.Equal("inserted", Assert.IsType<FakeNativeLabel>(handler.PlatformView.Children[0]).Text);
+			Assert.Equal(3, handler.PlatformView.FakeChildren.Count);
+			Assert.Equal("inserted", Assert.IsType<FakeNativeLabel>(handler.PlatformView.FakeChildren[0]).FakeText);
 
 			layout.RemoveAt(0);
-			Assert.Equal(2, handler.PlatformView.Children.Count);
+			Assert.Equal(2, handler.PlatformView.FakeChildren.Count);
 
 			layout[0] = new Label { Text = "replaced" };
-			Assert.Equal("replaced", Assert.IsType<FakeNativeLabel>(handler.PlatformView.Children[0]).Text);
+			Assert.Equal("replaced", Assert.IsType<FakeNativeLabel>(handler.PlatformView.FakeChildren[0]).FakeText);
 
 			layout.Clear();
-			Assert.Empty(handler.PlatformView.Children);
+			Assert.Empty(handler.PlatformView.FakeChildren);
 		}
 
 		[Fact]
@@ -243,10 +243,10 @@ namespace Microsoft.Maui.UnitTests.Handlers
 			neutral.Add(child);
 
 			var platformView = Assert.IsType<FakeNativeLayoutView>(neutral.PlatformView);
-			Assert.Single(platformView.Children);
+			Assert.Single(platformView.FakeChildren);
 
 			neutral.Clear();
-			Assert.Empty(platformView.Children);
+			Assert.Empty(platformView.FakeChildren);
 		}
 
 		[Fact]
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.UnitTests.Handlers
 
 			var handler = (FakeWindowHandler)((IElement)window).ToHandler(context);
 
-			Assert.Equal("external", handler.PlatformView.Title);
+			Assert.Equal("external", handler.PlatformView.FakeTitle);
 
 			IElementHandler<IWindow, object> neutral = handler;
 

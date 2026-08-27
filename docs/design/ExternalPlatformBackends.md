@@ -186,6 +186,14 @@ relationships continue to work with no `TypeLoadException`.
 An external backend derives from the public generic handler base classes and stops trying to implement
 the aliased interfaces.
 
+> **Note on the native type.** On a platform target framework,
+> `ViewHandler<TVirtualView, TPlatformView>` constrains `TPlatformView` to that platform's base view
+> type (`UIKit.UIView`, `Android.Views.View`, `Microsoft.UI.Xaml.FrameworkElement`,
+> `Tizen.NUI.BaseComponents.View`). An external backend's views already satisfy that. The constraint was
+> never the problem — the *aliased interfaces* were, because they pin `PlatformView` to one exact
+> concrete type. `ElementHandler<TVirtualView, TPlatformView>` constrains `TPlatformView` only to
+> `class`, on every target framework.
+
 ```csharp
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
@@ -265,10 +273,39 @@ builder.ConfigureMauiHandlers(handlers =>
 handlers for label, content view, layout and window, so everything it compiles is provably public API and
 provably warning-free for an external consumer.
 
-`src/Core/tests/UnitTests/Handlers/ExternalPlatformBackendTests.cs` exercises it: contract satisfaction,
-covariance, handler registration, property-mapper composition off `ViewHandler.ViewMapper`, Controls'
-`Layout` command routing reaching an external layout handler, and backward-compatibility assertions that
-the aliased interfaces are unchanged.
+It **multi-targets every target framework Core ships** — the platform-neutral one plus each platform TFM
+— because the failure it guards against is target-framework specific: `CS9333`/`CS8766` on the neutral
+TFM, `CS0738` on the platform TFMs. Compiling the same external-backend sources against all of them is
+the only way to prove the contracts close the gap everywhere.
+
+The fake native view types are therefore per-platform, because
+`ViewHandler<TVirtualView, TPlatformView>` constrains `TPlatformView` differently per TFM:
+
+| Target framework | `ViewHandler<,>` constraint on `TPlatformView` | Fake native view derives from |
+| --- | --- | --- |
+| `net11.0` (neutral) | `class` | *(nothing)* |
+| `net11.0-android` | `Android.Views.View` | `Android.Views.View` |
+| `net11.0-ios`, `net11.0-maccatalyst` | `UIKit.UIView` | `UIKit.UIView` |
+| `net11.0-windows` | `Microsoft.UI.Xaml.FrameworkElement` | `Microsoft.UI.Xaml.Controls.Panel` |
+
+This mirrors reality: a real external backend's views *do* derive from the platform's base view type.
+What makes it external is that its **concrete** types are its own, and so are never the types the aliased
+interfaces are pinned to (`MauiLabel`, `AppCompatTextView`, `TextBlock`) — which is exactly what produces
+`CS0738`. `ElementHandler<,>` constrains `TPlatformView` only to `class` on every TFM, so the fake native
+*window* type is a single definition shared across all of them.
+
+Fake members are prefixed `Fake` (`FakeText`, `FakeOpacity`, `FakeChildren`) so the same handler sources
+compile on every TFM without colliding with a real platform base type's members — for example
+`FrameworkElement.Opacity` on Windows.
+
+`ExternalBackendTfmContracts.cs` compiles unchanged on every TFM and asserts, at compile time, that the
+backend's own native type survives a round trip through the typed and neutral contracts, that the layout
+contract's behavior is callable, and that .NET MAUI's in-box handlers satisfy the same neutral contracts.
+
+`src/Core/tests/UnitTests/Handlers/ExternalPlatformBackendTests.cs` exercises runtime behavior on the
+neutral TFM: contract satisfaction, covariance, handler registration, property-mapper composition off
+`ViewHandler.ViewMapper`, Controls' `Layout` command routing reaching an external layout handler, and
+backward-compatibility assertions that the aliased interfaces are unchanged.
 
 ## Follow-up coverage
 

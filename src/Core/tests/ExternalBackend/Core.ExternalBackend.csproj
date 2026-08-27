@@ -1,7 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <!--
+      Multi-targets everywhere Microsoft.Maui.Core ships a platform build. The failure this assembly
+      guards against is target-framework specific:
+
+        * On a platform TFM the aliased handler interfaces pin PlatformView to one of .NET MAUI's own
+          native types, so an external native type produces CS0738.
+        * On the platform-neutral TFM the alias is a non-nullable System.Object, producing CS9333
+          (and CS8766, since ViewHandler.PlatformView is object?).
+
+      Compiling the same external-backend sources against every one of them is the only way to prove
+      the platform-neutral contracts actually close the gap on all of them.
+    -->
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Core.ExternalBackend.TestAssembly</AssemblyName>
     <RootNamespace>Microsoft.Maui.ExternalBackend</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -17,8 +29,14 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
 
 </Project>
