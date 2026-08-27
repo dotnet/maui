@@ -27,6 +27,7 @@ BeforeAll {
     $content = Get-Content -Raw $reviewScript
     $pipelineContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml')
     $provisionContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/common/provision.yml')
+    $buildShellContent = Get-Content -Raw (Join-Path $PSScriptRoot 'shared/Resolve-BuildShell.ps1')
 
     function Get-FunctionBody {
         param([string]$ScriptText, [string]$FunctionName)
@@ -1384,10 +1385,12 @@ Describe 'Pipeline pre-trusted command safety' {
         $sanitizer = "2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
 
         ([regex]::Matches($pipelineContent, [regex]::Escape($sanitizer))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = 'bash'"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in @('-o','pipefail','-c',`$buildCommand))"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape('& bash -o pipefail -c $buildCommand'))).Count | Should -Be 2
-        $pipelineContent | Should -Not -Match ([regex]::Escape("`$psi.FileName = 'pwsh'"))
+        ([regex]::Matches($pipelineContent, 'Invoke-BuildTasksWatchdog\s+`')).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape('-ShellCommand $buildCommand'))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("-DirectFileName 'pwsh'"))).Count | Should -Be 2
+        $buildShellContent | Should -Match '\$psi\.RedirectStandardOutput = \$true'
+        $buildShellContent | Should -Match '\$psi\.RedirectStandardError = \$true'
+        $buildShellContent | Should -Match 'Remove-VsoLoggingCommand -Line \$line'
     }
 
     It 'uses non-interactive sudo for CoreSimulator recovery before falling back' {

@@ -24,6 +24,8 @@ on:
       - '.github/workflows/**'
       - 'eng/scripts/**'
       - 'eng/pipelines/ci-copilot.yml'
+      - 'eng/pipelines/common/provision.yml'
+      - 'eng/pipelines/common/ui-tests-steps.yml'
       - 'eng/pipelines/ci-official-release.yml'
       - 'eng/pipelines/ci-official-release.Tests.ps1'
       - 'eng/scripts/nuget_release_packages.ps1'

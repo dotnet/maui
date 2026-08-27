@@ -241,15 +241,21 @@ Describe 'Choosing a shell that can actually run the build' {
             $output | Should -Not -Match 'FROM-DIRECT'
         }
 
-        It 'filters logging commands out of the output it relays' {
+        It 'filters logging commands out of both output streams it relays' {
             $output = Invoke-BuildTasksWatchdog `
                 -ShellPath '' `
                 -ShellCommand 'true' `
                 -DirectFileName $script:Pwsh `
-                -DirectArgument @('-NoProfile', '-Command', "Write-Output 'a##vso[task.complete result=Failed;]b'") `
+                -DirectArgument @(
+                    '-NoProfile',
+                    '-Command',
+                    "[Console]::Out.WriteLine('stdout##vso[task.complete result=Failed;]safe'); " +
+                        "[Console]::Error.WriteLine('stderr##vso[task.complete result=Failed;]safe')"
+                ) `
                 -TimeoutMinutes 1 6>&1 | Out-String
 
-            $output | Should -Match 'ab'
+            $output | Should -Match 'stdoutsafe'
+            $output | Should -Match 'stderrsafe'
             $output | Should -Not -Match '##vso'
         }
 
