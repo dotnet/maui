@@ -23,11 +23,12 @@ on:
       - 'eng/scripts/nuget_release_packages.ps1'
       - 'eng/scripts/nuget_release_packages.Tests.ps1'
       - '.github/workflows/powershell-script-tests.yml'
-      # UI-test pipeline partitioning is guarded by
+      # UI-test pipeline sharding is guarded by
       # UITestsPipelinePartitions.Tests.ps1, so re-run the suite when the
-      # partitioned pipeline templates change too.
+      # sharded pipeline templates change too.
       - 'eng/pipelines/common/ui-tests.yml'
       - 'eng/pipelines/common/ui-tests-steps.yml'
+      - 'src/Controls/tests/TestCases.Shared.Tests/**/*.cs'
   workflow_dispatch:
 
 concurrency:

@@ -16,6 +16,7 @@ public class Issue35859 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionView2ShouldNotMeasureNonFirstItemsWithCachedFirstItemHeight()
 	{
 		App.WaitForElement("35859ResetButton");

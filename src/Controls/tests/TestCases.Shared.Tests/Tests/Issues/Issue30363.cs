@@ -14,6 +14,7 @@ public class Issue30363 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewSelectionShouldClear()
 	{
 		App.WaitForElement("cvItem");

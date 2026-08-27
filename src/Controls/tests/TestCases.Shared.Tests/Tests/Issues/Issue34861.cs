@@ -15,6 +15,7 @@ public class Issue34861 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EmptyViewShouldAppearBelowHeaderInGridLayout()
 	{
 		App.WaitForElement("TestCollectionView");

@@ -12,6 +12,7 @@ public class Issue33333 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewScrolledEventShouldNotFireOnInitialLoad()
 	{
 		App.WaitForElement("ScrollCountLabel");

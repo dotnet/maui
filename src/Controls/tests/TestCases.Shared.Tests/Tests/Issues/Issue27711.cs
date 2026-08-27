@@ -15,6 +15,7 @@ public class Issue27711 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void RightToLeftFlowDirectionShouldWork()
 	{
 		App.WaitForElement("switch");

@@ -16,6 +16,7 @@ public class Issue29141 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCVGroupHFTemplateWithObservableCollection()
 	{
 		App.WaitForElement("collectionView");
@@ -28,6 +29,7 @@ public class Issue29141 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCVGroupHFTemplateWithStringCollection()
 	{
 		App.WaitForElement("collectionView");
@@ -39,6 +41,7 @@ public class Issue29141 : _IssuesUITest
 
 	[Test, Order(3)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCVNoSectionCrashOnAddFlatItem()
 	{
 		App.WaitForElement("collectionView");

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void SelectedItemsNotInSourceDoesNotCrash()
 		{
 			// If this page didn't crash, then we're good

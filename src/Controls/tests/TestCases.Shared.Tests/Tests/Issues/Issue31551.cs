@@ -14,6 +14,7 @@ public class Issue31551 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyNoExceptionOnInvalidGroupIndex()
 	{
 		App.WaitForElement("Issue31551ScrollBtn");

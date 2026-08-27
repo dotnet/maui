@@ -15,6 +15,7 @@ public class Issue19609 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CanTapButtonOnEmptyView()
 	{
 		var btnElementId = "btnClick";

@@ -17,6 +17,7 @@ public class Issue5949 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void DoNotAccessDisposedCollectionView()
 	{
 		App.WaitForElement(ToolBarItem);

@@ -13,6 +13,7 @@ public class Issue15778 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void SwipeViewInCollectionViewDoesNotTriggerSelection()
     {
         App.WaitForElement("Item 1");

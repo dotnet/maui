@@ -14,6 +14,7 @@ public class Issue18751 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void Issue18751Test()
 	{
 		App.WaitForElement("WaitForStubControl");

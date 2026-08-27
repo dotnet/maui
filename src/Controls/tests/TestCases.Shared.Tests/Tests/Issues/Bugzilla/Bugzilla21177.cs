@@ -15,6 +15,7 @@ public class Bugzilla21177 : _IssuesUITest
 
      [Test]
      [Category(UITestCategories.CollectionView)]
+     [Category(UITestCategories.CollectionView2)]
      [FailsOnIOSWhenRunningOnXamarinUITest]
      public void Bugzilla21177Test()
      {

@@ -15,6 +15,7 @@ public class Issue12008 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void EmptyGroupCreationShouldWork()
     {
         App.WaitForElement("CreateEmptyGroupButton12008");
@@ -28,6 +29,7 @@ public class Issue12008 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void DragItemIntoEmptyGroupShouldSucceed()
     {
         App.WaitForElement("CreateEmptyGroupButton12008");

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void KeepItemsInView()
 		{
 			App.WaitForElement("ScrollToMiddle");
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// above shifts indices so the previously visible "Vegetables.jpg, 10" becomes "FlowerBuds.jpg, 12".
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -63,6 +65,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void KeepLastItemInView()
 		{
 			App.WaitForElement("SelectScrollMode");

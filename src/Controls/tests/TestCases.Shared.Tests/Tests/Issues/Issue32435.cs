@@ -12,6 +12,7 @@ public class Issue32435 : _IssuesUITest
 	public override string Issue => "Rotating the Simulator causes the text on the collection view to disappear";
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCollectionViewTextShouldAppearAfterRotatingTheDevice()
 	{
 		App.WaitForElement("InstructionLabel");

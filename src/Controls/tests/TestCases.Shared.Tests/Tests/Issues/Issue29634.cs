@@ -15,6 +15,7 @@ public class Issue29634 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyEmptyViewResizesWhenBoundsChange()
 	{
 		App.WaitForElement("RunTest");

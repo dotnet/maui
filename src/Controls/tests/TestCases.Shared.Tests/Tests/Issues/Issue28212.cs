@@ -14,6 +14,7 @@ public class Issue28212 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void Issue28212_CollectionView()
 	{
 		App.WaitForElement("Button");

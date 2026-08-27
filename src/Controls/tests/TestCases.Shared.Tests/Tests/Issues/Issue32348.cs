@@ -13,6 +13,7 @@ public class Issue32348 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCVBackgroundAndBackgroundColorWithVSM()
 	{
 		App.WaitForElement("Item 2");

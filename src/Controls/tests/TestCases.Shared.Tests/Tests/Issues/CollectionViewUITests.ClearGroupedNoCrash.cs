@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Description("Clearing CollectionView IsGrouped=\"True\" no crashes application")]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void ClearingGroupedNoCrash()
 		{
 			App.WaitForElement(Go);

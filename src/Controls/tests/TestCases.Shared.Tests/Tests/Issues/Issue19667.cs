@@ -15,6 +15,7 @@ public class Issue19667 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewItemsSizeCorrectlyAfterOrientationChange()
 	{
 		App.TapShellFlyoutIcon();

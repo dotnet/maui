@@ -14,6 +14,7 @@ public class Issue29207 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void ScrollToLastItem()
 	{
 		App.WaitForElement("InsertItemButton");

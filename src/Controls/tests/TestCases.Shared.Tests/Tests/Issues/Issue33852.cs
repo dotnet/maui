@@ -14,6 +14,7 @@ public class Issue33852 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void ProgrammaticScrollToWorksWithHorizontalLayout()
     {
         App.WaitForElement("ScrollToButton");

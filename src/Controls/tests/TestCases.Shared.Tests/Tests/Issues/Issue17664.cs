@@ -18,6 +18,7 @@ public class Issue17664 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyGroupedCollectionViewVisibleItemIndices()
 	{
 		App.WaitForElement("Issue17664ScrollBtn");

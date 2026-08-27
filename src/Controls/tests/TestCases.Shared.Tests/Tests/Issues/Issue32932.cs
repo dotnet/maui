@@ -14,6 +14,7 @@ public class Issue32932 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EmptyViewShouldDisplayWhenCollectionViewIsInsideVerticalStackLayout()
 	{
 		App.WaitForElement("EmptyCollectionView");

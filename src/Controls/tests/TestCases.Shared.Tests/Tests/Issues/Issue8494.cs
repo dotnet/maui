@@ -13,6 +13,7 @@ public class Issue8494 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CheckEmptyViewMargin()
 	{
 		App.WaitForElement("EmptyViewDescriptionLabel");

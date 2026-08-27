@@ -13,6 +13,7 @@ public class Issue28656 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewShouldChangeItemsLayout()
 	{
 		App.WaitForElement("ChangeLayoutButton");

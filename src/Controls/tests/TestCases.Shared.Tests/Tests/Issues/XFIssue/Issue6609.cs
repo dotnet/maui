@@ -14,6 +14,7 @@ public class Issue6609 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void SelectionChangedCommandParameterBoundToSelectedItemShouldMatchSelectedItem()
 	{
 		App.WaitForElement("Item 2");

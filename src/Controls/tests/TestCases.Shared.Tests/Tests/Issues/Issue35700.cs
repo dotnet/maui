@@ -13,6 +13,7 @@ public class Issue35700 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void GroupedCollectionViewGridLayoutRendersCorrectly()
 	{
 		App.WaitForElement("TestCollectionView");

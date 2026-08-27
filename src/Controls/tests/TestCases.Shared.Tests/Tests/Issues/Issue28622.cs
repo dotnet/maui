@@ -15,6 +15,7 @@ public class Issue28622 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void ItemsLayoutShouldRenderProperlyOnEmptyView()
 	{
 		App.WaitForElement("LayoutButton");

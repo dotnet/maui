@@ -14,6 +14,7 @@ public class Issue6077 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void LastColumnShouldBeVisible()
 	{
 		// If the partial column shows up, then Item 5 will be in it

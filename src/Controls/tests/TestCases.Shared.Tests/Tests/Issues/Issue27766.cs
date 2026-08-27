@@ -14,6 +14,7 @@ public class Issue27766 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void ShouldIgnoreBottomContentInsetForCollectionViewItems()
 	{
 		App.WaitForElement("Test 3");

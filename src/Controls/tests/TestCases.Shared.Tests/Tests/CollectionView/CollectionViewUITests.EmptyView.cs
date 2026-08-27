@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void EmptyViewItemsSourceNullStringWorks()
 		{
 			VisitInitialGallery("EmptyView");
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void EmptyViewItemsSourceNullViewWorks()
 		{
 			VisitInitialGallery("EmptyView");

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void GroupingAndHeaderWorks()
 		{
 			VisitInitialGallery("Grouping");

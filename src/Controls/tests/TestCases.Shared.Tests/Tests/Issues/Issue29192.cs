@@ -13,6 +13,7 @@ public class Issue29192 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void ShouldMeasureFirstItemInHorizontalLayouts()
 	{
 		App.WaitForElement("CollectionView");

@@ -13,6 +13,7 @@ public class Issue28101 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void FooterTemplateShouldNotScrollWhenEmptyViewIsDisplayed()
 	{
 		App.WaitForElement("This Is A Footer");

@@ -16,6 +16,7 @@ public class Issue34336 : _IssuesUITest
 	// shrinking to match its items once they arrive after a 3-second delay.
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewHeightIsCorrectAfterDelayedLoad()
 	{
 		// Wait for page to load

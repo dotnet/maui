@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void HeaderFooterStringWorks()
 		{
 			// Navigate to the selection galleries
@@ -32,6 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS || ANDROID
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public async Task HeaderFooterViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -60,6 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void HeaderFooterHorizontalViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -83,6 +86,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void HeaderFooterTemplateWorks()
 		{
 			// Navigate to the selection galleries
@@ -96,6 +100,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void HeaderFooterGridWorks()
 		{
 			// Navigate to the selection galleries
@@ -120,6 +125,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// cause this test to fail.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void HeaderFooterGridHorizontalWorks()
 		{
 			// Navigate to the selection galleries

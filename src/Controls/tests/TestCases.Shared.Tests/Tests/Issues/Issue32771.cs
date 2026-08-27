@@ -13,6 +13,7 @@ public class Issue32771 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void FlowdirectionShouldWorkForHeaderFooter()
     {
         App.WaitForElement("ToggleFlowDirectionButton");

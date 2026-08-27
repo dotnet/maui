@@ -18,6 +18,7 @@ public class Issue28765 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EmptyViewStringWithHeaderAndFooterAsView()
 	{
 		App.WaitForElement("Footer View");
@@ -25,6 +26,7 @@ public class Issue28765 : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EmptyViewStringWithHeaderAndFooterString()
 	{
 		App.WaitForElement("Footer String");

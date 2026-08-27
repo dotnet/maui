@@ -13,6 +13,7 @@ public class Issue34897 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewHeaderVisibleWithEmptyViewAndNullItemsSource()
 	{
 		App.WaitForElement("Issue34897EmptyView");

@@ -16,6 +16,7 @@ public class Issue29484 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void PointerOverWithSelectedStateShouldWork()
 	{
 		App.WaitForElement("CollectionView");

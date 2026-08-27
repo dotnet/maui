@@ -14,6 +14,7 @@ public class Issue32404 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void FlowDirectionShouldWorkOnEmptyView()
     {
         App.WaitForElement("Issue32404ToggleButton");

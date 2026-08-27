@@ -13,6 +13,7 @@ public class Issue30953 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EnsureCollectionViewLayoutOnItemsSourceChange()
 	{
 		App.WaitForElement("Issue30953Button");

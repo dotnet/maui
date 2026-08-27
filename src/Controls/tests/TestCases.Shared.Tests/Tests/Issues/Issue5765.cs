@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void FlexLayoutsInFramesShouldSizeCorrectly()
 		{
 			// If the first label is visible at all, then this has succeeded

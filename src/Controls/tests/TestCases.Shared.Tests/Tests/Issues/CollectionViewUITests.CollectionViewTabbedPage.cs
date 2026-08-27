@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add1);
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add2);

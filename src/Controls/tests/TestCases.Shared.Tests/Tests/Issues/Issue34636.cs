@@ -15,6 +15,7 @@ public class Issue34636 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerticalItemsRemainFullyVisibleAfterChangingSpacing()
 	{
 		App.WaitForElement("ChangeSpacingButton");

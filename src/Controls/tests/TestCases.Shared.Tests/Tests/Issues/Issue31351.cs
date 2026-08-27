@@ -14,6 +14,7 @@ public class Issue31351 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CustomCollectionViewShouldScroll()
 	{
 		App.WaitForElement("Issue31351CollectionView");

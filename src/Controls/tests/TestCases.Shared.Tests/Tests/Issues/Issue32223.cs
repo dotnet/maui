@@ -14,6 +14,7 @@ public class Issue32223 : _IssuesUITest
 	[Test]
 	[Retry(5)]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CanReorderWithItemDataTemplateSelector()
 	{
 		App.WaitForElement("ReorderableCollectionView");

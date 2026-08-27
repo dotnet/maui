@@ -136,7 +136,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
-	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{GetTestResultsFilterName(testFilter)}");
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
 	var appiumLog = $"{binDir}/appium_mac_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings

@@ -14,6 +14,7 @@ public class Issue28657 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void CellLayoutUpdatesCorrectlyAfterDeviceOrientationChanges()
     {
         App.WaitForElement("StubLabel");

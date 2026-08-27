@@ -12,6 +12,7 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionView2ShouldFindAncestorType()
 	{
 		App.WaitForElement(CV2Item1);

@@ -13,6 +13,7 @@ public class Issue28716 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void KeepLastItemInViewShouldWork()
 	{
 		App.WaitForElement("AddItemButton");

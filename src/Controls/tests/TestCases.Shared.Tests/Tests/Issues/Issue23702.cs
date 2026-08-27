@@ -14,6 +14,7 @@ public class Issue23702 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewItemsShouldResizeWhenWidthDecreases()
 	{
 		App.WaitForElement("SetWidthButton");

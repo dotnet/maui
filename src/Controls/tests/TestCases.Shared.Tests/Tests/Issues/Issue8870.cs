@@ -18,6 +18,7 @@ public class Issue8870 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 	[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 	public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()

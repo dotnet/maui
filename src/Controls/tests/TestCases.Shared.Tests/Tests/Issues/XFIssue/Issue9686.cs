@@ -17,6 +17,7 @@ public class Issue9686 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 
 	public void AddRemoveEmptyGroupsShouldNotCrashOnInsert()
 	{

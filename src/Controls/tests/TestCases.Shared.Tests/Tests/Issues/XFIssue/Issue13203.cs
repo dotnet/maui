@@ -14,6 +14,7 @@ public class Issue13203 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionShouldInvalidateOnVisibilityChange()
 	{
 		App.WaitForElement("Success");

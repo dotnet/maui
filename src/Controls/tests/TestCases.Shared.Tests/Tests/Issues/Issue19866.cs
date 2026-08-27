@@ -13,6 +13,7 @@ public class Issue19866 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void StatusBarTapScrollsCollectionViewToTop()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))

@@ -13,6 +13,7 @@ public class Issue35313 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void GroupedCollectionViewScrollToIndexZeroShouldScrollToStart()
 	{
 		App.WaitForElement("ScrollToEndButton");

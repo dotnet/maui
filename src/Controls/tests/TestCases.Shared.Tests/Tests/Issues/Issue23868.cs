@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewWithHeaderAndRefreshViewShouldNotCrashOnPullToRefresh()
 		{
 			App.WaitForElement("UpdateData");

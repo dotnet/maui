@@ -14,6 +14,7 @@ public class Issue28604 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void FooterShouldDisplayAtBottomOfEmptyView()
     {
         App.WaitForElement("CollectionView");

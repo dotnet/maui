@@ -14,6 +14,7 @@ public class Issue28580 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void FooterWithEmptyCVShouldHaveCorrectSize()
 	{
 		App.WaitForElement("labelInFooter");

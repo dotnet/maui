@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionShouldInvalidateOnVisibilityChange (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13203.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
 			App.WaitForElement(Success);

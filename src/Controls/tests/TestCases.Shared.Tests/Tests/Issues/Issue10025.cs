@@ -15,6 +15,7 @@ public class Issue10025 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifySelectedItemClearsOnNullAssignment()
 	{
 		App.WaitForElement("Item1");

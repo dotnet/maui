@@ -12,6 +12,7 @@ public class Issue35326 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void GroupedCollectionViewScrollToIndexScrollsToCorrectItem()
 	{
 		// Initially the first item of the first group should be visible

@@ -14,6 +14,7 @@ public class Issue29595 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyGridItemsLayoutLeftAlignsSingleItem()
 	{
 		App.WaitForElement("StubLabel");

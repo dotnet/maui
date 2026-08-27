@@ -13,6 +13,7 @@ public class Issue20062 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewSelectionChangesVisualState()
 	{
 		App.WaitForElement("CollectionView");

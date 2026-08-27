@@ -14,6 +14,7 @@ public class Issue32983 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void BottomSheetDetentHeightIsCorrectWhenCollectionViewIsMeasuredBeforeMount()
 	{
 		App.WaitForElement("ShowBottomSheetButton");

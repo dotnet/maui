@@ -13,6 +13,7 @@ public class Issue31897 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EnsureCollectionViewLayoutOnItemsSourceChange()
 	{
 		App.WaitForElement("GetHeightButton");

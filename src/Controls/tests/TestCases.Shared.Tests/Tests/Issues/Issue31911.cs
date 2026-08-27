@@ -15,6 +15,7 @@ public class Issue31911 : _IssuesUITest
 
     [Test, Order(1)]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void HeaderShouldBeRemovedWhenSetToNull()
     {
         App.WaitForElement("ToggleHeaderButton");
@@ -24,6 +25,7 @@ public class Issue31911 : _IssuesUITest
 
     [Test, Order(2)]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void FooterShouldBeRemovedWhenSetToNull()
     {
         App.WaitForElement("ToggleFooterButton");

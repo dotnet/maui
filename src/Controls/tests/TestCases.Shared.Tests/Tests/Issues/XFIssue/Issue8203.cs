@@ -16,6 +16,7 @@ public class Issue8203 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void SelectionChangedShouldBeRaisedOnceWhenSelectionChanges()
 	{
 		App.WaitForElement("one");

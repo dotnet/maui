@@ -14,6 +14,7 @@ public class Issue17823 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void ReorderingItemToEndWithHeaderDoesNotCrash()
 	{
 		// Verify header is present
@@ -29,6 +30,7 @@ public class Issue17823 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void ReorderingLastItemWithHeaderDoesNotCrash()
 	{
 		// Verify header is present

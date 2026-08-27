@@ -14,6 +14,7 @@ public class Issue21375 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void SelectedItemsShowSelected()
 	{
 		var collectionView = App.WaitForElement("collectionView");

@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewEmptyViewDefaultTemplateShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement("SearchBar");
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void CollectionViewEmptyViewOtherTemplateShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement("SearchBar");

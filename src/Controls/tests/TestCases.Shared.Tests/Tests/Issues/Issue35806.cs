@@ -13,6 +13,7 @@ public class Issue35806 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void KeepScrollOffsetWorksAfterReplacingItemsSource()
 	{
 		App.WaitForElement("CollectionView35806");

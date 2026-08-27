@@ -14,6 +14,7 @@ public class Issue8308 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void NavigatingBackToCollectionViewShouldNotCrash()
 	{
 		App.WaitForElement("Instructions");

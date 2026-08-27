@@ -16,6 +16,7 @@ public class Issue34122 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void EmptyViewSwapShouldNotRevealFilteredOutItems()
 	{
 		// Verify items are visible initially

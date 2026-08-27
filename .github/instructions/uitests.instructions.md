@@ -31,7 +31,8 @@ This document provides specific guidance for GitHub Copilot when writing UI test
    - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
    - Use the `AutomationId` values to locate and interact with UI elements
    - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
-   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE per test)
+   - Include one functional `[Category(UITestCategories.XYZ)]` attribute per test
+   - CollectionView tests also require exactly one CI shard category: `CollectionView1` or `CollectionView2`
    - Test should validate expected behavior through UI interactions and assertions
 
 ### Base Class and Infrastructure

@@ -6,6 +6,8 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 [Category(UITestCategories.CollectionView)]
+
+[Category(UITestCategories.CollectionView2)]
 public class Issue32243 : _IssuesUITest
 {
 	public Issue32243(TestDevice testDevice) : base(testDevice) { }

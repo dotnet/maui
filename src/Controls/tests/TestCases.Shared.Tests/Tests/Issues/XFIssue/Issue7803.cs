@@ -15,6 +15,7 @@ public class Issue7803 : _IssuesUITest
 
 	//[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 	{
 		var collectionView = App.WaitForElement("CollectionView7803");

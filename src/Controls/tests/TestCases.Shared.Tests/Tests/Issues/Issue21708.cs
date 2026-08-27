@@ -14,6 +14,7 @@ public class Issue21708 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void VerifyCollectionViewVerticalOffset()
 	{
 		App.WaitForElement("Fill");

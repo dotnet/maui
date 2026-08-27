@@ -17,6 +17,7 @@ public class Issue10947 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewHeaderShouldNotScroll()
 	{
 		var headerEntry = App.WaitForElement(HeaderEntry);

@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string CheckBox = "CheckBox";
 		public const string CollectionView = "CollectionView";
 		public const string CollectionView1 = "CollectionView1";
+		public const string CollectionView2 = "CollectionView2";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
 		public const string Dispatcher = "Dispatcher";

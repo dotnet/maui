@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.CollectionView2)]
 		public void ItemsFromViewModelShouldBeSelected()
 		{
 			// Navigate to the selection galleries

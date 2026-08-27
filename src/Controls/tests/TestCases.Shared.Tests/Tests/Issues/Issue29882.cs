@@ -15,6 +15,7 @@ public class Issue29882 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void SettingItemSourceToNullShouldNotCrash()
 	{
 		App.WaitForElement("Item1");

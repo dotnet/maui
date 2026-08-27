@@ -14,6 +14,7 @@ public class NestedCollectionView : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void NestedCollectionViewsShouldNotCrash()
 	{
 		// If this page loaded and didn't crash, we're good.

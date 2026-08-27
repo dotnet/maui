@@ -12,6 +12,7 @@ public class Issue33324 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
+    [Category(UITestCategories.CollectionView2)]
     public void EmptyViewShouldRemeasureWhenParentLayoutChanges()
     {
         App.WaitForElement("LoadItemsButton");

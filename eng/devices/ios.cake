@@ -237,7 +237,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
-	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{GetTestResultsFilterName(testFilter)}");
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
 	var appiumLog = $"{binDir}/appium_ios_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings

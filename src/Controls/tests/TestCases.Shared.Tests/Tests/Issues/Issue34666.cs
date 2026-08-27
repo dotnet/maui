@@ -14,6 +14,7 @@ public class Issue34666 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Category(UITestCategories.CollectionView2)]
 	public void CollectionViewDoesNotScrollWhenRefreshViewDisabled()
 	{
 		App.WaitForElement("Baboon");
