@@ -423,14 +423,6 @@ public static class XamlComponentRegistry
 				_templateEntries[nodeId] = entries;
 			}
 
-			for (int i = entries.Count - 1; i >= 0; i--)
-			{
-				if (!entries[i].TryGetTarget(out var target))
-					entries.RemoveAt(i);
-				else if (ReferenceEquals(target, component))
-					return;
-			}
-
 			entries.Add(new WeakReference<object>(component));
 		}
 

@@ -99,18 +99,6 @@ public class XamlComponentRegistryTests
 	}
 
 	[Fact]
-	public void RegisterTemplateComponent_SameInstance_DoesNotDuplicate()
-	{
-		var page = new object();
-		var label = new object();
-
-		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", label);
-		XamlComponentRegistry.RegisterTemplateComponent(page, "label_0", label);
-
-		Assert.Single(XamlComponentRegistry.GetTemplateComponents(page, "label_0"));
-	}
-
-	[Fact]
 	public void Register_TwoPagesWithSameNodeId_AreIndependent()
 	{
 		var page1 = new object();
