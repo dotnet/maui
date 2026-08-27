@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new PropertyMapper<IToolbar, ExternalToolbarBackendHandler>(ElementMapper)
 				{
 					[nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,
-					[nameof(IToolbar.DrawerToggleVisible)] = MapDrawerToggleVisible,
+					[nameof(IToolbarDrawerToggleVisible.DrawerToggleVisible)] = MapDrawerToggleVisible,
 				};
 
 			public ExternalToolbarBackendHandler()
@@ -42,13 +42,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			protected override object CreatePlatformElement() => new object();
 
+			/// <summary>
+			/// The only way an external backend reads drawer state: pattern match the optional capability
+			/// interface off <see cref="IToolbar"/>. A toolbar that does not implement it has no drawer toggle.
+			/// </summary>
+			internal static bool ReadDrawerToggleVisible(IToolbar toolbar) =>
+				toolbar is IToolbarDrawerToggleVisible { DrawerToggleVisible: true };
+
 			static void MapDrawerToggleVisible(ExternalToolbarBackendHandler handler, IToolbar toolbar) =>
-				handler.DrawerToggleUpdates.Add(toolbar.DrawerToggleVisible);
+				handler.DrawerToggleUpdates.Add(ReadDrawerToggleVisible(toolbar));
 
 			static void MapBackButtonVisible(ExternalToolbarBackendHandler handler, IToolbar toolbar)
 			{
 				handler.BackButtonUpdates.Add(toolbar.BackButtonVisible);
-				handler.DrawerToggleVisibleObservedFromBackButtonMapper = toolbar.DrawerToggleVisible;
+				handler.DrawerToggleVisibleObservedFromBackButtonMapper = ReadDrawerToggleVisible(toolbar);
 			}
 		}
 
@@ -73,25 +80,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void IToolbarExposesDrawerToggleVisible()
+		public void DrawerToggleVisibleIsReachableFromIToolbar()
 		{
 			var shell = CreateFlyoutShell();
 
 			// An external backend only ever gets handed the IToolbar contract.
 			IToolbar toolbar = shell.Toolbar;
 
-			Assert.True(toolbar.DrawerToggleVisible);
+			var capability = Assert.IsAssignableFrom<IToolbarDrawerToggleVisible>(toolbar);
+			Assert.True(capability.DrawerToggleVisible);
 
 			shell.FlyoutBehavior = FlyoutBehavior.Disabled;
-			Assert.False(toolbar.DrawerToggleVisible);
+			Assert.False(capability.DrawerToggleVisible);
+		}
+
+		/// <summary>
+		/// The capability interface is optional, so an existing external <see cref="IToolbar"/>
+		/// implementation that predates it keeps compiling and simply reports no drawer toggle.
+		/// This type deliberately does not implement <see cref="IToolbarDrawerToggleVisible"/>.
+		/// </summary>
+		[Fact]
+		public void ToolbarWithoutCapabilityInterfaceReportsNoDrawerToggle()
+		{
+			IToolbar toolbar = new LegacyExternalToolbar();
+
+			Assert.False(toolbar is IToolbarDrawerToggleVisible);
+			Assert.False(ExternalToolbarBackendHandler.ReadDrawerToggleVisible(toolbar));
 		}
 
 		[Fact]
-		public void IToolbarDrawerToggleVisibleDefaultsToFalseForCustomImplementations()
+		public void ToolbarImplementingCapabilityInterfaceReportsDrawerToggle()
 		{
-			IToolbar toolbar = new MinimalToolbar();
+			IToolbar toolbar = new CapableExternalToolbar { DrawerToggleVisible = true };
 
-			Assert.False(toolbar.DrawerToggleVisible);
+			Assert.True(ExternalToolbarBackendHandler.ReadDrawerToggleVisible(toolbar));
 		}
 
 		[Fact]
@@ -142,17 +164,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(toolbar.DrawerToggleVisible);
 		}
 
+		/// <summary>
+		/// <c>BackButtonVisible</c> and <c>DrawerToggleVisible</c> are not mutually exclusive — on Windows
+		/// both can be true at once. What the framework does guarantee is ordering: the drawer backing value
+		/// is already current when <c>BackButtonVisible</c> notifies, so a backend that renders the shared
+		/// navigation slot from either mapper always sees a settled pair and can apply back-button precedence.
+		/// </summary>
 		[Fact]
-		public async Task ExternalBackendSeesConsistentStateWhileBackButtonMapperRuns()
+		public async Task DrawerToggleValueIsCurrentWhenBackButtonMapperRuns()
 		{
 			var shell = CreateFlyoutShell();
 			var handler = AttachExternalBackend(shell.Toolbar);
 
 			await shell.Navigation.PushAsync(new ContentPage());
 
-			// The drawer toggle backing value is updated before BackButtonVisible notifies, so a backend
-			// that renders the shared navigation slot from the back button mapper never sees a stale
-			// "back button and drawer toggle are both visible" state.
+			// On this (non-Windows) configuration ShellToolbar hides the drawer toggle once a page is
+			// pushed, and the back button mapper observes that settled value rather than a stale true.
 			Assert.False(handler.DrawerToggleVisibleObservedFromBackButtonMapper);
 			Assert.Equal(new[] { false }, handler.DrawerToggleUpdates);
 			Assert.Equal(new[] { true }, handler.BackButtonUpdates);
@@ -249,11 +276,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Empty(secondHandler.DrawerToggleUpdates);
 		}
 
-		class MinimalToolbar : IToolbar
+		/// <summary>Models an external toolbar written before the capability interface existed.</summary>
+		class LegacyExternalToolbar : IToolbar
 		{
 			public bool BackButtonVisible { get; set; }
 
 			public bool IsVisible { get; set; }
+
+			public string Title => string.Empty;
+
+			public IElement Parent => null;
+
+			public IElementHandler Handler { get; set; }
+		}
+
+		/// <summary>Models an external toolbar that opts into the capability interface.</summary>
+		class CapableExternalToolbar : IToolbar, IToolbarDrawerToggleVisible
+		{
+			public bool BackButtonVisible { get; set; }
+
+			public bool IsVisible { get; set; }
+
+			public bool DrawerToggleVisible { get; set; }
 
 			public string Title => string.Empty;
 

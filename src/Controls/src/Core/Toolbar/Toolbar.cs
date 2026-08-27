@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Toolbar : Maui.IToolbar, INotifyPropertyChanged
+	public partial class Toolbar : Maui.IToolbar, Maui.IToolbarDrawerToggleVisible, INotifyPropertyChanged
 	{
 		VisualElement _titleView;
 		string _title;

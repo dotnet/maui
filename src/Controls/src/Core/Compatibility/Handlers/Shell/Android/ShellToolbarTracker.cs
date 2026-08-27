@@ -585,8 +585,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			destination.Title = shellToolbar.Title;
 			destination.TitleView = shellToolbar.TitleView;
 			destination.DynamicOverflowEnabled = shellToolbar.DynamicOverflowEnabled;
-			destination.DrawerToggleVisible = shellToolbar.DrawerToggleVisible;
+			// BackButtonVisible must be assigned before DrawerToggleVisible: the two share the toolbar's
+			// navigation slot and the back button wins, so forwarding the drawer value first would map the
+			// slot against a stale back-button value.
 			destination.BackButtonVisible = shellToolbar.BackButtonVisible;
+			destination.DrawerToggleVisible = shellToolbar.DrawerToggleVisible;
 			destination.BackButtonEnabled = shellToolbar.BackButtonEnabled;
 			destination.IsVisible = shellToolbar.IsVisible;
 		}
