@@ -549,6 +549,8 @@ namespace Microsoft.Maui.Platform
 
 				// Resolve directly from the ancestor's current inputs so suppression does not
 				// depend on whether the ancestor has already completed its layout pass.
+				// Keyboard overlap only changes Bottom, so farther ancestors can omit that
+				// calculation after the nearest nonzero Bottom has been classified.
 				var safeArea = mauiView.GetAdjustedSafeAreaInsets(
 					includeKeyboardOverlap: bottom == SafeAreaRegions.None);
 				if (left == SafeAreaRegions.None &&

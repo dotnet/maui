@@ -62,7 +62,8 @@ namespace Microsoft.Maui
 		/// <param name="safeAreaElement">The safe area element whose strategy to read.</param>
 		/// <returns>
 		/// The effective per-edge strategy. An edge can remain <see cref="SafeAreaRegions.Default"/> when native
-		/// platform behavior should be preserved.
+		/// platform behavior should be preserved. For built-in controls, compatibility behavior can make this
+		/// value differ from the control's <see cref="ISafeAreaElement.SafeAreaEdges"/> property.
 		/// </returns>
 		/// <exception cref="System.ArgumentNullException">
 		/// Thrown when <paramref name="safeAreaElement"/> is <see langword="null"/>.

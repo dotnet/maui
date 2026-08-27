@@ -380,6 +380,8 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				// UIKit's adjusted inset is authoritative once the scroll view is scrollable.
+				// Filtering it through MAUI ancestor padding would discard native scroll insets.
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 			}
 
