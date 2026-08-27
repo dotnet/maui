@@ -9077,6 +9077,53 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
             { Read-ReplicationFixScope } | Should -Throw '*EntryTests.cs*'
         }
     }
+
+    Context 'a Windows agent may name a Windows file with the platform separator' {
+        # Build 15109150 (windows, issue 30090) cleared its negative control
+        # 3 of 3, staged a candidate, and then lost its entire fix phase
+        # because the expert named
+        # 'src\Core\src\Handlers\DatePicker\DatePickerHandler.Windows.cs'.
+        # The path was correct; only its separators were not.
+        It 'accepts a real product file named with backslashes' {
+            New-Scope -Files @(@{ path = 'src\Core\src\Handlers\EntryHandler.cs'; reason = 'sets the text' })
+            { Read-ReplicationFixScope } | Should -Not -Throw
+        }
+
+        It 'stores the forward-slash form, because every later consumer speaks git' {
+            # The load-bearing half. Accepting the path while storing the
+            # backslash spelling would only move the loss one gate later, to
+            # 'git checkout HEAD --' and to the publisher's intersection
+            # against 'git diff --name-only', which always emits forward
+            # slashes.
+            New-Scope -Files @(@{ path = 'src\Core\src\Handlers\EntryHandler.cs'; reason = 'sets the text' })
+            $scope = Read-ReplicationFixScope
+            $scope.Files | Should -Be @('src/Core/src/Handlers/EntryHandler.cs')
+            @($scope.Files) -join '' | Should -Not -Match '\\'
+            @($scope.FileReasons)[0].path | Should -Be 'src/Core/src/Handlers/EntryHandler.cs'
+        }
+
+        It 'still refuses <label>, so widening the separator widens nothing else' -TestCases @(
+            # Normalising ahead of the rejection check is strictly safer than
+            # the separator rule alone: the '..' segments are now caught by the
+            # traversal rule, which also covers the mixed form the separator
+            # rule would have matched only by accident.
+            @{ Path = '..\..\evil.cs'; Label = 'a backslash traversal'; Expect = 'escapes the repository' }
+            @{ Path = 'src/..\..\evil.cs'; Label = 'a mixed-separator traversal'; Expect = 'escapes the repository' }
+            @{ Path = 'C:\Windows\a.cs'; Label = 'a Windows drive path'; Expect = 'is absolute' }
+            @{ Path = 'src\Controls\tests\Core.UnitTests\EntryTests.cs'; Label = 'a backslash test path'; Expect = 'is test code' }
+            @{ Path = 'src\Core\src\Handlers\Missing.cs'; Label = 'a backslash path to nothing'; Expect = 'does not exist' }
+        ) {
+            New-Scope -Files @(@{ path = $Path; reason = 'r' })
+            { Read-ReplicationFixScope } | Should -Throw "*$Expect*"
+        }
+
+        It 'refuses one file spelled two ways, because dedup runs on the normalised value' {
+            New-Scope -Files @(
+                @{ path = 'src/Core/src/Handlers/EntryHandler.cs'; reason = 'a' }
+                @{ path = 'src\Core\src\Handlers\EntryHandler.cs'; reason = 'b' })
+            { Read-ReplicationFixScope } | Should -Throw '*more than once*'
+        }
+    }
 }
 
 Describe 'The fix panel stops before the step timeout kills the evidence' {

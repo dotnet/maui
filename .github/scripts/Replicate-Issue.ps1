@@ -5634,7 +5634,20 @@ function Read-ReplicationFixScope {
                     -Expected @('path', 'reason') -Actual $entryProperties) + ').')
         }
 
-        $path = [string]$entry.path
+        # A Windows agent occasionally names a Windows product file with the
+        # platform's own separator. Every consumer downstream speaks forward
+        # slashes - the scope match, 'git checkout HEAD --', and the
+        # publisher's intersection against 'git diff --name-only' output - so
+        # normalise once here, at ingestion, rather than at any later consumer:
+        # accepting the path but storing the backslash form would only move the
+        # loss from 'candidate blocked' to 'changed files outside its scope'.
+        #
+        # Deliberately ahead of the rejection check, so a traversal written
+        # with backslashes is caught by the '..' segment rule rather than only
+        # by the separator rule, which also covers mixed forms like
+        # 'src/..\..\evil.cs'; and ahead of $seen, so two spellings of one file
+        # cannot both enter the scope and defeat the duplicate guard below.
+        $path = ([string]$entry.path) -replace '\\', '/'
         $rejection = Get-ReplicationFixScopePathRejection -Path $path -RepositoryRoot $repoRoot
         if ($rejection) {
             throw "The fix scope names '$path', which $rejection."
