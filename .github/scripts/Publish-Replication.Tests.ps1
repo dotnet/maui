@@ -2690,3 +2690,79 @@ Describe 'The review path can reach the repository holding the pull request' {
         }
     }
 }
+
+Describe 'The pipeline still compiles: block scalars and compile-time expressions' {
+    BeforeAll {
+        # AzDO compiles any block scalar that CONTAINS a compile-time expression as
+        # ONE expression, whose whole literal must stay under 21000 characters. Go
+        # over it and the pipeline stops queueing entirely - every mode, not only
+        # the one that was edited. ci-copilot.yml warns about this in a comment at
+        # the top of its largest block, but nothing enforced it, and adding one
+        # such expression to that block took the pipeline down with
+        # "Exceeded max expression length 21000".
+        function Get-PipelineScriptBlocks {
+            param([Parameter(Mandatory = $true)][string]$Path)
+
+            $lines = Get-Content -LiteralPath $Path
+            $blocks = @()
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+                if ($lines[$i] -notmatch '^(\s*(?:-\s+)?)(pwsh|bash|script|powershell)\s*:\s*\|') { continue }
+                # The key's own column, not the dash's: a sibling key such as
+                # displayName sits deeper than the dash and would otherwise be
+                # read as part of the script, running every block to end of stage.
+                $keyColumn = $Matches[1].Length
+                $body = New-Object System.Text.StringBuilder
+                $j = $i + 1
+                for (; $j -lt $lines.Count; $j++) {
+                    $line = $lines[$j]
+                    if ($line.Trim().Length -gt 0) {
+                        $indent = ($line -replace '^(\s*).*$', '$1').Length
+                        if ($indent -le $keyColumn) { break }
+                    }
+                    [void]$body.AppendLine($line)
+                }
+                $blocks += [pscustomobject]@{
+                    Line          = $i + 1
+                    Length        = $body.Length
+                    HasExpression = ($body.ToString() -match '\$\{\{')
+                }
+                $i = $j - 1
+            }
+            return $blocks
+        }
+
+        $script:PipelinePath = (Resolve-Path (Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml')).Path
+    }
+
+    It 'keeps every block carrying a compile-time expression under the limit' {
+        $blocks = Get-PipelineScriptBlocks -Path $script:PipelinePath
+        # Guard the reader itself: a scanner that finds nothing would pass this
+        # test no matter what the pipeline contained.
+        @($blocks).Count | Should -BeGreaterThan 20
+        @($blocks | Where-Object HasExpression).Count | Should -BeGreaterThan 0
+
+        $violations = @($blocks | Where-Object { $_.HasExpression -and $_.Length -ge 21000 })
+        $detail = ($violations | ForEach-Object { "line $($_.Line) is $($_.Length) chars" }) -join '; '
+        $violations.Count | Should -Be 0 -Because ("a block scalar holding a compile-time expression must stay " +
+            "under 21000 chars or the pipeline will not queue: $detail")
+    }
+
+    It 'detects the violation when one is introduced' {
+        # Validated on a known positive, so a silent result means the pipeline is
+        # clean rather than that the scanner stopped reading.
+        $source = Get-Content -LiteralPath $script:PipelinePath -Raw
+        $needle = '-Repository "$env:PARAM_REVIEW_REPOSITORY" -TrustedGateResult'
+        $source | Should -BeLike "*$needle*" -Because 'the known-positive control edits this exact line'
+
+        $temp = Join-Path ([System.IO.Path]::GetTempPath()) "ci-copilot-violating-$([guid]::NewGuid()).yml"
+        try {
+            $source.Replace($needle, '-Repository "${{ parameters.ReviewRepository }}" -TrustedGateResult') |
+                Set-Content -LiteralPath $temp -Encoding utf8NoBOM
+            $violations = @(Get-PipelineScriptBlocks -Path $temp |
+                Where-Object { $_.HasExpression -and $_.Length -ge 21000 })
+            $violations.Count | Should -BeGreaterThan 0
+        } finally {
+            Remove-Item -LiteralPath $temp -ErrorAction SilentlyContinue
+        }
+    }
+}
