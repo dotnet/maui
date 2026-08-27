@@ -77,7 +77,7 @@ Describe 'post-inline-review findings JSON handling' {
 
         It 'queries durable review bodies before the POST and keeps stale-head rejection' {
             $queryIndex = $script:Content.IndexOf('pulls/$PRNumber/reviews?per_page=100')
-            $postIndex = $script:Content.IndexOf('--method POST "repos/dotnet/maui/pulls/$PRNumber/reviews"')
+            $postIndex = $script:Content.IndexOf('--method POST "repos/$Repository/pulls/$PRNumber/reviews"')
 
             $queryIndex | Should -BeGreaterThan -1
             $postIndex | Should -BeGreaterThan $queryIndex
