@@ -53,7 +53,11 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 /// <summary>
 /// Describes all property changes on a single element node, identified by its stable path within the tree.
 /// </summary>
-readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChanges, XmlType? nodeXmlType = null)
+readonly struct NodeDiff(
+	string nodeId,
+	IReadOnlyList<PropertyDiff> propertyChanges,
+	XmlType? nodeXmlType = null,
+	ElementNode? newNode = null)
 {
 	/// <summary>
 	/// Stable ID for this node. <c>""</c> for root, <c>"0"</c>, <c>"1"</c>, etc. for children
@@ -69,6 +73,12 @@ readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChan
 	/// May be <see langword="null"/> when not available (e.g. in tests).
 	/// </summary>
 	public XmlType? NodeXmlType { get; } = nodeXmlType;
+
+	/// <summary>
+	/// The complete new element, used when a property change must be applied through its owner
+	/// rather than by mutating the registered value object.
+	/// </summary>
+	public ElementNode? NewNode { get; } = newNode;
 }
 
 /// <summary>
@@ -344,7 +354,7 @@ static class XamlNodeDiff
 			return false;
 
 		if (propDiffs.Count > 0)
-			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType));
+			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType, newNode));
 
 		// If x:DataType changed on this node, propagate to all descendant bindings
 		bool childForceRefresh = forceBindingRefresh || xDataTypeChanged;
@@ -505,7 +515,7 @@ static class XamlNodeDiff
 				{
 					var contentName = new XmlName("", "__MAUI_Content__");
 					var contentDiff = new PropertyDiff(contentName, PropertyDiffKind.Set, newVal.Value?.ToString());
-					nodeChanges.Add(new NodeDiff(parentNodeId, new[] { contentDiff }, newNode.XmlType));
+					nodeChanges.Add(new NodeDiff(parentNodeId, new[] { contentDiff }, newNode.XmlType, newNode));
 				}
 			}
 			else

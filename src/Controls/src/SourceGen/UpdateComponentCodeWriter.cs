@@ -111,6 +111,21 @@ static class UpdateComponentCodeWriter
 			}
 
 			var varName = $"__uc_{compIdx++}";
+			if (TryEmitResourceDictionaryItemChange(
+				codeWriter,
+				nodeDiff,
+				varName,
+				compilation,
+				xmlnsCache,
+				typeCache,
+				rootType,
+				sourceProductionContext,
+				projectItem))
+			{
+				codeWriter.WriteLine();
+				continue;
+			}
+
 			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
 			using (PrePost.NewBlock(codeWriter))
 			{
@@ -984,6 +999,57 @@ static class UpdateComponentCodeWriter
 		var keysArrayExpr = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
 
+		return true;
+	}
+
+	static bool TryEmitResourceDictionaryItemChange(
+		IndentedTextWriter codeWriter,
+		NodeDiff nodeDiff,
+		string varName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		if (!InheritsFrom(rootType, "global::Microsoft.Maui.Controls.ResourceDictionary")
+			&& rootType.ToFQDisplayString() != "global::Microsoft.Maui.Controls.ResourceDictionary")
+		{
+			return false;
+		}
+
+		var element = nodeDiff.NewNode;
+		if (element is null
+			|| nodeDiff.PropertyChanges.Count != 1
+			|| nodeDiff.PropertyChanges[0].Kind != PropertyDiffKind.Set
+			|| nodeDiff.PropertyChanges[0].PropertyName.LocalName != "__MAUI_Content__"
+			|| element.CollectionItems.Count != 1
+			|| element.CollectionItems[0] is not ValueNode
+			|| !element.Properties.TryGetValue(XmlName.xKey, out var keyNode)
+			|| keyNode is not ValueNode { Value: string key })
+		{
+			return false;
+		}
+
+		var parent = element.Parent is ListNode list ? list.Parent : element.Parent;
+		if (parent is not SGRootNode)
+			return false;
+
+		var valueExpression = BuildResourceValueExpression(
+			element,
+			compilation,
+			xmlnsCache,
+			typeCache,
+			rootType,
+			sourceProductionContext,
+			projectItem);
+		if (valueExpression is null)
+			return false;
+
+		codeWriter.WriteLine($"var {varName} = {valueExpression};");
+		codeWriter.WriteLine($"this[\"{EscapeString(key)}\"] = {varName};");
+		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeDiff.NodeId}\", {varName});");
 		return true;
 	}
 
