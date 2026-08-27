@@ -632,32 +632,34 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal void UpdateTabBarHidden()
         {
-            if (ShellItemController is null)
+            if (((IElementHandler)this).VirtualView is not ShellItem shellItem)
             {
                 return;
             }
 
+            var shellItemController = (IShellItemController)shellItem;
+
             if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
             {
 #if MACCATALYST
-                if (_tabBarController.TabBar is not null && _tabBarController.TabBar.Hidden != !ShellItemController.ShowTabs)
+                if (_tabBarController.TabBar is not null && _tabBarController.TabBar.Hidden != !shellItemController.ShowTabs)
                 {
                     // TabSidebar mode can leave the tab bar hidden/transparent on iOS/MacCatalyst 18+.
                     _tabBarController.TabBar.Alpha = 1.0f;
-                    _tabBarController.TabBar.Hidden = !ShellItemController.ShowTabs;
+                    _tabBarController.TabBar.Hidden = !shellItemController.ShowTabs;
                 }
 #endif
 
-                if (_tabBarController.TabBarHidden == !ShellItemController.ShowTabs)
+                if (_tabBarController.TabBarHidden == !shellItemController.ShowTabs)
                 {
                     return;
                 }
 
-                _tabBarController.TabBarHidden = !ShellItemController.ShowTabs;
+                _tabBarController.TabBarHidden = !shellItemController.ShowTabs;
             }
             else
             {
-                _tabBarController.TabBar.Hidden = !ShellItemController.ShowTabs;
+                _tabBarController.TabBar.Hidden = !shellItemController.ShowTabs;
             }
         }
 

@@ -437,7 +437,7 @@ internal class FlyoutContainerManager
 
 		if (_clickOffView is not null)
 		{
-			_clickOffView.BackgroundColor = color ?? UIColor.Clear;
+			_clickOffView.BackgroundColor = color ?? (_dimDetailWithScrim ? ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f) : UIColor.Clear);
 		}
 	}
 

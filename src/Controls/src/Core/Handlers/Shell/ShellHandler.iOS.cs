@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #region Flow Direction
 
-        void UpdateFlowDirection(bool readdViews = false)
+        void UpdateFlowDirection()
         {
             if (_detailView is null)
             {
@@ -433,6 +433,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 // the current renderer. If so, attaching our now-stale newRenderer would be wrong — bail out.
                 if (_currentShellItemRenderer != value)
                 {
+                    if (oldRenderer is not null)
+                    {
+                        oldRenderer.ViewController?.WillMoveToParentViewController(null);
+                        oldRenderer.ViewController?.View?.RemoveFromSuperview();
+                        oldRenderer.ViewController?.RemoveFromParentViewController();
+                        oldRenderer.Dispose();
+                    }
+
                     return;
                 }
             }
@@ -523,22 +531,23 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            scrimView.UpdateBackground(backdropBrush);
-
             if (Brush.IsNullOrEmpty(backdropBrush))
             {
-                scrimView.BackgroundColor = UIColor.Clear;
+                scrimView.UpdateBackground(backdropBrush);
                 handler._flyoutManager?.SetScrimColor(null);
             }
             else if (backdropBrush is SolidColorBrush solidColorBrush)
             {
+                scrimView.UpdateBackground(backdropBrush);
                 handler._flyoutManager?.SetScrimColor(solidColorBrush.Color?.ToPlatform());
             }
             else
             {
                 // Gradient/image brushes aren't representable as a single UIColor — clear any stale
-                // cached solid color so a future re-pack doesn't incorrectly reapply an old solid backdrop.
+                // cached solid color first, then apply the brush so the default dim color doesn't
+                // replace the gradient's transparent background.
                 handler._flyoutManager?.SetScrimColor(null);
+                scrimView.UpdateBackground(backdropBrush);
             }
         }
 
@@ -579,7 +588,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public static void MapFlowDirection(ShellHandler handler, Shell shell)
         {
-            handler.UpdateFlowDirection(true);
+            handler.UpdateFlowDirection();
             handler.GetFlyoutContentRenderer()?.UpdateFlowDirection();
         }
 
