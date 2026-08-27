@@ -127,6 +127,9 @@ namespace Microsoft.Maui.DeviceTests
 				var navItem = Assert.Single(GetNavigationViewItems(navView));
 				var infoBadge = navItem.InfoBadge;
 				Assert.NotNull(infoBadge);
+				await AssertEventually(() =>
+					infoBadge.Background is WSolidColorBrush &&
+					infoBadge.Foreground is WSolidColorBrush);
 				var defaultBackgroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Background).Color;
 				var defaultForegroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Foreground).Color;
 				Assert.NotEqual(Colors.Blue.ToWindowsColor(), defaultBackgroundColor);
