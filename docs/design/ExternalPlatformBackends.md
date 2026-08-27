@@ -181,6 +181,42 @@ Binary compatibility was verified by compiling handlers against
 change: derived handlers, explicit-interface-implementation handlers, and all existing `is`/cast
 relationships continue to work with no `TypeLoadException`.
 
+### Handler lifecycle and `PlatformView` nullability
+
+`IElementHandler.PlatformView` is `object?`, but
+`IElementHandler<TVirtualView, TPlatformView>.PlatformView` is non-nullable `TPlatformView`, matching the
+existing non-nullable `ElementHandler<,>.PlatformView` / `ViewHandler<,>.PlatformView` properties it is
+satisfied by. Those properties **throw** rather than return `null` when the handler is not connected:
+
+```csharp
+public new TPlatformView PlatformView
+{
+    get => (TPlatformView?)base.PlatformView
+        ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+    ...
+}
+```
+
+That is pre-existing behavior and is deliberately not changed here, but it has a consequence worth
+knowing when consuming the typed contracts: a handler is only guaranteed to have a `PlatformView`
+between `SetVirtualView` and `DisconnectHandler`. `DisconnectHandler` clears `PlatformView` before
+invoking the disconnect callback, so reading `PlatformView` through a typed contract after disconnect
+throws.
+
+For code that may run outside a connected window — teardown paths, weak-reference caches, diagnostics —
+prefer the nullable base member, which never throws:
+
+```csharp
+// Safe at any point in the lifecycle.
+if (handler.PlatformView is FakeNativeLabel nativeLabel) { /* ... */ }
+
+// Only safe while the handler is connected.
+FakeNativeLabel nativeLabel = typedHandler.PlatformView;
+```
+
+Property and command mappers always run while the handler is connected, so mapper code can use the
+typed member freely — which is what the in-box handlers and the tests here do.
+
 ## Adopting this from an external backend
 
 An external backend derives from the public generic handler base classes and stops trying to implement
@@ -273,25 +309,40 @@ builder.ConfigureMauiHandlers(handlers =>
 handlers for label, content view, layout and window, so everything it compiles is provably public API and
 provably warning-free for an external consumer.
 
-It **multi-targets every target framework Core ships** — the platform-neutral one plus each platform TFM
-— because the failure it guards against is target-framework specific: `CS9333`/`CS8766` on the neutral
-TFM, `CS0738` on the platform TFMs. Compiling the same external-backend sources against all of them is
-the only way to prove the contracts close the gap everywhere.
+It **mirrors `Microsoft.Maui.Core`'s own `TargetFrameworks` exactly** —
+`netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)` — because the failure it guards
+against is target-framework specific: `CS9333`/`CS8766` on the platform-neutral and netstandard TFMs,
+`CS0738` on the platform TFMs. A target framework Core ships but the guard project does not compile
+would be an untested target framework, and the gap would be silent.
 
-The fake native view types are therefore per-platform, because
+Both projects expand the same `$(MauiPlatforms)`, so the platform set — **including whether Tizen is
+enabled** — cannot drift between them. Tizen is currently absent from real builds only because
+`IncludeTizenTargetFrameworks` is off repo-wide, **not** because the guard project lacks sources for it:
+`FakeNativeViews.Tizen.cs` exists and derives from `Tizen.NUI.BaseComponents.View`, so the matrix builds
+the moment the workload is re-enabled. `ExternalBackendTargetFrameworkTests` enforces all of this — it
+compares the two `TargetFrameworks` expressions directly and asserts a fake-native-view source exists for
+every platform.
+
+The fake native view types are per-platform, because
 `ViewHandler<TVirtualView, TPlatformView>` constrains `TPlatformView` differently per TFM:
 
 | Target framework | `ViewHandler<,>` constraint on `TPlatformView` | Fake native view derives from |
 | --- | --- | --- |
-| `net11.0` (neutral) | `class` | *(nothing)* |
+| `netstandard2.0`, `netstandard2.1`, `net11.0` | `class` | *(nothing)* |
 | `net11.0-android` | `Android.Views.View` | `Android.Views.View` |
 | `net11.0-ios`, `net11.0-maccatalyst` | `UIKit.UIView` | `UIKit.UIView` |
 | `net11.0-windows` | `Microsoft.UI.Xaml.FrameworkElement` | `Microsoft.UI.Xaml.Controls.Panel` |
+| `net11.0-tizen` *(gated off)* | `Tizen.NUI.BaseComponents.View` | `Tizen.NUI.BaseComponents.View` |
 
 This mirrors reality: a real external backend's views *do* derive from the platform's base view type.
 What makes it external is that its **concrete** types are its own, and so are never the types the aliased
-interfaces are pinned to (`MauiLabel`, `AppCompatTextView`, `TextBlock`) — which is exactly what produces
-`CS0738`. `ElementHandler<,>` constrains `TPlatformView` only to `class` on every TFM, so the fake native
+interfaces are pinned to (`MauiLabel`, `AppCompatTextView`, `TextBlock`,
+`Tizen.UIExtensions.NUI.Label`) — which is exactly what produces `CS0738`. Note the Tizen fake derives
+from the platform SDK's own `Tizen.NUI.BaseComponents.View` rather than from
+`Tizen.UIExtensions.NUI.ViewGroup`, which is what .NET MAUI's in-box Tizen views use: an external backend
+depends on the platform SDK, not on .NET MAUI's platform helper packages.
+
+`ElementHandler<,>` constrains `TPlatformView` only to `class` on every TFM, so the fake native
 *window* type is a single definition shared across all of them.
 
 Fake members are prefixed `Fake` (`FakeText`, `FakeOpacity`, `FakeChildren`) so the same handler sources
