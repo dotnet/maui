@@ -2221,6 +2221,40 @@ Describe 'The pull request body reports the independent review of the winning fi
             Should -Match 'did not block publication'
     }
 
+    It 'declares how far the arm has been measured, so a reader can weigh the findings' {
+        # A disclosure a reader cannot weigh is barely a disclosure. The arm was
+        # validated blind over 8 diffs: 6 of 8 pre-registered keys recovered, and
+        # 1 blocking finding raised on 4 already-merged maintainer fixes. Stating
+        # n is part of the claim - at this size the trial can refute a high error
+        # rate but cannot establish a low one, and a rate quoted without its
+        # sample size reads as far stronger evidence than it is.
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate
+
+        $block | Should -Match '6 of the 8'
+        $block | Should -Match '1 of 4'
+        $block | Should -Match 'n=8'
+        $block | Should -Match 'cannot establish a low one'
+    }
+
+    It 'never claims a trust rate for a review that produced nothing to weigh' {
+        # The orphan case: a caveat qualifying findings that do not exist claims
+        # accuracy for a measurement nobody made. Same defect shape as a
+        # certification caveat rendered beside a body that reports no level.
+        $noFindings = [pscustomobject]@{
+            fixIndependentReview = [pscustomobject]@{
+                model = 'gpt-5.6-sol'; summary = 'Nothing blocking found.'; findings = @() }
+        }
+
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $noFindings
+        $block | Should -Match 'Nothing blocking found'
+        $block | Should -Not -Match '6 of the 8'
+        $block | Should -Not -Match 'n=8'
+
+        $absent = Get-ReplicationIndependentReviewBlock -Candidate ([pscustomobject]@{ fixFiles = @('a.cs') })
+        $absent | Should -Match 'Not measured'
+        $absent | Should -Not -Match 'n=8'
+    }
+
     It 'caps the findings it renders so one verbose review cannot flood the body' {
         $many = 1..12 | ForEach-Object { [pscustomobject]@{ severity = 'minor'; detail = "finding number $_" } }
         $candidate = [pscustomobject]@{
