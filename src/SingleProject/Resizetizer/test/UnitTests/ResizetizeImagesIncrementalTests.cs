@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var generated = Path.Combine(project.PhysicalDirectory, GeneratedImage);
 			var before = File.ReadAllBytes(generated);
 
-			var source = Path.Combine(project.PhysicalDirectory, "images", ImageName);
+			var source = Path.Combine(project.ImagesDirectory, ImageName);
 			File.Copy(Path.Combine(AppContext.BaseDirectory, "images", "camera_color.png"), source, overwrite: true);
 			// File.Copy carries the source timestamp over, but an edit would bump it.
 			File.SetLastWriteTimeUtc(source, DateTime.UtcNow);
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.WriteAllText(orphan, "left over from an image that is no longer in the project");
 
 			// Touch the source image so the target is not skipped as up to date.
-			File.SetLastWriteTimeUtc(Path.Combine(project.PhysicalDirectory, "images", ImageName), DateTime.UtcNow);
+			File.SetLastWriteTimeUtc(Path.Combine(project.ImagesDirectory, ImageName), DateTime.UtcNow);
 
 			Build(project);
 
@@ -145,20 +145,93 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertGeneratedImageExists(project);
 		}
 
+		/// <summary>
+		/// The project directory itself is ordinary, but the intermediate output directory that receives
+		/// the generated images is reached through a link. This is what a redirected <c>obj</c> looks like.
+		/// </summary>
+		[Fact]
+		public void ImagesSurviveWhenOnlyTheIntermediateOutputIsLinked()
+		{
+			var project = CreateProject(throughLink: false, linkedIntermediateOutput: true);
+			if (project is null)
+				return;
+
+			Build(project);
+			AssertGeneratedImageExists(project);
+
+			Build(project);
+			AssertGeneratedImageExists(project);
+
+			// The images really do land on the far side of the link.
+			var real = Path.Combine(project.PhysicalDirectory, "obj-real", "resizetizer", "r", "drawable", ImageName);
+			Assert.True(File.Exists(real), $"Expected the generated image behind the link: {real}");
+		}
+
+		/// <summary>
+		/// The source images are reached through a link while the project and its output are ordinary.
+		/// </summary>
+		[Fact]
+		public void ImagesSurviveWhenOnlyTheInputImagesAreLinked()
+		{
+			var project = CreateProject(throughLink: false, linkedImages: true);
+			if (project is null)
+				return;
+
+			Build(project);
+			AssertGeneratedImageExists(project);
+
+			Build(project);
+			AssertGeneratedImageExists(project);
+		}
+
 		void AssertGeneratedImageExists(TestProject project)
 		{
 			var image = Path.Combine(project.PhysicalDirectory, GeneratedImage);
 			Assert.True(File.Exists(image), $"Expected the generated image to survive the build: {image}");
 		}
 
-		TestProject CreateProject(bool throughLink)
+		TestProject CreateProject(bool throughLink, bool linkedIntermediateOutput = false, bool linkedImages = false)
 		{
 			var physical = Path.Combine(DestinationDirectory, "project");
-			Directory.CreateDirectory(Path.Combine(physical, "images"));
+			Directory.CreateDirectory(physical);
+
+			var imagesDirectory = Path.Combine(physical, "images");
+
+			if (linkedImages)
+			{
+				// The project refers to images\, but that is a link to where the files really live.
+				var realImages = Path.Combine(physical, "images-real");
+				Directory.CreateDirectory(realImages);
+
+				if (!SymbolicLink.TryCreateDirectoryLink(imagesDirectory, realImages, out var imagesError))
+				{
+					Output.WriteLine($"Skipping: symbolic links are not available on this machine: {imagesError}");
+					return null;
+				}
+
+				imagesDirectory = realImages;
+			}
+			else
+			{
+				Directory.CreateDirectory(imagesDirectory);
+			}
 
 			File.Copy(
 				Path.Combine(AppContext.BaseDirectory, "images", ImageName),
-				Path.Combine(physical, "images", ImageName));
+				Path.Combine(imagesDirectory, ImageName));
+
+			if (linkedIntermediateOutput)
+			{
+				// The project writes to obj\, but that is a link to where the outputs really land.
+				var realIntermediate = Path.Combine(physical, "obj-real");
+				Directory.CreateDirectory(realIntermediate);
+
+				if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(physical, "obj"), realIntermediate, out var objError))
+				{
+					Output.WriteLine($"Skipping: symbolic links are not available on this machine: {objError}");
+					return null;
+				}
+			}
 
 			var targets = Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Resizetizer.After.targets");
 			Assert.True(File.Exists(targets), $"Expected the target file to be copied to the test output: {targets}");
@@ -190,7 +263,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				}
 			}
 
-			return new TestProject(physical, entry);
+			return new TestProject(physical, entry, imagesDirectory);
 		}
 
 		string Build(TestProject project, string target = "ResizetizeImages")
@@ -246,6 +319,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				: "dotnet";
 		}
 
-		sealed record TestProject(string PhysicalDirectory, string EntryDirectory);
+		sealed record TestProject(string PhysicalDirectory, string EntryDirectory, string ImagesDirectory);
 	}
 }

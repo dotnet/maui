@@ -122,6 +122,118 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.NotEqual(one, two, PathCanonicalizer.Comparer);
 		}
 
+		[Fact]
+		public void CanonicalizingIsIdempotent()
+		{
+			var (physical, link) = CreateLinkedDirectory();
+			if (link is null)
+				return;
+
+			File.WriteAllText(Path.Combine(physical, "camera.png"), "image");
+
+			var canonicalizer = new PathCanonicalizer();
+			var once = canonicalizer.Canonicalize(Path.Combine(link, "camera.png"));
+
+			Assert.Equal(once, canonicalizer.Canonicalize(once), PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void ChainedLinksResolveToTheFinalTarget()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var first = Path.Combine(DestinationDirectory, "first");
+			var second = Path.Combine(DestinationDirectory, "second");
+			Directory.CreateDirectory(physical);
+
+			if (!SymbolicLink.TryCreateDirectoryLink(first, physical, out var error) ||
+				!SymbolicLink.TryCreateDirectoryLink(second, first, out error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+
+			Assert.Equal(
+				canonicalizer.Canonicalize(Path.Combine(physical, "camera.png")),
+				canonicalizer.Canonicalize(Path.Combine(second, "camera.png")),
+				PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void ComparerFollowsThePlatformFileSystem()
+		{
+			// Only Linux path comparison is case sensitive. Everywhere else two spellings that differ by
+			// case are treated as the same file, which can only ever keep a stale file rather than delete
+			// a live one.
+			Assert.Equal(OperatingSystem.IsLinux() ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase, PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void RootsAreCanonicalizedWithoutRecursingForever()
+		{
+			var canonicalizer = new PathCanonicalizer();
+			var root = Path.GetPathRoot(Path.GetFullPath(DestinationDirectory));
+
+			Assert.False(string.IsNullOrEmpty(root));
+			Assert.Equal(root, canonicalizer.Canonicalize(root), PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void WindowsPathsKeepTheirDriveAndAcceptBothSeparators()
+		{
+			if (!OperatingSystem.IsWindows())
+				return;
+
+			var canonicalizer = new PathCanonicalizer();
+			var path = Path.Combine(DestinationDirectory, "drawable", "camera.png");
+
+			Assert.Equal(
+				canonicalizer.Canonicalize(path),
+				canonicalizer.Canonicalize(path.Replace('\\', '/')),
+				PathCanonicalizer.Comparer);
+
+			Assert.Equal(Path.GetPathRoot(path), Path.GetPathRoot(canonicalizer.Canonicalize(path)), StringComparer.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void WindowsJunctionsResolveLikeDirectoryLinks()
+		{
+			if (!OperatingSystem.IsWindows())
+				return;
+
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var junction = Path.Combine(DestinationDirectory, "junction");
+			Directory.CreateDirectory(physical);
+
+			if (!Junction.TryCreate(junction, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: junctions are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+
+			Assert.Equal(
+				canonicalizer.Canonicalize(Path.Combine(physical, "camera.png")),
+				canonicalizer.Canonicalize(Path.Combine(junction, "camera.png")),
+				PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void BackslashesAreOrdinaryCharactersOnUnix()
+		{
+			if (OperatingSystem.IsWindows())
+				return;
+
+			var canonicalizer = new PathCanonicalizer();
+
+			var withBackslash = canonicalizer.Canonicalize(Path.Combine(DestinationDirectory, "drawable\\camera.png"));
+			var withSeparator = canonicalizer.Canonicalize(Path.Combine(DestinationDirectory, "drawable", "camera.png"));
+
+			Assert.NotEqual(withBackslash, withSeparator, PathCanonicalizer.Comparer);
+		}
+
 		(string Physical, string Link) CreateLinkedDirectory()
 		{
 			var physical = Path.Combine(DestinationDirectory, "physical");

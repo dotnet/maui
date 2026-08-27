@@ -9,11 +9,17 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	/// </summary>
 	static class SymbolicLink
 	{
-		public static bool TryCreateDirectoryLink(string link, string target, out string error)
+		public static bool TryCreateDirectoryLink(string link, string target, out string error) =>
+			TryCreate(() => Directory.CreateSymbolicLink(link, target), out error);
+
+		public static bool TryCreateFileLink(string link, string target, out string error) =>
+			TryCreate(() => File.CreateSymbolicLink(link, target), out error);
+
+		static bool TryCreate(Action create, out string error)
 		{
 			try
 			{
-				Directory.CreateSymbolicLink(link, target);
+				create();
 				error = null;
 				return true;
 			}
