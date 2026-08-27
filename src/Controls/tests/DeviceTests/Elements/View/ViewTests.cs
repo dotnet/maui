@@ -74,13 +74,21 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
 
+			public int SafeAreaEdgesReadCount { get; private set; }
+
 			public SafeAreaEdges SafeAreaEdges
 			{
-				get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+				get
+				{
+					SafeAreaEdgesReadCount++;
+					return (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+				}
 				set => SetValue(SafeAreaEdgesProperty, value);
 			}
 
 			public Rect LastArrangeBounds { get; private set; }
+
+			public void ResetSafeAreaEdgesReadCount() => SafeAreaEdgesReadCount = 0;
 
 			bool ISafeAreaElement.HasExplicitSafeAreaEdges => SafeAreaElement.IsSafeAreaEdgesSet(this);
 

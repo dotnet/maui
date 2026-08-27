@@ -25,6 +25,8 @@ namespace Microsoft.Maui
 		/// For custom implementations, an edge set to <see cref="SafeAreaRegions.Default"/> is resolved from
 		/// <see cref="GetDefaultSafeAreaEdges"/>. Built-in controls can preserve an explicit
 		/// <see cref="SafeAreaRegions.Default"/> to retain native platform behavior.
+		/// When <see cref="HasExplicitSafeAreaEdges"/> is <see langword="false"/>, a built-in control can return
+		/// a compatibility-resolved value here instead of the value exposed by its concrete property.
 		/// Use <see cref="SafeAreaElementExtensions.GetEffectiveSafeAreaEdges"/> to read the same per-edge strategy
 		/// consumed by MAUI platform handlers.
 		/// </remarks>

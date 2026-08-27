@@ -769,6 +769,87 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task HiddenKeyboardSkipsDuplicateSoftInputStrategyResolution()
+		{
+			var view = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.None,
+					SafeAreaRegions.SoftInput)
+			};
+			var handler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(view);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var platformView = handler.PlatformView;
+
+				await platformView.AttachAndRun(() =>
+				{
+					var window = platformView.Window!;
+					platformView.SafeAreaInsetsValue = UIEdgeInsets.Zero;
+					platformView.Frame = new CGRect(0, window.Bounds.Height - 100, 100, 100);
+					platformView.SafeAreaInsetsDidChange();
+					platformView.LayoutSubviews();
+
+					view.ResetSafeAreaEdgesReadCount();
+					platformView.LayoutSubviews();
+
+					Assert.Equal(1, view.SafeAreaEdgesReadCount);
+					Assert.Equal(new Rect(0, 0, 100, 100), view.LastArrangeBounds);
+
+					var viewFrameInWindow = platformView.ConvertRectToView(platformView.Bounds, window);
+					var keyboardFrameInWindow = new CGRect(
+						0,
+						viewFrameInWindow.Bottom - 50,
+						window.Bounds.Width,
+						50);
+					var keyboardFrame = window.ConvertRectToCoordinateSpace(
+						keyboardFrameInWindow,
+						window.Screen.CoordinateSpace);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						platformView.LayoutSubviews();
+						Assert.Equal(new Rect(0, 0, 100, 50), view.LastArrangeBounds);
+
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+						platformView.LayoutSubviews();
+						Assert.Equal(new Rect(0, 0, 100, 100), view.LastArrangeBounds);
+
+						view.ResetSafeAreaEdgesReadCount();
+						platformView.LayoutSubviews();
+						Assert.Equal(1, view.SafeAreaEdgesReadCount);
+
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillShowNotification,
+							null,
+							userInfo);
+						platformView.LayoutSubviews();
+						Assert.Equal(new Rect(0, 0, 100, 50), view.LastArrangeBounds);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+				});
+			});
+		}
+
+		[Fact]
 		public async Task UnchangedKeyboardGeometryKeepsAncestorSafeAreaCache()
 		{
 			var parent = new CustomSafeAreaView
@@ -1276,6 +1357,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SystemAdjustedScrollViewInsetsAreNotSuppressedByParent()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<BoxView, BoxViewHandler>()));
+
 			var parent = new CustomSafeAreaView
 			{
 				SafeAreaEdges = new SafeAreaEdges(
@@ -1286,7 +1370,12 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			var scrollView = new RecordingSafeAreaScrollView
 			{
-				SafeAreaEdges = SafeAreaEdges.Container
+				SafeAreaEdges = SafeAreaEdges.Container,
+				Content = new BoxView
+				{
+					WidthRequest = 30,
+					HeightRequest = 50
+				}
 			};
 			var parentHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(parent);
 			var scrollViewHandler = await CreateHandlerAsync<TestSafeAreaScrollViewHandler>(scrollView);
@@ -1307,6 +1396,14 @@ namespace Microsoft.Maui.DeviceTests
 				scrollViewPlatformView.LayoutSubviews();
 
 				Assert.Equal(new Rect(0, 0, 40, 60), scrollView.LastArrangeBounds);
+				Assert.Equal(new CGSize(90, 90), scrollViewPlatformView.SizeThatFits(new CGSize(100, 100)));
+
+				scrollViewPlatformView.AdjustedContentInsetValue = new UIEdgeInsets(0, 20, 30, 40);
+				scrollViewPlatformView.AdjustedContentInsetDidChange();
+				scrollViewPlatformView.LayoutSubviews();
+
+				Assert.Equal(new Rect(0, 0, 40, 70), scrollView.LastArrangeBounds);
+				Assert.Equal(new CGSize(90, 80), scrollViewPlatformView.SizeThatFits(new CGSize(100, 100)));
 			});
 		}
 

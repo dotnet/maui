@@ -406,6 +406,13 @@ namespace Microsoft.Maui.Platform
 
 		bool HasSoftInputBottomOverlapChanged()
 		{
+			if (!_isKeyboardShowing)
+			{
+				var hadOverlap = _lastSoftInputBottomOverlap.HasValue;
+				_lastSoftInputBottomOverlap = null;
+				return hadOverlap;
+			}
+
 			double? overlap = null;
 			if (SafeAreaViewStrategy.TryGetSafeAreaEdges(View, out var safeAreaEdges, includeLegacy: false) &&
 				TryGetSoftInputBottomOverlap(safeAreaEdges, out var currentOverlap))
