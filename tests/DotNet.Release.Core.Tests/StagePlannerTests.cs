@@ -235,7 +235,9 @@ public class StagePlannerTests
     [Fact]
     public void Wrongly_normalized_version_fails_closed()
     {
-        // What the old substring hack would have produced for a four-part version.
+        // A reader that returned the raw file-name version instead of the normalized form.
+        // This is the check that converts the substring approach's silent wrong answer into
+        // a loud failure at stage time.
         var plan = Plan([new DropPackage(
             "SkiaSharp.3.119.0.0.nupkg", "SkiaSharp", "3.119.0.0", "3.119.0.0", TestData.Hash("x"))]);
 

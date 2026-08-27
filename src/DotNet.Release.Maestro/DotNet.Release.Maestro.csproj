@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>DotNet.Release.Maestro</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNet.Release.Core\DotNet.Release.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Read-only BAR access. This adapter uses exactly two members of IBuilds -
+      GetBuildAsync and ListBuildsAsync - and never the mutating CreateAsync/UpdateAsync.
+      See docs/design.md sections 2 and 4.
+    -->
+    <PackageReference Include="Microsoft.DotNet.ProductConstructionService.Client" Version="$(MicrosoftDotNetProductConstructionServiceClientPackageVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -7,16 +7,22 @@ namespace DotNet.Release.Core;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This replaces the current pipeline's normalized-version hack, which takes a substring of
-/// the file name after the package ID:
+/// This replaces the current pipeline's normalized-version derivation, which takes a
+/// substring of the file name after the package ID:
 /// </para>
 /// <code>normalizedVersion = package.BaseName.Substring(("$id.").Length)</code>
 /// <para>
-/// That is wrong whenever the file name's casing differs from the nuspec ID, and it
-/// propagates whatever version string the file name happens to carry rather than the
-/// normalized form NuGet.org indexes under. Since the normalized version is what the
-/// availability query is built from, a wrong value silently reports a published package as
-/// missing.
+/// That is <b>not</b> broken today. NuGet feeds serve packages under normalized file names,
+/// so the file name already is the normalized version and the substring returns the right
+/// answer. It is correct by coincidence rather than by construction: it depends on a
+/// property of the feeds upstream that nothing in the release checks.
+/// </para>
+/// <para>
+/// The reason it is worth replacing is the failure mode when that coincidence does not
+/// hold. The NuGet.org availability query is built from the normalized version, so a wrong
+/// value reports a published package as missing and verification can never succeed — with
+/// nothing in the log pointing at the cause. <see cref="IsNormalizedForm"/> exists so
+/// staging can turn that silent wrong answer into a loud one.
 /// </para>
 /// <para>
 /// <c>NuGet.Versioning</c> is a pure parser with no I/O, so this stays in Core.

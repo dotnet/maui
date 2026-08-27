@@ -20,7 +20,7 @@ The release logic currently carried by `dotnet/maui`:
 | `eng/scripts/nuget_release_packages.ps1`, copied into the artifact and hash-checked in twelve places | One hashed plan file that transitively pins the tool |
 | `expected-packages.json` + `release-audit.json` + four `##vso` variables | One `release-plan.json` |
 | Repository policy as PowerShell literals inside YAML | `config/repositories.json`, reviewable and tested |
-| Version normalization by substring of the file name | `NuGetVersion.ToNormalizedString()` |
+| Version normalization by substring of the file name | `NuGetVersion.ToNormalizedString()`, plus a check that rejects a disagreeing reader |
 | Hand-rolled zip + XML + XPath nuspec reading | `PackageArchiveReader` |
 | Hand-rolled HTTP HEAD + retry loop | `FindPackageByIdResource` |
 
@@ -70,10 +70,11 @@ dotnet test DotNet.Release.slnx
 
 ```
 src/DotNet.Release.Core/        pure policy, validation, planning — no I/O
-src/DotNet.Release.Maestro/     typed BAR client adapter                (not yet implemented)
+src/DotNet.Release.Maestro/     read-only BAR client adapter (typed client)
 src/DotNet.Release.NuGet/       read-only feed + nupkg adapters         (not yet implemented)
 src/DotNet.Release.Cli/         verbs and argument parsing              (not yet implemented)
 tests/DotNet.Release.Core.Tests/
+tests/DotNet.Release.Maestro.Tests/
 config/repositories.json        declarative release policy
 templates/                      thin ADO template consumers extend      (not yet implemented)
 docs/design.md

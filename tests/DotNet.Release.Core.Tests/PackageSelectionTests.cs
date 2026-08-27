@@ -116,14 +116,22 @@ public class PackageVersionsTests
     }
 
     /// <summary>
-    /// The behaviour the old substring hack could not produce. It would have yielded
-    /// "3.119.0.0" from the file name, and the availability query for that version returns
-    /// 404, so a published package would be reported as missing forever.
+    /// Normalization drops trailing zero components, which is the case the substring
+    /// approach cannot reproduce from a file name that is not already normalized.
     /// </summary>
+    /// <remarks>
+    /// Not a failure that fires today: feeds serve normalized file names, so the substring
+    /// happens to agree. Verified against NuGet.org — four-part versions such as
+    /// HarfBuzzSharp 8.3.1.5 are indexed as-is, and none end in a fourth component of .0.
+    /// </remarks>
     [Fact]
-    public void Four_part_versions_normalize_to_three_parts()
+    public void Trailing_zero_components_are_dropped()
     {
         Assert.Equal("3.119.0", PackageVersions.Normalize("3.119.0.0").Value);
+
+        // A four-part version with a non-zero fourth component is preserved, which is why
+        // real packages like HarfBuzzSharp 8.3.1.5 are indexed under that exact string.
+        Assert.Equal("8.3.1.5", PackageVersions.Normalize("8.3.1.5").Value);
     }
 
     [Theory]

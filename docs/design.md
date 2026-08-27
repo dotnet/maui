@@ -50,7 +50,7 @@ NuGet.org until every expected package is indexed, with a 30-minute deadline.
 |---|---|
 | One script, ~20 distinct failure modes, one generic error message | Failures are undiagnosable from the log |
 | `darc get-build` failure text goes to **stdout**, is captured into `$buildJson`, and only `$LASTEXITCODE` is checked | The real reason ("Could not any builds matching the given criteria") is discarded. This has already cost a production investigation |
-| Normalized version derived by `BaseName.Substring(("$id.").Length)` | A string hack standing in for NuGet version normalization |
+| Normalized version derived by `BaseName.Substring(("$id.").Length)` | Correct today only by coincidence — see section 12 |
 | Hand-rolled zip + XML + XPath nuspec reading | ~60 lines reimplementing `PackageArchiveReader` |
 | Hand-rolled HTTP HEAD + retry against the flat-container API | Reimplements `FindPackageByIdResource` |
 | Contract spread across `expected-packages.json`, `release-audit.json`, four `##vso` output variables, and twelve repeated hash-check blocks | No single reviewable artifact; integrity checks are copy-pasted |
@@ -268,8 +268,10 @@ Three things this buys:
    still enforces it as a stage dependency (§7), but the plan records the intent
    independently and it is unit-testable.
 2. **Per-package `sha256` closes a real gap.** Today only the *helper script* is hashed; the
-   packages themselves are not. Now `filter` can prove that the file it is about to hand to
-   1ES is byte-identical to the one `stage` validated.
+   packages themselves are not. **Threat model:** the publish job runs `checkout: none` and
+   executes a script out of the downloaded artifact, so anything crossing that job boundary
+   unpinned is a supply-chain gap. Now `filter` can prove that the file it is about to hand
+   to 1ES is byte-identical to the one `stage` validated.
 3. **One hash replaces twelve hash-check blocks.** The tool's own hash is recorded *inside*
    the plan, so hashing the plan transitively pins the tool. The publish job needs exactly
    one pinned value, `ReleasePlanHash`, and one verification block:
@@ -297,6 +299,13 @@ The invariant is exact and testable:
 `filter` fails closed if a `Pending` package's file is missing or its hash does not match,
 which is precisely the "publish job fails closed if the plan lists a file the directory does
 not contain" requirement.
+
+**Why the sidecar earns its keep**, stated plainly for a reviewer who would otherwise see
+extra machinery: `1ES.PublishNuget@1` pushes whatever its `packagesToPush` glob matches. It
+does not consult the plan. So today, a file that appears in the staging directory without
+being in the release set is published without ever having been validated, and nothing
+notices. The invariant above is what closes that hole — `ValidateFiltered` rejects both a
+missing `Pending` file *and* any file the plan does not list.
 
 ---
 
@@ -469,8 +478,27 @@ Subtleties in the current script that are easy to "fix" by accident and are kept
   set being filtered is an error.
 
 - **Normalized version** now comes from `NuGetVersion.ToNormalizedString()` instead of
-  `fileName.Substring(id.Length + 1)`. The old hack breaks on any case difference between
-  the file name and the nuspec ID and on non-normalized version strings in the file name.
+  `fileName.Substring(id.Length + 1)`.
+
+  This is **latent fragility, not a bug that fires today.** The substring reads the version
+  out of the *file name*, and NuGet feeds serve packages under normalized file names, so in
+  practice the file name already *is* the normalized version and the substring returns the
+  right answer. Verified against NuGet.org: four-part versions are indexed as-is
+  (`HarfBuzzSharp` `8.3.1.5`, `14.2.1.1`, `14.2.1.2`), and no version ends in a fourth
+  component of `.0`, consistent with normalization dropping only trailing zeros. Producing a
+  wrong answer requires a package whose file name is not already normalized — real, but it
+  needs an unusual producer.
+
+  The objection is that this is correctness *by coincidence* rather than by construction: it
+  holds because of a property of the feeds upstream, which nothing in the release checks or
+  is even aware of. And when it does break, it breaks silently — the availability query is
+  built from the normalized version, so a wrong value reports a published package as missing
+  and `verify` never succeeds, with nothing in the log pointing at the cause.
+
+  So the substring is replaced, and — this is the part that actually matters — `StagePlanner`
+  independently rejects any reader whose normalized version disagrees with
+  `NuGetVersion.ToNormalizedString()`. That turns a silent wrong answer into a loud one at
+  stage time, which is the real improvement.
 - **Wildcard semantics** are `*` and `?` only, via `FileSystemName.MatchesSimpleExpression`.
   PowerShell `-like` additionally supports `[a-z]` character classes. No current filter uses
   them, and a character class in a *release* package filter is a footgun, so the narrowing
@@ -478,7 +506,46 @@ Subtleties in the current script that are easy to "fix" by accident and are kept
 
 ---
 
-## 13. Arcade onboarding
+## 13. Migration from the current pipeline
+
+Cutover is not drop-in. These are the observable differences a consumer must handle.
+
+### Artifact names changed
+
+The tool is shared, so artifact names are repository-neutral rather than MAUI-specific.
+**Any consumer pipeline or downstream tooling that references the old names must be updated
+on cutover.**
+
+| Today | Here |
+|---|---|
+| `MauiPacksForNuGet` | `ReleasePacks` |
+| `MauiManifestsForNuGet` | `ReleaseManifests` |
+| `NuGetPackagesForRelease` | `ReleasePackages` |
+| `NuGetReleaseAudit` | folded into `release-plan.json` |
+
+### Files changed
+
+| Today | Here |
+|---|---|
+| `expected-packages.json` | `release-plan.json` (`sets[].packages`) |
+| `release-audit.json` | `release-plan.json` (`source` + `sets`) |
+| `nuget_release_packages.ps1` copied into the artifact | the tool, pinned by `tool.sha256` inside the plan |
+
+### Pipeline variables changed
+
+Four output variables (`BarId`, `WorkloadSetsChannel`, `WorkloadSetsFeed`,
+`PackageStatusScriptHash`) become one output variable (`BarId`) plus one pinned value
+(`ReleasePlanHash`). `WorkloadSetsChannel` and `WorkloadSetsFeed` move into the plan file, so
+the promote step reads them from `workloadSet` rather than from `stageDependencies`.
+
+### Parameters changed
+
+`nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters` collapse into a
+single `--skip` on `release filter`, scoped to the set being published (§12).
+
+---
+
+## 14. Arcade onboarding
 
 The repository is a standard Arcade repo, not a bespoke build:
 
@@ -498,36 +565,59 @@ Arcade defaults `xunit.runner.visualstudio` to 3.1.3. It is overridden to 3.1.5 
 `DefaultVersions.props` is conditioned on being unset — rather than pinning the package
 somewhere Arcade does not know about.
 
-### What is not finished
+### Dependency manifest
 
-`Microsoft.DotNet.ProductConstructionService.Client` is **not** yet in
-`eng/Version.Details.xml`. A `<Dependency>` entry requires a real `<Version>` and `<Sha>`,
-and inventing them would produce a manifest that looks authoritative and is not. It must be
-added with:
-
-```
-darc add-dependency --name Microsoft.DotNet.ProductConstructionService.Client \
-                    --type product --repo https://github.com/dotnet/arcade-services
-```
-
-which also resolves open question 4 in section 14.
+`Microsoft.DotNet.ProductConstructionService.Client` is tracked in
+`eng/Version.Details.xml` at `1.1.0-beta.26426.2`, with `<Uri>` and `<Sha>` read from the
+package's own nuspec `<repository>` metadata (`dotnet/arcade-services`,
+`596c9990a8259057dc5e864c20af37f50dc87f84`) rather than assumed. Updates should flow through
+darc from there.
 
 ---
 
-## 14. Open questions
+## 15. The verified BAR client surface
+
+`IBuildRegistry` was originally shaped from what the pipeline needs. It has since been
+reconciled against the real package by reflection, because an interface designed around
+wishful thinking is the one thing that could have invalidated this design.
+
+| Question | Verified answer |
+|---|---|
+| Fetch by BAR ID | `IBuilds.GetBuildAsync(int id, bool? includeAssetLocation, CancellationToken)` → `Task<Build>`. A *single* build, not a list; a missing build is `RestApiException` with `Response.Status == 404`. |
+| Fetch by repository + commit | `IBuilds.ListBuildsAsync(… string commit, … string repository, …)` → `Azure.AsyncPageable<Build>`. A filtered *list*, so zero-or-many is real and Core's "exactly one" rule is load-bearing. |
+| Channels | `Build.Channels` is `List<Channel>`; `Channel` exposes both `Id` (`int`) and `Name` (`string`). Both are available, so the existing name-**and**-id check is preserved exactly. |
+| Is `gitHubRepository` nullable? | **The assembly is not nullable-annotated.** `Build.GitHubRepository`, `Build.AzureDevOpsRepository`, `Build.Commit` and `Channel.Name` are declared plain `string` with nullability state `Unknown`. |
+
+The last row is the important one. The typed client gives **no** compile-time protection
+here: `GitHubRepository` is null in production — SkiaSharp BAR build 328857 — and nothing in
+the type system says so. `BarBuildMapper` therefore normalizes every string crossing the
+boundary explicitly, and the mapper is a pure function kept separate from the registry so
+that behaviour is tested without any paging plumbing.
+
+Two consequences for the adapter:
+
+- **404 is an answer, not a failure.** It maps to an empty result so Core produces
+  `BAR_BUILD_NOT_FOUND`. Every other status stays an exception — flattening a 500 into "no
+  such build" would send an operator hunting the wrong problem during an outage.
+- **`IBuilds` also exposes `CreateAsync` and `UpdateAsync`,** which write to BAR. The adapter
+  uses only `GetBuildAsync` and `ListBuildsAsync`; the test fake throws on the mutating
+  members, so if that ever changes a test fails rather than the guarantee quietly lapsing.
+
+---
+
+## 16. Open questions
 
 1. **Asset download without `gather-drop`.** Resolved for now — `gather-drop` stays (§4).
-   `Microsoft.DotNet.ProductConstructionService.Client` does return asset locations, so a
-   future native download is conceivable, but it would have to reimplement feed selection
-   and auth. Not worth it.
+   The client does return asset locations, so a future native download is conceivable, but
+   it would have to reimplement feed selection and auth. Not worth it.
 2. **Getting the tool onto the `checkout: none` publish agent.** Recommended: publish the
    CLI self-contained into the artifact and pin it via `tool.sha256` inside the plan (§6).
    The alternative — restoring a `dotnet tool` on the production agent — adds network
    dependency and feed auth to the most sensitive job. Needs confirmation against 1ES image
    constraints.
 3. **Whether workload repositories should also require an explicit channel** (§9).
-4. **Verifying the typed client's exact API surface.**
-   `Microsoft.DotNet.ProductConstructionService.Client` could not be restored in the offline
-   environment this was drafted in, so `IBuildRegistry` is currently defined from the shape
-   of the data the pipeline needs rather than from the client's real signatures. The adapter
-   must be reconciled with the package before it is trusted.
+4. ~~**Verifying the typed client's exact API surface.**~~ **Resolved** — see §15. The
+   package restored, the surface was confirmed by reflection, and `IBuildRegistry` matches
+   it. One residual, called out honestly: the 404-means-not-found behaviour is inferred from
+   the client's exception model and covered by a faked `RestApiException`, not observed
+   against a live service, because no live BAR calls were permitted.

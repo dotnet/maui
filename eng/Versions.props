@@ -33,4 +33,9 @@
     <NuGetProtocolPackageVersion>6.14.0</NuGetProtocolPackageVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Read-only Maestro/BAR client. Flowed by darc; see eng/Version.Details.xml. -->
+    <MicrosoftDotNetProductConstructionServiceClientPackageVersion>1.1.0-beta.26426.2</MicrosoftDotNetProductConstructionServiceClientPackageVersion>
+  </PropertyGroup>
+
 </Project>
