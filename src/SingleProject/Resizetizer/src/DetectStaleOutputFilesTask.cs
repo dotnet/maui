@@ -42,6 +42,12 @@ namespace Microsoft.Maui.Resizetizer
 		[Output]
 		public ITaskItem[] StaleFiles { get; set; }
 
+		/// <summary>
+		/// Lets tests exercise the behaviour of hosts without <c>Directory.ResolveLinkTarget</c>, which is
+		/// every .NET Framework host, including MSBuild.exe.
+		/// </summary>
+		internal bool AllowLinkResolution { get; set; } = true;
+
 		public override bool Execute()
 		{
 			StaleFiles = Array.Empty<ITaskItem>();
@@ -49,7 +55,7 @@ namespace Microsoft.Maui.Resizetizer
 			if (Files is null || Files.Length == 0)
 				return true;
 
-			var canonicalizer = new PathCanonicalizer();
+			var canonicalizer = new PathCanonicalizer(AllowLinkResolution);
 
 			var root = canonicalizer.CanonicalizeDirectory(Root);
 			if (string.IsNullOrEmpty(root))
@@ -70,9 +76,15 @@ namespace Microsoft.Maui.Resizetizer
 
 			foreach (var file in Files)
 			{
-				var key = canonicalizer.GetComparisonKey(file?.ItemSpec);
-				if (key is null)
+				if (file is null || string.IsNullOrWhiteSpace(file.ItemSpec))
 					continue;
+
+				var key = canonicalizer.GetComparisonKey(file.ItemSpec);
+				if (key is null)
+				{
+					Log.LogMessage(MessageImportance.Low, $"Leaving '{file.ItemSpec}' alone because its real location could not be determined.");
+					continue;
+				}
 
 				if (!PathCanonicalizer.IsUnder(key, root))
 				{

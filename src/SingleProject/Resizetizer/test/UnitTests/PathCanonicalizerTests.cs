@@ -178,6 +178,86 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		/// <summary>
+		/// Containment has to be case sensitive on every platform. On a case sensitive volume "…/r" and
+		/// "…/R" are two different directories, and a link inside the root that leads into the sibling
+		/// would otherwise be reported as living inside the root, letting a delete escape it.
+		/// </summary>
+		[Theory]
+		[InlineData("/x/R/deep/secret.png", "/x/r")]
+		[InlineData("/x/R/secret.png", "/x/r")]
+		[InlineData("/X/r/secret.png", "/x/r")]
+		[InlineData(@"C:\x\R\deep\secret.png", @"C:\x\r")]
+		public void IsUnderIsCaseSensitiveSoACaseOnlySiblingIsNeverContained(string key, string root)
+		{
+			key = key.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+			root = root.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+
+			Assert.False(PathCanonicalizer.IsUnder(key, root), $"'{key}' must not be treated as inside '{root}'.");
+		}
+
+		[Fact]
+		public void IsUnderStillAcceptsAnExactCaseMatch()
+		{
+			var root = Path.Combine(Path.DirectorySeparatorChar + "x", "r");
+			var key = Path.Combine(root, "deep", "camera.png");
+
+			Assert.True(PathCanonicalizer.IsUnder(key, root));
+		}
+
+		/// <summary>
+		/// A host without <c>Directory.ResolveLinkTarget</c> — every .NET Framework host, including
+		/// MSBuild.exe — cannot tell where a link leads, so it must report the path as unresolvable rather
+		/// than fall back to the lexical spelling and treat whatever is behind the link as contained.
+		/// </summary>
+		[Fact]
+		public void WithoutLinkResolutionAPathThroughALinkHasNoKey()
+		{
+			// Root the test where no ancestor is itself a link, so the only reparse point in play is the
+			// one the test creates. macOS temp directories live under /var, which is a link to /private/var.
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var physical = Path.Combine(basePath, "physical");
+			var link = Path.Combine(basePath, "link");
+			Directory.CreateDirectory(physical);
+
+			if (!SymbolicLink.TryCreateDirectoryLink(link, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var fallback = new PathCanonicalizer(allowLinkResolution: false);
+
+			Assert.False(fallback.CanResolveLinks);
+
+			// The link cannot be followed, so nothing behind it can be placed.
+			Assert.Null(fallback.CanonicalizeDirectory(link));
+			Assert.Null(fallback.GetComparisonKey(Path.Combine(link, "camera.png")));
+
+			// A directory that is not a link is unaffected, so cleanup keeps working everywhere else.
+			Assert.Equal(physical, fallback.CanonicalizeDirectory(physical), PathCanonicalizer.Comparer);
+			Assert.Equal(
+				Path.Combine(physical, "camera.png"),
+				fallback.GetComparisonKey(Path.Combine(physical, "camera.png")),
+				PathCanonicalizer.Comparer);
+		}
+
+		[Fact]
+		public void WithLinkResolutionThePathThroughALinkStillResolves()
+		{
+			var (physical, link) = CreateLinkedDirectory();
+			if (link is null)
+				return;
+
+			var canonicalizer = new PathCanonicalizer();
+
+			Assert.True(canonicalizer.CanResolveLinks, "This host is expected to resolve links.");
+			Assert.Equal(
+				canonicalizer.GetComparisonKey(Path.Combine(physical, "camera.png")),
+				canonicalizer.GetComparisonKey(Path.Combine(link, "camera.png")),
+				PathCanonicalizer.Comparer);
+		}
+
+		/// <summary>
 		/// A wildcard descends through a directory link, so the key of what it finds resolves outside the
 		/// root it was rooted at. That is what lets the caller refuse to delete it.
 		/// </summary>

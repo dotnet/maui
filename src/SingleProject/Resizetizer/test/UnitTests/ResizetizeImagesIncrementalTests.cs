@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var source = Path.Combine(project.ImagesDirectory, ImageName);
 			File.Copy(Path.Combine(AppContext.BaseDirectory, "images", "camera_color.png"), source, overwrite: true);
 			// File.Copy carries the source timestamp over, but an edit would bump it.
-			File.SetLastWriteTimeUtc(source, DateTime.UtcNow);
+			TouchSourceImage(project);
 
 			var output = Build(project);
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.WriteAllText(orphan, "left over from an image that is no longer in the project");
 
 			// Touch the source image so the target is not skipped as up to date.
-			File.SetLastWriteTimeUtc(Path.Combine(project.ImagesDirectory, ImageName), DateTime.UtcNow);
+			TouchSourceImage(project);
 
 			Build(project);
 
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			// Touch the source image so the target is not skipped as up to date.
-			File.SetLastWriteTimeUtc(Path.Combine(project.ImagesDirectory, ImageName), DateTime.UtcNow);
+			TouchSourceImage(project);
 
 			Build(project);
 
@@ -225,6 +225,37 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var image = Path.Combine(project.PhysicalDirectory, GeneratedImage);
 			Assert.True(File.Exists(image), $"Expected the generated image to survive the build: {image}");
 		}
+
+		/// <summary>
+		/// Marks the source image as edited so that the next build cannot treat the target as up to date.
+		/// </summary>
+		/// <remarks>
+		/// The new timestamp has to be definitively newer than everything the previous build wrote, not
+		/// merely "now". Only about a hundred milliseconds pass between the build writing its stamp file
+		/// and this call, so a file system that stores timestamps to the nearest second or two (ext3,
+		/// HFS+, FAT, some container overlays) rounds both into the same value. MSBuild treats an input
+		/// that is not strictly newer than its outputs as up to date and skips the target, which would
+		/// make these tests fail for a reason that has nothing to do with what they cover.
+		/// </remarks>
+		static void TouchSourceImage(TestProject project)
+		{
+			var newest = DateTime.UtcNow;
+
+			var intermediate = Path.Combine(project.PhysicalDirectory, "obj");
+			if (Directory.Exists(intermediate))
+			{
+				foreach (var written in Directory.EnumerateFiles(intermediate, "*", SearchOption.AllDirectories))
+				{
+					var time = File.GetLastWriteTimeUtc(written);
+					if (time > newest)
+						newest = time;
+				}
+			}
+
+			// Five seconds clears the two second granularity of the coarsest file systems.
+			File.SetLastWriteTimeUtc(Path.Combine(project.ImagesDirectory, ImageName), newest.AddSeconds(5));
+		}
+
 
 		TestProject CreateProject(bool throughLink, bool linkedIntermediateOutput = false, bool linkedImages = false)
 		{

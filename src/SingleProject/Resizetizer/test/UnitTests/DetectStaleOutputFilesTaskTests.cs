@@ -285,6 +285,118 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		/// <summary>
+		/// On a case sensitive volume the root's case-only sibling is a different directory, so a link
+		/// inside the root that leads into it must not make its contents look contained. A recursive
+		/// MSBuild wildcard really does surface these: its own cycle detection compares paths case
+		/// insensitively, so it walks straight into the sibling believing it is still inside the root.
+		/// </summary>
+		[Fact]
+		public void FilesInACaseOnlySiblingOfTheRootAreNeverStale()
+		{
+			var root = Path.Combine(DestinationDirectory, "r");
+			var sibling = Path.Combine(DestinationDirectory, "R");
+			Directory.CreateDirectory(root);
+
+			if (!IsCaseSensitiveVolume(DestinationDirectory))
+			{
+				Output.WriteLine("Skipping: this volume is case insensitive, so the sibling is the root itself.");
+				return;
+			}
+
+			Directory.CreateDirectory(Path.Combine(sibling, "deep"));
+			var outside = Path.Combine(sibling, "deep", "secret.png");
+			File.WriteAllText(outside, "not a build output");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(root, "alias"), Path.Combine(sibling, "deep"), out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var throughTheLink = Path.Combine(root, "alias", "secret.png");
+			var genuinelyStale = Path.Combine(root, "orphan.png");
+			File.WriteAllText(genuinelyStale, "left over");
+
+			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: root);
+
+			Assert.True(task.Execute());
+			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// A host without <c>Directory.ResolveLinkTarget</c>, which is every .NET Framework host including
+		/// MSBuild.exe, cannot tell where a junction leads. It has to leave anything behind one alone
+		/// instead of assuming the lexical spelling is the real location.
+		/// </summary>
+		[Fact]
+		public void WithoutLinkResolutionFilesBehindAReparsePointAreNeverStale()
+		{
+			// Root the test where no ancestor is itself a link, so the only reparse point in play is the
+			// one the test creates. macOS temp directories live under /var, which is a link to /private/var.
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var root = Path.Combine(basePath, "r");
+			var outside = Path.Combine(basePath, "outside");
+			Directory.CreateDirectory(root);
+			Directory.CreateDirectory(outside);
+
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(root, "alias"), outside, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var throughTheLink = Path.Combine(root, "alias", "precious.png");
+			var genuinelyStale = Path.Combine(root, "orphan.png");
+			File.WriteAllText(genuinelyStale, "left over");
+
+			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: root);
+			task.AllowLinkResolution = false;
+
+			Assert.True(task.Execute());
+
+			// The file behind the junction is left alone, while ordinary cleanup still happens.
+			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// When the root itself sits behind a reparse point the fallback host cannot place anything, so it
+		/// detects nothing at all rather than deleting on a guess.
+		/// </summary>
+		[Fact]
+		public void WithoutLinkResolutionARootBehindAReparsePointDetectsNothing()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var link = Path.Combine(DestinationDirectory, "link");
+			Directory.CreateDirectory(physical);
+
+			if (!SymbolicLink.TryCreateDirectoryLink(link, physical, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var stale = Path.Combine(physical, "orphan.png");
+			File.WriteAllText(stale, "left over");
+
+			var task = GetNewTask(new[] { Path.Combine(link, "orphan.png") }, Array.Empty<string>(), root: link);
+			task.AllowLinkResolution = false;
+
+			Assert.True(task.Execute());
+			Assert.Empty(task.StaleFiles);
+		}
+
+		static bool IsCaseSensitiveVolume(string directory)
+		{
+			var probe = Path.Combine(directory, "CaseProbe");
+			Directory.CreateDirectory(probe);
+
+			return !Directory.Exists(Path.Combine(directory, "caseprobe"));
+		}
+
+		/// <summary>
 		/// Every returned item has to come from <see cref="DetectStaleOutputFilesTask.Files"/>. Nothing may
 		/// be invented, and nothing that was declared as an output may be returned.
 		/// </summary>

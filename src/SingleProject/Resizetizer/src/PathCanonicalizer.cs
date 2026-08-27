@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	/// <summary>
 	/// Produces a canonical spelling of a file system path so that two differently spelled paths which
-	/// point at the same file compare as equal.
+	/// point at the same file compare as equal, and so that a caller can tell whether a path really lives
+	/// inside a directory it appears to live inside.
 	/// </summary>
 	/// <remarks>
 	/// <para>
@@ -23,15 +24,15 @@ namespace Microsoft.Maui.Resizetizer
 	/// Only the <em>directory</em> part of a path is link resolved. The file name is kept verbatim, so two
 	/// different names in one directory never collapse into one even when one of them is a link to the
 	/// other. Resolving the leaf as well would let a stale alias masquerade as a live output and survive
-	/// cleanup forever.
+	/// cleanup forever, and it is unnecessary: deleting a path whose leaf is a link removes the link
+	/// rather than whatever it points at.
 	/// </para>
 	/// <para>
-	/// Directories that do not exist yet are appended unresolved, so a path for a file the build has not
-	/// written can be canonicalized without the failure a plain <c>realpath</c> would produce.
-	/// </para>
-	/// <para>
-	/// The canonical form is only ever used for comparison. Callers keep the original item spec so the
-	/// paths surfaced to the rest of the build stay in the spelling the user provided.
+	/// Every decision here is made so that its failure mode is "keep the file". Comparing two paths for
+	/// equality is case insensitive off Linux, so an unexpected spelling difference makes a stale file
+	/// look live and it is kept. Containment is case sensitive everywhere, so an unexpected spelling
+	/// difference puts a file outside the root and it is kept. A directory whose link target cannot be
+	/// resolved makes the whole path unresolvable and it is kept.
 	/// </para>
 	/// </remarks>
 	internal sealed class PathCanonicalizer
@@ -40,22 +41,20 @@ namespace Microsoft.Maui.Resizetizer
 		const int MaxLinkHops = 40;
 
 		/// <summary>
-		/// Paths are compared case insensitively everywhere except Linux. macOS volumes can be case
-		/// sensitive, but treating two spellings as the same file there only ever means a stale file is
-		/// kept, which is far safer than deleting a file that is still needed.
+		/// Compares two canonical paths for <em>equality</em>. Case insensitive everywhere except Linux.
 		/// </summary>
+		/// <remarks>
+		/// This is only ever used to ask "is this file one the build just wrote?". Answering yes when the
+		/// two spellings are actually different files on a case sensitive volume keeps a stale file, which
+		/// is harmless. It must never be used to decide whether a path is inside a directory; see
+		/// <see cref="IsUnder"/>.
+		/// </remarks>
 		public static StringComparer Comparer { get; } =
 			RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
 				? StringComparer.Ordinal
 				: StringComparer.OrdinalIgnoreCase;
 
-		/// <summary>The <see cref="StringComparison"/> matching <see cref="Comparer"/>.</summary>
-		public static StringComparison Comparison { get; } =
-			RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-				? StringComparison.Ordinal
-				: StringComparison.OrdinalIgnoreCase;
-
-		static readonly MethodInfo ResolveDirectoryLinkTarget =
+		static readonly MethodInfo ResolveDirectoryLinkTargetMethod =
 			typeof(Directory).GetMethod("ResolveLinkTarget", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(bool) }, null);
 
 		// Cache keys are exact spellings. Two directories whose names differ only by case can be two
@@ -63,9 +62,32 @@ namespace Microsoft.Maui.Resizetizer
 		// another directory's resolved target.
 		readonly Dictionary<string, string> directoryCache = new Dictionary<string, string>(StringComparer.Ordinal);
 
+		readonly MethodInfo resolveDirectoryLinkTarget;
+
+		public PathCanonicalizer()
+			: this(ResolveDirectoryLinkTargetMethod is not null)
+		{
+		}
+
+		/// <summary>
+		/// Lets tests exercise the behaviour of hosts without <c>Directory.ResolveLinkTarget</c>, which is
+		/// every .NET Framework host, including MSBuild.exe.
+		/// </summary>
+		internal PathCanonicalizer(bool allowLinkResolution)
+		{
+			resolveDirectoryLinkTarget = allowLinkResolution ? ResolveDirectoryLinkTargetMethod : null;
+		}
+
+		/// <summary>
+		/// Whether this host can resolve directory links at all. When it cannot, any path that passes
+		/// through a reparse point is reported as unresolvable rather than guessed at.
+		/// </summary>
+		public bool CanResolveLinks => resolveDirectoryLinkTarget is not null;
+
 		/// <summary>
 		/// Returns the key to compare <paramref name="path"/> by: its link resolved directory plus its
-		/// file name unchanged. Returns <see langword="null"/> when the path cannot be interpreted.
+		/// file name unchanged. Returns <see langword="null"/> when the path cannot be interpreted or when
+		/// its directory passes through a link this host cannot resolve.
 		/// </summary>
 		public string GetComparisonKey(string path)
 		{
@@ -97,7 +119,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		/// <summary>
 		/// Returns <paramref name="directory"/> with every link in it resolved, or <see langword="null"/>
-		/// when it cannot be interpreted. Segments that do not exist are kept as they are.
+		/// when it cannot be interpreted or passes through an unresolvable link. Segments that do not
+		/// exist are kept as they are, so a path the build has not written yet can still be canonicalized.
 		/// </summary>
 		public string CanonicalizeDirectory(string directory)
 		{
@@ -119,17 +142,26 @@ namespace Microsoft.Maui.Resizetizer
 
 		/// <summary>
 		/// Returns whether <paramref name="key"/> names something inside <paramref name="root"/>. Both
-		/// must already be comparison keys.
+		/// must already be comparison keys produced by this type.
 		/// </summary>
+		/// <remarks>
+		/// Deliberately case sensitive on every platform, including Windows and macOS. This decides
+		/// whether a file may be deleted, so it has to fail closed. On a case sensitive volume
+		/// <c>…/r</c> and <c>…/R</c> are two different directories, and comparing them case insensitively
+		/// would report a file that really lives in the sibling as being inside the root, letting a delete
+		/// escape. Being stricter than the volume costs nothing worse than leaving a stale file behind,
+		/// because the paths on both sides are built from the same MSBuild properties and so share their
+		/// spelling.
+		/// </remarks>
 		public static bool IsUnder(string key, string root)
 		{
 			if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(root))
 				return false;
 
-			if (Comparer.Equals(key, root))
+			if (string.Equals(key, root, StringComparison.Ordinal))
 				return true;
 
-			if (key.Length <= root.Length || !key.StartsWith(root, Comparison))
+			if (key.Length <= root.Length || !key.StartsWith(root, StringComparison.Ordinal))
 				return false;
 
 			// A root that already ends in a separator, such as "/" or "C:\", has no separator to skip.
@@ -150,10 +182,20 @@ namespace Microsoft.Maui.Resizetizer
 			var parent = Path.GetDirectoryName(full);
 			var name = Path.GetFileName(full);
 
-			// A root resolves to itself, which also terminates the walk.
-			var canonical = string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(name)
-				? full
-				: ResolveDirectoryLink(Path.Combine(Canonicalize(parent, hops), name), hops);
+			string canonical;
+			if (string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(name))
+			{
+				// A root resolves to itself, which also terminates the walk.
+				canonical = full;
+			}
+			else
+			{
+				var canonicalParent = Canonicalize(parent, hops);
+
+				canonical = canonicalParent is null
+					? null
+					: ResolveDirectoryLink(Path.Combine(canonicalParent, name), hops);
+			}
 
 			directoryCache[full] = canonical;
 			return canonical;
@@ -161,37 +203,58 @@ namespace Microsoft.Maui.Resizetizer
 
 		string ResolveDirectoryLink(string path, int hops)
 		{
-			if (hops <= 0)
+			// A directory that does not exist cannot be a link, and a path the build has not written yet
+			// has to stay canonicalizable.
+			if (!Directory.Exists(path))
 				return path;
 
-			var target = GetDirectoryLinkTarget(path);
-			if (target is null)
+			if (!IsReparsePoint(path))
 				return path;
+
+			// From here on this really is a link or junction. Where it points decides whether everything
+			// below it is inside the root, so guessing is not an option: either resolve it or give up.
+			if (resolveDirectoryLinkTarget is null || hops <= 0)
+				return null;
+
+			FileSystemInfo target;
+			try
+			{
+				target = resolveDirectoryLinkTarget.Invoke(null, new object[] { path, /* returnFinalTarget: */ true }) as FileSystemInfo;
+			}
+			catch (Exception)
+			{
+				// Cyclic links, missing permissions or a racing delete.
+				return null;
+			}
+
+			if (target is null)
+				return null;
 
 			var resolved = TrimTrailingSeparators(target.FullName);
-			if (Comparer.Equals(resolved, path))
+
+			// Ordinal: on a case sensitive volume a link from "…/r" to "…/R" points at a different
+			// directory, and treating the two as the same would leave the link unresolved.
+			if (string.Equals(resolved, path, StringComparison.Ordinal))
 				return path;
 
 			// The target itself may live under directories that are links.
 			return Canonicalize(resolved, hops - 1);
 		}
 
-		static FileSystemInfo GetDirectoryLinkTarget(string path)
+		/// <summary>
+		/// Whether <paramref name="path"/> is a symbolic link, junction or other reparse point. Unlike
+		/// resolving one, asking this question works on every host, including .NET Framework.
+		/// </summary>
+		static bool IsReparsePoint(string path)
 		{
-			// Directory.ResolveLinkTarget only exists on .NET 6 and later. This assembly targets
-			// netstandard2.0 so that it can also load into MSBuild.exe on .NET Framework, where link
-			// resolution is unavailable and comparison falls back to the lexical full path.
-			if (ResolveDirectoryLinkTarget is null || !Directory.Exists(path))
-				return null;
-
 			try
 			{
-				return ResolveDirectoryLinkTarget.Invoke(null, new object[] { path, /* returnFinalTarget: */ true }) as FileSystemInfo;
+				return (new DirectoryInfo(path).Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
 			}
 			catch (Exception)
 			{
-				// Cyclic links, missing permissions or a racing delete: keep the unresolved spelling.
-				return null;
+				// If the attributes cannot be read, assume the worst rather than the best.
+				return true;
 			}
 		}
 
