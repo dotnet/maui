@@ -248,6 +248,80 @@ public class NUnitTestCategoryAnalyzerTests
 		Assert.Contains("TestMethod2", diagnostics[0].GetMessage(), StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public async Task TestMethod_WithFunctionalAndCollectionViewShardCategories_ReportsNoDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				[NUnit.Framework.Category("CollectionView1")]
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[NUnit.Framework.Category("CollectionView")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
+
+		Assert.Empty(diagnostics);
+	}
+
+	[Theory]
+	[InlineData("CollectionView1")]
+	[InlineData("CollectionView2")]
+	[InlineData("CollectionView3")]
+	[InlineData("CollectionView4")]
+	public async Task TestMethod_WithOnlyCollectionViewShardCategory_ReportsMissingCategory(string category)
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + $$"""
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[NUnit.Framework.Category("{{category}}")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MissingCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Equal("MAUI0001", diagnostics[0].Id);
+	}
+
+	[Fact]
+	public async Task TestMethod_WithTwoFunctionalAndCollectionViewShardCategories_ReportsMultipleCategoriesDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[NUnit.Framework.Category("CollectionView")]
+					[NUnit.Framework.Category("Compatibility")]
+					[NUnit.Framework.Category("CollectionView2")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MultipleCategoriesDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Contains("2", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+	}
+
 	#endregion
 
 	#region Custom Attributes Derived from CategoryAttribute Tests

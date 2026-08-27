@@ -107,6 +107,11 @@ namespace UITest.Analyzers.NUnit
 				// Check if it's a direct [Category] attribute
 				if (attr.AttributeClass.Name == "CategoryAttribute")
 				{
+					if (IsCiShardCategory(attr))
+					{
+						continue;
+					}
+
 					count++;
 					continue;
 				}
@@ -133,6 +138,17 @@ namespace UITest.Analyzers.NUnit
 				}
 			}
 			return count;
+		}
+
+		private static bool IsCiShardCategory(AttributeData attribute)
+		{
+			if (attribute.ConstructorArguments.Length != 1 ||
+				attribute.ConstructorArguments[0].Value is not string category)
+			{
+				return false;
+			}
+
+			return category is "CollectionView1" or "CollectionView2" or "CollectionView3" or "CollectionView4";
 		}
 
 		/// <summary>
