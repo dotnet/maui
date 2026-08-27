@@ -4,16 +4,14 @@
 # eng/pipelines/common/ui-tests.yml and ui-tests-steps.yml.
 #
 # Oversized UI-test categories (e.g. CollectionView, ~787 tests) are split into
-# multiple fixture-level shards so no single Azure DevOps matrix leg dominates
-# the critical path. Each shard runs a DISJOINT subset of ONE TestCategory via a
-# VSTest `--filter` FullyQualifiedName expression. The shards MUST stay
-# exhaustive and mutually exclusive or coverage silently changes:
-#   shard_1 = TestCategory=X & ( FQN~a | FQN~b | FQN~c )
-#   shard_2 = TestCategory=X & FQN!~a & FQN!~b & FQN!~c
-# so shard_1 (the tokens under `~`) must reference exactly the same fixtures as
-# shard_2 (the tokens under `!~`). This suite locks that invariant plus the YAML
-# wiring (every matrix expands the partition list, every CATEGORYGROUP step also
-# forwards the filter expression). It is hermetic: it only reads repo files.
+# multiple shards so no single Azure DevOps matrix leg dominates the critical
+# path. The smaller shard gets an additive fixture category; the other shard is
+# the umbrella category excluding that additive category:
+#   shard_1 = TestCategory=X1
+#   shard_2 = TestCategory=X & TestCategory!=X1
+# Tests retain the umbrella X category for local runs, while new untagged X tests
+# automatically enter shard 2. This suite locks that invariant plus the YAML
+# wiring. It is hermetic: it only reads repo files.
 
 BeforeAll {
     $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
@@ -27,8 +25,16 @@ BeforeAll {
         Get-Content -LiteralPath (Join-Path $script:repoRoot "eng/devices/$_") -Raw
     }
     $script:testRoot = Join-Path $script:repoRoot 'src/Controls/tests/TestCases.Shared.Tests'
+    $script:categoriesPath = Join-Path $script:testRoot 'UITestCategories.cs'
     $script:uiTests = Get-Content -LiteralPath $script:uiTestsPath -Raw
     $script:uiSteps = Get-Content -LiteralPath $script:uiStepsPath -Raw
+    $script:categories = Get-Content -LiteralPath $script:categoriesPath -Raw
+    $script:testSources = Get-ChildItem -LiteralPath $script:testRoot -Recurse -File -Filter '*.cs' | ForEach-Object {
+        [pscustomobject]@{
+            Path = $_.FullName
+            Text = Get-Content -LiteralPath $_.FullName -Raw
+        }
+    }
 
     # Parse the partitionedCategoryGroups entries (name / category / filter).
     $script:partitions = @{}
@@ -42,12 +48,6 @@ BeforeAll {
 
     function Get-Count([string]$text, [string]$literal) {
         return ([regex]::Matches($text, [regex]::Escape($literal))).Count
-    }
-    function Get-IncludeTokens([string]$filter) {
-        return [regex]::Matches($filter, 'FullyQualifiedName~(?<t>\w+)') | ForEach-Object { $_.Groups['t'].Value }
-    }
-    function Get-ExcludeTokens([string]$filter) {
-        return [regex]::Matches($filter, 'FullyQualifiedName!~(?<t>\w+)') | ForEach-Object { $_.Groups['t'].Value }
     }
 }
 
@@ -65,56 +65,49 @@ Describe 'partitionedCategoryGroups definition' {
         $script:partitions['CollectionView_2'].Category | Should -Be 'CollectionView'
     }
 
-    It 'scopes every partition filter to its owning TestCategory' {
-        foreach ($name in $script:partitions.Keys) {
-            $p = $script:partitions[$name]
-            $p.Filter | Should -BeLike "TestCategory=$($p.Category)&*"
-        }
+    It 'uses the additive category and its umbrella complement' {
+        $script:partitions['CollectionView_1'].Filter | Should -Be 'TestCategory=CollectionView1'
+        $script:partitions['CollectionView_2'].Filter | Should -Be 'TestCategory=CollectionView&TestCategory!=CollectionView1'
     }
 }
 
 Describe 'CollectionView partitions are exhaustive and mutually exclusive' {
-    It 'uses the same fixture token set under ~ (shard 1) and !~ (shard 2)' {
-        $include = @(Get-IncludeTokens $script:partitions['CollectionView_1'].Filter | Sort-Object -Unique)
-        $exclude = @(Get-ExcludeTokens $script:partitions['CollectionView_2'].Filter | Sort-Object -Unique)
-        $include.Count | Should -BeGreaterThan 0
-        # Set equality guarantees shard_1 ∪ shard_2 == whole category and
-        # shard_1 ∩ shard_2 == empty (De Morgan on the shared token set).
-        ($include -join ',') | Should -Be ($exclude -join ',')
+    It 'declares the additive CollectionView1 category' {
+        $script:categories | Should -Match 'public const string CollectionView1 = "CollectionView1";'
     }
 
-    It 'targets only CollectionView_-prefixed feature fixtures' {
-        foreach ($t in Get-IncludeTokens $script:partitions['CollectionView_1'].Filter) {
-            $t | Should -BeLike 'CollectionView_*'
+    It 'tags only the measured CollectionView_1 fixtures' {
+        $expectedFixtures = @(
+            'CollectionView_EmptyViewFeatureTests'
+            'CollectionView_HeaderFooterFeatureTests'
+            'CollectionView_ScrollingFeatureTests'
+            'CollectionView_SelectionFeatureTests'
+        )
+
+        $taggedFixtures = @(
+            foreach ($source in $script:testSources) {
+                $matches = [regex]::Matches(
+                    $source.Text,
+                    '(?m)^\s*\[Category\(UITestCategories\.CollectionView1\)\]\s*\r?\n\s*public class\s+(?<class>\w+)')
+                foreach ($match in $matches) {
+                    $match.Groups['class'].Value
+                }
+            }
+        ) | Sort-Object
+
+        $taggedFixtures | Should -Be ($expectedFixtures | Sort-Object)
+    }
+
+    It 'keeps the umbrella CollectionView category on every tagged fixture' {
+        foreach ($source in $script:testSources | Where-Object { $_.Text -match 'Category\(UITestCategories\.CollectionView1\)' }) {
+            $source.Text | Should -Match 'Category\(UITestCategories\.CollectionView\)'
+            $source.Text | Should -Match '(?m)^\s*\[(Test|TestCase|TestCaseSource)'
         }
     }
 
-    It 'targets existing CollectionView test fixtures' {
-        $sourceFiles = Get-ChildItem -LiteralPath $script:testRoot -Recurse -File -Filter '*.cs'
-
-        foreach ($token in Get-IncludeTokens $script:partitions['CollectionView_1'].Filter) {
-            $classPattern = "\bclass\s+$([regex]::Escape($token))\w*\b"
-            $matches = @($sourceFiles | Where-Object {
-                $source = Get-Content -LiteralPath $_.FullName -Raw
-                $source -match $classPattern
-            })
-
-            $matches.Count | Should -Be 1 -Because "partition token '$token' must resolve to exactly one fixture"
-
-            $fixtureSource = Get-Content -LiteralPath $matches[0].FullName -Raw
-            $fixtureSource | Should -Match 'UITestCategories\.CollectionView'
-            $fixtureSource | Should -Match '(?m)^\s*\[(Test|TestCase|TestCaseSource)'
-        }
-    }
-
-    It 'groups shard 1 OR-terms in parentheses so & does not bind them apart' {
-        $script:partitions['CollectionView_1'].Filter | Should -Match '&\('
-        $script:partitions['CollectionView_1'].Filter | Should -Match '\)$'
-        $script:partitions['CollectionView_1'].Filter | Should -Match '\|'
-    }
-
-    It 'keeps shard 2 all-AND (no OR) so operator precedence is unambiguous' {
-        $script:partitions['CollectionView_2'].Filter | Should -Not -Match '\|'
+    It 'does not use fixture-name filters' {
+        $script:partitions['CollectionView_1'].Filter | Should -Not -Match 'FullyQualifiedName'
+        $script:partitions['CollectionView_2'].Filter | Should -Not -Match 'FullyQualifiedName'
     }
 }
 

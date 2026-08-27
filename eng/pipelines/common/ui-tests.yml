@@ -45,16 +45,10 @@ parameters:
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
 
-  # Oversized categories are split into multiple fixture-level shards so that no
-  # single matrix leg dominates the UI-test critical path. Each partition runs a
-  # DISJOINT subset of ONE TestCategory via a VSTest FullyQualifiedName filter;
-  # the shards are exhaustive and mutually exclusive by construction, so total
-  # coverage is identical to running the category as a single leg. `category`
-  # preserves the existing test-result title; `filter` is passed verbatim to
-  # `dotnet test --filter` (see testFilterExpression in ui-tests-steps.yml).
-  # To keep a split correct, the same fixture tokens must appear under `~` in the
-  # first shard and under `!~` in the second (validated by
-  # .github/scripts/UITestsPipelinePartitions.Tests.ps1).
+  # Oversized categories are split into multiple shards so that no single matrix
+  # leg dominates the UI-test critical path. The smaller shard gets an additive
+  # category on its fixtures; the other shard is the umbrella category excluding
+  # that additive category. New tests therefore remain covered by default.
   partitionedCategoryGroups:
     # CollectionView (~790 tests) is the longest-running leg on Android CoreCLR,
     # WinUI, MacCatalyst and iOS. Split it into two fixture-level shards balanced by
@@ -66,10 +60,10 @@ parameters:
     # (~52% / ~48% measured), roughly halving the longest shard.
     - name: 'CollectionView_1'
       category: 'CollectionView'
-      filter: 'TestCategory=CollectionView&(FullyQualifiedName~CollectionView_ScrollingFeature|FullyQualifiedName~CollectionView_EmptyView|FullyQualifiedName~CollectionView_HeaderFooter|FullyQualifiedName~CollectionView_SelectionFeature)'
+      filter: 'TestCategory=CollectionView1'
     - name: 'CollectionView_2'
       category: 'CollectionView'
-      filter: 'TestCategory=CollectionView&FullyQualifiedName!~CollectionView_ScrollingFeature&FullyQualifiedName!~CollectionView_EmptyView&FullyQualifiedName!~CollectionView_HeaderFooter&FullyQualifiedName!~CollectionView_SelectionFeature'
+      filter: 'TestCategory=CollectionView&TestCategory!=CollectionView1'
 
   projects:
     - name: name

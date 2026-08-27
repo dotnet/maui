@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.CollectionView1)]
 public class CollectionView_SelectionFeatureTests : _GalleryUITest
 {
 	public const string SelectionFeatureMatrix = "CollectionView Feature Matrix";
