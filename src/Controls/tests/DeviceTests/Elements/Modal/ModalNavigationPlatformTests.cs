@@ -25,6 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Label, LabelHandler>();
 				});
 
 				builder.Services.AddSingleton(factory);
@@ -237,8 +238,6 @@ namespace Microsoft.Maui.DeviceTests
 				platform = factory.Latest;
 				Assert.Single(PlatformModalStack(window));
 			});
-
-			((IWindow)window).Destroying();
 
 			// Documented contract: teardown does not pop still-presented modals, Dispose owns that.
 			Assert.Empty(platform.Popped);

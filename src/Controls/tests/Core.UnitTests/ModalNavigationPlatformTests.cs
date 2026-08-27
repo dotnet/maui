@@ -116,10 +116,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task BuiltInPlatformMaintainsTheSameStackOrderingAsTheSeam()
 		{
-			// The in-box Tizen backend is implemented against IModalNavigationPlatform and relies on the
-			// fallback path applying the same stack bookkeeping the seam contract promises: the modal is
-			// on PlatformModalStack for the duration of a push, and off it for the duration of a pop.
-			// This guards that invariant on the no-factory path, which is what the built-in platforms use.
+			// The fallback path applies the same stack bookkeeping the seam promises: the modal is on
+			// PlatformModalStack for the duration of a push, and off it for the duration of a pop.
 			var window = CreateWindow();
 			var root = AttachRootPage(window);
 			var host = Host(window);
@@ -421,6 +419,58 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(modal, Assert.Single(platform.Popped).Page);
 			Assert.Empty(Host(window).PlatformModalStack);
 			Assert.Empty(window.Navigation.ModalStack);
+		}
+
+		[Fact]
+		public async Task DelayedPopFailureAfterTeardownDoesNotRestorePlatformState()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var platform = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			var failure = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+			platform.PopTaskBehavior = (_, _) => failure.Task;
+
+			var popTask = window.Navigation.PopModalAsync();
+			Assert.Empty(Host(window).PlatformModalStack);
+
+			((IWindow)window).Destroying();
+			failure.SetException(new InvalidOperationException("pop boom"));
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() => popTask);
+			Assert.Empty(Host(window).PlatformModalStack);
+		}
+
+		[Fact]
+		public async Task DelayedPushFailureFromReplacedHandlerDoesNotRollbackNewPlatformState()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var first = (RecordingModalNavigationPlatform)factory.Created[0];
+
+			var failure = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+			first.PushTaskBehavior = (_, _) => failure.Task;
+
+			var modal = new ContentPage();
+			var pushTask = window.Navigation.PushModalAsync(modal);
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+
+			window.Handler = CreateHandler(factory);
+			ForceResolvePlatform(window);
+
+			// The replacement backend has established the same modal as its current platform state
+			// while the outgoing backend's push is still completing.
+			var replacementStack = Assert.IsType<List<Page>>(Host(window).PlatformModalStack);
+			replacementStack.Add(modal);
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
+
+			failure.SetException(new InvalidOperationException("push boom"));
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() => pushTask);
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
 		}
 
 		[Fact]
@@ -1120,26 +1170,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public Action<Page, bool> PopBehavior { get; set; }
 
-			public Task PushModalAsync(Page modal, bool animated)
+			public Func<Page, bool, Task> PushTaskBehavior { get; set; }
+
+			public Func<Page, bool, Task> PopTaskBehavior { get; set; }
+
+			public async Task PushModalAsync(Page modal, bool animated)
 			{
 				PushBehavior?.Invoke(modal, animated);
+				if (PushTaskBehavior is not null)
+					await PushTaskBehavior(modal, animated);
 
 				OperationThreadIds.Add(Environment.CurrentManagedThreadId);
 				Operations.Add($"Push:{Pushed.Count}");
 				Pushed.Add(new ModalOperation(modal, animated, Host.CurrentPlatformPage, new List<Page>(Host.PlatformModalStack)));
-
-				return Task.CompletedTask;
 			}
 
-			public Task PopModalAsync(Page modal, bool animated)
+			public async Task PopModalAsync(Page modal, bool animated)
 			{
 				PopBehavior?.Invoke(modal, animated);
+				if (PopTaskBehavior is not null)
+					await PopTaskBehavior(modal, animated);
 
 				OperationThreadIds.Add(Environment.CurrentManagedThreadId);
 				Operations.Add($"Pop:{Pushed.Count - Popped.Count - 1}");
 				Popped.Add(new ModalOperation(modal, animated, Host.CurrentPlatformPage, new List<Page>(Host.PlatformModalStack)));
-
-				return Task.CompletedTask;
 			}
 
 			public void PageAttached() => PageAttachedCount++;

@@ -342,6 +342,7 @@ namespace Microsoft.Maui.Controls.Platform
 		async Task<Page> PopModalWithOverrideAsync(IModalNavigationPlatform platformOverride, bool animated)
 		{
 			var modal = CurrentPlatformModalPage;
+			var generation = _scopeGeneration;
 
 			// Removed before dismissing so that CurrentPlatformPage already refers to the page being
 			// revealed while the override runs. This matches the ordering of the built-in platforms.
@@ -358,7 +359,8 @@ namespace Microsoft.Maui.Controls.Platform
 				// dropping the entry here would leave a visible modal that is absent from both stacks
 				// and therefore impossible to reach again. It was the top of the stack, so appending
 				// restores its position and the next reconciliation pass retries the dismissal.
-				if (!_platformModalPages.Contains(modal))
+				if (IsCurrentPlatformScope(platformOverride, generation) &&
+					!_platformModalPages.Contains(modal))
 					_platformModalPages.Add(modal);
 
 				throw;
@@ -377,6 +379,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PushModalWithOverrideAsync(IModalNavigationPlatform platformOverride, Page modal, bool animated)
 		{
+			var generation = _scopeGeneration;
 			_platformModalPages.Add(modal);
 
 			try
@@ -388,10 +391,16 @@ namespace Microsoft.Maui.Controls.Platform
 				// The presentation didn't take effect, so the modal is not on screen. The platform stack
 				// tracks what is presented, so drop the entry again; the requested stack still contains
 				// the modal, and the next reconciliation pass retries the presentation.
-				_platformModalPages.Remove(modal);
+				if (IsCurrentPlatformScope(platformOverride, generation))
+					_platformModalPages.Remove(modal);
+
 				throw;
 			}
 		}
+
+		bool IsCurrentPlatformScope(IModalNavigationPlatform platformOverride, int generation) =>
+			generation == _scopeGeneration &&
+			ReferenceEquals(platformOverride, _platformOverride);
 
 		void SyncPlatformModalStack([CallerMemberName] string? callerName = null)
 		{
