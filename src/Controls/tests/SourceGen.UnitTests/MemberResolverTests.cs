@@ -7,6 +7,12 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
 public class MemberResolverTests
 {
+	private static bool ResolvesToStaticType(MemberResolutionResult result)
+	{
+		var property = typeof(MemberResolutionResult).GetProperty("ResolvesToStaticType");
+		return property?.GetValue(result) is true;
+	}
+
 	private static Compilation CreateCompilation(params string[] sources)
 	{
 		return CSharpCompilation.Create(
@@ -196,7 +202,7 @@ public class MemberResolverTests
 		var result = MemberResolver.Resolve(expression, GetPageType(), GetViewModelType(), compilation);
 
 		Assert.Equal(MemberLocation.Neither, result.Location);
-		Assert.True(result.ResolvesToStaticType);
+		Assert.True(ResolvesToStaticType(result));
 	}
 
 	[Theory]
@@ -209,7 +215,7 @@ public class MemberResolverTests
 		var result = MemberResolver.Resolve(expression, GetPageType(), GetViewModelType(), compilation);
 
 		Assert.Equal(MemberLocation.Neither, result.Location);
-		Assert.True(result.ResolvesToStaticType);
+		Assert.True(ResolvesToStaticType(result));
 	}
 
 	[Theory]
@@ -222,7 +228,7 @@ public class MemberResolverTests
 		var result = MemberResolver.Resolve(expression, GetPageType(), GetViewModelType(), compilation);
 
 		Assert.Equal(MemberLocation.Neither, result.Location);
-		Assert.False(result.ResolvesToStaticType);
+		Assert.False(ResolvesToStaticType(result));
 	}
 
 	[Fact]
@@ -233,7 +239,7 @@ public class MemberResolverTests
 		var result = MemberResolver.Resolve("DateTime.Now", GetPageType(), GetViewModelType(), compilation);
 
 		Assert.Equal(MemberLocation.Neither, result.Location);
-		Assert.False(result.ResolvesToStaticType);
+		Assert.False(ResolvesToStaticType(result));
 	}
 
 	[Fact]
