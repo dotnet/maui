@@ -15,6 +15,8 @@ namespace Microsoft.Maui
 	/// For custom views without built-in compatibility behavior, this per-edge contract takes precedence when the
 	/// view also implements the legacy <see cref="ISafeAreaView"/>. Built-in controls can preserve their existing
 	/// legacy behavior.
+	/// <see cref="HasExplicitSafeAreaEdges"/> and <see cref="GetDefaultSafeAreaEdges"/> are required because platform
+	/// handlers need both values to distinguish configured behavior from each control's default behavior.
 	/// </remarks>
 	public interface ISafeAreaElement
 	{

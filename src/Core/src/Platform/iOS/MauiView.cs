@@ -583,6 +583,8 @@ namespace Microsoft.Maui.Platform
 			SafeAreaEdges parentHandledEdges,
 			bool bottomIncludesKeyboardOverlap = false)
 		{
+			// Keep a child's positive frame-relative keyboard overlap until its parent arranges
+			// that child above the keyboard; the overlap is then zero and normal suppression applies.
 			return new SafeAreaPadding(
 				parentHandledEdges.Left != SafeAreaRegions.None ? 0 : safeArea.Left,
 				parentHandledEdges.Right != SafeAreaRegions.None ? 0 : safeArea.Right,
@@ -973,6 +975,8 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void InvalidateSafeArea(UIView platformView)
 		{
+			// Continue through safe-area-aware views: a farther ancestor can change a grandchild's
+			// suppression even when the intermediate view's own applied insets remain unchanged.
 			if (platformView is MauiView mauiView)
 			{
 				mauiView.InvalidateSafeArea();

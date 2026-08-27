@@ -265,6 +265,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaViewStrategy.GetSafeAreaRegionsForEdge(int edge)
 		{
+			// Support custom Page subclasses that adopt the public contract while inheriting this strategy.
 			if (this is ISafeAreaElement safeAreaElement)
 				return SafeAreaViewStrategy.GetSafeAreaRegionsForElement(safeAreaElement, edge);
 
