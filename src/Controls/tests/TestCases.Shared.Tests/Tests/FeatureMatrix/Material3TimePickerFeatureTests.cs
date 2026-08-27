@@ -30,6 +30,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_InitialState_VerifyVisualState()
 	{
+		// Snapshot the resting outlined field (dialog dismissed via OK); the platform Material dialog is intentionally not captured (platform component, non-deterministic).
 		OpenTimePickerDialog();
 		App.WaitForElement("OK");
 		App.Tap("OK");
@@ -414,7 +415,13 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElement("TimePickerControl");
 		// Material3 opens the dialog only via the trailing clock icon; tapping the text area must not open it.
 		App.Tap("TimePickerControl");
-		App.WaitForNoElement("OK");
+		// Bounded wait: the dialog must NOT appear within its normal inflation window.
+		Assert.Throws<TimeoutException>(() => App.WaitForElement("OK", timeout: TimeSpan.FromSeconds(2)));
+
+		// Positive control: the trailing icon DOES open the dialog, proving the field is interactive.
+		OpenTimePickerDialog();
+		App.WaitForElement("OK");
+		App.Tap("Cancel");
 	}
 }
 #endif

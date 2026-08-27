@@ -84,6 +84,10 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
         platformView.InputEditText?.FocusChange -= OnInputFocusChange;
 
+        // Reset focusability enabled by RequestInputFocus/FocusInput; the platform view can be reused
+        // across reconnects, so a leftover focusable read-only field could become an initial-focus candidate.
+        platformView.ClearInputFocus();
+
         base.DisconnectHandler(platformView);
     }
 
@@ -113,7 +117,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     static void MapBackground(DatePickerHandler2 handler, IDatePicker datePicker)
     {
-        handler.PlatformView?.UpdateBackground(datePicker);
+        handler.PlatformView?.UpdateBoxBackground(datePicker);
     }
 
     static void MapIsOpen(DatePickerHandler2 handler, IDatePicker picker)
@@ -287,7 +291,18 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         // programmatically via IsOpen.
         PlatformView?.RequestInputFocus();
 
-        _dialog.Show(fragmentManager, "MaterialDatePicker");
+        try
+        {
+            _dialog.Show(fragmentManager, "MaterialDatePicker");
+        }
+        catch
+        {
+            // A rejected fragment transaction (e.g. state saved in a race after the guard above) must not
+            // strand the field focused with no dialog; restore the resting state and abort the open.
+            _dialog = null;
+            PlatformView?.ClearInputFocus();
+            return;
+        }
 
         UpdateIsOpenState(true);
     }

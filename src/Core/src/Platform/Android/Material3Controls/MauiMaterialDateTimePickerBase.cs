@@ -5,6 +5,7 @@ using Android.Text;
 using Android.Text.Method;
 using Android.Views;
 using Google.Android.Material.TextField;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform;
 
@@ -23,8 +24,9 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     {
     }
 
-    // The context is expected to already be theme-wrapped by the handler's CreatePlatformView;
-    // the wrapped context then propagates to the inner edit text created below.
+    // The derived picker constructors (MauiMaterialDatePicker/MauiMaterialTimePicker) theme-wrap the
+    // context via MauiMaterialContextThemeWrapper.Create before calling base; the wrapped context then
+    // propagates to the inner edit text created below.
     protected MauiMaterialDateTimePickerBase(Context context, int endIconResource) : base(context)
     {
         // Outlined box is the Material 3 resting-state appearance for date/time fields.
@@ -48,6 +50,10 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         // deterministically in DisconnectHandler (the view itself is reused across reconnects).
         EndIconMode = EndIconCustom;
         SetEndIconDrawable(endIconResource);
+
+        // EndIconCustom does not auto-show the icon; without this the icon stays out of the layout
+        // and the accessibility tree, so UI automation and screen readers cannot locate it.
+        EndIconVisible = true;
     }
 
     /// <summary>
@@ -69,6 +75,24 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         SetEndIconOnClickListener(_clickListener);
     }
 
+    // Applies IView.Background to the outlined box fill. In BoxBackgroundOutline mode the visible fill/stroke
+    // are drawn on the inner edit text, so setting the outer ViewGroup background (the generic handler path)
+    // would render behind the box; target the box color instead (matching the Material SearchBar).
+    internal void UpdateBoxBackground(IView view)
+    {
+        if (view.Background is SolidPaint solidPaint)
+        {
+            var colorInt = (int)solidPaint.Color.ToPlatform();
+            SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(colorInt, colorInt));
+        }
+        else if (view.Background is null)
+        {
+            // Restore the outlined default (transparent box fill) if a color was previously applied.
+            var transparent = global::Android.Graphics.Color.Transparent.ToArgb();
+            SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(transparent, transparent));
+        }
+    }
+
     /// <summary>Removes and disposes the end-icon tap listener. Called from the handler's DisconnectHandler.</summary>
     internal void DisconnectClickListener()
     {
@@ -82,57 +106,64 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     // field is never an initial-focus candidate at rest.
     internal void RequestInputFocus()
     {
-        EnableInputFocusable();
-        _inputEditText?.RequestFocus();
+        EnableInputFocusable()?.RequestFocus();
     }
 
     // Routes a programmatic IView.Focus request to the inner edit text (the outer TextInputLayout
     // never takes focus). Uses Focus(request) so the FocusRequest result is completed for the framework.
     internal void FocusInput(FocusRequest request)
     {
-        EnableInputFocusable();
-        _inputEditText?.Focus(request);
-    }
-
-    // The read-only field is non-focusable at rest; enable focusability before requesting focus.
-    void EnableInputFocusable()
-    {
-        if (_inputEditText is null)
+        if (EnableInputFocusable() is not { } editText)
         {
+            // No inner edit text (e.g. the JNI activation path): complete the request so the framework's
+            // Focus() resolves to false instead of throwing "No result value was set."
+            request.TrySetResult(false);
             return;
         }
 
-        _inputEditText.Focusable = true;
-        _inputEditText.FocusableInTouchMode = true;
+        editText.Focus(request);
+    }
+
+    // The read-only field is non-focusable at rest; enable focusability before requesting focus.
+    // Resolves the inner edit text via the InputEditText property so it works on the JNI activation path.
+    MauiMaterialEditText? EnableInputFocusable()
+    {
+        if (InputEditText is not { } editText)
+        {
+            return null;
+        }
+
+        editText.Focusable = true;
+        editText.FocusableInTouchMode = true;
+        return editText;
     }
 
     // Always resets focusability so Android does not resolve focus onto the read-only field, even
     // when a prior RequestFocus() failed (e.g. the dialog window stole focus first).
     internal void ClearInputFocus()
     {
-        if (_inputEditText is null)
+        if (InputEditText is not { } editText)
         {
             return;
         }
 
-        if (_inputEditText.IsFocused)
+        if (editText.IsFocused)
         {
-            _inputEditText.ClearFocus();
+            editText.ClearFocus();
         }
 
-        _inputEditText.Focusable = false;
-        _inputEditText.FocusableInTouchMode = false;
+        editText.Focusable = false;
+        editText.FocusableInTouchMode = false;
     }
 
     protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
         {
-            var maximumHeight = MeasureSpec.GetSize(heightMeasureSpec);
-            var intrinsicHeightMeasureSpec = MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
-
-            base.OnMeasure(widthMeasureSpec, intrinsicHeightMeasureSpec);
-            SetMeasuredDimension(MeasuredWidth, Math.Min(MeasuredHeight, maximumHeight));
+            // A Material outlined field has a fixed minimum height (box + label + text). Measure at the
+            // intrinsic height and keep it even when the AtMost constraint is smaller, so the value is
+            // never clipped; a too-small constraint is exceeded rather than hiding the field's content.
+            base.OnMeasure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
             return;
         }
 

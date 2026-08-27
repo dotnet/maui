@@ -25,6 +25,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_InitialState_VerifyVisualState()
 	{
+		// Snapshot the resting outlined field (dialog dismissed via OK); the platform Material dialog is intentionally not captured (platform component, non-deterministic).
 		OpenDatePickerDialog();
 		App.WaitForElement("OK");
 		App.Tap("OK");
@@ -438,7 +439,13 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 		App.WaitForElement("DatePickerControl");
 		// Material3 opens the dialog only via the trailing calendar icon; tapping the text area must not open it.
 		App.Tap("DatePickerControl");
-		App.WaitForNoElement("OK");
+		// Bounded wait: the dialog must NOT appear within its normal inflation window.
+		Assert.Throws<TimeoutException>(() => App.WaitForElement("OK", timeout: TimeSpan.FromSeconds(2)));
+
+		// Positive control: the trailing icon DOES open the dialog, proving the field is interactive.
+		OpenDatePickerDialog();
+		App.WaitForElement("OK");
+		App.Tap("Cancel");
 	}
 }
 #endif
