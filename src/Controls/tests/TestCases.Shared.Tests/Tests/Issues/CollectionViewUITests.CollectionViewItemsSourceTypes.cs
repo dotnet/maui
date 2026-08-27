@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// CollectionViewItemsSourceTypesDisplayAndDontCrash (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsSourceTypes.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void CollectionViewItemsSourceTypesDisplayAndDontCrash()
 		{
 			if (Device == TestDevice.Android)

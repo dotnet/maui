@@ -13,8 +13,7 @@ public class Issue28212 : _IssuesUITest
 	public override string Issue => "Using CollectionView.EmptyView results in an Exception on Windows";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void Issue28212_CollectionView()
 	{
 		App.WaitForElement("Button");

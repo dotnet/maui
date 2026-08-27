@@ -12,8 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ObjectDisposedException When Toggling Header/Footer in CollectionView Dynamically";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void CollectionViewDynamicHeaderShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement("This Is A Header");

@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView causes invalid measurements on resize";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void CollectionViewItemsResizeWhenContraintsOnCollectionViewChange()
 		{
 			var largestSize = App.WaitForElement("Item1").GetRect();
@@ -30,8 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
 		{
 			var itemSize = App.WaitForElement("Item1").GetRect();
@@ -39,8 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 #if IOS || ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public async Task CollectionViewWorksWhenRotatingDevice()

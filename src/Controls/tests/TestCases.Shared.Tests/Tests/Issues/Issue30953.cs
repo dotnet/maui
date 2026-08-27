@@ -12,8 +12,7 @@ public class Issue30953 : _IssuesUITest
 	public override string Issue => "CollectionView does not update layout correctly when ItemsSource changes";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void EnsureCollectionViewLayoutOnItemsSourceChange()
 	{
 		App.WaitForElement("Issue30953Button");

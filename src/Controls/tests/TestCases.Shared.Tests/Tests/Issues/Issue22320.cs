@@ -13,8 +13,7 @@ public class Issue22320 : _IssuesUITest
 	public override string Issue => "CollectionView does not highlight selected grouped items correctly";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void SelectionShouldNotMovedToTopWithGroupedCollection()
 	{
 		App.WaitForElement("CollectionView");

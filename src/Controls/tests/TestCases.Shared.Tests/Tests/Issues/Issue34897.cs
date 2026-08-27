@@ -12,8 +12,7 @@ public class Issue34897 : _IssuesUITest
 	public override string Issue => "CollectionView Header is not visible when ItemsSource is not set and EmptyView is set";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void CollectionViewHeaderVisibleWithEmptyViewAndNullItemsSource()
 	{
 		App.WaitForElement("Issue34897EmptyView");

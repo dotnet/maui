@@ -14,8 +14,7 @@ public class Issue19609 : _IssuesUITest
 	public override string Issue => "Button clicked event and command will not be occurred in EmptyView of CollectionView";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void CanTapButtonOnEmptyView()
 	{
 		var btnElementId = "btnClick";

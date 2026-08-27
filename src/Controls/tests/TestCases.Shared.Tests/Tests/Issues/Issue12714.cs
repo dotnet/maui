@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] iOS application suspended at UICollectionViewFlowLayout.PrepareLayout() when using IsVisible = false";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 
 		public void InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense()
 		{

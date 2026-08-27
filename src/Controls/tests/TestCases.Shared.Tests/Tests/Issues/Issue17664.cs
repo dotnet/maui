@@ -17,8 +17,7 @@ public class Issue17664 : _IssuesUITest
 	public override string Issue => "Incorrect ItemsViewScrolledEventArgs in CollectionView when IsGrouped is set to true";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupedCollectionViewVisibleItemIndices()
 	{
 		App.WaitForElement("Issue17664ScrollBtn");

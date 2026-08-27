@@ -22,6 +22,9 @@ function Get-UITestInventory {
 	)
 
 	$escapedCategory = [regex]::Escape($Category)
+	$umbrellaPattern = "Category\s*\(\s*UITestCategories\.$escapedCategory\s*\)"
+	$shardedPattern = "ShardedTestCategory(?:Attribute)?\s*\(\s*UITestCategories\.$escapedCategory" +
+		"(?:\s*,\s*(?:shard\s*:\s*)?(?<shard>\d+))?\s*\)"
 	$methodPattern = '^\s*(?:(?:public|internal|private|protected|static|virtual|override|sealed|async|new)\s+)*[\w.]+(?:<[^>]+>)?(?:\[\])?\s+(?<method>[A-Za-z_]\w*)\s*\('
 	$namespacePattern = '^\s*namespace\s+(?<namespace>[\w.]+)'
 	$classPattern = '^\s*(?:(?:public|internal|private|protected|sealed|abstract|static|partial)\s+)*class\s+(?<class>[A-Za-z_]\w*)'
@@ -73,7 +76,8 @@ function Get-UITestInventory {
 				$classAttributeText = if ($classAttributeStart -lt $i) {
 					$lines[$classAttributeStart..($i - 1)] -join "`n"
 				} else { '' }
-				$classHasUmbrella = $classAttributeText -match "Category\s*\(\s*UITestCategories\.$escapedCategory\s*\)"
+				$classHasUmbrella = $classAttributeText -match $umbrellaPattern -or
+					$classAttributeText -match $shardedPattern
 			}
 
 			$methodMatch = [regex]::Match($lines[$i], $methodPattern)
@@ -88,7 +92,8 @@ function Get-UITestInventory {
 				$attributeStart--
 			}
 			$attributeText = ($lines[$attributeStart..($i - 1)] -join "`n")
-			$methodHasUmbrella = $attributeText -match "Category\s*\(\s*UITestCategories\.$escapedCategory\s*\)"
+			$methodHasUmbrella = $attributeText -match $umbrellaPattern -or
+				$attributeText -match $shardedPattern
 			$isTest = $attributeText -match '\[\s*Test(?:Case(?:Source)?)?(?:\s*[\],(])'
 			if ((-not $methodHasUmbrella -and -not $classHasUmbrella) -or -not $isTest) {
 				continue
@@ -96,9 +101,17 @@ function Get-UITestInventory {
 
 			$methodName = $methodMatch.Groups['method'].Value
 			$fullClassName = if ($namespace) { "$namespace.$className" } else { $className }
-			$shardMatches = [regex]::Matches(
+			$legacyShardMatches = [regex]::Matches(
 				$attributeText,
 				"Category\s*\(\s*UITestCategories\.(?<shard>$escapedCategory\d+)\s*\)")
+			$shardedMatches = [regex]::Matches($attributeText, $shardedPattern)
+			$shards = @(
+				$legacyShardMatches | ForEach-Object { $_.Groups['shard'].Value }
+				$shardedMatches | ForEach-Object {
+					$number = if ($_.Groups['shard'].Success) { $_.Groups['shard'].Value } else { '1' }
+					"$Category$number"
+				}
+			)
 
 			$items.Add([pscustomobject]@{
 				Id = "$fullClassName.$methodName"
@@ -111,16 +124,18 @@ function Get-UITestInventory {
 				AttributeStartLine = $attributeStart + 1
 				UmbrellaLine = if ($methodHasUmbrella) {
 					(@($attributeStart..($i - 1) | Where-Object {
-						$lines[$_] -match "Category\s*\(\s*UITestCategories\.$escapedCategory\s*\)"
+						$lines[$_] -match $umbrellaPattern -or $lines[$_] -match $shardedPattern
 					}) | Select-Object -Last 1) + 1
 				} else {
 					$i
 				}
-				Shard = if ($shardMatches.Count -eq 1) { $shardMatches[0].Groups['shard'].Value } else { $null }
-				ShardCount = $shardMatches.Count
-				ClassShardCount = [regex]::Matches(
-					$classAttributeText,
-					"Category\s*\(\s*UITestCategories\.$escapedCategory\d+\s*\)").Count
+				Shard = if ($shards.Count -eq 1) { $shards[0] } else { $null }
+				ShardCount = $shards.Count
+				ClassShardCount = (
+					[regex]::Matches(
+						$classAttributeText,
+						"Category\s*\(\s*UITestCategories\.$escapedCategory\d+\s*\)").Count +
+					[regex]::Matches($classAttributeText, $shardedPattern).Count)
 				DisabledAllPlatforms = $disabledStack -contains $true
 			})
 		}
@@ -714,6 +729,22 @@ function Remove-ShardCategoryFromLine {
 	return $result
 }
 
+function Remove-UmbrellaCategoryFromLine {
+	param(
+		[Parameter(Mandatory)][AllowEmptyString()][string]$Line,
+		[Parameter(Mandatory)][string]$Category
+	)
+
+	$token = "(?<!ShardedTest)Category\s*\(\s*UITestCategories\.$([regex]::Escape($Category))\s*\)"
+	if ($Line -notmatch $token) { return $Line }
+	if ($Line -match "^\s*\[\s*$token\s*\]\s*$") { return $null }
+
+	$result = $Line
+	$result = [regex]::Replace($result, "$token\s*,\s*", '')
+	$result = [regex]::Replace($result, "\s*,\s*$token", '')
+	return [regex]::Replace($result, $token, '')
+}
+
 function Set-UITestShardCategories {
 	param(
 		[Parameter(Mandatory)][string]$TestRoot,
@@ -723,20 +754,18 @@ function Set-UITestShardCategories {
 
 	$assignmentById = @{}
 	foreach ($assignment in $Assignments) { $assignmentById[$assignment.testId] = $assignment.shard }
+	$escapedCategory = [regex]::Escape($Category)
 	$files = @(
 		$Assignments.file
 		Get-ChildItem -LiteralPath $TestRoot -Recurse -File -Filter '*.cs' | Where-Object {
 			[System.IO.File]::ReadAllText($_.FullName) -match
-				"Category\s*\(\s*UITestCategories\.$([regex]::Escape($Category))\d+\s*\)"
+				"(?:Category\s*\(\s*UITestCategories\.$escapedCategory\d+\s*\)|" +
+				"ShardedTestCategory(?:Attribute)?\s*\(\s*UITestCategories\.$escapedCategory)"
 		} | ForEach-Object {
 			[System.IO.Path]::GetRelativePath($TestRoot, $_.FullName)
 		}
 	) | Sort-Object -Unique
-	$scratchRoot = Join-Path $TestRoot '.rebalance-ui-test-categories'
-	New-Item -ItemType Directory -Path $scratchRoot -Force | Out-Null
-
-	try {
-		foreach ($relativeFile in $files) {
+	foreach ($relativeFile in $files) {
 		$path = Join-Path $TestRoot $relativeFile
 		$originalBytes = [System.IO.File]::ReadAllBytes($path)
 		$hasUtf8Bom = $originalBytes.Length -ge 3 -and
@@ -746,34 +775,47 @@ function Set-UITestShardCategories {
 		$newLine = if ($original.Contains("`r`n")) { "`r`n" } else { "`n" }
 		$hasFinalNewLine = $original.EndsWith("`n")
 		$lines = [System.Collections.Generic.List[string]]::new()
-		foreach ($line in ($original -split '\r?\n')) {
-			$cleaned = Remove-ShardCategoryFromLine -Line $line -Category $Category
-			if ($null -ne $cleaned) { $lines.Add($cleaned) }
-		}
+		foreach ($line in ($original -split '\r?\n')) { $lines.Add($line) }
 		if ($hasFinalNewLine -and $lines.Count -gt 0 -and $lines[$lines.Count - 1] -eq '') {
 			$lines.RemoveAt($lines.Count - 1)
 		}
 
-		$workingPath = Join-Path $scratchRoot 'source.cs'
-		[System.IO.File]::WriteAllText($workingPath, ($lines -join $newLine) + $(if ($hasFinalNewLine) { $newLine } else { '' }))
-		$inventory = @(Get-UITestInventory -TestRoot $scratchRoot -Category $Category)
-
-		foreach ($test in $inventory | Sort-Object UmbrellaLine -Descending) {
+		$inventory = @(Get-UITestInventory -TestRoot $TestRoot -Category $Category |
+			Where-Object { $_.File -eq $path })
+		foreach ($test in $inventory | Sort-Object MethodLine -Descending) {
 			if (-not $assignmentById.ContainsKey($test.Id)) {
 				continue
 			}
-			$lineIndex = [int]$test.UmbrellaLine
-			$indent = [regex]::Match($lines[$lineIndex - 1], '^\s*').Value
-			$lines.Insert($lineIndex, "$indent[Category(UITestCategories.$($assignmentById[$test.Id]))]")
+
+			$shardNumber = [string]$assignmentById[$test.Id] -replace "^$escapedCategory", ''
+			$replacement = "ShardedTestCategory(UITestCategories.$Category, shard: $shardNumber)"
+			$lineIndex = [int]$test.UmbrellaLine - 1
+			$categoryToken = "(?<!ShardedTest)Category\s*\(\s*UITestCategories\.$escapedCategory\s*\)"
+			$shardedToken = "ShardedTestCategory(?:Attribute)?\s*\(\s*UITestCategories\.$escapedCategory" +
+				"(?:\s*,\s*(?:shard\s*:\s*)?\d+)?\s*\)"
+			if ($lines[$lineIndex] -match $categoryToken) {
+				$lines[$lineIndex] = [regex]::Replace($lines[$lineIndex], $categoryToken, $replacement)
+			} elseif ($lines[$lineIndex] -match $shardedToken) {
+				$lines[$lineIndex] = [regex]::Replace($lines[$lineIndex], $shardedToken, $replacement)
+			} else {
+				$methodIndex = [int]$test.MethodLine - 1
+				$indent = [regex]::Match($lines[$methodIndex], '^\s*').Value
+				$lines.Insert($methodIndex, "$indent[$replacement]")
 			}
+		}
+
+		$cleanedLines = [System.Collections.Generic.List[string]]::new()
+		foreach ($line in $lines) {
+			$cleaned = Remove-ShardCategoryFromLine -Line $line -Category $Category
+			if ($null -ne $cleaned) {
+				$cleaned = Remove-UmbrellaCategoryFromLine -Line $cleaned -Category $Category
+			}
+			if ($null -ne $cleaned) { $cleanedLines.Add($cleaned) }
+		}
 		[System.IO.File]::WriteAllText(
 			$path,
-			($lines -join $newLine) + $(if ($hasFinalNewLine) { $newLine } else { '' }),
+			($cleanedLines -join $newLine) + $(if ($hasFinalNewLine) { $newLine } else { '' }),
 			$encoding)
-		}
-	}
-	finally {
-		Remove-Item -LiteralPath $scratchRoot -Recurse -Force -ErrorAction SilentlyContinue
 	}
 }
 
@@ -962,6 +1004,9 @@ function Test-UITestShardApplication {
 			if ($match.Groups['shard'].Value -notin $validShards) {
 				throw "Stale shard '$($match.Groups['shard'].Value)' remains in $($file.FullName)."
 			}
+		}
+		if ($text -match "\[Category\s*\(\s*UITestCategories\.$([regex]::Escape($Category))\s*\)") {
+			throw "Legacy $Category umbrella category remains in $($file.FullName)."
 		}
 		if ($text -match (
 			"(?m)^\s*\[Category\(UITestCategories\.$([regex]::Escape($Category))\d+\)\]\s*\r?\n" +

@@ -12,8 +12,7 @@ public class Issue25362 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");

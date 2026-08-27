@@ -13,8 +13,7 @@ public class Issue19771 : _IssuesUITest
 	public override string Issue => "CollectionView IsEnabled=false allows touch interactions on iOS and Android";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void CollectionViewIsEnabledFalsePreventsInteractions()
 	{
 		App.WaitForElement("Item 1");

@@ -13,8 +13,7 @@ public class Issue18389 : _IssuesUITest
 	public override string Issue => "Incorrect scroll position when scrolling to an item with header in CollectionView";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyScrollToIndexWithHeader()
 	{
 		App.WaitForElement("Issue18389_ScrollToBtn");

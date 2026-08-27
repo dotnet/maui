@@ -13,8 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "VisualState Setters not working properly on Windows for a CollectionView";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void VerifyCollectionViewVisualState()
 		{
 			App.WaitForElement("CollectionView");

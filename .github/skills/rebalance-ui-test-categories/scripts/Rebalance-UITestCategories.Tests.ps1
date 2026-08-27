@@ -109,7 +109,7 @@ Describe 'multiplatform assignment' {
 }
 
 Describe 'source application' {
-	It 'keeps umbrella attributes and adds one method-level shard for standalone and combined attributes' {
+	It 'replaces umbrella and shard pairs with one method-level sharded category' {
 		$root = Join-Path $TestDrive 'tests'
 		New-Item -ItemType Directory -Path $root | Out-Null
 		$path = Join-Path $root 'WidgetTests.cs'
@@ -131,23 +131,34 @@ public class WidgetTests
 
 	[Test]
 	public void InheritedUmbrella() { }
+
+	[Test]
+	[ShardedTestCategory(UITestCategories.Widget)]
+	public void ExistingDefaultShard() { }
+
+	//[Test]
+	[ShardedTestCategory(UITestCategories.Widget)]
+	public void DisabledDefaultShard() { }
 }
 '@ | Set-Content -LiteralPath $path -NoNewline
 		$assignments = @(
 			[pscustomobject]@{ testId = 'N.WidgetTests.Standalone'; file = 'WidgetTests.cs'; shard = 'Widget1' }
 			[pscustomobject]@{ testId = 'N.WidgetTests.Combined'; file = 'WidgetTests.cs'; shard = 'Widget2' }
 			[pscustomobject]@{ testId = 'N.WidgetTests.InheritedUmbrella'; file = 'WidgetTests.cs'; shard = 'Widget1' }
+			[pscustomobject]@{ testId = 'N.WidgetTests.ExistingDefaultShard'; file = 'WidgetTests.cs'; shard = 'Widget2' }
 		)
 
 		Set-UITestShardCategories -TestRoot $root -Category Widget -Assignments $assignments
 		$text = Get-Content -LiteralPath $path -Raw
 
-		[regex]::Matches($text, 'Category\(UITestCategories\.Widget\)').Count | Should -Be 3
-		[regex]::Matches($text, 'Category\(UITestCategories\.Widget[12]\)').Count | Should -Be 3
+		[regex]::Matches($text, 'ShardedTestCategory\(UITestCategories\.Widget, shard: [12]\)').Count | Should -Be 4
+		$text | Should -Not -Match '\[Category\(UITestCategories\.Widget'
 		$text | Should -Not -Match '(?m)^\[Category\(UITestCategories\.Widget\d+\)\]\r?\npublic class'
-		$text | Should -Match '(?s)Category\(UITestCategories\.Widget\).*Category\(UITestCategories\.Widget1\).*public void Standalone'
-		$text | Should -Match '(?s)Category\(UITestCategories\.Widget\).*Category\(UITestCategories\.Widget2\).*public void Combined'
-		$text | Should -Match '(?s)\[Test\]\r?\n\s*\[Category\(UITestCategories\.Widget1\)\]\r?\n\s*public void InheritedUmbrella'
+		$text | Should -Match '(?s)ShardedTestCategory\(UITestCategories\.Widget, shard: 1\).*public void Standalone'
+		$text | Should -Match '(?s)ShardedTestCategory\(UITestCategories\.Widget, shard: 2\).*public void Combined'
+		$text | Should -Match '(?s)\[Test\]\r?\n\s*\[ShardedTestCategory\(UITestCategories\.Widget, shard: 1\)\]\r?\n\s*public void InheritedUmbrella'
+		$text | Should -Match '(?s)\[Test\]\r?\n\s*\[ShardedTestCategory\(UITestCategories\.Widget, shard: 2\)\]\r?\n\s*public void ExistingDefaultShard'
+		$text | Should -Match '(?s)//\[Test\]\r?\n\s*\[ShardedTestCategory\(UITestCategories\.Widget\)\]\r?\n\s*public void DisabledDefaultShard'
 	}
 
 	It 'updates constants, analyzer prefixes, and a standalone matrix entry without changing line endings' {
@@ -213,8 +224,7 @@ namespace N;
 public class Tests
 {
 	[Test]
-	[Category(UITestCategories.Widget)]
-	[Category(UITestCategories.Widget1)]
+	[ShardedTestCategory(UITestCategories.Widget)]
 	public void A() { }
 }
 '@ | Set-Content $path
@@ -225,7 +235,7 @@ public class Tests
 		}
 
 		{ Test-UITestShardApplication -TestRoot $root -Category Widget -Plan $plan } | Should -Not -Throw
-		(Get-Content $path -Raw).Replace('Widget1', 'Widget2') | Set-Content $path
+		(Get-Content $path -Raw).Replace('Widget)]', 'Widget, shard: 2)]') | Set-Content $path
 		{ Test-UITestShardApplication -TestRoot $root -Category Widget -Plan $plan } |
 			Should -Throw '*planned method-level shard*'
 	}

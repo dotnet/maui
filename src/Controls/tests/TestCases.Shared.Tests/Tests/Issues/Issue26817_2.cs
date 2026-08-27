@@ -14,8 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionViewHandler assigns Accessibility Traits with SelectionMode correctly";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void AccessibilityTraitsSetCorrectly()
 		{
 			App.WaitForElement("ToggleSelectionModeButton").Click();

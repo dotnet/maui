@@ -11,8 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView SelectedItem Background Reset After Modal Navigation";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void CollectionViewSelectedItemBackgroundShouldPersistAfterModalNavigation()
 		{
 			App.WaitForElement("CollectionView");

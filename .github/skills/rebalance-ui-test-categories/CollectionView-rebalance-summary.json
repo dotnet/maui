@@ -108,6 +108,7 @@
   "limitations": [
     "Projections use historical per-test p80 durations and measured job overhead; they are estimates, not guarantees.",
     "Assignments must project strictly below target minus the 2 minute safety margin.",
+    "FeatureMatrix fixtures initialize their subpage in FixtureSetup so every method-level shard starts independently.",
     "Dedicated testConfigurationArgs stages are retained as separate evidence and do not reduce ordinary category-matrix projections.",
     "Tests without samples on a platform contribute zero to that platform because they were not executed there.",
     "When explicitly enabled, unmeasured active tests use the maximum measured duration from their class/platform (or platform-wide maximum)."

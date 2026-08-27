@@ -12,8 +12,7 @@ public class Issue28716 : _IssuesUITest
 	public override string Issue => "Support for KeepLastItemInView for CV2";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void KeepLastItemInViewShouldWork()
 	{
 		App.WaitForElement("AddItemButton");

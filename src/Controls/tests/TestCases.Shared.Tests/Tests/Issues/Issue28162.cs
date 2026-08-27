@@ -13,8 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Crash occurs when switching CollectionView.IsVisible right after setting ItemsSource";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void SwitchingVisibilityAndChangingItemsSourceShouldNotCrash()
 		{
 			App.WaitForElement("button");

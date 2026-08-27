@@ -15,6 +15,7 @@ namespace UITest.Analyzers.NUnit
 	{
 		public const string MissingCategoryDiagnosticId = "MAUI0001";
 		public const string MultipleCategoriesDiagnosticId = "MAUI0002";
+		public const string ShardedCategoryDiagnosticId = "MAUI0003";
 
 		const string MissingCategoryTitle = "Test methods should have exactly one Category";
 		const string MissingCategoryMessageFormat = "Test method '{0}' should be marked with exactly one `[Category]` attribute on the method or its parent class";
@@ -23,6 +24,10 @@ namespace UITest.Analyzers.NUnit
 		const string MultipleCategoriesTitle = "Test methods should have exactly one Category";
 		const string MultipleCategoriesMessageFormat = "Test method '{0}' has {1} `[Category]` attributes but should have exactly one";
 		const string MultipleCategoriesDescription = "Test methods should have exactly one `[Category]` attribute, either on the method or its parent class.";
+
+		const string ShardedCategoryTitle = "Sharded test categories should use ShardedTestCategory";
+		const string ShardedCategoryMessageFormat = "Test method '{0}' uses the sharded category '{1}' directly; use `[ShardedTestCategory(UITestCategories.{1}, shard: ...)]` so both the umbrella and CI shard categories are registered";
+		const string ShardedCategoryDescription = "Categories split across CI jobs must use ShardedTestCategory so every test remains addressable through both its umbrella category and exactly one shard category.";
 
 		private const string Category = "Testing";
 
@@ -48,8 +53,17 @@ namespace UITest.Analyzers.NUnit
 			isEnabledByDefault: true,
 			description: MultipleCategoriesDescription);
 
+		private static readonly DiagnosticDescriptor ShardedCategoryRule = new DiagnosticDescriptor(
+			ShardedCategoryDiagnosticId,
+			ShardedCategoryTitle,
+			ShardedCategoryMessageFormat,
+			Category,
+			DiagnosticSeverity.Error,
+			isEnabledByDefault: true,
+			description: ShardedCategoryDescription);
+
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-			=> ImmutableArray.Create(MissingCategoryRule, MultipleCategoriesRule);
+			=> ImmutableArray.Create(MissingCategoryRule, MultipleCategoriesRule, ShardedCategoryRule);
 
 		public override void Initialize(AnalysisContext context)
 		{
@@ -69,6 +83,19 @@ namespace UITest.Analyzers.NUnit
 			if (!hasTestAttribute)
 			{
 				return;
+			}
+
+			foreach (var attribute in methodSymbol.GetAttributes().Concat(methodSymbol.ContainingType.GetAttributes()))
+			{
+				if (TryGetDirectCategory(attribute, out var category) &&
+					CiShardCategoryPrefixes.Contains(category))
+				{
+					context.ReportDiagnostic(Diagnostic.Create(
+						ShardedCategoryRule,
+						methodSymbol.Locations[0],
+						methodSymbol.Name,
+						category));
+				}
 			}
 
 			// Count category attributes on the method
@@ -120,6 +147,12 @@ namespace UITest.Analyzers.NUnit
 					continue;
 				}
 
+				if (attr.AttributeClass.Name is "ShardedTestCategoryAttribute" or "ShardedTestCategory")
+				{
+					count++;
+					continue;
+				}
+
 				// Check if it derives from CategoryAttribute (but exclude platform-specific ignore attributes)
 				// These attributes conditionally derive from CategoryAttribute or IgnoreAttribute based on platform,
 				// so we should not count them as category attributes
@@ -146,8 +179,7 @@ namespace UITest.Analyzers.NUnit
 
 		private static bool IsCiShardCategory(AttributeData attribute)
 		{
-			if (attribute.ConstructorArguments.Length != 1 ||
-				attribute.ConstructorArguments[0].Value is not string category)
+			if (!TryGetDirectCategory(attribute, out var category))
 			{
 				return false;
 			}
@@ -163,6 +195,20 @@ namespace UITest.Analyzers.NUnit
 			}
 
 			return false;
+		}
+
+		private static bool TryGetDirectCategory(AttributeData attribute, out string category)
+		{
+			category = string.Empty;
+			if (attribute.AttributeClass?.Name != "CategoryAttribute" ||
+				attribute.ConstructorArguments.Length != 1 ||
+				attribute.ConstructorArguments[0].Value is not string value)
+			{
+				return false;
+			}
+
+			category = value;
+			return true;
 		}
 
 		/// <summary>

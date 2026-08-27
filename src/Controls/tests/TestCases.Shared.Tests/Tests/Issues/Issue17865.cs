@@ -13,8 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView throws NRE when ScrollTo method is called from a handler of event Window.Created";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void Issue17865Test()
 		{
 			App.WaitForElement(ButtonId);

@@ -13,8 +13,7 @@ public class Issue28604 : _IssuesUITest
     public override string Issue => "Footer Not Displayed at the Bottom When EmptyView is Active in CV2";
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
-    [Category(UITestCategories.CollectionView1)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void FooterShouldDisplayAtBottomOfEmptyView()
     {
         App.WaitForElement("CollectionView");

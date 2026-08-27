@@ -1,8 +1,7 @@
 #Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '5.0.0' }
 
-# Regression guard for additive, method-level CollectionView UI-test shards.
-# CollectionView remains the umbrella category while numbered categories are
-# ordinary Azure matrix legs generated from historical timing evidence.
+# Regression guard for method-level CollectionView UI-test shards.
+# ShardedTestCategory exposes both the umbrella and numbered shard categories.
 
 BeforeAll {
     $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
@@ -43,21 +42,34 @@ Describe 'CollectionView shard category definitions' {
 }
 
 Describe 'CollectionView shards are exhaustive and mutually exclusive' {
-    It 'keeps the umbrella and exactly one planned method-level shard on every test' {
+    It 'uses exactly one planned method-level ShardedTestCategory on every test' {
         foreach ($test in $script:inventory) {
             $test.ShardCount | Should -Be 1 -Because "$($test.Id) requires exactly one shard"
             $test.Shard | Should -BeIn $script:shards -Because "$($test.Id) must use a current shard"
         }
     }
 
-    It 'never places numbered CollectionView categories on a class' {
+    It 'does not retain paired or class-level CollectionView categories' {
         $sources = Get-ChildItem -LiteralPath $script:testRoot -Recurse -File -Filter '*.cs'
         foreach ($source in $sources) {
             $text = Get-Content -LiteralPath $source.FullName -Raw
+            $text | Should -Not -Match '\[Category\(UITestCategories\.CollectionView\d*\)'
+            $text | Should -Not -Match '\[ShardedTest\]'
             $text | Should -Not -Match (
-                '(?m)^\s*\[Category\(UITestCategories\.CollectionView\d+\)\]\s*\r?\n' +
-                '\s*(?:(?:public|internal|private|protected|sealed|abstract|static|partial)\s+)*class\s+'
-            )
+                '(?m)^\s*\[ShardedTestCategory\(UITestCategories\.CollectionView.*\]\s*\r?\n' +
+                '\s*(?:(?:public|internal|private|protected|sealed|abstract|static|partial)\s+)*class\s+')
+        }
+    }
+
+    It 'initializes each sharded FeatureMatrix fixture independently' {
+        $featureMatrixSources = Get-ChildItem -LiteralPath (
+            Join-Path $script:testRoot 'Tests/FeatureMatrix'
+        ) -File -Filter 'CollectionView_*FeatureTests.cs'
+
+        foreach ($source in $featureMatrixSources) {
+            $text = Get-Content -LiteralPath $source.FullName -Raw
+            $text | Should -Match 'protected override string GallerySubPageButton =>'
+            $text | Should -Not -Match '\[Test,\s*Order\(1\)\]'
         }
     }
 

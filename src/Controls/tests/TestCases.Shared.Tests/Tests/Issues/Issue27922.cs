@@ -13,8 +13,7 @@ public class Issue27922 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void ItemShouldbeScrolledbasedOnGroupHeader()
 	{
 		App.WaitForElement("27922GroupedCollection");

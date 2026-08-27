@@ -14,8 +14,7 @@ public class Issue28827 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void CVGroupHFTemplateWithObservableCollection()
 	{
 		App.WaitForElement("collectionView");

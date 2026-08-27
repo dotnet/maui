@@ -18,8 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void HeaderFooterStringWorks()
 		{
 			// Navigate to the selection galleries
@@ -33,8 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #if IOS || ANDROID
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView1)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public async Task HeaderFooterViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -62,8 +60,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void HeaderFooterHorizontalViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -86,8 +83,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void HeaderFooterTemplateWorks()
 		{
 			// Navigate to the selection galleries
@@ -100,8 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void HeaderFooterGridWorks()
 		{
 			// Navigate to the selection galleries
@@ -125,8 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// So, we're ignoring this test due to it causing confusion when other changes
 		// cause this test to fail.
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void HeaderFooterGridHorizontalWorks()
 		{
 			// Navigate to the selection galleries

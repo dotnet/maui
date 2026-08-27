@@ -11,8 +11,7 @@ public class Issue28678 : _IssuesUITest
 	public override string Issue => "TargetInvocationException Occurs When Selecting Header/Footer After Changing ItemsLayout in CV2";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void HeaderFooterSelectionAfterItemsLayoutChangeShouldNotCrash()
 	{
 		App.WaitForElement("Button");

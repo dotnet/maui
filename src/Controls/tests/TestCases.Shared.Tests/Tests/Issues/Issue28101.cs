@@ -12,8 +12,7 @@ public class Issue28101 : _IssuesUITest
 	public override string Issue => "CollectionView Footer Becomes Scrollable When EmptyView is Active on Android";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void FooterTemplateShouldNotScrollWhenEmptyViewIsDisplayed()
 	{
 		App.WaitForElement("This Is A Footer");

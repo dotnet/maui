@@ -15,8 +15,7 @@ public class Issue8203 : _IssuesUITest
 	"to number of items each time";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void SelectionChangedShouldBeRaisedOnceWhenSelectionChanges()
 	{
 		App.WaitForElement("one");

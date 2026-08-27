@@ -14,8 +14,7 @@ public class Issue29882 : _IssuesUITest
 	public override string Issue => "[iOS] Crash occurs when ItemsSource is set to null in the SelectionChanged handler";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void SettingItemSourceToNullShouldNotCrash()
 	{
 		App.WaitForElement("Item1");

@@ -13,8 +13,7 @@ public class Issue27959 : _IssuesUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void EmptyViewHeaderFooterToggleNullToNonNull()
 	{
 		App.WaitForElement("EmptyViewButton").Click();
@@ -31,8 +30,7 @@ public class Issue27959 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void EmptyViewHeaderFooterTemplateToggleNullToNonNull()
 	{
 		App.WaitForElement("EmptyViewViewTemplatedButton").Click();
@@ -45,8 +43,7 @@ public class Issue27959 : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ItemsViewHeaderFooterToggleNullToNonNull()
 	{
 		App.WaitForElement("ItemsViewButton").Click();
@@ -63,8 +60,7 @@ public class Issue27959 : _IssuesUITest
 	}
 
 	[Test, Order(4)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ItemsViewHeaderFooterTemplatedToggleNullToNonNull()
 	{
 		App.WaitForElement("ItemsViewTemplatedButton").Click();

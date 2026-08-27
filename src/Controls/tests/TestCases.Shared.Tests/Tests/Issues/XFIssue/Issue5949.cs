@@ -16,8 +16,7 @@ public class Issue5949 : _IssuesUITest
 	public override string Issue => "CollectionView cannot access a disposed object.";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void DoNotAccessDisposedCollectionView()
 	{
 		App.WaitForElement(ToolBarItem);

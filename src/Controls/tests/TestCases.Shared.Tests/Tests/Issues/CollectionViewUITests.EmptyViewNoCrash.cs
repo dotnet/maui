@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// EmptyViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue9196.xaml.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void EmptyViewShouldNotCrash()
 		{
 			App.WaitForElement("Success");

@@ -12,8 +12,7 @@ public class Issue18657 : _IssuesUITest
 	public override string Issue => "CollectionView.EmptyView can not be removed by setting it to Null";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void RemoveEmptyViewAtRuntime()
 	{
 		App.WaitForElement("Issue18657Button");

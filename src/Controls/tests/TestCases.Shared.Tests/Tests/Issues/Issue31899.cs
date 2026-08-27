@@ -12,8 +12,7 @@ public class Issue31899 : _IssuesUITest
 
 #if TEST_FAILS_ON_ANDROID		// More Info - https://github.com/dotnet/maui/issues/31911
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void RemoveHeaderFooterAtRuntime()
 	{
 		App.WaitForElement("HeaderLabel");
@@ -25,8 +24,7 @@ public class Issue31899 : _IssuesUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS		// More Info - https://github.com/dotnet/maui/issues/31911
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void AddHeaderFooterAtRuntime()
 	{
 		App.WaitForElement("HeaderLabel");

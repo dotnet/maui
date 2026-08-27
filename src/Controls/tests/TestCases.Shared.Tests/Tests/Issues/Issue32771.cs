@@ -12,8 +12,7 @@ public class Issue32771 : _IssuesUITest
     public override string Issue => "Flow direction not working on Header/Footer in CollectionView [iOS]";
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
-    [Category(UITestCategories.CollectionView1)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void FlowdirectionShouldWorkForHeaderFooter()
     {
         App.WaitForElement("ToggleFlowDirectionButton");

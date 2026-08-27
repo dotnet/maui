@@ -12,8 +12,7 @@ public class Issue20062 : _IssuesUITest
 	public override string Issue => "CollectionView - SelectedItem visual state manager not working";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void CollectionViewSelectionChangesVisualState()
 	{
 		App.WaitForElement("CollectionView");

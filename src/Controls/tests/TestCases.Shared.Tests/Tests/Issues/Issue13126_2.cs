@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] Regression: 5.0.0-pre5 often fails to draw dynamically loaded collection view content";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void CollectionViewShouldSourceShouldResetWhileInvisible()
 		{
 			App.WaitForElement(Success);

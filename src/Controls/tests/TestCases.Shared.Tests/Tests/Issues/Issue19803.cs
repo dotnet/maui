@@ -13,8 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Setting Binding on Span GridItemsLayout results in NullReferenceException";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void NoNREWhenChangingGridItemsLayout()
 		{
 			_ = App.WaitForElement("button");

@@ -12,8 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void MeasureFirstItemMakesItemsDisappearOnAndroid()
 		{
 			App.WaitForElement("Issue2");

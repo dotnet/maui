@@ -13,8 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void CollectionViewShouldNotCrash()
 		{
 			App.WaitForElement("collectionView");

@@ -14,8 +14,7 @@ public class Issue34861 : _IssuesUITest
 	public override string Issue => "[Android] CollectionView EmptyView not displayed correctly with GridItemsLayout span > 1";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void EmptyViewShouldAppearBelowHeaderInGridLayout()
 	{
 		App.WaitForElement("TestCollectionView");

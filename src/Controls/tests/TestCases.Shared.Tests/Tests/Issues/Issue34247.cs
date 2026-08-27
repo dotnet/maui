@@ -13,8 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView with HeaderTemplate and SelectionMode.Single crashes on selection";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void SelectingItemInCollectionViewWithHeaderTemplateDoesNotCrash()
 		{
 			App.WaitForElement("TestCollectionView");

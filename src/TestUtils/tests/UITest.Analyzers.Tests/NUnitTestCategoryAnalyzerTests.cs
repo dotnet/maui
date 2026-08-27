@@ -249,7 +249,7 @@ public class NUnitTestCategoryAnalyzerTests
 	}
 
 	[Fact]
-	public async Task TestMethod_WithFunctionalAndCollectionViewShardCategories_ReportsNoDiagnostic()
+	public async Task TestMethod_WithLegacyCollectionViewCategoryPair_ReportsShardedCategoryDiagnostic()
 	{
 		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
 
@@ -265,9 +265,70 @@ public class NUnitTestCategoryAnalyzerTests
 			}
 			""";
 
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.ShardedCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Equal("MAUI0003", diagnostics[0].Id);
+		Assert.Contains("CollectionView", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData(", 3")]
+	[InlineData(", shard: 3")]
+	public async Task TestMethod_WithShardedTestCategory_ReportsNoDiagnostic(string shardArgument)
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + $$"""
+
+			namespace TestNamespace
+			{
+				public class ShardedTestCategoryAttribute : System.Attribute
+				{
+					public ShardedTestCategoryAttribute(string category, int shard = 1) { }
+				}
+
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[ShardedTestCategory("CollectionView"{{shardArgument}})]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
 		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
 
 		Assert.Empty(diagnostics);
+	}
+
+	[Fact]
+	public async Task TestMethod_WithShardedAndRegularCategories_ReportsMultipleCategoriesDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class ShardedTestCategoryAttribute : System.Attribute
+				{
+					public ShardedTestCategoryAttribute(string category, int shard = 1) { }
+				}
+
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[ShardedTestCategory("CollectionView", shard: 2)]
+					[NUnit.Framework.Category("Compatibility")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MultipleCategoriesDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Equal("MAUI0002", diagnostics[0].Id);
 	}
 
 	[Theory]

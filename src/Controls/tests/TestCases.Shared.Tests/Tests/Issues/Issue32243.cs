@@ -5,7 +5,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.CollectionView)]
 
 public class Issue32243 : _IssuesUITest
 {
@@ -14,7 +13,7 @@ public class Issue32243 : _IssuesUITest
 	public override string Issue => "CollectionView does not disconnect handlers when DataTemplateSelector changes template";
 
 	[Test]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void CollectionViewDisconnectsHandlersAfterNavigationBack()
 	{
 		App.WaitForElement("NavigateButton");

@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug][iOS] Concurrent issue leading to crash in SemaphoreSlim.Release in ObservableItemsSource";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void JustWhalingAwayOnTheCollectionViewWithAddsAndClearsShouldNotCrash()
 		{
 			App.WaitForElement(Run);

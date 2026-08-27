@@ -13,8 +13,7 @@ public class Issue28580 : _IssuesUITest
 	public override string Issue => "CollectionView footer sizing when source is empty";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void FooterWithEmptyCVShouldHaveCorrectSize()
 	{
 		App.WaitForElement("labelInFooter");

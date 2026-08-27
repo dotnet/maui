@@ -13,8 +13,7 @@ public class Issue6609 : _IssuesUITest
 	public override string Issue => "[Bug, CollectionView] SelectionChangedCommand invoked before SelectedItem is set";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void SelectionChangedCommandParameterBoundToSelectedItemShouldMatchSelectedItem()
 	{
 		App.WaitForElement("Item 2");

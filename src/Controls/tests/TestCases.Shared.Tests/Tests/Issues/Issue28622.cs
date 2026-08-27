@@ -14,8 +14,7 @@ public class Issue28622 : _IssuesUITest
 	public override string Issue => "[Android] CollectionView Header and Footer Do Not Align with Horizontal ItemsLayout When EmptyView is Displayed";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ItemsLayoutShouldRenderProperlyOnEmptyView()
 	{
 		App.WaitForElement("LayoutButton");

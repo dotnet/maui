@@ -12,8 +12,7 @@ public class Issue35700 : _IssuesUITest
 	public override string Issue => "Grouped CollectionView items not rendered properly on Android with GridItemsLayout";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void GroupedCollectionViewGridLayoutRendersCorrectly()
 	{
 		App.WaitForElement("TestCollectionView");

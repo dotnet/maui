@@ -15,8 +15,7 @@ public class Issue34336 : _IssuesUITest
 	// Bug: On iOS the CollectionView retains excessive height (full-screen) instead of
 	// shrinking to match its items once they arrive after a 3-second delay.
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void CollectionViewHeightIsCorrectAfterDelayedLoad()
 	{
 		// Wait for page to load

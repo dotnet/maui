@@ -13,8 +13,7 @@ public class Issue31096 : _IssuesUITest
 	public override string Issue => "Changing IsGrouped on runtime with CollectionViewHandler2 does not properly work";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void ChangingIsGroupedOnRuntime()
 	{
 		App.WaitForElement("Switch", timeout: TimeSpan.FromSeconds(15));

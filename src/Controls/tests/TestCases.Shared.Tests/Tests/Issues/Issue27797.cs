@@ -13,8 +13,7 @@ public class Issue27797 : _IssuesUITest
 	public override string Issue => "CollectionView with grouped data crashes on iOS when the groups change";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void AppShouldNotCrashWhenModifyingCollectionView()
 	{
 		App.WaitForElement("CleanHouse");

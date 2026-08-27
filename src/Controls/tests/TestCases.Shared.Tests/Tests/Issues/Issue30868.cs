@@ -13,8 +13,7 @@ public class Issue30868 : _IssuesUITest
 
 #if TEST_FAILS_ON_WINDOWS // Using AppThemeBinding and changing theme not working on Windows
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void CollectionViewSelectionModeOnDarkTheme()
 	{
 		try
@@ -32,8 +31,7 @@ public class Issue30868 : _IssuesUITest
 #endif
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void CollectionViewSelectionModeOnLightTheme()
 	{
 		App.WaitForElement("Item 2");

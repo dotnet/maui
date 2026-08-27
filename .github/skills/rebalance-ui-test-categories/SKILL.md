@@ -16,9 +16,10 @@ matrix legs and each leg must fit a target duration.
 
 - Historical Azure test results are required. Never substitute source test
   counts for timing evidence.
-- Keep the umbrella category on every test.
-- Add exactly one numbered shard category to each method carrying the umbrella
-  category. Never put shard categories on a class.
+- Use one method-level
+  `[ShardedTestCategory(UITestCategories.Category, shard: N)]` attribute. It
+  exposes both the umbrella and exactly one numbered shard category to NUnit.
+  Never put sharded categories on a class.
 - Use a conservative per-test/platform p80 of recent valid run totals.
 - Aggregate measured fixed job overhead with nearest-rank p80.
 - Reserve a configurable safety margin (2 minutes by default), so every
@@ -30,6 +31,9 @@ matrix legs and each leg must fit a target duration.
 - Applying a category maintains the analyzer's reusable shard-prefix set,
   preserving previously registered umbrellas, and performs mandatory
   plan-to-source validation after editing.
+- Before splitting methods from one fixture across shards, ensure fixture setup
+  independently reaches the state required by every selected method. Never rely
+  on an `Order(1)` test to initialize the remaining shard.
 - Dedicated configuration stages that use `testConfigurationArgs`, such as
   `ios_ui_tests_mono_cv1`, are intentionally outside ordinary category-matrix
   shard management. Their samples and overhead are recorded separately so

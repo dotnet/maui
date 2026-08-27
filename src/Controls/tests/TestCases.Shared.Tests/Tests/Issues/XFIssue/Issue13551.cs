@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] [iOS] CollectionView does not display items if `IsVisible` modified via a binding/trigger";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement(Success1);

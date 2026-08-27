@@ -19,8 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.CollectionView2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void VerifyCollectionViewIsEnableState()
 		{
 			App.WaitForElement("Button");

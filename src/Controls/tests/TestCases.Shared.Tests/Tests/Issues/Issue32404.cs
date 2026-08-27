@@ -13,8 +13,7 @@ public class Issue32404 : _IssuesUITest
     public override string Issue => "[Android, iOS, MacOS] FlowDirection not working on EmptyView in CollectionView";
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
-    [Category(UITestCategories.CollectionView6)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
     public void FlowDirectionShouldWorkOnEmptyView()
     {
         App.WaitForElement("Issue32404ToggleButton");

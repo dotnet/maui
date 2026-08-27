@@ -13,8 +13,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void UpdateGroupHeaderAndFooterDynamically()
 	{
 		App.WaitForElement("GroupHeaderFooterButton");
@@ -28,8 +27,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void UpdateHeaderFooterTemplateDynamically()
 	{
 		App.WaitForElement("ItemsViewTemplatedHeaderFooterButton");
@@ -43,8 +41,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void UpdateHeaderFooterDynamically()
 	{
 		App.WaitForElement("ItemsViewHeaderFooterButton");

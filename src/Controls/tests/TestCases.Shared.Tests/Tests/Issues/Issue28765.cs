@@ -17,16 +17,14 @@ public class Issue28765 : _IssuesUITest
 	}
 
 	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void EmptyViewStringWithHeaderAndFooterAsView()
 	{
 		App.WaitForElement("Footer View");
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.CollectionView)]
-	[Category(UITestCategories.CollectionView2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void EmptyViewStringWithHeaderAndFooterString()
 	{
 		App.WaitForElement("Footer String");
