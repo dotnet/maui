@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Input;
 using WApp = Microsoft.UI.Xaml.Application;
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
@@ -15,6 +16,8 @@ using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using WVirtualKey = Windows.System.VirtualKey;
+using WCoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -41,6 +44,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	Canvas? _dropIndicatorCanvas;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
+	internal bool IsNavigationFocusInProgress { get; private set; }
 
 	public MauiItemsView()
 	{
@@ -50,6 +54,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
 		// or out of the collection; no extra intermediate stop on the owner itself.
 		IsTabStop = false;
+		GettingFocus += OnGettingFocus;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
@@ -105,6 +110,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	protected override void OnGotFocus(RoutedEventArgs e)
 	{
 		base.OnGotFocus(e);
+		IsNavigationFocusInProgress = false;
 
 		if (!ReferenceEquals(e.OriginalSource, this) || ItemsRepeaterControl is not ItemsRepeater repeater)
 		{
@@ -132,6 +138,88 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 
 		firstContainer?.Focus(FocusState.Keyboard);
+	}
+
+	protected override void OnPreviewKeyDown(KeyRoutedEventArgs e)
+	{
+		IsNavigationFocusInProgress = IsFocusNavigationKey(e.Key);
+
+		if (e.Key == WVirtualKey.Tab &&
+			e.OriginalSource is DependencyObject source &&
+			FindAncestor<ItemContainer>(source) is ItemContainer container &&
+			ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), container) &&
+			!InputKeyboardSource.GetKeyStateForCurrentThread(WVirtualKey.Shift).HasFlag(WCoreVirtualKeyStates.Down) &&
+			TryFocusFirstTabStop(container))
+		{
+			e.Handled = true;
+			return;
+		}
+
+		base.OnPreviewKeyDown(e);
+	}
+
+	protected override void OnPreviewKeyUp(KeyRoutedEventArgs e)
+	{
+		base.OnPreviewKeyUp(e);
+
+		if (IsFocusNavigationKey(e.Key))
+		{
+			IsNavigationFocusInProgress = false;
+		}
+	}
+
+	protected override void OnLostFocus(RoutedEventArgs e)
+	{
+		IsNavigationFocusInProgress = false;
+		base.OnLostFocus(e);
+	}
+
+	void OnGettingFocus(UIElement sender, GettingFocusEventArgs e)
+	{
+		if (e.Direction != FocusNavigationDirection.None)
+		{
+			IsNavigationFocusInProgress = true;
+		}
+	}
+
+	static bool IsFocusNavigationKey(WVirtualKey key) => key is
+		WVirtualKey.Tab or
+		WVirtualKey.Up or WVirtualKey.Down or WVirtualKey.Left or WVirtualKey.Right or
+		WVirtualKey.Home or WVirtualKey.End or WVirtualKey.PageUp or WVirtualKey.PageDown;
+
+	static T? FindAncestor<T>(DependencyObject child) where T : DependencyObject
+	{
+		for (var current = child; current is not null; current = VisualTreeHelper.GetParent(current))
+		{
+			if (current is T ancestor)
+			{
+				return ancestor;
+			}
+		}
+
+		return null;
+	}
+
+	static bool TryFocusFirstTabStop(DependencyObject parent)
+	{
+		var childCount = VisualTreeHelper.GetChildrenCount(parent);
+		for (var childIndex = 0; childIndex < childCount; childIndex++)
+		{
+			var child = VisualTreeHelper.GetChild(parent, childIndex);
+			if (child is Control { IsTabStop: true, IsEnabled: true, Visibility: WVisibility.Visible } control &&
+				child is not ElementWrapper &&
+				control.Focus(FocusState.Keyboard))
+			{
+				return true;
+			}
+
+			if (TryFocusFirstTabStop(child))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>
