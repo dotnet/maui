@@ -35,11 +35,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	internal sealed class HybridHostPageRenderer : StaticHtmlRenderer
 	{
 		internal const string AppElementId = "app";
-		internal const string AppSelector = "#" + AppElementId;
 		internal const string HeadOutletSelector = "head::after";
 
 		private readonly List<HybridRootComponentRegistration> _registrations = new();
 		private readonly ResourceAssetCollection _assets;
+		private int _mountElementCount;
 
 		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ResourceAssetCollection assets)
 			: base(serviceProvider, loggerFactory)
@@ -122,8 +122,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				// Any other interactive root becomes a mount element that the live component attaches to.
-				_registrations.Add(new HybridRootComponentRegistration(AppSelector, componentType));
-				return new HybridMountPlaceholder(AppElementId);
+				// Each root gets a unique element id (app, app-1, app-2, ...) so a host document that
+				// declares more than one interactive boundary does not emit duplicate ids that collide
+				// on a single querySelector('#app') target.
+				var elementId = _mountElementCount == 0 ? AppElementId : $"{AppElementId}-{_mountElementCount}";
+				_mountElementCount++;
+				_registrations.Add(new HybridRootComponentRegistration("#" + elementId, componentType));
+				return new HybridMountPlaceholder(elementId);
 			}
 
 			return base.ResolveComponentForRenderMode(componentType, parentComponentId, componentActivator, renderMode);

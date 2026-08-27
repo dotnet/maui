@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
-			[nameof(IBlazorWebView.AppType)] = MapAppType,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
 #if WINDOWS
             [nameof(IView.FlowDirection)] = MapFlowDirection,
@@ -69,27 +68,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
 		{
 #if !(NETSTANDARD || !PLATFORM)
-			handler.HostPage = webView.HostPage;
-			handler.StartWebViewCoreIfPossible();
-#endif
-		}
-
-		/// <summary>
-		/// Maps the <see cref="IBlazorWebView.AppType"/> property to the specified handler.
-		/// </summary>
-		/// <param name="handler">The <see cref="BlazorWebViewHandler"/>.</param>
-		/// <param name="webView">The <see cref="IBlazorWebView"/>.</param>
-		public static void MapAppType(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-#if !(NETSTANDARD || !PLATFORM)
-			// Only views that opt into AppType need this mapper. When AppType is null the legacy
-			// HostPage startup path is left completely untouched (MapHostPage already handled it).
-			if (webView.AppType is null)
-			{
-				return;
-			}
-
-			// AppType provides a synthetic HostPage, so ensure the handler picks it up and attempts startup.
 			handler.HostPage = webView.HostPage;
 			handler.StartWebViewCoreIfPossible();
 #endif

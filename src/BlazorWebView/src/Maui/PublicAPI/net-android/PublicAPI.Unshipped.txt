@@ -14,6 +14,5 @@ Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler.CreateFilePro
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
-static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapAppType(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler!>! factory) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
 static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler<THandler>(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!

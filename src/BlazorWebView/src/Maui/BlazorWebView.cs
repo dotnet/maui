@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private Type? _appType;
 		private bool _appTypeRendered;
+		private bool _syntheticHostPageApplied;
 		private string? _renderedHostPageHtml;
 
 		/// <summary>
@@ -80,11 +82,30 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				_appType = value;
 
-				// Provide a synthetic host page so the existing startup and relative-path logic flows
-				// unchanged; the rendered document is overlaid onto the file provider at this path.
-				if (value is not null && string.IsNullOrEmpty(HostPage))
+				if (value is not null)
 				{
-					HostPage = AppTypeHostPage;
+					// Provide a synthetic host page so the existing startup and relative-path logic
+					// flows unchanged; the rendered document is overlaid onto the file provider at this
+					// path. Only applied when the caller has not set an explicit HostPage.
+					if (string.IsNullOrEmpty(HostPage))
+					{
+						HostPage = AppTypeHostPage;
+						_syntheticHostPageApplied = true;
+					}
+				}
+				else
+				{
+					// Clearing AppType: undo the synthetic host page and reset the rendered state so the
+					// view does not keep claiming a host page it no longer serves (which would otherwise
+					// leave a blank web view).
+					if (_syntheticHostPageApplied)
+					{
+						HostPage = null;
+						_syntheticHostPageApplied = false;
+					}
+
+					_appTypeRendered = false;
+					_renderedHostPageHtml = null;
 				}
 			}
 		}
@@ -177,7 +198,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// and fingerprinted-route serving work. The manifest lives outside the web root and is read
 			// from the app package, so it is never served to the web view. Absent (or on platforms
 			// without app-package access), fingerprinting simply stays off.
-			var manifest = StaticWebAssetsManifest.TryLoad();
+			var logger = Handler?.MauiContext?.Services?.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
+			var manifest = StaticWebAssetsManifest.TryLoad(logger);
 
 			// Render the host document once. This also collects any interactive components declared with
 			// a render mode and registers them so they attach to the live document, and resolves @Assets
@@ -188,16 +210,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, manifest);
 		}
 
+		// IL2072: AppType flows into HybridHostPageRenderer.Render's [DynamicallyAccessedMembers(All)]
+		// parameter. AppType cannot itself be annotated: it is a public property set by XAML via
+		// reflection (AppType="{x:Type components:App}"), and a DynamicallyAccessedMembers requirement on
+		// a reflection-set property/parameter is not satisfiable by the trimmer (it produces IL2111/IL2114
+		// instead). The assigned component type is preserved regardless: a {x:Type} reference is rooted by
+		// the XAML compiler, and the interactive components it renders are rooted by the Razor SDK's
+		// trimming roots (@rendermode / routable assembly), so their members survive trimming.
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
-			Justification = "Blazor components referenced by AppType are preserved by the Razor SDK trimming roots, consistent with RootComponent.ComponentType.")]
+			Justification = "AppType is set via XAML reflection so it cannot carry a DynamicallyAccessedMembers annotation; the component type is preserved by the XAML compiler ({x:Type}) and the Razor SDK trimming roots.")]
 		private void EnsureAppTypeRendered(ResourceAssetCollection? assets)
 		{
 			if (_appTypeRendered || AppType is null)
 			{
 				return;
 			}
-
-			_appTypeRendered = true;
 
 			var services = Handler?.MauiContext?.Services
 				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
@@ -213,6 +240,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					ComponentType = registration.ComponentType,
 				});
 			}
+
+			// Only latch success after the render and registration complete. If rendering throws (an
+			// invalid AppType, a failing OnInitializedAsync, a missing service), the flag stays false so
+			// a later handler reconnect retries instead of permanently serving a blank host page.
+			_appTypeRendered = true;
 		}
 
 		/// <summary>

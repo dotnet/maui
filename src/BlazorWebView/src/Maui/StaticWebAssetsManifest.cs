@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -34,6 +36,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		internal const string ManifestPackagePath = "_maui/blazor-asset-manifest.json";
 
+		// The manifest is immutable build output, so it is loaded and parsed once per process and the
+		// result (including "not present") is cached to avoid repeatedly blocking a caller thread on
+		// app-package I/O for every handler start / reconnect.
+		private static StaticWebAssetsManifest? s_cached;
+		private static bool s_cacheLoaded;
+		private static readonly object s_cacheLock = new();
+
 		private StaticWebAssetsManifest(ResourceAssetCollection assets, IReadOnlyDictionary<string, string> routeToPhysicalPath)
 		{
 			Assets = assets;
@@ -47,22 +56,45 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public IReadOnlyDictionary<string, string> RouteToPhysicalPath { get; }
 
 		/// <summary>
-		/// Attempts to load and parse the bundled manifest from the app package.
+		/// Attempts to load and parse the bundled manifest from the app package. The result is cached for
+		/// the lifetime of the process.
 		/// </summary>
+		/// <param name="logger">An optional logger used to report a corrupt (but present) manifest.</param>
 		/// <returns>The parsed manifest, or <c>null</c> if it is not present or cannot be read.</returns>
-		public static StaticWebAssetsManifest? TryLoad()
+		public static StaticWebAssetsManifest? TryLoad(ILogger? logger = null)
 		{
-			try
+			if (Volatile.Read(ref s_cacheLoaded))
 			{
-				// Offload to the thread pool and block: the downstream static-content pipeline that
-				// consumes this is synchronous, and the platform app-package readers complete
-				// synchronously anyway. Matches how the host document is rendered.
-				return Task.Run(LoadAsync).GetAwaiter().GetResult();
+				return s_cached;
 			}
-			catch (Exception)
+
+			lock (s_cacheLock)
 			{
-				// A missing or malformed manifest must never break startup; fingerprinting simply stays off.
-				return null;
+				if (s_cacheLoaded)
+				{
+					return s_cached;
+				}
+
+				StaticWebAssetsManifest? manifest = null;
+				try
+				{
+					// Offload to the thread pool and block: the downstream static-content pipeline that
+					// consumes this is synchronous. Some platform app-package readers are genuinely
+					// asynchronous (for example the Windows StorageFile-based reader), which is exactly
+					// why the load is performed once and cached rather than repeated per call.
+					manifest = Task.Run(LoadAsync).GetAwaiter().GetResult();
+				}
+				catch (Exception ex) when (ex is IOException or JsonException or NotImplementedException or UnauthorizedAccessException)
+				{
+					// A missing manifest is already handled in LoadAsync, so this only fires for a present
+					// but corrupt/unreadable manifest. Fingerprinting simply stays off, but it is logged so
+					// the resulting asset 404s are diagnosable rather than silent.
+					logger?.LogWarning(ex, "Failed to load the Blazor static web assets manifest '{ManifestPath}'; asset fingerprinting is disabled.", ManifestPackagePath);
+				}
+
+				s_cached = manifest;
+				Volatile.Write(ref s_cacheLoaded, true);
+				return s_cached;
 			}
 		}
 
@@ -75,6 +107,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			using var stream = await FileSystem.OpenAppPackageFileAsync(ManifestPackagePath).ConfigureAwait(false);
 			return Parse(stream);
+		}
+
+		// Test hook: clears the process-wide cache so a subsequent TryLoad re-reads the app package.
+		internal static void ResetCacheForTests()
+		{
+			lock (s_cacheLock)
+			{
+				s_cached = null;
+				Volatile.Write(ref s_cacheLoaded, false);
+			}
 		}
 
 		internal static StaticWebAssetsManifest Parse(Stream stream)

@@ -78,18 +78,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private sealed class InMemoryFileInfo : IFileInfo
 		{
 			private readonly byte[] _contents;
+			private readonly DateTimeOffset _lastModified;
 
 			public InMemoryFileInfo(string name, byte[] contents)
 			{
 				Name = name;
 				_contents = contents;
+				_lastModified = DateTimeOffset.UtcNow;
 			}
 
 			public bool Exists => true;
 			public long Length => _contents.Length;
 			public string? PhysicalPath => null;
 			public string Name { get; }
-			public DateTimeOffset LastModified => DateTimeOffset.UtcNow;
+			public DateTimeOffset LastModified => _lastModified;
 			public bool IsDirectory => false;
 
 			public Stream CreateReadStream() => new MemoryStream(_contents, writable: false);

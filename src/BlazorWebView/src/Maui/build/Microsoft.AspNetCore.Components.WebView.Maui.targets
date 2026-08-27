@@ -147,7 +147,20 @@
         builder.Append("]}");
 
         var content = builder.ToString();
-        Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+
+        // If endpoints were present but nothing was extracted, the SDK likely changed the shape of the
+        // EndpointProperties metadata this task parses. Fail loudly at build time rather than silently
+        // shipping an empty manifest that turns every @Assets fingerprint into a runtime 404.
+        if (Endpoints.Length > 0 && byRoute.Count == 0)
+        {
+            Log.LogWarning("BLAZORHYBRID0001: {0} static web asset endpoint(s) were found but no fingerprinted entries could be extracted for the Blazor asset manifest. Asset fingerprinting (@Assets) will be disabled at runtime. This usually means the SDK changed the EndpointProperties metadata shape.", Endpoints.Length);
+        }
+
+        var outputDir = Path.GetDirectoryName(OutputFile);
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            Directory.CreateDirectory(outputDir);
+        }
 
         // Only write when the content changes so incremental builds stay clean.
         if (!File.Exists(OutputFile) || File.ReadAllText(OutputFile) != content)
