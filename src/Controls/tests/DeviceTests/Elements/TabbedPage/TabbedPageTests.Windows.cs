@@ -128,13 +128,26 @@ namespace Microsoft.Maui.DeviceTests
 				var infoBadge = navItem.InfoBadge;
 				Assert.NotNull(infoBadge);
 				Assert.Null(infoBadge.Background);
-				Assert.Null(infoBadge.Foreground);
+
+				Assert.Equal("New", item.BadgeText);
+				Assert.Equal(-1, item.BadgeValue);
+
+				TabbedPage.SetBadgeText(firstPage, "42");
+
+				Assert.Equal("42", item.BadgeText);
+				Assert.Equal(42, item.BadgeValue);
+				await AssertEventually(() =>
+					infoBadge.Value == 42 &&
+					infoBadge.Background is null &&
+					infoBadge.Foreground is WSolidColorBrush,
+					timeout: 5000,
+					message: "Timed out waiting for the InfoBadge numeric value and native default brushes.");
+				var defaultForegroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Foreground).Color;
+				Assert.NotEqual(Colors.Yellow.ToWindowsColor(), defaultForegroundColor);
 
 				TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
 				TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
 
-				Assert.Equal("New", item.BadgeText);
-				Assert.Equal(-1, item.BadgeValue);
 				Assert.Equal(Colors.Blue.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeBackground).Color);
 				Assert.Equal(Colors.Yellow.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeForeground).Color);
 				await AssertEventually(() =>
@@ -145,7 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 					timeout: 5000,
 					message: "Timed out waiting for the InfoBadge custom brushes to be applied.");
 
-				TabbedPage.SetBadgeText(firstPage, "42");
 				TabbedPage.SetBadgeColor(firstPage, null);
 				TabbedPage.SetBadgeTextColor(firstPage, null);
 
@@ -155,9 +167,10 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(item.BadgeForeground);
 				await AssertEventually(() =>
 					infoBadge.Background is null &&
-					infoBadge.Foreground is null,
+					infoBadge.Foreground is WSolidColorBrush foreground &&
+					foreground.Color == defaultForegroundColor,
 					timeout: 5000,
-					message: "Timed out waiting for the InfoBadge custom brushes to be cleared.");
+					message: "Timed out waiting for the InfoBadge native default brushes to be restored.");
 
 				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
 				Assert.Same(
