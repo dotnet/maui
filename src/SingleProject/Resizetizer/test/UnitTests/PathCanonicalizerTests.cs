@@ -258,6 +258,76 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		/// <summary>
+		/// A link whose target is gone still reports where it was pointing, so containment is decided by
+		/// that target rather than by the link's own location inside the root.
+		/// </summary>
+		[Fact]
+		public void ADanglingLinkResolvesToItsAbsentTargetRatherThanItself()
+		{
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var root = Path.Combine(basePath, "r");
+			var absent = Path.Combine(basePath, "gone");
+			Directory.CreateDirectory(root);
+
+			var alias = Path.Combine(root, "alias");
+			if (!SymbolicLink.TryCreateDirectoryLink(alias, absent, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+			var key = canonicalizer.GetComparisonKey(Path.Combine(alias, "precious.png"));
+
+			// Either it resolves to the absent target, which is outside the root, or it is refused
+			// outright. What it must never be is the lexical spelling inside the root.
+			Assert.NotEqual(Path.Combine(alias, "precious.png"), key ?? string.Empty, PathCanonicalizer.Comparer);
+			Assert.False(PathCanonicalizer.IsUnder(key, canonicalizer.CanonicalizeDirectory(root)));
+		}
+
+		/// <summary>
+		/// A cycle of links cannot be followed, so nothing beneath it can be placed.
+		/// </summary>
+		[Fact]
+		public void ACyclicLinkHasNoKey()
+		{
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var first = Path.Combine(basePath, "first");
+			var second = Path.Combine(basePath, "second");
+
+			if (!SymbolicLink.TryCreateDirectoryLink(first, second, out var error) ||
+				!SymbolicLink.TryCreateDirectoryLink(second, first, out error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			var canonicalizer = new PathCanonicalizer();
+
+			Assert.Null(canonicalizer.GetComparisonKey(Path.Combine(first, "precious.png")));
+		}
+
+		/// <summary>
+		/// A genuinely absent directory is not ambiguous. It has to keep canonicalizing lexically, because
+		/// an output the build has not written yet must still be comparable against the wildcard's result.
+		/// </summary>
+		[Fact]
+		public void AnAbsentDirectoryIsNotTreatedAsAmbiguous()
+		{
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var neverCreated = Path.Combine(basePath, "never", "created");
+
+			var canonicalizer = new PathCanonicalizer();
+
+			Assert.Equal(neverCreated, canonicalizer.CanonicalizeDirectory(neverCreated), PathCanonicalizer.Comparer);
+			Assert.Equal(
+				Path.Combine(neverCreated, "camera.png"),
+				canonicalizer.GetComparisonKey(Path.Combine(neverCreated, "camera.png")),
+				PathCanonicalizer.Comparer);
+			Assert.True(PathCanonicalizer.IsUnder(canonicalizer.GetComparisonKey(Path.Combine(neverCreated, "camera.png")), basePath));
+		}
+
+		/// <summary>
 		/// A wildcard descends through a directory link, so the key of what it finds resolves outside the
 		/// root it was rooted at. That is what lets the caller refuse to delete it.
 		/// </summary>

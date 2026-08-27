@@ -203,13 +203,22 @@ namespace Microsoft.Maui.Resizetizer
 
 		string ResolveDirectoryLink(string path, int hops)
 		{
-			// A directory that does not exist cannot be a link, and a path the build has not written yet
-			// has to stay canonicalizable.
-			if (!Directory.Exists(path))
-				return path;
+			switch (Probe(path))
+			{
+				case DirectoryKind.Missing:
+					// Nothing is there at all, so nothing can be reached through it either and the lexical
+					// spelling is the whole truth. This is also the case for an output the build has not
+					// written yet, which still has to be canonicalizable.
+					return path;
 
-			if (!IsReparsePoint(path))
-				return path;
+				case DirectoryKind.Ordinary:
+					return path;
+
+				case DirectoryKind.Unknown:
+					// Something is there but it cannot be identified, so it cannot be ruled out as a link.
+					// Refuse to place anything under it rather than assume the lexical spelling is real.
+					return null;
+			}
 
 			// From here on this really is a link or junction. Where it points decides whether everything
 			// below it is inside the root, so guessing is not an option: either resolve it or give up.
@@ -223,7 +232,8 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			catch (Exception)
 			{
-				// Cyclic links, missing permissions or a racing delete.
+				// A cycle of links, missing permissions or a racing delete. A dangling link still resolves,
+				// to its absent target, and that target decides containment as usual.
 				return null;
 			}
 
@@ -241,20 +251,68 @@ namespace Microsoft.Maui.Resizetizer
 			return Canonicalize(resolved, hops - 1);
 		}
 
+		/// <summary>What a path turned out to be, as far as it can be determined.</summary>
+		enum DirectoryKind
+		{
+			/// <summary>Nothing exists at this path.</summary>
+			Missing,
+
+			/// <summary>An ordinary entry that is not a link and can be trusted lexically.</summary>
+			Ordinary,
+
+			/// <summary>A symbolic link, junction or other reparse point.</summary>
+			Link,
+
+			/// <summary>Something is there, but it could not be identified.</summary>
+			Unknown,
+		}
+
 		/// <summary>
-		/// Whether <paramref name="path"/> is a symbolic link, junction or other reparse point. Unlike
-		/// resolving one, asking this question works on every host, including .NET Framework.
+		/// Classifies <paramref name="path"/> without following it.
 		/// </summary>
-		static bool IsReparsePoint(string path)
+		/// <remarks>
+		/// <para>
+		/// <see cref="Directory.Exists(string)"/> cannot be used for this. It answers "can I open a
+		/// directory here", so it reports <see langword="false"/> for a link whose target is missing, for
+		/// a cycle of links, and for an entry it lacks permission to inspect. Treating those as "not a
+		/// link" would hand back the lexical spelling and let everything apparently beneath them look
+		/// contained.
+		/// </para>
+		/// <para>
+		/// <see cref="FileSystemInfo.Attributes"/> cannot be used either: for a path that does not exist
+		/// it yields <c>(FileAttributes)(-1)</c> rather than throwing, which has every bit set and so
+		/// claims to be a reparse point.
+		/// </para>
+		/// <para>
+		/// <see cref="File.GetAttributes(string)"/> does distinguish all of these, and works on every host
+		/// including .NET Framework: it reports the attributes of the entry itself rather than of whatever
+		/// it points at, throws for a path that is genuinely absent, and throws something else when the
+		/// entry cannot be inspected.
+		/// </para>
+		/// </remarks>
+		static DirectoryKind Probe(string path)
 		{
 			try
 			{
-				return (new DirectoryInfo(path).Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
+				var attributes = File.GetAttributes(path);
+
+				return (attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint
+					? DirectoryKind.Link
+					: DirectoryKind.Ordinary;
+			}
+			catch (FileNotFoundException)
+			{
+				return DirectoryKind.Missing;
+			}
+			catch (DirectoryNotFoundException)
+			{
+				return DirectoryKind.Missing;
 			}
 			catch (Exception)
 			{
-				// If the attributes cannot be read, assume the worst rather than the best.
-				return true;
+				// Denied permission, a path the platform rejects, or a racing change. Anything that is not
+				// a definite "nothing is here" has to count as unsafe.
+				return DirectoryKind.Unknown;
 			}
 		}
 
