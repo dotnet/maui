@@ -125,6 +125,99 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task PrecedingControlKeepsInitialFocusWhenScrollViewsLoad()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, TrackingTabStopScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var previousButton = new Button { Text = "Previous" };
+			var firstEntry = new Entry();
+			var secondEntry = new Entry();
+			var firstScrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 1000,
+					Children = { firstEntry }
+				}
+			};
+			var secondScrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 1000,
+					Children = { secondEntry }
+				}
+			};
+			var content = new VerticalStackLayout
+			{
+				Children =
+				{
+					previousButton,
+					firstScrollView,
+					secondScrollView
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = content }), async _ =>
+			{
+				var firstHandler = (TrackingTabStopScrollViewHandler)firstScrollView.Handler;
+				var secondHandler = (TrackingTabStopScrollViewHandler)secondScrollView.Handler;
+				var firstPlatformScrollView = firstHandler.PlatformView;
+				var secondPlatformScrollView = secondHandler.PlatformView;
+				await Task.WhenAll(
+					firstHandler.TemporaryTabStopObserved.Task,
+					secondHandler.TemporaryTabStopObserved.Task).WaitAsync(TimeSpan.FromSeconds(5));
+				await WaitForDispatcherIdle(firstPlatformScrollView.DispatcherQueue);
+				await WaitForDispatcherIdle(secondPlatformScrollView.DispatcherQueue);
+
+				Assert.True(previousButton.IsFocused);
+				Assert.False(firstEntry.IsFocused);
+				Assert.False(secondEntry.IsFocused);
+				Assert.False(firstPlatformScrollView.IsTabStop);
+				Assert.False(secondPlatformScrollView.IsTabStop);
+			});
+		}
+
+		[Fact]
+		public async Task TransientTabStopSurvivesUntilLoadedAndRestoresBeforeLowPriorityCallback()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<ScrollView, LoadingOrderScrollViewHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+
+			var scrollView = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					HeightRequest = 2000,
+					Children = { new Entry() }
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
+			{
+				var handler = (LoadingOrderScrollViewHandler)scrollView.Handler;
+				Assert.True(await handler.TemporaryTabStopObserved.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+				Assert.True(await handler.LowPriorityCallbackObservedRestore.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+			});
+		}
+
+		[Fact]
 		public async Task ScrollViewerPreservesNativeTabStopDefaultAcrossHandlerLifecycle()
 		{
 			EnsureHandlerCreated(builder =>
@@ -387,6 +480,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(platformScrollView.IsTabStop);
 				Assert.Equal(false, platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+				Assert.Null(platformScrollView.GetBindingExpression(WControl.IsTabStopProperty));
 				Assert.False(entry.IsFocused);
 			});
 		}
@@ -421,6 +515,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(platformScrollView.IsTabStop);
 				Assert.Equal(true, platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
+				Assert.Null(platformScrollView.GetBindingExpression(WControl.IsTabStopProperty));
 				Assert.False(entry.IsFocused);
 			});
 		}
@@ -460,7 +555,27 @@ namespace Microsoft.Maui.DeviceTests
 					WDependencyProperty.UnsetValue,
 					platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
 				Assert.True(platformScrollView.IsTabStop);
+				Assert.Null(platformScrollView.GetBindingExpression(WControl.IsTabStopProperty));
 				Assert.False(entry.IsFocused);
+
+				var replacementStyle = new WStyle(typeof(WScrollViewer));
+				replacementStyle.Setters.Add(new WSetter
+				{
+					Property = WControl.IsTabStopProperty,
+					Value = false
+				});
+				replacementStyle.Setters.Add(new WSetter
+				{
+					Property = WControl.TabIndexProperty,
+					Value = 42
+				});
+				platformScrollView.Style = replacementStyle;
+
+				Assert.False(platformScrollView.IsTabStop);
+				Assert.Equal(42, platformScrollView.TabIndex);
+				Assert.Same(
+					WDependencyProperty.UnsetValue,
+					platformScrollView.ReadLocalValue(WControl.IsTabStopProperty));
 			});
 		}
 
@@ -676,6 +791,49 @@ namespace Microsoft.Maui.DeviceTests
 				else
 					TemporaryTabStopObserved.TrySetException(
 						new InvalidOperationException("The temporary ScrollViewer tab stop was not active during loading."));
+			}
+		}
+
+		sealed class LoadingOrderScrollViewHandler : ScrollViewHandler
+		{
+			bool _loaded;
+
+			public TaskCompletionSource<bool> TemporaryTabStopObserved { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public TaskCompletionSource<bool> LowPriorityCallbackObservedRestore { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			protected override void ConnectHandler(WScrollViewer platformView)
+			{
+				base.ConnectHandler(platformView);
+				platformView.Loading += OnLoading;
+				platformView.Loaded += OnLoaded;
+			}
+
+			protected override void DisconnectHandler(WScrollViewer platformView)
+			{
+				platformView.Loading -= OnLoading;
+				platformView.Loaded -= OnLoaded;
+				base.DisconnectHandler(platformView);
+			}
+
+			void OnLoading(Microsoft.UI.Xaml.FrameworkElement sender, object args)
+			{
+				if (sender.DispatcherQueue?.TryEnqueue(
+					DispatcherQueuePriority.Low,
+					() => LowPriorityCallbackObservedRestore.TrySetResult(
+						_loaded && sender.IsLoaded && !((WScrollViewer)sender).IsTabStop)) != true)
+				{
+					LowPriorityCallbackObservedRestore.TrySetException(
+						new InvalidOperationException("Unable to queue low-priority loading callback."));
+				}
+			}
+
+			void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+			{
+				_loaded = true;
+				TemporaryTabStopObserved.TrySetResult(((WScrollViewer)sender).IsTabStop);
 			}
 		}
 
