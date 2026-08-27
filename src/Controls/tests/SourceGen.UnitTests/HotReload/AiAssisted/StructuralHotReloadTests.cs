@@ -125,6 +125,77 @@ public class StructuralHotReloadTests
 	static T Invoke<T>(object instance, string methodName) where T : class =>
 		Assert.IsType<T>(Invoke(instance, methodName));
 
+	[MetadataUpdateFact]
+	public void RemovedThenReaddedName_ReconcilesOriginalGeneratedField()
+	{
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.Label StructureCounterLabel = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+				public void SetCounterText(string text) => StructureCounterLabel.Text = text;
+				public global::Microsoft.Maui.Controls.Label GetStructureCounterLabel() => StructureCounterLabel;
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <HorizontalStackLayout>
+			    <Label x:Name="StructureCounterLabel" Text="Original" />
+			  </HorizontalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <HorizontalStackLayout />
+			</ContentPage>
+			""";
+		const string xamlV3 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="StructureCounterLabel" Text="Readded" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(RemovedThenReaddedName_ReconcilesOriginalGeneratedField),
+			PageClass,
+			pageStub);
+		var generation = harness.Generate(xamlV1, xamlV2, xamlV3);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var originalLabel = Assert.IsType<Label>(Assert.IsType<HorizontalStackLayout>(page.Content)[0]);
+
+			live.ApplyUpdate<ContentPage>(1);
+			Assert.Empty(Assert.IsType<HorizontalStackLayout>(page.Content));
+			Assert.Null(page.FindByName<Label>("StructureCounterLabel"));
+
+			live.ApplyUpdate<ContentPage>(2);
+			var visibleLabel = Assert.IsType<Label>(Assert.IsType<VerticalStackLayout>(page.Content)[0]);
+			Assert.NotSame(originalLabel, visibleLabel);
+
+			page.GetType().GetMethod("SetCounterText")!.Invoke(page, ["Updated"]);
+
+			Assert.Equal("Updated", visibleLabel.Text);
+			Assert.Equal("Original", originalLabel.Text);
+			Assert.Same(visibleLabel, Invoke<Label>(page, "GetStructureCounterLabel"));
+			Assert.Same(visibleLabel, page.FindByName<Label>("StructureCounterLabel"));
+		});
+	}
+
 	[Fact]
 	public void RootComplexElementProperty_IsNotSilentlyDropped()
 	{

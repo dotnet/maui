@@ -132,7 +132,8 @@ readonly struct ChildListChangeDiff(
 	string parentNodeId,
 	XmlType? parentXmlType,
 	IReadOnlyList<ChildChangeEntry> newChildren,
-	IReadOnlyList<string> removedNodeIds)
+	IReadOnlyList<string> removedNodeIds,
+	IReadOnlyList<string> removedNames)
 {
 	/// <summary>Stable path of the parent node whose children changed.</summary>
 	public string ParentNodeId { get; } = parentNodeId;
@@ -152,6 +153,8 @@ readonly struct ChildListChangeDiff(
 	/// these (and their subtrees) from the component registry.
 	/// </summary>
 	public IReadOnlyList<string> RemovedNodeIds { get; } = removedNodeIds;
+
+	public IReadOnlyList<string> RemovedNames { get; } = removedNames;
 }
 
 /// <summary>
@@ -657,10 +660,14 @@ static class XamlNodeDiff
 		}
 
 		var removedIds = new List<string>();
+		var removedNames = new List<string>();
 		foreach (var oldIdx in removedOldIndices)
+		{
 			CollectSubtreeIds(oldChildren[oldIdx], oldIds, removedIds);
+			CollectRootScopeNames(oldChildren[oldIdx], removedNames);
+		}
 
-		childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, removedIds));
+		childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, removedIds, removedNames));
 		return true;
 	}
 
@@ -677,6 +684,34 @@ static class XamlNodeDiff
 			if (item is ElementNode child)
 				CollectSubtreeIds(child, ids, result);
 		}
+	}
+
+	static void CollectRootScopeNames(ElementNode node, List<string> result)
+	{
+		if (node.XmlType.Name is "DataTemplate" or "ControlTemplate" or "Style" or "VisualStateGroup")
+			return;
+
+		if (node.Properties.TryGetValue(XmlName.xName, out var nameNode)
+			&& nameNode is ValueNode { Value: string name })
+		{
+			result.Add(name);
+		}
+
+		foreach (var property in node.Properties.Values)
+		{
+			if (property is ElementNode propertyElement)
+				CollectRootScopeNames(propertyElement, result);
+			else if (property is ListNode propertyList)
+			{
+				foreach (var item in propertyList.CollectionItems)
+					if (item is ElementNode itemElement)
+						CollectRootScopeNames(itemElement, result);
+			}
+		}
+
+		foreach (var child in node.CollectionItems)
+			if (child is ElementNode childElement)
+				CollectRootScopeNames(childElement, result);
 	}
 
 	/// <summary>

@@ -73,13 +73,12 @@ static class UpdateComponentCodeWriter
 		Dictionary<ElementNode, string>? newIds = null,
 		SourceProductionContext sourceProductionContext = default,
 		ProjectItem? projectItem = null,
-		ElementNode? oldRoot = null)
+		HashSet<string>? generatedFieldNames = null)
 	{
 		if (diff.IsEmpty)
 			return null;
 
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
-		var existingNamedFields = oldRoot is null ? null : CollectRootScopeNames(oldRoot);
 
 		// Emit diff summary as a comment for diagnostics
 		EmitDiffSummary(codeWriter, diff);
@@ -89,7 +88,7 @@ static class UpdateComponentCodeWriter
 		int addedCounter = 0;
 		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFieldNames, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			codeWriter.WriteLine();
 		}
 
@@ -248,6 +247,27 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		bool isRoot = string.IsNullOrEmpty(change.ParentNodeId);
+
+		if (change.RemovedNames.Count > 0)
+		{
+			var removedNameScopeVar = $"__removedNameScope_{changeIdx}";
+			using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
+			{
+				codeWriter.WriteLine($"var {removedNameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
+				codeWriter.WriteLine($"if ({removedNameScopeVar} != null)");
+				using (PrePost.NewBlock(codeWriter))
+				{
+					foreach (var removedName in change.RemovedNames)
+					{
+						var escapedName = EscapeString(removedName);
+						codeWriter.WriteLine($"if ({removedNameScopeVar}.FindByName(\"{escapedName}\") != null)");
+						codeWriter.Indent++;
+						codeWriter.WriteLine($"{removedNameScopeVar}.UnregisterName(\"{escapedName}\");");
+						codeWriter.Indent--;
+					}
+				}
+			}
+		}
 
 		// Resolve the parent variable and type
 		string parentVar;
@@ -588,7 +608,7 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
-	static HashSet<string> CollectRootScopeNames(ElementNode root)
+	internal static HashSet<string> CollectRootScopeNames(ElementNode root)
 	{
 		var names = new HashSet<string>(StringComparer.Ordinal);
 		Collect(root, names, isRoot: true);

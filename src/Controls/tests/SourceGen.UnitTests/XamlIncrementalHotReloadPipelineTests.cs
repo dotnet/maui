@@ -1896,6 +1896,44 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
+	public void AddedNamedElement_RemainsFieldlessAfterLaterStructuralReplacement()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <HorizontalStackLayout />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <HorizontalStackLayout>
+			        <Button x:Name="Foo" Text="Added" />
+			    </HorizontalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV3 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Button x:Name="Foo" Text="Recreated" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, _, run3) = ThreeRuns(xamlV1, xamlV2, xamlV3);
+		var uc = FindUCSource(run3, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Button()", uc!, StringComparison.Ordinal);
+		Assert.DoesNotContain("this.Foo =", uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void ContentTransitions_StringToMarkupToElementAndBack_Compile()
 	{
 		// jonathanpeppers review: verify a content/property value transitioning through
