@@ -21,13 +21,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Logger = new TestLogger();
 			}
 
-			public override void Dispose()
-			{
-				//Logger.Persist();
-				File.Copy(DestinationFilename, "output.png", true);
-				base.Dispose();
-			}
-
 			[Fact]
 			public void BasicNoScaleReturnsOriginalSize()
 			{
