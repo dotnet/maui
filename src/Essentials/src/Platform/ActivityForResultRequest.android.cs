@@ -254,27 +254,16 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		finally
 		{
-			if (_taskRemovalMonitors.TryRemove(
-				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation)))
-			{
-				cancellation.Dispose();
-			}
+			_taskRemovalMonitors.TryRemove(
+				new KeyValuePair<string, System.Threading.CancellationTokenSource>(requestOwner, cancellation));
+			cancellation.Dispose();
 		}
 	}
 
 	void StopTaskRemovalMonitor(string requestOwner)
 	{
 		if (_taskRemovalMonitors.TryRemove(requestOwner, out var cancellation))
-		{
-			try
-			{
-				cancellation.Cancel();
-			}
-			finally
-			{
-				cancellation.Dispose();
-			}
-		}
+			cancellation.Cancel();
 	}
 
 	protected virtual bool IsTaskPresent(global::Android.App.ActivityManager activityManager, int taskId)
