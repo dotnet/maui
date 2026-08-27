@@ -365,5 +365,7 @@ Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graph
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 Microsoft.Maui.IToolbarDrawerToggleVisible
 Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Android.Views.View? containerView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Android.Views.View! containerView) -> void
