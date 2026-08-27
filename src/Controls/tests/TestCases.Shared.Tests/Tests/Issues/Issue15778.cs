@@ -12,7 +12,7 @@ public class Issue15778 : _IssuesUITest
     public override string Issue => "CollectionView SelectionChanged gets fired when performing swipe using swipe view";
 
     [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
     public void SwipeViewInCollectionViewDoesNotTriggerSelection()
     {
         App.WaitForElement("Item 1");

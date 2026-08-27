@@ -12,7 +12,7 @@ public class Issue31897 : _IssuesUITest
 	public override string Issue => "CollectionView card height appears larger in Developer Balance sample";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void EnsureCollectionViewLayoutOnItemsSourceChange()
 	{
 		App.WaitForElement("GetHeightButton");

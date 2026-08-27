@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 
 		public void CollectionViewPreSelectionShouldUpdate()
 		{

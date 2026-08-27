@@ -13,7 +13,7 @@ public class Issue32243 : _IssuesUITest
 	public override string Issue => "CollectionView does not disconnect handlers when DataTemplateSelector changes template";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void CollectionViewDisconnectsHandlersAfterNavigationBack()
 	{
 		App.WaitForElement("NavigateButton");

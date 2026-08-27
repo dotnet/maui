@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView OnCollectionViewScrolled Calls and parameters are inconsistent or incorrect";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void Issue25649Test()
 		{
 			App.WaitForElement("collectionView");

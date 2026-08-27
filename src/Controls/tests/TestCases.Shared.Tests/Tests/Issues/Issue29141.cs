@@ -15,7 +15,7 @@ public class Issue29141 : _IssuesUITest
 	{ }
 
 	[Test, Order(1)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyCVGroupHFTemplateWithObservableCollection()
 	{
 		App.WaitForElement("collectionView");
@@ -27,7 +27,7 @@ public class Issue29141 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyCVGroupHFTemplateWithStringCollection()
 	{
 		App.WaitForElement("collectionView");
@@ -38,7 +38,7 @@ public class Issue29141 : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyCVNoSectionCrashOnAddFlatItem()
 	{
 		App.WaitForElement("collectionView");

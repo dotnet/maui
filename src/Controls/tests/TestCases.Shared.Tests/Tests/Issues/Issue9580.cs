@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CollectionView - iOS - Crash when adding first item to empty item group";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void AllEmptyGroupsShouldNotCrashOnItemInsert()
 		{
 			App.WaitForElement(Test9580);

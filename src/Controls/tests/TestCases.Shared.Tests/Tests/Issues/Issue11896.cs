@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void CollectionviewFooterHideswhenDynamicallyAddorRemoveItems()
 		{
 			App.WaitForElement("AddButton");
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void CollectionViewHeaderBlankWhenLastItemRemoved()
 		{
 			App.WaitForElement("AddButton");

@@ -13,7 +13,7 @@ public class Issue30868 : _IssuesUITest
 
 #if TEST_FAILS_ON_WINDOWS // Using AppThemeBinding and changing theme not working on Windows
 	[Test, Order(1)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void CollectionViewSelectionModeOnDarkTheme()
 	{
 		try

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			App.WaitForElement(ClearAutomationId);

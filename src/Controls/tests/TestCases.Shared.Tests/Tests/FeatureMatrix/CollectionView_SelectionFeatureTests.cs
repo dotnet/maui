@@ -42,7 +42,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifySelectionModeNoneWhenItemsSourceNone()
 	{
 		App.WaitForElement(Options);
@@ -58,7 +58,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeSingleWhenItemsSourceNone()
 	{
 		App.WaitForElement(Options);
@@ -75,7 +75,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link:https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeMultipleWhenItemsSourceNone()
 	{
 		App.WaitForElement(Options);
@@ -110,7 +110,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeSingleWhenItemsSourceObservableCollection5()
 	{
 		App.WaitForElement(Options);
@@ -169,7 +169,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeSingleWhenItemsSourceGroupList()
 	{
 		App.WaitForElement(Options);
@@ -192,7 +192,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeMultipleWhenItemsSourceGroupList()
 	{
 		App.WaitForElement(Options);
@@ -238,7 +238,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeSingleWhenItemsLayoutVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -257,7 +257,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -297,7 +297,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeSingleWhenItemsLayoutHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -316,7 +316,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -353,7 +353,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeSingleWhenItemsLayoutVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -395,7 +395,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeNoneWhenItemsLayoutHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -411,7 +411,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeSingleWhenItemsLayoutHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -430,7 +430,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeMultipleWhenItemsLayoutHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -476,7 +476,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeMultipleWhenProgrammaticSelectionWorksWithHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -497,7 +497,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeSingleWhenProgrammaticSelectionWorksWithVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -515,7 +515,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeMultipleWhenProgrammaticSelectionWorksWithVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -554,7 +554,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeMultipleWhenProgrammaticSelectionWhithItemsSourceGroupList()
 	{
 		App.WaitForElement(Options);
@@ -577,7 +577,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifySelecctionModeSingleWhenCurrentSelection()
 	{
 		App.WaitForElement(Options);
@@ -596,7 +596,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeMultipleWhenCurrentSelection()
 	{
 		App.WaitForElement(Options);
@@ -615,7 +615,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeNoneWhenCurrentSelection()
 	{
 		App.WaitForElement(Options);
@@ -630,7 +630,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeSingleWhenPreviousSelection()
 	{
 		App.WaitForElement(Options);
@@ -649,7 +649,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeMultipleWhenPreviousSelection()
 	{
 		App.WaitForElement(Options);
@@ -671,7 +671,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeNoneWhenPreviousSelection()
 	{
 		App.WaitForElement(Options);
@@ -690,7 +690,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifySelectionModeMultipleWithToggleSelection()
 	{
 		App.WaitForElement(Options);
@@ -714,7 +714,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeMultipleSelectionChangedEventCount()
 	{
 		App.WaitForElement(Options);
@@ -740,7 +740,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifySelectionModeSingleSelectionChangedEventCount()
 	{
 		App.WaitForElement(Options);
@@ -764,7 +764,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In iOS and Mac, related issue: https://github.com/dotnet/maui/issues/32225 and In windows, related issue: https://github.com/dotnet/maui/issues/27946
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRWithVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -779,7 +779,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyFlowDirectionRTLWithVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -794,7 +794,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionLTRWithHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -809,7 +809,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionRTLWithHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -824,7 +824,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionLTRWithVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -839,7 +839,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionRTLWithVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -854,7 +854,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionLTRWithHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -869,7 +869,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionRTLWithHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -884,7 +884,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyFlowDirectionRTLWithHeaderStringAndFooterStringAndVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -903,7 +903,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionRTLWithHeaderViewAndFooterViewAndVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -922,7 +922,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionRTLWithHeaderStringAndFooterStringAndHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -979,7 +979,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionRTLWithHeaderViewAndFooterViewAndVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -998,7 +998,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionRTLWithHeaderStringAndFooterStringAndHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1017,7 +1017,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionRTLWithHeaderViewAndFooterViewAndHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1036,7 +1036,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionRTLWithHeaderTemplateAndFooterTemplateAndVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -1059,7 +1059,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRWithHeaderTemplateAndFooterTemplateAndVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -1105,7 +1105,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionLTRWithHeaderTemplateAndFooterTemplateAndHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -1128,7 +1128,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionRTLWithHeaderTemplateAndFooterTemplateAndVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1151,7 +1151,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionLTRWithHeaderTemplateAndFooterTemplateAndVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1174,7 +1174,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionRTLWithHeaderTemplateAndFooterTemplateAndHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1197,7 +1197,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRWithHeaderTemplateAndFooterTemplateAndHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1222,7 +1222,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifySelectionModeNoneWithHeaderString()
 	{
 		App.WaitForElement(Options);
@@ -1282,7 +1282,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeMultipleWithHeaderView()
 	{
 		App.WaitForElement(Options);
@@ -1303,7 +1303,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeNoneWithHeaderView()
 	{
 		App.WaitForElement(Options);
@@ -1321,7 +1321,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifySelectionModeSingleWithHeaderView()
 	{
 		App.WaitForElement(Options);
@@ -1341,7 +1341,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeNoneWithFooterString()
 	{
 		App.WaitForElement(Options);
@@ -1381,7 +1381,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeMultipleWithFooterString()
 	{
 		App.WaitForElement(Options);
@@ -1401,7 +1401,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeMultipleWithFooterView()
 	{
 		App.WaitForElement(Options);
@@ -1422,7 +1422,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeNoneWithFooterView()
 	{
 		App.WaitForElement(Options);
@@ -1440,7 +1440,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifySelectionModeSingleWithFooterView()
 	{
 		App.WaitForElement(Options);
@@ -1460,7 +1460,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeNoneWithHeaderStringAndFooterString()
 	{
 		App.WaitForElement(Options);
@@ -1504,7 +1504,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeMultipleWithHeaderStringAndFooterString()
 	{
 		App.WaitForElement(Options);
@@ -1526,7 +1526,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeMultipleWithHeaderViewAndFooterView()
 	{
 		App.WaitForElement(Options);
@@ -1549,7 +1549,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeNoneWithHeaderViewAndFooterView()
 	{
 		App.WaitForElement(Options);
@@ -1569,7 +1569,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeSingleWithHeaderViewAndFooterView()
 	{
 		App.WaitForElement(Options);
@@ -1591,7 +1591,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifySelectionModeNoneWithHeaderTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1612,7 +1612,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeNoneWithFooterTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1634,7 +1634,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/32212
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifySelectionModeSingleWithHeaderTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1656,7 +1656,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeSingleWithFooterTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1680,7 +1680,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifySelectionModeMultipleWithHeaderTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1724,7 +1724,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectionModeMultipleWithHeaderTemplateViewAndFooterTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1751,7 +1751,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeSingleWithHeaderTemplateViewAndFooterTemplateView()
 	{
 		App.WaitForElement(Options);
@@ -1778,7 +1778,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifySelectionModeNoneWithHeaderTemplateViewAndFooterTemplateView()
 	{
 		App.WaitForElement(Options);

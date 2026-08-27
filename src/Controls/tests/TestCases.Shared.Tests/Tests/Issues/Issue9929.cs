@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void Issue3884Test()
 		{
 			App.WaitForElement("entryUpdate_Spacing");

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Grouped CollectionView items not rendered properly on Android, works on Windows";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void GroupedCollectionViewItems()
 		{
 			App.WaitForElement("Item 1");

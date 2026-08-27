@@ -13,7 +13,7 @@ public class Issue31551 : _IssuesUITest
 	public override string Issue => "ArgumentOutOfRangeException thrown by ScrollTo when group index is invalid";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyNoExceptionOnInvalidGroupIndex()
 	{
 		App.WaitForElement("Issue31551ScrollBtn");

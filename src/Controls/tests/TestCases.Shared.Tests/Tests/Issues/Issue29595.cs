@@ -13,7 +13,7 @@ public class Issue29595 : _IssuesUITest
 	{ }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGridItemsLayoutLeftAlignsSingleItem()
 	{
 		App.WaitForElement("StubLabel");

@@ -12,7 +12,7 @@ public class Issue35313 : _IssuesUITest
 	public override string Issue => "ScrollTo(0) not working on grouped CollectionView";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void GroupedCollectionViewScrollToIndexZeroShouldScrollToStart()
 	{
 		App.WaitForElement("ScrollToEndButton");

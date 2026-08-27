@@ -11,7 +11,7 @@ public class Issue35326 : _IssuesUITest
 	public override string Issue => "CollectionView.ScrollTo(index) doesn't work correctly when IsGrouped=\"True\" on iOS and MacCatalyst";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void GroupedCollectionViewScrollToIndexScrollsToCorrectItem()
 	{
 		// Initially the first item of the first group should be visible

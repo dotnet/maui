@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		[Description("Single Selection Binding")]
 		public void SelectionShouldUpdateBinding()
 		{

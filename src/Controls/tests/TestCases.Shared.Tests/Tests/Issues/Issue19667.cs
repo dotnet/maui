@@ -14,7 +14,7 @@ public class Issue19667 : _IssuesUITest
 	public override string Issue => "CollectionView contents not sizing correctly after orientation change";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void CollectionViewItemsSizeCorrectlyAfterOrientationChange()
 	{
 		App.TapShellFlyoutIcon();

@@ -13,7 +13,7 @@ public class Issue17823 : _IssuesUITest
 	public override string Issue => "CollectionView reordering last item succeeds when header is present";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ReorderingItemToEndWithHeaderDoesNotCrash()
 	{
 		// Verify header is present
@@ -28,7 +28,7 @@ public class Issue17823 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void ReorderingLastItemWithHeaderDoesNotCrash()
 	{
 		// Verify header is present

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] UWP Shell cannot host CollectionView/CarouselView";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void CollectionViewInShellShouldBeVisible()
 		{
 			App.WaitForElement(Success);

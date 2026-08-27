@@ -16,7 +16,7 @@ public class Issue10947 : _IssuesUITest
 	string FooterEntry => "FooterEntry";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void CollectionViewHeaderShouldNotScroll()
 	{
 		var headerEntry = App.WaitForElement(HeaderEntry);

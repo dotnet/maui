@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView: Swapping EmptyViews has no effect";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void SwappingEmptyViews()
 		{
 			App.WaitForElement("FilterItems");

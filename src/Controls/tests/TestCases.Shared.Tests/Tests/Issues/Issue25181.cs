@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void SingleItemAlignmentInCollectionViewHorizontalGridLayout()
 		{
 			App.WaitForElement("collectionview");

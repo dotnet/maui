@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Layout passes should not increase";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public async Task LayoutPassesShouldNotIncrease()
 		{
 			App.WaitForElement("RegenerateItems");

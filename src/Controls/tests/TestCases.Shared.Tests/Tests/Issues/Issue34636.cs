@@ -14,7 +14,7 @@ public class Issue34636 : _IssuesUITest
 	public override string Issue => "CollectionView ItemSpacing - First and last item on the list is truncated after changing Spacing value";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerticalItemsRemainFullyVisibleAfterChangingSpacing()
 	{
 		App.WaitForElement("ChangeSpacingButton");

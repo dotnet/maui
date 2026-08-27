@@ -13,7 +13,7 @@ public class Issue29207 : _IssuesUITest
 	public override string Issue => "KeepLastItemInView Does Not Scroll to Last Item When Adding Items at Top, Instead Scrolls to SecondLast Item";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void ScrollToLastItem()
 	{
 		App.WaitForElement("InsertItemButton");

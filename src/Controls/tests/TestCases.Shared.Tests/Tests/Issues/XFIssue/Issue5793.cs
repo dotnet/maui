@@ -13,7 +13,7 @@ public class Issue5793 : _IssuesUITest
 	public override string Issue => "[CollectionView/ListView] Not listening for Reset command";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void CollectionViewResetTest()
 	{
 		App.WaitForElement("Reset");

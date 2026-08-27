@@ -13,7 +13,7 @@ public class Issue32983 : _IssuesUITest
 	public Issue32983(TestDevice device) : base(device) { }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void BottomSheetDetentHeightIsCorrectWhenCollectionViewIsMeasuredBeforeMount()
 	{
 		App.WaitForElement("ShowBottomSheetButton");

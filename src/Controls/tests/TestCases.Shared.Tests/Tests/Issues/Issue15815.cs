@@ -13,7 +13,7 @@ public class Issue15815 : _IssuesUITest
 
 	public override string Issue => "Horizontal CollectionView does not show the last element under some condition";
 
-	[Test, ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[Test, ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void LastItemIsVisilbe()
 	{
 		var lastItem = App.WaitForElement("id-2");

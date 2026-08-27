@@ -13,7 +13,7 @@ public class Issue30363 : _IssuesUITest
 	{ }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void CollectionViewSelectionShouldClear()
 	{
 		App.WaitForElement("cvItem");

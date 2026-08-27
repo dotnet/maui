@@ -13,7 +13,7 @@ public class Issue28657 : _IssuesUITest
     }
 
     [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
     public void CellLayoutUpdatesCorrectlyAfterDeviceOrientationChanges()
     {
         App.WaitForElement("StubLabel");

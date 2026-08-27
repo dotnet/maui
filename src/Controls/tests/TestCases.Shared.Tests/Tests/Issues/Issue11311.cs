@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void CollectionViewWithFooterShouldNotNSRangeExceptionCrashOnDisplay()
 		{
 			// If this hasn't already crashed, the test is passing

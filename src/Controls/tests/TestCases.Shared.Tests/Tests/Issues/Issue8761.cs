@@ -13,7 +13,7 @@ public class Issue8761 : _IssuesUITest
 	{ }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void CollectionViewHeaderTemplateAndFooterTemplateDontWork()
 	{
 		for (int i = 0; i < 4; i++)

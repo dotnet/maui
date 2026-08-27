@@ -13,7 +13,7 @@ public class Issue32932 : _IssuesUITest
 	public override string Issue => "[Android] EmptyView doesn’t display when CollectionView is placed inside a VerticalStackLayout";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void EmptyViewShouldDisplayWhenCollectionViewIsInsideVerticalStackLayout()
 	{
 		App.WaitForElement("EmptyCollectionView");

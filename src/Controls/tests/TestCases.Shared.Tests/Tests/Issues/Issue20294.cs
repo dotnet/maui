@@ -11,7 +11,7 @@ public class Issue20294 : _IssuesUITest
 	public override string Issue => "CollectionView containing a Footer and a Border with StrokeThickness set to decimal value crashes on scroll";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void ScrollToEndDoesntCrash()
 	{
 		App.WaitForElement("ScrollToFooterButton");

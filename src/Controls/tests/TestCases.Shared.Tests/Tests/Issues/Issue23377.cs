@@ -13,7 +13,7 @@ public class Issue23377 : _IssuesUITest
 	public override string Issue => "Horizontal Item spacing in collectionView";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void Issue23377ItemSpacing()
 	{
 		App.WaitForElement("ChangeItemSpace");

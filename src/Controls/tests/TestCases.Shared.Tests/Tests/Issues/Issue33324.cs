@@ -11,7 +11,7 @@ public class Issue33324 : _IssuesUITest
     public Issue33324(TestDevice device) : base(device) { }
 
     [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
     public void EmptyViewShouldRemeasureWhenParentLayoutChanges()
     {
         App.WaitForElement("LoadItemsButton");

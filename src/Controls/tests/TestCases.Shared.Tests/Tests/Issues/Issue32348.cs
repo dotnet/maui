@@ -12,7 +12,7 @@ public class Issue32348 : _IssuesUITest
 	public override string Issue => "CollectionView VSM Background and BackgroundColor work similarly";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyCVBackgroundAndBackgroundColorWithVSM()
 	{
 		App.WaitForElement("Item 2");

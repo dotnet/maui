@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] CollectionView crash with empty ObservableCollection";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void InitiallyEmptySourceDisplaysAddedItem()
 		{
 			App.WaitForElement("Insert");

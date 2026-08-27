@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView ScrollTo not working under android";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void ScrollToIndexZeroShowsFirstItemNotHeader()
 		{
 			// Wait for CollectionView to load

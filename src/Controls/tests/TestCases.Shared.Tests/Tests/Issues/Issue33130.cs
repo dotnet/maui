@@ -10,7 +10,7 @@ public class Issue33130 : _IssuesUITest
 
 	public Issue33130(TestDevice device) : base(device) { }
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void GroupHeaderSizeShouldNotChangeWithItemSizingStrategy()
 	{
 		// Wait for the CollectionView to load

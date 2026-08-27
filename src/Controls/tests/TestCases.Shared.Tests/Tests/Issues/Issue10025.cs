@@ -14,7 +14,7 @@ public class Issue10025 : _IssuesUITest
 	public override string Issue => "Assigning null to the SelectedItem of the CollectionView in the SelectionChanged event does not clear the selection as expected";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifySelectedItemClearsOnNullAssignment()
 	{
 		App.WaitForElement("Item1");

@@ -37,7 +37,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyMeasureAllItemsWithObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -52,7 +52,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -87,7 +87,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyMeasureAllItemsWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -104,7 +104,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -123,7 +123,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyFlowDirectionRTLAndMeasureAllItemsWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -148,7 +148,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyMeasureFirstItemsWithObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -163,7 +163,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionLTRAndMeasureFirstItemsWithObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -180,7 +180,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionRTLAndMeasureFirstItemsWithObservableCollection()
 	{
 		App.WaitForElement(Options);
@@ -197,7 +197,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyMeasureFirstItemsWithObservableCollectionWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -214,7 +214,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyFlowDirectionLTRAndMeasureFirstItemsWithObservableCollectionWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -233,7 +233,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionRTLAndMeasureFirstItemsWithObservableCollectionWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -269,7 +269,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 	
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionLTRAndMeasureFirstItemsWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -288,7 +288,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionRTLAndMeasureFirstItemsWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -307,7 +307,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyMeasureAllItemsWithObservableCollectionWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -324,7 +324,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithObservableCollectionWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -343,7 +343,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionRTLAndMeasureAllItemsWithObservableCollectionWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -379,7 +379,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithObservableCollectionWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -398,7 +398,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyFlowDirectionRTLAndMeasureAllItemsWithObservableCollectionWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -417,7 +417,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyMeasureAllItemsWithObservableCollectionWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -434,7 +434,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithObservableCollectionWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -472,7 +472,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyMeasureAllItemsWithGroupedListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -491,7 +491,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithGroupedListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -512,7 +512,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyFlowDirectionRTLAndMeasureAllItemsWithGroupedListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -533,7 +533,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyMeasureAllItemsWithGroupedListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -552,7 +552,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithGroupedListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -573,7 +573,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionRTLAndMeasureAllItemsWithGroupedListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -594,7 +594,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyMeasureAllItemsWithGroupedListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -613,7 +613,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRAndMeasureAllItemsWithGroupedListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -675,7 +675,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyMeasureFirstItemsWithObservableCollectionWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -692,7 +692,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyMeasureFirstItemsWithGroupedListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -711,7 +711,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyMeasureFirstItemsWithGroupedListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -730,7 +730,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyMeasureFirstItemsWithGroupedListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -754,7 +754,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	//[Android] KeepItemsInView and KeepScrollOffset doesn't not works as expected when new items are added in CollectionView Issue Link: https://github.com/dotnet/maui/issues/29131
 	//[iOS] KeepItemsInView Does Not Show Newly Added Items After Scrolling Down in CollectionView Issue Link: https://github.com/dotnet/maui/issues/29145
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyKeepItemsInViewWithObservableList()
 	{
 		App.WaitForElement(Options);
@@ -775,7 +775,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyKeepItemsInViewWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -950,7 +950,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	//KeepLastItemInView Does Not Scroll to Last Item When Adding Items at Top, Instead Scrolls to SecondLast Item : https://github.com/dotnet/maui/issues/29207
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyKeepLastItemInViewWithObservableList()
 	{
 		App.WaitForElement(Options);
@@ -982,7 +982,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyFlowDirectionLTRAndKeepLastItemInViewWithObservableListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1002,7 +1002,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyFlowDirectionRTLAndKeepLastItemInViewWithObservableListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1022,7 +1022,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyKeepLastItemInViewWithObservableListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -1039,7 +1039,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionLTRAndKeepLastItemInViewWithObservableListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -1059,7 +1059,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionRTLAndKeepLastItemInViewWithObservableListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -1079,7 +1079,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyKeepLastItemInViewWithObservableListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1096,7 +1096,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyFlowDirectionLTRAndKeepLastItemInViewWithObservableListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1116,7 +1116,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyFlowDirectionRTLAndKeepLastItemInViewWithObservableListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1224,7 +1224,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // In windows, related issue: https://github.com/dotnet/maui/issues/34772
 	//[Android] KeepScrollOffset doesn't not works as expected when new items are added in CollectionView Issue Link:  https://github.com/dotnet/maui/issues/29131
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyKeepScrollOffsetWithObservableList()
 	{
 		App.WaitForElement(Options);
@@ -1248,7 +1248,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyKeepScrollOffsetWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -1277,7 +1277,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyFlowDirectionRTLAndKeepScrollOffsetWithGroupedList()
 	{
 		App.WaitForElement(Options);
@@ -1313,7 +1313,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 //CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1365,7 +1365,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1391,7 +1391,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1420,7 +1420,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -1451,7 +1451,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1486,7 +1486,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/33333
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrolledEventWithVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -1507,7 +1507,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrolledEventWithVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1523,7 +1523,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrolledEventWithHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -1539,7 +1539,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrolledEventWithHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -1557,7 +1557,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	//ScrollToRequested Event Tests
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyDefaultScrollToRequested()
 	{
 		App.WaitForElement(Options);
@@ -1576,7 +1576,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	// ScrollTo By Index Tests
 #if TEST_FAILS_ON_WINDOWS // Related issue: https://github.com/dotnet/maui/issues/34772
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1604,7 +1604,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/33614
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByIndexWithStartPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1631,7 +1631,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByIndexWithCenterPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1684,7 +1684,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	// ScrollTo By Item Tests
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1710,7 +1710,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/33614
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyScrollToByItemWithStartPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1737,7 +1737,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyScrollToByItemWithCenterPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1763,7 +1763,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyScrollToByItemWithEndPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1829,7 +1829,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1865,7 +1865,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndVerticalList_Potato()
 	{
 		App.WaitForElement(Options);
@@ -1899,7 +1899,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndVerticalList_Papaya()
 	{
 		App.WaitForElement(Options);
@@ -1934,7 +1934,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	//Grouped ScrollTo By Item Tests
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyGroupItemScrollToByItemWithMakeVisiblePositionAndVerticalList_Apricot()
 	{
 		App.WaitForElement(Options);
@@ -1965,7 +1965,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupItemScrollToByItemWithStartPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -1998,7 +1998,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupItemScrollToByItemWithCenterPositionAndVerticalList_Potato()
 	{
 		App.WaitForElement(Options);
@@ -2079,7 +2079,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyReorderCompletedWithVerticalList()
 	{
 		App.WaitForElement(Options);
@@ -2103,7 +2103,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Radish()
 	{
 		App.WaitForElement(Options);
@@ -2128,7 +2128,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2153,7 +2153,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement(Options);
@@ -2178,7 +2178,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyScrollToByIndexWithStartPositionAndVerticalGrid_Mango()
 	{
 		App.WaitForElement(Options);
@@ -2205,7 +2205,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2232,7 +2232,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyScrollToByIndexWithStartPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2259,7 +2259,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2286,7 +2286,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyScrollToByIndexWithCenterPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2313,7 +2313,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2340,7 +2340,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyScrollToByIndexWithEndPositionAndVerticalGrid_Radish()
 	{
 		App.WaitForElement(Options);
@@ -2367,7 +2367,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2394,7 +2394,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyScrollToByIndexWithEndPositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement(Options);
@@ -2422,7 +2422,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	// ScrollTo By Item Tests
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalGrid_Radish()
 	{
 		App.WaitForElement(Options);
@@ -2449,7 +2449,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2476,7 +2476,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement(Options);
@@ -2532,7 +2532,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyScrollToByItemWithStartPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2561,7 +2561,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyScrollToByItemWithStartPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2590,7 +2590,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyScrollToByItemWithCenterPositionAndVerticalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2619,7 +2619,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyScrollToByItemWithCenterPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2648,7 +2648,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyScrollToByItemWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2677,7 +2677,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyScrollToByItemWithEndPositionAndVerticalGrid_Radish()
 	{
 		App.WaitForElement(Options);
@@ -2706,7 +2706,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyScrollToByItemWithEndPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2801,7 +2801,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2837,7 +2837,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement(Options);
@@ -2873,7 +2873,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndVerticalGrid_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -2909,7 +2909,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -2981,7 +2981,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3017,7 +3017,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndHorizontalList_Tomato()
 	{
 		App.WaitForElement(Options);
@@ -3053,7 +3053,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3125,7 +3125,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3161,7 +3161,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndHorizontalGrid_Potato()
 	{
 		App.WaitForElement(Options);
@@ -3198,7 +3198,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	// Group name ScrollTo test by item
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Apricot()
 	{
 		App.WaitForElement(Options);
@@ -3232,7 +3232,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3266,7 +3266,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
 		App.WaitForElement(Options);
@@ -3300,7 +3300,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyGroupItemScrollToByIndexWithStartPositionAndVerticalGrid_Carrot()
 	{
 		App.WaitForElement(Options);
@@ -3336,7 +3336,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyGroupItemScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3372,7 +3372,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupItemScrollToByIndexWithStartPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3408,7 +3408,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupItemScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3480,7 +3480,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyGroupItemScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3516,7 +3516,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyGroupItemScrollToByIndexWithEndPositionAndVerticalGrid_Apricot()
 	{
 		App.WaitForElement(Options);
@@ -3552,7 +3552,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyGroupItemScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
 		App.WaitForElement(Options);
@@ -3588,7 +3588,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyGroupItemScrollToByIndexWithEndPositionAndHorizontalGrid_Potato()
 	{
 		App.WaitForElement(Options);
@@ -3625,7 +3625,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	// RemainingItemsThresholdReached Event Tests
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyRemainingItemsThresholdReachedWithVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -3662,7 +3662,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyRemainingItemsThresholdReachedWithHorizontalGrid()
 	{
 		App.WaitForElement(Options);
@@ -3681,7 +3681,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 
 	// ReorderCompleted Event Tests
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyReorderCompletedWithVerticalGrid()
 	{
 		App.WaitForElement(Options);
@@ -3700,7 +3700,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyReorderCompletedWithHorizontalList()
 	{
 		App.WaitForElement(Options);
@@ -3719,7 +3719,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyReorderCompletedWithHorizontalGrid()
 	{
 		App.WaitForElement(Options);

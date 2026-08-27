@@ -131,6 +131,7 @@ function Get-UITestInventory {
 				}
 				Shard = if ($shards.Count -eq 1) { $shards[0] } else { $null }
 				ShardCount = $shards.Count
+				Ordered = $attributeText -match '\bOrder\s*\('
 				ClassShardCount = (
 					[regex]::Matches(
 						$classAttributeText,

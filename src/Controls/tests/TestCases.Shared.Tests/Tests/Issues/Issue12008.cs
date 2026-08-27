@@ -14,7 +14,7 @@ public class Issue12008 : _IssuesUITest
     public override string Issue => "CollectionView Drag and Drop Reordering Can't Drop in Empty Group";
 
     [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void EmptyGroupCreationShouldWork()
     {
         App.WaitForElement("CreateEmptyGroupButton12008");
@@ -27,7 +27,7 @@ public class Issue12008 : _IssuesUITest
     }
 
     [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void DragItemIntoEmptyGroupShouldSucceed()
     {
         App.WaitForElement("CreateEmptyGroupButton12008");

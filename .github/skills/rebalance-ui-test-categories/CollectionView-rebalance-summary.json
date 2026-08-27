@@ -5,7 +5,7 @@
   "safetyMarginMinutes": 2.0,
   "planningLimitMinutes": 58.0,
   "shardCount": 7,
-  "maxProjectedMinutes": 47.607,
+  "maxProjectedMinutes": 54.114,
   "platforms": [
     "AndroidCoreCLR",
     "AndroidMono",
@@ -16,68 +16,68 @@
   ],
   "fixedOverheadMinutes": {
     "AndroidCoreCLR": 33.732989,
-    "AndroidMono": 34.272783,
+    "AndroidMono": 45.648006,
     "iOS18.5": 15.9011,
-    "iOSLatest": 10.035772,
+    "iOSLatest": 9.170772,
     "MacCatalyst": 16.158,
     "WinUI": 26.612394
   },
   "projectedShardMinutes": {
     "CollectionView1": {
-      "AndroidCoreCLR": 37.949,
-      "AndroidMono": 38.521,
-      "iOS18.5": 20.031,
-      "iOSLatest": 15.402,
-      "MacCatalyst": 43.116,
-      "WinUI": 26.612
+      "AndroidCoreCLR": 42.536,
+      "AndroidMono": 54.106,
+      "iOS18.5": 23.52,
+      "iOSLatest": 16.523,
+      "MacCatalyst": 49.31,
+      "WinUI": 30.68
     },
     "CollectionView2": {
-      "AndroidCoreCLR": 46.58,
-      "AndroidMono": 47.607,
-      "iOS18.5": 18.424,
-      "iOSLatest": 12.998,
-      "MacCatalyst": 40.318,
-      "WinUI": 27.828
+      "AndroidCoreCLR": 42.246,
+      "AndroidMono": 54.114,
+      "iOS18.5": 22.761,
+      "iOSLatest": 15.737,
+      "MacCatalyst": 35.283,
+      "WinUI": 29.387
     },
     "CollectionView3": {
-      "AndroidCoreCLR": 41.554,
-      "AndroidMono": 41.584,
-      "iOS18.5": 21.245,
-      "iOSLatest": 16.371,
-      "MacCatalyst": 38.167,
-      "WinUI": 31.403
+      "AndroidCoreCLR": 42.714,
+      "AndroidMono": 54.103,
+      "iOS18.5": 23.489,
+      "iOSLatest": 16.438,
+      "MacCatalyst": 34.182,
+      "WinUI": 29.345
     },
     "CollectionView4": {
-      "AndroidCoreCLR": 41.391,
-      "AndroidMono": 41.581,
-      "iOS18.5": 20.215,
-      "iOSLatest": 15.2,
-      "MacCatalyst": 33.212,
-      "WinUI": 31.931
+      "AndroidCoreCLR": 42.47,
+      "AndroidMono": 54.103,
+      "iOS18.5": 21.006,
+      "iOSLatest": 15.182,
+      "MacCatalyst": 50.498,
+      "WinUI": 30.8
     },
     "CollectionView5": {
-      "AndroidCoreCLR": 41.584,
-      "AndroidMono": 41.373,
-      "iOS18.5": 25.528,
-      "iOSLatest": 19.289,
-      "MacCatalyst": 41.356,
-      "WinUI": 30.479
+      "AndroidCoreCLR": 42.312,
+      "AndroidMono": 54.1,
+      "iOS18.5": 21.681,
+      "iOSLatest": 15.752,
+      "MacCatalyst": 50.571,
+      "WinUI": 32.01
     },
     "CollectionView6": {
-      "AndroidCoreCLR": 41.237,
-      "AndroidMono": 41.587,
-      "iOS18.5": 20.319,
-      "iOSLatest": 14.661,
-      "MacCatalyst": 33.696,
-      "WinUI": 30.189
+      "AndroidCoreCLR": 42.348,
+      "AndroidMono": 54.113,
+      "iOS18.5": 22.094,
+      "iOSLatest": 16.144,
+      "MacCatalyst": 51.13,
+      "WinUI": 32.567
     },
     "CollectionView7": {
-      "AndroidCoreCLR": 41.02,
-      "AndroidMono": 41.592,
-      "iOS18.5": 20.34,
-      "iOSLatest": 13.671,
-      "MacCatalyst": 26.444,
-      "WinUI": 30.789
+      "AndroidCoreCLR": 42.304,
+      "AndroidMono": 54.109,
+      "iOS18.5": 21.497,
+      "iOSLatest": 15.478,
+      "MacCatalyst": 51.665,
+      "WinUI": 31.738
     }
   },
   "evidence": {

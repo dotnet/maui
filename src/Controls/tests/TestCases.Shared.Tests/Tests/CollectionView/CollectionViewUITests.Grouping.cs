@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void GroupingAndHeaderWorks()
 		{
 			VisitInitialGallery("Grouping");

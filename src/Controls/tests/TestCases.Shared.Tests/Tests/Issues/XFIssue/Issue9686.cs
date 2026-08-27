@@ -16,7 +16,7 @@ public class Issue9686 : _IssuesUITest
 	public override string Issue => "[Bug, CollectionView,iOS] Foundation.Monotouch Exception in Grouped CollectionView";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 
 	public void AddRemoveEmptyGroupsShouldNotCrashOnInsert()
 	{

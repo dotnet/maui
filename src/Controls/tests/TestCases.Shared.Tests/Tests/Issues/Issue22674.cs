@@ -11,7 +11,7 @@ public class Issue22674 : _IssuesUITest
 	public override string Issue => "Crash when quickly clicking to delete item";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void RemoveItemWhenSelectionChanged()
 	{
 		App.WaitForElement("TestCollectionView");

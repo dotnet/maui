@@ -27,7 +27,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(2)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void UpdateHeaderFooterTemplateDynamically()
 	{
 		App.WaitForElement("ItemsViewTemplatedHeaderFooterButton");
@@ -41,7 +41,7 @@ public class Issue28509 : _IssuesUITest
 	}
 
 	[Test, Order(3)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void UpdateHeaderFooterDynamically()
 	{
 		App.WaitForElement("ItemsViewHeaderFooterButton");

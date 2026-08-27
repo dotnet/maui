@@ -13,7 +13,7 @@ public class Issue31351 : _IssuesUITest
 	public override string Issue => "[WinUI] Custom CollectionView does not work on ScrollTo";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void CustomCollectionViewShouldScroll()
 	{
 		App.WaitForElement("Issue31351CollectionView");
