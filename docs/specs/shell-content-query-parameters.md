@@ -52,16 +52,24 @@ or uniqueness.
   again reapplies its declarative parameters.
 - `QueryString` values are URI-decoded once. Both declarative forms use invariant
   conversion when assigned through `QueryPropertyAttribute`; structured values retain
-  their original CLR type when no conversion is required.
+  their original CLR type when no conversion is required. Existing `Shell.GoToAsync`
+  navigation keeps its historical decoding and current-culture conversion behavior for
+  compatibility, so moving identical encoded text into `QueryString` can produce a
+  different result.
 - When names are duplicated, the last parameter in collection order wins. Removing or
   replacing it reveals the preceding value, if one exists.
 - Parameters are applied on initial selection and whenever the user switches back to the
   content. Created pages are reused according to normal `ShellContent` lifecycle behavior.
 - Changes to the collection, a parameter name, or a parameter value update the selected
   content immediately. Changes to inactive content are applied when it is next selected.
-- Parameter objects inherit the `ShellContent` binding context, so `Name` and `Value` can use
-  bindings. Removed and replaced objects are detached from that inherited context and no
-  longer observed.
+- Parameter objects are logical children of `ShellContent`. `Name` and `Value` support
+  inherited binding contexts, dynamic resources, relative-source ancestor bindings, and
+  parent-scoped XAML references. Removed and replaced objects leave the logical tree and
+  are no longer observed.
+- The same parameter instance can appear more than once within one collection and remains
+  attached until its final occurrence is removed. It cannot be shared across different
+  `ShellContent` owners; adding an already-parented instance to another owner's collection
+  throws before that collection changes.
 - Parameters passed explicitly to `Shell.GoToAsync` take precedence over declarative parameters
   with the same name for that navigation. Content parameters supply values for keys not present
   in the navigation data, and are reapplied when the content is selected again.

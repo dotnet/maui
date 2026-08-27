@@ -163,6 +163,34 @@ namespace Microsoft.Maui.Controls
 		internal bool IsShellContentParameter(string name) =>
 			IsShellContentQueryParameter(name) || IsShellContentQueryStringParameter(name);
 
+		internal bool IsEquivalentTo(ShellRouteParameters other)
+		{
+			if (ReferenceEquals(this, other))
+				return true;
+
+			return other is not null &&
+				DictionaryEquals(this, other) &&
+				DictionaryEquals(_shellNavigationQueryParameters, other._shellNavigationQueryParameters) &&
+				_shellContentQueryParameterNames.SetEquals(other._shellContentQueryParameterNames) &&
+				_shellContentQueryStringParameterNames.SetEquals(other._shellContentQueryStringParameterNames);
+		}
+
+		static bool DictionaryEquals(
+			IDictionary<string, object> first,
+			IDictionary<string, object> second)
+		{
+			if (first.Count != second.Count)
+				return false;
+
+			foreach (var item in first)
+			{
+				if (!second.TryGetValue(item.Key, out var value) || !Equals(item.Value, value))
+					return false;
+			}
+
+			return true;
+		}
+
 		static Dictionary<string, string> ParseQueryString(ReadOnlySpan<char> query)
 		{
 			if (query.Length > 0 && query[0] == '?')

@@ -68,7 +68,9 @@ namespace Microsoft.Maui.Controls
 		/// The leading <c>?</c> is optional. The query string is URI-decoded once. Values from
 		/// <see cref="QueryParameters"/> take precedence over values in this query string. Parameters supplied
 		/// to Shell navigation take precedence for that navigation; selecting the content again reapplies its
-		/// declarative parameters.
+		/// declarative parameters. For compatibility, existing Shell navigation retains its historical decoding
+		/// and culture behavior, so moving the same encoded text from navigation to this property can produce
+		/// a different result.
 		/// </remarks>
 #nullable enable
 		public string? QueryString
@@ -85,7 +87,10 @@ namespace Microsoft.Maui.Controls
 		/// Changes to this collection or its parameters are applied immediately when this content is selected,
 		/// or the next time it is selected otherwise. Values in this collection take precedence over
 		/// <see cref="QueryString"/>. Parameters supplied to Shell navigation take precedence for that
-		/// navigation; selecting the content again reapplies its declarative parameters.
+		/// navigation; selecting the content again reapplies its declarative parameters. Parameters are logical
+		/// children of this content, so they support inherited binding contexts, dynamic resources, relative-source
+		/// ancestor bindings, and parent-scoped XAML references. A parameter instance can occur more than once in
+		/// this collection, but it cannot be shared with another <see cref="ShellContent"/>.
 		/// </remarks>
 		public IList<ShellContentQueryParameter> QueryParameters { get; }
 
@@ -162,15 +167,42 @@ namespace Microsoft.Maui.Controls
 		readonly HashSet<string> _lastAppliedContentParameterNames = new(StringComparer.Ordinal);
 		bool _hasAppliedQueryParameters;
 
+		sealed class ShellContentQueryParameterCollection : ObservableCollection<ShellContentQueryParameter>
+		{
+			readonly ShellContent _owner;
+
+			public ShellContentQueryParameterCollection(ShellContent owner)
+			{
+				_owner = owner;
+			}
+
+			protected override void InsertItem(int index, ShellContentQueryParameter item)
+			{
+				ValidateOwner(item);
+				base.InsertItem(index, item);
+			}
+
+			protected override void SetItem(int index, ShellContentQueryParameter item)
+			{
+				ValidateOwner(item);
+				base.SetItem(index, item);
+			}
+
+			void ValidateOwner(ShellContentQueryParameter parameter)
+			{
+				if (parameter?.Parent is Element parent && parent != _owner)
+					throw new InvalidOperationException($"{nameof(ShellContentQueryParameter)} instances cannot be shared across {nameof(ShellContent)} objects.");
+			}
+		}
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ShellContent"/> class.
 		/// </summary>
 		public ShellContent()
 		{
 			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
-			QueryParameters = new ObservableCollection<ShellContentQueryParameter>();
+			QueryParameters = new ShellContentQueryParameterCollection(this);
 			((INotifyCollectionChanged)QueryParameters).CollectionChanged += QueryParametersCollectionChanged;
-			BindingContextChanged += OnShellContentBindingContextChanged;
 		}
 
 		internal bool IsVisibleContent =>
@@ -274,6 +306,9 @@ namespace Microsoft.Maui.Controls
 						value.Unloaded += OnPageUnloaded;
 					}
 				}
+
+				if (value is not null && GetValue(QueryAttributesProperty) is ShellRouteParameters query)
+					value.SetValue(QueryAttributesProperty, query);
 
 				if (Parent is not null)
 				{
@@ -417,8 +452,10 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (e.OldItems is not null)
 			{
+				// An instance can appear more than once or be moved. Only detach it once it is absent.
+				var currentParameters = new HashSet<ShellContentQueryParameter>(QueryParameters);
 				foreach (ShellContentQueryParameter parameter in e.OldItems)
-					if (parameter is not null && !QueryParameters.Contains(parameter))
+					if (parameter is not null && !currentParameters.Contains(parameter))
 						UntrackQueryParameter(parameter);
 			}
 
@@ -443,14 +480,14 @@ namespace Microsoft.Maui.Controls
 		void TrackQueryParameter(ShellContentQueryParameter parameter)
 		{
 			parameter.PropertyChanged += OnQueryParameterPropertyChanged;
-			SetInheritedBindingContext(parameter, BindingContext);
+			AddLogicalChild(parameter);
 		}
 
 		void UntrackQueryParameter(ShellContentQueryParameter parameter)
 		{
 			_trackedQueryParameters.Remove(parameter);
 			parameter.PropertyChanged -= OnQueryParameterPropertyChanged;
-			SetInheritedBindingContext(parameter, null);
+			RemoveLogicalChild(parameter);
 		}
 
 		void OnQueryParameterPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -478,7 +515,17 @@ namespace Microsoft.Maui.Controls
 			if (this.FindParentOfType<Shell>()?.NavigationManager.AccumulateNavigatedEvents == true)
 				return;
 
-			if (!IsSelectedContent)
+			ApplyQueryAttributesFromSelectionCore(requireSelected: true);
+		}
+
+		internal void ApplyQueryAttributesFromIntermediateNavigation()
+		{
+			ApplyQueryAttributesFromSelectionCore(requireSelected: false);
+		}
+
+		void ApplyQueryAttributesFromSelectionCore(bool requireSelected)
+		{
+			if (requireSelected && !IsSelectedContent)
 				return;
 
 			var query = CreateSelectionQueryParameters(out bool hasQueryParameters);
@@ -494,6 +541,14 @@ namespace Microsoft.Maui.Controls
 			var query = CreateParameterChangeQueryParameters(out bool hasQueryParameters);
 			if (!hasQueryParameters && !_hasAppliedQueryParameters)
 				return;
+
+			var currentQuery = GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			var currentContentQuery = (ContentCache as BindableObject)?.GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			if (query.IsEquivalentTo(currentQuery) &&
+				(ContentCache is null || query.IsEquivalentTo(currentContentQuery)))
+			{
+				return;
+			}
 
 			ApplyQueryAttributesCore(query);
 			_hasAppliedQueryParameters = hasQueryParameters;
@@ -626,12 +681,6 @@ namespace Microsoft.Maui.Controls
 			_lastAppliedContentParameterNames.Clear();
 			foreach (var name in names)
 				_lastAppliedContentParameterNames.Add(name);
-		}
-
-		void OnShellContentBindingContextChanged(object sender, EventArgs e)
-		{
-			foreach (var parameter in _trackedQueryParameters)
-				SetInheritedBindingContext(parameter, BindingContext);
 		}
 
 		readonly struct ContentQueryParameter

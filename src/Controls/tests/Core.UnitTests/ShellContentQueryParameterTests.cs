@@ -111,6 +111,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task QueryStringUsesStandardDecodeWhileNavigationKeepsLegacyDecode()
+		{
+			var content = CreateQueryStringContent(
+				"value=a%252Bb",
+				() => new QueryPropertyPage());
+			var (shell, _) = CreateShell(content);
+			var page = GetPage<QueryPropertyPage>(content);
+
+			Assert.Equal("a%2Bb", page.Value);
+
+			await shell.GoToAsync("//content?value=a%252Bb");
+
+			Assert.Equal("a+b", page.Value);
+		}
+
+		[Fact]
 		public void QueryStringConvertsUsingInvariantCulture()
 		{
 			var originalCulture = CultureInfo.CurrentCulture;
@@ -256,6 +272,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GetPage<QueryAttributablePage>(second);
 			Assert.Equal(2, createdPages);
 			Assert.Equal("second", GetPage<QueryAttributablePage>(second).Value);
+		}
+
+		[Fact]
+		public void ReplacingCurrentContentAppliesExistingParametersToNewPage()
+		{
+			var firstPage = new QueryAttributablePage();
+			var content = new ShellContent
+			{
+				Route = "content",
+				Content = firstPage,
+			};
+			content.QueryParameters.Add(new ShellContentQueryParameter { Name = "value", Value = "static" });
+			CreateShell(content);
+			var replacementPage = new QueryAttributablePage();
+
+			content.Content = replacementPage;
+
+			Assert.Equal("static", replacementPage.Value);
+			Assert.Equal(1, replacementPage.ApplyCount);
 		}
 
 		[Fact]
@@ -562,6 +597,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task NavigationRemovalResetsNonNullableQueryPropertyToDefault()
+		{
+			var content = new ShellContent
+			{
+				Route = "content",
+				ContentTemplate = new DataTemplate(() => new IntegerQueryPropertyPage()),
+			};
+			var (shell, _) = CreateShell(content);
+
+			await shell.GoToAsync("//content?value=42");
+
+			await shell.GoToAsync("//content");
+
+			Assert.Equal(0, GetPage<IntegerQueryPropertyPage>(content).Value);
+		}
+
+		[Fact]
+		public void QueryParameterResolvesDynamicResourceFromShell()
+		{
+			var parameter = new ShellContentQueryParameter { Name = "value" };
+			parameter.SetDynamicResource(ShellContentQueryParameter.ValueProperty, "parameter-value");
+			var content = CreateContent(parameter);
+			var (shell, _) = CreateShell(content);
+
+			shell.Resources["parameter-value"] = "resolved";
+
+			Assert.Equal("resolved", GetPage<QueryAttributablePage>(content).Value);
+		}
+
+		[Fact]
+		public void RemovedQueryParameterLeavesLogicalTree()
+		{
+			var parameter = new ShellContentQueryParameter { Name = "value", Value = "first" };
+			var content = CreateContent(parameter);
+			var element = Assert.IsAssignableFrom<Element>(parameter);
+
+			Assert.Same(content, element.Parent);
+
+			content.QueryParameters.Remove(parameter);
+
+			Assert.Null(element.Parent);
+		}
+
+		[Fact]
+		public void QueryParameterCannotBeSharedAcrossShellContentOwners()
+		{
+			var parameter = new ShellContentQueryParameter { Name = "value", Value = "first" };
+			var first = CreateContent(parameter);
+			var second = new ShellContent();
+
+			Assert.Throws<InvalidOperationException>(() => second.QueryParameters.Add(parameter));
+			Assert.Same(first, parameter.Parent);
+			Assert.DoesNotContain(parameter, second.QueryParameters);
+		}
+
+		[Fact]
 		public async Task StaticParameterCanUpdateAndBeRemovedAfterRelativePop()
 		{
 			Routing.RegisterRoute("details", typeof(ContentPage));
@@ -624,9 +715,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("//content?value=navigation");
 			var page = GetPage<QueryAttributablePage>(content);
+			int applyCount = page.ApplyCount;
 			parameter.Value = "updated";
 
 			Assert.Equal("navigation", page.Value);
+			Assert.Equal(applyCount, page.ApplyCount);
+		}
+
+		[Fact]
+		public async Task IntermediateNavigationPreservesExistingUnrelatedRootParameter()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var content = CreateQueryStringContent("value=query-string");
+			var (shell, _) = CreateShell(content);
+			var page = GetPage<QueryAttributablePage>(content);
+
+			await shell.GoToAsync("//content?filter=retained");
+			await shell.GoToAsync("details");
+
+			Assert.Equal("query-string", page.Value);
+			Assert.Equal("retained", page.LastQuery["filter"]);
+		}
+
+		[Fact]
+		public async Task AbsoluteIntermediateNavigationPreservesExistingUnrelatedRootParameter()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var content = CreateQueryStringContent("value=query-string");
+			var (shell, _) = CreateShell(content);
+			var page = GetPage<QueryAttributablePage>(content);
+
+			await shell.GoToAsync("//content?filter=retained");
+			await shell.GoToAsync("//content/details");
+
+			Assert.Equal("query-string", page.Value);
+			Assert.Equal("retained", page.LastQuery["filter"]);
+		}
+
+		[Fact]
+		public async Task IneffectiveDeclarativeParameterDoesNotClearRootQuery()
+		{
+			Routing.RegisterRoute("details", typeof(ContentPage));
+			var content = new ShellContent
+			{
+				Route = "content",
+				ContentTemplate = new DataTemplate(() => new QueryAttributablePage()),
+			};
+			content.QueryParameters.Add(new ShellContentQueryParameter { Value = "ignored" });
+			var (shell, _) = CreateShell(content);
+			var page = GetPage<QueryAttributablePage>(content);
+
+			await shell.GoToAsync("//content?filter=retained");
+			int applyCount = page.ApplyCount;
+			await shell.GoToAsync("//content/details");
+
+			Assert.Equal("retained", page.LastQuery["filter"]);
+			Assert.Equal(applyCount, page.ApplyCount);
 		}
 
 		[Fact]
