@@ -372,7 +372,7 @@ $$"""
 			return null;
 		}
 
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem);
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, oldRoot);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)
