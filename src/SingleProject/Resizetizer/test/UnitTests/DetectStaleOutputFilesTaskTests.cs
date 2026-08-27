@@ -388,6 +388,170 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.Empty(task.StaleFiles);
 		}
 
+		/// <summary>
+		/// A link whose target no longer exists, a cycle of links, and an entry that cannot be inspected
+		/// all make <see cref="Directory.Exists(string)"/> report <see langword="false"/>, exactly like an
+		/// ordinary absent directory. Anything reached through one of them must still be left alone: the
+		/// wildcard enumerated it while the link was intact, and by the time <c>&lt;Delete&gt;</c> runs the
+		/// link may point somewhere real again.
+		/// </summary>
+		[Theory]
+		[InlineData(BrokenLinkKind.Dangling)]
+		[InlineData(BrokenLinkKind.Cyclic)]
+		[InlineData(BrokenLinkKind.Inaccessible)]
+		public void FilesBehindABrokenOrUnreadableLinkAreNeverStale(BrokenLinkKind kind)
+		{
+			AssertOnlyTheOrdinaryStaleFileIsReported(kind, allowLinkResolution: true);
+		}
+
+		/// <summary>
+		/// The same three states on a host that cannot resolve links at all, which is every .NET Framework
+		/// host including MSBuild.exe.
+		/// </summary>
+		[Theory]
+		[InlineData(BrokenLinkKind.Dangling)]
+		[InlineData(BrokenLinkKind.Cyclic)]
+		[InlineData(BrokenLinkKind.Inaccessible)]
+		public void WithoutLinkResolutionFilesBehindABrokenOrUnreadableLinkAreNeverStale(BrokenLinkKind kind)
+		{
+			AssertOnlyTheOrdinaryStaleFileIsReported(kind, allowLinkResolution: false);
+		}
+
+		void AssertOnlyTheOrdinaryStaleFileIsReported(BrokenLinkKind kind, bool allowLinkResolution)
+		{
+			// Root the test where no ancestor is itself a link, so the only unusual entry in play is the
+			// one the test creates. macOS temp directories live under /var, which is a link to /private/var,
+			// and a host that cannot resolve links could not place the root itself.
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var root = Path.Combine(basePath, "r");
+			Directory.CreateDirectory(root);
+
+			if (!TryCreateBrokenEntry(kind, root, basePath, out var traversed, out var skip))
+			{
+				Output.WriteLine(skip);
+				return;
+			}
+
+			try
+			{
+				var throughTheBrokenEntry = Path.Combine(traversed, "precious.png");
+				var genuinelyStale = Path.Combine(root, "orphan.png");
+				File.WriteAllText(genuinelyStale, "left over");
+
+				var task = GetNewTask(new[] { throughTheBrokenEntry, genuinelyStale }, Array.Empty<string>(), root: root);
+				task.AllowLinkResolution = allowLinkResolution;
+
+				Assert.True(task.Execute());
+
+				// Ordinary cleanup still happens; only the path through the broken entry is spared.
+				Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+			}
+			finally
+			{
+				Unlock(kind, root);
+			}
+		}
+
+		/// <summary>
+		/// A directory that is genuinely absent is not ambiguous, so it must not disable cleanup. Without
+		/// this, the guard would be indistinguishable from refusing to delete anything.
+		/// </summary>
+		[Fact]
+		public void AGenuinelyAbsentDirectoryStillAllowsCleanup()
+		{
+			var root = Path.Combine(DestinationDirectory, "r");
+			Directory.CreateDirectory(root);
+
+			var stale = Path.Combine(root, "drawable", "orphan.png");
+			Directory.CreateDirectory(Path.GetDirectoryName(stale));
+			File.WriteAllText(stale, "left over");
+
+			// A sibling directory that was never created at all.
+			var neverCreated = Path.Combine(root, "drawable-xhdpi", "orphan.png");
+
+			var task = GetNewTask(new[] { stale, neverCreated }, Array.Empty<string>(), root: root);
+
+			Assert.True(task.Execute());
+			Assert.Equal(new[] { stale, neverCreated }, task.StaleFiles.Select(f => f.ItemSpec).ToArray());
+		}
+
+		public enum BrokenLinkKind
+		{
+			/// <summary>A link whose target does not exist.</summary>
+			Dangling,
+
+			/// <summary>A link that eventually points back at itself.</summary>
+			Cyclic,
+
+			/// <summary>A real directory that cannot be inspected because its parent denies access.</summary>
+			Inaccessible,
+		}
+
+		static bool TryCreateBrokenEntry(BrokenLinkKind kind, string root, string outside, out string traversed, out string skip)
+		{
+			skip = null;
+			traversed = Path.Combine(root, "alias");
+
+			switch (kind)
+			{
+				case BrokenLinkKind.Dangling:
+					// The target has to be outside the root: a dangling link that pointed back inside it
+					// would resolve to an inside path and be legitimately stale.
+					if (!SymbolicLink.TryCreateDirectoryLink(traversed, Path.Combine(outside, "gone"), out var danglingError))
+					{
+						skip = $"Skipping: symbolic links are not available on this machine: {danglingError}";
+						return false;
+					}
+
+					return true;
+
+				case BrokenLinkKind.Cyclic:
+					var other = Path.Combine(root, "alias-other");
+					if (!SymbolicLink.TryCreateDirectoryLink(traversed, other, out var cyclicError) ||
+						!SymbolicLink.TryCreateDirectoryLink(other, traversed, out cyclicError))
+					{
+						skip = $"Skipping: symbolic links are not available on this machine: {cyclicError}";
+						return false;
+					}
+
+					return true;
+
+				default:
+					if (OperatingSystem.IsWindows())
+					{
+						// Denying read access needs ACL work that does not model the Unix case this covers,
+						// and the unidentifiable branch is already exercised by the other two states.
+						skip = "Skipping: denying directory access is not modelled on Windows.";
+						return false;
+					}
+
+					// A directory can only be inspected through a parent that grants access, so the parent
+					// is what gets locked.
+					var locked = Path.Combine(root, "locked");
+					traversed = Path.Combine(locked, "inner");
+					Directory.CreateDirectory(traversed);
+					File.WriteAllText(Path.Combine(traversed, "precious.png"), "not a build output");
+
+					if (Chmod(locked, 0) != 0)
+					{
+						skip = "Skipping: could not remove access from the directory.";
+						return false;
+					}
+
+					return true;
+			}
+		}
+
+		static void Unlock(BrokenLinkKind kind, string root)
+		{
+			// Leave the directory removable so the test's own cleanup can run.
+			if (kind == BrokenLinkKind.Inaccessible && !OperatingSystem.IsWindows())
+				Chmod(Path.Combine(root, "locked"), Convert.ToInt32("755", 8));
+		}
+
+		[System.Runtime.InteropServices.DllImport("libc", EntryPoint = "chmod", SetLastError = true)]
+		static extern int Chmod(string path, int mode);
+
 		static bool IsCaseSensitiveVolume(string directory)
 		{
 			var probe = Path.Combine(directory, "CaseProbe");
