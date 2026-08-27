@@ -349,12 +349,29 @@ Describe 'Replication issue outcome publication boundary' {
         $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
         $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
 
-        $step.Contains("`$existingCarriesFix = `$existing -and") | Should -BeTrue
-        $step.Contains("'(?m)^## Proposed fix") | Should -BeTrue
         $step.Contains('$matchingPulls =') | Should -BeTrue
         $step.Contains('$existing = $matchingPulls | Select-Object -First 1') | Should -BeTrue
-        $step.Contains('if ($existingCarriesFix -and -not $supersedeExisting)') | Should -BeTrue
-        $step.Contains('reproduction-only pull request exists but does not block') | Should -BeTrue
+
+        $logicStart = $step.IndexOf('$supersedeExisting = [bool]::Parse(')
+        $logicEnd = $step.IndexOf('# PR 199', $logicStart)
+        $logicStart | Should -BeGreaterThan 0
+        $logicEnd | Should -BeGreaterThan $logicStart
+        $logic = ($step.Substring($logicStart, $logicEnd - $logicStart)).Replace(
+            '${{ parameters.SupersedeExisting }}', 'false')
+        $guard = [scriptblock]::Create("param(`$existing)`n$logic")
+
+        $reproductionOutput = @(& $guard ([pscustomobject]@{
+            body = '<!-- MAUI_COPILOT_REPLICATION issue=1 platform=windows -->'
+            url = 'https://example.invalid/reproduction'
+        }) 6>&1) -join "`n"
+        $reproductionOutput | Should -Not -Match 'variable=replicationAlreadyPublished'
+        $reproductionOutput | Should -Match 'does not block generation of a validated fix'
+
+        $fixOutput = @(& $guard ([pscustomobject]@{
+            body = "<!-- MAUI_COPILOT_REPLICATION issue=1 platform=windows -->`n`n## Proposed fix"
+            url = 'https://example.invalid/fix'
+        }) 6>&1) -join "`n"
+        $fixOutput | Should -Match 'variable=replicationAlreadyPublished'
     }
 
     It 'skips the device run and the publisher when the issue is not open' {
