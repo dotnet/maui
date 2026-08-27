@@ -1004,19 +1004,57 @@ namespace Microsoft.Maui.Maps.Handlers
 		// Returns null on cancel/failure/no drawable.
 		static async Task<BitmapDescriptor?> LoadPinIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
 		{
+			IImageSourceServiceResult<ADrawable>? result = null;
+
 			try
 			{
-				using var result = await imageSource.GetPlatformImageAsync(mauiContext);
+				result = await imageSource.GetPlatformImageAsync(mauiContext);
 				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
 					return null;
 
-				var bitmap = DrawableToBitmap(drawable);
-				return bitmap != null ? BitmapDescriptorFactory.FromBitmap(bitmap) : null;
+				// Every DrawableToBitmap path returns a bitmap this handler owns, so nothing else
+				// reads it once the descriptor exists. Disposed rather than recycled: this drops
+				// the JNI peer and leaves the pixels to the Java GC, which stays correct even if
+				// FromBitmap retained the source rather than copying it. Recycling would not.
+				using var bitmap = DrawableToBitmap(drawable);
+				if (bitmap is null)
+					return null;
+
+				return BitmapDescriptorFactory.FromBitmap(bitmap);
 			}
 			catch (System.Exception ex)
 			{
-				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
+				TryLogWarning(mauiContext, ex, "Failed to load custom pin icon");
 				return null;
+			}
+			finally
+			{
+				// Guarded: the descriptor is already built by the time this runs, so a failing
+				// release must never be able to replace it with the default marker.
+				try
+				{
+					result?.Dispose();
+				}
+				catch (System.Exception ex)
+				{
+					TryLogWarning(mauiContext, ex, "Failed to release a custom pin icon image result");
+				}
+			}
+		}
+
+		// Resolving a logger throws once the scoped service provider has been disposed - the window
+		// closing while a pin image load is in flight is enough - and this runs on a path where the
+		// descriptor has often already been built. An exception escaping the catch faults the task,
+		// so AddPinAsync never reaches Map.AddMarker and the pin is missing rather than un-iconed;
+		// under FireAndForget that failure is silent. Failing to log must never cost more than the log.
+		static void TryLogWarning(IMauiContext mauiContext, System.Exception exception, string message)
+		{
+			try
+			{
+				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(exception, message);
+			}
+			catch
+			{
 			}
 		}
 
@@ -1045,7 +1083,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 				catch (System.Exception ex)
 				{
-					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Cluster image provider threw");
+					TryLogWarning(mauiContext, ex, "Cluster image provider threw");
 				}
 			}
 
@@ -1071,9 +1109,25 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		static ABitmap? DrawableToBitmap(ADrawable drawable)
 		{
-			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap != null)
+			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is ABitmap source)
 			{
-				return ScaleBitmap(bitmapDrawable.Bitmap, 64, 64);  // 64x64 pixels
+				var sized = ScaleBitmap(source, 64, 64);  // 64x64 pixels
+				if (!ReferenceEquals(sized, source))
+					return sized;
+
+				// Bitmap.createScaledBitmap hands an immutable source straight back when the image
+				// already fits - the size Pin.ImageSource documents for Android - so the descriptor
+				// would be built over pixels the image result owns, and releasing that result lets
+				// them go. Copy instead, and never fall back to the source: a failed copy has to
+				// mean the default marker, not a descriptor over foreign pixels.
+				//
+				// Always Argb8888 rather than preserving source.GetConfig(): at 64x64 a narrower
+				// config saves a few KB, which is not worth comparing Bitmap.Config values for.
+				// Those compare as JNI peers of a Java enum, and peer identity is not something the
+				// binding guarantees - a comparison that silently went false for a hardware bitmap
+				// would copy it as hardware, and BitmapDescriptorFactory cannot read those pixels
+				// back, which lands on the default marker this PR exists to prevent.
+				return source.Copy(ABitmap.Config.Argb8888!, false);
 			}
 
 			int width = drawable.IntrinsicWidth;
