@@ -114,6 +114,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task BuiltInPlatformMaintainsTheSameStackOrderingAsTheSeam()
+		{
+			// The in-box Tizen backend is implemented against IModalNavigationPlatform and relies on the
+			// fallback path applying the same stack bookkeeping the seam contract promises: the modal is
+			// on PlatformModalStack for the duration of a push, and off it for the duration of a pop.
+			// This guards that invariant on the no-factory path, which is what the built-in platforms use.
+			var window = CreateWindow();
+			var root = AttachRootPage(window);
+			var host = Host(window);
+
+			var first = new ContentPage();
+			var second = new ContentPage();
+
+			await window.Navigation.PushModalAsync(first);
+			Assert.Equal(new[] { first }, host.PlatformModalStack);
+			Assert.Same(first, host.CurrentPlatformPage);
+
+			await window.Navigation.PushModalAsync(second);
+			Assert.Equal(new[] { first, second }, host.PlatformModalStack);
+			Assert.Same(second, host.CurrentPlatformPage);
+
+			await window.Navigation.PopModalAsync();
+			Assert.Equal(new[] { first }, host.PlatformModalStack);
+			Assert.Same(first, host.CurrentPlatformPage);
+
+			await window.Navigation.PopModalAsync();
+			Assert.Empty(host.PlatformModalStack);
+			Assert.Same(root, host.CurrentPlatformPage);
+		}
+
+		[Fact]
 		public async Task CustomPlatformResolvedFromDependencyInjection()
 		{
 			var (window, _, factory) = CreateWindowWithPlatform();
