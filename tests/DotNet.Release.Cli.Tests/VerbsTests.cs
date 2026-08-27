@@ -173,9 +173,9 @@ public class VerbsTests : IDisposable
         return ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
     }
 
-    private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? skip = null, string? expectedHash = null) =>
+    private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? skip = null, string? expectedHash = null, string? set = null) =>
         Verbs.FilterAsync(
-            _console, probe, _workspace.ReadPlan(), _workspace.Out, skip ?? [], expectedHash, CancellationToken.None);
+            _console, probe, _workspace.ReadPlan(), _workspace.Out, skip ?? [], expectedHash, set, CancellationToken.None);
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()
@@ -299,19 +299,20 @@ public class VerbsTests : IDisposable
 
     // ---- verify ----
 
-    private Task<int> Verify(IPackageAvailabilityProbe probe, int maxMinutes = 30)
+    private Task<int> Verify(IPackageAvailabilityProbe probe, int maxMinutes = 30, string? set = null, int pollSeconds = 20)
     {
         var now = Workspace.Now;
 
         return Verbs.VerifyAsync(
             _console, probe, _workspace.ReadPlan(),
-            TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
+            TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(pollSeconds),
             () => now,
             (delay, _) =>
             {
                 now = now.Add(delay);
                 return Task.CompletedTask;
             },
+            set,
             CancellationToken.None);
     }
 

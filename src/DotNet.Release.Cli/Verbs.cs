@@ -201,6 +201,7 @@ internal static class Verbs
         string stageDirectory,
         IReadOnlyList<string> skipPatterns,
         string? expectedPlanHash,
+        string? setName,
         CancellationToken cancellationToken)
     {
         var plan = expectedPlanHash is { Length: > 0 }
@@ -212,9 +213,15 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, plan.Errors);
         }
 
+        var sets = SelectSets(plan.Value, setName);
+        if (sets.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, sets.Errors);
+        }
+
         var pending = 0;
 
-        foreach (var set in plan.Value.Sets.OrderBy(s => s.Order))
+        foreach (var set in sets.Value)
         {
             var setDirectory = Path.Combine(stageDirectory, set.ArtifactName);
 
@@ -279,11 +286,57 @@ internal static class Verbs
         return hashes;
     }
 
+    /// <summary>
+    /// Selects the sets a publish stage operates on.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This scoping is load-bearing for workload releases. Packs and manifests are published
+    /// by two separate stages, each of which downloads only its own artifact — so a stage
+    /// that operated on every set in the plan would look for the other stage's files in a
+    /// directory that does not exist, and would wait for packages that have not been pushed
+    /// yet. A single-set release works either way, which is exactly why the mistake is easy
+    /// to miss.
+    /// </para>
+    /// <para>
+    /// An unknown set name fails closed rather than silently selecting nothing: a typo in
+    /// the template would otherwise turn into a publish stage that verifies zero packages
+    /// and reports success.
+    /// </para>
+    /// </remarks>
+    internal static Result<IReadOnlyList<ReleasePackageSet>> SelectSets(ReleasePlan plan, string? setName)
+    {
+        var ordered = plan.Sets.OrderBy(s => s.Order).ToList();
+
+        if (string.IsNullOrWhiteSpace(setName))
+        {
+            return Result<IReadOnlyList<ReleasePackageSet>>.Success(ordered);
+        }
+
+        var matched = ordered
+            .Where(s => string.Equals(s.ArtifactName, setName.Trim(), StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        return matched.Count > 0
+            ? Result<IReadOnlyList<ReleasePackageSet>>.Success(matched)
+            : Result<IReadOnlyList<ReleasePackageSet>>.Failure(
+                ErrorCodes.PackageSetNotFound,
+                $"The release plan has no package set with artifact name '{setName}'. " +
+                $"It contains: {string.Join(", ", ordered.Select(s => s.ArtifactName))}.");
+    }
+
     // ---- release verify ----
 
     /// <summary>
-    /// Polls until every planned package is indexed on NuGet.org, or the deadline expires.
+    /// Polls until every package in scope is indexed on NuGet.org, or the deadline expires.
     /// </summary>
+    /// <remarks>
+    /// The deadline covers the whole set, not each package. Observed production behaviour
+    /// (build 3059242, 41 packages) was a long tail: one package alone held the run for
+    /// 4m11s across 11 attempts, with the set completing in 10m30s over 29 attempts. A
+    /// per-package budget would have to be large enough for that tail and would then be far
+    /// too generous for the set.
+    /// </remarks>
     public static async Task<int> VerifyAsync(
         IReleaseConsole console,
         IPackageAvailabilityProbe probe,
@@ -292,6 +345,7 @@ internal static class Verbs
         TimeSpan pollInterval,
         Func<DateTimeOffset> clock,
         Func<TimeSpan, CancellationToken, Task> delay,
+        string? setName,
         CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.DeserializePlan(planJson);
@@ -300,9 +354,16 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, plan.Errors);
         }
 
-        // Every planned package, including ones `filter` removed: those were withheld on the
-        // grounds that they were already live, so their absence here means that was wrong.
-        var packages = plan.Value.AllPackages.ToList();
+        var sets = SelectSets(plan.Value, setName);
+        if (sets.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, sets.Errors);
+        }
+
+        // Every package in scope, including ones `filter` removed: those were withheld on
+        // the grounds that they were already live, so their absence here means that was
+        // wrong. Scoped to this stage's sets, because the other stage has not published yet.
+        var packages = sets.Value.SelectMany(s => s.Packages).ToList();
         var deadline = clock() + maxDuration;
 
         while (true)

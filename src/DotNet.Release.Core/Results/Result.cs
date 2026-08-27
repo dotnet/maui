@@ -24,6 +24,7 @@ public static class ErrorCodes
     public const string PackageDuplicateFileName = "PACKAGE_DUPLICATE_FILENAME";
     public const string PackageDuplicateIdentity = "PACKAGE_DUPLICATE_IDENTITY";
     public const string PackageSetEmpty = "PACKAGE_SET_EMPTY";
+    public const string PackageSetNotFound = "PACKAGE_SET_NOT_FOUND";
     public const string ManifestInNonWorkload = "MANIFEST_IN_NON_WORKLOAD";
 
     public const string WorkloadBandUnresolved = "WORKLOAD_BAND_UNRESOLVED";

@@ -95,6 +95,7 @@ stages:
           --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
           --stage "$(Pipeline.Workspace)/${{ parameters.artifactName }}" `
           --expected-plan-hash "$(ReleasePlanHash)" `
+          --set "${{ parameters.artifactName }}" `
           --skip '${{ parameters.recoveryFilters }}'
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Filter already-published packages
@@ -116,6 +117,7 @@ stages:
     - pwsh: |
         & "$(toolPath)" verify `
           --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
+          --set "${{ parameters.artifactName }}" `
           --max-duration-minutes 30 `
           --poll-seconds 20
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

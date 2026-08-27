@@ -165,20 +165,23 @@ Resolves the BAR build through the typed client, then verifies it against the re
 the declarative policy: repository identity, exact commit, required channel membership, and
 workload classification. Writes `./stage/plan.json` (a `ResolvedRelease`).
 
-Emits exactly one pipeline variable:
+Emits one pipeline variable:
 `##vso[task.setvariable variable=BarId;isOutput=true]<id>`, because the `gather-drop` step
 that follows needs the BAR ID that this step discovered.
 
 `plan` has no package-reading and no feed code compiled into it.
 
-> **Deviation from the original intent, recorded honestly.** The plan was for `BarId` to be
-> the tool's *only* pipeline-variable side effect. It emits **two**: `release filter` also
-> sets `NuGetPackagesToPublish`, because the publish task is skipped via an Azure DevOps
-> `condition`, and a condition can only read a variable. The alternative — handing
-> `1ES.PublishNuget@1` an empty directory and relying on its glob to match nothing — fails
-> the task rather than skipping it. Both variables are covered by tests, and they are the
-> only two. Notably the plan *hash* is not among them: the pipeline computes it with
-> `Get-FileHash` rather than trusting the tool to declare the value that pins it.
+> **Compatibility note.** The tool sets a second pipeline variable,
+> `NuGetPackagesToPublish`, from `release filter`. This is not a new contract: today's
+> `nuget_release_packages.ps1` sets the same variable under the same name, and three
+> existing conditions consume it (`ci-official-release.yml` twice,
+> `non-workload-publish.yml` once). It exists because the publish task is skipped via an
+> Azure DevOps `condition`, and a condition can only read a variable. Both variables are
+> covered by tests, and they are the only two.
+>
+> The plan *hash* is deliberately not among them: the pipeline computes it with
+> `Get-FileHash`, because a value that pins an artifact must not be sourced from that
+> artifact.
 
 ### `release stage`
 
@@ -352,6 +355,25 @@ None of these splits is stylistic:
 - **prepare as three steps rather than one** — accepted deliberately. Three steps with one
   responsibility each are attributable on failure; today's single 304-line script can fail
   in about twenty ways behind one message.
+
+### Publish stages are scoped to one package set
+
+`release filter` and `release verify` both take `--set <artifactName>`, and the template
+passes the stage's own artifact name.
+
+This is load-bearing for workload releases and easy to get wrong, because a single-set
+release works without it. Each publish stage downloads only its own artifact, so a stage
+that operated on every set in the plan would:
+
+- look for the *other* stage's `.nupkg` files in a directory that does not exist, and fail
+  with `PACKAGE_FILE_MISSING`; and
+- wait for packages that, by design, have not been published yet — burning the full
+  verification deadline before failing.
+
+A workload release could therefore never have succeeded, while a non-workload one worked by
+accident. An unknown `--set` name fails closed with `PACKAGE_SET_NOT_FOUND` rather than
+selecting nothing, so a template typo cannot produce a publish stage that verifies zero
+packages and reports success. Covered by `WorkloadStageScopingTests`.
 
 ### Dry run is structurally incapable of publishing
 
@@ -613,7 +635,59 @@ Two consequences for the adapter:
 
 ---
 
-## 16. Open questions
+## 16. Operational behaviour observed in production
+
+Evidence from Azure DevOps build **3059242**, which released 41 packages end to end.
+
+### NuGet.org indexing is slow and non-uniform
+
+```
+19:35:44  waiting for 41   (attempt  2)
+19:39:01  waiting for 22   (attempt 10)
+19:41:55  waiting for  1   (attempt 18)
+19:46:04  Verified all 41 packages.   (attempt 29)
+```
+
+**10m30s, 29 polls, and one package alone held the tail for 4m11s across 11 polls.**
+
+Three design consequences, each pinned by a test in `VerificationBudgetTests`:
+
+1. **The default budget stays at 30 minutes / 20-second polls** — roughly 90 polls, about
+   three times what the observed run needed. `A_five_minute_budget_would_have_failed_a_healthy_release`
+   exists so nobody tunes it down on the assumption that indexing is quick.
+2. **The deadline covers the set, not each package.** A per-package budget would have to be
+   large enough for that 4-minute straggler and would then be wildly generous for the set.
+   Pinned by `A_single_straggler_is_covered_by_the_set_budget`.
+3. **The availability probe must not cache.** `SourceCacheContext.NoCache` is set. Against a
+   4-minute tail, a cached negative would let a later run re-push a package that had in fact
+   landed, and the 1ES NuGet task treats the resulting HTTP 409 as fatal.
+
+### Job result is not a release-success oracle
+
+The same run finished `partiallySucceeded`, with both pack sets pushed and verified
+correctly. The cause was two **non-blocking 1ES checks**:
+
+```
+Branch Validation (1ES PT):      Production releases must use a production branch
+Validate Source Build (1ES PT):  Artifacts downloaded in a production release job
+                                 must be built on a production branch
+```
+
+Any job using `templateContext: type: releaseJob, isProduction: true` inherits this.
+
+- **Expected, not a defect:** template validation and any end-to-end rehearsal from a
+  non-production branch will report `partiallySucceeded` even when the release is entirely
+  correct. Green is not the success signal here.
+- **Therefore the authoritative signal is `release verify`'s own exit code**, which is why
+  it is a distinct verb with an explicit exit contract rather than a step folded into the
+  publish. It returns a non-zero exit code and names every missing identity; it never warns
+  and continues. Pinned by
+  `Verification_failure_is_a_non_zero_exit_code_with_the_missing_identities`, and the
+  template propagates it with `if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }`.
+
+---
+
+## 17. Open questions
 
 1. **Asset download without `gather-drop`.** Resolved for now — `gather-drop` stays (§4).
    The client does return asset locations, so a future native download is conceivable, but
@@ -626,6 +700,17 @@ Two consequences for the adapter:
 3. **Whether workload repositories should also require an explicit channel** (§9).
 4. ~~**Verifying the typed client's exact API surface.**~~ **Resolved** — see §15. The
    package restored, the surface was confirmed by reflection, and `IBuildRegistry` matches
-   it. One residual, called out honestly: the 404-means-not-found behaviour is inferred from
-   the client's exception model and covered by a faked `RestApiException`, not observed
-   against a live service, because no live BAR calls were permitted.
+   it.
+
+   One residual, narrowed. The two risks here were originally treated as one and should not
+   be:
+   - The **null-field path is confirmed in production**. BAR build 328857 has
+     `gitHubRepository: null`; Arcade derives the identity from the AzDO mirror name,
+     verifies it against the GitHub API, gets a 404, and nulls the field as a `LogMessage`
+     rather than an error. Pinned by `Production_build_328857_has_a_null_github_repository`.
+     No longer a risk.
+   - The **missing-build path is still unobserved**. That a lookup for a non-existent BAR ID
+     surfaces as `RestApiException` with `Response.Status == 404` is inferred from the
+     client's exception model and covered by a faked exception, not seen against a live
+     service, because no live BAR calls were permitted. This is the only outstanding
+     verification.

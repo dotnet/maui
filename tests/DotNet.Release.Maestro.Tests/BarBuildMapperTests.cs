@@ -38,6 +38,33 @@ public class BarBuildMapperTests
         Assert.Null(mapped.GitHubRepository);
     }
 
+    /// <summary>
+    /// The exact shape of BAR build 328857, released from `dotnet/skiasharp` in production.
+    /// </summary>
+    /// <remarks>
+    /// Root cause of the null: Arcade's <c>PublishBuildToMaestro</c> derives the GitHub
+    /// identity from the AzDO mirror name (<c>dotnet-SkiaSharp</c> → <c>dotnet/skiasharp</c>),
+    /// verifies it against the GitHub API, receives a 404, and nulls the field as a
+    /// <c>LogMessage</c> rather than an error. So the field the client's type system presents
+    /// as non-null is null on a real, released build. This test pins that shape.
+    /// </remarks>
+    [Fact]
+    public void Production_build_328857_has_a_null_github_repository()
+    {
+        var mapped = BarBuildMapper.Map(BuildFactory.Create(
+            id: 328857,
+            gitHubRepository: null,
+            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp",
+            channels: [(1648, ".NET Libraries")]));
+
+        Assert.Equal(328857, mapped.Id);
+        Assert.Null(mapped.GitHubRepository);
+
+        // Identity is still established, from the mirror name, and still verifiable.
+        Assert.Equal("dotnet/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).Value.FullName);
+        Assert.Equal(new ChannelReference(".NET Libraries", 1648), Assert.Single(mapped.Channels));
+    }
+
     [Fact]
     public void Null_github_repository_still_carries_the_azdo_mirror_for_identity_recovery()
     {

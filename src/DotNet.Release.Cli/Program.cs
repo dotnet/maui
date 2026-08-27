@@ -123,10 +123,11 @@ public static class Program
         var skip = new Option<string?>("--skip") { Description = "Semicolon-separated filters for packages a previous run already submitted." };
         var expectedHash = new Option<string?>("--expected-plan-hash") { Description = "Fail unless the plan matches this SHA-256." };
         var feed = new Option<string?>("--feed") { Description = "Feed index to query. Defaults to NuGet.org." };
+        var set = new Option<string?>("--set") { Description = "Artifact name of the package set this stage publishes. Omit to operate on every set." };
 
         var command = new Command("filter", "Remove already-published packages from the staging directory.")
         {
-            plan, stage, skip, expectedHash, feed,
+            plan, stage, skip, expectedHash, feed, set,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -141,6 +142,7 @@ public static class Program
                 parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
                 PackageGlob.ParseList(parse.GetValue(skip)),
                 parse.GetValue(expectedHash),
+                parse.GetValue(set),
                 cancellationToken);
         });
 
@@ -153,10 +155,11 @@ public static class Program
         var maxDuration = new Option<int>("--max-duration-minutes") { Description = "Verification deadline.", DefaultValueFactory = _ => 30 };
         var interval = new Option<int>("--poll-seconds") { Description = "Delay between polls.", DefaultValueFactory = _ => 20 };
         var feed = new Option<string?>("--feed") { Description = "Feed index to query. Defaults to NuGet.org." };
+        var set = new Option<string?>("--set") { Description = "Artifact name of the package set this stage published. Omit to verify every set." };
 
-        var command = new Command("verify", "Poll until every planned package is indexed on NuGet.org.")
+        var command = new Command("verify", "Poll until every package in scope is indexed on NuGet.org.")
         {
-            plan, maxDuration, interval, feed,
+            plan, maxDuration, interval, feed, set,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -171,6 +174,7 @@ public static class Program
                 TimeSpan.FromSeconds(parse.GetValue(interval)),
                 () => DateTimeOffset.UtcNow,
                 Task.Delay,
+                parse.GetValue(set),
                 cancellationToken);
         });
 

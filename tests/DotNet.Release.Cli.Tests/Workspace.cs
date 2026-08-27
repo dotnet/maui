@@ -44,8 +44,11 @@ internal sealed class FakeProbe(params string[] published) : IPackageAvailabilit
 
     public int Calls { get; private set; }
 
-    /// <summary>Identities that become available after the given number of calls.</summary>
+    /// <summary>Identities that become available once this many calls have been made.</summary>
     public Dictionary<string, int> AvailableAfterCall { get; init; } = [];
+
+    /// <summary>Every identity becomes available once this many calls have been made.</summary>
+    public int? AllAvailableAfterCall { get; init; }
 
     public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
         IReadOnlyList<PlannedPackage> packages,
@@ -55,8 +58,22 @@ internal sealed class FakeProbe(params string[] published) : IPackageAvailabilit
 
         IReadOnlyDictionary<string, bool> result = packages.ToDictionary(
             p => p.IdentityKey,
-            p => _published.Contains(p.IdentityKey) ||
-                 (AvailableAfterCall.TryGetValue(p.IdentityKey, out var call) && Calls >= call),
+            p =>
+            {
+                if (_published.Contains(p.IdentityKey))
+                {
+                    return true;
+                }
+
+                // A per-identity schedule wins over the global one, so a straggler can be
+                // modelled as lagging behind the rest of the set.
+                if (AvailableAfterCall.TryGetValue(p.IdentityKey, out var call))
+                {
+                    return Calls >= call;
+                }
+
+                return AllAvailableAfterCall is { } all && Calls >= all;
+            },
             StringComparer.Ordinal);
 
         return Task.FromResult(result);
