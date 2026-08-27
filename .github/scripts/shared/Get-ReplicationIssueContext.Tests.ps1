@@ -430,6 +430,11 @@ $second
             }
         }
 
+        # Oversized bytes must never become a screenshot the agent sees, but
+        # that is a reason to drop the attachment, not to end a replication run
+        # that has not started yet. Build 15034051 died in setup for exactly
+        # this, so the property asserted here is that nothing survives, not
+        # that the run dies.
         {
             Invoke-GetReplicationIssueContext `
                 -IssueNumber 123 `
@@ -437,10 +442,14 @@ $second
                 -OutputDir $output `
                 -IssueJsonPath $fixture `
                 -DownloadScreenshots `
-                -MaxScreenshotBytes 16
-        } | Should -Throw '*exceeds MaxScreenshotBytes*'
+                -MaxScreenshotBytes 16 `
+                -WarningAction SilentlyContinue
+        } | Should -Not -Throw
         Test-Path -LiteralPath (Join-Path $output 'screenshots') |
             Should -BeFalse
+        $context = Get-Content -LiteralPath (Join-Path $output 'issue-context.json') -Raw |
+            ConvertFrom-Json
+        @($context.screenshots).Count | Should -Be 0
     }
 
     It 'uses the gh API seam only when IssueJsonPath is absent' {
@@ -995,5 +1004,438 @@ exit 1
                 $node -is [System.Management.Automation.Language.VariableExpressionAst]
             }, $true) | ForEach-Object { $_.VariablePath.UserPath }
         $variables | Where-Object { $_ -match '(?i)token' } | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Get-ReplicationRuntimeScopeMismatch' {
+    # Runs 15032131, 15032133 and 15032134 each provisioned a machine, built the
+    # Sandbox and spent several attempts before the agent correctly reported
+    # that a build, packaging or CI-only report is not something a page can
+    # show. The titles said so before any of that work started.
+    BeforeAll {
+        $contextScript = Join-Path (Split-Path -Parent $PSCommandPath) 'Get-ReplicationIssueContext.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $contextScript, [ref]$null, [ref]$null)
+        $fn = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Get-ReplicationRuntimeScopeMismatch' }, $true)
+        if (-not $fn) { throw 'Get-ReplicationRuntimeScopeMismatch not found' }
+        . ([scriptblock]::Create($fn.Extent.Text))
+    }
+
+    It 'refuses reports the Sandbox cannot answer' -ForEach @(
+        @{ Title = 'MSB6003 build failure from MakePri collision' }
+        @{ Title = 'Binding generators easily exceeds MAX_PATH on Windows' }
+        @{ Title = '[macOS CI] Flaky Label tests Pass Locally but Fail in CI' }
+        @{ Title = 'Failed to Make MSIX Package when using NativeAOT' }
+        @{ Title = '.NET MAUI iOS Native Linker Failure on .NET 9 + Xcode 26.5' }
+        # Build 15032411 recorded a page for this one, then spent every plan
+        # round being told no test could carry the evidence.
+        @{ Title = '[.NET 11] CLI - Creating new MAUI Blazor Sample App from CLI is .NET 10 by default' }
+        @{ Title = '[Android] `dotnet new maui -sc` fails to build: minSdkVersion 21 conflicts' }
+        @{ Title = '[dotnet 11 preview7] maui template project fails to build with NativeAot enabled' }
+        # Wave 48 selection surfaced these four; each reached the shortlist
+        # because the words the filter needed were one word further apart.
+        @{ Title = '[macOS]Build may fail if the title contains a slash' }
+        @{ Title = 'MAUI incremental build re-executes Android targets on repeat no-change build' }
+        @{ Title = "XAML Source Generation doesn't check for null references" }
+        @{ Title = "Conflicting values for resource 'Platform/Windows/TabbedPage/TabbedPageStyle.xbf'" }
+        # The agent may not add a package reference, so a trigger that needs one
+        # cannot be arranged in the Sandbox at all.
+        @{ Title = 'MethodAccessException when using CommunityToolkit.Maui AppThemeResource with 10.0.40' }
+        @{ Title = 'Syncfusion.Maui.Popup.SfPopupOverlayContainer has been Garbage Collected' }
+        # Build 15032415 recorded a Windows page for this before refusing it.
+        @{ Title = 'Warnings From Generated XAML Refer to a file the IDE cannot find' }
+        @{ Title = 'XAML Hot reload completely broken' }
+        @{ Title = 'Obsolete Named FontSize Values in XAML are Suggested by IntelliSense' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report whose trigger is a hosted web view the Sandbox may not use' {
+        foreach ($title in @(
+                'MAUI HybridWebView C# to JavaScript interface hang',
+                '[Android] BlazorWebView predictive back callback blocks back-to-home',
+                'WPF WebView2 DoubleClick Event is not triggered.',
+                'Deploying .NET MAUI Blazor Hybrid to Android Emulator crashes immediately'
+            )) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title -Labels @() |
+                Should -Not -BeNullOrEmpty -Because "'$title' cannot run in a plain-controls Sandbox"
+        }
+    }
+
+    It 'refuses an IDE report that abbreviates the product name with a year' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'VS 2026 XAML Binding Failures window not scanning initial page' -Labels @() |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report whose trigger is a project file property the agent may not edit' -ForEach @(
+        # Build 15033579 provisioned a Windows agent for this and spent three
+        # attempts concluding the Sandbox cannot restore or rebuild a project.
+        @{ Title = 'Unittests not working after changing ApplicationDisplayVersion different from ApplicationVersion' }
+        @{ Title = 'Setting RuntimeIdentifier breaks Release deployment on Windows' }
+        @{ Title = 'Adding a TargetFramework to the csproj drops the Android head' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -Not -BeNullOrEmpty -Because "'$Title' can only be arranged by editing a project file"
+    }
+
+    It "refuses triage of this repository's own test suite on a candidate pull request" -ForEach @(
+        @{ Title = '[inflight regression] Core.UnitTests/PickerTests fail in candidate PR 36411' }
+        @{ Title = '[inflight regression] UsesReflectionBasedBindings Xaml.UnitTests fails in candidate PR 36411' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'still accepts a runtime report that merely mentions a version or a restored value' -ForEach @(
+        # 'restore' is a build verb and an ordinary English one. Every title
+        # here was taken from the live corpus and must stay selectable.
+        @{ Title = '[SafeArea] [Android] Padding not restored after SoftInput closes' }
+        @{ Title = '[Windows, Android, iOS & Mac]Button TextColor does not restore to platform default when reset to null' }
+        @{ Title = '[iOS, Mac & Windows]Button BackgroundColor does not restore to default when reset to null after dynamic update' }
+        @{ Title = 'Label text is wrong after upgrading to 10.0.60' }
+        @{ Title = 'Running Maui in Unit Tests gets TypeInitializationException due to missing FocusManager' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -BeNullOrEmpty -Because "'$Title' describes what the running app does"
+    }
+
+    It 'refuses a report that the untouched template already misbehaves' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'Clean MAUI project crashes on start in release mode on Android' -Labels @() |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report whose trigger is an implicit XAML namespace' -ForEach @(
+        @{ Title = 'Use of XAML Implicit namespace causes runtime fault' }
+        @{ Title = 'XSG drops Trigger.Setters.Add() for Shell Tab Icons when using implicit xmlns - 10.0.40' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -Not -BeNullOrEmpty -Because 'the generated page must declare both namespaces explicitly'
+    }
+
+    It 'refuses a report whose label says it is not a defect' -ForEach @(
+        # Measured on the 600 open issues in the live pool: 49 proposal/open,
+        # 8 t/enhancement, 28 ci-scan-*, 1 Known Build Error, and none of the
+        # 86 also carries t/bug.
+        @{ Label = 'proposal/open' }
+        @{ Label = 't/enhancement' }
+        @{ Label = "t/enhancement `u{2600}`u{FE0F}" }
+        @{ Label = 'ci-scan-net11' }
+        @{ Label = 'Known Build Error' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[iOS] Label text is clipped when FontSize changes' -Labels @($Label) |
+            Should -Not -BeNullOrEmpty -Because "'$Label' is not a defect report"
+    }
+
+    It 'keeps an ordinary bug report that carries unrelated labels' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[iOS] Label text is clipped when FontSize changes' `
+            -Labels @('t/bug', 'platform/ios', 's/verified', 'area-controls-label', 'partner/syncfusion') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'refuses a Syncfusion control the Sandbox may not reference' -ForEach @(
+        @{ Title = '[iOS] SfAutocomplete with ShowSuggestionsOnFocus freezes in a popup' }
+        @{ Title = 'SfListView does not scroll to the last item' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @('t/bug') |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report that the compiler should have warned' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'XAML Does Not Warn or Obsolete FontSize' -Labels @('t/bug') |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'keeps a runtime report whose control name merely starts with lowercase sf' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Android] Safe area inset is wrong after rotation' -Labels @('t/bug') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'still accepts a launch crash whose trigger is an ordinary page property' -ForEach @(
+        @{ Title = 'iOS app crashes on start because of set SafeAreaEdges="None"' }
+        @{ Title = '[Windows] "TitleBar.ExtendsContentIntoTitleBar = false" is now crashing startup every time in minimal Maui Project' }
+        @{ Title = 'App crashes on startup after building in Release' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @() |
+            Should -BeNullOrEmpty -Because "'$Title' names a trigger a Sandbox page can set"
+    }
+
+    It 'still accepts an ordinary control report that merely renders web content' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'WebView inside ScrollView does not scroll on Android' -Labels @() |
+            Should -BeNullOrEmpty
+    }
+
+    It 'keeps reports about what the app does at runtime' -ForEach @(
+        @{ Title = '[Mac] FlowDirection Property of DatePicker Is Not Functioning as Expected' }
+        @{ Title = "TextToSpeech.Default.GetLocalesAsync() doesn't show Lithuanian language on iOS" }
+        @{ Title = '[iOS, Windows] Shell.TabBarBackgroundColor not reset to Null' }
+        @{ Title = "[Windows] The Shell's foreground color is not applied to the ToolbarItems" }
+        @{ Title = 'App crashes on startup after building in Release' }
+        @{ Title = 'Switch iOS Liquid glass rendering issue' }
+        # A control template is not a project template; these are the ordinary
+        # runtime reports the new CLI signal must not touch.
+        @{ Title = '[Android] ControlTemplate is not applied to ContentView on reuse' }
+        @{ Title = 'DataTemplate selector creates a new cell for every item' }
+        @{ Title = 'CollectionView ItemTemplate binding breaks after grouping changes' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title | Should -BeExactly ''
+    }
+
+    It 'refuses ahead-of-time publishing however the title spaces it' -ForEach @(
+        # Build 15050181 provisioned a Windows agent for the first of these and
+        # refused it three attempts later. Only the closed-up spelling was
+        # matched, and the title carries no error word for the build signal.
+        @{ Title = 'Maui Windows Native AOT custom font' }
+        @{ Title = 'NativeAOT publishing breaks custom fonts' }
+        @{ Title = 'Native  AOT trimming removes a converter' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels @('t/bug') |
+            Should -Not -BeNullOrEmpty -Because "'$Title' needs a project-file change"
+    }
+
+    It "refuses this repository's own infrastructure by label" {
+        # Build 15050187 provisioned a Mac for this exact report and spent three
+        # attempts concluding a Sandbox page cannot run its own CI host.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'Move macOS UI tests to ACES Shared infrastructure' `
+            -Labels @('platform/macos', 'area-infrastructure') |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'refuses a report the maintainers could not reproduce' -ForEach @(
+        @{ Label = 's/needs-repro' }
+        @{ Label = 's/needs-info' }
+    ) {
+        # Build 15050437 provisioned a Mac for "ScrollView in MacCatalyst
+        # doesn't work" and refused it because the evidence omits the hierarchy
+        # and sizing, which is the same thing the label already records.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title "ScrollView in MacCatalyst doesn't work" `
+            -Labels @('t/bug', 'platform/macos', $Label) |
+            Should -Not -BeNullOrEmpty -Because "$Label says the report is not reproducible as written"
+    }
+
+    It 'still accepts a report a maintainer has since verified' -ForEach @(
+        # All three live reports carrying both labels are ordinary app bugs.
+        @{ Title = '[Android] SwipeView Threshold is ignored in Microsoft.Maui.Controls 10.0.100 (regression from 10.0.90)' }
+        @{ Title = 'Windows: Shell.Background behavior is inconsistent with Android and iOS for TabBar' }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title $Title -Labels @('t/bug', 's/needs-repro', 's/verified') |
+            Should -BeNullOrEmpty -Because 's/verified answers the question s/needs-repro asked'
+    }
+
+    It 'does not confuse needs-attention with needs-repro' {
+        # Two of the reports that produced a reproduction carry this label.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Windows] CollectionView scrolls to the wrong item' `
+            -Labels @('t/bug', 's/needs-attention') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'keeps every report that has already produced a reproduction' -ForEach @(
+        @{ Title = '[Mac] Border stroke is drawn outside the control'; Labels = @('platform/macos', 's/verified', 'area-controls-general', 's/triaged', 'partner/syncfusion') }
+        @{ Title = '[Android] Shell flyout header overlaps the first item'; Labels = @('t/bug', 'platform/android', 'area-controls-shell', 's/verified', 's/triaged') }
+        @{ Title = '[Windows] CollectionView header is measured twice'; Labels = @('t/bug', 'platform/windows', 'area-controls-collectionview', 's/verified', 's/triaged') }
+        @{ Title = '[iOS] Switch thumb colour is wrong after toggling'; Labels = @('t/bug', 'platform/ios', 's/verified', 'area-controls-switch', 's/triaged', 'version/iOS-26') }
+    ) {
+        Get-ReplicationRuntimeScopeMismatch -Title $Title -Labels $Labels |
+            Should -BeNullOrEmpty -Because "'$Title' certified or reproduced on a live run"
+    }
+
+    It 'says nothing about a report with no title' {
+        Get-ReplicationRuntimeScopeMismatch -Title '' | Should -BeExactly ''
+    }
+    It 'reaches the field the pipeline already stops on' {
+        # The pipeline reads context.platformMismatch before it provisions a
+        # device, so a scope refusal has to arrive in that same field rather
+        # than a new one nothing consumes.
+        $fixture = Write-TestIssueJson `
+            -Body "### Description`n`nBuild breaks.`n" `
+            -Number 9571 `
+            -Title 'MSB6003 build failure from MakePri collision' `
+            -Labels @([ordered] @{ name = 't/bug' })
+
+        $output = Join-Path $TestDrive 'scope-mismatch'
+        Invoke-GetReplicationIssueContext `
+            -IssueNumber 9571 `
+            -Platform windows `
+            -OutputDir $output `
+            -IssueJsonPath $fixture | Out-Null
+
+        (Read-TestContext $output).platformMismatch |
+            Should -Match 'already-compiled fixed project'
+    }
+}
+
+Describe 'Get-ReplicationScreenshotRecords resilience' {
+    It 'drops a screenshot it cannot sanitize instead of ending the run' {
+        # Build 15034051 never reached its simulator: one attachment failed the
+        # post-sanitize size check and the whole replication run died in setup,
+        # even though screenshots are optional supporting context.
+        $root = Join-Path $TestDrive ('shots-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $urls = @(
+            'https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111',
+            'https://github.com/user-attachments/assets/22222222-2222-2222-2222-222222222222')
+
+        Mock Invoke-ScreenshotHttpRequest {
+            [pscustomobject]@{ Bytes = [byte[]]@(1, 2, 3); ContentType = 'image/png' }
+        }
+        Mock Get-RasterImageInfo { [pscustomobject]@{ Width = 10; Height = 10 } }
+        Mock ConvertTo-SafeScreenshotPng {
+            Set-Content -LiteralPath $OutputPath -Value 'png' -Encoding utf8NoBOM
+        }
+        Mock ConvertTo-SafeScreenshotPng -ParameterFilter {
+            $OutputPath.EndsWith('screenshot-001.png')
+        } -MockWith {
+            throw 'Sanitized screenshot is empty, oversized, or not a regular file.'
+        }
+
+        $records = @(Get-ReplicationScreenshotRecords -Urls $urls -OutputRoot $root -DownloadScreenshots -MaxScreenshotBytes 1024 -WarningAction SilentlyContinue)
+
+        $records.Count | Should -Be 1
+        $records[0].localPath | Should -Be 'screenshots/screenshot-002.png'
+    }
+
+    It 'keeps an earlier screenshot when a later one fails' {
+        $root = Join-Path $TestDrive ('shots2-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $urls = @(
+            'https://github.com/user-attachments/assets/33333333-3333-3333-3333-333333333333',
+            'https://github.com/user-attachments/assets/44444444-4444-4444-4444-444444444444')
+
+        Mock Invoke-ScreenshotHttpRequest {
+            [pscustomobject]@{ Bytes = [byte[]]@(1, 2, 3); ContentType = 'image/png' }
+        }
+        Mock Get-RasterImageInfo { [pscustomobject]@{ Width = 10; Height = 10 } }
+        Mock ConvertTo-SafeScreenshotPng {
+            Set-Content -LiteralPath $OutputPath -Value 'png' -Encoding utf8NoBOM
+        }
+        Mock ConvertTo-SafeScreenshotPng -ParameterFilter {
+            $OutputPath.EndsWith('screenshot-002.png')
+        } -MockWith { throw 'nope' }
+
+        $records = @(Get-ReplicationScreenshotRecords -Urls $urls -OutputRoot $root -DownloadScreenshots -MaxScreenshotBytes 1024 -WarningAction SilentlyContinue)
+
+        $records.Count | Should -Be 1
+        $records[0].localPath | Should -Be 'screenshots/screenshot-001.png'
+        Test-Path -LiteralPath (Join-Path $root 'screenshots/screenshot-001.png') | Should -BeTrue
+    }
+}
+
+Describe 'Get-ReplicationRuntimeScopeMismatch infrastructure and publish-mode signals' {
+    It 'refuses this repository''s own CI lane and UI-test harness' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Windows] WebView CI lane is taking a long time to complete tests' |
+            Should -Match 'own test suite'
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[UITest] Long accessibility identifier (>128 chars) causes WebDriverAgent failure' |
+            Should -Match 'own test suite'
+    }
+
+    It 'refuses a named test in this repository''s suite' {
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Bug] ContentViewRespondsWhenViewRemoved test fails on Catalyst' |
+            Should -Match 'named test'
+    }
+
+    It 'requires the PascalCase form so ordinary testing reports stay selectable' {
+        # A bare "test fails" appears in reports about an app's own tests and in
+        # reports that merely mention testing. Only a PascalCase identifier is
+        # unambiguously a test in this repository.
+        # Matched case-insensitively, [A-Z][a-z]+ splits any ordinary lowercase
+        # word into as many groups as it likes, so each of these would be
+        # refused as one of this repository's tests.
+        foreach ($title in @(
+                'My unit test fails after upgrading to .NET 10',
+                'the test fails on Android when the label is empty',
+                'the collectionview test fails on Android',
+                'my carousel scrolling test fails',
+                'the shell navigation test fails')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'refuses a request to re-enable or de-flake this repository''s tests' {
+        # Eight re-enable hits and one flaky hit in 1,071 titles, all of them
+        # asking for an edit to this repository's own suite rather than
+        # describing an app behaviour a device page could show.
+        foreach ($title in @(
+                'Re-enable Issue2818 test on iOS/Catalyst - FlyoutPage RTL hamburger icon not displaying',
+                '[Testing] Re-enable the Essentials Geocoding Tests on Windows',
+                '[testing] Reenable MultiProjectTemplate Test MultiProject@Symbol & More',
+                '[Testing][Android] Fix flaky tests for CookiesCorrectlyLoadWithMultipleWebViews in CI')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -Match 'own test suite'
+        }
+    }
+
+    It 'keeps a report selectable when it merely mentions enabling a feature' {
+        # The re-enable signal has to reach "tests", so a report about turning
+        # an app capability back on is unaffected.
+        foreach ($title in @(
+                '[Android] Cannot re-enable the swipe gesture after disabling it',
+                '[iOS] Re-enable scrolling on a CollectionView leaves it stuck')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'refuses a publish failure because no device interaction reaches one' {
+        # Both publish failures in 1,071 titles turn on package restore or a
+        # project reference, neither of which the agent may change. Only the
+        # first is this signal's: the Blazor report is already refused as a
+        # hosted web view, which is why the broader "fails to publish" clause
+        # was measured and rejected.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'Unable to publish Maui with .Net 10 to win-x64 platform due to missing Microsoft.NETCore.App.Runtime.Mono.win-x64 version 10.0.0' |
+            Should -Match 'publish or restore'
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title 'MAUI Blazor Hybrid fails to publish Windows app if Blazor project reference contains QuickGrid.' |
+            Should -Not -BeNullOrEmpty
+    }
+
+    It 'keeps a report selectable when the app itself fails to publish content' {
+        # "publish" is a common word in app code, so the signal is confined to
+        # the build sense and a report about an app publishing a message stays
+        # selectable.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title '[Android] WeakReferenceMessenger fails to publish a message after the page is popped' |
+            Should -BeNullOrEmpty
+    }
+
+    It 'refuses NativeAOT because the publish mode cannot be enabled' {
+        # All five NativeAOT reports in 1,071 titles are out of reach, including
+        # the runtime-sounding ones: enabling the mode is a project-file change.
+        Get-ReplicationRuntimeScopeMismatch `
+            -Title "[dotnet11 preview 6] ClientWebSocket doesn't work with NativeAOT on Android" |
+            Should -Match 'publish mode'
+        # The remaining NativeAOT titles are refused too, some by the packaging
+        # and build signals that already existed.
+        foreach ($title in @(
+                'Error getting pack version building NativeAot for android',
+                'Failed to Make MSIX Package when using NativeAOT',
+                '[dotnet 11 preview7] maui template project fails to build with NativeAot enabled')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    It 'keeps accepting ordinary runtime reports selected for this wave' {
+        foreach ($title in @(
+                '[Android] CollectionView with an EmptyView or EmptyViewTemplate gets potentially corrupted after being cleared and repopulated a number of times',
+                'Android: memoryleaks when programmatically changing the Detail of a FlyoutPage',
+                'Platform-specific (Windows) ResourceDictionary cannot align partial classes',
+                'Add page level style makes the label invisible on Windows',
+                '[iOS 26] Setting Shell FlyoutBehavior to Locked makes the page freeze',
+                '[iOS] ObjectDisposedException')) {
+            Get-ReplicationRuntimeScopeMismatch -Title $title | Should -BeNullOrEmpty
+        }
     }
 }

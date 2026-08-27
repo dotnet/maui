@@ -23,6 +23,7 @@ BeforeAll {
                 HasVideo        = $true
                 HasAudio        = $false
                 Decodable       = $true
+                DecodedFrames       = 48
                 DurationSeconds = 3.25
                 Width           = 1280
                 Height          = 720
@@ -524,7 +525,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
 Describe 'Record-Reproduction media validation' {
     It 'rejects media without a video stream' {
         $media = [pscustomobject]@{
-            HasVideo = $false; HasAudio = $false; Decodable = $true
+            HasVideo = $false; HasAudio = $false; Decodable = $true; DecodedFrames = 48
             DurationSeconds = 3; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -539,7 +540,7 @@ Describe 'Record-Reproduction media validation' {
 
     It 'rejects undecodable media' {
         $media = [pscustomobject]@{
-            HasVideo = $true; HasAudio = $false; Decodable = $false
+            HasVideo = $true; HasAudio = $false; Decodable = $false; DecodedFrames = 48
             DurationSeconds = 3; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -568,7 +569,7 @@ Describe 'Record-Reproduction media validation' {
 
     It 'rejects media whose duration exceeds the configured bound' {
         $media = [pscustomobject]@{
-            HasVideo = $true; HasAudio = $false; Decodable = $true
+            HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
             DurationSeconds = 10.01; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -582,9 +583,41 @@ Describe 'Record-Reproduction media validation' {
         } | Should -Throw '*duration exceeds the 10-second limit*'
     }
 
+    It 'refuses a recording that decoded no frames' -ForEach @(
+        @{ Frames = 0 }
+        @{ Frames = 1 }
+    ) {
+        # Every other property here is valid, and all of them come from the
+        # container header, which the encoder writes whether or not a frame
+        # ever reached it. Without the decoded count a recorder that failed
+        # silently is published as twelve seconds of evidence.
+        $media = [pscustomobject]@{
+            HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = $Frames
+            DurationSeconds = 12.0; Width = 1280; Height = 720; FrameRate = 15
+        }
+        $harness = New-RecordingHarness -MediaInfo $media
+
+        {
+            Invoke-TestRecording `
+                -Harness $harness `
+                -Platform catalyst `
+                -EvidenceDir (Join-Path $TestDrive "frames-$Frames")
+        } | Should -Throw '*carries no evidence of what happened on the device*'
+    }
+
+    It 'counts frames by decoding rather than reading the header' {
+        # -count_frames is what makes nb_read_frames a decoded count. Without
+        # it ffprobe reports the header's frame count, which is exactly the
+        # number this check may not trust.
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Record-Reproduction.ps1') -Raw
+        $source | Should -Match "'-count_frames'"
+        $source | Should -Match "nb_read_frames"
+    }
+
     It 'rejects media that is not longer than one second' {
         $media = [pscustomobject]@{
-            HasVideo = $true; HasAudio = $false; Decodable = $true
+            HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
             DurationSeconds = 1; Width = 1280; Height = 720; FrameRate = 15
         }
         $harness = New-RecordingHarness -MediaInfo $media
@@ -601,7 +634,7 @@ Describe 'Record-Reproduction media validation' {
         @{
             Name = 'audio'
             Media = [pscustomobject]@{
-                HasVideo = $true; HasAudio = $true; Decodable = $true
+                HasVideo = $true; HasAudio = $true; Decodable = $true; DecodedFrames = 48
                 DurationSeconds = 3; Width = 1280; Height = 720; FrameRate = 15
             }
             Message = '*audio stream*'
@@ -609,7 +642,7 @@ Describe 'Record-Reproduction media validation' {
         @{
             Name = 'dimensions'
             Media = [pscustomobject]@{
-                HasVideo = $true; HasAudio = $false; Decodable = $true
+                HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
                 DurationSeconds = 3; Width = 1920; Height = 1080; FrameRate = 15
             }
             Message = '*long-edge limit*'
@@ -618,7 +651,7 @@ Describe 'Record-Reproduction media validation' {
             # A tall portrait capture must be accepted at the same long edge.
             Name = 'portrait long edge'
             Media = [pscustomobject]@{
-                HasVideo = $true; HasAudio = $false; Decodable = $true
+                HasVideo = $true; HasAudio = $false; Decodable = $true; DecodedFrames = 48
                 DurationSeconds = 3; Width = 720; Height = 1281; FrameRate = 15
             }
             Message = '*long-edge limit*'
@@ -737,6 +770,9 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $manifest.durationSeconds | Should -Be 3.25
         $manifest.dimensions.width | Should -Be 1280
         $manifest.dimensions.height | Should -Be 720
+        # The count a reviewer needs in order to tell a real recording from a
+        # header that merely claims one.
+        $manifest.decodedFrames | Should -Be 48
         $manifest.sha256 | Should -BeExactly $expectedHash
         $manifest.files.video | Should -BeExactly 'repro.mp4'
         $manifest.files.thumbnail | Should -BeExactly 'thumbnail.png'
@@ -796,6 +832,7 @@ Describe 'Record-Reproduction safe inputs and evidence' {
             HasVideo        = $true
             HasAudio        = $false
             Decodable       = $true
+            DecodedFrames       = 48
             DurationSeconds = 24.0
             Width           = 1280
             Height          = 720
@@ -986,6 +1023,170 @@ Describe 'Select-ReproductionDiagnosticLines native backtraces' {
     }
 }
 
+Describe 'A late verdict outranks early chatter' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        foreach ($name in @('Select-ReproductionDiagnosticLines')) {
+            $fn = $ast.FindAll({ param($x)
+                $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $x.Name -eq $name }, $true) | Select-Object -First 1
+            . ([scriptblock]::Create($fn.Extent.Text))
+        }
+
+        # Build 15064926, Catalyst. The XCTest bridge narrates continuously
+        # using the words the generic signal filter looks for, and the runner
+        # states its verdict only at the very end.
+        function script:New-NoisyCatalystOutput {
+            param([string]$Verdict)
+            $chatter = 1..40 | ForEach-Object {
+                "Maui.Controls.Sample.Sandbox[13383:e644] [com.apple.dt.xctest:Default] " +
+                    "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout"
+                "Sending animations idle reply with error: (null)"
+            }
+            $tail = @(
+                '[9ad78baf][Mac2Driver@4c3b] Driver proxy active, passing request on via HTTP proxy'
+                '[9ad78baf][AppiumDriver@578d] Removing session 9ad78baf from our master session list'
+            )
+            return (@($chatter) + @($Verdict) + @($tail) + @('X Test failed with exit code 134')) -join "`n"
+        }
+    }
+
+    It 'keeps the runner verdict that arrives after forty chatter lines' {
+        $verdict = "Unhandled exception. System.InvalidOperationException: " +
+            "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+
+        $selected = Select-ReproductionDiagnosticLines -Text (New-NoisyCatalystOutput -Verdict $verdict)
+
+        $selected | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        $selected | Should -Match "actual='NO BUG:'"
+    }
+
+    It 'discards the XCTest narration that used to fill every signal slot' {
+        $verdict = "Unhandled exception. System.InvalidOperationException: " +
+            "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+
+        $selected = Select-ReproductionDiagnosticLines -Text (New-NoisyCatalystOutput -Verdict $verdict)
+
+        $selected | Should -Not -Match 'XCTPerformOnMainRunLoop'
+        $selected | Should -Not -Match 'animations idle reply'
+    }
+
+    It 'keeps a termination sentinel that arrives just as late' {
+        $verdict = 'REPLICATION_APP_TERMINATED step=3 action=tap the app under test exited'
+
+        $selected = Select-ReproductionDiagnosticLines -Text (New-NoisyCatalystOutput -Verdict $verdict)
+
+        $selected | Should -Match 'REPLICATION_APP_TERMINATED'
+    }
+
+    It 'keeps a verdict buried past both the signal window and the tail' {
+        # The noise filter only knows the narration it has been taught. A
+        # platform whose chatter is genuinely error-shaped still fills the
+        # signal window, and a verdict with enough output after it also falls
+        # out of the tail. Ranking is what keeps it, so this is the case that
+        # distinguishes ranking from filtering.
+        $before = 1..40 | ForEach-Object {
+            "W/GLSurfaceView( 4021): eglSwapBuffers failed on surface $_ (error 0x300d)"
+        }
+        $after = 1..25 | ForEach-Object { "Step $_ completed in $($_ * 7) ms" }
+        $raw = (@($before) + @(
+            "Unhandled exception. System.InvalidOperationException: REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+        ) + @($after)) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $raw
+
+        $selected | Should -Match 'REPLICATION_NOT_REPRODUCED'
+    }
+
+    It 'still keeps generic signal lines when no sentinel is present' {        $text = @(
+            'Determining projects to restore...'
+            'error CS0103: The name ''Foo'' does not exist in the current context'
+            'Build FAILED.'
+        ) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $text
+
+        $selected | Should -Match 'CS0103'
+        $selected | Should -Match 'Build FAILED'
+    }
+}
+
+Describe 'A verdict rescued from the noise is classified as a verdict' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        $fn = $ast.FindAll({ param($x)
+            $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $x.Name -eq 'Select-ReproductionDiagnosticLines' }, $true) | Select-Object -First 1
+        . ([scriptblock]::Create($fn.Extent.Text))
+
+        $replicate = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path (Split-Path -Parent $PSScriptRoot) 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
+        foreach ($name in @(
+            'Get-ReplicationAppTerminationPattern',
+            'Get-ReplicationAbortExitPattern',
+            'Get-ReplicationPlanVerdictPattern',
+            'Get-ReplicationDriverElementFailurePattern',
+            'Test-ReplicationAppTerminated')) {
+            $f = $replicate.FindAll({ param($x)
+                $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $x.Name -eq $name }, $true) | Select-Object -First 1
+            . ([scriptblock]::Create($f.Extent.Text))
+        }
+    }
+
+    It 'no longer calls a clean Catalyst negative an app termination' {
+        # End to end over the two units that produced the wrong answer: the
+        # summary the recorder keeps, fed to the classifier that reads it.
+        $chatter = 1..40 | ForEach-Object {
+            "Maui.Controls.Sample.Sandbox[13383:e644] [com.apple.dt.xctest:Default] " +
+                "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout"
+            "Sending animations idle reply with error: (null)"
+        }
+        $raw = (@($chatter) + @(
+            "Unhandled exception. System.InvalidOperationException: REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+            'X Test failed with exit code 134'
+        )) -join "`n"
+
+        $summary = Select-ReproductionDiagnosticLines -Text $raw
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+    }
+
+    It 'still calls a genuine termination a termination' {
+        $raw = @(
+            'Sending animations idle reply with error: (null)'
+            'REPLICATION_APP_TERMINATED step=2 action=tap the app under test exited'
+            'X Test failed with exit code 134'
+        ) -join "`n"
+
+        $summary = Select-ReproductionDiagnosticLines -Text $raw
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+    }
+
+    It 'still infers a termination from a bare abort with no verdict at all' {
+        # The safety property behind the noise filtering: when the runner dies
+        # before it can say anything, the exit code is the only witness left
+        # and it must survive into the summary. Losing this would make a hard
+        # native crash invisible.
+        $chatter = 1..40 | ForEach-Object {
+            "Maui.Controls.Sample.Sandbox[13383:e644] [com.apple.dt.xctest:Default] " +
+                "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness timeout"
+            "Sending animations idle reply with error: (null)"
+        }
+        $raw = (@('Running issue 37440 Appium plan on catalyst.') + @($chatter) + @(
+            "$([char]0x274C) Test failed with exit code 134"
+        )) -join "`n"
+
+        $summary = Select-ReproductionDiagnosticLines -Text $raw
+
+        $summary | Should -Match 'exit code 134'
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+    }
+}
+
 Describe 'Kept footage stops where the scenario stopped' {
     BeforeAll {
         # Define the bounding helper on its own; the recording harness cannot
@@ -1033,5 +1234,48 @@ Describe 'Kept footage stops where the scenario stopped' {
         Get-ReproductionKeptDurationSeconds `
             -ScenarioElapsedSeconds 0.1 -TrimStartSeconds 0 -MaxDurationSeconds 60 |
             Should -Be 1
+    }
+}
+
+Describe 'The element inventory has to reach the agent that must act on it' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
+        $fn = $ast.FindAll({ param($x)
+            $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $x.Name -eq 'Select-ReproductionDiagnosticLines' }, $true) | Select-Object -First 1
+        . ([scriptblock]::Create($fn.Extent.Text))
+
+        # Build 15065067 lost this line and burned attempts 3, 4 and 5
+        # re-guessing the same absent locator. The inventory names no error, so
+        # it wins no slot on wording alone; it survives only because the runner's
+        # own sentinels outrank generic chatter.
+        $script:inventory = '<<<REPLICATION_VISIBLE_ELEMENTS text=Open bottom tabs pane | ' +
+            'content-desc=TabsButton | resource-id=navigation_bar_item_icon_view REPLICATION_VISIBLE_ELEMENTS>>>'
+    }
+
+    It 'keeps the inventory even when error-shaped chatter fills every slot' {
+        $noise = (1..30 | ForEach-Object {
+            "Appium request $_ could not complete: unable to reach the expected element, timed out" })
+        $blob = (@('Unhandled exception. WebDriverTimeoutException: Element was not visible.') +
+            $noise + @($script:inventory) + $noise) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $blob -MaximumTailLines 20
+
+        ($selected -join "`n") | Should -Match 'REPLICATION_VISIBLE_ELEMENTS'
+        ($selected -join "`n") | Should -Match 'content-desc=TabsButton'
+    }
+
+    It 'keeps the inventory when the app exposed nothing addressable' {
+        # The empty answer is the most actionable one of all: it tells the agent
+        # the page never rendered, so no locator would have worked.
+        $empty = '<<<REPLICATION_VISIBLE_ELEMENTS none: the app exposes no identifying ' +
+            'attributes on any element. REPLICATION_VISIBLE_ELEMENTS>>>'
+        $noise = (1..30 | ForEach-Object { "step $_ failed with an unexpected error and timed out" })
+        $blob = (@('Unhandled exception.') + $noise + @($empty) + $noise) -join "`n"
+
+        $selected = Select-ReproductionDiagnosticLines -Text $blob -MaximumTailLines 20
+
+        ($selected -join "`n") | Should -Match 'exposes no identifying attributes'
     }
 }

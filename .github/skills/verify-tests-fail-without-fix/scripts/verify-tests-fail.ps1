@@ -129,6 +129,16 @@ param(
     [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification,
 
+    # What this run is being asked to prove. The mechanics are identical either
+    # way — run the test, report whether it failed — but the meaning of that
+    # result is inverted for a negative control, where a still-failing test is
+    # bad news. Only the console wording changes; exit codes and the machine
+    # report are deliberately untouched so every existing caller and validator
+    # keeps reading exactly what it reads today.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Reproduction", "NegativeControl")]
+    [string]$Purpose = "Reproduction",
+
     [Parameter(Mandatory = $false)]
     [ValidateSet("UITest", "UnitTest", "XamlUnitTest", "DeviceTest")]
     [string]$TestType
@@ -1317,6 +1327,15 @@ function Get-TargetedTestFailureMessage {
             }
         }
         $messages = [Collections.Generic.List[string]]::new()
+        # The gate requires the runner's own document as proof the named test
+        # actually executed, so retain the first parseable one whether or not a
+        # failure message is extracted from it. Retaining only on extraction
+        # made the evidence conditional on where the message happened to come
+        # from, which would refuse a valid run whose message came from console
+        # output instead.
+        if ([string]::IsNullOrWhiteSpace($script:ReplicationAuthoritativeResultPath)) {
+            $script:ReplicationAuthoritativeResultPath = $fullPath
+        }
         foreach ($testNode in @($resultXml.SelectNodes('//test'))) {
             if (
                 $testNode.GetAttribute('type') -cne $TargetClass -or
@@ -1394,6 +1413,43 @@ function Write-ReplicationVerifierMachineResult {
         return
     }
 
+    $executedTestCount = -1
+    foreach ($countName in @('Total', 'TotalCount')) {
+        if ($TestResult.ContainsKey($countName)) {
+            $countValue = $TestResult[$countName]
+            if ($null -ne $countValue -and [int]::TryParse([string]$countValue, [ref]$null)) {
+                $executedTestCount = [int]$countValue
+                break
+            }
+        }
+    }
+
+    # The reviewer of PR 242 could not check the claim that the named test
+    # failed, because the run kept only its own summary of the result file.
+    # Retain the authoritative document next to the machine result so the
+    # evidence is the runner's own output rather than this script's reading.
+    $retainedResultName = ''
+    $authoritativePath = $script:ReplicationAuthoritativeResultPath
+    if (-not [string]::IsNullOrWhiteSpace($authoritativePath) -and
+        (Test-Path -LiteralPath $authoritativePath -PathType Leaf)) {
+        try {
+            $resultDirectory = Split-Path -Parent $MachineResultPath
+            # The credential-free gate accepts exactly two extensions here, so
+            # the name is normalised to one of them at the point it is written.
+            # Deriving it from whatever the runner happened to produce is how a
+            # retained result would silently become an unexpected artifact and
+            # discard a finished device reproduction, as it did for builds
+            # 15032408 and 15032410.
+            $extension = if ([IO.Path]::GetExtension($authoritativePath) -ieq '.trx') { '.trx' } else { '.xml' }
+            $retainedResultName = "verification-test-result$extension"
+            Copy-Item -LiteralPath $authoritativePath `
+                -Destination (Join-Path $resultDirectory $retainedResultName) -Force
+        } catch {
+            Write-Host "Could not retain the authoritative test result: $($_.Exception.Message)"
+            $retainedResultName = ''
+        }
+    }
+
     [ordered]@{
         schemaVersion = 1
         testType = [string]$TestEntry.Type
@@ -1403,7 +1459,9 @@ function Write-ReplicationVerifierMachineResult {
         testClass = [string]$TestEntry.ClassFilter
         testMethod = [string]($TestEntry.Methods | Select-Object -First 1)
         failed = -not [bool]$TestResult.Passed
+        executedTestCount = $executedTestCount
         actualFailureMessage = $ActualFailureMessage
+        resultFile = $retainedResultName
     } |
         ConvertTo-Json -Depth 10 |
         Set-Content -LiteralPath $MachineResultPath -Encoding utf8NoBOM
@@ -1878,6 +1936,15 @@ function Get-TestResultFromOutput {
         $errMatch = [regex]::Match($content, '(?m)^.*\berror\s+[A-Z]{2,}\d+\b.*$')
         if ($errMatch.Success) {
             $excerpt = $errMatch.Value.Trim()
+            # An absolute agent path and the trailing project reference consume
+            # most of the budget, so the message itself is what gets cut.
+            # Catalyst build 15031426 reported "'TestDevice' could not be found
+            # (are you missing a u" because 120 characters went to a directory
+            # the reader already knows. Keep the file name and the position.
+            $excerpt = [regex]::Replace(
+                $excerpt, '(?<![\w.])(?:[A-Za-z]:[\\/]|/)[^\s(]*[\\/]([^\\/\s(]+)', '$1')
+            $excerpt = [regex]::Replace($excerpt, '\s*\[[^\]]*\]\s*$', '')
+            $excerpt = ([regex]::Replace($excerpt, '\s+', ' ')).Trim()
             if ($excerpt.Length -gt 200) { $excerpt = $excerpt.Substring(0, 200) + "..." }
             $buildErrorExcerpt = $excerpt
         }
@@ -2006,7 +2073,20 @@ function Get-TestResultFromOutput {
     if ($content -match "Failed:\s*(\d+)") {
         $failCount = [int]$matches[1]
         if ($failCount -gt 0) {
-            return @{ Passed = $false; FailCount = $failCount; Failed = $failCount; PassCount = 0; Total = $failCount; Skipped = 0 }
+            # A failing run still has to report how many tests the filter actually
+            # selected. A contains-style filter can match several tests, and
+            # "one of them failed" is not the same evidence as "the one targeted
+            # test failed", so keep the sibling counts instead of assuming zero.
+            $alsoPassed = if ($content -match "Passed:\s*(\d+)") { [int]$matches[1] } else { 0 }
+            $alsoSkipped = if ($content -match "Skipped:\s*(\d+)") { [int]$matches[1] } else { 0 }
+            return @{
+                Passed = $false
+                FailCount = $failCount
+                Failed = $failCount
+                PassCount = $alsoPassed
+                Total = $failCount + $alsoPassed + $alsoSkipped
+                Skipped = $alsoSkipped
+            }
         }
     }
 
@@ -2520,7 +2600,7 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "=========================================="
     Write-Host ""
 
-    $allFailed = ($allResults | Where-Object { $_.Passed }).Count -eq 0
+    $allFailed = @($allResults | Where-Object { $_.Passed }).Count -eq 0
     # Env/build/parse errors mean the gate could NOT verify the test's behaviour. Those
     # must surface as INCONCLUSIVE (exit 3), not FAILED, so infra/build flakes don't
     # masquerade as a broken test — mirroring the full-verification mode's classification.
@@ -2538,9 +2618,23 @@ if ($DetectedFixFiles.Count -eq 0) {
         } elseif ($r.Error) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif (-not $r.Passed) {
-            Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+            if ($Purpose -eq 'NegativeControl') {
+                # A failing test is the expected result for the reproduction arm
+                # and the refutation for this one. Printing the reproduction's
+                # green "(expected)" here told a reader the exact opposite of
+                # what was measured, directly above the CONTROL DID NOT CLEAR
+                # banner that says so - the same mistake the banner below was
+                # already written to avoid.
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ❌ (control did not clear)" -ForegroundColor Red
+            } else {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+            }
         } else {
-            Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+            if ($Purpose -eq 'NegativeControl') {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ✅ (expected with the trigger removed)" -ForegroundColor Green
+            } else {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+            }
         }
     }
     Write-Host ""
@@ -2558,22 +2652,43 @@ if ($DetectedFixFiles.Count -eq 0) {
     }
 
     if ($allFailed) {
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-        Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-        Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
-        Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        if ($Purpose -eq 'NegativeControl') {
+            # The trigger was removed and the test failed anyway, so this run
+            # establishes nothing about attribution. Saying "PASSED" here would
+            # tell a reader the exact opposite of what was measured.
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+            Write-Host "║              CONTROL DID NOT CLEAR ❌                     ║" -ForegroundColor Red
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+            Write-Host "║  All $($allResults.Count) test(s) FAILED with the trigger removed.        ║" -ForegroundColor Red
+            Write-Host "║  The failure is NOT attributable to the reported trigger. ║" -ForegroundColor Red
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        } else {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+            Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+            Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
+            Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        }
         Write-FailureOnlyReport -ReportStatus "✅ PASSED" -Results $allResults
         exit 0
     } else {
-        $passedCount = ($allResults | Where-Object { $_.Passed }).Count
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-        Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
-        Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        $passedCount = @($allResults | Where-Object { $_.Passed }).Count
+        if ($Purpose -eq 'NegativeControl') {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+            Write-Host "║              CONTROL CLEARED ✅                           ║" -ForegroundColor Green
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+            Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED with the trigger removed.         ║" -ForegroundColor Green
+            Write-Host "║  The failure is attributable to the reported trigger.     ║" -ForegroundColor Green
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        } else {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+            Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+            Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
+            Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        }
         Write-FailureOnlyReport -ReportStatus "❌ FAILED" -Results $allResults
         exit 1
     }
@@ -2934,9 +3049,9 @@ function Write-MarkdownReport {
         $woStates = @($WithoutFixResultsList | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
         $wStates  = @($WithFixResultsList    | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
 
-        $allWoPass   = ($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
-        $allWoFail   = ($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
-        $allWFail    = ($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWoPass   = @($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
+        $allWoFail   = @($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWFail    = @($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
         $hasRegression = $false
         # Regression: at least one test fixes (FAIL→PASS) AND at least one regresses (FAIL→FAIL)
         for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
@@ -3921,7 +4036,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
 # Combine into a single summary for backward compatibility
 $withoutFixResult = @{
-    Passed = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
+    Passed = @($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
     PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -4143,7 +4258,7 @@ foreach ($t in $AllDetectedTests) {
 
 # Combine into a single summary for backward compatibility
 $withFixResult = @{
-    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -4206,7 +4321,7 @@ foreach ($t in $AllDetectedTests) {
 # Refresh the aggregate objects after trusted Windows evidence conversion mutates the
 # per-test results. These aggregates feed the persisted Markdown report.
 $withoutFixResult = @{
-    Passed = ($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -4214,7 +4329,7 @@ $withoutFixResult = @{
     Total = ($withoutFixResults | Measure-Object -Property Total -Sum).Sum
 }
 $withFixResult = @{
-    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -4233,8 +4348,8 @@ Write-Log "VERIFICATION RESULTS"
 $verificationPassed = $false
 # "Without fix" should FAIL and "with fix" should PASS. These two aggregates are kept for the
 # report/summary text, but the PASS/FAIL DECISION now uses the relaxed per-test rule below.
-$failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
-$passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+$failedWithoutFix = @($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
+$passedWithFix = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
 
 # Print a clear comparison table
 Write-Host ""

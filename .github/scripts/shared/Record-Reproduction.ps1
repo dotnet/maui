@@ -218,6 +218,12 @@ function Select-ReproductionDiagnosticLines {
     #   "  3   WebDriverAgentLib  0x000000010... -[FBRoute mount:] + 168"
     $stackFramePattern = '^\s*(?:at\s+[\w.$<>+\[\]`]+\s*\(|\.{3}\s+\d+\s+more$|Caused by:\s|^\s*\d+\s+\S+\s+0x[0-9a-fA-F]{6,}\s)'
     $wireNoisePattern = '(?i)(?:(?:^|\s)\[(?:HTTP|debug|W3C|Appium\b|BaseDriver|AppiumDriver|XCUITest|UiAutomator2|ADB|Instrumentation|Protocol Converter|iProxy|WD Proxy|Mac2Driver|WinAppDriver|Logcat|Simulator|simctl)|(?:<--|-->)\s*(?:GET|POST|PUT|DELETE)\s|/session/[0-9a-fA-F-]{8,})'
+    # The XCTest bridge narrates itself continuously while the app is perfectly
+    # healthy, and it does so using the two words the signal filter below looks
+    # for: "Sending animations idle reply with error: (null)" and
+    # "XCTPerformOnMainRunLoop[not MT]: waiting with 30.00s responsiveness
+    # timeout". Neither reports a fault, so both are noise.
+    $hostChatterPattern = '(?i)XCTPerformOnMainRunLoop|Sending animations idle reply|com\.apple\.dt\.xctest'
 
     # PowerShell renders a nested failure as a console display -- an
     # "OperationStopped:" header, a "Line |" gutter, a squiggle and a
@@ -237,6 +243,7 @@ function Select-ReproductionDiagnosticLines {
             $_ -notmatch $progressPattern -and
             $_ -notmatch $stackFramePattern -and
             $_ -notmatch $errorRenderNoise -and
+            $_ -notmatch $hostChatterPattern -and
             $_ -notmatch $wireNoisePattern
         })
     if ($quiet.Count -gt 0) {
@@ -244,9 +251,24 @@ function Select-ReproductionDiagnosticLines {
     }
 
     $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|no such element|\bMSB\d+\b|\bCS\d+\b)'
+    # Selecting signal lines in arrival order lets whatever is chatty early
+    # crowd out whatever is decisive late. The runner states its verdict last,
+    # so on a noisy platform the verdict never made the cut: build 15064926
+    # reported three Catalyst attempts as the app aborting when the runner had
+    # said REPLICATION_NOT_REPRODUCED, because the twelve signal slots were
+    # already full of benign XCTest chatter matching "error" and "timeout".
+    #
+    # Only the protocol sentinels and an unhandled exception state an outcome,
+    # so they claim slots before anything matched by generic wording. The total
+    # budget is unchanged.
+    $decisivePattern = '(?i)REPLICATION_[A-Z_]+|Unhandled exception|\u274C|^STEP \d+/\d+:'
+    $decisive = @($lines | Where-Object { $_ -match $decisivePattern })
+    $generic = @($lines |
+        Where-Object { $_ -notmatch $decisivePattern -and $_ -match $signalPattern })
+    $genericBudget = [Math]::Max(0, $MaximumSignalLines - $decisive.Count)
     $candidates = @(
-        $lines | Where-Object { $_ -match $signalPattern } |
-            Select-Object -First $MaximumSignalLines
+        $decisive | Select-Object -First $MaximumSignalLines
+        $generic | Select-Object -First $genericBudget
         $lines | Select-Object -Last $MaximumTailLines
     )
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -938,12 +960,18 @@ function Get-DefaultMediaProbe {
         -ArgumentList @(
             '-v', 'error',
             '-protocol_whitelist', 'file,pipe',
+            # Counting frames decodes the stream, which is the only way to learn
+            # how many frames are really there. A container records a duration
+            # in its header whatever the encoder managed to write, so a recorder
+            # that produced no frames at all still probes as a valid twelve
+            # second video and passes every dimension and duration check.
+            '-count_frames',
             '-show_format',
             '-show_streams',
             '-of', 'json',
             $Path
         ) `
-        -TimeoutSeconds 30 `
+        -TimeoutSeconds ($MaxDurationSeconds + 60) `
         -Purpose 'Probe recorded MP4'
     try {
         $probeJson = [string](Get-ObjectPropertyValue $probeResult 'StdOut' '')
@@ -967,6 +995,27 @@ function Get-DefaultMediaProbe {
         $duration = ConvertTo-PositiveDouble (Get-ObjectPropertyValue $format 'duration')
     }
 
+    # An empty recording has no video stream, so '-map 0:v:0' selects nothing
+    # and ffmpeg reports "Failed to set value '0:v:0' for option 'map'" and
+    # "Stream map '' matches no streams". That is a true failure but it names
+    # the decoder's argument rather than the recording, and on build 15063014
+    # it was logged four times as an unclassified 'other' while the actual
+    # finding - the simulator captured nothing - was never stated. The caller
+    # already raises exactly that sentence, so let it, and decode only a file
+    # that has something to decode.
+    if ($null -eq $video) {
+        return [pscustomobject]@{
+            HasVideo        = $false
+            HasAudio        = $audioStreams.Count -gt 0
+            Decodable       = $false
+            DecodedFrames   = 0
+            DurationSeconds = $duration
+            Width           = 0
+            Height          = 0
+            FrameRate       = 0
+        }
+    }
+
     [void](Invoke-RequiredCommand `
         -FilePath 'ffmpeg' `
         -ArgumentList @(
@@ -988,6 +1037,8 @@ function Get-DefaultMediaProbe {
         HasVideo       = $null -ne $video
         HasAudio       = $audioStreams.Count -gt 0
         Decodable      = $true
+        DecodedFrames  = [long](ConvertTo-PositiveDouble (
+                Get-ObjectPropertyValue $video 'nb_read_frames' 0))
         DurationSeconds = $duration
         Width          = [int](Get-ObjectPropertyValue $video 'width' 0)
         Height         = [int](Get-ObjectPropertyValue $video 'height' 0)
@@ -1017,6 +1068,8 @@ function Get-ValidatedMediaInfo {
     $hasVideo = [bool](Get-ObjectPropertyValue $probe 'HasVideo' $false)
     $hasAudio = [bool](Get-ObjectPropertyValue $probe 'HasAudio' $false)
     $decodable = [bool](Get-ObjectPropertyValue $probe 'Decodable' $false)
+    $decodedFrames = [long](ConvertTo-PositiveDouble (
+            Get-ObjectPropertyValue $probe 'DecodedFrames' 0))
     $duration = ConvertTo-PositiveDouble (Get-ObjectPropertyValue $probe 'DurationSeconds')
     $width = [int](Get-ObjectPropertyValue $probe 'Width' 0)
     $height = [int](Get-ObjectPropertyValue $probe 'Height' 0)
@@ -1030,6 +1083,14 @@ function Get-ValidatedMediaInfo {
     }
     if (-not $decodable) {
         throw 'Recorded MP4 is not decodable.'
+    }
+    # A frame that decoded is the only proof the recorder captured anything.
+    # Duration, dimensions and frame rate all come from the container header,
+    # which the encoder writes whether or not a single frame reached it, so a
+    # recording that failed silently satisfies every other check here.
+    if ($decodedFrames -lt 2) {
+        throw ("Recorded MP4 decoded $decodedFrames frames, so it carries no " +
+            'evidence of what happened on the device.')
     }
     if ($duration -le 1.0) {
         throw "Recorded MP4 duration must be greater than one second (actual: $duration)."
@@ -1055,6 +1116,7 @@ function Get-ValidatedMediaInfo {
         Width           = $width
         Height          = $height
         FrameRate       = $frameRate
+        DecodedFrames   = $decodedFrames
     }
 }
 
@@ -1703,6 +1765,7 @@ try {
             height = $mediaInfo.Height
         }
         sha256            = $hash
+        decodedFrames     = [long]$mediaInfo.DecodedFrames
         videoBytes        = [long]$videoItem.Length
         files             = [ordered]@{
             video     = [System.IO.Path]::GetFileName($videoPath)

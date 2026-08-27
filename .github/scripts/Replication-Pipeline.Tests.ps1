@@ -4,6 +4,20 @@
 BeforeAll {
     $script:PipelinePath = Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml'
     $script:Pipeline = Get-Content -LiteralPath $script:PipelinePath -Raw
+
+    # One authority for "this text reads a pipeline script out of the worktree".
+    # Two consumers ask that question - the Build MSBuild Tasks step guard and
+    # the pipeline-wide ordering invariant - and a second copy of a pattern is a
+    # fork of the truth that drifts silently.
+    #
+    # The window is deliberately the looser '.{0,4}' rather than a class of
+    # quotes and separators. Both were measured against today's pipeline and
+    # agree exactly, so the tighter form is unexercised; and the error modes here
+    # are asymmetric in the opposite direction from a production gate. A false
+    # positive is a red suite somebody reads and resolves in a minute. A false
+    # negative is a step reading a script from a detached checkout, which is a
+    # lost run nobody is told about.
+    $script:WorktreeScriptReadPattern = 'Build\.SourcesDirectory.{0,4}[''"]?\.github/scripts'
 }
 
 Describe 'MAUI Copilot mode routing' {
@@ -42,7 +56,11 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)name: RunReview.*?condition: and\(succeededOrFailed\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)\)"
         $script:Pipeline | Should -Match "condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'review'\), in\(dependencies\.CopilotReview\.result"
         $script:Pipeline | Should -Match "(?s)- stage: RunDeepUITests.*?eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
-        $script:Pipeline | Should -Match "(?s)- stage: UpdateAISummaryComment.*?condition: and\(not\(canceled\(\)\), eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
+        # The cancellation predicate belongs to the base branch and has already
+        # changed once from not(canceled()) to always(); pinning its spelling
+        # failed this test for a base-branch edit that kept the review-only
+        # guard intact. Assert the guard, which is what this test is about.
+        $script:Pipeline | Should -Match "(?s)- stage: UpdateAISummaryComment.*?condition: and\([^,]+, eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
         $script:Pipeline | Should -Match "(?s)- stage: CleanupReviewLock.*?condition: always\(\).*?- job: CleanupReviewLock.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'review'\)"
     }
 
@@ -112,7 +130,10 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
         $script:Pipeline | Should -Match 'Publish-ReplicationOutcome\.ps1'
-        $script:Pipeline | Should -Match "'Move-ReplicationPRsToTestingFork\.ps1'"
+        # Matched as a quoted staging entry rather than an exact literal, so
+        # that changing where a script is copied from cannot fail a test whose
+        # subject is that the script is staged at all.
+        $script:Pipeline | Should -Match "'[^']*Move-ReplicationPRsToTestingFork\.ps1'"
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish MauiBot non-reproduction outcome'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Match 's/try-latest-version'
         $script:Pipeline | Should -Match "(?s)displayName: 'Move existing PRs and create MauiBot testing draft PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
@@ -123,7 +144,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_(?:STORAGE|PUBLIC_BASE_URL|FORK)'
         $script:Pipeline | Should -Match 'git merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
-        $script:Pipeline | Should -Match "'Assert-ReplicationTestGuard\.ps1'"
+        $script:Pipeline | Should -Match "'[^']*Assert-ReplicationTestGuard\.ps1'"
         $script:Pipeline | Should -Match '\$validation\.Count -ne 1'
         $script:Pipeline | Should -Match '\$validation\[0\]\.validationPassed -ne \$true'
         $validationTask = $script:Pipeline.Substring(
@@ -335,7 +356,11 @@ Describe 'Replication issue outcome publication boundary' {
         $check = $script:Pipeline.IndexOf(
             'Check for an existing reproduction pull request')
         $check | Should -BeGreaterThan 0
-        $step = $script:Pipeline.Substring($check - 3600, 3600)
+        # Slice from where the step actually begins rather than a fixed number
+        # of characters back, which silently truncated the step whenever it grew.
+        $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
+        $stepStart | Should -BeGreaterThan 0
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
         $step.Contains('repos/dotnet/maui/issues/') | Should -BeTrue
         $step.Contains('.state_reason') | Should -BeTrue
         $step.Contains('variable=replicationIssueIneligible') | Should -BeTrue
@@ -347,6 +372,81 @@ Describe 'Replication issue outcome publication boundary' {
         $script:Pipeline.Contains(
             "ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true')") |
             Should -BeTrue
+    }
+
+    It 'cross-references the upstream branch from the trusted capture, not the worktree' {
+        # The single most expensive defect available to this gate: by the time
+        # it runs, the worktree has been detached to the replication baseline,
+        # which carries the product tree and none of this pipeline's scripts.
+        # Reading the script from $(Build.SourcesDirectory) therefore finds
+        # nothing on every run, warns, and approves - the exact failure mode
+        # the platform gate beside it once shipped.
+        $check = $script:Pipeline.IndexOf(
+            'Check for an existing reproduction pull request')
+        $check | Should -BeGreaterThan 0
+        $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
+        $stepStart | Should -BeGreaterThan 0
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('Get-ReplicationUpstreamDuplicateVerdict') | Should -BeTrue
+        $step.Contains(
+            'trusted-github/scripts/shared/Get-ReplicationUpstreamFix.ps1') |
+            Should -BeTrue
+        # The script may never be loaded from the moved worktree.
+        $step | Should -Not -Match 'Build\.SourcesDirectory.{0,40}Get-ReplicationUpstreamFix'
+
+        # The repository root, by contrast, MUST be the worktree: after the
+        # detach that is the exact product tree this run will build, which is
+        # precisely the tree "do we already have this test case" asks about.
+        $step | Should -Match '-RepositoryRoot "\$\(Build\.SourcesDirectory\)"'
+
+        # Both forms, or the device job sees the refusal and the publish stage
+        # does not - the two read different variables.
+        #
+        # Scoped to THIS sub-gate's duplicate branch rather than to the step:
+        # all four sub-gates in this step emit the same two lines, so a
+        # step-wide Contains() is satisfied by a neighbour and says nothing
+        # about the gate under test. Mutation caught exactly that - removing
+        # this gate's isOutput line left a step-wide assertion green.
+        $duplicateBranch = $step.IndexOf("if (`$upstreamVerdict.Verdict -eq 'duplicate')")
+        $duplicateBranch | Should -BeGreaterThan 0
+        $branchEnd = $step.IndexOf('} elseif', $duplicateBranch)
+        $branchEnd | Should -BeGreaterThan $duplicateBranch
+        $branch = $step.Substring($duplicateBranch, $branchEnd - $duplicateBranch)
+
+        $branch.Contains(
+            '##vso[task.setvariable variable=replicationIssueIneligible]true') |
+            Should -BeTrue
+        $branch.Contains(
+            '##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true') |
+            Should -BeTrue
+        # The refusal has to say why, or a maintainer reads a skipped run with
+        # no account of what refused it.
+        $branch.Contains('ISSUE REPLICATION SKIPPED: $($upstreamVerdict.Reason)') |
+            Should -BeTrue
+    }
+
+    It 'lets an unmeasured upstream cross-reference proceed rather than refuse' {
+        $check = $script:Pipeline.IndexOf(
+            'Check for an existing reproduction pull request')
+        $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        # An absent measurement may not refuse, and may not report the run as
+        # cleared either. Both the missing-script and the unknown-verdict paths
+        # warn, and neither sets the ineligible variable.
+        $step | Should -Match 'Upstream cross-reference is missing'
+        $step | Should -Match 'Upstream cross-reference not measured'
+
+        $unknown = $step.IndexOf("Verdict -eq 'unknown'")
+        $unknown | Should -BeGreaterThan 0
+        $tail = $step.Substring($unknown)
+        $tail.Substring(0, $tail.IndexOf('} else {')) |
+            Should -Not -Match 'setvariable variable=replicationIssueIneligible'
+
+        # The whole gate is wrapped, because a pre-flight check that throws
+        # costs the run it was written to save.
+        $step | Should -Match 'Could not cross-reference the upstream branch'
     }
 
     It 'accepts a publication that reports an already-covered issue' {
@@ -428,6 +528,1331 @@ Describe 'A run that produced nothing does not fail the publisher too' {
 
             $window = $script:Pipeline.Substring($index, 260)
             $window | Should -Match "REPLICATION_CANDIDATE_READY'\], 'true'"
+        }
+    }
+}
+
+Describe 'MAUI Copilot pipeline splatting' {
+    It 'builds every splatted argument set as a hashtable' {
+        # An array splat passes its elements positionally, so '-IssueNumber'
+        # binds to -IssueNumber as a value and the step dies on a type
+        # conversion that names the parameter it failed to fill. Every splat
+        # site is checked because the mistake is invisible until the step runs.
+        #
+        # Splatting into a native executable is exempt: a process receives a
+        # positional argument vector, so an array is the correct shape there.
+        $nativeCommands = 'pwsh|dotnet|git|gh|adb|node|npm|xcrun|ffmpeg|python3?'
+        $splatNames = [regex]::Matches($script:Pipeline, '(?m)^(?<line>.*?@(?<name>[A-Za-z_][A-Za-z0-9_]*)\b.*)$') |
+            Where-Object {
+                $_.Groups['name'].Value -notin @('parameters', 'variables') -and
+                $_.Groups['line'].Value -notmatch ('&\s*(?:' + $nativeCommands + ')\s+@')
+            } |
+            ForEach-Object { $_.Groups['name'].Value } |
+            Sort-Object -Unique
+
+        $splatNames | Should -Not -BeNullOrEmpty
+
+        foreach ($name in $splatNames) {
+            $assignment = [regex]::Match($script:Pipeline, ('\$' + [regex]::Escape($name) + '\s*=\s*@(?<open>[({])'))
+            if (-not $assignment.Success) { continue }
+
+            $assignment.Groups['open'].Value |
+                Should -BeExactly '{' -Because "`$$name is splatted into a PowerShell command, so it must be a hashtable rather than an array"
+        }
+    }
+
+    It 'passes the issue number to the context script as a named argument' {
+        $script:Pipeline | Should -Match '(?s)\$contextArgs = @\{.*?IssueNumber = '
+        $script:Pipeline | Should -Not -Match "(?s)\`$contextArgs = @\(.*?'-IssueNumber'"
+    }
+
+    It 'adds the anonymous fallback as a hashtable entry rather than an array element' {
+        $script:Pipeline | Should -Match "\`$contextArgs\['AllowAnonymousFallback'\] = \`$true"
+    }
+}
+
+Describe 'MAUI Copilot pipeline argument contracts' {
+    It 'passes only arguments the issue-context script actually declares' {
+        # The pipeline and the script are edited independently, and a parameter
+        # that exists on an inner function but never reached the script's own
+        # param block fails only on the agent, after provisioning.
+        $block = [regex]::Match($script:Pipeline, '(?s)\$contextArgs = @\{(?<body>.*?)\n\s*\}')
+        $block.Success | Should -BeTrue
+
+        $keys = [regex]::Matches($block.Groups['body'].Value, '(?m)^\s*(?<key>[A-Za-z_][A-Za-z0-9_]*)\s*=') |
+            ForEach-Object { $_.Groups['key'].Value }
+        $keys | Should -Not -BeNullOrEmpty
+
+        $conditional = [regex]::Matches($script:Pipeline, "\`$contextArgs\['(?<key>[A-Za-z_][A-Za-z0-9_]*)'\]") |
+            ForEach-Object { $_.Groups['key'].Value }
+
+        $declared = (Get-Command (Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1')).Parameters.Keys
+
+        foreach ($key in (@($keys) + @($conditional) | Sort-Object -Unique)) {
+            $declared | Should -Contain $key -Because "the pipeline passes -$key to Get-ReplicationIssueContext.ps1"
+        }
+    }
+
+    It 'declares the anonymous fallback on the script it is passed to' {
+        $script = Get-Command (Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1')
+
+        $script.Parameters.Keys | Should -Contain 'AllowAnonymousFallback'
+        $script.Parameters['AllowAnonymousFallback'].ParameterType.Name |
+            Should -BeExactly 'SwitchParameter'
+    }
+
+    It 'forwards the anonymous fallback from the entry point to the reader' {
+        $source = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'shared/Get-ReplicationIssueContext.ps1')
+        $entry = [regex]::Match($source, '(?s)if \(\$MyInvocation\.InvocationName -ne .\..\) \{(?<body>.*)')
+
+        $entry.Success | Should -BeTrue
+        $entry.Groups['body'].Value | Should -Match '-AllowAnonymousFallback:\$AllowAnonymousFallback'
+    }
+}
+
+Describe 'The trusted publisher stages every module its gate loads' {
+    It 'copies each shared script every staged publisher script dot-sources' {
+        # Builds 15029872 and 15029876 each reproduced their issue and were
+        # rejected at the gate because Get-ReplicationCertification.ps1 was
+        # dot-sourced but never staged. The staging list is written by hand, so
+        # it is compared against what the gate actually loads.
+        $stagingBlock = [regex]::Match(
+            $script:Pipeline,
+            "(?s)\`$trustedRoot = Join-Path.*?foreach \(\`$\w+ in @\((.*?)\)\) \{").Groups[1].Value
+        $stagingBlock | Should -Not -BeNullOrEmpty
+
+        # Build 15030627 reproduced its issue, passed the gate and then failed
+        # in the publisher, so every staged script is checked, not just the gate.
+        #
+        # Entries carry the path each script is copied from, because not every
+        # trusted script lives in shared/. This test used to assume they all did
+        # and resolve every entry as shared/<name>. That assumption is precisely
+        # why it could not see Find-RegressionRisks.ps1 going unstaged: a script
+        # outside shared/ was unrepresentable, so the regression cross-reference
+        # reported nothing from the day it landed and no test could say so.
+        $staged = @([regex]::Matches($stagingBlock, "'((?:[A-Za-z0-9\-]+/)?[A-Za-z0-9\-]+\.ps1)'") |
+            ForEach-Object { $_.Groups[1].Value })
+        $staged.Count | Should -BeGreaterThan 0
+        $stagedNames = @($staged | ForEach-Object { Split-Path -Leaf $_ })
+
+        $required = [System.Collections.Generic.HashSet[string]]::new()
+        foreach ($stagedRelative in $staged) {
+            $stagedPath = Join-Path $PSScriptRoot $stagedRelative
+            if (-not (Test-Path -LiteralPath $stagedPath -PathType Leaf)) {
+                throw "The pipeline stages $stagedRelative, but no such script exists."
+            }
+            $source = Get-Content -LiteralPath $stagedPath -Raw
+            foreach ($match in [regex]::Matches($source, "(?m)^\s*\.\s+.*?['`"]?([A-Za-z0-9\-]+\.ps1)")) {
+                [void]$required.Add($match.Groups[1].Value)
+            }
+            # Any variable, not just $PSScriptRoot: the regression checker is
+            # probed through a search root, and requiring that one spelling is
+            # what let an unstaged invocation pass unnoticed.
+            foreach ($match in [regex]::Matches($source, "Join-Path\s+\`$\w+\s+'([A-Za-z0-9\-]+\.ps1)'")) {
+                [void]$required.Add($match.Groups[1].Value)
+            }
+        }
+        $required.Count | Should -BeGreaterThan 0
+
+        foreach ($name in $required) {
+            $stagedNames | Should -Contain $name -Because `
+                "a staged publisher script invokes $name, so it must be staged too"
+        }
+    }
+
+    It 'allows every candidate manifest field the orchestrator writes' {
+        # Build 15031427 reproduced its issue on a device, authored a passing
+        # negative control and was then thrown away because the gate had never
+        # been told the manifest gained a 'negativeControl' field. An allowlist
+        # that lags the writer silently destroys finished work, so derive the
+        # written names from the orchestrator instead of trusting the list.
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        # Several manifests in this script open with a schema version, so anchor
+        # on the candidate manifest's own last field and walk back to its start.
+        $manifestEnd = $orchestrator.IndexOf("        patch = 'test.patch'")
+        $manifestEnd | Should -BeGreaterThan 0
+        $manifestStart = $orchestrator.LastIndexOf('schemaVersion = 1', $manifestEnd)
+        $manifestStart | Should -BeGreaterThan 0
+        $manifestBlock = $orchestrator.Substring(
+            $manifestStart, $manifestEnd - $manifestStart)
+
+        # Only the manifest's own top-level keys are validated by the gate's
+        # allowlist; nested hashtable keys are checked by their own rules.
+        # Derive the top-level indent rather than hard-coding it: the manifest
+        # moved into a scriptblock so it could be written before the fix phase,
+        # which shifted every key four columns and silently emptied this list.
+        $indent = [regex]::Match(
+            $manifestBlock, "(?m)^([ ]*)schemaVersion = 1").Groups[1].Value
+        if (-not $indent) {
+            $lineStart = $orchestrator.LastIndexOf("`n", $manifestStart)
+            $indent = $orchestrator.Substring(
+                $lineStart + 1, $manifestStart - $lineStart - 1)
+        }
+        $indent | Should -Match '^ +$'
+        $written = @([regex]::Matches(
+                $manifestBlock, "(?m)^$indent([A-Za-z][A-Za-z0-9]*) = ") |
+            ForEach-Object { $_.Groups[1].Value })
+        $written | Should -Contain 'negativeControl'
+        $written.Count | Should -BeGreaterThan 10
+
+        $gate = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1') -Raw
+        $allowStart = $gate.IndexOf('$allowedProperties = @(')
+        $allowStart | Should -BeGreaterThan 0
+        $allowEnd = $gate.IndexOf(')', $allowStart)
+        $allowed = @([regex]::Matches(
+                $gate.Substring($allowStart, $allowEnd - $allowStart),
+                "'([A-Za-z_][A-Za-z0-9_]*)'") |
+            ForEach-Object { $_.Groups[1].Value })
+
+        foreach ($name in $written) {
+            $allowed | Should -Contain $name -Because `
+                "the orchestrator writes the manifest field $name"
+        }
+    }
+}
+
+Describe 'Every in-process call binds parameters its target actually declares' {
+    # The negative control never ran once. It called Invoke-ReplicationCopilot
+    # with -LogPath, which that function does not declare, so every reproduction
+    # from the control's introduction until build 15031868 published claiming
+    # "No negative control was run". The catch around the call reported the
+    # binding error as an author refusal, which is a legitimate outcome, so
+    # nothing upstream ever looked wrong.
+    BeforeAll {
+        $script:ScriptPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+        $tokens = $null
+        $errors = $null
+        $script:Ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ScriptPath, [ref]$tokens, [ref]$errors)
+        $script:Ast | Should -Not -BeNullOrEmpty
+
+        $script:Definitions = @{}
+        foreach ($fn in $script:Ast.FindAll({
+                param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)) {
+            $parameters = $null
+            if ($fn.Body.ParamBlock) { $parameters = $fn.Body.ParamBlock.Parameters }
+            elseif ($fn.Parameters) { $parameters = $fn.Parameters }
+            if (-not $parameters) { continue }
+
+            $declared = [ordered]@{}
+            foreach ($p in $parameters) {
+                $isMandatory = $false
+                foreach ($attribute in $p.Attributes) {
+                    if ($attribute -isnot [System.Management.Automation.Language.AttributeAst]) { continue }
+                    if ($attribute.TypeName.Name -notmatch '^Parameter$') { continue }
+                    foreach ($named in $attribute.NamedArguments) {
+                        if ($named.ArgumentName -eq 'Mandatory' -and
+                            $named.Argument.Extent.Text -match 'true') { $isMandatory = $true }
+                    }
+                }
+                $declared[$p.Name.VariablePath.UserPath] = $isMandatory
+            }
+            $script:Definitions[$fn.Name] = $declared
+        }
+    }
+
+    It 'passes only declared parameters, and every mandatory one' {
+        $problems = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($call in $script:Ast.FindAll({
+                param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)) {
+            $name = $call.GetCommandName()
+            if (-not $name -or -not $script:Definitions.Contains($name)) { continue }
+
+            $declared = $script:Definitions[$name]
+            $supplied = [System.Collections.Generic.List[string]]::new()
+            $splatted = $false
+            foreach ($element in $call.CommandElements) {
+                if ($element -is [System.Management.Automation.Language.CommandParameterAst]) {
+                    [void]$supplied.Add($element.ParameterName)
+                } elseif ($element -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                    $element.Splatted) {
+                    $splatted = $true
+                }
+            }
+            if ($splatted) { continue }
+
+            $line = $call.Extent.StartLineNumber
+            foreach ($parameterName in $supplied) {
+                # PowerShell accepts an unambiguous prefix, so resolve the same way.
+                $matched = @($declared.Keys | Where-Object {
+                    $_ -eq $parameterName -or $_ -like "$parameterName*" })
+                if ($matched.Count -eq 0) {
+                    [void]$problems.Add("line ${line}: $name has no parameter -$parameterName")
+                }
+            }
+            if ($supplied.Count -eq 0) { continue }
+            foreach ($parameterName in $declared.Keys) {
+                if (-not $declared[$parameterName]) { continue }
+                $isBound = @($supplied | Where-Object { $parameterName -like "$_*" }).Count -gt 0
+                if (-not $isBound) {
+                    [void]$problems.Add("line ${line}: $name requires -$parameterName")
+                }
+            }
+        }
+
+        $problems -join "`n" | Should -BeExactly ''
+    }
+}
+
+Describe 'The gate expects every artifact the verifier retains' {
+    # Fourth incident of a hand-maintained list discarding finished device
+    # work: the YAML staging list, the verification-result allowlist, the
+    # candidate-manifest allowlist, and now the verification *directory*
+    # allowlist. Builds 15032408 and 15032410 both reproduced their issue on a
+    # device and were thrown away because verification-test-result.trx was
+    # written without being expected. The expectation is derived from the
+    # producer here rather than restated.
+    BeforeAll {
+        $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        $script:VerifierSource = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1')
+        $script:GateSource = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Validate-ReplicationCandidate.ps1')
+    }
+
+    It 'retains a name built from a bounded set of extensions' {
+        # An extension copied from whatever the runner produced could be
+        # anything, and the gate accepts exactly two.
+        $script:VerifierSource |
+            Should -Match "\`$extension = if \(\[IO\.Path\]::GetExtension\(\`$authoritativePath\) -ieq '\.trx'\) \{ '\.trx' \} else \{ '\.xml' \}"
+    }
+
+    It 'accepts every retained name the verifier can actually produce' {
+        $stem = [regex]::Match($script:VerifierSource,
+            '\$retainedResultName = "(?<stem>[a-z-]+)\$extension"').Groups['stem'].Value
+        $stem | Should -Not -BeNullOrEmpty -Because 'the retained name must be discoverable from the producer'
+
+        $pattern = [regex]::Match($script:GateSource,
+            "\`$retainedResultPattern = '(?<p>[^']+)'").Groups['p'].Value
+        $pattern | Should -Not -BeNullOrEmpty -Because 'the gate must declare the pattern it accepts'
+
+        foreach ($extension in @('.trx', '.xml')) {
+            "$stem$extension" | Should -Match $pattern -Because "the verifier can write $stem$extension"
+        }
+    }
+
+    It 'consults the retained pattern at every artifact rejection' {
+        # Counting occurrences let a second allowlist ship without the pattern:
+        # the machine-readable branch rejected verification-test-result.trx and
+        # destroyed build 15032847, a Catalyst reproduction whose negative
+        # control had already passed 3 of 3. Enumerate the rejection sites from
+        # the source instead of asserting how many there should be.
+        $tokens = $null
+        $errors = $null
+        $gatePath = Join-Path (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) `
+            'scripts/shared/Validate-ReplicationCandidate.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $gatePath, [ref]$tokens, [ref]$errors)
+
+        $rejections = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.ThrowStatementAst] -and
+                $n.Extent.Text -match 'unexpected artifact'
+            }, $true)
+        $rejections.Count | Should -BeGreaterOrEqual 2 -Because 'both directory layouts reject artifacts'
+
+        # A guard may consult the pattern through a well-named intermediate,
+        # so accept any variable that is itself derived from it.
+        $derived = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+        foreach ($assignment in $ast.FindAll({
+                    param($n)
+                    $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                    $n.Right.Extent.Text -match '\$retainedResultPattern'
+                }, $true)) {
+            if ($assignment.Left -is [System.Management.Automation.Language.VariableExpressionAst]) {
+                [void]$derived.Add($assignment.Left.VariablePath.UserPath)
+            }
+        }
+
+        foreach ($rejection in $rejections) {
+            $guard = $rejection.Parent
+            while ($null -ne $guard -and
+                $guard -isnot [System.Management.Automation.Language.IfStatementAst]) {
+                $guard = $guard.Parent
+            }
+            $guard | Should -Not -BeNullOrEmpty -Because 'each rejection must sit inside a guard'
+            $condition = $guard.Clauses[0].Item1.Extent.Text
+            $consults = $condition -match '\$retainedResultPattern'
+            foreach ($name in $derived) {
+                if ($condition -match ('\$' + [regex]::Escape($name) + '\b')) {
+                    $consults = $true
+                }
+            }
+            $consults | Should -BeTrue -Because (
+                "the rejection at line $($rejection.Extent.StartLineNumber) must accept the retained result")
+        }
+    }
+
+    It 'names the artifact it rejects' {
+        # The original message said only that something was unexpected, which
+        # is why several lost reproductions took a log download each to explain.
+        # Derive the requirement from the rejection sites rather than listing
+        # the messages, so a new rejection cannot ship nameless.
+        $tokens = $null
+        $errors = $null
+        $gatePath = Join-Path (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) `
+            'scripts/shared/Validate-ReplicationCandidate.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $gatePath, [ref]$tokens, [ref]$errors)
+
+        $rejections = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.ThrowStatementAst] -and
+                $n.Extent.Text -match 'unexpected artifact'
+            }, $true)
+        $rejections.Count | Should -BeGreaterOrEqual 2
+
+        foreach ($rejection in $rejections) {
+            $rejection.Extent.Text | Should -Match 'Get-ReportableArtifactName' -Because (
+                "the rejection at line $($rejection.Extent.StartLineNumber) must say which file it means")
+        }
+    }
+}
+
+Describe 'The negative control author gets every attempt it is allotted' {
+    BeforeAll {
+        $script:orchestrator = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:orchestrator, [ref]$tokens, [ref]$errors)
+        $script:controlFunction = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $n.Name -eq 'Invoke-ReplicationNegativeControl'
+            }, $true) | Select-Object -First 1
+    }
+
+    It 'finds the negative control function' {
+        $script:controlFunction | Should -Not -BeNullOrEmpty
+    }
+
+    It 'never downgrades a recoverable control failure before the last attempt' {
+        # A silent non-write and an uninformative variant are both recoverable,
+        # so each must retry. Returning on the first non-write discarded
+        # certification the author would have earned on a retry.
+        $body = $script:controlFunction.Extent.Text
+        $guards = ([regex]::Matches($body, '\$round\s+-eq\s+\$MaxControlAttempts')).Count
+        $guards | Should -BeGreaterOrEqual 2
+    }
+
+    It 'attempt-guards every recoverable control failure it reports' {
+        # Enumerate the branches instead of naming one of them: an earlier
+        # version pinned the exact sentence 'wrote no control variant' and went
+        # stale the moment the artifact was renamed, which hides whether the
+        # branch is still guarded at all. Walk each report up to its enclosing
+        # if-statements so the check does not depend on how far the guard sits
+        # from the message.
+        $reports = $script:controlFunction.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.CommandAst] -and
+                $n.Extent.Text -match 'Write-Host "Negative control attempt'
+            }, $true)
+        $reports.Count | Should -BeGreaterOrEqual 3
+
+        foreach ($report in $reports) {
+            # The guard is an ancestor when the whole retry branch is wrapped
+            # in '-lt $MaxControlAttempts', and a sibling when the downgrade
+            # that follows the message is wrapped in '-eq $MaxControlAttempts'.
+            # Both spend every allotted attempt, so accept either shape.
+            $guarded = $false
+            $node = $report.Parent
+            while ($node -and -not $guarded) {
+                if ($node -is [System.Management.Automation.Language.IfStatementAst]) {
+                    foreach ($clause in $node.Clauses) {
+                        if ($clause.Item1.Extent.Text -match '\$MaxControlAttempts') {
+                            $guarded = $true
+                        }
+                    }
+                }
+                if ($node -is [System.Management.Automation.Language.StatementBlockAst]) {
+                    foreach ($sibling in $node.Statements) {
+                        if ($sibling -is [System.Management.Automation.Language.IfStatementAst]) {
+                            foreach ($clause in $sibling.Clauses) {
+                                if ($clause.Item1.Extent.Text -match '\$MaxControlAttempts') {
+                                    $guarded = $true
+                                }
+                            }
+                        }
+                    }
+                }
+                if ($node -eq $script:controlFunction) { break }
+                $node = $node.Parent
+            }
+
+            $guarded | Should -BeTrue -Because (
+                "$($report.Extent.Text) must sit inside a branch guarded by the attempt count")
+
+            $following = $script:controlFunction.Extent.Text
+            $offset = $following.IndexOf($report.Extent.Text, [StringComparison]::Ordinal)
+            $following.Substring($offset,
+                [Math]::Min(400, $following.Length - $offset)) |
+                Should -Match 'continue' -Because (
+                    "$($report.Extent.Text) must retry before the last attempt")
+        }
+    }
+}
+
+Describe 'A control the device runner never executed is not evidence against the test' {
+    BeforeAll {
+        $script:runner = Join-Path $PSScriptRoot '../skills/run-device-tests/scripts/Run-DeviceTests.ps1'
+        $script:orchestratorSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+    }
+
+    It 'reads the device runner that reports a class which never ran' {
+        Test-Path -LiteralPath $script:runner -PathType Leaf | Should -BeTrue
+    }
+
+    It 'recognises every not-run message the device runner can throw' {
+        # Derive the phrase from the producer instead of restating it, so the
+        # detector cannot drift away from the runner that emits it. Build
+        # 15032401 blocked a finished Android reproduction because the control
+        # reported "the target tests did not run" and the detector, which knew
+        # only Appium session faults, let it fall through to a hard rejection.
+        $runnerSource = Get-Content -LiteralPath $script:runner -Raw
+        $phrases = [regex]::Matches($runnerSource, '\(the target tests did not run\)')
+        $phrases.Count | Should -BeGreaterThan 0
+
+        $literal = 'the target tests did not run'
+        $script:orchestratorSource | Should -Match ([regex]::Escape($literal))
+    }
+
+}
+
+Describe 'Every artifact written beside the verification result is accounted for' {
+    # Five separate incidents destroyed finished device work because a producer
+    # wrote a file into the directory the credential-free gate inspects and no
+    # one taught the gate about it. Derive the producers' own names here so a
+    # sixth cannot ship: each must either be accepted by the gate or provably
+    # removed before the gate runs.
+    BeforeAll {
+        $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        $script:VerificationSource = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Invoke-ReplicationTestVerification.ps1')
+        $script:GateText = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Validate-ReplicationCandidate.ps1')
+    }
+
+    It 'discovers the names the verifier writes into its output directory' {
+        $names = [regex]::Matches($script:VerificationSource,
+            "Join-Path\s+\`$OutputDirectory\s+'(?<name>[^']+)'") |
+            ForEach-Object { $_.Groups['name'].Value } | Sort-Object -Unique
+        $names.Count | Should -BeGreaterThan 0
+        $names | Should -Contain 'verification-result.json'
+    }
+
+    It 'either accepts or removes every name the verifier writes there' {
+        $names = [regex]::Matches($script:VerificationSource,
+            "Join-Path\s+\`$OutputDirectory\s+'(?<name>[^']+)'") |
+            ForEach-Object { $_.Groups['name'].Value } | Sort-Object -Unique
+
+        foreach ($name in $names) {
+            $accepted = $script:GateText -match ("'" + [regex]::Escape($name) + "'")
+            # An intermediate file is acceptable only if it cannot survive the
+            # run, which means its removal is guaranteed by a finally block.
+            $variable = [regex]::Match($script:VerificationSource,
+                "(?<var>\`$\w+)\s*=\s*Join-Path\s+\`$OutputDirectory\s+'" +
+                [regex]::Escape($name) + "'").Groups['var'].Value
+            $removed = $false
+            if ($variable) {
+                $removed = $script:VerificationSource -match (
+                    'finally\s*\{[^}]*Remove-Item[^}]*' + [regex]::Escape($variable))
+            }
+
+            ($accepted -or $removed) | Should -BeTrue -Because (
+                "'$name' is written beside the verification result, so the gate must " +
+                'accept it or a finally block must remove it')
+        }
+    }
+}
+
+Describe 'The gate grades the control the verifier actually ran' {
+    # Every published reproduction, including build 15033161 whose control
+    # passed 3 of 3 on device, was graded 'no negative control was run'. The
+    # gate looked for the control inside verification-result.json, but the
+    # control runs after that file is written and its result goes to its own
+    # artifact. Derive the filename from the verifier so the two cannot drift.
+    BeforeAll {
+        $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        $script:VerifierText = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Invoke-ReplicationTestVerification.ps1')
+        $script:GateText2 = Get-Content -Raw -LiteralPath (Join-Path $root `
+            'scripts/shared/Validate-ReplicationCandidate.ps1')
+    }
+
+    It 'finds the artifact the verifier writes for the control' {
+        $script:VerifierText | Should -Match "controlPath = Join-Path \`$OutputDirectory '(?<n>[^']+)'"
+        [regex]::Match($script:VerifierText,
+            "controlPath = Join-Path \`$OutputDirectory '(?<n>[^']+)'").Groups['n'].Value |
+            Should -BeExactly 'negative-control-result.json'
+    }
+
+    It 'reads the control counts from that artifact' {
+        $name = [regex]::Match($script:VerifierText,
+            "controlPath = Join-Path \`$OutputDirectory '(?<n>[^']+)'").Groups['n'].Value
+        $script:GateText2 | Should -Match ([regex]::Escape($name))
+    }
+
+    It 'does not take the control from the verification result it precedes' {
+        # verification-result.json is written before the control runs, so a
+        # lookup there can only ever report that no control happened.
+        $script:GateText2 | Should -Not -Match "\`$result\.PSObject\.Properties\['negativeControl'\]"
+    }
+}
+
+Describe 'every blocked code is deliberately classified as an answer or a defect' {
+    # The set of codes that finish the run successfully is a hand-written list,
+    # and a hand-written list has silently gone stale in this pipeline five
+    # times. Derive the codes the classifier can actually produce and require
+    # each one to have been placed on a side, so adding a code forces the
+    # decision instead of defaulting it to a red build.
+    BeforeAll {
+        $script:ReplicateScript = Join-Path (Split-Path -Parent $PSCommandPath) 'Replicate-Issue.ps1'
+        $script:ReplicateAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:ReplicateScript, [ref]$null, [ref]$null)
+
+        $classifier = $script:ReplicateAst.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq 'Get-ReplicationBlockedCode'
+            }, $true) | Select-Object -First 1
+        if (-not $classifier) { throw 'Get-ReplicationBlockedCode was not found.' }
+
+        $script:ProducibleCodes = @(
+            $classifier.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.ReturnStatementAst] -and
+                    $node.Pipeline -and
+                    $node.Pipeline.PipelineElements.Count -eq 1
+                }, $true) |
+                ForEach-Object {
+                    $expression = $_.Pipeline.PipelineElements[0].Expression
+                    if ($expression -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
+                        $expression.Value
+                    }
+                } |
+                Where-Object { $_ } |
+                Sort-Object -Unique
+        )
+
+        # The successful-exit test is the only '-in @(...)' membership check
+        # written against the $code variable, so find it structurally rather
+        # than by quoting the list a second time.
+        $membership = $script:ReplicateAst.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.BinaryExpressionAst] -and
+                $node.Operator -eq [System.Management.Automation.Language.TokenKind]::Iin -and
+                $node.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                $node.Left.VariablePath.UserPath -eq 'code'
+            }, $true) | Select-Object -First 1
+        if (-not $membership) { throw 'The successful-exit membership test was not found.' }
+
+        $script:SuccessCodes = @(
+            $membership.Right.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.StringConstantExpressionAst]
+                }, $true) | ForEach-Object { $_.Value } | Sort-Object -Unique
+        )
+    }
+
+    It 'finishes successfully only on codes the classifier can produce' {
+        foreach ($code in $script:SuccessCodes) {
+            $script:ProducibleCodes | Should -Contain $code -Because `
+                "'$code' finishes the run successfully but Get-ReplicationBlockedCode never returns it"
+        }
+    }
+
+    It 'has a deliberate decision recorded for every producible code' {
+        # Update this partition when a code is added. Doing so is the point:
+        # the decision is whether the run learned the answer or broke.
+        $answers = @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy',
+            'control_refuted_reproduction')
+        # A third case, and deliberately not folded into either of the others:
+        # the device runtime never opened, so the run learned nothing and the
+        # pipeline is not at fault. Calling it an answer would claim knowledge
+        # it does not have; calling it a defect would send someone looking for
+        # a bug in this code. It finishes green so the outcome still reaches
+        # the issue, labelled for what it is.
+        $runtimeBlocked = @('harness_unavailable')
+        $defects = @(
+            'copilot_cli_unavailable', 'copilot_service_unavailable',
+            'sandbox_inconclusive', 'verification_inconclusive')
+
+        foreach ($code in $script:ProducibleCodes) {
+            ($answers + $runtimeBlocked + $defects) | Should -Contain $code -Because `
+                "'$code' is produced but neither finishes the run nor fails it deliberately"
+        }
+        foreach ($code in ($answers + $runtimeBlocked)) {
+            $script:SuccessCodes | Should -Contain $code -Because `
+                "'$code' must not fail the build"
+        }
+        foreach ($code in $defects) {
+            $script:SuccessCodes | Should -Not -Contain $code -Because `
+                "'$code' means no answer was reached and must stay red"
+        }
+    }
+}
+
+Describe 'the blocked-run classifier reads the attempts it reports' {
+    BeforeAll {
+        $script:ReplicateAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
+    }
+
+    It 'passes the same variable to the classifier that it prints' {
+        # Build 15034037 printed ten test attempts including test-passed and
+        # wrong-signature and was still classified verification_inconclusive,
+        # because the classifier was handed the sandbox list, which is empty
+        # once the sandbox has succeeded. The two must not be able to drift.
+        $call = @($script:ReplicateAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.CommandAst] -and
+                        $node.GetCommandName() -eq 'Get-ReplicationBlockedCode'
+                }, $true))
+        $call.Count | Should -Be 1 -Because 'the classifier is invoked exactly once'
+
+        $elements = $call[0].CommandElements
+        $classifierVariable = $null
+        for ($i = 0; $i -lt $elements.Count - 1; $i++) {
+            $parameter = $elements[$i] -as [System.Management.Automation.Language.CommandParameterAst]
+            if ($parameter -and $parameter.ParameterName -eq 'AttemptKinds') {
+                $classifierVariable =
+                    ($elements[$i + 1] -as [System.Management.Automation.Language.VariableExpressionAst]).VariablePath.UserPath
+            }
+        }
+        $classifierVariable | Should -Not -BeNullOrEmpty
+
+        $report = @($script:ReplicateAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.CommandAst] -and
+                        $node.GetCommandName() -eq 'Write-Host' -and
+                        $node.Extent.Text -match 'ISSUE REPLICATION BLOCKED'
+                }, $true))
+        $report.Count | Should -Be 1
+
+        $reportedVariables = @($report[0].FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.VariableExpressionAst]
+                }, $true) | ForEach-Object { $_.VariablePath.UserPath })
+        $reportedVariables | Should -Contain $classifierVariable -Because `
+            "the classifier reads '$classifierVariable' but the run reports a different list"
+    }
+}
+
+Describe 'script-scoped state survives StrictMode' {
+    It 'assigns every script-scoped variable at file scope before it is read' {
+        # Replicate-Issue.ps1 runs under Set-StrictMode -Version 3.0, where
+        # reading a variable that has never been assigned is a terminating
+        # error. A flag set only inside the branch that owns it therefore
+        # crashes every run that skips that branch, and those are the runs that
+        # matter: the scenario the agent reported as structurally blocked, the
+        # reproduction the device refused. Builds 15034975 and 15034980 died
+        # this way, turning two correct refusals into pipeline failures.
+        #
+        # The check is textual order rather than reachability, which is a
+        # stronger requirement than StrictMode imposes and easy to satisfy: put
+        # the initialiser above the code that reads it.
+        function Test-InsideFunction($node) {
+            $parent = $node.Parent
+            while ($parent) {
+                if ($parent -is [System.Management.Automation.Language.FunctionDefinitionAst]) {
+                    return $true
+                }
+                $parent = $parent.Parent
+            }
+            return $false
+        }
+
+        $uses = @($script:ReplicateAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                        $node.VariablePath.IsScript
+                }, $true))
+        $uses.Count | Should -BeGreaterThan 0
+
+        foreach ($group in ($uses | Group-Object { $_.VariablePath.UserPath })) {
+            $reads = @($group.Group | Where-Object {
+                    -not (($_.Parent -is [System.Management.Automation.Language.AssignmentStatementAst]) -and
+                        $_.Parent.Left -eq $_)
+                })
+            if ($reads.Count -eq 0) { continue }
+
+            $fileScopeAssignments = @($group.Group | Where-Object {
+                    ($_.Parent -is [System.Management.Automation.Language.AssignmentStatementAst]) -and
+                        $_.Parent.Left -eq $_ -and
+                        -not (Test-InsideFunction $_)
+                })
+            $fileScopeAssignments.Count | Should -BeGreaterThan 0 -Because `
+                "'$($group.Name)' is read but never assigned outside a function, so any run that skips that function fails under StrictMode"
+
+            $firstAssignment = ($fileScopeAssignments | ForEach-Object { $_.Extent.StartLineNumber } | Measure-Object -Minimum).Minimum
+            $firstRead = ($reads | ForEach-Object { $_.Extent.StartLineNumber } | Measure-Object -Minimum).Minimum
+            $firstAssignment | Should -BeLessThan $firstRead -Because `
+                "'$($group.Name)' is read on line $firstRead before its file-scope initialiser on line $firstAssignment"
+        }
+    }
+}
+
+Describe 'Every gate reads a path something actually writes' {
+    BeforeAll {
+        $script:Yaml = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+    }
+
+    It 'points the scope gate at the directory the context script writes to' {
+        # The gate read $contextDir/issue-context.json, but the step only ever
+        # copied the *agent* context there, so Test-Path was false and the gate
+        # approved every run in silence from its introduction to build 15051047.
+        $setter = [regex]::Match($script:Yaml,
+            'variable=REPLICATION_CONTEXT_PATH\]\$\(Join-Path (\$\w+)')
+        $setter.Success | Should -BeTrue
+
+        $writtenTo = 'privateContextDir'
+        $setter.Groups[1].Value | Should -Be ('$' + $writtenTo)
+    }
+
+    It 'passes the context script the same directory the gate later reads' {
+        # OutputDir and the gate's path have to agree, or the gate reads a file
+        # that exists somewhere else.
+        $script:Yaml | Should -Match 'OutputDir\s*=\s*\$privateContextDir'
+    }
+
+    It 'copies only the agent context into the agent-readable directory' {
+        # The full context stays private; moving the gate must not smuggle the
+        # unsanitized report into the directory the agent can read.
+        $agentReadable = [regex]::Matches($script:Yaml,
+            'Copy-Item -LiteralPath \(Join-Path \$privateContextDir "([^"]+)"\) -Destination \$contextDir')
+        @($agentReadable).Count | Should -BeGreaterThan 0
+        foreach ($match in $agentReadable) {
+            $match.Groups[1].Value | Should -Match '^issue-agent-context\.'
+        }
+    }
+
+    It 'says so when the scope gate cannot find its evidence' {
+        # A gate that silently approves is worse than no gate, because the run
+        # looks checked.
+        $script:Yaml | Should -Match 'The scope gate could not read the issue context'
+    }
+}
+
+Describe 'A build step may not report success for work it never ran' {
+    BeforeAll {
+        $script:Yaml = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+        # The tempered '(?!- pwsh: \|)' is what confines each capture to its own
+        # step. Without it the lazy '.*?' still begins at the *first* '- pwsh: |'
+        # in the file, because a regex takes the leftmost match, so the two
+        # captures spanned 1017 and 2754 lines and held 85 'displayName:' entries
+        # between them - this Describe was auditing 85 steps while claiming to
+        # audit 2. Narrowed they span 90 and 49 lines and hold none.
+        #
+        # Narrowing costs real protection: the over-broad span was measured to
+        # catch a step reading a pipeline script from the worktree after the
+        # checkout detaches, which is a defect that has cost this pipeline two
+        # runs. That property is now asserted directly, and pipeline-wide, by
+        # 'No job may read a pipeline script from the worktree after it detaches'
+        # below. Do not narrow one without the other.
+        $script:BuildTaskSteps = @(
+            [regex]::Matches(
+                $script:Yaml,
+                "(?s)- pwsh: \|((?:(?!- pwsh: \|).)*?)displayName: 'Build MSBuild Tasks'") |
+                ForEach-Object { $_.Groups[1].Value })
+    }
+
+    It 'captures each step body rather than everything before it' {
+        # The whole point of the narrowing: a capture holding another step's
+        # displayName is a capture holding another step.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match 'displayName:'
+        }
+    }
+
+    It 'finds both copies of the step' {
+        # One serves the review gate and one serves replicate. A fix applied to
+        # only one of them is why Windows kept failing after the first attempt.
+        $script:BuildTaskSteps.Count | Should -Be 2
+    }
+
+    It 'loads the shell resolver by an absolute path' {
+        # Build 15065790 dot-sourced './.github/scripts/shared/Resolve-BuildShell.ps1',
+        # did not find it, and carried on.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match '\.\s+\./\.github/scripts'
+            $step | Should -Match 'Join-Path "\$\(Build\.ArtifactStagingDirectory\)"'
+        }
+    }
+
+    It 'reads the resolver from the trusted capture, not the worktree' {
+        # Both jobs check out a different commit before this step runs, and that
+        # commit does not carry this resolver. Build 15066067 reported
+        # "the file does not exist" for
+        # /home/vsts/work/1/s/.github/scripts/shared/Resolve-BuildShell.ps1
+        # while the file was present and committed on the pipeline's own branch.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Match "trusted-github/scripts/shared/Resolve-BuildShell\.ps1"
+            $step | Should -Not -Match $script:WorktreeScriptReadPattern
+        }
+    }
+
+    It 'captures the trusted scripts before the step that reads them' {
+        # The capture is what makes the trusted path valid. If a job ever reads
+        # the resolver without capturing first, the path is just a different way
+        # for the file to be missing.
+        foreach ($job in @('CopilotReview', 'RunUITests')) {
+            $jobStart = $script:Yaml.IndexOf("- job: $job")
+            $jobStart | Should -BeGreaterThan -1
+            $capture = $script:Yaml.IndexOf('cp -r .github/scripts "$TRUSTED/scripts"', $jobStart)
+            $reader = $script:Yaml.IndexOf('trusted-github/scripts/shared/Resolve-BuildShell.ps1', $jobStart)
+
+            $capture | Should -BeGreaterThan -1
+            $reader | Should -BeGreaterThan $capture
+        }
+    }
+
+    It 'still builds the product with the product tree''s own build script' {
+        # Only the resolver is a trusted helper. build.ps1 must come from the
+        # checked-out commit, because that is the tree being built.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Match "Join-Path ""\$\(Build\.SourcesDirectory\)"" 'build\.ps1'"
+        }
+    }
+
+    It 'fails the step when the resolver will not load' {
+        # The warning-and-continue arm left Invoke-BuildTasksWatchdog undefined,
+        # so the step exited clean having built nothing at all.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Match '##\[error\]Could not load the build shell resolver'
+            $step | Should -Not -Match '##\[warning\]Could not load the build shell resolver'
+            $step | Should -Match '(?s)Could not load the build shell resolver.{0,400}exit 1'
+        }
+    }
+
+    It 'does not guard the watchdog call with a Get-Command probe' {
+        # The probe is what turned a missing function into a silent skip. If the
+        # resolver loaded, the function exists; if it did not, the step is over.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match "Get-Command -Name 'Resolve-BuildShellPath'"
+        }
+    }
+
+    It 'invokes the build script by an absolute path too' {
+        # Same failure mode, one line further down: a relative ./build.ps1 is
+        # only correct while the working directory happens to be the repo root.
+        foreach ($step in $script:BuildTaskSteps) {
+            $step | Should -Not -Match "'-File','\./build\.ps1'"
+            $step | Should -Match "Join-Path ""\$\(Build\.SourcesDirectory\)"" 'build\.ps1'"
+        }
+    }
+
+    It 'still records the gate failure marker when the resolver is missing' {
+        # The gate step is continueOnError, so downstream steps read a marker
+        # file rather than the task result. Exiting without setting it would
+        # tell them the tasks were built.
+        $gate = @($script:BuildTaskSteps | Where-Object { $_ -match 'Set-BuildTasksFailed' })
+        $gate.Count | Should -Be 1
+        $gate[0] | Should -Match '(?s)##\[error\]Could not load the build shell resolver.{0,300}Set-BuildTasksFailed 1'
+    }
+}
+
+Describe 'No job may read a pipeline script from the worktree after it detaches' {
+    # This is the property the over-broad 'Build MSBuild Tasks' capture was
+    # providing by accident. Every job that detaches its checkout is standing on
+    # a different commit from the one that carries these scripts, so a script
+    # read from $(Build.SourcesDirectory) after that point is a file that may
+    # not exist, or worse, a different file with the same name. Build 15066067
+    # reported "the file does not exist" for a resolver that was present and
+    # committed on the pipeline's own branch.
+    #
+    # Reads *before* the detach are correct and deliberate - that is the whole
+    # reason the trusted capture is taken while the worktree is still ours - so
+    # the assertion is about ordering within a job, not about the path.
+
+    BeforeAll {
+        $script:Yaml = $script:Pipeline
+
+        function Get-LateWorktreeScriptRead {
+            param([Parameter(Mandatory)][AllowEmptyString()][string]$Yaml)
+
+            $jobs = @([regex]::Matches($Yaml, '(?m)^\s*- job: (\S+)\s*$'))
+            $findings = @()
+
+            for ($i = 0; $i -lt $jobs.Count; $i++) {
+                $start = $jobs[$i].Index
+                $end = if ($i + 1 -lt $jobs.Count) { $jobs[$i + 1].Index } else { $Yaml.Length }
+                $body = $Yaml.Substring($start, $end - $start)
+
+                $detach = $body.IndexOf('git checkout --detach')
+                if ($detach -lt 0) { continue }
+
+                foreach ($read in [regex]::Matches($body, $script:WorktreeScriptReadPattern)) {
+                    if ($read.Index -gt $detach) {
+                        $findings += [pscustomobject]@{
+                            Job  = $jobs[$i].Groups[1].Value
+                            Line = ($Yaml.Substring(0, $start + $read.Index) -split "`n").Count
+                            Text = ($body.Substring($read.Index, [Math]::Min(90, $body.Length - $read.Index)) -split "`n")[0]
+                        }
+                    }
+                }
+            }
+
+            # Deliberately not ', $findings': that idiom preserves a
+            # single-element array but emits an *empty* one as a single object,
+            # so a clean pipeline would report one nameless finding. Every call
+            # site wraps with @(), which handles both ends correctly.
+            return $findings
+        }
+    }
+
+    It 'holds across every job in the pipeline' {
+        $findings = @(Get-LateWorktreeScriptRead -Yaml $script:Yaml)
+        $findings.Count | Should -Be 0 -Because (
+            "these read a pipeline script from the worktree after their job detached: " +
+            (($findings | ForEach-Object { "$($_.Job) line $($_.Line): $($_.Text)" }) -join '; '))
+    }
+
+    It 'fires on a step that loads the resolver from the worktree' {
+        # Proving the scan is not vacuous, on the real defect shape rather than a
+        # fixture: rewrite the trusted resolver load the way a careless edit
+        # would. Both jobs carry that line, so both must be named.
+        $trusted = 'Join-Path "$(Build.ArtifactStagingDirectory)" ' +
+            "'trusted-github/scripts/shared/Resolve-BuildShell.ps1'"
+        $script:Yaml | Should -BeLike "*$trusted*"
+
+        $mutated = $script:Yaml.Replace(
+            $trusted,
+            '"$(Build.SourcesDirectory)/.github/scripts/shared/Resolve-BuildShell.ps1"')
+        $mutated | Should -Not -Be $script:Yaml
+
+        $findings = @(Get-LateWorktreeScriptRead -Yaml $mutated)
+        @($findings | ForEach-Object { $_.Job }) | Should -Contain 'CopilotReview'
+        @($findings | ForEach-Object { $_.Job }) | Should -Contain 'RunUITests'
+    }
+
+    It 'does not object to a repository root passed as an argument' {
+        # The upstream-duplicate gate runs after the detach and passes
+        # -RepositoryRoot "$(Build.SourcesDirectory)" deliberately: after the
+        # detach that *is* the product tree the run will build. Only script
+        # loads are the defect.
+        $script:Yaml | Should -Match '-RepositoryRoot "\$\(Build\.SourcesDirectory\)"'
+        @(Get-LateWorktreeScriptRead -Yaml $script:Yaml).Count | Should -Be 0
+    }
+}
+
+Describe 'An already-covered issue may be re-run deliberately' {
+    # Every certified reproduction opens a pull request, and that pull request
+    # then blocks the issue from ever being replicated again. A pipeline change
+    # is therefore untestable against precisely the runs that exercise it.
+
+    It 'offers superseding as an explicit, off-by-default choice' {
+        $script:Pipeline | Should -Match "(?s)- name: SupersedeExisting.*?type: boolean.*?default: false"
+    }
+
+    It 'lets the pre-check skip only while superseding is off' {
+        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check | Should -BeGreaterThan 0
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('$supersedeExisting = [bool]::Parse(') | Should -BeTrue
+        $step.Contains('if ($existing -and -not $supersedeExisting)') | Should -BeTrue
+    }
+
+    It 'leaves the existing pull request untouched in the untrusted job' {
+        # The pre-check runs without the publishing credential, and closing the
+        # earlier pull request before this run has published anything would
+        # destroy the only evidence the issue has if the run then fails.
+        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('gh pr close') | Should -BeFalse
+    }
+
+    It 'passes the choice through to the publisher that acts on it' {
+        # A parameter the pre-check honours but the publisher never sees would
+        # spend a full device run and then refuse it at the last step.
+        $script:Pipeline | Should -Match "\`$publishFixArgument\['SupersedeExisting'\] = \`$true"
+        $publish = $script:Pipeline.IndexOf('Publish-ReplicationPR.ps1')
+        $splat = $script:Pipeline.IndexOf("`$publishFixArgument['SupersedeExisting']")
+        $publish | Should -BeGreaterThan 0
+        $splat | Should -BeGreaterThan 0
+    }
+}
+
+Describe 'Every pipeline script parses' {
+    # A one-character mistake (\" instead of `" inside a double-quoted string)
+    # left Build-AndDeploy.ps1 unparseable and wiped out all 890 tests in
+    # Replicate-Issue.Tests.ps1 at once. Nothing caught it at the point of
+    # damage: the tests covering that very block read the file with
+    # Get-Content -Raw, so they happily matched text in a file PowerShell
+    # could not load. Parsing is the cheapest possible check and the only one
+    # that fails on the broken file rather than somewhere downstream.
+    It 'parses <_> without errors' -ForEach @(
+        Get-ChildItem -Recurse -LiteralPath $PSScriptRoot -Filter *.ps1 |
+            ForEach-Object { $_.FullName }
+    ) {
+        $errors = $null
+        [System.Management.Automation.Language.Parser]::ParseFile(
+            $_, [ref]$null, [ref]$errors) | Out-Null
+        $messages = @($errors) | ForEach-Object {
+            "line $($_.Extent.StartLineNumber): $($_.Message)"
+        }
+        $messages -join "; " | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'The catalyst build registers its app where the mac2 driver looks' {
+    # Every one of the 22 cached runs that failed with "The app representing
+    # com.microsoft.maui.uitests could not be found" was catalyst, and every one
+    # was blocked with nothing published - 14% of all cached catalyst runs.
+    # BuildAndRunHostApp.ps1 documents the cause and registers the bundle, but
+    # the replication verification path never calls it: `lsregister` appeared
+    # zero times in all 22 logs. Build-AndDeploy.ps1 is the script that path
+    # does run, and it believed "no install step needed".
+    BeforeAll {
+        $script:DeploySource = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1')
+        $catalystStart = $script:DeploySource.IndexOf('$Platform -eq "catalyst"')
+        $windowsStart = $script:DeploySource.IndexOf('$Platform -eq "windows"')
+        $script:CatalystBranch = $script:DeploySource.Substring($catalystStart, $windowsStart - $catalystStart)
+    }
+
+    It 'registers the built bundle with LaunchServices' {
+        $script:CatalystBranch | Should -Match 'lsregister'
+    }
+
+    # Build 15090165 registered Maui.Controls.Sample.Sandbox.app, printed
+    # "Registered MacCatalyst app with LaunchServices", and then failed four
+    # attempts with "The app representing com.microsoft.maui.uitests could not
+    # be found". lsregister exiting 0 says an app was registered, never that it
+    # was the one the mac2 driver resolves by bundleId.
+    It 'reads back the identifier it actually registered' {
+        # Asserted on the PlistBuddy call itself, not on the file containing the
+        # word: a comment and a warning string both mention CFBundleIdentifier,
+        # so a looser check survived swapping the key for CFBundleName.
+        $script:CatalystBranch |
+            Should -Match "PlistBuddy[^\r\n]*Print :CFBundleIdentifier"
+    }
+
+    It 'warns when the registered bundle is not the one the driver resolves' {
+        $script:CatalystBranch | Should -Match '\$registeredBundleId -ne \$BundleId'
+    }
+
+    It 'names both identifiers so the warning is actionable on its own' {
+        $mismatch = [regex]::Match(
+            $script:CatalystBranch,
+            '(?s)\$registeredBundleId -ne \$BundleId.*?\}')
+        $mismatch.Success | Should -BeTrue
+        $mismatch.Value | Should -Match '\$registeredBundleId'
+        $mismatch.Value | Should -Match '\$BundleId'
+    }
+
+    # The comparison is worthless if the caller never says which bundle the
+    # tests will ask for, which was true for catalyst until this was fixed.
+    It 'is told which bundle the catalyst tests resolve' {
+        # Resolved through the AST so the guard reads the condition that really
+        # governs the assignment. A text window around it matched the ios-only
+        # form too, and that mutant survived.
+        $hostAppPath = Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1'
+        $errors = $null
+        $hostAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $hostAppPath, [ref]$null, [ref]$errors)
+        $errors | Should -BeNullOrEmpty
+
+        $ifs = $hostAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.IfStatementAst]
+        }, $true)
+
+        $governing = @($ifs | Where-Object {
+            $_.Clauses[0].Item2.Extent.Text -match '\$buildDeployParams\.BundleId'
+        })
+        $governing.Count | Should -Be 1
+        $governing[0].Clauses[0].Item1.Extent.Text | Should -Match 'catalyst'
+    }
+
+    It 'probes both known lsregister locations' {
+        # A single hard-coded path silently skips registration on an agent whose
+        # framework symlink layout differs, which looks exactly like the bug.
+        ([regex]::Matches($script:CatalystBranch, 'LaunchServices\.framework')).Count |
+            Should -BeGreaterThan 1
+    }
+
+    It 'reports a failed registration instead of claiming success' {
+        # Claiming success unconditionally is how a failed registration becomes
+        # an unexplained Appium error several attempts later.
+        $success = $script:CatalystBranch.IndexOf('Registered MacCatalyst app with LaunchServices')
+        $check = $script:CatalystBranch.IndexOf('$LASTEXITCODE -eq 0')
+        $check | Should -BeGreaterThan 0
+        $check | Should -BeLessThan $success
+    }
+
+    It 'exposes the bundle path for the mac2 driver as well' {
+        # bundleId resolution is primary, but options.App still needs the path.
+        $script:CatalystBranch | Should -Match 'MAC_APP_PATH'
+    }
+
+    It 'does not fail the build when registration is unavailable' {
+        # On an agent where the bundle is already registered the run still
+        # works; hard-failing would break runs that pass today.
+        $script:CatalystBranch | Should -Not -Match 'lsregister not found[^\r\n]*\r?\n\s*exit 1'
+    }
+}
+
+Describe 'The manifest, not the file system, decides whether a fix is published' {
+    # Build 15102442 reached a certified reproduction, passed two fix candidates,
+    # and was killed by the task timeout inside the panel. That orphans fix.patch
+    # beside the staged manifest, which names no fix files, and the publisher
+    # refused the whole candidate: "A fix patch was provided but the manifest
+    # names no fix files." A finished reproduction was destroyed by a
+    # contradiction it did not cause.
+    #
+    # These tests execute the pipeline's own guard rather than matching its text,
+    # because source text is present whether or not it works (see 'Every pipeline
+    # script parses').
+    BeforeAll {
+        $script:YmlText = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+
+        function script:Get-YmlRegion {
+            param([string]$StartsWith, [string]$EndsBefore)
+            $lines = $script:YmlText -split "`r?`n"
+            $start = -1
+            $end = -1
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+                if ($start -lt 0 -and $lines[$i].Trim().StartsWith($StartsWith)) { $start = $i; continue }
+                if ($start -ge 0 -and $lines[$i].Trim().StartsWith($EndsBefore)) { $end = $i; break }
+            }
+            if ($start -lt 0) { throw "Region starting '$StartsWith' was not found in ci-copilot.yml." }
+            if ($end -lt 0) { throw "Region ending before '$EndsBefore' was not found in ci-copilot.yml." }
+            ($lines[$start..($end - 1)] -join "`n")
+        }
+
+        # Azure substitutes $(Pipeline.Workspace) before pwsh ever sees the script.
+        # Left alone, PowerShell would read it as a subexpression and try to run
+        # 'Pipeline.Workspace' as a command, so the test must substitute it too.
+        function script:Invoke-FixPatchGuard {
+            param(
+                [string]$Region,
+                [string]$Workspace,
+                [hashtable]$Variables
+            )
+            $body = $Region.Replace('$(Pipeline.Workspace)', $Workspace)
+            # Which hashtable the region builds is a property of the region, so
+            # reading it from the region cannot drift from the code under test.
+            $resultVar = if ($body -match '\$publishFixArgument') { 'publishFixArgument' } else { 'fixPatchArgument' }
+            $prelude = (@($Variables.Keys) | ForEach-Object { "`$$_ = `$Vars['$_']" }) -join "`n"
+            $sb = [scriptblock]::Create("param(`$Vars)`n$prelude`n$body`n,@(`$$resultVar.Keys)")
+            , @((& $sb $Variables) | Select-Object -First 1)
+        }
+
+        function script:New-Workspace {
+            param([bool]$WritePatch)
+            $root = Join-Path ([System.IO.Path]::GetTempPath()) ("fixguard-" + [guid]::NewGuid().ToString('n'))
+            $null = New-Item -ItemType Directory -Path (Join-Path $root 'ReplicationArtifacts') -Force
+            $null = New-Item -ItemType Directory -Path (Join-Path $root 'ReplicationPublication') -Force
+            if ($WritePatch) {
+                Set-Content -LiteralPath (Join-Path $root 'ReplicationArtifacts/fix.patch') `
+                    -Value 'diff --git a/x b/x' -Encoding utf8NoBOM
+            }
+            $root
+        }
+    }
+
+    Context 'the validator is only handed a fix the manifest vouches for' {
+        BeforeAll {
+            $script:ValidatorRegion = script:Get-YmlRegion `
+                -StartsWith '$fixPatchPath = Join-Path $artifactRoot' `
+                -EndsBefore '$validation = @('
+        }
+
+        It 'validates the fix when the manifest names fix files' {
+            $ws = script:New-Workspace -WritePatch $true
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ fixFiles = @('src/Core/src/Platform/Windows/LabelHtmlHelper.cs') }
+                }
+                @($keys) | Should -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'ignores an orphan fix patch when the manifest names no fix files' {
+            $ws = script:New-Workspace -WritePatch $true
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ fixFiles = @() }
+                }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'ignores an orphan fix patch when the manifest has no fixFiles property at all' {
+            # A missing property is $null, and @($null).Count is 1, which a naive
+            # count reads as one named fix file.
+            $ws = script:New-Workspace -WritePatch $true
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ status = 'reproduced' }
+                }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'passes no fix argument when there is no fix patch on disk' {
+            $ws = script:New-Workspace -WritePatch $false
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                    artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
+                    candidate    = [pscustomobject]@{ fixFiles = @('src/Core/src/X.cs') }
+                }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+    }
+
+    Context 'the publisher applies only a fix the validator vouched for' {
+        BeforeAll {
+            $script:PublisherRegion = script:Get-YmlRegion `
+                -StartsWith '$publishFixPatch =' `
+                -EndsBefore 'if ([bool]::Parse('
+        }
+
+        It 'applies the fix when the validated candidate names fix files' {
+            $ws = script:New-Workspace -WritePatch $true
+            Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
+                -Value '{"fixFiles":["src/Core/src/X.cs"]}' -Encoding utf8NoBOM
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                @($keys) | Should -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'never applies a fix patch the validator declined to look at' {
+            # Probing the file here as well let the two consumers disagree: the
+            # validator would ignore the orphan and the publisher would publish
+            # it as a fix nobody checked.
+            $ws = script:New-Workspace -WritePatch $true
+            Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
+                -Value '{"fixFiles":[]}' -Encoding utf8NoBOM
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+
+        It 'never applies a fix patch when the validated candidate has no fixFiles property' {
+            $ws = script:New-Workspace -WritePatch $true
+            Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
+                -Value '{"schemaVersion":1,"validationPassed":true}' -Encoding utf8NoBOM
+            try {
+                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                @($keys) | Should -Not -Contain 'FixPatchPath'
+            } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
     }
 }

@@ -22,6 +22,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$PatchPath,
 
+    [string]$FixPatchPath,
+
     [Parameter(Mandatory = $true)]
     [string]$RepositoryRoot,
 
@@ -44,13 +46,16 @@ param(
 
     [string]$OutputPath = '',
 
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    [switch]$SupersedeExisting
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
 . (Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1')
+. (Join-Path $PSScriptRoot 'Get-ReplicationUpstreamFix.ps1')
 
 function ConvertTo-ReplicationSingleLine {
     param(
@@ -100,6 +105,147 @@ function New-ReplicationBranchName {
     return "copilot/reproduce-$IssueNumber-$safePlatform-$safeBuildId"
 }
 
+function Get-ReplicationIndependentReviewBlock {
+    <#
+        .SYNOPSIS
+            Renders the independent review of the winning fix, or says plainly
+            that it was not measured.
+
+        .DESCRIPTION
+            Reports, never refuses. A blocking finding here does not stop
+            publication: the arm's false-positive rate is unmeasurable, because
+            every reviewed pull request in the corpus it was validated against
+            carries a blocking finding, so there is no negative control. A wrong
+            paragraph costs a reader a minute; a wrong refusal costs a certified
+            fix, and every gate in this pipeline that could destroy work
+            eventually did.
+
+            An absent review renders "Not measured" rather than nothing. Silence
+            is what hid the regression cross-reference for its entire life - a
+            checker returning nothing is indistinguishable from a feature nobody
+            wired up.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Candidate
+    )
+
+    $header = '**Independent review.**'
+    $notMeasured = "$header Not measured - a second model did not return a usable report on this fix."
+
+    $property = $Candidate.PSObject.Properties['fixIndependentReview']
+    if (-not $property -or $null -eq $property.Value) { return $notMeasured }
+    $review = $property.Value
+
+    $summary = ConvertTo-ReplicationSingleLine -Value ([string]$review.summary) -MaximumLength 600
+    if ([string]::IsNullOrWhiteSpace($summary)) { return $notMeasured }
+
+    $model = ConvertTo-ReplicationSingleLine -Value ([string]$review.model) -MaximumLength 60
+    $attribution = if ($model) { " A second model (``$model``) reviewed the winning diff without having written it." } else { '' }
+
+    $lines = @("$header$attribution $summary")
+
+    $findings = @()
+    $findingsProperty = $review.PSObject.Properties['findings']
+    if ($findingsProperty -and $null -ne $findingsProperty.Value) {
+        foreach ($entry in @($findingsProperty.Value | Where-Object { $_ })) {
+            $detail = ConvertTo-ReplicationSingleLine -Value ([string]$entry.detail) -MaximumLength 800
+            if ([string]::IsNullOrWhiteSpace($detail)) { continue }
+            $severity = ConvertTo-ReplicationSingleLine -Value ([string]$entry.severity) -MaximumLength 40
+            if ([string]::IsNullOrWhiteSpace($severity)) { $severity = 'important' }
+            $findings += ('- **' + $severity + '.** ' + $detail)
+            if ($findings.Count -ge 6) { break }
+        }
+    }
+
+    if ($findings.Count -gt 0) {
+        $lines += ''
+        $lines += $findings
+        $lines += ''
+        $lines += ('These findings did not block publication. They are reported so a maintainer sees them ' +
+                   'in the body rather than having to rediscover them, and any of them may be wrong.')
+        $lines += ''
+        $lines += ('How far to trust them, measured rather than asserted: across two blind trials covering ' +
+                   '8 diffs, this arm recovered 6 of the 8 specific defects human reviewers had already ' +
+                   'named, and raised a blocking finding on 1 of 4 fixes dotnet/maui had already merged. ' +
+                   'At n=8 those rates are indicative only - they can rule out a high error rate, but they ' +
+                   'cannot establish a low one.')
+    }
+
+    return ($lines -join "`n")
+}
+
+function Get-ReplicationFixPanelBlock {
+    <#
+        .SYNOPSIS
+            Renders the try-fix panel: every candidate that competed, what it
+            proposed, and which one was selected.
+
+        .DESCRIPTION
+            The fix phase runs five cross-pollinated try-fix candidates and
+            publishes one. Only the winner used to reach the body, so a reader
+            could not distinguish a fix chosen from five competing approaches
+            from the single candidate that happened to run. That difference is
+            not hypothetical: before the tidiness fix, four of five candidates
+            were routinely blocked for changing no file, and the published body
+            read identically whether the panel had compared five approaches or
+            none.
+
+            Reports, never refuses, like every other disclosure in this body. An
+            absent panel renders "Not measured" rather than nothing, because a
+            silent block is indistinguishable from a feature nobody wired up.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Candidate
+    )
+
+    $header = '**Try-fix panel.**'
+    $notMeasured = "$header Not measured - no per-candidate record was produced for this fix."
+
+    $property = $Candidate.PSObject.Properties['fixPanel']
+    if (-not $property -or $null -eq $property.Value) { return $notMeasured }
+
+    $rows = @()
+    foreach ($entry in @($property.Value | Where-Object { $_ })) {
+        $model = ConvertTo-ReplicationSingleLine -Value ([string]$entry.model) -MaximumLength 60
+        if ([string]::IsNullOrWhiteSpace($model)) { $model = 'unknown' }
+
+        $result = ConvertTo-ReplicationSingleLine -Value ([string]$entry.result) -MaximumLength 40
+        if ([string]::IsNullOrWhiteSpace($result)) { $result = 'unknown' }
+
+        $detail = ConvertTo-ReplicationSingleLine -Value ([string]$entry.detail) -MaximumLength 300
+
+        # A pipe in model-written prose ends the cell and silently shifts every
+        # column after it, so the row would misreport which candidate produced
+        # which result. Escaped rather than stripped: the character is often
+        # load-bearing in the C# the candidate is describing.
+        $model = $model -replace '\|', '\|'
+        $result = $result -replace '\|', '\|'
+        $detail = $detail -replace '\|', '\|'
+
+        $marker = if ($entry.won) { ' **(selected)**' } else { '' }
+        $rows += ('| ' + [int]$entry.attempt + ' | `' + $model + '` | ' + $result + $marker + ' | ' + $detail + ' |')
+    }
+
+    if ($rows.Count -eq 0) { return $notMeasured }
+
+    $selected = @($property.Value | Where-Object { $_ -and $_.won }).Count
+    $lead = ("$header " + $rows.Count + ' candidate(s) each ran the reviewer''s `try-fix` skill against this ' +
+             'reproduction, sequentially and cross-pollinated, so each saw the approaches the earlier ones ' +
+             'had already tried. ' +
+             $(if ($selected -gt 0) { 'The selected row is the fix published below.' } else { 'No row is marked selected.' }))
+
+    return (@(
+        $lead,
+        '',
+        '| # | Model | Result | Approach or rejection |',
+        '| --- | --- | --- | --- |'
+    ) + $rows + @(
+        '',
+        ('Only the selected candidate''s diff was applied and put through the fix and restoration arms. ' +
+         'The other rows are recorded so the comparison is visible rather than implied.')
+    )) -join "`n"
+}
+
 function Get-ReplicationCandidateText {
     <#
         .SYNOPSIS
@@ -118,6 +264,338 @@ function Get-ReplicationCandidateText {
     return [string]$property.Value
 }
 
+function Test-ReplicationWeakerThanOpenPullRequest {
+    <#
+        .SYNOPSIS
+            True when an incoming publication carries no fix while the open
+            pull request it would supersede does carry one.
+
+        .DESCRIPTION
+            Superseding exists so a re-run can refresh the evidence for an
+            issue after the pipeline changes. It is not licence for a weaker
+            publication to destroy a stronger one, which is what happened when
+            reproduction-only runs retired two pull requests that each carried
+            a four-arm certified fix.
+    #>
+    param(
+        [AllowNull()][AllowEmptyString()][string]$DuplicateBody,
+        [bool]$IncomingCarriesFix
+    )
+
+    if ($IncomingCarriesFix) { return $false }
+    if ([string]::IsNullOrWhiteSpace($DuplicateBody)) { return $false }
+
+    # The fix section is the only part of the body that a reproduction-only
+    # publication never writes, so it is the honest discriminator. Matching the
+    # title would trust a string the publisher does not control.
+    return [bool]($DuplicateBody -match '(?m)^## Proposed fix\s*$')
+}
+
+function Get-ReplicationFixRegressionSignal {
+    <#
+        .SYNOPSIS
+            Reports whether the fix deletes a line a previous bug-fix PR added.
+
+        .DESCRIPTION
+            The fix arms prove the fix repairs its own oracle. They say nothing
+            about what else it changes, so a fix that passes its own test by
+            reintroducing a bug someone already fixed is published today as
+            `certified-oracle`.
+
+            `Find-RegressionRisks.ps1` answers the sharpest form of that
+            question mechanically - no AI, no device - and `REVERT` is precisely
+            the shape of that failure.
+
+            It REPORTS. It never refuses. Every gate in this pipeline that could
+            destroy work eventually did, and a regression signal in the PR body
+            costs nothing when it is wrong, while withholding a sound fix on a
+            mechanical string comparison costs a reproduction, a device and four
+            certification arms. An unavailable or failing check therefore says
+            it was not measured, which is the truth, rather than CLEAN, which is
+            a claim.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$FixPatchPath,
+        [Parameter(Mandatory = $false)][AllowEmptyString()][string]$ScriptRoot,
+        [Parameter(Mandatory = $false)][string]$Repo = 'dotnet/maui'
+    )
+
+    if ([string]::IsNullOrWhiteSpace($FixPatchPath) -or
+        -not (Test-Path -LiteralPath $FixPatchPath)) {
+        return $null
+    }
+
+    # Resolved here rather than as a parameter default, because a default is
+    # evaluated on every call - including the ones that return above - so an
+    # empty $PSScriptRoot would make a check that exists to REPORT throw instead.
+    #
+    # Two layouts have to work. In the repository this script sits in
+    # .github/scripts/shared/ and the checker one level up in .github/scripts/.
+    # In production the publish job copies a fixed list of scripts into a flat
+    # trusted directory, so the checker sits beside this file instead. Looking
+    # only upwards is why the cross-reference silently never ran: pull request
+    # 406 was published from the commit that added it and carries no signal.
+    $searchRoots = @()
+    if (-not [string]::IsNullOrWhiteSpace($ScriptRoot)) {
+        $searchRoots += $ScriptRoot
+    } elseif (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $searchRoots += $PSScriptRoot
+        $searchRoots += (Split-Path -Parent $PSScriptRoot)
+    }
+
+    $checker = $null
+    foreach ($root in $searchRoots) {
+        if ([string]::IsNullOrWhiteSpace($root)) { continue }
+        $probe = Join-Path $root 'Find-RegressionRisks.ps1'
+        if (Test-Path -LiteralPath $probe -PathType Leaf) { $checker = $probe; break }
+    }
+
+    $outputDir = Join-Path ([IO.Path]::GetTempPath()) ("regression-" + [guid]::NewGuid().ToString('N'))
+    $verdict = $null
+    # A missing checker falls through to 'not measured' rather than returning
+    # nothing. Silence is what hid this: an absent line is indistinguishable
+    # from a feature that was never wired up, while a stated non-measurement is
+    # a claim someone can check.
+    if ($checker) {
+        try {
+            & pwsh -NoProfile -File $checker -DiffPath $FixPatchPath -Repo $Repo `
+                -OutputDir $outputDir 2>&1 | Out-Null
+            $resultPath = Join-Path $outputDir 'result.txt'
+            if (Test-Path -LiteralPath $resultPath) {
+                $verdict = (Get-Content -LiteralPath $resultPath -Raw).Trim()
+            }
+        } catch {
+            $verdict = $null
+        } finally {
+            Remove-Item -LiteralPath $outputDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    switch ($verdict) {
+        'CLEAN' {
+            '**Regression cross-reference.** No line this fix deletes was added by a recent bug-fix pull request.'
+        }
+        'OVERLAP' {
+            ('**Regression cross-reference.** This fix touches a file a recent bug-fix pull request also ' +
+             'changed, but deletes none of the lines that fix added.')
+        }
+        'REVERT' {
+            ('**⚠️ Regression cross-reference.** This fix deletes one or more lines that a recent **bug-fix** ' +
+             'pull request added to the same file. That is the shape of a fix that passes its own test by ' +
+             'reintroducing a defect someone already repaired. Review the fix commit against that history ' +
+             'before merging.')
+        }
+        default {
+            '**Regression cross-reference.** Not measured for this fix.'
+        }
+    }
+}
+
+function Get-ReplicationUpstreamFixSignal {
+    <#
+        .SYNOPSIS
+            Reports whether the project has already fixed this issue on a
+            branch the reproduction was not built against.
+
+        .DESCRIPTION
+            dotnet/maui merges bug fixes to `inflight/current` and the issue
+            stays open until release, so issue state carries no information:
+            all three cases this was validated against are OPEN and carry a
+            merged fix. The tree we build tracks `main`, so an upstream fix
+            living only on `inflight/current` is invisible to every other
+            signal - the issue is open, the defect genuinely reproduces, and
+            our red test is honest.
+
+            So the reproduction is sound and only its *redundancy to the
+            project* is undisclosed. This REPORTS. Refusing would destroy
+            sound reproductions on a mechanical string comparison, and every
+            gate in this pipeline that could destroy work eventually did.
+
+            Presence is asked of the upstream branch and absence of the exact
+            base commit under test, because "a commit touched this path" is
+            not "the file exists there" - the commits endpoint returns
+            deletions too, and a reverted test case is the opposite signal:
+            upstream tried a fix and backed it out.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$IssueNumber,
+        [Parameter(Mandatory = $false)][AllowEmptyString()][string]$BaseSha,
+        [Parameter(Mandatory = $false)][string]$Repo = 'dotnet/maui',
+        [Parameter(Mandatory = $false)][string]$UpstreamRef = 'inflight/current'
+    )
+
+    if ($IssueNumber -notmatch '^\d+$') {
+        return '**Upstream cross-reference.** Not measured for this reproduction.'
+    }
+
+    $candidatePaths = @(
+        "src/Controls/tests/TestCases.HostApp/Issues/Issue$IssueNumber.cs",
+        "src/Controls/tests/TestCases.HostApp/Issues/Issue$IssueNumber.xaml"
+    )
+
+    $sawUnknown = $false
+    foreach ($path in $candidatePaths) {
+        $upstream = Get-ReplicationUpstreamTestCasePresence `
+            -Path $path -Ref $UpstreamRef -Repo $Repo
+        if ($upstream -eq 'unknown') { $sawUnknown = $true; continue }
+        if ($upstream -eq 'absent') { continue }
+
+        # Present upstream. It is only news if the tree under test lacks it.
+        if ($BaseSha -match '^[0-9a-fA-F]{40,64}$') {
+            $local = Get-ReplicationUpstreamTestCasePresence `
+                -Path $path -Ref $BaseSha -Repo $Repo
+            if ($local -eq 'unknown') { $sawUnknown = $true; continue }
+            if ($local -eq 'present') { continue }
+        }
+
+        # Oldest commit touching the path is the one that introduced it; the
+        # newest may be a later edit that names an unrelated pull request.
+        $subject = ''
+        try {
+            $subject = (& gh api `
+                "repos/$Repo/commits?sha=$UpstreamRef&path=$path&per_page=100" `
+                --jq '[.[]|.commit.message|split("\n")[0]]|last' 2>$null | Out-String).Trim()
+        } catch {
+            $subject = ''
+        }
+
+        $introduced = ''
+        if ($subject) {
+            # Upstream text is uncontrolled, so it is sanitized inline rather
+            # than handed to a validator that throws. A presentation bound must
+            # never be able to discard the work it describes.
+            $clean = ($subject -replace '[^\x20-\x7E]', ' ') -replace '\s+', ' '
+            $clean = $clean.Trim()
+            if ($clean.Length -gt 160) { $clean = $clean.Substring(0, 157) + '...' }
+            if ($clean) { $introduced = " It was introduced by *$clean*." }
+        }
+        return ('**⚠️ Upstream cross-reference.** A test case for this issue already exists on ' +
+                "``$Repo``'s ``$UpstreamRef`` branch, which this reproduction was not built against." +
+                $introduced +
+                ' The defect is genuinely red on the tree under test, so the evidence above stands - ' +
+                'but a fix may already be queued for release, in which case this pull request is ' +
+                'redundant. Please check that branch before merging.')
+    }
+
+    if ($sawUnknown) {
+        return '**Upstream cross-reference.** Not measured: the upstream branch could not be read.'
+    }
+
+    return ("**Upstream cross-reference.** No test case for this issue exists on ``$Repo``'s " +
+            "``$UpstreamRef`` branch.")
+}
+
+function Get-ReplicationExpressionSkeleton {
+    <#
+        .SYNOPSIS
+        Reduces C# source to the ordered member-access and +/- operator tokens
+        of each statement, with single-assignment locals inlined.
+
+        .DESCRIPTION
+        Receivers and local names are dropped deliberately, so renaming a
+        variable cannot hide the fact that two expressions compute the same
+        thing. `var i = v.AdjustedContentInset; ... i.Bottom` and
+        `v.AdjustedContentInset.Bottom` therefore reduce to the same tokens.
+    #>
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Source)
+
+    if ([string]::IsNullOrWhiteSpace($Source)) { return @() }
+
+    $text = $Source -replace '\s+', ' '
+    foreach ($local in [regex]::Matches($text, '\bvar\s+(\w+)\s*=\s*([A-Za-z_]\w*(?:\.[A-Z]\w*)+)\s*;')) {
+        $name = $local.Groups[1].Value
+        $expr = $local.Groups[2].Value
+        $text = $text -replace ('\b' + [regex]::Escape($name) + '\.'), ($expr + '.')
+    }
+
+    $skeletons = @()
+    foreach ($statement in ($text -split ';')) {
+        $tokens = @()
+        foreach ($token in [regex]::Matches($statement, '\.([A-Z]\w*)|([+\-])')) {
+            if ($token.Groups[1].Success) { $tokens += $token.Groups[1].Value }
+            else { $tokens += ('OP' + $token.Groups[2].Value) }
+        }
+        if ($tokens.Count -gt 0) { $skeletons += , $tokens }
+    }
+    # Returned with a leading comma, and consumed with foreach rather than a
+    # pipeline: a one-statement source otherwise unrolls to its bare tokens,
+    # every "skeleton" reads as length 1, and the detector goes silent for a
+    # reason that has nothing to do with the source.
+    return , $skeletons
+}
+
+function Get-ReplicationOracleIndependenceSignal {
+    <#
+        .SYNOPSIS
+        Reports a test whose expected value is computed with the same
+        arithmetic the product fix introduces.
+
+        .DESCRIPTION
+        PR 469 asserted `ContentSize.Height + AdjustedContentInset.Bottom -
+        Bounds.Height` while the fix it validates computes exactly that. An
+        oracle that restates its implementation cannot fail while the
+        implementation is present, and cannot tell a correct formula from the
+        one this fix happens to use -- so all four control arms pass and prove
+        nothing about correctness. A reviewer found it; nothing in the pipeline
+        could.
+
+        Measured before shipping, over all 57 open fix pull requests: it fires
+        on PR 469 and on nothing else, so the false-positive rate on real
+        published work is 0 of 56. Prevalence that low is why this reports
+        rather than refuses -- a legitimate test may need the same API to state
+        a specification, and per section 120 a guard that refuses correct tests
+        is worse than the defect it prevents.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestSource,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$FixSource
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TestSource)) { return '' }
+    if ([string]::IsNullOrWhiteSpace($FixSource)) { return '' }
+
+    $fixSkeletons = @()
+    foreach ($skeleton in (Get-ReplicationExpressionSkeleton -Source $FixSource)) {
+        if ($skeleton.Count -ge 4) { $fixSkeletons += , $skeleton }
+    }
+    if ($fixSkeletons.Count -eq 0) { return '' }
+
+    foreach ($candidate in (Get-ReplicationExpressionSkeleton -Source $TestSource)) {
+        # Real arithmetic only: at least two members and one operator, or a
+        # bare property comparison would match everything.
+        if ($candidate.Count -lt 4) { continue }
+        $members = @($candidate | Where-Object { -not $_.StartsWith('OP') })
+        if ($members.Count -lt 2) { continue }
+        if (-not ($candidate | Where-Object { $_.StartsWith('OP') })) { continue }
+
+        foreach ($fixSkeleton in $fixSkeletons) {
+            $limit = $fixSkeleton.Count - $candidate.Count
+            for ($start = 0; $start -le $limit; $start++) {
+                $matched = $true
+                for ($offset = 0; $offset -lt $candidate.Count; $offset++) {
+                    if ($fixSkeleton[$start + $offset] -ne $candidate[$offset]) {
+                        $matched = $false
+                        break
+                    }
+                }
+                if ($matched) {
+                    $formula = ($candidate | ForEach-Object {
+                            if ($_.StartsWith('OP')) { $_.Substring(2) } else { $_ }
+                        }) -join ' '
+                    return ('**⚠️ Oracle independence.** The test computes its expected value with the ' +
+                        'same arithmetic this fix introduces (`' +
+                        (ConvertTo-ReplicationSingleLine -Value $formula -MaximumLength 200) +
+                        '`), so it restates the implementation rather than the behaviour a user ' +
+                        'observes. It cannot distinguish a correct formula from this one, and the ' +
+                        'control arms cannot see the difference. Please check the assertion against ' +
+                        'an independently observable symptom.')
+                }
+            }
+        }
+    }
+    return ''
+}
+
 function New-ReplicationPullRequestBody {
     param(
         [Parameter(Mandatory = $true)]$Candidate,
@@ -125,7 +603,10 @@ function New-ReplicationPullRequestBody {
         [Parameter(Mandatory = $true)][string]$IssueTitle,
         [Parameter(Mandatory = $true)][string]$IssueOwner,
         [Parameter(Mandatory = $true)][string]$IssueRepository,
-        [AllowEmptyString()][string]$BuildUrl
+        [AllowEmptyString()][string]$BuildUrl,
+        [AllowEmptyString()][string]$RegressionSignal,
+        [AllowEmptyString()][string]$OracleSignal,
+        [AllowEmptyString()][string]$UpstreamSignal
     )
 
     $issueNumber = [int]$Candidate.issueNumber
@@ -268,6 +749,47 @@ function New-ReplicationPullRequestBody {
     $marker = Get-ReplicationPullRequestMarker -IssueNumber $issueNumber -Platform $platform
     $safeTitle = ConvertTo-ReplicationSingleLine -Value $IssueTitle -MaximumLength 180
 
+    # Reviewers had to work out for themselves whether a red test had been shown
+    # to depend on the reported trigger, so state it rather than leaving it to be
+    # inferred from the run count.
+    $certificationLevel = Get-ReplicationCandidateText -Candidate $Candidate -Name 'certificationLevel'
+    $certificationSummary = Get-ReplicationCandidateText -Candidate $Candidate -Name 'certificationSummary'
+
+    # Three of the four most recent adversarial reviews refuted a fix not on its
+    # causality, which they each confirmed by hand, but on issue fidelity: the
+    # reporter's linked sample drives the bug down a different path than the one
+    # the test models. That evidence is unreachable from here by design - the
+    # only network read is the GitHub issue API, and the sanitizer replaces every
+    # URL in the body with [url removed] before the authoring agent sees it. A
+    # detector was measured against two known cases and could not separate them
+    # for exactly this reason, so the honest remedy is to declare the boundary
+    # rather than to gate on evidence that was never fetched.
+    $evidenceBoundary = 'This rests on the issue report as returned by the GitHub issues API. The ' +
+    'reporter''s linked reproduction project is never downloaded, and links are stripped from the ' +
+    'report before the test is authored, so a test faithful to the written report may still drive ' +
+    'the defect down a different path than the linked sample. Please check that first.'
+
+    # Joined once and used by both branches. The forgotten sibling is the
+    # documented trap here: every defect of that shape in this pipeline was a
+    # correct change applied to exactly one of two places that needed it, and
+    # this block has two branches that both report an evidence level.
+    $evidenceCaveats = if ($UpstreamSignal) {
+        $evidenceBoundary + [Environment]::NewLine + [Environment]::NewLine + $UpstreamSignal
+    } else {
+        $evidenceBoundary
+    }
+
+    $certificationBlock = if ($certificationSummary) {
+        "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine + $certificationSummary +
+        [Environment]::NewLine + [Environment]::NewLine + $evidenceCaveats
+    } elseif ($certificationLevel) {
+        "## Evidence level" + [Environment]::NewLine + [Environment]::NewLine +
+        ('**Evidence level: `' + $certificationLevel + '`**') +
+        [Environment]::NewLine + [Environment]::NewLine + $evidenceCaveats
+    } else {
+        ''
+    }
+
     $steps = @()
     foreach ($step in @($Candidate.reproductionSteps)) {
         $safeStep = ConvertTo-ReplicationSingleLine -Value ([string]$step) -MaximumLength 300
@@ -282,11 +804,99 @@ function New-ReplicationPullRequestBody {
     $buildLine = if ($BuildUrl) { "- Pipeline run: $BuildUrl" } else { '- Pipeline run: unavailable' }
     $issueUrl = "https://github.com/$IssueOwner/$IssueRepository/issues/$issueNumber"
 
+    $fixFiles = @(Get-ValidatedFixFiles -Candidate $Candidate)
+    $fixBlock = if ($fixFiles.Count -gt 0) {
+        $fixRootCause = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixRootCause'
+        $fixRegressionLane = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixRegressionLane'
+        $fixApproach = Get-ReplicationCandidateText -Candidate $Candidate -Name 'fixApproach'
+        $rejected = @()
+        $rejectedProperty = $Candidate.PSObject.Properties['fixRejectedApproaches']
+        if ($rejectedProperty -and $null -ne $rejectedProperty.Value) {
+            foreach ($entry in @($rejectedProperty.Value)) {
+                $safeEntry = ConvertTo-ReplicationSingleLine -Value ([string]$entry) -MaximumLength 300
+                if ($safeEntry) {
+                    $rejected += "- $safeEntry"
+                }
+            }
+        }
+
+        $fixLines = @(
+            '## Proposed fix',
+            '',
+            ('This pull request carries two commits. The first adds the failing reproduction on its own, ' +
+             'so its parent can be checked out and the test watched to fail. The second changes product ' +
+             'code so the same test passes.'),
+            ''
+        )
+        if ($fixRootCause) {
+            $fixLines += ('**Root cause.** ' + (ConvertTo-ReplicationSingleLine -Value $fixRootCause -MaximumLength 600))
+            $fixLines += ''
+        }
+        if ($fixRegressionLane) {
+            $fixLines += ('**Regression lane.** The device tests beside this one declare `' +
+                (ConvertTo-ReplicationSingleLine -Value $fixRegressionLane -MaximumLength 120) +
+                '`. This test declares only its issue category, because a second category makes ' +
+                'the advertised `Category=Issue<N>` selector match nothing on this runner.')
+        } else {
+            $fixLines += ('**Regression lane.** Not measured: the tests beside this one do not ' +
+                'agree on a single conventional category.')
+        }
+        $fixLines += ''
+        if ($fixApproach) {
+            $fixLines += ('**Approach taken.** ' + (ConvertTo-ReplicationSingleLine -Value $fixApproach -MaximumLength 600))
+            $fixLines += ''
+        }
+        if ($RegressionSignal) {
+            $fixLines += $RegressionSignal
+            $fixLines += ''
+        }
+        if ($OracleSignal) {
+            $fixLines += $OracleSignal
+            $fixLines += ''
+        }
+        $fixLines += (Get-ReplicationFixPanelBlock -Candidate $Candidate)
+        $fixLines += ''
+        $fixLines += (Get-ReplicationIndependentReviewBlock -Candidate $Candidate)
+        $fixLines += ''
+        $fixLines += '**Files changed by the fix commit:**'
+        $fixLines += ''
+        foreach ($file in ($fixFiles | Sort-Object -Unique)) {
+            $fixLines += ('- `' + (ConvertTo-ReplicationSingleLine -Value $file -MaximumLength 240) + '`')
+        }
+        if ($rejected.Count -gt 0) {
+            $fixLines += ''
+            $fixLines += '**Approaches considered and rejected:**'
+            $fixLines += ''
+            $fixLines += $rejected
+        }
+        $fixLines -join [Environment]::NewLine
+    } else {
+        ''
+    }
+
+    $importantBanner = if ($fixFiles.Count -gt 0) {
+        ('> This is AI-generated **reproduction evidence with a proposed fix**. The first commit adds a test ' +
+         'that fails on the unfixed baseline; the second changes product code so it passes. Both the test and ' +
+         'the fix need human review before merge.')
+    } else {
+        ('> This is AI-generated **reproduction evidence**, not a merge-ready product fix. The added test ' +
+         'intentionally fails on the unfixed baseline. A product fix should make the test pass before this PR ' +
+         'is considered for merge.')
+    }
+    $patchScopeLine = if ($fixFiles.Count -gt 0) {
+        ('- The reproduction commit is add-only and restricted to approved MAUI test locations. The fix commit ' +
+         'modifies only the product files listed above, and adds, deletes, renames, and mode changes are refused.')
+    } else {
+        '- The published patch is add-only and restricted to approved MAUI test locations.'
+    }
+
     return @"
 $marker
 
 > [!IMPORTANT]
-> This is AI-generated **reproduction evidence**, not a merge-ready product fix. The added test intentionally fails on the unfixed baseline. A product fix should make the test pass before this PR is considered for merge.
+$importantBanner
+
+$certificationBlock
 
 ## Reproduced issue
 
@@ -322,7 +932,9 @@ $($steps -join [Environment]::NewLine)
 - The pipeline reconstructed the scenario from issue text, inline snippets, and allowed raster screenshots.
 - No linked repository, archive, binary, script, package, or arbitrary external file was downloaded.
 $reproductionClaim
-- The published patch is add-only and restricted to approved MAUI test locations.
+$patchScopeLine
+
+$fixBlock
 "@
 }
 
@@ -342,6 +954,200 @@ function Get-ValidatedCandidateFiles {
         throw 'Validated candidate does not list any added files.'
     }
     return $files
+}
+
+function Get-ValidatedFixFiles {
+    param([Parameter(Mandatory = $true)]$Candidate)
+
+    $property = $Candidate.PSObject.Properties['fixFiles']
+    if (-not $property -or $null -eq $property.Value) {
+        return @()
+    }
+    return @($property.Value | ForEach-Object { ([string]$_).Replace('\', '/') } | Where-Object { $_ })
+}
+
+function Remove-ReplicationPlatformTitlePrefix {
+    <#
+    .SYNOPSIS
+        Drops a leading bracket from an issue title when it holds nothing but
+        platform names.
+
+    .DESCRIPTION
+        Reporters routinely open a title with every platform they saw, as
+        dotnet/maui#35624 does with "[Android, iOS and Catalyst]". A run validates
+        exactly one, and the pull request already names that one in its own tag, so
+        quoting the reporter's list after it restates a claim the evidence does not
+        support in the one field every reader sees before opening anything. Two
+        independent human reviewers rejected fix pull requests on exactly that
+        ground - 509 ("claims Android and Catalyst coverage that this
+        implementation/test pair does not establish") and 458 ("the PR title claims
+        [Android, iOS and Catalyst], but the product diff changes only the iOS
+        tracker").
+
+        Measured before it was written, over the 68 open fix pull requests: 22
+        carry a leading pure-platform bracket and 8 of those name a platform the
+        run did not validate, including both PRs a reviewer objected to.
+
+        The rule is deliberately narrow, because a leading bracket usually is not a
+        platform list and removing it really would misdescribe the issue. A bracket
+        is dropped only when every token in it, split on the separators reporters
+        actually use, is a bare platform name. Measured against 361 real
+        dotnet/maui issue titles that open with a bracket, this drops 37 and keeps
+        324, with no false positives: "[iOS 26.5]", "[Android 16]",
+        "[REGRESSION: iOS, 10.0.100]", "[.NET 10]" and "[leak-scan]" are all kept,
+        because each carries something the platform tag does not.
+
+        Only the first bracket is considered, and only when it opens the title.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$Title
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Title)) {
+        return $Title
+    }
+
+    $match = [regex]::Match($Title, '^\s*\[([^\]]+)\]\s*')
+    if (-not $match.Success) {
+        return $Title
+    }
+
+    # The separators reporters use between platform names. A token that is not a
+    # bare platform name - a version, a release, a scan label - keeps the bracket.
+    $tokens = @($match.Groups[1].Value -split '(?:,|/|&|\+|\band\b)' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($tokens.Count -eq 0) {
+        return $Title
+    }
+
+    foreach ($token in $tokens) {
+        if ($token -notmatch '^(?i:android|ios|windows|catalyst|maccatalyst|mac|winui|uwp|tizen)$') {
+            return $Title
+        }
+    }
+
+    return $Title.Substring($match.Length)
+}
+
+function New-ReplicationPullRequestTitle {
+    <#
+    .SYNOPSIS
+        Builds the pull request title.
+
+    .DESCRIPTION
+        A PR that carries a product fix is titled
+        `[maui-bot-fix][<platform>] Fix for #N - <issue title>` so the bot's fixes
+        are filterable at a glance and name the platform the evidence covers.
+
+        A PR that carries only a reproduction keeps the platform-tagged
+        reproduction title. Claiming a fix that is not in the diff would overstate
+        the evidence in the one field every reader sees before opening anything,
+        which is exactly the failure mode the certification levels exist to avoid.
+
+        The platform tag exists for the same reason. Issue titles routinely name
+        every platform a reporter saw, as dotnet/maui#35667 does with
+        "[Android, iOS, Catalyst]", while a run validates exactly one. Quoting that
+        title after "Fix for" reads as a claim to have fixed all of them, and a
+        human reviewer of PR 509 rejected it on precisely that ground: "the current
+        title also claims Android and Catalyst coverage that this
+        implementation/test pair does not establish". The body has always been
+        accurate - it states the validated platform and the four control arms - but
+        the body is not what a reader sees in a PR list. Naming the validated
+        platform next to the inherited tag makes the narrower claim the visible
+        one.
+
+        Tagging alone did not settle it. A reviewer of PR 458 objected again with
+        the tag in place, because the reporter's own list was still quoted after
+        it. So a leading bracket holding nothing but platform names is now dropped
+        by Remove-ReplicationPlatformTitlePrefix, whose narrowness is measured
+        there. The rest of the reporter's title is still quoted verbatim, because
+        rewriting that would misdescribe the issue being fixed.
+
+        The issue title is treated as untrusted: control characters are stripped so
+        it cannot forge additional lines, and the whole title is bounded so it
+        stays legible in a PR list.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$IssueNumber,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Platform,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$IssueTitle,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$CarriesFix,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(40, 256)]
+        [int]$MaxLength = 120
+    )
+
+    if (-not $CarriesFix) {
+        return "[$Platform] Add failing reproduction for #$IssueNumber"
+    }
+
+    # Kept first so the [maui-bot-fix] filter every reader already uses still
+    # matches, with the validated platform immediately after it.
+    $prefix = "[maui-bot-fix][$Platform] Fix for #$IssueNumber"
+
+    $summary = if ($null -eq $IssueTitle) { '' } else { $IssueTitle }
+    $summary = ($summary -replace '[\p{C}]', ' ').Trim()
+    $summary = $summary -replace '\s{2,}', ' '
+    # The tag above already names the one validated platform, so a reporter's
+    # leading platform list would restate it less accurately. Runs before the
+    # whitespace check, because dropping the bracket can empty the summary.
+    $summary = (Remove-ReplicationPlatformTitlePrefix -Title $summary).Trim()
+    if ([string]::IsNullOrWhiteSpace($summary)) {
+        return $prefix
+    }
+
+    $separator = ' - '
+    $available = $MaxLength - $prefix.Length - $separator.Length
+    if ($available -lt 12) {
+        # No room for a summary that would still mean anything.
+        return $prefix
+    }
+
+    if ($summary.Length -gt $available) {
+        $summary = $summary.Substring(0, $available - 1).TrimEnd() + '…'
+    }
+
+    return "$prefix$separator$summary"
+}
+
+function Assert-ReplicationStagedFix {
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][AllowNull()][string[]]$StagedLines,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][AllowNull()][string[]]$ExpectedFiles
+    )
+
+    $actual = @()
+    foreach ($line in @($StagedLines)) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -notmatch '^M\s+(.+)$') {
+            throw "The staged fix is not modification-only: $line"
+        }
+        $actual += $Matches[1].Trim().Replace('\', '/')
+    }
+
+    $expectedSorted = @(@($ExpectedFiles) | Where-Object { $_ } | Sort-Object -Unique)
+    $actualSorted = @($actual | Sort-Object -Unique)
+    if (($expectedSorted -join "`n") -ne ($actualSorted -join "`n")) {
+        throw 'The staged fix files do not exactly match the validated candidate manifest.'
+    }
+
+    return $actualSorted
 }
 
 function Invoke-ReplicationExternalCommand {
@@ -466,8 +1272,42 @@ $buildId = if ($env:BUILD_BUILDID) {
 }
 $branchName = New-ReplicationBranchName -IssueNumber $issueNumber -Platform $platform -BuildId $buildId
 $marker = Get-ReplicationPullRequestMarker -IssueNumber $issueNumber -Platform $platform
-$prTitle = "[$platform] Add failing reproduction for #$issueNumber"
+$prTitle = New-ReplicationPullRequestTitle `
+    -IssueNumber $issueNumber `
+    -Platform $platform `
+    -IssueTitle $issueTitle `
+    -CarriesFix:(@(Get-ValidatedFixFiles -Candidate $candidate).Count -gt 0)
+# Computed here rather than inside the body builder, which stays free of child
+# processes and network so it can be tested directly. A null signal simply omits
+# the line: the check reports, it never withholds a fix.
+$regressionSignal = Get-ReplicationFixRegressionSignal -FixPatchPath $FixPatchPath
+if ($regressionSignal) { Write-Host "Regression cross-reference: $regressionSignal" }
+# Both patches are already on disk and validated by this point, so the oracle
+# comparison needs no child process and no network. Read defensively: a missing
+# patch means there is nothing to compare, never a refusal.
+$oracleSignal = ''
+if ($FixPatchPath -and (Test-Path -LiteralPath $FixPatchPath) -and
+    $PatchPath -and (Test-Path -LiteralPath $PatchPath)) {
+    $oracleSignal = Get-ReplicationOracleIndependenceSignal `
+        -TestSource (Get-Content -LiteralPath $PatchPath -Raw) `
+        -FixSource (Get-Content -LiteralPath $FixPatchPath -Raw)
+}
+if ($oracleSignal) { Write-Host "Oracle independence: $oracleSignal" }
+
+# The project merges bug fixes to a branch this reproduction is not built
+# against, where they are invisible to every other signal: the issue stays
+# open and the defect still reproduces. Measured at 8 of 70 open fix pull
+# requests, so this reports a real population rather than a hypothetical one.
+$upstreamSignal = Get-ReplicationUpstreamFixSignal `
+    -IssueNumber $issueNumber `
+    -BaseSha (Get-ReplicationCandidateText -Candidate $candidate -Name 'baseSha') `
+    -Repo "$IssueOwner/$IssueRepository"
+if ($upstreamSignal) { Write-Host "Upstream cross-reference: $upstreamSignal" }
+
 $prBody = New-ReplicationPullRequestBody `
+    -RegressionSignal $regressionSignal `
+    -OracleSignal $oracleSignal `
+    -UpstreamSignal $upstreamSignal `
     -Candidate $candidate `
     -Evidence $evidence `
     -IssueTitle $issueTitle `
@@ -497,8 +1337,11 @@ $plan = [ordered]@{
     body = $prBody
     marker = $marker
     files = @(Get-ValidatedCandidateFiles -Candidate $candidate)
+    fixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
     url = $null
     duplicateOf = $null
+    supersedes = $null
+    supersededClosed = $false
 }
 
 if (-not $DryRun) {
@@ -523,6 +1366,7 @@ if (-not $DryRun) {
             throw 'The trusted publishing checkout must be clean before applying the reproduction patch.'
         }
 
+        $supersededPull = $null
         $openPullsJson = & gh pr list `
             --repo "$TargetOwner/$TargetRepository" `
             --state open `
@@ -535,7 +1379,28 @@ if (-not $DryRun) {
         $duplicate = @($openPullsJson | ConvertFrom-Json) | Where-Object {
             [string]$_.body -like "*$marker*"
         } | Select-Object -First 1
-        if ($duplicate) {
+
+        # A reproduction is not a replacement for a fix. Builds 15075238 and
+        # 15076851 reproduced issues 36412 and 35624, found no fix, and retired
+        # pull requests 393 and 396 - which each carried a four-arm certified
+        # fix - replacing them with reproduction-only pull requests 398 and 403.
+        # Superseding exists so a re-run can refresh evidence, not so a weaker
+        # publication can destroy a stronger one, so an incoming run without a
+        # fix stands aside for an open pull request that has one.
+        $incomingCarriesFix = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
+            (Test-Path -LiteralPath $FixPatchPath)
+        $standsAside = $duplicate -and (Test-ReplicationWeakerThanOpenPullRequest `
+            -DuplicateBody ([string]$duplicate.body) -IncomingCarriesFix $incomingCarriesFix)
+        if ($standsAside) {
+            $plan.duplicateOf = [string]$duplicate.url
+            Write-Host ("An open pull request already carries a fix for this issue and platform, " +
+                "so this reproduction-only run stands aside: $($duplicate.url)")
+            Write-ReplicationPublicationManifest -Plan $plan
+            Pop-Location
+            exit 0
+        }
+
+        if ($duplicate -and -not $SupersedeExisting) {
             # Build 15001510 reproduced issue 37151 and authored its test while
             # an earlier run was publishing the same issue and platform. The
             # second run is redundant, not broken, so it reports what already
@@ -546,6 +1411,17 @@ if (-not $DryRun) {
             Write-ReplicationPublicationManifest -Plan $plan
             Pop-Location
             exit 0
+        }
+
+        if ($duplicate) {
+            # Superseding is what lets an already-covered issue be re-run after
+            # the pipeline itself changes. The earlier pull request is retired
+            # only once its replacement exists, further down: a run that never
+            # gets that far leaves the existing evidence exactly where it was.
+            $supersededPull = $duplicate
+            $plan.supersedes = [string]$duplicate.url
+            Write-Host ("This run supersedes an open reproduction pull request: " +
+                "$($duplicate.url)")
         }
 
         # Reviewers verify the reproduction against the pull request's first
@@ -621,6 +1497,37 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
 "@
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('commit', '-m', $commitMessage) -Description 'Committing reproduction test'
+
+        # The fix lands as a second commit so the red-to-green transition is
+        # legible: the first commit is the failing reproduction on its own, and
+        # anyone can check out its parent and watch the test fail.
+        if (@($plan.fixFiles).Count -gt 0) {
+            if ([string]::IsNullOrWhiteSpace($FixPatchPath)) {
+                throw 'The validated candidate names fix files but no fix patch was supplied.'
+            }
+            Invoke-ReplicationExternalCommand `
+                -FilePath 'git' `
+                -Arguments @('apply', '--index', '--whitespace=nowarn', $FixPatchPath) `
+                -Description 'Applying validated product fix'
+
+            $stagedFix = @(& git diff --cached --name-status --diff-filter=ACDMRTUXB)
+            if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to inspect the staged product fix.'
+            }
+
+            Assert-ReplicationStagedFix -StagedLines $stagedFix -ExpectedFiles @($plan.fixFiles) | Out-Null
+
+            $fixCommitMessage = @"
+Fix #$issueNumber so the reproduction passes
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
+"@
+            Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('commit', '-m', $fixCommitMessage) -Description 'Committing product fix'
+        } elseif (-not [string]::IsNullOrWhiteSpace($FixPatchPath)) {
+            throw 'A fix patch was supplied but the validated candidate names no fix files.'
+        }
+
         Invoke-ReplicationExternalCommand `
             -FilePath 'git' `
             -Arguments @('push', $sourceRemote, "HEAD:refs/heads/$branchName") `
@@ -640,6 +1547,25 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                 throw 'Creating the draft reproduction pull request failed.'
             }
             $plan.url = ([string]$prUrl).Trim()
+
+            if ($supersededPull) {
+                # Only now, with the replacement open, is retiring the earlier
+                # pull request safe. Closing it first would leave the issue with
+                # no open reproduction at all if anything above had failed, and
+                # a duplicate is a far smaller problem than lost evidence.
+                try {
+                    $supersededNumber = [string]$supersededPull.number
+                    $supersedeNote = "Superseded by $($plan.url), published by build $buildId."
+                    & gh pr comment $supersededNumber --repo "$TargetOwner/$TargetRepository" --body $supersedeNote | Out-Null
+                    & gh pr close $supersededNumber --repo "$TargetOwner/$TargetRepository" | Out-Null
+                    if ($LASTEXITCODE -eq 0) {
+                        $plan.supersededClosed = $true
+                    }
+                } catch {
+                    Write-Host ("The superseded pull request could not be retired, so it stays open: " +
+                        "$($_.Exception.Message)")
+                }
+            }
         }
         finally {
             Remove-Item -LiteralPath $bodyPath -Force -ErrorAction SilentlyContinue

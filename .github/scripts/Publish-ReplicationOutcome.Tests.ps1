@@ -123,3 +123,40 @@ Describe 'Trusted replication issue outcome publishing' {
         $result.reason | Should -BeExactly 'no-candidate'
     }
 }
+
+Describe 'The publisher accepts what the gate accepted' {
+    It 'shares one signature comparison with the verifier' {
+        # Build 15030627 reproduced its issue and passed the credential-free
+        # gate, then died in the publisher for a wording difference the gate
+        # deliberately allows.
+        $module = Join-Path $PSScriptRoot 'shared/Get-ReplicationSignatureMatch.ps1'
+        Test-Path -LiteralPath $module -PathType Leaf | Should -BeTrue
+
+        foreach ($name in @(
+                'shared/Invoke-ReplicationTestVerification.ps1',
+                'shared/Publish-ReplicationEvidence.ps1')) {
+            $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot $name) -Raw
+            $source | Should -Match 'Get-ReplicationSignatureMatch\.ps1' -Because `
+                "$name must use the shared comparison rather than its own"
+            $source | Should -Not -Match 'function Test-ReplicationSignatureEquivalent'
+        }
+
+        $publisher = Get-Content `
+            -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationEvidence.ps1') -Raw
+        $publisher | Should -Match 'Test-ReplicationSignatureEquivalent'
+    }
+
+    It 'still rejects a message that shares nothing with the signature' {
+        . (Join-Path $PSScriptRoot 'shared/Get-ReplicationSignatureMatch.ps1')
+        Test-ReplicationSignatureEquivalent `
+            -Declared 'On-state render mismatch: switch thumb offset' `
+            -Observed 'The app was expected to be running still' | Should -BeFalse
+    }
+
+    It 'accepts a reworded rendering of the same declared failure' {
+        . (Join-Path $PSScriptRoot 'shared/Get-ReplicationSignatureMatch.ps1')
+        Test-ReplicationSignatureEquivalent `
+            -Declared 'Switch thumb offset mismatch after toggle' `
+            -Observed '  Switch thumb offset mismatch  after  toggle (native)' | Should -BeTrue
+    }
+}

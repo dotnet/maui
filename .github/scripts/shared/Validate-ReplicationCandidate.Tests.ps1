@@ -326,7 +326,8 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             [Parameter(Mandatory = $true)][object]$Fixture,
             [scriptblock]$Probe = $script:successfulProbe,
             [string]$CandidateCommit,
-            [string]$BaseCommit
+            [string]$BaseCommit,
+            [string]$FixPatchPath
         )
 
         $parameters = @{
@@ -343,6 +344,9 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             $parameters.BaseCommit = $BaseCommit
         } else {
             $parameters.PatchPath = $Fixture.PatchPath
+            if ($FixPatchPath) {
+                $parameters.FixPatchPath = $FixPatchPath
+            }
         }
 
         return Invoke-ReplicationCandidateValidation @parameters
@@ -454,7 +458,8 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             "Platform: $($Fixture.Platform)"
             "Filter: $($Fixture.TestFilter)"
             "[$($Fixture.TestType)] $($Fixture.TestName): FAILED ✅ (expected)"
-            'VERIFICATION PASSED'
+            '📊 Parsed test results: Passed=0 Failed=1 Total=1 (from 1 result blocks)'
+            'VERIFICATION PASSED ✅ All 1 test(s) FAILED as expected!'
             'REPLICATION TEST VERIFICATION PASSED'
         ) -join "`n"
         Write-TestText `
@@ -481,6 +486,7 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
             requestedRunCount = 2
             completedRunCount = 2
             consistentRuns = $true
+            stableFailureMessage = $true
             logFiles = @('verification-console.log', 'verification-console-run-2.log')
         }
         Write-TestJson `
@@ -1009,6 +1015,86 @@ public static class Issue12345Bootstrap
             Should -Throw '*test lifecycle attribute*Move the setup inside the test method body.*'
     }
 
+    It 'allows a bindable property declaration the language cannot put in a method' {
+        # A bindable property is a static readonly field or it is nothing: the
+        # guard used to demand it move into the test body, which is impossible.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Probe
+{
+    public static readonly BindableProperty CurrentIconProperty =
+        BindableProperty.Create(
+            "CurrentIcon",
+            typeof(string),
+            typeof(Issue12345Probe),
+            null);
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+    }
+
+    It 'still rejects a static field initializer that is real setup' {
+        # The exemption is for the bindable property idiom only. Shared mutable
+        # state built outside the test still hides the setup the oracle depends
+        # on, which is the whole reason the rule exists.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Shared
+{
+    public static readonly System.Text.StringBuilder Log = new System.Text.StringBuilder();
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*field initializer that runs outside the test*'
+    }
+
+    It 'refuses to exempt a non-bindable field built by a Create call' {
+        # The exemption is keyed on the declared type as well as the call. A
+        # field of some other type is ordinary shared state no matter what
+        # initialises it.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Sneaky
+{
+    public static readonly object Cached =
+        BindableProperty.Create("X", typeof(string), typeof(object), null);
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*field initializer that runs outside the test*'
+    }
+
+    It 'refuses to exempt a bindable-typed field built by arbitrary code' {
+        # Declaring the type as BindableProperty is not a licence to run
+        # arbitrary setup at type-load time; only the Create idiom is exempt.
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+public static class Issue12345Sneakier
+{
+    public static readonly BindableProperty Cached = MakeTheProperty();
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*field initializer that runs outside the test*'
+    }
+
     It 'allows a UI HostApp companion constructor' {
         $fixture = New-ValidationFixture -TestType UITest
         $hostPath = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345Page.xaml.cs'
@@ -1187,6 +1273,51 @@ Describe 'Validate-ReplicationCandidate verification boundary' {
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*consistentRuns*'
+    }
+
+    It 'accepts a result that omits the executed test count' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } | Should -Not -Throw
+    }
+
+    It 'rejects a filter that selected more than one test' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult |
+            Add-Member -NotePropertyName 'executedTestCounts' -NotePropertyValue @(2)
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*instead of exactly one targeted test*'
+    }
+
+    It 'accepts a filter that selected exactly one test' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult |
+            Add-Member -NotePropertyName 'executedTestCounts' -NotePropertyValue @(1)
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } | Should -Not -Throw
+    }
+
+    It 'rejects a verifier that reported an ambiguous selection' {
+        $fixture = New-ValidationFixture
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult |
+            Add-Member -NotePropertyName 'selectionAmbiguous' -NotePropertyValue $true
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*not attributable to the named test*'
     }
 
     It 'rejects a repeat run whose console log does not prove the failure' {
@@ -2242,6 +2373,55 @@ Describe 'A test may not read back a verdict it announced itself' {
         } | Should -Not -Throw
     }
 
+    It 'catches the self-announced verdict in the NUnit spelling too' {
+        # The guard only ever matched the xUnit argument order. Across the ten
+        # published reproductions Assert.That outnumbered Assert.Equal 57 to 9,
+        # so the form the repository's UI tests actually use was unguarded, and
+        # PR 265 asserted Is.EqualTo("ALIGNED") against a label it set itself.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    statusLabel.Text = "BUG REPRODUCED";
+    Assert.That(statusLabel.Text, Is.EqualTo("BUG REPRODUCED"));
+'@ `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs'
+        } | Should -Throw -ExpectedMessage '*reading back a verdict it announced*'
+    }
+
+    It 'still allows an NUnit assertion against content the app displays' {
+        # Reading a content label the app rendered is evidence. Only reading
+        # back an announcement of the outcome is not.
+        {
+            Assert-ReplicationVerdictIsNotSelfAnnounced `
+                -Content @'
+    bandText.Text = "EDGE-TO-EDGE CONTENT START";
+    Assert.That(bandText.Text, Is.EqualTo("EDGE-TO-EDGE CONTENT START"));
+'@ `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'keeps every assertion pattern separate from its neighbour' {
+        # PowerShell binds the comma tighter than the plus, so an array of
+        # concatenated patterns written as @(a + b, c + d) collapses into the
+        # single element 'ab cd'. That parses cleanly, matches nothing, and
+        # silently disables this guard; it is only visible as both spellings
+        # being accepted at once. Pin the element count.
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Assert-ReplicationTestGuard.ps1') -Raw
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $source, [ref]$null, [ref]$null)
+        $forms = $ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $node.Left.Extent.Text -eq '$assertionForms'
+            }, $true)
+
+        $forms.Count | Should -Be 1
+        $values = $forms[0].Right.Expression.SubExpression.Statements[0].PipelineElements[0].Expression.Elements
+        $values.Count | Should -Be 2
+    }
+
     It 'catches the verdict announcement whatever member carries it' {
         foreach ($member in @('Text', 'AutomationId', 'ClassId')) {
             {
@@ -2327,5 +2507,1489 @@ public class Issue36298 : _IssuesUITest
                 -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36298.cs' `
                 -Platform 'windows'
         } | Should -Throw '*android, ios, catalyst*'
+    }
+}
+
+Describe 'Validate-ReplicationCandidate certification' {
+    BeforeAll {
+        $script:ControlBaselineSource = @'
+[Test]
+public void Repro()
+{
+    App.NavigateTo("ShadowedButtonGallery");
+    App.Tap("TriggerButton");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+        $script:ControlVariantSource = @'
+[Test]
+public void Repro_Control()
+{
+    App.NavigateTo("PlainButtonGallery");
+    App.Tap("TriggerButton");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+
+    function Add-NegativeControl {
+        param(
+            $Fixture,
+            [int]$RunCount = 2,
+            [int]$PassCount = 2,
+            [switch]$OmitSources,
+            [string]$VariantSource
+        )
+
+        # The control runs after verification-result.json is written, so
+        # production never puts the control inside it. Fixtures that did hid a
+        # defect that graded every real reproduction as uncontrolled, so write
+        # the artifact the verifier actually produces.
+        $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+        Write-TestJson `
+            -Path (Join-Path $verificationRoot 'negative-control-result.json') `
+            -Value ([ordered]@{
+                schemaVersion = 1
+                runCount      = $RunCount
+                passCount     = $PassCount
+            })
+
+        if (-not $OmitSources) {
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') `
+                -Value $script:ControlBaselineSource
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-variant.cs') `
+                -Value $(if ($VariantSource) { $VariantSource } else { $script:ControlVariantSource })
+        }
+
+        return $Fixture
+    }
+    }
+
+    It 'grades a reproduction without a control as observed rather than certified' {
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'observed-reproduction'
+    }
+
+    It 'certifies a control that edits the scene while the oracle lives elsewhere' {
+        # A UI test's control edits the HostApp page, which has no assertions of
+        # its own. Reading the oracle from that page, the gate found none and
+        # refused a control that had passed on the device.
+        $scene = @'
+public class Issue1 : ContentPage
+{
+    public Issue1()
+    {
+        var grid = new Grid();
+        grid.GestureRecognizers.Add(new TapGestureRecognizer());
+        Content = grid;
+    }
+}
+'@
+        $sceneControl = $scene.Replace('grid.GestureRecognizers.Add(new TapGestureRecognizer());', '')
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource $sceneControl
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') -Value $scene
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-oracle.cs') `
+            -Value $script:ControlBaselineSource
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+    }
+
+    It 'still refuses a scene control whose oracle snapshot has no assertion' {
+        $scene = 'public class Issue1 : ContentPage { public Issue1() { var x = 1; } }'
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource 'public class Issue1 : ContentPage { public Issue1() { } }'
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') -Value $scene
+        Write-TestText -Path (Join-Path $verificationRoot 'negative-control-oracle.cs') `
+            -Value 'public class T { [Test] public void M() { App.Tap("x"); } }'
+
+        { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*no assertion*'
+    }
+
+    It 'refuses a single-file control that drops the assertions it must preserve' {
+        # A device test is one file, so its oracle is the file the control
+        # edits and no oracle snapshot is written. The gate then compares
+        # baseline against control, which is the only way this case can catch a
+        # control that passes because it stopped measuring. Writing a snapshot
+        # here would have the gate compare it against itself and let this
+        # through.
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource 'public class T { [Test] public void M() { var x = 1; } }'
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        Test-Path -LiteralPath (Join-Path $verificationRoot 'negative-control-oracle.cs') |
+            Should -BeFalse
+
+        { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*asserts 0 times*'
+    }
+
+    It 'certifies a UI run whose console carries only the verifier summary' {
+        # A UI test run prints no parsed runner counts at all. Requiring them
+        # would have refused every UI reproduction, and six of the ten
+        # published reproductions are UI tests.
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value (((Get-Content -LiteralPath $path) |
+                    Where-Object { $_ -notmatch 'Parsed test results' }) -join "`n")
+        }
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+    }
+
+    It 'refuses to certify when the console does not prove one test ran' {
+        # The claim used to be hard-coded, so a run that dragged in a
+        # neighbouring test published a pull request saying it had not.
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value ((Get-Content -LiteralPath $path -Raw) -replace 'Total=1', 'Total=2')
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*exactly one test was selected and executed*'
+    }
+
+    It 'refuses to certify when the console omits the verifier summary' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value (((Get-Content -LiteralPath $path) |
+                    Where-Object { $_ -notmatch 'FAILED as expected' -and $_ -notmatch 'Parsed test results' }) -join "`n")
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*exactly one test was selected and executed*'
+    }
+
+    It 'refuses to certify when the verifier summary counts more than one test' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $verificationRoot = Join-Path $fixture.EvidenceDir 'verification'
+        foreach ($name in @('verification-console.log', 'verification-console-run-2.log')) {
+            $path = Join-Path $verificationRoot $name
+            Write-TestText -Path $path -Value ((Get-Content -LiteralPath $path -Raw) -replace 'All 1 test', 'All 2 test')
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*exactly one test was selected and executed*'
+    }
+
+    It 'refuses to certify when the verifier reports an unstable failure message' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        $result.stableFailureMessage = $false
+        Write-TestJson -Path $resultPath -Value $result
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*failure message was not identical across runs*'
+    }
+
+    It 'certifies a reproduction whose control passes without the trigger' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+    }
+
+    It 'reports the certification matrix for the pull request body' {
+        $fixture = Add-NegativeControl -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationSummary | Should -Match 'Trigger removed'
+    }
+
+    It 'refuses to certify when the test stays red without the trigger' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -PassCount 0
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'observed-reproduction'
+    }
+
+    It 'rejects a control reporting more passes than runs' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -RunCount 2 -PassCount 5
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*more passes than runs*'
+    }
+
+    It 'rejects a control that cannot be checked because its sources are missing' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -OmitSources
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*source snapshots*'
+    }
+
+    It 'rejects a control made green by weakening the oracle' {
+        $weakened = $script:ControlVariantSource -replace 'Is\.EqualTo\("Updated"\)', 'Is.Not.Null'
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource $weakened
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*changes the oracle*'
+    }
+
+    It 'rejects a control identical to the reproduction' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
+            -VariantSource $script:ControlBaselineSource
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*removes nothing*'
+    }
+}
+
+Describe 'The pre-publish gate refuses a verdict the host page computed' {
+    It 'runs the cross-file verdict guard before any credential is exposed' {
+        # The publisher is the last gate before a draft PR appears, so a guard
+        # the runner applies is worth nothing here unless this gate applies it
+        # too.
+        $source = Get-Content -LiteralPath $script:validatorPath -Raw
+        $source | Should -Match (
+            'Assert-ReplicationOracleIsNotInitialState -Files \$candidateContents\s*\r?\n\s*' +
+            'Assert-ReplicationVerdictIsNotComputedByTheApp -Files \$candidateContents')
+    }
+
+    It 'rejects a candidate whose page decides the word the test asserts' {
+        {
+            Assert-ReplicationVerdictIsNotComputedByTheApp -Files @{
+                'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs' =
+                    'if (element == border) { edge = "ALIGNED"; }'
+                'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' =
+                    'Assert.That(status, Is.EqualTo("ALIGNED"));'
+            }
+        } | Should -Throw '*selects with the branch*'
+    }
+}
+
+Describe 'The evidence allowlist knows every field the recorder writes' {
+    # Adding decodedFrames to the recorder without adding it to the publisher's
+    # strict allowlist made the publisher throw "unexpected property
+    # 'decodedFrames'" and killed build 15051402 at the final gate, after the
+    # emulator, the recording and the whole verification had already been paid
+    # for. Comparing the two lists by hand is exactly the check that was missed,
+    # so derive both from the source instead.
+    BeforeAll {
+        function Get-HashtableKeys {
+            param([string]$Path, [string]$MarkerKey)
+
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+                $Path, [ref]$null, [ref]$null)
+            $tables = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.HashtableAst] -and
+                    # -contains is case-insensitive, so a marker of 'width'
+                    # also matches the internal media-info object's 'Width'
+                    # and the test then compares the wrong hashtable against
+                    # the allowlist. Case matters for JSON keys anyway.
+                    @($node.KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") }) -ccontains $MarkerKey
+                }, $true)
+            if ($tables.Count -lt 1) { throw "No hashtable containing '$MarkerKey' in $Path." }
+            return @($tables[0].KeyValuePairs | ForEach-Object { $_.Item1.Extent.Text.Trim("'`"") })
+        }
+
+        function Get-EvidenceAllowlist {
+            param([string]$Path, [string]$Context = 'Evidence metadata')
+
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+                $Path, [ref]$null, [ref]$null)
+            $calls = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.CommandAst] -and
+                    $node.GetCommandName() -eq 'Assert-KnownProperties' -and
+                    $node.Extent.Text -match ("Context\s+'" + [regex]::Escape($Context) + "'")
+                }, $true)
+            # 'Evidence metadata' is asserted twice, once with a populated
+            # allowlist and once without, so take the call that actually
+            # carries names rather than whichever parses first.
+            $calls = @($calls | Where-Object { $_.Extent.Text -match "AllowedNames" })
+            if ($calls.Count -lt 1) { throw "No allowlist found for '$Context'." }
+            # Reading the call's raw text would also read its comments, and
+            # the comment above this allowlist quotes 'decodedFrames' to
+            # explain why it is there. That made the test pass while the
+            # allowlist itself was empty of it, so bind the parameter and read
+            # the array literal, which contains no comments by construction.
+            $binder = [System.Management.Automation.Language.StaticParameterBinder]::BindCommand(
+                $calls[0])
+            $bound = $binder.BoundParameters['AllowedNames']
+            if (-not $bound) { throw 'The evidence allowlist has no AllowedNames argument.' }
+            $arrayAst = $bound.Value
+            while ($arrayAst -is [System.Management.Automation.Language.UnaryExpressionAst] -or
+                $arrayAst -is [System.Management.Automation.Language.ParenExpressionAst]) {
+                $arrayAst = $arrayAst.Child ?? $arrayAst.Pipeline
+            }
+            $elements = $arrayAst.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.StringConstantExpressionAst]
+                }, $true)
+            return @($elements | ForEach-Object { $_.Value })
+        }
+
+        $script:RecorderPath = Join-Path $PSScriptRoot 'Record-Reproduction.ps1'
+        $script:ValidatorPath = Join-Path $PSScriptRoot 'Validate-ReplicationCandidate.ps1'
+    }
+
+    # Every strict allowlist has the same drift risk as the evidence manifest
+    # did, and the two largest are written in files the validator never
+    # references. Pair each one with the hashtable that produces it.
+    $script:Couplings = @(
+        @{ Context = 'Evidence metadata'; Writer = 'Record-Reproduction.ps1';            Marker = 'schemaVersion' }
+        @{ Context = 'Evidence dimensions'; Writer = 'Record-Reproduction.ps1';          Marker = 'width' }
+        @{ Context = 'Evidence files'; Writer = 'Record-Reproduction.ps1';               Marker = 'thumbnail' }
+        @{ Context = 'Verification result'; Writer = 'Invoke-ReplicationTestVerification.ps1'; Marker = 'verificationPassed' }
+    )
+
+    It 'allows every key <Writer> writes for "<Context>"' -ForEach $script:Couplings {
+        $writerPath = Join-Path $PSScriptRoot $Writer
+        $written = Get-HashtableKeys -Path $writerPath -MarkerKey $Marker
+        $allowed = Get-EvidenceAllowlist -Path $script:ValidatorPath -Context $Context
+
+        $written | Should -Not -BeNullOrEmpty
+        $allowed | Should -Not -BeNullOrEmpty
+        foreach ($key in $written) {
+            $allowed | Should -Contain $key -Because "$Writer writes '$key' and the publisher rejects anything unlisted"
+        }
+    }
+
+    It 'still lists the frame count that build 15051402 was rejected for' {
+        (Get-EvidenceAllowlist -Path $script:ValidatorPath) | Should -Contain 'decodedFrames'
+    }
+}
+
+Describe 'The fix patch is the inverse of the test patch' {
+    BeforeAll {
+        $script:fixScratch = Join-Path $script:scratchRoot 'fix-patch'
+        New-Item -ItemType Directory -Path $script:fixScratch -Force | Out-Null
+
+        $script:fixTarget = 'src/Controls/src/Core/Button/Button.cs'
+
+        function script:New-FixPatchFile {
+            param(
+                [Parameter(Mandatory = $true)][string]$Name,
+                [Parameter(Mandatory = $true)][string]$Value
+            )
+
+            $path = Join-Path $script:fixScratch "$Name.patch"
+            [System.IO.File]::WriteAllText(
+                $path,
+                $Value,
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            return $path
+        }
+
+        function script:New-FixPatchText {
+            param(
+                [string]$Target = 'src/Controls/src/Core/Button/Button.cs',
+                [string]$Hunk = @'
+@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
+ 	public partial class Button
+ 	{
+ 		void Update()
+-			=> Handler?.UpdateValue(nameof(Text));
++			=> Handler?.UpdateValue(nameof(Text), force: true);
+ 	}
+ }
+ 
+'@
+            )
+
+            return @"
+diff --git a/$Target b/$Target
+index cc87be1f60..4791badc38 100644
+--- a/$Target
++++ b/$Target
+$Hunk
+"@
+        }
+
+        # The most honest fixture is one git itself produced, so the parser is
+        # measured against real output rather than against our idea of it.
+        $script:gitFixRepo = Join-Path $script:fixScratch 'repo'
+        New-Item -ItemType Directory -Path (Join-Path $script:gitFixRepo (Split-Path $script:fixTarget -Parent)) -Force | Out-Null
+        Push-Location $script:gitFixRepo
+        try {
+            git init --quiet 2>&1 | Out-Null
+            git config user.email 'test@example.com' 2>&1 | Out-Null
+            git config user.name 'Test' 2>&1 | Out-Null
+            $original = (1..40 | ForEach-Object { "line $_" }) -join "`n"
+            [System.IO.File]::WriteAllText(
+                (Join-Path $script:gitFixRepo $script:fixTarget),
+                "$original`n",
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            git add -A 2>&1 | Out-Null
+            git commit --quiet -m 'base' 2>&1 | Out-Null
+
+            $edited = @($original -split "`n")
+            $edited[4] = 'line 5 changed'
+            $edited[30] = 'line 31 changed'
+            [System.IO.File]::WriteAllText(
+                (Join-Path $script:gitFixRepo $script:fixTarget),
+                (($edited -join "`n") + "`n"),
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            $script:realFixPatch = Join-Path $script:fixScratch 'real.patch'
+            git diff --binary -- $script:fixTarget |
+                Set-Content -LiteralPath $script:realFixPatch -Encoding utf8NoBOM
+        } finally {
+            Pop-Location
+        }
+    }
+
+    It 'accepts a modification patch git actually produced' {
+        $files = @(Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @($script:fixTarget))
+
+        $files | Should -HaveCount 1
+        $files[0].Path | Should -BeExactly $script:fixTarget
+        $files[0].AddedLines | Should -Be 2
+        $files[0].RemovedLines | Should -Be 2
+        $files[0].HunkCount | Should -Be 2
+    }
+
+    It 'refuses a file the reviewed scope never named' {
+        { Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @('src/Core/src/Handlers/Button/ButtonHandler.cs') } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'refuses a scope that differs only by case' {
+        { Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @($script:fixTarget.ToUpperInvariant()) } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'refuses an empty scope outright' {
+        { Get-ReplicationFixFilesFromPatch `
+            -Path $script:realFixPatch `
+            -AllowedPaths @() } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'accepts a hand-written patch of the same shape' {
+        $path = script:New-FixPatchFile -Name 'baseline' -Value (script:New-FixPatchText)
+        $files = @(Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget))
+
+        $files | Should -HaveCount 1
+        $files[0].AddedLines | Should -Be 1
+        $files[0].RemovedLines | Should -Be 1
+        $files[0].HunkCount | Should -Be 1
+    }
+
+    It 'refuses a patch that adds a file' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+new file mode 100644
+index 0000000000..4791badc38
+--- /dev/null
++++ b/$($script:fixTarget)
+@@ -0,0 +1 @@
++namespace X;
+"@
+        $path = script:New-FixPatchFile -Name 'add' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*add, delete, rename, copy, mode change, or submodule*'
+    }
+
+    It 'refuses a patch that deletes a file' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+deleted file mode 100644
+index cc87be1f60..0000000000
+--- a/$($script:fixTarget)
++++ /dev/null
+@@ -1 +0,0 @@
+-namespace X;
+"@
+        $path = script:New-FixPatchFile -Name 'delete' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*add, delete, rename, copy, mode change, or submodule*'
+    }
+
+    It 'refuses a patch that changes a file mode' {
+        $text = (script:New-FixPatchText) -replace 'index cc87be1f60', "old mode 100644`nnew mode 100755`nindex cc87be1f60"
+        $path = script:New-FixPatchFile -Name 'mode' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*add, delete, rename, copy, mode change, or submodule*'
+    }
+
+    It 'refuses a rename even when both paths are in scope' {
+        $other = 'src/Controls/src/Core/Button/Button2.cs'
+        $text = @"
+diff --git a/$($script:fixTarget) b/$other
+similarity index 98%
+rename from $($script:fixTarget)
+rename to $other
+"@
+        $path = script:New-FixPatchFile -Name 'rename' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget, $other) } |
+            Should -Throw '*rename or path mismatch*'
+    }
+
+    It 'refuses a binary patch' {
+        $text = (script:New-FixPatchText) -replace '@@ -10,7 \+10,7 @@.*', 'GIT binary patch'
+        $path = script:New-FixPatchFile -Name 'binary' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*binary patch*'
+    }
+
+    It 'refuses stray carriage returns' {
+        $text = (script:New-FixPatchText).Replace("`n", "`n") + "`rtrailing"
+        $path = script:New-FixPatchFile -Name 'cr' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*non-normalized line endings*'
+    }
+
+    It 'refuses an empty patch' {
+        $path = script:New-FixPatchFile -Name 'empty' -Value "   `n"
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*empty*'
+    }
+
+    It 'refuses anything before the first diff header' {
+        $text = "Here is my fix!`n" + (script:New-FixPatchText)
+        $path = script:New-FixPatchFile -Name 'preamble' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*unexpected preamble or malformed diff header*'
+    }
+
+    It 'refuses a hunk header that claims more lines than it carries' {
+        $text = (script:New-FixPatchText) -replace '@@ -10,7 \+10,7 @@', '@@ -10,9 +10,9 @@'
+        $path = script:New-FixPatchFile -Name 'overclaim' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*hunk line counts do not match*'
+    }
+
+    It 'refuses a hunk header that claims fewer lines than it carries' {
+        $text = (script:New-FixPatchText) -replace '@@ -10,7 \+10,7 @@', '@@ -10,5 +10,5 @@'
+        $path = script:New-FixPatchFile -Name 'underclaim' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*unsupported metadata or a malformed hunk*'
+    }
+
+    It 'refuses a hunk body line with an unrecognised marker' {
+        $text = (script:New-FixPatchText) -replace '(?m)^ (\tpublic partial class Button)$', '?$1'
+        $text | Should -Match '(?m)^\?' -Because 'the mutation must actually land or the test proves nothing'
+        $path = script:New-FixPatchFile -Name 'marker' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*malformed hunk body line*'
+    }
+
+    It 'refuses a patch that carries no hunk at all' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+index cc87be1f60..4791badc38 100644
+--- a/$($script:fixTarget)
++++ b/$($script:fixTarget)
+"@
+        $path = script:New-FixPatchFile -Name 'nohunk' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*complete modification to a tracked file*'
+    }
+
+    It 'refuses a patch that changes no lines' {
+        $hunk = @'
+@@ -10,3 +10,3 @@ namespace Microsoft.Maui.Controls
+ 	public partial class Button
+ 	{
+ 	}
+'@
+        $path = script:New-FixPatchFile -Name 'nochange' -Value (script:New-FixPatchText -Hunk $hunk)
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*changes no lines*'
+    }
+
+    It 'refuses a hunk that precedes its own file headers' {
+        $text = @"
+diff --git a/$($script:fixTarget) b/$($script:fixTarget)
+index cc87be1f60..4791badc38 100644
+@@ -10,1 +10,1 @@
+-a
++b
+--- a/$($script:fixTarget)
++++ b/$($script:fixTarget)
+"@
+        $path = script:New-FixPatchFile -Name 'earlyhunk' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*hunk before its file headers*'
+    }
+
+    It 'refuses a target header that names a different file' {
+        $text = (script:New-FixPatchText) -replace [regex]::Escape("+++ b/$($script:fixTarget)"), '+++ b/src/Controls/src/Core/Other.cs'
+        $path = script:New-FixPatchFile -Name 'mismatch' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*unsupported metadata or a malformed hunk*'
+    }
+
+    It 'refuses the same file twice' {
+        $text = (script:New-FixPatchText) + "`n" + (script:New-FixPatchText)
+        $path = script:New-FixPatchFile -Name 'duplicate' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*duplicate path*'
+    }
+
+    It 'refuses a diff that touches more files than the ceiling allows' {
+        $targets = 1..($script:FixFileMaxCount + 1) | ForEach-Object {
+            "src/Controls/src/Core/Button/Probe$_.cs"
+        }
+        $text = ($targets | ForEach-Object { script:New-FixPatchText -Target $_ }) -join "`n"
+        $path = script:New-FixPatchFile -Name 'toomanyfiles' -Value $text
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths $targets } |
+            Should -Throw '*modifies too many files*'
+    }
+
+    It 'refuses a diff that rewrites more lines than the ceiling allows' {
+        $bodyLines = 1..($script:FixChangedLineMaxCount + 2) | ForEach-Object { "+line $_" }
+        $hunk = "@@ -10,0 +10,$($bodyLines.Count) @@`n" + ($bodyLines -join "`n")
+        $path = script:New-FixPatchFile -Name 'toomanylines' -Value (script:New-FixPatchText -Hunk $hunk)
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*changes too many lines*'
+    }
+
+    It 'accepts an empty context line that lost its leading space in transit' {
+        $hunk = "@@ -10,4 +10,4 @@ namespace Microsoft.Maui.Controls`n 	public partial class Button`n`n-	void A() { }`n+	void A() { return; }`n 	}"
+        $path = script:New-FixPatchFile -Name 'looseblank' -Value (script:New-FixPatchText -Hunk $hunk)
+        $files = @(Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget))
+
+        $files | Should -HaveCount 1
+        $files[0].AddedLines | Should -Be 1
+    }
+
+    It 'refuses a patch larger than the fix ceiling' {
+        $filler = ('x' * 1024)
+        $text = (script:New-FixPatchText) + "`n" + (($filler | ForEach-Object { $_ }) * 1)
+        $big = [System.Text.StringBuilder]::new()
+        [void]$big.Append((script:New-FixPatchText))
+        while ($big.Length -le $script:FixPatchMaxBytes) {
+            [void]$big.AppendLine($filler)
+        }
+        $path = script:New-FixPatchFile -Name 'huge' -Value $big.ToString()
+        { Get-ReplicationFixFilesFromPatch -Path $path -AllowedPaths @($script:fixTarget) } |
+            Should -Throw '*Fix patch*'
+    }
+}
+
+Describe 'Which product files a fix is allowed to touch' {
+    It 'accepts every established product source root' {
+        $accepted = @(
+            'src/Controls/src/Core/Button/Button.cs',
+            'src/Core/src/Handlers/Button/ButtonHandler.Android.cs',
+            'src/Essentials/src/Types/Shared/Battery.cs',
+            'src/Graphics/src/Graphics/Canvas.cs',
+            'src/BlazorWebView/src/Maui/BlazorWebView.cs',
+            'src/Compatibility/Core/src/Foo.cs',
+            'src/SingleProject/Resizetizer/src/Foo.cs',
+            'src/Controls/src/Core/Templates/Bar.xaml'
+        )
+
+        foreach ($path in $accepted) {
+            Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) |
+                Should -BeExactly $path
+        }
+    }
+
+    It 'refuses test code, tooling, and infrastructure' {
+        $rejected = @(
+            'src/Controls/tests/DeviceTests/Elements/ButtonTests.cs',
+            'src/Controls/tests/TestCases.HostApp/Issues/Issue1.cs',
+            'src/Core/tests/UnitTests/Foo.cs',
+            'src/Templates/src/Foo.cs',
+            'src/Provisioning/Foo.cs',
+            'eng/scripts/Foo.cs',
+            '.github/workflows/ci.yml',
+            'src/Controls/src/Core/Button/Button.csproj',
+            'src/Controls/src/Core/Button/Button.g.cs',
+            'src/Controls/src/Core/Button/Button.designer.cs',
+            'src/Controls/src/Core/GlobalUsings.cs',
+            'src/Controls/src/Core/AssemblyInfo.cs',
+            'src/Controls/src/Core/obj/Generated.cs',
+            'src/Controls/src/Core/snapshots/Button.cs'
+        )
+
+        foreach ($path in $rejected) {
+            { Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) } |
+                Should -Throw -Because "$path must never be editable by a fix candidate"
+        }
+    }
+
+    It 'refuses absolute paths, traversal, and windows separators' {
+        foreach ($path in @(
+            '/etc/passwd',
+            'C:/Windows/System32/foo.cs',
+            'src/Controls/src/Core/../../../../etc/passwd.cs',
+            'src\Controls\src\Core\Button.cs',
+            'src/Controls/src/Core/%2e%2e/Button.cs'
+        )) {
+            { Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) } |
+                Should -Throw -Because "$path is not a repository-relative product path"
+        }
+    }
+}
+
+Describe 'What it takes to publish a fix alongside the reproduction' {
+    BeforeAll {
+        $script:oracleFixTarget = 'src/Controls/src/Core/Button/Button.cs'
+
+        $script:oracleControlBaseline = @'
+[Test]
+public void Issue12345()
+{
+    App.NavigateTo("PlainButtonGallery");
+    App.Tap("TriggerButton");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+        $script:oracleControlVariant = @'
+[Test]
+public void Issue12345()
+{
+    App.NavigateTo("PlainButtonGallery");
+    Assert.That(App.FindElement("ResultLabel").GetText(), Is.EqualTo("Updated"));
+}
+'@
+
+        function script:Add-OracleControl {
+            param([Parameter(Mandatory = $true)][object]$Fixture)
+
+            $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+            Write-TestJson `
+                -Path (Join-Path $verificationRoot 'negative-control-result.json') `
+                -Value ([ordered]@{ schemaVersion = 1; runCount = 2; passCount = 2 })
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') `
+                -Value $script:oracleControlBaseline
+            Write-TestText `
+                -Path (Join-Path $verificationRoot 'negative-control-variant.cs') `
+                -Value $script:oracleControlVariant
+            return $Fixture
+        }
+
+        function script:Add-OracleArms {
+            param(
+                [Parameter(Mandatory = $true)][object]$Fixture,
+                [int]$FixRuns = 2,
+                [int]$FixPasses = 2,
+                [int]$RestorationRuns = 2,
+                [int]$RestorationFailures = 2,
+                [switch]$OmitFix,
+                [switch]$OmitRestoration
+            )
+
+            $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+            if (-not $OmitFix) {
+                Write-TestJson `
+                    -Path (Join-Path $verificationRoot 'fix-control-result.json') `
+                    -Value ([ordered]@{ schemaVersion = 1; runCount = $FixRuns; passCount = $FixPasses })
+            }
+            if (-not $OmitRestoration) {
+                Write-TestJson `
+                    -Path (Join-Path $verificationRoot 'restoration-result.json') `
+                    -Value ([ordered]@{
+                        schemaVersion = 1
+                        runCount = $RestorationRuns
+                        failureCount = $RestorationFailures
+                    })
+            }
+            return $Fixture
+        }
+
+        function script:Add-OracleFixPatch {
+            param(
+                [Parameter(Mandatory = $true)][object]$Fixture,
+                [string]$Target = 'src/Controls/src/Core/Button/Button.cs',
+                [string[]]$DeclaredFiles,
+                [switch]$SkipProductFile
+            )
+
+            if (-not $SkipProductFile) {
+                Write-TestText `
+                    -Path (Join-Path $Fixture.RepoRoot $Target) `
+                    -Value "namespace Microsoft.Maui.Controls;`n"
+            }
+
+            $fixPatchPath = Join-Path $Fixture.Root 'fix.patch'
+            Write-TestText -Path $fixPatchPath -Value @"
+diff --git a/$Target b/$Target
+index cc87be1f60..4791badc38 100644
+--- a/$Target
++++ b/$Target
+@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
+ 	public partial class Button
+ 	{
+ 		void Update()
+-			=> Handler?.UpdateValue(nameof(Text));
++			=> Handler?.UpdateValue(nameof(Text), force: true);
+ 	}
+ }
+ 
+"@
+
+            $declared = if ($PSBoundParameters.ContainsKey('DeclaredFiles')) { @($DeclaredFiles) } else { @($Target) }
+            $manifest = Get-Content -LiteralPath $Fixture.ManifestPath -Raw | ConvertFrom-Json
+            Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' -NotePropertyValue $declared -Force
+            if (@($declared).Count -gt 0) {
+                Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' -NotePropertyValue 'fix.patch' -Force
+            }
+            Write-TestJson -Path $Fixture.ManifestPath -Value $manifest
+
+            return $fixPatchPath
+        }
+
+        function script:New-OracleFixture {
+            return script:Add-OracleControl `
+                -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        }
+    }
+
+    It 'certifies a reproduction whose fix turns it green and whose removal turns it red' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+        $result.fixFiles | Should -Be @($script:oracleFixTarget)
+        $result.fixPatch | Should -BeExactly 'fix.patch'
+    }
+
+    It 'ignores fix arm results when no fix patch is published' {
+        # Without this the run could claim the fix made the test green while
+        # shipping no fix at all, which is the one claim a reviewer cannot check.
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        $result.fixFiles | Should -Be @()
+        $result.fixPatch | Should -BeNullOrEmpty
+    }
+
+    It 'refuses a fix arm reported without its restoration arm' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -OmitRestoration
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*without its restoration arm*'
+    }
+
+    It 'refuses a restoration arm reported without its fix arm' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -OmitFix
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*without its restoration arm*'
+    }
+
+    It 'still publishes a trigger-certified reproduction when the fix arm did not pass every run' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -FixPasses 1
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        $result.fixFiles | Should -Be @() -Because 'a fix that did not work must be discarded, not published'
+        $result.fixPatch | Should -BeNullOrEmpty
+    }
+
+    It 'still publishes a trigger-certified reproduction when removing the fix left it green' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -RestorationFailures 1
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        $result.fixFiles | Should -Be @() -Because 'an unattributable fix must be discarded, not published'
+        $result.fixPatch | Should -BeNullOrEmpty
+    }
+
+    It 'still publishes a trigger-certified reproduction when no fix was attempted at all' {
+        $fixture = script:New-OracleFixture
+
+        $result = Invoke-FixtureValidation -Fixture $fixture
+
+        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+    }
+
+    It 'refuses a fix arm that reports more passes than runs' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -FixRuns 1 -FixPasses 2
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*more passes than runs*'
+    }
+
+    It 'refuses a restoration arm that reports more failures than runs' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture -RestorationRuns 1 -RestorationFailures 2
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*more failures than runs*'
+    }
+
+    It 'refuses a manifest that names fix files without shipping a fix patch' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $null = script:Add-OracleFixPatch -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*names fix files but no fix patch*'
+    }
+
+    It 'refuses a fix patch the manifest never declared' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -DeclaredFiles @('src/Core/src/Handlers/Button/ButtonHandler.cs')
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*outside the reviewed fix scope*'
+    }
+
+    It 'refuses a manifest that declares a file the fix patch never touches' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        Write-TestText `
+            -Path (Join-Path $fixture.RepoRoot 'src/Core/src/Handlers/Button/ButtonHandler.cs') `
+            -Value "namespace Microsoft.Maui.Handlers;`n"
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -DeclaredFiles @($script:oracleFixTarget, 'src/Core/src/Handlers/Button/ButtonHandler.cs')
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*names a fix file the fix patch never modifies*'
+    }
+
+    It 'refuses a fix that modifies a file the trusted checkout does not have' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture -SkipProductFile
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*does not exist in the trusted checkout*'
+    }
+
+    It 'refuses a manifest whose fix files overlap the test it is meant to turn green' {
+        $fixture = script:New-OracleFixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' `
+            -NotePropertyValue @($fixture.CandidatePath) -Force
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw
+    }
+}
+
+Describe 'A manifest cannot rename the fix patch out from under the gate' {
+    BeforeEach {
+        $script:renameFixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
+    }
+
+    It 'refuses a manifest that names a fix patch by some other name' {
+        # The gate is handed the patch by path, so this field is documentation.
+        # A manifest that documents a different artifact is describing a run
+        # that did not happen, and the PR would cite evidence nobody validated.
+        $manifest = Get-Content -LiteralPath $script:renameFixture.ManifestPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' `
+            -NotePropertyValue @('src/Controls/src/Core/Button/Button.cs') -Force
+        Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' `
+            -NotePropertyValue 'test.patch' -Force
+        Write-TestJson -Path $script:renameFixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $script:renameFixture } |
+            Should -Throw '*does not match the fixed artifact contract*'
+    }
+
+    It 'refuses a manifest that names a fix patch while claiming no fix files' {
+        $manifest = Get-Content -LiteralPath $script:renameFixture.ManifestPath -Raw | ConvertFrom-Json
+        Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' `
+            -NotePropertyValue 'fix.patch' -Force
+        Write-TestJson -Path $script:renameFixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $script:renameFixture } |
+            Should -Throw '*names a fix patch but no fix files*'
+    }
+
+    It 'accepts the reproduction-only manifest every run before the fix phase produced' {
+        { Invoke-FixtureValidation -Fixture $script:renameFixture } | Should -Not -Throw
+    }
+}
+
+Describe 'Reading the run instead of a summary of the run' {
+    BeforeEach {
+        $script:resultRoot = Join-Path $TestDrive ([Guid]::NewGuid().ToString('n'))
+        New-Item -ItemType Directory -Path $script:resultRoot -Force | Out-Null
+
+        # Shaped after the document build 14988245 actually produced. Writing a
+        # document we invented would test our idea of xUnit rather than xUnit.
+        $script:xunitOne = @'
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="1" passed="0" failed="1" skipped="0">
+    <errors />
+    <collection total="1" passed="0" failed="1" name="Serialize test" time="0.377">
+      <test name="HtmlInsAndDelRenderWithTextDecorations" type="Microsoft.Maui.DeviceTests.Issue19519" method="HtmlInsAndDelRenderWithTextDecorations" time="0.37" result="Fail">
+        <traits><trait name="Category" value="Issue19519" /></traits>
+        <failure exception-type="Xunit.Sdk.TrueException">
+          <message><![CDATA[HTML ins text should render as an underline.]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+'@
+
+        function script:Write-ResultDocument {
+            param([string]$Content, [string]$Name = 'verification-test-result.xml')
+            $path = Join-Path $script:resultRoot $Name
+            Set-Content -LiteralPath $path -Value $Content -Encoding utf8NoBOM
+            return $path
+        }
+
+        function script:Assert-Result {
+            param(
+                [string]$Class = 'Microsoft.Maui.DeviceTests.Issue19519',
+                [string]$Method = 'HtmlInsAndDelRenderWithTextDecorations'
+            )
+            return Assert-ReplicationAuthoritativeResult `
+                -VerificationRoot $script:resultRoot `
+                -TestClass $Class `
+                -TestMethod $Method
+        }
+    }
+
+    It 'accepts a run that executed exactly the named test and saw it fail' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+        $result = script:Assert-Result
+
+        $result.Name | Should -Be 'HtmlInsAndDelRenderWithTextDecorations'
+        $result.Outcome | Should -Be 'Fail'
+    }
+
+    It 'refuses a run whose filter selected nothing at all' {
+        # This is the defect the whole check exists for. An XHarness method
+        # filter cannot express a display name containing a comma, so a theory
+        # selected no test, no count was recorded, and the reproduction was
+        # published as evidence of a failure that never ran.
+        $null = script:Write-ResultDocument -Content @'
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="0" passed="0" failed="0" skipped="0">
+    <errors />
+  </assembly>
+</assemblies>
+'@
+
+        { script:Assert-Result } | Should -Throw '*records no executed test*'
+    }
+
+    It 'refuses a run that executed more than the named test' {
+        $null = script:Write-ResultDocument -Content ($script:xunitOne -replace
+            '(?s)(<test name="HtmlIns.*?</test>)', '$1
+      <test name="SomethingElse" type="Microsoft.Maui.DeviceTests.Issue19519" method="SomethingElse" result="Fail" />')
+
+        { script:Assert-Result } | Should -Throw '*records 2 executed tests*'
+    }
+
+    It 'refuses a run whose named test passed' {
+        $null = script:Write-ResultDocument -Content ($script:xunitOne -replace 'result="Fail"', 'result="Pass"')
+
+        { script:Assert-Result } | Should -Throw '*published as a failing test*'
+    }
+
+    It 'refuses a run that executed a different method than the manifest claims' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+
+        { script:Assert-Result -Method 'SomeOtherMethod' } |
+            Should -Throw '*not the method the manifest claims*'
+    }
+
+    It 'refuses a run that executed the right method on a different class' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+
+        { script:Assert-Result -Class 'Microsoft.Maui.DeviceTests.Issue99999' } |
+            Should -Throw '*not the class the manifest claims*'
+    }
+
+    It 'refuses evidence with no authoritative document at all' {
+        { script:Assert-Result } | Should -Throw '*no authoritative test result document*'
+    }
+
+    It 'refuses evidence carrying two authoritative documents' {
+        $null = script:Write-ResultDocument -Content $script:xunitOne
+        $null = script:Write-ResultDocument -Content $script:xunitOne -Name 'verification-test-result.trx'
+
+        { script:Assert-Result } | Should -Throw '*more than one authoritative test result document*'
+    }
+
+    It 'reads a namespaced TRX, which a namespace-sensitive query would read as empty' {
+        $null = script:Write-ResultDocument -Name 'verification-test-result.trx' -Content @'
+<?xml version="1.0" encoding="utf-8"?>
+<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Results>
+    <UnitTestResult testName="Microsoft.Maui.DeviceTests.Issue19519.HtmlInsAndDelRenderWithTextDecorations" outcome="Failed" />
+  </Results>
+</TestRun>
+'@
+
+        (script:Assert-Result).Outcome | Should -Be 'Failed'
+    }
+
+    It 'reads an NUnit document, which the UI test lanes emit' {
+        $null = script:Write-ResultDocument -Content @'
+<?xml version="1.0" encoding="utf-8"?>
+<test-run>
+  <test-suite type="TestFixture">
+    <test-case id="1000" name="HtmlInsAndDelRenderWithTextDecorations" fullname="Microsoft.Maui.DeviceTests.Issue19519.HtmlInsAndDelRenderWithTextDecorations" classname="Microsoft.Maui.DeviceTests.Issue19519" result="Failed" />
+  </test-suite>
+</test-run>
+'@
+
+        (script:Assert-Result).Outcome | Should -Be 'Failed'
+    }
+
+    It 'refuses a document that tries to read this machine through a DTD' {
+        $null = script:Write-ResultDocument -Content @'
+<?xml version="1.0"?>
+<!DOCTYPE assemblies [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<assemblies><assembly><collection><test name="&xxe;" type="X" result="Fail" /></collection></assembly></assemblies>
+'@
+
+        { script:Assert-Result } | Should -Throw '*could not be read as XML*'
+    }
+
+    It 'refuses a document too large to be a single test result' {
+        $path = script:Write-ResultDocument -Content $script:xunitOne
+        $stream = [IO.File]::OpenWrite($path)
+        try {
+            $stream.Seek(5MB, [IO.SeekOrigin]::Begin) | Out-Null
+            $stream.WriteByte(32)
+        } finally { $stream.Dispose() }
+
+        { script:Assert-Result } | Should -Throw '*exceeds the trusted size limit*'
+    }
+}
+
+Describe 'A device reproduction must carry the run that proves it' {
+    BeforeEach {
+        $script:deviceFixture = ConvertTo-ArtifactContractFixture -Fixture (
+            New-ValidationFixture -TestType 'DeviceTest')
+
+        function script:Add-AuthoritativeDocument {
+            param(
+                [object]$Fixture,
+                [string]$Method = 'ReproducesReportedFailure',
+                [string]$Type = 'Microsoft.Maui.DeviceTests.Issue12345',
+                [string]$Result = 'Fail',
+                [switch]$Twice
+            )
+
+            $body = if ($Twice) {
+                @"
+      <test name="$Method" type="$Type" method="$Method" result="$Result" />
+      <test name="AnotherOne" type="$Type" method="AnotherOne" result="$Result" />
+"@
+            } else {
+                "      <test name=`"$Method`" type=`"$Type`" method=`"$Method`" result=`"$Result`" />"
+            }
+
+            $document = @"
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll">
+    <errors />
+    <collection name="Serialize test">
+$body
+    </collection>
+  </assembly>
+</assemblies>
+"@
+            $target = Join-Path (Join-Path $Fixture.EvidenceDir 'verification') 'verification-test-result.xml'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
+            Set-Content -LiteralPath $target -Value $document -Encoding utf8NoBOM
+        }
+    }
+
+    It 'publishes a device reproduction whose run document shows the one test failing' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture
+
+        $result = Invoke-FixtureValidation -Fixture $script:deviceFixture
+        $result.validationPassed | Should -BeTrue
+    }
+
+    It 'refuses a device reproduction that ships no run document' {
+        # Without this the gate believes the summary, and a summary is written
+        # by the same run that is being judged.
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*no authoritative test result document*'
+    }
+
+    It 'refuses a device reproduction whose run selected no test at all' {
+        # The exact shape the comma-bearing display name produced: a document
+        # exists, the run reported success in reaching the runner, and nothing
+        # executed. Without this the gate reads an absent count as a clean run.
+        $target = Join-Path (Join-Path $script:deviceFixture.EvidenceDir 'verification') 'verification-test-result.xml'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
+        Set-Content -LiteralPath $target -Encoding utf8NoBOM -Value @'
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="0" passed="0" failed="0" skipped="0">
+    <errors />
+  </assembly>
+</assemblies>
+'@
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*records no executed test*'
+    }
+
+    It 'refuses a device reproduction whose run selected two tests' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Twice
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*records 2 executed tests*'
+    }
+
+    It 'refuses a device reproduction whose run shows the test passing' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Result 'Pass'
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*published as a failing test*'
+    }
+
+    It 'refuses a device reproduction whose run executed a different test' {
+        script:Add-AuthoritativeDocument -Fixture $script:deviceFixture -Method 'SomethingElseEntirely'
+
+        { Invoke-FixtureValidation -Fixture $script:deviceFixture } |
+            Should -Throw '*not the method the manifest claims*'
+    }
+}
+
+Describe 'The publisher accepts every product root the orchestrator will scope' {
+    # Build 15076525 earned a four-arm `certified-oracle` on
+    # src/Core/maps/src/... and lost it here, because the orchestrator's scope
+    # validator and this publisher's allowlist were two different rules. These
+    # tests read *both* validators and the real repository, so the next shipping
+    # library that appears fails a test instead of a certified run.
+
+    BeforeAll {
+        $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+
+        $orchestratorPath = Join-Path $script:repoRoot '.github/scripts/Replicate-Issue.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $orchestratorPath, [ref]$null, [ref]$null)
+        foreach ($name in @('Test-PathInsideRoot', 'Get-ReplicationFixScopePathRejection')) {
+            $fn = $ast.Find({
+                param($n)
+                $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name
+            }.GetNewClosure(), $true)
+            if (-not $fn) { throw "Orchestrator function '$name' not found." }
+            . ([scriptblock]::Create($fn.Extent.Text))
+        }
+
+        # Roots deliberately outside a fix scope: test infrastructure, project
+        # templates and AOT profile tooling are not runtime product code, so a
+        # device test could never validate a change to them.
+        $script:excludedRoots = @('src/TestUtils/', 'src/Templates/', 'src/ProfiledAot/')
+
+        Push-Location $script:repoRoot
+        try { $tracked = git ls-files 'src/*.cs' } finally { Pop-Location }
+
+        $script:sampleByRoot = @{}
+        foreach ($file in $tracked) {
+            if ($file -notmatch '^(src/(?:[^/]+/){1,2}src)/') { continue }
+            $root = $Matches[1]
+            if (-not $script:sampleByRoot.ContainsKey($root)) {
+                $script:sampleByRoot[$root] = $file
+            }
+        }
+    }
+
+    It 'finds product roots to check' {
+        $script:sampleByRoot.Count | Should -BeGreaterThan 10
+    }
+
+    It 'accepts every shipping root the orchestrator would allow into a scope' {
+        $drifted = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($entry in $script:sampleByRoot.GetEnumerator()) {
+            $root = $entry.Key
+            $sample = $entry.Value
+            if ($script:excludedRoots | Where-Object { $root.StartsWith($_, 'Ordinal') }) { continue }
+
+            $rejection = Get-ReplicationFixScopePathRejection -Path $sample -RepositoryRoot $script:repoRoot
+            if ($rejection) { continue }
+
+            try {
+                [void](Assert-ReplicationFixPath -Path $sample -AllowedPaths @($sample))
+            } catch {
+                $drifted.Add("$root (via $sample): $($_.Exception.Message)")
+            }
+        }
+
+        # A non-empty list is the exact loss that build 15076525 suffered.
+        $drifted -join "`n" | Should -BeNullOrEmpty
+    }
+
+    It 'still refuses the roots that are not runtime product code' {
+        foreach ($root in $script:excludedRoots) {
+            $sample = $script:sampleByRoot.Keys |
+                Where-Object { $_.StartsWith($root, 'Ordinal') } |
+                Select-Object -First 1
+            if (-not $sample) { continue }
+
+            { Assert-ReplicationFixPath -Path "$sample/Thing.cs" -AllowedPaths @("$sample/Thing.cs") } |
+                Should -Throw -ExpectedMessage '*outside the established product source directories*'
+        }
+    }
+
+    It 'refuses a src/ directory that does not ship' {
+        { Assert-ReplicationFixPath -Path 'src/Evil/src/Thing.cs' -AllowedPaths @('src/Evil/src/Thing.cs') } |
+            Should -Throw -ExpectedMessage '*outside the established product source directories*'
+    }
+
+    It 'matches product roots case-sensitively' {
+        { Assert-ReplicationFixPath -Path 'src/controls/src/Thing.cs' -AllowedPaths @('src/controls/src/Thing.cs') } |
+            Should -Throw -ExpectedMessage '*outside the established product source directories*'
+    }
+}
+
+Describe 'A disappearance oracle has to witness the appearance it claims ended' {
+    BeforeAll {
+        # Verbatim from kubaflo/maui#506, the PR a reviewer refuted by deleting
+        # the host AutomationId and nothing else. FindElements then matched
+        # nothing, displayedCount never left 0, and the test passed on unfixed
+        # product code.
+        $script:vacuous = @'
+public void CustomBusyIndicatorHidesAfterStopCallback()
+{
+    var navigationStatus = App.WaitForElement("NavigationStatus").GetText();
+    App.Tap("StartWizardButton");
+    App.WaitForElement("WizardPageLoadedLabel");
+    AssertStatus("IndicatorStatus", "IndicatorAttachedAndVisible=True");
+    App.RetryAssert(() =>
+    {
+        var displayedCount = 0;
+        foreach (var indicator in App.FindElements("CustomBusyIndicator"))
+        {
+            if (indicator.IsDisplayed())
+                displayedCount++;
+        }
+
+        Assert.That(
+            displayedCount,
+            Is.Zero,
+            $"Custom busy indicator remained visible after stop callback: observed {displayedCount} displayed native elements.");
+    }, timeout: TimeSpan.FromSeconds(2));
+}
+'@
+    }
+
+    It 'refuses a displayed-count-is-zero claim whose locator is never resolved' {
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $vacuous -Path 'Issue28300.cs' } |
+            Should -Throw -ExpectedMessage '*nothing in the test ever proves*'
+    }
+
+    It 'names the locator it could not find a witness for' {
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $vacuous -Path 'Issue28300.cs' } |
+            Should -Throw -ExpectedMessage '*"CustomBusyIndicator"*'
+    }
+
+    It 'accepts the same oracle once the locator is waited for and shown displayed' {
+        # The remedy the message asks for: the count now falls from a witnessed
+        # non-zero to zero, so breaking the locator fails the wait instead.
+        $remediated = $vacuous -replace 'App\.Tap\("StartWizardButton"\);', (
+            'App.Tap("StartWizardButton");' + [Environment]::NewLine +
+            '    var indicator = App.WaitForElement("CustomBusyIndicator");' + [Environment]::NewLine +
+            '    Assert.That(indicator.IsDisplayed(), Is.True, "visible before stop");')
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $remediated -Path 'Issue28300.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'leaves a plain absence contract alone' {
+        # kubaflo/maui#545 asserts an EmptyView is absent while items exist.
+        # That view must never appear, so no earlier moment could witness it --
+        # and without an IsDisplayed() filter it is not a disappearance claim.
+        $legitimate = @'
+public void EmptyViewHiddenWhileItemsExist()
+{
+    var item = App.WaitForElement("Baboon");
+    Assert.That(item.GetRect().Height, Is.GreaterThan(0));
+    Assert.That(App.FindElements(EmptyViewText), Is.Empty, "The EmptyView must not be present while items exist.");
+}
+'@
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $legitimate -Path 'Issue28023.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'does not read a claim out of a commented-out oracle' {
+        $commented = "// foreach (var x in App.FindElements(`"Ghost`")) { if (x.IsDisplayed()) c++; }" +
+            [Environment]::NewLine + "// Assert.That(c, Is.Zero);"
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $commented -Path 'Issue1.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'ignores a query with no displayed filter and no zero claim' {
+        $unrelated = 'var all = App.FindElements("Row"); Assert.That(all.Count, Is.GreaterThan(3));'
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $unrelated -Path 'Issue2.cs' } |
+            Should -Not -Throw
+    }
+
+    It 'leaves a displayed-count claim alone when it expects elements, not none' {
+        # Same shape as the refuted oracle -- an IsDisplayed() filter over an
+        # unwaited locator -- but it asserts the elements are *there*. That
+        # claim already fails when the locator breaks, so it needs no witness.
+        $expectsPresence = @'
+public void AllRowsAreVisible()
+{
+    var displayedCount = 0;
+    foreach (var row in App.FindElements("Row"))
+    {
+        if (row.IsDisplayed())
+            displayedCount++;
+    }
+    Assert.That(displayedCount, Is.GreaterThan(3), "every row should be visible");
+}
+'@
+        { Assert-ReplicationDisappearanceOracleProvesPresence -Content $expectsPresence -Path 'Issue3.cs' } |
+            Should -Not -Throw
     }
 }

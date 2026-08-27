@@ -15,6 +15,8 @@ param(
     [string]$CandidateManifestPath,
     [Parameter(ParameterSetName = 'Patch')]
     [string]$PatchPath,
+    [Parameter(ParameterSetName = 'Patch')]
+    [string]$FixPatchPath,
     [Parameter(ParameterSetName = 'Commit')]
     [string]$CandidateCommit,
     [Parameter(ParameterSetName = 'Commit')]
@@ -35,12 +37,21 @@ if (-not (Test-Path -LiteralPath $guardValidatorPath -PathType Leaf)) {
 }
 . $guardValidatorPath
 
+$certificationPath = Join-Path $PSScriptRoot 'Get-ReplicationCertification.ps1'
+if (-not (Test-Path -LiteralPath $certificationPath -PathType Leaf)) {
+    throw "Trusted replication certification module is missing: $certificationPath"
+}
+. $certificationPath
+
 $script:ManifestMaxBytes = 64KB
 $script:EvidenceJsonMaxBytes = 64KB
 $script:PatchMaxBytes = 2MB
 $script:CandidateFileMaxBytes = 256KB
 $script:CandidateTotalMaxBytes = 1MB
 $script:CandidateFileMaxCount = 24
+$script:FixPatchMaxBytes = 512KB
+$script:FixFileMaxCount = 8
+$script:FixChangedLineMaxCount = 400
 $script:VerificationArtifactMaxBytes = 2MB
 # Reviewers repeatedly rejected reproductions proved by one execution, so a
 # candidate has to show the same failure in more than one independent run.
@@ -192,6 +203,102 @@ function Read-BoundedUtf8File {
     return $text
 }
 
+function Get-ReplicationManifestPropertyValue {
+    <#
+    .SYNOPSIS
+        Reads a manifest property without tripping StrictMode.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]$Manifest,
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+
+    $property = $Manifest.PSObject.Properties[$Name]
+    if ($property -and $null -ne $property.Value) { return $property.Value }
+    return $null
+}
+
+function Get-ReplicationManifestDisclosure {
+    param(
+        [Parameter(Mandatory = $true)]$Manifest,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [int]$MaximumLength = 300
+    )
+
+    return (ConvertTo-ReplicationDisclosureText `
+        -Value (Get-ReplicationManifestPropertyValue -Manifest $Manifest -Name $Name) `
+        -MaximumLength $MaximumLength)
+}
+
+function Get-ReplicationManifestDisclosureList {
+    param(
+        [Parameter(Mandatory = $true)]$Manifest,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [int]$MaximumLength = 300
+    )
+
+    $value = Get-ReplicationManifestPropertyValue -Manifest $Manifest -Name $Name
+    if ($null -eq $value) { return @() }
+    return @(@($value) |
+        ForEach-Object { ConvertTo-ReplicationDisclosureText -Value $_ -MaximumLength $MaximumLength } |
+        Where-Object { $_ })
+}
+
+function ConvertTo-ReplicationDisclosureText {
+    <#
+    .SYNOPSIS
+        Sanitizes an agent-written disclosure string for display, dropping it
+        rather than throwing when it cannot be made safe.
+
+    .DESCRIPTION
+        The disclosure fields - the root cause, the winning approach, the
+        rejected approaches, the independent review, the try-fix panel - are
+        read by a human and acted on by nothing. They cross the trust boundary
+        like everything else the agent writes, so they must be sanitized; but a
+        disclosure is a courtesy to a reader and must never outrank the fix it
+        describes.
+
+        ConvertTo-BoundedSingleLine throws on text it cannot accept, and four
+        completed runs in this pipeline have already been destroyed by a bound
+        that refused instead of trimming. So this wrapper keeps the same
+        sanitizer and converts its refusal into an empty field: unsafe text is
+        still never emitted, and the run still ships.
+    #>
+    param(
+        [AllowNull()][object]$Value,
+        [int]$MaximumLength = 300
+    )
+
+    if ($Value -isnot [string]) { return '' }
+    if ([string]::IsNullOrWhiteSpace([string]$Value)) { return '' }
+
+    $text = [string]$Value
+
+    # Defanged here as well as at render time. The publisher strips these too,
+    # but this is the trust boundary, and a disclosure that reaches a log on
+    # some other path must not be able to set a pipeline variable.
+    $text = $text -replace '##vso\[[^\]]*\]', ''
+    $text = $text -replace '##\[[^\]]*\]', ''
+    $text = $text -replace '::(?:set-output|add-mask|error|warning|notice)[^\s]*', ''
+
+    # A mention in a pull request body notifies a real person. Nothing in this
+    # text was written by someone entitled to do that, so a plausible mention
+    # becomes a code span, which GitHub renders verbatim and does not link.
+    $text = [regex]::Replace($text, '(?<![\w`])@([A-Za-z0-9][\w-]*)', '`@$1`')
+
+    if ([string]::IsNullOrWhiteSpace($text)) { return '' }
+
+    try {
+        return ConvertTo-BoundedSingleLine `
+            -Value $text `
+            -Context 'Candidate disclosure' `
+            -MaximumLength $MaximumLength `
+            -Prose
+    } catch {
+        return ''
+    }
+}
+
 function Assert-JsonElementBounds {
     param(
         [Parameter(Mandatory = $true)][System.Text.Json.JsonElement]$Element,
@@ -284,7 +391,21 @@ function ConvertFrom-BoundedJson {
         if ($_.Exception.Message -like "$Context*") {
             throw
         }
-        throw "$Context is not valid bounded JSON."
+
+        # Every bound below throws a fixed literal that carries no data from the
+        # document, so the reason is safe to repeat. Collapsing them all into one
+        # generic sentence cost two finished runs and hours of artifact
+        # archaeology to learn that a single string was merely too long.
+        $reason = [string]$_.Exception.Message
+        if ($reason.Length -gt 200) {
+            $reason = $reason.Substring(0, 200)
+        }
+        $reason = ($reason -replace '[^\x20-\x7E]', ' ').Trim()
+        if ([string]::IsNullOrWhiteSpace($reason)) {
+            throw "$Context is not valid bounded JSON."
+        }
+
+        throw "$Context is not valid bounded JSON: $reason"
     } finally {
         if ($null -ne $document) {
             $document.Dispose()
@@ -391,13 +512,31 @@ function ConvertTo-BoundedSingleLine {
         [AllowNull()][object]$Value,
         [Parameter(Mandatory = $true)][string]$Context,
         [int]$MinimumLength = 1,
-        [int]$MaximumLength = 512
+        [int]$MaximumLength = 512,
+        [switch]$Prose
     )
 
     if ($Value -isnot [string]) {
         throw "$Context must be a string."
     }
     $text = [string]$Value
+    if ($Prose) {
+        # Presentation-only text, shown to a reader and acted on by nothing.
+        # Build 15075319 passed every arm and was discarded here because a
+        # model wrote a reproduction step that was too long or spanned a line,
+        # which is the third time in this pipeline that a bound on how text
+        # looks has destroyed the work the text describes.
+        #
+        # Layout is corrected; meaning is still refused. A line break or a tab
+        # becomes a space, the value is trimmed and cut to fit, and everything
+        # below - a genuine control character, a URL, a mention, a logging
+        # directive - still throws, because those change what the text does
+        # rather than how it reads.
+        $text = [regex]::Replace($text, '[\r\n\t]+', ' ').Trim()
+        if ($text.Length -gt $MaximumLength) {
+            $text = $text.Substring(0, [Math]::Max(1, $MaximumLength - 1)).TrimEnd() + '…'
+        }
+    }
     if (
         $text.Length -lt $MinimumLength -or
         $text.Length -gt $MaximumLength -or
@@ -466,7 +605,8 @@ function ConvertTo-NormalizedPlainStep {
     $step = ConvertTo-BoundedSingleLine `
         -Value $Value `
         -Context 'Manifest reproduction step' `
-        -MaximumLength 300
+        -MaximumLength 300 `
+        -Prose
     if (
         $step -match '(?i)\b(?:https?|ftps?|wss?)://' -or
         $step -match '@' -or
@@ -522,15 +662,15 @@ function Get-TestNameFromFilter {
         -MaximumLength 256
 }
 
-function Assert-CandidatePath {
+function Assert-CandidatePathShape {
     param(
         [AllowNull()][object]$Path,
-        [Parameter(Mandatory = $true)][string]$TestType
+        [Parameter(Mandatory = $true)][string]$Context
     )
 
     $candidatePath = ConvertTo-BoundedSingleLine `
         -Value $Path `
-        -Context 'Candidate path' `
+        -Context "$Context path" `
         -MaximumLength 240
     if (
         $candidatePath.StartsWith('/') -or
@@ -540,12 +680,12 @@ function Assert-CandidatePath {
         $candidatePath.Contains('%') -or
         $candidatePath -notmatch '^[A-Za-z0-9._+@()/{}\[\]-]+$'
     ) {
-        throw "Candidate path is absolute, non-normalized, or contains unsafe characters."
+        throw "$Context path is absolute, non-normalized, or contains unsafe characters."
     }
 
     $segments = $candidatePath.Split('/')
     if ($segments.Count -lt 2) {
-        throw 'Candidate path must be repository-relative.'
+        throw "$Context path must be repository-relative."
     }
     foreach ($segment in $segments) {
         if (
@@ -554,12 +694,30 @@ function Assert-CandidatePath {
             $segment.Length -gt 100 -or
             $segment -match '^(?i:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$'
         ) {
-            throw 'Candidate path contains traversal, an empty segment, or a reserved name.'
+            throw "$Context path contains traversal, an empty segment, or a reserved name."
         }
     }
     if ($segments -contains '.git' -or $segments -contains 'bin' -or $segments -contains 'obj') {
-        throw 'Candidate path targets a prohibited repository or build directory.'
+        throw "$Context path targets a prohibited repository or build directory."
     }
+
+    if (
+        $candidatePath -match '(?i)/(?:snapshots?|baselines?)/' -or
+        [System.IO.Path]::GetFileName($candidatePath) -match '(?i)^(?:Directory\.Build|AssemblyInfo|GlobalUsings)\.'
+    ) {
+        throw "$Context path targets generated, baseline, or project infrastructure content."
+    }
+
+    return $candidatePath
+}
+
+function Assert-CandidatePath {
+    param(
+        [AllowNull()][object]$Path,
+        [Parameter(Mandatory = $true)][string]$TestType
+    )
+
+    $candidatePath = Assert-CandidatePathShape -Path $Path -Context 'Candidate'
 
     $extension = [System.IO.Path]::GetExtension($candidatePath).ToLowerInvariant()
     $allowedExtensions = switch ($TestType) {
@@ -589,13 +747,6 @@ function Assert-CandidatePath {
     }
     if (-not $allowed) {
         throw "Candidate path is outside the established $TestType directories."
-    }
-
-    if (
-        $candidatePath -match '(?i)/(?:snapshots?|baselines?)/' -or
-        [System.IO.Path]::GetFileName($candidatePath) -match '(?i)^(?:Directory\.Build|AssemblyInfo|GlobalUsings)\.'
-    ) {
-        throw 'Candidate path targets generated, baseline, or project infrastructure content.'
     }
 
     return $candidatePath
@@ -660,7 +811,16 @@ function Read-ReplicationManifest {
         'reproductionResult', 'reproduction_result',
         'evidenceManifest', 'evidence_manifest',
         'verificationResult', 'verification_result',
-        'patch'
+        'negativeControl', 'negative_control',
+        'patch',
+        'fixFiles', 'fix_files',
+        'fixPatch', 'fix_patch',
+        'fixRootCause', 'fix_root_cause',
+        'fixRegressionLane', 'fix_regression_lane',
+        'fixApproach', 'fix_approach',
+        'fixRejectedApproaches', 'fix_rejected_approaches',
+        'fixPanel', 'fix_panel',
+        'fixIndependentReview', 'fix_independent_review'
     )
     Assert-KnownProperties `
         -Object $manifest `
@@ -1041,6 +1201,60 @@ function Read-ReplicationManifest {
         $proposedFiles.Add($normalizedPath)
     }
 
+    # A fix is optional: a reproduction that reaches trigger-certified without one
+    # is still publishable, and is what every reproduction published before the
+    # fix phase existed looked like. When a fix is claimed, the files it may
+    # touch are pinned here so the patch cannot widen its own scope later.
+    $fixProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('fixFiles', 'fix_files') `
+        -Context 'Candidate manifest'
+    $fixFiles = [System.Collections.Generic.List[string]]::new()
+    if ($fixProperty.Found -and $null -ne $fixProperty.Value) {
+        $rawFix = @($fixProperty.Value)
+        if ($rawFix.Count -gt $script:FixFileMaxCount) {
+            throw "Manifest fix files must contain no more than $($script:FixFileMaxCount) entries."
+        }
+        $seenFix = [System.Collections.Generic.HashSet[string]]::new(
+            [System.StringComparer]::OrdinalIgnoreCase
+        )
+        foreach ($pathValue in $rawFix) {
+            $normalizedFix = Assert-ReplicationFixPath `
+                -Path $pathValue `
+                -AllowedPaths @($pathValue)
+            if (-not $seenFix.Add($normalizedFix)) {
+                throw 'Manifest fix files contain a duplicate path.'
+            }
+            if ($seen.Contains($normalizedFix)) {
+                throw 'Manifest fix files overlap the proposed test files.'
+            }
+            $fixFiles.Add($normalizedFix)
+        }
+    }
+
+    # The gate is handed the fix patch by path, so the manifest's own name for
+    # it is documentation. Pin it anyway: a manifest that claims a fix while
+    # naming some other artifact is describing a run that did not happen, and a
+    # manifest that names a patch while claiming no fix files is the same
+    # mismatch from the other side.
+    $fixPatchProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('fixPatch', 'fix_patch') `
+        -Context 'Candidate manifest'
+    $fixPatchName = if ($fixPatchProperty.Found -and $null -ne $fixPatchProperty.Value) {
+        ConvertTo-BoundedSingleLine `
+            -Value $fixPatchProperty.Value `
+            -Context 'Manifest fix patch path' `
+            -MaximumLength 128
+    } else { '' }
+    if ($fixFiles.Count -gt 0) {
+        if ($fixPatchName -cne 'fix.patch') {
+            throw 'Manifest fix patch path does not match the fixed artifact contract.'
+        }
+    } elseif (-not [string]::IsNullOrWhiteSpace($fixPatchName)) {
+        throw 'Manifest names a fix patch but no fix files.'
+    }
+
     return [pscustomobject]@{
         IssueNumber = $manifestIssue
         Platform = $manifestPlatform
@@ -1053,7 +1267,14 @@ function Read-ReplicationManifest {
         SourceMarker = $sourceMarker
         ReproductionMarker = 'UNCONDITIONAL_REPRODUCTION_TEST'
         ProposedFiles = @($proposedFiles.ToArray() | Sort-Object)
+        FixFiles = @($fixFiles.ToArray() | Sort-Object)
         BaseSha = $baseSha
+        FixRootCause = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRootCause' -MaximumLength 600)
+        FixRegressionLane = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionLane' -MaximumLength 120)
+        FixApproach = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixApproach' -MaximumLength 600)
+        FixRejectedApproaches = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixRejectedApproaches' -MaximumLength 300)
+        FixPanel = @(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixPanel')
+        FixIndependentReview = (Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixIndependentReview')
         PublishedTestType = ConvertTo-PublishedTestType -TestType $testType
         ReproductionSteps = @($reproductionSteps)
         SelectedDeviceId = $selectedDeviceId
@@ -1236,6 +1457,249 @@ function Get-CandidateFilesFromPatch {
 
     if ($files.Count -eq 0) {
         throw 'Candidate patch contains no added test files.'
+    }
+
+    return @($files.ToArray() | Sort-Object Path)
+}
+
+function Assert-ReplicationFixPath {
+    param(
+        [AllowNull()][object]$Path,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$AllowedPaths
+    )
+
+    $fixPath = Assert-CandidatePathShape -Path $Path -Context 'Fix'
+
+    $extension = [System.IO.Path]::GetExtension($fixPath).ToLowerInvariant()
+    if ($extension -notin @('.cs', '.xaml')) {
+        throw 'Fix path has an unexpected extension.'
+    }
+
+    # This list is an allowlist and stays one: it runs in the job that holds the
+    # credential, so "everything not named is allowed" is the wrong shape here.
+    #
+    # It was incomplete, and the omission cost a whole certified run. Build
+    # 15076525 cleared its control, scoped `src/Core/maps/src/...`, ran the
+    # panel, passed the fix arm 3 of 3 and the restoration arm 3 of 3 - a full
+    # four-arm `certified-oracle` - and was thrown away here, because Maps ships
+    # from three roots and none of them was named.
+    #
+    # The orchestrator's own scope validator asks only that a path be under
+    # `src/`, not test code, `.cs` or `.xaml`, and tracked. So the two halves of
+    # one system were reading different rules, and everything between scoping
+    # and publication was spent before they disagreed. A test reads the
+    # repository and fails when a shipping product root is missing from this
+    # list, because a hand-maintained enumeration drifts exactly once and then
+    # costs a certified run.
+    $allowed = $fixPath -cmatch ('^src/(?:' +
+        'Controls/(?:Maps/|Foldable/)?src' +
+        '|Core/(?:maps/)?src' +
+        '|Essentials/src' +
+        '|Graphics/src' +
+        '|BlazorWebView/src' +
+        '|Compatibility/(?:Core|Maps|Material|Android\.AppLinks)/src' +
+        '|SingleProject/Resizetizer/src' +
+        ')/')
+    if (-not $allowed) {
+        throw 'Fix path is outside the established product source directories.'
+    }
+
+    foreach ($segment in $fixPath.Split('/')) {
+        if ($segment -match '(?i)^(?:tests?|.*\.(?:unit|device|ui)?tests?|testcases.*)$') {
+            throw 'Fix path targets test code rather than product code.'
+        }
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($fixPath)
+    if ($fileName -match '(?i)\.(?:g|designer|generated)\.cs$') {
+        throw 'Fix path targets generated source.'
+    }
+
+    if ($fixPath -cnotin $AllowedPaths) {
+        throw 'Fix path is outside the reviewed fix scope.'
+    }
+
+    return $fixPath
+}
+
+function Get-ReplicationFixFilesFromPatch {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$AllowedPaths
+    )
+
+    $patchText = Read-BoundedUtf8File `
+        -Path $Path `
+        -MaximumBytes $script:FixPatchMaxBytes `
+        -Context 'Fix patch'
+    if ($patchText.Contains("`r`n")) {
+        $patchText = $patchText.Replace("`r`n", "`n")
+    }
+    if ($patchText.Contains("`r")) {
+        throw 'Fix patch contains non-normalized line endings.'
+    }
+    if ($patchText -match '(?m)^(?:GIT binary patch|Binary files .* differ|literal \d+|delta \d+)$') {
+        throw 'Fix patch contains a binary patch.'
+    }
+
+    if ($patchText.EndsWith("`n", [System.StringComparison]::Ordinal)) {
+        $patchText = $patchText.Substring(0, $patchText.Length - 1)
+    }
+    if ([string]::IsNullOrWhiteSpace($patchText)) {
+        throw 'Fix patch is empty.'
+    }
+    $lines = $patchText.Split([char]"`n")
+
+    $files = [System.Collections.Generic.List[object]]::new()
+    $seen = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    $totalChangedLines = 0
+    $index = 0
+    while ($index -lt $lines.Count) {
+        $header = $lines[$index]
+        if ($header -notmatch '^diff --git a/(?<old>[^\s]+) b/(?<new>[^\s]+)$') {
+            throw 'Fix patch contains an unexpected preamble or malformed diff header.'
+        }
+        $oldPath = $Matches['old']
+        $newPath = $Matches['new']
+        if ($oldPath -cne $newPath) {
+            throw 'Fix patch contains a rename or path mismatch.'
+        }
+        $fixPath = Assert-ReplicationFixPath -Path $newPath -AllowedPaths $AllowedPaths
+        if (-not $seen.Add($fixPath)) {
+            throw 'Fix patch contains a duplicate path.'
+        }
+
+        $index++
+        $block = [System.Collections.Generic.List[string]]::new()
+        while ($index -lt $lines.Count -and -not $lines[$index].StartsWith('diff --git ', [System.StringComparison]::Ordinal)) {
+            $block.Add($lines[$index])
+            $index++
+        }
+
+        $hasIndex = $false
+        $hasOldHeader = $false
+        $hasNewHeader = $false
+        $hunkCount = 0
+        $addedLines = 0
+        $removedLines = 0
+        $remainingOld = 0
+        $remainingNew = 0
+        $insideHunk = $false
+
+        for ($blockIndex = 0; $blockIndex -lt $block.Count; $blockIndex++) {
+            $line = $block[$blockIndex]
+            if ($insideHunk -and ($remainingOld -gt 0 -or $remainingNew -gt 0)) {
+                if ($line -ceq '\ No newline at end of file') {
+                    continue
+                }
+                $marker = if ([string]::IsNullOrEmpty($line)) { ' ' } else { $line.Substring(0, 1) }
+                switch ($marker) {
+                    ' ' {
+                        $remainingOld--
+                        $remainingNew--
+                    }
+                    '+' {
+                        $remainingNew--
+                        $addedLines++
+                    }
+                    '-' {
+                        $remainingOld--
+                        $removedLines++
+                    }
+                    default {
+                        throw 'Fix patch contains a malformed hunk body line.'
+                    }
+                }
+                if ($remainingOld -lt 0 -or $remainingNew -lt 0) {
+                    throw 'Fix patch hunk line counts do not match its content.'
+                }
+                continue
+            }
+
+            if ($insideHunk) {
+                $insideHunk = $false
+            }
+
+            if ($line -ceq '\ No newline at end of file') {
+                continue
+            }
+            if ($line -match '^index [0-9a-fA-F]{7,64}\.\.[0-9a-fA-F]{7,64}(?: 100644)?$') {
+                if ($line -match '^index 0{7,64}\.\.') {
+                    throw 'Fix patch adds rather than modifies a file.'
+                }
+                if ($hasIndex) {
+                    throw 'Fix patch repeats its index line.'
+                }
+                $hasIndex = $true
+                continue
+            }
+            if ($line -match '^(?:new file mode|deleted file mode|old mode|new mode|rename from|rename to|copy from|copy to|similarity index|dissimilarity index|Submodule )') {
+                throw 'Fix patch contains an add, delete, rename, copy, mode change, or submodule change.'
+            }
+            if ($line -ceq "--- a/$fixPath") {
+                if ($hasOldHeader) {
+                    throw 'Fix patch repeats its source header.'
+                }
+                $hasOldHeader = $true
+                continue
+            }
+            if ($line -ceq "+++ b/$fixPath") {
+                if ($hasNewHeader) {
+                    throw 'Fix patch repeats its target header.'
+                }
+                $hasNewHeader = $true
+                continue
+            }
+            if ($line -match '^@@ -(?<oldStart>\d+)(?:,(?<oldCount>\d+))? \+(?<newStart>\d+)(?:,(?<newCount>\d+))? @@(?: .*)?$') {
+                if (-not $hasOldHeader -or -not $hasNewHeader) {
+                    throw 'Fix patch has a hunk before its file headers.'
+                }
+                $hunkCount++
+                $insideHunk = $true
+                $remainingOld = if ($Matches['oldCount']) { [int]$Matches['oldCount'] } else { 1 }
+                $remainingNew = if ($Matches['newCount']) { [int]$Matches['newCount'] } else { 1 }
+                if ($remainingOld -eq 0 -and $remainingNew -eq 0) {
+                    throw 'Fix patch contains an empty hunk.'
+                }
+                continue
+            }
+            if ([string]::IsNullOrEmpty($line) -and $blockIndex -eq ($block.Count - 1)) {
+                continue
+            }
+
+            throw 'Fix patch contains unsupported metadata or a malformed hunk.'
+        }
+
+        if ($remainingOld -gt 0 -or $remainingNew -gt 0) {
+            throw 'Fix patch hunk line counts do not match its content.'
+        }
+        if (-not $hasIndex -or -not $hasOldHeader -or -not $hasNewHeader -or $hunkCount -eq 0) {
+            throw 'Fix patch does not describe a complete modification to a tracked file.'
+        }
+        if (($addedLines + $removedLines) -eq 0) {
+            throw 'Fix patch changes no lines.'
+        }
+
+        $totalChangedLines += $addedLines + $removedLines
+        if ($totalChangedLines -gt $script:FixChangedLineMaxCount) {
+            throw 'Fix patch changes too many lines.'
+        }
+        if ($files.Count -ge $script:FixFileMaxCount) {
+            throw 'Fix patch modifies too many files.'
+        }
+
+        $files.Add([pscustomobject]@{
+            Path = $fixPath
+            AddedLines = $addedLines
+            RemovedLines = $removedLines
+            HunkCount = $hunkCount
+        })
+    }
+
+    if ($files.Count -eq 0) {
+        throw 'Fix patch contains no modified product files.'
     }
 
     return @($files.ToArray() | Sort-Object Path)
@@ -1504,6 +1968,25 @@ function Assert-ManifestMatchesCandidateFiles {
     }
 }
 
+function Assert-ReplicationFixPathsExist {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Paths
+    )
+
+    $repositoryPath = [System.IO.Path]::GetFullPath($Repository)
+    foreach ($path in $Paths) {
+        $fullPath = Assert-PathWithinRoot `
+            -Path (Join-Path $repositoryPath $path) `
+            -Root $repositoryPath `
+            -Context 'Fix patch path'
+        if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+            throw 'Fix patch modifies a file that does not exist in the trusted checkout.'
+        }
+        Assert-NoLinkInExistingPath -Path $fullPath
+    }
+}
+
 function Assert-PatchCandidatePathsAreNew {
     param(
         [Parameter(Mandatory = $true)][string]$Repository,
@@ -1573,6 +2056,9 @@ function Assert-SourceTextIsSafe {
         Assert-ReplicationGestureTravel `
             -Content $normalized `
             -Path $Path
+        Assert-ReplicationProbeGeometryIsMeasured `
+            -Content $normalized `
+            -Path $Path
         Assert-ReplicationGestureIsSynchronized `
             -Content $normalized `
             -Path $Path
@@ -1600,11 +2086,15 @@ function Assert-SourceTextIsSafe {
             -RepositoryRoot $RepositoryRoot
         Assert-ReplicationEnvironmentGateSkips `
             -Content $normalized `
-            -Path $Path
+            -Path $Path `
+            -TestType ([string]$Manifest.TestType)
         Assert-ReplicationPlatformViewIdentity `
             -Content $normalized `
             -Path $Path
         Assert-ReplicationVerdictIsNotSelfAnnounced `
+            -Content $normalized `
+            -Path $Path
+        Assert-ReplicationDisappearanceOracleProvesPresence `
             -Content $normalized `
             -Path $Path
     }
@@ -1675,6 +2165,30 @@ function Assert-ReplicationCandidateSources {
             ) {
                 $deviceTestIsSelectable = $true
             }
+            if ($Manifest.TestType -ceq 'DeviceTest') {
+                # A second category does not merely dilute the selector, it
+                # inverts it: "Category=Issue<N>" is implemented by excluding
+                # every other TestCategory field, so the conventional category
+                # this test also carries lands in the excluded list and the
+                # test is skipped. Publishing that selector ships a
+                # reproduction nobody can run.
+                $categoryConflict = Assert-ReplicationDeviceCategoryIsExclusive `
+                    -Content $file.Content `
+                    -Path $file.Path `
+                    -Issue ([int]$Manifest.IssueNumber) `
+                    -Platform ([string]$Manifest.Platform)
+                if ($categoryConflict) {
+                    throw (
+                        "Candidate device test '$($file.Path)' declares " +
+                        "[Category($categoryConflict)] alongside " +
+                        "[Category(`"Issue$($Manifest.IssueNumber)`")]. On " +
+                        "$($Manifest.Platform) the runner implements " +
+                        '"Category=X" by excluding every other TestCategory ' +
+                        'field, so that conventional category is excluded and ' +
+                        'the test is skipped. Declare the issue-keyed ' +
+                        'category on its own.')
+                }
+            }
         }
         Assert-SourceTextIsSafe `
             -Content $file.Content `
@@ -1688,6 +2202,7 @@ function Assert-ReplicationCandidateSources {
     $candidateContents = @{}
     foreach ($file in $CandidateFiles) { $candidateContents[$file.Path] = $file.Content }
     Assert-ReplicationOracleIsNotInitialState -Files $candidateContents
+    Assert-ReplicationVerdictIsNotComputedByTheApp -Files $candidateContents
 
     if (-not $testAttributeFound) {
         throw 'Candidate files do not add a test method in the expected test project.'
@@ -1702,6 +2217,26 @@ function Assert-ReplicationCandidateSources {
             'token as a category name, so with no test declaring it the run selects no ' +
             'categories and executes nothing.')
     }
+}
+
+function Get-ReportableArtifactName {
+    <#
+        .SYNOPSIS
+        Renders an artifact name safe to embed in a rejection message.
+
+        .DESCRIPTION
+        A rejection that does not say which file it means costs a log download
+        to explain, and several lost reproductions did exactly that. The name
+        comes from the file system, so it is reduced to a conservative
+        character set and bounded before it reaches a message or Markdown.
+    #>
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Name)
+
+    $safe = [regex]::Replace($Name, '[^A-Za-z0-9._-]', '?')
+    if ($safe.Length -gt 100) {
+        $safe = $safe.Substring(0, 100)
+    }
+    return $safe
 }
 
 function Get-ReplicationEvidenceInventory {
@@ -1749,8 +2284,23 @@ function Get-ReplicationEvidenceInventory {
         'verification-console.log',
         'verification-result.json',
         'verify-tests-fail.log',
-        'test-without-fix.log'
+        'test-without-fix.log',
+        'negative-control-baseline.cs',
+        'negative-control-oracle.cs',
+        'negative-control-variant.cs',
+        'negative-control-console.log',
+        'negative-control-result.json',
+        'fix-control-result.json',
+        'fix-control-console.log',
+        'restoration-result.json',
+        'restoration-console.log'
     )
+
+    # The runner's own result document is retained beside the machine result as
+    # evidence, so the gate must expect it. Its extension follows the runner
+    # (.trx for VSTest, .xml for NUnit), which is why this is a pattern rather
+    # than another literal name.
+    $retainedResultPattern = '^verification-test-result\.(?:trx|xml)$'
 
     $mediaItems = @(Get-ChildItem -LiteralPath $mediaRoot -Force)
     if ($mediaItems.Count -gt 20) {
@@ -1762,14 +2312,15 @@ function Get-ReplicationEvidenceInventory {
             (
                 $item.Name -cin $allowedVerificationNames -or
                 $item.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -or
-                $item.Name -cmatch '^verification-console-run-[2-3]\.log$'
+                $item.Name -cmatch '^verification-console-run-[2-3]\.log$' -or
+                $item.Name -cmatch $retainedResultPattern
             )
         )
         if ($item.PSIsContainer) {
             throw 'Evidence directory must not contain nested directories.'
         }
         if ($item.Name -cnotin $allowedMediaNames -and -not $isCombinedVerificationFile) {
-            throw 'Evidence directory contains an unexpected artifact.'
+            throw "Evidence directory contains an unexpected artifact: '$(Get-ReportableArtifactName -Name $item.Name)'."
         }
         $null = Get-SafeRegularFile `
             -Path $item.FullName `
@@ -1800,12 +2351,13 @@ function Get-ReplicationEvidenceInventory {
     $verificationItems = if ($verificationRoot -ceq $mediaRoot) {
         @($mediaItems | Where-Object {
             $_.Name -cin $allowedVerificationNames -or
-            $_.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$'
+            $_.Name -cmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -or
+            $_.Name -cmatch $retainedResultPattern
         })
     } else {
         @(Get-ChildItem -LiteralPath $verificationRoot -Force)
     }
-    if ($verificationItems.Count -gt 20) {
+    if ($verificationItems.Count -gt 26) {
         throw 'Verification directory contains too many artifacts.'
     }
     foreach ($item in $verificationItems) {
@@ -1815,9 +2367,15 @@ function Get-ReplicationEvidenceInventory {
         if (
             $item.Name -cnotin $allowedVerificationNames -and
             $item.Name -cnotmatch '^test-failure-[A-Za-z0-9_.-]+\.log$' -and
-            $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$'
+            $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
+            $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$' -and
+            $item.Name -cnotmatch $retainedResultPattern
         ) {
-            throw 'Verification directory contains an unexpected artifact.'
+            # Naming the file matters: builds 15032408 and 15032410 each
+            # finished a device reproduction and were discarded here, and the
+            # message gave no way to tell which artifact was unexpected. The
+            # name reaches a log, so only a bounded safe subset is echoed.
+            throw "Verification directory contains an unexpected artifact: '$(Get-ReportableArtifactName -Name $item.Name)'."
         }
         $null = Get-SafeRegularFile `
             -Path $item.FullName `
@@ -1832,9 +2390,23 @@ function Get-ReplicationEvidenceInventory {
         -PathType Leaf
     if ($hasMachineResult) {
         foreach ($item in $verificationItems) {
-            if ($item.Name -cnotin @('verification-console.log', 'verification-result.json') -and
-                $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$') {
-                throw 'Machine-readable verification directory contains an unexpected artifact.'
+            if ($item.Name -cnotin @(
+                    'verification-console.log',
+                    'verification-result.json',
+                    'negative-control-baseline.cs',
+                    'negative-control-oracle.cs',
+                    'negative-control-variant.cs',
+                    'negative-control-console.log',
+                    'negative-control-result.json',
+                    'fix-control-result.json',
+                    'fix-control-console.log',
+                    'restoration-result.json',
+                    'restoration-console.log') -and
+                $item.Name -cnotmatch '^verification-console-run-[2-3]\.log$' -and
+                $item.Name -cnotmatch '^negative-control-console-run-[2-3]\.log$' -and
+                $item.Name -cnotmatch $retainedResultPattern) {
+                throw ("Machine-readable verification directory contains an unexpected artifact: " +
+                    "'$(Get-ReportableArtifactName -Name $item.Name)'.")
             }
         }
         if (-not (Test-Path -LiteralPath (Join-Path $verificationRoot 'verification-console.log') -PathType Leaf)) {
@@ -2037,6 +2609,13 @@ function Read-ReplicationEvidenceMetadata {
                 'dimensions',
                 'sha256',
                 'videoBytes',
+                # The recorder writes the decoded frame count so a container
+                # that holds no frames cannot pass as a recording. This
+                # allowlist is strict by design, so omitting the field here
+                # made the publisher reject every run that produced one, at
+                # the last gate and after all the device work: build 15051402
+                # died on "unexpected property 'decodedFrames'".
+                'decodedFrames',
                 'files'
             ) `
             -Context 'Evidence metadata'
@@ -2359,10 +2938,278 @@ function Test-LabeledExactValue {
     return $Text -match "(?m)^\s*(?:[-*]\s*)?(?:$labelPattern)\s*:\s*\x60{0,2}$valuePattern\x60{0,2}\s*$"
 }
 
+function Assert-ReplicationAuthoritativeResult {
+    <#
+        .SYNOPSIS
+            Reads the runner's own result document and requires it to show
+            exactly one executed test, which failed, and which is the test the
+            manifest claims.
+
+        .DESCRIPTION
+            Every other selection check in this gate reads a number some script
+            wrote down. This reads the document the test runner produced.
+
+            It exists because of a specific failure: an XHarness method filter
+            cannot express a display name containing a comma, so a theory test
+            selected nothing at all, the runner reported no count, and a
+            reproduction whose test never executed was published as evidence
+            that it failed. A count that is absent is indistinguishable from a
+            count of zero unless something reads the run itself.
+
+            Three formats appear here. xUnit v2 XML is what the device test
+            lanes emit, TRX is what VSTest emits, and NUnit v3 XML is what the
+            UI test lanes emit. All three are read the same way: find the test
+            elements, require exactly one, require it to have failed, and
+            require its identity to be the manifest's.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$VerificationRoot,
+        [Parameter(Mandatory = $true)][string]$TestClass,
+        [Parameter(Mandatory = $true)][string]$TestMethod
+    )
+
+    $candidates = @(
+        Get-ChildItem -LiteralPath $VerificationRoot -Force -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -cmatch '^verification-test-result\.(?:trx|xml)$' })
+    if ($candidates.Count -eq 0) {
+        throw ('The verification evidence has no authoritative test result document, so ' +
+            'there is no proof the named test executed at all.')
+    }
+    if ($candidates.Count -gt 1) {
+        throw 'The verification evidence has more than one authoritative test result document.'
+    }
+
+    $file = $candidates[0]
+    if ($file.Length -gt 4MB) {
+        throw 'The authoritative test result document exceeds the trusted size limit.'
+    }
+
+    $document = [System.Xml.XmlDocument]::new()
+    # A result document arrives from the untrusted job. Resolving a DTD or an
+    # external entity in it would let it read this machine or hang the gate.
+    $document.XmlResolver = $null
+    $readerSettings = [System.Xml.XmlReaderSettings]::new()
+    $readerSettings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+    $readerSettings.XmlResolver = $null
+    try {
+        $stream = [IO.File]::OpenRead($file.FullName)
+        try {
+            $reader = [System.Xml.XmlReader]::Create($stream, $readerSettings)
+            try { $document.Load($reader) } finally { $reader.Dispose() }
+        } finally { $stream.Dispose() }
+    } catch {
+        throw "The authoritative test result document could not be read as XML: $($_.Exception.Message)"
+    }
+
+    $observed = @(Get-ReplicationAuthoritativeTestEntries -Document $document)
+    if ($observed.Count -eq 0) {
+        throw ('The authoritative test result document records no executed test, so the ' +
+            'reported failure did not come from the named test. This is what a filter that ' +
+            'selects nothing looks like.')
+    }
+    if ($observed.Count -gt 1) {
+        throw ("The authoritative test result document records $($observed.Count) executed " +
+            'tests, so the failure is not attributable to the named test.')
+    }
+
+    $entry = $observed[0]
+    if (-not $entry.Failed) {
+        throw ('The authoritative test result document records the targeted test as ' +
+            "'$($entry.Outcome)', but the reproduction is published as a failing test.")
+    }
+
+    # The runner spells identity differently per format: a bare method name with
+    # a separate type, or one fully qualified string. Requiring both tokens to
+    # appear in the recorded identity covers all three without pinning any one
+    # runner's spelling of the separator.
+    #
+    # 'name' is a display string, not an identity. A test carrying a DisplayName,
+    # or a runner that humanizes PascalCase into words, records a name that no
+    # method-name match can satisfy -- build 15073806 passed all four arms and
+    # was refused for a recorded name of 'Picker ItemsSource Does Not Retain
+    # Picker After Unload'. Where the document records the method itself, that is
+    # the identity and it must match exactly.
+    $shortClass = ($TestClass -split '\.')[-1]
+    if (-not [string]::IsNullOrWhiteSpace($entry.Method)) {
+        if ($entry.Method -cne $TestMethod) {
+            throw ('The authoritative test result document records a test method ' +
+                "'$(Get-ReportableArtifactName -Name $entry.Method)', which is not the method the manifest claims.")
+        }
+    } elseif ($entry.Name -cnotmatch [regex]::Escape($TestMethod)) {
+        throw ('The authoritative test result document records a test named ' +
+            "'$(Get-ReportableArtifactName -Name $entry.Name)', which is not the method the manifest claims.")
+    }
+    if (-not [string]::IsNullOrWhiteSpace($entry.Type)) {
+        if ($entry.Type -cnotmatch [regex]::Escape($shortClass)) {
+            throw ('The authoritative test result document records a test on type ' +
+                "'$(Get-ReportableArtifactName -Name $entry.Type)', which is not the class the manifest claims.")
+        }
+    } elseif ($entry.Name -cnotmatch [regex]::Escape($shortClass)) {
+        throw ('The authoritative test result document records a test named ' +
+            "'$(Get-ReportableArtifactName -Name $entry.Name)', which is not the class the manifest claims.")
+    }
+
+    return [pscustomobject]@{
+        Name = $entry.Name
+        Type = $entry.Type
+        Outcome = $entry.Outcome
+        Document = $file.Name
+    }
+}
+
+function Get-ReplicationAuthoritativeTestEntries {
+    <#
+        .SYNOPSIS
+            Extracts the executed tests from an xUnit, TRX or NUnit document.
+
+        .DESCRIPTION
+            Selection is by local name so that a namespaced document reads the
+            same as a bare one. TRX in particular is always namespaced, and a
+            namespace-sensitive query against it silently returns nothing --
+            which would read as "no test executed" and reject a valid run.
+
+            'Name' is a display string and 'Method' is an identity. xUnit and
+            NUnit both record the runtime method separately, and a test that
+            carries a DisplayName -- or a runner that humanizes PascalCase --
+            makes the two differ. Callers matching a manifest must use Method
+            when it is present; Name is a fallback for formats without one.
+    #>
+    param([Parameter(Mandatory = $true)][System.Xml.XmlDocument]$Document)
+
+    $entries = [System.Collections.Generic.List[object]]::new()
+
+    foreach ($node in @($Document.SelectNodes("//*[local-name()='test']"))) {
+        $result = [string]$node.GetAttribute('result')
+        $entries.Add([pscustomobject]@{
+            Name = [string]$node.GetAttribute('name')
+            Method = [string]$node.GetAttribute('method')
+            Type = [string]$node.GetAttribute('type')
+            Outcome = $result
+            Failed = $result -imatch '^fail'
+        }) | Out-Null
+    }
+    if ($entries.Count -gt 0) { return $entries.ToArray() }
+
+    foreach ($node in @($Document.SelectNodes("//*[local-name()='UnitTestResult']"))) {
+        $outcome = [string]$node.GetAttribute('outcome')
+        $entries.Add([pscustomobject]@{
+            Name = [string]$node.GetAttribute('testName')
+            Method = ''
+            Type = ''
+            Outcome = $outcome
+            Failed = $outcome -imatch '^fail'
+        }) | Out-Null
+    }
+    if ($entries.Count -gt 0) { return $entries.ToArray() }
+
+    foreach ($node in @($Document.SelectNodes("//*[local-name()='test-case']"))) {
+        $result = [string]$node.GetAttribute('result')
+        $fullName = [string]$node.GetAttribute('fullname')
+        if ([string]::IsNullOrWhiteSpace($fullName)) {
+            $fullName = [string]$node.GetAttribute('name')
+        }
+        $entries.Add([pscustomobject]@{
+            Name = $fullName
+            Method = [string]$node.GetAttribute('methodname')
+            Type = [string]$node.GetAttribute('classname')
+            Outcome = $result
+            Failed = $result -imatch '^fail'
+        }) | Out-Null
+    }
+
+    return $entries.ToArray()
+}
+
+function Get-ReplicationFixArmEvidenceFromRoot {
+    param(
+        [Parameter(Mandatory = $true)][string]$VerificationRoot,
+        [switch]$Enabled
+    )
+
+    $evidence = [pscustomobject]@{
+        FixRuns = 0
+        FixPasses = 0
+        RestorationRuns = 0
+        RestorationFailures = 0
+    }
+
+    if (-not $Enabled) {
+        return $evidence
+    }
+
+    $fixPath = Join-Path $VerificationRoot 'fix-control-result.json'
+    $restorationPath = Join-Path $VerificationRoot 'restoration-result.json'
+    $hasFix = Test-Path -LiteralPath $fixPath -PathType Leaf
+    $hasRestoration = Test-Path -LiteralPath $restorationPath -PathType Leaf
+    if (-not $hasFix -and -not $hasRestoration) {
+        return $evidence
+    }
+    # Half a control is not a control. A run that reports the fix turning the
+    # test green without also proving that removing the fix turns it red again
+    # has shown nothing that a rebuild would not have shown.
+    if ($hasFix -xor $hasRestoration) {
+        throw ('A fix arm was reported without its restoration arm, so the green result cannot be ' +
+            'attributed to the fix: ' +
+            [System.IO.Path]::GetFileName($(if ($hasFix) { $restorationPath } else { $fixPath })) +
+            ' is missing.')
+    }
+
+    $fixValue = Read-BoundedUtf8File `
+        -Path $fixPath `
+        -MaximumBytes $script:CandidateFileMaxBytes `
+        -Root $VerificationRoot `
+        -Context 'Fix control result' |
+        ConvertFrom-Json
+    $fixRuns = ConvertTo-PositiveInteger `
+        -Value (Find-AliasedProperty `
+            -Object $fixValue `
+            -Names @('runCount') `
+            -Context 'Fix control' `
+            -Required).Value `
+        -Context 'Fix control run count'
+    $fixPasses = [int](Find-AliasedProperty `
+            -Object $fixValue `
+            -Names @('passCount') `
+            -Context 'Fix control' `
+            -Required).Value
+    if ($fixPasses -lt 0 -or $fixPasses -gt $fixRuns) {
+        throw 'The fix control reports more passes than runs.'
+    }
+
+    $restorationValue = Read-BoundedUtf8File `
+        -Path $restorationPath `
+        -MaximumBytes $script:CandidateFileMaxBytes `
+        -Root $VerificationRoot `
+        -Context 'Restoration result' |
+        ConvertFrom-Json
+    $restorationRuns = ConvertTo-PositiveInteger `
+        -Value (Find-AliasedProperty `
+            -Object $restorationValue `
+            -Names @('runCount') `
+            -Context 'Restoration' `
+            -Required).Value `
+        -Context 'Restoration run count'
+    $restorationFailures = [int](Find-AliasedProperty `
+            -Object $restorationValue `
+            -Names @('failureCount') `
+            -Context 'Restoration' `
+            -Required).Value
+    if ($restorationFailures -lt 0 -or $restorationFailures -gt $restorationRuns) {
+        throw 'The restoration arm reports more failures than runs.'
+    }
+
+    $evidence.FixRuns = $fixRuns
+    $evidence.FixPasses = $fixPasses
+    $evidence.RestorationRuns = $restorationRuns
+    $evidence.RestorationFailures = $restorationFailures
+    return $evidence
+}
+
 function Assert-ReplicationVerificationEvidence {
     param(
         [Parameter(Mandatory = $true)][object]$Inventory,
-        [Parameter(Mandatory = $true)][object]$Manifest
+        [Parameter(Mandatory = $true)][object]$Manifest,
+        [object]$FixArms
     )
 
     if ($Inventory.HasMachineResult) {
@@ -2392,12 +3239,16 @@ function Assert-ReplicationVerificationEvidence {
                 'signatureEquivalent',
                 'effectiveFailureSignature',
                 'infrastructureFailure',
+                'selectionAmbiguous',
+                'executedTestCounts',
+                'retainedResultFiles',
                 'verificationPassed',
                 'requestedRunCount',
                 'completedRunCount',
                 'consistentRuns',
                 'stableFailureMessage',
                 'observedFailureMessages',
+                'negativeControl',
                 'logFiles'
             ) `
             -Context 'Verification result'
@@ -2544,6 +3395,28 @@ function Assert-ReplicationVerificationEvidence {
                 throw "Verification result '$($entry.Key)' does not prove a valid failure-only run."
             }
         }
+        # A run produced by an older trusted verifier carries neither field. Both
+        # are therefore optional, but strict whenever the verifier reported them,
+        # so a build already in flight is not thrown away for a schema addition.
+        $ambiguousProperty = $result.PSObject.Properties['selectionAmbiguous']
+        if ($ambiguousProperty) {
+            if ($ambiguousProperty.Value -isnot [bool] -or $ambiguousProperty.Value) {
+                throw ('Verification result reports an ambiguous test selection, ' +
+                    'so the failure is not attributable to the named test.')
+            }
+        }
+        $executedCountsProperty = $result.PSObject.Properties['executedTestCounts']
+        if ($executedCountsProperty) {
+            foreach ($executedCount in @($executedCountsProperty.Value)) {
+                # A recorded count is the runner's own answer to "how many tests
+                # did this filter select". Anything other than one means the
+                # published failure cannot be attributed to the single test.
+                if ([string]$executedCount -cne '1') {
+                    throw ('Verification result executed ' +
+                        "$executedCount tests instead of exactly one targeted test.")
+                }
+            }
+        }
         $requestedRunCount = ConvertTo-PositiveInteger `
             -Value (Find-AliasedProperty `
                 -Object $result `
@@ -2587,6 +3460,15 @@ function Assert-ReplicationVerificationEvidence {
 
         # Every independent execution has to carry the same proof, otherwise a
         # candidate could pass by failing once and being ignored afterwards.
+        $exactlyOneTestExecuted = $true
+        # The verifier compares the failure messages across runs and records the
+        # answer. Asserting it here instead meant the pull request claimed a
+        # stable message on the gate's authority while the gate had not looked.
+        $stableProperty = Find-AliasedProperty `
+            -Object $result `
+            -Names @('stableFailureMessage', 'stable_failure_message') `
+            -Context 'Verification result'
+        $stableFailureMessage = $stableProperty.Found -and [bool]$stableProperty.Value
         $consoleNames = @('verification-console.log')
         for ($runIndex = 2; $runIndex -le $completedRunCount; $runIndex++) {
             $consoleNames += "verification-console-run-$runIndex.log"
@@ -2628,9 +3510,147 @@ function Assert-ReplicationVerificationEvidence {
             ) {
                 throw 'Verification console does not prove the named test failed as expected.'
             }
+
+            # The pull request claims exactly one test was selected and
+            # executed. That claim was previously hard-coded here, so a run that
+            # dragged in a neighbouring test would still have been published
+            # saying it had not.
+            #
+            # The verifier states the count it acted on in its own summary, and
+            # that line is the only count a UI test run prints: device runs also
+            # echo the counts parsed from the runner's result file, but UI runs
+            # do not, so requiring those would refuse every UI reproduction.
+            # All fifty-two summaries in the collected pipeline logs read
+            # "All 1 test(s)", and every one of the UI runs among them has it.
+            $summary = [regex]::Match($console, '(?i)\bAll\s+(?<count>\d+)\s+test\(s\)\s+FAILED as expected')
+            if (-not $summary.Success -or [int]$summary.Groups['count'].Value -ne 1) {
+                $exactlyOneTestExecuted = $false
+            }
+            # A device run additionally reports what the runner itself counted,
+            # which is stronger than the verifier's own summary. Honour it when
+            # it is there.
+            foreach ($total in [regex]::Matches($console, '(?i)Parsed test results:.*?\bTotal=(?<total>\d+)')) {
+                if ([int]$total.Groups['total'].Value -ne 1) {
+                    $exactlyOneTestExecuted = $false
+                }
+            }
         }
 
         Add-Member -InputObject $result -NotePropertyName 'validatedRunCount' -NotePropertyValue $completedRunCount -Force
+
+        # Grade what was actually established. Everything above proves the named
+        # test failed repeatedly and identically; none of it shows the failure is
+        # caused by the reported defect rather than by something incidental to
+        # the scenario. That distinction is what reviewers kept having to make by
+        # hand, so it is computed here and carried into the pull request.
+        $negativeRuns = 0
+        $negativePasses = 0
+        # The control runs after this verification result is written, so it can
+        # never appear inside it. Reading it there graded every reproduction as
+        # 'no negative control was run', including build 15033161, whose control
+        # passed 3 of 3 on device. Read the artifact the verifier actually
+        # produces for the control instead.
+        $controlResultPath = Join-Path $Inventory.VerificationRoot 'negative-control-result.json'
+        if (Test-Path -LiteralPath $controlResultPath -PathType Leaf) {
+            $controlValue = Read-BoundedUtf8File `
+                -Path $controlResultPath `
+                -MaximumBytes $script:CandidateFileMaxBytes `
+                -Root $Inventory.VerificationRoot `
+                -Context 'Negative control result' |
+                ConvertFrom-Json
+            $negativeRuns = ConvertTo-PositiveInteger `
+                -Value (Find-AliasedProperty `
+                    -Object $controlValue `
+                    -Names @('runCount') `
+                    -Context 'Negative control' `
+                    -Required).Value `
+                -Context 'Negative control run count'
+            $negativePasses = [int](Find-AliasedProperty `
+                    -Object $controlValue `
+                    -Names @('passCount') `
+                    -Context 'Negative control' `
+                    -Required).Value
+
+            if ($negativePasses -gt $negativeRuns) {
+                throw 'The negative control reports more passes than runs.'
+            }
+
+            $baselineSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-baseline.cs'
+            $variantSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-variant.cs'
+            foreach ($required in @($baselineSourcePath, $variantSourcePath)) {
+                if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+                    throw ('A negative control was reported without its source snapshots, so its claim that ' +
+                        'removing the trigger turns the test green cannot be checked: ' +
+                        [System.IO.Path]::GetFileName($required) + '.')
+                }
+            }
+
+            $informativeArguments = @{
+                BaselineSource = Read-BoundedUtf8File `
+                    -Path $baselineSourcePath `
+                    -MaximumBytes $script:CandidateFileMaxBytes `
+                    -Root $Inventory.VerificationRoot `
+                    -Context 'Negative control baseline source'
+                ControlSource = Read-BoundedUtf8File `
+                    -Path $variantSourcePath `
+                    -MaximumBytes $script:CandidateFileMaxBytes `
+                    -Root $Inventory.VerificationRoot `
+                    -Context 'Negative control variant source'
+                TestFilter = $Manifest.TestName
+            }
+
+            # A UI test's control edits the HostApp page and never writes the
+            # test file, so the assertions it must preserve are in a third
+            # snapshot. Read from the page instead, the guard finds no
+            # assertions at all and refuses a control that is correct.
+            $oracleSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-oracle.cs'
+            if (Test-Path -LiteralPath $oracleSourcePath -PathType Leaf) {
+                $oracleSource = Read-BoundedUtf8File `
+                    -Path $oracleSourcePath `
+                    -MaximumBytes $script:CandidateFileMaxBytes `
+                    -Root $Inventory.VerificationRoot `
+                    -Context 'Negative control oracle source'
+                $informativeArguments['OracleBaselineSource'] = $oracleSource
+                $informativeArguments['OracleControlSource'] = $oracleSource
+            }
+
+            Assert-ReplicationNegativeControlIsInformative @informativeArguments
+        }
+
+        # The two arms that turn a reproduction into a regression oracle are read
+        # by the caller, which also decides whether the fix survived. Reading
+        # them here unconditionally would let a run claim 'the fix makes it
+        # green' while publishing no fix at all, which is the one claim nobody
+        # could check from the PR.
+        $arms = if ($FixArms) {
+            $FixArms
+        } else {
+            [pscustomobject]@{ FixRuns = 0; FixPasses = 0; RestorationRuns = 0; RestorationFailures = 0 }
+        }
+
+        $certification = Get-ReplicationCertification -Evidence @{
+            runtimeAvailable       = $true
+            baselineRuns           = $completedRunCount
+            baselineFailures       = $completedRunCount
+            stableFailureMessage   = $stableFailureMessage
+            exactlyOneTestExecuted = $exactlyOneTestExecuted
+            negativeControlRuns    = $negativeRuns
+            negativeControlPasses  = $negativePasses
+            fixControlRuns         = $arms.FixRuns
+            fixControlPasses       = $arms.FixPasses
+            restorationRuns        = $arms.RestorationRuns
+            restorationFailures    = $arms.RestorationFailures
+        } -RequiredRuns $script:VerificationMinimumRunCount
+
+        if (-not $certification.Publish) {
+            throw ('The candidate is graded ' + $certification.Level + ' and is not publishable: ' +
+                (@($certification.Reasons) -join ' '))
+        }
+
+        Add-Member -InputObject $result -NotePropertyName 'certificationLevel' `
+            -NotePropertyValue $certification.Level -Force
+        Add-Member -InputObject $result -NotePropertyName 'certificationSummary' `
+            -NotePropertyValue (Get-ReplicationCertificationSummary -Certification $certification) -Force
         return $result
     }
 
@@ -3041,6 +4061,7 @@ function Invoke-ReplicationCandidateValidation {
         [Parameter(Mandatory = $true)][string]$RepoRoot,
         [Parameter(Mandatory = $true)][string]$CandidateManifestPath,
         [string]$PatchPath,
+        [string]$FixPatchPath,
         [string]$CandidateCommit,
         [string]$BaseCommit,
         [Parameter(Mandatory = $true)][string]$EvidenceDir,
@@ -3134,18 +4155,91 @@ function Invoke-ReplicationCandidateValidation {
             -CandidateFiles $candidateFiles `
             -RepositoryRoot $repoPath
 
+        # The fix, if there is one, is a second artifact validated on its own
+        # terms: modification-only, product paths only, and no wider than the
+        # scope the manifest already committed to.
+        $fixFiles = @()
+        $hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath)
+        if ($hasFixPatch) {
+            if (-not $hasPatch) {
+                throw 'A fix patch may only accompany a patch candidate.'
+            }
+            if (@($manifest.FixFiles).Count -eq 0) {
+                throw 'A fix patch was provided but the manifest names no fix files.'
+            }
+            $fixFiles = @(Get-ReplicationFixFilesFromPatch `
+                -Path $FixPatchPath `
+                -AllowedPaths @($manifest.FixFiles))
+            $patchedPaths = @($fixFiles | ForEach-Object { $_.Path })
+            foreach ($declared in @($manifest.FixFiles)) {
+                if ($declared -cnotin $patchedPaths) {
+                    throw 'The manifest names a fix file the fix patch never modifies.'
+                }
+            }
+            Assert-ReplicationFixPathsExist `
+                -Repository $repoPath `
+                -Paths $patchedPaths
+        } elseif (@($manifest.FixFiles).Count -gt 0) {
+            throw 'The manifest names fix files but no fix patch was provided.'
+        }
+
         if ($manifest.ArtifactContract) {
             Assert-ReplicationExecutionResult `
                 -Directory $EvidenceDir `
                 -Manifest $manifest
         }
         $inventory = Get-ReplicationEvidenceInventory -Directory $EvidenceDir
+
+        # Read the run rather than a summary of it. Every other selection check
+        # here trusts a number some script wrote down, and a number that was
+        # never written is indistinguishable from a run that selected nothing --
+        # which is exactly how a test that never executed was once published as
+        # proof that it failed.
+        if ($manifest.TestType -ceq 'DeviceTest' -and
+            -not [string]::IsNullOrWhiteSpace($manifest.TestClassName) -and
+            -not [string]::IsNullOrWhiteSpace($manifest.TestMethodName)) {
+            $authoritative = Assert-ReplicationAuthoritativeResult `
+                -VerificationRoot $inventory.VerificationRoot `
+                -TestClass $manifest.TestClassName `
+                -TestMethod $manifest.TestMethodName
+            Write-Host ("The runner's own result document records exactly one executed test, " +
+                "'$($authoritative.Name)', which failed.")
+        }
+
+        # A fix whose arms did not hold is discarded here rather than allowed to
+        # drag the reproduction down with it. The grader treats a failed fix arm
+        # as decisive evidence against the test, which is correct when a fix is
+        # published; the right answer to a fix that did not work is to publish
+        # the reproduction alone, exactly as every run before the fix phase did.
+        $fixArms = Get-ReplicationFixArmEvidenceFromRoot `
+            -VerificationRoot $inventory.VerificationRoot `
+            -Enabled:$hasFixPatch
+        if ($hasFixPatch) {
+            $fixOutcome = Get-ReplicationControlOutcome `
+                -Requested $fixArms.FixRuns `
+                -Observed $fixArms.FixPasses `
+                -Required $script:VerificationMinimumRunCount
+            $restorationOutcome = Get-ReplicationControlOutcome `
+                -Requested $fixArms.RestorationRuns `
+                -Observed $fixArms.RestorationFailures `
+                -Required $script:VerificationMinimumRunCount
+            if (-not ($fixOutcome.Attempted -and $fixOutcome.Satisfied -and
+                    $restorationOutcome.Attempted -and $restorationOutcome.Satisfied)) {
+                Write-Host ('The fix did not satisfy both control arms, so it is discarded and the ' +
+                    'reproduction is published on its own.')
+                $hasFixPatch = $false
+                $fixFiles = @()
+                $fixArms = $null
+            }
+        }
+
         $null = Read-ReplicationEvidenceMetadata `
             -Inventory $inventory `
             -Manifest $manifest
         $verificationResult = Assert-ReplicationVerificationEvidence `
             -Inventory $inventory `
-            -Manifest $manifest
+            -Manifest $manifest `
+            -FixArms $fixArms
         if ($manifest.ArtifactContract -and $null -eq $verificationResult) {
             throw 'Verification evidence must include a trusted targeted failure message.'
         }
@@ -3179,9 +4273,68 @@ function Invoke-ReplicationCandidateValidation {
             } else {
                 0
             }
+            certificationLevel = if ($verificationResult) {
+                [string]$verificationResult.certificationLevel
+            } else {
+                'candidate-scenario'
+            }
+            certificationSummary = if ($verificationResult) {
+                [string]$verificationResult.certificationSummary
+            } else {
+                ''
+            }
             reproductionMarker = $manifest.ReproductionMarker
             files = @($manifest.ProposedFiles)
             proposedFiles = @($manifest.ProposedFiles)
+            fixFiles = @($fixFiles | ForEach-Object { $_.Path })
+            fixPatch = if ($hasFixPatch) { 'fix.patch' } else { $null }
+            # Everything the fix phase learned about its own work. Without
+            # these the publisher renders a fix with no root cause, no
+            # approach, and no panel - which is exactly what every fix pull
+            # request in the corpus looked like, because the fields stopped
+            # here and nothing noticed for the feature's entire life.
+            #
+            # Dropped entirely when the fix was discarded above, so a rejected
+            # fix cannot leave its reasoning attached to a reproduction that
+            # ships alone.
+            fixRootCause = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixRootCause -MaximumLength 600
+            } else { '' }
+            fixRegressionLane = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixRegressionLane -MaximumLength 120
+            } else { '' }
+            fixApproach = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixApproach -MaximumLength 600
+            } else { '' }
+            fixRejectedApproaches = if ($hasFixPatch) {
+                @(@($manifest.FixRejectedApproaches) |
+                    ForEach-Object { ConvertTo-ReplicationDisclosureText -Value $_ -MaximumLength 300 } |
+                    Where-Object { $_ } |
+                    Select-Object -First 8)
+            } else { @() }
+            fixPanel = if ($hasFixPatch) {
+                @(@($manifest.FixPanel) | Where-Object { $_ } | ForEach-Object {
+                    [ordered]@{
+                        attempt = [int]($_.attempt)
+                        model = ConvertTo-ReplicationDisclosureText -Value $_.model -MaximumLength 60
+                        result = ConvertTo-ReplicationDisclosureText -Value $_.result -MaximumLength 40
+                        detail = ConvertTo-ReplicationDisclosureText -Value $_.detail -MaximumLength 300
+                        won = [bool]($_.won)
+                    }
+                } | Select-Object -First 10)
+            } else { @() }
+            fixIndependentReview = if ($hasFixPatch -and $manifest.FixIndependentReview) {
+                [ordered]@{
+                    model = ConvertTo-ReplicationDisclosureText -Value $manifest.FixIndependentReview.model -MaximumLength 60
+                    summary = ConvertTo-ReplicationDisclosureText -Value $manifest.FixIndependentReview.summary -MaximumLength 600
+                    findings = @(@($manifest.FixIndependentReview.findings) | Where-Object { $_ } | ForEach-Object {
+                        [ordered]@{
+                            severity = ConvertTo-ReplicationDisclosureText -Value $_.severity -MaximumLength 40
+                            detail = ConvertTo-ReplicationDisclosureText -Value $_.detail -MaximumLength 800
+                        }
+                    } | Where-Object { $_.detail } | Select-Object -First 6)
+                }
+            } else { $null }
             reproductionSteps = @($manifest.ReproductionSteps)
             candidateSource = $candidateSource
             evidence = [ordered]@{
@@ -3207,6 +4360,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         -RepoRoot $RepoRoot `
         -CandidateManifestPath $CandidateManifestPath `
         -PatchPath $PatchPath `
+        -FixPatchPath $FixPatchPath `
         -CandidateCommit $CandidateCommit `
         -BaseCommit $BaseCommit `
         -EvidenceDir $EvidenceDir `

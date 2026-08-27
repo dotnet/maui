@@ -47,11 +47,64 @@ param(
     # Reviewers reject a reproduction proved by a single execution, so the same
     # targeted test is run repeatedly and every run has to fail identically.
     [ValidateRange(1, 3)]
-    [int]$RunCount = 1
+    [int]$RunCount = 1,
+
+    # Runs the same targeted test as a negative control, where the reported
+    # trigger has been removed and the unchanged oracle is therefore expected to
+    # pass. A red test only shows that something is wrong; the control is what
+    # shows the red depends on the reported behaviour rather than on something
+    # incidental to the scenario.
+    [switch]$ExpectPass,
+
+    # The negative control learned this the expensive way: a run that does not
+    # go the way an arm hopes is the arm's evidence, not a reason to stop
+    # measuring. The reproduction still stops early, because the orchestrator
+    # repairs the test and starts again, so repeating a known-red run buys
+    # nothing. A control arm has nothing to repair and its verdict discards work
+    # that is already paid for, so it measures every run it was asked for.
+    [switch]$CompleteAllRuns
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
+
+. (Join-Path $PSScriptRoot 'Get-ReplicationSignatureMatch.ps1')
+
+# The publisher rejects a non-attributive oracle using the message the run
+# actually produced, but it does so after the run is already paid for: builds
+# 15069211 and 15082995 both spent a full device run on issue 36652 and died at
+# the gate. The same question asked here is answerable while repair attempts
+# remain. The guard raises strict mode, which this script does not want applied
+# to code written against 3.0, so the level is restored immediately.
+. (Join-Path $PSScriptRoot 'Assert-ReplicationTestGuard.ps1')
+Set-StrictMode -Version 3.0
+
+function Get-ReplicationControlPassMarker {
+    <#
+        .SYNOPSIS
+        The verifier banners that report a targeted test which ran and passed.
+
+        .DESCRIPTION
+        The failure-only verifier has no success path for a passing test, so it
+        reports one as a rejection - "test(s) PASSED but should FAIL". A negative
+        control wants exactly that rejection, so the two read the same banner
+        rather than each carrying its own copy, which is how the tier-escalation
+        detector previously drifted away from the producer and stopped firing.
+
+        It drifted again. The verifier learned a -Purpose argument, and under
+        'NegativeControl' it prints the honest banner for a control instead:
+        "CONTROL CLEARED ... test(s) PASSED with the trigger removed". The
+        control always passes that argument, so from the moment it was added no
+        cleared control could be recognised as having cleared - every control
+        recorded zero passes and refuted the reproduction it was meant to
+        confirm. Both banners are read here, so neither variant can silently
+        stop matching again.
+    #>
+    return @(
+        'test(s) PASSED with the trigger removed',
+        'test(s) PASSED but should FAIL'
+    )
+}
 
 function Test-ReplicationExpectedFailureSignature {
     param(
@@ -86,81 +139,6 @@ function ConvertTo-NormalizedReplicationSignature {
     }
 
     return ([regex]::Replace($Value, '\s+', ' ')).Trim()
-}
-
-function Get-ReplicationSignatureTokens {
-    <#
-        .SYNOPSIS
-        Reduces a failure message to the words that identify the defect.
-
-        .DESCRIPTION
-        Assertion boilerplate is shared by every failing test, so it cannot say
-        whether two messages describe the same failure. Only the remaining
-        words carry that meaning.
-    #>
-    param([AllowEmptyString()][string]$Value)
-
-    $tokens = [System.Collections.Generic.HashSet[string]]::new(
-        [StringComparer]::Ordinal)
-    if ([string]::IsNullOrWhiteSpace($Value)) {
-        return , $tokens
-    }
-
-    $boilerplate = @(
-        'assert', 'asserted', 'assertion', 'actual', 'equal', 'equals',
-        'error', 'exception', 'expected', 'failed', 'failure', 'false',
-        'from', 'given', 'have', 'message', 'must', 'null', 'result',
-        'should', 'string', 'test', 'that', 'this', 'true', 'value',
-        'values', 'were', 'when', 'with', 'without')
-
-    foreach ($match in [regex]::Matches($Value.ToLowerInvariant(), '[a-z][a-z0-9_.]{3,}')) {
-        $token = $match.Value.Trim('.')
-        if ($token.Length -ge 4 -and $token -notin $boilerplate) {
-            [void]$tokens.Add($token)
-        }
-    }
-
-    # The comma keeps PowerShell from unrolling the set into loose strings.
-    return , $tokens
-}
-
-function Test-ReplicationSignatureEquivalent {
-    <#
-        .SYNOPSIS
-        Decides whether a real failure is the failure the test predicted.
-
-        .DESCRIPTION
-        The trusted verifier already proved the named test failed and the
-        message came from a validated machine-readable result, so a purely
-        textual mismatch is a wording difference rather than a different
-        defect. Rejecting it discards a working reproduction and invites the
-        agent to rewrite a test that was already correct.
-    #>
-    param(
-        [AllowEmptyString()][string]$Declared,
-        [AllowEmptyString()][string]$Observed,
-        [ValidateRange(0.5, 1.0)][double]$MinimumOverlap = 0.6
-    )
-
-    $declaredTokens = Get-ReplicationSignatureTokens -Value $Declared
-    if ($declaredTokens.Count -lt 3) {
-        # Too little meaning to compare; demand the exact declared text.
-        return $false
-    }
-
-    $observedTokens = Get-ReplicationSignatureTokens -Value $Observed
-    if ($observedTokens.Count -eq 0) {
-        return $false
-    }
-
-    $shared = 0
-    foreach ($token in $declaredTokens) {
-        if ($observedTokens.Contains($token)) {
-            $shared++
-        }
-    }
-
-    return ($shared / $declaredTokens.Count) -ge $MinimumOverlap
 }
 
 function Test-ReplicationInfrastructureFailure {
@@ -237,6 +215,48 @@ function ConvertTo-BoundedVerificationFailureMessage {
     return $head + $marker + $Content.Substring($signatureIndex, $tailLength)
 }
 
+function ConvertTo-BoundedComparableFailureMessage {
+    <#
+        .SYNOPSIS
+        Bounds a failure message that is stored for comparison rather than for
+        reading.
+
+        .DESCRIPTION
+        actualFailureMessage learned this bound long ago through
+        ConvertTo-BoundedVerificationFailureMessage; observedFailureMessages and
+        reproductionFailureMessages were added later for the negative-control
+        comparison and never did. The publisher rejects any JSON string over
+        4096 characters, so builds 15084787 and 15087788 - both holding a
+        finished reproduction - were destroyed at the last step by a 7469
+        character entry in an array nobody had bounded.
+
+        Truncation here must stay injective. These values are compared with
+        exact equality to decide whether the control failed for the same reason
+        as the reproduction, and a truncation that made two different messages
+        equal would report an unchanged failure mode and let the control refute
+        a sound reproduction. A digest of the full text is therefore appended,
+        so equal inputs stay equal and different inputs stay different.
+    #>
+    param(
+        [AllowEmptyString()][string]$Value,
+        [ValidateRange(256, 4096)][int]$MaximumLength = 4000
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+    if ($Value.Length -le $MaximumLength) {
+        return $Value
+    }
+
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
+    $digest = ([System.BitConverter]::ToString(
+        [System.Security.Cryptography.SHA256]::HashData($bytes)
+    ) -replace '-', '').Substring(0, 16).ToLowerInvariant()
+    $marker = " ... [truncated; sha256=$digest]"
+    return $Value.Substring(0, $MaximumLength - $marker.Length) + $marker
+}
+
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
 }
@@ -269,7 +289,13 @@ function Invoke-SingleVerificationRun {
             '-TestClass', $TestClass,
             '-TestMethod', $TestMethod,
             '-MachineResultPath', $machineResultPath,
-            '-PRNumber', [string]$IssueNumber
+            '-PRNumber', [string]$IssueNumber,
+            # Tell the verifier what it is being asked to prove. Without this it
+            # prints "VERIFICATION PASSED / This proves the tests correctly
+            # reproduce the bug" during a negative control, where a failing test
+            # means the exact opposite. The decision logic never read that banner,
+            # but a human reading the artifact did.
+            '-Purpose', $(if ($ExpectPass) { 'NegativeControl' } else { 'Reproduction' })
         )
         if (-not [string]::IsNullOrWhiteSpace($TestProject)) {
             $arguments += @('-TestProject', $TestProject)
@@ -318,6 +344,8 @@ function Invoke-SingleVerificationRun {
 
     $verifierPassed = $exitCode -eq 0 -and $combined -match 'VERIFICATION PASSED'
     $actualFailureMessage = ''
+    $executedTestCount = -1
+    $retainedResultFile = ''
     $expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
         "FullyQualifiedName=$TestClass.$TestMethod"
     } else {
@@ -343,11 +371,32 @@ function Invoke-SingleVerificationRun {
                 ([string]$machineResult.actualFailureMessage).Length -le 10000
             ) {
                 $actualFailureMessage = [string]$machineResult.actualFailureMessage
+                # Strict mode turns a missing property into a terminating error,
+                # and the catch below would blank the failure message, so probe
+                # for the optional count instead of dereferencing it.
+                $countProperty = $machineResult.PSObject.Properties['executedTestCount']
+                if ($countProperty -and $null -ne $countProperty.Value) {
+                    $parsedCount = 0
+                    if ([int]::TryParse(
+                            [string]$countProperty.Value,
+                            [ref]$parsedCount)) {
+                        $executedTestCount = $parsedCount
+                    }
+                }
+                $resultFileProperty = $machineResult.PSObject.Properties['resultFile']
+                if ($resultFileProperty -and $resultFileProperty.Value) {
+                    $retainedResultFile = [string]$resultFileProperty.Value
+                }
             }
         } catch {
             $actualFailureMessage = ''
+        } finally {
+            # This intermediate file lives in the directory the credential-free
+            # gate inspects, and that gate rejects any artifact it does not
+            # expect. Removing it only on the success path would let a failed
+            # run leave behind a file that destroys the next candidate.
+            Remove-Item -LiteralPath $machineResultPath -Force -ErrorAction SilentlyContinue
         }
-        Remove-Item -LiteralPath $machineResultPath -Force
     }
 
     $signatureMatched = Test-ReplicationExpectedFailureSignature `
@@ -365,6 +414,25 @@ function Invoke-SingleVerificationRun {
     }
     $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
 
+    # The evidence claim is "this one test fails". A contains-style filter can
+    # select several tests, and a run where two tests executed cannot tell us
+    # which one produced the failure, so the selection is not proof of anything.
+    $selectionAmbiguous = $executedTestCount -gt 1
+    if ($selectionAmbiguous) {
+        Write-Host ("The targeted filter selected $executedTestCount tests, so the " +
+            'failure cannot be attributed to the named test. Narrow the filter to ' +
+            'select exactly one test.')
+    }
+
+    # A control run is only informative when the test actually executed and
+    # reported a pass. An empty log, a crashed runner or a build break also
+    # "did not fail", and treating those as a passing control would certify the
+    # very reproductions that never ran.
+    $testPassed = (-not $infrastructureFailure) -and
+        @(Get-ReplicationControlPassMarker | Where-Object {
+            $combined.Contains($_, [StringComparison]::Ordinal)
+        }).Count -gt 0
+
     return [pscustomobject]@{
         Run = $Run
         ExitCode = $exitCode
@@ -372,8 +440,13 @@ function Invoke-SingleVerificationRun {
         SignatureMatched = $signatureMatched
         SignatureEquivalent = $signatureEquivalent
         InfrastructureFailure = $infrastructureFailure
+        SelectionAmbiguous = $selectionAmbiguous
+        ExecutedTestCount = $executedTestCount
+        RetainedResultFile = $retainedResultFile
+        TestPassed = $testPassed
         ActualFailureMessage = $actualFailureMessage
-        Passed = $verifierPassed -and $signatureEquivalent -and -not $infrastructureFailure
+        Passed = $verifierPassed -and $signatureEquivalent -and
+            -not $infrastructureFailure -and -not $selectionAmbiguous
         LogFiles = @($runLogs | Sort-Object -Unique)
     }
 }
@@ -439,20 +512,183 @@ function Test-ReplicationFailureMessagesAreStable {
     return $distinct.Count -eq 1
 }
 
+function Test-ReplicationControlFailureModeChanged {
+    <#
+        .SYNOPSIS
+        Reports a negative control that failed for a reason the reproduction
+        never observed.
+
+        .DESCRIPTION
+        A control only refutes a reproduction when it stays red for the *same*
+        reason. If the edit meant to remove the trigger also removed the element
+        the oracle locates, the control fails for an unrelated cause and says
+        nothing about attribution.
+
+        Reporting that as a refutation is the most expensive mistake available
+        here, because it discards a reproduction whose device work and evidence
+        are already paid for. When either side is unknown the answer is 'not
+        changed', so a missing measurement never manufactures a verdict.
+    #>
+    param(
+        [Parameter(Mandatory)][AllowNull()][AllowEmptyCollection()][AllowEmptyString()]
+        [string[]]$ControlMessages,
+        [Parameter(Mandatory)][AllowNull()][AllowEmptyCollection()][AllowEmptyString()]
+        [string[]]$ReproductionMessages
+    )
+
+    $control = @(@($ControlMessages) | Where-Object { $_ })
+    $reproduction = @(@($ReproductionMessages) | Where-Object { $_ })
+    if ($control.Count -eq 0 -or $reproduction.Count -eq 0) {
+        return $false
+    }
+
+    $shared = @($control | Where-Object { $reproduction -contains $_ })
+    return $shared.Count -eq 0
+}
+
 $runOutcomes = New-Object 'System.Collections.Generic.List[object]'
 for ($run = 1; $run -le $RunCount; $run++) {
+    # The control shares the reproduction's output directory so the gate can
+    # compare them, so it must never reuse the reproduction's console names or
+    # it would overwrite the very evidence it is meant to corroborate.
+    $consolePrefix = if ($ExpectPass) { 'negative-control-console' } else { 'verification-console' }
     $consoleLog = if ($run -eq 1) {
-        Join-Path $OutputDirectory 'verification-console.log'
+        Join-Path $OutputDirectory "$consolePrefix.log"
     } else {
-        Join-Path $OutputDirectory "verification-console-run-$run.log"
+        Join-Path $OutputDirectory "$consolePrefix-run-$run.log"
     }
     $outcome = Invoke-SingleVerificationRun -Run $run -ConsoleLog $consoleLog
     $runOutcomes.Add($outcome)
-    if (-not $outcome.Passed) {
+    $runSucceeded = if ($ExpectPass) { $outcome.TestPassed } else { $outcome.Passed }
+    if (-not $runSucceeded -and -not $ExpectPass -and -not $CompleteAllRuns) {
         # Repeating a run that already failed only wastes device time; the
         # orchestrator repairs the test and verifies again from scratch.
         break
     }
+    if (-not $runSucceeded) {
+        # A red control is the one result this loop must NOT stop on. Stopping
+        # here leaves a single sample, and that single sample is then used to
+        # refute the reproduction, which is the most destructive verdict the
+        # pipeline can reach: the device work and the recorded evidence are
+        # already spent. A verdict that expensive has to be measured across
+        # every requested run, so the control keeps going and lets the grading
+        # below tell a repeatedly red control apart from a flaky one.
+        continue
+    }
+}
+
+if ($ExpectPass) {
+    # The control shares the reproduction's oracle, so it must never be graded
+    # on the expected failure signature: it is expected to produce no failure at
+    # all. Report only how many control runs completed and how many observed the
+    # test pass, and let the credential-free gate decide what that proves.
+    $controlRuns = $runOutcomes.Count
+    $controlPasses = @($runOutcomes | Where-Object { $_.TestPassed }).Count
+    $controlInfrastructureFailure = @($runOutcomes |
+        Where-Object { $_.InfrastructureFailure }).Count -gt 0
+
+    $controlFailureMessages = @($runOutcomes |
+        Where-Object { -not $_.TestPassed } |
+        ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
+        Where-Object { $_ } |
+        ForEach-Object { ConvertTo-BoundedComparableFailureMessage -Value $_ } |
+        Sort-Object -Unique)
+
+    # A control that stays red only refutes the reproduction when it stays red
+    # for the *same* reason. If removing the trigger also removed the element
+    # the oracle looks for, or broke the scene some other way, the run failed
+    # for a reason the reproduction never observed and says nothing about
+    # attribution. Treating that as a refutation silently discards sound
+    # reproductions, so the two cases are separated here.
+    $reproductionMessages = @()
+    $reproductionResultPath = Join-Path $OutputDirectory 'verification-result.json'
+    if (Test-Path -LiteralPath $reproductionResultPath -PathType Leaf) {
+        try {
+            $reproductionResult = Get-Content -LiteralPath $reproductionResultPath -Raw |
+                ConvertFrom-Json
+            $reproductionMessages = @($reproductionResult.observedFailureMessages |
+                Where-Object { $_ } |
+                ForEach-Object { ConvertTo-BoundedComparableFailureMessage -Value ([string]$_) })
+        } catch {
+            $reproductionMessages = @()
+        }
+    }
+
+    $failureModeChanged = Test-ReplicationControlFailureModeChanged `
+        -ControlMessages $controlFailureMessages `
+        -ReproductionMessages $reproductionMessages
+
+    $controlResult = [ordered]@{
+        schemaVersion = 1
+        issueNumber = $IssueNumber
+        platform = $Platform
+        testType = $TestType
+        testFilter = $TestFilter
+        testClass = $TestClass
+        testMethod = $TestMethod
+        requestedRunCount = $RunCount
+        runCount = $controlRuns
+        passCount = $controlPasses
+        infrastructureFailure = $controlInfrastructureFailure
+        observedFailureMessages = @($controlFailureMessages)
+        reproductionFailureMessages = @($reproductionMessages)
+        failureModeChanged = $failureModeChanged
+        logFiles = @($runOutcomes | ForEach-Object { $_.LogFiles } | Sort-Object -Unique)
+    }
+    $controlPath = Join-Path $OutputDirectory 'negative-control-result.json'
+    $controlResult | ConvertTo-Json -Depth 10 |
+        Set-Content -LiteralPath $controlPath -Encoding utf8NoBOM
+
+    Write-Host ("Negative control observed the test pass in $controlPasses of " +
+        "$controlRuns run(s); requested $RunCount.")
+
+    if ($controlInfrastructureFailure) {
+        throw ('The negative control failed for build or infrastructure reasons, so it cannot ' +
+            'show that removing the reported trigger turns the test green.')
+    }
+    if ($failureModeChanged) {
+        Write-Host ('Negative control failure mode: ' +
+            ($controlFailureMessages -join ' | '))
+        Write-Host ('Reproduction failure mode: ' + ($reproductionMessages -join ' | '))
+        throw ('The negative control changed the failure mode instead of removing the trigger: ' +
+            'it failed for a reason the reproduction never observed, so it cannot show whether ' +
+            'the reproduction depends on the reported trigger.')
+    }
+    if ($controlRuns -ne $RunCount) {
+        # Unreachable while the loop above runs every control run, and kept
+        # deliberately: it is the net under that loop. If an early exit is ever
+        # reintroduced, this turns the failure into a loud unmeasured verdict
+        # instead of a silent refutation drawn from one sample, which is how 43
+        # sound reproductions were destroyed in a single wave.
+        throw ("The negative control completed only $controlRuns of $RunCount run(s), so how the " +
+            'test behaves without the reported trigger was never measured. An unfinished control ' +
+            'cannot show whether the reproduction depends on that trigger.')
+    }
+    if ($controlPasses -gt 0 -and $controlPasses -lt $RunCount) {
+        throw ("The negative control is inconsistent: it passed in $controlPasses of " +
+            "$controlRuns run(s). A control that changes its mind between identical runs " +
+            'measures flakiness rather than attribution, so it can neither confirm nor ' +
+            'refute the reproduction.')
+    }
+    if ($controlPasses -ne $RunCount) {
+        if ($controlFailureMessages.Count -eq 0 -or $reproductionMessages.Count -eq 0) {
+            # A control only refutes when it stayed red for the *same* reason,
+            # and that comparison needs both sides. With either side missing -
+            # an unsupported runner, an unparsed result document - the reason is
+            # unknown, and the failure-mode check answers 'not changed' for a
+            # comparison it could not make, which lands here. Refuting on that
+            # is an absent measurement destroying a paid-for reproduction, so it
+            # is reported as no comparable failure message instead.
+            throw ("The negative control stayed red in all $controlRuns run(s), but " +
+                'no comparable failure message was recorded on both sides, so whether it ' +
+                'failed for the same reason as the reproduction was never measured. An ' +
+                'unattributable control can neither confirm nor refute the reproduction.')
+        }
+        throw ("The negative control was expected to pass in all $RunCount run(s) but passed in " +
+            "$controlPasses of $controlRuns. The reproduction's failure therefore does not depend " +
+            'on the reported trigger alone.')
+    }
+    return
 }
 
 $firstOutcome = $runOutcomes[0]
@@ -463,6 +699,15 @@ $verifierPassed = @($runOutcomes | Where-Object { -not $_.VerifierPassed }).Coun
 $signatureMatched = @($runOutcomes | Where-Object { -not $_.SignatureMatched }).Count -eq 0
 $signatureEquivalent = @($runOutcomes | Where-Object { -not $_.SignatureEquivalent }).Count -eq 0
 $infrastructureFailure = @($runOutcomes | Where-Object { $_.InfrastructureFailure }).Count -gt 0
+$selectionAmbiguous = @($runOutcomes | Where-Object { $_.SelectionAmbiguous }).Count -gt 0
+$executedTestCounts = @($runOutcomes |
+    Where-Object { $_.ExecutedTestCount -ge 0 } |
+    ForEach-Object { [int]$_.ExecutedTestCount } |
+    Sort-Object -Unique)
+$retainedResultFiles = @($runOutcomes |
+    ForEach-Object { [string]$_.RetainedResultFile } |
+    Where-Object { $_ } |
+    Sort-Object -Unique)
 $nonZeroExitCodes = @($runOutcomes | Where-Object { $_.ExitCode -ne 0 })
 $exitCode = if ($nonZeroExitCodes.Count -gt 0) { [int]$nonZeroExitCodes[0].ExitCode } else { 0 }
 $actualFailureMessage = [string]$firstOutcome.ActualFailureMessage
@@ -472,11 +717,30 @@ $boundedFailureMessage = ConvertTo-BoundedVerificationFailureMessage `
     -Content $actualFailureMessage `
     -Signature $ExpectedFailureSignature
 $stableFailureMessage = Test-ReplicationFailureMessagesAreStable -Outcomes $runOutcomes.ToArray()
+
+# Asked of the message the run really produced, not the one the agent declared.
+# The declared signature was already screened at proposal time; a test can still
+# pass that screen and then fail for a harness or environment reason that no
+# product fix would ever turn green. A negative control is not run for the fix
+# oracle, where an empty message means the run passed as intended.
+$nonFalsifiableOracle = ''
+if (-not $ExpectPass -and -not [string]::IsNullOrWhiteSpace($actualFailureMessage)) {
+    try {
+        Assert-ReplicationOracleIsFalsifiable `
+            -ExpectedFailureSignature $actualFailureMessage `
+            -TestFilter $TestFilter
+    } catch {
+        $nonFalsifiableOracle = [string]$_.Exception.Message
+    }
+}
+
 $verificationPassed = $verifierPassed -and
     $signatureEquivalent -and
     -not $infrastructureFailure -and
+    -not $selectionAmbiguous -and
     $consistentRuns -and
-    $stableFailureMessage
+    $stableFailureMessage -and
+    -not $nonFalsifiableOracle
 
 # The declared signature is the agent's prediction; the observed message came
 # from a validated machine-readable verifier result. Publish what actually
@@ -508,6 +772,9 @@ $result = [ordered]@{
     signatureEquivalent = $signatureEquivalent
     effectiveFailureSignature = $effectiveFailureSignature
     infrastructureFailure = $infrastructureFailure
+    selectionAmbiguous = $selectionAmbiguous
+    executedTestCounts = @($executedTestCounts)
+    retainedResultFiles = @($retainedResultFiles)
     verificationPassed = $verificationPassed
     requestedRunCount = $RunCount
     completedRunCount = $completedRuns
@@ -516,12 +783,26 @@ $result = [ordered]@{
     observedFailureMessages = @($runOutcomes |
         ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
         Where-Object { $_ } |
+        ForEach-Object { ConvertTo-BoundedComparableFailureMessage -Value $_ } |
         Sort-Object -Unique)
     logFiles = @($candidateLogs)
 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8NoBOM
 
 if (-not $verificationPassed) {
+    if ($selectionAmbiguous) {
+        # A summary of booleans would send the agent hunting for a build or
+        # signature problem, so name the one thing that has to change.
+        $rendered = if ($executedTestCounts.Count -gt 0) {
+            ($executedTestCounts -join ' and ')
+        } else {
+            'several'
+        }
+        throw ("The run executed $rendered tests, so the failure cannot be " +
+            'attributed to the named test. Give the reproduction test a unique ' +
+            'name that no other test name contains so the runner selects ' +
+            'exactly one test.')
+    }
     if (-not $stableFailureMessage -and $verifierPassed -and $consistentRuns) {
         $observed = @($runOutcomes |
             ForEach-Object { Get-ReplicationVolatileFreeMessage -Value ([string]$_.ActualFailureMessage) } |
@@ -530,6 +811,13 @@ if (-not $verificationPassed) {
             "deterministic. Independent executions reported: " +
             (($observed | ForEach-Object { "'$_'" }) -join ' and ') +
             ". Assert on a value the defect fixes exactly rather than one that drifts between runs.")
+    }
+    if ($nonFalsifiableOracle) {
+        # Reported verbatim from the guard, which already names the reason and
+        # says what to assert instead. Reaching the agent here means the repair
+        # attempts that remain can be spent on the oracle rather than the run
+        # being abandoned at the publish gate.
+        throw $nonFalsifiableOracle
     }
     throw ("Replication test verification failed (verifierPassed=$verifierPassed, " +
         "signatureMatched=$signatureMatched, signatureEquivalent=$signatureEquivalent, " +

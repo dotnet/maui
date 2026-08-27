@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -381,6 +381,24 @@ Build FAILED.
         $r.BuildError | Should -BeTrue
         $r.Passed | Should -BeFalse
         $r.Error | Should -Match 'MAUIX2017'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'spends the excerpt budget on the message, not the agent directory' {
+        # Catalyst build 15031426 burned five attempts on the diagnosis
+        # "'TestDevice' could not be found (are you missing a u" because 120 of
+        # the 200 characters went to a path prefix the reader already knows.
+        $log = New-LogFile @"
+Build FAILED.
+/Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue30163.cs(9,20): error CS0246: The type or namespace name 'TestDevice' could not be found (are you missing a using directive or an assembly reference?) [/Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+
+        $r.BuildError | Should -BeTrue
+        $r.Error | Should -Match 'Issue30163\.cs\(9,20\)'
+        $r.Error | Should -Match 'are you missing a using directive or an assembly reference'
+        $r.Error | Should -Not -Match '_work'
+        $r.Error | Should -Not -Match 'csproj'
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -2159,5 +2177,107 @@ Describe 'Get-AutoDetectedTests — PR metadata fallback' {
         } finally {
             Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'The authoritative test result is kept as evidence' {
+    # The reviewer of PR 242 could not check the claim that the named test
+    # failed, because the run published only this script's summary of the
+    # runner's output and discarded the runner's own document.
+    It 'copies the result document next to the machine result and names it' {
+        $resultDir = Join-Path $TestDrive 'verification'
+        New-Item -ItemType Directory -Path $resultDir -Force | Out-Null
+        $sourceTrx = Join-Path $TestDrive 'Issue12345.trx'
+        '<TestRun><Results /></TestRun>' | Set-Content -LiteralPath $sourceTrx
+
+        $script:ReplicationAuthoritativeResultPath = $sourceTrx
+        $MachineResultPath = Join-Path $resultDir 'machine-result.json'
+
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry @{
+                Type = 'UITest'; Filter = 'FullyQualifiedName~Issue12345'
+                Project = 'Controls.TestCases.Shared.Tests'
+                ProjectPath = 'src/x.csproj'; ClassFilter = 'Issue12345'
+                Methods = @('Repro')
+            } `
+            -TestResult @{ Passed = $false; Total = 1 } `
+            -ActualFailureMessage 'expected red but was blue'
+
+        $written = Get-Content -LiteralPath $MachineResultPath -Raw | ConvertFrom-Json
+        $written.resultFile | Should -BeExactly 'verification-test-result.trx'
+        Test-Path -LiteralPath (Join-Path $resultDir 'verification-test-result.trx') |
+            Should -BeTrue
+
+        $script:ReplicationAuthoritativeResultPath = $null
+    }
+
+    It 'reports no retained document when none was authoritative' {
+        $resultDir = Join-Path $TestDrive 'verification-none'
+        New-Item -ItemType Directory -Path $resultDir -Force | Out-Null
+        $script:ReplicationAuthoritativeResultPath = $null
+        $MachineResultPath = Join-Path $resultDir 'machine-result.json'
+
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry @{
+                Type = 'UnitTest'; Filter = 'FullyQualifiedName=A.B'
+                Project = 'P'; ProjectPath = 'p.csproj'; ClassFilter = 'A'
+                Methods = @('B')
+            } `
+            -TestResult @{ Passed = $false; Total = 1 } `
+            -ActualFailureMessage 'boom'
+
+        (Get-Content -LiteralPath $MachineResultPath -Raw |
+            ConvertFrom-Json).resultFile | Should -BeExactly ''
+    }
+}
+
+Describe 'The per-test line knows which control arm it is reporting' {
+    # The banner already refuses to say "PASSED" for a failing negative control,
+    # for the reason its own comment gives: it would tell a reader the exact
+    # opposite of what was measured. The per-test loop a few lines above it was
+    # not given the same treatment, so build 15085903 printed
+    #   [UITest] Issue31059: FAILED (expected)      <- green
+    #   CONTROL DID NOT CLEAR                       <- red
+    # one after the other, and only the second was true.
+    BeforeAll {
+        $script:PerTestBlock = $script:VerifierSource.Substring(
+            $script:VerifierSource.IndexOf('# Show per-test results'),
+            2200)
+    }
+
+    It 'reports a failing negative control as the refutation, not as the expectation' {
+        $script:PerTestBlock | Should -Match 'control did not clear'
+    }
+
+    It 'reports a passing negative control as the expected outcome' {
+        $script:PerTestBlock | Should -Match 'expected with the trigger removed'
+    }
+
+    It 'branches on Purpose for both the failing and the passing case' {
+        # Guarding both halves: a fix applied to only the failing branch leaves a
+        # passing control reported as "PASSED (should fail!)", which is the same
+        # inversion in the other direction.
+        ([regex]::Matches($script:PerTestBlock, "Purpose -eq 'NegativeControl'")).Count |
+            Should -BeGreaterOrEqual 2
+    }
+
+    It 'leaves the reproduction arm wording byte-identical' {
+        # Validate-ReplicationCandidate.Tests.ps1 builds a console fixture
+        # containing this exact string, and the report renderer is deliberately
+        # untouched so existing validators keep reading what they read today.
+        $script:PerTestBlock | Should -Match 'FAILED \u2705 \(expected\)'
+        $script:PerTestBlock | Should -Match 'PASSED \u274c \(should fail!\)'
+    }
+
+    It 'still classifies env and build errors before either verdict' {
+        # An infrastructure failure is neither arm's result, and it has to keep
+        # outranking both so a build break cannot be read as a cleared control.
+        $envAt   = $script:PerTestBlock.IndexOf('ENV ERROR')
+        $buildAt = $script:PerTestBlock.IndexOf('BUILD ERROR')
+        $verdict = $script:PerTestBlock.IndexOf("Purpose -eq 'NegativeControl'")
+        $envAt   | Should -BeGreaterThan 0
+        $buildAt | Should -BeGreaterThan 0
+        $envAt   | Should -BeLessThan $verdict
+        $buildAt | Should -BeLessThan $verdict
     }
 }

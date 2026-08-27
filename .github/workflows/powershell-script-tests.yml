@@ -1,5 +1,4 @@
-# Pester regression gate for reviewer scripts, release-critical helpers, and
-# their coupled pipeline assets.
+# Pester regression gate for `.github/scripts/**` and release-critical helpers.
 #
 # Why this exists: repository automation ships Pester suites for transport
 # gating, release publishing, safe-output expectation reconciliation, milestone
@@ -27,9 +26,9 @@ on:
       - 'eng/pipelines/ci-copilot.yml'
       - 'eng/pipelines/ci-official-release.yml'
       - 'eng/pipelines/ci-official-release.Tests.ps1'
-      - 'eng/pipelines/common/provision.yml'
-      - 'eng/pipelines/common/ui-tests-steps.yml'
-      - 'src/Controls/tests/TestCases.Shared.Tests/UITest.cs'
+      - 'eng/scripts/nuget_release_packages.ps1'
+      - 'eng/scripts/nuget_release_packages.Tests.ps1'
+      - '.github/workflows/powershell-script-tests.yml'
   workflow_dispatch:
 
 concurrency:

@@ -52,8 +52,16 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [int]$PRNumber,
+
+    # A replicate fix exists only as a patch in a fork at the moment it needs
+    # judging: there is no pull request to name it by, and `gh pr diff` cannot
+    # reach it. Supplying the diff directly makes every downstream step - the
+    # bug-fix history walk and the removed-line comparison - reusable unchanged,
+    # because they work from file paths and diff text, not from a PR.
+    [Parameter(Mandatory = $false)]
+    [string]$DiffPath,
 
     [Parameter(Mandatory = $false)]
     [string]$Repo = "dotnet/maui",
@@ -314,6 +322,27 @@ function Get-PRMetadataIfBugFix {
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+# Load the supplied diff before anything reads it. An empty or missing file is
+# refused rather than treated as an empty diff, because an empty diff scores
+# CLEAN - and reporting "no regression risk" for a patch nobody managed to read
+# is the worst answer this script can give.
+$script:SuppliedDiff = $null
+if ($DiffPath) {
+    if (-not (Test-Path -LiteralPath $DiffPath)) {
+        Write-Host "❌ No diff at '$DiffPath'." -ForegroundColor Red
+        exit 2
+    }
+    $script:SuppliedDiff = Get-Content -LiteralPath $DiffPath -Raw
+    if ([string]::IsNullOrWhiteSpace($script:SuppliedDiff)) {
+        Write-Host "❌ The diff at '$DiffPath' is empty." -ForegroundColor Red
+        exit 2
+    }
+}
+elseif ($PRNumber -le 0) {
+    Write-Host "❌ Supply either -PRNumber or -DiffPath." -ForegroundColor Red
+    exit 2
+}
+
 # Validate gh authentication before making any API calls.
 # Silent auth failures would cause every PR lookup to return empty,
 # producing a false CLEAN result for risky PRs.
@@ -330,7 +359,14 @@ Write-Banner "Regression Cross-Reference — PR #$PRNumber"
 # Resolve files
 if (-not $FilePaths -or $FilePaths.Count -eq 0) {
     Write-Host "📂 Auto-detecting implementation files from PR #$PRNumber…" -ForegroundColor Yellow
-    $prFiles = gh pr diff $PRNumber --repo $Repo --name-only 2>$null
+    $prFiles = if ($script:SuppliedDiff) {
+        # `+++ b/<path>` is the unified-diff header the parser below already
+        # relies on, so reading paths from it cannot disagree with the hunks.
+        @([regex]::Matches($script:SuppliedDiff, '(?m)^\+\+\+ b/(.+)$') |
+            ForEach-Object { $_.Groups[1].Value.Trim() } | Sort-Object -Unique)
+    } else {
+        gh pr diff $PRNumber --repo $Repo --name-only 2>$null
+    }
     if (-not $prFiles) {
         Write-Host "❌ Could not get PR diff. Make sure gh is authenticated." -ForegroundColor Red
         exit 2
@@ -355,7 +391,16 @@ if ($FilePaths.Count -eq 0) {
 # Step 1: PR diff (lines removed)
 Write-Host ""
 Write-Host "📝 Reading current PR diff…" -ForegroundColor Yellow
-$prDiff = Get-PRDiffText -Number $PRNumber -Repo $Repo
+$prDiff = if ($script:SuppliedDiff) {
+    # Only here. Get-PRDiffText is also how each historical fix PR's diff is
+    # fetched, and answering with the patch under review there makes every one
+    # of them appear to have added nothing - so no line can ever match and the
+    # script reports CLEAN for a patch that reverts a shipped fix. A false CLEAN
+    # is the worst answer this script can give, and it is silent.
+    $script:SuppliedDiff
+} else {
+    Get-PRDiffText -Number $PRNumber -Repo $Repo
+}
 if (-not $prDiff) {
     Write-Host "❌ Empty PR diff." -ForegroundColor Red
     exit 2
@@ -426,11 +471,27 @@ foreach ($filePath in $FilePaths) {
     # Step 2: recent PRs touching this file
     $sinceDate = (Get-Date).AddMonths(-$MonthsBack).ToString("yyyy-MM-dd")
     if ($gitLogRef) {
-        # `--follow` traces through renames so we don't lose history when a file moves.
-        # `--follow` is single-file only, which matches our per-file loop.
-        $commitLog = git log --oneline --follow --since="$sinceDate" $gitLogRef -- $filePath 2>$null
+        # Deliberately NOT `--follow`. It was here to trace renames, and what it
+        # actually does on this repository is return commits the path never saw:
+        # measured on `main`, `src/Core/src/Platform/iOS/ViewExtensions.cs` and
+        # `src/Core/src/Handlers/TimePicker/TimePickerHandler.MacCatalyst.cs` have
+        # exactly one commit each in a six-month window, and `--follow` reports
+        # the SAME eight for both - a SearchHandler fix, a BindableObject
+        # optimization, a Magick.NET version bump, a RadioButton feature.
+        #
+        # That is not a cosmetic listing problem. Every one of those PRs is then
+        # inspected for lines it ADDED TO THIS FILE, and compared against the
+        # lines the diff under review REMOVED FROM THIS FILE. Both sides must
+        # mean the same path or the comparison is between unrelated code: a
+        # coincidental match is a false REVERT posted as an inline finding, and
+        # the seven wrong PRs crowd out the real one under -MaxRecentPRsPerFile,
+        # which is a false CLEAN.
+        #
+        # The rest of this script keys on the path string throughout, so renamed
+        # history could never have matched except by that coincidence.
+        $commitLog = git log --oneline --since="$sinceDate" $gitLogRef -- $filePath 2>$null
     } else {
-        $commitLog = git log --oneline --follow --since="$sinceDate" --all -- $filePath 2>$null
+        $commitLog = git log --oneline --since="$sinceDate" --all -- $filePath 2>$null
     }
     if (-not $commitLog) {
         Write-Host "  ● No recent commits." -ForegroundColor Green

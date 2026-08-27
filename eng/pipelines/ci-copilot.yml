@@ -34,6 +34,11 @@ parameters:
     type: boolean
     default: false
 
+  - name: SupersedeExisting
+    displayName: 'Replace an existing reproduction pull request for this issue and platform'
+    type: boolean
+    default: false
+
   - name: Platform
     displayName: 'Target Platform'
     type: string
@@ -604,19 +609,21 @@ stages:
               New-Item -ItemType Directory -Path $privateContextDir -Force | Out-Null
               New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -Force | Out-Null
               Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_ROOT]$root"
-              Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $contextDir 'issue-context.json')"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $privateContextDir 'issue-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_PRIVATE_CONTEXT_ROOT]$privateContextDir"
-              $contextArgs = @(
-                '-IssueNumber', ${{ parameters.IssueNumber }},
-                '-Platform', "${{ parameters.Platform }}",
-                '-OutputDir', $privateContextDir,
-                '-Repository', 'dotnet/maui',
-                '-DownloadScreenshots'
-              )
+              # Splatted as a hashtable: an array splat would pass these
+              # positionally and bind the literal '-IssueNumber' to -IssueNumber.
+              $contextArgs = @{
+                IssueNumber = ${{ parameters.IssueNumber }}
+                Platform = "${{ parameters.Platform }}"
+                OutputDir = $privateContextDir
+                Repository = 'dotnet/maui'
+                DownloadScreenshots = $true
+              }
               if ($env:REPLICATION_EVIDENCE_ONLY -eq 'true') {
-                # The publishing credential is dead but the issue is public.
-                $contextArgs += '-AllowAnonymousFallback'
+                # The publishing credential is unavailable but the issue is public.
+                $contextArgs['AllowAnonymousFallback'] = $true
               }
 
               & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
@@ -663,10 +670,17 @@ stages:
                 Write-Host "##vso[task.logissue type=warning]Could not check for an existing reproduction pull request: $($_.Exception.Message)"
               }
 
-              if ($existing) {
+              $supersedeExisting = [bool]::Parse('${{ parameters.SupersedeExisting }}')
+              if ($existing -and -not $supersedeExisting) {
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
                 Write-Host "ISSUE REPLICATION SKIPPED: an open reproduction pull request already covers this issue and platform: $($existing.url)"
+              } elseif ($existing) {
+                # Re-running an already-covered issue is the only way to test a
+                # pipeline change against the reproductions that exercise it.
+                # The existing pull request is not touched here; the publisher
+                # retires it after its replacement is open.
+                Write-Host "An open reproduction pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
               } else {
                 Write-Host "No open reproduction pull request covers this issue and platform yet."
               }
@@ -723,17 +737,74 @@ stages:
               # the refusal belongs here rather than forty minutes downstream.
               try {
                 $contextPath = $env:REPLICATION_CONTEXT_PATH
-                if (-not [string]::IsNullOrWhiteSpace($contextPath) -and (Test-Path -LiteralPath $contextPath)) {
+                if ([string]::IsNullOrWhiteSpace($contextPath) -or -not (Test-Path -LiteralPath $contextPath)) {
+                  # This gate read a path nothing ever wrote from its
+                  # introduction until build 15051047, so it silently approved
+                  # every run it was added to stop. A gate that cannot find its
+                  # evidence has to say so rather than quietly pass.
+                  Write-Host "##vso[task.logissue type=warning]The scope gate could not read the issue context at '$contextPath', so it approved this run without checking."
+                } else {
                   $mismatch = [string](Get-Content -LiteralPath $contextPath -Raw |
                     ConvertFrom-Json).platformMismatch
                   if (-not [string]::IsNullOrWhiteSpace($mismatch)) {
                     Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
                     Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
                     Write-Host "ISSUE REPLICATION SKIPPED: $mismatch"
+                  } else {
+                    Write-Host "Scope gate: the report does not name a platform or scope this run cannot answer."
                   }
                 }
               } catch {
                 Write-Host "##vso[task.logissue type=warning]Could not read the declared platforms: $($_.Exception.Message)"
+              }
+
+              # dotnet/maui merges bug fixes to `inflight/current` and leaves
+              # the issue open until release, so issue state carries no
+              # information here: PR 451 and PR 449 both reproduced, certified
+              # and published a fix for an issue the project had already fixed
+              # nineteen days earlier, and a human reviewer had to find it both
+              # times. Measured over the complete keying population, 37 of 37
+              # issues whose HostApp test case exists upstream and not on the
+              # tree under test are genuinely fixed there.
+              #
+              # This refuses where the publisher's identical cross-reference
+              # only discloses, and the difference is what a refusal costs. Here
+              # nothing has been spent yet; downstream a refusal would destroy a
+              # device run, a reproduction and a video that are already paid for.
+              # The worktree has already been detached to the replication
+              # baseline by this point, and that commit carries the product tree
+              # rather than this pipeline's scripts. Reading the cross-reference
+              # from `$(Build.SourcesDirectory)` therefore finds nothing, warns,
+              # and approves every run it was added to stop - which is exactly
+              # how the platform gate above once failed. The trusted capture is
+              # taken before the checkout, so it is the only copy that survives.
+              try {
+                $upstreamScript = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Get-ReplicationUpstreamFix.ps1'
+                if (-not (Test-Path -LiteralPath $upstreamScript -PathType Leaf)) {
+                  Write-Host "##vso[task.logissue type=warning]The upstream cross-reference is missing at '$upstreamScript', so this run was approved without checking."
+                } else {
+                  . $upstreamScript
+                  # The worktree is the replication baseline, which is the exact
+                  # product tree this run will build, so it answers "do we
+                  # already have this test case" precisely and for free.
+                  $upstreamVerdict = Get-ReplicationUpstreamDuplicateVerdict `
+                    -IssueNumber '${{ parameters.IssueNumber }}' `
+                    -RepositoryRoot "$(Build.SourcesDirectory)"
+                  if ($upstreamVerdict.Verdict -eq 'duplicate') {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: $($upstreamVerdict.Reason)"
+                  } elseif ($upstreamVerdict.Verdict -eq 'unknown') {
+                    # An absent measurement must never render as a finding, in
+                    # either direction: it may not refuse the run, and it may not
+                    # report the run as cleared either.
+                    Write-Host "##vso[task.logissue type=warning]Upstream cross-reference not measured: $($upstreamVerdict.Reason)"
+                  } else {
+                    Write-Host "Upstream cross-reference: $($upstreamVerdict.Reason)"
+                  }
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not cross-reference the upstream branch: $($_.Exception.Message)"
               }
             name: ReplicationDuplicateCheck
             displayName: 'Check for an existing reproduction pull request'
@@ -1039,29 +1110,49 @@ stages:
                 # band-correctly before the gate runs.
                 New-Item -ItemType File -Force -Path (Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads') | Out-Null
               }
+              # Read from the trusted capture, not the worktree. This job
+              # re-checkouts to another commit before this step runs, and that
+              # commit does not carry this resolver, so Build.SourcesDirectory
+              # does not have it by the time it is needed. The trusted copy was
+              # taken from $(Build.SourceVersion) and is immune to the switch.
+              #
+              # Fatal when it will not load. Build 15065790 dot-sourced this by a
+              # relative path, failed to find it, and the catch downgraded that
+              # to a warning. Invoke-BuildTasksWatchdog was then undefined, so the
+              # step built nothing and still exited clean — and five sandbox
+              # builds later failed with 'the required MSBuild tasks are not yet
+              # built'. A step that cannot build must say so rather than
+              # reporting success for work it never did.
+              $resolverPath = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Resolve-BuildShell.ps1'
               try {
-                $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'bash'
-                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
-                $psi.UseShellExecute = $false
-                $proc = [System.Diagnostics.Process]::Start($psi)
+                if (-not (Test-Path -LiteralPath $resolverPath)) {
+                  throw "the file does not exist (working directory is '$((Get-Location).Path)')"
+                }
+                . $resolverPath
               } catch {
-                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
-                & bash -o pipefail -c $buildCommand
-                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $LASTEXITCODE }
-                exit $LASTEXITCODE
-              }
-              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
-                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
-                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
-                Start-Sleep -Seconds 3
+                Write-Host "##[error]Could not load the build shell resolver from '$resolverPath': $($_.Exception.Message)"
                 New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
                 Set-BuildTasksFailed 1
                 exit 1
               }
-              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $proc.ExitCode }
+              $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
+              if ($buildShell) {
+                Write-Host "Build shell: $buildShell"
+              } else {
+                # On a Windows agent the bare name `bash` is the WSL launcher in
+                # System32, which exits 1 without building anything. Running the
+                # build directly is the only way this platform builds at all.
+                Write-Host "##[warning]No POSIX shell on this agent — running dotnet-buildtasks directly and filtering its output in process."
+              }
+              $exitCode = Invoke-BuildTasksWatchdog `
+                -ShellPath $buildShell `
+                -ShellCommand $buildCommand `
+                -DirectFileName 'pwsh' `
+                -DirectArgument @('-NoProfile','-File',(Join-Path "$(Build.SourcesDirectory)" 'build.ps1'),'--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -TimeoutMinutes $timeoutMin
+              if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $exitCode }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue; Remove-Item $btFailMarker -Force -ErrorAction SilentlyContinue }
-              exit $proc.ExitCode
+              exit $exitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
             # NON-BLOCKING for the review path. A failed buildtasks build is most often
@@ -2785,19 +2876,28 @@ stages:
               $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
               Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
-              foreach ($name in @(
-                'Assert-ReplicationTestGuard.ps1',
-                'Get-ReplicationGitHubLogin.ps1',
-                'Validate-ReplicationCandidate.ps1',
-                'Publish-ReplicationOutcome.ps1',
-                'Publish-ReplicationEvidence.ps1',
-                'Publish-ReplicationPR.ps1',
-                'Move-ReplicationPRsToTestingFork.ps1'
+              # Paths are relative to .github/scripts because not every trusted
+              # script lives in shared/. Find-RegressionRisks.ps1 sits one level
+              # up, was therefore never staged, and the PR body's regression
+              # cross-reference silently reported nothing from the day it landed.
+              foreach ($relative in @(
+                'shared/Assert-ReplicationTestGuard.ps1',
+                'shared/Get-ReplicationCertification.ps1',
+                'shared/Get-ReplicationSignatureMatch.ps1',
+                'shared/Get-ReplicationGitHubLogin.ps1',
+                'shared/Get-ReplicationUpstreamFix.ps1',
+                'shared/Validate-ReplicationCandidate.ps1',
+                'shared/Publish-ReplicationOutcome.ps1',
+                'shared/Publish-ReplicationEvidence.ps1',
+                'shared/Publish-ReplicationPR.ps1',
+                'shared/Move-ReplicationPRsToTestingFork.ps1',
+                'Find-RegressionRisks.ps1'
               )) {
-                $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared/$name"
+                $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/$relative"
                 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
                   throw "Trusted publisher script is missing: $source"
                 }
+                $name = Split-Path -Leaf $relative
                 Copy-Item -LiteralPath $source -Destination (Join-Path $trustedRoot $name) -Force
               }
               Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_PUBLISHER_ROOT]$trustedRoot"
@@ -2939,6 +3039,26 @@ stages:
                 exit 0
               }
 
+              $fixPatchPath = Join-Path $artifactRoot "fix.patch"
+              # A fix is optional, and the manifest is the authority on whether one
+              # was certified. A patch on disk the manifest does not name means the
+              # panel wrote it and the task was killed before the manifest could
+              # record it, so the fix phase never finished. That is an absent
+              # measurement, not a malformed candidate: the reproduction publishes
+              # on its own rather than being refused for a contradiction it did not
+              # cause. Build 15102442 lost a certified reproduction exactly that way.
+              $fixPatchArgument = @{}
+              $fixPatchPresent = Test-Path -LiteralPath $fixPatchPath -PathType Leaf
+              # Filtering rather than counting: a missing property is $null, and
+              # @($null).Count is 1, which would read as a named fix file.
+              $manifestFixFiles = @($candidate.fixFiles | Where-Object { $_ })
+              if ($fixPatchPresent -and $manifestFixFiles.Count -gt 0) {
+                $fixPatchArgument['FixPatchPath'] = $fixPatchPath
+                Write-Host "The candidate carries a proposed fix; validating it alongside the test."
+              } elseif ($fixPatchPresent) {
+                Write-Host "A fix patch is present but the manifest names no fix files, so the fix phase did not finish. Publishing the reproduction alone."
+              }
+
               $validation = @(
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
                   -RepoRoot "$(Build.SourcesDirectory)" `
@@ -2947,7 +3067,8 @@ stages:
                   -EvidenceDir $artifactRoot `
                   -IssueNumber ${{ parameters.IssueNumber }} `
                   -Platform "${{ parameters.Platform }}" `
-                  -OutputPath (Join-Path $outputRoot "validated-candidate.json")
+                  -OutputPath (Join-Path $outputRoot "validated-candidate.json") `
+                  @fixPatchArgument
               )
               if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
                 throw "Replication candidate validation did not return one validated result."
@@ -3029,6 +3150,25 @@ stages:
                   throw "Migrating existing reproduction pull requests to the testing fork failed."
                 }
 
+                $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
+                $publishFixArgument = @{}
+                # The validator is the authority on what was validated. Probing the
+                # file here as well let the two consumers disagree: a patch the
+                # validator declined to look at would still be applied and
+                # published as a fix nobody checked. Both now read the same
+                # document. Filtering rather than counting, because a missing
+                # property is $null and @($null).Count is 1.
+                $validatedCandidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" -Raw |
+                  ConvertFrom-Json -Depth 20
+                $validatedFixFiles = @($validatedCandidate.fixFiles | Where-Object { $_ })
+                if ((Test-Path -LiteralPath $publishFixPatch -PathType Leaf) -and
+                    $validatedFixFiles.Count -gt 0) {
+                  $publishFixArgument['FixPatchPath'] = $publishFixPatch
+                }
+                if ([bool]::Parse('${{ parameters.SupersedeExisting }}')) {
+                  $publishFixArgument['SupersedeExisting'] = $true
+                }
+
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
                   -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
                   -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
@@ -3040,7 +3180,8 @@ stages:
                   -TargetOwner "kubaflo" `
                   -TargetRepository "maui" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
-                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" `
+                  @publishFixArgument
                 if ($LASTEXITCODE -ne 0) {
                   throw "Publishing the replication pull request failed."
                 }
@@ -3768,28 +3909,39 @@ stages:
                   try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
                 }
               }
+              # Absolute, and fatal when it will not load; see the gate-stage
+              # copy of this step. A relative dot-source that quietly fails
+              # leaves the watchdog undefined and the step reports success for a
+              # build it never ran.
+              $resolverPath = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Resolve-BuildShell.ps1'
               try {
-                $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'bash'
-                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
-                $psi.UseShellExecute = $false
-                $proc = [System.Diagnostics.Process]::Start($psi)
+                if (-not (Test-Path -LiteralPath $resolverPath)) {
+                  throw "the file does not exist (working directory is '$((Get-Location).Path)')"
+                }
+                . $resolverPath
               } catch {
-                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
-                & bash -o pipefail -c $buildCommand
-                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
-                exit $LASTEXITCODE
-              }
-              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
-                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
-                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
-                Start-Sleep -Seconds 3
+                Write-Host "##[error]Could not load the build shell resolver from '$resolverPath': $($_.Exception.Message)"
                 New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
                 exit 1
               }
-              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
+              $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
+              if ($buildShell) {
+                Write-Host "Build shell: $buildShell"
+              } else {
+                # On a Windows agent the bare name `bash` is the WSL launcher in
+                # System32, which exits 1 without building anything. Running the
+                # build directly is the only way this platform builds at all.
+                Write-Host "##[warning]No POSIX shell on this agent — running dotnet-buildtasks directly and filtering its output in process."
+              }
+              $exitCode = Invoke-BuildTasksWatchdog `
+                -ShellPath $buildShell `
+                -ShellCommand $buildCommand `
+                -DirectFileName 'pwsh' `
+                -DirectArgument @('-NoProfile','-File',(Join-Path "$(Build.SourcesDirectory)" 'build.ps1'),'--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -TimeoutMinutes $timeoutMin
+              if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue }
-              exit $proc.ExitCode
+              exit $exitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
             # Wall-clock watchdog (see the gate-stage copy for the full rationale):

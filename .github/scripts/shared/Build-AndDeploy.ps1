@@ -414,8 +414,103 @@ if ($Platform -eq "android") {
     
     Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
     
-    # MacCatalyst apps run directly on the Mac - no install step needed
-    # The test framework (Appium) will launch the app directly
+    # MacCatalyst apps run directly on the Mac, so there is no install step -
+    # but "no install" is not the same as "nothing to do". The Appium mac2
+    # driver (WebDriverAgentMac) resolves the app through LaunchServices via
+    # the bundleId capability, and a freshly built Catalyst .app has never been
+    # registered there. When the lookup fails, OneTimeSetUp fails for EVERY
+    # test in the run with "The app representing com.microsoft.maui.uitests
+    # could not be found", which reads like a harness outage rather than a
+    # missing registration. Setting MAC_APP_PATH / options.App alone is NOT
+    # sufficient, because the driver still resolves by bundleId first.
+    #
+    # BuildAndRunHostApp.ps1 already documents this and registers the bundle,
+    # but the replication verification path never calls it: across the 22
+    # cached runs that hit this error - every one of them catalyst, and every
+    # one blocked with nothing published - `lsregister` appears zero times.
+    # That is 14% of all cached catalyst runs lost to a missing one-line step.
+    # It is intermittent rather than universal because agents are reused, so a
+    # warm agent can still carry the registration from an earlier run.
+    #
+    # Registration failure is deliberately a warning and not a build failure:
+    # on an agent where the bundle is already registered the run still works,
+    # and turning that into a hard failure would break runs that pass today.
+    $catalystAppPath = $null
+    $searchPath = Split-Path -Parent $ProjectPath
+    $artifactsDir = $null
+    while ($searchPath -and -not $artifactsDir) {
+        $testPath = Join-Path $searchPath "artifacts"
+        if (Test-Path $testPath) { $artifactsDir = $testPath; break }
+        $parent = Split-Path -Parent $searchPath
+        if ($parent -eq $searchPath) { break }
+        $searchPath = $parent
+    }
+
+    if ($artifactsDir) {
+        $catalystAppPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.FullName -match "$Configuration.*$macRid.*$projectName" -and
+                $_.FullName -notmatch "[\\/]obj[\\/]"
+            } |
+            Select-Object -First 1
+    }
+
+    if ($catalystAppPath) {
+        $env:MAC_APP_PATH = $catalystAppPath.FullName
+        Write-Info "MacCatalyst app bundle: $($catalystAppPath.FullName)"
+
+        # Probe both known lsregister locations so a differing framework
+        # symlink layout on any agent macOS version cannot silently skip
+        # registration.
+        $lsregisterCandidates = @(
+            "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        )
+        $lsregister = $lsregisterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($lsregister) {
+            & $lsregister -f $catalystAppPath.FullName 2>&1 | Out-Null
+            # Report the actual result. Claiming success unconditionally is how
+            # a failed registration turns into an unexplained Appium error four
+            # attempts later.
+            if ($LASTEXITCODE -eq 0) {
+                # lsregister exiting 0 only means *an* app was registered. The
+                # mac2 driver resolves by bundleId, so registering the wrong
+                # bundle looks exactly like success here and surfaces four
+                # attempts later as "The app representing <id> could not be
+                # found". Build 15090165 spent a full catalyst run that way with
+                # only Maui.Controls.Sample.Sandbox.app ever registered, and the
+                # console said "Registered MacCatalyst app with LaunchServices".
+                # Reading the identifier back turns that into one honest line.
+                $registeredBundleId = ''
+                $infoPlist = Join-Path $catalystAppPath.FullName 'Contents/Info.plist'
+                if (Test-Path -LiteralPath $infoPlist) {
+                    $registeredBundleId = (& /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' $infoPlist 2>$null)
+                    if ($LASTEXITCODE -ne 0) { $registeredBundleId = '' }
+                }
+                $registeredBundleId = ([string]$registeredBundleId).Trim()
+
+                if ($registeredBundleId) {
+                    Write-Success "Registered MacCatalyst app with LaunchServices: $registeredBundleId"
+                } else {
+                    Write-Success "Registered MacCatalyst app with LaunchServices"
+                    Write-Warn "Could not read CFBundleIdentifier from $infoPlist; the bundle the driver resolves is unverified"
+                }
+
+                if ($BundleId -and $registeredBundleId -and $registeredBundleId -ne $BundleId) {
+                    Write-Warn ("Registered '$registeredBundleId' but the test driver resolves '$BundleId'; " +
+                        "the Appium session will fail with 'The app representing $BundleId " +
+                        "could not be found' until the right bundle is registered.")
+                }
+            } else {
+                Write-Warn "lsregister exited $LASTEXITCODE; the mac2 driver may not resolve the bundle by id"
+            }
+        } else {
+            Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
+        }
+    } else {
+        Write-Warn "Could not locate the built MacCatalyst .app under $artifactsDir; skipping LaunchServices registration"
+    }
+
     Write-Success "MacCatalyst app ready (runs on host Mac)"
     
     #endregion

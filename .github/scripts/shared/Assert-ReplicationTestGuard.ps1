@@ -12,7 +12,7 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'http-client'; Scope = 'code'; Pattern = '(?i)\b(?:HttpClient|HttpMessageHandler|HttpRequestMessage|HttpWebRequest|SocketsHttpHandler|RestClient|GrpcChannel)\b' },
         [pscustomobject]@{ Code = 'network'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Net\b|\b(?:Dns|WebClient|WebRequest|TcpClient|TcpListener|UdpClient|WebSocket|ClientWebSocket|NSUrlSession|NSURLSession)\b|\bSocket\s*[.(]|\bnew\s+\w*Socket\b|\b(?:Java|Android)\s*\.\s*Net\b' },
         [pscustomobject]@{ Code = 'process-start'; Scope = 'code'; Pattern = '\bSystem\s*\.\s*Diagnostics\s*\.\s*Process\b|\bProcess\s*\.\s*(?:Start|GetCurrentProcess|GetProcess|GetProcesses|GetProcessById|EnterDebugMode)\b|\bnew\s+Process\s*[({]|(?i)\b(?:ProcessStartInfo|UseShellExecute|RedirectStandardOutput|WaitForExit|Win32Exception|ManagementObject|NSTask|NSWorkspace)\b' },
-        [pscustomobject]@{ Code = 'reflection'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Reflection\b|\bAssembly\s*\.|\.\s*Assembly\b|\b(?:Activator|AppDomain|MethodInfo|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|InvokeMember|GetMethod|GetProperty|GetField)\b|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
+        [pscustomobject]@{ Code = 'reflection'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Reflection\b|\bAssembly\s*\.|\.\s*Assembly\b|\b(?:Activator|AppDomain|MethodInfo|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|InvokeMember|GetMethod|GetField)\b|(?<!Mapper\s*\.\s*)\bGetProperty\b|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
         [pscustomobject]@{ Code = 'native-code'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Runtime\s*\.\s*InteropServices\b(?!\s*\.\s*COMException\b)|\b(?:DllImport|LibraryImport|GeneratedDllImport|NativeLibrary|UnmanagedCallersOnly|GetDelegateForFunctionPointer|GCHandle)\b|\bMarshal\s*\.|(?-i:\bunsafe\s*[{(]|\bunsafe\s+(?:static|void|partial|class|struct|int|byte|char|fixed)\b|\bstackalloc\b|\bextern\s+(?:static|alias)\b|\bstatic\s+extern\b)' },
         [pscustomobject]@{ Code = 'environment-secrets'; Scope = 'raw'; Pattern = '(?i)\bEnvironment\s*\.|\bEnvironmentVariableTarget\b|\b(?:GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|AZURE_STORAGE_KEY|AZURE_STORAGE_SAS_TOKEN)\b' },
         [pscustomobject]@{ Code = 'device-external-access'; Scope = 'code'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|Preferences)\s*\.|\b(?:HybridWebView|BlazorWebView|UrlWebViewSource|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b' },
@@ -22,7 +22,7 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'remote-url'; Scope = 'raw'; Pattern = '(?i)\b(?:https?|ftps?|wss?|file)\b\s*(?::|["'']\s*\+\s*["'']\s*:)|://' },
         [pscustomobject]@{ Code = 'package-reference'; Scope = 'raw'; Pattern = '(?i)\b(?:PackageReference|PackageDownload|dotnet\s+add\s+package|nuget\s*:|nuget\.exe)\b|#(?:r|load)\b' },
         [pscustomobject]@{ Code = 'obfuscated-source'; Scope = 'raw'; Pattern = '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})' },
-        [pscustomobject]@{ Code = 'verification-spoof'; Scope = 'raw'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|::set-output' },
+        [pscustomobject]@{ Code = 'verification-spoof'; Scope = 'raw'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|##\[|::set-output' },
         [pscustomobject]@{ Code = 'conditional-reproduction'; Scope = 'raw'; Pattern = '\bMAUI_REPRODUCTION_ISSUE\b' },
         [pscustomobject]@{ Code = 'framework-behavior-switch'; Scope = 'raw'; Pattern = '(?i)\bSkipMeasureInvalidatedPropagation\s*=' }
     )
@@ -361,6 +361,24 @@ function Get-ReplicationNonAttributiveOracles {
             # oracle in PR 213.
             Pattern = '(?i)\brequires\b.{0,60}?\b(?:or (?:later|newer|higher)|version \d|simulator|emulator|physical device|a display|network|internet|geometry|orientation|accessibility state|default accessibility)\b'
             Reason = 'a precondition on the environment rather than the reported behavior, so the red it predicts is a lane the test was never meant to run in'
+        },
+        [pscustomobject]@{
+            # PR 242 nominated "expected at least 1 purple icon pixel after
+            # Shell.ForegroundColor Purple". A reviewer rejected it because one
+            # antialiased or contaminated pixel satisfies that threshold, so a
+            # completely wrong rendering turns the test green. A measurement
+            # oracle has to name a share of what it measured, not a single unit.
+            Pattern = '(?i)\b(?:at least\s+(?:1|one)|>=\s*1|>\s*0)\b[^.;]{0,60}?\bpixels?\b'
+            Reason = 'a single pixel, which one antialiased or contaminated pixel satisfies, so a fully wrong rendering would still turn this test green'
+            Guidance = 'Assert a calibrated share of the opaque pixels you measured, such as a minimum fraction of the icon mask, and report the measured counts in the failure message.'
+        },
+        [pscustomobject]@{
+            # The same weak threshold, written with the measurement first.
+            # A camelCase identifier such as purplePixels has no word boundary
+            # before "Pixels", so the leading anchor is deliberately absent.
+            Pattern = '(?i)pixels?\b[^.;]{0,40}?(?:>=\s*1\b(?!\d)|>\s*0\b|at least\s+(?:1|one)\b)'
+            Reason = 'a single pixel, which one antialiased or contaminated pixel satisfies, so a fully wrong rendering would still turn this test green'
+            Guidance = 'Assert a calibrated share of the opaque pixels you measured, such as a minimum fraction of the icon mask, and report the measured counts in the failure message.'
         }
     )
 }
@@ -379,8 +397,13 @@ function Assert-ReplicationOracleIsFalsifiable {
 
     foreach ($oracle in Get-ReplicationNonAttributiveOracles) {
         if ([regex]::IsMatch($signature, $oracle.Pattern)) {
+            $guidance = if ($oracle.PSObject.Properties['Guidance'] -and $oracle.Guidance) {
+                [string]$oracle.Guidance
+            } else {
+                'Assert the reported behavior directly, so that a product fix turns this exact test green.'
+            }
             throw ("The reproduction '$TestFilter' nominates a non-falsifiable oracle: its expected failure is $($oracle.Reason). " +
-                'Assert the reported behavior directly, so that a product fix turns this exact test green.')
+                $guidance)
         }
     }
 }
@@ -616,6 +639,72 @@ function Assert-ReplicationGestureTravel {
                 'Android touch slop alone is around 22 px, so a drag this small is not recognised as a gesture and the test fails the same way whether the product is fixed or broken. ' +
                 'Drag far enough to clear the platform touch slop.')
         }
+    }
+}
+
+function Assert-ReplicationProbeGeometryIsMeasured {
+    <#
+    .SYNOPSIS
+        Refuses a probe point that is computed across axes from requested layout
+        values instead of read from the element's measured bounds.
+
+    .DESCRIPTION
+        PR 265 committed 'var expectedX = border.Height - border.Padding.Left'
+        to probe an initially rotated Border, and three exact-one runs failed
+        red against it. A reviewer then showed the oracle decides nothing: for
+        a correctly start-aligned 170x300 rotated visual the horizontal bounds
+        are roughly -65..235 DIP, so the committed X=288 probe lands outside a
+        *correct* Border as well. A real product fix can leave the probe
+        reporting MISSING, and the reported misplacement can drag the Border
+        across X=288 and report a false green.
+
+        Deriving an X from a Height (or a Y from a Width) is the signature of a
+        hand-rolled rotation guess. The transformed extent of a rotated visual
+        is a measured quantity, so it has to come from the rect the platform
+        actually reports. Reading that rect is allowed and is what the other
+        nine measured pull requests already do; only the cross-axis arithmetic
+        that replaces it is refused.
+
+        The negative control cannot catch this. Removing the trigger moves the
+        visual, so the probe flips green and the control passes while the
+        oracle is still keyed to a coordinate that means nothing.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $code = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    # Only an assignment that names a coordinate is examined. A width computed
+    # from a height is ordinary layout arithmetic and says nothing about where
+    # the test decides to look.
+    $assignments = [regex]::Matches(
+        $code,
+        '(?m)^[^\r\n]*?\b(?<name>[A-Za-z_][A-Za-z0-9_]*(?<axis>X|Y))\s*=\s*(?<rhs>[^;]+);')
+
+    foreach ($assignment in $assignments) {
+        $rhs = $assignment.Groups['rhs'].Value
+
+        # A coordinate taken from the rect the platform reported is exactly the
+        # measured value this guard is asking for.
+        if ($rhs -match '(?i)\b(GetRect|GetBoundingBox|Bounds|Frame|Location|Size)\b') {
+            continue
+        }
+
+        $axis = $assignment.Groups['axis'].Value
+        $crossAxis = if ($axis -eq 'X') { 'Height' } else { 'Width' }
+        if ($rhs -notmatch ('\.{0}\b' -f $crossAxis)) {
+            continue
+        }
+
+        throw ("Candidate test source '$Path' computes the probe coordinate " +
+            "'$($assignment.Groups['name'].Value)' from '.$crossAxis': $($rhs.Trim()). " +
+            "A $axis derived from a $crossAxis is a hand-rolled guess at where a transformed visual sits, " +
+            'and a probe placed by that guess can miss a correctly laid out element and report a false red, ' +
+            'or be reached by the reported misplacement and report a false green. ' +
+            "Read the element's measured rect and derive the probe from the bounds the platform reports.")
     }
 }
 
@@ -1586,10 +1675,31 @@ function Assert-ReplicationVerdictIsNotSelfAnnounced {
         return
     }
 
-    foreach ($assertion in [regex]::Matches(
-        $scanned,
-        '(?:Assert\s*\.\s*(?:Equal|AreEqual)|ClassicAssert\s*\.\s*AreEqual)\s*\(\s*' +
-        '(?<literal>"(?:[^"\\]|\\.)*")\s*,\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\b')) {
+    # The xUnit form puts the expected value first. NUnit reverses it, and the
+    # repository's UI tests are NUnit: across the ten published reproductions
+    # Assert.That outnumbered Assert.Equal 57 to 9, so matching only the xUnit
+    # spelling left the dominant form unguarded. The two shapes are matched in
+    # separate passes because one alternation would make 'literal' a duplicate
+    # group name, and the branch that did not participate reports an empty
+    # capture.
+    # Each pattern is parenthesised because PowerShell binds the comma tighter
+    # than the plus: without them '@(a + b, c + d)' evaluates to the single
+    # element 'ab cd' and both patterns are silently destroyed.
+    $assertionForms = @(
+        ('(?:Assert\s*\.\s*(?:Equal|AreEqual)|ClassicAssert\s*\.\s*AreEqual)\s*\(\s*' +
+            '(?<literal>"(?:[^"\\]|\\.)*")\s*,\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\b'),
+        ('Assert\s*\.\s*That\s*\(\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?<member>\w+)\s*,\s*' +
+            'Is\s*\.\s*EqualTo\s*\(\s*(?<literal>"(?:[^"\\]|\\.)*")\s*\)')
+    )
+
+    $assertions = [System.Collections.Generic.List[System.Text.RegularExpressions.Match]]::new()
+    foreach ($form in $assertionForms) {
+        foreach ($match in [regex]::Matches($scanned, $form)) {
+            $assertions.Add($match)
+        }
+    }
+
+    foreach ($assertion in $assertions) {
         $literal = $assertion.Groups['literal'].Value
         if (-not [regex]::IsMatch($literal, $verdict)) {
             continue
@@ -1663,11 +1773,24 @@ function Assert-ReplicationGeometryOracleIsPinned {
         return $identifier.Success -and $measuredLocals.Contains($identifier.Groups['name'].Value)
     }
 
+    # The last argument of Assert.True(condition, message) reports the failure,
+    # it is not an operand. Build 15069709 spent all five attempts refused
+    # because its message interpolated the frame it was reporting, so the
+    # splitter counted a pinned assertion as a relation between two
+    # measurements. A message that happens to end in a digit would equally have
+    # been counted as the expected value and exempted a relational oracle, so
+    # dropping it removes a false accept as well as a false refusal.
+    $isMessage = {
+        param([string]$Argument)
+        return $Argument.Trim() -match '^[\$@]{0,2}"'
+    }
+
     $relational = $null
     foreach ($match in [regex]::Matches(
         $code,
         '(?:Assert|ClassicAssert)\s*\.\s*(?:Equal|AreEqual|True|IsTrue)\s*\((?<args>[^;]*?)\)\s*;')) {
-        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value)
+        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value |
+            Where-Object { -not (& $isMessage $_) })
 
         # Assert.True(a == b) carries both operands in a single argument.
         if ($arguments.Count -eq 1 -and $arguments[0] -match '==|!=') {
@@ -1696,7 +1819,8 @@ function Assert-ReplicationGeometryOracleIsPinned {
         $code,
         '(?:Assert|ClassicAssert)\s*\.\s*\w+\s*\((?<args>[^;]*?)\)\s*;')
     foreach ($match in $pinned) {
-        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value)
+        $arguments = @(Split-ReplicationAssertionArguments -Arguments $match.Groups['args'].Value |
+            Where-Object { -not (& $isMessage $_) })
         $hasExpected = @($arguments | Where-Object {
             $_ -match '(?<![A-Za-z0-9_.])\d+(?:\.\d+)?\s*$' -and -not (& $isMeasured $_) }).Count -gt 0
         $hasMeasured = @($arguments | Where-Object { & $isMeasured $_ }).Count -gt 0
@@ -1818,6 +1942,224 @@ function Assert-ReplicationOracleIsNotInitialState {
             'delivered or that the driver missed, so it cannot tell a broken product from a test that did nothing. ' +
             'First assert a value the app can only produce once the interaction has landed, then assert the ' +
             'reported behavior.')
+    }
+}
+
+function Get-ReplicationComparisonSelectedLiteral {
+    <#
+    .SYNOPSIS
+        Reports the decision that picked a string literal, when the host
+        application picked it by comparing values itself.
+
+    .DESCRIPTION
+        Returns a description of the branch that selected the literal at
+        'Index', or $null when nothing nearby chose it. A literal written
+        unconditionally, such as a caption on a label or a starting sentinel,
+        is not selected by anything and returns $null.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Code,
+        [Parameter(Mandatory = $true)][int]$Index
+    )
+
+    $comparison =
+        '(==|!=|<=|>=|(?<![<>=!])[<>](?![<>=])|\.Equals\s*\(|\.Contains\s*\(' +
+        '|\.Any\s*\(|\.All\s*\(|\.SequenceEqual\s*\(|\.StartsWith\s*\(|\.EndsWith\s*\()'
+
+    # A decision that selects a literal sits within the same statement or the
+    # branch immediately around it, so the search stays local on purpose: a
+    # comparison elsewhere in the file did not choose this text.
+    $start = [Math]::Max(0, $Index - 600)
+    $window = $Code.Substring($start, $Index - $start)
+
+    # Conditional expression: cond ? "literal" : other. Exclude ?. ?? and ?[.
+    $ternaries = @([regex]::Matches($window, '\?(?![\.\?\[])'))
+    if ($ternaries.Count -gt 0) {
+        $question = $ternaries[$ternaries.Count - 1].Index
+        $before = $window.Substring(0, $question)
+        $conditionStart = 0
+        foreach ($boundary in [regex]::Matches($before, '[;{}]')) {
+            $conditionStart = $boundary.Index + 1
+        }
+        $condition = $before.Substring($conditionStart)
+        if ($condition -cmatch $comparison) {
+            return "the conditional expression '$(($condition.Trim() -replace '\s+', ' '))'"
+        }
+    }
+
+    # Guarded assignment: if (cond) { target = "literal"; }
+    $ifs = @([regex]::Matches($window, '\bif\s*\('))
+    if ($ifs.Count -eq 0) { return $null }
+
+    $lastIf = $ifs[$ifs.Count - 1]
+    $cursor = $lastIf.Index + $lastIf.Length
+    $depth = 1
+    $condition = ''
+    while ($cursor -lt $window.Length -and $depth -gt 0) {
+        $character = $window[$cursor]
+        if ($character -ceq '(') { $depth++ }
+        elseif ($character -ceq ')') {
+            $depth--
+            if ($depth -eq 0) { break }
+        }
+        $condition += $character
+        $cursor++
+    }
+    if ($condition -cnotmatch $comparison) { return $null }
+
+    # The literal only belongs to that branch while the branch still contains
+    # it: a braced body must still be open, and a braceless body ends at its
+    # first statement.
+    $body = $window.Substring([Math]::Min($cursor + 1, $window.Length))
+    if ($body.TrimStart().StartsWith('{')) {
+        $opened = @([regex]::Matches($body, '\{')).Count
+        $closed = @([regex]::Matches($body, '\}')).Count
+        if ($opened -le $closed) { return $null }
+    }
+    elseif ($body -cmatch ';') { return $null }
+
+    return "the branch 'if ($(($condition.Trim() -replace '\s+', ' ')))'"
+}
+
+function Assert-ReplicationDisappearanceOracleProvesPresence {
+    <#
+    .SYNOPSIS
+        Rejects an oracle that proves an element went away without ever
+        proving the element was there.
+
+    .DESCRIPTION
+        kubaflo/maui#506 counted the native elements matching
+        "CustomBusyIndicator", kept only the ones answering IsDisplayed(), and
+        asserted the total was Is.Zero. The reviewer deleted a single line --
+        the AutomationId on the host page -- left the product bug untouched,
+        and the test went green: FindElements matched nothing, so the counter
+        never left 0. An oracle that passes when its own locator is broken
+        cannot distinguish a fixed product from an absent one.
+
+        The test looked well guarded because it asserted
+        "IndicatorAttachedAndVisible=True" first, but that string is a label
+        the host page assigns itself; it says the app believed the indicator
+        was attached, not that the runner could see it.
+
+        Asserting absence is not itself suspect. kubaflo/maui#545 asserts
+        FindElements(EmptyViewText) is empty, and there the emptiness is the
+        whole contract -- that view must never appear while items exist, so
+        there is no earlier moment at which it could be found. What separates
+        the two is the IsDisplayed() filter: counting *displayed* matches and
+        expecting none is a disappearance claim, and a disappearance
+        presupposes a prior appearance that the same locator has to witness.
+
+        So this fires only on the disappearance shape, and only when the
+        locator is never handed to a WaitForElement* call anywhere in the
+        file. Waiting on the same locator both proves it resolves and pins
+        the before-state the zero is measured against.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return }
+
+    $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+
+    foreach ($match in [regex]::Matches(
+            $source,
+            'FindElements\s*\(\s*([^),]+?)\s*\)')) {
+        $locator = $match.Groups[1].Value.Trim()
+        if (-not $locator) { continue }
+
+        # The claim is read from the query forward: the filter and the zero
+        # belong to this call, not to some later unrelated assertion.
+        $start = $match.Index + $match.Length
+        $window = $source.Substring($start, [Math]::Min(600, $source.Length - $start))
+
+        if ($window -notmatch 'IsDisplayed\s*\(') { continue }
+        if ($window -notmatch '(?:Is\s*\.\s*Zero|Is\s*\.\s*EqualTo\s*\(\s*0\s*\)|Is\s*\.\s*Empty)') { continue }
+
+        if ([regex]::IsMatch($source, 'WaitForElement\w*\s*\(\s*' + [regex]::Escape($locator) + '\s*[),]')) { continue }
+
+        throw (
+            "$Path counts displayed elements matching $locator and asserts none remain, " +
+            "but nothing in the test ever proves that $locator resolves to an element. " +
+            "Breaking the locator alone would make this pass on unfixed product code -- " +
+            "kubaflo/maui#506 was refuted exactly that way, by deleting one AutomationId. " +
+            "Wait for $locator and assert it is displayed before the behaviour that is " +
+            "supposed to hide it, so the count is measured falling from a witnessed " +
+            "non-zero to zero. A status label the page assigns itself is not a witness."
+        )
+    }
+}
+
+function Assert-ReplicationVerdictIsNotComputedByTheApp {
+    <#
+    .SYNOPSIS
+        Rejects an oracle that asserts a word the host application chose by
+        comparing values itself.
+
+    .DESCRIPTION
+        Two reviewed reproductions failed for the same reason: the scene
+        compared the observed state against its own expectation, wrote the
+        answer into a label as a word, and the test asserted that word. One
+        page decided 'edge = element == border ? "ALIGNED" : "MISSING"'; the
+        other decided '_scrollBarChanges == 0 ? "scrollbar stable" : ...'. In
+        both the app is the judge and the test only repeats the judgement, so
+        a wrong expectation in the scene reads as a passing test and the
+        reproduction proves nothing about the product.
+
+        A scene may still report freely. Captions, starting sentinels and
+        interpolated measurements such as $"TAPPED: Width={width}" are all
+        untouched, because none of them is chosen by a comparison. Only the
+        act of deciding is refused, and the fix is to emit the measurement and
+        let the test compare it.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Files
+    )
+
+    $asserted = @{}
+    foreach ($path in $Files.Keys) {
+        $normalized = $path.Replace('\', '/')
+        if ($normalized -cmatch '(?i)TestCases\.HostApp/') { continue }
+        if ($normalized -cnotmatch '(?i)\.cs$') { continue }
+
+        $code = Get-ReplicationCommentFreeText -Text $Files[$path] -Path $path
+        $pattern =
+            '(?:Is\s*\.\s*(?:All\s*\.\s*)?EqualTo\s*\(\s*' +
+            '|(?:Assert|ClassicAssert)\s*\.\s*(?:Equal|AreEqual)\s*\(\s*)' +
+            '"(?<literal>[^"]+)"'
+        foreach ($match in [regex]::Matches($code, $pattern)) {
+            $asserted[$match.Groups['literal'].Value] = $normalized
+        }
+    }
+    if ($asserted.Count -eq 0) { return }
+
+    foreach ($path in $Files.Keys) {
+        $normalized = $path.Replace('\', '/')
+        if ($normalized -cnotmatch '(?i)TestCases\.HostApp/') { continue }
+        if ($normalized -cnotmatch '(?i)\.cs$') { continue }
+
+        $code = Get-ReplicationCommentFreeText -Text $Files[$path] -Path $path
+        foreach ($literal in $asserted.Keys) {
+            $needle = '"' + [regex]::Escape($literal) + '"'
+            foreach ($occurrence in [regex]::Matches($code, $needle)) {
+                $decision = Get-ReplicationComparisonSelectedLiteral `
+                    -Code $code `
+                    -Index $occurrence.Index
+                if (-not $decision) { continue }
+
+                throw ("Candidate test source '$($asserted[$literal])' asserts the text " +
+                    "'$literal', which the host page '$normalized' selects with $decision. " +
+                    'The scene is comparing the observed state against its own expectation and ' +
+                    'writing the answer down, so the test only repeats a verdict the application ' +
+                    'already reached. If that expectation is wrong the test still passes, and a ' +
+                    'product fix cannot turn it green on its own. Report the measured value from ' +
+                    'the page instead and let the test compare it.')
+            }
+        }
     }
 }
 
@@ -1946,9 +2288,11 @@ function Assert-ReplicationDeviceTestIsSelectable {
         sibling from muddying the verdict.
 
         CategoryAttribute takes params string[] and allows multiples, so an
-        issue-keyed category sits alongside the conventional
+        issue-keyed category can sit alongside the conventional
         [Category(TestCategory.Entry)] without touching TestCategory -- which
-        matters, because editing that shared file is not add-only.
+        matters, because editing that shared file is not add-only. On the
+        skip-filtered platforms that second category makes the test
+        unselectable; Assert-ReplicationDeviceCategoryIsExclusive rejects it.
 
         With [Category("Issue<N>")] present, the token names a real discovered
         category, so the selector published in the pull request is one the
@@ -1971,32 +2315,130 @@ function Assert-ReplicationDeviceTestIsSelectable {
     return [bool]([regex]::IsMatch($Content, $pattern))
 }
 
+function Assert-ReplicationDeviceCategoryIsExclusive {
+    <#
+        .SYNOPSIS
+        Reports a conventional category that makes an issue-keyed device test
+        unselectable on the skip-filtered platforms.
+
+        .DESCRIPTION
+        DeviceTestSharedHelpers.GetExcludedTestCategories implements
+        "TestFilter=Category=X" by *subtraction*: it lists the public static
+        string fields of TestCategory, removes X, and excludes everything that
+        is left. "Issue<N>" is deliberately not a TestCategory field, so
+        removing it removes nothing and every conventional category ends up in
+        the excluded list. A test that also declares [Category(TestCategory.Shape)]
+        therefore carries an excluded category and is skipped -- the published
+        selector selects it out rather than in.
+
+        Reviewers measured exactly this twice: PR 533 (Android, Shape +
+        Issue31330) reported 576 discovered / 3 passed / 573 ignored, and
+        PR 515 (Mac Catalyst, Accessibility + Issue37140) executed zero tests.
+        In both cases removing only the broad category made the exact test run.
+
+        Windows is exempt. Its runner filters by *discovered* traits
+        (ControlsHeadlessTestRunner collects tc.Traits["Category"]), so
+        "Issue<N>" is a real category there and a second one is harmless --
+        which is why PR 525 selected its single Windows test correctly.
+
+        Returns the offending category argument, or an empty string when the
+        issue-keyed category is the only one.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][int]$Issue,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Platform
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return '' }
+    if ($Platform -notin @('android', 'ios', 'catalyst')) { return '' }
+
+    # A commented-out attribute declares nothing.
+    $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+    $token = '"Issue' + $Issue + '"'
+
+    foreach ($match in [regex]::Matches(
+            $source,
+            '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*Category\s*\(([^)]*)\)')) {
+        foreach ($argument in ($match.Groups[1].Value -split ',')) {
+            $trimmed = $argument.Trim()
+            if (-not $trimmed) { continue }
+            if ($trimmed -ceq $token) { continue }
+            return $trimmed
+        }
+    }
+
+    return ''
+}
+
 function Get-ReplicationEnvironmentCapabilityPattern {
     # Calls that report which lane the test landed in, not what the product did.
     return '(?:OperatingSystem\.Is[A-Za-z]*VersionAtLeast|UIDevice\.CurrentDevice\.CheckSystemVersion|Build\.VERSION\.SdkInt)'
+}
+
+function Get-ReplicationUiLaneGuardPattern {
+    # UI-tier only. The lane a shared NUnit file landed in is decided by the
+    # driver type or by a version helper, not by the OperatingSystem APIs that
+    # Get-ReplicationEnvironmentCapabilityPattern names: across the 5 real
+    # offending fix PRs the guards were "App is not AppiumIOSApp" and
+    # "HelperExtensions.IsIOS26OrHigher", and neither matches that pattern. It
+    # is kept separate rather than folded in so the assert/throw clauses above
+    # keep their measured behaviour on the device tier.
+    return '(?:App\s+is\s+not\s+Appium[A-Za-z]*App' +
+        '|OperatingSystem\.Is[A-Za-z]*VersionAtLeast' +
+        '|UIDevice\.CurrentDevice\.CheckSystemVersion' +
+        '|Build\.VERSION\.SdkInt' +
+        '|\bIs(?:IOS|Android|Windows|MacCatalyst)[0-9]*OrHigher)'
 }
 
 function Assert-ReplicationEnvironmentGateSkips {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
-        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Path
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Path,
+        [Parameter(Mandatory = $false)][AllowEmptyString()][string]$TestType = ''
     )
 
     # A reproduction pinned to an OS floor is fine; nominating that floor as a
     # failure is not. PR 213 asserted `OperatingSystem.IsIOSVersionAtLeast(26)`
     # on line 25 and every one of its five runs died there in 1.8-3.0 ms,
     # before the oracle it advertised ever executed -- red for the lane, not
-    # for the defect, and still red after a complete product fix. Scanning
-    # 11,012 files, no Assert of any kind names one of these APIs and no
-    # version gate throws, while 49 sites gate with an early return, so this
+    # for the defect, and still red after a complete product fix. No Assert of
+    # any kind names one of these APIs and no version gate throws, so this
     # rejects a shape the repository never uses.
+    #
+    # The remedy is tier-specific, and saying otherwise caused a second defect.
+    # An earlier revision prescribed the early return unconditionally on the
+    # strength of "49 sites gate with an early return" -- a count taken over
+    # the whole tree. Stratified, those sites are 31 xUnit device tests and 31
+    # product/sample files; the NUnit UI tier uses the shape ZERO times and
+    # reaches for Assert.Ignore in 44 files instead. So the prescription had no
+    # precedent in the tier it was most often applied to, and there it is
+    # actively harmful: NUnit records a returned test as Passed, and a UI test
+    # is link-compiled into all four platform assemblies, so a lane the gate
+    # excludes reports a green it never earned. A reviewer measured exactly
+    # that on PR 464 -- "PASS in 32 ms without opening the page" on an iOS 18.5
+    # runner against a production-reverted build.
+    #
+    # xUnit has no Assert.Ignore (0 uses in DeviceTests), so device and unit
+    # tests keep the early return: refusing it there would leave the author no
+    # legal answer, which this pipeline has already paid for twice.
     $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
     $capability = Get-ReplicationEnvironmentCapabilityPattern
-    $remedy = ('Gate with the shape this repository uses instead -- ' +
-        '"if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- so an ' +
-        'unsupported lane skips quietly and the only red this test can ' +
-        'produce is the reported defect.')
+    $isUiTest = $TestType -ceq 'UITest'
+    $skipShape = if ($isUiTest) {
+        'Assert.Ignore("the reported defect needs iOS 26 or later") -- the ' +
+        'shape the UI tests use in 44 files -- so an unsupported lane is ' +
+        'recorded as skipped rather than as a pass it never earned'
+    }
+    else {
+        '"if (!OperatingSystem.IsIOSVersionAtLeast(26)) return;" -- the shape ' +
+        'the device and unit test projects use at 31 sites, and the only one ' +
+        'available to them, because xUnit has no Assert.Ignore'
+    }
+    $remedy = "Gate with the shape this tier supports instead -- $skipShape, " +
+        'so the only red this test can produce is the reported defect.'
 
     $asserted = [regex]::Match($source, "Assert\.[A-Za-z]+\s*\([^;]{0,400}?$capability")
     if ($asserted.Success) {
@@ -2015,6 +2457,26 @@ function Assert-ReplicationEnvironmentGateSkips {
             "precondition is unmet: '$($gatedFailure.Value.Trim())'. That red survives a " +
             'complete product fix, so it cannot be attributed to the reported defect. ' +
             $remedy)
+    }
+
+    if (-not $isUiTest) { return }
+
+    # NUnit only: a bare `return;` reached from an environment guard is scored
+    # Passed, so it is a false green rather than a skip. Assert.Ignore, a
+    # throw, and Assert.Inconclusive all record the truth, so none of them is
+    # matched here. Measured across 1,642 real files under
+    # TestCases.Shared.Tests: 0 firings.
+    $gatedReturn = [regex]::Match(
+        $source,
+        'if\s*\(\s*[^;{)]{0,200}?' + (Get-ReplicationUiLaneGuardPattern) +
+            '[^;{]{0,200}?\)\s*(?:\{\s*)?return\s*;'
+    )
+    if ($gatedReturn.Success) {
+        throw ("The reproduction in '$Path' returns without asserting when an " +
+            "environment precondition is unmet: '$($gatedReturn.Value.Trim())'. NUnit " +
+            'records a returned test as PASSED, and this file is link-compiled into the ' +
+            'Android, iOS, MacCatalyst and Windows assemblies alike, so every lane the ' +
+            'gate excludes reports a pass it never earned. ' + $remedy)
     }
 }
 
@@ -2047,10 +2509,28 @@ function Assert-ReplicationTestLifecycleSafety {
             Pattern = '(?m)^\s*(?:public|internal|protected|private)\s+(?!class\b|interface\b|enum\b|record\b)[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)'
         }
     )
+    # A bindable property has to be declared as a static readonly field: the
+    # MAUI type system offers no other way to write one, so demanding it move
+    # into the test body asks for something the language cannot express. Build
+    # 15066948 spent all five attempts failing that demand. Mask those
+    # declarations before the lifecycle rules run, preserving every newline so
+    # the reported line numbers still point at the real source.
+    $bindablePropertyDeclaration =
+        '(?ms)^[^\S\r\n]*(?:(?:public|internal|protected|private)[^\S\r\n]+)*' +
+        'static[^\S\r\n]+readonly[^\S\r\n]+Bindable(?:Property|PropertyKey)[^\S\r\n]+' +
+        '\w+\s*=\s*Bindable(?:Property|PropertyKey)\.Create\w*\s*\(.*?\)\s*;'
+    $lifecycleScanContent = [regex]::Replace(
+        $Content,
+        $bindablePropertyDeclaration,
+        {
+            param($bindableMatch)
+            ($bindableMatch.Value -replace '[^\r\n]', ' ')
+        })
+
     foreach ($rule in $lifecycleRules) {
-        $match = [regex]::Match($Content, $rule.Pattern)
+        $match = [regex]::Match($lifecycleScanContent, $rule.Pattern)
         if ($match.Success) {
-            throw "Candidate test source '$Path' contains $($rule.Reason): $(Get-ReplicationUnsafeMatchDetail -ScanText ($Content.Replace("`r`n", "`n")) -Match $match). Move the setup inside the test method body."
+            throw "Candidate test source '$Path' contains $($rule.Reason): $(Get-ReplicationUnsafeMatchDetail -ScanText ($lifecycleScanContent.Replace("`r`n", "`n")) -Match $match). Move the setup inside the test method body."
         }
     }
 
@@ -2082,4 +2562,317 @@ function Assert-ReplicationTestLifecycleSafety {
             throw "Candidate test source '$Path' contains an unguarded primary constructor."
         }
     }
+}
+
+function Get-ReplicationAssertionPattern {
+    # The statements that carry the oracle. An ablation is only informative if
+    # every one of these survives it untouched.
+    return '(?i)(?:^|[^\w.])(?:Assert\.|Assume\.|StringAssert\.|CollectionAssert\.|ClassicAssert\.)|\.Should(?:Be|NotBe|Match|Contain|Have|Throw|Not)|\bVerifyScreenshot\b'
+}
+
+function Get-ReplicationAssertionStatements {
+    <#
+        .SYNOPSIS
+        Returns the normalised assertion statements in a test source file.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Source
+    )
+
+    $pattern = Get-ReplicationAssertionPattern
+    $statements = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in ([string]$Source -split "`r?`n")) {
+        $trimmed = $line.Trim()
+        if ($trimmed -match '^\s*//') { continue }
+        if ([regex]::IsMatch($trimmed, $pattern)) {
+            $statements.Add(([regex]::Replace($trimmed, '\s+', ' ')))
+        }
+    }
+
+    # Emitted unwrapped so that callers wrapping in @() see an empty result as
+    # zero assertions. Returning ,@($statements) would hand them a single empty
+    # element instead, which reads as "one assertion" and defeats the check for
+    # a reproduction that has no oracle at all.
+    return $statements.ToArray()
+}
+
+function Get-ReplicationDisabledTestPatterns {
+    # Ways a control can be made green by never really running. The certification
+    # matrix rewards a passing control, so these are the shapes an agent reaches
+    # for when the ablation is inconvenient.
+    return @(
+        [pscustomobject]@{
+            Pattern = '(?im)^\s*\[\s*(?:Ignore|Explicit)\b'
+            Reason  = 'it is attributed away with [Ignore] or [Explicit]'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bAssert\.(?:Ignore|Inconclusive)\s*\('
+            Reason  = 'it ends itself with Assert.Ignore or Assert.Inconclusive'
+        },
+        [pscustomobject]@{
+            Pattern = '(?i)\bAssert\.Pass\s*\('
+            Reason  = 'it short-circuits with Assert.Pass'
+        },
+        [pscustomobject]@{
+            Pattern = '(?im)^\s*\[\s*Test\s*\([^)]*\bSkip\s*='
+            Reason  = 'it is declared with a Skip reason'
+        }
+    )
+}
+
+function Assert-ReplicationNegativeControlIsInformative {
+    <#
+        .SYNOPSIS
+        Rejects a negative control that cannot distinguish the defect.
+
+        .DESCRIPTION
+        The negative control is the arm that promotes a reproduction to a
+        certified oracle, so it is the arm worth faking. There are exactly two
+        cheap ways to make a control green, and both leave the reproduction
+        unproven:
+
+          - weaken the oracle, so the control passes because it no longer
+            measures anything;
+          - stop the control from running, so it passes vacuously.
+
+        A control is only informative when it removes the reported trigger and
+        changes nothing else. This compares the two sources directly rather than
+        trusting the manifest's description of them.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BaselineSource,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ControlSource,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$TestFilter,
+        # A UI test keeps its oracle in the test file and the condition that
+        # provokes the defect in the HostApp page, so the control edits one file
+        # and must preserve the assertions in another. When these are omitted
+        # the edited file is the oracle and the checks read the same sources as
+        # before.
+        [AllowEmptyString()][string]$OracleBaselineSource,
+        [AllowEmptyString()][string]$OracleControlSource
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ControlSource)) {
+        throw "The negative control for '$TestFilter' is empty, so removing the reported trigger was never actually tried."
+    }
+
+    $normalisedBaseline = [regex]::Replace([string]$BaselineSource, '\s+', ' ').Trim()
+    $normalisedControl = [regex]::Replace([string]$ControlSource, '\s+', ' ').Trim()
+    if ($normalisedBaseline -ceq $normalisedControl) {
+        throw ("The negative control for '$TestFilter' is identical to the reproduction, so it removes nothing and " +
+            'cannot show that the failure depends on the reported trigger.')
+    }
+
+    foreach ($disabled in Get-ReplicationDisabledTestPatterns) {
+        if ([regex]::IsMatch($normalisedControl, $disabled.Pattern) -and
+            -not [regex]::IsMatch($normalisedBaseline, $disabled.Pattern)) {
+            throw ("The negative control for '$TestFilter' passes only because $($disabled.Reason), " +
+                'so it proves the control did not run rather than that the trigger causes the failure.')
+        }
+    }
+
+    $oracleBaseline = if ($PSBoundParameters.ContainsKey('OracleBaselineSource')) {
+        $OracleBaselineSource
+    } else {
+        $BaselineSource
+    }
+    $oracleControl = if ($PSBoundParameters.ContainsKey('OracleControlSource')) {
+        $OracleControlSource
+    } else {
+        $ControlSource
+    }
+    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $oracleBaseline)
+    $controlAssertions = @(Get-ReplicationAssertionStatements -Source $oracleControl)
+
+    if ($baselineAssertions.Count -eq 0) {
+        throw "The reproduction '$TestFilter' contains no assertion, so there is no oracle for a control to preserve."
+    }
+
+    if ($controlAssertions.Count -ne $baselineAssertions.Count) {
+        throw ("The negative control for '$TestFilter' asserts $($controlAssertions.Count) times where the " +
+            "reproduction asserts $($baselineAssertions.Count). A control must remove the reported trigger and " +
+            'leave the oracle untouched, otherwise it passes because it stopped measuring.')
+    }
+
+    for ($index = 0; $index -lt $baselineAssertions.Count; $index++) {
+        if ($baselineAssertions[$index] -cne $controlAssertions[$index]) {
+            throw ("The negative control for '$TestFilter' changes the oracle: the reproduction asserts " +
+                "'$($baselineAssertions[$index])' where the control asserts '$($controlAssertions[$index])'. " +
+                'A control must differ only in the reported trigger.')
+        }
+    }
+}
+
+function Get-ReplicationWhitespaceInsensitiveSpan {
+    <#
+        .SYNOPSIS
+        Locates text in a source ignoring how it happens to be indented.
+
+        .DESCRIPTION
+        An author quoting several lines of XAML has to reproduce every tab to
+        match byte for byte, and build 15033553 shows they do not: two of three
+        attempts quoted the right element with the wrong indentation and the
+        control was skipped. Collapsing whitespace asks the author for the right
+        code instead of the right bytes.
+
+        This is stricter about ambiguity rather than looser. Two regions that
+        differ only in whitespace collapse to the same text, so both are counted
+        and the caller refuses the edit.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Source,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Find
+    )
+
+    $normalized = [System.Text.StringBuilder]::new()
+    $map = [System.Collections.Generic.List[int]]::new()
+    $cursor = 0
+    while ($cursor -lt $Source.Length) {
+        if ([char]::IsWhiteSpace($Source[$cursor])) {
+            $runStart = $cursor
+            while ($cursor -lt $Source.Length -and [char]::IsWhiteSpace($Source[$cursor])) {
+                $cursor++
+            }
+            [void] $normalized.Append(' ')
+            [void] $map.Add($runStart)
+            continue
+        }
+
+        [void] $normalized.Append($Source[$cursor])
+        [void] $map.Add($cursor)
+        $cursor++
+    }
+
+    $needle = ([regex]::Replace($Find, '\s+', ' ')).Trim()
+    if ([string]::IsNullOrEmpty($needle)) {
+        return [pscustomobject]@{ Count = 0; Index = -1; Length = 0 }
+    }
+
+    $haystack = $normalized.ToString()
+    $count = 0
+    $first = -1
+    $search = 0
+    while ($search -ge 0 -and $search -le ($haystack.Length - $needle.Length)) {
+        $hit = $haystack.IndexOf($needle, $search, [StringComparison]::Ordinal)
+        if ($hit -lt 0) { break }
+        $count++
+        if ($first -lt 0) { $first = $hit }
+        $search = $hit + 1
+    }
+
+    if ($count -ne 1) {
+        return [pscustomobject]@{ Count = $count; Index = -1; Length = 0 }
+    }
+
+    # The needle is trimmed, so its last character is never a collapsed
+    # whitespace run and the original span ends one past that character.
+    $startOriginal = $map[$first]
+    $endOriginal = $map[$first + $needle.Length - 1] + 1
+    return [pscustomobject]@{
+        Count  = 1
+        Index  = $startOriginal
+        Length = ($endOriginal - $startOriginal)
+    }
+}
+
+function New-ReplicationControlVariant {
+    <#
+        .SYNOPSIS
+        Builds a negative control by removing the reported trigger from the
+        reproduction source.
+
+        .DESCRIPTION
+        Authors were asked three times, in explicit prose, to copy the
+        reproduction and delete only the trigger, and they returned a variant
+        with no assertions every time. Prose does not constrain an author, so
+        this takes the file away from them: they describe the trigger edits and
+        trusted code performs them, which makes the oracle byte-identical by
+        construction rather than by instruction.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BaselineSource,
+        [Parameter(Mandatory = $true)][AllowNull()]$Edits
+    )
+
+    $editList = @($Edits)
+    if ($editList.Count -eq 0) {
+        throw 'The control edits list is empty. List the exact trigger statements to remove.'
+    }
+    if ($editList.Count -gt 10) {
+        throw "The control edits list has $($editList.Count) entries, which is more than the 10 a trigger removal should need."
+    }
+
+    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $BaselineSource)
+    $variant = [string]$BaselineSource
+
+    foreach ($edit in $editList) {
+        $find = ''
+        $replace = ''
+        if ($edit -is [string]) {
+            $find = [string]$edit
+        } elseif ($edit -is [System.Collections.IDictionary]) {
+            if ($edit.Contains('find')) { $find = [string]$edit['find'] }
+            if ($edit.Contains('replace') -and $null -ne $edit['replace']) {
+                $replace = [string]$edit['replace']
+            }
+        } else {
+            $findProperty = $edit.PSObject.Properties['find']
+            if ($findProperty) { $find = [string]$findProperty.Value }
+            $replaceProperty = $edit.PSObject.Properties['replace']
+            if ($replaceProperty -and $null -ne $replaceProperty.Value) {
+                $replace = [string]$replaceProperty.Value
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($find)) {
+            throw 'A control edit has an empty find value. Quote the exact trigger text from the reproduction.'
+        }
+
+        # An edit that carries an assertion is the author deleting the oracle
+        # under the name of removing the trigger, which is the exact failure
+        # this function exists to make impossible.
+        if (@(Get-ReplicationAssertionStatements -Source $find).Count -gt 0) {
+            throw "A control edit removes an assertion: '$($find.Trim())'. Remove only the trigger and leave every assertion in place."
+        }
+        if (@(Get-ReplicationAssertionStatements -Source $replace).Count -gt 0) {
+            throw "A control edit introduces an assertion: '$($replace.Trim())'. The control must keep the reproduction's assertions unchanged."
+        }
+
+        $occurrences = ([regex]::Matches($variant, [regex]::Escape($find))).Count
+        if ($occurrences -eq 1) {
+            $index = $variant.IndexOf($find, [StringComparison]::Ordinal)
+            $length = $find.Length
+        } else {
+            $span = Get-ReplicationWhitespaceInsensitiveSpan -Source $variant -Find $find
+            if ($span.Count -ne 1) {
+                throw ("The control edit text occurs $($span.Count) times in the reproduction, " +
+                    "ignoring indentation, but it must occur exactly once: '$($find.Trim())'.")
+            }
+            $index = $span.Index
+            $length = $span.Length
+        }
+
+        $variant = $variant.Substring(0, $index) + $replace +
+            $variant.Substring($index + $length)
+    }
+
+    if ($variant -ceq [string]$BaselineSource) {
+        throw 'The control edits changed nothing, so the control would rerun the reproduction unchanged.'
+    }
+
+    $variantAssertions = @(Get-ReplicationAssertionStatements -Source $variant)
+    if ($variantAssertions.Count -ne $baselineAssertions.Count) {
+        throw "The control has $($variantAssertions.Count) assertions where the reproduction has $($baselineAssertions.Count). Remove only the trigger."
+    }
+    for ($i = 0; $i -lt $variantAssertions.Count; $i++) {
+        if ($variantAssertions[$i] -cne $baselineAssertions[$i]) {
+            throw "Control assertion $($i + 1) changed from '$($baselineAssertions[$i])' to '$($variantAssertions[$i])'."
+        }
+    }
+
+    return $variant
 }

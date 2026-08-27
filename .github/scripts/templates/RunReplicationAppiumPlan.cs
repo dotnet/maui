@@ -548,6 +548,19 @@ static bool IsSandboxRunning(AppiumDriver driver, string platform)
     return Convert.ToInt64(queried, System.Globalization.CultureInfo.InvariantCulture) >= 2;
 }
 
+// The ids Android gives the buttons of its own application-error dialogs. An
+// inventory listing any of them is describing the system, not the app under
+// test, and telling the author to address one of them would send the next
+// attempt to tap Close app.
+static string[] SystemDialogMarkers() => new[]
+{
+    "aerr_wait",
+    "aerr_close",
+    "aerr_restart",
+    "aerr_report",
+    "aerr_mute",
+};
+
 static IWebElement WaitForElement(
     AppiumDriver driver,
     string platform,
@@ -555,38 +568,31 @@ static IWebElement WaitForElement(
     TimeSpan timeout)
 {
     var candidates = CreateLocatorCandidates(locator, platform);
-    var wait = new WebDriverWait(driver, timeout);
-    IWebElement? found = null;
     try
     {
-        found = wait.Until(current =>
-        {
-            foreach (var by in candidates)
-            {
-                try
-                {
-                    var element = current.FindElement(by);
-                    if (element.Displayed)
-                    {
-                        return element;
-                    }
-                }
-                catch (NoSuchElementException)
-                {
-                }
-                catch (StaleElementReferenceException)
-                {
-                }
-                catch (InvalidSelectorException)
-                {
-                }
-            }
-
-            return null;
-        });
+        return WaitForElementOnce(driver, candidates, timeout);
     }
     catch (WebDriverTimeoutException timedOut)
     {
+        // A system dialog covers the app without closing it, so the locator was
+        // never wrong: it was unreachable. Build 15071060 lost four attempts to
+        // an ANR whose Wait button was reported as an app element. Clearing it
+        // and waiting again is the only reading under which the attempt is
+        // still about the reported behaviour.
+        if (TryDismissObstructingSystemDialog(driver, platform))
+        {
+            try
+            {
+                return WaitForElementOnce(driver, candidates, timeout);
+            }
+            catch (WebDriverTimeoutException stillMissing)
+            {
+                throw new WebDriverTimeoutException(
+                    DescribeMissingElement(driver, platform, locator, candidates),
+                    stillMissing);
+            }
+        }
+
         // WebDriverWait raises its own timeout, so a throw placed after the wait
         // never runs. Without this catch the inventory below never reached the
         // agent and every retry re-guessed the same absent identifier.
@@ -594,9 +600,81 @@ static IWebElement WaitForElement(
             DescribeMissingElement(driver, platform, locator, candidates),
             timedOut);
     }
+}
 
+static IWebElement WaitForElementOnce(
+    AppiumDriver driver,
+    IReadOnlyList<By> candidates,
+    TimeSpan timeout)
+{
+    var wait = new WebDriverWait(driver, timeout);
+    var found = wait.Until(current =>
+    {
+        foreach (var by in candidates)
+        {
+            try
+            {
+                var element = current.FindElement(by);
+                if (element.Displayed)
+                {
+                    return element;
+                }
+            }
+            catch (NoSuchElementException)
+            {
+            }
+            catch (StaleElementReferenceException)
+            {
+            }
+            catch (InvalidSelectorException)
+            {
+            }
+        }
+
+        return null;
+    });
+
+    // WebDriverWait returns null rather than raising when its condition never
+    // yields, depending on the overload, so both exits have to be a timeout or
+    // the caller cannot tell a miss from a hit.
     return found ?? throw new WebDriverTimeoutException(
-        DescribeMissingElement(driver, platform, locator, candidates));
+        $"No candidate locator became visible within {timeout.TotalSeconds:0.##}s.");
+}
+
+// Android puts an ANR or a crash dialog in front of the app rather than in it.
+// Its buttons carry ordinary resource ids, so a locator times out against an
+// app that is present and an inventory taken at that moment describes the
+// dialog. Only the ANR dialog can be cleared without ending the app: Wait
+// leaves the process running, whereas Close app and Restart terminate it,
+// which is a termination for the caller to report rather than an obstruction
+// to clear.
+static bool TryDismissObstructingSystemDialog(AppiumDriver driver, string platform)
+{
+    if (!string.Equals(platform, "android", StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    try
+    {
+        var waitButtons = driver.FindElements(MobileBy.Id("android:id/aerr_wait"));
+        if (waitButtons.Count == 0)
+        {
+            return false;
+        }
+
+        Console.WriteLine(
+            "⚠️  An Android \"isn't responding\" dialog was covering the app. " +
+            "Choosing Wait and looking for the element again.");
+        waitButtons[0].Click();
+        return true;
+    }
+    catch (WebDriverException)
+    {
+        // A dialog that cannot be clicked is not a dialog we can clear, and the
+        // caller's report is more useful than this exception.
+        return false;
+    }
 }
 
 static string DescribeMissingElement(
@@ -637,6 +715,16 @@ static string DescribeAddressableElements(AppiumDriver driver)
     if (source.Length == 0)
     {
         return $"{ElementInventoryStart} unavailable: the driver returned an empty page source. {ElementInventoryEnd}";
+    }
+
+    if (SystemDialogMarkers().Any(marker => source.Contains(marker, StringComparison.Ordinal)))
+    {
+        return $"{ElementInventoryStart} unavailable: an Android system " +
+            "application-error dialog was in front of the app, so the page source " +
+            "describes that dialog and not the Sandbox. The locator is not the " +
+            "problem: the app was unreachable, or wedged, at this moment. Keep the " +
+            "same identifiers and reduce the work done on the UI thread before this " +
+            $"step. {ElementInventoryEnd}";
     }
 
     var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -953,14 +1041,85 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
 {
     if (platform == "windows")
     {
-        throw new InvalidOperationException("Swipe is not supported by the Windows adapter.");
+        // WinAppDriver has no 'mobile:' gesture vocabulary, and this used to
+        // throw without asking, so several scenarios were refused for a
+        // gesture that was never attempted. The W3C actions endpoint is the
+        // right question to ask.
+        //
+        // It must be asked with a touch pointer. WinAppDriver answers a mouse
+        // pointer with "Currently only pen and touch pointer input source
+        // types are supported" - it names what it accepts - so the previous
+        // assumption that a desktop driver has no touchscreen and therefore
+        // needs a mouse was refuted by the driver itself in builds 15077263,
+        // 15078178 and 15079789. Taps are unaffected because they go through
+        // Click() rather than the actions endpoint, which is why this stayed
+        // invisible: only swipes and drags were ever rejected.
+        var windowSize = driver.Manage().Window.Size;
+        var centreX = windowSize.Width / 2;
+        var centreY = windowSize.Height / 2;
+        var spanX = windowSize.Width / 3;
+        var spanY = windowSize.Height / 3;
+
+        var (startX, startY, endX, endY) = direction switch
+        {
+            "up" => (centreX, centreY + spanY, centreX, centreY - spanY),
+            "down" => (centreX, centreY - spanY, centreX, centreY + spanY),
+            "left" => (centreX + spanX, centreY, centreX - spanX, centreY),
+            "right" => (centreX - spanX, centreY, centreX + spanX, centreY),
+            _ => throw new InvalidOperationException(
+                $"Unknown swipe direction '{direction}'.")
+        };
+
+        var pointer = new PointerInputDevice(PointerKind.Touch, "finger");
+        var swipeSequence = new ActionSequence(pointer);
+        swipeSequence.AddAction(pointer.CreatePointerMove(
+            CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+        swipeSequence.AddAction(pointer.CreatePointerDown(MouseButton.Touch));
+        swipeSequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(250)));
+        swipeSequence.AddAction(pointer.CreatePointerMove(
+            CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(420)));
+        swipeSequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(140)));
+        swipeSequence.AddAction(pointer.CreatePointerUp(MouseButton.Touch));
+
+        try
+        {
+            driver.PerformActions(new List<ActionSequence> { swipeSequence });
+            return;
+        }
+        catch (WebDriverException actionsUnsupported)
+        {
+            throw new InvalidOperationException(
+                "Swipe is not supported by the Windows adapter: " +
+                actionsUnsupported.Message,
+                actionsUnsupported);
+        }
     }
 
-    if (platform == "ios" || platform == "catalyst")
+    if (platform == "ios")
     {
         driver.ExecuteScript(
             "mobile: swipe",
             new Dictionary<string, object> { ["direction"] = direction });
+        return;
+    }
+
+    if (platform == "catalyst")
+    {
+        // 'mobile: swipe' is the XCUITest driver's command. Catalyst runs under
+        // the Mac2 driver, which implements 'macos: swipe' and rejects the
+        // other name outright - build 15071938 was refused as an unsupported
+        // scenario for a gesture the driver has always had. Mac2 requires an
+        // element or a coordinate to swipe at, so the window centre is passed
+        // explicitly rather than relying on a default that does not exist.
+        var macSize = driver.Manage().Window.Size;
+        driver.ExecuteScript(
+            "macos: swipe",
+            new Dictionary<string, object>
+            {
+                ["x"] = macSize.Width / 2,
+                ["y"] = macSize.Height / 2,
+                ["direction"] = direction
+            });
         return;
     }
 
@@ -987,12 +1146,6 @@ static void DragPath(
     // A SwipeView, pan, or drag defect is triggered by one pointer that stays
     // down while it changes direction, which a single cardinal swipe cannot
     // express. Issue 37089 was abandoned for exactly that reason.
-    if (platform is "windows" or "catalyst")
-    {
-        throw new InvalidOperationException(
-            $"dragPath is not supported by the {platform} adapter.");
-    }
-
     var segments = ParseDragSegments(path);
     var size = driver.Manage().Window.Size;
     var origin = element.Location;
@@ -1000,11 +1153,20 @@ static void DragPath(
     var x = origin.X + (extent.Width / 2);
     var y = origin.Y + (extent.Height / 2);
 
-    var finger = new PointerInputDevice(PointerKind.Touch, "finger");
+    // Catalyst runs under the Mac2 driver, which accepts a mouse pointer and
+    // has no touchscreen. WinAppDriver rejects a mouse pointer outright with
+    // "Currently only pen and touch pointer input source types are supported",
+    // so the two desktops need different devices; treating them as one
+    // "isDesktop" case is why every Windows drag and swipe failed.
+    var isMousePointer = platform == "catalyst";
+    var button = isMousePointer ? MouseButton.Left : MouseButton.Touch;
+    var finger = new PointerInputDevice(
+        isMousePointer ? PointerKind.Mouse : PointerKind.Touch,
+        isMousePointer ? "mouse" : "finger");
     var sequence = new ActionSequence(finger);
     sequence.AddAction(finger.CreatePointerMove(
         CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
-    sequence.AddAction(finger.CreatePointerDown(MouseButton.Touch));
+    sequence.AddAction(finger.CreatePointerDown(button));
     sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(250)));
 
     foreach (var (dx, dy) in segments)
@@ -1016,8 +1178,23 @@ static void DragPath(
         sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(140)));
     }
 
-    sequence.AddAction(finger.CreatePointerUp(MouseButton.Touch));
-    driver.PerformActions(new List<ActionSequence> { sequence });
+    sequence.AddAction(finger.CreatePointerUp(button));
+
+    try
+    {
+        driver.PerformActions(new List<ActionSequence> { sequence });
+    }
+    catch (WebDriverException actionsUnsupported)
+    {
+        // Desktop drivers were refused outright before this, so the only way to
+        // learn whether they implement the actions endpoint was to ask them.
+        // Asking cannot regress: a driver that refuses lands on exactly the
+        // message that used to be thrown without trying.
+        throw new InvalidOperationException(
+            $"dragPath is not supported by the {platform} adapter: " +
+            actionsUnsupported.Message,
+            actionsUnsupported);
+    }
 }
 
 static List<(double Dx, double Dy)> ParseDragSegments(string path)
