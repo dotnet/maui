@@ -336,10 +336,19 @@ builder.ConfigureMauiHandlers(handlers =>
 ## Tests
 
 `src/Core/tests/ExternalBackend` is a separate assembly
-(`Microsoft.Maui.Core.ExternalBackend.TestAssembly`) that is deliberately **not** in Core's
+(`Microsoft.Maui.Core.ExternalBackend.TestSupport`) that is deliberately **not** in Core's
 `InternalsVisibleTo` list and builds with `TreatWarningsAsErrors`. It contains fake native view types and
 handlers for label, content view, layout and window, so everything it compiles is provably public API and
 provably warning-free for an external consumer.
+
+It is **shared with the container-view work** from
+[#37854](https://github.com/dotnet/maui/pull/37854), which introduced the same assembly to prove
+`ViewHandler.SetContainerView` is reachable from a non-friend assembly. Both efforts need exactly the
+same thing — an assembly outside Core's friend list that models an external backend — so they use one
+project rather than two. Those sources (`ExternalBackendViewHandler.cs`, `ExternalPlatformViews.cs`) use
+platform-agnostic native types, which satisfy `ViewHandler<,>`'s `TPlatformView` constraint only where
+that constraint is `class`, so they are scoped to the platform-neutral and netstandard target frameworks
+— precisely the set they were compiled against before this project became multi-targeted.
 
 It **mirrors `Microsoft.Maui.Core`'s own `TargetFrameworks` exactly** —
 `netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)` — because the failure it guards

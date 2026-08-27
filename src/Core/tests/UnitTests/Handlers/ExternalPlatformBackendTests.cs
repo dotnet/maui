@@ -14,7 +14,7 @@ namespace Microsoft.Maui.UnitTests.Handlers
 	/// public handler contracts.
 	/// </summary>
 	/// <remarks>
-	/// The fake backend lives in Microsoft.Maui.Core.ExternalBackend.TestAssembly, which is deliberately
+	/// The fake backend lives in Microsoft.Maui.Core.ExternalBackend.TestSupport, which is deliberately
 	/// absent from Core's InternalsVisibleTo list.
 	/// </remarks>
 	[Category(TestCategory.Core)]

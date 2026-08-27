@@ -41,3 +41,5 @@ Microsoft.Maui.ILayoutHandler<TPlatformView>.Insert(int index, Microsoft.Maui.IV
 Microsoft.Maui.ILayoutHandler<TPlatformView>.Remove(Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.ILayoutHandler<TPlatformView>.Update(int index, Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.ILayoutHandler<TPlatformView>.UpdateZIndex(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(object? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(object! containerView) -> void
