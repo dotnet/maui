@@ -193,8 +193,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("OnParent", ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
 		}
 
+		// Direct parent-resolution unit coverage. GenerateFlyoutGrouping hands a backend the MenuShellItem
+		// wrapper for items added to Shell.Items, not the bare MenuItem, so this exercises the resolver's
+		// parent lookup directly rather than a shape a backend receives from grouping.
 		[Fact]
-		public void BareMenuItemResolvesTemplateSetOnItsWrapper()
+		public void ResolverFindsTemplateOnTheParentOfAMenuItem()
 		{
 			var shell = new Shell();
 			shell.Items.Add(CreateShellItem());
@@ -202,20 +205,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var menuItem = new MenuItem { Text = "Menu" };
 			AddMenuShellItem(shell, menuItem);
 
-			// The wrapper is internal, but it is reachable as the MenuItem's parent, and a template set there
-			// has to be found when the backend is handed the bare MenuItem.
-			var template = new DataTemplate(() => new Label { Text = "OnWrapper" });
+			var template = new DataTemplate(() => new Label { Text = "OnParent" });
 			Shell.SetMenuItemTemplate(menuItem.Parent, template);
-
-			var backend = new FakeExternalShellFlyoutBackend(shell);
 
 			Assert.False(menuItem.IsSet(Shell.MenuItemTemplateProperty));
 			Assert.Same(template, Shell.ResolveFlyoutItemTemplate(shell, menuItem));
-			Assert.Equal("OnWrapper", ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
 		}
 
+		// Direct resolver coverage, same caveat as above.
 		[Fact]
-		public void BareMenuItemWithoutTemplateResolvesToNull()
+		public void ResolverReturnsNullForAMenuItemWithNoTemplateAnywhere()
 		{
 			var shell = new Shell();
 			shell.Items.Add(CreateShellItem());
@@ -223,10 +222,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var menuItem = new MenuItem { Text = "Menu" };
 			AddMenuShellItem(shell, menuItem);
 
+			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, menuItem));
+		}
+
+		// Unlike Shell.Items, ShellContent.MenuItems puts the bare MenuItem in the flyout grouping, so a
+		// template set directly on the MenuItem is a shape backends really do receive.
+		[Fact]
+		public void MenuItemTemplateSetOnTheMenuItemIsUsedForShellContentMenuItems()
+		{
+			var shell = new Shell();
+			var shellContent = CreateShellContent();
+
+			var menuItem = new MenuItem { Text = "Menu" };
+			var template = new DataTemplate(() => new Label { Text = "OnMenuItem" });
+			Shell.SetMenuItemTemplate(menuItem, template);
+
+			shellContent.MenuItems.Add(menuItem);
+			shell.Items.Add(shellContent);
+
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 
-			Assert.Null(Shell.ResolveFlyoutItemTemplate(shell, menuItem));
-			Assert.Equal(FakeExternalShellFlyoutBackend.PlatformDefaultText, ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
+			Assert.Contains(menuItem, backend.GetFlyoutItems());
+			Assert.Same(template, Shell.ResolveFlyoutItemTemplate(shell, menuItem));
+			Assert.Equal("OnMenuItem", ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
+		}
+
+		// Pins pre-existing behavior: when both the MenuItem and its parent set a template, the parent wins.
+		// This is long-standing Shell behavior that the public resolver preserves verbatim.
+		[Fact]
+		public void ParentTemplateWinsOverMenuItemTemplateForShellContentMenuItems()
+		{
+			var shell = new Shell();
+			var shellContent = CreateShellContent();
+
+			var menuItem = new MenuItem { Text = "Menu" };
+			Shell.SetMenuItemTemplate(menuItem, new DataTemplate(() => new Label { Text = "OnMenuItem" }));
+
+			var parentTemplate = new DataTemplate(() => new Label { Text = "OnParent" });
+			Shell.SetMenuItemTemplate(shellContent, parentTemplate);
+
+			shellContent.MenuItems.Add(menuItem);
+			shell.Items.Add(shellContent);
+
+			var backend = new FakeExternalShellFlyoutBackend(shell);
+
+			Assert.Same(parentTemplate, Shell.ResolveFlyoutItemTemplate(shell, menuItem));
+			Assert.Equal("OnParent", ((Label)backend.CreateFlyoutItemView(menuItem)).Text);
 		}
 
 		[Fact]
@@ -265,39 +306,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(invoked);
 		}
 
+		// Shell level MenuItemTemplate is applied to the MenuShellItem wrapper, which mirrors Text/Title from
+		// its MenuItem but does not surface Command. Selection is what activates the command; see
+		// MenuItemFlyoutSelectionInvokesTheCommand.
 		[Fact]
-		public void MenuItemTemplateBindsTextAndCommandForShellLevelMenuItems()
+		public void MenuItemTemplateBindsTextForShellLevelMenuItems()
 		{
-			bool invoked = false;
-
 			var shell = new Shell
 			{
 				MenuItemTemplate = new DataTemplate(() =>
 				{
-					var button = new Button();
-					button.SetBinding(Button.TextProperty, "Text");
-					button.SetBinding(Button.CommandProperty, "Command");
-					return button;
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, "Text");
+					return label;
 				})
 			};
 
 			shell.Items.Add(CreateShellItem());
 
-			var menuItem = new MenuItem
-			{
-				Text = "Menu",
-				Command = new Command(() => invoked = true)
-			};
-
+			var menuItem = new MenuItem { Text = "Menu" };
 			AddMenuShellItem(shell, menuItem);
 
 			var backend = new FakeExternalShellFlyoutBackend(shell);
 			var flyoutItem = FindFlyoutItem(backend, menuItem);
-			var button = Assert.IsType<Button>(backend.CreateFlyoutItemView(flyoutItem));
+			var label = Assert.IsType<Label>(backend.CreateFlyoutItemView(flyoutItem));
 
-			// The MenuShellItem wrapper mirrors Text from its MenuItem, so binding the created content to the
-			// flyout item works the same way it does on the built-in backends.
-			Assert.Equal("Menu", button.Text);
+			Assert.Equal("Menu", label.Text);
 		}
 
 		[Fact]
