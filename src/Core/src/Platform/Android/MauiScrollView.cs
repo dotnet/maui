@@ -384,8 +384,8 @@ namespace Microsoft.Maui.Platform
 			{
 				// Subtract padding (e.g. from SafeArea insets) so the child fits the content area exactly;
 				// otherwise NestedScrollView sees the overflow as vertical scroll range.
-				var hScrollViewHeight = this.MeasuredHeight - PaddingTop - PaddingBottom;
-				var hScrollViewWidth = this.MeasuredWidth - PaddingLeft - PaddingRight;
+				var hScrollViewHeight = Math.Max(0, this.MeasuredHeight - PaddingTop - PaddingBottom);
+				var hScrollViewWidth = Math.Max(0, this.MeasuredWidth - PaddingLeft - PaddingRight);
 
 				_hScrollView.Measure(MeasureSpec.MakeMeasureSpec(hScrollViewWidth, MeasureSpecMode.Exactly),
 					MeasureSpec.MakeMeasureSpec(hScrollViewHeight, MeasureSpecMode.Exactly));
@@ -399,8 +399,8 @@ namespace Microsoft.Maui.Platform
 			if (_hScrollView?.Parent == this && _content is not null)
 			{
 				var scrollViewContentHeight = _content.Height;
-				var hScrollViewHeight = (bottom - top) - PaddingTop - PaddingBottom;
-				var hScrollViewWidth = (right - left) - PaddingLeft - PaddingRight;
+				var hScrollViewHeight = Math.Max(0, (bottom - top) - PaddingTop - PaddingBottom);
+				var hScrollViewWidth = Math.Max(0, (right - left) - PaddingLeft - PaddingRight);
 
 				//if we are scrolling both ways we need to lay out our MauiHorizontalScrollView with more than the available height
 				//so its parent the NestedScrollView can scroll vertically
