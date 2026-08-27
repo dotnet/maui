@@ -73,10 +73,13 @@ namespace Microsoft.Maui.UnitTests.Handlers
 		}
 
 		[Fact]
-		public void ExternalHandlerCannotImplementAliasedInterface()
+		public void ExternalHandlerDoesNotImplementAliasedInterface()
 		{
-			// This is the gap the platform-neutral contracts exist to close: the aliased interfaces pin
-			// PlatformView to a type the external backend does not own, so it cannot implement them.
+			// Runtime assertion only: these handlers do not implement the aliased interfaces. The
+			// compile-time half of the claim - that they *cannot* - is proven by the Core.ExternalBackend
+			// assembly, which compiles the same handler shapes against every target framework Core ships.
+			// Attempting to implement ILabelHandler/ILayoutHandler there fails with CS0738 on a platform
+			// target framework and CS9333 on the platform-neutral and netstandard ones.
 			Assert.IsNotAssignableFrom<ILabelHandler>(new FakeLabelHandler());
 			Assert.IsNotAssignableFrom<ILayoutHandler>(new FakeLayoutHandler());
 		}

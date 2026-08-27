@@ -176,6 +176,38 @@ else if (handler is ILayoutHandler legacy)
 }
 ```
 
+### How Controls reaches a layout handler
+
+`Microsoft.Maui.Controls.Layout` does **not** cast to either layout interface. It raises the
+child-management operations as **command mapper keys**:
+
+```csharp
+// src/Controls/src/Core/Layout/Layout.cs
+Handler?.Invoke(nameof(ILayoutHandler.Add), new LayoutHandlerUpdate(index, view));
+Handler?.Invoke(nameof(ILayoutHandler.Clear));
+```
+
+That dispatch is type-agnostic, so it reaches an external backend's handler exactly as it reaches the
+in-box one. Referencing `ILayoutHandler` for its member *names* via `nameof` is always allowed — only
+*implementing* it is blocked — so an external backend should register those same key strings in its
+command mapper, and Controls interop keeps working unchanged. This is what
+`ControlsLayoutCommandsReachExternalLayoutHandler` verifies end to end.
+
+**One known gap.** The obsolete `Microsoft.Maui.Controls.Compatibility.Layout<T>.LayoutHandler` property
+is declared as `ILayoutHandler` and evaluates `Handler as ILayoutHandler`, so it returns `null` for a
+handler that implements only `ILayoutHandler<TPlatformView>`:
+
+```csharp
+// src/Controls/src/Core/LegacyLayouts/Layout.cs:35
+public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
+```
+
+This is the **only** remaining runtime cast to `ILayoutHandler` in .NET MAUI. It is a public convenience
+property that no in-box code path reads, and its declaring type carries `[Obsolete]`, so it does not
+affect layout behavior for an external backend. It is documented here because for that one legacy
+property, `ILayoutHandler<TPlatformView>` is a compile-time contract only. Converting it was deliberately
+left out of scope: changing a shipped public property's semantics is a larger, separable decision.
+
 Binary compatibility was verified by compiling handlers against
 `Microsoft.Maui.Core 11.0.0-preview.7.26406.9` and loading them against a build that includes this
 change: derived handlers, explicit-interface-implementation handlers, and all existing `is`/cast

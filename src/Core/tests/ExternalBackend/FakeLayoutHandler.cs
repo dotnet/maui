@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -92,8 +93,17 @@ namespace Microsoft.Maui.ExternalBackend
 			}
 		}
 
-		FakeNativeView? GetNativeChild(IView view) =>
-			view.ToHandler(MauiContext!).PlatformView as FakeNativeView;
+		FakeNativeView? GetNativeChild(IView view)
+		{
+			// An external backend should surface a missing context as an actionable error rather than
+			// letting a null-forgiving operator turn it into a bare NullReferenceException. This mirrors
+			// the null-safety pattern the in-box handlers use for their non-nullable members.
+			var mauiContext = MauiContext
+				?? throw new InvalidOperationException(
+					$"{nameof(MauiContext)} cannot be null here. {nameof(FakeLayoutHandler)} must be connected via SetMauiContext before its children are realized.");
+
+			return view.ToHandler(mauiContext).PlatformView as FakeNativeView;
+		}
 
 		static int GetClampedZIndex(IView view, int count)
 		{

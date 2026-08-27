@@ -24,6 +24,21 @@ namespace Microsoft.Maui
 	/// so any handler derived from it — in the box or in an external backend — satisfies the contract
 	/// without writing any additional members.
 	/// </para>
+	/// <para>
+	/// <b>Lifecycle.</b> <see cref="VirtualView"/> and <see cref="PlatformView"/> are non-nullable here,
+	/// matching the non-nullable properties on
+	/// <see cref="Handlers.ElementHandler{TVirtualView, TPlatformView}"/> that satisfy them — and those
+	/// properties <b>throw <see cref="System.InvalidOperationException"/></b> rather than returning
+	/// <see langword="null"/> once the handler is disconnected.
+	/// <see cref="IElementHandler.DisconnectHandler"/> clears the platform view before invoking the
+	/// disconnect callback, so a handler is only guaranteed to have one between
+	/// <see cref="IElementHandler.SetVirtualView"/> and <see cref="IElementHandler.DisconnectHandler"/>.
+	/// The inherited <see cref="IElementHandler.VirtualView"/> and
+	/// <see cref="IElementHandler.PlatformView"/> return <see langword="null"/> in exactly that state and
+	/// never throw, so code that can run outside a connected window — teardown paths, weak-reference
+	/// caches, diagnostics — should read those instead. Property and command mappers always run while
+	/// the handler is connected and can use the typed members freely.
+	/// </para>
 	/// </remarks>
 	/// <example>
 	/// <code lang="csharp"><![CDATA[
@@ -34,8 +49,10 @@ namespace Microsoft.Maui
 	///     protected override MyNativeWindow CreatePlatformElement() => new MyNativeWindow();
 	/// }
 	///
-	/// // Consumers match it platform-neutrally:
-	/// if (window.Handler is IElementHandler<IWindow, object> windowHandler)
+	/// // Consumers match it platform-neutrally. The typed members below throw once the handler is
+	/// // disconnected, so guard on the nullable IElementHandler.PlatformView first.
+	/// if (window.Handler is { PlatformView: not null } handler &&
+	///     handler is IElementHandler<IWindow, object> windowHandler)
 	/// {
 	///     IWindow virtualView = windowHandler.VirtualView;
 	///     object nativeWindow = windowHandler.PlatformView;
@@ -49,11 +66,21 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the cross-platform virtual view associated with the handler.
 		/// </summary>
+		/// <remarks>
+		/// Throws <see cref="System.InvalidOperationException"/> when the handler is not connected. Read
+		/// the nullable <see cref="IElementHandler.VirtualView"/> instead on paths that can run while
+		/// disconnected.
+		/// </remarks>
 		new TVirtualView VirtualView { get; }
 
 		/// <summary>
 		/// Gets the native view associated with the handler.
 		/// </summary>
+		/// <remarks>
+		/// Throws <see cref="System.InvalidOperationException"/> when the handler is not connected. Read
+		/// the nullable <see cref="IElementHandler.PlatformView"/> instead on paths that can run while
+		/// disconnected.
+		/// </remarks>
 		new TPlatformView PlatformView { get; }
 	}
 }

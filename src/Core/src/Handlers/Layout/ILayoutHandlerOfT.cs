@@ -20,6 +20,25 @@ namespace Microsoft.Maui
 	/// Because <typeparamref name="TPlatformView"/> is covariant, <c>ILayoutHandler&lt;object&gt;</c>
 	/// matches any layout handler regardless of backend.
 	/// </para>
+	/// <para>
+	/// <b>How .NET MAUI Controls reaches a layout handler.</b> <c>Microsoft.Maui.Controls.Layout</c> does
+	/// not cast to either layout interface. It raises the child-management operations as <b>command
+	/// mapper keys</b> — <c>Handler.Invoke(nameof(ILayoutHandler.Add), new LayoutHandlerUpdate(index,
+	/// view))</c> and so on — which is type-agnostic and therefore reaches an external backend's handler
+	/// exactly as it reaches the in-box one. Referencing <see cref="ILayoutHandler"/> for its member
+	/// <em>names</em> is always allowed; only implementing it is blocked. An external backend should use
+	/// those same key strings so Controls interop keeps working.
+	/// </para>
+	/// <para>
+	/// <b>Known gap.</b> The obsolete
+	/// <c>Microsoft.Maui.Controls.Compatibility.Layout&lt;T&gt;.LayoutHandler</c> property is declared as
+	/// <see cref="ILayoutHandler"/> and evaluates <c>Handler as ILayoutHandler</c>, so it returns
+	/// <see langword="null"/> for a handler that implements only this generic interface. It is the sole
+	/// runtime cast to <see cref="ILayoutHandler"/> left in .NET MAUI, it is a public convenience
+	/// property that no in-box code path reads, and its declaring type is <c>[Obsolete]</c> — so it does
+	/// not affect layout behavior. It is called out here because this interface is, for that legacy
+	/// property specifically, a compile-time contract only.
+	/// </para>
 	/// </remarks>
 	public interface ILayoutHandler<out TPlatformView> : IViewHandler<ILayout, TPlatformView>
 		where TPlatformView : class

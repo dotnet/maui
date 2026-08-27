@@ -21,11 +21,21 @@ namespace Microsoft.Maui
 	/// <see cref="Handlers.ViewHandler{TVirtualView, TPlatformView}"/> implements this interface, so
 	/// every handler derived from it already satisfies the contract with no extra members.
 	/// </para>
+	/// <para>
+	/// <b>Lifecycle.</b> As with
+	/// <see cref="IElementHandler{TVirtualView, TPlatformView}"/>, the typed <see cref="VirtualView"/>
+	/// and <c>PlatformView</c> members <b>throw <see cref="System.InvalidOperationException"/></b> rather
+	/// than returning <see langword="null"/> once the handler is disconnected. Use the nullable
+	/// <see cref="IElementHandler.VirtualView"/> and <see cref="IElementHandler.PlatformView"/> on paths
+	/// that can run outside a connected window.
+	/// </para>
 	/// </remarks>
 	/// <example>
 	/// <code lang="csharp"><![CDATA[
-	/// // Works for the in-box LabelHandler and for an external backend's label handler alike:
-	/// if (label.Handler is IViewHandler<ILabel, object> labelHandler)
+	/// // Works for the in-box LabelHandler and for an external backend's label handler alike. The typed
+	/// // members throw once the handler is disconnected, so guard on the nullable one first.
+	/// if (label.Handler is { PlatformView: not null } handler &&
+	///     handler is IViewHandler<ILabel, object> labelHandler)
 	/// {
 	///     ILabel virtualView = labelHandler.VirtualView;
 	///     object nativeLabel = labelHandler.PlatformView;
@@ -42,7 +52,10 @@ namespace Microsoft.Maui
 		/// <remarks>
 		/// Re-declared so that lookups are unambiguous between
 		/// <see cref="IElementHandler{TVirtualView, TPlatformView}.VirtualView"/> and
-		/// <see cref="IViewHandler.VirtualView"/>.
+		/// <see cref="IViewHandler.VirtualView"/>. Throws
+		/// <see cref="System.InvalidOperationException"/> when the handler is not connected; read the
+		/// nullable <see cref="IViewHandler.VirtualView"/> instead on paths that can run while
+		/// disconnected.
 		/// </remarks>
 		new TVirtualView VirtualView { get; }
 	}
