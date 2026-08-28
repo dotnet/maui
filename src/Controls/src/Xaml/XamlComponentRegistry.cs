@@ -401,6 +401,8 @@ public static class XamlComponentRegistry
 	/// </summary>
 	sealed class ComponentMap
 	{
+		const int TemplateComponentPruneThreshold = 64;
+
 		readonly Dictionary<string, WeakReference<object>> _entries = new(StringComparer.Ordinal);
 		readonly Dictionary<string, List<WeakReference<object>>> _templateEntries = new(StringComparer.Ordinal);
 
@@ -424,6 +426,15 @@ public static class XamlComponentRegistry
 			}
 
 			entries.Add(new WeakReference<object>(component));
+
+			// Compact at geometrically spaced sizes. This keeps registration amortized O(1)
+			// when all realizations are live, while steady virtualization churn cannot grow
+			// dead wrappers past the next doubling (or the initial threshold).
+			if (entries.Count >= TemplateComponentPruneThreshold
+				&& (entries.Count & (entries.Count - 1)) == 0)
+			{
+				PruneDeadEntries(entries);
+			}
 		}
 
 		public IReadOnlyList<object> GetTemplateComponents(string nodeId)
@@ -436,14 +447,22 @@ public static class XamlComponentRegistry
 			{
 				if (entries[i].TryGetTarget(out var target))
 					result.Add(target);
-				else
-					entries.RemoveAt(i);
 			}
 
+			PruneDeadEntries(entries);
 			if (entries.Count == 0)
 				_templateEntries.Remove(nodeId);
 
 			return result;
+		}
+
+		static void PruneDeadEntries(List<WeakReference<object>> entries)
+		{
+			for (int i = entries.Count - 1; i >= 0; i--)
+			{
+				if (!entries[i].TryGetTarget(out _))
+					entries.RemoveAt(i);
+			}
 		}
 
 		public bool TryGet(string nodeId, out object? component)

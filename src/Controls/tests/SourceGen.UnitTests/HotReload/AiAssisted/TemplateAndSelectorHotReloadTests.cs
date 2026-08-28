@@ -72,6 +72,15 @@ public partial class TemplateAndSelectorHotReloadTests
 		public sealed class ItemB { public string? Heading { get; set; } }
 		""";
 
+	const string CustomItemTemplateHostSource = """
+		namespace TestTemplates;
+
+		public sealed class CustomItemTemplateHost : global::Microsoft.Maui.Controls.ContentView
+		{
+			public global::Microsoft.Maui.Controls.DataTemplate? ItemTemplate { get; set; }
+		}
+		""";
+
 	static XamlHotReloadTestHarness CreateHarness([CallerMemberName] string scenarioName = "", params string[] additionalSources) =>
 		new(scenarioName, PageClass, PageStub, additionalSources);
 
@@ -111,6 +120,54 @@ public partial class TemplateAndSelectorHotReloadTests
 		      </DataTemplate>
 		    </CollectionView.ItemTemplate>
 		  </CollectionView>
+		</ContentPage>
+		""";
+
+	static string CollectionViewCompiledItemTemplateXaml(string dataType, string property) => $$"""
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestTemplates"
+		             x:Class="TestTemplates.MainPage">
+		  <CollectionView>
+		    <CollectionView.ItemTemplate>
+		      <DataTemplate x:DataType="{{dataType}}">
+		        <Label Text="{Binding {{property}}}" />
+		      </DataTemplate>
+		    </CollectionView.ItemTemplate>
+		  </CollectionView>
+		</ContentPage>
+		""";
+
+	static string CollectionViewMultiNodeItemTemplateXaml() => """
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestTemplates.MainPage">
+		  <CollectionView>
+		    <CollectionView.ItemTemplate>
+		      <DataTemplate>
+		        <VerticalStackLayout>
+		          <Label Text="First" />
+		          <Label Text="Second" />
+		          <Button Text="Third" />
+		        </VerticalStackLayout>
+		      </DataTemplate>
+		    </CollectionView.ItemTemplate>
+		  </CollectionView>
+		</ContentPage>
+		""";
+
+	static string CustomItemTemplateHostXaml(string text) => $$"""
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestTemplates"
+		             x:Class="TestTemplates.MainPage">
+		  <local:CustomItemTemplateHost>
+		    <local:CustomItemTemplateHost.ItemTemplate>
+		      <DataTemplate>
+		        <Label Text="{{text}}" />
+		      </DataTemplate>
+		    </local:CustomItemTemplateHost.ItemTemplate>
+		  </local:CustomItemTemplateHost>
 		</ContentPage>
 		""";
 

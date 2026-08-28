@@ -44,6 +44,69 @@ public partial class TemplateAndSelectorHotReloadTests
 		});
 	}
 
+	[Fact]
+	public void CollectionViewItemTemplate_RetypeUsesConservativePropertyDiff()
+	{
+		using var harness = CreateHarness(additionalSources: ItemTypesSource);
+		var generation = harness.Generate(
+			CollectionViewCompiledItemTemplateXaml("local:ItemA", "Caption"),
+			CollectionViewCompiledItemTemplateXaml("local:ItemB", "Heading"));
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("Complex property 'ItemTemplate'", updateComponentSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("GetTemplateComponents", updateComponentSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CollectionViewItemTemplatePatch_EnumeratesWithoutEmittedEarlyExit()
+	{
+		using var harness = CreateHarness();
+		var generation = harness.Generate(
+			CollectionViewItemTemplateXaml("Cell"),
+			CollectionViewItemTemplateXaml("Row"));
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("foreach (var", updateComponentSource!, StringComparison.Ordinal);
+		Assert.Contains("GetTemplateComponents", updateComponentSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("return;", updateComponentSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ItemTemplateFastPath_DoesNotMatchUnrelatedOwner()
+	{
+		using var harness = CreateHarness(additionalSources: CustomItemTemplateHostSource);
+		var generation = harness.Generate(
+			CustomItemTemplateHostXaml("Before"),
+			CustomItemTemplateHostXaml("After"));
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("Complex property 'ItemTemplate'", updateComponentSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("GetTemplateComponents", updateComponentSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TemplateComponentRegistrations_AreOrderedByStableNodeId()
+	{
+		using var harness = CreateHarness();
+		var generation = harness.Generate(
+			CollectionViewMultiNodeItemTemplateXaml(),
+			CollectionViewMultiNodeItemTemplateXaml());
+		var initializeComponentSource = generation[0].InitializeComponentSource;
+
+		Assert.NotNull(initializeComponentSource);
+		var registrations = initializeComponentSource!
+			.Split('\n')
+			.Where(line => line.Contains("RegisterTemplateComponent", StringComparison.Ordinal))
+			.ToArray();
+		Assert.True(registrations.Length >= 3);
+		Assert.Equal(
+			registrations.OrderBy(line => line, StringComparer.Ordinal),
+			registrations);
+	}
+
 	// Wave-2 · Templates · TS-01 (GREEN anchor)
 	// Provenance: MAUI §hot-reload DataTemplate realization; SetPropertiesVisitor.cs L245-296 (#36482);
 	//             UpdateComponent resource-replacement verified by dumping the generated V2 source.

@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
@@ -96,6 +99,25 @@ public class XamlComponentRegistryTests
 		Assert.Equal(2, components.Count);
 		Assert.Contains(first, components);
 		Assert.Contains(second, components);
+	}
+
+	[Fact]
+	public void RegisterTemplateComponent_PrunesDeadEntriesAtGeometricThreshold()
+	{
+		var page = new object();
+		const string nodeId = "label_0";
+
+		for (int i = 0; i < 63; i++)
+			RegisterEphemeralTemplateComponent(page, nodeId);
+
+		CollectGarbage();
+
+		var live = new object();
+		XamlComponentRegistry.RegisterTemplateComponent(page, nodeId, live);
+
+		Assert.Equal(1, GetTemplateRegistrationCount(page, nodeId));
+		GC.KeepAlive(live);
+		GC.KeepAlive(page);
 	}
 
 	[Fact]
@@ -363,6 +385,38 @@ public class XamlComponentRegistryTests
 
 		Assert.Same(comp, XamlComponentRegistry.GetComponent(page, "Label_0"));
 		Assert.Null(XamlComponentRegistry.GetComponent(page, "NotRegistered"));
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static void RegisterEphemeralTemplateComponent(object page, string nodeId) =>
+		XamlComponentRegistry.RegisterTemplateComponent(page, nodeId, new object());
+
+	static void CollectGarbage()
+	{
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		GC.Collect();
+	}
+
+	static int GetTemplateRegistrationCount(object page, string nodeId)
+	{
+		var tableField = typeof(XamlComponentRegistry).GetField("s_table", BindingFlags.NonPublic | BindingFlags.Static);
+		Assert.NotNull(tableField);
+		var table = tableField.GetValue(null);
+		Assert.NotNull(table);
+
+		var tryGetValue = table.GetType().GetMethod("TryGetValue");
+		Assert.NotNull(tryGetValue);
+		var arguments = new object[] { page, null };
+		Assert.True((bool)tryGetValue.Invoke(table, arguments)!);
+		var map = arguments[1];
+		Assert.NotNull(map);
+
+		var entriesField = map.GetType().GetField("_templateEntries", BindingFlags.NonPublic | BindingFlags.Instance);
+		Assert.NotNull(entriesField);
+		var entries = Assert.IsAssignableFrom<IDictionary>(entriesField.GetValue(map));
+		var registrations = Assert.IsAssignableFrom<ICollection>(entries[nodeId]);
+		return registrations.Count;
 	}
 
 	sealed class FakePage { }

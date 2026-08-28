@@ -438,7 +438,7 @@ static class XamlNodeDiff
 					&& newNode.Properties.TryGetValue(property.Key, out var newProperty)
 					&& newProperty is ElementNode newElement
 					&& XmlTypeEquals(oldElement.XmlType, newElement.XmlType)
-					&& ShouldDiffElementProperty(property.Key, oldElement, templateContent))
+					&& ShouldDiffElementProperty(oldNode, property.Key, oldElement, newElement, templateContent))
 				{
 					if (!DiffNode(oldElement, newElement, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, childForceRefresh, templateContent))
 						return false;
@@ -829,7 +829,7 @@ static class XamlNodeDiff
 				if (oldPropNode is ElementNode oldElement
 					&& newPropNode is ElementNode newElement
 					&& XmlTypeEquals(oldElement.XmlType, newElement.XmlType)
-					&& ShouldDiffElementProperty(name, oldElement, insideTemplate))
+					&& ShouldDiffElementProperty(oldNode, name, oldElement, newElement, insideTemplate))
 				{
 					continue;
 				}
@@ -946,9 +946,28 @@ static class XamlNodeDiff
 		=> node.XmlType.RepresentsType(XamlParser.MauiUri, "DataTemplate")
 			|| node.XmlType.RepresentsType(XamlParser.MauiUri, "ControlTemplate");
 
-	static bool ShouldDiffElementProperty(XmlName propertyName, ElementNode element, bool insideTemplate)
-		=> insideTemplate
-			|| (propertyName.LocalName == "ItemTemplate" && IsTemplateNode(element));
+	static bool ShouldDiffElementProperty(
+		ElementNode owner,
+		XmlName propertyName,
+		ElementNode oldElement,
+		ElementNode newElement,
+		bool insideTemplate)
+	{
+		// Retyping a template regenerates compiled binding accessors. Keep the owning
+		// property on the conservative complex-property path instead of partially
+		// patching the old realized subtree.
+		if (IsTemplateNode(oldElement) && DetectXDataTypeChange(oldElement, newElement))
+			return false;
+
+		if (insideTemplate)
+			return true;
+
+		// #37890 is intentionally limited to a direct CollectionView.ItemTemplate.
+		// Do not opt unrelated controls with a same-named property into this path.
+		return owner.XmlType.RepresentsType(XamlParser.MauiUri, "CollectionView")
+			&& propertyName.LocalName == "ItemTemplate"
+			&& IsTemplateNode(oldElement);
+	}
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the value of <c>x:DataType</c> on this node
