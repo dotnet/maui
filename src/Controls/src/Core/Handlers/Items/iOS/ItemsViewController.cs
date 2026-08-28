@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _laidOut;
 		bool _isEmpty = true;
+		bool _hasNoItems = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
@@ -134,10 +135,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CheckForEmptySource()
 		{
 			var wasEmpty = _isEmpty;
+			var hadNoItems = _hasNoItems;
 
-			_isEmpty = ItemsSource.ItemCount == 0;
+			_hasNoItems = ItemsSource.ItemCount == 0;
+			_isEmpty = IsEmptySource();
 
-			if (_isEmpty)
+			if (_hasNoItems)
 			{
 				ClearMeasurementCells();
 				ItemsViewLayout?.ClearCellSizeCache();
@@ -148,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateEmptyViewVisibility(_isEmpty);
 			}
 
-			if (wasEmpty && !_isEmpty)
+			if (hadNoItems && !_hasNoItems)
 			{
 				// If we're going from empty to having stuff, it's possible that we've never actually measured
 				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
@@ -779,7 +782,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+			UpdateEmptyViewVisibility(IsEmptySource());
+		}
+
+		bool IsEmptySource()
+		{
+			if (ItemsSource is null)
+			{
+				return true;
+			}
+
+			return ItemsView is GroupableItemsView { IsGrouped: true }
+				? ItemsSource.GroupCount == 0
+				: ItemsSource.ItemCount == 0;
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
