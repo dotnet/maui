@@ -269,13 +269,23 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIsPresented()
 		{
-			if (_flyoutView?.Parent == DrawerLayout)
+			// Use MauiDrawerLayout's open/close methods
+			if (VirtualView.IsPresented)
+				MauiDrawerLayout.OpenFlyout();
+			else
+				MauiDrawerLayout.CloseFlyout();
+
+			InvalidateFlyoutSafeArea();
+		}
+
+		void InvalidateFlyoutSafeArea()
+		{
+			if (_flyoutView is null)
 			{
-				if (VirtualView.IsPresented)
-					DrawerLayout.OpenDrawer(_flyoutView);
-				else
-					DrawerLayout.CloseDrawer(_flyoutView);
+				return;
 			}
+
+			MauiWindowInsetsScope.FindForView(_flyoutView)?.Invalidate(SafeAreaInvalidationReason.NavigationChromeChanged);
 		}
 
 		void UpdateFlyoutBehavior()
