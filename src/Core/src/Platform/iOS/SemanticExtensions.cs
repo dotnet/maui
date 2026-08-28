@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -50,8 +51,11 @@ namespace Microsoft.Maui.Platform
 		/// <param name="platformView">The platform view that hosts the input view.</param>
 		/// <param name="inputView">The input view that should receive focus, or <see langword="null"/> if no notification should be posted.</param>
 		/// <remarks>This method must be called on the UI thread.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="platformView"/> is <see langword="null"/>.</exception>
 		public static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
 		{
+			ArgumentNullException.ThrowIfNull(platformView);
+
 			if (inputView is null)
 			{
 				return;
