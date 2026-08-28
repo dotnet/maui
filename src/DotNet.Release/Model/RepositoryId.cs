@@ -127,14 +127,3 @@ internal enum RepositoryOrigin
     /// <summary>Derived from the Azure DevOps mirror name; see <see cref="RepositoryId.FromAzureDevOpsMirror"/>.</summary>
     AzureDevOpsMirrorConvention,
 }
-
-/// <summary>A BAR channel, identified by both name and ID because the release verifies both.</summary>
-internal sealed record ChannelReference(string Name, int Id);
-
-/// <summary>The subset of a BAR build the release actually depends on.</summary>
-internal sealed record BarBuild(
-    int Id,
-    string Commit,
-    string? GitHubRepository,
-    string? AzureDevOpsRepository,
-    IReadOnlyList<ChannelReference> Channels);

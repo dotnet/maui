@@ -1,71 +1,11 @@
-using NuGet.Common;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
-
 namespace DotNet.Release;
 
-/// <summary>
-/// Asks whether one package identity is resolvable on a feed.
-/// </summary>
-/// <remarks>
-/// A seam, so the aggregation in <see cref="PackageAvailabilityProbe"/> can be tested
-/// without a network. Read-only by construction: it answers a question and exposes nothing
-/// that could publish.
-/// </remarks>
-internal interface IPackageExistenceChecker
+/// <summary>Read-only availability for a batch of planned NuGet packages.</summary>
+internal interface IPackageAvailabilityProbe
 {
-    Task<bool> ExistsAsync(string id, string normalizedVersion, CancellationToken cancellationToken);
-}
-
-/// <summary>
-/// Checks package existence through the feed's flat-container resource.
-/// </summary>
-/// <remarks>
-/// <c>FindPackageByIdResource</c> implements NuGet protocol negotiation, retry behavior, and
-/// transient-status handling for exact package identity checks.
-/// </remarks>
-internal sealed class FlatContainerExistenceChecker : IPackageExistenceChecker, IDisposable
-{
-    /// <summary>The production feed. Queried read-only; nothing is ever pushed here.</summary>
-    public const string NuGetOrgIndex = "https://api.nuget.org/v3/index.json";
-
-    private readonly SourceCacheContext _cache;
-    private readonly ILogger _logger;
-    private readonly Task<FindPackageByIdResource> _resource;
-
-    public FlatContainerExistenceChecker(string? sourceIndexUrl = null, ILogger? logger = null)
-    {
-        _logger = logger ?? NullLogger.Instance;
-
-        // Availability must reflect the feed right now: a cached "missing" would let the
-        // publish job re-push a package that landed moments earlier, and NuGet's task treats
-        // the resulting 409 as fatal.
-        _cache = new SourceCacheContext { NoCache = true, DirectDownload = true };
-
-        var repository = Repository.Factory.GetCoreV3(sourceIndexUrl ?? NuGetOrgIndex);
-        _resource = repository.GetResourceAsync<FindPackageByIdResource>();
-    }
-
-    public async Task<bool> ExistsAsync(string id, string normalizedVersion, CancellationToken cancellationToken)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedVersion);
-
-        if (!NuGetVersion.TryParse(normalizedVersion, out var version))
-        {
-            throw new ArgumentException(
-                $"'{normalizedVersion}' is not a valid NuGet version.", nameof(normalizedVersion));
-        }
-
-        var resource = await _resource.ConfigureAwait(false);
-
-        return await resource
-            .DoesPackageExistAsync(id, version, _cache, _logger, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    public void Dispose() => _cache.Dispose();
+    Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
+        IReadOnlyList<PlannedPackage> packages,
+        CancellationToken cancellationToken);
 }
 
 /// <summary>

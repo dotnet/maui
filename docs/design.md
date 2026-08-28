@@ -174,8 +174,7 @@ src/DotNet.Release/
   Cli/                                 commands and orchestration
   Policy/                              pure release decisions
   Model/                               plan, policy, marker, and result types
-  Adapters/                            BAR, NuGet availability, and nupkg readers
-  Abstractions/                        read-only interfaces used by tests
+  Adapters/                            read-only interfaces and implementations
   Pipeline/                            Azure DevOps logging-command formatting
 
 tests/DotNet.Release.Tests/            unit, contract, architecture, and pipeline tests

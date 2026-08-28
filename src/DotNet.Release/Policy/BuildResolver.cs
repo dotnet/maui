@@ -1,49 +1,4 @@
-using System.Text.Json.Serialization;
-
 namespace DotNet.Release;
-
-/// <summary>What the operator asked for.</summary>
-internal sealed record ReleaseRequest(RepositoryId Repository, string Commit, int? BarBuildId);
-
-/// <summary>
-/// The verified outcome of <c>release plan</c>, serialized as <c>plan.json</c>.
-/// </summary>
-/// <remarks>
-/// Every field here has been checked against BAR, not merely copied from the request.
-/// </remarks>
-internal sealed record ResolvedRelease
-{
-    [JsonPropertyName("schemaVersion")]
-    public int SchemaVersion { get; init; } = 1;
-
-    [JsonPropertyName("toolVersion")]
-    public required string ToolVersion { get; init; }
-
-    [JsonPropertyName("createdUtc")]
-    public required DateTimeOffset CreatedUtc { get; init; }
-
-    [JsonPropertyName("repository")]
-    public required string Repository { get; init; }
-
-    [JsonPropertyName("repositoryUrl")]
-    public required string RepositoryUrl { get; init; }
-
-    [JsonPropertyName("commit")]
-    public required string Commit { get; init; }
-
-    [JsonPropertyName("barBuildId")]
-    public required int BarBuildId { get; init; }
-
-    /// <summary>Records which path established the repository identity, for the audit trail.</summary>
-    [JsonPropertyName("repositoryOrigin")]
-    public required RepositoryOrigin RepositoryOrigin { get; init; }
-
-    [JsonPropertyName("workload")]
-    public required bool Workload { get; init; }
-
-    [JsonPropertyName("channel")]
-    public ChannelReference? Channel { get; init; }
-}
 
 /// <summary>
 /// Verifies a BAR build against the request and the policy. Pure.

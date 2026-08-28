@@ -131,8 +131,7 @@ src/DotNet.Release/             the tool - one project
   Cli/                          the four verbs (System.CommandLine)
   Policy/                       pure decisions over plain data - no I/O
   Model/                        the data those decisions operate on
-  Adapters/                     the only I/O: read-only BAR + NuGet, reading .nupkg files
-  Abstractions/                 interfaces, so tests never touch a network
+  Adapters/                     read-only BAR/NuGet interfaces and implementations
 tests/DotNet.Release.Tests/     one test project, zero network
 config/repositories.json        declarative release policy
 docs/design.md                  full rationale
