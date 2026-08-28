@@ -140,8 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					view.FlyoutBackgroundColor?.AsPaint());
 		}
 
-		//TODO: Make it public in .NET 10.
-		internal static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view)
+		public static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 			if (handler?.PlatformView is not null && provider is not null)

@@ -62,8 +62,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// TODO: Make it public in .NET 10.0
-		internal static void MapSwitchMinimumWidth(IViewHandler handler, IView view)
+		public static void MapSwitchMinimumWidth(IViewHandler handler, IView view)
 		{
 			// Update the native ToggleSwitch MinWidth to reflect the MAUI view's MinimumWidth,
 			// overriding the default WinUI MinWidth (154) since we're not supporting OnContent and OffContent.
