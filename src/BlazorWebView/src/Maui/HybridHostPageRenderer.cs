@@ -39,13 +39,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private readonly List<HybridRootComponentRegistration> _registrations = new();
 		private readonly ResourceAssetCollection _assets;
+		private readonly Dispatcher? _dispatcher;
 		private int _mountElementCount;
 
-		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ResourceAssetCollection assets)
+		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ResourceAssetCollection assets, Dispatcher? dispatcher)
 			: base(serviceProvider, loggerFactory)
 		{
 			_assets = assets;
+			_dispatcher = dispatcher;
 		}
+
+		/// <summary>
+		/// Uses the supplied MAUI dispatcher (the same one the live <c>WebViewManager</c> renders on) when
+		/// provided, so the static host render shares a single threading model with the rest of the Blazor
+		/// pipeline. Falls back to the base renderer's default dispatcher when none is supplied.
+		/// </summary>
+		public override Dispatcher Dispatcher => _dispatcher ?? base.Dispatcher;
 
 		/// <summary>
 		/// Supplies the fingerprint-aware asset collection so that <c>@Assets["logical"]</c> resolves to
@@ -56,17 +65,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override ResourceAssetCollection Assets => _assets;
 
 		/// <summary>
-		/// Renders <paramref name="appComponentType"/> to a full HTML document and returns the markup
-		/// together with the interactive components that must be attached to the live document.
+		/// Asynchronously renders <paramref name="appComponentType"/> to a full HTML document and returns
+		/// the markup together with the interactive components that must be attached to the live document.
+		/// The render runs on <paramref name="dispatcher"/> when supplied (the MAUI UI dispatcher), so it
+		/// integrates with the UI message loop and is awaited rather than blocked.
 		/// </summary>
 		/// <param name="services">The application service provider.</param>
 		/// <param name="appComponentType">The host component type to render (the <c>App.razor</c> equivalent).</param>
 		/// <param name="assets">The fingerprint-aware asset collection, or <c>null</c> to disable <c>@Assets</c> fingerprinting.</param>
+		/// <param name="dispatcher">The dispatcher to render on, or <c>null</c> to use the default renderer dispatcher.</param>
 		/// <returns>The rendered document markup and the collected interactive attach registrations.</returns>
-		public static HybridHostPageResult Render(
+		public static Task<HybridHostPageResult> RenderAsync(
 			IServiceProvider services,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType,
-			ResourceAssetCollection? assets = null)
+			ResourceAssetCollection? assets = null,
+			Dispatcher? dispatcher = null)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(appComponentType);
@@ -74,35 +87,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 			var resolvedAssets = assets ?? ResourceAssetCollection.Empty;
 
-			// Render on a thread-pool thread so the renderer's dispatcher never contends with the UI
-			// synchronization context.
-			return Task.Run(() =>
+			var renderer = new HybridHostPageRenderer(services, loggerFactory, resolvedAssets, dispatcher);
+			return renderer.Dispatcher.InvokeAsync(async () =>
 			{
-				var renderer = new HybridHostPageRenderer(services, loggerFactory, resolvedAssets);
-				return renderer.Dispatcher.InvokeAsync(async () =>
+				try
 				{
-					try
-					{
-						var rootComponent = renderer.BeginRenderingComponent(appComponentType, ParameterView.Empty);
+					var rootComponent = renderer.BeginRenderingComponent(appComponentType, ParameterView.Empty);
 
-						// Wait for the component tree to finish rendering - including any asynchronous
-						// initialization (for example OnInitializedAsync) - before serializing, otherwise
-						// async host content (and its render-mode registrations) could be omitted from the
-						// document. This mirrors how the framework's own static HTML rendering awaits quiescence.
-						await rootComponent.QuiescenceTask.ConfigureAwait(false);
+					// Wait for the component tree to finish rendering - including any asynchronous
+					// initialization (for example OnInitializedAsync) - before serializing, otherwise
+					// async host content (and its render-mode registrations) could be omitted from the
+					// document. This mirrors how the framework's own static HTML rendering awaits quiescence.
+					await rootComponent.QuiescenceTask.ConfigureAwait(false);
 
-						var html = rootComponent.ToHtmlString();
-						return new HybridHostPageResult(html, renderer._registrations);
-					}
-					finally
-					{
-						// Dispose on the renderer's dispatcher (required by Renderer) to release the
-						// component tree and avoid leaking the renderer per host render.
-						renderer.Dispose();
-					}
-				});
-			}).GetAwaiter().GetResult();
+					var html = rootComponent.ToHtmlString();
+					return new HybridHostPageResult(html, renderer._registrations);
+				}
+				finally
+				{
+					// Dispose on the renderer's dispatcher (required by Renderer) to release the
+					// component tree and avoid leaking the renderer per host render.
+					renderer.Dispose();
+				}
+			});
 		}
+
+		/// <summary>
+		/// Synchronous fallback used when the host document is rendered outside the handler's dispatcher-gated
+		/// startup path (for example a direct <c>CreateFileProvider</c> call). Renders on the default
+		/// (thread-pool) dispatcher and blocks. The primary, non-blocking path is <see cref="RenderAsync"/>.
+		/// </summary>
+		public static HybridHostPageResult Render(
+			IServiceProvider services,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType,
+			ResourceAssetCollection? assets = null)
+			=> Task.Run(() => RenderAsync(services, appComponentType, assets, dispatcher: null)).GetAwaiter().GetResult();
 
 		/// <inheritdoc />
 		protected override IComponent ResolveComponentForRenderMode(

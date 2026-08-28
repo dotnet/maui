@@ -9,6 +9,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private bool _appTypeRendered;
 		private bool _syntheticHostPageApplied;
 		private string? _renderedHostPageHtml;
+		private StaticWebAssetsManifest? _manifest;
 		private readonly List<RootComponent> _appTypeRootComponents = new();
 
 		/// <summary>
@@ -122,6 +124,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			_appTypeRendered = false;
 			_renderedHostPageHtml = null;
+			_manifest = null;
 
 			if (_appTypeRootComponents.Count > 0)
 			{
@@ -133,6 +136,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_appTypeRootComponents.Clear();
 			}
 		}
+
+		/// <summary>Gets whether the <see cref="AppType"/> host document has been rendered.</summary>
+		internal bool IsAppTypeRendered => _appTypeRendered;
 
 		/// <summary>
 		/// Bindable property for <see cref="StartPath"/>.
@@ -218,23 +224,66 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return platformFileProvider;
 			}
 
+			// The host document is normally rendered ahead of startup by the handler (asynchronously, on
+			// the MAUI dispatcher). If it hasn't been - for example a direct CreateFileProvider call - fall
+			// back to a synchronous render so this path always has content to serve.
+			if (!_appTypeRendered)
+			{
+				EnsureAppTypeRendered();
+			}
+
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, _manifest);
+		}
+
+		/// <summary>
+		/// Renders the <see cref="AppType"/> host document asynchronously on the supplied MAUI dispatcher
+		/// (the same one the live components render on) so the render integrates with the UI message loop
+		/// and is awaited rather than blocking. Idempotent.
+		/// </summary>
+		internal async Task EnsureAppTypeRenderedAsync(IDispatcher? dispatcher)
+		{
+			if (_appTypeRendered || AppType is null)
+			{
+				return;
+			}
+
+			var (services, manifest) = PrepareAppTypeRender();
+			var blazorDispatcher = dispatcher is not null ? new MauiDispatcher(dispatcher) : null;
+			var result = await RenderAppTypeAsync(services, manifest, blazorDispatcher).ConfigureAwait(false);
+			ApplyAppTypeRender(result, manifest);
+		}
+
+		// See RenderAppTypeAsync for why the IL2072 suppression is required (AppType is XAML-reflection-set).
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
+			Justification = "AppType is set via XAML reflection so it cannot carry a DynamicallyAccessedMembers annotation; the component type is preserved by the XAML compiler ({x:Type}) and the Razor SDK trimming roots.")]
+		private void EnsureAppTypeRendered()
+		{
+			if (_appTypeRendered || AppType is null)
+			{
+				return;
+			}
+
+			var (services, manifest) = PrepareAppTypeRender();
+			var result = HybridHostPageRenderer.Render(services, AppType, manifest?.Assets);
+			ApplyAppTypeRender(result, manifest);
+		}
+
+		private (IServiceProvider Services, StaticWebAssetsManifest? Manifest) PrepareAppTypeRender()
+		{
+			var services = Handler?.MauiContext?.Services
+				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
+
 			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
 			// and fingerprinted-route serving work. The manifest lives outside the web root and is read
 			// from the app package, so it is never served to the web view. Absent (or on platforms
 			// without app-package access), fingerprinting simply stays off.
-			var logger = Handler?.MauiContext?.Services?.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
+			var logger = services.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
 			var manifest = StaticWebAssetsManifest.TryLoad(logger);
-
-			// Render the host document once. This also collects any interactive components declared with
-			// a render mode and registers them so they attach to the live document, and resolves @Assets
-			// using the manifest.
-			EnsureAppTypeRendered(manifest?.Assets);
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
-
-			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, manifest);
+			return (services, manifest);
 		}
 
-		// IL2072: AppType flows into HybridHostPageRenderer.Render's [DynamicallyAccessedMembers(All)]
+		// IL2072: AppType flows into HybridHostPageRenderer.RenderAsync's [DynamicallyAccessedMembers(All)]
 		// parameter. AppType cannot itself be annotated: it is a public property set by XAML via
 		// reflection (AppType="{x:Type components:App}"), and a DynamicallyAccessedMembers requirement on
 		// a reflection-set property/parameter is not satisfiable by the trimmer (it produces IL2111/IL2114
@@ -243,18 +292,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// trimming roots (@rendermode / routable assembly), so their members survive trimming.
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
 			Justification = "AppType is set via XAML reflection so it cannot carry a DynamicallyAccessedMembers annotation; the component type is preserved by the XAML compiler ({x:Type}) and the Razor SDK trimming roots.")]
-		private void EnsureAppTypeRendered(ResourceAssetCollection? assets)
+		private Task<HybridHostPageResult> RenderAppTypeAsync(IServiceProvider services, StaticWebAssetsManifest? manifest, Dispatcher? dispatcher)
+			=> HybridHostPageRenderer.RenderAsync(services, AppType!, manifest?.Assets, dispatcher);
+
+		private void ApplyAppTypeRender(HybridHostPageResult result, StaticWebAssetsManifest? manifest)
 		{
-			if (_appTypeRendered || AppType is null)
-			{
-				return;
-			}
-
-			var services = Handler?.MauiContext?.Services
-				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
-
-			var result = HybridHostPageRenderer.Render(services, AppType, assets);
 			_renderedHostPageHtml = result.Html;
+			_manifest = manifest;
 
 			foreach (var registration in result.Registrations)
 			{

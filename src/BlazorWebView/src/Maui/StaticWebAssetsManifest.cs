@@ -11,20 +11,20 @@ using Microsoft.Maui.Storage;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	/// <summary>
-	/// Loads the minimal fingerprinted-asset manifest that MAUI generates at build time (from the
-	/// static web assets endpoints) and bundles with a hybrid app, and exposes it as:
+	/// Loads the deterministic asset manifest that MAUI generates at build time (from the static web
+	/// asset endpoint descriptors) and bundles with a hybrid app, and exposes it as:
 	/// <list type="bullet">
 	/// <item><description>a <see cref="ResourceAssetCollection"/> so <c>@Assets["logical"]</c> resolves to the
-	/// fingerprinted URL at render time; and</description></item>
+	/// fingerprinted URL at render time (carrying label, integrity and preload metadata); and</description></item>
 	/// <item><description>a route-to-physical map so the web view can serve the physical asset for a
 	/// fingerprinted request URL.</description></item>
 	/// </list>
-	/// Blazor Web Apps build this from endpoint metadata via <c>MapStaticAssets</c>; hybrid apps have no
-	/// server, so MAUI reconstructs just the fingerprint mapping at build time. The manifest is bundled
-	/// outside the web root and read via the app package APIs, so it is never exposed to the web view.
-	/// Its content is derived entirely from asset fingerprints and logical names (no timestamps, absolute
-	/// paths, or runtime identifiers), so it is deterministic and identical across architectures - which
-	/// is required for universal (multi-RID) app bundles to merge.
+	/// Blazor Web Apps build the same <see cref="ResourceAssetCollection"/> from the endpoint descriptors via
+	/// <c>MapStaticAssets</c>; hybrid apps have no server, so MAUI reconstructs it from those descriptors. The
+	/// manifest is bundled outside the web root and read via the app package APIs, so it is never exposed to
+	/// the web view. Its content is derived entirely from asset fingerprints, logical names and content hashes
+	/// (no timestamps, absolute paths, or runtime identifiers), so it is deterministic and identical across
+	/// architectures - which is required for universal (multi-RID) app bundles to merge.
 	/// </summary>
 	internal sealed class StaticWebAssetsManifest
 	{
@@ -129,18 +129,50 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			foreach (var asset in assets)
 			{
-				var route = asset.Route;
-				var label = asset.Label;
-				if (route is null || label is null)
+				var url = asset.Url;
+				if (url is null)
 				{
 					continue;
 				}
 
-				// @Assets resolution: the fingerprinted route is exposed under its logical label.
-				resources.Add(new ResourceAsset(route, new[] { new ResourceAssetProperty("label", label) }));
+				// Rebuild the Blazor ResourceAsset from the endpoint descriptor properties (label,
+				// integrity, preload*), mirroring the framework's ResourceCollectionResolver. @Assets
+				// resolution uses "label"; the rest (integrity/preload) flow through for SRI and preload.
+				ResourceAssetProperty[]? properties = null;
+				string? label = null;
+				var entryProperties = asset.Properties;
+				if (entryProperties is { Count: > 0 })
+				{
+					var list = new List<ResourceAssetProperty>(entryProperties.Count);
+					foreach (var property in entryProperties)
+					{
+						if (property.Name is null || property.Value is null)
+						{
+							continue;
+						}
 
-				// Serving: the physical file under the web root is the logical (non-fingerprinted) label.
-				routeToPhysical.TryAdd(NormalizePath(route), NormalizePath(label));
+						list.Add(new ResourceAssetProperty(property.Name, property.Value));
+
+						if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
+						{
+							label = property.Value;
+						}
+					}
+
+					if (list.Count > 0)
+					{
+						properties = list.ToArray();
+					}
+				}
+
+				resources.Add(new ResourceAsset(url, properties));
+
+				// Serving: a fingerprinted route (label present and different from the route) maps to the
+				// physical file stored under the web root at the logical label.
+				if (label is not null)
+				{
+					routeToPhysical.TryAdd(NormalizePath(url), NormalizePath(label));
+				}
 			}
 
 			return new StaticWebAssetsManifest(new ResourceAssetCollection(resources), routeToPhysical);
@@ -170,22 +202,33 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private static string NormalizePath(string path) =>
 			(path ?? string.Empty).Replace('\\', '/').TrimStart('/');
 
-		/// <summary>The minimal fingerprint manifest MAUI generates at build time.</summary>
+		/// <summary>The deterministic asset manifest MAUI generates at build time from the endpoint descriptors.</summary>
 		internal sealed class ManifestData
 		{
 			[JsonPropertyName("Assets")]
 			public List<AssetEntry>? Assets { get; set; }
 		}
 
+		/// <summary>A single asset descriptor: the served URL plus the Blazor resource properties.</summary>
 		internal sealed class AssetEntry
 		{
-			/// <summary>The fingerprinted, served route (for example <c>_content/Pkg/app.abc123.css</c>).</summary>
-			[JsonPropertyName("Route")]
-			public string? Route { get; set; }
+			/// <summary>The served route (for example the fingerprinted <c>app.abc123.css</c>).</summary>
+			[JsonPropertyName("Url")]
+			public string? Url { get; set; }
 
-			/// <summary>The logical, non-fingerprinted path used by <c>@Assets</c> and stored on disk under the web root.</summary>
-			[JsonPropertyName("Label")]
-			public string? Label { get; set; }
+			/// <summary>The endpoint properties Blazor carries into a <see cref="ResourceAsset"/> (label, integrity, preload*).</summary>
+			[JsonPropertyName("Properties")]
+			public List<AssetPropertyEntry>? Properties { get; set; }
+		}
+
+		/// <summary>A single <c>{ "Name": ..., "Value": ... }</c> resource property.</summary>
+		internal sealed class AssetPropertyEntry
+		{
+			[JsonPropertyName("Name")]
+			public string? Name { get; set; }
+
+			[JsonPropertyName("Value")]
+			public string? Value { get; set; }
 		}
 	}
 

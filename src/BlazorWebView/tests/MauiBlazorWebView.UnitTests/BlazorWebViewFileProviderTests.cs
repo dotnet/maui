@@ -54,7 +54,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.UnitTests
 		[Fact]
 		public void FingerprintedRouteResolvesToPhysicalAsset()
 		{
-			var manifest = ParseManifest("{\"Assets\":[{\"Route\":\"app.abc123.css\",\"Label\":\"app.css\"}]}");
+			var manifest = ParseManifest("{\"Assets\":[{\"Url\":\"app.abc123.css\",\"Properties\":[{\"Name\":\"label\",\"Value\":\"app.css\"}]}]}");
 			var provider = new BlazorWebViewFileProvider(new FakeFileProvider("app.css"), hostPageRelativePath: null, hostPageHtml: null, manifest);
 
 			var fileInfo = provider.GetFileInfo("app.abc123.css");

@@ -70,15 +70,17 @@
   </Target>
 
   <!--
-    Generate a minimal, deterministic fingerprint manifest so that fingerprinted assets (@Assets)
-    can be resolved at runtime. Blazor Web Apps get this from MapStaticAssets endpoint metadata; hybrid
-    apps have no server, so MAUI reconstructs just the fingerprint mapping (fingerprinted route -> logical
-    label) from the static web asset endpoints.
+    Generate a minimal, deterministic asset manifest so that fingerprinted assets (@Assets) can be
+    resolved at runtime. Blazor Web Apps build the ResourceAssetCollection from the static web asset
+    endpoint descriptors via MapStaticAssets; hybrid apps have no server, so MAUI reconstructs the same
+    thing from those endpoint descriptors here.
 
-    The generated file is bundled OUTSIDE wwwroot so it is never exposed to the web view, and BlazorWebView
-    reads it from the app package via FileSystem.OpenAppPackageFileAsync. Its content is derived entirely
-    from content fingerprints and logical names (no timestamps, absolute paths, or RIDs), so it is byte
+    Each retained entry mirrors a Blazor ResourceAsset: the served Url plus the endpoint properties Blazor
+    uses (label for @Assets resolution, integrity for SRI, and the preload hints). Volatile serving-only
+    headers (Last-Modified) are intentionally excluded, and entries are emitted sorted, so the file is byte
     identical across architectures - which the SDK requires when merging universal (multi-RID) app bundles.
+    The file is bundled OUTSIDE wwwroot so it is never exposed to the web view, and BlazorWebView reads it
+    from the app package via FileSystem.OpenAppPackageFileAsync.
   -->
   <UsingTask TaskName="_GenerateMauiBlazorAssetManifest"
              TaskFactory="RoslynCodeTaskFactory"
@@ -94,13 +96,10 @@
       <Using Namespace="System.Text" />
       <Using Namespace="System.Text.RegularExpressions" />
       <Code Type="Fragment" Language="cs"><![CDATA[
-        // Reduce the static web asset endpoints to the minimal fingerprint mapping BlazorWebView needs:
-        // the fingerprinted route and its logical, non-fingerprinted label. Only primary (non-compressed)
-        // endpoints that actually carry a fingerprint are relevant; everything else serves directly.
-        //
-        // EndpointProperties is a JSON array of { "Name": "...", "Value": "..." } objects. It is parsed
-        // by looking each property up by name independently, so the result does not depend on the member
-        // order the SDK serializes within an object.
+        // Extract a named value from the serialized EndpointProperties JSON array. Each property is a
+        // { "Name": "...", "Value": "..." } object; Name and Value are matched independently within each
+        // object, so the result does not depend on the SDK's member ordering. Parsed with regex (rather
+        // than System.Text.Json) so the task runs under both dotnet msbuild and desktop MSBuild.exe.
         static string ExtractProperty(string propertiesJson, string name)
         {
             foreach (Match obj in Regex.Matches(propertiesJson, "\\{[^{}]*\\}"))
@@ -122,53 +121,79 @@
             return null;
         }
 
-        var byRoute = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        static string JsonEscape(string value) =>
+            value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+        // The endpoint properties Blazor's ResourceCollectionResolver carries into a ResourceAsset, in a
+        // stable order so the output is deterministic.
+        var resourceProperties = new[]
+        {
+            "label", "integrity",
+            "preloadrel", "preloadas", "preloadpriority", "preloadcrossorigin", "preloadorder", "preloadgroup",
+        };
+
+        var byUrl = new SortedDictionary<string, string>(StringComparer.Ordinal);
         var sawFingerprintEndpoint = false;
         foreach (var endpoint in Endpoints)
         {
             var selectors = endpoint.GetMetadata("Selectors");
             if (!string.IsNullOrEmpty(selectors) && selectors != "[]")
             {
-                // Content-negotiated alternative (gzip/brotli); not a distinct asset.
+                // A content-negotiated alternative representation (gzip/brotli); not a distinct asset.
                 continue;
             }
 
             var properties = endpoint.GetMetadata("EndpointProperties") ?? string.Empty;
-            var fingerprint = ExtractProperty(properties, "fingerprint");
-            if (string.IsNullOrEmpty(fingerprint))
+            if (!string.IsNullOrEmpty(ExtractProperty(properties, "fingerprint")))
             {
-                // Not a fingerprinted route (the plain route is served directly). Fingerprinting being
-                // off for this endpoint is legitimate (for example StaticWebAssetsFingerprintContent=false).
+                sawFingerprintEndpoint = true;
+            }
+
+            var props = new StringBuilder();
+            var wroteProperty = false;
+            foreach (var propertyName in resourceProperties)
+            {
+                var value = ExtractProperty(properties, propertyName);
+                if (string.IsNullOrEmpty(value))
+                {
+                    continue;
+                }
+
+                if (wroteProperty)
+                {
+                    props.Append(',');
+                }
+
+                props.Append("{\"Name\":\"").Append(JsonEscape(propertyName))
+                     .Append("\",\"Value\":\"").Append(JsonEscape(value)).Append("\"}");
+                wroteProperty = true;
+            }
+
+            // Match ResourceCollectionResolver: only include descriptors that carry a label or integrity.
+            if (!wroteProperty)
+            {
                 continue;
             }
 
-            // A fingerprinted endpoint was seen, so fingerprinting is on: from here a failure to extract
-            // the label is a real problem, not a "fingerprinting disabled" case.
-            sawFingerprintEndpoint = true;
-
             var route = endpoint.ItemSpec;
-            var label = ExtractProperty(properties, "label");
-            if (!string.IsNullOrEmpty(route) && !string.IsNullOrEmpty(label))
+            if (!string.IsNullOrEmpty(route))
             {
-                byRoute[route] = label;
+                byUrl[route] = props.ToString();
             }
         }
-
-        static string JsonEscape(string value) =>
-            value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
         var builder = new StringBuilder();
         builder.Append("{\"Assets\":[");
         var first = true;
-        foreach (var pair in byRoute)
+        foreach (var pair in byUrl)
         {
             if (!first)
             {
                 builder.Append(',');
             }
             first = false;
-            builder.Append("{\"Route\":\"").Append(JsonEscape(pair.Key))
-                   .Append("\",\"Label\":\"").Append(JsonEscape(pair.Value)).Append("\"}");
+            builder.Append("{\"Url\":\"").Append(JsonEscape(pair.Key))
+                   .Append("\",\"Properties\":[").Append(pair.Value).Append("]}");
         }
         builder.Append("]}");
 
@@ -176,9 +201,9 @@
 
         // Only warn when fingerprinting is actually on (a fingerprinted endpoint was seen) but nothing
         // could be extracted - that signals the SDK changed the EndpointProperties metadata shape. This
-        // deliberately does not fire for the legitimate "no fingerprinting" case (no fingerprinted
-        // endpoints at all). The warning carries a real code so it can be suppressed via NoWarn.
-        if (sawFingerprintEndpoint && byRoute.Count == 0)
+        // deliberately does not fire for the legitimate "no fingerprinting" case. The warning carries a
+        // real code so it can be suppressed via NoWarn.
+        if (sawFingerprintEndpoint && byUrl.Count == 0)
         {
             Log.LogWarning(
                 null,

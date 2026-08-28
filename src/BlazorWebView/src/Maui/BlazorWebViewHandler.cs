@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 #if !(NETSTANDARD || !PLATFORM)
 			handler.HostPage = webView.HostPage;
-			handler.StartWebViewCoreIfPossible();
+			handler.StartWebViewCoreOrRenderAppType();
 #endif
 		}
 
@@ -82,11 +84,55 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 #if !(NETSTANDARD || !PLATFORM)
 			handler.RootComponents = webView.RootComponents;
-			handler.StartWebViewCoreIfPossible();
+			handler.StartWebViewCoreOrRenderAppType();
 #endif
 		}
 
 #if !(NETSTANDARD || !PLATFORM)
+		private bool _appTypeRenderScheduled;
+
+		// When AppType is set, the host document is rendered asynchronously on the MAUI dispatcher (the
+		// same dispatcher the live components render on) BEFORE the web view core starts, so we never block
+		// the UI thread. Startup resumes once the render completes. The legacy HostPage path is unchanged
+		// and starts synchronously.
+		private void StartWebViewCoreOrRenderAppType()
+		{
+			if (VirtualView is BlazorWebView { AppType: not null } appTypeView && !appTypeView.IsAppTypeRendered)
+			{
+				if (_appTypeRenderScheduled)
+				{
+					return;
+				}
+
+				_appTypeRenderScheduled = true;
+				_ = RenderAppTypeThenStartAsync(appTypeView);
+				return;
+			}
+
+			StartWebViewCoreIfPossible();
+		}
+
+		private async Task RenderAppTypeThenStartAsync(BlazorWebView appTypeView)
+		{
+			try
+			{
+				var dispatcher = MauiContext?.Services?.GetService<IDispatcher>();
+				await appTypeView.EnsureAppTypeRenderedAsync(dispatcher);
+			}
+			catch (Exception ex)
+			{
+				// Allow a later reconnect to retry, and surface the failure instead of silently serving a
+				// blank host page.
+				_appTypeRenderScheduled = false;
+				MauiContext?.Services?.GetService<ILoggerFactory>()?
+					.CreateLogger<BlazorWebViewHandler>()?
+					.LogError(ex, "Failed to render the BlazorWebView AppType host document.");
+				return;
+			}
+
+			StartWebViewCoreIfPossible();
+		}
+
 		private string? HostPage { get; set; }
 
 		internal void UrlLoading(UrlLoadingEventArgs args) =>
