@@ -109,4 +109,17 @@ Describe 'standard category filter wiring' {
             $contents | Should -Match 'SanitizeTestResultsFilename\(.+testFilter'
         }
     }
+
+    It 'reuses the numbered shards for the legacy iOS CollectionView handler' {
+        $legacyStage = [regex]::Match(
+            $script:uiTests,
+            '(?s)- stage: ios_ui_tests_mono_cv1\b.*?(?=\r?\n  - stage:)'
+        ).Value
+
+        $legacyStage | Should -Match 'each categoryGroup in parameters\.categoryGroupsToTest'
+        $legacyStage | Should -Match "startsWith\(categoryGroup, 'CollectionView'\)"
+        $legacyStage | Should -Match 'testFilter: \$\{\{ categoryGroup \}\}'
+        $legacyStage | Should -Match 'testConfigurationArgs: "CollectionView1"'
+        $legacyStage | Should -Not -Match 'testFilter: "CollectionView"'
+    }
 }

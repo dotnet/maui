@@ -36,9 +36,10 @@ matrix legs and each leg must fit a target duration.
   independently reaches the state required by every selected method. Never rely
   on an `Order(1)` test to initialize the remaining shard.
 - Dedicated configuration stages that use `testConfigurationArgs`, such as
-  `ios_ui_tests_mono_cv1`, are intentionally outside ordinary category-matrix
-  shard management. Their samples and overhead are recorded separately so
-  they cannot make ordinary shard projections look artificially cheaper.
+  `ios_ui_tests_mono_cv1`, reuse the numbered shard filters but remain outside
+  ordinary category-matrix projection data. Their samples and overhead are
+  recorded separately so they cannot make ordinary shard projections look
+  artificially cheaper.
 
 ## Commands
 
