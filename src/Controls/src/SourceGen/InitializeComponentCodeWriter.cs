@@ -303,7 +303,7 @@ $$"""
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		SourceProductionContext sourceProductionContext,
 		ProjectItem projectItem,
-		HashSet<string>? generatedFieldNames,
+		Dictionary<string, XmlType>? generatedFields,
 		out SGRootNode? parsedNewRoot,
 		out Dictionary<ElementNode, string>? effectiveNewIds,
 		out int newNextNodeId,
@@ -373,7 +373,7 @@ $$"""
 			return null;
 		}
 
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFieldNames);
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

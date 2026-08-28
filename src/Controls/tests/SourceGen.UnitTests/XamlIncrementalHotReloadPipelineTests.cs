@@ -1112,6 +1112,29 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Equal(1, storedVer);
 	}
 
+	[Fact]
+	public void HotReloadState_LazilySeedsGeneratedFieldsAfterNullRoot()
+	{
+		const string xaml = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+				<Label x:Name="NamedLabel" />
+			</ContentPage>
+			""";
+		var parsedRoot = GeneratorHelpers.ParseXaml(xaml, AssemblyAttributes.Empty);
+		Assert.NotNull(parsedRoot);
+
+		XamlHotReloadState.Update("TestApp", "net11.0", PageRelativePath, xaml, null, null, 0, 0);
+		Assert.Null(XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath));
+
+		XamlHotReloadState.Update("TestApp", "net11.0", PageRelativePath, xaml, parsedRoot, null, 0, 1);
+
+		var generatedFields = XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath);
+		Assert.NotNull(generatedFields);
+		Assert.Equal("Label", generatedFields["NamedLabel"].Name);
+	}
+
 	// -----------------------------------------------------------------------
 	// Type converter tests — verify UC uses compile-time converters from IC
 	// -----------------------------------------------------------------------

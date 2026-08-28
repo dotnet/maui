@@ -44,6 +44,34 @@ public class StructuralHotReloadTests
 	static XamlHotReloadTestHarness CreateHarness([CallerMemberName] string scenarioName = "") =>
 		new(scenarioName, PageClass, PageStub);
 
+	static (string Before, string After) GetMoveBetweenContainersXaml() =>
+		(
+			"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+				<Grid>
+					<VerticalStackLayout x:Name="EarlierContainer" />
+					<VerticalStackLayout x:Name="LaterContainer">
+						<Label x:Name="MovedLabel" Text="Moved" />
+					</VerticalStackLayout>
+				</Grid>
+			</ContentPage>
+			""",
+			"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+				<Grid>
+					<VerticalStackLayout x:Name="EarlierContainer">
+						<Label x:Name="MovedLabel" Text="Moved" />
+					</VerticalStackLayout>
+					<VerticalStackLayout x:Name="LaterContainer" />
+				</Grid>
+			</ContentPage>
+			"""
+		);
+
 	[MetadataUpdateFact]
 	public void AncestorLayoutTypeReplacement_ReconcilesNamedFieldWithVisibleElement()
 	{
@@ -195,6 +223,108 @@ public class StructuralHotReloadTests
 			Assert.Same(visibleLabel, page.FindByName<Label>("StructureCounterLabel"));
 		});
 	}
+
+	[Fact]
+	public void IncompatibleNamedElementReplacement_DoesNotAssignGeneratedField()
+	{
+		const string currentPageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.Button NamedElement = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+			}
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+				<HorizontalStackLayout>
+					<Label x:Name="NamedElement" />
+				</HorizontalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+				<VerticalStackLayout>
+					<Button x:Name="NamedElement" />
+				</VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(IncompatibleNamedElementReplacement_DoesNotAssignGeneratedField),
+			PageClass,
+			currentPageStub);
+		var generation = harness.Generate(xamlV1, xamlV2);
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.DoesNotContain("this.NamedElement =", updateComponentSource!, StringComparison.Ordinal);
+		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
+	}
+
+	[MetadataUpdateFact]
+	public void MovingNameFromLaterToEarlierContainer_KeepsNewRegistration()
+	{
+		var (xamlV1, xamlV2) = GetMoveBetweenContainersXaml();
+
+		using var harness = CreateMoveBetweenContainersHarness();
+		var generation = harness.Generate(xamlV1, xamlV2);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+
+			live.ApplyUpdate<ContentPage>(1);
+
+			var grid = Assert.IsType<Grid>(page.Content);
+			var earlier = Assert.IsType<VerticalStackLayout>(grid[0]);
+			var movedLabel = Assert.IsType<Label>(Assert.Single(earlier));
+			Assert.Same(movedLabel, page.FindByName<Label>("MovedLabel"));
+		});
+	}
+
+	[Fact]
+	public void MovingNameFromLaterToEarlierContainer_EmitsIdentitySafeUnregister()
+	{
+		var (xamlV1, xamlV2) = GetMoveBetweenContainersXaml();
+
+		using var harness = CreateMoveBetweenContainersHarness();
+		var generation = harness.Generate(xamlV1, xamlV2);
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("XamlComponentRegistry.TryGet(this", updateComponentSource!, StringComparison.Ordinal);
+		Assert.Contains("ReferenceEquals(__removedNameScope_", updateComponentSource!, StringComparison.Ordinal);
+		Assert.Contains("__removedNamedElement_", updateComponentSource!, StringComparison.Ordinal);
+		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
+	}
+
+	static XamlHotReloadTestHarness CreateMoveBetweenContainersHarness([CallerMemberName] string scenarioName = "") =>
+		new(
+			scenarioName,
+			PageClass,
+			"""
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				private partial void InitializeComponent();
+				private global::Microsoft.Maui.Controls.VerticalStackLayout EarlierContainer = default!;
+				private global::Microsoft.Maui.Controls.VerticalStackLayout LaterContainer = default!;
+				private global::Microsoft.Maui.Controls.Label MovedLabel = default!;
+
+				public void InitializeComponentRuntime() { }
+				public MainPage() => InitializeComponent();
+			}
+			""");
 
 	[Fact]
 	public void RootComplexElementProperty_IsNotSilentlyDropped()

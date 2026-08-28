@@ -287,6 +287,71 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
+	public void RemovedBoundary_IncludesOwnNameButExcludesNestedNames()
+	{
+		var old = Parse(Page("""
+			<DataTemplate x:Name="NamedTemplate">
+				<Label x:Name="TemplateLabel" />
+			</DataTemplate>
+			"""));
+		var @new = Parse(Page(""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		var removedName = Assert.Single(Assert.Single(diff!.ChildListChanges).RemovedNames);
+		Assert.Equal("NamedTemplate", removedName.Name);
+	}
+
+	[Fact]
+	public void GeneratedFields_UseNamespaceAwareBoundaries()
+	{
+		var root = Parse($"""
+			<ContentPage {MauiXmlns} xmlns:local="clr-namespace:Test">
+				<local:Style x:Name="CustomStyle">
+					<Label x:Name="NestedLabel" />
+				</local:Style>
+			</ContentPage>
+			""");
+
+		var fields = XamlGeneratedFieldCollector.Collect(root);
+
+		Assert.Contains("CustomStyle", fields);
+		Assert.Contains("NestedLabel", fields);
+	}
+
+	[Fact]
+	public void GeneratedFields_IncludeBoundaryAndExcludeItsDescendants()
+	{
+		var root = Parse(Page("""
+			<Style x:Name="NamedStyle">
+				<Label x:Name="NestedLabel" />
+			</Style>
+			"""));
+
+		var fields = XamlGeneratedFieldCollector.Collect(root);
+
+		Assert.Contains("NamedStyle", fields);
+		Assert.DoesNotContain("NestedLabel", fields);
+	}
+
+	[Fact]
+	public void GeneratedFields_ExcludeVisualStateNames()
+	{
+		var root = Parse(Page("""
+			<VisualStateManager.VisualStateGroups>
+				<VisualStateGroup x:Name="CommonStates">
+					<VisualState x:Name="Normal" />
+				</VisualStateGroup>
+			</VisualStateManager.VisualStateGroups>
+			"""));
+
+		var fields = XamlGeneratedFieldCollector.Collect(root);
+
+		Assert.DoesNotContain("CommonStates", fields);
+		Assert.DoesNotContain("Normal", fields);
+	}
+
+	[Fact]
 	public void ChangedChildElementType_ProducesChildListChange()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" />"));

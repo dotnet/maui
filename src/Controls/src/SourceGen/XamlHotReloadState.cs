@@ -71,10 +71,10 @@ internal static class XamlHotReloadState
 		/// </summary>
 		public int Version { get; set; }
 		/// <summary>
-		/// Names whose generated fields exist on the originally loaded type. This seed set remains
-		/// stable across edits because metadata updates cannot add or remove instance fields.
+		/// Names and declared XAML types of fields generated on the originally loaded type. This seed
+		/// remains stable across edits because metadata updates cannot add or remove instance fields.
 		/// </summary>
-		public HashSet<string>? GeneratedFieldNames { get; set; }
+		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
 	}
 
 	/// <summary>
@@ -117,11 +117,15 @@ internal static class XamlHotReloadState
 			{
 				entry = new CacheEntry
 				{
-					GeneratedFieldNames = parsedRoot is null
+					GeneratedFields = parsedRoot is null
 						? null
-						: UpdateComponentCodeWriter.CollectRootScopeNames(parsedRoot),
+						: XamlGeneratedFieldCollector.Collect(parsedRoot),
 				};
 				_cache[(assemblyName, targetFramework, relativePath)] = entry;
+			}
+			else if (entry.GeneratedFields is null && parsedRoot is not null)
+			{
+				entry.GeneratedFields = XamlGeneratedFieldCollector.Collect(parsedRoot);
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
@@ -131,14 +135,14 @@ internal static class XamlHotReloadState
 		}
 	}
 
-	public static HashSet<string>? GetGeneratedFieldNames(string assemblyName, string targetFramework, string relativePath)
+	public static Dictionary<string, XmlType>? GetGeneratedFields(string assemblyName, string targetFramework, string relativePath)
 	{
 		lock (_lock)
 		{
 			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
-				&& entry.GeneratedFieldNames is not null)
+				&& entry.GeneratedFields is not null)
 			{
-				return new HashSet<string>(entry.GeneratedFieldNames, System.StringComparer.Ordinal);
+				return new Dictionary<string, XmlType>(entry.GeneratedFields, System.StringComparer.Ordinal);
 			}
 
 			return null;
