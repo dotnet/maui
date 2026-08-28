@@ -468,14 +468,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 			else
 			{
-				// todo: delete this after the api is bound
-				var platformPath = new SKPath();
-				platformPath.AddArc(rect, startAngle, sweep);
-				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-				platformPath.Dispose();
-
-				// todo: restore this when the api is bound.
-				//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);
+				_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);
 			}
 		}
 
@@ -511,14 +504,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (!clockwise)
 				sweep *= -1;
 
-			// todo: delete this after the api is bound
-			var platformPath = new SKPath();
-			platformPath.AddArc(rect, startAngle, sweep);
-			_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
-			platformPath.Dispose();
-
-			// todo: restore this when the api is bound.
-			//_canvas.DrawArc (rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
+			_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
 		}
 
 		protected override void PlatformDrawRectangle(
