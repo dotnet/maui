@@ -253,19 +253,47 @@ extends:
                 # Darc represents NuGet packages as slash-free asset names. Symbol and other blob
                 # assets use paths and are not inputs to this NuGet.org release.
                 $packageAssetFilter = '^[^/]+$'
+                $barPackageAssets = @($build.assets | Where-Object {
+                  !$_.nonShipping -and $_.name -match $packageAssetFilter
+                })
+                if (!$releaseWorkload -and $barPackageAssets.Count -eq 0) {
+                  throw "BAR build '$barId' contains no shipping NuGet package assets."
+                }
+
+                $gatherArguments = @(
+                  'gather-drop',
+                  '--ci',
+                  '--id', $barId,
+                  '-o', $dropPath,
+                  '--azdev-pat', '$(System.AccessToken)',
+                  '--include-released',
+                  '--asset-filter', $packageAssetFilter,
+                  '--verbose'
+                )
+                if (!$releaseWorkload) {
+                  $gatherArguments += '--continue-on-error'
+                }
                 Write-Host "Gathering BAR build '$barId' into '$dropPath'."
-                & $darc gather-drop --ci --id $barId -o "$dropPath" --azdev-pat $(System.AccessToken) --include-released --asset-filter $packageAssetFilter --verbose
-                if ($LASTEXITCODE -ne 0) {
+                & $darc @gatherArguments
+                $gatherExitCode = $LASTEXITCODE
+                $gatherFailed = $gatherExitCode -ne 0
+                if ($gatherFailed -and $releaseWorkload) {
                   throw "Darc gather-drop failed for BAR build '$barId'."
+                }
+                if ($gatherFailed) {
+                  Write-Warning "Darc exited with code $gatherExitCode for BAR build '$barId'; missing selected packages must already exist on NuGet.org."
                 }
 
                 $shippingPath = Join-Path $dropPath 'shipping\packages'
                 if (!(Test-Path $shippingPath -PathType Container)) {
-                  throw "Darc gather-drop did not create the expected package directory '$shippingPath'."
+                  if ($releaseWorkload) {
+                    throw "Darc gather-drop did not create the expected package directory '$shippingPath'."
+                  }
+                  New-Item -ItemType Directory -Force -Path $shippingPath | Out-Null
                 }
 
                 $allPackages = @(Get-ChildItem -Path $shippingPath -Filter '*.nupkg' -File -Recurse)
-                if ($allPackages.Count -eq 0) {
+                if ($releaseWorkload -and $allPackages.Count -eq 0) {
                   throw "Darc gather-drop produced no shipping NuGet packages."
                 }
 
@@ -305,25 +333,71 @@ extends:
                     throw "Non-workload releases do not support workload recovery filters: $($unsupportedFilters.Name -join ', ')."
                   }
 
-                  if (@($allPackages | Where-Object Name -like '*Manifest*.nupkg').Count -gt 0) {
+                  if (@($barPackageAssets | Where-Object Name -like '*Manifest*').Count -gt 0) {
                     throw "A non-workload release cannot contain workload manifest packages."
                   }
+                  $selectedBarAssets = @($barPackageAssets | Where-Object {
+                    $fileName = "$($_.name).$($_.version).nupkg"
+                    ($includeFilters.Count -eq 0 -or (Test-AnyFilter $fileName $includeFilters)) -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $fileName $excludeFilters))
+                  })
+                  if ($selectedBarAssets.Count -eq 0) {
+                    throw "Package filtering selected no non-workload NuGet packages."
+                  }
+
                   $selectedPackages = @($allPackages | Where-Object {
                     ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
                     !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
                   })
-                  if ($selectedPackages.Count -eq 0) {
-                    throw "Package filtering selected no non-workload NuGet packages."
+                  $downloadedIdentities = @($selectedPackages | ForEach-Object { Get-PackageIdentity $_ })
+                  $selectedIdentities = @($selectedBarAssets | ForEach-Object {
+                    $asset = $_
+                    $downloadedIdentity = @($downloadedIdentities | Where-Object {
+                      $_.id -ieq $asset.name -and $_.version -ieq $asset.version
+                    })
+                    if ($downloadedIdentity.Count -gt 1) {
+                      throw "Downloaded packages contain duplicate BAR identity '$($asset.name) $($asset.version)'."
+                    }
+                    if ($downloadedIdentity.Count -eq 1) {
+                      $downloadedIdentity[0]
+                    }
+                    else {
+                      [pscustomobject]@{
+                        id = [string] $asset.name
+                        version = [string] $asset.version
+                        normalizedVersion = [string] $asset.version
+                        fileName = "$($asset.name).$($asset.version).nupkg"
+                      }
+                    }
+                  })
+                  $unexpectedDownloadedPackages = @($downloadedIdentities | Where-Object {
+                    $downloadedIdentity = $_
+                    !@($selectedIdentities | Where-Object {
+                      $_.id -ieq $downloadedIdentity.id -and $_.version -ieq $downloadedIdentity.version
+                    })
+                  })
+                  if ($unexpectedDownloadedPackages.Count -gt 0) {
+                    throw "Gathered packages are absent from the selected BAR assets: $($unexpectedDownloadedPackages.fileName -join ', ')."
                   }
                   $packageSets = @(
-                    @{ Name = 'NuGet packages'; Packages = $selectedPackages; Path = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease' }
+                    @{
+                      Name = 'NuGet packages'
+                      Packages = $selectedPackages
+                      Identities = $selectedIdentities
+                      Path = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease'
+                    }
                   )
                 }
 
                 $releaseIdentities = @()
                 foreach ($packageSet in $packageSets) {
                   New-Item -ItemType Directory -Force -Path $packageSet.Path | Out-Null
-                  $identities = @($packageSet.Packages | ForEach-Object { Get-PackageIdentity $_ })
+                  $identities = if ($packageSet.ContainsKey('Identities')) {
+                    @($packageSet.Identities)
+                  }
+                  else {
+                    @($packageSet.Packages | ForEach-Object { Get-PackageIdentity $_ })
+                  }
                   $fileNameDuplicates = @($identities | Group-Object fileName | Where-Object Count -gt 1)
                   if ($fileNameDuplicates.Count -gt 0) {
                     throw "$($packageSet.Name) contains duplicate package file names: $($fileNameDuplicates.Name -join ', ')."

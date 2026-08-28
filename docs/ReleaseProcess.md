@@ -29,11 +29,15 @@ The pipeline accepts:
 ### Non-workload NuGet packages
 
 For repositories outside the inferred workload set, the generic non-workload path validates the
-BAR build against the requested GitHub repository, runs one fail-fast
-`darc gather-drop --id <BAR ID>`, gathers only shipping NuGet packages, rejects
-malformed or duplicate packages, applies the package filters, and filters exact
-ID/version pairs already on NuGet.org. All selected `.nupkg` files form one
-release set. Workload manifests
+BAR build against the requested GitHub repository and gathers its shipping
+NuGet packages with `darc gather-drop --id <BAR ID>`. Repeated releases of the
+same BAR build may encounter packages whose downloadable BAR location was
+replaced by NuGet.org after an earlier partial release. The gather continues in
+that case, but every selected package that was not downloaded must be confirmed
+at its exact ID/version on NuGet.org; an unavailable unpublished package fails
+the release. The pipeline also rejects malformed or duplicate packages, applies
+the package filters, and filters exact ID/version pairs already on NuGet.org.
+All selected `.nupkg` files form one release set. Workload manifests
 are rejected so a workload build cannot accidentally bypass MAUI's pack-before-
 manifest ordering.
 

@@ -23,13 +23,14 @@ Describe 'ci-official-release.yml' {
       Should -Not -Match $packageAssetFilter
   }
 
-  It 'keeps the filtered gather fail-fast' {
-    $gatherCommands = [regex]::Matches($pipeline, '(?m)^\s*& \$darc gather-drop.*$')
+  It 'keeps workload gathering fail-fast and validates non-workload misses' {
+    $gatherCommands = [regex]::Matches($pipeline, '(?m)^\s*& \$darc @gatherArguments.*$')
 
     $gatherCommands.Count | Should -Be 1
-    $gatherCommands[0].Value | Should -Match '--asset-filter \$packageAssetFilter'
-    $gatherCommands[0].Value | Should -Not -Match '--continue-on-error'
-    $pipeline | Should -Match '(?s)& \$darc gather-drop.*?if \(\$LASTEXITCODE -ne 0\) \{\s*throw'
+    $pipeline | Should -Match ([regex]::Escape("'--asset-filter', `$packageAssetFilter"))
+    $pipeline | Should -Match '(?s)if \(!\$releaseWorkload\) \{\s*\$gatherArguments \+= ''--continue-on-error'''
+    $pipeline | Should -Match '(?s)& \$darc @gatherArguments.*?if \(\$gatherFailed -and \$releaseWorkload\) \{\s*throw'
+    $pipeline | Should -Match 'missing selected packages must already exist on NuGet\.org'
   }
 
   It 'rejects duplicate package file names before copying release artifacts' {
@@ -79,9 +80,11 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match 'https://github\.com/dotnet/android'
     $pipeline | Should -Match 'https://github\.com/dotnet/macios'
     $pipeline | Should -Match 'non-workload release cannot contain workload manifest'
-    $pipeline | Should -Match 'Name = ''NuGet packages''; Packages = \$selectedPackages'
+    $pipeline | Should -Match '(?s)Name = ''NuGet packages''.*?Packages = \$selectedPackages.*?Identities = \$selectedIdentities'
     $pipeline | Should -Match '(?s)-Action FilterExisting.*?selectedPackages.*?stagedPackages'
     $pipeline | Should -Match 'belongs to ''\$repository'', not ''\$sourceRepository'''
+    $pipeline | Should -Match '(?s)\$barPackageAssets = @\(\$build\.assets.*?\$selectedBarAssets = @\(\$barPackageAssets'
+    $pipeline | Should -Match 'Gathered packages are absent from the selected BAR assets'
   }
 
   It 'supports package selection and rejects workload recovery filters for non-workload releases' {
