@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.ExternalBackend;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
