@@ -127,6 +127,10 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
+
+    [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification,
 
     # What this run is being asked to prove. The mechanics are identical either
@@ -284,22 +288,11 @@ if (-not $PRNumber) {
         Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
     } else {
         $foundPR = $false
-        # Try gh cli - first try 'gh pr view' for current branch
-        try {
-            $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
-            if ($prInfo -and $prInfo.number) {
-                $PRNumber = $prInfo.number
-                $foundPR = $true
-                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr view)" -ForegroundColor Green
-            }
-        } catch {
-            # gh pr view failed, will try fallback
-        }
-        
-        # Fallback: search for PRs with this branch as head (works across forks)
-        if (-not $foundPR) {
+        # Search for PRs with this branch as head (works across forks).
+        # `gh pr view --repo` without an explicit selector is a hard error.
+        if (-not [string]::IsNullOrWhiteSpace($currentBranch)) {
             try {
-                $prList = gh pr list --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
+                $prList = gh pr list --repo $Repository --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
                 if ($prList -and $prList.Count -gt 0 -and $prList[0].number) {
                     $PRNumber = $prList[0].number
                     $foundPR = $true
@@ -2201,6 +2194,7 @@ function Get-GateTestDetectionParameters {
     } elseif (-not [string]::IsNullOrWhiteSpace($PullRequestNumber)) {
         # Local/non-review callers may not have a usable committed snapshot.
         $params.PRNumber = $PullRequestNumber
+        $params.Repository = $Repository
     }
 
     return $params
@@ -2317,16 +2311,37 @@ Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
 # flags files that exist on the real base as "new in PR", removing them and
 # breaking the WITHOUT-fix build (build 14670709, #36274: BooleanBoxes.cs removed
 # -> BooleanBoxesTests.cs CS0103 -> gate INCONCLUSIVE instead of a real verdict).
-# Passing the explicit PR number makes `gh pr view` reliable; force-fetch the
-# tracking ref so Find-MergeBase step 1 (origin/<base>) resolves it directly.
+# Passing the explicit PR number makes `gh pr view` reliable. Fetch the selected
+# repository's current target-branch tip once, bind origin/<base> to that frozen
+# commit, and let Find-MergeBase step 1 resolve it directly.
 if (-not $BaseBranch -and $PRNumber) {
-    $detectedBase = gh pr view $PRNumber --json baseRefName -q .baseRefName 2>$null
+    $prBaseJson = @(& gh pr view $PRNumber --repo $Repository --json baseRefName 2>$null) -join "`n"
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prBaseJson)) {
+        throw "Could not resolve the target branch for $Repository#$PRNumber."
+    }
+    try {
+        $prBase = $prBaseJson | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "GitHub returned invalid target-branch metadata for $Repository#$PRNumber."
+    }
+    $detectedBase = [string]$prBase.baseRefName
     if ($detectedBase) {
-        git fetch origin "+$($detectedBase):refs/remotes/origin/$detectedBase" --no-tags 2>$null | Out-Null
+        git fetch "https://github.com/$Repository.git" "refs/heads/$detectedBase" --no-tags 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not fetch the current target branch '$detectedBase' for $Repository#$PRNumber."
+        }
+        $detectedBaseSha = ([string](git rev-parse FETCH_HEAD 2>$null)).Trim()
+        if ($LASTEXITCODE -ne 0 -or $detectedBaseSha -notmatch '^[0-9a-fA-F]{40}$') {
+            throw "Could not capture the immutable current tip of '$detectedBase' for $Repository#$PRNumber."
+        }
+        git update-ref "refs/remotes/origin/$detectedBase" $detectedBaseSha
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not bind origin/$detectedBase to immutable base $detectedBaseSha."
+        }
         $BaseBranch = $detectedBase
-        Write-Host "✅ Resolved PR #$PRNumber base branch: $BaseBranch (fetched origin/$BaseBranch)" -ForegroundColor Green
+        Write-Host "✅ Resolved PR #$PRNumber current base branch: $BaseBranch at $detectedBaseSha from $Repository" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  Could not resolve base branch for PR #$PRNumber; falling back to auto-detect" -ForegroundColor Yellow
+        throw "GitHub returned no target branch for $Repository#$PRNumber."
     }
 }
 

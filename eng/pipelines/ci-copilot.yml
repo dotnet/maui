@@ -220,7 +220,13 @@ stages:
               echo "Validating pipeline parameters..."
               MODE="${PARAM_MODE}"
               PR_NUM="${PARAM_PR_NUMBER}"
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
               ISSUE_NUM="${PARAM_ISSUE_NUMBER}"
+
+              if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then
+                echo "##vso[task.logissue type=error]ReviewRepository must use a valid owner/name form."
+                exit 1
+              fi
 
               case "${MODE}" in
                 review)
@@ -241,11 +247,12 @@ stages:
                   ;;
               esac
 
-              echo "Mode=${MODE} PRNumber=${PR_NUM} IssueNumber=${ISSUE_NUM} Platform=${PARAM_PLATFORM}"
+              echo "Mode=${MODE} PRNumber=${PR_NUM} ReviewRepository=${REVIEW_REPOSITORY} IssueNumber=${ISSUE_NUM} Platform=${PARAM_PLATFORM}"
             displayName: 'Validate Parameters'
             env:
               PARAM_MODE: ${{ parameters.Mode }}
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
@@ -354,14 +361,13 @@ stages:
           - bash: |
               set -uo pipefail
               BASE_REF=""
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
               if command -v gh >/dev/null 2>&1; then
-                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName 2>/dev/null || true)
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --repo "${REVIEW_REPOSITORY}" --json baseRefName -q .baseRefName 2>/dev/null || true)
               fi
               if [ -z "${BASE_REF}" ]; then
-                REPO=$(git config --get remote.origin.url 2>/dev/null | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
-                [ -z "${REPO}" ] && REPO="dotnet/maui"
                 BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
+                  "https://api.github.com/repos/${REVIEW_REPOSITORY}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
                   | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])" 2>/dev/null || true)
               fi
               if [ -z "${BASE_REF}" ]; then
@@ -373,10 +379,11 @@ stages:
                 echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main', a 'netN.0' branch, an 'inflight/*' branch, or a 'release/*' servicing branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
+              echo "${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
             displayName: 'Validate PR base branch (fast-fail unsupported)'
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               GH_TOKEN: $(GH_COMMENT_TOKEN)
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
 
@@ -425,7 +432,7 @@ stages:
           #    1. Workloads / SDK band — build.ps1 --target=dotnet reads
           #       global.json + eng/Versions.props from the worktree.
           #    2. Merge base — Review-PR.ps1 -Phase Setup squash-merges
-          #       the PR onto the current HEAD in CI.
+          #       the PR onto the immutable target-branch tip captured here.
           #  Running on the wrong base ⇒ wrong workloads + cross-branch
           #  squash-merge conflicts. Switching to the PR's base fixes both,
           #  so ONE pipeline branch handles main- and net11-targeting PRs.
@@ -442,19 +449,23 @@ stages:
                 echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
                 exit 1
               fi
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
+              REVIEW_REPOSITORY_URL="https://github.com/${REVIEW_REPOSITORY}.git"
 
               # Detect the PR's base branch (GitHub-provided metadata). Prefer gh; fall back
               # to the GitHub REST API because gh is not pre-installed on macOS (catalyst/ios)
               # agents this early in the job.
               if command -v gh >/dev/null 2>&1; then
-                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+                PR_METADATA=$(gh pr view "${PARAM_PR_NUMBER}" --repo "${REVIEW_REPOSITORY}" --json baseRefName,headRefOid)
               else
-                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
-                [ -z "$REPO" ] && REPO="dotnet/maui"
                 BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
-                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+                  "https://api.github.com/repos/${REVIEW_REPOSITORY}/pulls/${PARAM_PR_NUMBER}")
               fi
+              if [ -z "${PR_METADATA:-}" ]; then
+                PR_METADATA="${BASE_REF}"
+              fi
+              BASE_REF=$(printf '%s' "${PR_METADATA}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('baseRefName') or d.get('base',{}).get('ref',''))")
+              HEAD_SHA=$(printf '%s' "${PR_METADATA}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('headRefOid') or d.get('head',{}).get('sha',''))")
 
               # Allowlist: only ever switch to a known protected base branch.
               # Validate BEFORE echoing/using to avoid any injection via the ref.
@@ -462,21 +473,34 @@ stages:
                 echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+              if ! [[ "${HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]GitHub did not return an immutable head commit for ${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER}."
+                exit 1
+              fi
 
               # Always keep the worktree on the protected target branch while the
               # credential-bearing workload and build-task steps run. The trusted
               # Setup phase merges the immutable PR head later, after DOTNET_TOKEN is
               # out of scope, including for inflight/* targets.
-              git fetch origin "${BASE_REF}" --no-tags
-              git checkout --detach "origin/${BASE_REF}"
-              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
+              git fetch "${REVIEW_REPOSITORY_URL}" "refs/heads/${BASE_REF}" --no-tags
+              BASE_SHA=$(git rev-parse FETCH_HEAD)
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Could not capture the current ${REVIEW_REPOSITORY}:${BASE_REF} tip."
+                exit 1
+              fi
+              echo "${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER} targets ${BASE_REF} at current tip ${BASE_SHA}; immutable head ${HEAD_SHA}."
+              git checkout --detach "${BASE_SHA}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (${REVIEW_REPOSITORY}:${BASE_REF}) for workloads + merge base"
+              echo "##vso[task.setvariable variable=resolvedBaseRef]${BASE_REF}"
+              echo "##vso[task.setvariable variable=resolvedBaseSha]${BASE_SHA}"
+              echo "##vso[task.setvariable variable=resolvedHeadSha]${HEAD_SHA}"
             name: ResolveBaseBranch
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
 
           - bash: |
@@ -883,7 +907,7 @@ stages:
               }
               Write-Host "RunDetect using script: $detect"
               $cats = ""
-              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM" 2>&1
+              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" -Repository "$env:PARAM_REVIEW_REPOSITORY" -BaseCommit "$env:PARAM_BASE_COMMIT" -Platform "$env:PARAM_PLATFORM" 2>&1
               $out | ForEach-Object { Write-Host "  $_" }
               foreach ($line in $out) {
                 if ($line.ToString() -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') { $cats = $Matches[1] }
@@ -898,6 +922,8 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
+              PARAM_BASE_COMMIT: $(resolvedBaseSha)
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # On Windows, common/provision.yml (above) installs the local .NET SDK
@@ -2319,6 +2345,8 @@ stages:
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
                 -Repository "${{ parameters.ReviewRepository }}" \
+                -ResolvedBaseCommit "$(resolvedBaseSha)" \
+                -ResolvedBaseRef "$(resolvedBaseRef)" \
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
                 -TrustedScriptsDir "$TRUSTED" \
@@ -2341,18 +2369,20 @@ stages:
               REVIEWED_PR_HEAD_SHA=""
               REVIEWED_BASE_SHA=""
               REVIEWED_BASE_REF=""
+              REVIEWED_REPOSITORY=""
               SNAPSHOT_FILE="$(Build.ArtifactStagingDirectory)/review-snapshot.json"
               if [ "$SETUP_RESULT" = "COMPLETED" ] && [ -f "$SNAPSHOT_FILE" ]; then
                 SNAPSHOT_VALUES=$(SNAPSHOT_FILE="$SNAPSHOT_FILE" pwsh -NoProfile -Command '
                   $snapshot = Get-Content -Raw -LiteralPath $env:SNAPSHOT_FILE | ConvertFrom-Json
-                  "{0}|{1}|{2}" -f $snapshot.prHeadSha, $snapshot.baseSha, $snapshot.baseRefName
+                  "{0}|{1}|{2}|{3}" -f $snapshot.prHeadSha, $snapshot.baseSha, $snapshot.baseRefName, $snapshot.repository
                 ' 2>/dev/null | tr -d '\r\n' || true)
-                IFS='|' read -r REVIEWED_PR_HEAD_SHA REVIEWED_BASE_SHA REVIEWED_BASE_REF <<< "$SNAPSHOT_VALUES"
+                IFS='|' read -r REVIEWED_PR_HEAD_SHA REVIEWED_BASE_SHA REVIEWED_BASE_REF REVIEWED_REPOSITORY <<< "$SNAPSHOT_VALUES"
               fi
               if [ "$SETUP_RESULT" = "COMPLETED" ] && {
                 ! [[ "$REVIEWED_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
                 ! [[ "$REVIEWED_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
-                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
+                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+                [ "$REVIEWED_REPOSITORY" != "${{ parameters.ReviewRepository }}" ];
               }; then
                 echo "##vso[task.logissue type=error]Setup completed without a valid immutable review snapshot."
                 SETUP_RESULT="FAILED"
@@ -2795,7 +2825,7 @@ stages:
               # posted below supersedes them. Reuses the tested shared cleanup logic
               # (matches the hidden marker AND the stable header text, MauiBot-authored
               # only). Best-effort: never let cleanup failure block the new notice.
-              pwsh -NoProfile -Command '. "$(System.DefaultWorkingDirectory)/.github/scripts/shared/Remove-StaleMauiBotComments.ps1"; Hide-StaleMauiBotIssueComments -PRNumber ([int]$env:PARAM_PR_NUMBER) -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"' \
+              pwsh -NoProfile -Command '. "$(System.DefaultWorkingDirectory)/.github/scripts/shared/Remove-StaleMauiBotComments.ps1"; Hide-StaleMauiBotIssueComments -PRNumber ([int]$env:PARAM_PR_NUMBER) -Repository $env:PARAM_REVIEW_REPOSITORY -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"' \
                 || echo "ℹ️ prior review-incomplete collapse best-effort failed (continuing)"
               BUILD_URL="https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=${BUILD_BUILDID}"
               BODY_FILE="$(mktemp)"
@@ -2810,7 +2840,7 @@ stages:
                 echo ">"
                 echo "> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline · <a href=\"${BUILD_URL}\">build log</a></sub>"
               } > "$BODY_FILE"
-              if gh pr comment "$PARAM_PR_NUMBER" --repo dotnet/maui --body-file "$BODY_FILE"; then
+              if gh pr comment "$PARAM_PR_NUMBER" --repo "$PARAM_REVIEW_REPOSITORY" --body-file "$BODY_FILE"; then
                 echo "Review-incomplete notice posted to PR #$PARAM_PR_NUMBER."
               else
                 echo "##vso[task.logissue type=warning]Failed to post review-incomplete notice to PR #$PARAM_PR_NUMBER."
@@ -2821,6 +2851,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               BUILD_BUILDID: $(Build.BuildId)
 
           - task: PublishPipelineArtifact@1
@@ -3343,6 +3374,8 @@ stages:
               BASE_REF="${REVIEWED_BASE_REF}"
               BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
+              REVIEW_REPOSITORY_URL="https://github.com/${REVIEW_REPOSITORY}.git"
               if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
                 echo "##vso[task.logissue type=error]Trusted Setup output did not contain a valid PR base branch."
                 exit 1
@@ -3351,10 +3384,14 @@ stages:
                 echo "##vso[task.logissue type=error]Trusted Setup output did not contain valid immutable commit SHAs."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} immutable snapshot: base ${BASE_REF}@${BASE_SHA:0:7}, head ${PR_HEAD_SHA:0:7}"
+              echo "${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER} immutable snapshot: base ${BASE_REF}@${BASE_SHA:0:7}, head ${PR_HEAD_SHA:0:7}"
 
-              git fetch origin "${BASE_REF}" --no-tags
-              if git fetch origin "pull/${PARAM_PR_NUMBER}/head" --no-tags; then
+              git fetch "${REVIEW_REPOSITORY_URL}" "${BASE_SHA}" --no-tags
+              if [ "$(git rev-parse FETCH_HEAD)" != "${BASE_SHA}" ]; then
+                echo "##vso[task.logissue type=error]Fetched base does not match the immutable reviewed base ${BASE_SHA:0:7}."
+                exit 1
+              fi
+              if git fetch "${REVIEW_REPOSITORY_URL}" "pull/${PARAM_PR_NUMBER}/head" --no-tags; then
                 LIVE_PR_HEAD=$(git rev-parse FETCH_HEAD)
                 if [ "${LIVE_PR_HEAD}" != "${PR_HEAD_SHA}" ]; then
                   echo "##vso[task.logissue type=warning]PR head advanced after Setup; Deep UI will use the immutable reviewed commit ${PR_HEAD_SHA:0:7}, not live head ${LIVE_PR_HEAD:0:7}."
@@ -3365,7 +3402,7 @@ stages:
 
               for REQUIRED_SHA in "${BASE_SHA}" "${PR_HEAD_SHA}"; do
                 if ! git cat-file -e "${REQUIRED_SHA}^{commit}" 2>/dev/null; then
-                  git fetch origin "${REQUIRED_SHA}" --no-tags
+                  git fetch "${REVIEW_REPOSITORY_URL}" "${REQUIRED_SHA}" --no-tags
                 fi
                 if ! git cat-file -e "${REQUIRED_SHA}^{commit}" 2>/dev/null; then
                   echo "##vso[task.logissue type=error]The immutable review snapshot commit ${REQUIRED_SHA:0:7} is no longer fetchable."
@@ -3378,6 +3415,7 @@ stages:
             retryCountOnTaskFailure: 2
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
               REVIEWED_BASE_SHA: $(reviewedBaseSha)
               REVIEWED_BASE_REF: $(reviewedBaseRef)
@@ -4657,7 +4695,7 @@ stages:
               $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
               $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
               if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
-              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
             displayName: 'Prepare UI failure analysis input'
             continueOnError: true
             env:
@@ -4949,6 +4987,12 @@ stages:
                 "The deep job was canceled before normal publication (for example, by the outer 360-minute job cap); results may be incomplete and the deep run needs a rerun."
               } else { '' }
               $prNumber = "$env:PARAM_PR_NUMBER"
+              $reviewRepository = [string]$env:PARAM_REVIEW_REPOSITORY
+              if ($reviewRepository -notmatch '^(?<owner>[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))/(?<name>[A-Za-z0-9._-]+)$') {
+                throw "Review repository '$reviewRepository' is not a valid owner/name."
+              }
+              $reviewOwner = $Matches.owner
+              $reviewRepo = $Matches.name
               $reviewId = $env:AI_SUMMARY_REVIEW_ID
               if (-not [string]::IsNullOrWhiteSpace($reviewId) -and
                   $reviewId -ne 'DEFERRED' -and
@@ -5145,7 +5189,7 @@ stages:
                 # report that case as undetermined rather than blaming the base.
                 $bfClass = ''
                 $prFilesForClass = @()
-                try { $prFilesForClass = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
+                try { $prFilesForClass = @(gh api "repos/$reviewRepository/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
                 if ($buildFailedSampleFile -and $prFilesForClass.Count -gt 0) {
                   $hit = $prFilesForClass | Where-Object { $_ -and ($_ -eq $buildFailedSampleFile -or $buildFailedSampleFile.EndsWith("/$_") -or $_.EndsWith("/$buildFailedSampleFile")) } | Select-Object -First 1
                   if ($hit) {
@@ -5401,7 +5445,7 @@ stages:
                 if ($snapDiffTriples.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($ghTok)) {
                   $prStems = @()
                   try {
-                    $prStems = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null |
+                    $prStems = @(gh api "repos/$reviewRepository/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null |
                       ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) } |
                       Where-Object { $_ -and $_.Length -ge 4 } | Select-Object -Unique)
                   } catch { $prStems = @() }
@@ -5951,8 +5995,12 @@ stages:
                         "> ℹ️ The review agent did not produce a full summary on this run (an infrastructure issue on the CI agent), but the **deep UI tests completed** — their results are below. Re-comment ``/review`` for a fresh full review." +
                         [Environment]::NewLine + [Environment]::NewLine + $wrappedDeep
                       $doTmp = New-TemporaryFile
-                      @{ body = $doBody; event = 'COMMENT' } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
-                      gh api -X POST "repos/dotnet/maui/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
+                      @{
+                        body = $doBody
+                        event = 'COMMENT'
+                        commit_id = "$(reviewedPrHeadSha)"
+                      } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
+                      gh api -X POST "repos/$reviewRepository/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
                       if ($LASTEXITCODE -eq 0) {
                         Write-Host "✅ Standalone deep-results review posted"
                         # The Review stage already posted a bare 'review could not
@@ -5962,7 +6010,7 @@ stages:
                         # contradictory warning. Best-effort; never fatal.
                         try {
                           . ".github/scripts/shared/Remove-StaleMauiBotComments.ps1"
-                          Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -IncludeReviewIncomplete -Reason "superseded by standalone deep-results review"
+                          Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -Repository $reviewRepository -IncludeReviewIncomplete -Reason "superseded by standalone deep-results review"
                           Write-Host "Collapsed the earlier review-incomplete notice."
                         } catch { Write-Host "ℹ️ Could not collapse review-incomplete notice (non-fatal): $_" }
                       }
@@ -5984,7 +6032,7 @@ stages:
                     try {
                       try {
                         . ".github/scripts/shared/Remove-StaleMauiBotComments.ps1"
-                        Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"
+                        Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -Repository $reviewRepository -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"
                       } catch { Write-Host "ℹ️ prior review-incomplete collapse best-effort failed (continuing): $_" }
                       $buildUrl = "https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=$($env:BUILD_BUILDID)"
                       $riBody = @(
@@ -6002,7 +6050,7 @@ stages:
                       try {
                         $riBody | Set-Content $riTmp.FullName -Encoding UTF8
                         Invoke-GhCommandWithRetry `
-                          -Arguments @('pr', 'comment', $prNumber, '--repo', 'dotnet/maui', '--body-file', $riTmp.FullName) `
+                          -Arguments @('pr', 'comment', $prNumber, '--repo', $reviewRepository, '--body-file', $riTmp.FullName) `
                           -Description "post the review-incomplete notice for PR #$prNumber" | Out-Null
                         Write-Host "✅ Review-incomplete notice posted (Stage 3 fallback)"
                       } finally {
@@ -6128,7 +6176,9 @@ stages:
                         -PRNumber $prNumber `
                         -RepoRoot (Get-Location).Path `
                         -TrustedGateResult $trustedGate `
-                        -ExpectedHeadSha "$(reviewedPrHeadSha)"
+                        -ExpectedHeadSha "$(reviewedPrHeadSha)" `
+                        -Owner $reviewOwner `
+                        -Repo $reviewRepo
                       Write-Host "✅ Labels applied"
                     } catch {
                       Write-Host "⚠️ Label application failed: $_"
@@ -6141,7 +6191,7 @@ stages:
                   Write-Host "No deep results and review already exists — nothing to patch"
                   exit 0
                 }
-                $existing = (gh api "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
+                $existing = (gh api "repos/$reviewRepository/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
                   Write-Host "Could not fetch review body — aborting"
                   exit 0
@@ -6169,7 +6219,7 @@ stages:
 
                 $tmp = New-TemporaryFile
                 @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
-                gh api -X PATCH "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
+                gh api -X PATCH "repos/$reviewRepository/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
                 Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed + $totalSkipped))"
               }
             displayName: 'Post AI summary review'
@@ -6223,8 +6273,13 @@ stages:
               set -euo pipefail
 
               PR_NUM="${PARAM_PR_NUMBER}"
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
               if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
                 echo "Skipping lock cleanup; invalid PR number: '${PR_NUM}'"
+                exit 0
+              fi
+              if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then
+                echo "##vso[task.logissue type=warning]Preserving review lock because repository identity is invalid."
                 exit 0
               fi
 
@@ -6255,10 +6310,12 @@ stages:
 
               if ! OTHER_ACTIVE=$(printf '%s' "${BUILDS_JSON}" | jq -r \
                 --arg pr "${PR_NUM}" \
+                --arg repository "${REVIEW_REPOSITORY}" \
                 --argjson current "${CURRENT_BUILD}" \
                 '.value[] |
                  select(.id != $current and .status != "completed") |
                  select(((.templateParameters.PRNumber // "") | tostring) == $pr) |
+                 select(((.templateParameters.ReviewRepository // "dotnet/maui") | tostring) == $repository) |
                  [.id, .status, .queueTime] | @tsv'); then
                 echo "##vso[task.logissue type=warning]Preserving review lock because the active-build response was invalid."
                 exit 0
@@ -6280,7 +6337,7 @@ stages:
                  [ "${UPDATE_SUMMARY_RESULT}" != "SucceededWithIssues" ]; then
                 EXPECTED_HEAD="${REVIEWED_PR_HEAD_SHA}"
                 if [[ "${EXPECTED_HEAD}" =~ ^[0-9a-fA-F]{40}$ ]]; then
-                  CURRENT_HEAD=$(gh api "repos/dotnet/maui/pulls/${PR_NUM}" --jq '.head.sha' 2>/dev/null || true)
+                  CURRENT_HEAD=$(gh api "repos/${REVIEW_REPOSITORY}/pulls/${PR_NUM}" --jq '.head.sha' 2>/dev/null || true)
                   if [ "${CURRENT_HEAD}" = "${EXPECTED_HEAD}" ]; then
                     echo "Final summary stage result was '${UPDATE_SUMMARY_RESULT:-unknown}'; marking the immutable reviewed head incomplete."
                     for LABEL in \
@@ -6291,11 +6348,11 @@ stages:
                       s%2Fagent-fix-win \
                       s%2Fagent-fix-pr-picked \
                       s%2Fagent-reviewed; do
-                      gh api --method DELETE "repos/dotnet/maui/issues/${PR_NUM}/labels/${LABEL}" >/dev/null 2>&1 || true
+                      gh api --method DELETE "repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels/${LABEL}" >/dev/null 2>&1 || true
                     done
                     LABEL_PAYLOAD=$(mktemp)
                     printf '%s' '{"labels":["s/agent-review-incomplete","s/agent-reviewed"]}' > "${LABEL_PAYLOAD}"
-                    if ! gh api --method POST "repos/dotnet/maui/issues/${PR_NUM}/labels" --input "${LABEL_PAYLOAD}" >/dev/null; then
+                    if ! gh api --method POST "repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels" --input "${LABEL_PAYLOAD}" >/dev/null; then
                       echo "##vso[task.logissue type=warning]Could not apply the review-incomplete fallback labels."
                     fi
                     rm -f "${LABEL_PAYLOAD}"
@@ -6310,7 +6367,7 @@ stages:
               echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
               gh api \
                 --method DELETE \
-                "repos/dotnet/maui/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
+                "repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
             displayName: 'Remove in-progress label'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
@@ -6320,6 +6377,7 @@ stages:
               SYSTEM_DEFINITIONID: $(System.DefinitionId)
               BUILD_BUILDID: $(Build.BuildId)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               TRUSTED_SETUP_RESULT: $(cleanupSetupResult)
               REVIEWED_PR_HEAD_SHA: $(cleanupReviewedPrHeadSha)
               UPDATE_SUMMARY_RESULT: $(cleanupSummaryResult)

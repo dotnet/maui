@@ -64,7 +64,8 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateRetryBudgetMinutes')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateRetryFitsBudget')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
-    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRemoteBranchSha')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRepositoryBranchSha')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Assert-ResolvedReviewBaseRef')
     $script:stopTrustedCatalystOverlayFailureBody = Get-FunctionBody -ScriptText $content -FunctionName 'Stop-TrustedCatalystOverlayFailure'
     . (Join-Path $PSScriptRoot 'shared/Invoke-GhCommandWithRetry.ps1')
 }
@@ -78,7 +79,33 @@ Describe 'Phase worktree requirements' {
     }
 }
 
-Describe 'Inflight target branch fetch' {
+Describe 'Current target branch fetch' {
+    It 'fetches the selected repository branch and resolves only FETCH_HEAD' {
+        $expectedSha = 'a' * 40
+        Mock Invoke-ReviewGitCommand {
+            param([string[]]$Arguments)
+            if ($Arguments[0] -eq 'fetch') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '' }
+            }
+            if ($Arguments -join ' ' -eq 'rev-parse FETCH_HEAD') {
+                return [pscustomobject]@{ ExitCode = 0; Output = $expectedSha }
+            }
+            throw "Unexpected git invocation: $($Arguments -join ' ')"
+        }
+
+        Get-FetchedRepositoryBranchSha `
+            -RepositoryUrl 'https://github.com/kubaflo/maui.git' `
+            -BranchName 'inflight/current' |
+            Should -BeExactly $expectedSha
+
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -join ' ' -eq 'fetch https://github.com/kubaflo/maui.git refs/heads/inflight/current --no-tags'
+        }
+        Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -join ' ' -eq 'rev-parse FETCH_HEAD'
+        }
+    }
+
     It 'does not resolve or merge a stale cached ref when fetch fails' {
         Mock Invoke-ReviewGitCommand {
             param([string[]]$Arguments)
@@ -92,11 +119,13 @@ Describe 'Inflight target branch fetch' {
         }
 
         {
-            Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName 'inflight/current'
+            Get-FetchedRepositoryBranchSha `
+                -RepositoryUrl 'https://github.com/kubaflo/maui.git' `
+                -BranchName 'inflight/current'
         } | Should -Throw '*inconclusive due to a retryable environment/infrastructure failure*'
 
         Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
-            $Arguments -join ' ' -eq 'fetch origin inflight/current'
+            $Arguments -join ' ' -eq 'fetch https://github.com/kubaflo/maui.git refs/heads/inflight/current --no-tags'
         }
         Should -Invoke Invoke-ReviewGitCommand -Times 0 -Exactly -ParameterFilter {
             $Arguments[0] -eq 'rev-parse'
@@ -116,7 +145,9 @@ Describe 'Inflight target branch fetch' {
         }
 
         $errorMessage = try {
-            Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName 'inflight/candidate'
+            Get-FetchedRepositoryBranchSha `
+                -RepositoryUrl 'https://github.com/kubaflo/maui.git' `
+                -BranchName 'inflight/candidate'
             throw 'Expected the failed fetch to terminate branch resolution.'
         } catch {
             $_.Exception.Message
@@ -125,11 +156,43 @@ Describe 'Inflight target branch fetch' {
         $errorMessage | Should -Match 'inconclusive due to a retryable environment/infrastructure failure'
         $errorMessage | Should -Not -Match 'merge conflict'
         Should -Invoke Invoke-ReviewGitCommand -Times 1 -Exactly -ParameterFilter {
-            $Arguments -join ' ' -eq 'fetch origin inflight/candidate'
+            $Arguments -join ' ' -eq 'fetch https://github.com/kubaflo/maui.git refs/heads/inflight/candidate --no-tags'
         }
         Should -Invoke Invoke-ReviewGitCommand -Times 0 -Exactly -ParameterFilter {
             $Arguments[0] -eq 'rev-parse'
         }
+    }
+}
+
+Describe 'Resolved review base identity' {
+    It 'accepts the base ref captured with the frozen base commit' {
+        {
+            Assert-ResolvedReviewBaseRef `
+                -ResolvedBaseRef 'inflight/current' `
+                -LiveBaseRef 'inflight/current' `
+                -Repository 'kubaflo/maui' `
+                -PRNumber 848
+        } | Should -Not -Throw
+    }
+
+    It 'refuses a PR retargeted after its base commit was captured' {
+        {
+            Assert-ResolvedReviewBaseRef `
+                -ResolvedBaseRef 'main' `
+                -LiveBaseRef 'inflight/current' `
+                -Repository 'kubaflo/maui' `
+                -PRNumber 848
+        } | Should -Throw '*retargeted from ''main'' to ''inflight/current''*'
+    }
+
+    It 'keeps standalone setup compatible when no resolved base ref was supplied' {
+        {
+            Assert-ResolvedReviewBaseRef `
+                -ResolvedBaseRef '' `
+                -LiveBaseRef 'main' `
+                -Repository 'kubaflo/maui' `
+                -PRNumber 848
+        } | Should -Not -Throw
     }
 }
 
@@ -144,6 +207,8 @@ Describe 'Setup PR metadata lookup' {
             '$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json'))
         $content | Should -Match ([regex]::Escape(
             '$baseRefName = [string]$prInfo.base.ref'))
+        $content | Should -Match ([regex]::Escape(
+            'Assert-ResolvedReviewBaseRef `'))
     }
 }
 
@@ -531,6 +596,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('variable=reviewedBaseSha;isOutput=true'))
         $pipelineContent | Should -Match ([regex]::Escape('variable=reviewedBaseRef;isOutput=true'))
         $pipelineContent | Should -Match ([regex]::Escape("reviewedPrHeadSha: `$[ stageDependencies.ReviewPR.CopilotReview.outputs['RunSetup.reviewedPrHeadSha'] ]"))
+        $pipelineContent | Should -Match ([regex]::Escape('-ResolvedBaseCommit "$(resolvedBaseSha)"'))
+        $pipelineContent | Should -Match ([regex]::Escape('-ResolvedBaseRef "$(resolvedBaseRef)"'))
         $pipelineContent | Should -Match ([regex]::Escape('git merge --squash "${PR_HEAD_SHA}"'))
         $pipelineContent | Should -Match ([regex]::Escape('-ReviewedCommit "$(trustedReviewedPrHeadSha)"'))
         $pipelineContent | Should -Match ([regex]::Escape('-ReviewedCommit "$(reviewedPrHeadSha)"'))
@@ -578,7 +645,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $cleanupBlock | Should -Match '\.templateParameters\.PRNumber'
         $cleanupBlock | Should -Match '\.id != \$current and \.status != "completed"'
         $cleanupBlock | Should -Match 'Preserving s/agent-review-in-progress'
-        $cleanupBlock.IndexOf('OTHER_ACTIVE=') | Should -BeLessThan $cleanupBlock.IndexOf('repos/dotnet/maui/issues/${PR_NUM}/labels')
+        $cleanupBlock | Should -Match '\.templateParameters\.ReviewRepository'
+        $cleanupBlock.IndexOf('OTHER_ACTIVE=') | Should -BeLessThan $cleanupBlock.IndexOf('repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels')
         $analyzeBlock | Should -Match 'condition: not\(canceled\(\)\)'
     }
 
@@ -740,7 +808,11 @@ Describe 'Reviewer pipeline timeout containment' {
             $buildTasks)
 
         $resolveBlock | Should -Match (
-            [regex]::Escape('git checkout --detach "origin/${BASE_REF}"'))
+            [regex]::Escape('git fetch "${REVIEW_REPOSITORY_URL}" "refs/heads/${BASE_REF}" --no-tags'))
+        $resolveBlock | Should -Match (
+            [regex]::Escape('BASE_SHA=$(git rev-parse FETCH_HEAD)'))
+        $resolveBlock | Should -Match (
+            [regex]::Escape('git checkout --detach "${BASE_SHA}"'))
         $resolveBlock | Should -Not -Match 'pull/\$\{PARAM_PR_NUMBER\}/head'
         $resolveBlock | Should -Not -Match 'git checkout --detach FETCH_HEAD'
         $installWorkloads | Should -BeGreaterThan $resolveEnd
@@ -912,7 +984,9 @@ Describe 'Reviewer pipeline timeout containment' {
     }
 
     It 'passes the selected platform into every UI category detection pass' {
-        $pipelineContent | Should -Match ([regex]::Escape('-PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM"'))
+        $pipelineContent | Should -Match ([regex]::Escape('-PrNumber "$env:PARAM_PR_NUMBER" -Repository "$env:PARAM_REVIEW_REPOSITORY" -BaseCommit "$env:PARAM_BASE_COMMIT" -Platform "$env:PARAM_PLATFORM"'))
+        $pipelineContent | Should -Match ([regex]::Escape('PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}'))
+        $pipelineContent | Should -Match ([regex]::Escape('PARAM_BASE_COMMIT: $(resolvedBaseSha)'))
         $pipelineContent | Should -Match ([regex]::Escape('PARAM_PLATFORM: ${{ parameters.Platform }}'))
         ([regex]::Matches($content, [regex]::Escape('-Platform "$Platform"'))).Count | Should -BeGreaterOrEqual 2
     }

@@ -64,7 +64,12 @@ param(
     [string]$DiffPath,
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
     [string]$Repo = "dotnet/maui",
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$HistoryRepo = "dotnet/maui",
 
     [Parameter(Mandatory = $false)]
     [string[]]$FilePaths,
@@ -77,6 +82,10 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch = 'main',
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$BaseCommit = '',
 
     [Parameter(Mandatory = $false)]
     [string]$OutputDir,
@@ -102,6 +111,28 @@ function ConvertTo-NormalizedLine {
     # so an indent change alone won't trigger a false REVERT.
     param([string]$Line)
     return ($Line -replace '\s+', ' ').Trim()
+}
+
+function Get-HistoryPullRequestLink {
+    param(
+        [int]$Number,
+        [string]$Repository
+    )
+    return "[#$Number](https://github.com/$Repository/pull/$Number)"
+}
+
+function ConvertTo-HistoryIssueLinks {
+    param(
+        [string]$IssueList,
+        [string]$Repository
+    )
+
+    return (@($IssueList -split ',\s*' | ForEach-Object {
+        if ($_ -match '^#(?<number>[1-9][0-9]*)$') {
+            return "[$_](https://github.com/$Repository/issues/$($Matches.number))"
+        }
+        return $_
+    }) -join ', ')
 }
 
 function Test-IsImplementationFile {
@@ -425,35 +456,51 @@ foreach ($file in $prDiffByFile.Keys) {
     $addedNormByFile[$file] = $addedSet
 }
 
-# Resolve the base ref for git log scope. Try local refs first; if neither exists, fall
-# back to --all (with a warning) so the script still produces useful output.
+# Resolve the base for git log scope. Review callers supply the immutable base
+# commit captured during Setup; standalone callers retain the branch fallback.
 $gitLogRef = $null
-foreach ($candidate in @($BaseBranch, "origin/$BaseBranch", "upstream/$BaseBranch")) {
-    git rev-parse --verify --quiet $candidate 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        $gitLogRef = $candidate
-        break
+if (-not [string]::IsNullOrWhiteSpace($BaseCommit)) {
+    git cat-file -e "$BaseCommit^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Immutable review base commit '$BaseCommit' is not present in the repository."
     }
-}
-if (-not $gitLogRef) {
-    Write-Host "  ⚠️  Base ref '$BaseBranch' not found locally — falling back to --all (may include unrelated history)." -ForegroundColor Yellow
-}
-
-# Resolve the PR's base branch so we can verify that fix PRs were actually merged
-# into it. A fix merged to inflight/current won't be reachable from main.
-$prBaseRef = $null
-$prBaseJson = gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
-if ($prBaseJson) {
-    foreach ($candidate in @($prBaseJson, "origin/$prBaseJson", "upstream/$prBaseJson")) {
+    $gitLogRef = $BaseCommit
+} else {
+    foreach ($candidate in @($BaseBranch, "origin/$BaseBranch", "upstream/$BaseBranch")) {
         git rev-parse --verify --quiet $candidate 2>$null | Out-Null
         if ($LASTEXITCODE -eq 0) {
-            $prBaseRef = $candidate
+            $gitLogRef = $candidate
             break
+        }
+    }
+    if (-not $gitLogRef) {
+        Write-Host "  ⚠️  Base ref '$BaseBranch' not found locally — falling back to --all (may include unrelated history)." -ForegroundColor Yellow
+    }
+}
+
+# Use the same immutable base for ancestry checks. Falling back to a mutable
+# same-named local branch can silently answer about the pipeline repository
+# instead of the repository holding the reviewed PR.
+$prBaseRef = $null
+$prBaseDescription = $null
+if (-not [string]::IsNullOrWhiteSpace($BaseCommit)) {
+    $prBaseRef = $BaseCommit
+    $prBaseDescription = $BaseCommit
+} else {
+    $prBaseJson = gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
+    if ($prBaseJson) {
+        foreach ($candidate in @($prBaseJson, "origin/$prBaseJson", "upstream/$prBaseJson")) {
+            git rev-parse --verify --quiet $candidate 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+                $prBaseRef = $candidate
+                $prBaseDescription = $prBaseJson
+                break
+            }
         }
     }
 }
 if ($prBaseRef) {
-    Write-Host "  📌 PR targets '$prBaseJson' — verifying fix PRs are reachable from $prBaseRef" -ForegroundColor Gray
+    Write-Host "  📌 Verifying fix PRs are reachable from reviewed base $prBaseDescription" -ForegroundColor Gray
 } else {
     Write-Host "  ⚠️ Could not resolve PR base branch — skipping ancestry verification" -ForegroundColor Yellow
 }
@@ -524,7 +571,7 @@ foreach ($filePath in $FilePaths) {
         if ($inspectedPRs.ContainsKey($recentPR)) {
             $meta = $inspectedPRs[$recentPR]
         } else {
-            $meta = Get-PRMetadataIfBugFix -Number $recentPR -Repo $Repo
+            $meta = Get-PRMetadataIfBugFix -Number $recentPR -Repo $HistoryRepo
             $inspectedPRs[$recentPR] = $meta
             # Single combined `gh pr view --json labels,title,body` + up to one `gh issue
             # view` per linked issue. Average ≈ 1-3 calls per fix-PR candidate.
@@ -553,7 +600,7 @@ foreach ($filePath in $FilePaths) {
         if ($fixDiffCache.ContainsKey($recentPR)) {
             $fixByFile = $fixDiffCache[$recentPR]
         } else {
-            $fixDiff = Get-PRDiffText -Number $recentPR -Repo $Repo
+            $fixDiff = Get-PRDiffText -Number $recentPR -Repo $HistoryRepo
             $ghCallCount++
             $fixByFile = if ($fixDiff) { Get-DiffLinesByFile -DiffText $fixDiff } else { @{} }
             $fixDiffCache[$recentPR] = $fixByFile
@@ -800,13 +847,18 @@ if ($OutputDir) {
             foreach ($r in $reverts) {
                 $sample = @($r.RevertedLines) | Select-Object -First 1 | ForEach-Object { $_.Text.Trim() }
                 $sampleEsc = ($sample -replace '\|', '\|')
-                [void]$md.AppendLine("| ``$($r.File)`` | #$($r.RecentPR) | $($r.FixedIssues) | ✗ REVERT | ``$sampleEsc`` |")
+                $prLink = Get-HistoryPullRequestLink -Number $r.RecentPR -Repository $HistoryRepo
+                $issueLinks = ConvertTo-HistoryIssueLinks -IssueList $r.FixedIssues -Repository $HistoryRepo
+                [void]$md.AppendLine("| ``$($r.File)`` | $prLink | $issueLinks | ✗ REVERT | ``$sampleEsc`` |")
             }
             $allIssues = @($reverts | ForEach-Object { $_.FixedIssues -split ',\s*' } |
                 Where-Object { $_ } | Select-Object -Unique | Sort-Object)
             if ($allIssues.Count -gt 0) {
+                $allIssueLinks = @($allIssues | ForEach-Object {
+                    ConvertTo-HistoryIssueLinks -IssueList $_ -Repository $HistoryRepo
+                })
                 [void]$md.AppendLine()
-                [void]$md.AppendLine("**Action required:** Verify that issues $($allIssues -join ', ') do not re-regress before merging.")
+                [void]$md.AppendLine("**Action required:** Verify that issues $($allIssueLinks -join ', ') do not re-regress before merging.")
             }
 
             # List regression tests that should be run
@@ -823,7 +875,8 @@ if ($OutputDir) {
                 [void]$md.AppendLine("| Fix PR | Type | Test | Filter |")
                 [void]$md.AppendLine("|---|---|---|---|")
                 foreach ($t in $allRegressionTests) {
-                    [void]$md.AppendLine("| #$($t.FixPR) | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
+                    $prLink = Get-HistoryPullRequestLink -Number $t.FixPR -Repository $HistoryRepo
+                    [void]$md.AppendLine("| $prLink | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
                 }
             }
         }
@@ -833,7 +886,9 @@ if ($OutputDir) {
             [void]$md.AppendLine("| File | Fix PR | Fixed issue(s) |")
             [void]$md.AppendLine("|---|---|---|")
             foreach ($o in $overlaps) {
-                [void]$md.AppendLine("| ``$($o.File)`` | #$($o.RecentPR) | $($o.FixedIssues) |")
+                $prLink = Get-HistoryPullRequestLink -Number $o.RecentPR -Repository $HistoryRepo
+                $issueLinks = ConvertTo-HistoryIssueLinks -IssueList $o.FixedIssues -Repository $HistoryRepo
+                [void]$md.AppendLine("| ``$($o.File)`` | $prLink | $issueLinks |")
             }
 
             # List regression tests from overlapping fix PRs
@@ -850,7 +905,8 @@ if ($OutputDir) {
                 [void]$md.AppendLine("| Fix PR | Type | Test | Filter |")
                 [void]$md.AppendLine("|---|---|---|---|")
                 foreach ($t in $overlapTests) {
-                    [void]$md.AppendLine("| #$($t.FixPR) | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
+                    $prLink = Get-HistoryPullRequestLink -Number $t.FixPR -Repository $HistoryRepo
+                    [void]$md.AppendLine("| $prLink | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
                 }
             }
         }
@@ -866,8 +922,9 @@ if ($OutputDir) {
         $inline = @()
         foreach ($r in $reverts) {
             foreach ($rl in @($r.RevertedLines)) {
-                $prUrl = "https://github.com/$Repo/pull/$($r.RecentPR)"
-                $body = "● **Regression risk** — this line was added by [#$($r.RecentPR)]($prUrl) to fix $($r.FixedIssues). Removing it may re-introduce the original bug. Please confirm this removal is intentional and that the previously-fixed issue is covered by another mechanism."
+                $prUrl = "https://github.com/$HistoryRepo/pull/$($r.RecentPR)"
+                $issueLinks = ConvertTo-HistoryIssueLinks -IssueList $r.FixedIssues -Repository $HistoryRepo
+                $body = "● **Regression risk** — this line was added by [#$($r.RecentPR)]($prUrl) to fix $issueLinks. Removing it may re-introduce the original bug. Please confirm this removal is intentional and that the previously-fixed issue is covered by another mechanism."
                 $inline += @{
                     path = $r.File
                     line = $rl.Line
