@@ -86,7 +86,7 @@
         },
         {
           "id": "avaloniaIgnoredWithSampleContent",
-          "condition": "((HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\") && WithAvalonia && EnableSampleContent)",
+          "condition": "(WithAvalonia && EnableSampleContent)",
           "description": "Warning: The Avalonia option was not applied.",
           "manualInstructions": [
             {
@@ -98,7 +98,7 @@
         },
         {
           "id": "sampleContentIgnoredWithCSharpUI",
-          "condition": "((HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\") && UseCSharpUI && IncludeSampleContentCli)",
+          "condition": "(UseCSharpUI && IncludeSampleContentCli)",
           "description": "Warning: The sample content option was not applied.",
           "manualInstructions": [
             {
