@@ -57,4 +57,13 @@ static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdge
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.ConnectHandler(UIKit.UIView platformView) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.DisconnectHandler(UIKit.UIView platformView) -> void
-﻿#nullable enable
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(UIKit.UIView? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(UIKit.UIView! containerView) -> void
+override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.ValidateContainerView(UIKit.UIView! containerView) -> void

@@ -76,10 +76,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IClipboard Default =>
-			defaultImplementation ??= new ClipboardImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ClipboardImplementation());
 
 		internal static void SetDefault(IClipboard? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	partial class ClipboardImplementation : IClipboard

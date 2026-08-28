@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Maui.Authentication;
 using Xunit;
 
@@ -9,11 +10,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("WebAuthenticator")]
 	public class WebAuthenticator_Windows_Tests
 	{
-		// Pre-canceled authentication should eventually behave consistently across all
-		// WebAuthenticator platforms. This regression test is currently Windows-only
-		// because the other platforms still start their native browser session.
 		[Fact]
-		public async Task AuthenticateAsyncWithPreCanceledTokenStopsBeforePlatformValidation()
+		public async Task PlatformValidationPrecedesPreCanceledToken()
 		{
 			var options = new WebAuthenticatorOptions
 			{
@@ -23,10 +21,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			var cancellationToken = new CancellationToken(canceled: true);
 
-			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
 				WebAuthenticator.Default.AuthenticateAsync(options, cancellationToken));
 
-			Assert.Equal(cancellationToken, exception.CancellationToken);
+			Assert.Contains("not supported", exception.Message, StringComparison.OrdinalIgnoreCase);
 		}
 
 		[Theory]
@@ -67,6 +65,102 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				new Uri(callbackUrl));
 
 			Assert.Equal(expected, actual);
+		}
+
+		[Fact]
+		public void ManifestProtocolLookupUsesCurrentApplicationAndVersionAgnosticUapNamespace()
+		{
+			var document = XDocument.Parse("""
+				<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+				         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5">
+				  <Applications>
+				    <Application Id="OtherApp">
+				      <Extensions>
+				        <uap5:Extension Category="windows.protocol">
+				          <uap5:Protocol Name="other-auth" />
+				        </uap5:Extension>
+				      </Extensions>
+				    </Application>
+				    <Application Id="CurrentApp">
+				      <Extensions>
+				        <uap5:Extension Category="windows.protocol">
+				          <uap5:Protocol Name="MAUI-AUTH" />
+				        </uap5:Extension>
+				      </Extensions>
+				    </Application>
+				  </Applications>
+				</Package>
+				""");
+
+			Assert.True(WebAuthenticatorImplementation.IsUriProtocolDeclared(document, "CurrentApp", "maui-auth"));
+			Assert.False(WebAuthenticatorImplementation.IsUriProtocolDeclared(document, "CurrentApp", "other-auth"));
+			Assert.False(WebAuthenticatorImplementation.IsUriProtocolDeclared(document, null, "maui-auth"));
+		}
+
+		[Fact]
+		public void ManifestProtocolLookupCanUseTheOnlyApplicationAsIdentityFallback()
+		{
+			var document = XDocument.Parse("""
+				<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+				         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10">
+				  <Applications>
+				    <Application Id="OnlyApp">
+				      <Extensions>
+				        <uap:Extension Category="windows.protocol">
+				          <uap:Protocol Name="maui-auth" />
+				        </uap:Extension>
+				      </Extensions>
+				    </Application>
+				  </Applications>
+				</Package>
+				""");
+
+			Assert.True(WebAuthenticatorImplementation.IsUriProtocolDeclared(document, null, "MAUI-AUTH"));
+		}
+
+		[Theory]
+		[InlineData(null, true)]
+		[InlineData("", true)]
+		[InlineData("\"C:\\Program Files\\Maui App\\maui.exe\" \"%1\"", true)]
+		[InlineData("\"c:\\PROGRAM FILES\\MAUI APP\\MAUI.EXE\" --protocol \"%1\"", true)]
+		[InlineData("\"C:\\Other\\other.exe\" \"%1\"", false)]
+		[InlineData("C:\\Apps\\maui.exe %1", false)]
+		[InlineData("C:\\Program Files\\Maui App\\maui.exe %1", true)]
+		[InlineData("maui.exe %1", true)]
+		[InlineData("\"unterminated command", true)]
+		public void RegistryOwnershipRejectsOnlyCertainOtherExecutables(string command, bool expected)
+		{
+			var actual = WebAuthenticatorImplementation.IsRegistryCommandOwnedByCurrentExecutable(
+				command,
+				@"C:\Program Files\Maui App\maui.exe");
+
+			Assert.Equal(expected, actual);
+		}
+
+		[Fact]
+		public void RegistryOwnershipAcceptsDotnetHostedCommand()
+		{
+			var actual = WebAuthenticatorImplementation.IsRegistryCommandOwnedByCurrentExecutable(
+				"\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Apps\\sample.dll\" \"%1\"",
+				@"C:\Program Files\dotnet\dotnet.exe");
+
+			Assert.True(actual);
+		}
+
+		[Fact]
+		public void CallbackRouteExceptionsPreserveTheRedactedCauseChain()
+		{
+			var nativeCause = new InvalidOperationException("native diagnostic");
+			var inspectionFailure = WebAuthenticatorImplementation.CreateCallbackRouteException(
+				"Unable to inspect the current application instance.",
+				nativeCause);
+			var outerFailure = WebAuthenticatorImplementation.CreateCallbackRouteException(
+				"Unable to register the WebAuthenticator callback route.",
+				inspectionFailure);
+
+			Assert.Equal("Unable to register the WebAuthenticator callback route.", outerFailure.Message);
+			Assert.Same(inspectionFailure, outerFailure.InnerException);
+			Assert.Same(nativeCause, outerFailure.InnerException?.InnerException);
 		}
 	}
 }

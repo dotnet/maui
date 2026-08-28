@@ -26,15 +26,28 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SelectedTabColor"/>.</summary>
 		public static readonly BindableProperty SelectedTabColorProperty = BindableProperty.Create(nameof(SelectedTabColor), typeof(Color), typeof(TabbedPage), default(Color));
 
+		/// <summary>Bindable property for attached property <c>BadgeText</c>.</summary>
+		public static readonly BindableProperty BadgeTextProperty =
+			BindableProperty.CreateAttached("BadgeText", typeof(string), typeof(TabbedPage), null);
+
+		/// <summary>Bindable property for attached property <c>BadgeColor</c>.</summary>
+		public static readonly BindableProperty BadgeColorProperty =
+			BindableProperty.CreateAttached("BadgeColor", typeof(Color), typeof(TabbedPage), null);
+
+		/// <summary>Bindable property for attached property <c>BadgeTextColor</c>.</summary>
+		public static readonly BindableProperty BadgeTextColorProperty =
+			BindableProperty.CreateAttached("BadgeTextColor", typeof(Color), typeof(TabbedPage), null);
+
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
 
 		// Stores the collection change args from OnPagesChanged so MapItemsSource
 		// can handle Add/Remove incrementally instead of full rebuild.
 		internal NotifyCollectionChangedEventArgs _pendingPagesChangedArgs;
 
-		// Stores the page whose Title/Icon changed so the mapper can refresh
+		// Stores the page and property that changed so the mapper can refresh
 		// only that page's tab bar item instead of all children.
 		internal Page _pendingPropertyChangedPage;
+		internal string _pendingPropertyChangedPropertyName;
 
 		// Tracks pages with active PropertyChanged subscriptions so they can be
 		// unsubscribed on Reset (where Children is already empty and e.OldItems is null).
@@ -73,6 +86,47 @@ namespace Microsoft.Maui.Controls
 			get => (Color)GetValue(SelectedTabColorProperty);
 			set => SetValue(SelectedTabColorProperty, value);
 		}
+
+		/// <summary>Gets the badge text displayed for a page in a <see cref="TabbedPage"/>.</summary>
+		/// <remarks>
+		/// A non-null, non-empty value displays a badge containing the value. An empty string displays
+		/// a dot indicator, and <see langword="null"/> hides the badge. On Windows, non-numeric text
+		/// displays as a dot indicator.
+		/// </remarks>
+		public static string GetBadgeText(BindableObject page) =>
+			(string)page.GetValue(BadgeTextProperty);
+
+		/// <summary>Sets the badge text displayed for a page in a <see cref="TabbedPage"/>.</summary>
+		/// <param name="page">The page whose tab badge is updated.</param>
+		/// <param name="value">The badge text, an empty string for a dot, or <see langword="null"/> to hide the badge.</param>
+		public static void SetBadgeText(BindableObject page, string value) =>
+			page.SetValue(BadgeTextProperty, value);
+
+		/// <summary>Gets the background color of the badge displayed for a page in a <see cref="TabbedPage"/>.</summary>
+		/// <remarks>
+		/// On iOS and Mac Catalyst, this maps to <c>UITabBarItem.BadgeColor</c>. System tab bars
+		/// introduced in iOS 18 and Mac Catalyst 18 may retain this value but render the system
+		/// badge color instead.
+		/// </remarks>
+		public static Color GetBadgeColor(BindableObject page) =>
+			(Color)page.GetValue(BadgeColorProperty);
+
+		/// <summary>Sets the background color of the badge displayed for a page in a <see cref="TabbedPage"/>.</summary>
+		public static void SetBadgeColor(BindableObject page, Color value) =>
+			page.SetValue(BadgeColorProperty, value);
+
+		/// <summary>Gets the text color of the badge displayed for a page in a <see cref="TabbedPage"/>.</summary>
+		/// <remarks>
+		/// On iOS and Mac Catalyst, this maps to <c>UITabBarItem.SetBadgeTextAttributes</c>. System
+		/// tab bars introduced in iOS 18 and Mac Catalyst 18 may retain these attributes but render
+		/// the system badge text color instead.
+		/// </remarks>
+		public static Color GetBadgeTextColor(BindableObject page) =>
+			(Color)page.GetValue(BadgeTextColorProperty);
+
+		/// <summary>Sets the text color of the badge displayed for a page in a <see cref="TabbedPage"/>.</summary>
+		public static void SetBadgeTextColor(BindableObject page, Color value) =>
+			page.SetValue(BadgeTextColorProperty, value);
 
 		protected override Page CreateDefault(object item)
 		{
@@ -178,11 +232,16 @@ namespace Microsoft.Maui.Controls
 			void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == Page.TitleProperty.PropertyName ||
-					e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+					e.PropertyName == Page.IconImageSourceProperty.PropertyName ||
+					e.PropertyName == BadgeTextProperty.PropertyName ||
+					e.PropertyName == BadgeColorProperty.PropertyName ||
+					e.PropertyName == BadgeTextColorProperty.PropertyName)
 				{
 					_pendingPropertyChangedPage = sender as Page;
+					_pendingPropertyChangedPropertyName = e.PropertyName;
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
 					_pendingPropertyChangedPage = null;
+					_pendingPropertyChangedPropertyName = null;
 				}
 			}
 		}

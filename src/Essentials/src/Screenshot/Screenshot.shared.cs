@@ -179,10 +179,10 @@ namespace Microsoft.Maui.Media
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IScreenshot Default =>
-			defaultImplementation ??= new ScreenshotImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ScreenshotImplementation());
 
 		internal static void SetDefault(IScreenshot? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

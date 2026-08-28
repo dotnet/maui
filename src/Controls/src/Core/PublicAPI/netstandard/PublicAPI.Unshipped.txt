@@ -1,4 +1,14 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.DragGestureRecognizer.SendDragStarting(Microsoft.Maui.Controls.View! element, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs = null) -> Microsoft.Maui.Controls.DragStartingEventArgs!
+Microsoft.Maui.Controls.DragGestureRecognizer.SendDropCompleted(Microsoft.Maui.Controls.DropCompletedEventArgs! args) -> void
+Microsoft.Maui.Controls.DropGestureRecognizer.SendDragLeave(Microsoft.Maui.Controls.DragEventArgs! args) -> void
+Microsoft.Maui.Controls.DropGestureRecognizer.SendDrop(Microsoft.Maui.Controls.DropEventArgs! args) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerEntered(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerExited(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerMoved(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerPressed(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.SendPointerReleased(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformPointerEventArgs? platformArgs = null, Microsoft.Maui.Controls.ButtonsMask button = Microsoft.Maui.Controls.ButtonsMask.Primary) -> void
+Microsoft.Maui.Controls.TapGestureRecognizer.SendTapped(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
 Microsoft.Maui.Controls.Window.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.Controls.Window.StatusBarTheme.set -> void
 static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -42,6 +52,8 @@ Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.get -> i
 Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.set -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.get -> int
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.SendLongPressed(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.SendLongPressing(Microsoft.Maui.Controls.View! sender, Microsoft.Maui.GestureStatus status, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.State.get -> Microsoft.Maui.GestureStatus
 Microsoft.Maui.Controls.LongPressedEventArgs
 Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter) -> void
@@ -183,4 +195,20 @@ virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+~Microsoft.Maui.Controls.SwipeItem.IconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SwipeItem.IconColor.set -> void
+~static readonly Microsoft.Maui.Controls.SwipeItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.SwipeItem.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SwipeItem.TextColor.set -> void
+~static readonly Microsoft.Maui.Controls.SwipeItem.TextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
+~static Microsoft.Maui.Controls.TabbedPage.GetBadgeColor(Microsoft.Maui.Controls.BindableObject page) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.TabbedPage.GetBadgeText(Microsoft.Maui.Controls.BindableObject page) -> string
+~static Microsoft.Maui.Controls.TabbedPage.GetBadgeTextColor(Microsoft.Maui.Controls.BindableObject page) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.TabbedPage.SetBadgeColor(Microsoft.Maui.Controls.BindableObject page, Microsoft.Maui.Graphics.Color value) -> void
+~static Microsoft.Maui.Controls.TabbedPage.SetBadgeText(Microsoft.Maui.Controls.BindableObject page, string value) -> void
+~static Microsoft.Maui.Controls.TabbedPage.SetBadgeTextColor(Microsoft.Maui.Controls.BindableObject page, Microsoft.Maui.Graphics.Color value) -> void
+~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?

@@ -1,26 +1,279 @@
+using System.Threading.Tasks;
+using Android.Graphics.Drawables;
+using AndroidX.AppCompat.Graphics.Drawable;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.DrawerLayout.Widget;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using AndroidX.DrawerLayout.Widget;
-using AndroidX.AppCompat.Graphics.Drawable;
-using AndroidX.CoordinatorLayout.Widget;
-using Google.Android.Material.AppBar;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AView = Android.Views.View;
+using AViewStates = Android.Views.ViewStates;
 using NativeShellHandler = Microsoft.Maui.Controls.Handlers.ShellHandler;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	public class StartupTrackingShellHandler : NativeShellHandler
+	{
+		public int TabLayoutAppearanceTrackerCreationCount { get; private set; }
+
+		public int BottomNavAppearanceTrackerCreationCount { get; private set; }
+
+		protected override IShellTabLayoutAppearanceTracker CreateTabLayoutAppearanceTracker(ShellSection shellSection)
+		{
+			TabLayoutAppearanceTrackerCreationCount++;
+			return base.CreateTabLayoutAppearanceTracker(shellSection);
+		}
+
+		protected override IShellBottomNavViewAppearanceTracker CreateBottomNavViewAppearanceTracker(ShellItem shellItem)
+		{
+			BottomNavAppearanceTrackerCreationCount++;
+			return base.CreateBottomNavViewAppearanceTracker(shellItem);
+		}
+	}
+
 	[Category(TestCategory.Shell)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellHandler)] // See RendererHandlerVariant.cs
 	public partial class ShellHandlerTests_Shell : ShellTests
 	{
+		[Fact]
+		public async Task SinglePageShellCreatesTabInfrastructureOnlyWhenNeeded()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var firstContent = new ShellContent { Content = firstPage };
+			var expectedBadgeText = "7";
+			var section = new ShellSection
+			{
+				BadgeText = expectedBadgeText,
+				Items = { firstContent }
+			};
+			var item = new FlyoutItem { Items = { section } };
+			var secondSection = new ShellSection
+			{
+				Title = "Second section",
+				Items = { new ShellContent { Content = new ContentPage() } }
+			};
+			var secondContent = new ShellContent
+			{
+				Title = "Second content",
+				Content = new ContentPage()
+			};
+			var expectedTabBackground = Colors.Red;
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetBackgroundColor(shell, expectedTabBackground);
+				shell.Items.Add(item);
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				var shellHandler = Assert.IsType<StartupTrackingShellHandler>(shell.Handler);
+				var itemHandler = Assert.IsType<ShellItemHandler>(item.Handler);
+				var sectionHandler = Assert.IsType<ShellSectionHandler>(section.Handler);
+
+				Assert.Null(itemHandler._tabbedViewManager);
+				Assert.Null(itemHandler._shellItemAdapter);
+				Assert.Null(itemHandler.BottomNavigationView);
+				Assert.Null(sectionHandler.ContentTabLayout);
+				Assert.Equal(0, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.Equal(0, shellHandler.TabLayoutAppearanceTrackerCreationCount);
+				var topTabsContainer = shellHandler.PlatformView.FindViewById(Resource.Id.navigationlayout_toptabs);
+				Assert.NotNull(topTabsContainer);
+				Assert.Equal(AViewStates.Gone, topTabsContainer.Visibility);
+
+				item.Items.Add(secondSection);
+				section.Items.Add(secondContent);
+
+				Assert.NotNull(itemHandler._tabbedViewManager);
+				Assert.NotNull(sectionHandler.ContentTabLayout);
+				var bottomBackground = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
+				Assert.Equal(expectedTabBackground.ToPlatform(), bottomBackground.EndColor);
+				var badge = itemHandler.BottomNavigationView.GetBadge(0);
+				Assert.NotNull(badge);
+				Assert.Equal(expectedBadgeText, badge.Text);
+				var background = Assert.IsType<ColorDrawable>(sectionHandler.ContentTabLayout.Background);
+				Assert.Equal(expectedTabBackground.ToPlatform(), background.Color);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.Equal(1, shellHandler.TabLayoutAppearanceTrackerCreationCount);
+
+				var tabbedViewManager = itemHandler._tabbedViewManager;
+				var shellItemAdapter = itemHandler._shellItemAdapter;
+				var bottomNavigationView = itemHandler.BottomNavigationView;
+				var contentTabLayout = sectionHandler.ContentTabLayout;
+
+				item.Items.Remove(secondSection);
+				section.Items.Remove(secondContent);
+				Assert.Equal(AViewStates.Gone, topTabsContainer.Visibility);
+				item.Items.Add(secondSection);
+				section.Items.Add(secondContent);
+
+				Assert.Same(tabbedViewManager, itemHandler._tabbedViewManager);
+				Assert.Same(shellItemAdapter, itemHandler._shellItemAdapter);
+				Assert.Same(bottomNavigationView, itemHandler.BottomNavigationView);
+				Assert.Same(contentTabLayout, sectionHandler.ContentTabLayout);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.Equal(1, shellHandler.TabLayoutAppearanceTrackerCreationCount);
+			});
+		}
+
+		[Fact]
+		public async Task SwitchingShellItemsCreatesBottomTabsOnlyWhenNeeded()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var firstItem = new FlyoutItem
+			{
+				Title = "First item",
+				Items =
+				{
+					new ShellSection
+					{
+						Items = { new ShellContent { Content = firstPage } }
+					}
+				}
+			};
+			var secondPage = new ContentPage();
+			var secondItem = new FlyoutItem
+			{
+				Title = "Second item",
+				Items =
+				{
+					new ShellSection
+					{
+						Title = "First section",
+						Items = { new ShellContent { Content = secondPage } }
+					},
+					new ShellSection
+					{
+						Title = "Second section",
+						Items = { new ShellContent { Content = new ContentPage() } }
+					}
+				}
+			};
+			var expectedTabBackground = Colors.Blue;
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTabBarBackgroundColor(secondItem, expectedTabBackground);
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+				shell.CurrentItem = firstItem;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				var shellHandler = Assert.IsType<StartupTrackingShellHandler>(shell.Handler);
+				Assert.Equal(0, shellHandler.BottomNavAppearanceTrackerCreationCount);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				var itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.NotNull(itemHandler._tabbedViewManager);
+				var background = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
+				Assert.Equal(expectedTabBackground.ToPlatform(), background.EndColor);
+
+				shell.CurrentItem = firstItem;
+				await OnLoadedAsync(firstPage);
+
+				itemHandler = Assert.IsType<ShellItemHandler>(firstItem.Handler);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.Null(itemHandler._tabbedViewManager);
+				Assert.Null(itemHandler.BottomNavigationView);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				Assert.Equal(2, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.NotNull(itemHandler._tabbedViewManager);
+			});
+		}
+
+		[Fact]
+		public async Task SwitchingShellItemsRecreatesBottomNavAppearanceTracker()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var firstItem = new FlyoutItem
+			{
+				Title = "First item",
+				Items =
+				{
+					new ShellSection
+					{
+						Title = "First section",
+						Items = { new ShellContent { Content = firstPage } }
+					},
+					new ShellSection
+					{
+						Title = "Second section",
+						Items = { new ShellContent { Content = new ContentPage() } }
+					}
+				}
+			};
+			var secondPage = new ContentPage();
+			var secondItem = new FlyoutItem
+			{
+				Title = "Second item",
+				Items =
+				{
+					new ShellSection
+					{
+						Title = "First section",
+						Items = { new ShellContent { Content = secondPage } }
+					},
+					new ShellSection
+					{
+						Title = "Second section",
+						Items = { new ShellContent { Content = new ContentPage() } }
+					}
+				}
+			};
+			var expectedTabBackground = Colors.Blue;
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTabBarBackgroundColor(firstItem, Colors.Red);
+				Shell.SetTabBarBackgroundColor(secondItem, expectedTabBackground);
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+				shell.CurrentItem = firstItem;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				var shellHandler = Assert.IsType<StartupTrackingShellHandler>(shell.Handler);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				var itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				Assert.Equal(2, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				var background = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
+				Assert.Equal(expectedTabBackground.ToPlatform(), background.EndColor);
+			});
+		}
+
 		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
@@ -30,7 +283,7 @@ namespace Microsoft.Maui.DeviceTests
 					// Register all standard handlers first (Layout, Image, Label, Page, Toolbar, MenuBar, etc.)
 					SetupShellHandlers(handlers);
 					// Override Shell with the new NativeShellHandler
-					handlers.AddHandler(typeof(Controls.Shell), typeof(NativeShellHandler));
+					handlers.AddHandler(typeof(Controls.Shell), typeof(StartupTrackingShellHandler));
 					handlers.AddHandler(typeof(ShellItem), typeof(ShellItemHandler));
 					handlers.AddHandler(typeof(ShellSection), typeof(ShellSectionHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
@@ -43,6 +296,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 				});
 			});
+		}
+
+		protected override void SetupShellTabColorsTest(Shell shell)
+		{
+			Shell.SetTabBarIsVisible(shell, true);
 		}
 
 		// NativeShellHandler uses MauiDrawerLayout (not ShellFlyoutRenderer), so cast to MauiDrawerLayout.

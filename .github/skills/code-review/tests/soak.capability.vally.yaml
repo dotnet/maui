@@ -474,7 +474,7 @@ stimuli:
         - code-review
 
 scoring:
-  # Vally 0.10 supports scoring.weights, but this suite deliberately omits
+  # Vally supports scoring.weights, but this suite deliberately omits
   # them so a trial's score is the unweighted mean of its graders' [0,1]
   # scores. The `prompt`
   # grader contributes ONE holistic score, so rubric criteria are not

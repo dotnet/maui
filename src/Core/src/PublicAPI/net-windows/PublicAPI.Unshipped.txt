@@ -45,3 +45,12 @@ static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdge
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 virtual Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated.Invoke(Microsoft.UI.Xaml.Application! application, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 virtual Microsoft.Maui.MauiWinUIApplication.OnAppInstanceActivated(Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Microsoft.UI.Xaml.FrameworkElement? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Microsoft.UI.Xaml.FrameworkElement! containerView) -> void

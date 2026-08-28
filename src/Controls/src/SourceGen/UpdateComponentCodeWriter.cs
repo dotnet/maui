@@ -72,7 +72,8 @@ static class UpdateComponentCodeWriter
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		Dictionary<ElementNode, string>? newIds = null,
 		SourceProductionContext sourceProductionContext = default,
-		ProjectItem? projectItem = null)
+		ProjectItem? projectItem = null,
+		Dictionary<string, XmlType>? generatedFields = null)
 	{
 		if (diff.IsEmpty)
 			return null;
@@ -87,7 +88,7 @@ static class UpdateComponentCodeWriter
 		int addedCounter = 0;
 		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, generatedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			codeWriter.WriteLine();
 		}
 
@@ -111,6 +112,21 @@ static class UpdateComponentCodeWriter
 			}
 
 			var varName = $"__uc_{compIdx++}";
+			if (TryEmitResourceDictionaryItemChange(
+				codeWriter,
+				nodeDiff,
+				varName,
+				compilation,
+				xmlnsCache,
+				typeCache,
+				rootType,
+				sourceProductionContext,
+				projectItem))
+			{
+				codeWriter.WriteLine();
+				continue;
+			}
+
 			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
 			using (PrePost.NewBlock(codeWriter))
 			{
@@ -237,6 +253,7 @@ static class UpdateComponentCodeWriter
 		int changeIdx,
 		ref int addedCounter,
 		Dictionary<ElementNode, string>? newIds,
+		Dictionary<string, XmlType>? existingNamedFields,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
@@ -245,6 +262,32 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		bool isRoot = string.IsNullOrEmpty(change.ParentNodeId);
+
+		if (change.RemovedNames.Count > 0
+			&& InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject"))
+		{
+			var removedNameScopeVar = $"__removedNameScope_{changeIdx}";
+			using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
+			{
+				codeWriter.WriteLine($"var {removedNameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
+				codeWriter.WriteLine($"if ({removedNameScopeVar} != null)");
+				using (PrePost.NewBlock(codeWriter))
+				{
+					for (int removedNameIdx = 0; removedNameIdx < change.RemovedNames.Count; removedNameIdx++)
+					{
+						var removedName = change.RemovedNames[removedNameIdx];
+						var escapedName = EscapeString(removedName.Name);
+						var removedElementVar = $"__removedNamedElement_{changeIdx}_{removedNameIdx}";
+						codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{EscapeString(removedName.NodeId)}\", out var {removedElementVar})");
+						codeWriter.Indent++;
+						codeWriter.WriteLine($"&& global::System.Object.ReferenceEquals({removedNameScopeVar}.FindByName(\"{escapedName}\"), {removedElementVar}))");
+						codeWriter.Indent--;
+						using (PrePost.NewBlock(codeWriter))
+							codeWriter.WriteLine($"{removedNameScopeVar}.UnregisterName(\"{escapedName}\");");
+					}
+				}
+			}
+		}
 
 		// Resolve the parent variable and type
 		string parentVar;
@@ -369,7 +412,7 @@ static class UpdateComponentCodeWriter
 						else // Added
 						{
 							var newElement = entry.NewElement!;
-							EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+							EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 						}
 					}
 				}
@@ -379,7 +422,7 @@ static class UpdateComponentCodeWriter
 		{
 			// Content property container (ContentPage, ContentView, ScrollView, Border, etc.)
 			// These have a single content property — set directly instead of using Children.Add()
-			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName!, ref addedCounter, newIds, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName!, ref addedCounter, newIds, existingNamedFields, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 		}
 
 		// Unregister removed children and their entire subtrees.
@@ -413,6 +456,7 @@ static class UpdateComponentCodeWriter
 		string contentPropertyName,
 		ref int addedCounter,
 		Dictionary<ElementNode, string>? newIds,
+		Dictionary<string, XmlType>? existingNamedFields,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
@@ -464,11 +508,13 @@ static class UpdateComponentCodeWriter
 		var fqName = childType.ToFQDisplayString();
 		codeWriter.WriteLine($"var {childVar} = new {fqName}();");
 
+		EmitNewElementNameScope(codeWriter, newElement, childVar, childType, rootType, existingNamedFields, compilation, xmlnsCache, typeCache);
+
 		// Set properties on the new child
 		EmitNewElementProperties(codeWriter, newElement, childVar, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Recursively create grandchildren
-		EmitNewElementChildren(codeWriter, newElement, childVar, entry.NewNodeId, newIds, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+		EmitNewElementChildren(codeWriter, newElement, childVar, entry.NewNodeId, newIds, existingNamedFields, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Set as content. Assign the concrete child directly: a single content property (e.g.
 		// ContentPage.Content, typed View) is not IView-typed, so casting up to IView would fail
@@ -491,6 +537,7 @@ static class UpdateComponentCodeWriter
 		string parentLayoutVar,
 		string nodeId,
 		Dictionary<ElementNode, string>? newIds,
+		Dictionary<string, XmlType>? existingNamedFields,
 		ref int addedCounter,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
@@ -515,17 +562,90 @@ static class UpdateComponentCodeWriter
 		// Create instance
 		codeWriter.WriteLine($"var {varName} = new {fqName}();");
 
+		EmitNewElementNameScope(codeWriter, element, varName, typeSymbol, rootType, existingNamedFields, compilation, xmlnsCache, typeCache);
+
 		// Set properties
 		EmitNewElementProperties(codeWriter, element, varName, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Recursively create children
-		EmitNewElementChildren(codeWriter, element, varName, nodeId, newIds, ref addedCounter, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+		EmitNewElementChildren(codeWriter, element, varName, nodeId, newIds, existingNamedFields, ref addedCounter, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Add to parent layout
 		codeWriter.WriteLine($"{parentLayoutVar}.Add((global::Microsoft.Maui.IView){varName});");
 
 		// Register in component registry
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {varName});");
+	}
+
+	static void EmitNewElementNameScope(
+		IndentedTextWriter codeWriter,
+		ElementNode element,
+		string varName,
+		INamedTypeSymbol typeSymbol,
+		INamedTypeSymbol rootType,
+		Dictionary<string, XmlType>? existingNamedFields,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	{
+		if (!InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Element")
+			|| !InheritsFrom(rootType, "global::Microsoft.Maui.Controls.BindableObject"))
+		{
+			return;
+		}
+
+		var nameScopeVar = $"__ns_{varName}";
+		using (PrePost.NewConditional(codeWriter, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
+		{
+			codeWriter.WriteLine($"var {nameScopeVar} = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(this);");
+			codeWriter.WriteLine($"if ({nameScopeVar} != null)");
+			using (PrePost.NewBlock(codeWriter))
+			{
+				codeWriter.WriteLine($"{varName}.transientNamescope = {nameScopeVar};");
+
+				if (element.Properties.TryGetValue(XmlName.xName, out var nameNode)
+					&& nameNode is ValueNode { Value: string name })
+				{
+					var escapedName = EscapeString(name);
+					var previousVar = $"__previous_{varName}";
+					codeWriter.WriteLine($"var {previousVar} = {nameScopeVar}.FindByName(\"{escapedName}\");");
+					codeWriter.WriteLine($"if (!global::System.Object.ReferenceEquals({previousVar}, {varName}))");
+					using (PrePost.NewBlock(codeWriter))
+					{
+						codeWriter.WriteLine($"if ({previousVar} != null)");
+						codeWriter.Indent++;
+						codeWriter.WriteLine($"{nameScopeVar}.UnregisterName(\"{escapedName}\");");
+						codeWriter.Indent--;
+						codeWriter.WriteLine($"{nameScopeVar}.RegisterName(\"{escapedName}\", {varName});");
+					}
+				}
+			}
+		}
+
+		if (element.Properties.TryGetValue(XmlName.xName, out var fieldNameNode)
+			&& fieldNameNode is ValueNode { Value: string fieldName })
+		{
+			if (existingNamedFields?.TryGetValue(fieldName, out var existingFieldXmlType) == true
+				&& existingFieldXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var existingFieldType)
+				&& existingFieldType is not null
+				&& IsAssignableTo(typeSymbol, existingFieldType))
+			{
+				codeWriter.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(fieldName)} = {varName};");
+			}
+			codeWriter.WriteLine($"{varName}.StyleId ??= \"{EscapeString(fieldName)}\";");
+		}
+	}
+
+	static bool IsAssignableTo(INamedTypeSymbol sourceType, INamedTypeSymbol targetType)
+	{
+		for (var current = sourceType; current is not null; current = current.BaseType)
+		{
+			if (SymbolEqualityComparer.Default.Equals(current, targetType))
+				return true;
+		}
+
+		return sourceType.AllInterfaces.Any(interfaceType =>
+			SymbolEqualityComparer.Default.Equals(interfaceType, targetType));
 	}
 
 	/// <summary>
@@ -798,6 +918,7 @@ static class UpdateComponentCodeWriter
 		string varName,
 		string nodeId,
 		Dictionary<ElementNode, string>? newIds,
+		Dictionary<string, XmlType>? existingNamedFields,
 		ref int addedCounter,
 		INamedTypeSymbol typeSymbol,
 		Compilation compilation,
@@ -838,7 +959,7 @@ static class UpdateComponentCodeWriter
 						childNodeId = childId;
 					else
 						childNodeId = $"{nodeId}_{i}"; // fallback
-					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, existingNamedFields, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 				}
 			}
 		}
@@ -875,8 +996,9 @@ static class UpdateComponentCodeWriter
 					var childIdx = addedCounter++;
 					var childVar = $"__na_{childIdx}";
 					codeWriter.WriteLine($"var {childVar} = new {childType.ToFQDisplayString()}();");
+					EmitNewElementNameScope(codeWriter, childElement, childVar, childType, rootType, existingNamedFields, compilation, xmlnsCache, typeCache);
 					EmitNewElementProperties(codeWriter, childElement, childVar, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
-					EmitNewElementChildren(codeWriter, childElement, childVar, childNodeId, newIds, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					EmitNewElementChildren(codeWriter, childElement, childVar, childNodeId, newIds, existingNamedFields, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 					// Assign the concrete child directly (not cast to IView): a content property is not
 					// IView-typed, so an IView -> View cast would fail with CS0266. See EmitContentPropertyChange.
 					codeWriter.WriteLine($"{varName}.{contentProp} = {childVar};");
@@ -984,6 +1106,60 @@ static class UpdateComponentCodeWriter
 		var keysArrayExpr = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
 
+		return true;
+	}
+
+	static bool TryEmitResourceDictionaryItemChange(
+		IndentedTextWriter codeWriter,
+		NodeDiff nodeDiff,
+		string varName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		if (!InheritsFrom(rootType, "global::Microsoft.Maui.Controls.ResourceDictionary")
+			&& rootType.ToFQDisplayString() != "global::Microsoft.Maui.Controls.ResourceDictionary")
+		{
+			return false;
+		}
+
+		var element = nodeDiff.NewNode;
+		if (element is null
+			|| nodeDiff.PropertyChanges.Count != 1
+			|| nodeDiff.PropertyChanges[0].Kind != PropertyDiffKind.Set
+			|| nodeDiff.PropertyChanges[0].PropertyName.LocalName != "__MAUI_Content__"
+			|| element.CollectionItems.Count != 1
+			|| element.CollectionItems[0] is not ValueNode
+			|| !element.Properties.TryGetValue(XmlName.xKey, out var keyNode)
+			|| keyNode is not ValueNode { Value: string key })
+		{
+			return false;
+		}
+
+		var parent = element.Parent is ListNode list ? list.Parent : element.Parent;
+		if (parent is not SGRootNode)
+			return false;
+
+		var valueExpression = BuildResourceValueExpression(
+			element,
+			compilation,
+			xmlnsCache,
+			typeCache,
+			rootType,
+			sourceProductionContext,
+			projectItem);
+		if (valueExpression is null)
+			return false;
+
+		codeWriter.WriteLine($"var {varName} = {valueExpression};");
+		codeWriter.WriteLine($"this[\"{EscapeString(key)}\"] = {varName};");
+		codeWriter.WriteLine($"if ({varName} is not null)");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeDiff.NodeId}\", {varName});");
+		codeWriter.Indent--;
 		return true;
 	}
 
@@ -1628,8 +1804,29 @@ static class UpdateComponentCodeWriter
 			// and falls back to runtime ProvideValue() for unknown IMarkupExtension implementors
 			elementNode.TryProvideValue(captureWriter, ctx);
 
+			IFieldSymbol? dynamicResourceProperty = null;
+			// A DynamicResource value has lower specificity than a local value. When Hot Reload
+			// replaces a literal or binding assignment, remove the binding first, register the
+			// resource, then clear the local value. Registering before the clear pre-stages a
+			// resolved resource so the visible value transitions directly without exposing a
+			// transient default or style value.
+			if (ctx.Variables.TryGetValue(elementNode, out var valueVar)
+				&& valueVar.Type.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!, ctx))
+			{
+				var localName = propertyXmlName.LocalName;
+				var bindableProperty = ownerType.GetBindableProperty(propertyXmlName.NamespaceURI, ref localName, out _, ctx, elementNode);
+				if (bindableProperty != null && compilation.IsSymbolAccessibleWithin(bindableProperty, rootType))
+				{
+					dynamicResourceProperty = bindableProperty;
+					captureWriter.WriteLine($"{parentAccessor}.RemoveBinding({bindableProperty.ToFQDisplayString()});");
+				}
+			}
+
 			// Step 4: SetPropertyValue — emits the assignment to the parent
 			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], propertyXmlName, elementNode, ctx);
+
+			if (dynamicResourceProperty != null)
+				captureWriter.WriteLine($"{parentAccessor}.ClearValue({dynamicResourceProperty.ToFQDisplayString()});");
 		}
 		catch (Exception)
 		{

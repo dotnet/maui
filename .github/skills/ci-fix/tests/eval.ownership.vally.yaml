@@ -21,12 +21,18 @@ defaults:
   judge_model: claude-opus-5
   executor: copilot-sdk
 
+environment:
+  # Isolate and load the unit under test. `expect_skills` documents the
+  # expected route but does not itself force Copilot to invoke the skill.
+  skills:
+    - ..
+
 stimuli:
   # Source: live CI-fixer run 30118934440, issue #36051, PR #36657.
   - name: comment-only-reference-does-not-stop-triage
     tags: { source_issue: "36051", source_pr: "36657", kind: false-dedup }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
       main-branch snapshot.
 
       Tracking issue #36051 is open, has the ci-scan label, and has no open or
@@ -45,16 +51,16 @@ stimuli:
 
       Do not query GitHub; the snapshot above is complete.
     graders:
-      - type: output-contains
-        config: { substring: "Decision: Continue" }
-      - type: output-not-contains
-        config: { substring: "Decision: Stop" }
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Continue\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
   - name: incidental-body-reference-does-not-stop-triage
     tags: { kind: false-dedup }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
       main-branch snapshot.
 
       Tracking issue #48101 is open, in scope, and has no [ci-fix] PR. The
@@ -73,16 +79,16 @@ stimuli:
 
       Do not query GitHub; the snapshot above is complete.
     graders:
-      - type: output-contains
-        config: { substring: "Decision: Continue" }
-      - type: output-not-contains
-        config: { substring: "Decision: Stop" }
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Continue\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
   - name: explicit-human-reference-stops-competing-fix
     tags: { kind: human-ownership }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
       main-branch snapshot.
 
       Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
@@ -96,16 +102,16 @@ stimuli:
 
       Do not query GitHub.
     graders:
-      - type: output-contains
-        config: { substring: "Decision: Stop" }
-      - type: output-not-contains
-        config: { substring: "Decision: Continue" }
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Stop\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
   - name: explicit-human-url-reference-stops-competing-fix
     tags: { kind: human-ownership }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
       main-branch snapshot.
 
       Tracking issue #48103 is open, in scope, and has no [ci-fix] PR. Open
@@ -120,10 +126,10 @@ stimuli:
 
       Do not query GitHub.
     graders:
-      - type: output-contains
-        config: { substring: "Decision: Stop" }
-      - type: output-not-contains
-        config: { substring: "Decision: Continue" }
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Stop\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
 scoring:

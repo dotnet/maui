@@ -360,3 +360,12 @@ virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutAsFlyout() -> void
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutSideBySide() -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView, AndroidX.Fragment.App.FragmentContainerView? fragmentContainerView = null) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.OnCreateNavigationAnimation(Android.Content.Context! context, bool isPopping, bool enter) -> Android.Views.Animations.Animation?
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Android.Views.View? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Android.Views.View! containerView) -> void

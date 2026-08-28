@@ -2,10 +2,10 @@ name: Release Readiness
 
 # Unified release-readiness workflow. Each day:
 #  1. detect-trackers: invoke Find-ReleaseReadinessTrackers -AllActiveMajors to enumerate every
-#     active in-flight/candidate branch across all active majors (SR + preview).
+#     active in-flight/candidate branch across all active majors (SR + Preview + RC).
 #  2. matrix expansion: emit one matrix job per tracker (≤ a handful per day).
 #  3. per-tracker readiness: dispatch the right report script based on branchType
-#     ('sr' -> Get-ReleaseReadiness.ps1; 'preview' -> Get-PreviewReadiness.ps1)
+#     ('sr' -> Get-ReleaseReadiness.ps1; 'preview'/'rc' -> Get-PreviewReadiness.ps1)
 #     and write a daily "[Release Readiness]" issue idempotently:
 #       - reuse open tracker issue by canonicalKey marker if it already exists
 #       - otherwise close any older daily issues for the same tracker and create a new one
@@ -241,11 +241,12 @@ jobs:
                   recentCommitCount: .recentCommitCount,
                   hasRecentActivity: .hasRecentActivity,
                   expectedTag: (.expectedTag // ""),
-                  # SR-only fields (null for preview trackers)
+                  # SR-only fields (null for prerelease trackers)
                   priorSrBranch:    (.priorSrBranch // ""),
                   regressionLabels: (.regressionLabels // []),
-                  # Preview-only fields (null for SR trackers)
-                  previewNumber: (.previewNumber // null)
+                  # Prerelease-only fields (null for SR trackers)
+                  previewNumber: (.previewNumber // null),
+                  rcNumber: (.rcNumber // null)
                 }
             ]
           ' trackers.json > matrix.json
@@ -380,9 +381,9 @@ jobs:
               -OutputDir readiness-out
             BODY_FILE="readiness-out/release-readiness.md"
 
-          elif [ "$BRANCH_TYPE" = "preview" ]; then
-            # Preview readiness — Get-PreviewReadiness.ps1 always takes the
-            # canonical preview branch name (whether it exists yet or not);
+          elif [ "$BRANCH_TYPE" = "preview" ] || [ "$BRANCH_TYPE" = "rc" ]; then
+            # Prerelease readiness — Get-PreviewReadiness.ps1 takes the
+            # canonical Preview/RC branch name (whether it exists yet or not);
             # candidate mode flips -SurveyRef to net<major>.0.
             pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
               -Branch "$BRANCH_NAME" \
@@ -903,6 +904,7 @@ jobs:
         run: |
           set -euo pipefail
           pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseHandoff.ps1
 
       - name: Run Find-Trackers (no issue side-effects)
         env:
@@ -970,7 +972,7 @@ jobs:
                 "${REG_LABEL_ARG[@]}" \
                 -TrackerKey "$CANONICAL" \
                 -OutputDir "$OUT_DIR"
-            elif [ "$BRANCH_TYPE" = "preview" ]; then
+            elif [ "$BRANCH_TYPE" = "preview" ] || [ "$BRANCH_TYPE" = "rc" ]; then
               pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
                 -Branch "$BRANCH_NAME" \
                 -Mode "$MODE" \

@@ -68,6 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		float _appBarElevation;
 		GenericGlobalLayoutListener _globalLayoutListener;
 		DrawerArrowDrawable _drawerArrowDrawable;
+		DrawerArrowDrawable _backArrowDrawable;
 		FlyoutIconDrawerDrawable _flyoutIconDrawerDrawable;
 		IToolbar _toolbar;
 		protected IMauiContext MauiContext => _shell.Handler.MauiContext;
@@ -519,7 +520,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
 				if (backButtonVisibleFromBehavior && (backButtonVisible || !defaultDrawerArrowDrawable))
-					toolbar.NavigationIcon = icon;
+				{
+					if (defaultDrawerArrowDrawable)
+					{
+						// Use a separate drawable for the back-arrow NavigationIcon so that
+						// OnDrawerSlide callbacks (which mutate _drawerToggle.DrawerArrowDrawable)
+						// cannot race with and clobber the visible icon's Progress value.
+						_backArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
+						_backArrowDrawable.Progress = progress;
+						toolbar.NavigationIcon = _backArrowDrawable;
+					}
+					else
+					{
+						toolbar.NavigationIcon = icon;
+					}
+				}
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
 			{
@@ -570,8 +585,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			destination.Title = shellToolbar.Title;
 			destination.TitleView = shellToolbar.TitleView;
 			destination.DynamicOverflowEnabled = shellToolbar.DynamicOverflowEnabled;
-			destination.DrawerToggleVisible = shellToolbar.DrawerToggleVisible;
-			destination.BackButtonVisible = shellToolbar.BackButtonVisible;
+			shellToolbar.ForwardNavigationIconStateTo(destination);
 			destination.BackButtonEnabled = shellToolbar.BackButtonEnabled;
 			destination.IsVisible = shellToolbar.IsVisible;
 		}
