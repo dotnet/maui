@@ -1,7 +1,65 @@
+using System.CommandLine;
+
 namespace DotNet.Release;
 
 internal static class StageCommand
 {
+    public static Command Build(IReleaseConsole console, string toolVersion)
+    {
+        var config = new Option<FileInfo>("--config")
+        {
+            Description = "Release policy JSON.",
+            Required = true,
+        };
+        var plan = new Option<FileInfo>("--plan")
+        {
+            Description = "plan.json written by release plan.",
+            Required = true,
+        };
+        var drop = new Option<DirectoryInfo>("--drop")
+        {
+            Description = "Directory produced by darc gather-drop.",
+            Required = true,
+        };
+        var output = new Option<DirectoryInfo>("--out")
+        {
+            Description = "Output directory.",
+            Required = true,
+        };
+        var include = new Option<string?>("--include")
+        {
+            Description = "Semicolon-separated include filters.",
+        };
+        var exclude = new Option<string?>("--exclude")
+        {
+            Description = "Semicolon-separated exclude filters.",
+        };
+
+        var command = new Command(
+            "stage",
+            "Read the gathered drop, validate it, and write release-plan.json.")
+        {
+            config, plan, drop, output, include, exclude,
+        };
+
+        command.SetAction((parse, cancellationToken) => ExecuteAsync(
+            console,
+            File.ReadAllText(parse.GetValue(config)!.FullName),
+            File.ReadAllText(parse.GetValue(plan)!.FullName),
+            parse.GetValue(drop)!.FullName,
+            parse.GetValue(output)!.FullName,
+            new StageOptions
+            {
+                Include = PackageGlob.ParseList(parse.GetValue(include)),
+                Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
+            },
+            DateTimeOffset.UtcNow,
+            toolVersion,
+            cancellationToken));
+
+        return command;
+    }
+
     public static async Task<int> ExecuteAsync(
         IReleaseConsole console,
         string policyJson,

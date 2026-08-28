@@ -1,8 +1,66 @@
+using System.CommandLine;
+
 namespace DotNet.Release;
 
 internal static class FilterCommand
 {
     public const string ReportFileName = "release-filter.json";
+
+    public static Command Build(IReleaseConsole console)
+    {
+        var plan = new Option<FileInfo>("--plan")
+        {
+            Description = "release-plan.json.",
+            Required = true,
+        };
+        var stage = new Option<DirectoryInfo?>("--stage")
+        {
+            Description = "Release artifact directory. Defaults to the plan directory.",
+        };
+        var recoveryFilters = new Option<string?>("--recovery-filters")
+        {
+            Description = "Semicolon-separated filters for already submitted packages.",
+        };
+        var expectedHash = new Option<string>("--expected-plan-hash")
+        {
+            Description = "The SHA-256 emitted by the prepare stage.",
+            Required = true,
+        };
+        var feed = new Option<string?>("--feed")
+        {
+            Description = "Feed index to query. Defaults to NuGet.org.",
+        };
+        var set = new Option<string>("--set")
+        {
+            Description = "Package-set directory name.",
+            Required = true,
+        };
+
+        var command = new Command(
+            "filter",
+            "Remove already-published packages from the staged set.")
+        {
+            plan, stage, recoveryFilters, expectedHash, feed, set,
+        };
+
+        command.SetAction((parse, cancellationToken) =>
+        {
+            var planFile = parse.GetValue(plan)!;
+            using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
+
+            return ExecuteAsync(
+                console,
+                new PackageAvailabilityProbe(checker),
+                File.ReadAllText(planFile.FullName),
+                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
+                PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
+                parse.GetValue(expectedHash)!,
+                parse.GetValue(set),
+                cancellationToken);
+        });
+
+        return command;
+    }
 
     public static async Task<int> ExecuteAsync(
         IReleaseConsole console,

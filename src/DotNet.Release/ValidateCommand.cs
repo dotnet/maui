@@ -1,7 +1,49 @@
+using System.CommandLine;
+
 namespace DotNet.Release;
 
 internal static class ValidateCommand
 {
+    public static Command Build(IReleaseConsole console)
+    {
+        var plan = new Option<FileInfo>("--plan")
+        {
+            Description = "release-plan.json.",
+            Required = true,
+        };
+        var stage = new Option<DirectoryInfo>("--stage")
+        {
+            Description = "Release artifact directory.",
+            Required = true,
+        };
+        var set = new Option<string>("--set")
+        {
+            Description = "Package-set directory name.",
+            Required = true,
+        };
+        var expectedHash = new Option<string>("--expected-plan-hash")
+        {
+            Description = "The SHA-256 emitted by the prepare stage.",
+            Required = true,
+        };
+
+        var command = new Command(
+            "validate",
+            "Validate a downloaded package-set artifact without contacting NuGet.org.")
+        {
+            plan, stage, set, expectedHash,
+        };
+
+        command.SetAction(parse => Execute(
+            console,
+            File.ReadAllText(parse.GetValue(plan)!.FullName),
+            parse.GetValue(stage)!.FullName,
+            parse.GetValue(expectedHash)!,
+            parse.GetValue(set)!));
+
+        return command;
+    }
+
     public static int Execute(
         IReleaseConsole console,
         string planJson,
