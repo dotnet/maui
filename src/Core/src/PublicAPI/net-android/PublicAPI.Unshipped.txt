@@ -7,6 +7,9 @@
 *REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Android.Views.View! platformView) -> void
 *REMOVED*static Microsoft.Maui.Handlers.WebViewHandler.MapWebChromeClient(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*static Microsoft.Maui.Handlers.WebViewHandler.MapWebViewClient(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2.ActivityIndicatorHandler2() -> void
 Microsoft.Maui.Handlers.DatePickerHandler2
@@ -135,6 +138,9 @@ Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaR
 Microsoft.Maui.Platform.MauiMaterialTimePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
+Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void

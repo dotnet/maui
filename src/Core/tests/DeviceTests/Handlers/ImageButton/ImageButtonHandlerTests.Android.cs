@@ -1,11 +1,25 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Platform;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
+		[Fact(DisplayName = "ImageButton uses MauiShapeableImageView")]
+		public Task ImageButtonUsesMauiShapeableImageView()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(new ImageButtonStub());
+
+				var platformView = Assert.IsType<MauiShapeableImageView>(handler.PlatformView);
+				Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
+			});
+		}
+
 		[Fact(DisplayName = "Clip ImageButton with Background works Correctly")]
 		public async Task ClipImageButtonWithBackgroundWorks()
 		{
