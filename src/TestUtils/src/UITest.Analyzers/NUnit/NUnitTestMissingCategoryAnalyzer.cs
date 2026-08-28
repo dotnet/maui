@@ -76,18 +76,27 @@ namespace UITest.Analyzers.NUnit
 		private static void AnalyzeSymbol(SymbolAnalysisContext context)
 		{
 			var methodSymbol = (IMethodSymbol)context.Symbol;
+			var methodAttributes = methodSymbol.GetAttributes();
+			var testAttributes = methodAttributes.Where(IsTestAttribute).ToImmutableArray();
 
-			// Check if the method has the [Test] attribute.
-			var hasTestAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "TestAttribute");
-
-			if (!hasTestAttribute)
+			if (testAttributes.IsEmpty)
 			{
 				return;
 			}
 
-			foreach (var attribute in methodSymbol.GetAttributes().Concat(methodSymbol.ContainingType.GetAttributes()))
+			foreach (var attribute in methodAttributes.Concat(methodSymbol.ContainingType.GetAttributes()))
 			{
 				if (TryGetDirectCategory(attribute, out var category) &&
+					CiShardCategoryPrefixes.Contains(category))
+				{
+					context.ReportDiagnostic(Diagnostic.Create(
+						ShardedCategoryRule,
+						methodSymbol.Locations[0],
+						methodSymbol.Name,
+						category));
+				}
+
+				if (TryGetTestCaseCategory(attribute, out category) &&
 					CiShardCategoryPrefixes.Contains(category))
 				{
 					context.ReportDiagnostic(Diagnostic.Create(
@@ -99,26 +108,58 @@ namespace UITest.Analyzers.NUnit
 			}
 
 			// Count category attributes on the method
-			int methodCategoryCount = CountCategoryAttributes(methodSymbol.GetAttributes());
+			int methodCategoryCount = CountCategoryAttributes(methodAttributes);
 
 			// Count category attributes on the containing class
 			var containingClass = methodSymbol.ContainingType;
 			int classCategoryCount = CountCategoryAttributes(containingClass.GetAttributes());
 
-			int totalCategoryCount = methodCategoryCount + classCategoryCount;
+			int sharedCategoryCount = methodCategoryCount + classCategoryCount;
+			var parameterizedTestAttributes = testAttributes
+				.Where(IsParameterizedTestAttribute)
+				.ToImmutableArray();
 
-			// If it has [Test] but no [Category], report missing category diagnostic.
-			if (totalCategoryCount == 0)
+			var categoryCounts = parameterizedTestAttributes.IsEmpty
+				? ImmutableArray.Create(sharedCategoryCount)
+				: parameterizedTestAttributes
+					.Select(attribute => sharedCategoryCount + CountTestCaseCategory(attribute))
+					.ToImmutableArray();
+
+			if (categoryCounts.Any(count => count == 0))
 			{
 				var diagnostic = Diagnostic.Create(MissingCategoryRule, methodSymbol.Locations[0], methodSymbol.Name);
 				context.ReportDiagnostic(diagnostic);
 			}
-			// If it has more than one [Category], report multiple categories diagnostic.
-			else if (totalCategoryCount > 1)
+			else if (categoryCounts.Any(count => count > 1))
 			{
-				var diagnostic = Diagnostic.Create(MultipleCategoriesRule, methodSymbol.Locations[0], methodSymbol.Name, totalCategoryCount);
+				var diagnostic = Diagnostic.Create(
+					MultipleCategoriesRule,
+					methodSymbol.Locations[0],
+					methodSymbol.Name,
+					categoryCounts.Max());
 				context.ReportDiagnostic(diagnostic);
 			}
+		}
+
+		private static bool IsTestAttribute(AttributeData attribute)
+		{
+			return attribute.AttributeClass?.Name is
+				"TestAttribute" or
+				"TestCaseAttribute" or
+				"TestCaseSourceAttribute" or
+				"TheoryAttribute";
+		}
+
+		private static bool IsParameterizedTestAttribute(AttributeData attribute)
+		{
+			return attribute.AttributeClass?.Name is "TestCaseAttribute" or "TestCaseSourceAttribute";
+		}
+
+		private static int CountTestCaseCategory(AttributeData attribute)
+		{
+			return TryGetTestCaseCategory(attribute, out var category) && !IsCiShardCategory(category)
+				? 1
+				: 0;
 		}
 
 		/// <summary>
@@ -184,6 +225,11 @@ namespace UITest.Analyzers.NUnit
 				return false;
 			}
 
+			return IsCiShardCategory(category);
+		}
+
+		private static bool IsCiShardCategory(string category)
+		{
 			foreach (var prefix in CiShardCategoryPrefixes)
 			{
 				if (category.Length > prefix.Length &&
@@ -209,6 +255,28 @@ namespace UITest.Analyzers.NUnit
 
 			category = value;
 			return true;
+		}
+
+		private static bool TryGetTestCaseCategory(AttributeData attribute, out string category)
+		{
+			category = string.Empty;
+			if (!IsParameterizedTestAttribute(attribute))
+			{
+				return false;
+			}
+
+			foreach (var namedArgument in attribute.NamedArguments)
+			{
+				if (namedArgument.Key == "Category" &&
+					namedArgument.Value.Value is string value &&
+					!string.IsNullOrWhiteSpace(value))
+				{
+					category = value;
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <summary>

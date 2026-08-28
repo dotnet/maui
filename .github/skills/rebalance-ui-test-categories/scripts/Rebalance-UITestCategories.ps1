@@ -90,6 +90,7 @@ if ($Mode -in @('Apply', 'All')) {
 		throw 'Applying source changes requires the explicit -Apply switch.'
 	}
 	if (-not $plan) { throw 'No plan is available to apply.' }
+	Test-UITestShardPlan -TestRoot $testRoot -Category $Category -Plan $plan
 	Set-UITestShardCategories -TestRoot $testRoot -Category $Category -Assignments @($plan.assignments)
 	Set-ShardInfrastructure -Category $Category -ShardCount $plan.shardCount `
 		-CategoriesPath $categoriesPath -PipelinePath $pipelinePath -AnalyzerPath $analyzerPath

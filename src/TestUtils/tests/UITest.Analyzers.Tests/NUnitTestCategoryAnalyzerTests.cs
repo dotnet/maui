@@ -115,6 +115,183 @@ public class NUnitTestCategoryAnalyzerTests
 		Assert.Equal(2, diagnostics.Length);
 	}
 
+	[Fact]
+	public async Task TestCaseMethod_WithNoCategory_ReportsMissingCategoryDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1)]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MissingCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+	}
+
+	[Fact]
+	public async Task TestCaseMethod_WithShardedCategory_ReportsNoDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class ShardedTestCategoryAttribute : System.Attribute
+				{
+					public ShardedTestCategoryAttribute(string category, int shard = 1) { }
+				}
+
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1)]
+					[NUnit.Framework.TestCase(2)]
+					[ShardedTestCategory("CollectionView", shard: 3)]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
+
+		Assert.Empty(diagnostics);
+	}
+
+	[Fact]
+	public async Task TestCases_WithDifferentCaseCategories_ReportNoDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "Navigation")]
+					[NUnit.Framework.TestCase(2, Category = "Shell")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
+
+		Assert.Empty(diagnostics);
+	}
+
+	[Fact]
+	public async Task TestCases_WhenOneCaseHasNoCategory_ReportMissingCategoryDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "Navigation")]
+					[NUnit.Framework.TestCase(2)]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MissingCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+	}
+
+	[Fact]
+	public async Task TestCase_WithMethodAndCaseCategory_ReportsMultipleCategoriesDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "Navigation")]
+					[NUnit.Framework.Category("Shell")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MultipleCategoriesDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Contains("2", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public async Task TestCase_WithDirectShardedUmbrellaCategory_ReportsShardedCategoryDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "CollectionView")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.ShardedCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+	}
+
+	[Fact]
+	public async Task TestCaseSource_WithNoCategory_ReportsMissingCategoryDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCaseSource("Cases")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MissingCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+	}
+
+	[Fact]
+	public async Task Theory_WithNoCategory_ReportsMissingCategoryDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.Theory]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MissingCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+	}
+
 	#endregion
 
 	#region MAUI0002 - Multiple Categories Tests

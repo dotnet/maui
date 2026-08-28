@@ -1023,6 +1023,80 @@ function Set-ShardInfrastructure {
 	[System.IO.File]::WriteAllText($AnalyzerPath, $analyzer, $analyzerEncoding)
 }
 
+function Test-UITestShardPlan {
+	param(
+		[Parameter(Mandatory)][string]$TestRoot,
+		[Parameter(Mandatory)][string]$Category,
+		[Parameter(Mandatory)]$Plan
+	)
+
+	if (-not $Plan.PSObject.Properties['category'] -or $Plan.category -ne $Category) {
+		$planCategory = if ($Plan.PSObject.Properties['category']) { $Plan.category } else { '<missing>' }
+		throw "Plan category '$planCategory' does not match '$Category'."
+	}
+	if (-not $Plan.PSObject.Properties['shardCount'] -or
+		[string]$Plan.shardCount -notmatch '^\d+$' -or
+		[int]$Plan.shardCount -lt 1 -or
+		[int]$Plan.shardCount -gt 32) {
+		throw 'Plan shardCount must be an integer from 1 through 32.'
+	}
+	if (-not $Plan.PSObject.Properties['assignments']) {
+		throw 'Plan does not contain assignments.'
+	}
+
+	$shardCount = [int]$Plan.shardCount
+	$validShards = [System.Collections.Generic.HashSet[string]]::new(
+		[System.StringComparer]::Ordinal)
+	foreach ($number in 1..$shardCount) {
+		$null = $validShards.Add("$Category$number")
+	}
+
+	$plannedIds = [System.Collections.Generic.HashSet[string]]::new(
+		[System.StringComparer]::Ordinal)
+	foreach ($assignment in @($Plan.assignments)) {
+		if (-not $assignment.PSObject.Properties['testId'] -or
+			[string]::IsNullOrWhiteSpace([string]$assignment.testId)) {
+			throw 'Plan contains an assignment without a test ID.'
+		}
+
+		$testId = [string]$assignment.testId
+		if (-not $plannedIds.Add($testId)) {
+			throw "Plan contains duplicate test ID '$testId'."
+		}
+
+		$shard = if ($assignment.PSObject.Properties['shard']) {
+			[string]$assignment.shard
+		} else {
+			''
+		}
+		if (-not $validShards.Contains($shard)) {
+			throw "Plan assignment '$testId' uses invalid shard '$shard'; expected ${Category}1 through $Category$shardCount."
+		}
+	}
+
+	$inventoryIds = [System.Collections.Generic.HashSet[string]]::new(
+		[System.StringComparer]::Ordinal)
+	foreach ($test in @(Get-UITestInventory -TestRoot $TestRoot -Category $Category)) {
+		if (-not $inventoryIds.Add([string]$test.Id)) {
+			throw "Pre-apply inventory contains duplicate test ID '$($test.Id)'."
+		}
+	}
+
+	$missing = @($inventoryIds | Where-Object { -not $plannedIds.Contains($_) } | Sort-Object)
+	$unknown = @($plannedIds | Where-Object { -not $inventoryIds.Contains($_) } | Sort-Object)
+	if ($missing.Count -gt 0 -or $unknown.Count -gt 0) {
+		$details = @(
+			if ($missing.Count -gt 0) {
+				"missing from plan: $($missing -join ', ')"
+			}
+			if ($unknown.Count -gt 0) {
+				"not in pre-apply inventory: $($unknown -join ', ')"
+			}
+		) -join '; '
+		throw "Plan assignment IDs do not exactly match the pre-apply inventory ($details)."
+	}
+}
+
 function Test-UITestShardApplication {
 	param(
 		[Parameter(Mandatory)][string]$TestRoot,
@@ -1030,21 +1104,11 @@ function Test-UITestShardApplication {
 		[Parameter(Mandatory)]$Plan
 	)
 
-	if ($Plan.category -ne $Category) {
-		throw "Plan category '$($Plan.category)' does not match '$Category'."
-	}
+	Test-UITestShardPlan -TestRoot $TestRoot -Category $Category -Plan $Plan
 	$inventory = @(Get-UITestInventory -TestRoot $TestRoot -Category $Category)
 	$planned = @{}
 	foreach ($assignment in @($Plan.assignments)) {
-		if ($planned.ContainsKey([string]$assignment.testId)) {
-			throw "Plan contains duplicate test ID '$($assignment.testId)'."
-		}
 		$planned[[string]$assignment.testId] = [string]$assignment.shard
-	}
-	$inventoryIds = @($inventory.Id | Sort-Object)
-	$planIds = @($planned.Keys | Sort-Object)
-	if (($inventoryIds -join "`n") -ne ($planIds -join "`n")) {
-		throw 'Applied inventory IDs do not exactly match plan assignment IDs.'
 	}
 
 	$validShards = @(1..([int]$Plan.shardCount) | ForEach-Object { "$Category$_" })
@@ -1088,5 +1152,6 @@ Export-ModuleMember -Function @(
 	'New-UITestShardPlan',
 	'Set-UITestShardCategories',
 	'Set-ShardInfrastructure',
+	'Test-UITestShardPlan',
 	'Test-UITestShardApplication'
 )
