@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -376,7 +377,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\"", output: _output),
+		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\" --skipRestore", output: _output),
 			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
 		// Verify the project file was created with the correct name (this was the bug)
@@ -395,12 +396,31 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
 			"Expected Extensions.cs file was not created.");
 
-		// Verify the project file contains required properties
-		var projectContent = File.ReadAllText(expectedProjectFile);
-		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
-			"Project file should contain Aspire-specific properties.");
-		Assert.True(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
-			"Project file should contain UseMauiCore property.");
+		// Verify the current template was selected and contains the required MAUI properties.
+		var project = XDocument.Load(expectedProjectFile);
+		var targetFramework = project.Descendants("TargetFramework").Single().Value;
+		Assert.Equal(DotNetCurrent, targetFramework);
+		Assert.Equal("true", project.Descendants("IsAspireSharedProject").Single().Value);
+		Assert.Equal("true", project.Descendants("UseMauiCore").Single().Value);
+
+		var mauiCoreReference = project.Descendants("PackageReference")
+			.Single(element => string.Equals((string?)element.Attribute("Include"), "Microsoft.Maui.Core", StringComparison.Ordinal));
+		Assert.Equal("$(MauiVersion)", (string?)mauiCoreReference.Attribute("Version"));
+
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", target: "Restore", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to restore. Check test output/attachments for errors.");
+
+		using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectDir, "obj", "project.assets.json")));
+		var mauiCoreVersion = assets.RootElement
+			.GetProperty("project")
+			.GetProperty("frameworks")
+			.GetProperty(DotNetCurrent)
+			.GetProperty("dependencies")
+			.GetProperty("Microsoft.Maui.Core")
+			.GetProperty("version")
+			.GetString();
+		Assert.NotNull(mauiCoreVersion);
+		Assert.Contains(MauiPackageVersion, mauiCoreVersion, StringComparison.Ordinal);
 
 		// Verify the project actually builds
 		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
