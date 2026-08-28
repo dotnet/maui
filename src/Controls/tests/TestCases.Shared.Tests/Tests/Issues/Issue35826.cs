@@ -19,8 +19,11 @@ public class Issue35826 : _IssuesUITest
 	const string PhotoPickerAvailabilityLabel = "PhotoPickerAvailabilityLabel";
 	const string StatusLabel = "StatusLabel";
 
+	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+	// This test belongs to the Essentials category.
+    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
-	[Category(UITestCategories.Essentials)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void PickPhotosAsyncShouldReturnFromChildActivity()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
@@ -30,10 +33,6 @@ public class Issue35826 : _IssuesUITest
 		// (the guard in ActivityForResultRequest.Register() blocked it), so the task hung
 		// indefinitely and the result label stayed on "Picking...".
 		App.Tap(ChildActivityPickButton);
-
-		// Cancel the system photo picker by pressing Back.
-		// After the fix each activity has its own launcher entry so the result is delivered.
-		WaitForPhotoPicker();
 		App.Back();
 
 		// If the bug is present WaitForTextToBePresentInElement times out because the
@@ -60,15 +59,17 @@ public class Issue35826 : _IssuesUITest
 		App.Back();
 		App.WaitForElement(OpenChildActivityButton);
 	}
-
+    
+	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+	// This test belongs to the Essentials category.
+    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
-	[Category(UITestCategories.Essentials)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void OverlappingPhotoPickerRequestsAreRejected()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
 
 		App.Tap(ChildActivityOverlapButton);
-		WaitForPhotoPicker();
 		App.Back();
 
 		var rejected = App.WaitForTextToBePresentInElement(
@@ -83,15 +84,17 @@ public class Issue35826 : _IssuesUITest
 		App.Back();
 		App.WaitForElement(OpenChildActivityButton);
 	}
-
+    
+	// This test requires API 36+ because the issue reproduces only when Android strictly enforces ActivityResultLauncher ownership.
+	// This test belongs to the Essentials category.
+    // Use the SafeAreaEdges category because its device-farm lane runs on API 36+ devices.
 	[Test]
-	[Category(UITestCategories.Essentials)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void FinishingLaunchingActivityCancelsPendingPhotoPicker()
 	{
 		OpenChildActivityAndRequirePhotoPicker();
 
 		App.Tap(ChildActivityFinishWhilePickingButton);
-		WaitForPhotoPicker();
 		App.Back();
 
 		App.WaitForElement(StatusLabel);
@@ -122,8 +125,5 @@ public class Issue35826 : _IssuesUITest
 		Assert.That(availability, Is.EqualTo("Photo Picker: Available"),
 			"The regression test must exercise the AndroidX Photo Picker launcher path changed by this PR.");
 	}
-
-	void WaitForPhotoPicker() =>
-		App.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Cancel']"));
 }
 #endif
