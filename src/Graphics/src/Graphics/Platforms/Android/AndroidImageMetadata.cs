@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// <summary>Writes the captured tags (and the current <see cref="Orientation"/>) into a JPEG file.</summary>
 		public void ApplyTo(string jpegFilePath)
 		{
-			var exif = new ExifInterface(jpegFilePath);
+			using var exif = new ExifInterface(jpegFilePath);
 			foreach (var kvp in _tags)
 			{
 				try

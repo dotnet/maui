@@ -51,12 +51,14 @@ namespace Microsoft.Maui.Graphics.Platform
 		// macOS (AppKit) does not currently capture or re-embed image metadata, so these delegate to
 		// the plain pixel save. Metadata preservation is a mobile (iOS/Android)/Windows concern.
 		/// <inheritdoc/>
-		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+#nullable enable
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
 			=> Save(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
 
 		/// <inheritdoc/>
-		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
 			=> SaveAsync(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
+#nullable restore
 
 		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
 
@@ -203,8 +205,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		// macOS decodes with orientation handled by NSImage and does not capture metadata; the options
 		// are accepted for API parity but only the decode is performed. The loading service forwards here.
-		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+#nullable enable
+		public static IImage FromStream(Stream stream, ImageLoadOptions? options)
 			=> FromStream(stream, ImageFormat.Png);
+#nullable restore
 
 	}
 }

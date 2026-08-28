@@ -14,9 +14,9 @@ Microsoft.Maui.Graphics.Color.WithHue(float hue) -> Microsoft.Maui.Graphics.Colo
 Microsoft.Maui.Graphics.Color.WithLuminosity(float luminosity) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.WithSaturation(float saturation) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.IImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
-~Microsoft.Maui.Graphics.IImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
-~Microsoft.Maui.Graphics.IImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
-~Microsoft.Maui.Graphics.IImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageLoadOptions options) -> Microsoft.Maui.Graphics.IImage
+Microsoft.Maui.Graphics.IImage.Save(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions? options) -> void
+Microsoft.Maui.Graphics.IImage.SaveAsync(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions? options) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Graphics.IImageLoadingService.FromStream(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageLoadOptions? options) -> Microsoft.Maui.Graphics.IImage!
 Microsoft.Maui.Graphics.IImageMetadata
 Microsoft.Maui.Graphics.ImageLoadOptions
 Microsoft.Maui.Graphics.ImageLoadOptions.DisableRotationNormalization.get -> bool
@@ -31,8 +31,8 @@ Microsoft.Maui.Graphics.ImageSaveOptions.PreserveMetadata.set -> void
 Microsoft.Maui.Graphics.ImageSaveOptions.Quality.get -> float
 Microsoft.Maui.Graphics.ImageSaveOptions.Quality.set -> void
 Microsoft.Maui.Graphics.Platform.PlatformImage.Metadata.get -> Microsoft.Maui.Graphics.IImageMetadata?
-~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> void
-~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions options) -> System.Threading.Tasks.Task
+Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions? options) -> void
+Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format, Microsoft.Maui.Graphics.ImageSaveOptions? options) -> System.Threading.Tasks.Task!
 override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
 override Microsoft.Maui.Graphics.Color.ToString() -> string!
 static Microsoft.Maui.Graphics.Color.FromArgb(string! colorAsHex) -> Microsoft.Maui.Graphics.Color!

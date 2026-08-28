@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	{
 		// Creates a small, decodable JPEG in a directory OUTSIDE the app cache to represent a picked
 		// file whose location MAUI does not own and therefore must never modify or delete.
-		static string CreateSourceImage(string fileName, string makeTag = null)
+		static string CreateSourceImage(string fileName, string makeTag = null, int? orientation = null)
 		{
 			var dir = Path.Combine(FileSystem.AppDataDirectory, "mediapicker_source_tests");
 			Directory.CreateDirectory(dir);
@@ -27,14 +27,27 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				bitmap.Compress(Bitmap.CompressFormat.Jpeg, 100, stream);
 			}
 
-			if (makeTag is not null)
+			if (makeTag is not null || orientation.HasValue)
 			{
-				var exif = new ExifInterface(path);
-				exif.SetAttribute(ExifInterface.TagMake, makeTag);
+				using var exif = new ExifInterface(path);
+				if (makeTag is not null)
+					exif.SetAttribute(ExifInterface.TagMake, makeTag);
+				if (orientation.HasValue)
+					exif.SetAttribute(ExifInterface.TagOrientation, orientation.Value.ToString());
 				exif.SaveAttributes();
 			}
 
 			return path;
+		}
+
+		static string CreateMauiOwnedSourceImage(string fileName)
+		{
+			var file = FileSystemUtils.GetTemporaryFile(global::Android.App.Application.Context.CacheDir, fileName);
+			using var bitmap = Bitmap.CreateBitmap(64, 48, Bitmap.Config.Argb8888);
+			bitmap.EraseColor(unchecked((int)0xFF3366CC));
+			using var stream = File.Create(file.AbsolutePath);
+			bitmap.Compress(Bitmap.CompressFormat.Jpeg, 100, stream);
+			return file.AbsolutePath;
 		}
 
 		static string CanonicalCacheRoot()
@@ -110,16 +123,99 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task ProcessPhoto_PreservesExifMetadata()
 		{
-			var sourcePath = CreateSourceImage("meta_source.jpg", makeTag: "CopilotCam");
+			var sourcePath = CreateSourceImage("meta_source.jpg", makeTag: "CopilotCam", orientation: 6);
 			string resultPath = null;
 			try
 			{
-				var options = new MediaPickerOptions { CompressionQuality = 60, PreserveMetaData = true };
+				var options = new MediaPickerOptions
+				{
+					CompressionQuality = 60,
+					MaximumHeight = 40,
+					RotateImage = true,
+					PreserveMetaData = true,
+				};
 
 				resultPath = await MediaPickerImplementation.ProcessPhotoAsync(sourcePath, options);
 
-				var exif = new ExifInterface(resultPath);
+				using var exif = new ExifInterface(resultPath);
 				Assert.Equal("CopilotCam", exif.GetAttribute(ExifInterface.TagMake));
+				Assert.Equal("1", exif.GetAttribute(ExifInterface.TagOrientation));
+
+				using var result = BitmapFactory.DecodeFile(resultPath);
+				Assert.NotNull(result);
+				Assert.True(result.Width <= 40 && result.Height <= 40);
+			}
+			finally
+			{
+				CleanUp(sourcePath, resultPath);
+			}
+		}
+
+		[Fact]
+		public async Task ProcessPhoto_ReclaimsMauiOwnedSourceAfterPublishing()
+		{
+			var sourcePath = CreateMauiOwnedSourceImage("owned_source.jpg");
+			string resultPath = null;
+			try
+			{
+				resultPath = await MediaPickerImplementation.ProcessPhotoAsync(
+					sourcePath,
+					new MediaPickerOptions { CompressionQuality = 60 });
+
+				Assert.NotEqual(sourcePath, resultPath);
+				Assert.False(File.Exists(sourcePath), "MAUI-owned temporary source was not reclaimed.");
+				Assert.True(File.Exists(resultPath), "Processed output was not published.");
+			}
+			finally
+			{
+				CleanUp(sourcePath, resultPath);
+			}
+		}
+
+		[Fact]
+		public async Task ProcessPhotoPreservingSource_KeepsRecoveryInput()
+		{
+			var sourcePath = CreateMauiOwnedSourceImage("recovery_source.jpg");
+			string resultPath = null;
+			try
+			{
+				resultPath = await MediaPickerImplementation.ProcessPhotoPreservingSourceAsync(
+					sourcePath,
+					new PersistedPhotoProcessingOptions(
+						maximumWidth: null,
+						maximumHeight: null,
+						compressionQuality: 60,
+						rotateImage: false,
+						preserveMetaData: true));
+
+				Assert.NotEqual(sourcePath, resultPath);
+				Assert.True(File.Exists(sourcePath), "Recovery-sensitive source was deleted before record cleanup.");
+				Assert.True(File.Exists(resultPath), "Processed output was not published.");
+			}
+			finally
+			{
+				CleanUp(sourcePath, resultPath);
+			}
+		}
+
+		[Fact]
+		public async Task ProcessPhoto_FallbackCopyPreservesOriginalExtension()
+		{
+			var sourcePath = Path.Combine(FileSystem.AppDataDirectory, "mediapicker_source_tests", "undecodable.heic");
+			Directory.CreateDirectory(Path.GetDirectoryName(sourcePath));
+			var originalBytes = new byte[] { 1, 2, 3, 4 };
+			File.WriteAllBytes(sourcePath, originalBytes);
+			string resultPath = null;
+			try
+			{
+				resultPath = await MediaPickerImplementation.ProcessPhotoAsync(
+					sourcePath,
+					new MediaPickerOptions { CompressionQuality = 60 });
+
+				Assert.NotEqual(sourcePath, resultPath);
+				Assert.Equal(".heic", Path.GetExtension(resultPath));
+				Assert.Equal(originalBytes, File.ReadAllBytes(resultPath));
+				Assert.True(File.Exists(sourcePath), "User-owned source was deleted.");
 			}
 			finally
 			{

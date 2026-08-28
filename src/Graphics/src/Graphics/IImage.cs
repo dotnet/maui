@@ -114,12 +114,14 @@ namespace Microsoft.Maui.Graphics
 		/// </summary>
 		/// <param name="stream">The stream to save the image to.</param>
 		/// <param name="format">The format to save the image in.</param>
-		/// <param name="options">The options controlling quality and metadata preservation.</param>
+		/// <param name="options">The options controlling quality and metadata preservation, or
+		/// <see langword="null"/> to use the defaults.</param>
+#nullable enable
 #if NETSTANDARD2_0
-		void Save(Stream stream, ImageFormat format, ImageSaveOptions options);
+		void Save(Stream stream, ImageFormat format, ImageSaveOptions? options);
 #else
-		void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> Save(stream, format, (options ?? new ImageSaveOptions()).Quality);
+		void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
+			=> Save(stream, format, Math.Max(0f, Math.Min(1f, (options ?? new ImageSaveOptions()).Quality)));
 #endif
 
 		/// <summary>
@@ -128,13 +130,15 @@ namespace Microsoft.Maui.Graphics
 		/// </summary>
 		/// <param name="stream">The stream to save the image to.</param>
 		/// <param name="format">The format to save the image in.</param>
-		/// <param name="options">The options controlling quality and metadata preservation.</param>
+		/// <param name="options">The options controlling quality and metadata preservation, or
+		/// <see langword="null"/> to use the defaults.</param>
 		/// <returns>A task representing the asynchronous save operation.</returns>
 #if NETSTANDARD2_0
-		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options);
+		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options);
 #else
-		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> SaveAsync(stream, format, (options ?? new ImageSaveOptions()).Quality);
+		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
+			=> SaveAsync(stream, format, Math.Max(0f, Math.Min(1f, (options ?? new ImageSaveOptions()).Quality)));
 #endif
+#nullable restore
 	}
 }

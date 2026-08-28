@@ -121,5 +121,38 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					File.Delete(outputPath);
 			}
 		}
+
+		[Fact]
+		public async Task ProcessImage_ZeroWidth_StillHonorsMaximumHeight()
+		{
+			var loadingService = new PlatformImageLoadingService();
+			string outputPath = null;
+			try
+			{
+				using var input = new MemoryStream(SampleJpeg);
+
+				outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
+					input,
+					"picked.jpg",
+					new ImageProcessingOptions(
+						maximumWidth: 0,
+						maximumHeight: 40,
+						compressionQuality: 100,
+						rotateImage: false,
+						preserveMetadata: false));
+
+				using var verifyStream = File.OpenRead(outputPath);
+				using var processed = loadingService.FromStream(verifyStream);
+
+				Assert.NotNull(processed);
+				Assert.True(processed.Height <= 40, $"Expected height <= 40px, got {processed.Height}px.");
+				Assert.True(processed.Width > processed.Height, "Expected the landscape aspect ratio to be preserved.");
+			}
+			finally
+			{
+				if (outputPath is not null && File.Exists(outputPath))
+					File.Delete(outputPath);
+			}
+		}
 	}
 }

@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Media
 					? "image/png"
 					: "image/jpeg";
 
-				return new FileResult(outputPath, contentType) { FileName = original.FileName };
+				return new FileResult(outputPath, contentType);
 			}
 			catch (Exception ex)
 			{

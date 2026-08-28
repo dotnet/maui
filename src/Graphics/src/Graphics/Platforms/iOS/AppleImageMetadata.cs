@@ -47,13 +47,13 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (source is null)
 				return null;
 
-			var properties = source.CopyProperties((NSDictionary?)null, 0);
+			using var properties = source.CopyProperties((NSDictionary?)null, 0);
 			if (properties is null)
 				return null;
 
 			var orientation = (properties[OrientationKey] as NSNumber)?.Int32Value ?? 1;
 
-			var plist = NSPropertyListSerialization.DataWithPropertyList(
+			using var plist = NSPropertyListSerialization.DataWithPropertyList(
 				properties, NSPropertyListFormat.Binary, 0, out var error);
 			if (plist is null || error is not null)
 				return null;
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			using (var data = NSData.FromArray(_properties))
 			{
 				var format = NSPropertyListFormat.Binary;
-				var restored = NSPropertyListSerialization.PropertyListWithData(
+				using var restored = NSPropertyListSerialization.PropertyListWithData(
 					data, NSPropertyListReadOptions.Immutable, ref format, out _) as NSDictionary;
 				mutable = restored is null ? new NSMutableDictionary() : new NSMutableDictionary(restored);
 			}

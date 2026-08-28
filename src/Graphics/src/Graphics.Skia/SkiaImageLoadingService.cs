@@ -19,9 +19,11 @@ namespace Microsoft.Maui.Graphics.Skia
 		}
 
 		/// <inheritdoc/>
-		public IImage FromStream(Stream stream, ImageLoadOptions options)
+#nullable enable
+		public IImage FromStream(Stream stream, ImageLoadOptions? options)
 		{
 			return SkiaImage.FromStream(stream);
 		}
+#nullable restore
 	}
 }

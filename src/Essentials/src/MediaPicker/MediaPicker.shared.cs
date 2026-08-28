@@ -230,7 +230,8 @@ namespace Microsoft.Maui.Media
 		/// will be copied from the original image to the processed image during operations like resizing,
 		/// compression, or rotation.</para>
 		/// <para>Setting this to false may result in smaller file sizes but will lose the image's metadata.</para>
-		/// <para>Currently not supported on Windows.</para>
+		/// <para>Metadata preservation is platform and format dependent. Android and Windows support JPEG;
+		/// iOS and Mac Catalyst support JPEG and PNG.</para>
 		/// </remarks>
 		public bool PreserveMetaData { get; set; } = true;
 

@@ -23,6 +23,11 @@ namespace Microsoft.Maui.Graphics
 		/// so it can be re-embedded when the image is saved. When <see langword="false"/> (the default),
 		/// metadata is not preserved.
 		/// </summary>
+		/// <remarks>
+		/// Metadata capture is platform dependent. It is supported by the Android, iOS, Mac Catalyst,
+		/// and Windows platform image implementations; implementations without a metadata backend
+		/// return <see langword="null"/> from <see cref="IImage.Metadata"/>.
+		/// </remarks>
 		public bool PreserveMetadata { get; set; }
 	}
 }

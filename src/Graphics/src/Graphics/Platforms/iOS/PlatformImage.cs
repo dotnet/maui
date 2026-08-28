@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics.Platform
 	public class PlatformImage : IImage
 	{
 		private UIImage _image;
-		private readonly AppleImageMetadata _metadata;
+		private AppleImageMetadata _metadata;
 
 		public PlatformImage(UIImage image)
 			: this(image, null)
@@ -109,7 +109,11 @@ namespace Microsoft.Maui.Graphics.Platform
 					_image.Dispose();
 				}
 
-				return context.Image;
+				var resizedImage = context.Image;
+				if (resizedImage is PlatformImage resized)
+					resized._metadata = NormalizedMetadata();
+
+				return resizedImage;
 			}
 		}
 
@@ -141,7 +145,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		/// <inheritdoc/>
-		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+#nullable enable
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
 		{
 			options ??= new ImageSaveOptions();
 			using var data = CreateData(format, options);
@@ -149,7 +154,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		/// <inheritdoc/>
-		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
 		{
 			// NSData-backed streams don't reliably support async reads on CoreCLR (CopyToAsync throws
 			// inside UnmanagedMemoryStream.ReadAsync), so copy synchronously — this streams the encoded
@@ -157,6 +162,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			Save(stream, format, options);
 			return Task.CompletedTask;
 		}
+#nullable restore
 
 		private NSData CreateData(ImageFormat format, ImageSaveOptions options)
 		{
@@ -247,16 +253,19 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		// The options-based loader. The loading service (PlatformImageLoadingService) forwards to this,
 		// mirroring the public FromStream(stream, format) overload above.
-		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+#nullable enable
+		public static IImage FromStream(Stream stream, ImageLoadOptions? options)
 		{
 			options ??= new ImageLoadOptions();
-			using var data = NSData.FromStream(stream);
+			using var data = NSData.FromStream(stream)
+				?? throw new ArgumentException("The stream does not contain a decodable image.", nameof(stream));
 
-			var metadata = options.PreserveMetadata && data is not null
+			var metadata = options.PreserveMetadata
 				? AppleImageMetadata.Capture(data)
 				: null;
 
-			var image = UIImage.LoadFromData(data);
+			var image = UIImage.LoadFromData(data!)
+				?? throw new ArgumentException("The stream does not contain a decodable image.", nameof(stream));
 
 			if (options.DisableRotationNormalization)
 			{
@@ -273,5 +282,6 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			return new PlatformImage(normalized, metadata);
 		}
+#nullable restore
 	}
 }

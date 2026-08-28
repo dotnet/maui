@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		/// <inheritdoc cref="Save" />
+		/// <inheritdoc cref="Save(System.IO.Stream, ImageFormat, float)" />
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
@@ -242,16 +242,15 @@ namespace Microsoft.Maui.Graphics.Platform
 
 #if !MAUI_GRAPHICS_WIN2D
 #nullable enable
-		IImageMetadata? IImage.Metadata => _metadata;
-#nullable restore
+		public IImageMetadata? Metadata => _metadata;
 
-		void IImage.Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
 			=> AsyncPump.Run(() => SaveWithOptionsAsync(stream, format, options));
 
-		Task IImage.SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
 			=> SaveWithOptionsAsync(stream, format, options);
 
-		async Task SaveWithOptionsAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		async Task SaveWithOptionsAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
 		{
 			options ??= new ImageSaveOptions();
 			var quality = Math.Max(0f, Math.Min(1f, options.Quality));
@@ -278,14 +277,16 @@ namespace Microsoft.Maui.Graphics.Platform
 			outputStream.Seek(0);
 			await outputStream.AsStreamForRead().CopyToAsync(stream);
 		}
+#nullable restore
 
 		// Loads the image applying the supplied options (EXIF orientation normalization and metadata
 		// capture). Unlike the plain FromStream overload, this normalizes orientation by default so the
 		// returned pixels are upright, matching the behavior of the other platforms.
-		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+#nullable enable
+		public static IImage FromStream(Stream stream, ImageLoadOptions? options)
 			=> AsyncPump.Run(() => FromStreamWithOptionsAsync(stream, options));
 
-		static async Task<IImage> FromStreamWithOptionsAsync(Stream stream, ImageLoadOptions options)
+		static async Task<IImage> FromStreamWithOptionsAsync(Stream stream, ImageLoadOptions? options)
 		{
 			options ??= new ImageLoadOptions();
 			var creator = PlatformGraphicsService.Creator;
@@ -295,7 +296,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			using var randomAccessStream = new InMemoryRandomAccessStream();
-			await stream.CopyToAsync(randomAccessStream.AsStreamForWrite());
+			var randomAccessWriter = randomAccessStream.AsStreamForWrite();
+			await stream.CopyToAsync(randomAccessWriter);
+			await randomAccessWriter.FlushAsync();
 			randomAccessStream.Seek(0);
 
 			var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
@@ -326,6 +329,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			return new PlatformImage(creator, bitmap, metadata);
 		}
+#nullable restore
 #endif
 
 		public IImage ToPlatformImage()

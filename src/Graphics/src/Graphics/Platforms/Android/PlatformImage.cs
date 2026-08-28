@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Graphics.Platform
 	public class PlatformImage : IImage
 	{
 		private Bitmap _bitmap;
-		private readonly AndroidImageMetadata _metadata;
+		private AndroidImageMetadata _metadata;
 
 		public PlatformImage(Bitmap bitmap)
 			: this(bitmap, null)
@@ -103,7 +103,11 @@ namespace Microsoft.Maui.Graphics.Platform
 					_bitmap.Dispose();
 				}
 
-				return context.Image;
+				var resizedImage = context.Image;
+				if (resizedImage is PlatformImage resized)
+					resized._metadata = _metadata;
+
+				return resizedImage;
 			}
 		}
 
@@ -154,7 +158,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		/// <inheritdoc/>
-		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+#nullable enable
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
 		{
 			options ??= new ImageSaveOptions();
 			if (!TryGetMetadataToEmbed(format, options, out var metadata))
@@ -167,7 +172,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			try
 			{
 				using (var fileStream = File.Create(tempPath))
-					_bitmap.Compress(Bitmap.CompressFormat.Jpeg, (int)(ClampQuality(options.Quality) * 100), fileStream);
+					_bitmap.Compress(Bitmap.CompressFormat.Jpeg!, (int)(ClampQuality(options.Quality) * 100), fileStream);
 
 				metadata.ApplyTo(tempPath);
 
@@ -181,7 +186,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		/// <inheritdoc/>
-		public async Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		public async Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
 		{
 			options ??= new ImageSaveOptions();
 			if (!TryGetMetadataToEmbed(format, options, out var metadata))
@@ -194,7 +199,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			try
 			{
 				using (var fileStream = File.Create(tempPath))
-					await _bitmap.CompressAsync(Bitmap.CompressFormat.Jpeg, (int)(ClampQuality(options.Quality) * 100), fileStream);
+					await _bitmap.CompressAsync(Bitmap.CompressFormat.Jpeg!, (int)(ClampQuality(options.Quality) * 100), fileStream);
 
 				metadata.ApplyTo(tempPath);
 
@@ -206,6 +211,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				TryDeleteFile(tempPath);
 			}
 		}
+#nullable restore
 
 		// Metadata embedding is only supported for JPEG. When it can't be applied we fall back to a
 		// plain pixel-only save.
@@ -268,7 +274,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				try
 				{
 					// Read EXIF orientation
-					var exif = new ExifInterface(seekableStream);
+					using var exif = new ExifInterface(seekableStream);
 					var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
 					seekableStream.Position = 0;
 					bitmap = DecodeOrThrow(seekableStream);
@@ -295,7 +301,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		// The options-based loader. The loading service (PlatformImageLoadingService) forwards to this,
 		// mirroring the public FromStream(stream, format) overload above.
-		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+#nullable enable
+		public static IImage FromStream(Stream stream, ImageLoadOptions? options)
 		{
 			options ??= new ImageLoadOptions();
 
@@ -312,6 +319,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				return CreateImageFromSeekableStream(memoryStream, options);
 			}
 		}
+#nullable restore
 
 		private static IImage CreateImageFromSeekableStream(Stream seekableStream, ImageLoadOptions options)
 		{
@@ -326,7 +334,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			AndroidImageMetadata metadata = null;
 			try
 			{
-				var exif = new ExifInterface(seekableStream);
+				using var exif = new ExifInterface(seekableStream);
 				orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
 				if (options.PreserveMetadata)
 				{

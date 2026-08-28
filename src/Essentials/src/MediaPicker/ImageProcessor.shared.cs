@@ -55,7 +55,9 @@ internal static class ImageProcessor
 	/// Whether any processing (resize or recompress) is required.
 	/// </summary>
 	public static bool IsProcessingNeeded(int? maxWidth, int? maxHeight, int qualityPercent) =>
-		maxWidth.HasValue || maxHeight.HasValue || qualityPercent < 100;
+		maxWidth.GetValueOrDefault() > 0 ||
+		maxHeight.GetValueOrDefault() > 0 ||
+		qualityPercent < 100;
 
 	/// <summary>
 	/// Whether any processing (rotation, resize, or recompress) is required.
@@ -144,10 +146,22 @@ internal static class ImageProcessor
 	public static async Task SaveImageAsync(IImage image, Stream output, ImageFormat format, ImageProcessingOptions options)
 	{
 		var current = image;
-		if (options.MaximumWidth.HasValue || options.MaximumHeight.HasValue)
+		var maximumWidth = options.MaximumWidth.GetValueOrDefault();
+		var maximumHeight = options.MaximumHeight.GetValueOrDefault();
+		if (maximumWidth > 0 || maximumHeight > 0)
 		{
-			// Downsize preserves aspect ratio and only ever scales down.
-			current = image.Downsize(options.MaximumWidth ?? int.MaxValue, options.MaximumHeight ?? int.MaxValue, disposeOriginal: false);
+			// A non-positive or null dimension means "unconstrained". Use the source dimension for that
+			// axis so a single positive constraint still downsizes instead of causing platform Downsize
+			// implementations to treat the whole request as a no-op.
+			var targetWidth = maximumWidth > 0 ? maximumWidth : image.Width;
+			var targetHeight = maximumHeight > 0 ? maximumHeight : image.Height;
+
+			// Downsize preserves aspect ratio and only ever scales down. Avoid creating a transformed
+			// image when both effective constraints are already satisfied.
+			if (image.Width > targetWidth || image.Height > targetHeight)
+			{
+				current = image.Downsize(targetWidth, targetHeight, disposeOriginal: false);
+			}
 		}
 
 		try

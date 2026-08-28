@@ -22,19 +22,22 @@ namespace Microsoft.Maui.Graphics
 		/// EXIF orientation normalization and metadata preservation.
 		/// </summary>
 		/// <param name="stream">The stream containing the image data.</param>
-		/// <param name="options">The options controlling orientation normalization and metadata capture.</param>
+		/// <param name="options">The options controlling orientation normalization and metadata capture,
+		/// or <see langword="null"/> to use the defaults.</param>
 		/// <returns>An <see cref="IImage"/> created from the stream.</returns>
 		/// <remarks>
 		/// On non-<c>NETSTANDARD2_0</c> targets this has a default interface implementation that ignores
 		/// <paramref name="options"/> and falls back to <see cref="FromStream(System.IO.Stream, ImageFormat)"/>.
-		/// The platform loading services all override it to honor the options; a custom implementer that
-		/// needs the options respected should likewise override it.
+		/// Platform loading services override it where orientation and metadata control is supported; a
+		/// custom implementer that needs the options respected should likewise override it.
 		/// </remarks>
+#nullable enable
 #if NETSTANDARD2_0
-		IImage FromStream(Stream stream, ImageLoadOptions options);
+		IImage FromStream(Stream stream, ImageLoadOptions? options);
 #else
-		IImage FromStream(Stream stream, ImageLoadOptions options)
+		IImage FromStream(Stream stream, ImageLoadOptions? options)
 			=> FromStream(stream);
 #endif
+#nullable restore
 	}
 }

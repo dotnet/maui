@@ -241,15 +241,17 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// <inheritdoc/>
 #nullable enable
 		public IImageMetadata? Metadata => null;
+
+		/// <inheritdoc/>
+		public void Save(Stream stream, ImageFormat format, ImageSaveOptions? options)
+			=> Save(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
+
+		/// <inheritdoc/>
+		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions? options)
+			=> SaveAsync(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
+
+		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
 #nullable restore
-
-		/// <inheritdoc/>
-		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> Save(stream, format, (options ?? new ImageSaveOptions()).Quality);
-
-		/// <inheritdoc/>
-		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> SaveAsync(stream, format, (options ?? new ImageSaveOptions()).Quality);
 	}
 #endif
 }
