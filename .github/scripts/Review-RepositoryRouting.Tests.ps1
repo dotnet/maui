@@ -215,8 +215,16 @@ Describe 'Review-PR immutable repository snapshot' {
 
     It 'passes repository and immutable base through analysis, gates, posting, and metadata updates' {
         $script:ReviewSource | Should -Match '(?s)& \$regressionScript\s+.*?-Repo \$Repository\s+.*?-BaseCommit \(\[string\]\$reviewSnapshot\.baseSha\)'
-        $script:ReviewSource | Should -Match ([regex]::Escape(
-            '-File $detectScript -PrNumber "$PRNumber" -Repository $Repository -BaseCommit ([string]$reviewSnapshot.baseSha)'))
+        $reviewAst = Get-PowerShellAst -Source $script:ReviewSource
+        $detectCalls = @($reviewAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+            $args[0].Extent.Text -match '(?s)-File\s+\$detectScript\b'
+        }, $true))
+        @($detectCalls).Count | Should -Be 2
+        foreach ($detectCall in $detectCalls) {
+            $detectCall.Extent.Text | Should -Match ([regex]::Escape(
+                '-PrNumber "$PRNumber" -Repository $Repository -BaseCommit ([string]$reviewSnapshot.baseSha)'))
+        }
         $script:ReviewSource | Should -Match ([regex]::Escape(
             '-File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -Repository $Repository -BaseBranch ([string]$reviewSnapshot.baseSha)'))
         $script:ReviewSource | Should -Match ([regex]::Escape(
@@ -296,6 +304,10 @@ Describe 'Pipeline review routing' {
         $script:PipelineSource | Should -Match '(?s)- name: ReviewRepository\s+displayName:.*?\s+type: string\s+default: ''dotnet/maui'''
         $script:PipelineSource | Should -Match 'ReviewRepository must use a valid owner/name form'
         $script:PipelineSource | Should -Match 'PARAM_REVIEW_REPOSITORY: \$\{\{ parameters\.ReviewRepository \}\}'
+        @([regex]::Matches(
+            $script:PipelineSource,
+            [regex]::Escape('if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then'))).Count |
+            Should -Be 2
     }
 
     It 'routes both metadata resolvers and immutable fetches through the selected repository' {
@@ -309,13 +321,22 @@ Describe 'Pipeline review routing' {
         $script:PipelineSource | Should -Match ([regex]::Escape('-ResolvedBaseCommit "$(resolvedBaseSha)"'))
         $script:PipelineSource | Should -Match ([regex]::Escape('-ResolvedBaseRef "$(resolvedBaseRef)"'))
         $script:PipelineSource | Should -Match 'PARAM_BASE_COMMIT: \$\(resolvedBaseSha\)'
+        @([regex]::Matches(
+            $script:PipelineSource,
+            [regex]::Escape('REVIEW_REPOSITORY_URL="https://github.com/${REVIEW_REPOSITORY}.git"'))).Count |
+            Should -Be 2
     }
 
     It 'passes repository identity to every Review-PR phase and validates the Setup snapshot' {
         @([regex]::Matches(
             $script:PipelineSource,
             '-Repository "\$\{\{ parameters\.ReviewRepository \}\}"')).Count |
-            Should -BeGreaterOrEqual 4
+            Should -Be 5
+        $script:PipelineSource | Should -Match '(?s)-Repository "\$\{\{ parameters\.ReviewRepository \}\}"\s*\\\s*-ResolvedBaseCommit'
+        $script:PipelineSource | Should -Match 'GATE_ARGS=\(-PRNumber "\$\{PARAM_PR_NUMBER\}" -Repository "\$\{\{ parameters\.ReviewRepository \}\}"'
+        $script:PipelineSource | Should -Match 'REVIEW_ARGS=\(-PRNumber "\$\{PARAM_PR_NUMBER\}" -Repository "\$\{\{ parameters\.ReviewRepository \}\}"'
+        $script:PipelineSource | Should -Match '(?s)-File \./\.github/scripts/Review-PR\.ps1\s+.*?-Repository "\$\{\{ parameters\.ReviewRepository \}\}"\s+.*?-Phase Post'
+        $script:PipelineSource | Should -Match '& \$prepScript -ArtifactDir \$artDir -PRNumber "\$\{\{ parameters\.PRNumber \}\}" -Repository "\$\{\{ parameters\.ReviewRepository \}\}"'
         $script:PipelineSource | Should -Match '\{0\}\|\{1\}\|\{2\}\|\{3\}.*snapshot\.repository'
         $script:PipelineSource | Should -Match '\[ "\$REVIEWED_REPOSITORY" != "\$\{\{ parameters\.ReviewRepository \}\}" \]'
     }
