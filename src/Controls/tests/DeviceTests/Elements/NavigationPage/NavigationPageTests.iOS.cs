@@ -64,6 +64,26 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task InteractivePopGestureDoesNotInvokeBackButtonPressedWhenNavigationBarVisible()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var backHandlingPage = new BackHandlingPage(true);
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var recognizer = navController.InteractivePopGestureRecognizer;
+
+				Assert.True(recognizer.Delegate.ShouldBegin(recognizer));
+				Assert.Equal(0, backHandlingPage.BackButtonPressedCount);
+				await Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]

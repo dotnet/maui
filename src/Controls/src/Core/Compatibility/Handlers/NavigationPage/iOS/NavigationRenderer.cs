@@ -253,7 +253,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var currentPage = NavPage?.CurrentPage;
 			if (currentPage is not null && !NavigationPage.GetHasNavigationBar(currentPage))
+			{
 				return ShouldPopCurrentPage();
+			}
 
 			_uiRequestedPop = true;
 			return true;
