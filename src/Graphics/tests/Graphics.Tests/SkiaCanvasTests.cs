@@ -51,13 +51,29 @@ public class SkiaCanvasTests
 		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
 		expectedPlatformCanvas.DrawPath(path, paint);
 
+		var shouldDrawPixels = width > 0 && height > 0 && expectedSweep != 0;
+		Assert.Equal(shouldDrawPixels, HasPixels(expected));
+		Assert.Equal(shouldDrawPixels, HasPixels(actual));
 		Assert.Equal(expected.Bytes, actual.Bytes);
 	}
 
 	[Theory]
-	[InlineData(false, -30, -210)]
-	[InlineData(true, -30, 150)]
-	public void FillArcMatchesPathRendering(bool clockwise, float expectedStartAngle, float expectedSweep)
+	[InlineData(25, 18, 30, 240, false, -30, -210)]
+	[InlineData(25, 18, 30, 240, true, -30, 150)]
+	[InlineData(25, 18, 0, 360, false, 0, -360)]
+	[InlineData(25, 18, 0, 360, true, 0, 0)]
+	[InlineData(25, 18, 360, 0, false, -360, 0)]
+	[InlineData(25, 18, 360, 0, true, -360, 360)]
+	[InlineData(0, 18, 30, 240, false, -30, -210)]
+	[InlineData(25, 0, 30, 240, false, -30, -210)]
+	public void FillArcMatchesPathRendering(
+		float width,
+		float height,
+		float startAngle,
+		float endAngle,
+		bool clockwise,
+		float expectedStartAngle,
+		float expectedSweep)
 	{
 		using var actual = CreateBitmap();
 		using var expected = CreateBitmap();
@@ -73,11 +89,14 @@ public class SkiaCanvasTests
 		using var path = new SKPath();
 
 		canvas.FillColor = Colors.Red;
-		canvas.FillArc(5, 7, 25, 18, 30, 240, clockwise);
+		canvas.FillArc(5, 7, width, height, startAngle, endAngle, clockwise);
 
-		path.AddArc(new SKRect(5, 7, 30, 25), expectedStartAngle, expectedSweep);
+		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
 		expectedPlatformCanvas.DrawPath(path, paint);
 
+		var shouldDrawPixels = width > 0 && height > 0 && expectedSweep != 0;
+		Assert.Equal(shouldDrawPixels, HasPixels(expected));
+		Assert.Equal(shouldDrawPixels, HasPixels(actual));
 		Assert.Equal(expected.Bytes, actual.Bytes);
 	}
 
@@ -87,6 +106,17 @@ public class SkiaCanvasTests
 			new SKImageInfo(40, 40, SKColorType.Rgba8888, SKAlphaType.Premul));
 		bitmap.Erase(SKColors.Transparent);
 		return bitmap;
+	}
+
+	private static bool HasPixels(SKBitmap bitmap)
+	{
+		foreach (var value in bitmap.Bytes)
+		{
+			if (value != 0)
+				return true;
+		}
+
+		return false;
 	}
 
 	private static SKStrokeCap GetStrokeCap(LineCap lineCap) =>
