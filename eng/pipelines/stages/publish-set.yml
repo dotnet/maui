@@ -1,8 +1,9 @@
-# Validates one package set and, when enabled, publishes it.
+# Prunes and validates one package set and, when enabled, publishes it.
 #
-# Every matching dry-run stage downloads the Release artifact and executes the validate verb.
-# Approval, NuGet.org filtering, publishing, and verification exist only when publishPackages
-# is true.
+# The preflight job always runs for the matching repository type. It downloads the Release
+# artifact, queries NuGet.org for existing versions, removes those local files, validates the
+# remaining set, and publishes the exact pruned artifact for review. Approval and mutation
+# jobs exist only when publishPackages is true.
 
 parameters:
 - name: stageName
@@ -14,6 +15,9 @@ parameters:
 - name: artifactName
   type: string
   default: Release
+
+- name: preparedArtifactName
+  type: string
 
 - name: setName
   type: string
@@ -49,8 +53,8 @@ stages:
   condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.releasePlan.IsWorkload'], '${{ parameters.expectedWorkload }}'))
   jobs:
 
-  - job: validate
-    displayName: Validate downloaded release artifact
+  - job: preflight
+    displayName: Prune and validate package set
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
       ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
@@ -58,6 +62,10 @@ stages:
       inputs:
       - input: pipelineArtifact
         artifactName: ${{ parameters.artifactName }}
+        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+      outputs:
+      - output: pipelineArtifact
+        artifactName: ${{ parameters.preparedArtifactName }}
         targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
     steps:
     - checkout: self
@@ -90,24 +98,32 @@ stages:
 
     - pwsh: |
         $ErrorActionPreference = 'Stop'
+
+        $recovery = @()
+        if (![string]::IsNullOrWhiteSpace($env:RECOVERY_FILTERS)) {
+          $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
+        }
+
         dotnet "$env:RELEASE_TOOL" `
-          validate `
+          prune-published `
           --plan "$env:ARTIFACT_DIR/release-plan.json" `
           --stage "$env:ARTIFACT_DIR" `
           --set "$env:SET_NAME" `
-          --expected-plan-hash "$env:EXPECTED_PLAN_HASH"
+          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+          @recovery
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      displayName: Validate package set locally
+      displayName: Prune versions already published on NuGet.org
       env:
         RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         SET_NAME: ${{ parameters.setName }}
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
   - ${{ if eq(parameters.publishPackages, true) }}:
     - job: approval
-      displayName: Wait to publish
-      dependsOn: validate
+      displayName: Approve exact pruned package set
+      dependsOn: preflight
       timeoutInMinutes: 240
       pool: server
       steps:
@@ -130,7 +146,7 @@ stages:
         isProduction: true
         inputs:
         - input: pipelineArtifact
-          artifactName: ${{ parameters.artifactName }}
+          artifactName: ${{ parameters.preparedArtifactName }}
           targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
       steps:
       - checkout: self
@@ -156,11 +172,13 @@ stages:
           if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
             throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
           }
-        displayName: Verify artifact integrity
+        displayName: Verify approved artifact integrity
         env:
           EXPECTED_PLAN_HASH: $(ReleasePlanHash)
           EXPECTED_TOOL_HASH: $(ReleaseToolHash)
 
+      # Approval can remain open while another run publishes one of the same versions. This
+      # recheck may only remove files from the approved set; it can never add a package.
       - pwsh: |
           $ErrorActionPreference = 'Stop'
 
@@ -170,14 +188,14 @@ stages:
           }
 
           dotnet "$env:RELEASE_TOOL" `
-            filter `
+            prune-published `
             --plan "$env:ARTIFACT_DIR/release-plan.json" `
             --stage "$env:ARTIFACT_DIR" `
             --set "$env:SET_NAME" `
             --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
             @recovery
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        displayName: Filter already-published packages
+        displayName: Refresh already-published versions
         env:
           RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
           ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
@@ -186,7 +204,7 @@ stages:
           RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
       - task: 1ES.PublishNuget@1
-        displayName: Push packages to NuGet.org
+        displayName: Push approved packages to NuGet.org
         condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
         inputs:
           useDotNetTask: false

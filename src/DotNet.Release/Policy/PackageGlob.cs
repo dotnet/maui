@@ -10,8 +10,8 @@ namespace DotNet.Release;
 /// <see cref="FileSystemName.MatchesSimpleExpression"/>.
 /// <para>
 /// This is a deliberate narrowing of PowerShell's <c>-like</c>, which also supports
-/// <c>[a-z]</c> character classes. No existing release filter uses one, and a character
-/// class in a release package filter is a footgun. See docs/design.md section 12.
+/// <c>[a-z]</c> character classes. Release selection supports only simple expressions so
+/// patterns remain predictable.
 /// </para>
 /// </remarks>
 internal static class PackageGlob

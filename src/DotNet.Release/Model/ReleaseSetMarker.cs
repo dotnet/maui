@@ -6,7 +6,7 @@ namespace DotNet.Release;
 /// A self-describing marker written into each staged package set's directory.
 /// </summary>
 /// <remarks>
-/// <c>filter</c> and <c>verify</c> receive both a package-set name and an artifact directory.
+/// <c>prune-published</c> and <c>verify</c> receive both a set name and artifact directory.
 /// The marker binds that directory to the requested set, BAR build, and commit. This produces
 /// an explicit <see cref="ErrorCodes.PackageSetMismatch"/> for cross-set or stale-artifact
 /// wiring instead of a generic missing-file failure. Package identities remain sourced only

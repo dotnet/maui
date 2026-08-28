@@ -66,7 +66,7 @@ The strongest NuGet.org safety property is the Azure DevOps credential boundary.
 
 The `nuget.org (dotnetframework)` service connection is declared only by
 `1ES.PublishNuget@1`. Azure DevOps injects its secret only into that task. The release tool,
-including `filter` and `verify` steps running in the same job, cannot access it.
+including `prune-published` and `verify`, cannot access it.
 
 The tool also contains:
 
@@ -87,18 +87,18 @@ For a dry run, the expanded pipeline MUST NOT contain:
 
 - `1ES.PublishNuget@1`;
 - the `nuget.org (dotnetframework)` service connection;
-- `release filter`;
 - `release verify`;
 - `darc add-build-to-channel`;
 - a manual publish or promotion gate.
 
-The matching package-set stage remains present. Its `validate` job downloads the `Release`
-artifact and verifies the plan hash, tool hash, set marker, package list, package presence,
-and package hashes without constructing a NuGet.org client.
+The matching package-set stage remains present. Its `preflight` job downloads the `Release`
+artifact, verifies plan/tool integrity, queries NuGet.org read-only, prunes already-published
+versions, validates the remaining package set, and publishes that exact local artifact for
+review.
 
 The dry run therefore:
 
-- does not contact NuGet.org through the checked-in release code or tasks;
+- queries NuGet.org for exact package availability but performs no NuGet.org mutation;
 - does not write or update GitHub;
 - does not mutate BAR, channels, or release state.
 
@@ -119,14 +119,15 @@ pipeline's exclusion of all NuGet.org release operations.
 
 ### Compile-time exclusion
 
-Publish and promotion stages are selected with Azure DevOps template expressions:
+Mutating publish jobs and the promotion stage are selected with Azure DevOps template
+expressions:
 
 ```yaml
 - ${{ if eq(parameters.publishPackages, true) }}:
 ```
 
-This is a compile-time barrier around the remote release jobs. When false, approval,
-filtering, publishing, and verification do not exist in the expanded YAML.
+This is a compile-time barrier around mutating release jobs. When false, approval,
+publishing, and verification do not exist in the expanded YAML.
 
 The package-set stages themselves always exist so a dry run validates stage selection,
 artifact download, SDK setup, tool execution, and local integrity.
@@ -192,7 +193,7 @@ remote reads testable:
 NuGet availability has one additional internal seam:
 
 - `IPackageExistenceChecker` models the per-identity NuGet protocol call;
-- `IPackageAvailabilityProbe` models the batched operation consumed by filter and verify.
+- `IPackageAvailabilityProbe` models the batched operation consumed by prune and verify.
 
 The distinction is intentional. Probe tests substitute the per-identity checker to validate
 deduplication, concurrency, and exception behavior. Verb tests substitute the batch probe to
@@ -260,21 +261,23 @@ Promotion is excluded from dry runs.
 Every package set uses the same internal stage definition:
 
 ```
-validate
+preflight
   -> download Release artifact
   -> verify plan and tool hashes
-  -> release validate
+  -> release prune-published
+  -> publish exact pruned artifact for review
 
 when publishPackages=true:
   ManualValidation@0
-    -> release filter
+    -> refresh prune
     -> 1ES.PublishNuget@1
     -> release verify
 ```
 
-`release validate` performs no remote query. It validates the selected set marker and every
-planned package file/hash, proving that the agent job can start, download the artifact,
-install the SDK, load the approved tool, and interpret the plan before a publishing run.
+The preflight job proves that the release job can start, download the artifact, install the
+SDK, load the approved tool, query NuGet.org, interpret the plan, and validate the exact
+pending set before approval. The publish job repeats the prune after approval; the approved
+set can only shrink.
 
 The manual validation task MUST run in its own `pool: server` job. An agentless job cannot
 download artifacts or execute scripts, so the gated operation runs in a dependent agent
@@ -556,7 +559,7 @@ set directory, so one expected plan hash pins every copy.
 - BAR build ID;
 - commit.
 
-`filter` and `verify` require `--set` and check the marker before using the directory. A
+`prune-published` and `verify` require `--set` and check the marker before using the directory. A
 valid but wrong artifact therefore fails with `PACKAGE_SET_MISMATCH` instead of a misleading
 missing-file error.
 
@@ -580,32 +583,32 @@ The publish job:
 1. downloads the `Release` artifact;
 2. compares raw plan bytes with `ReleasePlanHash`;
 3. compares `_tool/release.dll` with `ToolHash`;
-4. executes that DLL for `filter`;
+4. executes that DLL for `prune-published`;
 5. validates all pending package hashes before invoking 1ES;
 6. executes the same DLL for `verify` with the same expected plan hash.
 
 Unexpected `.nupkg` files, missing pending files, and changed package bytes fail closed.
 Companion JSON and executable files are excluded by the `.nupkg` enumeration.
 
-## Filtering and publication
+## Pruning and publication
 
-`release filter` queries NuGet.org read-only using `FindPackageByIdResource`.
+`release prune-published` queries NuGet.org read-only using `FindPackageByIdResource`.
 
 For each planned package it records one disposition:
 
-| Disposition | Meaning | File after filtering |
+| Disposition | Meaning | File after pruning |
 |---|---|---|
 | `Pending` | Not visible on NuGet.org | present |
 | `AlreadyPublished` | Exact ID/version is visible | removed |
 | `PreviouslyAttempted` | Matched an operator recovery filter | removed |
 
 The immutable plan is not rewritten. Dispositions are written to
-`release-filter.json`.
+`release-prune.json`.
 
 Before deleting anything, all artifact and package names are revalidated as a single
 relative path component.
 
-After filtering, the invariant is:
+After pruning, the invariant is:
 
 ```text
 file is present <=> disposition is Pending
@@ -641,10 +644,11 @@ terminates immediately.
 For partial publication:
 
 1. queue the same repository, commit, filters, and BAR build;
-2. `filter` removes packages already visible on NuGet.org;
+2. `prune-published` removes packages already visible on NuGet.org;
 3. if NuGet.org accepted a package but it is not yet visible, add its filename to
    `recoveryFilters`;
-4. the filter must match a planned package or the run fails with `FILTER_UNMATCHED`;
+4. each recovery filter must match a planned package or the run fails with
+   `FILTER_UNMATCHED`;
 5. verification still requires every planned package, including recovered packages.
 
 ### Known recovery limit
@@ -700,14 +704,14 @@ package-publication result.
 Before using the system for a production push:
 
 1. queue a dry run with `publishPackages=false`;
-2. confirm matching package-set validation jobs run and no approval, filter, push, or
-   verification job exists;
-3. confirm the run is tagged `DRY-RUN`;
-4. confirm no NuGet.org service connection is requested;
-5. inspect the `Release` artifact and the identical plan copies in each package-set directory;
-6. use a workload repository for at least one dry run, proving both `ReleasePacks` and
+2. confirm matching preflight jobs query NuGet.org and produce pruned artifacts;
+3. confirm no approval, push, verification, or BAR mutation job exists;
+4. confirm the run is tagged `DRY-RUN`;
+5. confirm no NuGet.org service connection is requested;
+6. inspect the `Release` and pruned package-set artifacts;
+7. use a workload repository for at least one dry run, proving both `ReleasePacks` and
    `ReleaseManifests` directories are produced;
-7. confirm the missing-build behavior of the typed PCS client against a real nonexistent
+8. confirm the missing-build behavior of the typed PCS client against a real nonexistent
    BAR ID.
 
 The final item remains the only known unobserved client behavior: tests model a missing BAR

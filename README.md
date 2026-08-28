@@ -33,8 +33,8 @@ both for every run.
 5. On a publish run, approve the matching gate. The packages are pushed and verified.
 
 **The default run publishes nothing.** `PUBLISH to NuGet.org` is off, and on a dry run the
-package-set stages download and validate the artifact, while their approval, NuGet.org
-filter, push, and verification jobs do not exist in the expanded pipeline.
+package-set stages download, prune, and validate the artifact, while their approval, push,
+and verification jobs do not exist in the expanded pipeline.
 
 ### Adding a repository
 
@@ -49,9 +49,9 @@ prepare_release
   build the tool  →  release plan  →  darc gather-drop  →  release stage
       ↓ artifacts + pinned plan hash
 matching package-set stage
-  validate artifact download, plan, marker, package hashes, and tool
+  query NuGet.org, prune published versions, and validate the exact local set
   if publishing:
-    approval  →  release filter  →  1ES.PublishNuget@1  →  release verify
+    approval  →  refresh prune  →  1ES.PublishNuget@1  →  release verify
 ```
 
 Workload repositories publish **packs first, then manifests**, as two separately gated
@@ -65,11 +65,10 @@ logs to Azure DevOps.
 
 The boundary is narrower and more important:
 
-- **A dry run never contacts NuGet.org.** The matching package-set stage executes
-  `release validate`, which is local-only. `release filter`, `release verify`, the
-  `nuget.org (dotnetframework)` service connection, and `1ES.PublishNuget@1` are nested
-  inside the internal template's `${{ if eq(parameters.publishPackages, true) }}` block and
-  do not exist in the expanded dry-run YAML.
+- **A dry run performs no remote mutation.** It queries NuGet.org read-only and prunes local
+  files so the dry-run artifact is the exact set that would need publication. The
+  `nuget.org (dotnetframework)` service connection, `1ES.PublishNuget@1`, BAR promotion, and
+  NuGet.org verification exist only when publishing is enabled.
 - **A dry run does not mutate BAR or GitHub.** `darc add-build-to-channel` is also compile-time
   excluded unless `publishPackages` and `promoteWorkloadSet` are both true, and it has its own
   manual gate. Preparation uses read-only BAR methods and `darc gather-drop`.
@@ -155,7 +154,6 @@ audit trail refers to them.
 ```
 release plan   --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --out ./stage
 release stage  --plan ./stage/plan.json --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
-release validate --plan <release-plan.json> --stage <releaseArtifact> --set <setDirectory> --expected-plan-hash <sha256>
-release filter --plan <release-plan.json> --set <setDirectory> [--recovery-filters '…'] [--expected-plan-hash <sha256>]
+release prune-published --plan <release-plan.json> --set <setDirectory> [--recovery-filters '…'] [--expected-plan-hash <sha256>]
 release verify --plan <release-plan.json> --set <setDirectory> [--expected-plan-hash <sha256>] [--max-duration-minutes 30]
 ```

@@ -34,7 +34,7 @@ public class SetMarkerTests : IDisposable
     }
 
     private Task<int> Filter(string? set) =>
-        FilterCommand.ExecuteAsync(
+        PrunePublishedCommand.ExecuteAsync(
             _console, new FakeProbe(), _workspace.ReadPlan(), _workspace.Out, [], PlanHash, set, CancellationToken.None);
 
     private string SetDirectory(string artifactName) => Path.Combine(_workspace.Out, artifactName);

@@ -4,10 +4,10 @@ namespace DotNet.Release;
 /// Decides which staged packages still need publishing. Pure: the caller performs the
 /// NuGet.org queries and the file deletions.
 /// </summary>
-internal static class FilterPlanner
+internal static class PrunePublishedPlanner
 {
     /// <summary>
-    /// Plans the filtering of one package set.
+    /// Plans which files to prune from one package set.
     /// </summary>
     /// <param name="set">The set being published.</param>
     /// <param name="recoveryPatterns">
@@ -17,7 +17,7 @@ internal static class FilterPlanner
     /// waiting for visibility.
     /// </param>
     /// <param name="availability">Availability keyed by <see cref="PlannedPackage.IdentityKey"/>.</param>
-    public static Result<FilterReport> Plan(
+    public static Result<PruneReport> Plan(
         ReleasePackageSet set,
         IReadOnlyList<string> recoveryPatterns,
         IReadOnlyDictionary<string, bool> availability)
@@ -35,13 +35,13 @@ internal static class FilterPlanner
 
         if (unmatched.Count > 0)
         {
-            return Result<FilterReport>.Failure(
+            return Result<PruneReport>.Failure(
                 ErrorCodes.FilterUnmatched,
                 $"Recovery filters matched no expected packages in " +
                 $"'{set.Name}': {string.Join(", ", unmatched)}.");
         }
 
-        var decisions = new List<FilterDecision>(set.Packages.Count);
+        var decisions = new List<PruneDecision>(set.Packages.Count);
         var missingAvailability = new List<ReleaseError>();
 
         foreach (var package in set.Packages)
@@ -68,10 +68,10 @@ internal static class FilterPlanner
         }
 
         return missingAvailability.Count > 0
-            ? Result<FilterReport>.Failure(missingAvailability)
-            : Result<FilterReport>.Success(new FilterReport { SetName = set.Name, Decisions = decisions });
+            ? Result<PruneReport>.Failure(missingAvailability)
+            : Result<PruneReport>.Success(new PruneReport { SetName = set.Name, Decisions = decisions });
     }
 
-    private static FilterDecision Decide(PlannedPackage package, PackageDisposition disposition) =>
+    private static PruneDecision Decide(PlannedPackage package, PackageDisposition disposition) =>
         new(package.FileName, package.Id, package.NormalizedVersion, disposition);
 }

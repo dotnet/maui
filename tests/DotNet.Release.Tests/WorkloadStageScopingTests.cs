@@ -61,7 +61,7 @@ public class WorkloadStageScopingTests : IDisposable
     }
 
     private Task<int> Filter(string? set, IPackageAvailabilityProbe probe) =>
-        FilterCommand.ExecuteAsync(
+        PrunePublishedCommand.ExecuteAsync(
             _console,
             probe,
             _workspace.ReadPlan(),
@@ -87,12 +87,12 @@ public class WorkloadStageScopingTests : IDisposable
     }
 
     [Fact]
-    public async Task Packs_stage_filters_only_its_own_set()
+    public async Task Packs_stage_prunes_only_its_own_set()
     {
         await StageWorkloadAsync();
         KeepOnly(StagePlanner.PacksArtifactName);
 
-        // Staging already logged both set names, so only the filter's own output is examined.
+        // Staging logged both set names, so inspect only the prune command output.
         _console.Output.Clear();
 
         var exit = await Filter(StagePlanner.PacksArtifactName, new FakeProbe());
@@ -107,7 +107,7 @@ public class WorkloadStageScopingTests : IDisposable
     /// every manifest reads as a missing pending file.
     /// </summary>
     [Fact]
-    public async Task Unscoped_filter_in_a_packs_only_stage_fails_closed()
+    public async Task Unscoped_prune_in_a_packs_only_stage_fails_closed()
     {
         await StageWorkloadAsync();
         KeepOnly(StagePlanner.PacksArtifactName);

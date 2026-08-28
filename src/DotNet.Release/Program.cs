@@ -23,8 +23,7 @@ internal static class Program
 
         root.Subcommands.Add(PlanCommand.Build(console, ToolVersion));
         root.Subcommands.Add(StageCommand.Build(console, ToolVersion));
-        root.Subcommands.Add(ValidateCommand.Build(console));
-        root.Subcommands.Add(FilterCommand.Build(console));
+        root.Subcommands.Add(PrunePublishedCommand.Build(console));
         root.Subcommands.Add(VerifyCommand.Build(console));
 
         return root;

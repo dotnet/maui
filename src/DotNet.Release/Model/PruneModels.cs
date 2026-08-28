@@ -9,14 +9,14 @@ internal enum PackageDisposition
     PreviouslyAttempted,
 }
 
-internal sealed record FilterDecision(
+internal sealed record PruneDecision(
     [property: JsonPropertyName("fileName")] string FileName,
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("normalizedVersion")] string NormalizedVersion,
     [property: JsonPropertyName("disposition")] PackageDisposition Disposition);
 
-/// <summary>Package dispositions written by <c>release filter</c>.</summary>
-internal sealed record FilterReport
+/// <summary>Package dispositions written by <c>release prune-published</c>.</summary>
+internal sealed record PruneReport
 {
     [JsonPropertyName("schemaVersion")]
     public int SchemaVersion { get; init; } = 1;
@@ -25,7 +25,7 @@ internal sealed record FilterReport
     public required string SetName { get; init; }
 
     [JsonPropertyName("decisions")]
-    public required IReadOnlyList<FilterDecision> Decisions { get; init; }
+    public required IReadOnlyList<PruneDecision> Decisions { get; init; }
 
     [JsonIgnore]
     public IReadOnlyList<string> FilesToRemove =>

@@ -63,9 +63,9 @@ public class StagedSetIntegrityTests
     }
 
     [Fact]
-    public void Removed_files_are_absent_after_filtering()
+    public void Removed_files_are_absent_after_pruning()
     {
-        var report = FilterPlanner.Plan(
+        var report = PrunePublishedPlanner.Plan(
             Set,
             [],
             TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
@@ -76,7 +76,7 @@ public class StagedSetIntegrityTests
     [Fact]
     public void A_withheld_package_still_on_disk_fails_closed()
     {
-        var report = FilterPlanner.Plan(
+        var report = PrunePublishedPlanner.Plan(
             Set,
             [],
             TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
@@ -90,7 +90,7 @@ public class StagedSetIntegrityTests
     [Fact]
     public void The_invariant_holds_for_every_disposition()
     {
-        var report = FilterPlanner.Plan(
+        var report = PrunePublishedPlanner.Plan(
             Set,
             [HarfBuzz.FileName],
             TestData.Availability((Skia, true), (HarfBuzz, false))).Value;

@@ -12,7 +12,7 @@ namespace DotNet.Release;
 /// <c>darc gather-drop</c> step that follows needs the BAR ID that step discovered.</item>
 /// <item><see cref="IsWorkloadVariable"/>, from <c>release plan</c>, because stage conditions
 /// select workload or non-workload publication from repository policy.</item>
-/// <item><see cref="PackagesToPublishVariable"/>, from <c>release filter</c>, because the
+/// <item><see cref="PackagesToPublishVariable"/>, from <c>release prune-published</c>, because the
 /// publish task is skipped by an Azure DevOps <c>condition</c>, and a condition can only
 /// read a variable.</item>
 /// </list>

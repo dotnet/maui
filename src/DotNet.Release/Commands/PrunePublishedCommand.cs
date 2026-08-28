@@ -2,9 +2,9 @@ using System.CommandLine;
 
 namespace DotNet.Release;
 
-internal static class FilterCommand
+internal static class PrunePublishedCommand
 {
-    public const string ReportFileName = "release-filter.json";
+    public const string ReportFileName = "release-prune.json";
 
     public static Command Build(IReleaseConsole console)
     {
@@ -37,8 +37,8 @@ internal static class FilterCommand
         };
 
         var command = new Command(
-            "filter",
-            "Remove already-published packages from the staged set.")
+            "prune-published",
+            "Remove package versions already published on the target feed.")
         {
             plan, stage, recoveryFilters, expectedHash, feed, set,
         };
@@ -107,7 +107,7 @@ internal static class FilterCommand
             var availability = await probe
                 .GetAvailabilityAsync(set.Packages, cancellationToken)
                 .ConfigureAwait(false);
-            var report = FilterPlanner.Plan(set, recoveryPatterns, availability);
+            var report = PrunePublishedPlanner.Plan(set, recoveryPatterns, availability);
             if (report.IsFailure)
             {
                 return ConsoleReporting.Fail(console, report.Errors);

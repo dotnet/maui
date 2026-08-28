@@ -19,7 +19,7 @@ namespace DotNet.Release;
 internal static class StagedSetIntegrity
 {
     /// <summary>
-    /// Validates the staging directory against the plan before <c>filter</c> has run: every
+    /// Validates the staging directory against the plan before pruning: every
     /// planned file must be present with the hash recorded at stage time, and nothing else
     /// may be in the directory.
     /// </summary>
@@ -41,13 +41,13 @@ internal static class StagedSetIntegrity
         Validate(set, observed, _ => PackageDisposition.Pending);
 
     /// <summary>
-    /// Validates the staging directory after <c>filter</c> has run, using the recorded
+    /// Validates the staging directory after pruning, using the recorded
     /// dispositions.
     /// </summary>
     public static Result<bool> ValidateFiltered(
         ReleasePackageSet set,
         IReadOnlyDictionary<string, string> observed,
-        FilterReport report)
+        PruneReport report)
     {
         ArgumentNullException.ThrowIfNull(report);
 

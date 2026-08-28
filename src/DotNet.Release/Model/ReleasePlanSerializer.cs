@@ -27,10 +27,10 @@ internal static class ReleasePlanSerializer
         return JsonSerializer.Serialize(resolved, PlanJsonContext.Default.ResolvedRelease);
     }
 
-    public static string Serialize(FilterReport report)
+    public static string Serialize(PruneReport report)
     {
         ArgumentNullException.ThrowIfNull(report);
-        return JsonSerializer.Serialize(report, PlanJsonContext.Default.FilterReport);
+        return JsonSerializer.Serialize(report, PlanJsonContext.Default.PruneReport);
     }
 
     /// <summary>The only plan schema this tool understands.</summary>
@@ -121,6 +121,6 @@ internal static class ReleasePlanSerializer
     WriteIndented = true)]
 [JsonSerializable(typeof(ReleasePlan))]
 [JsonSerializable(typeof(ResolvedRelease))]
-[JsonSerializable(typeof(FilterReport))]
+[JsonSerializable(typeof(PruneReport))]
 [JsonSerializable(typeof(ReleaseSetMarker))]
 internal sealed partial class PlanJsonContext : JsonSerializerContext;

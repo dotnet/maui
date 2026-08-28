@@ -12,7 +12,7 @@ internal sealed record WorkloadSetTarget(
 /// The single contract artifact, serialized as <c>release-plan.json</c>.
 /// </summary>
 /// <remarks>
-/// The plan is immutable after staging. <c>release filter</c> records runtime dispositions
+/// The plan is immutable after staging. <c>release prune-published</c> records dispositions
 /// in a sidecar so the plan hash remains valid through approval, publishing, and verification.
 /// </remarks>
 internal sealed record ReleasePlan

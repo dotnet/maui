@@ -154,7 +154,7 @@ public class ArchitectureTests
     [InlineData("ReleasePolicy")]
     [InlineData("BuildResolver")]
     [InlineData("StagePlanner")]
-    [InlineData("FilterPlanner")]
+    [InlineData("PrunePublishedPlanner")]
     [InlineData("StagedSetIntegrity")]
     [InlineData("VerificationEvaluator")]
     [InlineData("PackageGlob")]

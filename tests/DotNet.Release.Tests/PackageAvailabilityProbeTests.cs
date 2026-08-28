@@ -121,7 +121,7 @@ public class PackageAvailabilityProbeTests
     // ---- integration with release decisions ----
 
     [Fact]
-    public async Task Drives_the_filter_decision_end_to_end()
+    public async Task Drives_the_prune_decision_end_to_end()
     {
         var set = new ReleasePackageSet
         {
@@ -134,7 +134,7 @@ public class PackageAvailabilityProbeTests
         var availability = await new PackageAvailabilityProbe(new FakeExistenceChecker("SkiaSharp/3.119.0"))
             .GetAvailabilityAsync(set.Packages, CancellationToken.None);
 
-        var report = FilterPlanner.Plan(set, [], availability);
+        var report = PrunePublishedPlanner.Plan(set, [], availability);
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal([Skia.FileName], report.Value.FilesToRemove);

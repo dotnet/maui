@@ -304,16 +304,49 @@ public class PipelineDefinitionTests
 
         Assert.Contains("pool: server", publish, StringComparison.Ordinal);
         Assert.Contains("ManualValidation@0", publish, StringComparison.Ordinal);
+        Assert.Contains("dependsOn: preflight", publish, StringComparison.Ordinal);
         Assert.Contains("dependsOn: approval", publish, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Preflight_publishes_the_exact_pruned_set_before_approval()
+    {
+        var path = Path.Combine(
+            RepoRoot,
+            "eng",
+            "pipelines",
+            "stages",
+            "publish-set.yml");
+        var lines = File.ReadAllLines(path);
+        var text = string.Join("\n", lines);
+
+        Assert.Contains("job: preflight", text, StringComparison.Ordinal);
+        Assert.Contains(
+            "artifactName: ${{ parameters.preparedArtifactName }}",
+            text,
+            StringComparison.Ordinal);
+        Assert.Contains("dependsOn: preflight", text, StringComparison.Ordinal);
+
+        var pruneSteps = Enumerable.Range(0, lines.Length)
+            .Where(index => lines[index].Trim() == "prune-published `")
+            .ToList();
+        Assert.Collection(pruneSteps, _ => { }, _ => { });
+
+        Assert.DoesNotContain(
+            EnclosingConditions(lines, pruneSteps[0]),
+            condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
+        Assert.Contains(
+            EnclosingConditions(lines, pruneSteps[1]),
+            condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
+    }
+
     /// <summary>
-    /// Remote release operations must be compile-time absent when publishPackages is false.
+    /// Approval, package upload, and publication verification must be compile-time absent when
+    /// publishPackages is false.
     /// </summary>
     /// <remarks>
-    /// The package-set stage itself runs during a dry run to validate artifact download and
-    /// local integrity. Approval, NuGet.org queries, publishing, and verification must all be
-    /// descendants of the internal <c>publishPackages=true</c> block.
+    /// The preflight NuGet query is read-only and runs on dry runs. Operations that authorize,
+    /// perform, or verify publication are descendants of <c>publishPackages=true</c>.
     /// </remarks>
     [Fact]
     public void Every_remote_publish_operation_is_nested_inside_the_publish_guard()
@@ -325,11 +358,10 @@ public class PipelineDefinitionTests
             .Where(i =>
                 lines[i].Contains("ManualValidation@0", StringComparison.Ordinal) ||
                 lines[i].Contains("1ES.PublishNuget@1", StringComparison.Ordinal) ||
-                lines[i].Trim() == "filter `" ||
                 lines[i].Trim() == "verify `")
             .ToList();
 
-        Assert.Collection(operations, _ => { }, _ => { }, _ => { }, _ => { });
+        Assert.Collection(operations, _ => { }, _ => { }, _ => { });
 
         foreach (var operation in operations)
         {
@@ -342,7 +374,7 @@ public class PipelineDefinitionTests
     }
 
     [Fact]
-    public void Dry_run_executes_package_set_validation_outside_the_publish_guard()
+    public void Dry_run_executes_package_set_preflight_outside_the_publish_guard()
     {
         var publishPath = Path.Combine(
             RepoRoot,
@@ -351,11 +383,13 @@ public class PipelineDefinitionTests
             "stages",
             "publish-set.yml");
         var publishLines = File.ReadAllLines(publishPath);
-        var validate = Array.FindIndex(publishLines, line => line.Trim() == "validate `");
+        var preflight = Array.FindIndex(
+            publishLines,
+            line => line.Trim() == "prune-published `");
 
-        Assert.True(validate >= 0);
+        Assert.True(preflight >= 0);
         Assert.DoesNotContain(
-            EnclosingConditions(publishLines, validate),
+            EnclosingConditions(publishLines, preflight),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
 
         var rootLines = File.ReadAllLines(PipelinePath);
@@ -524,12 +558,11 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The exact dry-run contract: no task or script in the always-emitted pipeline contacts
-    /// NuGet.org. All NuGet.org contact lives in publish-set.yml, whose every inclusion is
-    /// guarded by publishPackages=true.
+    /// A dry run may query NuGet.org but cannot obtain the publishing service connection or
+    /// execute the upload task.
     /// </summary>
     [Fact]
-    public void A_dry_run_contains_no_NuGet_org_contact()
+    public void A_dry_run_contains_no_NuGet_org_mutation()
     {
         var root = string.Join(
             "\n",
@@ -538,14 +571,10 @@ public class PipelineDefinitionTests
         var publish = File.ReadAllText(
             Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        // These are the only mechanisms this system uses to contact NuGet.org.
         Assert.DoesNotContain("1ES.PublishNuget@1", root, StringComparison.Ordinal);
         Assert.DoesNotContain("nuget.org (dotnetframework)", root, StringComparison.Ordinal);
-        Assert.DoesNotContain("api.nuget.org", root, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("www.nuget.org/api/v2/package", root, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("dotnet nuget push", root, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("NuGetCommand@2", root, StringComparison.Ordinal);
 
+        Assert.Contains("prune-published", publish, StringComparison.Ordinal);
         Assert.Contains("1ES.PublishNuget@1", publish, StringComparison.Ordinal);
         Assert.Contains("nuget.org (dotnetframework)", publish, StringComparison.Ordinal);
 
@@ -554,12 +583,11 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// Preparation is the complete dry-run execution path. It may build the tool, read BAR,
-    /// gather packages, stage them, and upload AzDO artifacts; it may not invoke either verb
-    /// that queries NuGet.org.
+    /// The prepare stage builds the tool, reads BAR, gathers packages, stages them, and uploads
+    /// the initial Release artifact. NuGet availability is queried by package-set preflight.
     /// </summary>
     [Fact]
-    public void The_dry_run_invokes_only_read_and_local_preparation_verbs()
+    public void Prepare_stage_invokes_only_plan_gather_and_stage()
     {
         var lines = File.ReadAllLines(PipelinePath);
         var promotionStage = Array.FindIndex(
@@ -574,7 +602,7 @@ public class PipelineDefinitionTests
         Assert.Contains(scripts, line => line.Contains("gather-drop", StringComparison.Ordinal));
         Assert.Contains(scripts, line => line.Trim() == "stage `");
 
-        Assert.DoesNotContain(scripts, line => line.Trim() == "filter `");
+        Assert.DoesNotContain(scripts, line => line.Trim() == "prune-published `");
         Assert.DoesNotContain(scripts, line => line.Trim() == "verify `");
         Assert.DoesNotContain(scripts, line => line.Contains("add-build-to-channel", StringComparison.Ordinal));
     }

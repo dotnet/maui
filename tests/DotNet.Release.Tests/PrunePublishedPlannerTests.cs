@@ -2,7 +2,7 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-public class FilterPlannerTests
+public class PrunePublishedPlannerTests
 {
     private static readonly PlannedPackage Skia = TestData.Planned("SkiaSharp", "3.119.0");
     private static readonly PlannedPackage HarfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
@@ -12,7 +12,7 @@ public class FilterPlannerTests
     [Fact]
     public void Packages_not_on_nuget_org_stay_pending()
     {
-        var report = FilterPlanner.Plan(Set, [], TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal(2, report.Value.PendingCount);
@@ -27,7 +27,7 @@ public class FilterPlannerTests
     [Fact]
     public void Already_published_packages_are_removed_from_the_push_set()
     {
-        var report = FilterPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal(1, report.Value.PendingCount);
@@ -41,7 +41,7 @@ public class FilterPlannerTests
     [Fact]
     public void Everything_published_means_the_publish_task_can_be_skipped()
     {
-        var report = FilterPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, true)));
+        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, true)));
 
         Assert.True(report.IsSuccess);
         Assert.Equal(0, report.Value.PendingCount);
@@ -55,7 +55,7 @@ public class FilterPlannerTests
     [Fact]
     public void Recovery_filters_win_over_the_feed_query()
     {
-        var report = FilterPlanner.Plan(
+        var report = PrunePublishedPlanner.Plan(
             Set,
             [Skia.FileName],
             TestData.Availability((Skia, false), (HarfBuzz, false)));
@@ -70,7 +70,7 @@ public class FilterPlannerTests
     [Fact]
     public void Recovery_filters_support_wildcards()
     {
-        var report = FilterPlanner.Plan(Set, ["SkiaSharp.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, ["SkiaSharp.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal([Skia.FileName], report.Value.FilesToRemove);
@@ -83,7 +83,7 @@ public class FilterPlannerTests
     [Fact]
     public void Recovery_filter_matching_nothing_fails_closed()
     {
-        var report = FilterPlanner.Plan(Set, ["Typo.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, ["Typo.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.True(report.IsFailure);
         Assert.True(report.HasError(ErrorCodes.FilterUnmatched));
@@ -93,7 +93,7 @@ public class FilterPlannerTests
     [Fact]
     public void Missing_availability_is_never_treated_as_unpublished()
     {
-        var report = FilterPlanner.Plan(Set, [], TestData.Availability((Skia, false)));
+        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, false)));
 
         Assert.True(report.IsFailure);
     }
@@ -109,7 +109,7 @@ public class FilterPlannerTests
     [Fact]
     public void Report_records_a_decision_for_every_planned_package()
     {
-        var report = FilterPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         Assert.Equal(Set.Packages.Count, report.Value.Decisions.Count);
     }

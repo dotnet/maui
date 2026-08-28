@@ -157,7 +157,7 @@ public class VerbsTests : IDisposable
         Assert.Contains(ErrorCodes.ManifestInNonWorkload, _console.AllErrors, StringComparison.Ordinal);
     }
 
-    // ---- filter ----
+    // ---- prune-published ----
 
     [Theory]
     [InlineData("../outside.nupkg")]
@@ -191,46 +191,8 @@ public class VerbsTests : IDisposable
     }
 
     private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
-        FilterCommand.ExecuteAsync(
+        PrunePublishedCommand.ExecuteAsync(
             _console, probe, _workspace.ReadPlan(), _workspace.Out, recovery ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
-
-    [Fact]
-    public async Task Validate_checks_a_downloaded_set_without_a_feed_probe()
-    {
-        await StagedPlanAsync(("SkiaSharp", "3.119.0"));
-
-        var exit = ValidateCommand.Execute(
-            _console,
-            _workspace.ReadPlan(),
-            _workspace.Out,
-            PlanHash,
-            StagePlanner.PackagesArtifactName);
-
-        Assert.Equal(ExitCodes.Success, exit);
-        Assert.Contains("no NuGet.org query", _console.AllOutput, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Validate_rejects_a_changed_package()
-    {
-        await StagedPlanAsync(("SkiaSharp", "3.119.0"));
-        await File.WriteAllTextAsync(
-            Path.Combine(
-                _workspace.StagedSet(StagePlanner.PackagesArtifactName),
-                "SkiaSharp.3.119.0.nupkg"),
-            "changed",
-            CancellationToken.None);
-
-        var exit = ValidateCommand.Execute(
-            _console,
-            _workspace.ReadPlan(),
-            _workspace.Out,
-            PlanHash,
-            StagePlanner.PackagesArtifactName);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageHashMismatch, _console.AllErrors, StringComparison.Ordinal);
-    }
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()
@@ -258,12 +220,12 @@ public class VerbsTests : IDisposable
 
         var sidecar = Path.Combine(
             _workspace.StagedSet(StagePlanner.PackagesArtifactName),
-            FilterCommand.ReportFileName);
+            PrunePublishedCommand.ReportFileName);
         Assert.True(File.Exists(sidecar));
         Assert.Contains("AlreadyPublished", File.ReadAllText(sidecar), StringComparison.Ordinal);
 
         // The plan is immutable, so the hash pinned by the preparing stage stays valid even
-        // though filter deleted a file the plan still lists.
+        // though pruning deleted a file the plan still lists.
         Assert.Equal(beforeFilter, _workspace.ReadPlan());
     }
 
@@ -278,7 +240,7 @@ public class VerbsTests : IDisposable
     }
 
     [Fact]
-    public async Task Filter_honours_recovery_filters_before_consulting_the_feed()
+    public async Task Prune_honours_recovery_filters_before_consulting_the_feed()
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
 
@@ -287,12 +249,13 @@ public class VerbsTests : IDisposable
         var directory = _workspace.StagedSet(StagePlanner.PackagesArtifactName);
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
 
-        var sidecar = File.ReadAllText(Path.Combine(directory, FilterCommand.ReportFileName));
+        var sidecar = File.ReadAllText(
+            Path.Combine(directory, PrunePublishedCommand.ReportFileName));
         Assert.Contains("PreviouslyAttempted", sidecar, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task Filter_fails_closed_when_a_recovery_filter_matches_nothing()
+    public async Task Prune_fails_closed_when_a_recovery_filter_matches_nothing()
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
@@ -407,11 +370,11 @@ public class VerbsTests : IDisposable
     }
 
     /// <summary>
-    /// Verification covers packages `filter` withheld: they were withheld because they were
+    /// Verification covers packages `prune-published` withheld: they were withheld because they were
     /// already live, so their absence would mean that claim was wrong.
     /// </summary>
     [Fact]
-    public async Task Verify_covers_packages_that_filter_removed()
+    public async Task Verify_covers_packages_that_pruning_removed()
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
         await Filter(new FakeProbe("skiasharp/3.119.0"));

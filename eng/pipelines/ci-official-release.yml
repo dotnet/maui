@@ -18,7 +18,7 @@
 #   3. `darc gather-drop` - download that build's shipping packages
 #   4. `release stage`  - validate every package, write the hashed release plan, stage artifacts
 #   5. manual approval gate (agentless)
-#   6. `release filter` -> `1ES.PublishNuget@1` -> `release verify`
+#   6. `release prune-published` -> approval -> refresh -> `1ES.PublishNuget@1` -> verification
 #
 # Safety properties worth knowing before you press Run:
 #   - `publishPackages` defaults to FALSE. The default run is a dry run that publishes
@@ -348,17 +348,18 @@ extends:
 
     # -----------------------------------------------------------------------------------------
     # Validate the package-set jobs and artifact wiring on every run. The internal template
-    # includes approval, NuGet.org filtering, push, and verification only when publishing.
+    # includes approval, push, and verification only when publishing.
     # -----------------------------------------------------------------------------------------
     - template: /eng/pipelines/stages/publish-set.yml@self
       parameters:
         stageName: publish_packs
         displayName: Release workload packs
         setName: ReleasePacks
+        preparedArtifactName: PreparedReleasePacks
         expectedWorkload: 'true'
         publishPackages: ${{ parameters.publishPackages }}
         dependsOn: [prepare_release]
-        approvalInstructions: 'Review the ReleasePacks set in the Release artifact, then press "Resume" to push workload packs to NuGet.org.'
+        approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to publish them.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     # Manifests reference packs, so manifest approval is unreachable until pack
@@ -368,10 +369,11 @@ extends:
         stageName: publish_manifests
         displayName: Release workload manifests
         setName: ReleaseManifests
+        preparedArtifactName: PreparedReleaseManifests
         expectedWorkload: 'true'
         publishPackages: ${{ parameters.publishPackages }}
         dependsOn: [prepare_release, publish_packs]
-        approvalInstructions: 'Packs are verified on NuGet.org. Press "Resume" to push workload manifests.'
+        approvalInstructions: 'Packs are verified. Review release-prune.json and the exact nupkgs in PreparedReleaseManifests, then press "Resume".'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     - template: /eng/pipelines/stages/publish-set.yml@self
@@ -379,8 +381,9 @@ extends:
         stageName: publish_packages
         displayName: Release NuGet packages
         setName: ReleasePackages
+        preparedArtifactName: PreparedReleasePackages
         expectedWorkload: 'false'
         publishPackages: ${{ parameters.publishPackages }}
         dependsOn: [prepare_release]
-        approvalInstructions: 'Review the ReleasePackages set in the Release artifact, then press "Resume" to publish its exact staged package list.'
+        approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePackages, then press "Resume" to publish them.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
