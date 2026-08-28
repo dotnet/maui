@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Resizetizer
 		const int MacOSymlink = 0x00200000;
 		const uint MacRenameExclusive = 0x00000004;
 		const uint MacRenameNoFollowAny = 0x00000010;
-		const uint MacRenameResolveBeneath = 0x00000020;
 		const int LinuxOCloseExec = 0x00080000;
 		const int LinuxODirectory = 0x00010000;
 		const int LinuxONoFollow = 0x00020000;
@@ -283,7 +282,7 @@ namespace Microsoft.Maui.Resizetizer
 						source,
 						destinationDirectory,
 						destination,
-						MacRenameExclusive | MacRenameNoFollowAny | MacRenameResolveBeneath);
+						MacRenameExclusive | MacRenameNoFollowAny);
 				}
 				else
 				{
