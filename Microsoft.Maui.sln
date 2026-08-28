@@ -143,7 +143,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiBlazorWebView.DeviceTes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiBlazorWebView.UnitTests", "src\BlazorWebView\tests\MauiBlazorWebView.UnitTests\MauiBlazorWebView.UnitTests.csproj", "{00E708AA-402D-4BB5-AD88-348274F8E1DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWebView.Windows.UnitTests", "src\BlazorWebView\tests\BlazorWebView.Windows.UnitTests\BlazorWebView.Windows.UnitTests.csproj", "{6C6D9154-BA27-4A42-A96B-9B234C071A8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebView.Windows.UnitTests", "src\BlazorWebView\tests\BlazorWebView.Windows.UnitTests\BlazorWebView.Windows.UnitTests.csproj", "{6C6D9154-BA27-4A42-A96B-9B234C071A8D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSource", "{4F2926C8-43AB-4328-A735-D9EAD699F81D}"
 	ProjectSection(SolutionItems) = preProject
