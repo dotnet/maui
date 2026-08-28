@@ -13,7 +13,7 @@ public class Issue29131 : _IssuesUITest
 	const string ScrollButton = "ScrollButton";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void KeepScrollOffsetShouldWork()
 	{
 		App.WaitForElement("CollectionView");

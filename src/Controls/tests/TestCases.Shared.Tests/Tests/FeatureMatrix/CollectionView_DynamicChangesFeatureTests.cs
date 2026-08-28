@@ -18,7 +18,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ValidateDynamicItemTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -41,7 +41,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID
 	//Dynamic Updates to CollectionView Header/Footer and Templates Are Not Displayed Issue Link: https://github.com/dotnet/maui/issues/28676
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ValidateDynamicHeaderStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -59,7 +59,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ValidateDynamicHeaderGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -77,7 +77,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void ValidateDynamicHeaderTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -95,7 +95,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ValidateDynamicFooterStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -113,7 +113,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ValidateDynamicFooterGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -131,7 +131,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ValidateDynamicFooterTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -150,7 +150,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void ValidateDynamicGroupHeaderTemplateDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -197,7 +197,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	//[Testing] EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
 	//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ValidateDynamicEmptyViewStringDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -217,7 +217,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ValidateDynamicEmptyViewGridDisplayed()
 	{
 		App.WaitForElement(Options);
@@ -237,7 +237,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void ValidateDynamicEmptyViewTemplateDisplayed()
 	{
 		App.WaitForElement(Options);

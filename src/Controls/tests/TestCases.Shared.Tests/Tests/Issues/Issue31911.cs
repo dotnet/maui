@@ -14,7 +14,7 @@ public class Issue31911 : _IssuesUITest
     public override string Issue => "CollectionView Header Footer not removed when set to null on Android";
 
     [Test, Order(1)]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
     public void HeaderShouldBeRemovedWhenSetToNull()
     {
         App.WaitForElement("ToggleHeaderButton");
@@ -23,7 +23,7 @@ public class Issue31911 : _IssuesUITest
     }
 
     [Test, Order(2)]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
     public void FooterShouldBeRemovedWhenSetToNull()
     {
         App.WaitForElement("ToggleFooterButton");

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CollectionView crash if source is empty in XF 4.2.0.709249";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void Issue7338Test()
 		{
 			// If the instructions are visible at all, then this has succeeded

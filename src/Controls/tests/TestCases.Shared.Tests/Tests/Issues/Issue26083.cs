@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "UI not updating GridItemsLayout when Span becomes 1";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void ItemsWrapGridShouldUpdateBasedOnCollectionViewSize()
 		{
 			Exception? exception = null;

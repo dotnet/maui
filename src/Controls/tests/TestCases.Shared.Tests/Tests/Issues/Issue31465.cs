@@ -10,7 +10,7 @@ public class Issue31465 : _IssuesUITest
 
 	public override string Issue => "The page can be dragged down, and it would cause an extra space between Header and EmptyView text.";
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyCollectionViewEmptyView()
 	{
 		App.WaitForElement("HeaderLabel");

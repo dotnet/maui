@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView wrong Layout";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void Issue17400Test()
 		{
 			// Is a Windows issue; see https://github.com/dotnet/maui/issues/17400

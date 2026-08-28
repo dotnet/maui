@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// KeepScrollOffset semantics. With the fix, the visible items remain stable; adding 5 items
 		// above shifts indices so the previously visible "Vegetables.jpg, 10" becomes "FlowerBuds.jpg, 12".
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void KeepLastItemInView()
 		{
 			App.WaitForElement("SelectScrollMode");

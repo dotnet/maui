@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void EmptyViewItemsSourceNullStringWorks()
 		{
 			VisitInitialGallery("EmptyView");

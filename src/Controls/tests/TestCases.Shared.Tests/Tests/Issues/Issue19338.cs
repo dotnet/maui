@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Border.Shadow hide the collectionView Header";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void HeaderAndFooterShouldBeVisible()
 		{
 			App.WaitForElement("HeaderLabel");

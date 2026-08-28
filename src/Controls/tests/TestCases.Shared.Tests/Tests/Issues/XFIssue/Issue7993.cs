@@ -13,7 +13,7 @@ public class Issue7993 : _IssuesUITest
 	public override string Issue => "[Bug] CollectionView.Scrolled event offset isn't correctly reset when items change";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void CollectionViewVerticalOffset()
 	{
 		App.WaitForElement("CollectionView7993");

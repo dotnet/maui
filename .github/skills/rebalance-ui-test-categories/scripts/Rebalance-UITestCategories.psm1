@@ -816,6 +816,7 @@ function Set-UITestShardCategories {
 	$assignmentById = @{}
 	foreach ($assignment in $Assignments) { $assignmentById[$assignment.testId] = $assignment.shard }
 	$escapedCategory = [regex]::Escape($Category)
+	$inventory = @(Get-UITestInventory -TestRoot $TestRoot -Category $Category)
 	$files = @(
 		$Assignments.file
 		Get-ChildItem -LiteralPath $TestRoot -Recurse -File -Filter '*.cs' | Where-Object {
@@ -841,9 +842,8 @@ function Set-UITestShardCategories {
 			$lines.RemoveAt($lines.Count - 1)
 		}
 
-		$inventory = @(Get-UITestInventory -TestRoot $TestRoot -Category $Category |
-			Where-Object { $_.File -eq $path })
-		foreach ($test in $inventory | Sort-Object MethodLine -Descending) {
+		$fileInventory = @($inventory | Where-Object { $_.File -eq $path })
+		foreach ($test in $fileInventory | Sort-Object MethodLine -Descending) {
 			if (-not $assignmentById.ContainsKey($test.Id)) {
 				continue
 			}

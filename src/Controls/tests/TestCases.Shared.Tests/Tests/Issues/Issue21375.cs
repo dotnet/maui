@@ -13,7 +13,7 @@ public class Issue21375 : _IssuesUITest
 	public override string Issue => "Selected CollectionView item is not announced";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void SelectedItemsShowSelected()
 	{
 		var collectionView = App.WaitForElement("collectionView");

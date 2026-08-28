@@ -64,7 +64,7 @@ public class Issue7814 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void TouchClaimingRowInsideVerticalCollectionViewNestedInHorizontalParentKeepsHorizontalGesture()
 	{
 		if (App is not AppiumAndroidApp)
@@ -98,7 +98,7 @@ public class Issue7814 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void TouchReleasingRowInsideVerticalCollectionViewNestedInHorizontalParentHandsHorizontalGestureToParent()
 	{
 		if (App is not AppiumAndroidApp)
