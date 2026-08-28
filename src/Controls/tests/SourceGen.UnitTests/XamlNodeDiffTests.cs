@@ -1034,6 +1034,25 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
+	public void XKey_Changed_ReturnsNull()
+	{
+		var old = Parse($"""
+			<ResourceDictionary {MauiXmlns} x:Class="Test.Resources">
+				<Color x:Key="OldKey">Red</Color>
+			</ResourceDictionary>
+			""");
+		var @new = Parse($"""
+			<ResourceDictionary {MauiXmlns} x:Class="Test.Resources">
+				<Color x:Key="NewKey">Red</Color>
+			</ResourceDictionary>
+			""");
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff);
+	}
+
+	[Fact]
 	public void XDataType_Changed_NoBindings_EmptyDiff()
 	{
 		// x:DataType changed but no bindings → no property diffs needed (incremental, not structural)
@@ -1431,7 +1450,7 @@ public class XamlNodeDiffTests
 		var prop = diff.NodeChanges[0].PropertyChanges[0];
 		Assert.Equal("Text", prop.PropertyName.LocalName);
 		Assert.NotNull(prop.NewNode); // complex markup
-		// Child list change: Entry added
+									  // Child list change: Entry added
 		Assert.Single(diff.ChildListChanges);
 		Assert.Equal(1, diff.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
