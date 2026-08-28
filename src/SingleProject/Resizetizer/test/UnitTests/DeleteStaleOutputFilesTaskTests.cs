@@ -62,18 +62,35 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var stale = WriteFile(parent, "orphan.png");
 			var outside = Path.Combine(DestinationDirectory, "outside");
 			var precious = WriteFile(outside, "orphan.png");
+			var mutationBlocked = false;
 
 			var task = GetNewTask(root);
 			var executed = task.Execute(() =>
 			{
-				Directory.Move(parent, movedParent);
-				Assert.True(TryCreateDirectoryAlias(parent, outside));
+				if (OperatingSystem.IsWindows())
+				{
+					Assert.ThrowsAny<IOException>(() => Directory.Move(parent, movedParent));
+					mutationBlocked = true;
+				}
+				else
+				{
+					Directory.Move(parent, movedParent);
+					Assert.True(TryCreateDirectoryAlias(parent, outside));
+				}
 			});
 
 			Assert.True(executed);
-			Assert.False(File.Exists(Path.Combine(movedParent, Path.GetFileName(stale))));
 			Assert.Equal("image", File.ReadAllText(precious));
-			Assert.Equal("image", File.ReadAllText(Path.Combine(parent, "orphan.png")));
+			if (OperatingSystem.IsWindows())
+			{
+				Assert.True(mutationBlocked);
+				Assert.False(File.Exists(stale));
+			}
+			else
+			{
+				Assert.False(File.Exists(Path.Combine(movedParent, Path.GetFileName(stale))));
+				Assert.Equal("image", File.ReadAllText(Path.Combine(parent, "orphan.png")));
+			}
 		}
 
 		[Fact]
@@ -84,18 +101,35 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var stale = WriteFile(root, "drawable", "orphan.png");
 			var outside = Path.Combine(DestinationDirectory, "outside-root");
 			var precious = WriteFile(outside, "drawable", "orphan.png");
+			var mutationBlocked = false;
 
 			var task = GetNewTask(root);
 			var executed = task.Execute(() =>
 			{
-				Directory.Move(root, movedRoot);
-				Assert.True(TryCreateDirectoryAlias(root, outside));
+				if (OperatingSystem.IsWindows())
+				{
+					Assert.ThrowsAny<IOException>(() => Directory.Move(root, movedRoot));
+					mutationBlocked = true;
+				}
+				else
+				{
+					Directory.Move(root, movedRoot);
+					Assert.True(TryCreateDirectoryAlias(root, outside));
+				}
 			});
 
 			Assert.True(executed);
-			Assert.False(File.Exists(Path.Combine(movedRoot, "drawable", Path.GetFileName(stale))));
 			Assert.Equal("image", File.ReadAllText(precious));
-			Assert.Equal("image", File.ReadAllText(Path.Combine(root, "drawable", "orphan.png")));
+			if (OperatingSystem.IsWindows())
+			{
+				Assert.True(mutationBlocked);
+				Assert.False(File.Exists(stale));
+			}
+			else
+			{
+				Assert.False(File.Exists(Path.Combine(movedRoot, "drawable", Path.GetFileName(stale))));
+				Assert.Equal("image", File.ReadAllText(Path.Combine(root, "drawable", "orphan.png")));
+			}
 		}
 
 		[Fact]
@@ -104,16 +138,33 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var root = CreateRoot();
 			var stale = WriteFile(root, "drawable", "orphan.png");
 			var moved = Path.Combine(Path.GetDirectoryName(stale), "orphan-old.png");
+			var mutationBlocked = false;
 
 			var task = GetNewTask(root);
 			var executed = task.Execute(() =>
 			{
-				File.Move(stale, moved);
-				File.WriteAllText(stale, "replacement");
+				if (OperatingSystem.IsWindows())
+				{
+					Assert.ThrowsAny<IOException>(() => File.Move(stale, moved));
+					mutationBlocked = true;
+				}
+				else
+				{
+					File.Move(stale, moved);
+					File.WriteAllText(stale, "replacement");
+				}
 			});
 
 			Assert.True(executed);
-			Assert.Equal("replacement", File.ReadAllText(stale));
+			if (OperatingSystem.IsWindows())
+			{
+				Assert.True(mutationBlocked);
+				Assert.False(File.Exists(stale));
+			}
+			else
+			{
+				Assert.Equal("replacement", File.ReadAllText(stale));
+			}
 		}
 
 		[Fact]
@@ -121,12 +172,25 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var root = CreateRoot();
 			var stale = WriteFile(root, "drawable", "orphan.png");
+			var mutationBlocked = false;
 
 			var task = GetNewTask(root);
-			var executed = task.Execute(() => File.Delete(stale));
+			var executed = task.Execute(() =>
+			{
+				if (OperatingSystem.IsWindows())
+				{
+					Assert.ThrowsAny<IOException>(() => File.Delete(stale));
+					mutationBlocked = true;
+				}
+				else
+				{
+					File.Delete(stale);
+				}
+			});
 
 			Assert.True(executed);
 			Assert.False(File.Exists(stale));
+			Assert.Equal(OperatingSystem.IsWindows(), mutationBlocked);
 		}
 
 		[Fact]
@@ -136,6 +200,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var stale = WriteFile(root, "drawable", "orphan.png");
 			var moved = Path.Combine(Path.GetDirectoryName(stale), "orphan-old.png");
 			var precious = WriteFile(DestinationDirectory, "outside", "precious.png");
+			var mutationBlocked = false;
 
 			if (!SymbolicLink.TryCreateFileLink(Path.Combine(root, "probe-link"), precious, out var error))
 			{
@@ -147,13 +212,80 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(root);
 			var executed = task.Execute(() =>
 			{
-				File.Move(stale, moved);
-				Assert.True(SymbolicLink.TryCreateFileLink(stale, precious, out var linkError), linkError);
+				if (OperatingSystem.IsWindows())
+				{
+					Assert.ThrowsAny<IOException>(() => File.Move(stale, moved));
+					mutationBlocked = true;
+				}
+				else
+				{
+					File.Move(stale, moved);
+					Assert.True(SymbolicLink.TryCreateFileLink(stale, precious, out var linkError), linkError);
+				}
 			});
 
 			Assert.True(executed);
-			Assert.True(File.Exists(stale));
 			Assert.Equal("image", File.ReadAllText(precious));
+			if (OperatingSystem.IsWindows())
+			{
+				Assert.True(mutationBlocked);
+				Assert.False(File.Exists(stale));
+			}
+			else
+			{
+				Assert.True(File.Exists(stale));
+			}
+		}
+
+		[Fact]
+		public void QuarantineReplacementAfterIdentityValidationIsNeverDeleted()
+		{
+			if (OperatingSystem.IsWindows())
+				return;
+
+			var root = CreateRoot();
+			var stale = WriteFile(root, "drawable", "orphan.png");
+			var replacement = WriteFile(DestinationDirectory, "outside", "replacement.png");
+			string replacementInQuarantine = null;
+
+			var task = GetNewTask(root);
+			var executed = task.Execute(null, () =>
+			{
+				var quarantine = Path.Combine(Path.GetDirectoryName(root), ".maui-resizetizer-stale");
+				var quarantined = Assert.Single(Directory.GetFiles(quarantine));
+				File.Move(quarantined, quarantined + "-original");
+				File.Move(replacement, quarantined);
+				replacementInQuarantine = quarantined;
+			});
+
+			Assert.True(executed);
+			Assert.False(File.Exists(stale));
+			Assert.Equal("image", File.ReadAllText(replacementInQuarantine));
+		}
+
+		[Fact]
+		public void WindowsValidatedLeafCannotMoveOutsideTheRetainedAncestry()
+		{
+			if (!OperatingSystem.IsWindows())
+				return;
+
+			var root = CreateRoot();
+			var outside = Path.Combine(DestinationDirectory, "outside", "external.png");
+			var candidate = WriteFile(root, "drawable", "orphan.png");
+			var task = GetNewTask(root);
+			var mutationBlocked = false;
+
+			var executed = task.Execute(() =>
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(outside));
+				Assert.ThrowsAny<IOException>(() => File.Move(candidate, outside));
+				mutationBlocked = true;
+			});
+
+			Assert.True(executed);
+			Assert.True(mutationBlocked);
+			Assert.False(File.Exists(candidate));
+			Assert.False(File.Exists(outside));
 		}
 
 		[Fact]

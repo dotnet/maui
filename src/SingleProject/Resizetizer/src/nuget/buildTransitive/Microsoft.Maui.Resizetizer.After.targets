@@ -816,8 +816,9 @@
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == '' And '@(_MauiImageToProcess)' != ''" Include="@(_ResizetizerOutputs)" />
         </ItemGroup>
 
-        <!-- Keep validation and deletion in one task so cleanup retains the opened root, parent and leaf
-             identities. Replacing any corresponding pathname after validation cannot redirect deletion. -->
+        <!-- Keep validation and removal in one task so cleanup retains the opened root, parent and leaf
+             identities. Windows deletes the retained leaf while locking its ancestry; Unix atomically
+             moves it to a quarantine outside the resource tree, which _CleanResizetizer removes. -->
         <DeleteStaleOutputFilesTask
             Root="$(_MauiIntermediateImagesFullPath)"
             KnownOutputs="@(_ResizetizerCollectedImages)" />

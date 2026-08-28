@@ -9,14 +9,17 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.Maui.Resizetizer
 {
 	/// <summary>
-	/// Deletes files left over from earlier Resizetizer runs without separating filesystem validation
-	/// from the delete that consumes it.
+	/// Removes files left over from earlier Resizetizer runs without separating filesystem validation
+	/// from the operation that consumes it.
 	/// </summary>
 	/// <remarks>
 	/// <para>
 	/// The root is opened before enumeration and retained until cleanup finishes. Each stale leaf is then
-	/// opened and validated before it is deleted through that retained filesystem identity. This prevents
-	/// replacing the root, a parent directory, or the leaf name after validation from redirecting cleanup.
+	/// opened and validated before it is removed through retained filesystem identities. Windows deletes
+	/// the opened leaf while preventing ancestry changes. Unix atomically moves the opened leaf to a
+	/// quarantine directory outside the generated resource tree; <c>Clean</c> removes that quarantine.
+	/// This prevents replacing the root, a parent directory, or the leaf name after validation from
+	/// redirecting cleanup.
 	/// </para>
 	/// <para>
 	/// Known outputs are still canonicalized permissively because they describe files a future build step
@@ -32,9 +35,12 @@ namespace Microsoft.Maui.Resizetizer
 		/// <summary>The files the current build expects beneath <see cref="Root"/>.</summary>
 		public ITaskItem[] KnownOutputs { get; set; }
 
-		public override bool Execute() => Execute(null);
+		public override bool Execute() => Execute(null, null);
 
-		internal bool Execute(Action beforeDeletion)
+		internal bool Execute(Action beforeDeletion) =>
+			Execute(beforeDeletion, null);
+
+		internal bool Execute(Action beforeDeletion, Action afterIdentityValidation)
 		{
 			var lexicalRoot = NormalizePath(Root);
 			if (lexicalRoot is null)
@@ -53,6 +59,7 @@ namespace Microsoft.Maui.Resizetizer
 			var keep = GetKnownRelativePaths(lexicalRoot, session.RootPath);
 			var existing = EnumerateExistingFiles(lexicalRoot);
 			var invokedBeforeDeletion = false;
+			var invokedAfterIdentityValidation = false;
 
 			foreach (var path in existing)
 			{
@@ -84,10 +91,23 @@ namespace Microsoft.Maui.Resizetizer
 					invokedBeforeDeletion = true;
 				}
 
-				switch (candidate.Delete(out var deleteError))
+				void AfterIdentityValidation()
+				{
+					if (!invokedAfterIdentityValidation && afterIdentityValidation is not null)
+					{
+						afterIdentityValidation();
+						invokedAfterIdentityValidation = true;
+					}
+				}
+
+				switch (candidate.Delete(AfterIdentityValidation, out var deleteError))
 				{
 					case StaleFileDeletionResult.Deleted:
 						Log.LogMessage(MessageImportance.Low, $"Deleted stale output file '{path}'.");
+						break;
+
+					case StaleFileDeletionResult.Quarantined:
+						Log.LogMessage(MessageImportance.Low, $"Moved stale output file '{path}' out of the Resizetizer output tree.");
 						break;
 
 					case StaleFileDeletionResult.Changed:
@@ -254,6 +274,7 @@ namespace Microsoft.Maui.Resizetizer
 	internal enum StaleFileDeletionResult
 	{
 		Deleted,
+		Quarantined,
 		Changed,
 		Unsupported,
 		Failed,
@@ -268,7 +289,7 @@ namespace Microsoft.Maui.Resizetizer
 
 	internal interface IValidatedStaleFile : IDisposable
 	{
-		StaleFileDeletionResult Delete(out string error);
+		StaleFileDeletionResult Delete(Action afterIdentityValidation, out string error);
 	}
 
 	internal static class StaleOutputDeletionSession

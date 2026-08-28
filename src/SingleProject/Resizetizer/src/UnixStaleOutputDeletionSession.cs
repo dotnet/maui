@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal sealed class UnixStaleOutputDeletionSession : IStaleOutputDeletionSession
 	{
+		const string QuarantineDirectoryName = ".maui-resizetizer-stale";
 		const int MacOCloseExec = 0x01000000;
 		const int MacODirectory = 0x00100000;
 		const int MacONoFollow = 0x00000100;
@@ -23,10 +24,15 @@ namespace Microsoft.Maui.Resizetizer
 		const uint LinuxRenameNoReplace = 0x00000001;
 
 		readonly SafeUnixHandle root;
+		readonly SafeUnixHandle quarantine;
 
-		UnixStaleOutputDeletionSession(SafeUnixHandle root, string rootPath)
+		UnixStaleOutputDeletionSession(
+			SafeUnixHandle root,
+			SafeUnixHandle quarantine,
+			string rootPath)
 		{
 			this.root = root;
+			this.quarantine = quarantine;
 			RootPath = rootPath;
 		}
 
@@ -59,8 +65,54 @@ namespace Microsoft.Maui.Resizetizer
 				return null;
 			}
 
-			error = null;
-			return new UnixStaleOutputDeletionSession(handle, physicalPath);
+			var rootParent = OpenAt(handle, "..", ParentOpenFlags, 0);
+			if (rootParent.IsInvalid)
+			{
+				error = GetErrorMessage();
+				rootParent.Dispose();
+				handle.Dispose();
+				return null;
+			}
+
+			using (rootParent)
+			{
+				var quarantine = OpenAt(rootParent, QuarantineDirectoryName, ParentOpenFlags, 0);
+				if (quarantine.IsInvalid)
+				{
+					var openError = Marshal.GetLastWin32Error();
+					quarantine.Dispose();
+
+					if (openError != 2)
+					{
+						error = GetErrorMessage(openError);
+						handle.Dispose();
+						return null;
+					}
+
+					if (UnixMakeDirectoryAt(rootParent, QuarantineDirectoryName, Convert.ToInt32("700", 8)) != 0)
+					{
+						var createError = Marshal.GetLastWin32Error();
+						if (createError != 17)
+						{
+							error = GetErrorMessage(createError);
+							handle.Dispose();
+							return null;
+						}
+					}
+
+					quarantine = OpenAt(rootParent, QuarantineDirectoryName, ParentOpenFlags, 0);
+					if (quarantine.IsInvalid)
+					{
+						error = GetErrorMessage();
+						quarantine.Dispose();
+						handle.Dispose();
+						return null;
+					}
+				}
+
+				error = null;
+				return new UnixStaleOutputDeletionSession(handle, quarantine, physicalPath);
+			}
 		}
 
 		public IValidatedStaleFile TryValidate(string relativePath, out string error)
@@ -129,7 +181,21 @@ namespace Microsoft.Maui.Resizetizer
 					return null;
 				}
 
-				var result = new UnixValidatedStaleFile(parent, leaf, segments[segments.Length - 1], identity);
+				var candidateQuarantine = Duplicate(quarantine);
+				if (candidateQuarantine.IsInvalid)
+				{
+					error = GetErrorMessage();
+					candidateQuarantine.Dispose();
+					leaf.Dispose();
+					return null;
+				}
+
+				var result = new UnixValidatedStaleFile(
+					parent,
+					candidateQuarantine,
+					leaf,
+					segments[segments.Length - 1],
+					identity);
 				parent = null;
 				return result;
 			}
@@ -139,7 +205,11 @@ namespace Microsoft.Maui.Resizetizer
 			}
 		}
 
-		public void Dispose() => root.Dispose();
+		public void Dispose()
+		{
+			quarantine.Dispose();
+			root.Dispose();
+		}
 
 		static int RootOpenFlags =>
 			RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
@@ -196,8 +266,9 @@ namespace Microsoft.Maui.Resizetizer
 		}
 
 		static bool MoveNoReplace(
-			SafeUnixHandle parent,
+			SafeUnixHandle sourceDirectory,
 			string source,
+			SafeUnixHandle destinationDirectory,
 			string destination,
 			out int nativeError,
 			out string error)
@@ -208,18 +279,18 @@ namespace Microsoft.Maui.Resizetizer
 				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 				{
 					result = MacRenameAt(
-						parent,
+						sourceDirectory,
 						source,
-						parent,
+						destinationDirectory,
 						destination,
 						MacRenameExclusive | MacRenameNoFollowAny | MacRenameResolveBeneath);
 				}
 				else
 				{
 					result = LinuxRenameAt(
-						parent,
+						sourceDirectory,
 						source,
-						parent,
+						destinationDirectory,
 						destination,
 						LinuxRenameNoReplace);
 				}
@@ -266,26 +337,35 @@ namespace Microsoft.Maui.Resizetizer
 		sealed class UnixValidatedStaleFile : IValidatedStaleFile
 		{
 			readonly SafeUnixHandle parent;
+			readonly SafeUnixHandle quarantine;
 			readonly SafeUnixHandle leaf;
 			readonly string leafName;
 			readonly DarwinFileIdentity? darwinIdentity;
 
 			public UnixValidatedStaleFile(
 				SafeUnixHandle parent,
+				SafeUnixHandle quarantine,
 				SafeUnixHandle leaf,
 				string leafName,
 				DarwinFileIdentity? darwinIdentity)
 			{
 				this.parent = parent;
+				this.quarantine = quarantine;
 				this.leaf = leaf;
 				this.leafName = leafName;
 				this.darwinIdentity = darwinIdentity;
 			}
 
-			public StaleFileDeletionResult Delete(out string error)
+			public StaleFileDeletionResult Delete(Action afterIdentityValidation, out string error)
 			{
 				var temporaryName = $".maui-resizetizer-delete-{Guid.NewGuid():N}";
-				if (!MoveNoReplace(parent, leafName, temporaryName, out var nativeError, out var moveError))
+				if (!MoveNoReplace(
+					parent,
+					leafName,
+					quarantine,
+					temporaryName,
+					out var nativeError,
+					out var moveError))
 				{
 					if (nativeError == 2)
 					{
@@ -314,32 +394,26 @@ namespace Microsoft.Maui.Resizetizer
 					return StaleFileDeletionResult.Changed;
 				}
 
-				if (UnixUnlinkAt(parent, temporaryName, 0) == 0)
-				{
-					error = null;
-					return StaleFileDeletionResult.Deleted;
-				}
-
-				var unlinkError = GetErrorMessage();
-				Restore(temporaryName);
-				error = unlinkError;
-				return StaleFileDeletionResult.Failed;
+				afterIdentityValidation?.Invoke();
+				error = null;
+				return StaleFileDeletionResult.Quarantined;
 			}
 
 			public void Dispose()
 			{
 				leaf.Dispose();
+				quarantine.Dispose();
 				parent.Dispose();
 			}
 
 			bool Restore(string temporaryName) =>
-				MoveNoReplace(parent, temporaryName, leafName, out _, out _);
+				MoveNoReplace(quarantine, temporaryName, parent, leafName, out _, out _);
 
 			bool IsOriginalLeaf(string temporaryName, out string error)
 			{
 				if (darwinIdentity is DarwinFileIdentity expected)
 				{
-					using var moved = OpenAt(parent, temporaryName, LeafOpenFlags, 0);
+					using var moved = OpenAt(quarantine, temporaryName, LeafOpenFlags, 0);
 					if (moved.IsInvalid)
 					{
 						error = GetErrorMessage();
@@ -353,14 +427,14 @@ namespace Microsoft.Maui.Resizetizer
 					return actual.Equals(expected);
 				}
 
-				if (!TryGetLinuxPath(parent, out var parentPath, out error) ||
+				if (!TryGetLinuxPath(quarantine, out var quarantinePath, out error) ||
 					!TryGetLinuxPath(leaf, out var leafPath, out error))
 				{
 					return false;
 				}
 
 				error = null;
-				return string.Equals(Path.Combine(parentPath, temporaryName), leafPath, StringComparison.Ordinal);
+				return string.Equals(Path.Combine(quarantinePath, temporaryName), leafPath, StringComparison.Ordinal);
 			}
 		}
 
@@ -437,11 +511,11 @@ namespace Microsoft.Maui.Resizetizer
 		[DllImport("libc", EntryPoint = "close", SetLastError = true)]
 		static extern int UnixClose(IntPtr handle);
 
-		[DllImport("libc", EntryPoint = "unlinkat", SetLastError = true)]
-		static extern int UnixUnlinkAt(
+		[DllImport("libc", EntryPoint = "mkdirat", SetLastError = true)]
+		static extern int UnixMakeDirectoryAt(
 			SafeUnixHandle directory,
 			[MarshalAs(UnmanagedType.LPStr)] string path,
-			int flags);
+			int mode);
 
 		static int MacFStat(SafeUnixHandle handle, out DarwinStat status) =>
 			RuntimeInformation.ProcessArchitecture == Architecture.X64

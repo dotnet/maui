@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -22,6 +23,14 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		public bool UseJunction { get; set; }
 
+		public bool MutateAfterIdentityValidation { get; set; }
+
+		public bool ExpectMutationBlocked { get; set; }
+
+		public string QuarantineReplacementPath { get; set; }
+
+		public string QuarantinedOriginalPath { get; set; }
+
 		public string MarkerFile { get; set; }
 
 		public override bool Execute()
@@ -36,7 +45,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					HostObject = HostObject,
 				};
 
-				return task.Execute(string.IsNullOrWhiteSpace(MutationPath) ? null : Mutate);
+				Action mutation =
+					string.IsNullOrWhiteSpace(MutationPath) &&
+					string.IsNullOrWhiteSpace(QuarantineReplacementPath)
+						? null
+						: Mutate;
+
+				return MutateAfterIdentityValidation
+					? task.Execute(null, mutation)
+					: task.Execute(mutation, null);
 			}
 			catch (Exception ex)
 			{
@@ -47,33 +64,47 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		void Mutate()
 		{
-			if (!string.IsNullOrEmpty(RecreatedFileContents))
+			try
 			{
-				File.Move(MutationPath, MovedPath);
-				File.WriteAllText(MutationPath, RecreatedFileContents);
-			}
-			else
-			{
-				if (!string.IsNullOrWhiteSpace(MovedPath))
+				if (!string.IsNullOrWhiteSpace(QuarantineReplacementPath))
 				{
-					Directory.Move(MutationPath, MovedPath);
+					var root = Root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+					var quarantine = Path.Combine(Path.GetDirectoryName(root), ".maui-resizetizer-stale");
+					var quarantined = AssertSingleQuarantinedFile(quarantine);
+					File.Move(quarantined, QuarantinedOriginalPath);
+					File.Move(QuarantineReplacementPath, quarantined);
+				}
+				else if (!string.IsNullOrEmpty(RecreatedFileContents))
+				{
+					File.Move(MutationPath, MovedPath);
+					File.WriteAllText(MutationPath, RecreatedFileContents);
 				}
 				else
 				{
-					try
+					if (!string.IsNullOrWhiteSpace(MovedPath))
 					{
-						Directory.Delete(MutationPath);
+						Directory.Move(MutationPath, MovedPath);
 					}
-					catch (DirectoryNotFoundException)
+					else
 					{
+						try
+						{
+							Directory.Delete(MutationPath);
+						}
+						catch (DirectoryNotFoundException)
+						{
+						}
 					}
-				}
 
-				if (!string.IsNullOrWhiteSpace(AliasTargetPath) &&
-					!TryCreateDirectoryAlias(MutationPath, AliasTargetPath, out var error))
-				{
-					throw new IOException($"Could not create directory alias '{MutationPath}' to '{AliasTargetPath}': {error}");
+					if (!string.IsNullOrWhiteSpace(AliasTargetPath) &&
+						!TryCreateDirectoryAlias(MutationPath, AliasTargetPath, out var error))
+					{
+						throw new IOException($"Could not create directory alias '{MutationPath}' to '{AliasTargetPath}': {error}");
+					}
 				}
+			}
+			catch (IOException) when (ExpectMutationBlocked)
+			{
 			}
 
 			if (!string.IsNullOrWhiteSpace(MarkerFile))
@@ -84,6 +115,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				File.WriteAllText(MarkerFile, MutationPath);
 			}
+		}
+
+		static string AssertSingleQuarantinedFile(string quarantine)
+		{
+			var files = Directory.GetFiles(quarantine, ".maui-resizetizer-delete-*");
+			if (files.Length != 1)
+				throw new InvalidOperationException($"Expected one quarantined file in '{quarantine}', found {files.Length}: {string.Join(", ", files.Select(Path.GetFileName))}");
+
+			return files[0];
 		}
 
 		bool TryCreateDirectoryAlias(string alias, string target, out string error)

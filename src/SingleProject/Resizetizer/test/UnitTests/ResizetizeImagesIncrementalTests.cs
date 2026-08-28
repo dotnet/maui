@@ -301,12 +301,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				["_TestAliasTargetPath"] = outside,
 				["_TestMutationMarker"] = marker,
 				["_TestUseJunction"] = useJunction ? "true" : "false",
+				["_TestExpectMutationBlocked"] = OperatingSystem.IsWindows() ? "true" : "false",
 			});
 
 			Assert.True(File.Exists(marker), "The parent-replacement hook did not run.");
-			Assert.False(File.Exists(Path.Combine(movedInside, "orphan.png")), "Expected cleanup to delete through the retained physical parent.");
 			Assert.True(File.Exists(precious), $"Cleanup followed the replacement alias outside the intermediate folder: {precious}");
-			Assert.Equal("not a build output", File.ReadAllText(Path.Combine(inside, "orphan.png")));
+			if (OperatingSystem.IsWindows())
+			{
+				Assert.False(Directory.Exists(movedInside), "The retained parent handle should block moving the physical parent.");
+				Assert.False(File.Exists(stale), "Expected the stale file to be deleted after the blocked mutation.");
+			}
+			else
+			{
+				Assert.False(File.Exists(Path.Combine(movedInside, "orphan.png")), "Expected cleanup to move the stale file out of the retained physical parent.");
+				Assert.Equal("not a build output", File.ReadAllText(Path.Combine(inside, "orphan.png")));
+			}
 		}
 
 		/// <summary>
@@ -335,10 +344,14 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				["_TestMovedPath"] = moved,
 				["_TestRecreatedFileContents"] = "replacement",
 				["_TestMutationMarker"] = marker,
+				["_TestExpectMutationBlocked"] = OperatingSystem.IsWindows() ? "true" : "false",
 			});
 
 			Assert.True(File.Exists(marker), "The leaf-recreation hook did not run.");
-			Assert.Equal("replacement", File.ReadAllText(stale));
+			if (OperatingSystem.IsWindows())
+				Assert.False(File.Exists(stale), "The retained leaf handle should block recreation, then delete the original.");
+			else
+				Assert.Equal("replacement", File.ReadAllText(stale));
 		}
 
 		/// <summary>
@@ -377,12 +390,85 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				["_TestAliasTargetPath"] = outsideRoot,
 				["_TestMutationMarker"] = marker,
 				["_TestUseJunction"] = useJunction ? "true" : "false",
+				["_TestExpectMutationBlocked"] = OperatingSystem.IsWindows() ? "true" : "false",
 			});
 
 			Assert.True(File.Exists(marker), "The root-replacement hook did not run.");
-			Assert.False(File.Exists(Path.Combine(movedRoot, "drawable", "orphan.png")), "Expected cleanup to delete through the retained physical root.");
 			Assert.True(File.Exists(precious), $"Cleanup followed the replacement root alias: {precious}");
-			Assert.Equal("not a build output", File.ReadAllText(Path.Combine(root, "drawable", "orphan.png")));
+			if (OperatingSystem.IsWindows())
+			{
+				Assert.False(Directory.Exists(movedRoot), "The retained root handle should block moving the physical root.");
+				Assert.False(File.Exists(stale), "Expected the stale file to be deleted after the blocked mutation.");
+			}
+			else
+			{
+				Assert.False(File.Exists(Path.Combine(movedRoot, "drawable", "orphan.png")), "Expected cleanup to move the stale file out of the retained physical root.");
+				Assert.Equal("not a build output", File.ReadAllText(Path.Combine(root, "drawable", "orphan.png")));
+			}
+		}
+
+		/// <summary>
+		/// After the original stale leaf has been identity-verified in quarantine, a racer replaces its
+		/// quarantine name with an unrelated file. Cleanup must perform no later name-based deletion.
+		/// </summary>
+		[Fact]
+		public void CleanupNeverDeletesAReplacementAtTheVerifiedQuarantineName()
+		{
+			if (OperatingSystem.IsWindows())
+				return;
+
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+
+			var stale = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r", "drawable", "orphan.png");
+			File.WriteAllText(stale, "left over");
+			var replacement = Path.Combine(project.PhysicalDirectory, "outside-replacement.png");
+			File.WriteAllText(replacement, "not a build output");
+			var quarantinedOriginal = Path.Combine(project.PhysicalDirectory, "quarantined-original.png");
+			var marker = Path.Combine(project.PhysicalDirectory, "replace-quarantine.marker");
+
+			TouchSourceImage(project);
+			Build(project, properties: new Dictionary<string, string>
+			{
+				["_TestMutateAfterIdentityValidation"] = "true",
+				["_TestQuarantineReplacementPath"] = replacement,
+				["_TestQuarantinedOriginalPath"] = quarantinedOriginal,
+				["_TestMutationMarker"] = marker,
+			});
+
+			var quarantine = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", ".maui-resizetizer-stale");
+			var replacementInQuarantine = Assert.Single(Directory.GetFiles(quarantine, ".maui-resizetizer-delete-*"));
+			Assert.True(File.Exists(marker), "The post-verification quarantine mutation hook did not run.");
+			Assert.False(File.Exists(stale), "The stale output should no longer be visible in the generated resource tree.");
+			Assert.Equal("not a build output", File.ReadAllText(replacementInQuarantine));
+			Assert.Equal("left over", File.ReadAllText(quarantinedOriginal));
+		}
+
+		[Fact]
+		public void CleanRemovesTheUnixStaleOutputQuarantine()
+		{
+			if (OperatingSystem.IsWindows())
+				return;
+
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+			var stale = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r", "drawable", "orphan.png");
+			File.WriteAllText(stale, "left over");
+			TouchSourceImage(project);
+			Build(project);
+
+			var quarantine = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", ".maui-resizetizer-stale");
+			Assert.NotEmpty(Directory.GetFiles(quarantine, ".maui-resizetizer-delete-*"));
+
+			Build(project, "_CleanResizetizer");
+
+			Assert.False(Directory.Exists(quarantine), "The Resizetizer clean target should remove quarantined stale outputs.");
 		}
 
 		/// <summary>
@@ -551,6 +637,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				new XAttribute("AliasTargetPath", "$(_TestAliasTargetPath)"),
 				new XAttribute("RecreatedFileContents", "$(_TestRecreatedFileContents)"),
 				new XAttribute("UseJunction", "$(_TestUseJunction)"),
+				new XAttribute("MutateAfterIdentityValidation", "$(_TestMutateAfterIdentityValidation)"),
+				new XAttribute("ExpectMutationBlocked", "$(_TestExpectMutationBlocked)"),
+				new XAttribute("QuarantineReplacementPath", "$(_TestQuarantineReplacementPath)"),
+				new XAttribute("QuarantinedOriginalPath", "$(_TestQuarantinedOriginalPath)"),
 				new XAttribute("MarkerFile", "$(_TestMutationMarker)"));
 
 			document.Save(destination);
