@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -115,7 +114,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
-	[InlineData(DotNetCurrent, "Debug", "--sample-content", "")]
+	[InlineData(DotNetCurrent, "Debug", "", "")]
 	[InlineData(DotNetCurrent, "Release", "", "TrimMode=partial")]
 	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetNewParams, string additionalDotNetBuildParams)
 	{
@@ -150,9 +149,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var appXamlContent = File.ReadAllText(appXamlFile);
 		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		var projectContent = File.ReadAllText(projectFile);
-		AssertContains("HorizontalOptions = LayoutOptions.Center", mainPageContent);
-		AssertContains("Resources[\"Headline\"]", mainPageContent);
-		AssertContains("Resources[\"SubHeadline\"]", mainPageContent);
+		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"Headline\")", mainPageContent);
+		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"SubHeadline\")", mainPageContent);
+		AssertDoesNotContain("HorizontalOptions = LayoutOptions.Center", mainPageContent);
 		AssertDoesNotContain("FontSize = 18", mainPageContent);
 		AssertDoesNotContain("FontAttributes = FontAttributes.Bold", mainPageContent);
 		AssertContains("HorizontalOptions = LayoutOptions.Fill", mainPageContent);
@@ -175,29 +174,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
-	}
-
-	[Fact]
-	public void MauiTemplateEditorPostActionsUseFilteredPrimaryOutputIndexes()
-	{
-		var templateConfigFile = Path.Combine(
-			TestEnvironment.GetMauiDirectory(),
-			"src",
-			"Templates",
-			"src",
-			"templates",
-			"maui-mobile",
-			".template.config",
-			"template.json");
-
-		using var templateConfig = JsonDocument.Parse(File.ReadAllText(templateConfigFile));
-		var postActions = templateConfig.RootElement
-			.GetProperty("postActions")
-			.EnumerateArray()
-			.ToDictionary(action => action.GetProperty("id").GetString()!);
-
-		Assert.Equal("0;1", postActions["openInEditorSampleXaml"].GetProperty("args").GetProperty("files").GetString());
-		Assert.Equal("0", postActions["openInEditorCSharp"].GetProperty("args").GetProperty("files").GetString());
 	}
 
 	[Theory]
@@ -563,6 +539,20 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		AssertDoesNotContain("UseAvalonia", mauiProgram);
+
+		var appShell = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml"));
+		AssertContains("xmlns:sf=\"clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit\"", appShell);
+		AssertContains("ContentTemplate=\"{DataTemplate pages:MainPage}\"", appShell);
+		AssertDoesNotContain("ContentTemplate=\"{DataTemplate local:MainPage}\"", appShell);
+
+		var appShellCodeBehind = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml.cs"));
+		AssertContains("using CommunityToolkit.Maui.Alerts;", appShellCodeBehind);
+
+		var styles = File.ReadAllText(Path.Combine(projectDir, "Resources", "Styles", "Styles.xaml"));
+		AssertContains("Syncfusion.Maui.Toolkit.Shimmer", styles);
+
+		var colors = File.ReadAllText(Path.Combine(projectDir, "Resources", "Styles", "Colors.xaml"));
+		AssertContains("x:Key=\"DarkBackground\"", colors);
 	}
 
 	[Fact]

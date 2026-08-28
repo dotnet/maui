@@ -145,14 +145,13 @@
         {
           "condition": "(UseCSharpUI)",
           "exclude": [
-            "App.xaml.cs",
             "AppShell.xaml",
             "AppShell.xaml.cs",
             "MainPage.xaml",
             "MainPage.xaml.cs"
           ],
           "rename": {
-            "App-CSharp.cs": "App.cs",
+            "App.xaml.cs": "App.cs",
             "AppShell-CSharp.cs": "AppShell.cs",
             "MainPage-CSharp.cs": "MainPage.cs"
           }
@@ -160,7 +159,6 @@
         {
           "condition": "(!UseCSharpUI)",
           "exclude": [
-            "App-CSharp.cs",
             "AppShell-CSharp.cs",
             "MainPage-CSharp.cs"
           ]
