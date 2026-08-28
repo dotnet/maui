@@ -20,7 +20,12 @@
   <PropertyGroup>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
+    <MauiEnableAndroidWebViewDragDrop Condition=" '$(MauiEnableAndroidWebViewDragDrop)' == '' ">true</MauiEnableAndroidWebViewDragDrop>
   </PropertyGroup>
+
+  <ItemGroup Condition=" '$(MauiEnableAndroidWebViewDragDrop)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
+    <AndroidManifestOverlay Include="$(MSBuildThisFileDirectory)Android\DropDataContentProvider.xml" />
+  </ItemGroup>
 
   <Target Name="ConvertStaticWebAssetsToMauiAssets"
       BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"

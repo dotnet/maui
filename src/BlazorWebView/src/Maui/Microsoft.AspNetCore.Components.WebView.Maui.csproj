@@ -44,6 +44,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
     <PackageReference Include="Microsoft.JSInterop" />
+    <PackageReference Include="Xamarin.AndroidX.WebKit" Condition=" '$(TargetPlatformIdentifier)' == 'android' " />
   </ItemGroup>
 
   <ItemGroup>
