@@ -1,8 +1,9 @@
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
-internal partial class MauiItemsViewAutomationPeer(MauiItemsView owner) : ItemsViewAutomationPeer(owner)
+internal partial class MauiItemsViewAutomationPeer(MauiItemsView owner) : ItemsViewAutomationPeer(owner), ISelectionProvider
 {
 	protected override string GetClassNameCore() => nameof(CollectionView);
 

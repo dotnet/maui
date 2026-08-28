@@ -50,6 +50,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
 		// or out of the collection; no extra intermediate stop on the owner itself.
 		IsTabStop = false;
+		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
