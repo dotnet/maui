@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Windows] CollectionView throws NRE when value of IsGrouped property is changed to false";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void CollectionViewShouldNotCrashWhenIsGroupedChangesInBothDirections()
 		{
 			App.WaitForElement(CollectionView);

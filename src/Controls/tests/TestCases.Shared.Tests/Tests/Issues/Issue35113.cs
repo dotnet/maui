@@ -11,7 +11,7 @@ public class Issue35113 : _IssuesUITest
 	public Issue35113(TestDevice device) : base(device) { }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void HorizontalGridHeaderExpandsToContentWidth()
 	{
 		// With the bug: the header's supplementary cell is constrained to ~30pt wide
@@ -28,7 +28,7 @@ public class Issue35113 : _IssuesUITest
 	}
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void HorizontalGridFooterExpandsToContentWidth()
 	{
 		App.WaitForElement("Issue35113CollectionView");

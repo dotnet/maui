@@ -14,7 +14,7 @@ public class Issue29634 : _IssuesUITest
 	{ }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyEmptyViewResizesWhenBoundsChange()
 	{
 		App.WaitForElement("RunTest");

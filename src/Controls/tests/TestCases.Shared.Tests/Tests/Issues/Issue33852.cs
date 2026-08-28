@@ -13,7 +13,7 @@ public class Issue33852 : _IssuesUITest
     public override string Issue => "CollectionView ScrollTo does not work with horizontal layout";
 
     [Test]
-    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
     public void ProgrammaticScrollToWorksWithHorizontalLayout()
     {
         App.WaitForElement("ScrollToButton");

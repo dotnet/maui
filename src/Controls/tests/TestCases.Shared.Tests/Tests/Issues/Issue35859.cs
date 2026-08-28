@@ -15,7 +15,7 @@ public class Issue35859 : _IssuesUITest
 	public override string Issue => "CollectionView2 on iOS measures non-first cells despite ItemSizingStrategy.MeasureFirstItem";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void CollectionView2ShouldNotMeasureNonFirstItemsWithCachedFirstItemHeight()
 	{
 		App.WaitForElement("35859ResetButton");

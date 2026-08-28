@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CollectionView problems and crashes with IsGrouped is true";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{

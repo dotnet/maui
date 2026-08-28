@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void RefreshShouldNotChangeSize()
 		{
 			_ = App.WaitForElement("lblSmall");

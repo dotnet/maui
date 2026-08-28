@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void HeaderFooterStringWorks()
 		{
 			// Navigate to the selection galleries
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #if IOS || ANDROID
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public async Task HeaderFooterViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void HeaderFooterHorizontalViewWorks()
 		{
 			// Navigate to the selection galleries
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void HeaderFooterTemplateWorks()
 		{
 			// Navigate to the selection galleries
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void HeaderFooterGridWorks()
 		{
 			// Navigate to the selection galleries
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// So, we're ignoring this test due to it causing confusion when other changes
 		// cause this test to fail.
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void HeaderFooterGridHorizontalWorks()
 		{
 			// Navigate to the selection galleries

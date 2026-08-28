@@ -12,14 +12,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionViewHandler2 null reference exception if ItemsLayout is set for Tablet but NOT Phone";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void CollectionViewShouldUseFallBackItemsLayout()
 		{
 			App.WaitForElement("CollectionView");
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void CollectionViewWithFallbackVauleShouldUpdateAtRunTime()
 		{
 			App.WaitForElement("ToggleButton");

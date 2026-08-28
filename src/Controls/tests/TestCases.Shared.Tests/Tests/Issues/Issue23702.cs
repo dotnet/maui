@@ -13,7 +13,7 @@ public class Issue23702 : _IssuesUITest
 	public override string Issue => "CollectionView with GridItemsLayout (Span=1) doesn't adapt to window width reduction on Windows platform";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void CollectionViewItemsShouldResizeWhenWidthDecreases()
 	{
 		App.WaitForElement("SetWidthButton");

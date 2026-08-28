@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView with header or footer has incorrect height";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void CollectionViewShouldHaveCorrectHeight()
 		{
 			App.WaitForElement("item3");

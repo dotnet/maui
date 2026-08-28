@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[CollectionView] Updating the ItemsLayout type should refresh the layout";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void CollectionViewItemsLayoutUpdate()
 		{
 			App.WaitForElement("CollectionView5354");

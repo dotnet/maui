@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Not able to update CollectionView header";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void UpdateCollectionViewHeaderTest()
 		{
 			App.WaitForElement("WaitForStubControl");

@@ -12,7 +12,7 @@ public class Issue19866 : _IssuesUITest
 	public override string Issue => "CollectionView does not scroll to top on iOS status bar tap";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void StatusBarTapScrollsCollectionViewToTop()
 	{
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
 		{
 			var itemSize = App.WaitForElement("Item1").GetRect();

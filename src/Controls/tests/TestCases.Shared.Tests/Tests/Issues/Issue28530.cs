@@ -13,7 +13,7 @@ public class Issue28530 : _IssuesUITest
 	public override string Issue => "[Catalyst] CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void ReorderBetweenGroupsShouldNotOccurWhenCanMixGroupsIsFalse()
 	{
 		App.WaitForElement("CollectionViewControl");

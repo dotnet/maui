@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "App crashes when calling ItemsView.ScrollTo on unloaded CollectionView";
 
 		[Test]
-		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 		public void ScrollToOnUnloadedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement("ScrollToRemovedButton");

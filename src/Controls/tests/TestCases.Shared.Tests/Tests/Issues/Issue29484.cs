@@ -15,7 +15,7 @@ public class Issue29484 : _IssuesUITest
 	public override string Issue => "CollectionView Selected state does not work on the selected item when combined with PointerOver";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void PointerOverWithSelectedStateShouldWork()
 	{
 		App.WaitForElement("CollectionView");

@@ -13,7 +13,7 @@ public class Issue32223 : _IssuesUITest
 
 	[Test]
 	[Retry(5)]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void CanReorderWithItemDataTemplateSelector()
 	{
 		App.WaitForElement("ReorderableCollectionView");

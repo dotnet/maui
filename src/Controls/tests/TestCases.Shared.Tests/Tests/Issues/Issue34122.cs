@@ -15,7 +15,7 @@ public class Issue34122 : _IssuesUITest
 	public Issue34122(TestDevice device) : base(device) { }
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void EmptyViewSwapShouldNotRevealFilteredOutItems()
 	{
 		// Verify items are visible initially

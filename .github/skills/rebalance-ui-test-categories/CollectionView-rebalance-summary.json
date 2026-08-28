@@ -5,7 +5,7 @@
   "safetyMarginMinutes": 2.0,
   "planningLimitMinutes": 58.0,
   "shardCount": 7,
-  "maxProjectedMinutes": 54.114,
+  "maxProjectedMinutes": 54.5,
   "platforms": [
     "AndroidCoreCLR",
     "AndroidMono",
@@ -16,68 +16,68 @@
   ],
   "fixedOverheadMinutes": {
     "AndroidCoreCLR": 33.732989,
-    "AndroidMono": 45.648006,
+    "AndroidMono": 37.509889,
     "iOS18.5": 15.9011,
     "iOSLatest": 9.170772,
-    "MacCatalyst": 16.158,
-    "WinUI": 26.612394
+    "MacCatalyst": 16.062489,
+    "WinUI": 20.449283
   },
   "projectedShardMinutes": {
     "CollectionView1": {
-      "AndroidCoreCLR": 42.536,
-      "AndroidMono": 54.106,
-      "iOS18.5": 23.52,
-      "iOSLatest": 16.523,
-      "MacCatalyst": 49.31,
-      "WinUI": 30.68
+      "AndroidCoreCLR": 40.898,
+      "AndroidMono": 44.055,
+      "iOS18.5": 23.433,
+      "iOSLatest": 16.548,
+      "MacCatalyst": 54.492,
+      "WinUI": 24.15
     },
     "CollectionView2": {
-      "AndroidCoreCLR": 42.246,
-      "AndroidMono": 54.114,
-      "iOS18.5": 22.761,
-      "iOSLatest": 15.737,
-      "MacCatalyst": 35.283,
-      "WinUI": 29.387
+      "AndroidCoreCLR": 42.359,
+      "AndroidMono": 45.211,
+      "iOS18.5": 23.879,
+      "iOSLatest": 16.86,
+      "MacCatalyst": 54.488,
+      "WinUI": 24.473
     },
     "CollectionView3": {
-      "AndroidCoreCLR": 42.714,
-      "AndroidMono": 54.103,
-      "iOS18.5": 23.489,
-      "iOSLatest": 16.438,
-      "MacCatalyst": 34.182,
-      "WinUI": 29.345
+      "AndroidCoreCLR": 46.487,
+      "AndroidMono": 49.569,
+      "iOS18.5": 24.355,
+      "iOSLatest": 17.674,
+      "MacCatalyst": 54.5,
+      "WinUI": 24.124
     },
     "CollectionView4": {
-      "AndroidCoreCLR": 42.47,
-      "AndroidMono": 54.103,
-      "iOS18.5": 21.006,
-      "iOSLatest": 15.182,
-      "MacCatalyst": 50.498,
-      "WinUI": 30.8
+      "AndroidCoreCLR": 40.994,
+      "AndroidMono": 43.839,
+      "iOS18.5": 21.28,
+      "iOSLatest": 15.108,
+      "MacCatalyst": 54.498,
+      "WinUI": 24.431
     },
     "CollectionView5": {
-      "AndroidCoreCLR": 42.312,
-      "AndroidMono": 54.1,
-      "iOS18.5": 21.681,
-      "iOSLatest": 15.752,
-      "MacCatalyst": 50.571,
-      "WinUI": 32.01
+      "AndroidCoreCLR": 43.009,
+      "AndroidMono": 45.417,
+      "iOS18.5": 21.322,
+      "iOSLatest": 15.409,
+      "MacCatalyst": 54.497,
+      "WinUI": 25.835
     },
     "CollectionView6": {
-      "AndroidCoreCLR": 42.348,
-      "AndroidMono": 54.113,
-      "iOS18.5": 22.094,
-      "iOSLatest": 16.144,
-      "MacCatalyst": 51.13,
-      "WinUI": 32.567
+      "AndroidCoreCLR": 42.321,
+      "AndroidMono": 45.558,
+      "iOS18.5": 20.673,
+      "iOSLatest": 14.771,
+      "MacCatalyst": 54.489,
+      "WinUI": 25.465
     },
     "CollectionView7": {
-      "AndroidCoreCLR": 42.304,
-      "AndroidMono": 54.109,
-      "iOS18.5": 21.497,
-      "iOSLatest": 15.478,
-      "MacCatalyst": 51.665,
-      "WinUI": 31.738
+      "AndroidCoreCLR": 45.49,
+      "AndroidMono": 48.752,
+      "iOS18.5": 21.15,
+      "iOSLatest": 15.341,
+      "MacCatalyst": 54.493,
+      "WinUI": 25.084
     }
   },
   "evidence": {
@@ -88,32 +88,28 @@
     "buildIds": [
       1561395,
       1563447,
-      1570916
+      1570916,
+      1571507
     ],
     "statistic": "Per-test/platform p80 of ordinary category-matrix run totals; p80 nearest-rank successful observed overhead per platform",
     "fixedOverheadPopulation": "Successful CategoryMatrixShard jobs when available; otherwise successful UmbrellaBaseline jobs. Overhead is job wall time minus test-run wall time.",
-    "configurationStagePolicy": "Dedicated testConfigurationArgs stages are recorded separately and excluded from ordinary category-matrix projections.",
-    "fixedOverheadBuildIds": [
-      1570916
-    ],
-    "fixedOverheadPolicy": "P80 successful 1570916 four-shard jobs; excludes one 33-minute iOS checkout anomaly"
+    "configurationStagePolicy": "Dedicated testConfigurationArgs stages are recorded separately and excluded from ordinary category-matrix projections."
   },
   "configurationStageEvidence": {
-    "sampleCount": 2517,
-    "jobCount": 6,
+    "sampleCount": 3356,
+    "jobCount": 8,
     "fixedOverheadMinutesP80": {
-      "iOS18.5": 14.548267,
+      "iOS18.5": 20.222717,
       "iOSLatest": 20.938267
     },
     "projectionPolicy": "Recorded separately and excluded from ordinary category-matrix projections."
   },
-  "unmatchedEvidenceCount": 24,
+  "unmatchedEvidenceCount": 32,
   "disabledUnmeasuredTestCount": 68,
   "imputedTestCount": 31,
   "limitations": [
     "Projections use historical per-test p80 durations and measured job overhead; they are estimates, not guarantees.",
     "Assignments must project strictly below target minus the 2 minute safety margin.",
-    "FeatureMatrix fixtures initialize their subpage in FixtureSetup so every method-level shard starts independently.",
     "Dedicated testConfigurationArgs stages are retained as separate evidence and do not reduce ordinary category-matrix projections.",
     "Methods in fixtures containing NUnit Order attributes are assigned together so ordered setup and state remain available.",
     "Tests without samples on a platform contribute zero to that platform because they were not executed there.",

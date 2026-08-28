@@ -14,7 +14,7 @@ public class Issue17969 : _IssuesUITest
 	public override string Issue => "CollectionView duplicates group headers/footers when adding a new item to a group or crashes when adding a new group with empty view";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void CollectionViewDuplicateViewsWhenAddItemToGroup()
 	{
 		App.WaitForElement("collectionView");

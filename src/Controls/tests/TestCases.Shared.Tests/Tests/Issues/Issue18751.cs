@@ -13,7 +13,7 @@ public class Issue18751 : _IssuesUITest
 	public override string Issue => "Can scroll CollectionView inside RefreshView";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void Issue18751Test()
 	{
 		App.WaitForElement("WaitForStubControl");

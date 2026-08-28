@@ -14,7 +14,7 @@ public class Issue27711 : _IssuesUITest
 	public override string Issue => "FlowDirection = `RightToLeft` doesn't work with CV1 & CV2";
 
 	[Test]
-	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void RightToLeftFlowDirectionShouldWork()
 	{
 		App.WaitForElement("switch");
