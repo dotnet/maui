@@ -132,7 +132,8 @@ readonly struct ChildListChangeDiff(
 	string parentNodeId,
 	XmlType? parentXmlType,
 	IReadOnlyList<ChildChangeEntry> newChildren,
-	IReadOnlyList<string> removedNodeIds)
+	IReadOnlyList<string> removedNodeIds,
+	IReadOnlyList<RemovedNameEntry> removedNames)
 {
 	/// <summary>Stable path of the parent node whose children changed.</summary>
 	public string ParentNodeId { get; } = parentNodeId;
@@ -152,6 +153,69 @@ readonly struct ChildListChangeDiff(
 	/// these (and their subtrees) from the component registry.
 	/// </summary>
 	public IReadOnlyList<string> RemovedNodeIds { get; } = removedNodeIds;
+
+	public IReadOnlyList<RemovedNameEntry> RemovedNames { get; } = removedNames;
+}
+
+readonly struct RemovedNameEntry(string name, string nodeId)
+{
+	public string Name { get; } = name;
+
+	public string NodeId { get; } = nodeId;
+}
+
+static class XamlGeneratedFieldCollector
+{
+	public static Dictionary<string, XmlType> Collect(ElementNode root)
+	{
+		var fields = new Dictionary<string, XmlType>(StringComparer.Ordinal);
+		Visit(root, (element, name) => fields[name] = element.XmlType);
+		return fields;
+	}
+
+	public static void Visit(ElementNode root, Action<ElementNode, string> visitor)
+		=> Visit(root, parent: null, visitor);
+
+	static void Visit(INode node, INode? parent, Action<ElementNode, string> visitor)
+	{
+		if (node is ElementNode element)
+		{
+			if (!IsVisualStateFieldExcluded(element, parent)
+				&& element.Properties.TryGetValue(XmlName.xName, out var nameNode)
+				&& nameNode is ValueNode { Value: string name })
+			{
+				visitor(element, name);
+			}
+
+			if (IsFieldBoundary(element.XmlType))
+				return;
+
+			foreach (var property in element.Properties)
+			{
+				if (!IsFieldBoundary(property.Key))
+					Visit(property.Value, element, visitor);
+			}
+
+			foreach (var child in element.CollectionItems)
+				Visit(child, element, visitor);
+		}
+		else if (node is ListNode list)
+		{
+			foreach (var child in list.CollectionItems)
+				Visit(child, list, visitor);
+		}
+	}
+
+	static bool IsFieldBoundary(XmlType type)
+		=> type.IsOfAnyType("DataTemplate", "ControlTemplate", "Style");
+
+	static bool IsFieldBoundary(XmlName property)
+		=> (property.NamespaceURI == XamlParser.MauiUri || property.NamespaceURI == XamlParser.MauiGlobalUri)
+			&& property.LocalName == "VisualStateManager.VisualStateGroups";
+
+	static bool IsVisualStateFieldExcluded(ElementNode element, INode? parent)
+		=> parent is IListNode
+			&& element.XmlType.Name is "VisualStateGroup" or "VisualState";
 }
 
 /// <summary>
@@ -657,10 +721,18 @@ static class XamlNodeDiff
 		}
 
 		var removedIds = new List<string>();
+		var removedNames = new List<RemovedNameEntry>();
 		foreach (var oldIdx in removedOldIndices)
+		{
 			CollectSubtreeIds(oldChildren[oldIdx], oldIds, removedIds);
+			XamlGeneratedFieldCollector.Visit(oldChildren[oldIdx], (element, name) =>
+			{
+				if (oldIds.TryGetValue(element, out var id))
+					removedNames.Add(new RemovedNameEntry(name, id));
+			});
+		}
 
-		childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, removedIds));
+		childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, removedIds, removedNames));
 		return true;
 	}
 
