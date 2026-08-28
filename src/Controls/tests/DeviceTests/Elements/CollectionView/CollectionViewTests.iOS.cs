@@ -16,11 +16,74 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact(DisplayName = "Grouped CollectionView EmptyView Tracks Groups")]
+		public Task GroupedCollectionViewEmptyViewTracksGroups()
+		{
+			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler>();
+		}
+
+		[Fact(DisplayName = "CollectionViewHandler2 Grouped EmptyView Tracks Groups")]
+		public Task GroupedCollectionViewEmptyViewTracksGroups2()
+		{
+			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler2>();
+		}
+
+		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<THandler>()
+			where THandler : class, IElementHandler
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, THandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var group = new ObservableCollection<string> { "Item 1" };
+			var groups = new ObservableCollection<ObservableCollection<string>> { group };
+			var emptyView = new Label { Text = "Empty" };
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				EmptyView = emptyView
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<THandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				var platformView = Assert.IsAssignableFrom<UIView>(handler.PlatformView);
+				var nativeCollectionView = platformView as UICollectionView
+					?? platformView.Subviews.OfType<UICollectionView>().FirstOrDefault();
+				Assert.NotNull(nativeCollectionView);
+
+				var emptyPlatformView = Assert.IsAssignableFrom<UIView>(emptyView.Handler.PlatformView);
+				var emptyViewWrapper = Assert.IsAssignableFrom<UIView>(emptyPlatformView.Superview);
+
+				await AssertEventually(() => nativeCollectionView.NumberOfItemsInSection(0) == 1);
+				Assert.Null(emptyViewWrapper.Superview);
+
+				group.RemoveAt(0);
+				await AssertEventually(() => nativeCollectionView.NumberOfItemsInSection(0) == 0);
+				Assert.Null(emptyViewWrapper.Superview);
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => emptyViewWrapper.Superview is not null);
+
+				groups.Add(new());
+				await AssertEventually(() => emptyViewWrapper.Superview is null);
+			});
+		}
+
 		[Fact]
 		public async Task ItemsSourceGroupedClearDoestCrash()
 		{
