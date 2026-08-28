@@ -11,6 +11,8 @@ Microsoft.Maui.ITab.IsEnabled.get -> bool
 Microsoft.Maui.ITab.Title.get -> string!
 Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated
+Microsoft.Maui.Platform.MauiBorderAutomationPeer
+Microsoft.Maui.Platform.MauiBorderAutomationPeer.MauiBorderAutomationPeer(Microsoft.Maui.Platform.ContentPanel! owner) -> void
 Microsoft.Maui.Platform.MauiLayoutAutomationPeer
 Microsoft.Maui.Platform.MauiLayoutAutomationPeer.MauiLayoutAutomationPeer(Microsoft.Maui.Platform.LayoutPanel! owner) -> void
 Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer
@@ -27,6 +29,10 @@ override Microsoft.Maui.Animations.PlatformTicker.IsRunning.get -> bool
 override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 override Microsoft.Maui.Platform.ContentPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
 override Microsoft.Maui.Platform.LayoutPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.GetAutomationControlTypeCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationControlType
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.GetClassNameCore() -> string!
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.IsContentElementCore() -> bool
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.IsControlElementCore() -> bool
 override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetAutomationControlTypeCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationControlType
 override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetClassNameCore() -> string!
 override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetLocalizedControlTypeCore() -> string!
