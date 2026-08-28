@@ -51,9 +51,12 @@ namespace Microsoft.Maui.Platform
 		/// Posts a VoiceOver screen changed notification for an input view when it becomes visible.
 		/// This ensures VoiceOver shifts focus to the input view (e.g., UIPickerView, UIDatePicker) when it appears.
 		/// </summary>
-		/// <param name="platformView">The platform view that hosts the input view.</param>
+		/// <param name="platformView">The platform view that hosts the input view. This receiver is not the notification target.</param>
 		/// <param name="inputView">The input view that should receive focus, or <see langword="null"/> if no notification should be posted.</param>
-		/// <remarks>This method must be called on the UI thread.</remarks>
+		/// <remarks>
+		/// This method must be called on the UI thread. The notification targets <paramref name="inputView"/>;
+		/// passing <see langword="null"/> for <paramref name="inputView"/> is a no-op.
+		/// </remarks>
 		/// <exception cref="ArgumentNullException"><paramref name="platformView"/> is <see langword="null"/>.</exception>
 		public static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
 		{
