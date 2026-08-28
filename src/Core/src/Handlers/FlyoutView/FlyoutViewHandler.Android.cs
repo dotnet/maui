@@ -184,6 +184,18 @@ namespace Microsoft.Maui.Handlers
 				MauiDrawerLayout.OpenFlyout();
 			else
 				MauiDrawerLayout.CloseFlyout();
+
+			InvalidateFlyoutSafeArea();
+		}
+
+		void InvalidateFlyoutSafeArea()
+		{
+			if (_flyoutView is null)
+			{
+				return;
+			}
+
+			MauiWindowInsetsScope.FindForView(_flyoutView)?.Invalidate(SafeAreaInvalidationReason.NavigationChromeChanged);
 		}
 
 		void UpdateFlyoutBehavior()
