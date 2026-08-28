@@ -96,6 +96,7 @@ public class PipelineDefinitionTests
     {
         var offered = ((YamlSequenceNode)Parameter("ghRepo")["values"])
             .Cast<YamlScalarNode>()
+            .Where(v => v.Value != "select-repository")
             .Select(v => $"dotnet/{v.Value}")
             .OrderBy(v => v, StringComparer.Ordinal);
 
@@ -176,14 +177,18 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// Repository and commit identify the release. Neither has a safe default.
+    /// The repository sentinel fails policy validation, and the commit must be supplied.
     /// </summary>
-    [Theory]
-    [InlineData("ghRepo")]
-    [InlineData("commitHash")]
-    public void Release_identity_must_be_supplied_for_every_run(string parameter)
+    [Fact]
+    public void Release_identity_must_be_supplied_for_every_run()
     {
-        Assert.False(Parameter(parameter).Children.ContainsKey("default"));
+        Assert.Equal(
+            "select-repository",
+            ((YamlScalarNode)Parameter("ghRepo")["default"]).Value);
+        Assert.DoesNotContain(
+            Policy.Repositories,
+            repository => repository.Repository.Name == "select-repository");
+        Assert.False(Parameter("commitHash").Children.ContainsKey("default"));
     }
 
     [Theory]
@@ -191,9 +196,24 @@ public class PipelineDefinitionTests
     [InlineData("includeFilters")]
     [InlineData("excludeFilters")]
     [InlineData("recoveryFilters")]
-    public void Optional_string_parameters_default_to_empty(string parameter)
+    public void Optional_string_parameters_use_an_explicit_none_sentinel(string parameter)
     {
-        Assert.Equal(string.Empty, ((YamlScalarNode)Parameter(parameter)["default"]).Value);
+        Assert.Equal("none", ((YamlScalarNode)Parameter(parameter)["default"]).Value);
+    }
+
+    [Fact]
+    public void Optional_parameter_sentinels_are_not_forwarded_to_commands()
+    {
+        var root = File.ReadAllText(PipelinePath);
+        var publish = File.ReadAllText(
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+
+        Assert.Contains("$env:BAR_BUILD_ID -ne 'none'", root, StringComparison.Ordinal);
+        Assert.Contains("$env:INCLUDE_FILTERS -ne 'none'", root, StringComparison.Ordinal);
+        Assert.Contains("$env:EXCLUDE_FILTERS -ne 'none'", root, StringComparison.Ordinal);
+        Assert.Equal(
+            2,
+            Regex.Matches(publish, @"\$env:RECOVERY_FILTERS -ne 'none'").Count);
     }
 
     [Fact]
@@ -254,8 +274,8 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The tool is built before the Maestro-authenticated task and the same DLL is executed
-    /// after approval from the immutable Release artifact.
+    /// The tool is built before the Maestro-authenticated task, and the entire framework-
+    /// dependent tool directory is pinned before it is executed after approval.
     /// </summary>
     [Fact]
     public void The_tool_is_built_once_before_credentials_and_carried_in_the_artifact()
@@ -272,6 +292,14 @@ public class PipelineDefinitionTests
         Assert.Contains("$(Build.ArtifactStagingDirectory)/_tool", root, StringComparison.Ordinal);
         Assert.Contains("buildTool.ToolHash", publish, StringComparison.Ordinal);
         Assert.Contains("_tool/release.dll", publish, StringComparison.Ordinal);
+        Assert.Contains("Get-ReleaseToolHash.ps1", root, StringComparison.Ordinal);
+        Assert.Equal(
+            2,
+            Regex.Matches(publish, "Get-ReleaseToolHash.ps1", RegexOptions.CultureInvariant).Count);
+        Assert.DoesNotContain(
+            "Get-FileHash -LiteralPath $toolPath",
+            root + publish,
+            StringComparison.Ordinal);
         Assert.DoesNotContain("dotnet run", publish, StringComparison.Ordinal);
         Assert.DoesNotContain("dotnet publish", root, StringComparison.Ordinal);
     }
@@ -325,6 +353,20 @@ public class PipelineDefinitionTests
             "artifactName: ${{ parameters.preparedArtifactName }}",
             text,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "targetPath: $(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}",
+            text,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Copy-Item -LiteralPath \"$source/${{ parameters.setName }}\"",
+            text,
+            StringComparison.Ordinal);
+        Assert.Equal(
+            2,
+            Regex.Matches(
+                text,
+                @"artifactName: \$\{\{ parameters\.preparedArtifactName \}\}",
+                RegexOptions.CultureInvariant).Count);
         Assert.Contains("dependsOn: preflight", text, StringComparison.Ordinal);
 
         var pruneSteps = Enumerable.Range(0, lines.Length)
@@ -543,6 +585,42 @@ public class PipelineDefinitionTests
         Assert.Contains("ManualValidation@0", promote, StringComparison.Ordinal);
         Assert.Contains("pool: server", promote, StringComparison.Ordinal);
         Assert.Contains("dependsOn: promote_approval", promote, StringComparison.Ordinal);
+        Assert.Contains("Verify release plan integrity", promote, StringComparison.Ordinal);
+        Assert.Contains("dependsOn: [prepare_release, promote_workload_set]", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Prepared_artifact_names_are_distinct_for_each_package_set()
+    {
+        var text = File.ReadAllText(PipelinePath);
+        var names = Regex.Matches(text, @"preparedArtifactName:\s*(?<name>\S+)")
+            .Cast<Match>()
+            .Select(match => match.Groups["name"].Value)
+            .ToList();
+
+        Assert.Equal(3, names.Count);
+        Assert.Equal(3, names.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void Missing_workload_classification_cannot_produce_a_green_run()
+    {
+        var text = File.ReadAllText(PipelinePath);
+
+        Assert.Contains("- stage: fail_if_no_release_topology", text, StringComparison.Ordinal);
+        Assert.Contains("dependencies.publish_packs.result, 'Skipped'", text, StringComparison.Ordinal);
+        Assert.Contains("dependencies.publish_manifests.result, 'Skipped'", text, StringComparison.Ordinal);
+        Assert.Contains("dependencies.publish_packages.result, 'Skipped'", text, StringComparison.Ordinal);
+        Assert.Contains("No package-set stage ran", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Retry_guidance_preserves_the_immutable_prepared_artifact()
+    {
+        var readme = File.ReadAllText(Path.Combine(RepoRoot, "README.md"));
+
+        Assert.Contains("Rerun failed jobs", readme, StringComparison.Ordinal);
+        Assert.Contains("Do not rerun the whole stage", readme, StringComparison.Ordinal);
     }
 
     /// <summary>

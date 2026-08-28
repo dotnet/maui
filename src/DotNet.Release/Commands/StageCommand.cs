@@ -148,10 +148,6 @@ internal static class StageCommand
             }
 
             await File.WriteAllTextAsync(
-                Path.Combine(setDirectory, ReleaseArtifact.PlanFileName),
-                planJson,
-                cancellationToken).ConfigureAwait(false);
-            await File.WriteAllTextAsync(
                 Path.Combine(setDirectory, ReleaseSetMarker.FileName),
                 ReleasePlanSerializer.Serialize(ReleaseSetMarker.For(set, resolved.Value)),
                 cancellationToken).ConfigureAwait(false);
@@ -183,11 +179,10 @@ internal static class StageCommand
     internal static List<string> FindShippingPackages(string dropDirectory)
     {
         var shipping = Path.Combine(dropDirectory, "shipping", "packages");
-        var root = Directory.Exists(shipping) ? shipping : dropDirectory;
 
-        return Directory.Exists(root)
+        return Directory.Exists(shipping)
             ? [.. Directory
-                .EnumerateFiles(root, "*.nupkg", SearchOption.AllDirectories)
+                .EnumerateFiles(shipping, "*.nupkg", SearchOption.AllDirectories)
                 .Order(StringComparer.Ordinal)]
             : [];
     }

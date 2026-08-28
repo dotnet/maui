@@ -67,6 +67,7 @@ public class StagedSetIntegrityTests
     {
         var report = PrunePublishedPlanner.Plan(
             Set,
+            Set.Packages,
             [],
             TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
 
@@ -78,6 +79,7 @@ public class StagedSetIntegrityTests
     {
         var report = PrunePublishedPlanner.Plan(
             Set,
+            Set.Packages,
             [],
             TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
 
@@ -92,6 +94,7 @@ public class StagedSetIntegrityTests
     {
         var report = PrunePublishedPlanner.Plan(
             Set,
+            Set.Packages,
             [HarfBuzz.FileName],
             TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
 

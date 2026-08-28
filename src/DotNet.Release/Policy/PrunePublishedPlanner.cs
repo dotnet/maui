@@ -19,18 +19,23 @@ internal static class PrunePublishedPlanner
     /// <param name="availability">Availability keyed by <see cref="PlannedPackage.IdentityKey"/>.</param>
     public static Result<PruneReport> Plan(
         ReleasePackageSet set,
+        IEnumerable<PlannedPackage> releasePackages,
         IReadOnlyList<string> recoveryPatterns,
         IReadOnlyDictionary<string, bool> availability)
     {
         ArgumentNullException.ThrowIfNull(set);
+        ArgumentNullException.ThrowIfNull(releasePackages);
         ArgumentNullException.ThrowIfNull(recoveryPatterns);
         ArgumentNullException.ThrowIfNull(availability);
 
+        var allPackages = releasePackages.ToList();
+
         // A recovery filter that matches nothing means the operator mistyped a package name,
         // and silently publishing the package they meant to withhold is the exact failure
-        // the filter exists to prevent. So it is an error, not a no-op.
+        // the filter exists to prevent. Match against the complete release so a pack-only
+        // filter remains valid when the manifest set is processed, and vice versa.
         var unmatched = recoveryPatterns
-            .Where(pattern => !set.Packages.Any(p => PackageGlob.IsMatch(p.FileName, pattern)))
+            .Where(pattern => !allPackages.Any(p => PackageGlob.IsMatch(p.FileName, pattern)))
             .ToList();
 
         if (unmatched.Count > 0)
@@ -38,7 +43,7 @@ internal static class PrunePublishedPlanner
             return Result<PruneReport>.Failure(
                 ErrorCodes.FilterUnmatched,
                 $"Recovery filters matched no expected packages in " +
-                $"'{set.Name}': {string.Join(", ", unmatched)}.");
+                $"the release: {string.Join(", ", unmatched)}.");
         }
 
         var decisions = new List<PruneDecision>(set.Packages.Count);

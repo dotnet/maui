@@ -132,6 +132,21 @@ public class VerbsTests : IDisposable
     }
 
     [Fact]
+    public async Task Stage_does_not_fall_back_to_packages_outside_the_shipping_directory()
+    {
+        var package = _workspace.WritePackage("SkiaSharp", "3.119.0");
+        var outsideShipping = Path.Combine(_workspace.Drop, Path.GetFileName(package));
+        File.Move(package, outsideShipping);
+        Directory.Delete(Path.Combine(_workspace.Drop, "shipping"), recursive: true);
+        await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
+
+        var exit = await Stage();
+
+        Assert.Equal(ExitCodes.ReleaseError, exit);
+        Assert.Contains(ErrorCodes.PackageSetEmpty, _console.AllErrors, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Stage_applies_exclude_filters()
     {
         _workspace.WritePackage("SkiaSharp", "3.119.0");

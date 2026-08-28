@@ -44,7 +44,7 @@ parameters:
 
 - name: recoveryFilters
   type: string
-  default: ''
+  default: none
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -55,6 +55,8 @@ stages:
 
   - job: preflight
     displayName: Prune and validate package set
+    workspace:
+      clean: all
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
       ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
@@ -66,7 +68,7 @@ stages:
       outputs:
       - output: pipelineArtifact
         artifactName: ${{ parameters.preparedArtifactName }}
-        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+        targetPath: $(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}
     steps:
     - checkout: self
       clean: true
@@ -87,7 +89,8 @@ stages:
           throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
         }
 
-        $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-ReleaseToolHash.ps1" `
+          -Path (Split-Path -Parent $toolPath)
         if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
           throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
         }
@@ -100,7 +103,7 @@ stages:
         $ErrorActionPreference = 'Stop'
 
         $recovery = @()
-        if (![string]::IsNullOrWhiteSpace($env:RECOVERY_FILTERS)) {
+        if ($env:RECOVERY_FILTERS -ne 'none') {
           $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
         }
 
@@ -119,6 +122,15 @@ stages:
         SET_NAME: ${{ parameters.setName }}
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
         RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
+
+    - pwsh: |
+        $source = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+        $prepared = "$(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}"
+        New-Item -ItemType Directory -Path $prepared -Force | Out-Null
+        Copy-Item -LiteralPath "$source/release-plan.json" -Destination $prepared
+        Copy-Item -LiteralPath "$source/_tool" -Destination $prepared -Recurse
+        Copy-Item -LiteralPath "$source/${{ parameters.setName }}" -Destination $prepared -Recurse
+      displayName: Create exact approval artifact
 
   - ${{ if eq(parameters.publishPackages, true) }}:
     - job: approval
@@ -168,7 +180,8 @@ stages:
             throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
           }
 
-          $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-ReleaseToolHash.ps1" `
+            -Path (Split-Path -Parent $toolPath)
           if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
             throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
           }
@@ -183,7 +196,7 @@ stages:
           $ErrorActionPreference = 'Stop'
 
           $recovery = @()
-          if (![string]::IsNullOrWhiteSpace($env:RECOVERY_FILTERS)) {
+          if ($env:RECOVERY_FILTERS -ne 'none') {
             $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
           }
 

@@ -45,7 +45,9 @@ parameters:
 - name: ghRepo
   displayName: GitHub repository (must be enabled in config/repositories.json)
   type: string
+  default: select-repository
   values:
+  - select-repository
   - maui
   - android
   - macios
@@ -57,9 +59,9 @@ parameters:
   type: string
 
 - name: barBuildId
-  displayName: "[OPTIONAL] BAR build ID. Required when BAR has no GitHub URL for the build."
+  displayName: "[OPTIONAL] BAR build ID, or 'none'"
   type: string
-  default: ''
+  default: none
 
 # ---- what to actually do --------------------------------------------------------------------
 - name: publishPackages
@@ -74,19 +76,19 @@ parameters:
 
 # ---- selection and recovery -----------------------------------------------------------------
 - name: includeFilters
-  displayName: "[OPTIONAL] Semicolon-separated package file filters to include"
+  displayName: "[OPTIONAL] Semicolon-separated package file filters to include, or 'none'"
   type: string
-  default: ''
+  default: none
 
 - name: excludeFilters
-  displayName: "[OPTIONAL] Semicolon-separated package file filters to exclude"
+  displayName: "[OPTIONAL] Semicolon-separated package file filters to exclude, or 'none'"
   type: string
-  default: ''
+  default: none
 
 - name: recoveryFilters
-  displayName: "[RECOVERY] Packages already submitted to NuGet.org by this release"
+  displayName: "[RECOVERY] Packages already submitted to NuGet.org, or 'none'"
   type: string
-  default: ''
+  default: none
 
 # ---- infrastructure --------------------------------------------------------------------------
 - name: pool
@@ -159,7 +161,7 @@ extends:
             useGlobalJson: true
 
         # Build once before any task acquires the Maestro production identity. Publish jobs
-        # execute this exact assembly from the immutable Release artifact without rebuilding.
+        # execute this exact tool directory from the immutable Release artifact without rebuilding.
         - pwsh: |
             $toolDirectory = "$(Build.ArtifactStagingDirectory)/_tool"
             dotnet build "$(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj" `
@@ -168,7 +170,8 @@ extends:
             if ($LASTEXITCODE -ne 0) { throw 'Failed to build the release tool.' }
 
             $toolPath = Join-Path $toolDirectory 'release.dll'
-            $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-ReleaseToolHash.ps1" `
+              -Path $toolDirectory
             Write-Host "##vso[task.setvariable variable=ToolPath]$toolPath"
             Write-Host "##vso[task.setvariable variable=ToolHash;isOutput=true]$toolHash"
           name: buildTool
@@ -191,7 +194,7 @@ extends:
               }
 
               $barId = @()
-              if (![string]::IsNullOrWhiteSpace($env:BAR_BUILD_ID)) {
+              if ($env:BAR_BUILD_ID -ne 'none') {
                 if ($env:BAR_BUILD_ID -notmatch '^[0-9]+$') {
                   throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
                 }
@@ -231,20 +234,22 @@ extends:
               darc gather-drop --ci `
                 --id $(releasePlan.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
-                --azdev-pat $(System.AccessToken) `
+                --azdev-pat $env:AZDO_TOKEN `
                 --include-released `
                 --asset-filter '^[^/]+$' `
                 --verbose
               if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
+          env:
+            AZDO_TOKEN: $(System.AccessToken)
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
 
             $filters = @()
-            if (![string]::IsNullOrWhiteSpace($env:INCLUDE_FILTERS)) {
+            if ($env:INCLUDE_FILTERS -ne 'none') {
               $filters += @('--include', $env:INCLUDE_FILTERS)
             }
-            if (![string]::IsNullOrWhiteSpace($env:EXCLUDE_FILTERS)) {
+            if ($env:EXCLUDE_FILTERS -ne 'none') {
               $filters += @('--exclude', $env:EXCLUDE_FILTERS)
             }
 
@@ -279,6 +284,15 @@ extends:
         - ${{ if eq(parameters.publishPackages, true) }}:
           - pwsh: Write-Host '##vso[build.addbuildtag]PUBLISH'
             displayName: Tag this run as PUBLISH
+
+          - ${{ if eq(parameters.promoteWorkloadSet, true) }}:
+            - pwsh: |
+                if ($env:IS_WORKLOAD -ne 'true') {
+                  Write-Host '##vso[task.logissue type=warning]promoteWorkloadSet applies only to workload repositories and will be skipped.'
+                }
+              displayName: Check promotion applicability
+              env:
+                IS_WORKLOAD: $(releasePlan.IsWorkload)
 
         - ${{ if eq(parameters.publishPackages, false) }}:
           - pwsh: |
@@ -320,6 +334,8 @@ extends:
           timeoutInMinutes: 60
           dependsOn: promote_approval
           condition: eq(dependencies.promote_approval.result, 'Succeeded')
+          variables:
+            ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
           templateContext:
             inputs:
             - input: pipelineArtifact
@@ -329,6 +345,16 @@ extends:
           - checkout: self
             clean: true
             persistCredentials: false
+
+          - pwsh: |
+              $planPath = "$(Pipeline.Workspace)/Release/release-plan.json"
+              $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+              if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
+                throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
+              }
+            displayName: Verify release plan integrity
+            env:
+              EXPECTED_PLAN_HASH: $(ReleasePlanHash)
 
           - task: AzureCLI@2
             displayName: Add build to channel
@@ -343,8 +369,10 @@ extends:
                   --channel "$($plan.workloadSet.channel)" `
                   --id "$($plan.source.barBuildId)" `
                   --skip-assets-publishing `
-                  --azdev-pat $(System.AccessToken) --verbose
+                  --azdev-pat $env:AZDO_TOKEN --verbose
                 if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
+            env:
+              AZDO_TOKEN: $(System.AccessToken)
 
     # -----------------------------------------------------------------------------------------
     # Validate the package-set jobs and artifact wiring on every run. The internal template
@@ -358,7 +386,10 @@ extends:
         preparedArtifactName: PreparedReleasePacks
         expectedWorkload: 'true'
         publishPackages: ${{ parameters.publishPackages }}
-        dependsOn: [prepare_release]
+        ${{ if and(eq(parameters.promoteWorkloadSet, true), eq(parameters.publishPackages, true)) }}:
+          dependsOn: [prepare_release, promote_workload_set]
+        ${{ else }}:
+          dependsOn: [prepare_release]
         approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to publish them.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
@@ -387,3 +418,15 @@ extends:
         dependsOn: [prepare_release]
         approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePackages, then press "Resume" to publish them.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
+
+    # If the workload output is missing or invalid, all release stages skip. Turn that
+    # otherwise-green result into a failure.
+    - stage: fail_if_no_release_topology
+      displayName: Validate release topology
+      dependsOn: [publish_packs, publish_manifests, publish_packages]
+      condition: and(always(), eq(dependencies.publish_packs.result, 'Skipped'), eq(dependencies.publish_manifests.result, 'Skipped'), eq(dependencies.publish_packages.result, 'Skipped'))
+      jobs:
+      - job: fail
+        steps:
+        - pwsh: throw 'No package-set stage ran. The IsWorkload output is missing or invalid.'
+          displayName: Fail closed

@@ -33,44 +33,32 @@ public class SetMarkerTests : IDisposable
             Workspace.Now, "1.0.0-test", CancellationToken.None));
     }
 
-    private Task<int> Filter(string? set) =>
+    private Task<int> Filter(string? set, IReadOnlyList<string>? recovery = null) =>
         PrunePublishedCommand.ExecuteAsync(
-            _console, new FakeProbe(), _workspace.ReadPlan(), _workspace.Out, [], PlanHash, set, CancellationToken.None);
+            _console,
+            new FakeProbe(),
+            _workspace.ReadPlan(),
+            _workspace.Out,
+            recovery ?? [],
+            PlanHash,
+            set,
+            CancellationToken.None);
 
     private string SetDirectory(string artifactName) => Path.Combine(_workspace.Out, artifactName);
 
-    // ---- the artifact must be self-contained ----
+    // ---- the root plan and per-set markers bind the artifact ----
 
-    /// <summary>
-    /// Each set directory is published as an independent pipeline artifact, so the plan must
-    /// travel with the packages.
-    /// </summary>
     [Fact]
-    public async Task Each_set_directory_contains_the_plan_and_its_marker()
+    public async Task The_artifact_contains_one_root_plan_and_a_marker_in_each_set()
     {
         await StageWorkloadAsync();
 
+        Assert.True(File.Exists(Path.Combine(_workspace.Out, ReleaseArtifact.PlanFileName)));
         foreach (var artifact in new[] { StagePlanner.PacksArtifactName, StagePlanner.ManifestsArtifactName })
         {
-            Assert.True(File.Exists(Path.Combine(SetDirectory(artifact), ReleaseArtifact.PlanFileName)));
+            Assert.False(File.Exists(Path.Combine(SetDirectory(artifact), ReleaseArtifact.PlanFileName)));
             Assert.True(File.Exists(Path.Combine(SetDirectory(artifact), ReleaseSetMarker.FileName)));
         }
-    }
-
-    /// <summary>
-    /// The plan bytes are identical in every set, so one hash still pins them all — which is
-    /// the property that made a single central plan worth having.
-    /// </summary>
-    [Fact]
-    public async Task The_plan_is_byte_identical_in_every_set_so_one_hash_pins_them_all()
-    {
-        await StageWorkloadAsync();
-
-        var packs = File.ReadAllText(Path.Combine(SetDirectory(StagePlanner.PacksArtifactName), ReleaseArtifact.PlanFileName));
-        var manifests = File.ReadAllText(Path.Combine(SetDirectory(StagePlanner.ManifestsArtifactName), ReleaseArtifact.PlanFileName));
-
-        Assert.Equal(packs, manifests);
-        Assert.Equal(ReleasePlanSerializer.ComputeHash(packs), ReleasePlanSerializer.ComputeHash(manifests));
     }
 
     [Fact]
@@ -157,6 +145,23 @@ public class SetMarkerTests : IDisposable
         Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.ManifestsArtifactName));
     }
 
+    [Fact]
+    public async Task One_recovery_filter_can_resume_both_workload_stages()
+    {
+        await StageWorkloadAsync();
+        string[] recovery = ["*Manifest*"];
+
+        Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.PacksArtifactName, recovery));
+        Assert.True(File.Exists(Path.Combine(
+            SetDirectory(StagePlanner.PacksArtifactName),
+            $"{Pack}.10.0.0.nupkg")));
+
+        Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.ManifestsArtifactName, recovery));
+        Assert.False(File.Exists(Path.Combine(
+            SetDirectory(StagePlanner.ManifestsArtifactName),
+            $"{Manifest}.10.0.0.nupkg")));
+    }
+
     /// <summary>
     /// Tampering can only cause a failure, never a silently wrong publish: identities still
     /// come from the hashed plan, so a swapped marker just fails the check.
@@ -217,12 +222,12 @@ public class SetMarkerTests : IDisposable
     /// observed and cannot trip it.
     /// </summary>
     [Fact]
-    public async Task The_plan_and_marker_do_not_trip_the_unexpected_file_rule()
+    public async Task The_root_plan_and_set_marker_do_not_trip_the_unexpected_file_rule()
     {
         await StageWorkloadAsync();
 
         var directory = SetDirectory(StagePlanner.PacksArtifactName);
-        Assert.True(File.Exists(Path.Combine(directory, ReleaseArtifact.PlanFileName)));
+        Assert.True(File.Exists(Path.Combine(_workspace.Out, ReleaseArtifact.PlanFileName)));
         Assert.True(File.Exists(Path.Combine(directory, ReleaseSetMarker.FileName)));
 
         Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.PacksArtifactName));

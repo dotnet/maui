@@ -12,7 +12,7 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Packages_not_on_nuget_org_stay_pending()
     {
-        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal(2, report.Value.PendingCount);
@@ -27,7 +27,7 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Already_published_packages_are_removed_from_the_push_set()
     {
-        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal(1, report.Value.PendingCount);
@@ -41,7 +41,7 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Everything_published_means_the_publish_task_can_be_skipped()
     {
-        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, true)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, true)));
 
         Assert.True(report.IsSuccess);
         Assert.Equal(0, report.Value.PendingCount);
@@ -57,6 +57,7 @@ public class PrunePublishedPlannerTests
     {
         var report = PrunePublishedPlanner.Plan(
             Set,
+            Set.Packages,
             [Skia.FileName],
             TestData.Availability((Skia, false), (HarfBuzz, false)));
 
@@ -70,7 +71,11 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filters_support_wildcards()
     {
-        var report = PrunePublishedPlanner.Plan(Set, ["SkiaSharp.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(
+            Set,
+            Set.Packages,
+            ["SkiaSharp.*"],
+            TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal([Skia.FileName], report.Value.FilesToRemove);
@@ -83,7 +88,11 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filter_matching_nothing_fails_closed()
     {
-        var report = PrunePublishedPlanner.Plan(Set, ["Typo.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(
+            Set,
+            Set.Packages,
+            ["Typo.*"],
+            TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.True(report.IsFailure);
         Assert.True(report.HasError(ErrorCodes.FilterUnmatched));
@@ -93,7 +102,7 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Missing_availability_is_never_treated_as_unpublished()
     {
-        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false)));
 
         Assert.True(report.IsFailure);
     }
@@ -109,8 +118,26 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Report_records_a_decision_for_every_planned_package()
     {
-        var report = PrunePublishedPlanner.Plan(Set, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         Assert.Equal(Set.Packages.Count, report.Value.Decisions.Count);
+    }
+
+    [Fact]
+    public void Recovery_filter_for_another_release_set_is_valid_but_does_not_prune_this_set()
+    {
+        var manifest = TestData.Planned(
+            "Microsoft.NET.Sdk.Maui.Manifest-10.0.100",
+            "10.0.0");
+
+        var report = PrunePublishedPlanner.Plan(
+            Set,
+            [.. Set.Packages, manifest],
+            [manifest.FileName],
+            TestData.Availability((Skia, false), (HarfBuzz, false)));
+
+        Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
+        Assert.Equal(2, report.Value.PendingCount);
+        Assert.Empty(report.Value.FilesToRemove);
     }
 }

@@ -107,7 +107,11 @@ internal static class PrunePublishedCommand
             var availability = await probe
                 .GetAvailabilityAsync(set.Packages, cancellationToken)
                 .ConfigureAwait(false);
-            var report = PrunePublishedPlanner.Plan(set, recoveryPatterns, availability);
+            var report = PrunePublishedPlanner.Plan(
+                set,
+                plan.Value.AllPackages,
+                recoveryPatterns,
+                availability);
             if (report.IsFailure)
             {
                 return ConsoleReporting.Fail(console, report.Errors);

@@ -207,15 +207,20 @@ production adapters directly.
 | Parameter | Required | Default | Purpose |
 |---|---:|---|---|
 | `ghOwner` | yes | `dotnet` | GitHub repository owner |
-| `ghRepo` | yes | none | Repository selected explicitly from the enabled list |
+| `ghRepo` | yes | `select-repository` | Fail-closed sentinel that the operator replaces with an enabled repository |
 | `commitHash` | yes | none | Exact full commit registered in BAR |
-| `barBuildId` | no | empty | Direct BAR lookup for builds without a GitHub URL |
+| `barBuildId` | no | `none` | Direct BAR lookup when commit lookup is insufficient |
 | `publishPackages` | yes | `false` | Include gated NuGet.org jobs in matching set stages |
 | `promoteWorkloadSet` | yes | `false` | Emit the gated BAR channel-promotion stage |
-| `includeFilters` | no | empty | Semicolon-separated package filename globs |
-| `excludeFilters` | no | empty | Semicolon-separated package filename globs |
-| `recoveryFilters` | no | empty | Packages already submitted by this release |
+| `includeFilters` | no | `none` | Semicolon-separated package filename globs |
+| `excludeFilters` | no | `none` | Semicolon-separated package filename globs |
+| `recoveryFilters` | no | `none` | Packages already submitted by this release |
 | `pool` | infrastructure | internal Windows pool | Agent pool definition |
+
+Azure DevOps runtime parameters cannot be optional. An omitted parameter either uses a
+default or, for an allowed-values list, silently selects its first value. Explicit sentinels
+make that platform behavior visible and safe: `select-repository` fails repository policy,
+and `none` is normalized to no optional argument before the CLI is invoked.
 
 Runs are tagged `DRY-RUN` or `PUBLISH`.
 
@@ -231,7 +236,7 @@ The prepare stage always runs, including on a dry run:
 ```
 checkout release-system source
   -> install pinned .NET SDK
-  -> build Release/_tool/release.dll
+  -> build and pin Release/_tool
   -> release plan
   -> darc gather-drop
   -> release stage
@@ -242,9 +247,9 @@ checkout release-system source
 The gathered drop is placed under `Agent.TempDirectory`, not the artifact staging root.
 
 The prepare job builds the framework-dependent tool once with `dotnet build`, before any
-task acquires the Maestro production identity. The build output is stored in the immutable
-`Release` artifact. Publish jobs execute that exact `release.dll` after approval without
-restoring or rebuilding it.
+task acquires the Maestro production identity. The complete build output is hashed and
+stored in the immutable `Release` artifact. Publish jobs verify and execute that exact tool
+directory after approval without restoring or rebuilding it.
 
 ### Workload-set promotion stage
 
@@ -255,6 +260,10 @@ When requested for a workload repository:
    to the workload-set channel recorded in the plan.
 
 Promotion is excluded from dry runs.
+
+When both promotion and package publishing are requested, `publish_packs` depends on
+successful promotion. Promotion therefore completes before the first NuGet.org approval;
+manifests remain ordered after verified packs.
 
 ### Package-set stages
 
@@ -274,10 +283,11 @@ when publishPackages=true:
     -> release verify
 ```
 
-The preflight job proves that the release job can start, download the artifact, install the
-SDK, load the approved tool, query NuGet.org, interpret the plan, and validate the exact
-pending set before approval. The publish job repeats the prune after approval; the approved
-set can only shrink.
+The preflight job proves that a normal agent job can download the artifact, install the SDK,
+load the approved tool, query NuGet.org, interpret the plan, and validate the exact pending
+set before approval. The production `releaseJob` is a different 1ES execution mode and is
+validated only by a publish-enabled rehearsal. The publish job repeats the prune after
+approval; the approved set can only shrink.
 
 The manual validation task MUST run in its own `pool: server` job. An agentless job cannot
 download artifacts or execute scripts, so the gated operation runs in a dependent agent
@@ -521,8 +531,8 @@ Unknown schema versions fail with `PLAN_SCHEMA_INVALID`.
 
 ## Artifact contract
 
-The pipeline publishes one artifact named `Release`. Package sets are directories within
-that artifact:
+The prepare stage publishes one artifact named `Release`. Package sets are directories
+within that artifact:
 
 | Release type | Set directory |
 |---|---|
@@ -541,13 +551,15 @@ Release/
     <runtime dependencies>
   ReleasePackages/
     *.nupkg
-    release-plan.json
     release-set.json
 ```
 
 Workload releases contain `ReleasePacks/` and `ReleaseManifests/` instead of
-`ReleasePackages/`. The same byte-identical plan is copied into the artifact root and every
-set directory, so one expected plan hash pins every copy.
+`ReleasePackages/`. There is one authoritative `release-plan.json` at the artifact root.
+
+Each matching preflight publishes a prepared artifact containing the pinned root plan, the
+pinned tool directory, and only that stage's pruned package-set directory. The approval
+artifact therefore cannot contain an unpruned sibling workload set.
 
 ### Set marker
 
@@ -571,18 +583,18 @@ only fail the release; it cannot cause a different package to publish.
 The prepare stage:
 
 1. builds the C# project into `Release/_tool`;
-2. computes `release.dll` SHA-256 as `ToolHash`;
-3. executes that DLL for `plan` and `stage`;
+2. computes a deterministic hash over every file and relative path in `_tool` as `ToolHash`;
+3. executes `_tool/release.dll` for `plan` and `stage`;
 4. records every package SHA-256 in the plan;
-5. writes byte-identical plans into the release artifact and each package-set directory;
+5. writes one authoritative plan into the release artifact root;
 6. computes the plan hash independently with `Get-FileHash`;
 7. exports `ToolHash` and `ReleasePlanHash`.
 
 The publish job:
 
-1. downloads the `Release` artifact;
+1. downloads the stage's exact prepared artifact;
 2. compares raw plan bytes with `ReleasePlanHash`;
-3. compares `_tool/release.dll` with `ToolHash`;
+3. recomputes the complete `_tool` directory hash and compares it with `ToolHash`;
 4. executes that DLL for `prune-published`;
 5. validates all pending package hashes before invoking 1ES;
 6. executes the same DLL for `verify` with the same expected plan hash.
@@ -647,9 +659,18 @@ For partial publication:
 2. `prune-published` removes packages already visible on NuGet.org;
 3. if NuGet.org accepted a package but it is not yet visible, add its filename to
    `recoveryFilters`;
-4. each recovery filter must match a planned package or the run fails with
+4. each recovery filter must match a package anywhere in the release plan or the run fails with
    `FILTER_UNMATCHED`;
 5. verification still requires every planned package, including recovered packages.
+
+Recovery filters are release-scoped. A pack-only filter remains valid while the manifest
+set is processed, and a manifest-only filter remains valid while the pack set is processed.
+Within each set, only matching files are withheld.
+
+Inside an existing run, retry a failed `publish` job with **Rerun failed jobs**. Do not rerun
+the whole stage: Azure DevOps pipeline artifact names are immutable within a run, so its
+prepared artifact name already exists. The retried publish job downloads that approved
+artifact and performs the monotonic NuGet.org re-prune again.
 
 ### Known recovery limit
 
@@ -712,11 +733,15 @@ Before using the system for a production push:
 7. use a workload repository for at least one dry run, proving both `ReleasePacks` and
    `ReleaseManifests` directories are produced;
 8. confirm the missing-build behavior of the typed PCS client against a real nonexistent
-   BAR ID.
+   BAR ID;
+9. expand the pipeline at the exact commit used for the first production run and confirm
+   parameter sentinels, prepared-artifact wiring, and topology conditions;
+10. use a completed release for a publish-enabled rehearsal so the production `releaseJob`
+    runs while pruning leaves no packages to upload.
 
-The final item remains the only known unobserved client behavior: tests model a missing BAR
-build as `RestApiException` with HTTP 404, but this has not been observed against the live
-service.
+The missing-build check remains the only known unobserved PCS client behavior: tests model
+a missing BAR build as `RestApiException` with HTTP 404, but this has not been observed
+against the live service.
 
 ## Test-enforced invariants
 

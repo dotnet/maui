@@ -79,6 +79,15 @@ internal static class StagePlanner
                 $"{packs.Count} pack(s) and {manifests.Count} manifest(s).");
         }
 
+        var duplicateIdentities = GetDuplicateIdentities([.. packs, .. manifests]);
+        if (duplicateIdentities.Count > 0)
+        {
+            return Result<ReleasePlan>.Failure(
+                ErrorCodes.PackageDuplicateIdentity,
+                $"Workload release contains duplicate package identities: " +
+                $"{string.Join(", ", duplicateIdentities)}.");
+        }
+
         var band = PackageClassifier.GetWorkloadBand([.. manifests.Select(m => m.FileName)]);
         if (band.IsFailure)
         {
@@ -119,9 +128,13 @@ internal static class StagePlanner
         DateTimeOffset createdUtc,
         string toolVersion)
     {
+        var selected = drop
+            .Where(p => PackageGlob.IsSelected(p.FileName, options.Include, options.Exclude))
+            .ToList();
+
         // A workload manifest requires the dedicated pack-before-manifest stage topology.
         // Reject it from a non-workload release instead of publishing it in the single set.
-        var manifests = drop.Where(p => PackageClassifier.IsWorkloadManifest(p.FileName)).ToList();
+        var manifests = selected.Where(p => PackageClassifier.IsWorkloadManifest(p.FileName)).ToList();
         if (manifests.Count > 0)
         {
             return Result<ReleasePlan>.Failure(
@@ -129,10 +142,6 @@ internal static class StagePlanner
                 $"A non-workload release cannot contain workload manifest packages: " +
                 $"{string.Join(", ", manifests.Select(m => m.FileName).Order(StringComparer.Ordinal))}.");
         }
-
-        var selected = drop
-            .Where(p => PackageGlob.IsSelected(p.FileName, options.Include, options.Exclude))
-            .ToList();
 
         if (selected.Count == 0)
         {
@@ -181,12 +190,7 @@ internal static class StagePlanner
 
         // Two different files can still carry the same identity, which NuGet.org would
         // reject mid-publish, leaving the release half-applied.
-        var duplicateIdentities = packages
-            .GroupBy(p => $"{p.Id}/{p.Version}", StringComparer.OrdinalIgnoreCase)
-            .Where(g => g.Count() > 1)
-            .Select(g => g.Key)
-            .Order(StringComparer.Ordinal)
-            .ToList();
+        var duplicateIdentities = GetDuplicateIdentities(packages);
 
         if (duplicateIdentities.Count > 0)
         {
@@ -207,7 +211,7 @@ internal static class StagePlanner
             ArtifactName = artifactName,
             Packages = [.. packages
                 .OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(p => p.Version, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(p => p.NormalizedVersion, StringComparer.OrdinalIgnoreCase)
                 .Select(p => new PlannedPackage
                 {
                     Id = p.Id,
@@ -218,6 +222,14 @@ internal static class StagePlanner
                 })],
         });
     }
+
+    private static List<string> GetDuplicateIdentities(IReadOnlyList<DropPackage> packages) =>
+        packages
+            .GroupBy(p => $"{p.Id}/{p.NormalizedVersion}", StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .Order(StringComparer.Ordinal)
+            .ToList();
 
     private static List<ReleaseError> ValidateIdentities(IReadOnlyList<DropPackage> drop)
     {

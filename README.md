@@ -16,16 +16,17 @@ Releasing repositories do not change. They are named by parameter.
 
    | Parameter | Meaning |
    |---|---|
-   | **GitHub owner** / **GitHub repository** | What to release. The dropdown is exactly the set enabled in `config/repositories.json`. |
+   | **GitHub owner** / **GitHub repository** | What to release. Replace the fail-closed `select-repository` sentinel with a repository enabled in `config/repositories.json`. |
    | **Commit** | The full SHA, as registered in BAR. Required. |
-   | **BAR build ID** | Only when BAR has no GitHub URL for the build. Otherwise leave empty. |
+   | **BAR build ID** | Only when direct BAR lookup is needed. Otherwise leave `none`. |
    | **PUBLISH to NuGet.org** | **Off by default.** Leave it off for a dry run. |
    | **Promote to workload-set channel** | Workload repositories only. |
-   | Include / exclude filters | Optional package selection. |
-   | Recovery filters | Only when resuming a partially-completed release. |
+   | Include / exclude filters | Optional package selection; leave `none` when unused. |
+   | Recovery filters | Only when resuming a partially-completed release; leave `none` otherwise. |
 
-The repository and commit have no defaults. Azure DevOps requires the operator to choose
-both for every run.
+Azure DevOps runtime parameters cannot be optional and chooses the first allowed value when
+no default exists. The repository therefore defaults to `select-repository`, which policy
+rejects, while optional strings use `none`. The commit has no default and must be entered.
 
 3. The run prepares the release and validates the matching package-set jobs.
 4. Review `release-plan.json` in the published artifact — it lists every package that will be
@@ -115,11 +116,12 @@ The Azure DevOps pipeline entry point is
 - to run in the internal project, where those connections and the 1ES production template are
   available.
 
-The checked-in dry-run graph itself contains no NuGet.org task, client, or service
-connection. The mandated 1ES compliance template is external code and may perform public
-registry metadata lookups for component governance; if "no NuGet.org contact" means a
-literal network-level prohibition including compliance tooling, enforce that with agent
-egress policy in addition to this pipeline's structural exclusion.
+The checked-in dry-run graph contains no NuGet.org publishing task or publishing service
+connection. It does contain the anonymous, read-only NuGet client used by preflight pruning.
+The mandated 1ES compliance template is external code and may also perform public-registry
+metadata lookups for component governance; if "no NuGet.org contact" means a literal
+network-level prohibition including compliance tooling, enforce that with agent egress
+policy in addition to this pipeline's structural exclusion.
 
 ## Layout
 
@@ -154,6 +156,10 @@ audit trail refers to them.
 ```
 release plan   --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --out ./stage
 release stage  --plan ./stage/plan.json --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
-release prune-published --plan <release-plan.json> --set <setDirectory> [--recovery-filters '…'] [--expected-plan-hash <sha256>]
-release verify --plan <release-plan.json> --set <setDirectory> [--expected-plan-hash <sha256>] [--max-duration-minutes 30]
+release prune-published --plan <release-plan.json> --stage <artifactDir> --set <setName> --expected-plan-hash <sha256> [--recovery-filters '…']
+release verify --plan <release-plan.json> --stage <artifactDir> --set <setName> --expected-plan-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
+
+For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.
+Do not rerun the whole stage: the immutable prepared artifact already exists for that run.
+The publish job rechecks NuGet.org and can only remove packages from the approved set.

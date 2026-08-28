@@ -47,6 +47,17 @@ public class StagePlannerTests
     }
 
     [Fact]
+    public void Non_workload_release_can_exclude_a_manifest_from_the_selected_set()
+    {
+        var plan = Plan(
+            [TestData.Drop("SkiaSharp", "3.119.0"), Manifest()],
+            options: new StageOptions { Exclude = ["*Manifest*"] });
+
+        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
+        Assert.Equal("SkiaSharp", Assert.Single(plan.Value.AllPackages).Id);
+    }
+
+    [Fact]
     public void Filters_selecting_nothing_fail_closed()
     {
         var plan = Plan(
@@ -187,6 +198,33 @@ public class StagePlannerTests
             TestData.Drop("SkiaSharp", "3.119.0"),
             TestData.Drop("SkiaSharp", "3.119.0", fileName: "SkiaSharp.3.119.0.0.nupkg"),
         ]);
+
+        Assert.True(plan.IsFailure);
+        Assert.True(plan.HasError(ErrorCodes.PackageDuplicateIdentity));
+    }
+
+    [Fact]
+    public void Duplicate_normalized_identities_fail_closed()
+    {
+        var plan = Plan([
+            TestData.Drop("SkiaSharp", "3.119", fileName: "SkiaSharp.3.119.nupkg"),
+            TestData.Drop("SkiaSharp", "3.119.0", fileName: "SkiaSharp.3.119.0.nupkg"),
+        ]);
+
+        Assert.True(plan.IsFailure);
+        Assert.True(plan.HasError(ErrorCodes.PackageDuplicateIdentity));
+    }
+
+    [Fact]
+    public void Duplicate_normalized_identities_across_workload_sets_fail_closed()
+    {
+        var plan = Plan(
+            [
+                TestData.Drop("Shared", "1.0", fileName: "Shared.1.0.nupkg"),
+                TestData.Drop("Shared", "1.0.0", fileName: "Shared.Manifest-10.1.0.0.nupkg"),
+            ],
+            workload: true,
+            repo: "dotnet/maui");
 
         Assert.True(plan.IsFailure);
         Assert.True(plan.HasError(ErrorCodes.PackageDuplicateIdentity));

@@ -134,7 +134,7 @@ public class PackageAvailabilityProbeTests
         var availability = await new PackageAvailabilityProbe(new FakeExistenceChecker("SkiaSharp/3.119.0"))
             .GetAvailabilityAsync(set.Packages, CancellationToken.None);
 
-        var report = PrunePublishedPlanner.Plan(set, [], availability);
+        var report = PrunePublishedPlanner.Plan(set, set.Packages, [], availability);
 
         Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal([Skia.FileName], report.Value.FilesToRemove);
