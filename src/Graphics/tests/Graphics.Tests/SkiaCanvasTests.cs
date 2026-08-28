@@ -63,6 +63,11 @@ public class SkiaCanvasTests
 		Assert.Equal(expected.Bytes, actual.Bytes);
 	}
 
-	private static SKBitmap CreateBitmap() =>
-		new(new SKImageInfo(40, 40, SKColorType.Rgba8888, SKAlphaType.Premul));
+	private static SKBitmap CreateBitmap()
+	{
+		var bitmap = new SKBitmap(
+			new SKImageInfo(40, 40, SKColorType.Rgba8888, SKAlphaType.Premul));
+		bitmap.Erase(SKColors.Transparent);
+		return bitmap;
+	}
 }
