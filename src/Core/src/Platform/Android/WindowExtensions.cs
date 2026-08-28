@@ -49,8 +49,13 @@ namespace Microsoft.Maui
 				.SetSoftInputMode(inputMode);
 		}
 
-		//TODO : Make it public in NET 11.
-		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
+		/// <summary>
+		/// Configures translucent system bars for the specified Android window.
+		/// </summary>
+		/// <param name="window">The Android window to configure.</param>
+		/// <param name="activity">The activity that owns the window.</param>
+		/// <remarks>This method must be called on the UI thread.</remarks>
+		public static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
 			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
 			{

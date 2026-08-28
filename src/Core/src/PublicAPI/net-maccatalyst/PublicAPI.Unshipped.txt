@@ -53,6 +53,8 @@ static Microsoft.Maui.Handlers.StepperHandler.MapFlowDirection(Microsoft.Maui.Ha
 static Microsoft.Maui.Handlers.WindowHandler.MapStatusBarTheme(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this UIKit.UIButton! platformButton, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.CollectionViewExtensions.UpdateIsEnabled(this UIKit.UICollectionView! collectionView, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView) -> void
+static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView, UIKit.UIView? inputView) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.ConnectHandler(UIKit.UIView platformView) -> void

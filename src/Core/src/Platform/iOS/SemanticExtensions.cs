@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Platform
 		/// Posts a VoiceOver screen changed notification to return focus to the specified view.
 		/// This is typically used when an input view is dismissed and focus should return to the original control.
 		/// </summary>
-		/// <param name="platformView">The platform view that should receive focus</param>
-		internal static void PostAccessibilityFocusNotification(this UIView platformView)
+		/// <param name="platformView">The platform view that should receive focus.</param>
+		/// <remarks>This method must be called on the UI thread.</remarks>
+		public static void PostAccessibilityFocusNotification(this UIView platformView)
 		{
-			// TODO: Make public for .NET 11.
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, platformView);
 		}
 
@@ -47,12 +47,11 @@ namespace Microsoft.Maui.Platform
 		/// Posts a VoiceOver screen changed notification for an input view when it becomes visible.
 		/// This ensures VoiceOver shifts focus to the input view (e.g., UIPickerView, UIDatePicker) when it appears.
 		/// </summary>
-		/// <param name="platformView">The platform view that hosts the input view</param>
-		/// <param name="inputView">The input view that should receive focus</param>
-		internal static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
+		/// <param name="platformView">The platform view that hosts the input view.</param>
+		/// <param name="inputView">The input view that should receive focus, or <see langword="null"/> if no notification should be posted.</param>
+		/// <remarks>This method must be called on the UI thread.</remarks>
+		public static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
 		{
-			// TODO: Make public for .NET 11.
-
 			if (inputView is null)
 			{
 				return;
