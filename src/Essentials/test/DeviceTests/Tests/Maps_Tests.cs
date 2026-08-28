@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
 using Xunit;
+#if __IOS__
+using MapKit;
+#endif
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
@@ -33,6 +36,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			};
 			await Map.OpenAsync(placemark, new MapLaunchOptions { Name = mapName }).ConfigureAwait(false);
 		}
+
+#if __IOS__
+		[Fact]
+		public void BicyclingNavigationModeUsesCyclingDirections() =>
+			Assert.Equal(MKDirectionsMode.Cycling, MapImplementation.GetDirectionsMode(NavigationMode.Bicycling));
+#endif
 
 		[Fact]
 		public async Task LaunchMap_NullLocation()

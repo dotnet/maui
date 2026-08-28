@@ -113,31 +113,34 @@ namespace Microsoft.Maui.ApplicationModel
 			MKLaunchOptions launchOptions = null;
 			if (options.NavigationMode != NavigationMode.None)
 			{
-				var mode = MKDirectionsMode.Default;
-
-				switch (options.NavigationMode)
-				{
-					case NavigationMode.Driving:
-						mode = MKDirectionsMode.Driving;
-						break;
-					case NavigationMode.Transit:
-						mode = MKDirectionsMode.Transit;
-						break;
-					case NavigationMode.Walking:
-						mode = MKDirectionsMode.Walking;
-						break;
-					case NavigationMode.Default:
-						mode = MKDirectionsMode.Default;
-						break;
-				}
 				launchOptions = new MKLaunchOptions
 				{
-					DirectionsMode = mode
+					DirectionsMode = GetDirectionsMode(options.NavigationMode)
 				};
 			}
 
 			var mapItems = new[] { mapItem };
 			return Task.FromResult(MKMapItem.OpenMaps(mapItems, launchOptions));
+		}
+
+		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode)
+		{
+#if __IOS__
+			if (navigationMode == NavigationMode.Bicycling)
+			{
+				return OperatingSystem.IsIOSVersionAtLeast(14)
+					? MKDirectionsMode.Cycling
+					: MKDirectionsMode.Default;
+			}
+#endif
+
+			return navigationMode switch
+			{
+				NavigationMode.Driving => MKDirectionsMode.Driving,
+				NavigationMode.Transit => MKDirectionsMode.Transit,
+				NavigationMode.Walking => MKDirectionsMode.Walking,
+				_ => MKDirectionsMode.Default,
+			};
 		}
 	}
 }
