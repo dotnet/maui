@@ -7,10 +7,8 @@ namespace DotNet.Release;
 /// Reads package identity and content hash from a <c>.nupkg</c> on local disk.
 /// </summary>
 /// <remarks>
-/// Replaces roughly 60 lines of hand-rolled zip enumeration, XML loading and
-/// local-name XPath in the current pipeline, plus its substring-derived normalized version.
-/// <c>PackageArchiveReader</c> already knows where a nuspec lives and how to parse it, and
-/// <c>NuGetVersion</c> already knows what "normalized" means.
+/// <c>PackageArchiveReader</c> locates and parses the nuspec, and <c>NuGetVersion</c>
+/// supplies the normalized version used for availability queries.
 /// </remarks>
 public sealed class NupkgIdentityReader : IPackageIdentityReader
 {

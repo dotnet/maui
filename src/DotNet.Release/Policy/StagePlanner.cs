@@ -14,7 +14,7 @@ public sealed record StageOptions
 /// </summary>
 public static class StagePlanner
 {
-    /// <summary>Artifact and set names. Deliberately repository-neutral, unlike today's <c>Maui*</c> names.</summary>
+    /// <summary>Repository-neutral artifact names consumed by the shared pipeline.</summary>
     public const string PacksArtifactName = "ReleasePacks";
     public const string ManifestsArtifactName = "ReleaseManifests";
     public const string PackagesArtifactName = "ReleasePackages";
@@ -24,7 +24,6 @@ public static class StagePlanner
         ReleasePolicy policy,
         IReadOnlyList<DropPackage> drop,
         StageOptions options,
-        ToolReference tool,
         DateTimeOffset createdUtc,
         string toolVersion)
     {
@@ -32,7 +31,6 @@ public static class StagePlanner
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(drop);
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(tool);
 
         if (drop.Count == 0)
         {
@@ -48,8 +46,8 @@ public static class StagePlanner
         }
 
         return source.Workload
-            ? CreateWorkloadPlan(source, policy, drop, options, tool, createdUtc, toolVersion)
-            : CreateNonWorkloadPlan(source, drop, options, tool, createdUtc, toolVersion);
+            ? CreateWorkloadPlan(source, policy, drop, options, createdUtc, toolVersion)
+            : CreateNonWorkloadPlan(source, drop, options, createdUtc, toolVersion);
     }
 
     private static Result<ReleasePlan> CreateWorkloadPlan(
@@ -57,13 +55,12 @@ public static class StagePlanner
         ReleasePolicy policy,
         IReadOnlyList<DropPackage> drop,
         StageOptions options,
-        ToolReference tool,
         DateTimeOffset createdUtc,
         string toolVersion)
     {
-        // Behaviour preserved verbatim from the current pipeline: include filters select
-        // packs, but manifests are selected unless *excluded*. Applying include filters to
-        // manifests would silently drop them from a release. See docs/design.md section 12.
+        // Include filters select packs. Manifests remain selected unless explicitly excluded,
+        // because a valid workload release requires its manifests independently of pack
+        // selection.
         var packs = drop
             .Where(p => !PackageClassifier.IsWorkloadManifest(p.FileName))
             .Where(p => PackageGlob.IsSelected(p.FileName, options.Include, options.Exclude))
@@ -111,7 +108,6 @@ public static class StagePlanner
                 workloadSet.Value.Band,
                 workloadSet.Value.Channel,
                 workloadSet.Value.Feed),
-            Tool = tool,
             Sets = [packSet.Value, manifestSet.Value],
         });
     }
@@ -120,12 +116,11 @@ public static class StagePlanner
         ResolvedRelease source,
         IReadOnlyList<DropPackage> drop,
         StageOptions options,
-        ToolReference tool,
         DateTimeOffset createdUtc,
         string toolVersion)
     {
-        // A workload manifest in a non-workload release would bypass the pack-before-manifest
-        // ordering entirely, so it is rejected outright rather than filtered away.
+        // A workload manifest requires the dedicated pack-before-manifest stage topology.
+        // Reject it from a non-workload release instead of publishing it in the single set.
         var manifests = drop.Where(p => PackageClassifier.IsWorkloadManifest(p.FileName)).ToList();
         if (manifests.Count > 0)
         {
@@ -158,7 +153,6 @@ public static class StagePlanner
             CreatedUtc = createdUtc.ToUniversalTime(),
             Source = source,
             WorkloadSet = null,
-            Tool = tool,
             Sets = [set.Value],
         });
     }

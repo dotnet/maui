@@ -22,10 +22,8 @@ public interface IPackageExistenceChecker
 /// Checks package existence through the feed's flat-container resource.
 /// </summary>
 /// <remarks>
-/// Replaces the current pipeline's hand-rolled <c>Invoke-WebRequest -Method Head</c> against
-/// <c>api.nuget.org/v3-flatcontainer/...</c> with its own retry and status-code table.
-/// <c>FindPackageByIdResource</c> already implements the protocol, the retries and the
-/// transient-status handling.
+/// <c>FindPackageByIdResource</c> implements NuGet protocol negotiation, retry behavior, and
+/// transient-status handling for exact package identity checks.
 /// </remarks>
 public sealed class FlatContainerExistenceChecker : IPackageExistenceChecker, IDisposable
 {

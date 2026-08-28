@@ -31,8 +31,6 @@ internal static class TestData
     public static RepositoryPolicy RepoPolicy(string fullName) =>
         Policy().GetRepository(Repo(fullName)).Value;
 
-    public static ToolReference Tool => new("release", Hash("tool"));
-
     /// <summary>A stable fake content hash, so expectations stay readable.</summary>
     public static string Hash(string seed) =>
         Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(seed)));

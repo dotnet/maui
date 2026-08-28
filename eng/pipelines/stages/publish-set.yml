@@ -1,8 +1,8 @@
 # One gated publish of one package set.
 #
-# INTERNAL to eng/pipelines/release.yml. This is not a consumer-facing template: nothing
-# outside this repository references it. It exists so the workload path (packs, then
-# manifests) and the non-workload path share one implementation instead of three copies.
+# Internal stage definition used by ci-official-release.yml for every package set. It keeps
+# approval, integrity checks, filtering, 1ES publishing, and verification identical across
+# workload packs, workload manifests, and non-workload packages.
 #
 # The three-step shape is fixed: `release filter` -> 1ES.PublishNuget@1 -> `release verify`.
 # Two tool invocations bracketing the compliance task, which owns the actual upload.
@@ -69,11 +69,16 @@ stages:
         artifactName: ${{ parameters.artifactName }}
         targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
     steps:
-    - checkout: none
+    - checkout: self
+      clean: true
+      persistCredentials: false
 
-    # One verification block, not twelve. The plan hash is pinned by the preparing stage,
-    # and the tool's own hash lives inside the plan, so verifying the plan transitively
-    # pins the tool and the per-package hashes it records.
+    - task: UseDotNet@2
+      displayName: Install the .NET SDK
+      inputs:
+        useGlobalJson: true
+
+    # The plan hash is pinned by the preparing stage and covers package identities and hashes.
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
         $planPath = "$root/release-plan.json"
@@ -83,14 +88,6 @@ stages:
           throw "Release plan hash '$actual' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
         }
 
-        $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
-        $toolPath = "$root/_tool/$($plan.tool.fileName)"
-        $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($toolHash -ne $plan.tool.sha256) {
-          throw "Release tool hash '$toolHash' does not match the hash recorded in the plan."
-        }
-
-        Write-Host "##vso[task.setvariable variable=toolPath]$toolPath"
       displayName: Verify artifact integrity
       env:
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
@@ -99,7 +96,12 @@ stages:
     # still needs publishing. Fails closed on a missing, tampered or unlisted file.
     - pwsh: |
         $ErrorActionPreference = 'Stop'
-        & "$env:TOOL_PATH" filter `
+        dotnet run `
+          --project "$env:RELEASE_PROJECT" `
+          --configuration Release `
+          --no-launch-profile `
+          -- `
+          filter `
           --plan "$env:ARTIFACT_DIR/release-plan.json" `
           --stage "$env:STAGE_ROOT" `
           --set "$env:SET_NAME" `
@@ -108,7 +110,7 @@ stages:
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Filter already-published packages
       env:
-        TOOL_PATH: $(toolPath)
+        RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         STAGE_ROOT: $(Pipeline.Workspace)
         SET_NAME: ${{ parameters.artifactName }}
@@ -131,7 +133,12 @@ stages:
     # withheld because they were already live, so their absence would disprove that.
     - pwsh: |
         $ErrorActionPreference = 'Stop'
-        & "$env:TOOL_PATH" verify `
+        dotnet run `
+          --project "$env:RELEASE_PROJECT" `
+          --configuration Release `
+          --no-launch-profile `
+          -- `
+          verify `
           --plan "$env:ARTIFACT_DIR/release-plan.json" `
           --set "$env:SET_NAME" `
           --stage "$env:STAGE_ROOT" `
@@ -141,7 +148,7 @@ stages:
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Verify packages on NuGet.org
       env:
-        TOOL_PATH: $(toolPath)
+        RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         STAGE_ROOT: $(Pipeline.Workspace)
         SET_NAME: ${{ parameters.artifactName }}

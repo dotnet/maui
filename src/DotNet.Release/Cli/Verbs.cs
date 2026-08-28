@@ -11,9 +11,6 @@ internal static class Verbs
     public const string ReleasePlanFileName = "release-plan.json";
     public const string FilterReportFileName = "release-filter.json";
 
-    /// <summary>Subdirectory holding the tool the publish job executes under `checkout: none`.</summary>
-    public const string ToolDirectoryName = "_tool";
-
     // ---- release plan ----
 
     /// <summary>
@@ -103,8 +100,6 @@ internal static class Verbs
         string dropDirectory,
         string outputDirectory,
         StageOptions options,
-        ToolReference tool,
-        string toolFilePath,
         DateTimeOffset now,
         string toolVersion,
         CancellationToken cancellationToken)
@@ -150,7 +145,7 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, readErrors);
         }
 
-        var plan = StagePlanner.Create(resolved.Value, policy.Value, drop, options, tool, now, toolVersion);
+        var plan = StagePlanner.Create(resolved.Value, policy.Value, drop, options, now, toolVersion);
         if (plan.IsFailure)
         {
             return ConsoleReporting.Fail(console, plan.Errors);
@@ -189,36 +184,28 @@ internal static class Verbs
                     overwrite: true);
             }
 
-            // Each set directory is published as its own pipeline artifact and consumed by a
-            // job running `checkout: none`, so the artifact has to be self-contained. The
-            // plan bytes are identical in every set, so one hash still pins them all.
+            // Each set directory is published as its own pipeline artifact. The plan travels
+            // with the packages, and its bytes are identical in every set.
             await File.WriteAllTextAsync(
                     Path.Combine(setDirectory, ReleasePlanFileName),
                     planJson,
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            // Makes the directory declare which set it is, so a publish stage wired to the
-            // wrong set is caught immediately instead of surfacing as missing files.
+            // Makes the directory declare which set and release it contains, so wiring errors
+            // produce PACKAGE_SET_MISMATCH with the actual and expected identities.
             await File.WriteAllTextAsync(
                 Path.Combine(setDirectory, ReleaseSetMarker.FileName),
                 ReleasePlanSerializer.Serialize(ReleaseSetMarker.For(set, resolved.Value)),
                 cancellationToken).ConfigureAwait(false);
 
-            // The publish job runs `checkout: none`, so the tool it executes can only come
-            // from this artifact. Its hash is recorded in the plan, so verifying the plan
-            // transitively pins the binary that is about to run.
-            var toolDirectory = Path.Combine(setDirectory, ToolDirectoryName);
-            Directory.CreateDirectory(toolDirectory);
-            File.Copy(toolFilePath, Path.Combine(toolDirectory, tool.FileName), overwrite: true);
         }
 
         var planPath = Path.Combine(outputDirectory, ReleasePlanFileName);
         await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
 
-        // Self-check: the directories just written must satisfy the same invariant the
-        // publish job will enforce. Cheap here, and catches a staging bug before the
-        // artifact is published rather than inside a production release job.
+        // Apply the publish-job package invariant while the artifacts are created, so an
+        // invalid artifact is never uploaded for approval.
         foreach (var set in plan.Value.Sets)
         {
             var staged = StagedSetIntegrity.ValidateStaged(
@@ -384,10 +371,9 @@ internal static class Verbs
     /// requires no change here and no allow-list.
     /// </para>
     /// <para>
-    /// This matches how the pipeline being replaced scopes the same rule, and how
-    /// <c>1ES.PublishNuget@1</c> scopes its own <c>packagesToPush</c> glob: in build 3059242
-    /// the staged directory held 41 nupkgs plus a JSON manifest plus a PowerShell script,
-    /// and exactly 41 packages were pushed.
+    /// <c>1ES.PublishNuget@1</c> also receives a top-level <c>*.nupkg</c> glob. Companion
+    /// files such as the plan, marker, and executable are therefore outside both the
+    /// integrity enumeration and the publish input.
     /// </para>
     /// </remarks>
     internal static Dictionary<string, string> ReadStagedHashes(string directory)

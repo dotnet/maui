@@ -15,12 +15,8 @@ namespace DotNet.Release;
 /// read a variable.</item>
 /// </list>
 /// <para>
-/// The second is an existing contract, not a new one: today's
-/// <c>nuget_release_packages.ps1</c> sets the same variable under the same name and three
-/// pipeline conditions already consume it. Everything else — channel, feed, package
-/// identities, hashes — travels in the plan file. The current pipeline sets four output
-/// variables and threads them through <c>stageDependencies</c> expressions, which is why so
-/// many of its steps restate the same values.
+/// Channel, feed, package identities, and hashes travel in the plan file. Variables are
+/// limited to values Azure DevOps conditions or subsequent steps must consume directly.
 /// </para>
 /// <para>
 /// The plan's own hash is deliberately <i>not</i> emitted here. The pipeline computes it

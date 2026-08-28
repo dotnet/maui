@@ -24,7 +24,7 @@ public class VerbsTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, options ?? new StageOptions(),
-            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None);
+            Workspace.Now, "1.0.0-test", CancellationToken.None);
 
     // ---- plan ----
 
@@ -122,8 +122,6 @@ public class VerbsTests : IDisposable
 
         var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
         Assert.Equal(2, plan.Sets[0].Packages.Count);
-        Assert.Equal(_workspace.Tool, plan.Tool);
-
         // The staged directory is what 1ES will glob.
         var staged = Directory.GetFiles(_workspace.StagedSet(StagePlanner.PackagesArtifactName), "*.nupkg");
         Assert.Equal(2, staged.Length);

@@ -14,7 +14,6 @@ public class StagePlannerTests
             TestData.Policy(),
             drop,
             options ?? new StageOptions(),
-            TestData.Tool,
             TestData.Now,
             TestData.ToolVersion);
 
@@ -135,9 +134,8 @@ public class StagePlannerTests
     }
 
     /// <summary>
-    /// Preserved verbatim from the current pipeline: include filters select packs, but
-    /// manifests are selected unless explicitly excluded. Applying include filters to
-    /// manifests would silently drop them from the release.
+    /// Include filters select workload packs. Manifests remain selected unless explicitly
+    /// excluded because a workload release requires both sets.
     /// </summary>
     [Fact]
     public void Include_filters_apply_to_packs_but_not_to_manifests()
@@ -246,13 +244,12 @@ public class StagePlannerTests
     }
 
     [Fact]
-    public void Plan_carries_the_verified_source_and_the_tool_hash()
+    public void Plan_carries_the_verified_source_and_tool_version()
     {
         var plan = Plan([TestData.Drop("SkiaSharp", "3.119.0")]).Value;
 
         Assert.Equal(TestData.Commit, plan.Source.Commit);
         Assert.Equal(4242, plan.Source.BarBuildId);
-        Assert.Equal(TestData.Tool, plan.Tool);
         Assert.Equal(TestData.ToolVersion, plan.ToolVersion);
     }
 }

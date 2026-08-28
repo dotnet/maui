@@ -93,8 +93,7 @@ public class BuildResolverTests
     [Fact]
     public void Channel_name_comparison_is_case_sensitive()
     {
-        // Matches the current pipeline's -ceq. Channel names are display strings, and a
-        // casing difference means a different channel was created, not the same one.
+        // Channel policy binds both the exact display name and numeric ID.
         var result = Resolve([TestData.Build(channels: new ChannelReference(".net libraries", 1648))]);
 
         Assert.True(result.IsFailure);

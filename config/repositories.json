@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
 
-  "//": "Release policy. Anything not listed here fails closed. See docs/design.md section 9.",
+  "//": "Release policy. Anything not listed here fails closed. See 'Repository policy' in docs/design.md.",
 
   "repositories": {
     "dotnet/maui": { "workload": true },

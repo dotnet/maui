@@ -3,10 +3,7 @@ namespace DotNet.Release;
 /// <summary>
 /// Stable identifiers for every way a release can fail closed.
 /// </summary>
-/// <remarks>
-/// Codes exist so failures can be documented, searched for in build logs and asserted in
-/// tests. The current pipeline throws ad-hoc prose, which cannot be any of those things.
-/// </remarks>
+/// <remarks>Codes are stable identifiers for documentation, build-log search, and tests.</remarks>
 public static class ErrorCodes
 {
     public const string RepositoryNotAllowed = "REPO_NOT_ALLOWED";

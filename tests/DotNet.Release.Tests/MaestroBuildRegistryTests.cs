@@ -19,9 +19,8 @@ public class MaestroBuildRegistryTests
     }
 
     /// <summary>
-    /// The failure this adapter exists to fix. darc writes "Could not any builds matching
-    /// the given criteria" to stdout and the current script discards it; here a missing
-    /// build is simply an empty result, which Core turns into BAR_BUILD_NOT_FOUND.
+    /// A missing BAR build is a lookup result, not a transport failure. The adapter returns
+    /// an empty result so policy reports BAR_BUILD_NOT_FOUND with release context.
     /// </summary>
     [Fact]
     public async Task Http_404_becomes_an_empty_result_rather_than_an_exception()
@@ -115,8 +114,8 @@ public class MaestroBuildRegistryTests
     }
 
     /// <summary>
-    /// End to end on the repo+commit path: the channel the policy requires must survive the
-    /// adapter and satisfy `BuildResolver`. This is the path that was broken.
+    /// Repository-and-commit lookup must load channel collections so policy can verify the
+    /// required channel.
     /// </summary>
     [Fact]
     public async Task Required_channel_verification_succeeds_on_the_repository_and_commit_path()

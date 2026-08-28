@@ -115,15 +115,7 @@ public class PackageVersionsTests
         Assert.Equal(expected, normalized.Value);
     }
 
-    /// <summary>
-    /// Normalization drops trailing zero components, which is the case the substring
-    /// approach cannot reproduce from a file name that is not already normalized.
-    /// </summary>
-    /// <remarks>
-    /// Not a failure that fires today: feeds serve normalized file names, so the substring
-    /// happens to agree. Verified against NuGet.org — four-part versions such as
-    /// HarfBuzzSharp 8.3.1.5 are indexed as-is, and none end in a fourth component of .0.
-    /// </remarks>
+    /// <summary>NuGet normalization drops trailing zero components and preserves significant ones.</summary>
     [Fact]
     public void Trailing_zero_components_are_dropped()
     {

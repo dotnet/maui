@@ -2,15 +2,7 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-/// <summary>
-/// Covers the guarantee bought back by <see cref="ReleaseSetMarker"/>.
-/// </summary>
-/// <remarks>
-/// The pipeline this replaces gave each set its own directory containing its own manifest,
-/// which made cross-set confusion unrepresentable. A single hashed plan is better for
-/// supply-chain integrity but turns that structural guarantee into a passed argument. These
-/// tests pin the compensating control.
-/// </remarks>
+/// <summary>Verifies that each artifact directory is bound to its planned package set.</summary>
 public class SetMarkerTests : IDisposable
 {
     private readonly Workspace _workspace = new();
@@ -38,7 +30,7 @@ public class SetMarkerTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
+            Workspace.Now, "1.0.0-test", CancellationToken.None));
     }
 
     private Task<int> Filter(string? set) =>
@@ -50,9 +42,8 @@ public class SetMarkerTests : IDisposable
     // ---- the artifact must be self-contained ----
 
     /// <summary>
-    /// Each set directory is published as its own pipeline artifact and consumed by a job
-    /// running `checkout: none`, so the plan has to travel inside the artifact rather than
-    /// sitting beside it.
+    /// Each set directory is published as an independent pipeline artifact, so the plan must
+    /// travel with the packages.
     /// </summary>
     [Fact]
     public async Task Each_set_directory_contains_the_plan_and_its_marker()
@@ -244,7 +235,7 @@ public class SetMarkerTests : IDisposable
     /// </summary>
     [Theory]
     [InlineData("release-audit.md")]
-    [InlineData("_tool/release")]
+    [InlineData("diagnostics/release.log")]
     [InlineData("some-future-file.txt")]
     [InlineData("nupkg-lookalike.nupkg.txt")]
     public async Task An_arbitrary_future_companion_file_does_not_trip_the_rule(string relativePath)

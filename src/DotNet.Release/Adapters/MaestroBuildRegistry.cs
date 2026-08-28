@@ -7,12 +7,9 @@ namespace DotNet.Release;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Replaces <c>darc get-build</c>. That call is why this adapter exists: darc writes
-/// "Could not any builds matching the given criteria" to <b>stdout</b>, the current script
-/// captures it into the variable it expects JSON in, checks only <c>$LASTEXITCODE</c>, and
-/// throws a generic message — so the actual reason is discarded and the run is
-/// undiagnosable from the log. There is no stdout here to misinterpret: a missing build is
-/// an empty result and a transport failure is a typed exception.
+/// A typed lookup distinguishes a missing build from transport and service failures without
+/// parsing process output. A 404 becomes an empty result for Core to report as
+/// <c>BAR_BUILD_NOT_FOUND</c>; other failures remain typed exceptions.
 /// </para>
 /// <para>
 /// This type touches exactly two members of <see cref="IBuilds"/>,
@@ -85,8 +82,7 @@ public sealed class MaestroBuildRegistry : IBuildRegistry
 
         var builds = new List<BarBuild>();
 
-        // BAR records the repository as its GitHub URL, which is what the current pipeline
-        // passes to `darc get-build --repo`.
+        // BAR indexes builds by their recorded repository URL.
         //
         // loadCollections MUST be true. The service only eager-loads BuildChannels when it
         // is set:

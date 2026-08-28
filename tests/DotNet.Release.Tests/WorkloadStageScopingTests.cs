@@ -41,7 +41,7 @@ public class WorkloadStageScopingTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
+            Workspace.Now, "1.0.0-test", CancellationToken.None));
 
         var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
         Assert.Equal(2, plan.Sets.Count);
@@ -239,7 +239,7 @@ public class VerificationBudgetTests : IDisposable
             _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
+            Workspace.Now, "1.0.0-test", CancellationToken.None));
     }
 
     private Task<int> Verify(IPackageAvailabilityProbe probe, int deadlineMinutes, int pollSeconds = DefaultPollSeconds)

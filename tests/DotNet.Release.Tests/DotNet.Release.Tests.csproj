@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Parses eng/pipelines/release.yml so pipeline/policy drift is a build failure. -->
+    <!-- Parses eng/pipelines/ci-official-release.yml so pipeline/policy drift fails the build. -->
     <PackageReference Include="YamlDotNet" Version="$(YamlDotNetPackageVersion)" />
   </ItemGroup>
 

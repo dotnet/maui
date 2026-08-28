@@ -35,9 +35,8 @@ internal static class ConsoleReporting
     /// Prints every error with its stable code.
     /// </summary>
     /// <remarks>
-    /// All of them, not just the first: validation collects everything it found in one pass,
-    /// and a release operator fixing packages one round-trip at a time is exactly the
-    /// experience the current pipeline already has.
+    /// All of them, not just the first: validation collects every actionable problem in one
+    /// pass so an operator can correct the release in one iteration.
     /// </remarks>
     public static int Fail(IReleaseConsole console, IReadOnlyList<ReleaseError> errors)
     {

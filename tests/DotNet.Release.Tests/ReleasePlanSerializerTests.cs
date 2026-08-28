@@ -9,7 +9,6 @@ public class ReleasePlanSerializerTests
         TestData.Policy(),
         [TestData.Drop("SkiaSharp", "3.119.0"), TestData.Drop("HarfBuzzSharp", "8.3.1")],
         new StageOptions(),
-        TestData.Tool,
         TestData.Now,
         TestData.ToolVersion).Value;
 
@@ -29,7 +28,6 @@ public class ReleasePlanSerializerTests
         Assert.Equal(json, ReleasePlanSerializer.Serialize(restored.Value));
 
         Assert.Equal(original.Source, restored.Value.Source);
-        Assert.Equal(original.Tool, restored.Value.Tool);
         Assert.Equal(
             original.AllPackages.Select(p => (p.Id, p.Version, p.NormalizedVersion, p.FileName, p.Sha256)),
             restored.Value.AllPackages.Select(p => (p.Id, p.Version, p.NormalizedVersion, p.FileName, p.Sha256)));
@@ -161,7 +159,6 @@ public class ReleasePlanSerializerTests
                 TestData.Drop("Microsoft.NET.Sdk.Maui.Manifest-10.0.100", "10.0.0"),
             ],
             new StageOptions(),
-            TestData.Tool,
             TestData.Now,
             TestData.ToolVersion).Value;
 

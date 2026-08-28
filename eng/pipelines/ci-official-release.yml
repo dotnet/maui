@@ -1,6 +1,9 @@
 # =============================================================================================
 # THE .NET package release pipeline.
 #
+# Azure DevOps entry point. The configured pipeline definition references this path, so the
+# filename is part of the release system's operational contract.
+#
 # This is the shared release system. It is hooked up ONCE in Azure DevOps, and everyone
 # triggers *this* pipeline with parameters describing what to release. Nothing consumes this
 # repository as a template and no other repository copies it: releasing repositories do not
@@ -10,12 +13,11 @@
 #   at the manual gate, approve, done.
 #
 # What it does, in order:
-#   1. build the release tool from this repository
-#   2. `release plan`  - resolve and verify the BAR build for the requested repo/commit
-#   3. `darc gather-drop` - download that build's shipping packages
-#   4. `release stage`  - validate every package, write the hashed release plan, stage artifacts
-#   5. manual approval gate (agentless)
-#   6. `release filter` -> `1ES.PublishNuget@1` -> `release verify`
+#   1. `release plan`  - resolve and verify the BAR build for the requested repo/commit
+#   2. `darc gather-drop` - download that build's shipping packages
+#   3. `release stage`  - validate every package, write the hashed release plan, stage artifacts
+#   4. manual approval gate (agentless)
+#   5. `release filter` -> `1ES.PublishNuget@1` -> `release verify`
 #
 # Safety properties worth knowing before you press Run:
 #   - `publishPackages` defaults to FALSE. The default run is a dry run that publishes
@@ -42,7 +44,6 @@ parameters:
 - name: ghRepo
   displayName: GitHub repository (must be enabled in config/repositories.json)
   type: string
-  default: skiasharp
   values:
   - maui
   - android
@@ -108,14 +109,8 @@ variables:
 - name: isWorkload
   value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'maui', 'android', 'macios')) }}
 
-- name: toolFileName
-  value: release.exe
-
-- name: toolRuntimeIdentifier
-  value: win-x64
-
-# Reviewed Darc build. gather-drop receives production credentials; do not replace it at run
-# time with whatever a mutable "latest" endpoint happens to return.
+# gather-drop receives production credentials, so the Darc executable is pinned to a reviewed
+# package version tracked in Arcade dependency metadata.
 - name: DarcVersion
   value: 1.1.0-beta.26426.1
 
@@ -187,25 +182,6 @@ extends:
           inputs:
             useGlobalJson: true
 
-        # The tool must be built here and travel inside the artifact: the publish job runs
-        # `checkout: none` and has no other source for it. Self-contained single-file means
-        # the hash recorded in the plan covers the whole tool, not a launcher stub.
-        - pwsh: |
-            $toolDirectory = "$(Agent.TempDirectory)/tool"
-            dotnet publish "$(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj" `
-              --configuration Release `
-              --self-contained true `
-              -p:PublishSingleFile=true `
-              -p:RuntimeIdentifier=$(toolRuntimeIdentifier) `
-              --output $toolDirectory
-            if ($LASTEXITCODE -ne 0) { throw 'Failed to publish the release tool.' }
-
-            $toolFile = Join-Path $toolDirectory '$(toolFileName)'
-            if (!(Test-Path -LiteralPath $toolFile)) { throw "Published tool '$toolFile' was not found." }
-
-            Write-Host "##vso[task.setvariable variable=toolPath]$toolFile"
-          displayName: Build the release tool
-
         - task: AzureCLI@2
           name: releasePlan
           displayName: Resolve and verify the BAR build
@@ -238,7 +214,12 @@ extends:
                 throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
               }
 
-              & "$env:TOOL_PATH" plan `
+              dotnet run `
+                --project "$env:RELEASE_PROJECT" `
+                --configuration Release `
+                --no-launch-profile `
+                -- `
+                plan `
                 --config "$env:CONFIG_PATH" `
                 --repo "$env:GH_OWNER/$env:GH_REPO" `
                 --commit $env:COMMIT_HASH `
@@ -247,7 +228,7 @@ extends:
                 @barId
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
-            TOOL_PATH: $(toolPath)
+            RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
             STAGE_DIR: $(Agent.TempDirectory)/stage
             IS_WORKLOAD: $(isWorkload)
@@ -278,18 +259,22 @@ extends:
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
-            & "$env:TOOL_PATH" stage `
+            dotnet run `
+              --project "$env:RELEASE_PROJECT" `
+              --configuration Release `
+              --no-launch-profile `
+              -- `
+              stage `
               --config "$env:CONFIG_PATH" `
               --plan "$env:STAGE_DIR/plan.json" `
               --drop "$env:DROP_DIR" `
               --out "$env:ARTIFACT_DIR" `
               --include $env:INCLUDE_FILTERS `
-              --exclude $env:EXCLUDE_FILTERS `
-              --tool "$env:TOOL_PATH"
+              --exclude $env:EXCLUDE_FILTERS
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           displayName: Validate and stage packages
           env:
-            TOOL_PATH: $(toolPath)
+            RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
             STAGE_DIR: $(Agent.TempDirectory)/stage
             DROP_DIR: $(Agent.TempDirectory)/drop
@@ -297,9 +282,9 @@ extends:
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
+        # The pipeline computes the pin itself rather than trusting the tool to declare
+        # the value that pins it.
         - pwsh: |
-            # The pipeline computes the pin itself rather than trusting the tool to declare
-            # the value that pins it.
             $planPath = "$(Build.ArtifactStagingDirectory)/release-plan.json"
             $hash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
             Write-Host "Release plan SHA-256: $hash"
@@ -307,9 +292,7 @@ extends:
           name: pinPlan
           displayName: Pin the release plan hash
 
-        # Runs are otherwise indistinguishable in history, so intent is recorded as a build
-        # tag. A logging command is used rather than the `name:` scalar because the run name
-        # is fixed at queue time.
+        # Record release intent as a build tag. The run name is already fixed at queue time.
         - ${{ if eq(parameters.publishPackages, true) }}:
           - pwsh: Write-Host '##vso[build.addbuildtag]PUBLISH'
             displayName: Tag this run as PUBLISH
@@ -337,10 +320,7 @@ extends:
         displayName: Promote to workload set channel
         dependsOn: prepare_release
         jobs:
-        # Promotion mutates BAR, so it gets its own gate. Without one it would run in
-        # parallel with the publish stages' approvals, mutating release state before any
-        # human had reviewed the plan - contrary to the prepare -> review -> mutate flow
-        # every other mutation in this pipeline follows.
+        # Promotion mutates BAR and therefore requires explicit approval of the staged plan.
         - job: promote_approval
           displayName: Wait to promote
           timeoutInMinutes: 240
@@ -386,8 +366,7 @@ extends:
                 if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
 
     # -----------------------------------------------------------------------------------------
-    # Publish. These stages are emitted ONLY when publishPackages is true, so a dry run is
-    # structurally incapable of publishing rather than merely flag-gated.
+    # Publish. These stages exist only when publishPackages is true.
     # -----------------------------------------------------------------------------------------
     - ${{ if eq(parameters.publishPackages, true) }}:
       - ${{ if eq(variables.isWorkload, 'true') }}:

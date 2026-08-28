@@ -9,19 +9,8 @@ namespace DotNet.Release.Tests;
 /// Enforces the guarantees the release system's safety case rests on.
 /// </summary>
 /// <remarks>
-/// <para>
-/// The tool is one assembly, so these scan the whole thing — there is nowhere for a
-/// violation to hide. That is a strict improvement on the previous arrangement, where the
-/// scan covered only the pure policy project: the assembly that could actually have pushed a
-/// package was the one nothing looked at.
-/// </para>
-/// <para>
-/// <b>What was traded away by merging the projects:</b> "the policy layer performs no I/O"
-/// used to be enforced by an assembly boundary and is now a convention expressed by the
-/// <c>Policy/</c> and <c>Adapters/</c> folders. That was an internal design discipline. The
-/// two guarantees that are externally load-bearing — the tool cannot push, and the tool
-/// cannot start a process — are unaffected and are asserted below.
-/// </para>
+/// The tool ships as one assembly, so the scan covers every command, policy function, and
+/// adapter that can execute in the release process.
 /// </remarks>
 public class ArchitectureTests
 {
@@ -119,8 +108,8 @@ public class ArchitectureTests
     }
 
     /// <summary>
-    /// Version normalization is policy, so the pure parser that provides it must be present —
-    /// otherwise the substring hack it replaced could quietly return.
+    /// Version normalization is policy, so the NuGet parser that defines the canonical form
+    /// must remain a direct dependency.
     /// </summary>
     [Fact]
     public void NuGet_Versioning_is_referenced_because_normalization_is_policy()
@@ -131,9 +120,8 @@ public class ArchitectureTests
     }
 
     /// <summary>
-    /// The adapters stay behind interfaces. This is the abstraction worth keeping after the
-    /// projects were merged: it is what lets every test run with no network, no BAR account
-    /// and no real feed.
+    /// Remote and package reads stay behind interfaces so tests run without a network, BAR
+    /// account, or real feed.
     /// </summary>
     [Theory]
     [InlineData("IBuildRegistry")]

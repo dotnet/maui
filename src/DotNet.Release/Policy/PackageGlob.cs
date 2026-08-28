@@ -17,7 +17,7 @@ namespace DotNet.Release;
 /// </remarks>
 public static class PackageGlob
 {
-    /// <summary>The sentinel the existing pipeline uses to mean "no filter".</summary>
+    /// <summary>The pipeline parameter value that means "no filter".</summary>
     public const string SkipSentinel = "skip";
 
     /// <summary>
@@ -67,9 +67,8 @@ public static partial class PackageClassifier
     /// True when the package is a workload manifest.
     /// </summary>
     /// <remarks>
-    /// Matches the existing pipeline's <c>*Manifest*.nupkg</c> test exactly. It is a
-    /// file-name convention rather than package metadata, which is fragile, but changing it
-    /// would change which packages land in which gated stage, so it is preserved verbatim.
+    /// Workload artifacts encode manifest classification in the package filename; this
+    /// classification selects the separately gated manifest stage.
     /// </remarks>
     public static bool IsWorkloadManifest(string fileName) =>
         fileName.Contains("Manifest", StringComparison.OrdinalIgnoreCase) &&

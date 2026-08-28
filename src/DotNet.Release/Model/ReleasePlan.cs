@@ -4,9 +4,8 @@ namespace DotNet.Release;
 
 /// <summary>A package identity read out of a gathered drop, before any policy is applied.</summary>
 /// <remarks>
-/// Produced by <see cref="IPackageIdentityReader"/>. <see cref="NormalizedVersion"/> comes
-/// from <c>NuGetVersion.ToNormalizedString()</c>, replacing the current pipeline's
-/// <c>fileName.Substring(id.Length + 1)</c> hack.
+/// Produced by <see cref="IPackageIdentityReader"/>. <see cref="NormalizedVersion"/> is the
+/// form accepted by NuGet availability queries.
 /// </remarks>
 public sealed record DropPackage(
     string FileName,
@@ -31,8 +30,7 @@ public sealed record PlannedPackage
     public required string FileName { get; init; }
 
     /// <summary>
-    /// SHA-256 of the .nupkg as staged, so later jobs can prove the file they hold is the
-    /// one that was validated. The current pipeline hashes only its helper script.
+    /// SHA-256 of the staged nupkg, used to verify the publish input across the job boundary.
     /// </summary>
     [JsonPropertyName("sha256")]
     public required string Sha256 { get; init; }
@@ -70,25 +68,11 @@ public sealed record WorkloadSetTarget(
     [property: JsonPropertyName("feed")] string Feed);
 
 /// <summary>
-/// The tool binary that produced this plan.
-/// </summary>
-/// <remarks>
-/// Recording the tool's own hash inside the plan means hashing the plan transitively pins
-/// the tool, so the publish job needs one pinned pipeline variable instead of the twelve
-/// repeated hash-check blocks the current pipeline carries.
-/// </remarks>
-public sealed record ToolReference(
-    [property: JsonPropertyName("fileName")] string FileName,
-    [property: JsonPropertyName("sha256")] string Sha256);
-
-/// <summary>
 /// The single contract artifact, serialized as <c>release-plan.json</c>.
 /// </summary>
 /// <remarks>
-/// Replaces <c>expected-packages.json</c>, <c>release-audit.json</c> and four
-/// <c>##vso</c> output variables. It is immutable once written: <c>release filter</c>
-/// records dispositions in a sidecar rather than editing the plan, so the plan hash stays
-/// valid for the whole release.
+/// The plan is immutable after staging. <c>release filter</c> records runtime dispositions
+/// in a sidecar so the plan hash remains valid through approval, publishing, and verification.
 /// </remarks>
 public sealed record ReleasePlan
 {
@@ -106,9 +90,6 @@ public sealed record ReleasePlan
 
     [JsonPropertyName("workloadSet")]
     public WorkloadSetTarget? WorkloadSet { get; init; }
-
-    [JsonPropertyName("tool")]
-    public required ToolReference Tool { get; init; }
 
     [JsonPropertyName("sets")]
     public required IReadOnlyList<ReleasePackageSet> Sets { get; init; }

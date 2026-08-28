@@ -31,9 +31,8 @@ public static class StagedSetIntegrity
     /// The unexpected-file rule is scoped by extension at the point of enumeration, never by
     /// allow-listing companion file names here. Companion files — <c>release-plan.json</c>,
     /// <c>release-set.json</c>, and anything added later — are simply never observed, so
-    /// adding one can never require weakening this check. Allow-listing by name would work
-    /// today and rot the moment a third file appeared, and the tempting fix at that point is
-    /// to widen the filter, which silently disables the rule this exists to enforce.
+    /// adding one requires no allow-list update. The invariant remains scoped to every
+    /// <c>.nupkg</c> file in the directory tree.
     /// </para>
     /// </param>
     public static Result<bool> ValidateStaged(

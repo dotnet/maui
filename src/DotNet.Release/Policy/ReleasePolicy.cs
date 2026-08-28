@@ -13,8 +13,8 @@ public sealed record WorkloadSetPolicy(int Band, string Channel, string Feed);
 /// The declarative, checked-in release policy. Anything not listed fails closed.
 /// </summary>
 /// <remarks>
-/// This replaces PowerShell literals embedded in pipeline YAML, which were neither
-/// reviewable, diffable, testable, nor shareable between repositories.
+/// Repository enablement, workload classification, channel requirements, and workload-set
+/// targets are versioned together in <c>config/repositories.json</c>.
 /// </remarks>
 public sealed class ReleasePolicy
 {

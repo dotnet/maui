@@ -6,36 +6,11 @@ namespace DotNet.Release;
 /// A self-describing marker written into each staged package set's directory.
 /// </summary>
 /// <remarks>
-/// <para>
-/// This buys back a guarantee the single-plan design gave away, and the history is worth
-/// recording because it explains the shape.
-/// </para>
-/// <para>
-/// The pipeline this replaces had no central plan. Each set's directory carried its own
-/// <c>expected-packages.json</c>, and the helper script resolved that manifest from inside
-/// the directory it was handed — so pointing it at the packs artifact made reasoning about
-/// manifests <b>unrepresentable</b>, not merely untested. Cross-set contamination could not
-/// be expressed.
-/// </para>
-/// <para>
-/// A single hashed plan is better for supply-chain integrity — one root of trust instead of
-/// N — but it means <c>filter</c> and <c>verify</c> must be <i>told</i> which set they are
-/// operating on. That replaced a structural guarantee with a passed argument, and passed
-/// arguments depend on the caller being right.
-/// </para>
-/// <para>
-/// <c>--set</c> plus <see cref="ErrorCodes.PackageSetNotFound"/> catches a <i>misspelled</i>
-/// set. It does not catch a <i>valid but wrong</i> one: asking the packs directory for
-/// <c>ReleaseManifests</c> resolves cleanly and only fails later, as
-/// <see cref="ErrorCodes.PackageFileMissing"/> — the same error a genuinely broken artifact
-/// upload produces. That is the diagnostic failure mode this project rejects elsewhere, so
-/// it is rejected here too.
-/// </para>
-/// <para>
-/// The marker makes the directory declare what it is, so a wrong-but-valid set is detected
-/// immediately with an unambiguous cause. Tampering with it can only cause a failure, never
-/// a silently wrong publish, because the package identities still come from the hashed plan.
-/// </para>
+/// <c>filter</c> and <c>verify</c> receive both a package-set name and an artifact directory.
+/// The marker binds that directory to the requested set, BAR build, and commit. This produces
+/// an explicit <see cref="ErrorCodes.PackageSetMismatch"/> for cross-set or stale-artifact
+/// wiring instead of a generic missing-file failure. Package identities remain sourced only
+/// from the hashed release plan, so marker changes can only fail a release.
 /// </remarks>
 public sealed record ReleaseSetMarker
 {

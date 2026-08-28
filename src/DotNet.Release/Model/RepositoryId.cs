@@ -88,7 +88,7 @@ public readonly record struct RepositoryId
     /// This exists because BAR stores a null <c>gitHubRepository</c> whenever Arcade could
     /// not verify the AzDO-to-GitHub mapping at publish time (it silently nulls the field on
     /// a GitHub API 404). Such a build is reachable only by BAR ID, and its identity must
-    /// still be established rather than assumed. See docs/design.md section 11.
+    /// still be established from the mirror identity.
     /// </remarks>
     public static Result<RepositoryId> FromAzureDevOpsMirror(string? azureDevOpsRepository)
     {

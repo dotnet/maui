@@ -25,9 +25,8 @@ public class NupkgIdentityReaderTests : IDisposable
     }
 
     /// <summary>
-    /// Identity comes from the nuspec, not the file name. The current pipeline derives the
-    /// version from the file name, which is why it can only be right when the file name
-    /// already agrees.
+    /// Package identity is authoritative nuspec metadata; the filename is validated
+    /// independently by staging policy.
     /// </summary>
     [Fact]
     public async Task Identity_comes_from_the_nuspec_not_the_file_name()
@@ -172,7 +171,6 @@ public class NupkgIdentityReaderTests : IDisposable
 
         var plan = StagePlanner.Create(
             resolved, policy, [read.Value], new StageOptions(),
-            new ToolReference("release", new string('b', 64)),
             DateTimeOffset.UnixEpoch, "1.0.0-test");
 
         Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));

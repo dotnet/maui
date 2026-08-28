@@ -20,13 +20,12 @@
 
       Dependencies are chosen for what they can do, not just what they provide:
 
-      - NuGet.Versioning is a pure parser. It is what makes normalized versions correct by
-        construction rather than by substring.
-      - NuGet.Packaging reads .nupkg identity, replacing hand-rolled zip + XML + XPath.
+      - NuGet.Versioning is a pure parser that applies NuGet's normalization rules.
+      - NuGet.Packaging reads package identity from nuspec metadata.
       - NuGet.Protocol is used READ-ONLY, to ask whether an ID/version is already live. It
         also contains PackageUpdateResource - the push API - which this tool must never use.
-        ArchitectureTests asserts its absence, so that is enforced rather than promised.
-      - The PCS client replaces `darc get-build`, whose failures went to stdout and were lost.
+        ArchitectureTests asserts that the tool does not reference it.
+      - The PCS client provides typed BAR queries and typed failures.
     -->
     <PackageReference Include="Microsoft.DotNet.ProductConstructionService.Client" Version="$(MicrosoftDotNetProductConstructionServiceClientPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingPackageVersion)" />

@@ -138,8 +138,8 @@ public class StagedSetIntegrityTests
     /// This is the anti-brittleness assertion: Core has no knowledge of
     /// <c>release-plan.json</c> or <c>release-set.json</c> and <i>would</i> reject them if
     /// they were ever observed. The safety comes from the caller only ever observing
-    /// <c>.nupkg</c> files, which is why adding a further companion file can never require
-    /// weakening this rule. Name allow-listing would work today and rot on the third file.
+    /// <c>.nupkg</c> files. Companion files are excluded by enumeration scope, not by a
+    /// filename allow-list.
     /// </remarks>
     [Fact]
     public void Companion_file_names_are_not_allow_listed_in_the_rule_itself()

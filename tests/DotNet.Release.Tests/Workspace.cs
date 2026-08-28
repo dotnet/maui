@@ -110,24 +110,6 @@ internal sealed class Workspace : IDisposable
 
     public string DropPackages => Path.Combine(Drop, "shipping", "packages");
 
-    /// <summary>
-    /// A real file on disk standing in for the published single-file tool, because `stage`
-    /// copies it into each artifact's _tool/ directory and records its actual hash.
-    /// </summary>
-    public string ToolFilePath => Path.Combine(Root, "release");
-
-    public ToolReference Tool
-    {
-        get
-        {
-            File.WriteAllText(ToolFilePath, "fake tool binary");
-            using var stream = File.OpenRead(ToolFilePath);
-            return new ToolReference(
-                "release",
-                Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(stream)));
-        }
-    }
-
     public static readonly DateTimeOffset Now = new(2026, 8, 27, 18, 0, 0, TimeSpan.Zero);
 
     public static BarBuild Build(

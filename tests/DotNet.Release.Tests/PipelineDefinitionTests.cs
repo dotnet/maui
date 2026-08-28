@@ -9,7 +9,7 @@ namespace DotNet.Release.Tests;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <c>eng/pipelines/release.yml</c> is the shared release system: it is hooked up once in
+/// <c>eng/pipelines/ci-official-release.yml</c> is the shared release system: it is hooked up once in
 /// Azure DevOps and everyone triggers it with parameters. Nothing consumes this repository as
 /// a template, so this file is the only place these mistakes can be caught before a release.
 /// </para>
@@ -39,7 +39,8 @@ public class PipelineDefinitionTests
         }
     }
 
-    private static string PipelinePath => Path.Combine(RepoRoot, "eng", "pipelines", "release.yml");
+    private static string PipelinePath =>
+        Path.Combine(RepoRoot, "eng", "pipelines", "ci-official-release.yml");
 
     private static YamlMappingNode Pipeline
     {
@@ -160,13 +161,14 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// A release is always pinned to an exact commit, so there is no safe default for it.
-    /// Omitting the default makes Azure DevOps require a value at queue time.
+    /// Repository and commit identify the release. Neither has a safe default.
     /// </summary>
-    [Fact]
-    public void The_commit_must_be_supplied_for_every_run()
+    [Theory]
+    [InlineData("ghRepo")]
+    [InlineData("commitHash")]
+    public void Release_identity_must_be_supplied_for_every_run(string parameter)
     {
-        Assert.False(Parameter("commitHash").Children.ContainsKey("default"));
+        Assert.False(Parameter(parameter).Children.ContainsKey("default"));
     }
 
     [Fact]
@@ -222,31 +224,33 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The tool is built in the prepare stage and must be on PATH-like variable for every
-    /// step that invokes it; the publish job re-derives it from the artifact instead.
+    /// Every agent job runs the C# project directly from the checked-out release-system
+    /// source.
     /// </summary>
     [Fact]
-    public void The_tool_is_built_before_it_is_invoked()
+    public void The_tool_is_run_from_source()
     {
-        var text = File.ReadAllText(PipelinePath);
+        var root = File.ReadAllText(PipelinePath);
+        var publish = File.ReadAllText(
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        var setsToolPath = text.IndexOf("variable=toolPath", StringComparison.Ordinal);
-        var firstUse = text.IndexOf("TOOL_PATH: $(toolPath)", StringComparison.Ordinal);
-
-        Assert.True(setsToolPath > 0, "release.yml must publish the tool and set toolPath.");
-        Assert.True(firstUse > setsToolPath, "release.yml invokes the tool before building it.");
-        Assert.Contains("dotnet publish", text, StringComparison.Ordinal);
+        Assert.Contains("dotnet run", root, StringComparison.Ordinal);
+        Assert.Contains("dotnet run", publish, StringComparison.Ordinal);
+        Assert.DoesNotContain("dotnet publish", root, StringComparison.Ordinal);
+        Assert.DoesNotContain("_tool", publish, StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// The publish job runs `checkout: none`, so the tool can only come from the artifact.
+    /// The publish job checks out the release-system source and remains a production 1ES job.
     /// </summary>
     [Fact]
-    public void The_publish_job_takes_no_checkout_and_runs_as_a_production_release_job()
+    public void The_publish_job_checks_out_source_and_runs_as_a_production_release_job()
     {
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        Assert.Contains("checkout: none", publish, StringComparison.Ordinal);
+        Assert.Contains("checkout: self", publish, StringComparison.Ordinal);
+        Assert.Contains("persistCredentials: false", publish, StringComparison.Ordinal);
+        Assert.Contains("UseDotNet@2", publish, StringComparison.Ordinal);
         Assert.Contains("type: releaseJob", publish, StringComparison.Ordinal);
         Assert.Contains("isProduction: true", publish, StringComparison.Ordinal);
         Assert.Contains("1ES.PublishNuget@1", publish, StringComparison.Ordinal);
@@ -267,21 +271,11 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// Requirement 4: a dry run must be structurally incapable of publishing.
+    /// A dry run must be structurally incapable of publishing.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// This is the test that certifies the property everything else rests on, so it checks
-    /// <b>nesting</b>, not position. An earlier version asserted only that each
-    /// <c>publish-set.yml</c> reference appeared later in the file than the guard — which a
-    /// sibling include placed after the guard would satisfy while being emitted
-    /// unconditionally. Later in the file is not the same as inside the guard.
-    /// </para>
-    /// <para>
-    /// Indentation is the structural property in YAML, so that is what is measured: every
-    /// publish include must be more deeply indented than the guard, with no intervening line
-    /// at or below the guard's own indentation (which would close it).
-    /// </para>
+    /// YAML indentation defines structural ancestry. Every publish include must have the
+    /// <c>publishPackages=true</c> condition among its enclosing blocks.
     /// </remarks>
     [Fact]
     public void Every_publish_stage_is_nested_inside_the_publish_guard()
@@ -450,7 +444,7 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// A dry run and a real publish are otherwise indistinguishable in run history.
+    /// Run tags make release intent visible in Azure DevOps history.
     /// </summary>
     [Fact]
     public void Runs_are_tagged_with_their_intent()
@@ -508,12 +502,12 @@ public class PipelineDefinitionTests
             .Select(i => lines[i])
             .ToList();
 
-        Assert.Contains(scripts, line => line.Contains("\"$env:TOOL_PATH\" plan", StringComparison.Ordinal));
+        Assert.Contains(scripts, line => line.Trim() == "plan `");
         Assert.Contains(scripts, line => line.Contains("gather-drop", StringComparison.Ordinal));
-        Assert.Contains(scripts, line => line.Contains("\"$env:TOOL_PATH\" stage", StringComparison.Ordinal));
+        Assert.Contains(scripts, line => line.Trim() == "stage `");
 
-        Assert.DoesNotContain(scripts, line => line.Contains("\"$env:TOOL_PATH\" filter", StringComparison.Ordinal));
-        Assert.DoesNotContain(scripts, line => line.Contains("\"$env:TOOL_PATH\" verify", StringComparison.Ordinal));
+        Assert.DoesNotContain(scripts, line => line.Trim() == "filter `");
+        Assert.DoesNotContain(scripts, line => line.Trim() == "verify `");
         Assert.DoesNotContain(scripts, line => line.Contains("add-build-to-channel", StringComparison.Ordinal));
     }
 

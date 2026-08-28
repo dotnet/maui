@@ -5,16 +5,12 @@ namespace DotNet.Release;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Implemented in <c>DotNet.Release.Maestro</c> over
-/// <c>Microsoft.DotNet.ProductConstructionService.Client</c>. Deliberately read-only: adding
-/// a build to a channel is a mutation and stays an explicit <c>darc add-build-to-channel</c>
-/// step in pipeline YAML (docs/design.md section 2).
+/// Implemented by <see cref="MaestroBuildRegistry"/> over
+/// <c>Microsoft.DotNet.ProductConstructionService.Client</c>. The interface exposes only
+/// build lookup; channel mutation is an explicit gated pipeline operation.
 /// </para>
 /// <para>
-/// Replacing <c>darc get-build</c> with a typed client removes a real production failure
-/// mode: darc writes "Could not any builds matching the given criteria" to <b>stdout</b>,
-/// which the current script captures into its JSON variable and discards, leaving only a
-/// generic error. There is no stdout here to misinterpret.
+/// Typed results preserve the distinction between no matching build and service failure.
 /// </para>
 /// </remarks>
 public interface IBuildRegistry
@@ -33,9 +29,8 @@ public interface IBuildRegistry
 /// Reads package identities out of <c>.nupkg</c> files in a gathered drop.
 /// </summary>
 /// <remarks>
-/// Implemented in <c>DotNet.Release.NuGet</c> using <c>PackageArchiveReader</c> and
-/// <c>NuGetVersion.ToNormalizedString()</c>, replacing roughly 60 lines of hand-rolled zip,
-/// XML and XPath plus a substring-based version hack.
+/// Implemented by <see cref="NupkgIdentityReader"/> using <c>PackageArchiveReader</c> and
+/// <c>NuGetVersion.ToNormalizedString()</c>.
 /// </remarks>
 public interface IPackageIdentityReader
 {
@@ -48,13 +43,13 @@ public interface IPackageIdentityReader
 /// </summary>
 /// <remarks>
 /// <para>
-/// Implemented in <c>DotNet.Release.NuGet</c> over <c>FindPackageByIdResource</c>, replacing
-/// a hand-rolled HTTP HEAD and retry loop against the flat-container API.
+/// Implemented by <see cref="PackageAvailabilityProbe"/> over
+/// <c>FindPackageByIdResource</c>.
 /// </para>
 /// <para>
 /// There is no publishing counterpart to this interface anywhere in the codebase.
 /// <c>1ES.PublishNuget@1</c> performs every push, so the tool never holds a NuGet.org
-/// credential (docs/design.md section 3).
+/// credential (see "Credential boundary" in docs/design.md).
 /// </para>
 /// </remarks>
 public interface IPackageAvailabilityProbe

@@ -92,26 +92,13 @@ public static class Program
         var output = new Option<DirectoryInfo>("--out") { Description = "Output directory.", Required = true };
         var include = new Option<string?>("--include") { Description = "Semicolon-separated include filters." };
         var exclude = new Option<string?>("--exclude") { Description = "Semicolon-separated exclude filters." };
-        var tool = new Option<FileInfo>("--tool")
-        {
-            Description = "The published single-file tool the publish job will execute. Its hash is recorded in the plan.",
-            Required = true,
-        };
 
         var command = new Command("stage", "Read the gathered drop, validate it, and write release-plan.json.")
         {
-            config, plan, drop, output, include, exclude, tool,
+            config, plan, drop, output, include, exclude,
         };
 
-        command.SetAction((parse, cancellationToken) =>
-        {
-            var toolReference = DescribeTool(parse.GetValue(tool));
-            if (toolReference.IsFailure)
-            {
-                return Task.FromResult(ConsoleReporting.Fail(console, toolReference.Errors));
-            }
-
-            return Verbs.StageAsync(
+        command.SetAction((parse, cancellationToken) => Verbs.StageAsync(
             console,
             new NupkgIdentityReader(),
             File.ReadAllText(parse.GetValue(config)!.FullName),
@@ -123,12 +110,9 @@ public static class Program
                 Include = PackageGlob.ParseList(parse.GetValue(include)),
                 Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
             },
-            toolReference.Value,
-            parse.GetValue(tool)!.FullName,
             DateTimeOffset.UtcNow,
             ToolVersion,
-            cancellationToken);
-        });
+            cancellationToken));
 
         return command;
     }
@@ -217,51 +201,6 @@ public static class Program
         });
 
         return command;
-    }
-
-    /// <summary>
-    /// Describes the tool binary so its hash can be recorded inside the plan.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>Must be given an explicit path.</b> Inferring it from <c>Environment.ProcessPath</c>
-    /// does not work and silently produces a meaningless pin:
-    /// </para>
-    /// <list type="bullet">
-    /// <item>run as <c>dotnet release.dll</c>, <c>ProcessPath</c> is the <c>dotnet</c> muxer,
-    /// so the plan would record the hash of the shared host;</item>
-    /// <item>run via the apphost, <c>ProcessPath</c> is a ~70 KB native stub containing none
-    /// of the managed IL, so <c>DotNet.Release.Core.dll</c> could be swapped without changing
-    /// the hash.</item>
-    /// </list>
-    /// <para>
-    /// Either way the chain of trust would terminate at a launcher, making the design's claim
-    /// that hashing the plan transitively pins the tool false. <c>--tool</c> therefore points
-    /// at the self-contained single-file artifact that the publish job actually executes.
-    /// </para>
-    /// </remarks>
-    private static Result<ToolReference> DescribeTool(FileInfo? toolFile)
-    {
-        if (toolFile is null)
-        {
-            return Result<ToolReference>.Failure(
-                ErrorCodes.PackageFileMissing,
-                "--tool must point at the published single-file tool that the publish job will " +
-                "execute. It cannot be inferred from the running process: that resolves to the " +
-                "dotnet muxer or to an apphost stub, neither of which contains the managed code.");
-        }
-
-        if (!toolFile.Exists)
-        {
-            return Result<ToolReference>.Failure(
-                ErrorCodes.PackageFileMissing,
-                $"The tool file '{toolFile.FullName}' was not found.");
-        }
-
-        using var stream = toolFile.OpenRead();
-        return Result<ToolReference>.Success(new ToolReference(
-            toolFile.Name,
-            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(stream))));
     }
 
     private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>
