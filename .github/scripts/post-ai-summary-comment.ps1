@@ -1045,7 +1045,7 @@ try {
 $currentHeadSha = if ($prMetadata) { [string]$prMetadata.head } else { '' }
 $commitFull = if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) { $ReviewedCommit } else { $currentHeadSha }
 $commitSha7 = if ($commitFull.Length -ge 7) { $commitFull.Substring(0, 7) } else { "unknown" }
-$commitUrl = if ($commitFull) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
+$commitUrl = if ($commitFull) { "https://github.com/$Repository/commit/$commitFull" } else { "#" }
 $prAuthor = if ($prMetadata) { [string]$prMetadata.author } else { $null }
 
 $snapshotNotice = $null
@@ -1058,7 +1058,7 @@ if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
 "@
     } elseif (-not $currentHeadSha.Equals($ReviewedCommit, [StringComparison]::OrdinalIgnoreCase)) {
         $currentHeadSha7 = $currentHeadSha.Substring(0, [Math]::Min(7, $currentHeadSha.Length))
-        $currentHeadUrl = "https://github.com/dotnet/maui/commit/$currentHeadSha"
+        $currentHeadUrl = "https://github.com/$Repository/commit/$currentHeadSha"
         $reviewEvent = 'COMMENT'
         $snapshotNotice = @"
 > [!WARNING]
@@ -1321,6 +1321,7 @@ if ($reviewEvent -eq 'COMMENT') {
     if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
         Hide-StaleMauiBotIssueComments `
             -PRNumber $PRNumber `
+            -Repository $Repository `
             -IncludeAISummary `
             -IncludeLegacyGate `
             -IncludeMergeConflict `
@@ -1330,7 +1331,7 @@ if ($reviewEvent -eq 'COMMENT') {
     }
     # Best-effort collapse of any stale AI-Summary REVIEWS (from before the issue-comment design).
     if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
-        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -IncludeAISummary -IncludeTryFix -Reason "superseded by a newer AI Summary" -DismissFormalReviews
+        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -Repository $Repository -IncludeAISummary -IncludeTryFix -Reason "superseded by a newer AI Summary" -DismissFormalReviews
     }
 
     try {
@@ -1357,6 +1358,7 @@ if (-not $review) {
     if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
         Hide-StaleMauiBotIssueComments `
             -PRNumber $PRNumber `
+            -Repository $Repository `
             -IncludeAISummary `
             -IncludeLegacyGate `
             -IncludeMergeConflict `
@@ -1368,6 +1370,7 @@ if (-not $review) {
     if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
         Hide-StaleMauiBotPullRequestReviews `
             -PRNumber $PRNumber `
+            -Repository $Repository `
             -IncludeAISummary `
             -IncludeTryFix `
             -Reason "stale generated PR review" `

@@ -161,4 +161,152 @@ Describe 'The history walked is the history of the file under review' {
             @($followed).Count | Should -BeGreaterOrEqual @($scoped).Count
         }
     }
+
+    Describe 'Immutable review base and upstream history repository' {
+        It 'uses the supplied base SHA for both history and ancestry, independent of a conflicting main branch' {
+            $root = Join-Path $TestDrive 'immutable-base-repo'
+            $file = 'src/Core/src/Foo.cs'
+            $filePath = Join-Path $root $file
+            $fakeBin = Join-Path $TestDrive 'fake-bin'
+            $ghLog = Join-Path $TestDrive 'gh.log'
+            $diffPath = Join-Path $TestDrive 'review.diff'
+            $outputDir = Join-Path $TestDrive 'result'
+
+            New-Item -ItemType Directory -Force -Path (Split-Path $filePath -Parent) | Out-Null
+            New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
+
+            Push-Location $root
+            try {
+                git init -q
+                git checkout -q -b review-base
+                git config user.email tests@example.com
+                git config user.name Tests
+                'OldFix();' | Set-Content -LiteralPath $filePath -Encoding UTF8
+                git add .
+                git commit -q -m 'Fix old behavior (#111)'
+                $baseCommit = (git rev-parse HEAD).Trim()
+
+                git checkout -q --orphan main
+                git rm -q -rf .
+                New-Item -ItemType Directory -Force -Path (Split-Path $filePath -Parent) | Out-Null
+                'UnrelatedPipelineChange();' | Set-Content -LiteralPath $filePath -Encoding UTF8
+                git add .
+                git commit -q -m 'Unrelated pipeline history (#222)'
+            } finally {
+                Pop-Location
+            }
+
+            @(
+                'diff --git a/src/Core/src/Foo.cs b/src/Core/src/Foo.cs'
+                'index 1111111..2222222 100644'
+                '--- a/src/Core/src/Foo.cs'
+                '+++ b/src/Core/src/Foo.cs'
+                '@@ -1,2 +1 @@'
+                '-OldFix();'
+                ' UnrelatedPipelineChange();'
+            ) -join "`n" |
+                Set-Content -LiteralPath $diffPath -Encoding UTF8 -NoNewline
+
+            $fakeGhPath = Join-Path $fakeBin 'gh'
+            @(
+                '#!/usr/bin/env pwsh'
+                ''
+                'Add-Content -LiteralPath $env:ROUTING_GH_LOG -Value ($args -join '' '')'
+                ''
+                'if ($args[0] -eq ''auth'' -and $args[1] -eq ''status'') {'
+                '    exit 0'
+                '}'
+                ''
+                'if ($args[0] -eq ''pr'' -and $args[1] -eq ''view'') {'
+                '    $number = [int]$args[2]'
+                '    $repoIndex = [Array]::IndexOf($args, ''--repo'')'
+                '    if ($repoIndex -lt 0 -or $args[$repoIndex + 1] -ne ''dotnet/maui'') {'
+                '        exit 1'
+                '    }'
+                '    if ($number -eq 111) {'
+                '        [ordered]@{'
+                '            labels = @([ordered]@{ name = ''t/bug'' })'
+                '            title = ''Fix old behavior'''
+                '            body = ''Fixes #333'''
+                '            mergeCommit = [ordered]@{ oid = $env:ROUTING_BASE_SHA }'
+                '        } | ConvertTo-Json -Depth 5 -Compress'
+                '        exit 0'
+                '    }'
+                '    if ($number -eq 222) {'
+                '        [ordered]@{'
+                '            labels = @()'
+                '            title = ''Unrelated pipeline history'''
+                '            body = '''''
+                '            mergeCommit = [ordered]@{ oid = (''2'' * 40) }'
+                '        } | ConvertTo-Json -Depth 5 -Compress'
+                '        exit 0'
+                '    }'
+                '}'
+                ''
+                'if ($args[0] -eq ''pr'' -and $args[1] -eq ''diff'' -and [int]$args[2] -eq 111) {'
+                '    @('
+                '        ''diff --git a/src/Core/src/Foo.cs b/src/Core/src/Foo.cs'''
+                '        ''index 0000000..1111111 100644'''
+                '        ''--- a/src/Core/src/Foo.cs'''
+                '        ''+++ b/src/Core/src/Foo.cs'''
+                '        ''@@ -0,0 +1 @@'''
+                '        ''+OldFix();'''
+                '    )'
+                '    exit 0'
+                '}'
+                ''
+                'exit 1'
+            ) -join "`n" |
+                Set-Content -LiteralPath $fakeGhPath -Encoding UTF8 -NoNewline
+            & /bin/chmod +x $fakeGhPath
+
+            $oldPath = $env:PATH
+            $oldLog = $env:ROUTING_GH_LOG
+            $oldBase = $env:ROUTING_BASE_SHA
+            $env:PATH = "$fakeBin$([IO.Path]::PathSeparator)$oldPath"
+            $env:ROUTING_GH_LOG = $ghLog
+            $env:ROUTING_BASE_SHA = $baseCommit
+
+            Push-Location $root
+            try {
+                $result = Invoke-Script -Arguments @(
+                    '-PRNumber', '848',
+                    '-DiffPath', $diffPath,
+                    '-FilePaths', $file,
+                    '-Repo', 'kubaflo/maui',
+                    '-HistoryRepo', 'dotnet/maui',
+                    '-BaseCommit', $baseCommit,
+                    '-MaxRecentPRsPerFile', '1',
+                    '-MonthsBack', '12',
+                    '-WriteInlineFindings',
+                    '-OutputDir', $outputDir)
+            } finally {
+                Pop-Location
+                $env:PATH = $oldPath
+                $env:ROUTING_GH_LOG = $oldLog
+                $env:ROUTING_BASE_SHA = $oldBase
+            }
+
+            $result.ExitCode | Should -Be 0
+            $result.Output | Should -Match 'REVERT'
+            (Get-Content -Raw -LiteralPath (Join-Path $outputDir 'result.txt')).Trim() |
+                Should -BeExactly 'REVERT'
+            $content = Get-Content -Raw -LiteralPath (Join-Path $outputDir 'content.md')
+            $content | Should -Match ([regex]::Escape('https://github.com/dotnet/maui/pull/111'))
+            $content | Should -Match ([regex]::Escape('https://github.com/dotnet/maui/issues/333'))
+            $content | Should -Not -Match ([regex]::Escape('https://github.com/kubaflo/maui/pull/111'))
+            $content | Should -Not -Match ([regex]::Escape('https://github.com/kubaflo/maui/issues/333'))
+            $inline = Get-Content -Raw -LiteralPath (Join-Path $outputDir 'inline-findings.json')
+            $inline | Should -Match ([regex]::Escape('https://github.com/dotnet/maui/pull/111'))
+            $inline | Should -Match ([regex]::Escape('https://github.com/dotnet/maui/issues/333'))
+            $inline | Should -Not -Match ([regex]::Escape('https://github.com/kubaflo/maui/pull/111'))
+            $inline | Should -Not -Match ([regex]::Escape('https://github.com/kubaflo/maui/issues/333'))
+
+            $calls = Get-Content -LiteralPath $ghLog
+            $calls | Should -Contain 'pr view 111 --repo dotnet/maui --json labels,title,body,mergeCommit'
+            $calls | Should -Contain 'pr diff 111 --repo dotnet/maui'
+            $calls -join "`n" | Should -Not -Match 'pr view 222'
+            $calls -join "`n" | Should -Not -Match '--repo kubaflo/maui'
+        }
+    }
 }

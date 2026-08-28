@@ -103,6 +103,20 @@ param(
     [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
     [string]$ReviewedCommit = '',
 
+    # Current target-branch tip captured by the trusted pipeline resolver before
+    # any review worktree mutation. Setup freezes and persists this exact commit
+    # rather than re-reading the PR object's historical base SHA.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ResolvedBaseCommit = '',
+
+    # Target branch name captured with ResolvedBaseCommit. Setup compares this
+    # with fresh PR metadata so a concurrent PR retarget cannot pair a new branch
+    # name with the old branch's frozen commit.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$')]
+    [string]$ResolvedBaseRef = '',
+
     # Fast test-run toggle for local/diagnostic runs. When set, the Gate phase skips
     # STEP 2-4 (UI-category detection, regression tests, and the device/UI test
     # verification) and reports SKIPPED, so no emulator/simulator is required.
@@ -129,6 +143,10 @@ if ($LogFile) {
 
 $RepoRoot = git rev-parse --show-toplevel 2>$null
 if (-not $RepoRoot) { Write-Error "Not in a git repository"; exit 1 }
+$repositoryParts = $Repository.Split('/')
+$repositoryOwner = $repositoryParts[0]
+$repositoryName = $repositoryParts[1]
+$reviewRepositoryUrl = "https://github.com/$Repository.git"
 
 # ─── Phase routing ─────────────────────────────────────────────────────────────
 # When -Phase is specified, run ONLY that phase. This enables the 4-task AzDO
@@ -194,29 +212,47 @@ function Invoke-ReviewGitCommand {
     }
 }
 
-function Get-FetchedRemoteBranchSha {
+function Get-FetchedRepositoryBranchSha {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$RemoteName,
+        [string]$RepositoryUrl,
 
         [Parameter(Mandatory = $true)]
         [string]$BranchName
     )
 
-    $fetchResult = Invoke-ReviewGitCommand -Arguments @('fetch', $RemoteName, $BranchName)
+    $branchRef = "refs/heads/$BranchName"
+    $fetchResult = Invoke-ReviewGitCommand -Arguments @('fetch', $RepositoryUrl, $branchRef, '--no-tags')
     if ($fetchResult.ExitCode -ne 0) {
         $detail = if ([string]::IsNullOrWhiteSpace($fetchResult.Output)) { '' } else { "`n$($fetchResult.Output)" }
-        throw "Failed to fetch the latest target branch '$BranchName' from '$RemoteName'. Review setup is inconclusive due to a retryable environment/infrastructure failure.$detail"
+        throw "Failed to fetch the current target branch '$BranchName' from '$RepositoryUrl'. Review setup is inconclusive due to a retryable environment/infrastructure failure.$detail"
     }
 
-    $remoteRef = "$RemoteName/$BranchName"
-    $resolveResult = Invoke-ReviewGitCommand -Arguments @('rev-parse', $remoteRef)
+    $resolveResult = Invoke-ReviewGitCommand -Arguments @('rev-parse', 'FETCH_HEAD')
     $sha = ([string]$resolveResult.Output).Trim()
     if ($resolveResult.ExitCode -ne 0 -or $sha -notmatch '^[0-9a-fA-F]{40}$') {
-        throw "Fetched target branch '$BranchName', but could not resolve '$remoteRef'. Review setup is inconclusive due to a retryable environment/infrastructure failure."
+        throw "Fetched target branch '$BranchName', but could not resolve its immutable current tip from FETCH_HEAD. Review setup is inconclusive due to a retryable environment/infrastructure failure."
     }
 
     return $sha
+}
+
+function Assert-ResolvedReviewBaseRef {
+    param(
+        [string]$ResolvedBaseRef,
+        [string]$LiveBaseRef,
+        [string]$Repository,
+        [int]$PRNumber
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ResolvedBaseRef)) {
+        return
+    }
+
+    $expectedBaseRef = $ResolvedBaseRef.Trim()
+    if ($LiveBaseRef -cne $expectedBaseRef) {
+        throw "PR $Repository#$PRNumber was retargeted from '$expectedBaseRef' to '$LiveBaseRef' after its review base was captured. Review setup is inconclusive; queue a new run."
+    }
 }
 
 # Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
@@ -360,7 +396,7 @@ if ($DryRun) {
     if ($UseCurrentBranch) {
         Write-Host "[DRY RUN] Would create review branch '$reviewBranch' from current branch" -ForegroundColor Magenta
     } else {
-        Write-Host "[DRY RUN] Would checkout main, then create review branch '$reviewBranch'" -ForegroundColor Magenta
+        Write-Host "[DRY RUN] Would fetch the current '$Repository' target-branch tip, then create review branch '$reviewBranch'" -ForegroundColor Magenta
     }
     Write-Host "[DRY RUN] Would squash-merge PR #$PRNumber (stops on conflicts)" -ForegroundColor Magenta
 } else {
@@ -386,9 +422,6 @@ if ($DryRun) {
         git branch -D $reviewBranch 2>$null
     }
 
-    # Auto-detect CI environment
-    $isCI = $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS -or $env:BUILD_BUILDID
-
     # Detect the PR's TARGET (base) branch. PRs targeting the inflight release
     # branches ('inflight/current', 'inflight/candidate') carry release-specific
     # code that has diverged from main, so squash-merging them onto the (main-based)
@@ -397,6 +430,20 @@ if ($DryRun) {
     # main or a netN.0 feature branch keep the squash-merge-onto-pipeline behavior.
     $baseRefName = [string]$prInfo.base.ref
     if ($baseRefName) { $baseRefName = $baseRefName.Trim() }
+    if ($baseRefName -notmatch '^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$') {
+        Write-Error "PR #$PRNumber targets unsupported base branch '$baseRefName'."
+        exit 1
+    }
+    try {
+        Assert-ResolvedReviewBaseRef `
+            -ResolvedBaseRef $ResolvedBaseRef `
+            -LiveBaseRef $baseRefName `
+            -Repository $Repository `
+            -PRNumber $PRNumber
+    } catch {
+        Write-Error $_
+        exit 1
+    }
     $inflightTargets = @('inflight/current', 'inflight/candidate')
     $isInflightTarget = $baseRefName -and ($inflightTargets -contains $baseRefName)
     if ($isInflightTarget) {
@@ -413,45 +460,68 @@ if ($DryRun) {
         $currentBranch = git branch --show-current 2>$null
         if (-not $currentBranch) { $currentBranch = "(detached HEAD)" }
         Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
-    } elseif ($isCI) {
-        # In CI the checkout is pinned to the pipeline branch (e.g.
-        # feature/regression-check via -b parameter). The pipeline ref
-        # already contains our script fixes — switching to origin/main
-        # would overwrite them. Stay on the current branch and squash-merge
-        # the PR onto it. This preserves all pipeline-ref scripts while
-        # still testing the PR's changes.
-        $currentBranch = git branch --show-current 2>$null
-        if (-not $currentBranch) { $currentBranch = git rev-parse --short HEAD 2>$null }
-        $baseSha = git rev-parse --short HEAD 2>$null
-        Write-Host "  🤖 CI environment detected — using pipeline branch '$currentBranch' as merge base ($baseSha)" -ForegroundColor Cyan
+        $reviewedBaseSha = ([string](git rev-parse HEAD 2>$null)).Trim()
     } else {
-        # Default (local): checkout main
-        Write-Host "  📌 Checking out main branch..." -ForegroundColor Cyan
-        git checkout main 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Error "Failed to checkout main"; exit 1 }
-        $pullOutput = git pull origin main --ff-only 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ⚠️ git pull failed (non-fatal, continuing with local main): $pullOutput" -ForegroundColor Yellow
+        if ($ResolvedBaseCommit) {
+            $reviewedBaseSha = $ResolvedBaseCommit.Trim().ToLowerInvariant()
+            $resolveResult = Invoke-ReviewGitCommand -Arguments @('rev-parse', '--verify', "$reviewedBaseSha^{commit}")
+            if ($resolveResult.ExitCode -ne 0) {
+                $fetchResult = Invoke-ReviewGitCommand -Arguments @('fetch', $reviewRepositoryUrl, $reviewedBaseSha, '--no-tags')
+                if ($fetchResult.ExitCode -ne 0) {
+                    Write-Error "Could not fetch captured base commit $reviewedBaseSha from $reviewRepositoryUrl."
+                    exit 1
+                }
+                $fetchedCommitResult = Invoke-ReviewGitCommand -Arguments @('rev-parse', 'FETCH_HEAD')
+                $fetchedSha = ([string]$fetchedCommitResult.Output).Trim()
+                if ($fetchedSha -ne $reviewedBaseSha) {
+                    Write-Error "Fetched base commit $fetchedSha does not match captured base $reviewedBaseSha."
+                    exit 1
+                }
+            }
+            Write-Host "  🔒 Using captured current target-branch tip: $baseRefName @ $($reviewedBaseSha.Substring(0, 7))" -ForegroundColor Cyan
+        } else {
+            Write-Host "  📥 Resolving current target-branch tip from $Repository..." -ForegroundColor Cyan
+            try {
+                $reviewedBaseSha = Get-FetchedRepositoryBranchSha `
+                    -RepositoryUrl $reviewRepositoryUrl `
+                    -BranchName $baseRefName
+            } catch {
+                Write-Error $_
+                exit 1
+            }
+            Write-Host "  🔒 Captured current target-branch tip: $baseRefName @ $($reviewedBaseSha.Substring(0, 7))" -ForegroundColor Cyan
         }
-        $baseSha = git rev-parse --short HEAD 2>$null
-        Write-Host "  📌 Review base: main @ $baseSha" -ForegroundColor Cyan
     }
-    $reviewedBaseSha = ([string](git rev-parse HEAD 2>$null)).Trim()
+    if ($reviewedBaseSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "Could not resolve an immutable review base for $Repository#$PRNumber."
+        exit 1
+    }
 
     # Create review branch
     Write-Host "  🔀 Creating review branch: $reviewBranch" -ForegroundColor Cyan
-    git checkout -b $reviewBranch 2>&1 | Out-Null
+    if ($UseCurrentBranch) {
+        git checkout -b $reviewBranch 2>&1 | Out-Null
+    } else {
+        git checkout -b $reviewBranch $reviewedBaseSha 2>&1 | Out-Null
+    }
     if ($LASTEXITCODE -ne 0) { Write-Error "Failed to create branch '$reviewBranch'"; exit 1 }
 
     # Fetch PR commits
     Write-Host "  📥 Fetching PR #$PRNumber..." -ForegroundColor Cyan
     $tempBranch = "temp-pr-$PRNumber"
+    $expectedPrHeadSha = ([string]$prInfo.head.sha).Trim()
+    if ($expectedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "GitHub did not return an immutable head commit for $Repository#$PRNumber."
+        exit 1
+    }
 
     # Clean up any leftover temp branch
     git branch -D $tempBranch 2>$null | Out-Null
 
-    # Try fetching from origin (same-repo PRs)
-    git fetch origin "pull/$PRNumber/head:$tempBranch" 2>&1 | Out-Null
+    # Fetch the pull ref from the repository named by -Repository. Using origin
+    # here silently reviews the wrong PR when the pipeline repository and the
+    # selected repository both have the same PR number.
+    git fetch $reviewRepositoryUrl "pull/$PRNumber/head:$tempBranch" 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
         # Fork PR — get fork info
         Write-Host "  📥 Fetching from fork..." -ForegroundColor Cyan
@@ -478,6 +548,10 @@ if ($DryRun) {
         Write-Error "Could not resolve the immutable PR head for review."
         exit 1
     }
+    if ($reviewedPrHeadSha -ne $expectedPrHeadSha) {
+        Write-Error "PR head advanced while setup was resolving $Repository#$PRNumber (expected $expectedPrHeadSha, fetched $reviewedPrHeadSha). Re-run the review against the new immutable head."
+        exit 1
+    }
 
     # ── Merge PR commits (squash) ──
     # For inflight-targeted PRs, DON'T squash-merge onto the pipeline base — reset the
@@ -485,26 +559,13 @@ if ($DryRun) {
     # inflight base. (Trusted scripts already live in $TRUSTED, copied in Setup before
     # any branch switch, so resetting the worktree here does not lose pipeline fixes.)
     if ($isInflightTarget) {
-        Write-Host "  🎯 Testing PR branch on the LATEST inflight base — resetting to PR head ($tempBranch), then merging origin/$baseRefName..." -ForegroundColor Cyan
+        Write-Host "  🎯 Testing PR branch on the immutable inflight base — resetting to PR head ($tempBranch), then merging $baseRefName..." -ForegroundColor Cyan
         git reset --hard $tempBranch 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             git branch -D $tempBranch 2>$null
             Write-Error "Failed to reset review branch to PR head for inflight-targeted PR #$PRNumber"; exit 1
         }
-        # Merge the CURRENT inflight base so base-branch fixes that landed AFTER the PR branched
-        # are included (e.g. #36787 fixed the inflight/current build breaks after #36776 was cut).
-        # Otherwise the gate rebuilds the stale/broken base and the gate + UI tests never run.
-        try {
-            $reviewedBaseSha = Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName $baseRefName
-        } catch {
-            $fetchError = $_.Exception.Message
-            git checkout $originalBranch 2>$null
-            git branch -D $reviewBranch 2>$null
-            git branch -D $tempBranch 2>$null
-            Write-Error $fetchError
-            exit 1
-        }
-        git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/$baseRefName" 2>&1 | Out-Null
+        git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit $reviewedBaseSha 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             # Genuine conflict between the PR head and the latest inflight base — the PR must
             # rebase. Report it exactly like the squash-merge conflict path and bail.
@@ -515,6 +576,7 @@ if ($DryRun) {
             if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
                 Remove-StaleMauiBotIssueComments `
                     -PRNumber $PRNumber `
+                    -Repository $Repository `
                     -IncludeMergeConflict `
                     -IncludeReviewIncomplete `
                     -Reason "stale merge-conflict or review-incomplete notice"
@@ -532,6 +594,7 @@ if ($DryRun) {
         if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
+                -Repository $Repository `
                 -IncludeMergeConflict `
                 -Reason "resolved merge-conflict notice"
         }
@@ -576,6 +639,7 @@ if ($DryRun) {
         if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
+                -Repository $Repository `
                 -IncludeMergeConflict `
                 -Reason "resolved merge-conflict notice"
         }
@@ -592,6 +656,7 @@ if ($DryRun) {
         if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
+                -Repository $Repository `
                 -IncludeMergeConflict `
                 -IncludeReviewIncomplete `
                 -Reason "stale merge-conflict or review-incomplete notice"
@@ -645,6 +710,7 @@ if ($Phase -eq 'Setup') {
         exit 1
     }
     ([ordered]@{
+        repository = $Repository
         baseRefName = $baseRefName
         baseSha = $reviewedBaseSha
         prHeadSha = $reviewedPrHeadSha
@@ -749,6 +815,21 @@ if (Test-PhaseRequiresReviewWorktree -PhaseName $Phase) {
     $sentinelFile = Join-Path $sentinelDir "setup-complete"
     if (-not (Test-Path $sentinelFile)) {
         Write-Error "Setup phase did not complete (sentinel not found at '$sentinelFile'). Cannot proceed with -Phase $Phase."
+        exit 1
+    }
+
+    $snapshotFile = Join-Path $sentinelDir 'review-snapshot.json'
+    try {
+        $reviewSnapshot = Get-Content -LiteralPath $snapshotFile -Raw | ConvertFrom-Json
+    } catch {
+        Write-Error "Setup phase did not leave a readable immutable review snapshot at '$snapshotFile'."
+        exit 1
+    }
+    if ([string]$reviewSnapshot.repository -ne $Repository -or
+        [string]$reviewSnapshot.baseSha -notmatch '^[0-9a-fA-F]{40}$' -or
+        [string]$reviewSnapshot.prHeadSha -notmatch '^[0-9a-fA-F]{40}$' -or
+        [string]$reviewSnapshot.reviewTreeSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "The immutable review snapshot does not match repository '$Repository' or contains invalid commit identities."
         exit 1
     }
 
@@ -1763,7 +1844,7 @@ $uitestCategories = ""
 $detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
 if (Test-Path $detectScript) {
     try {
-        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Platform "$Platform" 2>&1
+        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Repository $Repository -BaseCommit ([string]$reviewSnapshot.baseSha) -Platform "$Platform" 2>&1
         $detectOutput | ForEach-Object { Write-Host "  $_" }
 
         foreach ($line in $detectOutput) {
@@ -1842,7 +1923,11 @@ $regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber
 $regressionScript = Join-Path $ScriptsDir "Find-RegressionRisks.ps1"
 if (Test-Path $regressionScript) {
     try {
-        & $regressionScript -PRNumber $PRNumber -OutputDir $regressionOutputDir
+        & $regressionScript `
+            -PRNumber $PRNumber `
+            -Repo $Repository `
+            -BaseCommit ([string]$reviewSnapshot.baseSha) `
+            -OutputDir $regressionOutputDir
         $regressionResult = if (Test-Path (Join-Path $regressionOutputDir "result.txt")) {
             (Get-Content (Join-Path $regressionOutputDir "result.txt") -Raw).Trim()
         } else { 'UNKNOWN' }
@@ -2112,7 +2197,7 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # may need GH_TOKEN to resolve PR base metadata when no pinned local snapshot
     # is available. Test selection itself uses merge-base..HEAD in this review
     # worktree. The script strips tokens around every PR-controlled subprocess.
-    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -Repository $Repository -BaseBranch ([string]$reviewSnapshot.baseSha) 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
@@ -2889,7 +2974,7 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
         $aiCategoriesArg = (Get-Content $aiCategoriesFile -Raw).Trim()
         if (-not [string]::IsNullOrWhiteSpace($aiCategoriesArg)) {
             Write-Host "  🔁 Refreshing UI category detection with AI tier..." -ForegroundColor Cyan
-            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Platform "$Platform" -AiCategories $aiCategoriesArg 2>&1
+            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Repository $Repository -BaseCommit ([string]$reviewSnapshot.baseSha) -Platform "$Platform" -AiCategories $aiCategoriesArg 2>&1
             $refreshOutput | ForEach-Object { Write-Host "    $_" }
 
             $refreshedCategories = $uitestCategories
@@ -3013,6 +3098,7 @@ if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
                 PRNumber = $PRNumber
                 ContentFile = $finalizeContent
                 WinnerFile = $finalizeWinner
+                Repo = $Repository
                 ExpectedHeadSha = $ReviewedCommit
             }
             if ($DryRun) { $applyArgs.DryRun = $true }
@@ -3134,6 +3220,7 @@ $isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
 if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
     Hide-StaleMauiBotIssueComments `
         -PRNumber $PRNumber `
+        -Repository $Repository `
         -IncludeTryFix `
         -Reason "stale try-fix notice"
 }
@@ -3141,6 +3228,7 @@ if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
 if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue) {
     Dismiss-StaleMauiBotTryFixReviews `
         -PRNumber $PRNumber `
+        -Repository $Repository `
         -Reason "stale try-fix review"
 }
 
@@ -3201,13 +3289,15 @@ if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
             -PRNumber $PRNumber `
             -RepoRoot $RepoRoot `
             -TrustedGateResult $trustedGateResultForPost `
-            -ExpectedHeadSha $ReviewedCommit
+            -ExpectedHeadSha $ReviewedCommit `
+            -Owner $repositoryOwner `
+            -Repo $repositoryName
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
     } finally {
         if (-not $env:TF_BUILD -and (Get-Command Clear-AgentReviewInProgress -ErrorAction SilentlyContinue)) {
-            Clear-AgentReviewInProgress -PRNumber $PRNumber | Out-Null
+            Clear-AgentReviewInProgress -PRNumber $PRNumber -Owner $repositoryOwner -Repo $repositoryName | Out-Null
         }
     }
 } else {

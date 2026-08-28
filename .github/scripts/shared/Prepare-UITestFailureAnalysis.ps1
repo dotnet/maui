@@ -31,6 +31,9 @@
 .PARAMETER PRNumber
     Pull request number (used for `gh pr diff`).
 
+.PARAMETER Repository
+    Repository holding the pull request, in owner/name form.
+
 .PARAMETER OutputFile
     Path to write the analysis input markdown. Must live under
     $(Agent.TempDirectory) (rule 6). Written only when regular failures exist.
@@ -43,6 +46,8 @@
 param(
     [Parameter(Mandatory = $true)] [string] $ArtifactDir,
     [Parameter(Mandatory = $true)] [string] $PRNumber,
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string] $Repository = 'dotnet/maui',
     [Parameter(Mandatory = $true)] [string] $OutputFile,
     [string] $Platform,
     [int] $MaxDiffLines = 800
@@ -149,7 +154,7 @@ foreach ($cat in $regular.Keys) {
 [void]$sb.AppendLine("## PR changed files")
 $changedFiles = @()
 try {
-    $changedFiles = @(& gh pr diff $PRNumber --name-only 2>$null | Where-Object { $_ })
+    $changedFiles = @(& gh pr diff $PRNumber --repo $Repository --name-only 2>$null | Where-Object { $_ })
 } catch { }
 if ($changedFiles.Count -gt 0) {
     foreach ($f in ($changedFiles | Select-Object -First 200)) { [void]$sb.AppendLine("- $f") }
@@ -162,7 +167,7 @@ if ($changedFiles.Count -gt 0) {
 [void]$sb.AppendLine("## PR unified diff (truncated to $MaxDiffLines lines)")
 $diffLines = @()
 try {
-    $diffLines = @(& gh pr diff $PRNumber 2>$null)
+    $diffLines = @(& gh pr diff $PRNumber --repo $Repository 2>$null)
 } catch { }
 if ($diffLines.Count -gt 0) {
     $truncated = $diffLines.Count -gt $MaxDiffLines
