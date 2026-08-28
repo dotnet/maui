@@ -31,8 +31,9 @@ namespace Microsoft.Maui.Resizetizer
 	/// Every decision here is made so that its failure mode is "keep the file". Comparing two paths for
 	/// equality is case insensitive off Linux, so an unexpected spelling difference makes a stale file
 	/// look live and it is kept. Containment is case sensitive everywhere, so an unexpected spelling
-	/// difference puts a file outside the root and it is kept. A directory whose link target cannot be
-	/// resolved makes the whole path unresolvable and it is kept.
+	/// difference puts a file outside the root and it is kept. Future outputs may keep a missing suffix
+	/// lexically, but a path already returned by a wildcard must have every component positively resolved
+	/// before it can be handed to a delete.
 	/// </para>
 	/// </remarks>
 	internal sealed class PathCanonicalizer
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Resizetizer
 		// different directories on a case sensitive volume, so a case insensitive key could hand back
 		// another directory's resolved target.
 		readonly Dictionary<string, string> directoryCache = new Dictionary<string, string>(StringComparer.Ordinal);
+		readonly Dictionary<string, string> existingDirectoryCache = new Dictionary<string, string>(StringComparer.Ordinal);
 
 		readonly MethodInfo resolveDirectoryLinkTarget;
 
@@ -89,32 +91,66 @@ namespace Microsoft.Maui.Resizetizer
 		/// file name unchanged. Returns <see langword="null"/> when the path cannot be interpreted or when
 		/// its directory passes through a link this host cannot resolve.
 		/// </summary>
-		public string GetComparisonKey(string path)
+		public string GetComparisonKey(string path) =>
+			GetPath(path, requireExisting: false);
+
+		/// <summary>
+		/// Returns a path that is safe to pass to a later path-based delete: the positively resolved parent
+		/// directory plus the original leaf name. Returns <see langword="null"/> when any parent component
+		/// or the leaf is missing or cannot be inspected.
+		/// </summary>
+		/// <remarks>
+		/// Keeping the leaf unresolved means deleting a leaf symbolic link deletes the link, not its target.
+		/// Resolving the parent removes every alias from the spelling handed to the delete, so retargeting an
+		/// alias from the wildcard item after this method returns cannot redirect that delete. This is not
+		/// an OS handle-relative operation: a process that can concurrently replace a directory in the
+		/// returned canonical path can still race a later path lookup.
+		/// </remarks>
+		public string GetDeletionPath(string path) =>
+			GetPath(path, requireExisting: true);
+
+		/// <summary>Returns a normalized absolute spelling without resolving any links.</summary>
+		public static string NormalizePath(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
 				return null;
 
-			string full;
 			try
 			{
-				full = TrimTrailingSeparators(Path.GetFullPath(path));
+				return TrimTrailingSeparators(Path.GetFullPath(path));
 			}
 			catch (Exception)
 			{
-				// An item spec can contain characters that are not valid in a path.
 				return null;
 			}
+		}
+
+		string GetPath(string path, bool requireExisting)
+		{
+			var full = NormalizePath(path);
+			if (full is null)
+				return null;
 
 			var parent = Path.GetDirectoryName(full);
 			var name = Path.GetFileName(full);
 
 			// A bare root such as "/" or "C:\" has no file name to keep.
 			if (string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(name))
-				return CanonicalizeDirectory(full);
+				return CanonicalizeDirectory(full, requireExisting);
 
-			var directory = CanonicalizeDirectory(parent);
+			var directory = CanonicalizeDirectory(parent, requireExisting);
+			if (directory is null)
+				return null;
 
-			return directory is null ? null : Path.Combine(directory, name);
+			var result = Path.Combine(directory, name);
+			if (requireExisting)
+			{
+				var kind = Probe(result);
+				if (kind == DirectoryKind.Missing || kind == DirectoryKind.Unknown)
+					return null;
+			}
+
+			return result;
 		}
 
 		/// <summary>
@@ -123,21 +159,22 @@ namespace Microsoft.Maui.Resizetizer
 		/// exist are kept as they are, so a path the build has not written yet can still be canonicalized.
 		/// </summary>
 		public string CanonicalizeDirectory(string directory)
+			=> CanonicalizeDirectory(directory, requireExisting: false);
+
+		/// <summary>
+		/// Returns <paramref name="directory"/> with every link in it resolved, or <see langword="null"/>
+		/// when any component is missing, cannot be inspected, or passes through an unresolvable link.
+		/// </summary>
+		public string CanonicalizeExistingDirectory(string directory)
+			=> CanonicalizeDirectory(directory, requireExisting: true);
+
+		string CanonicalizeDirectory(string directory, bool requireExisting)
 		{
-			if (string.IsNullOrWhiteSpace(directory))
+			var full = NormalizePath(directory);
+			if (full is null)
 				return null;
 
-			string full;
-			try
-			{
-				full = TrimTrailingSeparators(Path.GetFullPath(directory));
-			}
-			catch (Exception)
-			{
-				return null;
-			}
-
-			return Canonicalize(full, MaxLinkHops);
+			return Canonicalize(full, MaxLinkHops, requireExisting);
 		}
 
 		/// <summary>
@@ -174,9 +211,10 @@ namespace Microsoft.Maui.Resizetizer
 			return next == Path.DirectorySeparatorChar || next == Path.AltDirectorySeparatorChar;
 		}
 
-		string Canonicalize(string full, int hops)
+		string Canonicalize(string full, int hops, bool requireExisting)
 		{
-			if (directoryCache.TryGetValue(full, out var cached))
+			var cache = requireExisting ? existingDirectoryCache : directoryCache;
+			if (cache.TryGetValue(full, out var cached))
 				return cached;
 
 			var parent = Path.GetDirectoryName(full);
@@ -190,26 +228,26 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			else
 			{
-				var canonicalParent = Canonicalize(parent, hops);
+				var canonicalParent = Canonicalize(parent, hops, requireExisting);
 
 				canonical = canonicalParent is null
 					? null
-					: ResolveDirectoryLink(Path.Combine(canonicalParent, name), hops);
+					: ResolveDirectoryLink(Path.Combine(canonicalParent, name), hops, requireExisting);
 			}
 
-			directoryCache[full] = canonical;
+			cache[full] = canonical;
 			return canonical;
 		}
 
-		string ResolveDirectoryLink(string path, int hops)
+		string ResolveDirectoryLink(string path, int hops, bool requireExisting)
 		{
 			switch (Probe(path))
 			{
 				case DirectoryKind.Missing:
-					// Nothing is there at all, so nothing can be reached through it either and the lexical
-					// spelling is the whole truth. This is also the case for an output the build has not
-					// written yet, which still has to be canonicalizable.
-					return path;
+					// A future KnownOutput still has to compare before the build writes it. An item already
+					// returned by a wildcard, however, cannot trust a component that has since disappeared:
+					// it could be recreated as a link before the later delete.
+					return requireExisting ? null : path;
 
 				case DirectoryKind.Ordinary:
 					return path;
@@ -232,8 +270,8 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			catch (Exception)
 			{
-				// A cycle of links, missing permissions or a racing delete. A dangling link still resolves,
-				// to its absent target, and that target decides containment as usual.
+				// A cycle of links, missing permissions, a racing delete, or a host that cannot resolve a
+				// dangling target. Refuse the path rather than guess.
 				return null;
 			}
 
@@ -248,7 +286,7 @@ namespace Microsoft.Maui.Resizetizer
 				return path;
 
 			// The target itself may live under directories that are links.
-			return Canonicalize(resolved, hops - 1);
+			return Canonicalize(resolved, hops - 1, requireExisting);
 		}
 
 		/// <summary>What a path turned out to be, as far as it can be determined.</summary>

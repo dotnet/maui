@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -261,6 +263,176 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(File.Exists(precious), $"Cleanup deleted a file outside the intermediate folder: {precious}");
 		}
 
+		/// <summary>
+		/// The stale-file task has already accepted the wildcard item when this hook retargets its directory
+		/// alias. Delete must use the resolved parent returned by the task, not traverse the changed alias.
+		/// </summary>
+		[Fact]
+		public void CleanupUsesTheResolvedParentWhenAnAliasIsRetargetedAfterValidation()
+		{
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+
+			var root = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r");
+			var inside = Path.Combine(root, "inside");
+			var outside = Path.Combine(project.PhysicalDirectory, "outside");
+			Directory.CreateDirectory(inside);
+			Directory.CreateDirectory(outside);
+
+			var stale = Path.Combine(inside, "orphan.png");
+			var precious = Path.Combine(outside, "orphan.png");
+			File.WriteAllText(stale, "left over");
+			File.WriteAllText(precious, "not a build output");
+
+			var alias = Path.Combine(root, "alias");
+			if (!TryCreateDirectoryAlias(alias, inside, out var useJunction))
+				return;
+
+			TouchSourceImage(project);
+			var marker = Path.Combine(project.PhysicalDirectory, "replace-alias.marker");
+
+			Build(project, properties: new Dictionary<string, string>
+			{
+				["_TestBeforeStaleFileDeletionTargets"] = "_TestReplaceDirectoryAlias",
+				["_TestAliasPath"] = alias,
+				["_TestAliasTargetPath"] = outside,
+				["_TestReplaceAliasMarker"] = marker,
+				["_TestUseJunction"] = useJunction ? "true" : "false",
+			});
+
+			Assert.True(File.Exists(marker), "The before-deletion mutation hook did not run.");
+			Assert.False(File.Exists(stale), $"Expected the stale file at the resolved inside path to be deleted: {stale}");
+			Assert.True(File.Exists(precious), $"Cleanup followed the retargeted alias outside the intermediate folder: {precious}");
+			Assert.Equal("not a build output", File.ReadAllText(Path.Combine(alias, "orphan.png")));
+		}
+
+		/// <summary>
+		/// This exercises both race windows. The wildcard first enumerates <c>alias/orphan.png</c> while
+		/// the alias points inside. The first hook removes the alias before validation; the second recreates
+		/// it pointing outside before Delete. A missing component in an enumerated candidate must therefore
+		/// be rejected, while the independently enumerated physical stale file is still cleaned.
+		/// </summary>
+		[Fact]
+		public void CleanupRejectsAnEnumeratedCandidateWhoseAliasDisappearsBeforeValidation()
+		{
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+
+			var root = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r");
+			var inside = Path.Combine(root, "inside");
+			var outside = Path.Combine(project.PhysicalDirectory, "outside");
+			Directory.CreateDirectory(inside);
+			Directory.CreateDirectory(outside);
+
+			var stale = Path.Combine(inside, "orphan.png");
+			var precious = Path.Combine(outside, "orphan.png");
+			File.WriteAllText(stale, "left over");
+			File.WriteAllText(precious, "not a build output");
+
+			var alias = Path.Combine(root, "alias");
+			if (!TryCreateDirectoryAlias(alias, inside, out var useJunction))
+				return;
+
+			TouchSourceImage(project);
+			var removeMarker = Path.Combine(project.PhysicalDirectory, "remove-alias.marker");
+			var replaceMarker = Path.Combine(project.PhysicalDirectory, "replace-alias.marker");
+
+			Build(project, properties: new Dictionary<string, string>
+			{
+				["_TestAfterStaleFileEnumerationTargets"] = "_TestRemoveDirectoryAlias",
+				["_TestBeforeStaleFileDeletionTargets"] = "_TestReplaceDirectoryAlias",
+				["_TestAliasPath"] = alias,
+				["_TestAliasTargetPath"] = outside,
+				["_TestRemoveAliasMarker"] = removeMarker,
+				["_TestReplaceAliasMarker"] = replaceMarker,
+				["_TestUseJunction"] = useJunction ? "true" : "false",
+			});
+
+			Assert.True(File.Exists(removeMarker), "The after-enumeration mutation hook did not run.");
+			Assert.True(File.Exists(replaceMarker), "The before-deletion mutation hook did not run.");
+			Assert.False(File.Exists(stale), $"Expected the ordinary stale file to still be deleted: {stale}");
+			Assert.True(File.Exists(precious), $"Cleanup accepted the missing alias and later followed it outside: {precious}");
+			Assert.Equal("not a build output", File.ReadAllText(Path.Combine(alias, "orphan.png")));
+		}
+
+		/// <summary>
+		/// The root is canonicalized before the wildcard snapshot. Retargeting the linked intermediate
+		/// directory after enumeration must not let both Root and the candidate move together into an
+		/// external tree and pass containment there.
+		/// </summary>
+		[Fact]
+		public void CleanupKeepsTheOriginalRootWhenTheIntermediateAliasIsRetargeted()
+		{
+			var project = CreateProject(throughLink: false, linkedIntermediateOutput: true);
+			if (project is null)
+				return;
+
+			Build(project);
+
+			var stale = Path.Combine(project.PhysicalDirectory, "obj-real", "resizetizer", "r", "drawable", "orphan.png");
+			File.WriteAllText(stale, "left over");
+
+			var outsideIntermediate = Path.Combine(project.PhysicalDirectory, "outside-obj");
+			var outsideRoot = Path.Combine(outsideIntermediate, "resizetizer", "r", "drawable");
+			Directory.CreateDirectory(outsideRoot);
+			var precious = Path.Combine(outsideRoot, "orphan.png");
+			File.WriteAllText(precious, "not a build output");
+
+			TouchSourceImage(project);
+			var marker = Path.Combine(project.PhysicalDirectory, "replace-root.marker");
+
+			Build(project, properties: new Dictionary<string, string>
+			{
+				["_TestAfterStaleFileEnumerationTargets"] = "_TestReplaceDirectoryAlias",
+				["_TestAliasPath"] = Path.Combine(project.PhysicalDirectory, "obj"),
+				["_TestAliasTargetPath"] = outsideIntermediate,
+				["_TestReplaceAliasMarker"] = marker,
+				["_TestUseJunction"] = OperatingSystem.IsWindows() ? "true" : "false",
+			});
+
+			Assert.True(File.Exists(marker), "The after-enumeration root mutation hook did not run.");
+			Assert.True(File.Exists(precious), $"Cleanup followed the retargeted intermediate root: {precious}");
+			Assert.True(File.Exists(stale), "The candidate from the old root should be kept when its lexical root moves.");
+		}
+
+		/// <summary>
+		/// Canonicalizing the parent must not canonicalize the leaf. Delete should remove a stale leaf link
+		/// inside the intermediate folder and leave the file it points at untouched.
+		/// </summary>
+		[Fact]
+		public void CleanupDeletesALeafLinkWithoutDeletingItsTarget()
+		{
+			var project = CreateProject(throughLink: false);
+			if (project is null)
+				return;
+
+			Build(project);
+
+			var outside = Path.Combine(project.PhysicalDirectory, "outside");
+			Directory.CreateDirectory(outside);
+			var precious = Path.Combine(outside, "precious.png");
+			File.WriteAllText(precious, "not a build output");
+
+			var alias = Path.Combine(project.PhysicalDirectory, "obj", "resizetizer", "r", "drawable", "orphan.png");
+			if (!SymbolicLink.TryCreateFileLink(alias, precious, out var error))
+			{
+				Output.WriteLine($"Skipping: symbolic links are not available on this machine: {error}");
+				return;
+			}
+
+			TouchSourceImage(project);
+			Build(project);
+
+			Assert.False(File.Exists(alias), $"Expected the stale leaf link to be deleted: {alias}");
+			Assert.True(File.Exists(precious), $"Cleanup deleted the leaf link's target: {precious}");
+		}
+
 		void AssertGeneratedImageExists(TestProject project)
 		{
 			var image = Path.Combine(project.PhysicalDirectory, GeneratedImage);
@@ -334,19 +506,22 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var realIntermediate = Path.Combine(physical, "obj-real");
 				Directory.CreateDirectory(realIntermediate);
 
-				if (!SymbolicLink.TryCreateDirectoryLink(Path.Combine(physical, "obj"), realIntermediate, out var objError))
-				{
-					Output.WriteLine($"Skipping: symbolic links are not available on this machine: {objError}");
+				if (!TryCreateDirectoryAlias(Path.Combine(physical, "obj"), realIntermediate, out _))
 					return null;
-				}
 			}
 
-			var targets = Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Resizetizer.After.targets");
-			Assert.True(File.Exists(targets), $"Expected the target file to be copied to the test output: {targets}");
+			var sourceTargets = Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Resizetizer.After.targets");
+			Assert.True(File.Exists(sourceTargets), $"Expected the target file to be copied to the test output: {sourceTargets}");
+			var targets = Path.Combine(physical, "Microsoft.Maui.Resizetizer.After.targets");
+			CreateInstrumentedTargets(sourceTargets, targets);
+			var mutationTaskAssembly = System.Security.SecurityElement.Escape(typeof(DirectoryAliasMutationTask).Assembly.Location);
 
 			File.WriteAllText(Path.Combine(physical, "App.proj"),
 				$"""
 				<Project>
+				  <UsingTask
+				      TaskName="Microsoft.Maui.Resizetizer.Tests.DirectoryAliasMutationTask"
+				      AssemblyFile="{mutationTaskAssembly}" />
 				  <PropertyGroup>
 				    <ResizetizerPlatformType>android</ResizetizerPlatformType>
 				    <IntermediateOutputPath>obj\</IntermediateOutputPath>
@@ -354,6 +529,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				  <ItemGroup>
 				    <MauiImage Include="images\{ImageName}" />
 				  </ItemGroup>
+				  <Target Name="_TestRemoveDirectoryAlias">
+				    <DirectoryAliasMutationTask
+				        AliasPath="$(_TestAliasPath)"
+				        MarkerFile="$(_TestRemoveAliasMarker)" />
+				  </Target>
+				  <Target Name="_TestReplaceDirectoryAlias">
+				    <DirectoryAliasMutationTask
+				        AliasPath="$(_TestAliasPath)"
+				        TargetPath="$(_TestAliasTargetPath)"
+				        MarkerFile="$(_TestReplaceAliasMarker)"
+				        UseJunction="$(_TestUseJunction)" />
+				  </Target>
 				  <Import Project="{targets}" />
 				</Project>
 				""");
@@ -374,7 +561,49 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			return new TestProject(physical, entry, imagesDirectory);
 		}
 
-		string Build(TestProject project, string target = "ResizetizeImages")
+		static void CreateInstrumentedTargets(string source, string destination)
+		{
+			var document = XDocument.Load(source);
+			var ns = document.Root.Name.Namespace;
+			Assert.Single(document.Descendants(ns + "_ResizetizerTaskAssemblyName")).Value =
+				Path.Combine(Path.GetDirectoryName(source), "Microsoft.Maui.Resizetizer.dll");
+			var target = Assert.Single(
+				document.Root.Elements(ns + "Target"),
+				element => string.Equals((string)element.Attribute("Name"), "ResizetizeImages", StringComparison.Ordinal));
+			var detection = Assert.Single(target.Elements(ns + "DetectStaleOutputFilesTask"));
+
+			detection.AddBeforeSelf(
+				new XElement(
+					ns + "CallTarget",
+					new XAttribute("Condition", "'$(_TestAfterStaleFileEnumerationTargets)' != ''"),
+					new XAttribute("Targets", "$(_TestAfterStaleFileEnumerationTargets)")));
+			detection.AddAfterSelf(
+				new XElement(
+					ns + "CallTarget",
+					new XAttribute("Condition", "'$(_TestBeforeStaleFileDeletionTargets)' != ''"),
+					new XAttribute("Targets", "$(_TestBeforeStaleFileDeletionTargets)")));
+
+			document.Save(destination);
+		}
+
+		bool TryCreateDirectoryAlias(string alias, string target, out bool useJunction)
+		{
+			useJunction = OperatingSystem.IsWindows();
+
+			string error;
+			bool created;
+			if (OperatingSystem.IsWindows())
+				created = Junction.TryCreate(alias, target, out error);
+			else
+				created = SymbolicLink.TryCreateDirectoryLink(alias, target, out error);
+
+			if (!created)
+				Output.WriteLine($"Skipping: directory aliases are not available on this machine: {error}");
+
+			return created;
+		}
+
+		string Build(TestProject project, string target = "ResizetizeImages", IReadOnlyDictionary<string, string> properties = null)
 		{
 			const int timeoutMilliseconds = 300_000;
 
@@ -393,6 +622,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			startInfo.ArgumentList.Add("-v:normal");
 			// Node reuse would keep MSBuild processes alive between the builds of a single test.
 			startInfo.ArgumentList.Add("-nodeReuse:false");
+
+			foreach (var property in properties ?? new Dictionary<string, string>())
+				startInfo.ArgumentList.Add($"-p:{property.Key}={property.Value}");
 
 			using var process = Process.Start(startInfo);
 			Assert.NotNull(process);

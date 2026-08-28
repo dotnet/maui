@@ -17,13 +17,19 @@ namespace Microsoft.Maui.Resizetizer
 	/// a task that resolved the same directory itself. A plain <c>Remove</c> compares those item specs
 	/// textually, so a symbolic link or junction anywhere in the project path is enough to make every
 	/// generated file look stale. Comparing canonical paths makes the difference independent of spelling
-	/// while the returned items keep their original item spec and metadata.
+	/// while the returned items keep their metadata.
 	/// </para>
 	/// <para>
 	/// A recursive MSBuild wildcard descends through directory links, so it can name a file that lives
 	/// outside <see cref="Root"/>, and <c>&lt;Delete&gt;</c> would then remove that outside file rather
 	/// than the link. Anything whose resolved directory escapes <see cref="Root"/> is therefore never
 	/// reported as stale.
+	/// </para>
+	/// <para>
+	/// <see cref="Files"/> has already been enumerated, so every component must still exist and be
+	/// inspectable. <see cref="KnownOutputs"/> describes future build outputs and may legitimately contain
+	/// missing components. Stale items are returned using their resolved parent plus unchanged leaf name,
+	/// never the wildcard's unchecked lexical spelling.
 	/// </para>
 	/// </remarks>
 	public class DetectStaleOutputFilesTask : Task
@@ -38,7 +44,14 @@ namespace Microsoft.Maui.Resizetizer
 		[Required]
 		public string Root { get; set; }
 
-		/// <summary>The members of <see cref="Files"/> that are safe to delete.</summary>
+		/// <summary>
+		/// Whether <see cref="Root"/> was already resolved before <see cref="Files"/> was enumerated. When
+		/// set, the root is normalized but deliberately not resolved again, so a replaced directory cannot
+		/// move the containment boundary together with the candidates.
+		/// </summary>
+		public bool RootIsCanonical { get; set; }
+
+		/// <summary>Deletion-safe paths corresponding to members of <see cref="Files"/>.</summary>
 		[Output]
 		public ITaskItem[] StaleFiles { get; set; }
 
@@ -57,7 +70,9 @@ namespace Microsoft.Maui.Resizetizer
 
 			var canonicalizer = new PathCanonicalizer(AllowLinkResolution);
 
-			var root = canonicalizer.CanonicalizeDirectory(Root);
+			var root = RootIsCanonical
+				? PathCanonicalizer.NormalizePath(Root)
+				: canonicalizer.CanonicalizeExistingDirectory(Root);
 			if (string.IsNullOrEmpty(root))
 			{
 				Log.LogMessage(MessageImportance.Low, $"Skipping stale file detection because the root '{Root}' could not be resolved.");
@@ -73,16 +88,17 @@ namespace Microsoft.Maui.Resizetizer
 			}
 
 			var stale = new List<ITaskItem>();
+			var stalePaths = new HashSet<string>(PathCanonicalizer.Comparer);
 
 			foreach (var file in Files)
 			{
 				if (file is null || string.IsNullOrWhiteSpace(file.ItemSpec))
 					continue;
 
-				var key = canonicalizer.GetComparisonKey(file.ItemSpec);
+				var key = canonicalizer.GetDeletionPath(file.ItemSpec);
 				if (key is null)
 				{
-					Log.LogMessage(MessageImportance.Low, $"Leaving '{file.ItemSpec}' alone because its real location could not be determined.");
+					Log.LogMessage(MessageImportance.Low, $"Leaving '{file.ItemSpec}' alone because it no longer exists or its real location could not be determined.");
 					continue;
 				}
 
@@ -95,8 +111,16 @@ namespace Microsoft.Maui.Resizetizer
 				if (keep.Contains(key))
 					continue;
 
-				Log.LogMessage(MessageImportance.Low, $"Detected stale output file '{file.ItemSpec}'.");
-				stale.Add(file);
+				if (!stalePaths.Add(key))
+					continue;
+
+				var deletionItem = new TaskItem(file)
+				{
+					ItemSpec = key,
+				};
+
+				Log.LogMessage(MessageImportance.Low, $"Detected stale output file '{file.ItemSpec}' as deletion path '{key}'.");
+				stale.Add(deletionItem);
 			}
 
 			StaleFiles = stale.ToArray();

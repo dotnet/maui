@@ -37,11 +37,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public void EverythingIsStaleWhenNothingIsExpected()
 		{
 			var file = Path.Combine(DestinationDirectory, "camera.png");
+			WriteFile(file);
 
 			var task = GetNewTask(new[] { file }, Array.Empty<string>());
 
 			Assert.True(task.Execute());
-			Assert.Equal(file, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(file), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		[Fact]
@@ -49,17 +50,20 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var kept = Path.Combine(DestinationDirectory, "camera.png");
 			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+			WriteFile(kept);
+			WriteFile(stale);
 
 			var task = GetNewTask(new[] { kept, stale }, new[] { kept });
 
 			Assert.True(task.Execute());
-			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		[Fact]
-		public void StaleFilesKeepTheirOriginalItemSpecAndMetadata()
+		public void StaleFilesUseDeletionSafeItemSpecsAndKeepMetadata()
 		{
 			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+			WriteFile(stale);
 			var item = new TaskItem(stale);
 			item.SetMetadata("_ResizetizerDpiPath", "drawable-xhdpi");
 
@@ -74,7 +78,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(task.Execute());
 
 			var result = Assert.Single(task.StaleFiles);
-			Assert.Equal(stale, result.ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), result.ItemSpec);
 			Assert.Equal("drawable-xhdpi", result.GetMetadata("_ResizetizerDpiPath"));
 		}
 
@@ -83,6 +87,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var kept = Path.Combine(DestinationDirectory, "camera.png");
 			var spelledDifferently = Path.Combine(DestinationDirectory, ".", "obj", "..", "camera.png");
+			WriteFile(kept);
 
 			var task = GetNewTask(new[] { spelledDifferently }, new[] { kept });
 
@@ -135,16 +140,39 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(new[] { Path.Combine(link, "drawable", "camera.png"), stale }, new[] { kept });
 
 			Assert.True(task.Execute());
-			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		[Fact]
+		public void EquivalentAliasSpellingsProduceOneDeletionPath()
+		{
+			var root = Path.Combine(DestinationDirectory, "root");
+			var physical = Path.Combine(root, "physical");
+			var alias = Path.Combine(root, "alias");
+			Directory.CreateDirectory(physical);
+
+			if (!TryCreateDirectoryAlias(alias, physical))
+				return;
+
+			var stale = Path.Combine(physical, "orphan.png");
+			WriteFile(stale);
+
+			var task = GetNewTask(
+				new[] { stale, Path.Combine(alias, "orphan.png") },
+				Array.Empty<string>(),
+				root);
+
+			Assert.True(task.Execute());
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		/// <summary>
-		/// The item specs handed back are what <c>&lt;Delete&gt;</c> acts on, so they must be the exact
-		/// strings that came in. Returning the canonical spelling instead would let a delete reach
-		/// outside the intermediate directory the wildcard was rooted at.
+		/// The item specs handed back are what <c>&lt;Delete&gt;</c> acts on, so they must use the resolved
+		/// parent rather than the wildcard spelling. Retargeting that wildcard alias later must not redirect
+		/// the delete.
 		/// </summary>
 		[Fact]
-		public void StaleFilesAreReturnedVerbatimEvenWhenCanonicalizationChangesTheSpelling()
+		public void StaleFilesUseTheResolvedParentWhenCanonicalizationChangesTheSpelling()
 		{
 			var physical = Path.Combine(DestinationDirectory, "physical");
 			var link = Path.Combine(DestinationDirectory, "link");
@@ -165,7 +193,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(new[] { stale }, Array.Empty<string>());
 
 			Assert.True(task.Execute());
-			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(canonicalizer.GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.NotEqual(stale, Assert.Single(task.StaleFiles).ItemSpec, PathCanonicalizer.Comparer);
 		}
 
 		/// <summary>
@@ -194,7 +223,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(new[] { inside }, Array.Empty<string>(), root: intermediate);
 
 			Assert.True(task.Execute());
-			Assert.Equal(inside, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(inside), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		/// <summary>
@@ -227,7 +256,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(new[] { throughTheLink, genuinelyStale }, Array.Empty<string>(), root: intermediate);
 
 			Assert.True(task.Execute());
-			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(genuinelyStale), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		/// <summary>
@@ -253,7 +282,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(new[] { kept, alias }, new[] { kept }, root: intermediate);
 
 			Assert.True(task.Execute());
-			Assert.Equal(alias, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(alias), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		[Fact]
@@ -282,6 +311,29 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			Assert.True(task.Execute());
 			Assert.Empty(task.StaleFiles);
+		}
+
+		[Fact]
+		public void CanonicalizeDirectoryTaskAnchorsAnExistingLinkedRoot()
+		{
+			var physical = Path.Combine(DestinationDirectory, "physical");
+			var alias = Path.Combine(DestinationDirectory, "alias");
+			Directory.CreateDirectory(physical);
+
+			if (!TryCreateDirectoryAlias(alias, physical))
+				return;
+
+			var task = new CanonicalizeDirectoryTask
+			{
+				Directory = alias,
+				BuildEngine = this,
+			};
+
+			Assert.True(task.Execute());
+			Assert.Equal(
+				new PathCanonicalizer().CanonicalizeExistingDirectory(physical),
+				task.CanonicalDirectory.ItemSpec,
+				PathCanonicalizer.Comparer);
 		}
 
 		/// <summary>
@@ -358,7 +410,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(task.Execute());
 
 			// The file behind the junction is left alone, while ordinary cleanup still happens.
-			Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(genuinelyStale), Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// This is the actual full-framework shape: MSBuild.exe can identify a Windows junction as a
+		/// reparse point but cannot resolve its target through <c>Directory.ResolveLinkTarget</c>.
+		/// </summary>
+		[Fact]
+		public void WithoutLinkResolutionFilesBehindAWindowsJunctionAreNeverStale()
+		{
+			if (!OperatingSystem.IsWindows())
+				return;
+
+			var basePath = new PathCanonicalizer().CanonicalizeDirectory(DestinationDirectory);
+			var root = Path.Combine(basePath, "r");
+			var outside = Path.Combine(basePath, "outside");
+			Directory.CreateDirectory(root);
+			Directory.CreateDirectory(outside);
+
+			var precious = Path.Combine(outside, "precious.png");
+			WriteFile(precious);
+
+			var alias = Path.Combine(root, "alias");
+			if (!Junction.TryCreate(alias, outside, out var error))
+			{
+				Output.WriteLine($"Skipping: junctions are not available on this machine: {error}");
+				return;
+			}
+
+			var stale = Path.Combine(root, "orphan.png");
+			WriteFile(stale);
+
+			var task = GetNewTask(new[] { Path.Combine(alias, "precious.png"), stale }, Array.Empty<string>(), root: root);
+			task.AllowLinkResolution = false;
+
+			Assert.True(task.Execute());
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		/// <summary>
@@ -444,7 +532,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(task.Execute());
 
 				// Ordinary cleanup still happens; only the path through the broken entry is spared.
-				Assert.Equal(genuinelyStale, Assert.Single(task.StaleFiles).ItemSpec);
+				Assert.Equal(new PathCanonicalizer().GetDeletionPath(genuinelyStale), Assert.Single(task.StaleFiles).ItemSpec);
 			}
 			finally
 			{
@@ -453,11 +541,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		/// <summary>
-		/// A directory that is genuinely absent is not ambiguous, so it must not disable cleanup. Without
-		/// this, the guard would be indistinguishable from refusing to delete anything.
+		/// A wildcard item whose directory has disappeared is unsafe: it may be recreated as a link before
+		/// Delete runs. Rejecting it must not disable cleanup of an independently verified stale file.
 		/// </summary>
 		[Fact]
-		public void AGenuinelyAbsentDirectoryStillAllowsCleanup()
+		public void AMissingEnumeratedCandidateIsRejectedWithoutDisablingCleanup()
 		{
 			var root = Path.Combine(DestinationDirectory, "r");
 			Directory.CreateDirectory(root);
@@ -472,7 +560,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var task = GetNewTask(new[] { stale, neverCreated }, Array.Empty<string>(), root: root);
 
 			Assert.True(task.Execute());
-			Assert.Equal(new[] { stale, neverCreated }, task.StaleFiles.Select(f => f.ItemSpec).ToArray());
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
+		}
+
+		/// <summary>
+		/// Known outputs are future paths, not wildcard snapshots. Their missing suffixes must remain
+		/// comparable without weakening the stricter treatment of enumerated candidates.
+		/// </summary>
+		[Fact]
+		public void MissingFutureKnownOutputsDoNotDisableOrdinaryCleanup()
+		{
+			var root = Path.Combine(DestinationDirectory, "r");
+			Directory.CreateDirectory(root);
+
+			var stale = Path.Combine(root, "drawable", "orphan.png");
+			WriteFile(stale);
+			var future = Path.Combine(root, "drawable-xhdpi", "camera.png");
+
+			var task = GetNewTask(new[] { stale }, new[] { future }, root: root);
+
+			Assert.True(task.Execute());
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		public enum BrokenLinkKind
@@ -561,11 +669,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		/// <summary>
-		/// Every returned item has to come from <see cref="DetectStaleOutputFilesTask.Files"/>. Nothing may
-		/// be invented, and nothing that was declared as an output may be returned.
+		/// Every returned deletion path has to be the resolved-parent form of a member of
+		/// <see cref="DetectStaleOutputFilesTask.Files"/>. Nothing may be invented, and nothing that was
+		/// declared as an output may be returned.
 		/// </summary>
 		[Fact]
-		public void StaleFilesAreAlwaysASubsetOfTheInputFiles()
+		public void StaleFilesAreAlwaysDeletionPathsForInputFiles()
 		{
 			var files = new[]
 			{
@@ -573,6 +682,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Path.Combine(DestinationDirectory, "drawable", "orphan.png"),
 				Path.Combine(DestinationDirectory, "drawable-xhdpi", "camera.png"),
 			};
+			foreach (var file in files)
+				WriteFile(file);
 
 			var known = new[]
 			{
@@ -586,19 +697,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(task.Execute());
 
 			var stale = task.StaleFiles.Select(f => f.ItemSpec).ToArray();
-			Assert.All(stale, s => Assert.Contains(s, files));
-			Assert.Equal(new[] { files[1], files[2] }, stale);
+			var canonicalizer = new PathCanonicalizer();
+			Assert.All(stale, s => Assert.Contains(s, files.Select(canonicalizer.GetDeletionPath)));
+			Assert.Equal(new[] { canonicalizer.GetDeletionPath(files[1]), canonicalizer.GetDeletionPath(files[2]) }, stale);
 		}
 
 		[Fact]
 		public void EmptyAndWhitespaceItemSpecsAreIgnored()
 		{
 			var stale = Path.Combine(DestinationDirectory, "orphan.png");
+			WriteFile(stale);
 
 			var task = GetNewTask(new[] { "", "   ", stale }, new[] { "", "   " });
 
 			Assert.True(task.Execute());
-			Assert.Equal(stale, Assert.Single(task.StaleFiles).ItemSpec);
+			Assert.Equal(new PathCanonicalizer().GetDeletionPath(stale), Assert.Single(task.StaleFiles).ItemSpec);
 		}
 
 		[Fact]
@@ -606,6 +719,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		{
 			var kept = Path.Combine(DestinationDirectory, "drawable", "camera.png");
 			var differentCase = Path.Combine(DestinationDirectory, "drawable", "CAMERA.png");
+			WriteFile(kept);
+			if (OperatingSystem.IsLinux())
+				WriteFile(differentCase);
 
 			var task = GetNewTask(new[] { differentCase }, new[] { kept });
 
@@ -614,7 +730,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			if (OperatingSystem.IsLinux())
 			{
 				// Linux paths are case sensitive, so these really are two different files.
-				Assert.Equal(differentCase, Assert.Single(task.StaleFiles).ItemSpec);
+				Assert.Equal(new PathCanonicalizer().GetDeletionPath(differentCase), Assert.Single(task.StaleFiles).ItemSpec);
 			}
 			else
 			{
@@ -629,6 +745,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public void MSBuildNormalizesSeparatorsBeforeTheTaskSeesThem()
 		{
 			var kept = Path.Combine(DestinationDirectory, "drawable", "camera.png");
+			WriteFile(kept);
 
 			// MSBuild rewrites separators when it builds an item spec: on Unix a backslash becomes a
 			// forward slash, and on Windows both characters are separators anyway. Either way the task
@@ -640,6 +757,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			Assert.True(task.Execute());
 			Assert.Empty(task.StaleFiles);
+		}
+
+		static void WriteFile(string path)
+		{
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
+			File.WriteAllText(path, "image");
+		}
+
+		bool TryCreateDirectoryAlias(string alias, string target)
+		{
+			string error;
+			bool created;
+			if (OperatingSystem.IsWindows())
+				created = Junction.TryCreate(alias, target, out error);
+			else
+				created = SymbolicLink.TryCreateDirectoryLink(alias, target, out error);
+
+			if (!created)
+				Output.WriteLine($"Skipping: directory aliases are not available on this machine: {error}");
+
+			return created;
 		}
 	}
 }
