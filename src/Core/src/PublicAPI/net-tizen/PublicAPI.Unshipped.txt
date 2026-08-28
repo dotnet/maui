@@ -21,6 +21,8 @@ static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(str
 Microsoft.Maui.ISwipeItemMenuItemIconColor
 Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
 Microsoft.Maui.IImageSourcePaint
 Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Tizen.NUI.BaseComponents.View? containerView) -> void
