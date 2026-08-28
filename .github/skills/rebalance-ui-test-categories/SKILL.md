@@ -4,7 +4,7 @@ description: Rebalances a UI-test umbrella category into additive method-level C
 metadata:
   author: dotnet-maui
   version: "1.0"
-compatibility: Requires PowerShell 7, Azure CLI with the azure-devops extension, and Pester 5 for tests.
+compatibility: Requires PowerShell 7 and Azure CLI with the azure-devops extension.
 ---
 
 # Rebalance UI Test Categories
