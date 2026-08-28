@@ -1574,6 +1574,7 @@ static class UpdateComponentCodeWriter
 		var captureStringWriter = new StringWriter(CultureInfo.InvariantCulture);
 		var captureWriter = new IndentedTextWriter(captureStringWriter, "\t") { NewLine = NewLine };
 		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem, captureWriter);
+		var referenceLookups = new List<(string VariableName, string ElementAccessor, string Name)>();
 
 		// Create a synthetic parent variable so SetPropertyValue can emit "parent.SetValue(...)"
 		var parentAccessor = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
@@ -1602,6 +1603,9 @@ static class UpdateComponentCodeWriter
 			// BEFORE TryProvideValue creates the TypedBinding (which reads extension.Converter).
 			if (ctx.Variables.TryGetValue(elementNode, out var extVar))
 			{
+				var elementType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element");
+				var referenceExtensionType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension");
+
 				foreach (var kvp in elementNode.Properties)
 				{
 					if (kvp.Value is ElementNode propElement
@@ -1622,19 +1626,35 @@ static class UpdateComponentCodeWriter
 						}
 					}
 					else if (kvp.Value is ElementNode referenceElement
-						&& referenceElement.XmlType.Name is "ReferenceExtension" or "Reference"
+						&& referenceExtensionType is not null
+						&& referenceElement.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolvedReferenceType)
+						&& SymbolEqualityComparer.Default.Equals(resolvedReferenceType, referenceExtensionType)
 						&& TryGetReferenceName(referenceElement, out var referenceName)
-						&& compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element") is { } elementType
-						&& ownerType.InheritsFrom(elementType, ctx))
+						&& elementType is not null)
 					{
 						var propLocalName = kvp.Key.LocalName;
 						var propSymbol = extVar.Type.GetAllProperties(propLocalName, ctx).FirstOrDefault();
-						if (propSymbol != null)
+						if (propSymbol is null)
 						{
-							var castType = propSymbol.Type.ToFQDisplayString();
-							var referenceLiteral = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(referenceName, quote: true);
-							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})((global::Microsoft.Maui.Controls.Element){parentAccessor}).FindByName({referenceLiteral});");
+							codeWriter.WriteLine($"// Markup extension '{elementNode.XmlType.Name}' skipped: property '{propLocalName}' required for x:Reference resolution was not found.");
+							return false;
 						}
+
+						var elementAccessor = ownerType.InheritsFrom(elementType, ctx)
+							? parentAccessor
+							: rootType.InheritsFrom(elementType, ctx)
+								? "this"
+								: null;
+						if (elementAccessor is null)
+						{
+							codeWriter.WriteLine($"// Markup extension '{elementNode.XmlType.Name}' skipped: no Element namescope anchor was available for x:Reference '{referenceName}'.");
+							return false;
+						}
+
+						var referenceVariable = $"__xReference{referenceLookups.Count}";
+						referenceLookups.Add((referenceVariable, elementAccessor, referenceName));
+						var castType = propSymbol.Type.ToFQDisplayString();
+						captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType}){referenceVariable};");
 					}
 				}
 			}
@@ -1667,6 +1687,32 @@ static class UpdateComponentCodeWriter
 		codeWriter.WriteLine("{");
 		codeWriter.Indent++;
 
+		foreach (var lookup in referenceLookups)
+		{
+			var referenceLiteral = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(lookup.Name, quote: true);
+			codeWriter.WriteLine($"global::System.Object? {lookup.VariableName} = null;");
+			codeWriter.WriteLine("try");
+			using (PrePost.NewBlock(codeWriter))
+			{
+				codeWriter.WriteLine($"{lookup.VariableName} = ((global::Microsoft.Maui.Controls.Element){lookup.ElementAccessor}).FindByName({referenceLiteral});");
+			}
+			codeWriter.WriteLine("catch (global::System.InvalidOperationException)");
+			using (PrePost.NewBlock(codeWriter))
+			{
+			}
+			codeWriter.WriteLine("catch (global::System.NotSupportedException)");
+			using (PrePost.NewBlock(codeWriter))
+			{
+			}
+		}
+
+		if (referenceLookups.Count > 0)
+		{
+			codeWriter.WriteLine($"if ({string.Join(" && ", referenceLookups.Select(static lookup => $"{lookup.VariableName} != null"))})");
+			codeWriter.WriteLine("{");
+			codeWriter.Indent++;
+		}
+
 		foreach (var line in capturedCode.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
 		{
 			if (!string.IsNullOrEmpty(line))
@@ -1685,6 +1731,12 @@ static class UpdateComponentCodeWriter
 				else
 					codeWriter.WriteLine(mline);
 			}
+		}
+
+		if (referenceLookups.Count > 0)
+		{
+			codeWriter.Indent--;
+			codeWriter.WriteLine("}");
 		}
 
 		codeWriter.Indent--;

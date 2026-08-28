@@ -114,6 +114,13 @@ public partial class BindingAndMarkupHotReloadTests : IDisposable
 
 			object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 		}
+
+		public sealed class ReferenceExtension : IMarkupExtension
+		{
+			public string Name { get; set; } = string.Empty;
+
+			public object ProvideValue(IServiceProvider serviceProvider) => new TestViewModel { Text = Name };
+		}
 		""";
 
 	static XamlHotReloadTestHarness CreateHarness([CallerMemberName] string scenarioName = "") =>

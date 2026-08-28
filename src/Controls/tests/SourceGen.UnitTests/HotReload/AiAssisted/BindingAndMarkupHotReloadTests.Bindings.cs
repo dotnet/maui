@@ -17,6 +17,167 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 public partial class BindingAndMarkupHotReloadTests
 {
 	[MetadataUpdateFact]
+	public void XReferenceBinding_MissingLiveNameScope_RetainsExistingBinding()
+	{
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				internal global::Microsoft.Maui.Controls.Label CaptionLabel = null!;
+
+				private partial void InitializeComponent();
+
+				public MainPage()
+				{
+					InitializeComponent();
+				}
+			}
+			""";
+		const string xamlV0 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption V0" />
+			    <Label Text="{Binding Source={x:Reference CaptionLabel}, Path=Text, StringFormat='echo {0}'}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption V0" />
+			    <Label Text="{Binding Source={x:Reference CaptionLabel}, Path=Text, StringFormat='mirror {0}'}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(XReferenceBinding_MissingLiveNameScope_RetainsExistingBinding),
+			PageClass,
+			pageStub,
+			BindingAndMarkupSource);
+		var generation = harness.Generate(xamlV0, xamlV1);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
+			var caption = Assert.IsType<Label>(layout.Children[0]);
+			var formatted = Assert.IsType<Label>(layout.Children[1]);
+
+			Assert.True(layout.Children.Remove(formatted));
+			formatted.transientNamescope = null;
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+
+			var registration = GetTextRegistration(formatted);
+			var binding = Assert.IsAssignableFrom<BindingBase>(registration.Binding);
+			Assert.Same(caption, binding.GetType().GetProperty("Source")!.GetValue(binding));
+			Assert.Equal("echo Caption V0", formatted.Text);
+
+			caption.Text = "Caption V1";
+			Assert.Equal("echo Caption V1", formatted.Text);
+		});
+	}
+
+	[MetadataUpdateFact]
+	public void XReferenceBinding_RenamedUnregisteredName_DoesNotClearExistingSource()
+	{
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				internal global::Microsoft.Maui.Controls.Label CaptionLabel = null!;
+				internal global::Microsoft.Maui.Controls.Label HeaderLabel = null!;
+
+				private partial void InitializeComponent();
+
+				public MainPage()
+				{
+					InitializeComponent();
+				}
+			}
+			""";
+		const string xamlV0 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption V0" />
+			    <Label Text="{Binding Source={x:Reference CaptionLabel}, Path=Text, StringFormat='echo {0}'}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="HeaderLabel" Text="Caption V1" />
+			    <Label Text="{Binding Source={x:Reference HeaderLabel}, Path=Text, StringFormat='mirror {0}'}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(XReferenceBinding_RenamedUnregisteredName_DoesNotClearExistingSource),
+			PageClass,
+			pageStub,
+			BindingAndMarkupSource);
+		var generation = harness.Generate(xamlV0, xamlV1);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
+			var caption = Assert.IsType<Label>(layout.Children[0]);
+			var formatted = Assert.IsType<Label>(layout.Children[1]);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Equal("Caption V0", caption.Text);
+			Assert.Equal("echo Caption V0", formatted.Text);
+
+			var registration = GetTextRegistration(formatted);
+			var binding = Assert.IsAssignableFrom<BindingBase>(registration.Binding);
+			Assert.Same(caption, binding.GetType().GetProperty("Source")!.GetValue(binding));
+		});
+	}
+
+	[MetadataUpdateFact]
+	public void UserReferenceExtension_IsNotRewrittenAsMauiXReference()
+	{
+		const string xamlV0 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestAiAssisted"
+			             x:Class="TestAiAssisted.MainPage">
+			  <Label Text="{Binding Source={local:Reference Name=Custom}, Path=Text, StringFormat='echo {0}'}" />
+			</ContentPage>
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestAiAssisted"
+			             x:Class="TestAiAssisted.MainPage">
+			  <Label Text="{Binding Source={local:Reference Name=Custom}, Path=Text, StringFormat='mirror {0}'}" />
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV0, xamlV1);
+
+		Assert.DoesNotContain(
+			"FindByName(\"Custom\")",
+			Assert.IsType<string>(generation[1].UpdateComponentSource),
+			StringComparison.Ordinal);
+	}
+
+	[MetadataUpdateFact]
 	public void XReferenceBinding_StringFormatEdit_RetainsSourceAcrossUpdates()
 	{
 		const string pageStub = """
