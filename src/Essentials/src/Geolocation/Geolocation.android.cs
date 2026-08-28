@@ -89,15 +89,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var tcs = new TaskCompletionSource<AndroidLocation?>();
 
 			var allProviders = LocationManager.GetProviders(false);
-
-			var providers = new List<string>();
-			if (allProviders.Contains(LocationManager.GpsProvider))
-				providers.Add(LocationManager.GpsProvider);
-			if (allProviders.Contains(LocationManager.NetworkProvider))
-				providers.Add(LocationManager.NetworkProvider);
-
-			if (providers.Count == 0)
-				providers.Add(providerInfo.Provider);
+			var providers = GetProviders(allProviders, providerInfo.Provider);
 
 			var listener = new SingleLocationListener(LocationManager, providerInfo.Accuracy, providers);
 			listener.LocationHandler = HandleLocation;
@@ -179,15 +171,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				return false;
 
 			var allProviders = LocationManager.GetProviders(false);
-
-			listeningProviders = new List<string>();
-			if (allProviders.Contains(LocationManager.GpsProvider))
-				listeningProviders.Add(LocationManager.GpsProvider);
-			if (allProviders.Contains(LocationManager.NetworkProvider))
-				listeningProviders.Add(LocationManager.NetworkProvider);
-
-			if (listeningProviders.Count == 0)
-				listeningProviders.Add(providerInfo.Provider);
+			listeningProviders = GetProviders(allProviders, providerInfo.Provider);
 
 			continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
 			continuousListener.LocationHandler = HandleLocation;
@@ -241,12 +225,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			continuousListener = null;
 		}
 
-		// TODO: android.location.Criteria deprecated in API 34
-		// https://developer.android.com/reference/android/location/Criteria
-#pragma warning disable CA1422
 		static (string? Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
 		{
-			// Criteria: https://developer.android.com/reference/android/location/Criteria
+			var accuracyDistance = GetAccuracyDistance(accuracy);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(34))
+				return (SelectProvider(locationManager.GetProviders(true), accuracy), accuracyDistance);
 
 			var criteria = new Criteria
 			{
@@ -255,40 +239,33 @@ namespace Microsoft.Maui.Devices.Sensors
 				SpeedRequired = false
 			};
 
-			var accuracyDistance = 100;
-
 			switch (accuracy)
 			{
 				case GeolocationAccuracy.Lowest:
 					criteria.Accuracy = Accuracy.NoRequirement;
 					criteria.HorizontalAccuracy = Accuracy.NoRequirement;
 					criteria.PowerRequirement = LocationPower.NoRequirement;
-					accuracyDistance = 500;
 					break;
 				case GeolocationAccuracy.Low:
 					criteria.Accuracy = Accuracy.Coarse;
 					criteria.HorizontalAccuracy = Accuracy.Low;
 					criteria.PowerRequirement = LocationPower.Low;
-					accuracyDistance = 500;
 					break;
 				case GeolocationAccuracy.Default:
 				case GeolocationAccuracy.Medium:
 					criteria.Accuracy = Accuracy.Coarse;
 					criteria.HorizontalAccuracy = Accuracy.Medium;
 					criteria.PowerRequirement = LocationPower.Medium;
-					accuracyDistance = 250;
 					break;
 				case GeolocationAccuracy.High:
 					criteria.Accuracy = Accuracy.Fine;
 					criteria.HorizontalAccuracy = Accuracy.High;
 					criteria.PowerRequirement = LocationPower.High;
-					accuracyDistance = 100;
 					break;
 				case GeolocationAccuracy.Best:
 					criteria.Accuracy = Accuracy.Fine;
 					criteria.HorizontalAccuracy = Accuracy.High;
 					criteria.PowerRequirement = LocationPower.High;
-					accuracyDistance = 50;
 					break;
 			}
 
@@ -296,7 +273,52 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			return (provider, accuracyDistance);
 		}
-#pragma warning restore CA1422
+
+		internal static string? SelectProvider(IList<string> enabledProviders, GeolocationAccuracy accuracy)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(31) &&
+				enabledProviders.Contains(LocationManager.FusedProvider))
+				return LocationManager.FusedProvider;
+
+			var preferredProvider = accuracy switch
+			{
+				GeolocationAccuracy.High or GeolocationAccuracy.Best => LocationManager.GpsProvider,
+				_ => LocationManager.NetworkProvider,
+			};
+			var alternateProvider = preferredProvider == LocationManager.GpsProvider
+				? LocationManager.NetworkProvider
+				: LocationManager.GpsProvider;
+
+			if (enabledProviders.Contains(preferredProvider))
+				return preferredProvider;
+			if (enabledProviders.Contains(alternateProvider))
+				return alternateProvider;
+
+			return enabledProviders.FirstOrDefault(provider => !ignoredProviders.Contains(provider));
+		}
+
+		internal static List<string> GetProviders(IList<string> allProviders, string fallbackProvider)
+		{
+			var providers = new List<string>();
+
+			if (allProviders.Contains(LocationManager.GpsProvider))
+				providers.Add(LocationManager.GpsProvider);
+			if (allProviders.Contains(LocationManager.NetworkProvider))
+				providers.Add(LocationManager.NetworkProvider);
+			if (providers.Count == 0)
+				providers.Add(fallbackProvider);
+
+			return providers;
+		}
+
+		internal static float GetAccuracyDistance(GeolocationAccuracy accuracy) =>
+			accuracy switch
+			{
+				GeolocationAccuracy.Lowest or GeolocationAccuracy.Low => 500,
+				GeolocationAccuracy.Default or GeolocationAccuracy.Medium => 250,
+				GeolocationAccuracy.Best => 50,
+				_ => 100,
+			};
 
 		internal static bool IsBetterLocation(AndroidLocation location, AndroidLocation? bestLocation)
 		{
