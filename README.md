@@ -59,12 +59,18 @@ stages, because manifests reference packs and NuGet.org packages are immutable.
 Structural, not conventional — there are tests that fail if they stop being true.
 
 - **The tool never pushes anything.** `1ES.PublishNuget@1` performs every upload; it is a
-  compliance requirement. There is no push verb, no `--push` flag, and no upload code path in
-  any shipping assembly. The tool never holds a NuGet.org credential.
-- **The tool never starts a subprocess.** `darc` is invoked from pipeline YAML, where Azure
-  DevOps owns the exit code and the log.
-- **The tool mutates nothing outside its own output directory.** It reads BAR, reads a drop
-  directory, queries NuGet.org read-only, and writes a plan.
+  compliance requirement. There is no push verb, no `--push` flag, and no upload code path.
+  The load-bearing part is that **the tool is never given a NuGet.org credential**: Azure
+  DevOps injects a service-connection secret only into the task that declares it, so the tool
+  could not publish even if it were compromised. An architecture test also scans for the push
+  API, but that is a tripwire, not the guarantee.
+- **The tool mutates nothing outside its own output directory.** Every filesystem effect goes
+  through one seam that refuses any write or delete resolving outside the directory the verb
+  was rooted at — so a crafted plan cannot reach outside the staging tree even if every other
+  check were bypassed. Tests assert that `plan` and `stage` delete nothing at all.
+- **The tool never shells out to `darc`.** `darc` is invoked from pipeline YAML, where Azure
+  DevOps owns the exit code and the log. (Authentication does start `az` transitively via
+  `Azure.Identity`; the codebase itself starts no process.)
 - **Everything fails closed.** Unknown repository, wrong commit, missing channel, duplicate
   package, workload misclassification, tampered artifact — all are errors with stable codes.
 

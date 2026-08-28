@@ -98,14 +98,22 @@ stages:
     # Removes already-published packages in place, so the push glob below sees only what
     # still needs publishing. Fails closed on a missing, tampered or unlisted file.
     - pwsh: |
-        & "$(toolPath)" filter `
-          --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
-          --stage "$(Pipeline.Workspace)" `
-          --expected-plan-hash "$(ReleasePlanHash)" `
-          --set "${{ parameters.artifactName }}" `
-          --skip '${{ parameters.recoveryFilters }}'
+        $ErrorActionPreference = 'Stop'
+        & "$env:TOOL_PATH" filter `
+          --plan "$env:ARTIFACT_DIR/release-plan.json" `
+          --stage "$env:STAGE_ROOT" `
+          --set "$env:SET_NAME" `
+          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+          --skip $env:RECOVERY_FILTERS
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Filter already-published packages
+      env:
+        TOOL_PATH: $(toolPath)
+        ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+        STAGE_ROOT: $(Pipeline.Workspace)
+        SET_NAME: ${{ parameters.artifactName }}
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
     # The compliance boundary. The tool has no push capability; this task performs the
     # upload and carries the SBOM and provenance obligations.
@@ -122,12 +130,19 @@ stages:
     # Requires every identity in the plan, including ones filter withheld: those were
     # withheld because they were already live, so their absence would disprove that.
     - pwsh: |
-        & "$(toolPath)" verify `
-          --plan "$(Pipeline.Workspace)/${{ parameters.artifactName }}/release-plan.json" `
-          --set "${{ parameters.artifactName }}" `
-          --stage "$(Pipeline.Workspace)" `
-          --expected-plan-hash "$(ReleasePlanHash)" `
+        $ErrorActionPreference = 'Stop'
+        & "$env:TOOL_PATH" verify `
+          --plan "$env:ARTIFACT_DIR/release-plan.json" `
+          --set "$env:SET_NAME" `
+          --stage "$env:STAGE_ROOT" `
+          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
           --max-duration-minutes 30 `
           --poll-seconds 20
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Verify packages on NuGet.org
+      env:
+        TOOL_PATH: $(toolPath)
+        ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+        STAGE_ROOT: $(Pipeline.Workspace)
+        SET_NAME: ${{ parameters.artifactName }}
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)

@@ -231,7 +231,7 @@ public class PipelineDefinitionTests
         var text = File.ReadAllText(PipelinePath);
 
         var setsToolPath = text.IndexOf("variable=toolPath", StringComparison.Ordinal);
-        var firstUse = text.IndexOf("\"$(toolPath)\"", StringComparison.Ordinal);
+        var firstUse = text.IndexOf("TOOL_PATH: $(toolPath)", StringComparison.Ordinal);
 
         Assert.True(setsToolPath > 0, "release.yml must publish the tool and set toolPath.");
         Assert.True(firstUse > setsToolPath, "release.yml invokes the tool before building it.");
@@ -267,22 +267,197 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// Requirement 4: a dry run must be structurally incapable of publishing. The publish
-    /// stages are emitted only when publishPackages is true, so on a dry run they do not
-    /// exist in the expanded YAML at all.
+    /// Requirement 4: a dry run must be structurally incapable of publishing.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is the test that certifies the property everything else rests on, so it checks
+    /// <b>nesting</b>, not position. An earlier version asserted only that each
+    /// <c>publish-set.yml</c> reference appeared later in the file than the guard — which a
+    /// sibling include placed after the guard would satisfy while being emitted
+    /// unconditionally. Later in the file is not the same as inside the guard.
+    /// </para>
+    /// <para>
+    /// Indentation is the structural property in YAML, so that is what is measured: every
+    /// publish include must be more deeply indented than the guard, with no intervening line
+    /// at or below the guard's own indentation (which would close it).
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void Every_publish_stage_is_nested_inside_the_publish_guard()
+    {
+        var lines = File.ReadAllLines(PipelinePath);
+
+        var includes = Enumerable.Range(0, lines.Length)
+            .Where(i => lines[i].Contains("publish-set.yml", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.NotEmpty(includes);
+
+        foreach (var include in includes)
+        {
+            Assert.True(
+                EnclosingConditions(lines, include).Any(c =>
+                    c.Contains("parameters.publishPackages, true", StringComparison.Ordinal)),
+                $"release.yml line {include + 1} includes a publish stage that is not nested " +
+                $"inside a publishPackages guard, so it would be emitted on a dry run: " +
+                $"{lines[include].Trim()}");
+        }
+    }
+
+    /// <summary>
+    /// Walks outwards from a line, collecting every <c>${{ if }}</c> that encloses it.
+    /// </summary>
+    /// <remarks>
+    /// Enclosure in YAML is indentation, so an ancestor is the nearest preceding line at a
+    /// strictly smaller indent. This is what distinguishes "inside the guard" from "later in
+    /// the file than the guard" — the distinction a positional check cannot make, and the one
+    /// that decides whether a dry run can publish.
+    /// </remarks>
+    private static IReadOnlyList<string> EnclosingConditions(string[] lines, int index)
+    {
+        var conditions = new List<string>();
+        var indent = Indent(lines[index]);
+
+        for (var i = index - 1; i >= 0 && indent > 0; i--)
+        {
+            if (lines[i].Trim().Length == 0)
+            {
+                continue;
+            }
+
+            var candidate = Indent(lines[i]);
+            if (candidate >= indent)
+            {
+                continue;
+            }
+
+            indent = candidate;
+
+            if (lines[i].Contains("${{ if", StringComparison.Ordinal))
+            {
+                conditions.Add(lines[i]);
+            }
+        }
+
+        return conditions;
+    }
+
+    private static int Indent(string line) => line.Length - line.TrimStart().Length;
+
+    /// <summary>
+    /// Queue-time parameters are attacker-controlled in a shared pipeline: anyone who can
+    /// queue it supplies them, and the preparation tasks hold a production Maestro credential.
+    /// Splicing them into script text lets a value containing a quote and a separator close
+    /// the argument and run arbitrary commands. They must be passed as environment variables.
+    /// </summary>
+    [Theory]
+    [InlineData("commitHash")]
+    [InlineData("barBuildId")]
+    [InlineData("includeFilters")]
+    [InlineData("excludeFilters")]
+    [InlineData("ghOwner")]
+    [InlineData("ghRepo")]
+    [InlineData("recoveryFilters")]
+    public void Queue_time_parameters_are_never_spliced_into_script_text(string parameterName)
+    {
+        var reference = $"${{{{ parameters.{parameterName} }}}}";
+
+        foreach (var path in new[]
+        {
+            PipelinePath,
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"),
+        })
+        {
+            var lines = File.ReadAllLines(path);
+
+            foreach (var i in ScriptLines(lines))
+            {
+                Assert.DoesNotContain(
+                    reference,
+                    lines[i]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Indices of every line inside a PowerShell block scalar.
+    /// </summary>
+    /// <remarks>
+    /// Only script bodies matter. A parameter in <c>name:</c>, in an <c>env:</c> binding, or
+    /// in a template hand-off is inert; the same parameter inside <c>inlineScript: |</c> is
+    /// executable text, and in a shared pipeline its value is supplied by whoever queued the
+    /// run — into a task holding a production Maestro credential.
+    /// </remarks>
+    private static IReadOnlyList<int> ScriptLines(string[] lines)
+    {
+        var inside = new List<int>();
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var trimmed = lines[i].TrimEnd();
+            if (!trimmed.EndsWith("inlineScript: |", StringComparison.Ordinal) &&
+                !trimmed.EndsWith("- pwsh: |", StringComparison.Ordinal) &&
+                !trimmed.EndsWith("script: |", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            // A YAML block scalar's content indentation is set by its first non-empty line,
+            // and the block ends at the first line indented less than that. Measuring from
+            // the `|` line instead would wrongly swallow the step's sibling keys - including
+            // the `env:` block, which is exactly where these parameters are supposed to live.
+            var contentIndent = -1;
+
+            for (var j = i + 1; j < lines.Length; j++)
+            {
+                if (lines[j].Trim().Length == 0)
+                {
+                    continue;
+                }
+
+                if (contentIndent < 0)
+                {
+                    contentIndent = Indent(lines[j]);
+                }
+                else if (Indent(lines[j]) < contentIndent)
+                {
+                    break;
+                }
+
+                inside.Add(j);
+            }
+        }
+
+        return inside;
+    }
+
+    /// <summary>
+    /// Every mutation in this pipeline is gated by a human. Promotion writes to BAR, so it
+    /// needs its own approval rather than inheriting one from a later stage.
     /// </summary>
     [Fact]
-    public void Publish_stages_are_excluded_at_compile_time_on_a_dry_run()
+    public void The_bar_promotion_stage_is_gated_by_its_own_approval()
     {
         var text = File.ReadAllText(PipelinePath);
 
-        Assert.Contains("${{ if eq(parameters.publishPackages, true) }}", text, StringComparison.Ordinal);
+        var promote = text[text.IndexOf("- stage: promote_workload_set", StringComparison.Ordinal)..];
+        promote = promote[..promote.IndexOf("${{ if eq(parameters.publishPackages, true) }}", StringComparison.Ordinal)];
 
-        // Every publish-set include must sit inside that guard.
-        var guard = text.IndexOf("${{ if eq(parameters.publishPackages, true) }}", StringComparison.Ordinal);
-        foreach (Match match in Regex.Matches(text, @"publish-set\.yml"))
-        {
-            Assert.True(match.Index > guard, "A publish stage is emitted outside the publishPackages guard.");
-        }
+        Assert.Contains("ManualValidation@0", promote, StringComparison.Ordinal);
+        Assert.Contains("pool: server", promote, StringComparison.Ordinal);
+        Assert.Contains("dependsOn: promote_approval", promote, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A dry run and a real publish are otherwise indistinguishable in run history.
+    /// </summary>
+    [Fact]
+    public void Runs_are_tagged_with_their_intent()
+    {
+        var text = File.ReadAllText(PipelinePath);
+
+        Assert.Contains("##vso[build.addbuildtag]PUBLISH", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]DRY-RUN", text, StringComparison.Ordinal);
     }
 }

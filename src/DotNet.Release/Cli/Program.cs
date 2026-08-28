@@ -69,6 +69,7 @@ public static class Program
 
             return Verbs.PlanAsync(
                 console,
+                new PhysicalReleaseFileSystem(parse.GetValue(output)!.FullName),
                 MaestroBuildRegistry.Create(api),
                 File.ReadAllText(parse.GetValue(config)!.FullName),
                 parse.GetValue(repo)!,
@@ -113,6 +114,7 @@ public static class Program
 
             return Verbs.StageAsync(
             console,
+            new PhysicalReleaseFileSystem(parse.GetValue(output)!.FullName),
             new NupkgIdentityReader(),
             File.ReadAllText(parse.GetValue(config)!.FullName),
             File.ReadAllText(parse.GetValue(plan)!.FullName),
@@ -156,11 +158,14 @@ public static class Program
             var planFile = parse.GetValue(plan)!;
             using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
 
+            var stageRoot = parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!;
+
             return Verbs.FilterAsync(
                 console,
+                new PhysicalReleaseFileSystem(stageRoot),
                 new PackageAvailabilityProbe(checker),
                 File.ReadAllText(planFile.FullName),
-                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
+                stageRoot,
                 PackageGlob.ParseList(parse.GetValue(skip)),
                 parse.GetValue(expectedHash),
                 parse.GetValue(set),
@@ -181,7 +186,11 @@ public static class Program
             Description = "Artifact name of the package set this stage published.",
             Required = true,
         };
-        var expectedHash = new Option<string?>("--expected-plan-hash") { Description = "Fail unless the plan matches this SHA-256." };
+        var expectedHash = new Option<string>("--expected-plan-hash")
+        {
+            Description = "The SHA-256 the preparing stage pinned. The plan must match it.",
+            Required = true,
+        };
         var stage = new Option<DirectoryInfo?>("--stage") { Description = "Directory containing the staged set directories. Defaults to the plan's directory." };
 
         var command = new Command("verify", "Poll until every package in scope is indexed on NuGet.org.")
@@ -196,6 +205,7 @@ public static class Program
 
             return Verbs.VerifyAsync(
                 console,
+                new PhysicalReleaseFileSystem(parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!),
                 new PackageAvailabilityProbe(checker),
                 File.ReadAllText(planFile.FullName),
                 TimeSpan.FromMinutes(parse.GetValue(maxDuration)),

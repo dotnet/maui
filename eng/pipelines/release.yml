@@ -208,18 +208,48 @@ extends:
             azureSubscription: "Darc: Maestro Production"
             scriptType: pscore
             scriptLocation: inlineScript
-            # Emits the BarId output variable, which the gather step below consumes.
+            # Queue-time parameters are passed as environment variables and never spliced
+            # into the script text. Anyone who can queue this pipeline controls these values,
+            # and this task holds a production Maestro credential: a value containing a quote
+            # and a semicolon would otherwise close the argument and run arbitrary commands.
+            # They are also shape-checked here, so a malformed value fails before the tool
+            # authenticates rather than after.
             inlineScript: |
-              $barId = if ('${{ parameters.barBuildId }}' -ne 'skip') { @('--bar-id', '${{ parameters.barBuildId }}') } else { @() }
+              $ErrorActionPreference = 'Stop'
 
-              & "$(toolPath)" plan `
-                --config "$(Build.SourcesDirectory)/config/repositories.json" `
-                --repo "${{ parameters.ghOwner }}/${{ parameters.ghRepo }}" `
-                --commit "${{ parameters.commitHash }}" `
-                --expect-workload $(isWorkload) `
-                --out "$(Agent.TempDirectory)/stage" `
+              if ($env:COMMIT_HASH -notmatch '^[0-9a-fA-F]{40}$') {
+                throw "Commit '$env:COMMIT_HASH' is not a 40-character hexadecimal SHA."
+              }
+
+              $barId = @()
+              if ($env:BAR_BUILD_ID -ne 'skip') {
+                if ($env:BAR_BUILD_ID -notmatch '^[0-9]+$') {
+                  throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
+                }
+                $barId = @('--bar-id', $env:BAR_BUILD_ID)
+              }
+
+              if ($env:GH_OWNER -notmatch '^[A-Za-z0-9\-]+$' -or $env:GH_REPO -notmatch '^[A-Za-z0-9\-\._]+$') {
+                throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
+              }
+
+              & "$env:TOOL_PATH" plan `
+                --config "$env:CONFIG_PATH" `
+                --repo "$env:GH_OWNER/$env:GH_REPO" `
+                --commit $env:COMMIT_HASH `
+                --expect-workload $env:IS_WORKLOAD `
+                --out "$env:STAGE_DIR" `
                 @barId
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          env:
+            TOOL_PATH: $(toolPath)
+            CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
+            STAGE_DIR: $(Agent.TempDirectory)/stage
+            IS_WORKLOAD: $(isWorkload)
+            GH_OWNER: ${{ parameters.ghOwner }}
+            GH_REPO: ${{ parameters.ghRepo }}
+            COMMIT_HASH: ${{ parameters.commitHash }}
+            BAR_BUILD_ID: ${{ parameters.barBuildId }}
 
         - task: AzureCLI@2
           displayName: Gather the drop
@@ -242,16 +272,25 @@ extends:
               if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
 
         - pwsh: |
-            & "$(toolPath)" stage `
-              --config "$(Build.SourcesDirectory)/config/repositories.json" `
-              --plan "$(Agent.TempDirectory)/stage/plan.json" `
-              --drop "$(Agent.TempDirectory)/drop" `
-              --out "$(Build.ArtifactStagingDirectory)" `
-              --include '${{ parameters.includeFilters }}' `
-              --exclude '${{ parameters.excludeFilters }}' `
-              --tool "$(toolPath)"
+            $ErrorActionPreference = 'Stop'
+            & "$env:TOOL_PATH" stage `
+              --config "$env:CONFIG_PATH" `
+              --plan "$env:STAGE_DIR/plan.json" `
+              --drop "$env:DROP_DIR" `
+              --out "$env:ARTIFACT_DIR" `
+              --include $env:INCLUDE_FILTERS `
+              --exclude $env:EXCLUDE_FILTERS `
+              --tool "$env:TOOL_PATH"
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           displayName: Validate and stage packages
+          env:
+            TOOL_PATH: $(toolPath)
+            CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
+            STAGE_DIR: $(Agent.TempDirectory)/stage
+            DROP_DIR: $(Agent.TempDirectory)/drop
+            ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)
+            INCLUDE_FILTERS: ${{ parameters.includeFilters }}
+            EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
         - pwsh: |
             # The pipeline computes the pin itself rather than trusting the tool to declare
@@ -263,11 +302,27 @@ extends:
           name: pinPlan
           displayName: Pin the release plan hash
 
+        # Runs are otherwise indistinguishable in history, so intent is recorded as a build
+        # tag. A logging command is used rather than the `name:` scalar because the run name
+        # is fixed at queue time.
+        - ${{ if eq(parameters.publishPackages, true) }}:
+          - pwsh: Write-Host '##vso[build.addbuildtag]PUBLISH'
+            displayName: Tag this run as PUBLISH
+
         - ${{ if eq(parameters.publishPackages, false) }}:
           - pwsh: |
-              Write-Host 'DRY RUN. No publish stages exist in this run.'
+              Write-Host '##vso[build.addbuildtag]DRY-RUN'
+              Write-Host 'DRY RUN. The publish stages do not exist in this run.'
+              Write-Host 'Nothing will be pushed to NuGet.org and no BAR channel will change.'
               Write-Host 'Review the staged artifacts and release-plan.json above.'
             displayName: Dry run - nothing will be published
+
+          # An operator who ticked promoteWorkloadSet on a dry run gets no stage and, without
+          # this, no explanation either.
+          - ${{ if eq(parameters.promoteWorkloadSet, true) }}:
+            - pwsh: |
+                Write-Host '##vso[task.logissue type=warning]promoteWorkloadSet was requested but is ignored on a dry run. Re-run with publishPackages enabled to promote.'
+              displayName: Warn - promotion ignored on a dry run
 
     # -----------------------------------------------------------------------------------------
     # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
@@ -277,9 +332,26 @@ extends:
         displayName: Promote to workload set channel
         dependsOn: prepare_release
         jobs:
+        # Promotion mutates BAR, so it gets its own gate. Without one it would run in
+        # parallel with the publish stages' approvals, mutating release state before any
+        # human had reviewed the plan - contrary to the prepare -> review -> mutate flow
+        # every other mutation in this pipeline follows.
+        - job: promote_approval
+          displayName: Wait to promote
+          timeoutInMinutes: 240
+          pool: server
+          steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 120
+            inputs:
+              instructions: 'Review release-plan.json, then press "Resume" to add this build to its workload-set channel. This mutates BAR.'
+              onTimeout: reject
+
         - job: promote
           displayName: Add build to workload set channel
           timeoutInMinutes: 60
+          dependsOn: promote_approval
+          condition: eq(dependencies.promote_approval.result, 'Succeeded')
           templateContext:
             inputs:
             - input: pipelineArtifact

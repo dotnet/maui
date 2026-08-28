@@ -17,6 +17,12 @@ public class WorkloadStageScopingTests : IDisposable
     private readonly Workspace _workspace = new();
     private readonly RecordingConsole _console = new();
 
+    /// <summary>Unrestricted: containment is asserted in ReleaseFileSystemTests.</summary>
+    private static IReleaseFileSystem Fs => new PhysicalReleaseFileSystem();
+
+    /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
+    private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
+
     public void Dispose() => _workspace.Dispose();
 
     private const string Pack = "Microsoft.Maui.Controls";
@@ -31,11 +37,11 @@ public class WorkloadStageScopingTests : IDisposable
         var registry = new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui"));
 
         Assert.Equal(ExitCodes.Success, await Verbs.PlanAsync(
-            _console, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null, true,
+            _console, Fs, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null, true,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None));
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
-            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, Fs, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
@@ -58,20 +64,20 @@ public class WorkloadStageScopingTests : IDisposable
     }
 
     private Task<int> Filter(string? set, IPackageAvailabilityProbe probe) =>
-        Verbs.FilterAsync(_console, probe, _workspace.ReadPlan(), _workspace.Out, [], null, set, CancellationToken.None);
+        Verbs.FilterAsync(_console, Fs, probe, _workspace.ReadPlan(), _workspace.Out, [], PlanHash, set, CancellationToken.None);
 
     private Task<int> Verify(string? set, IPackageAvailabilityProbe probe, int maxMinutes = 30)
     {
         var now = Workspace.Now;
 
         return Verbs.VerifyAsync(
-            _console, probe, _workspace.ReadPlan(),
+            _console, Fs, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
             () => now,
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             set,
             _workspace.Out,
-            null,
+            PlanHash,
             CancellationToken.None);
     }
 
@@ -209,6 +215,12 @@ public class VerificationBudgetTests : IDisposable
     private readonly Workspace _workspace = new();
     private readonly RecordingConsole _console = new();
 
+    /// <summary>Unrestricted: containment is asserted in ReleaseFileSystemTests.</summary>
+    private static IReleaseFileSystem Fs => new PhysicalReleaseFileSystem();
+
+    /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
+    private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
+
     public void Dispose() => _workspace.Dispose();
 
     /// <summary>The template's defaults.</summary>
@@ -226,11 +238,11 @@ public class VerificationBudgetTests : IDisposable
         var registry = new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
 
         await Verbs.PlanAsync(
-            _console, registry, Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null, false,
+            _console, Fs, registry, Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null, false,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
-            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, Fs, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
@@ -241,13 +253,13 @@ public class VerificationBudgetTests : IDisposable
         var now = Workspace.Now;
 
         return Verbs.VerifyAsync(
-            _console, probe, _workspace.ReadPlan(),
+            _console, Fs, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(deadlineMinutes), TimeSpan.FromSeconds(pollSeconds),
             () => now,
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             null,
             _workspace.Out,
-            null,
+            PlanHash,
             CancellationToken.None);
     }
 

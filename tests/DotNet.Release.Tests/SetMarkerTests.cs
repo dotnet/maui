@@ -16,6 +16,12 @@ public class SetMarkerTests : IDisposable
     private readonly Workspace _workspace = new();
     private readonly RecordingConsole _console = new();
 
+    /// <summary>Unrestricted: containment is asserted in ReleaseFileSystemTests.</summary>
+    private static IReleaseFileSystem Fs => new PhysicalReleaseFileSystem();
+
+    /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
+    private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
+
     public void Dispose() => _workspace.Dispose();
 
     private const string Pack = "Microsoft.Maui.Controls";
@@ -27,12 +33,12 @@ public class SetMarkerTests : IDisposable
         _workspace.WritePackage(Manifest, "10.0.0");
 
         await Verbs.PlanAsync(
-            _console, new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
+            _console, Fs, new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
             Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null, true,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
-            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, Fs, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None));
@@ -40,7 +46,7 @@ public class SetMarkerTests : IDisposable
 
     private Task<int> Filter(string? set) =>
         Verbs.FilterAsync(
-            _console, new FakeProbe(), _workspace.ReadPlan(), _workspace.Out, [], null, set, CancellationToken.None);
+            _console, Fs, new FakeProbe(), _workspace.ReadPlan(), _workspace.Out, [], PlanHash, set, CancellationToken.None);
 
     private string SetDirectory(string artifactName) => Path.Combine(_workspace.Out, artifactName);
 
@@ -193,10 +199,10 @@ public class SetMarkerTests : IDisposable
 
         var now = Workspace.Now;
         var exit = await Verbs.VerifyAsync(
-            _console, new FakeProbe(), _workspace.ReadPlan(),
+            _console, Fs, new FakeProbe(), _workspace.ReadPlan(),
             TimeSpan.FromMinutes(30), TimeSpan.FromSeconds(20),
             () => now, (d, _) => { now = now.Add(d); return Task.CompletedTask; },
-            StagePlanner.ManifestsArtifactName, _workspace.Out, null, CancellationToken.None);
+            StagePlanner.ManifestsArtifactName, _workspace.Out, PlanHash, CancellationToken.None);
 
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains(ErrorCodes.PackageSetMismatch, _console.AllErrors, StringComparison.Ordinal);

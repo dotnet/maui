@@ -89,10 +89,19 @@ because every remaining external interaction is a read behind an interface.
 
 ### P2 — No subprocesses, anywhere
 
-No `Process.Start`, no shelling out, no stdout scraping, no exit-code plumbing. There is no
-process-execution abstraction in the codebase at all. Where an external tool is genuinely
-the right implementation (`gather-drop`, `add-build-to-channel`), it is invoked from YAML,
-where Azure DevOps owns the exit code natively and `--verbose` output lands in the build log.
+No `Process.Start`, no shelling out, no stdout scraping, no exit-code plumbing **in the code
+this repository owns**. Where an external tool is genuinely the right implementation
+(`gather-drop`, `add-build-to-channel`), it is invoked from YAML, where Azure DevOps owns the
+exit code natively and `--verbose` output lands in the build log.
+
+**Correction, because the original claim was too strong.** "There are no subprocesses
+anywhere" was wrong: authentication uses `Azure.Identity`, and `AzureCliCredential` launches
+`az account get-access-token`. So the running process does start a child process,
+transitively, through a dependency. The architecture test passes because it scans *this*
+assembly's type references and never saw it. The accurate claim is narrower and still worth
+having: this codebase contains no process-execution abstraction and never shells out to darc,
+which is what made the old pipeline's failures undiagnosable. Credential acquisition is
+Azure's business, not ours.
 
 ### P3 — Pure policy first
 
@@ -122,10 +131,17 @@ Therefore:
   `release filter --plan` → `1ES.PublishNuget@1` → `release verify --plan`.
   Two tool invocations bracketing the compliance task.
 
-This is a real architectural benefit, not merely a constraint accepted under protest.
-Credential handling stays entirely with 1ES and the `nuget.org (dotnetframework)` service
-connection. The tool never holds a NuGet.org API key, so no amount of tool misbehaviour —
-including a bug, a bad plan file, or a malicious input — can publish a package.
+**The strongest property in this design is the credential boundary, not any test.** The
+`nuget.org (dotnetframework)` service connection is bound to the `publishFeedCredentials`
+input of `1ES.PublishNuget@1`. Azure DevOps injects a service-connection secret only into the
+task that declares it, so `release filter` and `release verify` — running in the *same job* —
+cannot read it. That is platform-enforced and holds even if the tool were wholly compromised.
+
+The architecture test that scans for `PackageUpdateResource` is a useful tripwire and is
+worth keeping, but it is **not** proof. It scans the type references an assembly names, so it
+cannot see a reflective lookup, a raw `HttpClient.PutAsync` to the NuGet.org endpoint, or a
+push reached transitively through a dependency. Do not lean on it as though it were the
+guarantee. The guarantee is that the tool has no credential to push with.
 
 **Trade-off, stated honestly:** the push cannot be folded into a single command. That is
 precisely why `filter` and `verify` are separate verbs operating on the same plan file
@@ -950,7 +966,134 @@ but it is currently an accident of topology rather than a decision.
 
 ---
 
-## 18. Open questions
+## 18. The dry run, and why it cannot publish
+
+Two independent reviews (Claude Opus 5, GPT-5.6 Sol Fast) were asked one question: *can a
+default-parameter run have any external effect?* They **disagreed on the headline**, which is
+worth recording because the disagreement is the useful part.
+
+- **Opus 5: "No - a default run cannot mutate anything external."** It verified the guard
+  nesting by indentation and confirmed the tool's entire mutating surface is filesystem-only.
+- **Sol: "Yes."** But its "yes" counts *any* effect - authentication, artifact upload, logs,
+  audit records - not mutation of release state. On publishing and BAR it agreed: neither
+  happens.
+
+They agree on substance. **With ordinary inputs, a default run publishes nothing and mutates
+no BAR state.** What it does do, honestly enumerated:
+
+| Effect | Escapes the agent? |
+|---|---|
+| Authenticates via `Darc: Maestro Production` | Token acquisition, audit record |
+| Reads BAR; downloads assets from internal feeds | Read-only |
+| Uploads staged packages, plan and tool as pipeline artifacts | **Yes** - visible to anyone with pipeline read access |
+| Build record, logs, run tags | Yes, benign |
+| 1ES compliance tasks (SBOM, CodeQL, Component Governance) | Yes, inherited from the template |
+
+The artifact row matters for an embargoed release: a dry run materialises the complete
+unreleased package set into artifact storage. Fine routinely; worth knowing before rehearsing
+a security release.
+
+**The single most important safety fact** is a comparison, not an assertion: the pipeline
+being replaced defaults `pushPackages`, `pushWorkloadSet` and `pushNugetOrg` all to **true**
+- it publishes on default parameters. This one inverts all three.
+
+### What the reviews found, and what changed
+
+**Sol found a real vulnerability Opus missed: command injection.** Queue-time parameters were
+spliced directly into inline PowerShell:
+
+```yaml
+--commit "${{ parameters.commitHash }}"
+```
+
+A `commitHash` of `abc"; <command>; "` closes the argument and runs arbitrary commands -
+inside a task holding a production Maestro credential, in a pipeline anyone with queue
+permission can trigger. Every parameter now crosses into scripts as an environment variable,
+commit and BAR ID are shape-checked before the tool authenticates, and
+`Queue_time_parameters_are_never_spliced_into_script_text` fails the build if anyone
+reintroduces a splice. Verified non-vacuous by re-introducing the exact vulnerability.
+
+**Opus found that the test certifying the dry-run guarantee was positional.** It asserted
+that each `publish-set.yml` include appeared *later in the file* than the guard - which a
+sibling include placed after the guard would satisfy while being emitted unconditionally.
+*Later than* is not *inside*. The test now walks each include's enclosing conditions by
+indentation and requires a `publishPackages, true` guard among its ancestors.
+
+**Both flagged promotion running before review.** `darc add-build-to-channel` mutates BAR and
+depended only on `prepare_release`, so it ran in parallel with the publish approvals -
+mutating release state before any human saw the plan. It now has its own `ManualValidation@0`
+gate, so every mutation in the system is gated.
+
+Also fixed: `--expected-plan-hash` was optional and an empty value silently meant "skip
+verification" on the value pinning the whole artifact (now required, fails closed); runs are
+tagged `PUBLISH` or `DRY-RUN` so history distinguishes them; and a dry run with
+`promoteWorkloadSet` ticked now warns rather than silently ignoring it.
+
+---
+
+## 19. Answering "could the dry run just swap the implementations?"
+
+The proposal: make push an interface with a real and a no-op implementation, and have the dry
+run register the no-op - a "fully blocked" design without special code paths, reusable in
+tests.
+
+**For the push: no, and both reviewers were emphatic.** It would be a downgrade.
+
+1. It converts a **compile-time absence into a runtime configuration question.** Today the
+   answer to "can this binary push?" is *there is no such code*. With a seam it becomes
+   *depends which registration ran* - and the failure modes are a wrong default registration,
+   a config precedence bug, an inverted `#if`. NuGet.org packages are immutable; that incident
+   is unrecoverable.
+2. It **breaks the compliance constraint.** A real implementation must hold a NuGet.org API
+   key, which destroys the strongest property in the design (section 3): the tool has no
+   credential, so it cannot publish even if compromised.
+3. **The dry-run barrier is not in the tool anyway.** It is `${{ if }}` - the publish step
+   does not exist. A no-op implementation would sit downstream of a barrier that already
+   prevents the step from running.
+4. You could only test **your wiring** ("the no-op was registered"), never a property of the
+   shipped artifact.
+
+The seam already exists. It is the process boundary between `release filter` and
+`1ES.PublishNuget@1`, enforced by credential scoping rather than by code.
+
+**But the idea is right one layer down, and both reviewers independently proposed the same
+thing.** `stage` wrote files and `filter` deleted them through direct `File.*` calls, which
+meant P1 - *the tool mutates nothing outside its own output directory*, the organising
+constraint of the entire design - was the one property with **no mechanical enforcement at
+all**. It was a claim about code that happened to be written that way.
+
+So `IReleaseFileSystem` now carries every filesystem effect, with two implementations:
+
+- **`PhysicalReleaseFileSystem(writeRoot)`** - refuses any write or delete resolving outside
+  its root. Reads stay unrooted, because the policy file, the drop and the tool legitimately
+  live elsewhere. Each verb is rooted at exactly the directory it may touch. **This is a
+  safety gain independent of testing:** `filter` derives deletion targets from a plan, and a
+  plan is data, so containment now holds even if the hash chain, the marker check and the
+  file-name validation were all bypassed.
+- **`RecordingReleaseFileSystem`** - wraps the real one and records every effect.
+
+That makes previously impossible assertions ordinary tests:
+
+```
+Plan_writes_exactly_one_file
+Plan_deletes_nothing
+Stage_deletes_nothing
+A_dry_run_mutates_nothing_outside_its_output_directory
+Filter_deletes_only_the_already_published_packages
+```
+
+You cannot prove a negative about code that reaches the filesystem directly; with a seam you
+can.
+
+**What it does not prove.** Only that the two verbs a dry run invokes mutate nothing. The
+*pipeline*-level guarantee stays where it was - compile-time stage exclusion plus
+`PipelineDefinitionTests` - because artifact upload, darc and the 1ES compliance tasks are
+outside the tool and always will be. That is precisely why the nesting fix above mattered
+more than this refactor did.
+
+---
+
+## 20. Open questions
 
 1. **Asset download without `gather-drop`.** Resolved for now — `gather-drop` stays (§4).
    The client does return asset locations, so a future native download is conceivable, but
