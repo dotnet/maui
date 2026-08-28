@@ -306,6 +306,12 @@ Describe 'Pipeline review routing' {
         $script:PipelineSource | Should -Match 'PARAM_REVIEW_REPOSITORY: \$\{\{ parameters\.ReviewRepository \}\}'
         @([regex]::Matches(
             $script:PipelineSource,
+            [regex]::Escape('REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"'))).Count |
+            Should -Be 5
+        $script:PipelineSource | Should -Match ([regex]::Escape(
+            '$reviewRepository = [string]$env:PARAM_REVIEW_REPOSITORY'))
+        @([regex]::Matches(
+            $script:PipelineSource,
             [regex]::Escape('if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then'))).Count |
             Should -Be 2
     }
@@ -318,6 +324,8 @@ Describe 'Pipeline review routing' {
         $script:PipelineSource | Should -Match 'git fetch "\$\{REVIEW_REPOSITORY_URL\}" "refs/heads/\$\{BASE_REF\}" --no-tags'
         $script:PipelineSource | Should -Match 'BASE_SHA=\$\(git rev-parse FETCH_HEAD\)'
         $script:PipelineSource | Should -Match 'git fetch "\$\{REVIEW_REPOSITORY_URL\}" "pull/\$\{PARAM_PR_NUMBER\}/head" --no-tags'
+        $script:PipelineSource | Should -Match 'git fetch "\$\{REVIEW_REPOSITORY_URL\}" "\$\{BASE_SHA\}" --no-tags'
+        $script:PipelineSource | Should -Match 'git fetch "\$\{REVIEW_REPOSITORY_URL\}" "\$\{REQUIRED_SHA\}" --no-tags'
         $script:PipelineSource | Should -Match ([regex]::Escape('-ResolvedBaseCommit "$(resolvedBaseSha)"'))
         $script:PipelineSource | Should -Match ([regex]::Escape('-ResolvedBaseRef "$(resolvedBaseRef)"'))
         $script:PipelineSource | Should -Match 'PARAM_BASE_COMMIT: \$\(resolvedBaseSha\)'
