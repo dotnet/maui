@@ -41,16 +41,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		private int GetKeyboardY()
 		{
 #if IOS
-			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-			{
-				var rect = App.WaitForElement("Toolbar").GetRect();
-				return rect.Y;
-			}
-			else
-			{
-				var rect = App.WaitForElement("Done").GetRect();
-				return rect.Y;
-			}
+			var rect = App.WaitForElement("DoneAccessory").GetRect();
+			return rect.Y;
 #elif ANDROID
 			var (_, screenHeight) = GetScreenSize();
 			var insets = GetSafeAreaInsets();

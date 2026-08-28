@@ -49,8 +49,8 @@
                                                        TextTransform="{Binding TextTransform}"
                                                        VerticalTextAlignment="{Binding VerticalTextAlignment}"/>
                      </Shell.SearchHandler>
-                     <ScrollView>
-                            <VerticalStackLayout Padding="10,8">
+                            <VerticalStackLayout x:Name="MainStack"
+                                                  Padding="10,8">
 
                                    <!-- Action buttons -->
                                    <Grid RowSpacing="2"
@@ -159,11 +159,10 @@
                                                  AutomationId="SelectedItem"
                                                  Text="{Binding SelectedItem}"/>
                                    </Grid>
-                                   <!-- Spacer to ensure content is scrollable for Collapsible search box -->
+                                   <!-- Spacer to ensure content is scrollable for Collapsible search box on iOS/MacCatalyst -->
                                    <BoxView HeightRequest="600"
                                                  Color="Transparent"/>
                             </VerticalStackLayout>
-                     </ScrollView>
               </ContentPage>
        </ShellContent>
 </Shell>

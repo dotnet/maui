@@ -597,8 +597,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	public void VerifyShellSearch_TextColor()
 	{
 #if IOS
-		App.WaitForElement("Cancel");
-		App.Tap("Cancel");
+	 App.PressEnter();
 #elif MACCATALYST
 	 App.WaitForElement("Options");
 	 App.Tap("Options");
@@ -620,8 +619,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	{
 // TODO: For now, CI shows an incorrect screenshot for this test; it renders properly on local macOS 26.
 #if IOS
-		App.WaitForElement("Cancel");
-		App.Tap("Cancel");
+	 App.PressEnter();
 #elif MACCATALYST
 	 App.WaitForElement("Options");
 	 App.Tap("Options");
@@ -644,8 +642,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	public void VerifyShellSearch_CharacterSpacing()
 	{
 #if IOS
-     App.WaitForElement("Cancel");
-	 App.Tap("Cancel");
+	 App.PressEnter();
 #elif MACCATALYST
 	 App.WaitForElement("Options");
 	 App.Tap("Options");
@@ -669,8 +666,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	public void VerifyShellSearch_TextTransformUppercase()
 	{
 #if IOS
-     App.WaitForElement("Cancel");
-	 App.Tap("Cancel");
+      App.PressEnter();
 #elif MACCATALYST
 	 App.WaitForElement("Options");
 	 App.Tap("Options");
