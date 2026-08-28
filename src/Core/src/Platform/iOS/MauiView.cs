@@ -582,8 +582,9 @@ namespace Microsoft.Maui.Platform
 			SafeAreaEdges parentHandledEdges,
 			bool bottomIncludesKeyboardOverlap = false)
 		{
-			// Keep a child's positive frame-relative keyboard overlap until its parent arranges
-			// that child above the keyboard; the overlap is then zero and normal suppression applies.
+			// A positive overlap is the residual intersection of the child's current window frame,
+			// not a copy of the ancestor's inset. Keep it for an overflowing child; once the parent
+			// arranges the child clear of the keyboard, it becomes zero and suppression applies.
 			return new SafeAreaPadding(
 				parentHandledEdges.Left != SafeAreaRegions.None ? 0 : safeArea.Left,
 				parentHandledEdges.Right != SafeAreaRegions.None ? 0 : safeArea.Right,
@@ -683,8 +684,14 @@ namespace Microsoft.Maui.Platform
 
 			if (!effectiveSafeArea.IsEmpty)
 			{
-				// If we're responding to the safe area, we need to add the safe area back to the size so the container can allocate the correct space
-				crossPlatformSize = new Size(crossPlatformSize.Width + effectiveSafeArea.HorizontalThickness, crossPlatformSize.Height + effectiveSafeArea.VerticalThickness);
+				// A frame-relative keyboard overlap must not increase the desired height that
+				// determines that frame, or desired-size parents amplify the overlap each pass.
+				var softInputBottomOverlap = _appliesSafeAreaAdjustments
+					? Math.Min(_lastSoftInputBottomOverlap ?? 0, effectiveSafeArea.Bottom)
+					: 0;
+				crossPlatformSize = new Size(
+					crossPlatformSize.Width + effectiveSafeArea.HorizontalThickness,
+					crossPlatformSize.Height + effectiveSafeArea.VerticalThickness - softInputBottomOverlap);
 			}
 
 			return crossPlatformSize;
@@ -974,8 +981,8 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static void InvalidateSafeArea(UIView platformView)
 		{
-			// Continue through safe-area-aware views: a farther ancestor can change a grandchild's
-			// suppression even when the intermediate view's own applied insets remain unchanged.
+			// Continue through native intermediate views: a farther ancestor can change a MAUI
+			// grandchild's suppression even when the intermediate view has no safe-area state.
 			if (platformView is MauiView mauiView)
 			{
 				mauiView.InvalidateSafeArea();

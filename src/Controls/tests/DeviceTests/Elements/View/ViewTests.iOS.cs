@@ -905,21 +905,25 @@ namespace Microsoft.Maui.DeviceTests
 						childPlatformView.LayoutSubviews();
 
 						parentPlatformView.ResetSafeAreaInsetsReadCount();
+						childPlatformView.ResetSafeAreaInsetsReadCount();
 						childPlatformView.LayoutSubviews();
 						childPlatformView.LayoutSubviews();
 
 						Assert.Equal(0, parentPlatformView.SafeAreaInsetsReadCount);
+						Assert.Equal(0, childPlatformView.SafeAreaInsetsReadCount);
 
 						var subPixelStep = 0.4 / (double)parentPlatformView.Window!.Screen.Scale;
 						childPlatformView.Transform = CGAffineTransform.MakeTranslation(0, (nfloat)subPixelStep);
 						childPlatformView.LayoutSubviews();
 
 						Assert.Equal(0, parentPlatformView.SafeAreaInsetsReadCount);
+						Assert.Equal(0, childPlatformView.SafeAreaInsetsReadCount);
 
 						childPlatformView.Transform = CGAffineTransform.MakeTranslation(0, (nfloat)(subPixelStep * 2));
 						childPlatformView.LayoutSubviews();
 
 						Assert.True(parentPlatformView.SafeAreaInsetsReadCount > 0);
+						Assert.True(childPlatformView.SafeAreaInsetsReadCount > 0);
 					}
 					finally
 					{
@@ -1156,6 +1160,107 @@ namespace Microsoft.Maui.DeviceTests
 					null,
 					userInfo);
 			}
+		}
+
+		[Fact]
+		public async Task DesiredSizeDrivenSoftInputViewSettlesWhileKeyboardIsVisible()
+		{
+			var bottomSoftInput = new SafeAreaEdges(
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.None,
+				SafeAreaRegions.SoftInput);
+			var target = new CustomSafeAreaView
+			{
+				SafeAreaEdges = bottomSoftInput,
+				MeasureResult = new Size(100, 100)
+			};
+			var spacer = new CustomSafeAreaView
+			{
+				SafeAreaEdges = SafeAreaEdges.None,
+				MeasureResult = new Size(100, 100)
+			};
+			var stack = new VerticalStackLayout
+			{
+				Spacing = 0,
+				SafeAreaEdges = SafeAreaEdges.None,
+				Children =
+				{
+					spacer,
+					target
+				}
+			};
+			await CreateHandlerAsync<CustomSafeAreaViewHandler>(spacer);
+			var targetHandler = await CreateHandlerAsync<CustomSafeAreaViewHandler>(target);
+			var stackHandler = await CreateHandlerAsync<LayoutHandler>(stack);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var stackPlatformView = stackHandler.PlatformView;
+				var targetPlatformView = targetHandler.PlatformView;
+
+				await stackPlatformView.AttachAndRun(() =>
+				{
+					var window = stackPlatformView.Window!;
+					stackPlatformView.Frame = new CGRect(0, window.Bounds.Height - 400, 100, 400);
+					stackPlatformView.SafeAreaInsetsDidChange();
+					targetPlatformView.SafeAreaInsetsDidChange();
+					stackPlatformView.LayoutSubviews();
+					targetPlatformView.LayoutSubviews();
+
+					Assert.Same(targetPlatformView, stackPlatformView.Subviews[1]);
+					Assert.Equal(100d, (double)targetPlatformView.Bounds.Height, precision: 5);
+
+					var targetFrameInWindow = targetPlatformView.ConvertRectToView(
+						targetPlatformView.Bounds,
+						window);
+					var keyboardTop = targetFrameInWindow.Bottom - 20;
+					var keyboardFrameInWindow = new CGRect(
+						0,
+						keyboardTop,
+						window.Bounds.Width,
+						window.Bounds.Height - keyboardTop);
+					var keyboardFrame = window.ConvertRectToCoordinateSpace(
+						keyboardFrameInWindow,
+						window.Screen.CoordinateSpace);
+					using var userInfo = NSDictionary.FromObjectAndKey(
+						NSValue.FromCGRect(keyboardFrame),
+						UIKeyboard.FrameEndUserInfoKey);
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIKeyboard.WillShowNotification,
+						null,
+						userInfo);
+
+					try
+					{
+						for (int i = 0; i < 4; i++)
+						{
+							stackPlatformView.LayoutSubviews();
+							targetPlatformView.LayoutSubviews();
+						}
+
+						var settledHeight = (double)targetPlatformView.Bounds.Height;
+						var settledArrange = target.LastArrangeBounds;
+						var settledMeasureCount = target.MeasureCount;
+
+						stackPlatformView.LayoutSubviews();
+						targetPlatformView.LayoutSubviews();
+
+						Assert.Equal(settledHeight, (double)targetPlatformView.Bounds.Height, precision: 5);
+						Assert.Equal(settledArrange, target.LastArrangeBounds);
+						Assert.Equal(settledMeasureCount, target.MeasureCount);
+						Assert.Equal(100d, (double)targetPlatformView.Bounds.Height, precision: 5);
+						Assert.Equal(new Rect(0, 0, 100, 80), target.LastArrangeBounds);
+					}
+					finally
+					{
+						NSNotificationCenter.DefaultCenter.PostNotificationName(
+							UIKeyboard.WillHideNotification,
+							null);
+					}
+				});
+			});
 		}
 
 		[Fact]

@@ -76,6 +76,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			public int SafeAreaEdgesReadCount { get; private set; }
 
+			public int MeasureCount { get; private set; }
+
+			public Size? MeasureResult { get; set; }
+
 			public SafeAreaEdges SafeAreaEdges
 			{
 				get
@@ -94,8 +98,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			SafeAreaEdges ISafeAreaElement.GetDefaultSafeAreaEdges() => SafeAreaEdges.Container;
 
-			Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) =>
-				new(widthConstraint, heightConstraint);
+			Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+			{
+				MeasureCount++;
+				return MeasureResult ?? new Size(widthConstraint, heightConstraint);
+			}
 
 			Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 			{
