@@ -434,12 +434,14 @@ darc gather-drop
 The asset filter selects slash-free package assets and excludes symbol and other
 path-shaped blob assets.
 
-The pipeline uses Arcade's `Get-Darc` helper from `eng/common/tools.ps1`. Arcade's
-`darc-init.ps1` asks Maestro's Darc-version endpoint for the current supported version and
-installs it from `dotnet-eng`; no Darc version is duplicated in this repository's YAML or
-dependency files. The pipeline copies the resolved tool into the immutable `Release`
-artifact before acquiring the Maestro identity. `gather-drop` executes that exact path to
-read BAR and repository metadata and download package assets to the agent.
+The pipeline follows the [official Darc setup
+guidance](https://github.com/dotnet/arcade-services/blob/main/docs/Darc.md#setting-up-your-darc-client)
+by invoking Arcade's `eng/common/darc-init.ps1`. Without `-darcVersion`, the initializer
+asks Maestro's Darc-version endpoint for the matching supported version and installs it
+from `dotnet-eng`; no Darc version is duplicated in this repository's YAML or dependency
+files. The pipeline uses the script's supported `-toolpath` option to install directly into
+the immutable `Release` artifact before acquiring the Maestro identity. `gather-drop`
+executes that exact path to read BAR and repository metadata and download package assets.
 `--include-released` permits downloading a build already marked released; it does not
 change release state.
 

@@ -716,15 +716,16 @@ public class PipelineDefinitionTests
         var globalJson = File.ReadAllText(Path.Combine(RepoRoot, "global.json"));
         var versionDetails = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
 
-        Assert.Contains("eng/common/tools.ps1", pipeline, StringComparison.Ordinal);
-        Assert.Contains("$installedDarc = Get-Darc", pipeline, StringComparison.Ordinal);
-        Assert.DoesNotContain("Get-Darc $", pipeline, StringComparison.Ordinal);
+        Assert.Contains("eng/common/darc-init.ps1", pipeline, StringComparison.Ordinal);
+        Assert.Contains("-toolpath $darcDirectory", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("-darcVersion", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("dotnet tool install Microsoft.DotNet.Darc", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("\"darc\"", globalJson, StringComparison.Ordinal);
         Assert.DoesNotContain("Microsoft.DotNet.Darc", versionDetails, StringComparison.Ordinal);
         Assert.Contains("name: installDarc", pipeline, StringComparison.Ordinal);
         Assert.Contains("installDarc.DarcHash", pipeline, StringComparison.Ordinal);
         Assert.True(
-            pipeline.IndexOf("$installedDarc = Get-Darc", StringComparison.Ordinal) <
+            pipeline.IndexOf("eng/common/darc-init.ps1", StringComparison.Ordinal) <
             pipeline.IndexOf("azureSubscription:", StringComparison.Ordinal));
         Assert.Contains("& \"$env:DARC_PATH\" gather-drop", pipeline, StringComparison.Ordinal);
         Assert.Contains("& \"$env:DARC_PATH\" add-build-to-channel", pipeline, StringComparison.Ordinal);

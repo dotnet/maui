@@ -161,17 +161,14 @@ extends:
             useGlobalJson: true
 
         - pwsh: |
-            . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
-            $installedDarc = Get-Darc
-            if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $installedDarc -PathType Leaf)) {
+            $darcDirectory = "$(Build.ArtifactStagingDirectory)/_darc"
+            & "$(Build.SourcesDirectory)/eng/common/darc-init.ps1" `
+              -toolpath $darcDirectory
+            $darcPath = Join-Path $darcDirectory 'darc.exe'
+            if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darcPath -PathType Leaf)) {
               throw 'Arcade failed to install the Darc CLI.'
             }
 
-            $darcDirectory = "$(Build.ArtifactStagingDirectory)/_darc"
-            New-Item -ItemType Directory -Path $darcDirectory -Force | Out-Null
-            Get-ChildItem -LiteralPath (Split-Path -Parent $installedDarc) -Force |
-              Copy-Item -Destination $darcDirectory -Recurse -Force
-            $darcPath = Join-Path $darcDirectory 'darc.exe'
             $darcHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
               -Path $darcDirectory
             Write-Host "##vso[task.setvariable variable=DarcPath]$darcPath"
