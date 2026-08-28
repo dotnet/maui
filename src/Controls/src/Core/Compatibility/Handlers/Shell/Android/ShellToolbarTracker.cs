@@ -585,8 +585,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			destination.Title = shellToolbar.Title;
 			destination.TitleView = shellToolbar.TitleView;
 			destination.DynamicOverflowEnabled = shellToolbar.DynamicOverflowEnabled;
-			destination.DrawerToggleVisible = shellToolbar.DrawerToggleVisible;
-			destination.BackButtonVisible = shellToolbar.BackButtonVisible;
+			shellToolbar.ForwardNavigationIconStateTo(destination);
 			destination.BackButtonEnabled = shellToolbar.BackButtonEnabled;
 			destination.IsVisible = shellToolbar.IsVisible;
 		}

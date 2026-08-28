@@ -1112,6 +1112,29 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Equal(1, storedVer);
 	}
 
+	[Fact]
+	public void HotReloadState_LazilySeedsGeneratedFieldsAfterNullRoot()
+	{
+		const string xaml = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+				<Label x:Name="NamedLabel" />
+			</ContentPage>
+			""";
+		var parsedRoot = GeneratorHelpers.ParseXaml(xaml, AssemblyAttributes.Empty);
+		Assert.NotNull(parsedRoot);
+
+		XamlHotReloadState.Update("TestApp", "net11.0", PageRelativePath, xaml, null, null, 0, 0);
+		Assert.Null(XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath));
+
+		XamlHotReloadState.Update("TestApp", "net11.0", PageRelativePath, xaml, parsedRoot, null, 0, 1);
+
+		var generatedFields = XamlHotReloadState.GetGeneratedFields("TestApp", "net11.0", PageRelativePath);
+		Assert.NotNull(generatedFields);
+		Assert.Equal("Label", generatedFields["NamedLabel"].Name);
+	}
+
 	// -----------------------------------------------------------------------
 	// Type converter tests — verify UC uses compile-time converters from IC
 	// -----------------------------------------------------------------------
@@ -1892,6 +1915,44 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("new global::Microsoft.Maui.Controls.Button()", uc!, StringComparison.Ordinal);
 		Assert.Contains("XamlComponentRegistry.Register(this,", uc!, StringComparison.Ordinal);
 		// ...but the UC must NOT assign a backing field that can't exist on the loaded type.
+		Assert.DoesNotContain("this.Foo =", uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AddedNamedElement_RemainsFieldlessAfterLaterStructuralReplacement()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <HorizontalStackLayout />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <HorizontalStackLayout>
+			        <Button x:Name="Foo" Text="Added" />
+			    </HorizontalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV3 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Button x:Name="Foo" Text="Recreated" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, _, run3) = ThreeRuns(xamlV1, xamlV2, xamlV3);
+		var uc = FindUCSource(run3, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Button()", uc!, StringComparison.Ordinal);
 		Assert.DoesNotContain("this.Foo =", uc!, StringComparison.Ordinal);
 	}
 
