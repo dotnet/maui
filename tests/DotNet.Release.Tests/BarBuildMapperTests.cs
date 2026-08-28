@@ -105,7 +105,7 @@ public class BarBuildMapperTests
     [InlineData("")]
     public void Absent_commit_becomes_empty_so_verification_fails_rather_than_throws(string? value)
     {
-        // Core reports BAR_COMMIT_MISMATCH for this; a NullReferenceException here would be
+        // Build resolution reports BAR_COMMIT_MISMATCH; a NullReferenceException here would be
         // a worse diagnostic than the failure the operator actually needs to see.
         Assert.Equal(string.Empty, BarBuildMapper.Map(BuildFactory.Create(commit: value)).Commit);
     }

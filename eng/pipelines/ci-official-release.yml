@@ -13,11 +13,12 @@
 #   at the manual gate, approve, done.
 #
 # What it does, in order:
-#   1. `release plan`  - resolve and verify the BAR build for the requested repo/commit
-#   2. `darc gather-drop` - download that build's shipping packages
-#   3. `release stage`  - validate every package, write the hashed release plan, stage artifacts
-#   4. manual approval gate (agentless)
-#   5. `release filter` -> `1ES.PublishNuget@1` -> `release verify`
+#   1. build the C# tool once into the Release artifact
+#   2. `release plan`  - resolve and verify the BAR build for the requested repo/commit
+#   3. `darc gather-drop` - download that build's shipping packages
+#   4. `release stage`  - validate every package, write the hashed release plan, stage artifacts
+#   5. manual approval gate (agentless)
+#   6. `release filter` -> `1ES.PublishNuget@1` -> `release verify`
 #
 # Safety properties worth knowing before you press Run:
 #   - `publishPackages` defaults to FALSE. The default run is a dry run that publishes
@@ -58,7 +59,7 @@ parameters:
 - name: barBuildId
   displayName: "[OPTIONAL] BAR build ID. Required when BAR has no GitHub URL for the build."
   type: string
-  default: skip
+  default: ''
 
 # ---- what to actually do --------------------------------------------------------------------
 - name: publishPackages
@@ -75,17 +76,17 @@ parameters:
 - name: includeFilters
   displayName: "[OPTIONAL] Semicolon-separated package file filters to include"
   type: string
-  default: skip
+  default: ''
 
 - name: excludeFilters
   displayName: "[OPTIONAL] Semicolon-separated package file filters to exclude"
   type: string
-  default: skip
+  default: ''
 
 - name: recoveryFilters
-  displayName: "[RECOVERY] Packages a previous run already submitted to NuGet.org"
+  displayName: "[RECOVERY] Packages already submitted to NuGet.org by this release"
   type: string
-  default: skip
+  default: ''
 
 # ---- infrastructure --------------------------------------------------------------------------
 - name: pool
@@ -98,21 +99,6 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
-
-# Workload classification is derived, never asked for, so an operator cannot set it wrong.
-# It must be known at COMPILE time because it decides which stages exist: workload releases
-# need two separately gated publishes in a fixed order.
-#
-# config/repositories.json remains authoritative, and `release plan` is given this value via
-# --expect-workload so it fails closed with WORKLOAD_MISMATCH if the two ever disagree — for
-# example if a repository is added to the policy but not to the list below.
-- name: isWorkload
-  value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'maui', 'android', 'macios')) }}
-
-# gather-drop receives production credentials, so the Darc executable is pinned to a reviewed
-# package version tracked in Arcade dependency metadata.
-- name: DarcVersion
-  value: 1.1.0-beta.26426.1
 
 resources:
   repositories:
@@ -156,20 +142,10 @@ extends:
           clean: all
         templateContext:
           outputs:
-          - ${{ if eq(variables.isWorkload, 'true') }}:
-            - output: pipelineArtifact
-              displayName: Publish workload packs
-              targetPath: $(Build.ArtifactStagingDirectory)/ReleasePacks
-              artifactName: ReleasePacks
-            - output: pipelineArtifact
-              displayName: Publish workload manifests
-              targetPath: $(Build.ArtifactStagingDirectory)/ReleaseManifests
-              artifactName: ReleaseManifests
-          - ${{ else }}:
-            - output: pipelineArtifact
-              displayName: Publish release packages
-              targetPath: $(Build.ArtifactStagingDirectory)/ReleasePackages
-              artifactName: ReleasePackages
+          - output: pipelineArtifact
+            displayName: Publish release plan and packages
+            targetPath: $(Build.ArtifactStagingDirectory)
+            artifactName: Release
         steps:
         # `self` is this release-tooling repository. The repository being *released* is never
         # checked out: its packages come from BAR via darc.
@@ -182,6 +158,22 @@ extends:
           inputs:
             useGlobalJson: true
 
+        # Build once before any task acquires the Maestro production identity. Publish jobs
+        # execute this exact assembly from the immutable Release artifact without rebuilding.
+        - pwsh: |
+            $toolDirectory = "$(Build.ArtifactStagingDirectory)/_tool"
+            dotnet build "$(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj" `
+              --configuration Release `
+              --output $toolDirectory
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to build the release tool.' }
+
+            $toolPath = Join-Path $toolDirectory 'release.dll'
+            $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            Write-Host "##vso[task.setvariable variable=ToolPath]$toolPath"
+            Write-Host "##vso[task.setvariable variable=ToolHash;isOutput=true]$toolHash"
+          name: buildTool
+          displayName: Build the release tool
+
         - task: AzureCLI@2
           name: releasePlan
           displayName: Resolve and verify the BAR build
@@ -189,12 +181,8 @@ extends:
             azureSubscription: "Darc: Maestro Production"
             scriptType: pscore
             scriptLocation: inlineScript
-            # Queue-time parameters are passed as environment variables and never spliced
-            # into the script text. Anyone who can queue this pipeline controls these values,
-            # and this task holds a production Maestro credential: a value containing a quote
-            # and a semicolon would otherwise close the argument and run arbitrary commands.
-            # They are also shape-checked here, so a malformed value fails before the tool
-            # authenticates rather than after.
+            # Queue-time values enter executable PowerShell only through environment
+            # variables. Shape validation runs before the tool authenticates with Maestro.
             inlineScript: |
               $ErrorActionPreference = 'Stop'
 
@@ -203,7 +191,7 @@ extends:
               }
 
               $barId = @()
-              if ($env:BAR_BUILD_ID -ne 'skip') {
+              if (![string]::IsNullOrWhiteSpace($env:BAR_BUILD_ID)) {
                 if ($env:BAR_BUILD_ID -notmatch '^[0-9]+$') {
                   throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
                 }
@@ -214,24 +202,18 @@ extends:
                 throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
               }
 
-              dotnet run `
-                --project "$env:RELEASE_PROJECT" `
-                --configuration Release `
-                --no-launch-profile `
-                -- `
+              dotnet "$env:RELEASE_TOOL" `
                 plan `
                 --config "$env:CONFIG_PATH" `
                 --repo "$env:GH_OWNER/$env:GH_REPO" `
                 --commit $env:COMMIT_HASH `
-                --expect-workload $env:IS_WORKLOAD `
                 --out "$env:STAGE_DIR" `
                 @barId
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
-            RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
+            RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
             STAGE_DIR: $(Agent.TempDirectory)/stage
-            IS_WORKLOAD: $(isWorkload)
             GH_OWNER: ${{ parameters.ghOwner }}
             GH_REPO: ${{ parameters.ghRepo }}
             COMMIT_HASH: ${{ parameters.commitHash }}
@@ -246,9 +228,7 @@ extends:
             # darc owns feed discovery, authentication, retries and --include-released.
             # Invoked here so Azure DevOps owns the exit code and --verbose lands in this log.
             inlineScript: |
-              . $(Build.SourcesDirectory)/eng/common/tools.ps1
-              $darc = Get-Darc "$(DarcVersion)"
-              & $darc gather-drop --ci `
+              darc gather-drop --ci `
                 --id $(releasePlan.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $(System.AccessToken) `
@@ -259,22 +239,26 @@ extends:
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
-            dotnet run `
-              --project "$env:RELEASE_PROJECT" `
-              --configuration Release `
-              --no-launch-profile `
-              -- `
+
+            $filters = @()
+            if (![string]::IsNullOrWhiteSpace($env:INCLUDE_FILTERS)) {
+              $filters += @('--include', $env:INCLUDE_FILTERS)
+            }
+            if (![string]::IsNullOrWhiteSpace($env:EXCLUDE_FILTERS)) {
+              $filters += @('--exclude', $env:EXCLUDE_FILTERS)
+            }
+
+            dotnet "$env:RELEASE_TOOL" `
               stage `
               --config "$env:CONFIG_PATH" `
               --plan "$env:STAGE_DIR/plan.json" `
               --drop "$env:DROP_DIR" `
               --out "$env:ARTIFACT_DIR" `
-              --include $env:INCLUDE_FILTERS `
-              --exclude $env:EXCLUDE_FILTERS
+              @filters
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           displayName: Validate and stage packages
           env:
-            RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
+            RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
             STAGE_DIR: $(Agent.TempDirectory)/stage
             DROP_DIR: $(Agent.TempDirectory)/drop
@@ -282,8 +266,7 @@ extends:
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
-        # The pipeline computes the pin itself rather than trusting the tool to declare
-        # the value that pins it.
+        # Get-FileHash independently pins the exact plan bytes written by release stage.
         - pwsh: |
             $planPath = "$(Build.ArtifactStagingDirectory)/release-plan.json"
             $hash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -305,8 +288,7 @@ extends:
               Write-Host 'Review the staged artifacts and release-plan.json above.'
             displayName: Dry run - nothing will be published
 
-          # An operator who ticked promoteWorkloadSet on a dry run gets no stage and, without
-          # this, no explanation either.
+          # Report that promotion is inactive when publishing is disabled.
           - ${{ if eq(parameters.promoteWorkloadSet, true) }}:
             - pwsh: |
                 Write-Host '##vso[task.logissue type=warning]promoteWorkloadSet was requested but is ignored on a dry run. Re-run with publishPackages enabled to promote.'
@@ -315,10 +297,11 @@ extends:
     # -----------------------------------------------------------------------------------------
     # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
     # -----------------------------------------------------------------------------------------
-    - ${{ if and(eq(variables.isWorkload, 'true'), eq(parameters.promoteWorkloadSet, true), eq(parameters.publishPackages, true)) }}:
+    - ${{ if and(eq(parameters.promoteWorkloadSet, true), eq(parameters.publishPackages, true)) }}:
       - stage: promote_workload_set
         displayName: Promote to workload set channel
         dependsOn: prepare_release
+        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.releasePlan.IsWorkload'], 'true'))
         jobs:
         # Promotion mutates BAR and therefore requires explicit approval of the staged plan.
         - job: promote_approval
@@ -340,8 +323,8 @@ extends:
           templateContext:
             inputs:
             - input: pipelineArtifact
-              artifactName: ReleaseManifests
-              targetPath: $(Pipeline.Workspace)/ReleaseManifests
+              artifactName: Release
+              targetPath: $(Pipeline.Workspace)/Release
           steps:
           - checkout: self
             clean: true
@@ -355,10 +338,8 @@ extends:
               scriptLocation: inlineScript
               # Channel and feed are read from the plan, so there is one source of truth.
               inlineScript: |
-                . $(Build.SourcesDirectory)/eng/common/tools.ps1
-                $plan = Get-Content "$(Pipeline.Workspace)/ReleaseManifests/release-plan.json" -Raw | ConvertFrom-Json
-                $darc = Get-Darc "$(DarcVersion)"
-                & $darc add-build-to-channel --ci `
+                $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
+                darc add-build-to-channel --ci `
                   --channel "$($plan.workloadSet.channel)" `
                   --id "$($plan.source.barBuildId)" `
                   --skip-assets-publishing `
@@ -366,36 +347,40 @@ extends:
                 if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
 
     # -----------------------------------------------------------------------------------------
-    # Publish. These stages exist only when publishPackages is true.
+    # Validate the package-set jobs and artifact wiring on every run. The internal template
+    # includes approval, NuGet.org filtering, push, and verification only when publishing.
     # -----------------------------------------------------------------------------------------
-    - ${{ if eq(parameters.publishPackages, true) }}:
-      - ${{ if eq(variables.isWorkload, 'true') }}:
-        - template: /eng/pipelines/stages/publish-set.yml@self
-          parameters:
-            stageName: publish_packs
-            displayName: Release workload packs
-            artifactName: ReleasePacks
-            dependsOn: [prepare_release]
-            approvalInstructions: 'Review release-plan.json in the ReleasePacks artifact, then press "Resume" to push workload packs to NuGet.org.'
-            recoveryFilters: ${{ parameters.recoveryFilters }}
+    - template: /eng/pipelines/stages/publish-set.yml@self
+      parameters:
+        stageName: publish_packs
+        displayName: Release workload packs
+        setName: ReleasePacks
+        expectedWorkload: 'true'
+        publishPackages: ${{ parameters.publishPackages }}
+        dependsOn: [prepare_release]
+        approvalInstructions: 'Review the ReleasePacks set in the Release artifact, then press "Resume" to push workload packs to NuGet.org.'
+        recoveryFilters: ${{ parameters.recoveryFilters }}
 
-        # A stage dependency, not a job dependency: manifests reference packs, so manifest
-        # approval must be unreachable until every pack is verified on NuGet.org.
-        - template: /eng/pipelines/stages/publish-set.yml@self
-          parameters:
-            stageName: publish_manifests
-            displayName: Release workload manifests
-            artifactName: ReleaseManifests
-            dependsOn: [prepare_release, publish_packs]
-            approvalInstructions: 'Packs are verified on NuGet.org. Press "Resume" to push workload manifests.'
-            recoveryFilters: ${{ parameters.recoveryFilters }}
+    # Manifests reference packs, so manifest approval is unreachable until pack
+    # verification succeeds.
+    - template: /eng/pipelines/stages/publish-set.yml@self
+      parameters:
+        stageName: publish_manifests
+        displayName: Release workload manifests
+        setName: ReleaseManifests
+        expectedWorkload: 'true'
+        publishPackages: ${{ parameters.publishPackages }}
+        dependsOn: [prepare_release, publish_packs]
+        approvalInstructions: 'Packs are verified on NuGet.org. Press "Resume" to push workload manifests.'
+        recoveryFilters: ${{ parameters.recoveryFilters }}
 
-      - ${{ else }}:
-        - template: /eng/pipelines/stages/publish-set.yml@self
-          parameters:
-            stageName: publish_packages
-            displayName: Release NuGet packages
-            artifactName: ReleasePackages
-            dependsOn: [prepare_release]
-            approvalInstructions: 'Review release-plan.json in the ReleasePackages artifact, then press "Resume" to publish its exact staged package list.'
-            recoveryFilters: ${{ parameters.recoveryFilters }}
+    - template: /eng/pipelines/stages/publish-set.yml@self
+      parameters:
+        stageName: publish_packages
+        displayName: Release NuGet packages
+        setName: ReleasePackages
+        expectedWorkload: 'false'
+        publishPackages: ${{ parameters.publishPackages }}
+        dependsOn: [prepare_release]
+        approvalInstructions: 'Review the ReleasePackages set in the Release artifact, then press "Resume" to publish its exact staged package list.'
+        recoveryFilters: ${{ parameters.recoveryFilters }}

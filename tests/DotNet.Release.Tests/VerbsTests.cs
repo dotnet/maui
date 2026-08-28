@@ -16,7 +16,7 @@ public class VerbsTests : IDisposable
 
     private Task<int> Plan(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) =>
         Verbs.PlanAsync(
-            _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, null,
+            _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
     private Task<int> Stage(StageOptions? options = null) =>
@@ -29,23 +29,23 @@ public class VerbsTests : IDisposable
     // ---- plan ----
 
     [Fact]
-    public async Task Plan_writes_the_resolved_release_and_emits_the_bar_id()
+    public async Task Plan_writes_the_resolved_release_and_emits_pipeline_outputs()
     {
         var exit = await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
         Assert.Equal(ExitCodes.Success, exit);
         Assert.True(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
 
-        // The one pipeline variable the tool emits: `darc gather-drop` needs this ID.
         Assert.Contains("##vso[task.setvariable variable=BarId;isOutput=true]4242", _console.Output);
+        Assert.Contains("##vso[task.setvariable variable=IsWorkload;isOutput=true]false", _console.Output);
     }
 
     [Fact]
-    public async Task Plan_emits_exactly_one_pipeline_variable()
+    public async Task Plan_emits_bar_id_and_workload_classification()
     {
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        Assert.Single(_console.Output, l => l.StartsWith("##vso[", StringComparison.Ordinal));
+        Assert.Equal(2, _console.Output.Count(l => l.StartsWith("##vso[", StringComparison.Ordinal)));
     }
 
     [Fact]
@@ -55,24 +55,6 @@ public class VerbsTests : IDisposable
 
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains(ErrorCodes.RepositoryNotAllowed, _console.AllErrors, StringComparison.Ordinal);
-        Assert.False(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
-    }
-
-    /// <summary>
-    /// End to end: the pipeline's compile-time stage choice is verified against the policy
-    /// before anything is gathered.
-    /// </summary>
-    [Fact]
-    public async Task Plan_fails_closed_when_the_pipeline_misclassifies_the_repository()
-    {
-        var exit = await Verbs.PlanAsync(
-            _console, new FakeRegistry(Workspace.Build(channels: Libraries)),
-            Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null,
-            expectWorkload: true,
-            _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.WorkloadMismatch, _console.AllErrors, StringComparison.Ordinal);
         Assert.False(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
     }
 
@@ -211,6 +193,44 @@ public class VerbsTests : IDisposable
     private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? skip = null, string? expectedHash = null, string? set = null) =>
         Verbs.FilterAsync(
             _console, probe, _workspace.ReadPlan(), _workspace.Out, skip ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
+
+    [Fact]
+    public async Task Validate_checks_a_downloaded_set_without_a_feed_probe()
+    {
+        await StagedPlanAsync(("SkiaSharp", "3.119.0"));
+
+        var exit = Verbs.Validate(
+            _console,
+            _workspace.ReadPlan(),
+            _workspace.Out,
+            PlanHash,
+            StagePlanner.PackagesArtifactName);
+
+        Assert.Equal(ExitCodes.Success, exit);
+        Assert.Contains("no NuGet.org query", _console.AllOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Validate_rejects_a_changed_package()
+    {
+        await StagedPlanAsync(("SkiaSharp", "3.119.0"));
+        await File.WriteAllTextAsync(
+            Path.Combine(
+                _workspace.StagedSet(StagePlanner.PackagesArtifactName),
+                "SkiaSharp.3.119.0.nupkg"),
+            "changed",
+            CancellationToken.None);
+
+        var exit = Verbs.Validate(
+            _console,
+            _workspace.ReadPlan(),
+            _workspace.Out,
+            PlanHash,
+            StagePlanner.PackagesArtifactName);
+
+        Assert.Equal(ExitCodes.ReleaseError, exit);
+        Assert.Contains(ErrorCodes.PackageHashMismatch, _console.AllErrors, StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()

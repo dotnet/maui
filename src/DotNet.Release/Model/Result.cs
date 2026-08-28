@@ -8,8 +8,6 @@ public static class ErrorCodes
 {
     public const string RepositoryNotAllowed = "REPO_NOT_ALLOWED";
     public const string RepositoryUnparseable = "REPO_UNPARSEABLE";
-    public const string WorkloadMismatch = "WORKLOAD_MISMATCH";
-
     public const string BarBuildNotFound = "BAR_BUILD_NOT_FOUND";
     public const string BarBuildNotUnique = "BAR_BUILD_NOT_UNIQUE";
     public const string BarRepositoryMismatch = "BAR_REPO_MISMATCH";

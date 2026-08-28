@@ -118,7 +118,7 @@ public class PackageAvailabilityProbeTests
         Assert.Throws<ArgumentNullException>(() => new PackageAvailabilityProbe(null!));
     }
 
-    // ---- integration with Core's decisions ----
+    // ---- integration with release decisions ----
 
     [Fact]
     public async Task Drives_the_filter_decision_end_to_end()

@@ -54,7 +54,7 @@ public class ArchitectureTests
     }
 
     [Fact]
-    public void The_tool_cannot_push_a_package_or_start_a_process()
+    public void Tool_source_references_no_push_or_process_execution_APIs()
     {
         var referenced = ReferencedTypes().ToHashSet(StringComparer.Ordinal);
 
@@ -65,7 +65,7 @@ public class ArchitectureTests
 
         Assert.True(
             offenders.Count == 0,
-            "The tool must never push a package or start a process, but references: " +
+            "The tool source must not reference package-push or process-execution APIs: " +
             string.Join(", ", offenders));
     }
 

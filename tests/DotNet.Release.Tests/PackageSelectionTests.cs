@@ -8,9 +8,7 @@ public class PackageSelectionTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    [InlineData("skip")]
-    [InlineData("SKIP")]
-    public void ParseList_treats_the_skip_sentinel_as_no_filters(string? value)
+    public void ParseList_treats_blank_as_no_filters(string? value)
     {
         Assert.Empty(PackageGlob.ParseList(value));
     }

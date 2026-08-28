@@ -23,7 +23,7 @@ public class SetMarkerTests : IDisposable
 
         await Verbs.PlanAsync(
             _console, new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
-            Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null, true,
+            Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(

@@ -4,23 +4,11 @@ using YamlDotNet.RepresentationModel;
 
 namespace DotNet.Release.Tests;
 
-/// <summary>
-/// Guards the release pipeline against drifting away from the checked-in policy.
-/// </summary>
+/// <summary>Verifies the shared pipeline's operator contract and safety barriers.</summary>
 /// <remarks>
-/// <para>
-/// <c>eng/pipelines/ci-official-release.yml</c> is the shared release system: it is hooked up once in
-/// Azure DevOps and everyone triggers it with parameters. Nothing consumes this repository as
-/// a template, so this file is the only place these mistakes can be caught before a release.
-/// </para>
-/// <para>
-/// The pipeline necessarily restates two things the policy already knows — the set of
-/// releasable repositories, and which of them are workload repositories — because Azure
-/// DevOps needs both at <i>compile</i> time: one to populate the run dialog, the other to
-/// decide which stages exist. Restating them is unavoidable; letting them drift is not.
-/// <c>WORKLOAD_MISMATCH</c> catches a mismatch at release time, and these tests catch it at
-/// build time.
-/// </para>
+/// <c>eng/pipelines/ci-official-release.yml</c> is the Azure DevOps entry point. These tests
+/// bind its repository choices to policy and verify the dry-run, approval, ordering, and
+/// credential boundaries.
 /// </remarks>
 public class PipelineDefinitionTests
 {
@@ -118,32 +106,59 @@ public class PipelineDefinitionTests
         Assert.Equal(allowed, offered);
     }
 
-    /// <summary>
-    /// The compile-time workload list decides which stages exist. If it disagrees with the
-    /// policy, a workload release would publish packs and manifests through a single stage
-    /// and lose the ordering guarantee that makes the release recoverable.
-    /// </summary>
     [Fact]
-    public void The_compile_time_workload_list_matches_the_release_policy()
+    public void Workload_classification_comes_only_from_repository_policy()
     {
-        var expression = ((YamlSequenceNode)Pipeline["variables"])
-            .Cast<YamlMappingNode>()
-            .Single(v => v.Children.ContainsKey("name") && ((YamlScalarNode)v["name"]).Value == "isWorkload")
-            ["value"].ToString();
+        var pipeline = File.ReadAllText(PipelinePath);
+        var publish = File.ReadAllText(
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        var declared = Regex
-            .Matches(expression, @"'(?<repo>[a-z0-9\-\.]+)'")
-            .Select(m => m.Groups["repo"].Value)
-            .Where(v => v != "dotnet")
-            .Select(v => $"dotnet/{v}")
-            .OrderBy(v => v, StringComparer.Ordinal);
+        Assert.DoesNotContain("- name: isWorkload", pipeline, StringComparison.Ordinal);
+        Assert.Equal(2, Regex.Matches(pipeline, @"expectedWorkload:\s*'true'").Count);
+        Assert.Single(Regex.Matches(pipeline, @"expectedWorkload:\s*'false'").Cast<Match>());
+        Assert.Contains("releasePlan.IsWorkload", publish, StringComparison.Ordinal);
+        Assert.Contains("expectedWorkload", publish, StringComparison.Ordinal);
+        Assert.Contains(
+            "${{ parameters.artifactName }}/${{ parameters.setName }}/*.nupkg",
+            publish,
+            StringComparison.Ordinal);
+    }
 
-        var workload = Policy.Repositories
-            .Where(r => r.Workload)
-            .Select(r => r.Repository.FullName)
-            .OrderBy(v => v, StringComparer.Ordinal);
+    [Fact]
+    public void Workload_stage_conditions_resolve_the_plan_output()
+    {
+        var root = File.ReadAllText(PipelinePath);
+        var publish = File.ReadAllText(
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var references = Regex.Matches(
+                root + "\n" + publish,
+                @"dependencies\.(?<stage>\w+)\.outputs\['(?<job>\w+)\.(?<step>\w+)\.IsWorkload'\]")
+            .Cast<Match>()
+            .ToList();
 
-        Assert.Equal(workload, declared);
+        Assert.Collection(references, _ => { }, _ => { });
+
+        foreach (var reference in references)
+        {
+            Assert.Contains($"- stage: {reference.Groups["stage"].Value}", root, StringComparison.Ordinal);
+            Assert.Contains($"- job: {reference.Groups["job"].Value}", root, StringComparison.Ordinal);
+            Assert.Contains($"name: {reference.Groups["step"].Value}", root, StringComparison.Ordinal);
+        }
+
+        var verbs = File.ReadAllText(
+            Path.Combine(RepoRoot, "src", "DotNet.Release", "Cli", "Verbs.cs"));
+        Assert.Contains("SetIsWorkload(resolved.Value.Workload)", verbs, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Prepare_publishes_one_release_artifact_for_every_repository_type()
+    {
+        var pipeline = File.ReadAllText(PipelinePath);
+
+        Assert.Contains("artifactName: Release", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("artifactName: ReleasePacks", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("artifactName: ReleaseManifests", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("artifactName: ReleasePackages", pipeline, StringComparison.Ordinal);
     }
 
     // ---- safe defaults ----
@@ -169,6 +184,16 @@ public class PipelineDefinitionTests
     public void Release_identity_must_be_supplied_for_every_run(string parameter)
     {
         Assert.False(Parameter(parameter).Children.ContainsKey("default"));
+    }
+
+    [Theory]
+    [InlineData("barBuildId")]
+    [InlineData("includeFilters")]
+    [InlineData("excludeFilters")]
+    [InlineData("recoveryFilters")]
+    public void Optional_string_parameters_default_to_empty(string parameter)
+    {
+        Assert.Equal(string.Empty, ((YamlScalarNode)Parameter(parameter)["default"]).Value);
     }
 
     [Fact]
@@ -200,48 +225,60 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The publish stage reads the plan hash across a stage boundary, which only resolves if
+    /// The publish stage reads integrity hashes across a stage boundary, which only resolve if
     /// the stage name, job name and step name in the expression all match the producer.
     /// A typo here yields an empty variable and an integrity check that compares against
     /// nothing.
     /// </summary>
     [Fact]
-    public void The_publish_stage_reads_the_plan_hash_from_the_right_place()
+    public void The_publish_stage_reads_prepare_outputs_from_the_right_place()
     {
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        var reference = Regex.Match(
+        var references = Regex.Matches(
             publish,
-            @"stageDependencies\.(?<stage>\w+)\.(?<job>\w+)\.outputs\['(?<step>\w+)\.(?<variable>\w+)'\]");
+            @"stageDependencies\.(?<stage>\w+)\.(?<job>\w+)\.outputs\['(?<step>\w+)\.(?<variable>\w+)'\]")
+            .Cast<Match>()
+            .ToList();
 
-        Assert.True(reference.Success, "publish-set.yml must read the plan hash from the prepare stage.");
+        Assert.Collection(references, _ => { }, _ => { }, _ => { }, _ => { });
 
         var pipeline = File.ReadAllText(PipelinePath);
-        Assert.Contains($"- stage: {reference.Groups["stage"].Value}", pipeline, StringComparison.Ordinal);
-        Assert.Contains($"- job: {reference.Groups["job"].Value}", pipeline, StringComparison.Ordinal);
-        Assert.Contains($"name: {reference.Groups["step"].Value}", pipeline, StringComparison.Ordinal);
-        Assert.Contains($"variable={reference.Groups["variable"].Value}", pipeline, StringComparison.Ordinal);
+        foreach (var reference in references)
+        {
+            Assert.Contains($"- stage: {reference.Groups["stage"].Value}", pipeline, StringComparison.Ordinal);
+            Assert.Contains($"- job: {reference.Groups["job"].Value}", pipeline, StringComparison.Ordinal);
+            Assert.Contains($"name: {reference.Groups["step"].Value}", pipeline, StringComparison.Ordinal);
+            Assert.Contains($"variable={reference.Groups["variable"].Value}", pipeline, StringComparison.Ordinal);
+        }
     }
 
     /// <summary>
-    /// Every agent job runs the C# project directly from the checked-out release-system
-    /// source.
+    /// The tool is built before the Maestro-authenticated task and the same DLL is executed
+    /// after approval from the immutable Release artifact.
     /// </summary>
     [Fact]
-    public void The_tool_is_run_from_source()
+    public void The_tool_is_built_once_before_credentials_and_carried_in_the_artifact()
     {
         var root = File.ReadAllText(PipelinePath);
         var publish = File.ReadAllText(
             Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        Assert.Contains("dotnet run", root, StringComparison.Ordinal);
-        Assert.Contains("dotnet run", publish, StringComparison.Ordinal);
+        var build = root.IndexOf("dotnet build", StringComparison.Ordinal);
+        var authenticatedTask = root.IndexOf("azureSubscription:", StringComparison.Ordinal);
+
+        Assert.True(build >= 0);
+        Assert.True(authenticatedTask > build);
+        Assert.Contains("$(Build.ArtifactStagingDirectory)/_tool", root, StringComparison.Ordinal);
+        Assert.Contains("buildTool.ToolHash", publish, StringComparison.Ordinal);
+        Assert.Contains("_tool/release.dll", publish, StringComparison.Ordinal);
+        Assert.DoesNotContain("dotnet run", publish, StringComparison.Ordinal);
         Assert.DoesNotContain("dotnet publish", root, StringComparison.Ordinal);
-        Assert.DoesNotContain("_tool", publish, StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// The publish job checks out the release-system source and remains a production 1ES job.
+    /// The publish job checks out the release-system metadata needed by UseDotNet and remains
+    /// a production 1ES job.
     /// </summary>
     [Fact]
     public void The_publish_job_checks_out_source_and_runs_as_a_production_release_job()
@@ -271,42 +308,74 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// A dry run must be structurally incapable of publishing.
+    /// Remote release operations must be compile-time absent when publishPackages is false.
     /// </summary>
     /// <remarks>
-    /// YAML indentation defines structural ancestry. Every publish include must have the
-    /// <c>publishPackages=true</c> condition among its enclosing blocks.
+    /// The package-set stage itself runs during a dry run to validate artifact download and
+    /// local integrity. Approval, NuGet.org queries, publishing, and verification must all be
+    /// descendants of the internal <c>publishPackages=true</c> block.
     /// </remarks>
     [Fact]
-    public void Every_publish_stage_is_nested_inside_the_publish_guard()
+    public void Every_remote_publish_operation_is_nested_inside_the_publish_guard()
     {
-        var lines = File.ReadAllLines(PipelinePath);
+        var path = Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml");
+        var lines = File.ReadAllLines(path);
 
-        var includes = Enumerable.Range(0, lines.Length)
-            .Where(i => lines[i].Contains("publish-set.yml", StringComparison.Ordinal))
+        var operations = Enumerable.Range(0, lines.Length)
+            .Where(i =>
+                lines[i].Contains("ManualValidation@0", StringComparison.Ordinal) ||
+                lines[i].Contains("1ES.PublishNuget@1", StringComparison.Ordinal) ||
+                lines[i].Trim() == "filter `" ||
+                lines[i].Trim() == "verify `")
             .ToList();
 
-        Assert.NotEmpty(includes);
+        Assert.Collection(operations, _ => { }, _ => { }, _ => { }, _ => { });
 
-        foreach (var include in includes)
+        foreach (var operation in operations)
         {
             Assert.True(
-                EnclosingConditions(lines, include).Any(c =>
+                EnclosingConditions(lines, operation).Any(c =>
                     c.Contains("parameters.publishPackages, true", StringComparison.Ordinal)),
-                $"release.yml line {include + 1} includes a publish stage that is not nested " +
-                $"inside a publishPackages guard, so it would be emitted on a dry run: " +
-                $"{lines[include].Trim()}");
+                $"publish-set.yml line {operation + 1} contains a remote release operation " +
+                $"outside the publishPackages guard: {lines[operation].Trim()}");
         }
+    }
+
+    [Fact]
+    public void Dry_run_executes_package_set_validation_outside_the_publish_guard()
+    {
+        var publishPath = Path.Combine(
+            RepoRoot,
+            "eng",
+            "pipelines",
+            "stages",
+            "publish-set.yml");
+        var publishLines = File.ReadAllLines(publishPath);
+        var validate = Array.FindIndex(publishLines, line => line.Trim() == "validate `");
+
+        Assert.True(validate >= 0);
+        Assert.DoesNotContain(
+            EnclosingConditions(publishLines, validate),
+            condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
+
+        var rootLines = File.ReadAllLines(PipelinePath);
+        var includes = Enumerable.Range(0, rootLines.Length)
+            .Where(i => rootLines[i].Contains("publish-set.yml", StringComparison.Ordinal))
+            .ToList();
+        Assert.Collection(includes, _ => { }, _ => { }, _ => { });
+        Assert.All(
+            includes,
+            include => Assert.DoesNotContain(
+                EnclosingConditions(rootLines, include),
+                condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal)));
     }
 
     /// <summary>
     /// Walks outwards from a line, collecting every <c>${{ if }}</c> that encloses it.
     /// </summary>
     /// <remarks>
-    /// Enclosure in YAML is indentation, so an ancestor is the nearest preceding line at a
-    /// strictly smaller indent. This is what distinguishes "inside the guard" from "later in
-    /// the file than the guard" — the distinction a positional check cannot make, and the one
-    /// that decides whether a dry run can publish.
+    /// Enclosure in YAML is indentation: each ancestor is the nearest preceding line at a
+    /// strictly smaller indent.
     /// </remarks>
     private static IReadOnlyList<string> EnclosingConditions(string[] lines, int index)
     {
@@ -436,7 +505,6 @@ public class PipelineDefinitionTests
         var text = File.ReadAllText(PipelinePath);
 
         var promote = text[text.IndexOf("- stage: promote_workload_set", StringComparison.Ordinal)..];
-        promote = promote[..promote.IndexOf("${{ if eq(parameters.publishPackages, true) }}", StringComparison.Ordinal)];
 
         Assert.Contains("ManualValidation@0", promote, StringComparison.Ordinal);
         Assert.Contains("pool: server", promote, StringComparison.Ordinal);
@@ -481,8 +549,8 @@ public class PipelineDefinitionTests
         Assert.Contains("1ES.PublishNuget@1", publish, StringComparison.Ordinal);
         Assert.Contains("nuget.org (dotnetframework)", publish, StringComparison.Ordinal);
 
-        // The structural nesting test above proves this template is absent from a dry run.
-        Every_publish_stage_is_nested_inside_the_publish_guard();
+        // The structural nesting test proves these operations are absent from a dry run.
+        Every_remote_publish_operation_is_nested_inside_the_publish_guard();
     }
 
     /// <summary>
@@ -533,47 +601,15 @@ public class PipelineDefinitionTests
                 condition.Contains("parameters.promoteWorkloadSet, true", StringComparison.Ordinal));
     }
 
-    /// <summary>
-    /// gather-drop receives production credentials. A mutable "latest Darc" endpoint could
-    /// change the executable after review, so every invocation must supply the checked-in
-    /// version and that version must be tracked by Arcade dependency metadata.
-    /// </summary>
+    /// <summary>The pipeline uses the Darc CLI installed on the agent image.</summary>
     [Fact]
-    public void Darc_is_pinned_to_a_tracked_dependency()
+    public void Darc_is_invoked_directly()
     {
-        var pipeline = File.ReadAllLines(PipelinePath);
-        var calls = pipeline
-            .Where(line => line.Contains("Get-Darc", StringComparison.Ordinal))
-            .ToList();
+        var pipeline = File.ReadAllText(PipelinePath);
 
-        Assert.NotEmpty(calls);
-        Assert.All(
-            calls,
-            line => Assert.Contains("Get-Darc \"$(DarcVersion)\"", line, StringComparison.Ordinal));
-
-        var versions = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Versions.props"));
-        var details = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
-        var configured = ((YamlSequenceNode)Pipeline["variables"])
-            .Cast<YamlMappingNode>()
-            .Single(variable =>
-                variable.Children.ContainsKey("name") &&
-                ((YamlScalarNode)variable["name"]).Value == "DarcVersion");
-
-        Assert.Equal(
-            "1.1.0-beta.26426.1",
-            ((YamlScalarNode)configured["value"]).Value);
-
-        Assert.Contains(
-            "<MicrosoftDotNetDarcPackageVersion>1.1.0-beta.26426.1</MicrosoftDotNetDarcPackageVersion>",
-            versions,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "Name=\"Microsoft.DotNet.Darc\" Version=\"1.1.0-beta.26426.1\"",
-            details,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "<Sha>f271aca69409ef2985730f0de4983f5ba2423f28</Sha>",
-            details,
-            StringComparison.Ordinal);
+        Assert.Contains("darc gather-drop", pipeline, StringComparison.Ordinal);
+        Assert.Contains("darc add-build-to-channel", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("Get-Darc", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("DarcVersion", pipeline, StringComparison.Ordinal);
     }
 }

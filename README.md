@@ -18,7 +18,7 @@ Releasing repositories do not change. They are named by parameter.
    |---|---|
    | **GitHub owner** / **GitHub repository** | What to release. The dropdown is exactly the set enabled in `config/repositories.json`. |
    | **Commit** | The full SHA, as registered in BAR. Required. |
-   | **BAR build ID** | Only when BAR has no GitHub URL for the build — the run will tell you if so. Otherwise leave as `skip`. |
+   | **BAR build ID** | Only when BAR has no GitHub URL for the build. Otherwise leave empty. |
    | **PUBLISH to NuGet.org** | **Off by default.** Leave it off for a dry run. |
    | **Promote to workload-set channel** | Workload repositories only. |
    | Include / exclude filters | Optional package selection. |
@@ -27,20 +27,20 @@ Releasing repositories do not change. They are named by parameter.
 The repository and commit have no defaults. Azure DevOps requires the operator to choose
 both for every run.
 
-3. The run prepares and validates everything, then **waits at a manual approval gate**.
+3. The run prepares the release and validates the matching package-set jobs.
 4. Review `release-plan.json` in the published artifact — it lists every package that will be
    pushed, with its exact version and content hash.
-5. Approve. The packages are pushed and then verified on NuGet.org.
+5. On a publish run, approve the matching gate. The packages are pushed and verified.
 
 **The default run publishes nothing.** `PUBLISH to NuGet.org` is off, and on a dry run the
-publish stages are not merely skipped — they do not exist in the expanded pipeline.
+package-set stages download and validate the artifact, while their approval, NuGet.org
+filter, push, and verification jobs do not exist in the expanded pipeline.
 
 ### Adding a repository
 
-Add it to `config/repositories.json` **and** to the `ghRepo` dropdown in
-`eng/pipelines/ci-official-release.yml` (and to the `isWorkload` list if it is a workload repository).
-A test fails the build if those disagree, and the tool fails the release if they disagree at
-run time.
+Add it to `config/repositories.json` and to the `ghRepo` dropdown in
+`eng/pipelines/ci-official-release.yml`. Workload classification comes only from the config.
+A test fails the build if the dropdown and policy disagree.
 
 ## How it works
 
@@ -48,10 +48,10 @@ run time.
 prepare_release
   build the tool  →  release plan  →  darc gather-drop  →  release stage
       ↓ artifacts + pinned plan hash
-publish_* (only when publishing)
-  approval  (agentless, pool: server)
-  publish   (checkout release-system source)
-     release filter  →  1ES.PublishNuget@1  →  release verify
+matching package-set stage
+  validate artifact download, plan, marker, package hashes, and tool
+  if publishing:
+    approval  →  release filter  →  1ES.PublishNuget@1  →  release verify
 ```
 
 Workload repositories publish **packs first, then manifests**, as two separately gated
@@ -65,11 +65,11 @@ logs to Azure DevOps.
 
 The boundary is narrower and more important:
 
-- **A dry run never contacts NuGet.org.** `release filter`, `release verify`, the
-  `nuget.org (dotnetframework)` service connection, and `1ES.PublishNuget@1` exist only in an
-  internal stage template whose every inclusion is structurally nested beneath
-  `${{ if eq(parameters.publishPackages, true) }}`. They do not exist in the expanded dry-run
-  YAML.
+- **A dry run never contacts NuGet.org.** The matching package-set stage executes
+  `release validate`, which is local-only. `release filter`, `release verify`, the
+  `nuget.org (dotnetframework)` service connection, and `1ES.PublishNuget@1` are nested
+  inside the internal template's `${{ if eq(parameters.publishPackages, true) }}` block and
+  do not exist in the expanded dry-run YAML.
 - **A dry run does not mutate BAR or GitHub.** `darc add-build-to-channel` is also compile-time
   excluded unless `publishPackages` and `promoteWorkloadSet` are both true, and it has its own
   manual gate. Preparation uses read-only BAR methods and `darc gather-drop`.
@@ -81,7 +81,7 @@ The boundary is narrower and more important:
   DevOps owns the exit code and the log. (Authentication does start `az` transitively via
   `Azure.Identity`; the codebase itself starts no process.)
 - **Everything fails closed.** Unknown repository, wrong commit, missing channel, duplicate
-  package, workload misclassification, tampered artifact — all are errors with stable codes.
+  package, or tampered artifact — all are errors with stable codes.
 
 ## Before first production use
 
@@ -102,9 +102,8 @@ Two things must be confirmed by whoever first runs this against the real service
 
 ## Hooking up the pipeline
 
-The existing Azure DevOps pipeline already points at
-`eng/pipelines/ci-official-release.yml`; keep that path until the pipeline definition is
-explicitly migrated. It needs:
+The Azure DevOps pipeline entry point is
+`eng/pipelines/ci-official-release.yml`. The pipeline definition needs:
 
 - to use the **Azure Repos mirror** (`dnceng/internal/dotnet-maui`) as its source, not a
   GitHub service connection. This prevents pipeline-definition features such as "Report build
@@ -154,8 +153,9 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release plan   --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] [--expect-workload <bool>] --out ./stage
+release plan   --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --out ./stage
 release stage  --plan ./stage/plan.json --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
-release filter --plan <release-plan.json> --set <artifactName> [--skip '…'] [--expected-plan-hash <sha256>]
-release verify --plan <release-plan.json> --set <artifactName> [--expected-plan-hash <sha256>] [--max-duration-minutes 30]
+release validate --plan <release-plan.json> --stage <releaseArtifact> --set <setDirectory> --expected-plan-hash <sha256>
+release filter --plan <release-plan.json> --set <setDirectory> [--recovery-filters '…'] [--expected-plan-hash <sha256>]
+release verify --plan <release-plan.json> --set <setDirectory> [--expected-plan-hash <sha256>] [--max-duration-minutes 30]
 ```

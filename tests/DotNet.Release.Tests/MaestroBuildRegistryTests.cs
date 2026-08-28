@@ -172,7 +172,7 @@ public class MaestroBuildRegistryTests
         Assert.Empty(await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, commit, CancellationToken.None));
     }
 
-    // ---- end-to-end through Core ----
+    // ---- end-to-end through build resolution ----
 
     /// <summary>
     /// The full production path for SkiaSharp build 328857: BAR has no GitHub URL, the build

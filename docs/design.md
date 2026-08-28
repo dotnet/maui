@@ -20,7 +20,7 @@ The Azure DevOps entry point is:
 eng/pipelines/ci-official-release.yml
 ```
 
-The filename is retained because the existing pipeline definition already references it.
+The filename is part of the Azure DevOps pipeline definition contract.
 
 ## Goals
 
@@ -92,6 +92,10 @@ For a dry run, the expanded pipeline MUST NOT contain:
 - `darc add-build-to-channel`;
 - a manual publish or promotion gate.
 
+The matching package-set stage remains present. Its `validate` job downloads the `Release`
+artifact and verifies the plan hash, tool hash, set marker, package list, package presence,
+and package hashes without constructing a NuGet.org client.
+
 The dry run therefore:
 
 - does not contact NuGet.org through the checked-in release code or tasks;
@@ -121,19 +125,22 @@ Publish and promotion stages are selected with Azure DevOps template expressions
 - ${{ if eq(parameters.publishPackages, true) }}:
 ```
 
-This is a compile-time barrier. When false, the protected stages do not exist in the
-expanded YAML; they are not runtime-skipped jobs with credentials or tasks still present.
+This is a compile-time barrier around the remote release jobs. When false, approval,
+filtering, publishing, and verification do not exist in the expanded YAML.
 
-All `publish-set.yml` inclusions MUST be descendants of this guard.
+The package-set stages themselves always exist so a dry run validates stage selection,
+artifact download, SDK setup, tool execution, and local integrity.
 
-Workload-set promotion additionally requires:
+Workload-set promotion is compile-time excluded unless both operator opt-ins are true:
 
 ```yaml
 and(
-  eq(variables.isWorkload, 'true'),
   eq(parameters.promoteWorkloadSet, true),
   eq(parameters.publishPackages, true))
 ```
+
+Its runtime condition additionally requires the `IsWorkload` output emitted by
+`release plan`.
 
 ### Queue-parameter safety
 
@@ -192,12 +199,12 @@ production adapters directly.
 | `ghOwner` | yes | `dotnet` | GitHub repository owner |
 | `ghRepo` | yes | none | Repository selected explicitly from the enabled list |
 | `commitHash` | yes | none | Exact full commit registered in BAR |
-| `barBuildId` | no | `skip` | Direct BAR lookup for builds without a GitHub URL |
-| `publishPackages` | yes | `false` | Emit the gated NuGet.org publish stages |
+| `barBuildId` | no | empty | Direct BAR lookup for builds without a GitHub URL |
+| `publishPackages` | yes | `false` | Include gated NuGet.org jobs in matching set stages |
 | `promoteWorkloadSet` | yes | `false` | Emit the gated BAR channel-promotion stage |
-| `includeFilters` | no | `skip` | Semicolon-separated package filename globs |
-| `excludeFilters` | no | `skip` | Semicolon-separated package filename globs |
-| `recoveryFilters` | no | `skip` | Packages submitted by an earlier partial run |
+| `includeFilters` | no | empty | Semicolon-separated package filename globs |
+| `excludeFilters` | no | empty | Semicolon-separated package filename globs |
+| `recoveryFilters` | no | empty | Packages already submitted by this release |
 | `pool` | infrastructure | internal Windows pool | Agent pool definition |
 
 Runs are tagged `DRY-RUN` or `PUBLISH`.
@@ -214,7 +221,7 @@ The prepare stage always runs, including on a dry run:
 ```
 checkout release-system source
   -> install pinned .NET SDK
-  -> publish release.exe as a self-contained single file
+  -> build Release/_tool/release.dll
   -> release plan
   -> darc gather-drop
   -> release stage
@@ -224,8 +231,10 @@ checkout release-system source
 
 The gathered drop is placed under `Agent.TempDirectory`, not the artifact staging root.
 
-Each agent job checks out this release-system repository and invokes the C# project with
-`dotnet run`. The source commit is fixed by the Azure DevOps run.
+The prepare job builds the framework-dependent tool once with `dotnet build`, before any
+task acquires the Maestro production identity. The build output is stored in the immutable
+`Release` artifact. Publish jobs execute that exact `release.dll` after approval without
+restoring or rebuilding it.
 
 ### Workload-set promotion stage
 
@@ -237,17 +246,26 @@ When requested for a workload repository:
 
 Promotion is excluded from dry runs.
 
-### Package publish stages
+### Package-set stages
 
 Every package set uses the same internal stage definition:
 
 ```
-ManualValidation@0
-  -> verify plan hash
-  -> release filter
-  -> 1ES.PublishNuget@1
-  -> release verify
+validate
+  -> download Release artifact
+  -> verify plan and tool hashes
+  -> release validate
+
+when publishPackages=true:
+  ManualValidation@0
+    -> release filter
+    -> 1ES.PublishNuget@1
+    -> release verify
 ```
+
+`release validate` performs no remote query. It validates the selected set marker and every
+planned package file/hash, proving that the agent job can start, download the artifact,
+install the SDK, load the approved tool, and interpret the plan before a publishing run.
 
 The manual validation task MUST run in its own `pool: server` job. An agentless job cannot
 download artifacts or execute scripts, so the gated operation runs in a dependent agent
@@ -305,15 +323,17 @@ Channel verification establishes a property distinct from source identity:
 
 ### Workload classification
 
-Azure DevOps must choose workload or non-workload stage topology at compile time. The
-pipeline therefore contains a workload repository list in addition to the JSON policy.
+`config/repositories.json` is the only source of workload classification.
 
-Drift is checked twice:
+`release plan` emits `IsWorkload` as an Azure DevOps output variable. When publishing is
+enabled, the pipeline contains the workload and non-workload stage shapes, and each stage
+uses a runtime condition against that output:
 
-1. tests require the pipeline dropdown and compile-time workload list to match the JSON
-   policy;
-2. the pipeline passes `--expect-workload` to `release plan`, which fails with
-   `WORKLOAD_MISMATCH` if runtime policy disagrees.
+- `publish_packs` and `publish_manifests` require `IsWorkload=true`;
+- `publish_packages` requires `IsWorkload=false`;
+- `promote_workload_set` requires `IsWorkload=true`.
+
+This keeps stage ordering explicit without duplicating repository classification in YAML.
 
 ## BAR resolution
 
@@ -391,15 +411,8 @@ darc gather-drop
 The asset filter selects slash-free package assets and excludes symbol and other
 path-shaped blob assets.
 
-Darc is pinned to:
-
-```text
-Microsoft.DotNet.Darc 1.1.0-beta.26426.1
-dotnet/arcade-services f271aca69409ef2985730f0de4983f5ba2423f28
-```
-
-The pinned `gather-drop` implementation reads BAR and repository metadata and downloads
-from recognized Azure DevOps feeds or blob storage. It rejects unknown location types.
+The pipeline invokes the Darc CLI installed on the agent image. `gather-drop` reads BAR and
+repository metadata and downloads package assets to the agent.
 `--include-released` permits downloading a build already marked released; it does not
 change release state.
 
@@ -496,25 +509,33 @@ Unknown schema versions fail with `PLAN_SCHEMA_INVALID`.
 
 ## Artifact contract
 
-Artifact names are:
+The pipeline publishes one artifact named `Release`. Package sets are directories within
+that artifact:
 
-| Release type | Artifact |
+| Release type | Set directory |
 |---|---|
 | Non-workload | `ReleasePackages` |
 | Workload packs | `ReleasePacks` |
 | Workload manifests | `ReleaseManifests` |
 
-Each package-set artifact is self-contained:
+The artifact layout is:
 
 ```
-<artifact>/
-  *.nupkg
+Release/
   release-plan.json
-  release-set.json
+  _tool/
+    release.dll
+    release.deps.json
+    <runtime dependencies>
+  ReleasePackages/
+    *.nupkg
+    release-plan.json
+    release-set.json
 ```
 
-The same byte-identical plan is copied into every set artifact, so one expected plan hash
-pins every copy.
+Workload releases contain `ReleasePacks/` and `ReleaseManifests/` instead of
+`ReleasePackages/`. The same byte-identical plan is copied into the artifact root and every
+set directory, so one expected plan hash pins every copy.
 
 ### Set marker
 
@@ -537,20 +558,22 @@ only fail the release; it cannot cause a different package to publish.
 
 The prepare stage:
 
-1. runs the C# project from the checked-out release-system source;
-2. records every package SHA-256 in the plan;
-3. writes byte-identical plans into each package-set artifact;
-4. computes the plan hash independently with `Get-FileHash`;
-5. exports that hash as `ReleasePlanHash`.
+1. builds the C# project into `Release/_tool`;
+2. computes `release.dll` SHA-256 as `ToolHash`;
+3. executes that DLL for `plan` and `stage`;
+4. records every package SHA-256 in the plan;
+5. writes byte-identical plans into the release artifact and each package-set directory;
+6. computes the plan hash independently with `Get-FileHash`;
+7. exports `ToolHash` and `ReleasePlanHash`.
 
 The publish job:
 
-1. checks out the same release-system source commit;
-2. downloads the package-set artifact;
-3. compares raw plan bytes with `ReleasePlanHash`;
-4. runs `filter` with the expected plan hash;
+1. downloads the `Release` artifact;
+2. compares raw plan bytes with `ReleasePlanHash`;
+3. compares `_tool/release.dll` with `ToolHash`;
+4. executes that DLL for `filter`;
 5. validates all pending package hashes before invoking 1ES;
-6. runs `verify` with the same expected plan hash.
+6. executes the same DLL for `verify` with the same expected plan hash.
 
 Unexpected `.nupkg` files, missing pending files, and changed package bytes fail closed.
 Companion JSON and executable files are excluded by the `.nupkg` enumeration.
@@ -629,7 +652,6 @@ The repository follows Arcade conventions:
 Tracked release dependencies include:
 
 - `Microsoft.DotNet.ProductConstructionService.Client`;
-- `Microsoft.DotNet.Darc`;
 - `NuGet.Packaging`;
 - `NuGet.Protocol`;
 - `NuGet.Versioning`;
@@ -657,12 +679,13 @@ package-publication result.
 Before using the system for a production push:
 
 1. queue a dry run with `publishPackages=false`;
-2. confirm the expanded plan contains only preparation;
+2. confirm matching package-set validation jobs run and no approval, filter, push, or
+   verification job exists;
 3. confirm the run is tagged `DRY-RUN`;
 4. confirm no NuGet.org service connection is requested;
-5. inspect all package-set artifacts and their identical plan hashes;
+5. inspect the `Release` artifact and the identical plan copies in each package-set directory;
 6. use a workload repository for at least one dry run, proving both `ReleasePacks` and
-   `ReleaseManifests` artifacts are produced;
+   `ReleaseManifests` directories are produced;
 7. confirm the missing-build behavior of the typed PCS client against a real nonexistent
    BAR ID.
 
@@ -675,12 +698,13 @@ service.
 Tests MUST fail when:
 
 - the pipeline repository dropdown differs from policy;
-- the pipeline workload list differs from policy;
-- a publish-stage include is not structurally nested beneath `publishPackages=true`;
+- workload and non-workload stages do not use the `release plan` classification output;
+- a remote publish operation is not structurally nested beneath `publishPackages=true`;
+- package-set local validation is nested beneath `publishPackages=true`;
 - BAR promotion is not nested beneath both publish and promotion opt-ins;
 - queue-time parameters appear in executable PowerShell text;
 - the NuGet.org task, connection, or known push mechanisms appear in the root dry-run graph;
-- Darc is not pinned consistently across pipeline and Arcade dependency metadata;
+- Darc is resolved through `Get-Darc` instead of the installed agent command;
 - `ManualValidation@0` is not an agentless predecessor of the mutating job;
 - pack/manifests stage ordering is broken;
 - the tool references NuGet's push API;

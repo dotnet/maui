@@ -183,6 +183,16 @@ public class AzurePipelineCommandTests
             AzurePipelineCommand.SetBarId(4242));
     }
 
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void Workload_classification_is_emitted_as_an_output_variable(bool value, string expected)
+    {
+        Assert.Equal(
+            $"##vso[task.setvariable variable=IsWorkload;isOutput=true]{expected}",
+            AzurePipelineCommand.SetIsWorkload(value));
+    }
+
     [Fact]
     public void PackagesToPublish_is_a_plain_variable()
     {

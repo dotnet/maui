@@ -39,8 +39,7 @@ public class NupkgIdentityReaderTests : IDisposable
         Assert.Equal("SkiaSharp", result.Value.Id);
         Assert.Equal("3.119.0", result.Value.Version);
 
-        // The file name is reported as-is; StagePlanner is what rejects the mismatch, so the
-        // reader stays a reader and the policy stays in Core.
+        // The reader reports metadata as-is; StagePlanner applies filename policy.
         Assert.Equal("totally-different-name.nupkg", result.Value.FileName);
     }
 
@@ -140,8 +139,8 @@ public class NupkgIdentityReaderTests : IDisposable
     }
 
     /// <summary>
-    /// End to end: a real package read off disk must satisfy the validation Core applies at
-    /// stage time, including the normalized-version agreement check.
+    /// A real package read from disk must satisfy staging policy, including normalized-version
+    /// agreement.
     /// </summary>
     [Fact]
     public async Task A_real_package_passes_Core_staging_validation()

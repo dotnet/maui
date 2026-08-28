@@ -27,7 +27,6 @@ internal static class Verbs
         string repository,
         string commit,
         int? barBuildId,
-        bool? expectWorkload,
         string outputDirectory,
         DateTimeOffset now,
         string toolVersion,
@@ -51,14 +50,6 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, repositoryPolicy.Errors);
         }
 
-        // The pipeline chose its stage structure from its own repository list. If that
-        // disagrees with the checked-in policy, stop before anything is gathered.
-        var classification = ReleasePolicy.VerifyWorkloadClassification(repositoryPolicy.Value, expectWorkload);
-        if (classification.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, classification.Errors);
-        }
-
         var request = new ReleaseRequest(repositoryId.Value, commit, barBuildId);
 
         var candidates = barBuildId is { } id
@@ -80,8 +71,9 @@ internal static class Verbs
         console.WriteLine($"Identity established from: {resolved.Value.RepositoryOrigin}.");
         console.WriteLine($"Wrote {planPath}.");
 
-        // The only pipeline variable this tool emits from `plan`.
+        // Subsequent pipeline steps need the resolved build ID and package-set topology.
         console.WriteLine(AzurePipelineCommand.SetBarId(resolved.Value.BarBuildId));
+        console.WriteLine(AzurePipelineCommand.SetIsWorkload(resolved.Value.Workload));
 
         return ExitCodes.Success;
     }
@@ -244,6 +236,57 @@ internal static class Verbs
     }
 
     // ---- release filter ----
+
+    /// <summary>
+    /// Validates a downloaded package-set artifact without any remote query or mutation.
+    /// </summary>
+    public static int Validate(
+        IReleaseConsole console,
+        string planJson,
+        string stageDirectory,
+        string expectedPlanHash,
+        string setName)
+    {
+        var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
+        if (plan.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, plan.Errors);
+        }
+
+        var sets = SelectSets(plan.Value, setName);
+        if (sets.IsFailure)
+        {
+            return ConsoleReporting.Fail(console, sets.Errors);
+        }
+
+        foreach (var set in sets.Value)
+        {
+            if (!IsSinglePathComponent(set.ArtifactName))
+            {
+                return ConsoleReporting.Fail(console, [new ReleaseError(
+                    ErrorCodes.PlanSchemaInvalid,
+                    $"Package set artifact name '{set.ArtifactName}' must be one directory name.")]);
+            }
+
+            var setDirectory = Path.Combine(stageDirectory, set.ArtifactName);
+            var marker = ValidateSetMarker(setDirectory, set, plan.Value.Source, setName);
+            if (marker.IsFailure)
+            {
+                return ConsoleReporting.Fail(console, marker.Errors);
+            }
+
+            var integrity = StagedSetIntegrity.ValidateStaged(set, ReadStagedHashes(setDirectory));
+            if (integrity.IsFailure)
+            {
+                return ConsoleReporting.Fail(console, integrity.Errors);
+            }
+
+            console.WriteLine(
+                $"Validated {set.Name}: {set.Packages.Count} package(s), no NuGet.org query.");
+        }
+
+        return ExitCodes.Success;
+    }
 
     /// <summary>
     /// Removes already-published packages from the staging directory so the 1ES push glob

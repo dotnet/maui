@@ -17,17 +17,12 @@ namespace DotNet.Release;
 /// </remarks>
 public static class PackageGlob
 {
-    /// <summary>The pipeline parameter value that means "no filter".</summary>
-    public const string SkipSentinel = "skip";
-
     /// <summary>
-    /// Parses a semicolon-separated filter list, treating null, whitespace and the
-    /// <c>skip</c> sentinel as "no filters".
+    /// Parses a semicolon-separated filter list. Null or whitespace means no filters.
     /// </summary>
     public static IReadOnlyList<string> ParseList(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            string.Equals(value.Trim(), SkipSentinel, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(value))
         {
             return [];
         }

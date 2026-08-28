@@ -46,11 +46,6 @@
   <PropertyGroup>
     <!-- Read-only Maestro/BAR client. Flowed by darc; see eng/Version.Details.xml. -->
     <MicrosoftDotNetProductConstructionServiceClientPackageVersion>1.1.0-beta.26426.2</MicrosoftDotNetProductConstructionServiceClientPackageVersion>
-    <!--
-      Pinned because gather-drop receives production credentials. Do not resolve a mutable
-      "latest Darc" endpoint during a release after the executable was reviewed.
-    -->
-    <MicrosoftDotNetDarcPackageVersion>1.1.0-beta.26426.1</MicrosoftDotNetDarcPackageVersion>
   </PropertyGroup>
 
 </Project>

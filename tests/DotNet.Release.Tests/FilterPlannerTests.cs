@@ -135,7 +135,7 @@ public class StagedSetIntegrityTests
     /// allow-listing companion names here.
     /// </summary>
     /// <remarks>
-    /// This is the anti-brittleness assertion: Core has no knowledge of
+    /// The integrity validator has no knowledge of
     /// <c>release-plan.json</c> or <c>release-set.json</c> and <i>would</i> reject them if
     /// they were ever observed. The safety comes from the caller only ever observing
     /// <c>.nupkg</c> files. Companion files are excluded by enumeration scope, not by a

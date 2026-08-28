@@ -1,11 +1,8 @@
-# One gated publish of one package set.
+# Validates one package set and, when enabled, publishes it.
 #
-# Internal stage definition used by ci-official-release.yml for every package set. It keeps
-# approval, integrity checks, filtering, 1ES publishing, and verification identical across
-# workload packs, workload manifests, and non-workload packages.
-#
-# The three-step shape is fixed: `release filter` -> 1ES.PublishNuget@1 -> `release verify`.
-# Two tool invocations bracketing the compliance task, which owns the actual upload.
+# Every matching dry-run stage downloads the Release artifact and executes the validate verb.
+# Approval, NuGet.org filtering, publishing, and verification exist only when publishPackages
+# is true.
 
 parameters:
 - name: stageName
@@ -16,6 +13,20 @@ parameters:
 
 - name: artifactName
   type: string
+  default: Release
+
+- name: setName
+  type: string
+
+- name: expectedWorkload
+  type: string
+  values:
+  - 'true'
+  - 'false'
+
+- name: publishPackages
+  type: boolean
+  default: false
 
 - name: dependsOn
   type: object
@@ -23,47 +34,27 @@ parameters:
 - name: approvalInstructions
   type: string
 
-# The one production connection this release system publishes through. Not operator-facing:
-# it is a property of the system, not of an individual release.
 - name: nugetServiceConnection
   type: string
   default: nuget.org (dotnetframework)
 
 - name: recoveryFilters
   type: string
-  default: skip
+  default: ''
 
 stages:
 - stage: ${{ parameters.stageName }}
   displayName: ${{ parameters.displayName }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: succeeded()
+  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.releasePlan.IsWorkload'], '${{ parameters.expectedWorkload }}'))
   jobs:
 
-  # ManualValidation@0 requires `pool: server`, and an agentless job cannot download
-  # artifacts or run scripts. The gate therefore cannot live in the publishing job; the
-  # split is imposed by Azure DevOps, not a style choice.
-  - job: approval
-    displayName: Wait to publish
-    timeoutInMinutes: 240
-    pool: server
-    steps:
-    - task: ManualValidation@0
-      timeoutInMinutes: 120
-      inputs:
-        instructions: ${{ parameters.approvalInstructions }}
-        onTimeout: reject
-
-  - job: publish
-    displayName: Publish to NuGet.org
-    timeoutInMinutes: 90
-    dependsOn: approval
-    condition: eq(dependencies.approval.result, 'Succeeded')
+  - job: validate
+    displayName: Validate downloaded release artifact
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+      ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
     templateContext:
-      type: releaseJob
-      isProduction: true
       inputs:
       - input: pipelineArtifact
         artifactName: ${{ parameters.artifactName }}
@@ -78,78 +69,146 @@ stages:
       inputs:
         useGlobalJson: true
 
-    # The plan hash is pinned by the preparing stage and covers package identities and hashes.
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
         $planPath = "$root/release-plan.json"
+        $toolPath = "$root/_tool/release.dll"
 
-        $actual = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($actual -ne $env:EXPECTED_PLAN_HASH) {
-          throw "Release plan hash '$actual' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
+        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
+          throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
         }
 
+        $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
+          throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
+        }
       displayName: Verify artifact integrity
       env:
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_TOOL_HASH: $(ReleaseToolHash)
 
-    # Removes already-published packages in place, so the push glob below sees only what
-    # still needs publishing. Fails closed on a missing, tampered or unlisted file.
     - pwsh: |
         $ErrorActionPreference = 'Stop'
-        dotnet run `
-          --project "$env:RELEASE_PROJECT" `
-          --configuration Release `
-          --no-launch-profile `
-          -- `
-          filter `
+        dotnet "$env:RELEASE_TOOL" `
+          validate `
           --plan "$env:ARTIFACT_DIR/release-plan.json" `
-          --stage "$env:STAGE_ROOT" `
+          --stage "$env:ARTIFACT_DIR" `
           --set "$env:SET_NAME" `
-          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
-          --skip $env:RECOVERY_FILTERS
+          --expected-plan-hash "$env:EXPECTED_PLAN_HASH"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      displayName: Filter already-published packages
+      displayName: Validate package set locally
       env:
-        RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
+        RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-        STAGE_ROOT: $(Pipeline.Workspace)
-        SET_NAME: ${{ parameters.artifactName }}
+        SET_NAME: ${{ parameters.setName }}
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
-        RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
-    # The compliance boundary. The tool has no push capability; this task performs the
-    # upload and carries the SBOM and provenance obligations.
-    - task: 1ES.PublishNuget@1
-      displayName: Push packages to NuGet.org
-      condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
-      inputs:
-        useDotNetTask: false
-        packagesToPush: $(Pipeline.Workspace)/${{ parameters.artifactName }}/*.nupkg
-        packageParentPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-        nuGetFeedType: external
-        publishFeedCredentials: ${{ parameters.nugetServiceConnection }}
+  - ${{ if eq(parameters.publishPackages, true) }}:
+    - job: approval
+      displayName: Wait to publish
+      dependsOn: validate
+      timeoutInMinutes: 240
+      pool: server
+      steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 120
+        inputs:
+          instructions: ${{ parameters.approvalInstructions }}
+          onTimeout: reject
 
-    # Requires every identity in the plan, including ones filter withheld: those were
-    # withheld because they were already live, so their absence would disprove that.
-    - pwsh: |
-        $ErrorActionPreference = 'Stop'
-        dotnet run `
-          --project "$env:RELEASE_PROJECT" `
-          --configuration Release `
-          --no-launch-profile `
-          -- `
-          verify `
-          --plan "$env:ARTIFACT_DIR/release-plan.json" `
-          --set "$env:SET_NAME" `
-          --stage "$env:STAGE_ROOT" `
-          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
-          --max-duration-minutes 30 `
-          --poll-seconds 20
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      displayName: Verify packages on NuGet.org
-      env:
-        RELEASE_PROJECT: $(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj
-        ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-        STAGE_ROOT: $(Pipeline.Workspace)
-        SET_NAME: ${{ parameters.artifactName }}
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+    - job: publish
+      displayName: Publish to NuGet.org
+      timeoutInMinutes: 90
+      dependsOn: approval
+      condition: eq(dependencies.approval.result, 'Succeeded')
+      variables:
+        ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+        ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
+      templateContext:
+        type: releaseJob
+        isProduction: true
+        inputs:
+        - input: pipelineArtifact
+          artifactName: ${{ parameters.artifactName }}
+          targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+      steps:
+      - checkout: self
+        clean: true
+        persistCredentials: false
+
+      - task: UseDotNet@2
+        displayName: Install the .NET SDK
+        inputs:
+          useGlobalJson: true
+
+      - pwsh: |
+          $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+          $planPath = "$root/release-plan.json"
+          $toolPath = "$root/_tool/release.dll"
+
+          $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
+            throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
+          }
+
+          $toolHash = (Get-FileHash -LiteralPath $toolPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
+            throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
+          }
+        displayName: Verify artifact integrity
+        env:
+          EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+          EXPECTED_TOOL_HASH: $(ReleaseToolHash)
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+
+          $recovery = @()
+          if (![string]::IsNullOrWhiteSpace($env:RECOVERY_FILTERS)) {
+            $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
+          }
+
+          dotnet "$env:RELEASE_TOOL" `
+            filter `
+            --plan "$env:ARTIFACT_DIR/release-plan.json" `
+            --stage "$env:ARTIFACT_DIR" `
+            --set "$env:SET_NAME" `
+            --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+            @recovery
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        displayName: Filter already-published packages
+        env:
+          RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
+          ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+          SET_NAME: ${{ parameters.setName }}
+          EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+          RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
+
+      - task: 1ES.PublishNuget@1
+        displayName: Push packages to NuGet.org
+        condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+        inputs:
+          useDotNetTask: false
+          packagesToPush: $(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.setName }}/*.nupkg
+          packageParentPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}/${{ parameters.setName }}
+          nuGetFeedType: external
+          publishFeedCredentials: ${{ parameters.nugetServiceConnection }}
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          dotnet "$env:RELEASE_TOOL" `
+            verify `
+            --plan "$env:ARTIFACT_DIR/release-plan.json" `
+            --set "$env:SET_NAME" `
+            --stage "$env:ARTIFACT_DIR" `
+            --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+            --max-duration-minutes 30 `
+            --poll-seconds 20
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        displayName: Verify packages on NuGet.org
+        env:
+          RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
+          ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+          SET_NAME: ${{ parameters.setName }}
+          EXPECTED_PLAN_HASH: $(ReleasePlanHash)

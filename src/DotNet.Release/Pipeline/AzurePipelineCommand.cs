@@ -5,11 +5,13 @@ namespace DotNet.Release;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The tool emits two pipeline variables, and no others:
+/// The tool emits three pipeline variables:
 /// </para>
 /// <list type="number">
 /// <item><see cref="BarIdVariable"/>, from <c>release plan</c>, because the
 /// <c>darc gather-drop</c> step that follows needs the BAR ID that step discovered.</item>
+/// <item><see cref="IsWorkloadVariable"/>, from <c>release plan</c>, because stage conditions
+/// select workload or non-workload publication from repository policy.</item>
 /// <item><see cref="PackagesToPublishVariable"/>, from <c>release filter</c>, because the
 /// publish task is skipped by an Azure DevOps <c>condition</c>, and a condition can only
 /// read a variable.</item>
@@ -26,8 +28,11 @@ namespace DotNet.Release;
 /// </remarks>
 public static class AzurePipelineCommand
 {
-    /// <summary>The one variable this tool sets.</summary>
+    /// <summary>The resolved BAR build consumed by gather-drop.</summary>
     public const string BarIdVariable = "BarId";
+
+    /// <summary>The package-set topology declared by repository policy.</summary>
+    public const string IsWorkloadVariable = "IsWorkload";
 
     /// <summary>The variable the publish task's condition reads to skip an empty push.</summary>
     public const string PackagesToPublishVariable = "NuGetPackagesToPublish";
@@ -45,6 +50,10 @@ public static class AzurePipelineCommand
     /// <summary>Formats the <c>BarId</c> output variable emitted by <c>release plan</c>.</summary>
     public static string SetBarId(int barBuildId) =>
         SetVariable(BarIdVariable, barBuildId.ToString(System.Globalization.CultureInfo.InvariantCulture), isOutput: true);
+
+    /// <summary>Formats the workload classification emitted by <c>release plan</c>.</summary>
+    public static string SetIsWorkload(bool isWorkload) =>
+        SetVariable(IsWorkloadVariable, isWorkload ? "true" : "false", isOutput: true);
 
     /// <summary>Formats the flag the publish task's condition reads.</summary>
     public static string SetPackagesToPublish(bool hasPackages) =>

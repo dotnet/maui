@@ -8,7 +8,7 @@ namespace DotNet.Release;
 /// <remarks>
 /// <para>
 /// A typed lookup distinguishes a missing build from transport and service failures without
-/// parsing process output. A 404 becomes an empty result for Core to report as
+/// parsing process output. A 404 becomes an empty result for policy to report as
 /// <c>BAR_BUILD_NOT_FOUND</c>; other failures remain typed exceptions.
 /// </para>
 /// <para>
@@ -41,7 +41,7 @@ public sealed class MaestroBuildRegistry : IBuildRegistry
     /// <inheritdoc />
     /// <remarks>
     /// The client returns a single build or throws, so this yields either zero or one
-    /// result. Core still applies its "exactly one" rule to both resolution paths.
+    /// result. Build resolution still applies its "exactly one" rule to both paths.
     /// </remarks>
     public async Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken)
     {
@@ -63,7 +63,7 @@ public sealed class MaestroBuildRegistry : IBuildRegistry
         catch (RestApiException ex) when (ex.Response?.Status == NotFound)
         {
             // "No such build" is an expected answer to a lookup, not a transport failure, so
-            // it becomes an empty result and Core produces the BAR_BUILD_NOT_FOUND message.
+            // it becomes an empty result and policy produces the BAR_BUILD_NOT_FOUND message.
             // Every other status stays an exception rather than being flattened into "none".
             return [];
         }
