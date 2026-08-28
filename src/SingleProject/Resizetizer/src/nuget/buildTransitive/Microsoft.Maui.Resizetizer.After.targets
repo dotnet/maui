@@ -27,7 +27,7 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
-        TaskName="Microsoft.Maui.Resizetizer.CanonicalizeDirectoryTask" />
+        TaskName="Microsoft.Maui.Resizetizer.DeleteStaleOutputFilesTask" />
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
@@ -807,15 +807,6 @@
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
-        <!-- Resolve the root before taking the wildcard snapshot. If a project/intermediate-output alias is
-             retargeted after enumeration, candidate paths are still checked against this original root. -->
-        <ItemGroup>
-            <_ResizetizerCanonicalStaleRoot Remove="@(_ResizetizerCanonicalStaleRoot)" />
-        </ItemGroup>
-        <CanonicalizeDirectoryTask Directory="$(_MauiIntermediateImagesFullPath)">
-            <Output TaskParameter="CanonicalDirectory" ItemName="_ResizetizerCanonicalStaleRoot" />
-        </CanonicalizeDirectoryTask>
-
         <ItemGroup>
             <!-- Fresh build: use the task output directly -->
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources->Count())' != '0'" Include="@(_CopiedResources)" />
@@ -823,34 +814,13 @@
                  written into the intermediate folder by external backends (e.g. *.items files) are
                  never surfaced through MauiProcessedImage / _ResizetizerCollectedImages. -->
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == '' And '@(_MauiImageToProcess)' != ''" Include="@(_ResizetizerOutputs)" />
-            <!-- Wildcard is kept solely for stale-file detection and cleanup. -->
-            <_ResizetizerExistingImages
-                Condition="'@(_ResizetizerCanonicalStaleRoot)' != ''"
-                Include="$(_MauiIntermediateImages)\**\*" />
         </ItemGroup>
 
-        <!-- Compare canonical paths rather than item specs. The wildcard above and the collected images
-             can legitimately spell the same file differently (symlinked project paths, casing), and a
-             textual Remove would then classify every generated image as stale. Root also confines the
-             delete list to the intermediate folder, because the recursive wildcard descends through any
-             directory link it finds inside it. Returned stale items use the positively resolved parent
-             plus the original leaf, so retargeting the wildcard's alias cannot redirect Delete. This is
-             not an OS handle-relative delete: concurrently replacing a directory in that resolved path
-             remains outside the guarantee. -->
-        <DetectStaleOutputFilesTask
-            Condition="'@(_ResizetizerCanonicalStaleRoot)' != ''"
-            Root="@(_ResizetizerCanonicalStaleRoot)"
-            RootIsCanonical="true"
-            Files="@(_ResizetizerExistingImages->'%(FullPath)')"
-            KnownOutputs="@(_ResizetizerCollectedImages)">
-            <Output TaskParameter="StaleFiles" ItemName="_ResizetizerImagesToDelete" />
-        </DetectStaleOutputFilesTask>
-
-        <!-- Remove files which are no longer needed -->
-        <Delete
-            Condition="'@(_ResizetizerImagesToDelete->Count())' != '0'"
-            Files="@(_ResizetizerImagesToDelete)"
-        />
+        <!-- Keep validation and deletion in one task so cleanup retains the opened root, parent and leaf
+             identities. Replacing any corresponding pathname after validation cannot redirect deletion. -->
+        <DeleteStaleOutputFilesTask
+            Root="$(_MauiIntermediateImagesFullPath)"
+            KnownOutputs="@(_ResizetizerCollectedImages)" />
 
         <ItemGroup>
             <MauiProcessedImage Include="@(_ResizetizerCollectedImages)" />

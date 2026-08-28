@@ -20,11 +20,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.Null(canonicalizer.GetComparisonKey(null));
 			Assert.Null(canonicalizer.GetComparisonKey(""));
 			Assert.Null(canonicalizer.GetComparisonKey("   "));
-			Assert.Null(canonicalizer.GetDeletionPath(null));
-			Assert.Null(canonicalizer.GetDeletionPath(""));
 			Assert.Null(canonicalizer.CanonicalizeDirectory(null));
 			Assert.Null(canonicalizer.CanonicalizeDirectory(""));
-			Assert.Null(canonicalizer.CanonicalizeExistingDirectory(null));
 		}
 
 		[Fact]
@@ -33,9 +30,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var canonicalizer = new PathCanonicalizer();
 
 			Assert.Null(canonicalizer.GetComparisonKey("bad\0path"));
-			Assert.Null(canonicalizer.GetDeletionPath("bad\0path"));
 			Assert.Null(canonicalizer.CanonicalizeDirectory("bad\0path"));
-			Assert.Null(canonicalizer.CanonicalizeExistingDirectory("bad\0path"));
 		}
 
 		[Fact]
@@ -74,20 +69,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
-		public void MissingPathsHaveNoDeletionPath()
-		{
-			var canonicalizer = new PathCanonicalizer();
-			var missingParent = Path.Combine(DestinationDirectory, "never", "created", "orphan.png");
-			var existingParent = Path.Combine(DestinationDirectory, "drawable");
-			Directory.CreateDirectory(existingParent);
-			var missingLeaf = Path.Combine(existingParent, "orphan.png");
-
-			Assert.Null(canonicalizer.GetDeletionPath(missingParent));
-			Assert.Null(canonicalizer.GetDeletionPath(missingLeaf));
-			Assert.Null(canonicalizer.CanonicalizeExistingDirectory(Path.GetDirectoryName(missingParent)));
-		}
-
-		[Fact]
 		public void LinkedAndPhysicalDirectoriesCanonicalizeToTheSamePath()
 		{
 			var (physical, link) = CreateLinkedDirectory();
@@ -113,10 +94,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.Equal(
 				canonicalizer.GetComparisonKey(Path.Combine(physical, "camera.png")),
 				canonicalizer.GetComparisonKey(Path.Combine(link, "camera.png")),
-				PathCanonicalizer.Comparer);
-			Assert.Equal(
-				Path.Combine(canonicalizer.CanonicalizeExistingDirectory(physical), "camera.png"),
-				canonicalizer.GetDeletionPath(Path.Combine(link, "camera.png")),
 				PathCanonicalizer.Comparer);
 		}
 
@@ -174,11 +151,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				canonicalizer.GetComparisonKey(target),
 				canonicalizer.GetComparisonKey(alias),
 				PathCanonicalizer.Comparer);
-			Assert.Equal(
-				Path.Combine(canonicalizer.CanonicalizeExistingDirectory(directory), "orphan.png"),
-				canonicalizer.GetDeletionPath(alias),
-				PathCanonicalizer.Comparer);
-			Assert.NotEqual(target, canonicalizer.GetDeletionPath(alias), PathCanonicalizer.Comparer);
 		}
 
 		[Fact]
@@ -260,7 +232,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			// The link cannot be followed, so nothing behind it can be placed.
 			Assert.Null(fallback.CanonicalizeDirectory(link));
 			Assert.Null(fallback.GetComparisonKey(Path.Combine(link, "camera.png")));
-			Assert.Null(fallback.GetDeletionPath(Path.Combine(link, "camera.png")));
 
 			// A directory that is not a link is unaffected, so cleanup keeps working everywhere else.
 			Assert.Equal(physical, fallback.CanonicalizeDirectory(physical), PathCanonicalizer.Comparer);
@@ -354,18 +325,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				canonicalizer.GetComparisonKey(Path.Combine(neverCreated, "camera.png")),
 				PathCanonicalizer.Comparer);
 			Assert.True(PathCanonicalizer.IsUnder(canonicalizer.GetComparisonKey(Path.Combine(neverCreated, "camera.png")), basePath));
-			Assert.Null(canonicalizer.CanonicalizeExistingDirectory(neverCreated));
-			Assert.Null(canonicalizer.GetDeletionPath(Path.Combine(neverCreated, "camera.png")));
-		}
-
-		[Fact]
-		public void FutureOutputCanonicalizationCannotMakeAMissingCandidateDeletable()
-		{
-			var missing = Path.Combine(DestinationDirectory, "never", "created");
-			var canonicalizer = new PathCanonicalizer();
-
-			Assert.NotNull(canonicalizer.GetComparisonKey(Path.Combine(missing, "camera.png")));
-			Assert.Null(canonicalizer.GetDeletionPath(Path.Combine(missing, "orphan.png")));
 		}
 
 		/// <summary>
@@ -506,7 +465,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var physical = Path.Combine(DestinationDirectory, "physical");
 			var junction = Path.Combine(DestinationDirectory, "junction");
 			Directory.CreateDirectory(physical);
-			File.WriteAllText(Path.Combine(physical, "camera.png"), "image");
 
 			if (!Junction.TryCreate(junction, physical, out var error))
 			{
@@ -519,10 +477,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.Equal(
 				canonicalizer.GetComparisonKey(Path.Combine(physical, "camera.png")),
 				canonicalizer.GetComparisonKey(Path.Combine(junction, "camera.png")),
-				PathCanonicalizer.Comparer);
-			Assert.Equal(
-				canonicalizer.GetDeletionPath(Path.Combine(physical, "camera.png")),
-				canonicalizer.GetDeletionPath(Path.Combine(junction, "camera.png")),
 				PathCanonicalizer.Comparer);
 		}
 
