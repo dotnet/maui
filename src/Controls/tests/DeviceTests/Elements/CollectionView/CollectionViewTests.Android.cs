@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
 
@@ -102,6 +103,44 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(emptyView.Height > 0, "EmptyView should be arranged");
 					Assert.True(header.Height > 0, "Header should be arranged");
 					Assert.True(footer.Height > 0, "Footer should be arranged");
+				});
+		}
+
+		[Fact]
+		public async Task GroupedCollectionViewEmptyViewTracksGroups()
+		{
+				SetupBuilder();
+
+				var groups = new ObservableCollection<ObservableCollection<string>>
+				{
+					new()
+				};
+				var collectionView = new CollectionView
+				{
+					IsGrouped = true,
+					ItemsSource = groups,
+					EmptyView = new Label { Text = "Empty" }
+				};
+				var frame = collectionView.Frame;
+
+				await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+				{
+					await WaitForUIUpdate(frame, collectionView);
+					Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+
+					groups.RemoveAt(0);
+					await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+
+					groups.Add(new());
+					await AssertEventually(() => handler.PlatformView.GetAdapter() is not EmptyViewAdapter);
+
+					groups.Add(new() { "Item 1", "Item 2" });
+					await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
+
+					groups.RemoveAt(1);
+					await AssertEventually(() =>
+						handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+						handler.PlatformView.GetAdapter().ItemCount == 0);
 				});
 		}
 
