@@ -114,6 +114,11 @@ variables:
 - name: toolRuntimeIdentifier
   value: win-x64
 
+# Reviewed Darc build. gather-drop receives production credentials; do not replace it at run
+# time with whatever a mutable "latest" endpoint happens to return.
+- name: DarcVersion
+  value: 1.1.0-beta.26426.1
+
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -261,7 +266,7 @@ extends:
             # Invoked here so Azure DevOps owns the exit code and --verbose lands in this log.
             inlineScript: |
               . $(Build.SourcesDirectory)/eng/common/tools.ps1
-              $darc = Get-Darc
+              $darc = Get-Darc "$(DarcVersion)"
               & $darc gather-drop --ci `
                 --id $(releasePlan.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
@@ -372,7 +377,7 @@ extends:
               inlineScript: |
                 . $(Build.SourcesDirectory)/eng/common/tools.ps1
                 $plan = Get-Content "$(Pipeline.Workspace)/ReleaseManifests/release-plan.json" -Raw | ConvertFrom-Json
-                $darc = Get-Darc
+                $darc = Get-Darc "$(DarcVersion)"
                 & $darc add-build-to-channel --ci `
                   --channel "$($plan.workloadSet.channel)" `
                   --id "$($plan.source.barBuildId)" `

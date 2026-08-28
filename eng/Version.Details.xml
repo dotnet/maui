@@ -10,6 +10,10 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>596c9990a8259057dc5e864c20af37f50dc87f84</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.26426.1">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>f271aca69409ef2985730f0de4983f5ba2423f28</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.26070.104">

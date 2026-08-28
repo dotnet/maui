@@ -9,9 +9,6 @@ public class VerbsTests : IDisposable
     private readonly Workspace _workspace = new();
     private readonly RecordingConsole _console = new();
 
-    /// <summary>Unrestricted: containment is asserted in ReleaseFileSystemTests.</summary>
-    private static IReleaseFileSystem Fs => new PhysicalReleaseFileSystem();
-
     /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
     private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
 
@@ -19,12 +16,12 @@ public class VerbsTests : IDisposable
 
     private Task<int> Plan(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) =>
         Verbs.PlanAsync(
-            _console, Fs, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, null,
+            _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, null,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
     private Task<int> Stage(StageOptions? options = null) =>
         Verbs.StageAsync(
-            _console, Fs, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, options ?? new StageOptions(),
             _workspace.Tool, _workspace.ToolFilePath, Workspace.Now, "1.0.0-test", CancellationToken.None);
@@ -69,7 +66,7 @@ public class VerbsTests : IDisposable
     public async Task Plan_fails_closed_when_the_pipeline_misclassifies_the_repository()
     {
         var exit = await Verbs.PlanAsync(
-            _console, Fs, new FakeRegistry(Workspace.Build(channels: Libraries)),
+            _console, new FakeRegistry(Workspace.Build(channels: Libraries)),
             Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null,
             expectWorkload: true,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
@@ -182,6 +179,24 @@ public class VerbsTests : IDisposable
 
     // ---- filter ----
 
+    [Theory]
+    [InlineData("../outside.nupkg")]
+    [InlineData("sub/package.nupkg")]
+    [InlineData("/rooted.nupkg")]
+    [InlineData("")]
+    public void A_deletion_target_must_be_one_file_name(string value)
+    {
+        Assert.False(Verbs.IsSinglePathComponent(value));
+    }
+
+    [Theory]
+    [InlineData("SkiaSharp.3.119.0.nupkg")]
+    [InlineData("release-set.json")]
+    public void A_single_path_component_is_accepted(string value)
+    {
+        Assert.True(Verbs.IsSinglePathComponent(value));
+    }
+
     private async Task<ReleasePlan> StagedPlanAsync(params (string Id, string Version)[] packages)
     {
         foreach (var (id, version) in packages)
@@ -197,7 +212,7 @@ public class VerbsTests : IDisposable
 
     private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? skip = null, string? expectedHash = null, string? set = null) =>
         Verbs.FilterAsync(
-            _console, Fs, probe, _workspace.ReadPlan(), _workspace.Out, skip ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
+            _console, probe, _workspace.ReadPlan(), _workspace.Out, skip ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()
@@ -326,7 +341,7 @@ public class VerbsTests : IDisposable
         var now = Workspace.Now;
 
         return Verbs.VerifyAsync(
-            _console, Fs, probe, _workspace.ReadPlan(),
+            _console, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(pollSeconds),
             () => now,
             (delay, _) =>

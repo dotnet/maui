@@ -460,4 +460,126 @@ public class PipelineDefinitionTests
         Assert.Contains("##vso[build.addbuildtag]PUBLISH", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]DRY-RUN", text, StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// The exact dry-run contract: no task or script in the always-emitted pipeline contacts
+    /// NuGet.org. All NuGet.org contact lives in publish-set.yml, whose every inclusion is
+    /// guarded by publishPackages=true.
+    /// </summary>
+    [Fact]
+    public void A_dry_run_contains_no_NuGet_org_contact()
+    {
+        var root = string.Join(
+            "\n",
+            File.ReadAllLines(PipelinePath)
+                .Where(line => !line.TrimStart().StartsWith('#')));
+        var publish = File.ReadAllText(
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+
+        // These are the only mechanisms this system uses to contact NuGet.org.
+        Assert.DoesNotContain("1ES.PublishNuget@1", root, StringComparison.Ordinal);
+        Assert.DoesNotContain("nuget.org (dotnetframework)", root, StringComparison.Ordinal);
+        Assert.DoesNotContain("api.nuget.org", root, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("www.nuget.org/api/v2/package", root, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("dotnet nuget push", root, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("NuGetCommand@2", root, StringComparison.Ordinal);
+
+        Assert.Contains("1ES.PublishNuget@1", publish, StringComparison.Ordinal);
+        Assert.Contains("nuget.org (dotnetframework)", publish, StringComparison.Ordinal);
+
+        // The structural nesting test above proves this template is absent from a dry run.
+        Every_publish_stage_is_nested_inside_the_publish_guard();
+    }
+
+    /// <summary>
+    /// Preparation is the complete dry-run execution path. It may build the tool, read BAR,
+    /// gather packages, stage them, and upload AzDO artifacts; it may not invoke either verb
+    /// that queries NuGet.org.
+    /// </summary>
+    [Fact]
+    public void The_dry_run_invokes_only_read_and_local_preparation_verbs()
+    {
+        var lines = File.ReadAllLines(PipelinePath);
+        var promotionStage = Array.FindIndex(
+            lines,
+            line => line.Contains("- stage: promote_workload_set", StringComparison.Ordinal));
+        var scripts = ScriptLines(lines)
+            .Where(i => i < promotionStage)
+            .Select(i => lines[i])
+            .ToList();
+
+        Assert.Contains(scripts, line => line.Contains("\"$env:TOOL_PATH\" plan", StringComparison.Ordinal));
+        Assert.Contains(scripts, line => line.Contains("gather-drop", StringComparison.Ordinal));
+        Assert.Contains(scripts, line => line.Contains("\"$env:TOOL_PATH\" stage", StringComparison.Ordinal));
+
+        Assert.DoesNotContain(scripts, line => line.Contains("\"$env:TOOL_PATH\" filter", StringComparison.Ordinal));
+        Assert.DoesNotContain(scripts, line => line.Contains("\"$env:TOOL_PATH\" verify", StringComparison.Ordinal));
+        Assert.DoesNotContain(scripts, line => line.Contains("add-build-to-channel", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// BAR channel promotion is a remote mutation and must be compile-time excluded unless
+    /// both publishing and promotion were explicitly requested.
+    /// </summary>
+    [Fact]
+    public void BAR_promotion_is_absent_from_a_dry_run()
+    {
+        var lines = File.ReadAllLines(PipelinePath);
+        var promote = Array.FindIndex(
+            lines,
+            line => line.Contains("- stage: promote_workload_set", StringComparison.Ordinal));
+
+        Assert.True(promote >= 0, "The workload promotion stage was not found.");
+
+        var conditions = EnclosingConditions(lines, promote);
+        Assert.Contains(
+            conditions,
+            condition =>
+                condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal) &&
+                condition.Contains("parameters.promoteWorkloadSet, true", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// gather-drop receives production credentials. A mutable "latest Darc" endpoint could
+    /// change the executable after review, so every invocation must supply the checked-in
+    /// version and that version must be tracked by Arcade dependency metadata.
+    /// </summary>
+    [Fact]
+    public void Darc_is_pinned_to_a_tracked_dependency()
+    {
+        var pipeline = File.ReadAllLines(PipelinePath);
+        var calls = pipeline
+            .Where(line => line.Contains("Get-Darc", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.NotEmpty(calls);
+        Assert.All(
+            calls,
+            line => Assert.Contains("Get-Darc \"$(DarcVersion)\"", line, StringComparison.Ordinal));
+
+        var versions = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Versions.props"));
+        var details = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
+        var configured = ((YamlSequenceNode)Pipeline["variables"])
+            .Cast<YamlMappingNode>()
+            .Single(variable =>
+                variable.Children.ContainsKey("name") &&
+                ((YamlScalarNode)variable["name"]).Value == "DarcVersion");
+
+        Assert.Equal(
+            "1.1.0-beta.26426.1",
+            ((YamlScalarNode)configured["value"]).Value);
+
+        Assert.Contains(
+            "<MicrosoftDotNetDarcPackageVersion>1.1.0-beta.26426.1</MicrosoftDotNetDarcPackageVersion>",
+            versions,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Name=\"Microsoft.DotNet.Darc\" Version=\"1.1.0-beta.26426.1\"",
+            details,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<Sha>f271aca69409ef2985730f0de4983f5ba2423f28</Sha>",
+            details,
+            StringComparison.Ordinal);
+    }
 }

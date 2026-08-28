@@ -25,7 +25,6 @@ internal static class Verbs
     /// </remarks>
     public static async Task<int> PlanAsync(
         IReleaseConsole console,
-        IReleaseFileSystem fs,
         IBuildRegistry registry,
         string policyJson,
         string repository,
@@ -75,9 +74,9 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, resolved.Errors);
         }
 
-        fs.CreateDirectory(outputDirectory);
+        Directory.CreateDirectory(outputDirectory);
         var planPath = Path.Combine(outputDirectory, PlanFileName);
-        await fs.WriteAllTextAsync(planPath, ReleasePlanSerializer.Serialize(resolved.Value), cancellationToken)
+        await File.WriteAllTextAsync(planPath, ReleasePlanSerializer.Serialize(resolved.Value), cancellationToken)
             .ConfigureAwait(false);
 
         console.WriteLine($"Resolved BAR build {resolved.Value.BarBuildId} for {resolved.Value.Repository} at {resolved.Value.Commit}.");
@@ -98,7 +97,6 @@ internal static class Verbs
     /// </summary>
     public static async Task<int> StageAsync(
         IReleaseConsole console,
-        IReleaseFileSystem fs,
         IPackageIdentityReader reader,
         string policyJson,
         string resolvedPlanJson,
@@ -123,7 +121,7 @@ internal static class Verbs
             return ConsoleReporting.Fail(console, resolved.Errors);
         }
 
-        var packageFiles = FindShippingPackages(fs, dropDirectory);
+        var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
         {
             return ConsoleReporting.Fail(console, [new ReleaseError(
@@ -175,28 +173,34 @@ internal static class Verbs
             }
         }
 
-        fs.CreateDirectory(outputDirectory);
+        Directory.CreateDirectory(outputDirectory);
         var planJson = ReleasePlanSerializer.Serialize(plan.Value);
 
         foreach (var set in plan.Value.Sets.OrderBy(s => s.Order))
         {
             var setDirectory = Path.Combine(outputDirectory, set.ArtifactName);
-            fs.CreateDirectory(setDirectory);
+            Directory.CreateDirectory(setDirectory);
 
             foreach (var package in set.Packages)
             {
-                fs.CopyFile(sourceByFileName[package.FileName], Path.Combine(setDirectory, package.FileName));
+                File.Copy(
+                    sourceByFileName[package.FileName],
+                    Path.Combine(setDirectory, package.FileName),
+                    overwrite: true);
             }
 
             // Each set directory is published as its own pipeline artifact and consumed by a
             // job running `checkout: none`, so the artifact has to be self-contained. The
             // plan bytes are identical in every set, so one hash still pins them all.
-            await fs.WriteAllTextAsync(Path.Combine(setDirectory, ReleasePlanFileName), planJson, cancellationToken)
+            await File.WriteAllTextAsync(
+                    Path.Combine(setDirectory, ReleasePlanFileName),
+                    planJson,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             // Makes the directory declare which set it is, so a publish stage wired to the
             // wrong set is caught immediately instead of surfacing as missing files.
-            await fs.WriteAllTextAsync(
+            await File.WriteAllTextAsync(
                 Path.Combine(setDirectory, ReleaseSetMarker.FileName),
                 ReleasePlanSerializer.Serialize(ReleaseSetMarker.For(set, resolved.Value)),
                 cancellationToken).ConfigureAwait(false);
@@ -205,12 +209,12 @@ internal static class Verbs
             // from this artifact. Its hash is recorded in the plan, so verifying the plan
             // transitively pins the binary that is about to run.
             var toolDirectory = Path.Combine(setDirectory, ToolDirectoryName);
-            fs.CreateDirectory(toolDirectory);
-            fs.CopyFile(toolFilePath, Path.Combine(toolDirectory, tool.FileName));
+            Directory.CreateDirectory(toolDirectory);
+            File.Copy(toolFilePath, Path.Combine(toolDirectory, tool.FileName), overwrite: true);
         }
 
         var planPath = Path.Combine(outputDirectory, ReleasePlanFileName);
-        await fs.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
+        await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
 
         // Self-check: the directories just written must satisfy the same invariant the
         // publish job will enforce. Cheap here, and catches a staging bug before the
@@ -218,7 +222,7 @@ internal static class Verbs
         foreach (var set in plan.Value.Sets)
         {
             var staged = StagedSetIntegrity.ValidateStaged(
-                set, ReadStagedHashes(fs, Path.Combine(outputDirectory, set.ArtifactName)));
+                set, ReadStagedHashes(Path.Combine(outputDirectory, set.ArtifactName)));
 
             if (staged.IsFailure)
             {
@@ -241,12 +245,15 @@ internal static class Verbs
     /// Only <c>shipping/packages</c>. Non-shipping packages are build inputs, and symbol
     /// blobs are excluded upstream by the gather's asset filter.
     /// </remarks>
-    internal static List<string> FindShippingPackages(IReleaseFileSystem fs, string dropDirectory)
+    internal static List<string> FindShippingPackages(string dropDirectory)
     {
         var shipping = Path.Combine(dropDirectory, "shipping", "packages");
-        var root = fs.DirectoryExists(shipping) ? shipping : dropDirectory;
+        var root = Directory.Exists(shipping) ? shipping : dropDirectory;
 
-        return [.. fs.EnumerateFiles(root, "*.nupkg", recursive: true).Order(StringComparer.Ordinal)];
+        return Directory.Exists(root)
+            ? [.. Directory.EnumerateFiles(root, "*.nupkg", SearchOption.AllDirectories)
+                .Order(StringComparer.Ordinal)]
+            : [];
     }
 
     // ---- release filter ----
@@ -257,7 +264,6 @@ internal static class Verbs
     /// </summary>
     public static async Task<int> FilterAsync(
         IReleaseConsole console,
-        IReleaseFileSystem fs,
         IPackageAvailabilityProbe probe,
         string planJson,
         string stageDirectory,
@@ -284,9 +290,16 @@ internal static class Verbs
 
         foreach (var set in sets.Value)
         {
+            if (!IsSinglePathComponent(set.ArtifactName))
+            {
+                return ConsoleReporting.Fail(console, [new ReleaseError(
+                    ErrorCodes.PlanSchemaInvalid,
+                    $"Package set artifact name '{set.ArtifactName}' must be one directory name.")]);
+            }
+
             var setDirectory = Path.Combine(stageDirectory, set.ArtifactName);
 
-            var marker = ValidateSetMarker(fs, setDirectory, set, plan.Value.Source, setName);
+            var marker = ValidateSetMarker(setDirectory, set, plan.Value.Source, setName);
             if (marker.IsFailure)
             {
                 return ConsoleReporting.Fail(console, marker.Errors);
@@ -300,12 +313,26 @@ internal static class Verbs
                 return ConsoleReporting.Fail(console, report.Errors);
             }
 
+            // Re-assert containment at the point of deletion. StagePlanner validates this
+            // when it creates a plan, but filter consumes serialized data and must not rely
+            // solely on a prior validator or on the plan hash to prevent path traversal.
+            // Validate the complete list before deleting anything, so a bad entry cannot
+            // leave the staging directory partially modified.
+            var invalidFileName = report.Value.FilesToRemove
+                .FirstOrDefault(fileName => !IsSinglePathComponent(fileName));
+            if (invalidFileName is not null)
+            {
+                return ConsoleReporting.Fail(console, [new ReleaseError(
+                    ErrorCodes.PlanSchemaInvalid,
+                    $"Package file name '{invalidFileName}' must not contain a directory.")]);
+            }
+
             foreach (var fileName in report.Value.FilesToRemove)
             {
                 var path = Path.Combine(setDirectory, fileName);
-                if (fs.FileExists(path))
+                if (File.Exists(path))
                 {
-                    fs.DeleteFile(path);
+                    File.Delete(path);
                 }
 
                 console.WriteLine($"Withheld {fileName}.");
@@ -314,14 +341,20 @@ internal static class Verbs
             // The directory is now the input to a production push, so it is checked against
             // the plan before anything is handed to 1ES: a missing pending file, a tampered
             // file, or an unlisted extra file all fail here.
-            var integrity = StagedSetIntegrity.ValidateFiltered(set, ReadStagedHashes(fs, setDirectory), report.Value);
+            var integrity = StagedSetIntegrity.ValidateFiltered(
+                set,
+                ReadStagedHashes(setDirectory),
+                report.Value);
             if (integrity.IsFailure)
             {
                 return ConsoleReporting.Fail(console, integrity.Errors);
             }
 
             var reportPath = Path.Combine(setDirectory, FilterReportFileName);
-            await fs.WriteAllTextAsync(reportPath, ReleasePlanSerializer.Serialize(report.Value), cancellationToken)
+            await File.WriteAllTextAsync(
+                    reportPath,
+                    ReleasePlanSerializer.Serialize(report.Value),
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             console.WriteLine($"{set.Name}: {report.Value.PendingCount} of {set.Packages.Count} remain to publish.");
@@ -332,6 +365,12 @@ internal static class Verbs
 
         return ExitCodes.Success;
     }
+
+    /// <summary>True when a plan value is exactly one relative path component.</summary>
+    internal static bool IsSinglePathComponent(string value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        !Path.IsPathRooted(value) &&
+        Path.GetFileName(value) == value;
 
     /// <summary>
     /// Hashes the staged packages so they can be compared with the plan.
@@ -351,11 +390,11 @@ internal static class Verbs
     /// and exactly 41 packages were pushed.
     /// </para>
     /// </remarks>
-    internal static Dictionary<string, string> ReadStagedHashes(IReleaseFileSystem fs, string directory)
+    internal static Dictionary<string, string> ReadStagedHashes(string directory)
     {
         var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        if (!fs.DirectoryExists(directory))
+        if (!Directory.Exists(directory))
         {
             return hashes;
         }
@@ -365,11 +404,13 @@ internal static class Verbs
         // this check. Enumerating recursively means a nested package is reported as
         // unexpected rather than silently ignored, and it decouples this rule from the exact
         // glob written in the YAML.
-        foreach (var file in fs.EnumerateFiles(directory, "*.nupkg", recursive: true))
+        foreach (var file in Directory.EnumerateFiles(
+            directory,
+            "*.nupkg",
+            SearchOption.AllDirectories))
         {
             hashes[Path.GetRelativePath(directory, file)] = Convert.ToHexStringLower(
-                System.Security.Cryptography.SHA256.HashData(
-                    fs.ReadAllBytesAsync(file, CancellationToken.None).GetAwaiter().GetResult()));
+                System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
         }
 
         return hashes;
@@ -383,7 +424,6 @@ internal static class Verbs
     /// asserted something that can be wrong, and it is the case the pipeline always uses.
     /// </remarks>
     internal static Result<bool> ValidateSetMarker(
-        IReleaseFileSystem fs,
         string setDirectory,
         ReleasePackageSet set,
         ResolvedRelease source,
@@ -395,13 +435,13 @@ internal static class Verbs
         }
 
         var markerPath = Path.Combine(setDirectory, ReleaseSetMarker.FileName);
-        if (!fs.FileExists(markerPath))
+        if (!File.Exists(markerPath))
         {
             return ReleaseSetMarker.Validate(null, set, source);
         }
 
         var marker = ReleasePlanSerializer.DeserializeSetMarker(
-            fs.ReadAllTextAsync(markerPath, CancellationToken.None).GetAwaiter().GetResult());
+            File.ReadAllText(markerPath));
 
         return marker.IsFailure
             ? marker.ToFailure<bool>()
@@ -461,7 +501,6 @@ internal static class Verbs
     /// </remarks>
     public static async Task<int> VerifyAsync(
         IReleaseConsole console,
-        IReleaseFileSystem fs,
         IPackageAvailabilityProbe probe,
         string planJson,
         TimeSpan maxDuration,
@@ -494,7 +533,10 @@ internal static class Verbs
             foreach (var set in sets.Value)
             {
                 var marker = ValidateSetMarker(
-                    fs, Path.Combine(stageDirectory, set.ArtifactName), set, plan.Value.Source, setName);
+                    Path.Combine(stageDirectory, set.ArtifactName),
+                    set,
+                    plan.Value.Source,
+                    setName);
 
                 if (marker.IsFailure)
                 {

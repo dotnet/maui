@@ -54,20 +54,26 @@ publish_* (only when publishing)
 Workload repositories publish **packs first, then manifests**, as two separately gated
 stages, because manifests reference packs and NuGet.org packages are immutable.
 
-## Safety properties
+## Dry-run boundary
 
-Structural, not conventional — there are tests that fail if they stop being true.
+The dry run is not "no filesystem mutation" and not "no network." It runs on a disposable
+agent, reads production BAR, downloads the package drop, and uploads review artifacts and
+logs to Azure DevOps.
 
-- **The tool never pushes anything.** `1ES.PublishNuget@1` performs every upload; it is a
-  compliance requirement. There is no push verb, no `--push` flag, and no upload code path.
-  The load-bearing part is that **the tool is never given a NuGet.org credential**: Azure
-  DevOps injects a service-connection secret only into the task that declares it, so the tool
-  could not publish even if it were compromised. An architecture test also scans for the push
-  API, but that is a tripwire, not the guarantee.
-- **The tool mutates nothing outside its own output directory.** Every filesystem effect goes
-  through one seam that refuses any write or delete resolving outside the directory the verb
-  was rooted at — so a crafted plan cannot reach outside the staging tree even if every other
-  check were bypassed. Tests assert that `plan` and `stage` delete nothing at all.
+The boundary is narrower and more important:
+
+- **A dry run never contacts NuGet.org.** `release filter`, `release verify`, the
+  `nuget.org (dotnetframework)` service connection, and `1ES.PublishNuget@1` exist only in an
+  internal stage template whose every inclusion is structurally nested beneath
+  `${{ if eq(parameters.publishPackages, true) }}`. They do not exist in the expanded dry-run
+  YAML.
+- **A dry run does not mutate BAR or GitHub.** `darc add-build-to-channel` is also compile-time
+  excluded unless `publishPackages` and `promoteWorkloadSet` are both true, and it has its own
+  manual gate. Preparation uses read-only BAR methods and `darc gather-drop`.
+- **The release tool itself never pushes anything.** There is no push verb, no `--push` flag,
+  and no upload code path. The load-bearing property is that **the tool is never given a
+  NuGet.org credential**: Azure DevOps injects the service-connection secret only into
+  `1ES.PublishNuget@1`. The architecture test is a useful tripwire, not the guarantee.
 - **The tool never shells out to `darc`.** `darc` is invoked from pipeline YAML, where Azure
   DevOps owns the exit code and the log. (Authentication does start `az` transitively via
   `Azure.Identity`; the codebase itself starts no process.)
@@ -110,12 +116,22 @@ Two things must be confirmed by whoever first runs this against the real service
 
 Point a new Azure DevOps pipeline at `eng/pipelines/release.yml`. It needs:
 
+- to use the **Azure Repos mirror** (`dnceng/internal/dotnet-maui`) as its source, not a
+  GitHub service connection. This prevents pipeline-definition features such as "Report build
+  status" or source labeling from writing a Check, status, or tag to GitHub independently of
+  this YAML;
 - the `Darc: Maestro Production` service connection (BAR reads, `gather-drop`, channel promotion);
 - the `nuget.org (dotnetframework)` service connection (the 1ES publish task);
 - an environment or service-connection approval check on the production connection, configured
   outside this repository's YAML;
 - to run in the internal project, where those connections and the 1ES production template are
   available.
+
+The checked-in dry-run graph itself contains no NuGet.org task, client, or service
+connection. The mandated 1ES compliance template is external code and may perform public
+registry metadata lookups for component governance; if "no NuGet.org contact" means a
+literal network-level prohibition including compliance tooling, enforce that with agent
+egress policy in addition to this pipeline's structural exclusion.
 
 ## Layout
 

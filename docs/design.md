@@ -65,14 +65,17 @@ NuGet.org until every expected package is indexed, with a 30-minute deadline.
 
 ## 2. Design principles
 
-### P1 — The tool mutates nothing outside its own output directory
+### P1 — Dry run performs no external release mutation
 
 This is the organising constraint and it explains nearly every other decision.
 
-The tool reads BAR, reads a drop directory on local disk, queries NuGet.org read-only, and
-writes a plan file plus a staging directory. The single exception is that `release filter`
-deletes staged `.nupkg` files it has **proven** are already live — a deletion inside its own
-staging directory, never a remote effect.
+The dry run is allowed to write, copy and delete inside the disposable agent workspace. Those
+effects need no abstraction: the paths are supplied by this pipeline, the agent is discarded,
+and no release state depends on them.
+
+What matters is what crosses the machine boundary. A dry run reads BAR and downloads the
+drop, then uploads its audit artifacts and logs to Azure DevOps so a human can inspect them.
+It **never contacts NuGet.org**, never adds a BAR channel, and never writes GitHub state.
 
 Every genuinely mutating operation stays an explicit, auditable step in the pipeline YAML:
 
@@ -83,9 +86,8 @@ Every genuinely mutating operation stays an explicit, auditable step in the pipe
 | Promote a build to a channel | `darc add-build-to-channel` YAML step | Explicit and auditable in the pipeline definition |
 | Approve a release | `ManualValidation@0` | Human decision |
 
-Consequences: the tool never holds or needs publish credentials; its blast radius is
-confined to reading and to writing its own output; and it becomes genuinely easy to test,
-because every remaining external interaction is a read behind an interface.
+Consequences: the tool never holds or needs publish credentials, and every remaining
+production-system interaction on a dry run is read-only.
 
 ### P2 — No subprocesses, anywhere
 
@@ -993,6 +995,29 @@ The artifact row matters for an embargoed release: a dry run materialises the co
 unreleased package set into artifact storage. Fine routinely; worth knowing before rehearsing
 a security release.
 
+The stronger requirement was later clarified: **the dry run must not touch NuGet.org at
+all**, not merely avoid an upload. For the release system's checked-in code and tasks, that
+holds:
+
+- `release filter` and `release verify` are the only tool paths that construct a NuGet.org
+  client, and neither verb exists in the dry-run stage graph;
+- `1ES.PublishNuget@1` and the `nuget.org (dotnetframework)` service connection exist only
+  in `publish-set.yml`, whose every inclusion is beneath the compile-time publish guard;
+- the reviewed Darc `gather-drop` implementation downloads NuGet packages from Azure DevOps
+  feeds or blob storage; it has no NuGet.org source path.
+
+Darc is pinned to `1.1.0-beta.26426.1` (`dotnet/arcade-services` commit
+`f271aca69409ef2985730f0de4983f5ba2423f28`) rather than resolved from the mutable
+`darc-version` endpoint at run time, so that last property cannot change underneath a
+reviewed pipeline.
+
+One boundary remains outside this repository: the mandated 1ES compliance template may
+perform public-registry metadata lookups for component governance. It has no NuGet.org
+publish credential and cannot publish through this pipeline, but a literal egress-level
+guarantee that **no HTTP request** reaches NuGet.org requires agent network policy. The
+guarantee this repository enforces is that no dry-run release code, NuGet client, service
+connection, filter, verify, or publish task reaches NuGet.org.
+
 **The single most important safety fact** is a comparison, not an assertion: the pipeline
 being replaced defaults `pushPackages`, `pushWorkloadSet` and `pushNugetOrg` all to **true**
 - it publishes on default parameters. This one inverts all three.
@@ -1056,40 +1081,24 @@ tests.
 The seam already exists. It is the process boundary between `release filter` and
 `1ES.PublishNuget@1`, enforced by credential scoping rather than by code.
 
-**But the idea is right one layer down, and both reviewers independently proposed the same
-thing.** `stage` wrote files and `filter` deleted them through direct `File.*` calls, which
-meant P1 - *the tool mutates nothing outside its own output directory*, the organising
-constraint of the entire design - was the one property with **no mechanical enforcement at
-all**. It was a claim about code that happened to be written that way.
+The filesystem version of the idea was implemented after the reviews, then removed after the
+safety boundary was clarified. It abstracted harmless local work on a disposable agent and
+did not strengthen the property the dry run actually needs: **no NuGet.org contact and no
+remote release mutation**.
 
-So `IReleaseFileSystem` now carries every filesystem effect, with two implementations:
+The useful seams remain the remote-read boundaries: `IBuildRegistry` and
+`IPackageAvailabilityProbe`. They keep BAR and NuGet queries fakeable in tests. There is still
+no push abstraction, because adding one would weaken the design for all the reasons above.
 
-- **`PhysicalReleaseFileSystem(writeRoot)`** - refuses any write or delete resolving outside
-  its root. Reads stay unrooted, because the policy file, the drop and the tool legitimately
-  live elsewhere. Each verb is rooted at exactly the directory it may touch. **This is a
-  safety gain independent of testing:** `filter` derives deletion targets from a plan, and a
-  plan is data, so containment now holds even if the hash chain, the marker check and the
-  file-name validation were all bypassed.
-- **`RecordingReleaseFileSystem`** - wraps the real one and records every effect.
+The dry-run proof belongs at the pipeline layer:
 
-That makes previously impossible assertions ordinary tests:
+1. every inclusion of the NuGet.org stage template is structurally nested beneath the
+   compile-time `publishPackages` guard;
+2. the BAR mutation stage is nested beneath the same guard plus `promoteWorkloadSet`;
+3. preparation invokes only `plan`, `gather-drop`, and `stage`;
+4. queue-time parameters never enter executable PowerShell text.
 
-```
-Plan_writes_exactly_one_file
-Plan_deletes_nothing
-Stage_deletes_nothing
-A_dry_run_mutates_nothing_outside_its_output_directory
-Filter_deletes_only_the_already_published_packages
-```
-
-You cannot prove a negative about code that reaches the filesystem directly; with a seam you
-can.
-
-**What it does not prove.** Only that the two verbs a dry run invokes mutate nothing. The
-*pipeline*-level guarantee stays where it was - compile-time stage exclusion plus
-`PipelineDefinitionTests` - because artifact upload, darc and the 1ES compliance tasks are
-outside the tool and always will be. That is precisely why the nesting fix above mattered
-more than this refactor did.
+Those are the checks that protect an actual run carrying production credentials.
 
 ---
 
