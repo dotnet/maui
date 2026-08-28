@@ -39,8 +39,11 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="platformView">The platform view that should receive focus.</param>
 		/// <remarks>This method must be called on the UI thread.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="platformView"/> is <see langword="null"/>.</exception>
 		public static void PostAccessibilityFocusNotification(this UIView platformView)
 		{
+			ArgumentNullException.ThrowIfNull(platformView);
+
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, platformView);
 		}
 

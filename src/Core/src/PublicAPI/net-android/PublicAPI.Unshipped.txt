@@ -352,8 +352,8 @@ static Microsoft.Maui.Platform.TimePickerExtensions.UpdateFormat(this Microsoft.
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextAlignment(this Microsoft.Maui.Platform.MauiTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiMaterialTimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTime(this Microsoft.Maui.Platform.MauiMaterialTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
-static Microsoft.Maui.WindowExtensions.ConfigureTranslucentSystemBars(this Android.Views.Window? window, Android.App.Activity! activity) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+static Microsoft.Maui.WindowExtensions.ConfigureTranslucentSystemBars(this Android.Views.Window? window, Android.App.Activity! activity) -> void
 virtual Microsoft.Maui.Handlers.DatePickerHandler2.CreateDatePickerDialog(int year, int month, int day) -> Google.Android.Material.DatePicker.MaterialDatePicker?
 virtual Microsoft.Maui.Handlers.TimePickerHandler2.CreateTimePickerDialog(int hour, int minute) -> Google.Android.Material.TimePicker.MaterialTimePicker?
 virtual Microsoft.Maui.Platform.MauiDrawerLayout.Disconnect() -> void

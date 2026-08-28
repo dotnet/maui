@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
@@ -55,8 +56,11 @@ namespace Microsoft.Maui
 		/// <param name="window">The Android window to configure.</param>
 		/// <param name="activity">The activity that owns the window.</param>
 		/// <remarks>This method must be called on the UI thread.</remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="activity"/> is <see langword="null"/>.</exception>
 		public static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
+			ArgumentNullException.ThrowIfNull(activity);
+
 			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
 			{
 				ConfigureLegacyTranslucentSystemBars(window, activity);
