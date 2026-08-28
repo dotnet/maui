@@ -9,6 +9,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class AnimationTests : BaseTestFixture
 	{
 		[Fact]
+		public void InsertWithDisabledTickerDoesNotRetainCallback()
+		{
+			var initialTweenerCount = AnimationExtensions.TweenersCounter;
+			using var manager = new AnimationManager(new DisabledTicker());
+
+			AnimationExtensions.Insert(manager, _ => true);
+
+			Assert.Equal(initialTweenerCount, AnimationExtensions.TweenersCounter);
+		}
+
+		[Fact]
+		public void InsertWithDisposedManagerDoesNotRetainCallback()
+		{
+			var initialTweenerCount = AnimationExtensions.TweenersCounter;
+			var manager = new AnimationManager(new Ticker()) { AutoStartTicker = false };
+			manager.Dispose();
+
+			AnimationExtensions.Insert(manager, _ => true);
+
+			Assert.Equal(initialTweenerCount, AnimationExtensions.TweenersCounter);
+		}
+
+		[Fact]
 		public void DisposingNonStartingManagerReleasesInsertedCallback()
 		{
 			var initialTweenerCount = AnimationExtensions.TweenersCounter;
@@ -46,6 +69,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 				GC.Collect();
+			}
+		}
+
+		sealed class DisabledTicker : Ticker
+		{
+			public DisabledTicker()
+			{
+				SystemEnabled = false;
 			}
 		}
 
