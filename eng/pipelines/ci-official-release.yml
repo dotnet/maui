@@ -17,6 +17,11 @@ parameters:
   type: string
   default: skip
 
+- name: barBuildId
+  displayName: "[OPTIONAL] BAR build ID, when the commit cannot be resolved from GitHub"
+  type: string
+  default: skip
+
 - name: pushWorkloadSet
   displayName: Push workload set channel stage
   type: boolean
@@ -157,7 +162,8 @@ extends:
                   'https://github.com/dotnet/maui',
                   'https://github.com/dotnet/android',
                   'https://github.com/dotnet/macios',
-                  'https://github.com/dotnet/android-libraries'
+                  'https://github.com/dotnet/android-libraries',
+                  'https://github.com/dotnet/skiasharp'
                 )
                 if ($sourceRepository -notin $allowedRepositories) {
                   throw "Repository '$sourceRepository' is not enabled for this release pipeline."
@@ -229,9 +235,23 @@ extends:
                 Add-Type -AssemblyName System.IO.Compression.FileSystem
                 . $(Build.SourcesDirectory)\eng\common\tools.ps1
                 $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo $sourceRepository --commit "$env:COMMIT_HASH" --extended --output-format json --azdev-pat $(System.AccessToken)
+                # Darc can only resolve a build from a repository URL that BAR recorded. When
+                # Arcade could not verify the AzDO -> GitHub mapping at publish time the build
+                # has no GitHub URL and is reachable only by its BAR ID.
+                if ("$env:BAR_BUILD_ID" -ne 'skip' -and ![string]::IsNullOrWhiteSpace($env:BAR_BUILD_ID)) {
+                  $barBuildId = 0
+                  if (![int]::TryParse($env:BAR_BUILD_ID.Trim(), [ref] $barBuildId) -or $barBuildId -le 0) {
+                    throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
+                  }
+                  $buildJson = & $darc get-build --ci --id $barBuildId --extended --output-format json --azdev-pat $(System.AccessToken)
+                }
+                else {
+                  $buildJson = & $darc get-build --ci --repo $sourceRepository --commit "$env:COMMIT_HASH" --extended --output-format json --azdev-pat $(System.AccessToken)
+                }
                 if ($LASTEXITCODE -ne 0) {
-                  throw "Darc failed to resolve the BAR build."
+                  # Darc reports "Could not any builds matching the given criteria" on stdout,
+                  # so include the captured output or the reason is lost.
+                  throw "Darc failed to resolve the BAR build: $($buildJson | Out-String)"
                 }
 
                 $builds = @($buildJson | ConvertFrom-Json)
@@ -239,7 +259,24 @@ extends:
                   throw "Expected exactly one BAR build for '$sourceRepository', found $($builds.Count)."
                 }
                 $build = $builds[0]
-                $repository = ([Uri] $build.gitHubRepository).GetLeftPart([UriPartial]::Path).TrimEnd('/').ToLowerInvariant()
+                # A build resolved by ID has not been matched against the requested repository
+                # or commit yet, so both are verified below for every resolution path.
+                if (([string] $build.commit).Trim() -ne "$env:COMMIT_HASH".Trim()) {
+                  throw "BAR build '$($build.id)' is for commit '$($build.commit)', not the requested '$env:COMMIT_HASH'."
+                }
+                $buildRepository = $build.gitHubRepository
+                if ([string]::IsNullOrWhiteSpace($buildRepository)) {
+                  # Reproduce Arcade's AzDO -> GitHub convention (lowercase the repository name,
+                  # then turn its first '-' into '/') so a build that predates a working mapping
+                  # is still bound to a verifiable GitHub identity.
+                  $azdoName = (("$($build.azureDevOpsRepository)".TrimEnd('/') -split '/')[-1]).ToLowerInvariant()
+                  $separator = $azdoName.IndexOf('-')
+                  if ($separator -le 0) {
+                    throw "BAR build '$($build.id)' has no GitHub repository and '$azdoName' does not follow the '<owner>-<name>' mirror convention."
+                  }
+                  $buildRepository = "https://github.com/$($azdoName.Substring(0, $separator))/$($azdoName.Substring($separator + 1))"
+                }
+                $repository = ([Uri] $buildRepository).GetLeftPart([UriPartial]::Path).TrimEnd('/').ToLowerInvariant()
                 if ($repository.EndsWith('.git')) {
                   $repository = $repository.Substring(0, $repository.Length - 4)
                 }
@@ -482,6 +519,7 @@ extends:
                 Write-Host "##vso[task.setvariable variable=PackageStatusScriptHash;isOutput=true]$packageStatusScriptHash"
             env:
               COMMIT_HASH: ${{ parameters.commitHash }}
+              BAR_BUILD_ID: ${{ parameters.barBuildId }}
               GH_OWNER: ${{ parameters.ghOwner }}
               GH_REPO: ${{ parameters.ghRepo }}
               IS_WORKLOAD: $(isWorkload)
