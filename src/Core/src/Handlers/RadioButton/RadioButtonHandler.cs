@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IRadioButton.StrokeColor)] = MapStrokeColor,
 			[nameof(IRadioButton.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IRadioButton.CornerRadius)] = MapCornerRadius,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IRadioButton, IRadioButtonHandler> CommandMapper = new(ViewCommandMapper)
 		{

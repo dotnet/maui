@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers;
 public class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTextInputLayout>
 {
     public static PropertyMapper<ISearchBar, SearchBarHandler2> Mapper =
-    new(ViewMapper)
+    new PropertyMapper<ISearchBar, SearchBarHandler2>(ViewMapper)
     {
         [nameof(ISearchBar.Background)] = MapBackground,
         [nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
@@ -35,7 +35,7 @@ public class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTe
         [nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
         [nameof(ISearchBar.CursorPosition)] = MapCursorPosition,
         [nameof(ISearchBar.SelectionLength)] = MapSelectionLength,
-    };
+    }.WithFrameworkMappingsSealed();
 
     public static CommandMapper<ISearchBar, SearchBarHandler2> CommandMapper =
             new(ViewCommandMapper)

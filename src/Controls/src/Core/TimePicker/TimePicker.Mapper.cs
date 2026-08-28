@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class TimePicker
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
+		static void RemapForControlsOnce()
+		{
 			// Adjust the mappings to preserve Controls.TimePicker legacy behaviors
 #if IOS
-			TimePickerHandler.Mapper.ReplaceMapping<TimePicker, ITimePickerHandler>(PlatformConfiguration.iOSSpecific.TimePicker.UpdateModeProperty.PropertyName, MapUpdateMode);
+			TimePickerHandler.Mapper.ReplaceMappingForControls<TimePicker, ITimePickerHandler>(PlatformConfiguration.iOSSpecific.TimePicker.UpdateModeProperty.PropertyName, MapUpdateMode);
 #endif
 		}
 	}

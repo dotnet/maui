@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			[nameof(IView.Background)] = MapBackground,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<ISwipeView, ISwipeViewHandler> CommandMapper = new(ViewCommandMapper)
 		{

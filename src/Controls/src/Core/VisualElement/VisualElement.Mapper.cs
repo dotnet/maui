@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -11,29 +10,30 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public partial class VisualElement
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
+		static void RemapForControlsOnce()
+		{
 #if WINDOWS
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
-			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
 
-			ViewHandler.ViewMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
+			ViewHandler.ViewMapper.AppendToMappingForControls<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
 
-			ViewHandler.ViewCommandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
+			ViewHandler.ViewCommandMapper.ModifyMappingForControls<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view) =>

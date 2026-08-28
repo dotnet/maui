@@ -81,21 +81,21 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || IOS
 				[nameof(ISafeAreaElement.SafeAreaEdges)] = MapSafeAreaEdges
 #endif
-			};
+			}.WithFrameworkMappingsSealed();
 
 		/// <summary>
 		/// A dictionary that maps the virtual view commands to their platform view counterparts.
 		/// </summary>
 		/// <remarks>The concept or a command mapper is very similar to the property mapper with
 		/// the addition that you can provide extra data in the form of arguments with the command mapper.</remarks>
-		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
+		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new CommandMapper<IView, IViewHandler>()
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,
 			[nameof(IView.ZIndex)] = MapZIndex,
 			[nameof(IView.Focus)] = MapFocus,
 			[nameof(IView.Unfocus)] = MapUnfocus,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		bool _hasContainer;
 

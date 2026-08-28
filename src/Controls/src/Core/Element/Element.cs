@@ -1189,6 +1189,8 @@ namespace Microsoft.Maui.Controls
 				OnHandlerChangingCore(new HandlerChangingEventArgs(_previousHandler, newHandler));
 
 				_handler = newHandler;
+				if (_handler is not null)
+					RemapForControls();
 
 				// Only call disconnect if the previous handler is still connected to this virtual view.
 				// If a handler is being reused for a different VirtualView then the virtual
@@ -1197,7 +1199,9 @@ namespace Microsoft.Maui.Controls
 					_previousHandler?.DisconnectHandler();
 
 				if (_handler?.VirtualView != this)
+				{
 					_handler?.SetVirtualView(this);
+				}
 
 				OnHandlerChangedCore();
 			}

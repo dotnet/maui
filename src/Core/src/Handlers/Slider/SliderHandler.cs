@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(ISlider.Background)] = MapBackgroundColor
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<ISlider, ISliderHandler> CommandMapper = new(ViewCommandMapper)
 		{

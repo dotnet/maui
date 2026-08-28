@@ -17,6 +17,9 @@ namespace Microsoft.Maui
 	public abstract class PropertyMapper : IPropertyMapper
 	{
 		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
+		readonly Dictionary<string, MappingCustomization> _mappingCustomizations = new(StringComparer.Ordinal);
+		bool _frameworkMappingsSealed;
+		bool _preserveMappingCustomizations;
 		IPropertyMapper[]? _chained;
 
 		List<string>? _updatePropertiesKeys;
@@ -38,9 +41,67 @@ namespace Microsoft.Maui
 
 		protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
+			if (!_preserveMappingCustomizations
+				&& (_mapper.ContainsKey(key) || (_frameworkMappingsSealed && GetChainedProperty(key) is not null)))
+			{
+				AddMappingCustomization(key, _ => action);
+				return;
+			}
+
 			_mapper[key] = action;
 
 			ClearMergedMappers();
+		}
+
+		void SetCustomizedPropertyCore(string key, Action<IElementHandler, IElement> action)
+		{
+			_preserveMappingCustomizations = true;
+			try
+			{
+				SetPropertyCore(key, action);
+			}
+			finally
+			{
+				_preserveMappingCustomizations = false;
+			}
+		}
+
+		internal void AddMappingCustomization(
+			string key,
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> customization)
+		{
+			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
+			{
+				mappingCustomization = CreateMappingCustomization(key);
+				_mappingCustomizations[key] = mappingCustomization;
+			}
+
+			mappingCustomization.Customizations.Add(customization);
+			SetCustomizedPropertyCore(key, mappingCustomization.Compose());
+		}
+
+		internal void SealFrameworkMappings() => _frameworkMappingsSealed = true;
+
+		internal void ModifyFrameworkMapping(
+			string key,
+			Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification)
+		{
+			if (!_mappingCustomizations.TryGetValue(key, out var mappingCustomization))
+			{
+				mappingCustomization = CreateMappingCustomization(key);
+				_mappingCustomizations[key] = mappingCustomization;
+			}
+
+			mappingCustomization.ModifyFrameworkMapping(modification);
+			SetCustomizedPropertyCore(key, mappingCustomization.Compose());
+		}
+
+		MappingCustomization CreateMappingCustomization(string key)
+		{
+			if (_mapper.TryGetValue(key, out var localMapping))
+				return new(() => localMapping);
+
+			return new(() => GetChainedProperty(key));
 		}
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
@@ -88,6 +149,11 @@ namespace Microsoft.Maui
 				return action;
 			}
 
+			return GetChainedProperty(key);
+		}
+
+		Action<IElementHandler, IElement>? GetChainedProperty(string key)
+		{
 			var chainedPropertyMappers = Chained;
 			if (chainedPropertyMappers is not null)
 			{
@@ -188,6 +254,47 @@ namespace Microsoft.Maui
 
 			return (updatePropertiesKeys, updatePropertiesMappers, cachedMappers);
 		}
+
+		sealed class MappingCustomization
+		{
+			Func<Action<IElementHandler, IElement>?> _frameworkMapping;
+
+			public MappingCustomization(Func<Action<IElementHandler, IElement>?> frameworkMapping)
+			{
+				_frameworkMapping = frameworkMapping;
+			}
+
+			public List<Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>>> Customizations { get; } = new();
+
+			public void ModifyFrameworkMapping(
+				Func<Action<IElementHandler, IElement>?, Action<IElementHandler, IElement>> modification)
+			{
+				var previousFrameworkMapping = _frameworkMapping;
+				var previousMapping = CreateDynamicMapping(previousFrameworkMapping);
+				var newMapping = modification(previousMapping);
+				_frameworkMapping = () => newMapping;
+			}
+
+			public Action<IElementHandler, IElement> Compose()
+			{
+				var mapping = CreateDynamicMapping(_frameworkMapping);
+				foreach (var customization in Customizations)
+				{
+					mapping = customization(mapping);
+				}
+
+				return mapping!;
+			}
+
+			static Action<IElementHandler, IElement>? CreateDynamicMapping(
+				Func<Action<IElementHandler, IElement>?> mappingAccessor)
+			{
+				if (mappingAccessor() is null)
+					return null;
+
+				return (handler, view) => mappingAccessor()?.Invoke(handler, view);
+			}
+		}
 	}
 
 	public interface IPropertyMapper
@@ -219,6 +326,12 @@ namespace Microsoft.Maui
 		public PropertyMapper(params IPropertyMapper[] chained)
 			: base(chained)
 		{
+		}
+
+		internal PropertyMapper<TVirtualView, TViewHandler> WithFrameworkMappingsSealed()
+		{
+			SealFrameworkMappings();
+			return this;
 		}
 
 		public Action<TViewHandler, TVirtualView> this[string key]

@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
 using System.Text;
 using Microsoft.Maui.Controls.Compatibility;
 
@@ -8,28 +7,29 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class TabbedPage
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarBackground), MapBarBackground);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarBackgroundColor), MapBarBackgroundColor);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarTextColor), MapBarTextColor);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(UnselectedTabColor), MapUnselectedTabColor);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(SelectedTabColor), MapSelectedTabColor);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(MultiPage<TabbedPage>.ItemsSource), MapItemsSource);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(MultiPage<TabbedPage>.ItemTemplate), MapItemTemplate);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(MultiPage<TabbedPage>.SelectedItem), MapSelectedItem);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(CurrentPage), MapCurrentPage);
+		static void RemapForControlsOnce()
+		{
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(BarBackground), MapBarBackground);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(BarBackgroundColor), MapBarBackgroundColor);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(BarTextColor), MapBarTextColor);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(UnselectedTabColor), MapUnselectedTabColor);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(SelectedTabColor), MapSelectedTabColor);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(MultiPage<TabbedPage>.ItemsSource), MapItemsSource);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(MultiPage<TabbedPage>.ItemTemplate), MapItemTemplate);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(MultiPage<TabbedPage>.SelectedItem), MapSelectedItem);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(CurrentPage), MapCurrentPage);
 #if ANDROID
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.AndroidSpecific.TabbedPage.IsSwipePagingEnabledProperty.PropertyName, MapIsSwipePagingEnabled);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.AndroidSpecific.TabbedPage.IsSwipePagingEnabledProperty.PropertyName, MapIsSwipePagingEnabled);
 
 #pragma warning disable CS0612, CS0618 // Type or member is obsolete
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.AndroidSpecific.TabbedPage.OffscreenPageLimitProperty.PropertyName, MapOffscreenPageLimit);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.AndroidSpecific.TabbedPage.OffscreenPageLimitProperty.PropertyName, MapOffscreenPageLimit);
 #pragma warning restore CS0612, CS0618 // Type or member is obsolete
 
 #endif
@@ -39,11 +39,11 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if IOS || MACCATALYST
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(FlowDirection), MapFlowDirection);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHiddenProperty);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersPrefersStatusBarHiddenProperty);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName, MapPreferredStatusBarUpdateAnimation);
-			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.TabbedPage.TranslucencyModeProperty.PropertyName, MapTranslucencyMode);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(nameof(FlowDirection), MapFlowDirection);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHiddenProperty);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersPrefersStatusBarHiddenProperty);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName, MapPreferredStatusBarUpdateAnimation);
+			TabbedViewHandler.Mapper.ReplaceMappingForControls<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.TabbedPage.TranslucencyModeProperty.PropertyName, MapTranslucencyMode);
 #endif
 		}
 	}
