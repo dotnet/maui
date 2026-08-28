@@ -49,7 +49,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
 		const int MaxIconCacheSize = 64;
-		readonly IconCache<BitmapDescriptor> _iconCache = new(MaxIconCacheSize);
+
+		// Two caches, not one: a ClusterImageVersion bump must not drop the pin icons, and pin
+		// traffic past the capacity must not evict the cluster entries on every pass. The cost is
+		// that a pin and a cluster naming the same image decode twice.
+		readonly IconCache<BitmapDescriptor> _pinIconCache = new(MaxIconCacheSize);
+		readonly IconCache<BitmapDescriptor> _clusterIconCache = new(MaxIconCacheSize);
 		WeakReference<IMap>? _clusterImageOwner;
 		int _clusterImageVersion = int.MinValue;
 
@@ -135,7 +140,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			_circles = null;
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
-			_iconCache.Clear();
+			_pinIconCache.Clear();
+			_clusterIconCache.Clear();
 			_clusterImageOwner = null;
 			_clusterImageVersion = int.MinValue;
 			_init = true;
@@ -414,7 +420,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_clusterImageOwner = new WeakReference<IMap>(map);
 			_clusterImageVersion = version;
-			_iconCache.Clear();
+			// Cluster entries only: a version bump says nothing about the pins' own ImageSources.
+			_clusterIconCache.Clear();
 		}
 
 		/// <summary>
@@ -921,7 +928,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				// Clustering re-runs AddPins on every zoom change, so without the cache the icon of
 				// every un-clustered pin is decoded and rescaled again on each pass.
-				var icon = await GetIconAsync(requestedSource, MauiContext, ct);
+				var icon = await GetIconAsync(_pinIconCache, requestedSource, MauiContext, ct);
 
 				// Re-checked after the await: UpdatePinImageSourceAsync can have applied a newer
 				// source in the meantime, and it guards its own write the same way. Without this
@@ -961,7 +968,11 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			if (requestedSource != null)
 			{
-				icon = await LoadPinIconAsync(requestedSource, mauiContext, ct);
+				// Through the cache like AddPinAsync: switching many pins to one image coalesces
+				// into a single load, and the next recluster pass finds the entry. Note GetIconAsync
+				// drops ct for a keyable load, so this can outlive a pins reset - the guards below
+				// still discard the result.
+				icon = await GetIconAsync(_pinIconCache, requestedSource, mauiContext, ct);
 				// null means load failed/cancelled - leave the marker's current icon untouched.
 				if (icon == null)
 					return;
@@ -984,17 +995,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		// Shared by pin and cluster markers: one decoded descriptor backs every marker naming the same
-		// image, so a recluster pass reuses it instead of decoding per marker. GetIconCacheKey returns
-		// null for a source that can't be keyed stably, or that opted out of caching - those load fresh
-		// every time, which is also why they keep this caller's ct: nobody else is waiting on them.
-		// A keyable load is shared, so it must not be cancelled by whichever caller happened to start it.
-		Task<BitmapDescriptor?> GetIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
+		// One decoded descriptor backs every marker naming the same image, so a recluster pass reuses
+		// it instead of decoding per marker. GetIconCacheKey returns null for a source that can't be
+		// keyed stably, or that opted out of caching - those load fresh every time, which is also why
+		// they keep this caller's ct: nobody else is waiting on them. A keyable load is shared, so it
+		// must not be cancelled by whichever caller happened to start it.
+		static Task<BitmapDescriptor?> GetIconAsync(IconCache<BitmapDescriptor> cache, IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
 		{
 			var cacheKey = GetIconCacheKey(imageSource);
 			var loadToken = cacheKey is null ? ct : CancellationToken.None;
 
-			return _iconCache.GetOrCreateAsync(
+			return cache.GetOrCreateAsync(
 				cacheKey,
 				() => LoadPinIconAsync(imageSource, mauiContext, loadToken),
 				() => GetIconCacheExpiry(imageSource));
@@ -1004,19 +1015,57 @@ namespace Microsoft.Maui.Maps.Handlers
 		// Returns null on cancel/failure/no drawable.
 		static async Task<BitmapDescriptor?> LoadPinIconAsync(IImageSource imageSource, IMauiContext mauiContext, CancellationToken ct)
 		{
+			IImageSourceServiceResult<ADrawable>? result = null;
+
 			try
 			{
-				using var result = await imageSource.GetPlatformImageAsync(mauiContext);
+				result = await imageSource.GetPlatformImageAsync(mauiContext);
 				if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
 					return null;
 
-				var bitmap = DrawableToBitmap(drawable);
-				return bitmap != null ? BitmapDescriptorFactory.FromBitmap(bitmap) : null;
+				// Every DrawableToBitmap path returns a bitmap this handler owns, so nothing else
+				// reads it once the descriptor exists. Disposed rather than recycled: this drops
+				// the JNI peer and leaves the pixels to the Java GC, which stays correct even if
+				// FromBitmap retained the source rather than copying it. Recycling would not.
+				using var bitmap = DrawableToBitmap(drawable);
+				if (bitmap is null)
+					return null;
+
+				return BitmapDescriptorFactory.FromBitmap(bitmap);
 			}
 			catch (System.Exception ex)
 			{
-				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
+				TryLogWarning(mauiContext, ex, "Failed to load custom pin icon");
 				return null;
+			}
+			finally
+			{
+				// Guarded: the descriptor is already built by the time this runs, so a failing
+				// release must never be able to replace it with the default marker.
+				try
+				{
+					result?.Dispose();
+				}
+				catch (System.Exception ex)
+				{
+					TryLogWarning(mauiContext, ex, "Failed to release a custom pin icon image result");
+				}
+			}
+		}
+
+		// Resolving a logger throws once the scoped service provider has been disposed - the window
+		// closing while a pin image load is in flight is enough - and this runs on a path where the
+		// descriptor has often already been built. An exception escaping the catch faults the task,
+		// so AddPinAsync never reaches Map.AddMarker and the pin is missing rather than un-iconed;
+		// under FireAndForget that failure is silent. Failing to log must never cost more than the log.
+		static void TryLogWarning(IMauiContext mauiContext, System.Exception exception, string message)
+		{
+			try
+			{
+				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(exception, message);
+			}
+			catch
+			{
 			}
 		}
 
@@ -1045,13 +1094,13 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 				catch (System.Exception ex)
 				{
-					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Cluster image provider threw");
+					TryLogWarning(mauiContext, ex, "Cluster image provider threw");
 				}
 			}
 
 			BitmapDescriptor? icon = null;
 			if (image != null)
-				icon = await GetIconAsync(image, mauiContext, ct);
+				icon = await GetIconAsync(_clusterIconCache, image, mauiContext, ct);
 
 			if (ct.IsCancellationRequested || !ReferenceEquals(Map, map))
 				return;
@@ -1071,9 +1120,25 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		static ABitmap? DrawableToBitmap(ADrawable drawable)
 		{
-			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap != null)
+			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is ABitmap source)
 			{
-				return ScaleBitmap(bitmapDrawable.Bitmap, 64, 64);  // 64x64 pixels
+				var sized = ScaleBitmap(source, 64, 64);  // 64x64 pixels
+				if (!ReferenceEquals(sized, source))
+					return sized;
+
+				// Bitmap.createScaledBitmap hands an immutable source straight back when the image
+				// already fits - the size Pin.ImageSource documents for Android - so the descriptor
+				// would be built over pixels the image result owns, and releasing that result lets
+				// them go. Copy instead, and never fall back to the source: a failed copy has to
+				// mean the default marker, not a descriptor over foreign pixels.
+				//
+				// Always Argb8888 rather than preserving source.GetConfig(): at 64x64 a narrower
+				// config saves a few KB, which is not worth comparing Bitmap.Config values for.
+				// Those compare as JNI peers of a Java enum, and peer identity is not something the
+				// binding guarantees - a comparison that silently went false for a hardware bitmap
+				// would copy it as hardware, and BitmapDescriptorFactory cannot read those pixels
+				// back, which lands on the default marker this PR exists to prevent.
+				return source.Copy(ABitmap.Config.Argb8888!, false);
 			}
 
 			int width = drawable.IntrinsicWidth;
