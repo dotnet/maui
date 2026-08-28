@@ -149,7 +149,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			FindAncestor<ItemContainer>(source) is ItemContainer container &&
 			ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), container) &&
 			!InputKeyboardSource.GetKeyStateForCurrentThread(WVirtualKey.Shift).HasFlag(WCoreVirtualKeyStates.Down) &&
-			container.Child is DependencyObject content &&
+			container.Child is ElementWrapper { Content: FrameworkElement content } &&
+			content.IsLoaded &&
+			ReferenceEquals(content.XamlRoot, XamlRoot) &&
 			FocusManager.FindFirstFocusableElement(content) is Control firstFocusableElement &&
 			firstFocusableElement.Focus(FocusState.Keyboard))
 		{
