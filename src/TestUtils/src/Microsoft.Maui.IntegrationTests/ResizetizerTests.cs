@@ -50,19 +50,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add the svg file
 		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
@@ -106,14 +94,10 @@ public class ResizetizerTests : BaseBuildTest
 
 		if (TestEnvironment.IsWindows)
 		{
-			// Use a single RID so the test does not build every architecture in the template.
 			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
-			const string windowsRuntimeIdentifier = "win-x64";
-			var windowsBuildProps = BuildProps;
-			windowsBuildProps.Add("UseMonoRuntime=false");
-			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: windowsBuildProps, runtimeIdentifier: windowsRuntimeIdentifier, output: _output),
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
 				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
-			Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "the_image.scale-100.png")),
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows was missing the image file.");
 		}
 	}
@@ -147,18 +131,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add the svg file to the library
 		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
@@ -188,12 +161,9 @@ public class ResizetizerTests : BaseBuildTest
 		if (TestEnvironment.IsWindows)
 		{
 			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
-			const string windowsRuntimeIdentifier = "win-x64";
-			var windowsBuildProps = BuildProps;
-			windowsBuildProps.Add("UseMonoRuntime=false");
-			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: windowsBuildProps, runtimeIdentifier: windowsRuntimeIdentifier, output: _output),
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
 				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
-			Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "the_image.scale-100.png")),
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows should NOT have the image file (AdditionalProperties should have excluded it).");
 		}
 	}
@@ -227,18 +197,7 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// toggle packaged / unpackaged
-		if (unpackaged)
-		{
-			FileUtilities.ReplaceInFile(appFile,
-				"</Project>",
-				"""
-				<PropertyGroup>
-					<WindowsPackageType>None</WindowsPackageType>
-				</PropertyGroup>
-				</Project>
-				""");
-		}
+		SetWindowsPackageType(appFile, unpackaged);
 
 		// add two svg files to the library — the property selects which one is included
 		File.WriteAllText(Path.Combine(libDir, "default_image.svg"), BlankSvgContents);
@@ -271,15 +230,30 @@ public class ResizetizerTests : BaseBuildTest
 		if (TestEnvironment.IsWindows)
 		{
 			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
-			const string windowsRuntimeIdentifier = "win-x64";
-			var windowsBuildProps = BuildProps;
-			windowsBuildProps.Add("UseMonoRuntime=false");
-			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: windowsBuildProps, runtimeIdentifier: windowsRuntimeIdentifier, output: _output),
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: GetWindowsBuildProps(), output: _output),
 				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
-			Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "alternate_image.scale-100.png")),
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "alternate_image.scale-100.png")),
 				"Windows was missing alternate_image — AdditionalProperties was not propagated.");
-			Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "default_image.scale-100.png")),
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "x64", "Debug", windowsFramework, "resizetizer", "r", "default_image.scale-100.png")),
 				"Windows should NOT have default_image — AdditionalProperties should have selected the alternate.");
 		}
+	}
+
+	static void SetWindowsPackageType(string projectFile, bool unpackaged)
+	{
+		FileUtilities.ReplaceInFile(
+			projectFile,
+			"<WindowsPackageType>None</WindowsPackageType>",
+			$"<WindowsPackageType>{(unpackaged ? "None" : "MSIX")}</WindowsPackageType>");
+	}
+
+	List<string> GetWindowsBuildProps()
+	{
+		var properties = BuildProps;
+		// Constrain restore without producing RID-specific app output that mismatches project-reference PRI output.
+		properties.Add("RuntimeIdentifiers=win-x64");
+		properties.Add("Platform=x64");
+		properties.Add("UseMonoRuntime=false");
+		return properties;
 	}
 }
