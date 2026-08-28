@@ -15,21 +15,18 @@ public class ResizetizerTests : BaseBuildTest
 
 	[Theory]
 	// windows unpackaged/exe
-	[InlineData("maui", "classlib", true)] // net9.0
-	[InlineData("maui", "mauilib", true)] // net9.0-xxx
-	[InlineData("maui-blazor", "classlib", true)] // net9.0
-	[InlineData("maui-blazor", "mauilib", true)] // net9.0-xxx
-											   // windows packaged/msix
-	[InlineData("maui", "classlib", false)] // net9.0
-	[InlineData("maui", "mauilib", false)] // net9.0-xxx
-	[InlineData("maui-blazor", "classlib", false)] // net9.0
-	[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
+	[InlineData("maui", "classlib", true)] // base TFM
+	[InlineData("maui", "mauilib", true)] // platform TFMs
+	[InlineData("maui-blazor", "classlib", true)] // base TFM
+	[InlineData("maui-blazor", "mauilib", true)] // platform TFMs
+												 // windows packaged/msix
+	[InlineData("maui", "classlib", false)] // base TFM
+	[InlineData("maui", "mauilib", false)] // platform TFMs
+	[InlineData("maui-blazor", "classlib", false)] // base TFM
+	[InlineData("maui-blazor", "mauilib", false)] // platform TFMs
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		// TODO: fix the tests as they have been disabled too long!
-		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -84,20 +81,41 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\the_image.png")),
+		// build and assert Android
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "the_image.png")),
 			"Android was missing the image file.");
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-ios\\iossimulator-x64\\resizetizer\\r\\the_image.png")),
+
+		// build and assert iOS
+		var iosFramework = $"{DotNetCurrent}-ios";
+		var iosRuntimeIdentifier = TestEnvironment.IOSSimulatorRuntimeIdentifier;
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: iosFramework, properties: BuildProps, runtimeIdentifier: iosRuntimeIdentifier, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for iOS. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", iosFramework, iosRuntimeIdentifier, "resizetizer", "r", "the_image.png")),
 			"iOS was missing the image file.");
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-maccatalyst\\maccatalyst-x64\\resizetizer\\r\\the_image.png")),
+
+		// build and assert Mac Catalyst
+		var macCatalystFramework = $"{DotNetCurrent}-maccatalyst";
+		var macCatalystRuntimeIdentifier = TestEnvironment.IsArm64 ? "maccatalyst-arm64" : "maccatalyst-x64";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: macCatalystFramework, properties: BuildProps, runtimeIdentifier: macCatalystRuntimeIdentifier, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Mac Catalyst. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", macCatalystFramework, macCatalystRuntimeIdentifier, "resizetizer", "r", "the_image.png")),
 			"Mac Catalyst was missing the image file.");
+
 		if (TestEnvironment.IsWindows)
-			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
+		{
+			// Use a single RID so the test does not build every architecture in the template.
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			const string windowsRuntimeIdentifier = "win-x64";
+			var windowsBuildProps = BuildProps;
+			windowsBuildProps.Add("UseMonoRuntime=false");
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: windowsBuildProps, runtimeIdentifier: windowsRuntimeIdentifier, output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows was missing the image file.");
+		}
 	}
 
 	[Theory]
@@ -106,9 +124,6 @@ public class ResizetizerTests : BaseBuildTest
 	public void AdditionalPropertiesExcludesImage(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		// TODO: fix the tests as they have been disabled too long!
-		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -163,16 +178,24 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert - the image should NOT be collected because AdditionalProperties excluded it
-		Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\the_image.png")),
+		// build and assert Android - the image should NOT be collected because AdditionalProperties excluded it
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "the_image.png")),
 			"Android should NOT have the image file (AdditionalProperties should have excluded it).");
+
 		if (TestEnvironment.IsWindows)
-			Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
+		{
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			const string windowsRuntimeIdentifier = "win-x64";
+			var windowsBuildProps = BuildProps;
+			windowsBuildProps.Add("UseMonoRuntime=false");
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: windowsBuildProps, runtimeIdentifier: windowsRuntimeIdentifier, output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "the_image.scale-100.png")),
 				"Windows should NOT have the image file (AdditionalProperties should have excluded it).");
+		}
 	}
 
 	[Theory]
@@ -181,9 +204,6 @@ public class ResizetizerTests : BaseBuildTest
 	public void AdditionalPropertiesSelectsImageInLibrary(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		// TODO: fix the tests as they have been disabled too long!
-		if (!TestEnvironment.IsWindows)
-			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -239,21 +259,26 @@ public class ResizetizerTests : BaseBuildTest
 			</Project>
 			""");
 
-		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
-			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
-
-		// assert - alternate_image should be collected (property was propagated)
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\alternate_image.png")),
+		// build and assert Android
+		var androidFramework = $"{DotNetCurrent}-android";
+		Assert.True(DotnetInternal.Build(appFile, "Debug", framework: androidFramework, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(appFile)} failed to build for Android. Check test output/attachments for errors.");
+		Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "alternate_image.png")),
 			"Android was missing alternate_image — AdditionalProperties was not propagated.");
-		// assert - default_image should NOT be collected (it was excluded by the property)
-		Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\default_image.png")),
+		Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", androidFramework, "resizetizer", "r", "drawable-mdpi", "default_image.png")),
 			"Android should NOT have default_image — AdditionalProperties should have selected the alternate.");
+
 		if (TestEnvironment.IsWindows)
 		{
-			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\alternate_image.scale-100.png")),
+			var windowsFramework = $"{DotNetCurrent}-windows10.0.19041.0";
+			const string windowsRuntimeIdentifier = "win-x64";
+			var windowsBuildProps = BuildProps;
+			windowsBuildProps.Add("UseMonoRuntime=false");
+			Assert.True(DotnetInternal.Build(appFile, "Debug", framework: windowsFramework, properties: windowsBuildProps, runtimeIdentifier: windowsRuntimeIdentifier, output: _output),
+				$"Project {Path.GetFileName(appFile)} failed to build for Windows. Check test output/attachments for errors.");
+			Assert.True(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "alternate_image.scale-100.png")),
 				"Windows was missing alternate_image — AdditionalProperties was not propagated.");
-			Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\default_image.scale-100.png")),
+			Assert.False(File.Exists(Path.Combine(appDir, "obj", "Debug", windowsFramework, windowsRuntimeIdentifier, "resizetizer", "r", "default_image.scale-100.png")),
 				"Windows should NOT have default_image — AdditionalProperties should have selected the alternate.");
 		}
 	}
