@@ -308,6 +308,50 @@ internal static class SafeAreaExtensions
 		return newWindowInsets;
 	}
 
+	internal static void ApplyAnimatedSoftInputInsetsPx(
+		WindowInsetsCompat windowInsets,
+		ICrossPlatformLayout crossPlatformLayout,
+		Context context,
+		View view)
+	{
+		var bottomRegion = GetSafeAreaRegionForEdge(3, crossPlatformLayout);
+		if (!SafeAreaEdges.IsSoftInput(bottomRegion))
+		{
+			return;
+		}
+
+		var keyboardBottom = windowInsets.GetKeyboardInsetsPx(context).Bottom;
+		var containerBottom = windowInsets.ToSafeAreaInsetsPx(context).Bottom;
+		var viewHeight = view.Height > 0 ? view.Height : view.MeasuredHeight;
+		if (viewHeight <= 0)
+		{
+			return;
+		}
+
+		var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
+		if (windowManager?.DefaultDisplay is null)
+		{
+			return;
+		}
+
+		var realMetrics = new global::Android.Util.DisplayMetrics();
+		windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
+
+		var viewLocation = new int[2];
+		view.GetLocationOnScreen(viewLocation);
+		var rootLocation = new int[2];
+		view.RootView?.GetLocationOnScreen(rootLocation);
+		var viewTop = viewLocation[1] - rootLocation[1];
+		var viewBottom = viewTop + viewHeight;
+		var keyboardOverlap = Math.Min(keyboardBottom, Math.Max(0, viewBottom - (realMetrics.HeightPixels - keyboardBottom)));
+		var containerOverlap = Math.Min(containerBottom, Math.Max(0, viewBottom - (realMetrics.HeightPixels - containerBottom)));
+		var bottom = SafeAreaEdges.IsOnlySoftInput(bottomRegion)
+			? keyboardOverlap
+			: Math.Max(containerOverlap, keyboardOverlap);
+
+		view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
+	}
+
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
 	{
 		// Edge-to-edge content - no safe area padding
@@ -327,9 +371,10 @@ internal static class SafeAreaExtensions
 
 			if (isKeyboardShowing)
 			{
-				// Return keyboard insets for any region that includes SoftInput
+				// Combined regions such as All must continue respecting container insets
+				// while the keyboard is visible.
 				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-					return keyBoardInsets.Bottom;
+					return Math.Max(originalSafeArea, keyBoardInsets.Bottom);
 			}
 		}
 

@@ -29,9 +29,8 @@ namespace Microsoft.Maui.Platform
 	internal class MauiWindowInsetListener : WindowInsetsAnimationCompat.Callback, IOnApplyWindowInsetsListener
 	{
 		readonly HashSet<AView> _trackedViews = [];
+		readonly HashSet<AView> _imeAnimationViews = [];
 		bool IsImeAnimating { get; set; }
-
-		AView? _pendingView;
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -234,15 +233,13 @@ namespace Microsoft.Maui.Platform
 		{
 			if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
 			{
-				if (IsImeAnimating)
+				if (IsImeAnimating && v is not null)
 				{
-					_pendingView = v;
+					_imeAnimationViews.Add(v);
 				}
 
 				return insets;
 			}
-
-			_pendingView = null;
 
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
@@ -370,6 +367,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_trackedViews.Remove(view);
+			_imeAnimationViews.Remove(view);
 		}
 
 		public void ResetAllViews()
@@ -438,6 +436,7 @@ namespace Microsoft.Maui.Platform
 			base.OnPrepare(animation);
 			if (IsImeAnimation(animation))
 			{
+				_imeAnimationViews.Clear();
 				IsImeAnimating = true;
 			}
 		}
@@ -454,21 +453,19 @@ namespace Microsoft.Maui.Platform
 
 		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
 		{
-			if (insets is null || runningAnimations is null)
+			if (insets is null || runningAnimations is null || !runningAnimations.Any(IsImeAnimation))
 			{
 				return insets;
 			}
 
-			// Process any IME animations
-			foreach (var animation in runningAnimations)
+			foreach (var view in _imeAnimationViews)
 			{
-				if (IsImeAnimation(animation))
+				if (view is ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout } && view.Context is Context context)
 				{
-					var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-					// IME height available as: imeInsets?.Bottom ?? 0
-					break; // Only need to process one IME animation
+					SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(insets, crossPlatformLayout, context, view);
 				}
 			}
+
 			return insets;
 		}
 
@@ -478,19 +475,13 @@ namespace Microsoft.Maui.Platform
 
 			if (IsImeAnimation(animation))
 			{
-				if (_pendingView is AView view)
+				IsImeAnimating = false;
+				foreach (var view in _imeAnimationViews)
 				{
-					_pendingView = null;
-					view.Post(() =>
-					{
-						IsImeAnimating = false;
-						ViewCompat.RequestApplyInsets(view);
-					});
+					ViewCompat.RequestApplyInsets(view);
 				}
-				else
-				{
-					IsImeAnimating = false;
-				}
+
+				_imeAnimationViews.Clear();
 			}
 		}
 
