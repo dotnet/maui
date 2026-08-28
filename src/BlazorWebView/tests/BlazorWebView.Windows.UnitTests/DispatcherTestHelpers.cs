@@ -62,6 +62,56 @@ internal static class DispatcherTestHelpers
 		Assert.False(task.IsFaulted);
 	}
 
+	public static async Task AssertAsyncWorkItemResumesOnDispatcherThread(
+		ComponentsDispatcher dispatcher,
+		DispatcherWorkItemKind workItemKind)
+	{
+		var initialThreadId = 0;
+		var continuationThreadId = 0;
+		var initialAccess = false;
+		var continuationAccess = false;
+
+		void CaptureInitialState()
+		{
+			initialThreadId = Environment.CurrentManagedThreadId;
+			initialAccess = dispatcher.CheckAccess();
+		}
+
+		void CaptureContinuationState()
+		{
+			continuationThreadId = Environment.CurrentManagedThreadId;
+			continuationAccess = dispatcher.CheckAccess();
+		}
+
+		async Task CaptureDispatcherContext()
+		{
+			CaptureInitialState();
+			await Task.Yield();
+			CaptureContinuationState();
+		}
+
+		async Task<bool> CaptureDispatcherContextWithResult()
+		{
+			CaptureInitialState();
+			await Task.Yield();
+			CaptureContinuationState();
+			return true;
+		}
+
+		var task = workItemKind switch
+		{
+			DispatcherWorkItemKind.AsyncAction => dispatcher.InvokeAsync(CaptureDispatcherContext),
+			DispatcherWorkItemKind.AsyncFunction => dispatcher.InvokeAsync(CaptureDispatcherContextWithResult),
+			_ => throw new ArgumentOutOfRangeException(nameof(workItemKind)),
+		};
+
+		await task.WaitAsync(TimeSpan.FromSeconds(5));
+
+		Assert.True(initialAccess);
+		Assert.True(continuationAccess);
+		Assert.Equal(initialThreadId, continuationThreadId);
+	}
+
 	private static void Throw(Exception exception) => throw exception;
 
 	private static async Task ThrowAsync(Exception exception)

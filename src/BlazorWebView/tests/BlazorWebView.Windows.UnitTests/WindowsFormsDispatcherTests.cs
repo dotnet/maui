@@ -78,4 +78,12 @@ public sealed class WindowsFormsDispatcherTests
 			WinFormsApplication.ThreadException -= handler;
 		}
 	}
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.AsyncAction)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
+	public Task AsyncWorkItemsResumeOnDispatcherThread(DispatcherWorkItemKind workItemKind) =>
+		DispatcherTestHelpers.AssertAsyncWorkItemResumesOnDispatcherThread(
+			_fixture.WindowsFormsDispatcher,
+			workItemKind);
 }
