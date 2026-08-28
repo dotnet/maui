@@ -2248,18 +2248,23 @@ Describe 'The pull request body reports the independent review of the winning fi
             Should -Match 'did not block publication'
     }
 
-    It 'declares how far the arm has been measured, so a reader can weigh the findings' {
+    It 'declares measured cross-review agreement without presenting it as independent ground truth' {
         # A disclosure a reader cannot weigh is barely a disclosure. The arm was
-        # validated blind over 8 diffs: 6 of 8 pre-registered keys recovered, and
-        # 1 blocking finding raised on 4 already-merged maintainer fixes. Stating
-        # n is part of the claim - at this size the trial can refute a high error
-        # rate but cannot establish a low one, and a rate quoted without its
-        # sample size reads as far stronger evidence than it is.
+        # validated blind over 8 diffs against findings from an earlier automated
+        # adversarial-review pass: 6 of 8 pre-registered keys recovered, and 1
+        # blocking finding raised on 4 already-merged maintainer fixes. That is
+        # cross-review agreement, not an independent human benchmark. Stating n
+        # is part of the claim - at this size the trial can refute a high error
+        # rate but cannot establish a low one.
         $block = Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate
 
         $block | Should -Match '6 of the 8'
         $block | Should -Match '1 of 4'
         $block | Should -Match 'n=8'
+        $block | Should -Match 'earlier automated adversarial-review pass'
+        $block | Should -Match 'agreement between automated review passes'
+        $block | Should -Match 'not independent ground truth'
+        $block | Should -Not -Match 'specific defects human reviewers had already named'
         $block | Should -Match 'cannot establish a low one'
     }
 

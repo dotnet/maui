@@ -166,8 +166,10 @@ function Get-ReplicationIndependentReviewBlock {
                    'in the body rather than having to rediscover them, and any of them may be wrong.')
         $lines += ''
         $lines += ('How far to trust them, measured rather than asserted: across two blind trials covering ' +
-                   '8 diffs, this arm recovered 6 of the 8 specific defects human reviewers had already ' +
-                   'named, and raised a blocking finding on 1 of 4 fixes dotnet/maui had already merged. ' +
+                   '8 diffs, this arm recovered 6 of the 8 specific defects an earlier automated ' +
+                   'adversarial-review pass had already named, and raised a blocking finding on 1 of 4 ' +
+                   'fixes dotnet/maui had already merged. This measures agreement between automated review ' +
+                   'passes, not independent ground truth. ' +
                    'At n=8 those rates are indicative only - they can rule out a high error rate, but they ' +
                    'cannot establish a low one.')
     }
