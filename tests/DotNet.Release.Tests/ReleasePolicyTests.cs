@@ -104,7 +104,7 @@ public class ReleasePolicyTests
     /// the build rather than a release.
     /// </summary>
     [Fact]
-    public void Checked_in_policy_is_valid_and_matches_the_repositories_released_today()
+    public void Checked_in_policy_is_valid_and_matches_supported_repositories()
     {
         var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "repositories.json"));
 

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace DotNet.Release;
 
 /// <summary>What the operator asked for.</summary>
-public sealed record ReleaseRequest(RepositoryId Repository, string Commit, int? BarBuildId);
+internal sealed record ReleaseRequest(RepositoryId Repository, string Commit, int? BarBuildId);
 
 /// <summary>
 /// The verified outcome of <c>release plan</c>, serialized as <c>plan.json</c>.
@@ -11,7 +11,7 @@ public sealed record ReleaseRequest(RepositoryId Repository, string Commit, int?
 /// <remarks>
 /// Every field here has been checked against BAR, not merely copied from the request.
 /// </remarks>
-public sealed record ResolvedRelease
+internal sealed record ResolvedRelease
 {
     [JsonPropertyName("schemaVersion")]
     public int SchemaVersion { get; init; } = 1;
@@ -48,7 +48,7 @@ public sealed record ResolvedRelease
 /// <summary>
 /// Verifies a BAR build against the request and the policy. Pure.
 /// </summary>
-public static class BuildResolver
+internal static class BuildResolver
 {
     /// <summary>
     /// Resolves and verifies exactly one BAR build.

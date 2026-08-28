@@ -18,7 +18,7 @@ namespace DotNet.Release;
 /// an explicit <c>darc add-build-to-channel</c> step in pipeline YAML.
 /// </para>
 /// </remarks>
-public sealed class MaestroBuildRegistry : IBuildRegistry
+internal sealed class MaestroBuildRegistry : IBuildRegistry
 {
     private const int NotFound = 404;
 

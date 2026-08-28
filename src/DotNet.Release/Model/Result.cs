@@ -4,7 +4,7 @@ namespace DotNet.Release;
 /// Stable identifiers for every way a release can fail closed.
 /// </summary>
 /// <remarks>Codes are stable identifiers for documentation, build-log search, and tests.</remarks>
-public static class ErrorCodes
+internal static class ErrorCodes
 {
     public const string RepositoryNotAllowed = "REPO_NOT_ALLOWED";
     public const string RepositoryUnparseable = "REPO_UNPARSEABLE";
@@ -39,7 +39,7 @@ public static class ErrorCodes
 }
 
 /// <summary>A single fail-closed condition, carrying a stable <see cref="Code"/>.</summary>
-public sealed record ReleaseError(string Code, string Message)
+internal sealed record ReleaseError(string Code, string Message)
 {
     public override string ToString() => $"{Code}: {Message}";
 }
@@ -51,7 +51,7 @@ public sealed record ReleaseError(string Code, string Message)
 /// Errors are returned rather than thrown so that validation can report every problem it
 /// found in one pass, and so tests can assert on codes without exception plumbing.
 /// </remarks>
-public sealed class Result<T>
+internal sealed class Result<T>
 {
     private readonly T? _value;
 

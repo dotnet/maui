@@ -16,7 +16,7 @@ namespace DotNet.Release;
 /// silently skipped.
 /// </para>
 /// </remarks>
-public static class StagedSetIntegrity
+internal static class StagedSetIntegrity
 {
     /// <summary>
     /// Validates the staging directory against the plan before <c>filter</c> has run: every
@@ -123,7 +123,7 @@ public static class StagedSetIntegrity
 /// <summary>
 /// Decides whether a release is fully indexed on NuGet.org. Pure: the caller polls.
 /// </summary>
-public static class VerificationEvaluator
+internal static class VerificationEvaluator
 {
     /// <summary>
     /// Returns the planned packages that are not yet resolvable on NuGet.org.

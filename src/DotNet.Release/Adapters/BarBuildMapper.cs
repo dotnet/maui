@@ -21,7 +21,7 @@ namespace DotNet.Release;
 /// than trusted.
 /// </para>
 /// </remarks>
-public static class BarBuildMapper
+internal static class BarBuildMapper
 {
     public static BarBuild Map(PcsModels.Build build)
     {

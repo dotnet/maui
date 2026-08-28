@@ -13,7 +13,7 @@ namespace DotNet.Release;
 /// Typed results preserve the distinction between no matching build and service failure.
 /// </para>
 /// </remarks>
-public interface IBuildRegistry
+internal interface IBuildRegistry
 {
     /// <summary>Gets a single build by its BAR ID, or an empty list if there is none.</summary>
     Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken);
@@ -23,19 +23,6 @@ public interface IBuildRegistry
         RepositoryId repository,
         string commit,
         CancellationToken cancellationToken);
-}
-
-/// <summary>
-/// Reads package identities out of <c>.nupkg</c> files in a gathered drop.
-/// </summary>
-/// <remarks>
-/// Implemented by <see cref="NupkgIdentityReader"/> using <c>PackageArchiveReader</c> and
-/// <c>NuGetVersion.ToNormalizedString()</c>.
-/// </remarks>
-public interface IPackageIdentityReader
-{
-    /// <summary>Reads the identity and content hash of one package file.</summary>
-    Task<Result<DropPackage>> ReadAsync(string packageFilePath, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -52,7 +39,7 @@ public interface IPackageIdentityReader
 /// credential (see "Credential boundary" in docs/design.md).
 /// </para>
 /// </remarks>
-public interface IPackageAvailabilityProbe
+internal interface IPackageAvailabilityProbe
 {
     /// <summary>
     /// Returns whether each identity is currently resolvable on NuGet.org, keyed by

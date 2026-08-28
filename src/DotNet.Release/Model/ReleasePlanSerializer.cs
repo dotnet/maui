@@ -13,7 +13,7 @@ namespace DotNet.Release;
 /// Determinism matters because the plan's SHA-256 is the single pinned value carried across
 /// the job boundary into the production publish job. Same plan in, same bytes out.
 /// </remarks>
-public static class ReleasePlanSerializer
+internal static class ReleasePlanSerializer
 {
     public static string Serialize(ReleasePlan plan)
     {
@@ -94,19 +94,9 @@ public static class ReleasePlanSerializer
     /// <summary>
     /// SHA-256 of UTF-8 text, as lower-case hex.
     /// </summary>
-    /// <remarks>
-    /// The pipeline pins the plan with <c>Get-FileHash</c>, which hashes raw file bytes.
-    /// These agree only while the plan is written without a byte-order mark, so callers
-    /// verifying a file on disk should use <see cref="ComputeFileHash"/> rather than reading
-    /// it as text — <c>File.ReadAllText</c> strips a BOM and would produce a different hash
-    /// from the same bytes.
-    /// </remarks>
+    /// <remarks>The serializer writes UTF-8 without a byte-order mark.</remarks>
     public static string ComputeHash(string content) =>
         Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
-
-    /// <summary>SHA-256 of a file's raw bytes, matching PowerShell's <c>Get-FileHash</c>.</summary>
-    public static string ComputeFileHash(byte[] content) =>
-        Convert.ToHexStringLower(SHA256.HashData(content));
 
     /// <summary>
     /// Verifies that plan content matches the hash pinned by the preparing stage.

@@ -16,7 +16,7 @@ namespace DotNet.Release;
 /// this tool never holds a NuGet.org credential. See docs/design.md section 3.
 /// </para>
 /// </remarks>
-public static class Program
+internal static class Program
 {
     private static string ToolVersion =>
         typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
@@ -96,7 +96,6 @@ public static class Program
 
         command.SetAction((parse, cancellationToken) => Verbs.StageAsync(
             console,
-            new NupkgIdentityReader(),
             File.ReadAllText(parse.GetValue(config)!.FullName),
             File.ReadAllText(parse.GetValue(plan)!.FullName),
             parse.GetValue(drop)!.FullName,

@@ -10,7 +10,7 @@ namespace DotNet.Release;
 /// <c>PackageArchiveReader</c> locates and parses the nuspec, and <c>NuGetVersion</c>
 /// supplies the normalized version used for availability queries.
 /// </remarks>
-public sealed class NupkgIdentityReader : IPackageIdentityReader
+internal sealed class NupkgIdentityReader
 {
     /// <inheritdoc />
     public async Task<Result<DropPackage>> ReadAsync(string packageFilePath, CancellationToken cancellationToken)

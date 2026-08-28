@@ -4,10 +4,10 @@ using System.Text.Json.Serialization;
 namespace DotNet.Release;
 
 /// <summary>Policy for one releasable repository.</summary>
-public sealed record RepositoryPolicy(RepositoryId Repository, bool Workload, ChannelReference? Channel);
+internal sealed record RepositoryPolicy(RepositoryId Repository, bool Workload, ChannelReference? Channel);
 
 /// <summary>The workload-set channel and feed for one .NET band.</summary>
-public sealed record WorkloadSetPolicy(int Band, string Channel, string Feed);
+internal sealed record WorkloadSetPolicy(int Band, string Channel, string Feed);
 
 /// <summary>
 /// The declarative, checked-in release policy. Anything not listed fails closed.
@@ -16,7 +16,7 @@ public sealed record WorkloadSetPolicy(int Band, string Channel, string Feed);
 /// Repository enablement, workload classification, channel requirements, and workload-set
 /// targets are versioned together in <c>config/repositories.json</c>.
 /// </remarks>
-public sealed class ReleasePolicy
+internal sealed class ReleasePolicy
 {
     private readonly IReadOnlyDictionary<string, RepositoryPolicy> _repositories;
     private readonly IReadOnlyDictionary<int, WorkloadSetPolicy> _workloadSets;

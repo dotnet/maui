@@ -4,10 +4,10 @@ namespace DotNet.Release;
 
 /// <summary>A package identity read out of a gathered drop, before any policy is applied.</summary>
 /// <remarks>
-/// Produced by <see cref="IPackageIdentityReader"/>. <see cref="NormalizedVersion"/> is the
+/// Produced by <see cref="NupkgIdentityReader"/>. <see cref="NormalizedVersion"/> is the
 /// form accepted by NuGet availability queries.
 /// </remarks>
-public sealed record DropPackage(
+internal sealed record DropPackage(
     string FileName,
     string Id,
     string Version,
@@ -15,7 +15,7 @@ public sealed record DropPackage(
     string Sha256);
 
 /// <summary>A package that is going to be released.</summary>
-public sealed record PlannedPackage
+internal sealed record PlannedPackage
 {
     [JsonPropertyName("id")]
     public required string Id { get; init; }
@@ -41,7 +41,7 @@ public sealed record PlannedPackage
 }
 
 /// <summary>One gated, independently published group of packages.</summary>
-public sealed record ReleasePackageSet
+internal sealed record ReleasePackageSet
 {
     [JsonPropertyName("name")]
     public required string Name { get; init; }
@@ -62,7 +62,7 @@ public sealed record ReleasePackageSet
 }
 
 /// <summary>The workload-set channel a workload build is promoted to.</summary>
-public sealed record WorkloadSetTarget(
+internal sealed record WorkloadSetTarget(
     [property: JsonPropertyName("band")] int Band,
     [property: JsonPropertyName("channel")] string Channel,
     [property: JsonPropertyName("feed")] string Feed);
@@ -74,7 +74,7 @@ public sealed record WorkloadSetTarget(
 /// The plan is immutable after staging. <c>release filter</c> records runtime dispositions
 /// in a sidecar so the plan hash remains valid through approval, publishing, and verification.
 /// </remarks>
-public sealed record ReleasePlan
+internal sealed record ReleasePlan
 {
     [JsonPropertyName("schemaVersion")]
     public int SchemaVersion { get; init; } = 1;

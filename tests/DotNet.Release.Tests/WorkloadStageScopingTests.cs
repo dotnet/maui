@@ -38,7 +38,7 @@ public class WorkloadStageScopingTests : IDisposable
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None));
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
-            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None));
@@ -236,7 +236,7 @@ public class VerificationBudgetTests : IDisposable
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
         Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
-            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None));

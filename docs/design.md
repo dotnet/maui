@@ -186,8 +186,16 @@ The implementation is one executable project. Interfaces are retained where they
 remote reads testable:
 
 - `IBuildRegistry`;
-- `IPackageIdentityReader`;
 - `IPackageAvailabilityProbe`.
+
+NuGet availability has one additional internal seam:
+
+- `IPackageExistenceChecker` models the per-identity NuGet protocol call;
+- `IPackageAvailabilityProbe` models the batched operation consumed by filter and verify.
+
+The distinction is intentional. Probe tests substitute the per-identity checker to validate
+deduplication, concurrency, and exception behavior. Verb tests substitute the batch probe to
+model poll-level availability and transient failures.
 
 No dependency-injection container is required. The CLI composition root constructs the
 production adapters directly.
@@ -638,6 +646,18 @@ For partial publication:
 4. the filter must match a planned package or the run fails with `FILTER_UNMATCHED`;
 5. verification still requires every planned package, including recovered packages.
 
+### Known recovery limit
+
+Staging requires every selected package file to be downloadable by `darc gather-drop`.
+The system does not synthesize package identities solely from BAR asset metadata when a
+package file is unavailable. A repeated non-workload release whose internal package asset
+has expired therefore fails during gathering or staging, even if that identity already
+exists on NuGet.org.
+
+Supporting that case requires the plan step to carry selected BAR asset identities and the
+stage step to reconcile downloaded files against them. BAR versions must be normalized with
+`NuGetVersion` before any NuGet.org lookup.
+
 ## Build and dependency management
 
 The repository follows Arcade conventions:
@@ -704,7 +724,7 @@ Tests MUST fail when:
 - BAR promotion is not nested beneath both publish and promotion opt-ins;
 - queue-time parameters appear in executable PowerShell text;
 - the NuGet.org task, connection, or known push mechanisms appear in the root dry-run graph;
-- Darc is resolved through `Get-Darc` instead of the installed agent command;
+- Darc calls do not use the installed agent command;
 - `ManualValidation@0` is not an agentless predecessor of the mutating job;
 - pack/manifests stage ordering is broken;
 - the tool references NuGet's push API;

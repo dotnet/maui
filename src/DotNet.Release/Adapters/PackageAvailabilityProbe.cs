@@ -13,7 +13,7 @@ namespace DotNet.Release;
 /// without a network. Read-only by construction: it answers a question and exposes nothing
 /// that could publish.
 /// </remarks>
-public interface IPackageExistenceChecker
+internal interface IPackageExistenceChecker
 {
     Task<bool> ExistsAsync(string id, string normalizedVersion, CancellationToken cancellationToken);
 }
@@ -25,7 +25,7 @@ public interface IPackageExistenceChecker
 /// <c>FindPackageByIdResource</c> implements NuGet protocol negotiation, retry behavior, and
 /// transient-status handling for exact package identity checks.
 /// </remarks>
-public sealed class FlatContainerExistenceChecker : IPackageExistenceChecker, IDisposable
+internal sealed class FlatContainerExistenceChecker : IPackageExistenceChecker, IDisposable
 {
     /// <summary>The production feed. Queried read-only; nothing is ever pushed here.</summary>
     public const string NuGetOrgIndex = "https://api.nuget.org/v3/index.json";
@@ -76,7 +76,7 @@ public sealed class FlatContainerExistenceChecker : IPackageExistenceChecker, ID
 /// <c>1ES.PublishNuget@1</c> performs every push, so the tool never holds a NuGet.org
 /// credential (docs/design.md section 3).
 /// </remarks>
-public sealed class PackageAvailabilityProbe : IPackageAvailabilityProbe
+internal sealed class PackageAvailabilityProbe : IPackageAvailabilityProbe
 {
     private readonly IPackageExistenceChecker _checker;
     private readonly int _maxConcurrency;

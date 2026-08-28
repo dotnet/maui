@@ -15,7 +15,7 @@ namespace DotNet.Release;
 /// class in a release package filter is a footgun. See docs/design.md section 12.
 /// </para>
 /// </remarks>
-public static class PackageGlob
+internal static class PackageGlob
 {
     /// <summary>
     /// Parses a semicolon-separated filter list. Null or whitespace means no filters.
@@ -56,7 +56,7 @@ public static class PackageGlob
 }
 
 /// <summary>Distinguishes workload manifests from workload packs, and derives the .NET band.</summary>
-public static partial class PackageClassifier
+internal static partial class PackageClassifier
 {
     /// <summary>
     /// True when the package is a workload manifest.

@@ -2,7 +2,7 @@
 namespace DotNet.Release;
 
 /// <summary>Process exit codes. Stable, so pipeline steps can distinguish outcomes.</summary>
-public static class ExitCodes
+internal static class ExitCodes
 {
     public const int Success = 0;
 
@@ -14,7 +14,7 @@ public static class ExitCodes
 }
 
 /// <summary>Console output, kept behind an interface so verbs are testable.</summary>
-public interface IReleaseConsole
+internal interface IReleaseConsole
 {
     void WriteLine(string message);
 

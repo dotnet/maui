@@ -120,16 +120,15 @@ public class ArchitectureTests
     }
 
     /// <summary>
-    /// Remote and package reads stay behind interfaces so tests run without a network, BAR
-    /// account, or real feed.
+    /// Remote reads stay behind interfaces so tests run without a network, BAR account, or
+    /// real feed.
     /// </summary>
     [Theory]
     [InlineData("IBuildRegistry")]
-    [InlineData("IPackageIdentityReader")]
     [InlineData("IPackageAvailabilityProbe")]
-    public void Adapters_are_reachable_only_through_interfaces(string name)
+    public void Remote_adapters_are_reachable_only_through_interfaces(string name)
     {
-        var type = Tool.GetExportedTypes().SingleOrDefault(t => t.Name == name);
+        var type = Tool.GetTypes().SingleOrDefault(t => t.Name == name);
 
         Assert.NotNull(type);
         Assert.True(type.IsInterface, $"{name} must stay an interface.");
@@ -148,8 +147,8 @@ public class ArchitectureTests
     }
 
     /// <summary>
-    /// The layering survives as folders now that the assembly boundary is gone. Policy types
-    /// take and return plain data, so they stay unit-testable without a filesystem or a feed.
+    /// Policy types take and return plain data, so they are unit-testable without a filesystem
+    /// or feed.
     /// </summary>
     [Theory]
     [InlineData("ReleasePolicy")]
@@ -162,7 +161,7 @@ public class ArchitectureTests
     [InlineData("PackageVersions")]
     public void Policy_types_expose_no_file_or_network_types_in_their_signatures(string typeName)
     {
-        var type = Tool.GetExportedTypes().SingleOrDefault(t => t.Name == typeName);
+        var type = Tool.GetTypes().SingleOrDefault(t => t.Name == typeName);
         Assert.NotNull(type);
 
         var forbidden = new[] { "FileInfo", "DirectoryInfo", "FileStream", "HttpClient", "Stream", "Process" };

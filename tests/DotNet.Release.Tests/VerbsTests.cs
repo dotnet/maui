@@ -21,7 +21,7 @@ public class VerbsTests : IDisposable
 
     private Task<int> Stage(StageOptions? options = null) =>
         Verbs.StageAsync(
-            _console, new NupkgIdentityReader(), Workspace.PolicyJson,
+            _console, Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
             _workspace.Drop, _workspace.Out, options ?? new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None);
@@ -190,9 +190,9 @@ public class VerbsTests : IDisposable
         return ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
     }
 
-    private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? skip = null, string? expectedHash = null, string? set = null) =>
+    private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
         Verbs.FilterAsync(
-            _console, probe, _workspace.ReadPlan(), _workspace.Out, skip ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
+            _console, probe, _workspace.ReadPlan(), _workspace.Out, recovery ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
 
     [Fact]
     public async Task Validate_checks_a_downloaded_set_without_a_feed_probe()
@@ -280,7 +280,7 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
 
-        await Filter(new FakeProbe(), skip: ["SkiaSharp.*"]);
+        await Filter(new FakeProbe(), recovery: ["SkiaSharp.*"]);
 
         var directory = _workspace.StagedSet(StagePlanner.PackagesArtifactName);
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
@@ -294,7 +294,7 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
-        var exit = await Filter(new FakeProbe(), skip: ["Typo.*"]);
+        var exit = await Filter(new FakeProbe(), recovery: ["Typo.*"]);
 
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains(ErrorCodes.FilterUnmatched, _console.AllErrors, StringComparison.Ordinal);

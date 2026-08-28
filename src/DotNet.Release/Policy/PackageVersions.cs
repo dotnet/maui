@@ -11,7 +11,7 @@ namespace DotNet.Release;
 /// <see cref="IsNormalizedForm"/> lets staging reject an adapter result that disagrees with
 /// NuGet's normalization rules.
 /// </remarks>
-public static class PackageVersions
+internal static class PackageVersions
 {
     /// <summary>Parses a nuspec version and returns its NuGet-normalized form.</summary>
     public static Result<string> Normalize(string? version)

@@ -1,7 +1,7 @@
 namespace DotNet.Release;
 
 /// <summary>Package selection filters supplied to <c>release stage</c>.</summary>
-public sealed record StageOptions
+internal sealed record StageOptions
 {
     public IReadOnlyList<string> Include { get; init; } = [];
 
@@ -12,7 +12,7 @@ public sealed record StageOptions
 /// Turns a gathered drop into a <see cref="ReleasePlan"/>. Pure: the caller has already read
 /// the nupkgs and hashed them.
 /// </summary>
-public static class StagePlanner
+internal static class StagePlanner
 {
     /// <summary>Repository-neutral artifact names consumed by the shared pipeline.</summary>
     public const string PacksArtifactName = "ReleasePacks";

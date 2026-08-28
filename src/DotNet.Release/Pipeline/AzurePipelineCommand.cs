@@ -26,7 +26,7 @@ namespace DotNet.Release;
 /// that artifact.
 /// </para>
 /// </remarks>
-public static class AzurePipelineCommand
+internal static class AzurePipelineCommand
 {
     /// <summary>The resolved BAR build consumed by gather-drop.</summary>
     public const string BarIdVariable = "BarId";

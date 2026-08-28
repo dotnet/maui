@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace DotNet.Release;
 
 /// <summary>What <c>release filter</c> decided to do with one package.</summary>
-public enum PackageDisposition
+internal enum PackageDisposition
 {
     /// <summary>Not on NuGet.org. Its file stays staged and will be pushed.</summary>
     Pending,
@@ -11,14 +11,11 @@ public enum PackageDisposition
     /// <summary>Proven live on NuGet.org. Its file is removed from the push set.</summary>
     AlreadyPublished,
 
-    /// <summary>Matched a recovery filter for a package a previous run already submitted.</summary>
+    /// <summary>Matched a recovery filter for a package already submitted by this release.</summary>
     PreviouslyAttempted,
 }
 
-/// <summary>Whether a given identity is currently resolvable on NuGet.org.</summary>
-public sealed record PackageAvailability(string IdentityKey, bool IsPublished);
-
-public sealed record FilterDecision(
+internal sealed record FilterDecision(
     [property: JsonPropertyName("fileName")] string FileName,
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("normalizedVersion")] string NormalizedVersion,
@@ -32,7 +29,7 @@ public sealed record FilterDecision(
 /// editing the plan to match would invalidate the hash that pins it across the job
 /// boundary. The plan stays immutable; this records what happened to it.
 /// </remarks>
-public sealed record FilterReport
+internal sealed record FilterReport
 {
     [JsonPropertyName("schemaVersion")]
     public int SchemaVersion { get; init; } = 1;
@@ -60,14 +57,14 @@ public sealed record FilterReport
 /// Decides which staged packages still need publishing. Pure: the caller performs the
 /// NuGet.org queries and the file deletions.
 /// </summary>
-public static class FilterPlanner
+internal static class FilterPlanner
 {
     /// <summary>
     /// Plans the filtering of one package set.
     /// </summary>
     /// <param name="set">The set being published.</param>
-    /// <param name="skipPatterns">
-    /// Recovery filters naming packages a previous run already submitted. NuGet.org can
+    /// <param name="recoveryPatterns">
+    /// Recovery filters naming packages already submitted by this release. NuGet.org can
     /// reserve a version and return HTTP 409 before it becomes visible through the
     /// flat-container API, so those packages must be withheld from a second push without
     /// waiting for visibility.
@@ -75,17 +72,17 @@ public static class FilterPlanner
     /// <param name="availability">Availability keyed by <see cref="PlannedPackage.IdentityKey"/>.</param>
     public static Result<FilterReport> Plan(
         ReleasePackageSet set,
-        IReadOnlyList<string> skipPatterns,
+        IReadOnlyList<string> recoveryPatterns,
         IReadOnlyDictionary<string, bool> availability)
     {
         ArgumentNullException.ThrowIfNull(set);
-        ArgumentNullException.ThrowIfNull(skipPatterns);
+        ArgumentNullException.ThrowIfNull(recoveryPatterns);
         ArgumentNullException.ThrowIfNull(availability);
 
         // A recovery filter that matches nothing means the operator mistyped a package name,
         // and silently publishing the package they meant to withhold is the exact failure
         // the filter exists to prevent. So it is an error, not a no-op.
-        var unmatched = skipPatterns
+        var unmatched = recoveryPatterns
             .Where(pattern => !set.Packages.Any(p => PackageGlob.IsMatch(p.FileName, pattern)))
             .ToList();
 
@@ -93,7 +90,7 @@ public static class FilterPlanner
         {
             return Result<FilterReport>.Failure(
                 ErrorCodes.FilterUnmatched,
-                $"Previously attempted package filters matched no expected packages in " +
+                $"Recovery filters matched no expected packages in " +
                 $"'{set.Name}': {string.Join(", ", unmatched)}.");
         }
 
@@ -104,7 +101,7 @@ public static class FilterPlanner
         {
             // Recovery filters are honoured before the feed is consulted, because the whole
             // point is that these packages are not yet visible through the feed.
-            if (skipPatterns.Count > 0 && PackageGlob.IsAnyMatch(package.FileName, skipPatterns))
+            if (recoveryPatterns.Count > 0 && PackageGlob.IsAnyMatch(package.FileName, recoveryPatterns))
             {
                 decisions.Add(Decide(package, PackageDisposition.PreviouslyAttempted));
                 continue;

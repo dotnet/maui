@@ -8,7 +8,7 @@ namespace DotNet.Release;
 /// inconsistent casing, so every comparison in a release must be made on a normalized
 /// form. Normalizing once here removes that decision from every call site.
 /// </remarks>
-public readonly record struct RepositoryId
+internal readonly record struct RepositoryId
 {
     private RepositoryId(string owner, string name)
     {
@@ -119,7 +119,7 @@ public readonly record struct RepositoryId
 }
 
 /// <summary>How a build's repository identity was established.</summary>
-public enum RepositoryOrigin
+internal enum RepositoryOrigin
 {
     /// <summary>BAR recorded a GitHub URL for the build.</summary>
     GitHubRepository,
@@ -129,10 +129,10 @@ public enum RepositoryOrigin
 }
 
 /// <summary>A BAR channel, identified by both name and ID because the release verifies both.</summary>
-public sealed record ChannelReference(string Name, int Id);
+internal sealed record ChannelReference(string Name, int Id);
 
 /// <summary>The subset of a BAR build the release actually depends on.</summary>
-public sealed record BarBuild(
+internal sealed record BarBuild(
     int Id,
     string Commit,
     string? GitHubRepository,

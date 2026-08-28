@@ -86,7 +86,6 @@ internal static class Verbs
     /// </summary>
     public static async Task<int> StageAsync(
         IReleaseConsole console,
-        IPackageIdentityReader reader,
         string policyJson,
         string resolvedPlanJson,
         string dropDirectory,
@@ -96,6 +95,8 @@ internal static class Verbs
         string toolVersion,
         CancellationToken cancellationToken)
     {
+        var reader = new NupkgIdentityReader();
+
         var policy = ReleasePolicy.Parse(policyJson);
         if (policy.IsFailure)
         {
@@ -297,7 +298,7 @@ internal static class Verbs
         IPackageAvailabilityProbe probe,
         string planJson,
         string stageDirectory,
-        IReadOnlyList<string> skipPatterns,
+        IReadOnlyList<string> recoveryPatterns,
         string? expectedPlanHash,
         string? setName,
         CancellationToken cancellationToken)
@@ -337,7 +338,7 @@ internal static class Verbs
 
             var availability = await probe.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
 
-            var report = FilterPlanner.Plan(set, skipPatterns, availability);
+            var report = FilterPlanner.Plan(set, recoveryPatterns, availability);
             if (report.IsFailure)
             {
                 return ConsoleReporting.Fail(console, report.Errors);

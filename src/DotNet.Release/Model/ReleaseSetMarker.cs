@@ -12,7 +12,7 @@ namespace DotNet.Release;
 /// wiring instead of a generic missing-file failure. Package identities remain sourced only
 /// from the hashed release plan, so marker changes can only fail a release.
 /// </remarks>
-public sealed record ReleaseSetMarker
+internal sealed record ReleaseSetMarker
 {
     /// <summary>The marker file name, written beside the staged packages.</summary>
     public const string FileName = "release-set.json";
