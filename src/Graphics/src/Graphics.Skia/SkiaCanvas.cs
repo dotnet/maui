@@ -466,6 +466,13 @@ namespace Microsoft.Maui.Graphics.Skia
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
 				platformPath.Dispose();
 			}
+			else if (Math.Abs(sweep) >= 360)
+			{
+				var platformPath = new SKPath();
+				platformPath.AddArc(rect, startAngle, sweep);
+				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
+				platformPath.Dispose();
+			}
 			else
 			{
 				_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.StrokePaintWithAlpha);

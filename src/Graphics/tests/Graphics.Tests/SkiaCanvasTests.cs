@@ -7,9 +7,25 @@ namespace Microsoft.Maui.Graphics.Tests;
 public class SkiaCanvasTests
 {
 	[Theory]
-	[InlineData(false, -30, -210)]
-	[InlineData(true, -30, 150)]
-	public void DrawArcMatchesPathRendering(bool clockwise, float expectedStartAngle, float expectedSweep)
+	[InlineData(25, 18, 30, 240, false, LineCap.Butt, -30, -210)]
+	[InlineData(25, 18, 30, 240, true, LineCap.Butt, -30, 150)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Butt, 0, -360)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Round, 0, -360)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Square, 0, -360)]
+	[InlineData(25, 18, 360, 0, true, LineCap.Butt, -360, 360)]
+	[InlineData(25, 18, 360, 0, true, LineCap.Round, -360, 360)]
+	[InlineData(25, 18, 360, 0, true, LineCap.Square, -360, 360)]
+	[InlineData(0, 18, 30, 240, false, LineCap.Butt, -30, -210)]
+	[InlineData(25, 0, 30, 240, false, LineCap.Butt, -30, -210)]
+	public void DrawArcMatchesPathRendering(
+		float width,
+		float height,
+		float startAngle,
+		float endAngle,
+		bool clockwise,
+		LineCap lineCap,
+		float expectedStartAngle,
+		float expectedSweep)
 	{
 		using var actual = CreateBitmap();
 		using var expected = CreateBitmap();
@@ -21,16 +37,18 @@ public class SkiaCanvasTests
 			Color = SKColors.Red,
 			IsAntialias = true,
 			IsStroke = true,
+			StrokeCap = GetStrokeCap(lineCap),
 			StrokeMiter = CanvasDefaults.DefaultMiterLimit,
 			StrokeWidth = 3,
 		};
 		using var path = new SKPath();
 
 		canvas.StrokeColor = Colors.Red;
+		canvas.StrokeLineCap = lineCap;
 		canvas.StrokeSize = 3;
-		canvas.DrawArc(5, 7, 25, 18, 30, 240, clockwise, false);
+		canvas.DrawArc(5, 7, width, height, startAngle, endAngle, clockwise, false);
 
-		path.AddArc(new SKRect(5, 7, 30, 25), expectedStartAngle, expectedSweep);
+		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
 		expectedPlatformCanvas.DrawPath(path, paint);
 
 		Assert.Equal(expected.Bytes, actual.Bytes);
@@ -70,4 +88,12 @@ public class SkiaCanvasTests
 		bitmap.Erase(SKColors.Transparent);
 		return bitmap;
 	}
+
+	private static SKStrokeCap GetStrokeCap(LineCap lineCap) =>
+		lineCap switch
+		{
+			LineCap.Round => SKStrokeCap.Round,
+			LineCap.Square => SKStrokeCap.Square,
+			_ => SKStrokeCap.Butt,
+		};
 }
