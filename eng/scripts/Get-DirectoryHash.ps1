@@ -5,9 +5,9 @@ param(
 )
 
 $root = (Resolve-Path -LiteralPath $Path).Path.TrimEnd('\', '/')
-$files = @(Get-ChildItem -LiteralPath $root -File -Recurse)
+$files = @(Get-ChildItem -LiteralPath $root -File -Recurse -Force)
 if ($files.Count -eq 0) {
-    throw "Release tool directory '$root' contains no files."
+    throw "Directory '$root' contains no files."
 }
 
 [string[]] $entries = $files |

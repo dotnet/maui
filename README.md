@@ -18,15 +18,15 @@ Releasing repositories do not change. They are named by parameter.
    |---|---|
    | **GitHub owner** / **GitHub repository** | What to release. Replace the fail-closed `select-repository` sentinel with a repository enabled in `config/repositories.json`. |
    | **Commit** | The full SHA, as registered in BAR. Required. |
-   | **BAR build ID** | Only when direct BAR lookup is needed. Otherwise leave `none`. |
+   | **BAR build ID** | Only when direct BAR lookup is needed. Otherwise leave `skip`. |
    | **PUBLISH to NuGet.org** | **Off by default.** Leave it off for a dry run. |
    | **Promote to workload-set channel** | Workload repositories only. |
-   | Include / exclude filters | Optional package selection; leave `none` when unused. |
-   | Recovery filters | Only when resuming a partially-completed release; leave `none` otherwise. |
+   | Include / exclude filters | Optional package selection; leave `skip` when unused. |
+   | Recovery filters | Only when resuming a partially-completed release; leave `skip` otherwise. |
 
 Azure DevOps runtime parameters cannot be optional and chooses the first allowed value when
 no default exists. The repository therefore defaults to `select-repository`, which policy
-rejects, while optional strings use `none`. The commit has no default and must be entered.
+rejects, while optional strings use `skip`. The commit has no default and must be entered.
 
 3. The run prepares the release and validates the matching package-set jobs.
 4. Review `release-plan.json` in the published artifact — it lists every package that will be

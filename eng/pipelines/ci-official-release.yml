@@ -59,9 +59,9 @@ parameters:
   type: string
 
 - name: barBuildId
-  displayName: "[OPTIONAL] BAR build ID, or 'none'"
+  displayName: "[OPTIONAL] BAR build ID, or 'skip'"
   type: string
-  default: none
+  default: skip
 
 # ---- what to actually do --------------------------------------------------------------------
 - name: publishPackages
@@ -76,19 +76,19 @@ parameters:
 
 # ---- selection and recovery -----------------------------------------------------------------
 - name: includeFilters
-  displayName: "[OPTIONAL] Semicolon-separated package file filters to include, or 'none'"
+  displayName: "[OPTIONAL] Semicolon-separated package file filters to include, or 'skip'"
   type: string
-  default: none
+  default: skip
 
 - name: excludeFilters
-  displayName: "[OPTIONAL] Semicolon-separated package file filters to exclude, or 'none'"
+  displayName: "[OPTIONAL] Semicolon-separated package file filters to exclude, or 'skip'"
   type: string
-  default: none
+  default: skip
 
 - name: recoveryFilters
-  displayName: "[RECOVERY] Packages already submitted to NuGet.org, or 'none'"
+  displayName: "[RECOVERY] Packages already submitted to NuGet.org, or 'skip'"
   type: string
-  default: none
+  default: skip
 
 # ---- infrastructure --------------------------------------------------------------------------
 - name: pool
@@ -160,6 +160,25 @@ extends:
           inputs:
             useGlobalJson: true
 
+        - pwsh: |
+            . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
+            $installedDarc = Get-Darc
+            if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $installedDarc -PathType Leaf)) {
+              throw 'Arcade failed to install the Darc CLI.'
+            }
+
+            $darcDirectory = "$(Build.ArtifactStagingDirectory)/_darc"
+            New-Item -ItemType Directory -Path $darcDirectory -Force | Out-Null
+            Get-ChildItem -LiteralPath (Split-Path -Parent $installedDarc) -Force |
+              Copy-Item -Destination $darcDirectory -Recurse -Force
+            $darcPath = Join-Path $darcDirectory 'darc.exe'
+            $darcHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+              -Path $darcDirectory
+            Write-Host "##vso[task.setvariable variable=DarcPath]$darcPath"
+            Write-Host "##vso[task.setvariable variable=DarcHash;isOutput=true]$darcHash"
+          name: installDarc
+          displayName: Install Darc through Arcade
+
         # Build once before any task acquires the Maestro production identity. Publish jobs
         # execute this exact tool directory from the immutable Release artifact without rebuilding.
         - pwsh: |
@@ -170,7 +189,7 @@ extends:
             if ($LASTEXITCODE -ne 0) { throw 'Failed to build the release tool.' }
 
             $toolPath = Join-Path $toolDirectory 'release.dll'
-            $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-ReleaseToolHash.ps1" `
+            $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
               -Path $toolDirectory
             Write-Host "##vso[task.setvariable variable=ToolPath]$toolPath"
             Write-Host "##vso[task.setvariable variable=ToolHash;isOutput=true]$toolHash"
@@ -194,7 +213,7 @@ extends:
               }
 
               $barId = @()
-              if ($env:BAR_BUILD_ID -ne 'none') {
+              if ($env:BAR_BUILD_ID -ne 'skip') {
                 if ($env:BAR_BUILD_ID -notmatch '^[0-9]+$') {
                   throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
                 }
@@ -231,7 +250,7 @@ extends:
             # darc owns feed discovery, authentication, retries and --include-released.
             # Invoked here so Azure DevOps owns the exit code and --verbose lands in this log.
             inlineScript: |
-              darc gather-drop --ci `
+              & "$env:DARC_PATH" gather-drop --ci `
                 --id $(releasePlan.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $env:AZDO_TOKEN `
@@ -241,15 +260,16 @@ extends:
               if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
           env:
             AZDO_TOKEN: $(System.AccessToken)
+            DARC_PATH: $(DarcPath)
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
 
             $filters = @()
-            if ($env:INCLUDE_FILTERS -ne 'none') {
+            if ($env:INCLUDE_FILTERS -ne 'skip') {
               $filters += @('--include', $env:INCLUDE_FILTERS)
             }
-            if ($env:EXCLUDE_FILTERS -ne 'none') {
+            if ($env:EXCLUDE_FILTERS -ne 'skip') {
               $filters += @('--exclude', $env:EXCLUDE_FILTERS)
             }
 
@@ -336,6 +356,7 @@ extends:
           condition: eq(dependencies.promote_approval.result, 'Succeeded')
           variables:
             ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+            DarcHash: $[ stageDependencies.prepare_release.prepare_release.outputs['installDarc.DarcHash'] ]
           templateContext:
             inputs:
             - input: pipelineArtifact
@@ -346,15 +367,28 @@ extends:
             clean: true
             persistCredentials: false
 
+          - task: UseDotNet@2
+            displayName: Install the .NET SDK
+            inputs:
+              useGlobalJson: true
+
           - pwsh: |
               $planPath = "$(Pipeline.Workspace)/Release/release-plan.json"
               $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
               if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
                 throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
               }
+
+              $darcDirectory = "$(Pipeline.Workspace)/Release/_darc"
+              $darcHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+                -Path $darcDirectory
+              if ($darcHash -ne $env:EXPECTED_DARC_HASH) {
+                throw "Darc hash '$darcHash' does not match the prepared hash '$env:EXPECTED_DARC_HASH'."
+              }
             displayName: Verify release plan integrity
             env:
               EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+              EXPECTED_DARC_HASH: $(DarcHash)
 
           - task: AzureCLI@2
             displayName: Add build to channel
@@ -365,7 +399,7 @@ extends:
               # Channel and feed are read from the plan, so there is one source of truth.
               inlineScript: |
                 $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
-                darc add-build-to-channel --ci `
+                & "$env:DARC_PATH" add-build-to-channel --ci `
                   --channel "$($plan.workloadSet.channel)" `
                   --id "$($plan.source.barBuildId)" `
                   --skip-assets-publishing `
@@ -373,6 +407,7 @@ extends:
                 if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
             env:
               AZDO_TOKEN: $(System.AccessToken)
+              DARC_PATH: $(Pipeline.Workspace)/Release/_darc/darc.exe
 
     # -----------------------------------------------------------------------------------------
     # Validate the package-set jobs and artifact wiring on every run. The internal template
@@ -423,8 +458,8 @@ extends:
     # otherwise-green result into a failure.
     - stage: fail_if_no_release_topology
       displayName: Validate release topology
-      dependsOn: [publish_packs, publish_manifests, publish_packages]
-      condition: and(always(), eq(dependencies.publish_packs.result, 'Skipped'), eq(dependencies.publish_manifests.result, 'Skipped'), eq(dependencies.publish_packages.result, 'Skipped'))
+      dependsOn: [prepare_release, publish_packs, publish_manifests, publish_packages]
+      condition: and(always(), eq(dependencies.prepare_release.result, 'Succeeded'), eq(dependencies.publish_packs.result, 'Skipped'), eq(dependencies.publish_manifests.result, 'Skipped'), eq(dependencies.publish_packages.result, 'Skipped'))
       jobs:
       - job: fail
         steps:

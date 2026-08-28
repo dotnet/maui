@@ -44,7 +44,7 @@ parameters:
 
 - name: recoveryFilters
   type: string
-  default: none
+  default: skip
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -89,7 +89,7 @@ stages:
           throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
         }
 
-        $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-ReleaseToolHash.ps1" `
+        $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
           -Path (Split-Path -Parent $toolPath)
         if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
           throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
@@ -103,7 +103,7 @@ stages:
         $ErrorActionPreference = 'Stop'
 
         $recovery = @()
-        if ($env:RECOVERY_FILTERS -ne 'none') {
+        if ($env:RECOVERY_FILTERS -ne 'skip') {
           $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
         }
 
@@ -180,7 +180,7 @@ stages:
             throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
           }
 
-          $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-ReleaseToolHash.ps1" `
+          $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
             -Path (Split-Path -Parent $toolPath)
           if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
             throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
@@ -196,7 +196,7 @@ stages:
           $ErrorActionPreference = 'Stop'
 
           $recovery = @()
-          if ($env:RECOVERY_FILTERS -ne 'none') {
+          if ($env:RECOVERY_FILTERS -ne 'skip') {
             $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
           }
 

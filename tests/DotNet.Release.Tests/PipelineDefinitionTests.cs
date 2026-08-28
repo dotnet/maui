@@ -196,9 +196,9 @@ public class PipelineDefinitionTests
     [InlineData("includeFilters")]
     [InlineData("excludeFilters")]
     [InlineData("recoveryFilters")]
-    public void Optional_string_parameters_use_an_explicit_none_sentinel(string parameter)
+    public void Optional_string_parameters_use_the_established_skip_sentinel(string parameter)
     {
-        Assert.Equal("none", ((YamlScalarNode)Parameter(parameter)["default"]).Value);
+        Assert.Equal("skip", ((YamlScalarNode)Parameter(parameter)["default"]).Value);
     }
 
     [Fact]
@@ -208,12 +208,12 @@ public class PipelineDefinitionTests
         var publish = File.ReadAllText(
             Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        Assert.Contains("$env:BAR_BUILD_ID -ne 'none'", root, StringComparison.Ordinal);
-        Assert.Contains("$env:INCLUDE_FILTERS -ne 'none'", root, StringComparison.Ordinal);
-        Assert.Contains("$env:EXCLUDE_FILTERS -ne 'none'", root, StringComparison.Ordinal);
+        Assert.Contains("$env:BAR_BUILD_ID -ne 'skip'", root, StringComparison.Ordinal);
+        Assert.Contains("$env:INCLUDE_FILTERS -ne 'skip'", root, StringComparison.Ordinal);
+        Assert.Contains("$env:EXCLUDE_FILTERS -ne 'skip'", root, StringComparison.Ordinal);
         Assert.Equal(
             2,
-            Regex.Matches(publish, @"\$env:RECOVERY_FILTERS -ne 'none'").Count);
+            Regex.Matches(publish, @"\$env:RECOVERY_FILTERS -ne 'skip'").Count);
     }
 
     [Fact]
@@ -292,10 +292,10 @@ public class PipelineDefinitionTests
         Assert.Contains("$(Build.ArtifactStagingDirectory)/_tool", root, StringComparison.Ordinal);
         Assert.Contains("buildTool.ToolHash", publish, StringComparison.Ordinal);
         Assert.Contains("_tool/release.dll", publish, StringComparison.Ordinal);
-        Assert.Contains("Get-ReleaseToolHash.ps1", root, StringComparison.Ordinal);
+        Assert.Contains("Get-DirectoryHash.ps1", root, StringComparison.Ordinal);
         Assert.Equal(
             2,
-            Regex.Matches(publish, "Get-ReleaseToolHash.ps1", RegexOptions.CultureInvariant).Count);
+            Regex.Matches(publish, "Get-DirectoryHash.ps1", RegexOptions.CultureInvariant).Count);
         Assert.DoesNotContain(
             "Get-FileHash -LiteralPath $toolPath",
             root + publish,
@@ -611,6 +611,7 @@ public class PipelineDefinitionTests
         Assert.Contains("dependencies.publish_packs.result, 'Skipped'", text, StringComparison.Ordinal);
         Assert.Contains("dependencies.publish_manifests.result, 'Skipped'", text, StringComparison.Ordinal);
         Assert.Contains("dependencies.publish_packages.result, 'Skipped'", text, StringComparison.Ordinal);
+        Assert.Contains("dependencies.prepare_release.result, 'Succeeded'", text, StringComparison.Ordinal);
         Assert.Contains("No package-set stage ran", text, StringComparison.Ordinal);
     }
 
@@ -707,15 +708,27 @@ public class PipelineDefinitionTests
                 condition.Contains("parameters.promoteWorkloadSet, true", StringComparison.Ordinal));
     }
 
-    /// <summary>The pipeline uses the Darc CLI installed on the agent image.</summary>
+    /// <summary>Arcade provisions Darc, then the pipeline carries and invokes its exact bytes.</summary>
     [Fact]
-    public void Darc_is_invoked_directly()
+    public void Darc_is_provisioned_by_Arcade_and_carried_in_the_release_artifact()
     {
         var pipeline = File.ReadAllText(PipelinePath);
+        var globalJson = File.ReadAllText(Path.Combine(RepoRoot, "global.json"));
+        var versionDetails = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
 
-        Assert.Contains("darc gather-drop", pipeline, StringComparison.Ordinal);
-        Assert.Contains("darc add-build-to-channel", pipeline, StringComparison.Ordinal);
-        Assert.DoesNotContain("Get-Darc", pipeline, StringComparison.Ordinal);
-        Assert.DoesNotContain("DarcVersion", pipeline, StringComparison.Ordinal);
+        Assert.Contains("eng/common/tools.ps1", pipeline, StringComparison.Ordinal);
+        Assert.Contains("$installedDarc = Get-Darc", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("Get-Darc $", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"darc\"", globalJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("Microsoft.DotNet.Darc", versionDetails, StringComparison.Ordinal);
+        Assert.Contains("name: installDarc", pipeline, StringComparison.Ordinal);
+        Assert.Contains("installDarc.DarcHash", pipeline, StringComparison.Ordinal);
+        Assert.True(
+            pipeline.IndexOf("$installedDarc = Get-Darc", StringComparison.Ordinal) <
+            pipeline.IndexOf("azureSubscription:", StringComparison.Ordinal));
+        Assert.Contains("& \"$env:DARC_PATH\" gather-drop", pipeline, StringComparison.Ordinal);
+        Assert.Contains("& \"$env:DARC_PATH\" add-build-to-channel", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("\n              darc gather-drop", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("\n                darc add-build-to-channel", pipeline, StringComparison.Ordinal);
     }
 }

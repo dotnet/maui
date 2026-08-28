@@ -209,18 +209,18 @@ production adapters directly.
 | `ghOwner` | yes | `dotnet` | GitHub repository owner |
 | `ghRepo` | yes | `select-repository` | Fail-closed sentinel that the operator replaces with an enabled repository |
 | `commitHash` | yes | none | Exact full commit registered in BAR |
-| `barBuildId` | no | `none` | Direct BAR lookup when commit lookup is insufficient |
+| `barBuildId` | no | `skip` | Direct BAR lookup when commit lookup is insufficient |
 | `publishPackages` | yes | `false` | Include gated NuGet.org jobs in matching set stages |
 | `promoteWorkloadSet` | yes | `false` | Emit the gated BAR channel-promotion stage |
-| `includeFilters` | no | `none` | Semicolon-separated package filename globs |
-| `excludeFilters` | no | `none` | Semicolon-separated package filename globs |
-| `recoveryFilters` | no | `none` | Packages already submitted by this release |
+| `includeFilters` | no | `skip` | Semicolon-separated package filename globs |
+| `excludeFilters` | no | `skip` | Semicolon-separated package filename globs |
+| `recoveryFilters` | no | `skip` | Packages already submitted by this release |
 | `pool` | infrastructure | internal Windows pool | Agent pool definition |
 
 Azure DevOps runtime parameters cannot be optional. An omitted parameter either uses a
 default or, for an allowed-values list, silently selects its first value. Explicit sentinels
 make that platform behavior visible and safe: `select-repository` fails repository policy,
-and `none` is normalized to no optional argument before the CLI is invoked.
+and `skip` is normalized to no optional argument before the CLI is invoked.
 
 Runs are tagged `DRY-RUN` or `PUBLISH`.
 
@@ -236,6 +236,7 @@ The prepare stage always runs, including on a dry run:
 ```
 checkout release-system source
   -> install pinned .NET SDK
+  -> install and pin Release/_darc
   -> build and pin Release/_tool
   -> release plan
   -> darc gather-drop
@@ -433,8 +434,12 @@ darc gather-drop
 The asset filter selects slash-free package assets and excludes symbol and other
 path-shaped blob assets.
 
-The pipeline invokes the Darc CLI installed on the agent image. `gather-drop` reads BAR and
-repository metadata and downloads package assets to the agent.
+The pipeline uses Arcade's `Get-Darc` helper from `eng/common/tools.ps1`. Arcade's
+`darc-init.ps1` asks Maestro's Darc-version endpoint for the current supported version and
+installs it from `dotnet-eng`; no Darc version is duplicated in this repository's YAML or
+dependency files. The pipeline copies the resolved tool into the immutable `Release`
+artifact before acquiring the Maestro identity. `gather-drop` executes that exact path to
+read BAR and repository metadata and download package assets to the agent.
 `--include-released` permits downloading a build already marked released; it does not
 change release state.
 
@@ -545,6 +550,9 @@ The artifact layout is:
 ```
 Release/
   release-plan.json
+  _darc/
+    darc.exe
+    <runtime dependencies>
   _tool/
     release.dll
     release.deps.json
@@ -582,13 +590,15 @@ only fail the release; it cannot cause a different package to publish.
 
 The prepare stage:
 
-1. builds the C# project into `Release/_tool`;
-2. computes a deterministic hash over every file and relative path in `_tool` as `ToolHash`;
-3. executes `_tool/release.dll` for `plan` and `stage`;
-4. records every package SHA-256 in the plan;
-5. writes one authoritative plan into the release artifact root;
-6. computes the plan hash independently with `Get-FileHash`;
-7. exports `ToolHash` and `ReleasePlanHash`.
+1. installs the Arcade/Maestro-selected Darc CLI into `Release/_darc`;
+2. computes a deterministic hash over every file and relative path in `_darc` as `DarcHash`;
+3. builds the C# project into `Release/_tool`;
+4. computes the same directory hash over `_tool` as `ToolHash`;
+5. executes `_tool/release.dll` for `plan` and `stage`;
+6. records every package SHA-256 in the plan;
+7. writes one authoritative plan into the release artifact root;
+8. computes the plan hash independently with `Get-FileHash`;
+9. exports `DarcHash`, `ToolHash`, and `ReleasePlanHash`.
 
 The publish job:
 
@@ -754,7 +764,7 @@ Tests MUST fail when:
 - BAR promotion is not nested beneath both publish and promotion opt-ins;
 - queue-time parameters appear in executable PowerShell text;
 - the NuGet.org task, connection, or known push mechanisms appear in the root dry-run graph;
-- Darc calls do not use the installed agent command;
+- Darc is not installed, pinned, carried, hashed, and invoked by exact path;
 - `ManualValidation@0` is not an agentless predecessor of the mutating job;
 - pack/manifests stage ordering is broken;
 - the tool references NuGet's push API;
