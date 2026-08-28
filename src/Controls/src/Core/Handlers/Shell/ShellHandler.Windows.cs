@@ -142,11 +142,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view)
 		{
+			if (handler.PlatformView is null)
+				return;
+
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			if (handler?.PlatformView is not null && provider is not null)
-			{
-				handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget();
-			}
+			handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget();
 		}
 
 		public static void MapFlyoutIcon(ShellHandler handler, Shell view)
