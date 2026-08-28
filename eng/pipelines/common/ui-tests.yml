@@ -406,7 +406,6 @@ stages:
                           headless: ${{ parameters.headless }}
                           testConfigurationArgs: "CollectionView1"
                           skipProvisioning: ${{ parameters.skipProvisioning }}
-                      
                       # Collect and publish iOS CV1 snapshot diffs
                       - template: ui-tests-collect-snapshot-diffs.yml
                         parameters:
