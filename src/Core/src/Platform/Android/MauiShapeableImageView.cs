@@ -6,7 +6,7 @@ using Google.Android.Material.ImageView;
 namespace Microsoft.Maui.Platform
 {
 	/// <summary>
-	/// A <see cref="ShapeableImageView"/> that applies the .NET MAUI Material theme and normalizes padding during measurement.
+	/// A <see cref="ShapeableImageView"/> that applies the .NET MAUI Material 3 theme when enabled and normalizes padding during measurement.
 	/// </summary>
 	public class MauiShapeableImageView : ShapeableImageView
 	{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
 		/// </summary>
 		/// <param name="context">The Android context for the view.</param>
-		public MauiShapeableImageView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+		public MauiShapeableImageView(Context? context) : base(GetThemedContext(context))
 		{
 		}
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="context">The Android context for the view.</param>
 		/// <param name="attrs">The attributes for the view.</param>
-		public MauiShapeableImageView(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(GetThemedContext(context), attrs)
 		{
 		}
 
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 		/// <param name="context">The Android context for the view.</param>
 		/// <param name="attrs">The attributes for the view.</param>
 		/// <param name="defStyle">The default style attribute for the view.</param>
-		public MauiShapeableImageView(Context context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyle)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(GetThemedContext(context), attrs, defStyle)
 		{
 		}
 
@@ -44,6 +44,14 @@ namespace Microsoft.Maui.Platform
 		/// <param name="transfer">The ownership transfer behavior for the JNI reference.</param>
 		protected MauiShapeableImageView(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+		}
+
+		static Context? GetThemedContext(Context? context)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled || context is null)
+				return context;
+
+			return MauiMaterialContextThemeWrapper.Create(context);
 		}
 
 		/// <inheritdoc />
