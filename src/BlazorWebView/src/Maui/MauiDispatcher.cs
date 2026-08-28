@@ -18,24 +18,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return !_dispatcher.IsDispatchRequired;
 		}
 
-		public override Task InvokeAsync(Action workItem)
+		public override async Task InvokeAsync(Action workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			await _dispatcher.DispatchAsync(workItem).ConfigureAwait(false);
 		}
 
-		public override Task InvokeAsync(Func<Task> workItem)
+		public override async Task InvokeAsync(Func<Task> workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			await _dispatcher.DispatchAsync(workItem).ConfigureAwait(false);
 		}
 
-		public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
+		public override async Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			return await _dispatcher.DispatchAsync(workItem).ConfigureAwait(false);
 		}
 
-		public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
+		public override async Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
 		{
-			return _dispatcher.DispatchAsync(workItem);
+			return await _dispatcher.DispatchAsync(workItem).ConfigureAwait(false);
 		}
 	}
 }
