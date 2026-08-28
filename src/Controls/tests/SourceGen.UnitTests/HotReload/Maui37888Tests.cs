@@ -40,6 +40,62 @@ public class Maui37888Tests
 		}
 	}
 
+	[Fact]
+	public void NullConvertedResource_GuardsComponentRegistration()
+	{
+		const string rootClass = "TestMaui37888.NullResources";
+		const string codeBehind = """
+			using System;
+			using System.ComponentModel;
+			using System.Globalization;
+
+			namespace TestMaui37888;
+
+			[TypeConverter(typeof(NullResourceConverter))]
+			public sealed class NullResource
+			{
+			}
+
+			public sealed class NullResourceConverter : TypeConverter
+			{
+				public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
+					sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+
+				public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) =>
+					null;
+			}
+
+			public partial class NullResources : global::Microsoft.Maui.Controls.ResourceDictionary
+			{
+				private partial void InitializeComponent();
+
+				public NullResources() => InitializeComponent();
+			}
+			""";
+
+		string Xaml(string value) => $$"""
+			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			                    xmlns:local="clr-namespace:TestMaui37888"
+			                    x:Class="{{rootClass}}">
+			  <local:NullResource x:Key="NullResource">{{value}}</local:NullResource>
+			  <x:String x:Key="FollowingResource">{{value}}</x:String>
+			</ResourceDictionary>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(NullConvertedResource_GuardsComponentRegistration),
+			rootClass,
+			codeBehind);
+		var generation = harness.Generate(Xaml("V0"), Xaml("V1"));
+		var updateComponentSource = generation[1].UpdateComponentSource;
+
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("if (__uc_0 is not null)", updateComponentSource, StringComparison.Ordinal);
+		Assert.Contains("this[\"FollowingResource\"] = __uc_1;", updateComponentSource, StringComparison.Ordinal);
+		harness.Compile(generation[1]);
+	}
+
 	static void VerifyInlineApplicationResourceUpdate()
 	{
 		const string rootClass = "TestMaui37888.App";

@@ -1049,7 +1049,10 @@ static class UpdateComponentCodeWriter
 
 		codeWriter.WriteLine($"var {varName} = {valueExpression};");
 		codeWriter.WriteLine($"this[\"{EscapeString(key)}\"] = {varName};");
+		codeWriter.WriteLine($"if ({varName} is not null)");
+		codeWriter.Indent++;
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeDiff.NodeId}\", {varName});");
+		codeWriter.Indent--;
 		return true;
 	}
 

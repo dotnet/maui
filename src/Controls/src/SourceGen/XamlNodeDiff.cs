@@ -693,7 +693,7 @@ static class XamlNodeDiff
 	/// Diffs the <see cref="ElementNode.Properties"/> dictionaries of two nodes.
 	/// All property changes are recorded — simple <see cref="ValueNode"/> values, markup extensions,
 	/// and nested elements alike. Only changes to codegen-sensitive <c>x:</c> properties
-	/// (e.g. <c>x:Name</c>, <c>x:Class</c>) trigger structural fallback.
+	/// (e.g. <c>x:Name</c>, <c>x:Class</c>, <c>x:Key</c>) trigger structural fallback.
 	/// When <paramref name="forceBindingRefresh"/> is <see langword="true"/>, all binding MarkupNode
 	/// properties are treated as changed even if the markup string is identical — this propagates
 	/// <c>x:DataType</c> changes from ancestor nodes.
@@ -813,6 +813,7 @@ static class XamlNodeDiff
 			case "FieldModifier":
 			case "TypeArguments":
 			case "FactoryMethod":
+			case "Key":
 				return true;
 			default:
 				return false;
