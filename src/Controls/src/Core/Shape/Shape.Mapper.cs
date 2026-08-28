@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Threading;
 using System.Text;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
@@ -11,15 +10,16 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Shape
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
-			ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
+		static void RemapForControlsOnce()
+		{
+			ShapeViewHandler.Mapper.ReplaceMappingForControls<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
 		}
 	}
 }

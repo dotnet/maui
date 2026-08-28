@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -12,14 +11,16 @@ namespace Microsoft.Maui.Controls
 	{
 		void IControlsMapperRemappable.RemapForControls() => RemapForControls();
 
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal virtual void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
+			s_remappedForControls.InvokeOnce();
+		}
 
-			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
-			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);
+		static void RemapForControlsOnce()
+		{
+			ViewHandler.ViewMapper.ReplaceMappingForControls<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
+			ViewHandler.ViewMapper.ReplaceMappingForControls<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);
 		}
 	}
 }

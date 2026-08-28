@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 #if IOS || MACCATALYST
@@ -11,29 +10,30 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
+		static void RemapForControlsOnce()
+		{
 			// Adjust the mappings to preserve Controls.NavigationPage legacy behaviors
 #if IOS || MACCATALYST
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName, MapPrefersLargeTitles);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(Page.TitleProperty.PropertyName, MapTitle);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(NavigationPage.BarBackgroundColorProperty.PropertyName, MapBarBackground);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(NavigationPage.BarBackgroundProperty.PropertyName, MapBarBackground);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(NavigationPage.BarTextColorProperty.PropertyName, MapBarTextColor);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.HideNavigationBarSeparatorProperty.PropertyName, MapHideNavigationBarSeparator);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.StatusBarTextColorModeProperty.PropertyName, MapStatusBarTextColorMode);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersStatusBarHidden);
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName, MapPreferredStatusBarUpdateAnimation);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName, MapPrefersLargeTitles);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(Page.TitleProperty.PropertyName, MapTitle);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(NavigationPage.BarBackgroundColorProperty.PropertyName, MapBarBackground);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(NavigationPage.BarBackgroundProperty.PropertyName, MapBarBackground);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(NavigationPage.BarTextColorProperty.PropertyName, MapBarTextColor);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.HideNavigationBarSeparatorProperty.PropertyName, MapHideNavigationBarSeparator);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.StatusBarTextColorModeProperty.PropertyName, MapStatusBarTextColorMode);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersStatusBarHidden);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName, MapPreferredStatusBarUpdateAnimation);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName, MapIsNavigationBarTranslucent);
+			NavigationViewHandler.Mapper.ReplaceMappingForControls<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName, MapIsNavigationBarTranslucent);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			// Wire all Controls-layer integration in one place.

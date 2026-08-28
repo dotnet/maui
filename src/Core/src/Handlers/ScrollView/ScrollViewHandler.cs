@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 #if __IOS__
 			[nameof(IScrollView.IsEnabled)] = MapIsEnabled,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IScrollView, IScrollViewHandler> CommandMapper = new(ViewCommandMapper)
 		{

@@ -15,7 +15,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 	ColorStateList? _defaultHintTextColors;
 
 	public static PropertyMapper<IEntry, EntryHandler2> Mapper =
-	  new(ViewMapper)
+	  new PropertyMapper<IEntry, EntryHandler2>(ViewMapper)
 	  {
 		  [nameof(IEntry.Background)] = MapBackground,
 		  [nameof(IEntry.Text)] = MapText,
@@ -37,13 +37,13 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		  [nameof(IEntry.SelectionLength)] = MapSelectionLength,
 		  [nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 		  [nameof(IView.FlowDirection)] = MapFlowDirection,
-	  };
+	  }.WithFrameworkMappingsSealed();
 
 	public static CommandMapper<IEntry, EntryHandler2> CommandMapper =
-	  new(ViewCommandMapper)
+	  new CommandMapper<IEntry, EntryHandler2>(ViewCommandMapper)
 	  {
 		  [nameof(IEntry.Focus)] = MapFocus
-	  };
+	  }.WithFrameworkMappingsSealed();
 
 	public EntryHandler2() : base(Mapper, CommandMapper)
 	{

@@ -46,6 +46,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(typeof(ButtonHandlerStub), specificHandler.GetType());
 		}
 
+		[Fact]
+		public void TryAddHandlerDoesNotReplaceEnabledElementHandlerDefault()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<Button, ButtonHandlerStub>())
+				.UseMauiApp<ApplicationStub>()
+				.Build();
+
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<ButtonHandler>(handlers.GetHandler(typeof(Button)));
+		}
+
+		[Fact]
+		public void TryAddHandlerRegistersDerivedTypeWithoutDirectElementHandlerDefault()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<FancyButton, ButtonHandlerStub>())
+				.UseMauiApp<ApplicationStub>()
+				.Build();
+
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<ButtonHandlerStub>(handlers.GetHandler(typeof(FancyButton)));
+		}
+
+		[Fact]
+		public void TryAddHandlerRegistersWhenElementHandlerDefaultsAreDisabled()
+		{
+			var mauiApp = MauiApp.CreateBuilder(useDefaults: false)
+				.ConfigureMauiHandlers(handlers => handlers.TryAddHandler<Button, ButtonHandlerStub>())
+				.Build();
+
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<ButtonHandlerStub>(handlers.GetHandler(typeof(Button)));
+		}
+
 		[Theory]
 		[MemberData(nameof(BuiltInHandlerTypes))]
 		public void VariousControlsGetCorrectHandler(Type viewType, Type handlerType)

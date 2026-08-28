@@ -42,14 +42,14 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength
-		};
+		}.WithFrameworkMappingsSealed();
 
-		public static CommandMapper<IEntry, IEntryHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IEntry, IEntryHandler> CommandMapper = new CommandMapper<IEntry, IEntryHandler>(ViewCommandMapper)
 		{
 #if ANDROID
 			[nameof(IEntry.Focus)] = MapFocus
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public EntryHandler() : this(Mapper)
 		{

@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
-		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new();
-		readonly ConcurrentDictionary<Type, ElementHandlerAttribute?> _elementHandlerAttributeCache = new();
+		readonly ConcurrentDictionary<Type, Lazy<Type?>> _serviceCache = new();
+		readonly ConcurrentDictionary<Type, Lazy<ElementHandlerAttributeResolution>> _elementHandlerAttributeCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -29,23 +29,29 @@ namespace Microsoft.Maui.Hosting.Internal
 				return exactHandler;
 			}
 
-			// 2. Assignable DI registration. This preserves base/interface override behavior, e.g.
-			// AddHandler<Button, CustomButtonHandler>() must also win for FancyButton : Button
-			// instead of falling through to Button's inherited ElementHandler attribute.
+			// 2. A handler declared directly on the requested type preserves the historical
+			// precedence of an exact built-in registration over assignable registrations.
+			if (TryGetDirectElementHandlerAttribute(type, out var directElementHandlerAttribute))
+			{
+				return CreateAttributeHandler(type, directElementHandlerAttribute);
+			}
+
+			// 3. Assignable DI registration. AddHandler<Button, CustomButtonHandler>() still
+			// applies to FancyButton when FancyButton does not declare its own handler.
 			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
 				&& GetService(serviceType) is IElementHandler assignedHandler)
 			{
 				return assignedHandler;
 			}
 
-			// 3. ElementHandler attribute. Built-in controls use this as their trimmable default
-			// when no user DI registration overrides the view type.
-			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
+			// 4. An inherited ElementHandler attribute is the trimmable fallback for derived
+			// types that do not declare or register their own handler.
+			if (TryGetInheritedElementHandlerAttribute(type, out var inheritedElementHandlerAttribute))
 			{
-				return CreateAttributeHandler(type, elementHandlerAttribute);
+				return CreateAttributeHandler(type, inheritedElementHandlerAttribute);
 			}
 
-			// 4. ContentView fallback
+			// 5. ContentView fallback
 			if (typeof(IContentView).IsAssignableFrom(type))
 			{
 				return new ContentViewHandler();
@@ -60,23 +66,26 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
-			if (TryGetRegisteredHandlerType(iview, out Type? type))
+			// An exact registration always wins, even when a factory registration has no
+			// implementation type for this API to report.
+			if (InternalCollection.TryGetService(iview, out ServiceDescriptor? exactDescriptor))
 			{
-				return type;
+				return exactDescriptor?.ImplementationType;
 			}
 
-			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& TryGetRegisteredHandlerType(serviceType, out type))
+			if (TryGetDirectElementHandlerAttribute(iview, out var directElementHandlerAttribute))
 			{
-				return type;
+				return GetValidatedHandlerType(iview, directElementHandlerAttribute);
 			}
 
-			// Keep GetHandlerType in the same order as GetHandler so injection fallback paths see
-			// the user-registered override type instead of the inherited ElementHandler default.
-			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType)
 			{
-				return GetValidatedHandlerType(iview, elementHandlerAttribute);
+				return TryGetRegisteredHandlerType(serviceType, out Type? type) ? type : null;
+			}
+
+			if (TryGetInheritedElementHandlerAttribute(iview, out var inheritedElementHandlerAttribute))
+			{
+				return GetValidatedHandlerType(iview, inheritedElementHandlerAttribute);
 			}
 
 			// ContentViewHandler is the default/fallback handler for any IContentView
@@ -101,34 +110,51 @@ namespace Microsoft.Maui.Hosting.Internal
 			return false;
 		}
 
-		private bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
+		private bool TryGetDirectElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			elementHandlerAttribute = _elementHandlerAttributeCache.GetOrAdd(viewType, static type => FindElementHandlerAttribute(type));
+			elementHandlerAttribute = GetElementHandlerAttributeResolution(viewType).Direct;
 			return elementHandlerAttribute is not null;
 		}
 
-		private static ElementHandlerAttribute? FindElementHandlerAttribute(Type viewType)
+		private bool TryGetInheritedElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			Type? type = viewType;
+			elementHandlerAttribute = GetElementHandlerAttributeResolution(viewType).Inherited;
+			return elementHandlerAttribute is not null;
+		}
+
+		private ElementHandlerAttributeResolution GetElementHandlerAttributeResolution(Type viewType) =>
+			_elementHandlerAttributeCache.GetOrAdd(
+				viewType,
+				static type => new Lazy<ElementHandlerAttributeResolution>(
+					() => FindElementHandlerAttributes(type))).Value;
+
+		private static ElementHandlerAttributeResolution FindElementHandlerAttributes(Type viewType)
+		{
+			var direct = viewType.GetCustomAttribute<ElementHandlerAttribute>(inherit: false);
+			Type? type = viewType.BaseType;
 
 			while (type is not null)
 			{
 				var elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>(inherit: false);
 				if (elementHandlerAttribute is not null)
 				{
-					return elementHandlerAttribute;
+					return new(direct, elementHandlerAttribute);
 				}
 
 				type = type.BaseType;
 			}
 
-			return null;
+			return new(direct, null);
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
-			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
+			=> _serviceCache.GetOrAdd(
+				type,
+				static (viewType, serviceTypes) => new Lazy<Type?>(
+					() => serviceTypes.ResolveVirtualViewToRegisteredHandlerServiceType(viewType)),
+				_registeredHandlerServiceTypeSet).Value;
 
 		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
 		{
@@ -162,5 +188,9 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			return handlerType;
 		}
+
+		private readonly record struct ElementHandlerAttributeResolution(
+			ElementHandlerAttribute? Direct,
+			ElementHandlerAttribute? Inherited);
 	}
 }

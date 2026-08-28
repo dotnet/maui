@@ -1,6 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
 using System.Text;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -11,30 +10,31 @@ namespace Microsoft.Maui.Controls
 	public partial class Button
 	{
 		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
+		static void RemapForControlsOnce()
+		{
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
 #if IOS
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Padding), MapPadding);
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(BorderWidth), MapBorderWidth);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(Padding), MapPadding);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(BorderWidth), MapBorderWidth);
 #endif
 #if ANDROID
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty.PropertyName, MapRippleColor);
-			ButtonHandler.Mapper.AppendToMapping<Button, IButtonHandler>(nameof(Background), MapRippleColor);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty.PropertyName, MapRippleColor);
+			ButtonHandler.Mapper.AppendToMappingForControls<Button, IButtonHandler>(nameof(Background), MapRippleColor);
 #endif
 #if WINDOWS
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
 #endif
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(Text), MapText);
 
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(TextTransform), MapText);
-			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Button.LineBreakMode), MapLineBreakMode);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(TextTransform), MapText);
+			ButtonHandler.Mapper.ReplaceMappingForControls<Button, IButtonHandler>(nameof(Button.LineBreakMode), MapLineBreakMode);
 		}
 
 		/// <summary>

@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using Microsoft.Maui.Handlers;
 #if IOS || MACCATALYST
 using UIKit;
@@ -10,15 +9,16 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that manages two panes of information: a flyout that presents a menu or navigation, and a detail that presents the selected content.</summary>
 	public partial class FlyoutPage
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
+		static void RemapForControlsOnce()
+		{
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
 #if IOS || MACCATALYST
 			// Fill configuration record (Core → Controls bridge)
 			FlyoutViewHandler.ControlsConfiguration = new(
@@ -29,16 +29,16 @@ namespace Microsoft.Maui.Controls
 			);
 
 			// iOS-specific property mappers
-			FlyoutViewHandler.Mapper.AppendToMapping(
+			FlyoutViewHandler.Mapper.AppendToMappingForControls(
 				PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName,
 				MapApplyShadow);
-			FlyoutViewHandler.Mapper.AppendToMapping(nameof(IView.FlowDirection), MapFlowDirection);
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHiddenProperty);
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersPrefersStatusBarHiddenProperty);
+			FlyoutViewHandler.Mapper.AppendToMappingForControls(nameof(IView.FlowDirection), MapFlowDirection);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHiddenProperty);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersPrefersStatusBarHiddenProperty);
 #endif
 #if WINDOWS
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
+			FlyoutViewHandler.Mapper.ReplaceMappingForControls<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
 #endif
 		}
 

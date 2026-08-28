@@ -1,48 +1,48 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
-		static int s_remappedForControls;
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
 		internal override void RemapForControls()
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
 			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
 
+		static void RemapForControlsOnce()
+		{
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors
 #if WINDOWS
-			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
+			EditorHandler.Mapper.ReplaceMappingForControls<Editor, IEditorHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #endif
-			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(Text), MapText);
-			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(TextTransform), MapText);
+			EditorHandler.Mapper.ReplaceMappingForControls<Editor, IEditorHandler>(nameof(Text), MapText);
+			EditorHandler.Mapper.ReplaceMappingForControls<Editor, IEditorHandler>(nameof(TextTransform), MapText);
 
 #if ANDROID
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				EditorHandler2.Mapper.ReplaceMapping<Editor, EditorHandler2>(nameof(Text), MapText);
-				EditorHandler2.Mapper.ReplaceMapping<Editor, EditorHandler2>(nameof(TextTransform), MapText);
-				EditorHandler2.Mapper.AppendToMapping<Editor, EditorHandler2>(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
-				EditorHandler2.CommandMapper.PrependToMapping<Editor, EditorHandler2>(nameof(IEditor.Focus), InputView.MapFocus);
+				EditorHandler2.Mapper.ReplaceMappingForControls<Editor, EditorHandler2>(nameof(Text), MapText);
+				EditorHandler2.Mapper.ReplaceMappingForControls<Editor, EditorHandler2>(nameof(TextTransform), MapText);
+				EditorHandler2.Mapper.AppendToMappingForControls<Editor, EditorHandler2>(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+				EditorHandler2.CommandMapper.PrependToMappingForControls<Editor, EditorHandler2>(nameof(IEditor.Focus), InputView.MapFocus);
 			}
 #endif
 
 #if IOS || ANDROID
-			EditorHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
-			EditorHandler.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
+			EditorHandler.Mapper.AppendToMappingForControls(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+			EditorHandler.Mapper.AppendToMappingForControls(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
 #endif
 
 #if IOS || MACCATALYST
-			EditorHandler.Mapper.AppendToMapping<Editor, IEditorHandler>(nameof(AutoSize), MapAutoSize);
+			EditorHandler.Mapper.AppendToMappingForControls<Editor, IEditorHandler>(nameof(AutoSize), MapAutoSize);
 #endif
 
 #if ANDROID
-			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), InputView.MapFocus);
+			EditorHandler.CommandMapper.PrependToMappingForControls(nameof(IEditor.Focus), InputView.MapFocus);
 #endif
 		}
 	}

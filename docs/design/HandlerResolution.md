@@ -42,17 +42,22 @@ builder.ConfigureMauiHandlers(handlers =>
        }
 ```
 
-DI registration should only be used to override an existing `[ElementHandler]` declaration or when the element type is an interface (e.g., `IScrollView`). DI-registered handlers take priority over `[ElementHandler]` attributes when the registered type is assignable from the requested element type.
+DI registration should only be used to override an existing `[ElementHandler]` declaration or when the element type is an interface (e.g., `IScrollView`). An exact `AddHandler` registration always overrides an attribute-based default. An assignable registration applies to derived types that do not declare their own handler, preserving the behavior of the previous built-in DI registrations.
+
+`TryAddHandler` has different override semantics. In an app using the Controls defaults, it does not replace a handler declared directly on the same type with `[ElementHandler]`. It can still register a handler for a custom derived type that only inherits an attribute fallback. Apps that do not enable the Controls defaults can use `TryAddHandler` normally. This policy is stored with each app's handler collection rather than in process-wide state, so separately built `MauiApp` instances do not affect one another.
 
 ## Resolution Order
 
 Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerType(Type)` follow the same resolution order:
 
 1. **Exact DI registration** — checks if a handler was registered for this exact type via `AddHandler`
-2. **Assignable DI registration** — uses `RegisteredHandlerServiceTypeSet` to find the best matching concrete or interface registration (e.g., a handler registered for `Button` matches a derived `FancyButton`, and a handler registered for `IScrollView` matches a `ScrollView` instance)
-3. **`[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the attribute; lookup results are cached per requested view type
-4. **`IContentView` fallback** — returns `ContentViewHandler` for any `IContentView` implementation
-5. **`GetHandlerType` returns `null`** / **`GetHandler` throws `HandlerNotFoundException`** — if none of the above matched
+2. **Direct `[ElementHandler]` attribute** — uses an attribute declared on the requested type
+3. **Assignable DI registration** — uses `RegisteredHandlerServiceTypeSet` to find the best matching concrete or interface registration (e.g., a handler registered for `Button` matches a derived `FancyButton`, and a handler registered for `IScrollView` matches a `ScrollView` instance)
+4. **Inherited `[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the nearest attribute
+5. **`IContentView` fallback** — returns `ContentViewHandler` for any `IContentView` implementation
+6. **`GetHandlerType` returns `null`** / **`GetHandler` throws `HandlerNotFoundException`** — if none of the above matched
+
+The direct/inherited attribute lookup and assignable-registration lookup are cached per requested view type in thread-safe dictionaries. The full resolution result is not cached: exact registrations remain live so app customization can override defaults, and each handler request still creates a new handler instance.
 
 `GetHandler(Type)` is the primary API for creating a handler instance. `GetHandlerType(Type)` returns the handler `Type` without instantiating it and is used by code paths that need to compare handler types or create handlers through DI fallback.
 
@@ -60,8 +65,8 @@ Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerT
 
 How a handler instance is created depends on how it was resolved:
 
-- **DI-registered handlers** (steps 1 & 2): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided.
-- **`[ElementHandler]` attribute** (step 3): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
+- **DI-registered handlers** (steps 1 & 3): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided. `GetHandlerType(Type)` can only report DI registrations that provide an `ImplementationType`; a matching factory registration still wins resolution, but `GetHandlerType(Type)` returns `null` rather than falling through to a lower-precedence attribute.
+- **`[ElementHandler]` attribute** (steps 2 & 4): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
 - **Fallback in `ElementExtensions.ToHandler()`**: When `Activator.CreateInstance` fails with a `MissingMethodException` (e.g., the handler requires constructor parameters), `ActivatorUtilities.CreateInstance` is used instead, which supports constructor injection from the DI container.
 
 > **Note:** Handlers resolved via `[ElementHandler]` are instantiated with `Activator.CreateInstance()`
@@ -77,9 +82,11 @@ How a handler instance is created depends on how it was resolved:
 
 ### Controls mapper remapping
 
-Controls-specific mapper remaps are independent of handler resolution. `ElementHandler.SetVirtualView()` calls the internal Controls remap hook on the virtual view before mapper updates, so remaps run regardless of whether the handler came from exact DI registration, assignable DI registration, `[ElementHandler]`, or the `IContentView` fallback.
+Controls-specific mapper remaps are independent of handler resolution. The Controls `Element.SetHandler()` path calls the internal remap hook before attaching any handler, including compatibility renderers. `ElementHandler.SetVirtualView()` also calls the hook for handlers attached directly outside the Controls path. Remaps therefore run regardless of whether the handler came from exact DI registration, assignable DI registration, `[ElementHandler]`, or the `IContentView` fallback.
 
-Each remappable Controls type owns its own one-time gate and calls `base.RemapForControls()` before applying its mapper changes. Non-mapper command dependency setup, such as `CommandProperty.DependsOn(...)`, remains in the relevant control type initialization so binding behavior is available before a handler is attached.
+Each remappable Controls type owns a blocking, one-time initialization action and calls `base.RemapForControls()` before applying its mapper changes. Concurrent callers wait for the remap to finish, but unrelated control types do not contend on a global lock. Non-mapper command dependency setup, such as `CommandProperty.DependsOn(...)`, remains in the relevant control type initialization so binding behavior is available before a handler is attached.
+
+Controls property and command mapper changes update the framework mapping underneath application customizations. Built-in mapper declarations seal their framework mappings after construction so direct indexer replacements can be distinguished from the initial framework mappings, including replacements for keys supplied by chained parent mappers. Direct indexer replacements and `AppendToMapping`, `PrependToMapping`, `ModifyMapping`, and `ReplaceMapping` calls made during startup are recorded in order and recomposed after the lazy Controls remap, so they behave the same whether they are registered before or after the first control instance is attached.
 
 ## Types used in the resolution of Handlers to Views
 
