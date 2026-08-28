@@ -172,8 +172,7 @@ eng/pipelines/stages/publish-set.yml   internal reusable publish-stage definitio
 
 src/DotNet.Release/
   Program.cs                           CLI entry point
-  *Command.cs                          one orchestration handler per command
-  ReleaseArtifact.cs                   shared artifact validation helpers
+  Commands/                            handlers and shared artifact validation
   ConsoleReporting.cs                  command output and exit codes
   Policy/                              pure release decisions
   Model/                               plan, policy, marker, and result types

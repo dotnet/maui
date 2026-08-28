@@ -146,7 +146,7 @@ public class PipelineDefinitionTests
         }
 
         var verbs = File.ReadAllText(
-            Path.Combine(RepoRoot, "src", "DotNet.Release", "PlanCommand.cs"));
+            Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "PlanCommand.cs"));
         Assert.Contains("SetIsWorkload(resolved.Value.Workload)", verbs, StringComparison.Ordinal);
     }
 

@@ -129,8 +129,7 @@ eng/pipelines/ci-official-release.yml  THE pipeline. Existing AzDO entry point.
 eng/pipelines/stages/           internal stage templates used by it
 src/DotNet.Release/             the tool - one project
   Program.cs                    the CLI entry point
-  *Command.cs                   one orchestration handler per command
-  ReleaseArtifact.cs            shared artifact validation helpers
+  Commands/                     handlers and shared artifact validation
   Policy/                       pure decisions over plain data - no I/O
   Model/                        the data those decisions operate on
   Adapters/                     read-only BAR/NuGet interfaces and implementations
