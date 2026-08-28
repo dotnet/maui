@@ -50,6 +50,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
 		// or out of the collection; no extra intermediate stop on the owner itself.
 		IsTabStop = false;
+		// WinUI's Once path casts a selected source item to UIElement; MAUI source items are data objects.
+		TabNavigation = KeyboardNavigationMode.Local;
 		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
@@ -73,6 +75,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			return base.GetChildrenInTabFocusOrder();
 		}
 
+		ItemContainer? selectedContainer = null;
 		ItemContainer? firstContainer = null;
 		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
 		for (var childIndex = 0; childIndex < childCount; childIndex++)
@@ -89,11 +92,17 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 				return new DependencyObject[] { container };
 			}
 
+			if (SelectionMode == ItemsViewSelectionMode.Single && container.IsSelected)
+			{
+				selectedContainer = container;
+			}
+
 			firstContainer ??= container;
 		}
 
-		return firstContainer is not null
-			? new DependencyObject[] { firstContainer }
+		var tabCandidate = selectedContainer ?? firstContainer;
+		return tabCandidate is not null
+			? new DependencyObject[] { tabCandidate }
 			: base.GetChildrenInTabFocusOrder();
 	}
 
