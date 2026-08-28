@@ -21,20 +21,20 @@ public class SetMarkerTests : IDisposable
         _workspace.WritePackage(Pack, "10.0.0");
         _workspace.WritePackage(Manifest, "10.0.0");
 
-        await Verbs.PlanAsync(
+        await PlanCommand.ExecuteAsync(
             _console, new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
             Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
-        Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
+        Assert.Equal(ExitCodes.Success, await StageCommand.ExecuteAsync(
             _console, Workspace.PolicyJson,
-            File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
+            File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None));
     }
 
     private Task<int> Filter(string? set) =>
-        Verbs.FilterAsync(
+        FilterCommand.ExecuteAsync(
             _console, new FakeProbe(), _workspace.ReadPlan(), _workspace.Out, [], PlanHash, set, CancellationToken.None);
 
     private string SetDirectory(string artifactName) => Path.Combine(_workspace.Out, artifactName);
@@ -52,7 +52,7 @@ public class SetMarkerTests : IDisposable
 
         foreach (var artifact in new[] { StagePlanner.PacksArtifactName, StagePlanner.ManifestsArtifactName })
         {
-            Assert.True(File.Exists(Path.Combine(SetDirectory(artifact), Verbs.ReleasePlanFileName)));
+            Assert.True(File.Exists(Path.Combine(SetDirectory(artifact), ReleaseArtifact.PlanFileName)));
             Assert.True(File.Exists(Path.Combine(SetDirectory(artifact), ReleaseSetMarker.FileName)));
         }
     }
@@ -66,8 +66,8 @@ public class SetMarkerTests : IDisposable
     {
         await StageWorkloadAsync();
 
-        var packs = File.ReadAllText(Path.Combine(SetDirectory(StagePlanner.PacksArtifactName), Verbs.ReleasePlanFileName));
-        var manifests = File.ReadAllText(Path.Combine(SetDirectory(StagePlanner.ManifestsArtifactName), Verbs.ReleasePlanFileName));
+        var packs = File.ReadAllText(Path.Combine(SetDirectory(StagePlanner.PacksArtifactName), ReleaseArtifact.PlanFileName));
+        var manifests = File.ReadAllText(Path.Combine(SetDirectory(StagePlanner.ManifestsArtifactName), ReleaseArtifact.PlanFileName));
 
         Assert.Equal(packs, manifests);
         Assert.Equal(ReleasePlanSerializer.ComputeHash(packs), ReleasePlanSerializer.ComputeHash(manifests));
@@ -186,7 +186,7 @@ public class SetMarkerTests : IDisposable
         Directory.Move(SetDirectory(StagePlanner.PacksArtifactName), SetDirectory(StagePlanner.ManifestsArtifactName));
 
         var now = Workspace.Now;
-        var exit = await Verbs.VerifyAsync(
+        var exit = await VerifyCommand.ExecuteAsync(
             _console, new FakeProbe(), _workspace.ReadPlan(),
             TimeSpan.FromMinutes(30), TimeSpan.FromSeconds(20),
             () => now, (d, _) => { now = now.Add(d); return Task.CompletedTask; },
@@ -222,7 +222,7 @@ public class SetMarkerTests : IDisposable
         await StageWorkloadAsync();
 
         var directory = SetDirectory(StagePlanner.PacksArtifactName);
-        Assert.True(File.Exists(Path.Combine(directory, Verbs.ReleasePlanFileName)));
+        Assert.True(File.Exists(Path.Combine(directory, ReleaseArtifact.PlanFileName)));
         Assert.True(File.Exists(Path.Combine(directory, ReleaseSetMarker.FileName)));
 
         Assert.Equal(ExitCodes.Success, await Filter(StagePlanner.PacksArtifactName));

@@ -33,13 +33,13 @@ public class WorkloadStageScopingTests : IDisposable
 
         var registry = new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui"));
 
-        Assert.Equal(ExitCodes.Success, await Verbs.PlanAsync(
+        Assert.Equal(ExitCodes.Success, await PlanCommand.ExecuteAsync(
             _console, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None));
 
-        Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
+        Assert.Equal(ExitCodes.Success, await StageCommand.ExecuteAsync(
             _console, Workspace.PolicyJson,
-            File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
+            File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None));
 
@@ -61,13 +61,21 @@ public class WorkloadStageScopingTests : IDisposable
     }
 
     private Task<int> Filter(string? set, IPackageAvailabilityProbe probe) =>
-        Verbs.FilterAsync(_console, probe, _workspace.ReadPlan(), _workspace.Out, [], PlanHash, set, CancellationToken.None);
+        FilterCommand.ExecuteAsync(
+            _console,
+            probe,
+            _workspace.ReadPlan(),
+            _workspace.Out,
+            [],
+            PlanHash,
+            set,
+            CancellationToken.None);
 
     private Task<int> Verify(string? set, IPackageAvailabilityProbe probe, int maxMinutes = 30)
     {
         var now = Workspace.Now;
 
-        return Verbs.VerifyAsync(
+        return VerifyCommand.ExecuteAsync(
             _console, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
             () => now,

@@ -141,7 +141,8 @@ internal sealed class Workspace : IDisposable
         return path;
     }
 
-    public string ReadPlan() => File.ReadAllText(Path.Combine(Out, Verbs.ReleasePlanFileName));
+    public string ReadPlan() =>
+        File.ReadAllText(Path.Combine(Out, ReleaseArtifact.PlanFileName));
 
     public string StagedSet(string artifactName) => Path.Combine(Out, artifactName);
 

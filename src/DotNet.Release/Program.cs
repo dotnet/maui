@@ -64,7 +64,7 @@ internal static class Program
                 parse.GetValue(token),
                 parse.GetValue(managedIdentity));
 
-            return Verbs.PlanAsync(
+            return PlanCommand.ExecuteAsync(
                 console,
                 MaestroBuildRegistry.Create(api),
                 File.ReadAllText(parse.GetValue(config)!.FullName),
@@ -94,7 +94,7 @@ internal static class Program
             config, plan, drop, output, include, exclude,
         };
 
-        command.SetAction((parse, cancellationToken) => Verbs.StageAsync(
+        command.SetAction((parse, cancellationToken) => StageCommand.ExecuteAsync(
             console,
             File.ReadAllText(parse.GetValue(config)!.FullName),
             File.ReadAllText(parse.GetValue(plan)!.FullName),
@@ -130,7 +130,7 @@ internal static class Program
             plan, stage, set, expectedHash,
         };
 
-        command.SetAction(parse => Verbs.Validate(
+        command.SetAction(parse => ValidateCommand.Execute(
             console,
             File.ReadAllText(parse.GetValue(plan)!.FullName),
             parse.GetValue(stage)!.FullName,
@@ -170,13 +170,13 @@ internal static class Program
             var planFile = parse.GetValue(plan)!;
             using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
 
-            return Verbs.FilterAsync(
+            return FilterCommand.ExecuteAsync(
                 console,
                 new PackageAvailabilityProbe(checker),
                 File.ReadAllText(planFile.FullName),
                 parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
                 PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
-                parse.GetValue(expectedHash),
+                parse.GetValue(expectedHash)!,
                 parse.GetValue(set),
                 cancellationToken);
         });
@@ -212,7 +212,7 @@ internal static class Program
             var planFile = parse.GetValue(plan)!;
             using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
 
-            return Verbs.VerifyAsync(
+            return VerifyCommand.ExecuteAsync(
                 console,
                 new PackageAvailabilityProbe(checker),
                 File.ReadAllText(planFile.FullName),
@@ -221,8 +221,8 @@ internal static class Program
                 () => DateTimeOffset.UtcNow,
                 Task.Delay,
                 parse.GetValue(set),
-                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName,
-                parse.GetValue(expectedHash),
+                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
+                parse.GetValue(expectedHash)!,
                 cancellationToken);
         });
 

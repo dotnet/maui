@@ -15,14 +15,14 @@ public class VerbsTests : IDisposable
     public void Dispose() => _workspace.Dispose();
 
     private Task<int> Plan(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) =>
-        Verbs.PlanAsync(
+        PlanCommand.ExecuteAsync(
             _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
     private Task<int> Stage(StageOptions? options = null) =>
-        Verbs.StageAsync(
+        StageCommand.ExecuteAsync(
             _console, Workspace.PolicyJson,
-            File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
+            File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop, _workspace.Out, options ?? new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None);
 
@@ -34,7 +34,7 @@ public class VerbsTests : IDisposable
         var exit = await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
         Assert.Equal(ExitCodes.Success, exit);
-        Assert.True(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
+        Assert.True(File.Exists(Path.Combine(_workspace.Out, PlanCommand.FileName)));
 
         Assert.Contains("##vso[task.setvariable variable=BarId;isOutput=true]4242", _console.Output);
         Assert.Contains("##vso[task.setvariable variable=IsWorkload;isOutput=true]false", _console.Output);
@@ -55,7 +55,7 @@ public class VerbsTests : IDisposable
 
         Assert.Equal(ExitCodes.ReleaseError, exit);
         Assert.Contains(ErrorCodes.RepositoryNotAllowed, _console.AllErrors, StringComparison.Ordinal);
-        Assert.False(File.Exists(Path.Combine(_workspace.Out, Verbs.PlanFileName)));
+        Assert.False(File.Exists(Path.Combine(_workspace.Out, PlanCommand.FileName)));
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public class VerbsTests : IDisposable
     [InlineData("")]
     public void A_deletion_target_must_be_one_file_name(string value)
     {
-        Assert.False(Verbs.IsSinglePathComponent(value));
+        Assert.False(ReleaseArtifact.IsSinglePathComponent(value));
     }
 
     [Theory]
@@ -174,7 +174,7 @@ public class VerbsTests : IDisposable
     [InlineData("release-set.json")]
     public void A_single_path_component_is_accepted(string value)
     {
-        Assert.True(Verbs.IsSinglePathComponent(value));
+        Assert.True(ReleaseArtifact.IsSinglePathComponent(value));
     }
 
     private async Task<ReleasePlan> StagedPlanAsync(params (string Id, string Version)[] packages)
@@ -191,7 +191,7 @@ public class VerbsTests : IDisposable
     }
 
     private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
-        Verbs.FilterAsync(
+        FilterCommand.ExecuteAsync(
             _console, probe, _workspace.ReadPlan(), _workspace.Out, recovery ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
 
     [Fact]
@@ -199,7 +199,7 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
-        var exit = Verbs.Validate(
+        var exit = ValidateCommand.Execute(
             _console,
             _workspace.ReadPlan(),
             _workspace.Out,
@@ -221,7 +221,7 @@ public class VerbsTests : IDisposable
             "changed",
             CancellationToken.None);
 
-        var exit = Verbs.Validate(
+        var exit = ValidateCommand.Execute(
             _console,
             _workspace.ReadPlan(),
             _workspace.Out,
@@ -256,7 +256,9 @@ public class VerbsTests : IDisposable
 
         await Filter(new FakeProbe("skiasharp/3.119.0"));
 
-        var sidecar = Path.Combine(_workspace.StagedSet(StagePlanner.PackagesArtifactName), Verbs.FilterReportFileName);
+        var sidecar = Path.Combine(
+            _workspace.StagedSet(StagePlanner.PackagesArtifactName),
+            FilterCommand.ReportFileName);
         Assert.True(File.Exists(sidecar));
         Assert.Contains("AlreadyPublished", File.ReadAllText(sidecar), StringComparison.Ordinal);
 
@@ -285,7 +287,7 @@ public class VerbsTests : IDisposable
         var directory = _workspace.StagedSet(StagePlanner.PackagesArtifactName);
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
 
-        var sidecar = File.ReadAllText(Path.Combine(directory, Verbs.FilterReportFileName));
+        var sidecar = File.ReadAllText(Path.Combine(directory, FilterCommand.ReportFileName));
         Assert.Contains("PreviouslyAttempted", sidecar, StringComparison.Ordinal);
     }
 
@@ -358,7 +360,7 @@ public class VerbsTests : IDisposable
     {
         var now = Workspace.Now;
 
-        return Verbs.VerifyAsync(
+        return VerifyCommand.ExecuteAsync(
             _console, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(pollSeconds),
             () => now,

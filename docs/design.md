@@ -171,7 +171,9 @@ eng/pipelines/ci-official-release.yml  Azure DevOps entry point
 eng/pipelines/stages/publish-set.yml   internal reusable publish-stage definition
 
 src/DotNet.Release/
-  Program.cs / Verbs.cs                commands and orchestration
+  Program.cs                           CLI entry point
+  *Command.cs                          one orchestration handler per command
+  ReleaseArtifact.cs                   shared artifact validation helpers
   ConsoleReporting.cs                  command output and exit codes
   Policy/                              pure release decisions
   Model/                               plan, policy, marker, and result types

@@ -25,7 +25,7 @@ public class VerificationBudgetTests : IDisposable
         var registry = new FakeRegistry(
             Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
 
-        await Verbs.PlanAsync(
+        await PlanCommand.ExecuteAsync(
             _console,
             registry,
             Workspace.PolicyJson,
@@ -37,10 +37,10 @@ public class VerificationBudgetTests : IDisposable
             "1.0.0-test",
             CancellationToken.None);
 
-        Assert.Equal(ExitCodes.Success, await Verbs.StageAsync(
+        Assert.Equal(ExitCodes.Success, await StageCommand.ExecuteAsync(
             _console,
             Workspace.PolicyJson,
-            File.ReadAllText(Path.Combine(_workspace.Out, Verbs.PlanFileName)),
+            File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop,
             _workspace.Out,
             new StageOptions(),
@@ -56,7 +56,7 @@ public class VerificationBudgetTests : IDisposable
     {
         var now = Workspace.Now;
 
-        return Verbs.VerifyAsync(
+        return VerifyCommand.ExecuteAsync(
             _console,
             probe,
             _workspace.ReadPlan(),
