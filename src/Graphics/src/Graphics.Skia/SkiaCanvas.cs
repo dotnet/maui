@@ -468,7 +468,8 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 			else if (Math.Abs(sweep) >= 360)
 			{
-				// Preserve AddArc's full-sweep behavior: cardinal starts close the oval, while non-cardinal starts may produce an empty contour.
+				// Preserve legacy full-sweep strokes: AddArc closes cardinal starts as ovals, while DrawArc leaves an open contour with caps at the seam.
+				// The same fallback also retains AddArc's empty contours for some non-cardinal starts.
 				var platformPath = new SKPath();
 				platformPath.AddArc(rect, startAngle, sweep);
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
@@ -514,7 +515,8 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (Math.Abs(sweep) >= 360)
 			{
-				// Preserve AddArc's full-sweep behavior: cardinal starts close the oval, while non-cardinal starts may produce an empty contour.
+				// Preserve legacy Skia full-sweep compatibility, including empty contours for some non-cardinal starts.
+				// Other ICanvas implementations fill those contours, but correcting that deviation is outside this binding cleanup.
 				var platformPath = new SKPath();
 				platformPath.AddArc(rect, startAngle, sweep);
 				_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);

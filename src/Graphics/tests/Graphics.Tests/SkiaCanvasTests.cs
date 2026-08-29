@@ -16,11 +16,14 @@ public class SkiaCanvasTests
 	[InlineData(25, 18, 30, 240, true, LineCap.Round, -30, 150, true, false)]
 	[InlineData(25, 18, 30, 240, true, LineCap.Square, -30, 150, true, false)]
 	[InlineData(25, 18, 0, 360, false, LineCap.Butt, 0, -360, true, false)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Butt, 0, -360, true, true)]
 	[InlineData(25, 18, 0, 360, false, LineCap.Round, 0, -360, true, false)]
 	[InlineData(25, 18, 0, 360, false, LineCap.Square, 0, -360, true, false)]
 	[InlineData(25, 18, 360, 0, true, LineCap.Butt, -360, 360, true, false)]
 	[InlineData(25, 18, 360, 0, true, LineCap.Round, -360, 360, true, false)]
 	[InlineData(25, 18, 360, 0, true, LineCap.Square, -360, 360, true, false)]
+	// Empty non-cardinal full sweeps document a known deviation from other ICanvas implementations, not a desired contract.
+	[InlineData(25, 18, 30, 390, false, LineCap.Butt, -30, -360, false, true)]
 	[InlineData(25, 18, 30, 390, false, LineCap.Round, -30, -360, false, false)]
 	[InlineData(25, 18, 30, 390, false, LineCap.Square, -30, -360, false, false)]
 	[InlineData(0, 18, 30, 240, false, LineCap.Butt, -30, -210, false, false)]
@@ -79,6 +82,7 @@ public class SkiaCanvasTests
 	[InlineData(25, 18, 0, 360, true, 0, 0, false)]
 	[InlineData(25, 18, 360, 0, false, -360, 0, false)]
 	[InlineData(25, 18, 360, 0, true, -360, 360, true)]
+	// This empty result preserves a known Skia deviation from other ICanvas implementations, not a desired contract.
 	[InlineData(25, 18, 30, 390, false, -30, -360, false)]
 	[InlineData(0, 18, 30, 240, false, -30, -210, false)]
 	[InlineData(25, 0, 30, 240, false, -30, -210, false)]
