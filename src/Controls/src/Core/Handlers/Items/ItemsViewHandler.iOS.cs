@@ -10,6 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This handler is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> instead.")]
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
 		ItemsViewLayout _layout;

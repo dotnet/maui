@@ -42,8 +42,13 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
+#if IOS || MACCATALYST
+				handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+#else
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#endif
 #if IOS || MACCATALYST
 				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
 				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
@@ -500,19 +505,10 @@ public class MemoryTests : ControlsHandlerTestBase
 
 
 #if IOS || MACCATALYST
-			var cv1handler = cv.Handler as CollectionViewHandler;
-			var cv2handler = cv.Handler as CollectionViewHandler2;
-
-			if (cv1handler is not null)
-			{
-				controllerReference = new WeakReference(cv1handler.Controller);
-			}
-			else if (cv2handler is not null)
-			{
-				controllerReference = new WeakReference(cv2handler.Controller);
-			}
-			cv1handler = null;
-			cv2handler = null;
+			var collectionViewHandler = cv.Handler as CollectionViewHandler2;
+			Assert.NotNull(collectionViewHandler);
+			controllerReference = new WeakReference(collectionViewHandler.Controller);
+			collectionViewHandler = null;
 #else
 			controllerReference = new WeakReference(new object());
 #endif

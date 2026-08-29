@@ -9,7 +9,11 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -45,9 +49,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#if IOS && !MACCATALYST
-					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
-#endif
 				});
 			});
 		}
