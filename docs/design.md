@@ -89,7 +89,7 @@ For a dry run, the expanded pipeline MUST NOT contain:
 - the `nuget.org (dotnetframework)` service connection;
 - `release verify`;
 - `darc add-build-to-channel`;
-- a manual publish or promotion gate.
+- a promotion gate.
 
 The matching package-set stage remains present. Its `preflight` job downloads the `Release`
 artifact, verifies plan/tool integrity, queries NuGet.org read-only, prunes already-published
@@ -110,6 +110,9 @@ The dry run DOES:
 - read repository dependency metadata when Darc requires it;
 - write and copy files on the disposable agent;
 - upload plans, packages, markers, and the release executable as Azure DevOps artifacts;
+- pause at the same package-set `ManualValidation@0` gates used by a publish run;
+- run the same production `releaseJob`, including approved-artifact download, integrity
+  validation, and the final read-only prune;
 - produce logs, build tags, audit records, and mandatory 1ES compliance output.
 
 The 1ES pipeline template is external code. Component-governance tooling may perform
@@ -119,15 +122,17 @@ pipeline's exclusion of all NuGet.org release operations.
 
 ### Compile-time exclusion
 
-Mutating publish jobs and the promotion stage are selected with Azure DevOps template
+Mutating publish steps and the promotion stage are selected with Azure DevOps template
 expressions:
 
 ```yaml
 - ${{ if eq(parameters.publishPackages, true) }}:
 ```
 
-This is a compile-time barrier around mutating release jobs. When false, approval,
-publishing, and verification do not exist in the expanded YAML.
+This is a compile-time barrier around the NuGet.org task and post-publish verification.
+When false, those steps do not exist in the expanded YAML. The approval and production
+`releaseJob` remain so a dry run exercises their topology, artifact input, SDK setup,
+integrity checks, and final prune.
 
 The package-set stages themselves always exist so a dry run validates stage selection,
 artifact download, SDK setup, tool execution, and local integrity.
@@ -222,7 +227,9 @@ default or, for an allowed-values list, silently selects its first value. Explic
 make that platform behavior visible and safe: `select-repository` fails repository policy,
 and `skip` is normalized to no optional argument before the CLI is invoked.
 
-Runs are tagged `DRY-RUN` or `PUBLISH`.
+Runs are tagged `DRY-RUN` or `PUBLISH`. After BAR resolution they also receive Arcade's
+established `BAR ID - <id>` tag and a matching `REPO - <owner/name>` tag, so release history
+can be filtered by either resolved identity.
 
 If `promoteWorkloadSet=true` and `publishPackages=false`, promotion is omitted and the run
 logs a warning.
@@ -277,18 +284,25 @@ preflight
   -> release prune-published
   -> publish exact pruned artifact for review
 
-when publishPackages=true:
-  ManualValidation@0
+ManualValidation@0
+  -> production releaseJob
+    -> download approved artifact
+    -> verify plan and tool hashes
     -> refresh prune
+
+when publishPackages=true:
     -> 1ES.PublishNuget@1
     -> release verify
+
+otherwise:
+    -> confirm publishing operations were compile-time excluded
 ```
 
 The preflight job proves that a normal agent job can download the artifact, install the SDK,
 load the approved tool, query NuGet.org, interpret the plan, and validate the exact pending
-set before approval. The production `releaseJob` is a different 1ES execution mode and is
-validated only by a publish-enabled rehearsal. The publish job repeats the prune after
-approval; the approved set can only shrink.
+set before approval. The dry run then exercises the production `releaseJob` without giving
+it a publishing task or credential. The release job repeats the prune after approval; the
+approved set can only shrink.
 
 The manual validation task MUST run in its own `pool: server` job. An agentless job cannot
 download artifacts or execute scripts, so the gated operation runs in a dependent agent
@@ -738,18 +752,19 @@ Before using the system for a production push:
 
 1. queue a dry run with `publishPackages=false`;
 2. confirm matching preflight jobs query NuGet.org and produce pruned artifacts;
-3. confirm no approval, push, verification, or BAR mutation job exists;
-4. confirm the run is tagged `DRY-RUN`;
-5. confirm no NuGet.org service connection is requested;
-6. inspect the `Release` and pruned package-set artifacts;
-7. use a workload repository for at least one dry run, proving both `ReleasePacks` and
+3. complete the package-set approval and confirm the production release job runs;
+4. confirm no 1ES push, verification, or BAR mutation step exists;
+5. confirm the run is tagged `DRY-RUN`;
+6. confirm no NuGet.org service connection is requested;
+7. inspect the `Release` and pruned package-set artifacts;
+8. use a workload repository for at least one dry run, proving both `ReleasePacks` and
    `ReleaseManifests` directories are produced;
-8. confirm the missing-build behavior of the typed PCS client against a real nonexistent
+9. confirm the missing-build behavior of the typed PCS client against a real nonexistent
    BAR ID;
-9. expand the pipeline at the exact commit used for the first production run and confirm
+10. expand the pipeline at the exact commit used for the first production run and confirm
    parameter sentinels, prepared-artifact wiring, and topology conditions;
-10. use a completed release for a publish-enabled rehearsal so the production `releaseJob`
-    runs while pruning leaves no packages to upload.
+11. use a completed release for a publish-enabled rehearsal so the 1ES step is present while
+    pruning leaves no packages to upload.
 
 The missing-build check remains the only known unobserved PCS client behavior: tests model
 a missing BAR build as `RestApiException` with HTTP 404, but this has not been observed

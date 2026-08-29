@@ -238,6 +238,16 @@ extends:
             COMMIT_HASH: ${{ parameters.commitHash }}
             BAR_BUILD_ID: ${{ parameters.barBuildId }}
 
+        # Match Arcade's established "BAR ID - <id>" build tag format. The repository tag uses
+        # the same readable convention so release runs can be filtered by either identity.
+        - pwsh: |
+            $plan = Get-Content "$env:PLAN_PATH" -Raw | ConvertFrom-Json
+            Write-Host "##vso[build.addbuildtag]BAR ID - $($plan.barBuildId)"
+            Write-Host "##vso[build.addbuildtag]REPO - $($plan.repository)"
+          displayName: Tag resolved release identity
+          env:
+            PLAN_PATH: $(Agent.TempDirectory)/stage/plan.json
+
         - task: AzureCLI@2
           displayName: Gather the drop
           inputs:
@@ -423,6 +433,7 @@ extends:
         ${{ else }}:
           dependsOn: [prepare_release]
         approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to publish them.'
+        dryRunApprovalInstructions: 'DRY RUN: Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to rehearse the production release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     # Manifests reference packs, so manifest approval is unreachable until pack
@@ -437,6 +448,7 @@ extends:
         publishPackages: ${{ parameters.publishPackages }}
         dependsOn: [prepare_release, publish_packs]
         approvalInstructions: 'Packs are verified. Review release-prune.json and the exact nupkgs in PreparedReleaseManifests, then press "Resume".'
+        dryRunApprovalInstructions: 'DRY RUN: The pack rehearsal succeeded. Review release-prune.json and the exact nupkgs in PreparedReleaseManifests, then press "Resume" to rehearse the manifest release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     - template: /eng/pipelines/stages/publish-set.yml@self
@@ -449,6 +461,7 @@ extends:
         publishPackages: ${{ parameters.publishPackages }}
         dependsOn: [prepare_release]
         approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePackages, then press "Resume" to publish them.'
+        dryRunApprovalInstructions: 'DRY RUN: Review release-prune.json and the exact nupkgs in PreparedReleasePackages, then press "Resume" to rehearse the production release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     # If the workload output is missing or invalid, all release stages skip. Turn that

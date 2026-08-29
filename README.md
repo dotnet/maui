@@ -31,11 +31,13 @@ rejects, while optional strings use `skip`. The commit has no default and must b
 3. The run prepares the release and validates the matching package-set jobs.
 4. Review `release-plan.json` in the published artifact — it lists every package that will be
    pushed, with its exact version and content hash.
-5. On a publish run, approve the matching gate. The packages are pushed and verified.
+5. Approve the matching gate. A dry run rehearses the production release job; a publish run
+   pushes and verifies the packages.
 
 **The default run publishes nothing.** `PUBLISH to NuGet.org` is off, and on a dry run the
-package-set stages download, prune, and validate the artifact, while their approval, push,
-and verification jobs do not exist in the expanded pipeline.
+package-set stages download, prune, validate, pause for approval, and run the production
+release job. The 1ES upload and post-publish verification steps do not exist in the expanded
+pipeline.
 
 ### Adding a repository
 
@@ -51,8 +53,9 @@ prepare_release
       ↓ artifacts + pinned plan hash
 matching package-set stage
   query NuGet.org, prune published versions, and validate the exact local set
-  if publishing:
-    approval  →  refresh prune  →  1ES.PublishNuget@1  →  release verify
+  approval  →  production release job  →  refresh prune
+    if publishing: 1ES.PublishNuget@1  →  release verify
+    otherwise: confirm publishing operations were excluded
 ```
 
 Workload repositories publish **packs first, then manifests**, as two separately gated

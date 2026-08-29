@@ -377,18 +377,18 @@ public class PipelineDefinitionTests
         Assert.DoesNotContain(
             EnclosingConditions(lines, pruneSteps[0]),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
-        Assert.Contains(
+        Assert.DoesNotContain(
             EnclosingConditions(lines, pruneSteps[1]),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
     }
 
     /// <summary>
-    /// Approval, package upload, and publication verification must be compile-time absent when
-    /// publishPackages is false.
+    /// Package upload and publication verification must be compile-time absent when
+    /// publishPackages is false. The approval and production job remain as a rehearsal.
     /// </summary>
     /// <remarks>
-    /// The preflight NuGet query is read-only and runs on dry runs. Operations that authorize,
-    /// perform, or verify publication are descendants of <c>publishPackages=true</c>.
+    /// The preflight and final NuGet queries are read-only and run on dry runs. Operations that
+    /// perform or verify publication are descendants of <c>publishPackages=true</c>.
     /// </remarks>
     [Fact]
     public void Every_remote_publish_operation_is_nested_inside_the_publish_guard()
@@ -398,12 +398,11 @@ public class PipelineDefinitionTests
 
         var operations = Enumerable.Range(0, lines.Length)
             .Where(i =>
-                lines[i].Contains("ManualValidation@0", StringComparison.Ordinal) ||
                 lines[i].Contains("1ES.PublishNuget@1", StringComparison.Ordinal) ||
                 lines[i].Trim() == "verify `")
             .ToList();
 
-        Assert.Collection(operations, _ => { }, _ => { }, _ => { });
+        Assert.Collection(operations, _ => { }, _ => { });
 
         foreach (var operation in operations)
         {
@@ -413,6 +412,28 @@ public class PipelineDefinitionTests
                 $"publish-set.yml line {operation + 1} contains a remote release operation " +
                 $"outside the publishPackages guard: {lines[operation].Trim()}");
         }
+    }
+
+    [Fact]
+    public void Dry_run_rehearses_the_manual_gate_and_production_release_job()
+    {
+        var path = Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml");
+        var lines = File.ReadAllLines(path);
+        var text = string.Join("\n", lines);
+        var approval = Array.FindIndex(lines, line => line.Contains("ManualValidation@0", StringComparison.Ordinal));
+        var releaseJob = Array.FindIndex(lines, line => line.Contains("type: releaseJob", StringComparison.Ordinal));
+
+        Assert.True(approval >= 0);
+        Assert.True(releaseJob >= 0);
+        Assert.DoesNotContain(
+            EnclosingConditions(lines, approval),
+            condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            EnclosingConditions(lines, releaseJob),
+            condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
+        Assert.Contains("Review dry-run package set", text, StringComparison.Ordinal);
+        Assert.Contains("Rehearse production release job", text, StringComparison.Ordinal);
+        Assert.Contains("Confirm publish operations are excluded", text, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -634,6 +655,8 @@ public class PipelineDefinitionTests
 
         Assert.Contains("##vso[build.addbuildtag]PUBLISH", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]DRY-RUN", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]BAR ID - $($plan.barBuildId)", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]REPO - $($plan.repository)", text, StringComparison.Ordinal);
     }
 
     /// <summary>

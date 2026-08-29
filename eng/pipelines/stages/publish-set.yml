@@ -2,8 +2,8 @@
 #
 # The preflight job always runs for the matching repository type. It downloads the Release
 # artifact, queries NuGet.org for existing versions, removes those local files, validates the
-# remaining set, and publishes the exact pruned artifact for review. Approval and mutation
-# jobs exist only when publishPackages is true.
+# remaining set, and publishes the exact pruned artifact for review. Approval and the production
+# release job run in dry runs too; only mutation and post-publish verification are excluded.
 
 parameters:
 - name: stageName
@@ -36,6 +36,9 @@ parameters:
   type: object
 
 - name: approvalInstructions
+  type: string
+
+- name: dryRunApprovalInstructions
   type: string
 
 - name: nugetServiceConnection
@@ -132,90 +135,99 @@ stages:
         Copy-Item -LiteralPath "$source/${{ parameters.setName }}" -Destination $prepared -Recurse
       displayName: Create exact approval artifact
 
-  - ${{ if eq(parameters.publishPackages, true) }}:
-    - job: approval
+  - job: approval
+    ${{ if eq(parameters.publishPackages, true) }}:
       displayName: Approve exact pruned package set
-      dependsOn: preflight
-      timeoutInMinutes: 240
-      pool: server
-      steps:
-      - task: ManualValidation@0
-        timeoutInMinutes: 120
-        inputs:
+    ${{ else }}:
+      displayName: Review dry-run package set
+    dependsOn: preflight
+    timeoutInMinutes: 240
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 120
+      inputs:
+        ${{ if eq(parameters.publishPackages, true) }}:
           instructions: ${{ parameters.approvalInstructions }}
-          onTimeout: reject
+        ${{ else }}:
+          instructions: ${{ parameters.dryRunApprovalInstructions }}
+        onTimeout: reject
 
-    - job: publish
+  - job: publish
+    ${{ if eq(parameters.publishPackages, true) }}:
       displayName: Publish to NuGet.org
-      timeoutInMinutes: 90
-      dependsOn: approval
-      condition: eq(dependencies.approval.result, 'Succeeded')
-      variables:
-        ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
-        ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
-      templateContext:
-        type: releaseJob
-        isProduction: true
-        inputs:
-        - input: pipelineArtifact
-          artifactName: ${{ parameters.preparedArtifactName }}
-          targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-      steps:
-      - checkout: self
-        clean: true
-        persistCredentials: false
+    ${{ else }}:
+      displayName: Rehearse production release job
+    timeoutInMinutes: 90
+    dependsOn: approval
+    condition: eq(dependencies.approval.result, 'Succeeded')
+    variables:
+      ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+      ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
+    templateContext:
+      type: releaseJob
+      isProduction: true
+      inputs:
+      - input: pipelineArtifact
+        artifactName: ${{ parameters.preparedArtifactName }}
+        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+    steps:
+    - checkout: self
+      clean: true
+      persistCredentials: false
 
-      - task: UseDotNet@2
-        displayName: Install the .NET SDK
-        inputs:
-          useGlobalJson: true
+    - task: UseDotNet@2
+      displayName: Install the .NET SDK
+      inputs:
+        useGlobalJson: true
 
-      - pwsh: |
-          $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
-          $planPath = "$root/release-plan.json"
-          $toolPath = "$root/_tool/release.dll"
+    - pwsh: |
+        $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+        $planPath = "$root/release-plan.json"
+        $toolPath = "$root/_tool/release.dll"
 
-          $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
-            throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
-          }
+        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
+          throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
+        }
 
-          $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
-            -Path (Split-Path -Parent $toolPath)
-          if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
-            throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
-          }
-        displayName: Verify approved artifact integrity
-        env:
-          EXPECTED_PLAN_HASH: $(ReleasePlanHash)
-          EXPECTED_TOOL_HASH: $(ReleaseToolHash)
+        $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+          -Path (Split-Path -Parent $toolPath)
+        if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
+          throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
+        }
+      displayName: Verify approved artifact integrity
+      env:
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_TOOL_HASH: $(ReleaseToolHash)
 
-      # Approval can remain open while another run publishes one of the same versions. This
-      # recheck may only remove files from the approved set; it can never add a package.
-      - pwsh: |
-          $ErrorActionPreference = 'Stop'
+    # Approval can remain open while another run publishes one of the same versions. This
+    # recheck may only remove files from the approved set; it can never add a package.
+    - pwsh: |
+        $ErrorActionPreference = 'Stop'
 
-          $recovery = @()
-          if ($env:RECOVERY_FILTERS -ne 'skip') {
-            $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
-          }
+        $recovery = @()
+        if ($env:RECOVERY_FILTERS -ne 'skip') {
+          $recovery = @('--recovery-filters', $env:RECOVERY_FILTERS)
+        }
 
-          dotnet "$env:RELEASE_TOOL" `
-            prune-published `
-            --plan "$env:ARTIFACT_DIR/release-plan.json" `
-            --stage "$env:ARTIFACT_DIR" `
-            --set "$env:SET_NAME" `
-            --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
-            @recovery
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        displayName: Refresh already-published versions
-        env:
-          RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
-          ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-          SET_NAME: ${{ parameters.setName }}
-          EXPECTED_PLAN_HASH: $(ReleasePlanHash)
-          RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
+        dotnet "$env:RELEASE_TOOL" `
+          prune-published `
+          --plan "$env:ARTIFACT_DIR/release-plan.json" `
+          --stage "$env:ARTIFACT_DIR" `
+          --set "$env:SET_NAME" `
+          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+          @recovery
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      displayName: Refresh already-published versions
+      env:
+        RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
+        ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+        SET_NAME: ${{ parameters.setName }}
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
+    - ${{ if eq(parameters.publishPackages, true) }}:
       - task: 1ES.PublishNuget@1
         displayName: Push approved packages to NuGet.org
         condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
@@ -243,3 +255,9 @@ stages:
           ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
           SET_NAME: ${{ parameters.setName }}
           EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+
+    - ${{ else }}:
+      - pwsh: |
+          Write-Host 'DRY RUN. The production release job, approved artifact download, integrity checks, and final prune all succeeded.'
+          Write-Host 'The NuGet.org publishing task and post-publish verification are not present in this job.'
+        displayName: Confirm publish operations are excluded
