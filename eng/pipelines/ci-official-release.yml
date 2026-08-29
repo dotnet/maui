@@ -17,12 +17,12 @@
 #   2. `release plan`  - resolve and verify the BAR build for the requested repo/commit
 #   3. `darc gather-drop` - download that build's shipping packages
 #   4. `release stage`  - validate every package, write the hashed release plan, stage artifacts
-#   5. manual approval gate (agentless)
-#   6. `release prune-published` -> approval -> refresh -> `1ES.PublishNuget@1` -> verification
+#   5. `release prune-published` -> manual approval gate (agentless)
+#   6. production release job -> refresh prune -> optional `1ES.PublishNuget@1` -> verification
 #
 # Safety properties worth knowing before you press Run:
 #   - `publishPackages` defaults to FALSE. The default run is a dry run that publishes
-#     nothing and does not even emit the publish stages.
+#     nothing while still exercising package stages, approvals, and production release jobs.
 #   - The tool cannot push. `1ES.PublishNuget@1` performs every upload.
 #   - Workload repositories publish packs and manifests as two separately gated stages, in
 #     that order, because manifests reference packs and NuGet.org packages are immutable.
@@ -327,7 +327,7 @@ extends:
         - ${{ if eq(parameters.publishPackages, false) }}:
           - pwsh: |
               Write-Host '##vso[build.addbuildtag]DRY-RUN'
-              Write-Host 'DRY RUN. The publish stages do not exist in this run.'
+              Write-Host 'DRY RUN. Package approval and production release jobs will run.'
               Write-Host 'Nothing will be pushed to NuGet.org and no BAR channel will change.'
               Write-Host 'Review the staged artifacts and release-plan.json above.'
             displayName: Dry run - nothing will be published
@@ -411,8 +411,8 @@ extends:
               AZDO_TOKEN: $(System.AccessToken)
 
     # -----------------------------------------------------------------------------------------
-    # Validate the package-set jobs and artifact wiring on every run. The internal template
-    # includes approval, push, and verification only when publishing.
+    # Validate package-set jobs, approval, and artifact wiring on every run. The internal
+    # template includes NuGet.org mutation and post-publish verification only when publishing.
     # -----------------------------------------------------------------------------------------
     - template: /eng/pipelines/stages/publish-set.yml@self
       parameters:
@@ -430,8 +430,8 @@ extends:
         dryRunApprovalInstructions: 'DRY RUN: Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to rehearse the production release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
-    # Manifests reference packs, so manifest approval is unreachable until pack
-    # verification succeeds.
+    # Manifests reference packs, so manifest approval is unreachable until the pack stage
+    # verifies publication or completes its dry-run rehearsal.
     - template: /eng/pipelines/stages/publish-set.yml@self
       parameters:
         stageName: publish_manifests
