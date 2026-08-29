@@ -512,8 +512,18 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (!clockwise)
 				sweep *= -1;
 
-			// Full sweeps use DrawArc's closed-oval fast path because fill paint never has a path effect.
-			_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
+			if (Math.Abs(sweep) >= 360)
+			{
+				// Preserve AddArc's full-sweep behavior: cardinal starts close the oval, while non-cardinal starts may produce an empty contour.
+				var platformPath = new SKPath();
+				platformPath.AddArc(rect, startAngle, sweep);
+				_canvas.DrawPath(platformPath, CurrentState.FillPaintWithAlpha);
+				platformPath.Dispose();
+			}
+			else
+			{
+				_canvas.DrawArc(rect, startAngle, sweep, false, CurrentState.FillPaintWithAlpha);
+			}
 		}
 
 		protected override void PlatformDrawRectangle(

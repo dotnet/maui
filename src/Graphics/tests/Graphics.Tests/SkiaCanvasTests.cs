@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Maui.Graphics.Skia;
 using SkiaSharp;
 using Xunit;
@@ -53,7 +54,7 @@ public class SkiaCanvasTests
 		};
 		using var pathEffect = strokePattern is null
 			? null
-			: SKPathEffect.CreateDash([6, 3], 0);
+			: SKPathEffect.CreateDash(strokePattern.Select(interval => interval * paint.StrokeWidth).ToArray(), 0);
 		paint.PathEffect = pathEffect;
 		using var path = new SKPath();
 
@@ -72,14 +73,15 @@ public class SkiaCanvasTests
 	}
 
 	[Theory]
-	[InlineData(25, 18, 30, 240, false, -30, -210)]
-	[InlineData(25, 18, 30, 240, true, -30, 150)]
-	[InlineData(25, 18, 0, 360, false, 0, -360)]
-	[InlineData(25, 18, 0, 360, true, 0, 0)]
-	[InlineData(25, 18, 360, 0, false, -360, 0)]
-	[InlineData(25, 18, 360, 0, true, -360, 360)]
-	[InlineData(0, 18, 30, 240, false, -30, -210)]
-	[InlineData(25, 0, 30, 240, false, -30, -210)]
+	[InlineData(25, 18, 30, 240, false, -30, -210, true)]
+	[InlineData(25, 18, 30, 240, true, -30, 150, true)]
+	[InlineData(25, 18, 0, 360, false, 0, -360, true)]
+	[InlineData(25, 18, 0, 360, true, 0, 0, false)]
+	[InlineData(25, 18, 360, 0, false, -360, 0, false)]
+	[InlineData(25, 18, 360, 0, true, -360, 360, true)]
+	[InlineData(25, 18, 30, 390, false, -30, -360, false)]
+	[InlineData(0, 18, 30, 240, false, -30, -210, false)]
+	[InlineData(25, 0, 30, 240, false, -30, -210, false)]
 	public void FillArcMatchesPathRendering(
 		float width,
 		float height,
@@ -87,7 +89,8 @@ public class SkiaCanvasTests
 		float endAngle,
 		bool clockwise,
 		float expectedStartAngle,
-		float expectedSweep)
+		float expectedSweep,
+		bool shouldDrawPixels)
 	{
 		using var actual = CreateBitmap();
 		using var expected = CreateBitmap();
@@ -108,7 +111,6 @@ public class SkiaCanvasTests
 		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
 		expectedPlatformCanvas.DrawPath(path, paint);
 
-		var shouldDrawPixels = width > 0 && height > 0 && expectedSweep != 0;
 		Assert.Equal(shouldDrawPixels, HasPixels(expected));
 		Assert.Equal(shouldDrawPixels, HasPixels(actual));
 		Assert.Equal(expected.Bytes, actual.Bytes);
