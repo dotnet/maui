@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		static Context? GetThemedContext(Context? context, bool useMaterial3)
 		{
-			if (!useMaterial3 || context is null)
+			if (context is null || (!useMaterial3 && context is not MauiMaterialContextThemeWrapper))
 				return context;
 
 			return MauiMaterialContextThemeWrapper.Create(context, useMaterial3);

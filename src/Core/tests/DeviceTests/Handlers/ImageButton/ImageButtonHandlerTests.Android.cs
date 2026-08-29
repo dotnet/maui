@@ -37,6 +37,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "MauiShapeableImageView uses the requested Material theme")]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public Task MauiShapeableImageViewUsesRequestedMaterialTheme(bool currentMaterial3, bool requestedMaterial3)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var currentContext = MauiMaterialContextThemeWrapper.Create(MauiContext.Context, currentMaterial3);
+				var platformView = new MauiShapeableImageView(currentContext, requestedMaterial3);
+				var actualContext = Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
+
+				Assert.Equal(requestedMaterial3, actualContext.UseMaterial3);
+				Assert.Same(MauiContext.Context.GetActivity(), actualContext.GetActivity());
+
+				if (currentMaterial3 == requestedMaterial3)
+					Assert.Same(currentContext, actualContext);
+				else
+					Assert.NotSame(currentContext, actualContext);
+			});
+		}
+
 		[Fact(DisplayName = "ImageButton applies Material 3 theme when enabled")]
 		public Task ImageButtonAppliesMaterial3ThemeWhenEnabled()
 		{
