@@ -160,22 +160,6 @@ extends:
           inputs:
             useGlobalJson: true
 
-        - pwsh: |
-            $darcDirectory = "$(Build.ArtifactStagingDirectory)/_darc"
-            & "$(Build.SourcesDirectory)/eng/common/darc-init.ps1" `
-              -toolpath $darcDirectory
-            $darcPath = Join-Path $darcDirectory 'darc.exe'
-            if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darcPath -PathType Leaf)) {
-              throw 'Arcade failed to install the Darc CLI.'
-            }
-
-            $darcHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
-              -Path $darcDirectory
-            Write-Host "##vso[task.setvariable variable=DarcPath]$darcPath"
-            Write-Host "##vso[task.setvariable variable=DarcHash;isOutput=true]$darcHash"
-          name: installDarc
-          displayName: Install Darc through Arcade
-
         # Build once before any task acquires the Maestro production identity. Publish jobs
         # execute this exact tool directory from the immutable Release artifact without rebuilding.
         - pwsh: |
@@ -271,7 +255,13 @@ extends:
             # darc owns feed discovery, authentication, retries and --include-released.
             # Invoked here so Azure DevOps owns the exit code and --verbose lands in this log.
             inlineScript: |
-              & "$env:DARC_PATH" gather-drop --ci `
+              . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
+              $darc = Get-Darc
+              if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
+                throw 'Arcade failed to install the Darc CLI.'
+              }
+
+              & $darc gather-drop --ci `
                 --id $(releasePlan.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $env:AZDO_TOKEN `
@@ -281,7 +271,6 @@ extends:
               if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
           env:
             AZDO_TOKEN: $(System.AccessToken)
-            DARC_PATH: $(DarcPath)
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
@@ -377,39 +366,15 @@ extends:
           condition: eq(dependencies.promote_approval.result, 'Succeeded')
           variables:
             ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
-            DarcHash: $[ stageDependencies.prepare_release.prepare_release.outputs['installDarc.DarcHash'] ]
-            GlobalJsonHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.GlobalJsonHash'] ]
-            DirectoryHashScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.DirectoryHashScriptHash'] ]
           templateContext:
             inputs:
             - input: pipelineArtifact
               artifactName: Release
               targetPath: $(Pipeline.Workspace)/Release
           steps:
-          - checkout: none
-
-          - pwsh: |
-              $root = "$(Pipeline.Workspace)/Release"
-              $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()
-              if ($globalJsonHash -ne $env:EXPECTED_GLOBAL_JSON_HASH) {
-                throw "global.json hash '$globalJsonHash' does not match '$env:EXPECTED_GLOBAL_JSON_HASH'."
-              }
-
-              $hashScript = "$root/_infra/Get-DirectoryHash.ps1"
-              $hashScriptHash = (Get-FileHash -LiteralPath $hashScript -Algorithm SHA256).Hash.ToLowerInvariant()
-              if ($hashScriptHash -ne $env:EXPECTED_HASH_SCRIPT_HASH) {
-                throw "Directory hash script hash '$hashScriptHash' does not match '$env:EXPECTED_HASH_SCRIPT_HASH'."
-              }
-            displayName: Verify release infrastructure
-            env:
-              EXPECTED_GLOBAL_JSON_HASH: $(GlobalJsonHash)
-              EXPECTED_HASH_SCRIPT_HASH: $(DirectoryHashScriptHash)
-
-          - task: UseDotNet@2
-            displayName: Install the .NET SDK
-            inputs:
-              useGlobalJson: true
-              workingDirectory: $(Pipeline.Workspace)/Release
+          - checkout: self
+            clean: true
+            persistCredentials: false
 
           - pwsh: |
               $planPath = "$(Pipeline.Workspace)/Release/release-plan.json"
@@ -417,17 +382,9 @@ extends:
               if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
                 throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
               }
-
-              $darcDirectory = "$(Pipeline.Workspace)/Release/_darc"
-              $darcHash = & "$(Pipeline.Workspace)/Release/_infra/Get-DirectoryHash.ps1" `
-                -Path $darcDirectory
-              if ($darcHash -ne $env:EXPECTED_DARC_HASH) {
-                throw "Darc hash '$darcHash' does not match the prepared hash '$env:EXPECTED_DARC_HASH'."
-              }
             displayName: Verify release plan integrity
             env:
               EXPECTED_PLAN_HASH: $(ReleasePlanHash)
-              EXPECTED_DARC_HASH: $(DarcHash)
 
           - task: AzureCLI@2
             displayName: Add build to channel
@@ -438,7 +395,13 @@ extends:
               # Channel and feed are read from the plan, so there is one source of truth.
               inlineScript: |
                 $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
-                & "$env:DARC_PATH" add-build-to-channel --ci `
+                . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
+                $darc = Get-Darc
+                if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
+                  throw 'Arcade failed to install the Darc CLI.'
+                }
+
+                & $darc add-build-to-channel --ci `
                   --channel "$($plan.workloadSet.channel)" `
                   --id "$($plan.source.barBuildId)" `
                   --skip-assets-publishing `
@@ -446,7 +409,6 @@ extends:
                 if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
             env:
               AZDO_TOKEN: $(System.AccessToken)
-              DARC_PATH: $(Pipeline.Workspace)/Release/_darc/darc.exe
 
     # -----------------------------------------------------------------------------------------
     # Validate the package-set jobs and artifact wiring on every run. The internal template

@@ -737,27 +737,26 @@ public class PipelineDefinitionTests
                 condition.Contains("parameters.promoteWorkloadSet, true", StringComparison.Ordinal));
     }
 
-    /// <summary>Arcade provisions Darc, then the pipeline carries and invokes its exact bytes.</summary>
+    /// <summary>Only normal jobs obtain Darc through Arcade; release artifacts never carry it.</summary>
     [Fact]
-    public void Darc_is_provisioned_by_Arcade_and_carried_in_the_release_artifact()
+    public void Darc_is_provisioned_per_normal_job_and_excluded_from_release_artifacts()
     {
         var pipeline = File.ReadAllText(PipelinePath);
+        var publish = File.ReadAllText(
+            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
         var globalJson = File.ReadAllText(Path.Combine(RepoRoot, "global.json"));
         var versionDetails = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
 
-        Assert.Contains("eng/common/darc-init.ps1", pipeline, StringComparison.Ordinal);
-        Assert.Contains("-toolpath $darcDirectory", pipeline, StringComparison.Ordinal);
-        Assert.DoesNotContain("-darcVersion", pipeline, StringComparison.Ordinal);
+        Assert.Equal(2, Regex.Matches(pipeline, @"\$darc = Get-Darc").Count);
+        Assert.Contains("eng/common/tools.ps1", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("dotnet tool install Microsoft.DotNet.Darc", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("\"darc\"", globalJson, StringComparison.Ordinal);
         Assert.DoesNotContain("Microsoft.DotNet.Darc", versionDetails, StringComparison.Ordinal);
-        Assert.Contains("name: installDarc", pipeline, StringComparison.Ordinal);
-        Assert.Contains("installDarc.DarcHash", pipeline, StringComparison.Ordinal);
-        Assert.True(
-            pipeline.IndexOf("eng/common/darc-init.ps1", StringComparison.Ordinal) <
-            pipeline.IndexOf("azureSubscription:", StringComparison.Ordinal));
-        Assert.Contains("& \"$env:DARC_PATH\" gather-drop", pipeline, StringComparison.Ordinal);
-        Assert.Contains("& \"$env:DARC_PATH\" add-build-to-channel", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("_darc", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("DarcHash", pipeline, StringComparison.Ordinal);
+        Assert.DoesNotContain("darc", publish, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("& $darc gather-drop", pipeline, StringComparison.Ordinal);
+        Assert.Contains("& $darc add-build-to-channel", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("\n              darc gather-drop", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("\n                darc add-build-to-channel", pipeline, StringComparison.Ordinal);
     }

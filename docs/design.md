@@ -165,9 +165,9 @@ This validation runs before the release tool authenticates.
 ### Source-control safety
 
 The pipeline source MUST be the internal Azure Repos mirror, not a GitHub service
-connection. Only the prepare job checks out `self`, with `persistCredentials: false`.
-Downstream jobs consume the immutable `Release` artifact and use `checkout: none`; 1ES
-release jobs prohibit source checkout.
+connection. The normal prepare and optional promotion jobs check out `self` with
+`persistCredentials: false`. Package preflight and 1ES release jobs consume immutable
+artifacts and use `checkout: none`; 1ES release jobs prohibit source checkout.
 
 The released repository is never checked out. Its GitHub identity is data used to query BAR.
 No checked-in step invokes `git push`, `gh`, Octokit, or the GitHub write API.
@@ -245,7 +245,6 @@ The prepare stage always runs, including on a dry run:
 ```
 checkout release-system source
   -> install pinned .NET SDK
-  -> install and pin Release/_darc
   -> build and pin Release/_tool
   -> release plan
   -> darc gather-drop
@@ -452,12 +451,11 @@ path-shaped blob assets.
 
 The pipeline follows the [official Darc setup
 guidance](https://github.com/dotnet/arcade-services/blob/main/docs/Darc.md#setting-up-your-darc-client)
-by invoking Arcade's `eng/common/darc-init.ps1`. Without `-darcVersion`, the initializer
-asks Maestro's Darc-version endpoint for the matching supported version and installs it
-from `dotnet-eng`; no Darc version is duplicated in this repository's YAML or dependency
-files. The pipeline uses the script's supported `-toolpath` option to install directly into
-the immutable `Release` artifact before acquiring the Maestro identity. `gather-drop`
-executes that exact path to read BAR and repository metadata and download package assets.
+through Arcade's `Get-Darc` helper in `eng/common/tools.ps1`. The helper invokes
+`darc-init.ps1`, asks Maestro's Darc-version endpoint for the matching supported version,
+and installs it from `dotnet-eng`; no Darc version is duplicated in this repository's YAML
+or dependency files. The normal prepare and promotion jobs each obtain Darc independently.
+Darc is never copied into a release artifact or used by a package release job.
 `--include-released` permits downloading a build already marked released; it does not
 change release state.
 
@@ -571,9 +569,6 @@ Release/
   global.json
   _infra/
     Get-DirectoryHash.ps1
-  _darc/
-    darc.exe
-    <runtime dependencies>
   _tool/
     release.dll
     release.deps.json
@@ -612,16 +607,14 @@ only fail the release; it cannot cause a different package to publish.
 
 The prepare stage:
 
-1. installs the Arcade/Maestro-selected Darc CLI into `Release/_darc`;
-2. computes a deterministic hash over every file and relative path in `_darc` as `DarcHash`;
-3. builds the C# project into `Release/_tool`;
-4. computes the same directory hash over `_tool` as `ToolHash`;
-5. copies `global.json` and `Get-DirectoryHash.ps1` into the artifact and hashes both;
-6. executes `_tool/release.dll` for `plan` and `stage`;
-7. records every package SHA-256 in the plan;
-8. writes one authoritative plan into the release artifact root;
-9. computes the plan hash independently with `Get-FileHash`;
-10. exports all infrastructure, tool, and plan hashes.
+1. builds the C# project into `Release/_tool`;
+2. computes a deterministic hash over every file and relative path in `_tool` as `ToolHash`;
+3. copies `global.json` and `Get-DirectoryHash.ps1` into the artifact and hashes both;
+4. executes `_tool/release.dll` for `plan` and `stage`;
+5. records every package SHA-256 in the plan;
+6. writes one authoritative plan into the release artifact root;
+7. computes the plan hash independently with `Get-FileHash`;
+8. exports all infrastructure, tool, and plan hashes.
 
 The publish job:
 
