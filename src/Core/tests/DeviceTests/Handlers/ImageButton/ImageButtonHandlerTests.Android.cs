@@ -7,8 +7,11 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Collection(Material3FeatureSwitchTestCollection.Name)]
 	public partial class ImageButtonHandlerTests
 	{
+		const string Material3FeatureSwitch = "Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled";
+
 		[Fact(DisplayName = "ImageButton uses MauiShapeableImageView with expected activity context")]
 		public Task ImageButtonUsesMauiShapeableImageViewWithExpectedActivityContext()
 		{
@@ -33,15 +36,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "MauiShapeableImageView applies Material 3 theme when requested")]
-		public Task MauiShapeableImageViewAppliesMaterial3ThemeWhenRequested()
+		[Fact(DisplayName = "ImageButton applies Material 3 theme when enabled")]
+		public Task ImageButtonAppliesMaterial3ThemeWhenEnabled()
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var platformView = new MauiShapeableImageView(MauiContext.Context, useMaterial3: true);
+				AppContext.TryGetSwitch(Material3FeatureSwitch, out bool wasMaterial3Enabled);
+				AppContext.SetSwitch(Material3FeatureSwitch, true);
+				try
+				{
+					var handler = CreateHandler(new ImageButtonStub());
+					var platformView = Assert.IsType<MauiShapeableImageView>(handler.PlatformView);
 
-				Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
-				Assert.Same(MauiContext.Context.GetActivity(), platformView.Context.GetActivity());
+					Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
+					Assert.Same(MauiContext.Context.GetActivity(), platformView.Context.GetActivity());
+				}
+				finally
+				{
+					AppContext.SetSwitch(Material3FeatureSwitch, wasMaterial3Enabled);
+				}
 			});
 		}
 
@@ -93,5 +106,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
 			imageButtonHandler.PlatformView.Drawable != null;
+	}
+
+	[CollectionDefinition(Name, DisableParallelization = true)]
+	public sealed class Material3FeatureSwitchTestCollection
+	{
+		public const string Name = "Material3FeatureSwitch";
 	}
 }
