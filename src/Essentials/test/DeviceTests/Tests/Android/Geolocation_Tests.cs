@@ -70,6 +70,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Equal("custom", provider);
 		}
 
+		[Fact]
+		public void SelectFallbackProvider_IgnoresPassiveAndLocalDatabaseProviders()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.PassiveProvider, "local_database", "custom" };
+
+			var provider = GeolocationImplementation.SelectFallbackProvider(enabledProviders);
+
+			Assert.Equal("custom", provider);
+		}
+
 		[Theory]
 		[InlineData(GeolocationAccuracy.Best, AndroidLocationManager.NetworkProvider)]
 		[InlineData(GeolocationAccuracy.Lowest, AndroidLocationManager.GpsProvider)]

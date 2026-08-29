@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Devices.Sensors
 					break;
 			}
 
-			var provider = locationManager.GetBestProvider(criteria, true) ?? enabledProviders.FirstOrDefault();
+			var provider = locationManager.GetBestProvider(criteria, true) ?? SelectFallbackProvider(enabledProviders);
 
 			return (provider, accuracyDistance);
 		}
@@ -295,8 +295,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (enabledProviders.Contains(alternateProvider))
 				return alternateProvider;
 
-			return enabledProviders.FirstOrDefault(provider => !ignoredProviders.Contains(provider));
+			return SelectFallbackProvider(enabledProviders);
 		}
+
+		internal static string? SelectFallbackProvider(IList<string>? enabledProviders) =>
+			enabledProviders?.FirstOrDefault(provider => !ignoredProviders.Contains(provider));
 
 		internal static List<string> GetProviders(IList<string> availableProviders, string selectedProvider, bool includeSelectedProvider)
 		{
