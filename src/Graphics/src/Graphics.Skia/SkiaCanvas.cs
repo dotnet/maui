@@ -468,7 +468,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 			else if (Math.Abs(sweep) >= 360)
 			{
-				// AddArc closes full sweeps; DrawArc leaves stroked sweeps open and can render caps at the seam.
+				// Preserve AddArc's full-sweep behavior: cardinal starts close the oval, while non-cardinal starts may produce an empty contour.
 				var platformPath = new SKPath();
 				platformPath.AddArc(rect, startAngle, sweep);
 				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);

@@ -7,20 +7,23 @@ namespace Microsoft.Maui.Graphics.Tests;
 public class SkiaCanvasTests
 {
 	[Theory]
-	[InlineData(25, 18, 30, 240, false, LineCap.Butt, -30, -210)]
-	[InlineData(25, 18, 30, 240, false, LineCap.Round, -30, -210)]
-	[InlineData(25, 18, 30, 240, false, LineCap.Square, -30, -210)]
-	[InlineData(25, 18, 30, 240, true, LineCap.Butt, -30, 150)]
-	[InlineData(25, 18, 30, 240, true, LineCap.Round, -30, 150)]
-	[InlineData(25, 18, 30, 240, true, LineCap.Square, -30, 150)]
-	[InlineData(25, 18, 0, 360, false, LineCap.Butt, 0, -360)]
-	[InlineData(25, 18, 0, 360, false, LineCap.Round, 0, -360)]
-	[InlineData(25, 18, 0, 360, false, LineCap.Square, 0, -360)]
-	[InlineData(25, 18, 360, 0, true, LineCap.Butt, -360, 360)]
-	[InlineData(25, 18, 360, 0, true, LineCap.Round, -360, 360)]
-	[InlineData(25, 18, 360, 0, true, LineCap.Square, -360, 360)]
-	[InlineData(0, 18, 30, 240, false, LineCap.Butt, -30, -210)]
-	[InlineData(25, 0, 30, 240, false, LineCap.Butt, -30, -210)]
+	[InlineData(25, 18, 30, 240, false, LineCap.Butt, -30, -210, true, false)]
+	[InlineData(25, 18, 30, 240, false, LineCap.Butt, -30, -210, true, true)]
+	[InlineData(25, 18, 30, 240, false, LineCap.Round, -30, -210, true, false)]
+	[InlineData(25, 18, 30, 240, false, LineCap.Square, -30, -210, true, false)]
+	[InlineData(25, 18, 30, 240, true, LineCap.Butt, -30, 150, true, false)]
+	[InlineData(25, 18, 30, 240, true, LineCap.Round, -30, 150, true, false)]
+	[InlineData(25, 18, 30, 240, true, LineCap.Square, -30, 150, true, false)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Butt, 0, -360, true, false)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Round, 0, -360, true, false)]
+	[InlineData(25, 18, 0, 360, false, LineCap.Square, 0, -360, true, false)]
+	[InlineData(25, 18, 360, 0, true, LineCap.Butt, -360, 360, true, false)]
+	[InlineData(25, 18, 360, 0, true, LineCap.Round, -360, 360, true, false)]
+	[InlineData(25, 18, 360, 0, true, LineCap.Square, -360, 360, true, false)]
+	[InlineData(25, 18, 30, 390, false, LineCap.Round, -30, -360, false, false)]
+	[InlineData(25, 18, 30, 390, false, LineCap.Square, -30, -360, false, false)]
+	[InlineData(0, 18, 30, 240, false, LineCap.Butt, -30, -210, false, false)]
+	[InlineData(25, 0, 30, 240, false, LineCap.Butt, -30, -210, false, false)]
 	public void DrawArcMatchesPathRendering(
 		float width,
 		float height,
@@ -29,8 +32,11 @@ public class SkiaCanvasTests
 		bool clockwise,
 		LineCap lineCap,
 		float expectedStartAngle,
-		float expectedSweep)
+		float expectedSweep,
+		bool shouldDrawPixels,
+		bool dashed)
 	{
+		float[] strokePattern = dashed ? [2, 1] : null;
 		using var actual = CreateBitmap();
 		using var expected = CreateBitmap();
 		using var actualPlatformCanvas = new SKCanvas(actual);
@@ -45,17 +51,21 @@ public class SkiaCanvasTests
 			StrokeMiter = CanvasDefaults.DefaultMiterLimit,
 			StrokeWidth = 3,
 		};
+		using var pathEffect = strokePattern is null
+			? null
+			: SKPathEffect.CreateDash([6, 3], 0);
+		paint.PathEffect = pathEffect;
 		using var path = new SKPath();
 
 		canvas.StrokeColor = Colors.Red;
 		canvas.StrokeLineCap = lineCap;
 		canvas.StrokeSize = 3;
+		canvas.StrokeDashPattern = strokePattern;
 		canvas.DrawArc(5, 7, width, height, startAngle, endAngle, clockwise, false);
 
 		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
 		expectedPlatformCanvas.DrawPath(path, paint);
 
-		var shouldDrawPixels = width > 0 && height > 0 && expectedSweep != 0;
 		Assert.Equal(shouldDrawPixels, HasPixels(expected));
 		Assert.Equal(shouldDrawPixels, HasPixels(actual));
 		Assert.Equal(expected.Bytes, actual.Bytes);
