@@ -13,7 +13,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
-#if IOS || MACCATALYST || WINDOWS
+#if IOS || MACCATALYST
 using Microsoft.Maui.Controls.Handlers.Items2;
 #endif
 using Microsoft.Maui.Handlers;
@@ -44,12 +44,9 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Button, ButtonHandler>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<CarouselView, CarouselViewHandler2>();
-#else
-				handlers.AddHandler<CarouselView, CarouselViewHandler>();
-#endif
-#if IOS || MACCATALYST || WINDOWS
 				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
 #else
+				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
 #if IOS || MACCATALYST

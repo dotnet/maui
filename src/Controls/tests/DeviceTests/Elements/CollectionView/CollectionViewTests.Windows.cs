@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using WSetter = Microsoft.UI.Xaml.Setter;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -99,6 +103,161 @@ namespace Microsoft.Maui.DeviceTests
 				((IElementHandler)handler).DisconnectHandler();
 
 				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task ValidateItemContainerDefaultHeight()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3"
+			};
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					return new VerticalStackLayout()
+					{
+						new Label()
+					};
+				}),
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				collectionView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+				ValidateItemContainerStyle(collectionView);
+			});
+		}
+
+		void ValidateItemContainerStyle(CollectionView collectionView)
+		{
+			var handler = (CollectionViewHandler)collectionView.Handler;
+			var control = handler.PlatformView;
+
+			var minHeight = control.ItemContainerStyle.Setters
+				.OfType<WSetter>()
+				.FirstOrDefault(X => X.Property == FrameworkElement.MinHeightProperty).Value;
+
+			Assert.Equal(0d, minHeight);
+		}
+
+		[Fact]
+		public async Task ValidateItemsVirtualize()
+		{
+			SetupBuilder();
+
+			const int listItemCount = 1000;
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var template = new Grid()
+					{
+						ColumnDefinitions = new ColumnDefinitionCollection(
+						[
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+						])
+					};
+
+					for (int i = 0; i < 5; i++)
+					{
+						var label = new Label();
+						label.SetBinding(Label.TextProperty, new Binding("Symbol"));
+						Grid.SetColumn(label, i);
+						template.Add(label);
+					}
+
+					return template;
+				}),
+				ItemsSource = Enumerable.Range(0, listItemCount)
+					.Select(x => new { Symbol = x })
+					.ToList()
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var listView = (UI.Xaml.Controls.ListView)collectionView.Handler.PlatformView;
+
+				int childCount = 0;
+				int prevChildCount = -1;
+
+				await Task.Delay(2000);
+
+				bool listIsDoneGrowing()
+				{
+					prevChildCount = childCount;
+					childCount = listView.GetChildren<UI.Xaml.Controls.TextBlock>().Count();
+					return childCount == prevChildCount;
+				}
+
+				await AssertEventually(listIsDoneGrowing, timeout: 10000);
+
+				// If this is broken we'll get way more than 1000 elements
+				Assert.True(childCount < 1000);
+			});
+		}
+
+		[Fact]
+		public async Task ValidateCorrectHorzScroll()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3"
+			};
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					return new VerticalStackLayout()
+					{
+						new Label()
+					};
+				}),
+				ItemsSource = data,
+				ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Horizontal)
+				{
+					Span = 2,
+					HorizontalItemSpacing = 4,
+					VerticalItemSpacing = 4
+				}
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				collectionView
+			};
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var cvHandler = (CollectionViewHandler)collectionView.Handler;
+				var control = cvHandler.PlatformView;
+
+				var horzScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.HorizontalScrollModeProperty);
+				var vertScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.VerticalScrollModeProperty);
+				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Enabled);
+				Assert.True(vertScrollMode == UI.Xaml.Controls.ScrollMode.Disabled);
 			});
 		}
 
@@ -233,7 +392,7 @@ namespace Microsoft.Maui.DeviceTests
 				throw new System.Exception("The cell is not in the visual tree");
 			}
 
-			return cellContent.ToPlatform().GetParentOfType<Microsoft.UI.Xaml.Controls.ItemContainer>().GetBoundingBox();
+			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
 		}
 
 		class Subscriber

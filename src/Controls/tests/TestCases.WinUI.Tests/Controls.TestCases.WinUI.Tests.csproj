@@ -53,4 +53,8 @@
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="snapshots/windows-cv1/" />
+  </ItemGroup>
+
 </Project>

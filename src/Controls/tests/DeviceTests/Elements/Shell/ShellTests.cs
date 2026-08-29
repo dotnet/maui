@@ -9,7 +9,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
-#if IOS || MACCATALYST || WINDOWS
+#if IOS || MACCATALYST
 using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
 #else
 using Microsoft.Maui.Controls.Handlers.Items;
