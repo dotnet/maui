@@ -1,0 +1,232 @@
+# Trigger issue replication when a maintainer comments `/fix -b <pipeline-branch>`.
+# Uses OIDC (no PAT) -- see .github/docs/trigger-azdo-pipeline-setup.md.
+
+name: Fix Trigger
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  # Keep command parsing, authorization, and validation in a read-only job.
+  # The OIDC-capable job is not provisioned unless every check succeeds.
+  preflight:
+    if: github.event_name == 'issue_comment' && !github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      matched: ${{ steps.command.outputs.matched }}
+      authorized: ${{ steps.permission.outputs.authorized }}
+      proceed: ${{ steps.validate.outputs.proceed }}
+      issue_number: ${{ steps.validate.outputs.issue_number }}
+      pipeline_ref: ${{ steps.validate.outputs.pipeline_ref }}
+      platform: ${{ steps.validate.outputs.platform }}
+    steps:
+      - name: Match /fix command
+        id: command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          PIPELINE_REF=""
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/fix[[:space:]]+(-b|--branch)[[:space:]]+([^[:space:]-][^[:space:]]*)[[:space:]]*$ ]]; then
+            PIPELINE_REF="${BASH_REMATCH[2]}"
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/fix[[:space:]]+(-b=|--branch=)([^[:space:]-][^[:space:]]*)[[:space:]]*$ ]]; then
+            PIPELINE_REF="${BASH_REMATCH[2]}"
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "matched=true" >> "$GITHUB_OUTPUT"
+          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
+
+      - name: Check actor permission
+        id: permission
+        if: steps.command.outputs.matched == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+        run: |
+          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null); then
+            echo "::warning::Permission lookup failed for ${ACTOR}; treating the caller as unauthorized."
+            echo "authorized=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "User ${ACTOR} has permission: ${PERMISSION}"
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+            echo "::notice::Only users with write, maintain, or admin permission can trigger /fix."
+            echo "authorized=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "authorized=true" >> "$GITHUB_OUTPUT"
+
+      - name: Validate issue, branch, and platform
+        id: validate
+        if: steps.permission.outputs.authorized == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PIPELINE_REF: ${{ steps.command.outputs.pipeline_ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if ! [[ "${ISSUE_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::The event did not provide a valid issue number."
+            exit 1
+          fi
+
+          ISSUE_JSON=$(gh api "repos/${REPO}/issues/${ISSUE_NUMBER}")
+          if jq -e 'has("pull_request")' <<< "${ISSUE_JSON}" >/dev/null; then
+            echo "::error::/fix is only supported on issues, not pull requests."
+            exit 1
+          fi
+          ISSUE_STATE=$(jq -r '.state' <<< "${ISSUE_JSON}")
+          if [ "${ISSUE_STATE}" != "open" ]; then
+            echo "::error::Issue #${ISSUE_NUMBER} is not open (state: ${ISSUE_STATE})."
+            exit 1
+          fi
+
+          if ! [[ "${PIPELINE_REF}" =~ ^[A-Za-z0-9._/-]+$ ]] ||
+             [[ "${PIPELINE_REF}" == refs/* ]] ||
+             ! git check-ref-format --branch "${PIPELINE_REF}" >/dev/null 2>&1; then
+            echo "::error::Invalid pipeline branch name: '${PIPELINE_REF}'."
+            exit 1
+          fi
+          if ! gh api "repos/${REPO}/git/ref/heads/${PIPELINE_REF}" --silent >/dev/null 2>&1; then
+            echo "::error::Pipeline branch '${PIPELINE_REF}' does not exist in ${REPO}."
+            exit 1
+          fi
+
+          PLATFORMS=$(jq -r '
+            .labels[].name
+            | ascii_downcase
+            | if . == "platform/ios" then "ios"
+              elif . == "platform/macos" or . == "platform/maccatalyst" then "catalyst"
+              elif . == "platform/android" then "android"
+              elif . == "platform/windows" then "windows"
+              else empty
+              end
+          ' <<< "${ISSUE_JSON}" | sort -u)
+          PLATFORM_COUNT=$(printf '%s\n' "${PLATFORMS}" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "${PLATFORM_COUNT}" = "1" ]; then
+            PLATFORM="${PLATFORMS}"
+            echo "Resolved platform '${PLATFORM}' from issue labels."
+          else
+            PLATFORM="android"
+            echo "::notice::Issue platform labels are inconclusive; defaulting to android."
+          fi
+
+          {
+            echo "issue_number=${ISSUE_NUMBER}"
+            echo "pipeline_ref=${PIPELINE_REF}"
+            echo "platform=${PLATFORM}"
+            echo "proceed=true"
+          } >> "$GITHUB_OUTPUT"
+
+  trigger-fix:
+    needs: preflight
+    if: needs.preflight.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: fix-trigger-${{ needs.preflight.outputs.issue_number }}
+      cancel-in-progress: false
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+    steps:
+      # Keep both credentials shell-local in this step. Neither credential is
+      # persisted through job outputs or passed to the queued pipeline.
+      - name: Trigger issue replication pipeline
+        id: trigger_azdo
+        env:
+          ISSUE_NUMBER: ${{ needs.preflight.outputs.issue_number }}
+          PIPELINE_REF: ${{ needs.preflight.outputs.pipeline_ref }}
+          PLATFORM: ${{ needs.preflight.outputs.platform }}
+          AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          trap 'unset OIDC_TOKEN AZDO_TOKEN AZURE_RESPONSE' EXIT
+
+          # 1. Get a GitHub OIDC token.
+          OIDC_TOKEN=$(curl -sS --fail-with-body \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -er '.value')
+          echo "::add-mask::${OIDC_TOKEN}"
+
+          # 2. Exchange the OIDC token for an Azure DevOps access token.
+          AZURE_RESPONSE=$(curl -sS --fail-with-body -X POST \
+            "https://login.microsoftonline.com/${AZDO_TENANT_ID}/oauth2/v2.0/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${AZDO_CLIENT_ID}" \
+            -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
+            -d "client_assertion=${OIDC_TOKEN}" \
+            -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+          unset OIDC_TOKEN
+
+          AZDO_TOKEN=$(jq -er '.access_token' <<< "${AZURE_RESPONSE}")
+          echo "::add-mask::${AZDO_TOKEN}"
+          unset AZURE_RESPONSE
+
+          # 3. Queue replicate mode from the selected pipeline implementation ref.
+          PAYLOAD=$(jq -n \
+            --arg issue "${ISSUE_NUMBER}" \
+            --arg platform "${PLATFORM}" \
+            --arg ref "refs/heads/${PIPELINE_REF}" \
+            '{
+              templateParameters: {
+                Mode: "replicate",
+                IssueNumber: $issue,
+                PRNumber: "0",
+                Platform: $platform
+              },
+              resources: { repositories: { self: { refName: $ref } } }
+            }')
+
+          RESPONSE=$(curl -sS --fail-with-body -w "\n%{http_code}" \
+            -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}")
+          unset AZDO_TOKEN
+
+          HTTP_CODE=$(tail -n 1 <<< "${RESPONSE}")
+          RESPONSE_BODY=$(sed '$d' <<< "${RESPONSE}")
+          if ! [[ "${HTTP_CODE}" =~ ^2[0-9][0-9]$ ]]; then
+            echo "::error::Failed to queue issue replication pipeline (HTTP ${HTTP_CODE})."
+            jq . <<< "${RESPONSE_BODY}" 2>/dev/null || printf '%s\n' "${RESPONSE_BODY}"
+            exit 1
+          fi
+
+          RUN_ID=$(jq -r '.id' <<< "${RESPONSE_BODY}")
+          echo "Queued issue replication for #${ISSUE_NUMBER} on ${PLATFORM} from refs/heads/${PIPELINE_REF}."
+          echo "Run: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
+          echo "queued=true" >> "$GITHUB_OUTPUT"
+
+      - name: Acknowledge queued command
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.trigger_azdo.outputs.queued == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+          REPO: ${{ github.repository }}
+        run: |
+          if ! gh api -X POST "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions" \
+            -f content=rocket --silent; then
+            echo "::warning::Could not add a reaction to the queued /fix command."
+          fi
+          if ! gh api graphql \
+            -f query="mutation(\$id:ID!){minimizeComment(input:{subjectId:\$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}" \
+            -f id="${COMMENT_NODE_ID}" --silent; then
+            echo "::warning::Could not minimize the queued /fix command."
+          fi
