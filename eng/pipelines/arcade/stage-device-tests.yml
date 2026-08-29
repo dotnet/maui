@@ -414,6 +414,8 @@ stages:
   displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR MacCatalyst Helix Tests
   dependsOn: 
     - devicetests_build_coreclr
+  # Mac Catalyst device tests only run for release branches (or PRs targeting one); see runMacCatalystTestsCondition.
+  condition: and(succeeded(), eq(variables.runMacCatalystTestsCondition, true))
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:

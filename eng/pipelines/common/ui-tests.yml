@@ -524,6 +524,8 @@ stages:
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
+    # Mac Catalyst UI tests only run for release branches (or PRs targeting one); see runMacCatalystTestsCondition.
+    condition: and(succeeded(), eq(variables.runMacCatalystTestsCondition, true))
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:

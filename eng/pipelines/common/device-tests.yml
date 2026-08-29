@@ -39,6 +39,9 @@ stages:
     ${{ else }}:
       dependsOn:
       - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ if eq(platform, 'catalyst') }}:
+      # Mac Catalyst device tests only run for release branches (or PRs targeting one); see runMacCatalystTestsCondition.
+      condition: and(succeeded(), eq(variables.runMacCatalystTestsCondition, true))
     jobs:
 
     - ${{ if eq(platform, 'android') }}:

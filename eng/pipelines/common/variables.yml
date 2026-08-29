@@ -34,6 +34,11 @@ variables:
   value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main')]
 - name: signingCondition
   value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
+# True only for a release/* branch build, or a PR targeting a release/* branch.
+# Mac Catalyst tests are expensive and largely redundant with iOS coverage, so they are
+# gated to release branches only; iOS testing is unaffected and always runs.
+- name: runMacCatalystTestsCondition
+  value: $[or( startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'release/') )]
 # Common Agent Pools in use
 # hostedMacImage is the source of truth for Azure Pipelines hosted macOS image lanes.
 # Keep the AcesMacImageOverride mapping below aligned so AcesShared lanes target
