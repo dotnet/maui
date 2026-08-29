@@ -45,14 +45,23 @@ public sealed class MauiDispatcherTests
 	}
 
 	[Theory]
-	[InlineData(DispatcherWorkItemKind.Action)]
-	[InlineData(DispatcherWorkItemKind.AsyncAction)]
-	[InlineData(DispatcherWorkItemKind.Function)]
-	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
-	public async Task CancellationCancelsReturnedTask(DispatcherWorkItemKind workItemKind)
+	[InlineData(DispatcherWorkItemKind.Action, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, true)]
+	[InlineData(DispatcherWorkItemKind.Function, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, true)]
+	[InlineData(DispatcherWorkItemKind.Action, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, false)]
+	[InlineData(DispatcherWorkItemKind.Function, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, false)]
+	public async Task OperationCanceledExceptionCancelsReturnedTask(
+		DispatcherWorkItemKind workItemKind,
+		bool cancellationRequested)
 	{
 		using var cancellation = new CancellationTokenSource();
-		cancellation.Cancel();
+		if (cancellationRequested)
+		{
+			cancellation.Cancel();
+		}
 		var task = InvokeFailure(workItemKind, new OperationCanceledException(cancellation.Token));
 
 		var thrown = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
