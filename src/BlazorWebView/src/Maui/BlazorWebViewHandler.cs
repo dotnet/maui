@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					?? NullLogger<BlazorWebViewHandler>.Instance;
 
 				// Dispatch because this is going to be async, and we want to catch any errors
-				_webviewManager.Dispatcher.InvokeAsync(async () =>
+				var dispatchTask = _webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
 					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
 					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
@@ -141,7 +141,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
-				}).FireAndForget(logger);
+				});
+				global::Microsoft.AspNetCore.Components.WebView.TaskExtensions.FireAndForget(dispatchTask, logger);
 			}
 		}
 #endif
