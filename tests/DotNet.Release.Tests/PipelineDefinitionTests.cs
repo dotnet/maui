@@ -312,13 +312,15 @@ public class PipelineDefinitionTests
     public void The_publish_job_checks_out_source_and_runs_as_a_production_release_job()
     {
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var releaseJob = publish[publish.IndexOf("- job: publish", StringComparison.Ordinal)..];
 
-        Assert.Contains("checkout: self", publish, StringComparison.Ordinal);
-        Assert.Contains("persistCredentials: false", publish, StringComparison.Ordinal);
-        Assert.Contains("UseDotNet@2", publish, StringComparison.Ordinal);
-        Assert.Contains("type: releaseJob", publish, StringComparison.Ordinal);
-        Assert.Contains("isProduction: true", publish, StringComparison.Ordinal);
-        Assert.Contains("1ES.PublishNuget@1", publish, StringComparison.Ordinal);
+        Assert.Contains("type: releaseJob", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("isProduction: true", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("- input: checkout", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("repository: self", releaseJob, StringComparison.Ordinal);
+        Assert.DoesNotContain("- checkout: self", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("UseDotNet@2", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("1ES.PublishNuget@1", releaseJob, StringComparison.Ordinal);
     }
 
     /// <summary>

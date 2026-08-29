@@ -168,14 +168,12 @@ stages:
       type: releaseJob
       isProduction: true
       inputs:
+      - input: checkout
+        repository: self
       - input: pipelineArtifact
         artifactName: ${{ parameters.preparedArtifactName }}
         targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
     steps:
-    - checkout: self
-      clean: true
-      persistCredentials: false
-
     - task: UseDotNet@2
       displayName: Install the .NET SDK
       inputs:
