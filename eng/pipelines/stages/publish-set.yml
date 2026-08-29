@@ -190,12 +190,12 @@ stages:
       type: releaseJob
       isProduction: true
       inputs:
-      - input: checkout
-        repository: none
       - input: pipelineArtifact
         artifactName: ${{ parameters.preparedArtifactName }}
         targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
     steps:
+    - checkout: none
+
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
         $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()

@@ -316,9 +316,8 @@ public class PipelineDefinitionTests
 
         Assert.Contains("type: releaseJob", releaseJob, StringComparison.Ordinal);
         Assert.Contains("isProduction: true", releaseJob, StringComparison.Ordinal);
-        Assert.Contains("- input: checkout", releaseJob, StringComparison.Ordinal);
-        Assert.Contains("repository: none", releaseJob, StringComparison.Ordinal);
-        Assert.DoesNotContain("repository: self", releaseJob, StringComparison.Ordinal);
+        Assert.DoesNotContain("input: checkout", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("- checkout: none", releaseJob, StringComparison.Ordinal);
         Assert.DoesNotContain("- checkout: self", releaseJob, StringComparison.Ordinal);
         Assert.Contains("artifactName: ${{ parameters.preparedArtifactName }}", releaseJob, StringComparison.Ordinal);
         Assert.Contains("workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}", releaseJob, StringComparison.Ordinal);
