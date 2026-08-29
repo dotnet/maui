@@ -261,7 +261,7 @@ public class PipelineDefinitionTests
             .Cast<Match>()
             .ToList();
 
-        Assert.Collection(references, _ => { }, _ => { }, _ => { }, _ => { });
+        Assert.Equal(8, references.Count);
 
         var pipeline = File.ReadAllText(PipelinePath);
         foreach (var reference in references)
@@ -294,7 +294,7 @@ public class PipelineDefinitionTests
         Assert.Contains("_tool/release.dll", publish, StringComparison.Ordinal);
         Assert.Contains("Get-DirectoryHash.ps1", root, StringComparison.Ordinal);
         Assert.Equal(
-            2,
+            4,
             Regex.Matches(publish, "Get-DirectoryHash.ps1", RegexOptions.CultureInvariant).Count);
         Assert.DoesNotContain(
             "Get-FileHash -LiteralPath $toolPath",
@@ -305,11 +305,11 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The publish job checks out the release-system metadata needed by UseDotNet and remains
-    /// a production 1ES job.
+    /// A 1ES release job cannot check out source. Every runtime dependency, including SDK
+    /// selection and integrity tooling, must arrive through its declared artifact input.
     /// </summary>
     [Fact]
-    public void The_publish_job_checks_out_source_and_runs_as_a_production_release_job()
+    public void The_publish_job_uses_only_declared_artifact_dependencies()
     {
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
         var releaseJob = publish[publish.IndexOf("- job: publish", StringComparison.Ordinal)..];
@@ -317,8 +317,12 @@ public class PipelineDefinitionTests
         Assert.Contains("type: releaseJob", releaseJob, StringComparison.Ordinal);
         Assert.Contains("isProduction: true", releaseJob, StringComparison.Ordinal);
         Assert.Contains("- input: checkout", releaseJob, StringComparison.Ordinal);
-        Assert.Contains("repository: self", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("repository: none", releaseJob, StringComparison.Ordinal);
+        Assert.DoesNotContain("repository: self", releaseJob, StringComparison.Ordinal);
         Assert.DoesNotContain("- checkout: self", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("artifactName: ${{ parameters.preparedArtifactName }}", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("$root/_infra/Get-DirectoryHash.ps1", releaseJob, StringComparison.Ordinal);
         Assert.Contains("UseDotNet@2", releaseJob, StringComparison.Ordinal);
         Assert.Contains("1ES.PublishNuget@1", releaseJob, StringComparison.Ordinal);
     }

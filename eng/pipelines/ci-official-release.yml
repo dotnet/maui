@@ -179,6 +179,17 @@ extends:
         # Build once before any task acquires the Maestro production identity. Publish jobs
         # execute this exact tool directory from the immutable Release artifact without rebuilding.
         - pwsh: |
+            $artifactDirectory = "$(Build.ArtifactStagingDirectory)"
+            $infraDirectory = Join-Path $artifactDirectory '_infra'
+            New-Item -ItemType Directory -Path $infraDirectory -Force | Out-Null
+
+            $globalJsonPath = Join-Path $artifactDirectory 'global.json'
+            $directoryHashScriptPath = Join-Path $infraDirectory 'Get-DirectoryHash.ps1'
+            Copy-Item -LiteralPath "$(Build.SourcesDirectory)/global.json" -Destination $globalJsonPath
+            Copy-Item `
+              -LiteralPath "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+              -Destination $directoryHashScriptPath
+
             $toolDirectory = "$(Build.ArtifactStagingDirectory)/_tool"
             dotnet build "$(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj" `
               --configuration Release `
@@ -186,10 +197,13 @@ extends:
             if ($LASTEXITCODE -ne 0) { throw 'Failed to build the release tool.' }
 
             $toolPath = Join-Path $toolDirectory 'release.dll'
-            $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
-              -Path $toolDirectory
+            $toolHash = & $directoryHashScriptPath -Path $toolDirectory
+            $globalJsonHash = (Get-FileHash -LiteralPath $globalJsonPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $directoryHashScriptHash = (Get-FileHash -LiteralPath $directoryHashScriptPath -Algorithm SHA256).Hash.ToLowerInvariant()
             Write-Host "##vso[task.setvariable variable=ToolPath]$toolPath"
             Write-Host "##vso[task.setvariable variable=ToolHash;isOutput=true]$toolHash"
+            Write-Host "##vso[task.setvariable variable=GlobalJsonHash;isOutput=true]$globalJsonHash"
+            Write-Host "##vso[task.setvariable variable=DirectoryHashScriptHash;isOutput=true]$directoryHashScriptHash"
           name: buildTool
           displayName: Build the release tool
 
@@ -364,20 +378,38 @@ extends:
           variables:
             ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
             DarcHash: $[ stageDependencies.prepare_release.prepare_release.outputs['installDarc.DarcHash'] ]
+            GlobalJsonHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.GlobalJsonHash'] ]
+            DirectoryHashScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.DirectoryHashScriptHash'] ]
           templateContext:
             inputs:
             - input: pipelineArtifact
               artifactName: Release
               targetPath: $(Pipeline.Workspace)/Release
           steps:
-          - checkout: self
-            clean: true
-            persistCredentials: false
+          - checkout: none
+
+          - pwsh: |
+              $root = "$(Pipeline.Workspace)/Release"
+              $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()
+              if ($globalJsonHash -ne $env:EXPECTED_GLOBAL_JSON_HASH) {
+                throw "global.json hash '$globalJsonHash' does not match '$env:EXPECTED_GLOBAL_JSON_HASH'."
+              }
+
+              $hashScript = "$root/_infra/Get-DirectoryHash.ps1"
+              $hashScriptHash = (Get-FileHash -LiteralPath $hashScript -Algorithm SHA256).Hash.ToLowerInvariant()
+              if ($hashScriptHash -ne $env:EXPECTED_HASH_SCRIPT_HASH) {
+                throw "Directory hash script hash '$hashScriptHash' does not match '$env:EXPECTED_HASH_SCRIPT_HASH'."
+              }
+            displayName: Verify release infrastructure
+            env:
+              EXPECTED_GLOBAL_JSON_HASH: $(GlobalJsonHash)
+              EXPECTED_HASH_SCRIPT_HASH: $(DirectoryHashScriptHash)
 
           - task: UseDotNet@2
             displayName: Install the .NET SDK
             inputs:
               useGlobalJson: true
+              workingDirectory: $(Pipeline.Workspace)/Release
 
           - pwsh: |
               $planPath = "$(Pipeline.Workspace)/Release/release-plan.json"
@@ -387,7 +419,7 @@ extends:
               }
 
               $darcDirectory = "$(Pipeline.Workspace)/Release/_darc"
-              $darcHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+              $darcHash = & "$(Pipeline.Workspace)/Release/_infra/Get-DirectoryHash.ps1" `
                 -Path $darcDirectory
               if ($darcHash -ne $env:EXPECTED_DARC_HASH) {
                 throw "Darc hash '$darcHash' does not match the prepared hash '$env:EXPECTED_DARC_HASH'."

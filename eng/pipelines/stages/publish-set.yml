@@ -63,6 +63,8 @@ stages:
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
       ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
+      GlobalJsonHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.GlobalJsonHash'] ]
+      DirectoryHashScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.DirectoryHashScriptHash'] ]
     templateContext:
       inputs:
       - input: pipelineArtifact
@@ -73,14 +75,30 @@ stages:
         artifactName: ${{ parameters.preparedArtifactName }}
         targetPath: $(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}
     steps:
-    - checkout: self
-      clean: true
-      persistCredentials: false
+    - checkout: none
+
+    - pwsh: |
+        $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+        $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($globalJsonHash -ne $env:EXPECTED_GLOBAL_JSON_HASH) {
+          throw "global.json hash '$globalJsonHash' does not match '$env:EXPECTED_GLOBAL_JSON_HASH'."
+        }
+
+        $hashScript = "$root/_infra/Get-DirectoryHash.ps1"
+        $hashScriptHash = (Get-FileHash -LiteralPath $hashScript -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($hashScriptHash -ne $env:EXPECTED_HASH_SCRIPT_HASH) {
+          throw "Directory hash script hash '$hashScriptHash' does not match '$env:EXPECTED_HASH_SCRIPT_HASH'."
+        }
+      displayName: Verify release infrastructure
+      env:
+        EXPECTED_GLOBAL_JSON_HASH: $(GlobalJsonHash)
+        EXPECTED_HASH_SCRIPT_HASH: $(DirectoryHashScriptHash)
 
     - task: UseDotNet@2
       displayName: Install the .NET SDK
       inputs:
         useGlobalJson: true
+        workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}
 
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
@@ -92,7 +110,7 @@ stages:
           throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
         }
 
-        $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+        $toolHash = & "$root/_infra/Get-DirectoryHash.ps1" `
           -Path (Split-Path -Parent $toolPath)
         if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
           throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
@@ -131,6 +149,8 @@ stages:
         $prepared = "$(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}"
         New-Item -ItemType Directory -Path $prepared -Force | Out-Null
         Copy-Item -LiteralPath "$source/release-plan.json" -Destination $prepared
+        Copy-Item -LiteralPath "$source/global.json" -Destination $prepared
+        Copy-Item -LiteralPath "$source/_infra" -Destination $prepared -Recurse
         Copy-Item -LiteralPath "$source/_tool" -Destination $prepared -Recurse
         Copy-Item -LiteralPath "$source/${{ parameters.setName }}" -Destination $prepared -Recurse
       displayName: Create exact approval artifact
@@ -164,20 +184,40 @@ stages:
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
       ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
+      GlobalJsonHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.GlobalJsonHash'] ]
+      DirectoryHashScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.DirectoryHashScriptHash'] ]
     templateContext:
       type: releaseJob
       isProduction: true
       inputs:
       - input: checkout
-        repository: self
+        repository: none
       - input: pipelineArtifact
         artifactName: ${{ parameters.preparedArtifactName }}
         targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
     steps:
+    - pwsh: |
+        $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
+        $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($globalJsonHash -ne $env:EXPECTED_GLOBAL_JSON_HASH) {
+          throw "global.json hash '$globalJsonHash' does not match '$env:EXPECTED_GLOBAL_JSON_HASH'."
+        }
+
+        $hashScript = "$root/_infra/Get-DirectoryHash.ps1"
+        $hashScriptHash = (Get-FileHash -LiteralPath $hashScript -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($hashScriptHash -ne $env:EXPECTED_HASH_SCRIPT_HASH) {
+          throw "Directory hash script hash '$hashScriptHash' does not match '$env:EXPECTED_HASH_SCRIPT_HASH'."
+        }
+      displayName: Verify release infrastructure
+      env:
+        EXPECTED_GLOBAL_JSON_HASH: $(GlobalJsonHash)
+        EXPECTED_HASH_SCRIPT_HASH: $(DirectoryHashScriptHash)
+
     - task: UseDotNet@2
       displayName: Install the .NET SDK
       inputs:
         useGlobalJson: true
+        workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}
 
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
@@ -189,7 +229,7 @@ stages:
           throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
         }
 
-        $toolHash = & "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
+        $toolHash = & "$root/_infra/Get-DirectoryHash.ps1" `
           -Path (Split-Path -Parent $toolPath)
         if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
           throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."

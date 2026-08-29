@@ -165,7 +165,9 @@ This validation runs before the release tool authenticates.
 ### Source-control safety
 
 The pipeline source MUST be the internal Azure Repos mirror, not a GitHub service
-connection. `checkout: self` uses `persistCredentials: false`.
+connection. Only the prepare job checks out `self`, with `persistCredentials: false`.
+Downstream jobs consume the immutable `Release` artifact and use `checkout: none`; 1ES
+release jobs prohibit source checkout.
 
 The released repository is never checked out. Its GitHub identity is data used to query BAR.
 No checked-in step invokes `git push`, `gh`, Octokit, or the GitHub write API.
@@ -566,6 +568,9 @@ The artifact layout is:
 ```
 Release/
   release-plan.json
+  global.json
+  _infra/
+    Get-DirectoryHash.ps1
   _darc/
     darc.exe
     <runtime dependencies>
@@ -581,9 +586,10 @@ Release/
 Workload releases contain `ReleasePacks/` and `ReleaseManifests/` instead of
 `ReleasePackages/`. There is one authoritative `release-plan.json` at the artifact root.
 
-Each matching preflight publishes a prepared artifact containing the pinned root plan, the
-pinned tool directory, and only that stage's pruned package-set directory. The approval
-artifact therefore cannot contain an unpruned sibling workload set.
+Each matching preflight publishes a prepared artifact containing the pinned root plan,
+`global.json`, the pinned integrity helper and tool directory, and only that stage's pruned
+package-set directory. The approval artifact therefore cannot contain an unpruned sibling
+workload set and the release job needs no source checkout.
 
 ### Set marker
 
@@ -610,20 +616,23 @@ The prepare stage:
 2. computes a deterministic hash over every file and relative path in `_darc` as `DarcHash`;
 3. builds the C# project into `Release/_tool`;
 4. computes the same directory hash over `_tool` as `ToolHash`;
-5. executes `_tool/release.dll` for `plan` and `stage`;
-6. records every package SHA-256 in the plan;
-7. writes one authoritative plan into the release artifact root;
-8. computes the plan hash independently with `Get-FileHash`;
-9. exports `DarcHash`, `ToolHash`, and `ReleasePlanHash`.
+5. copies `global.json` and `Get-DirectoryHash.ps1` into the artifact and hashes both;
+6. executes `_tool/release.dll` for `plan` and `stage`;
+7. records every package SHA-256 in the plan;
+8. writes one authoritative plan into the release artifact root;
+9. computes the plan hash independently with `Get-FileHash`;
+10. exports all infrastructure, tool, and plan hashes.
 
 The publish job:
 
-1. downloads the stage's exact prepared artifact;
-2. compares raw plan bytes with `ReleasePlanHash`;
-3. recomputes the complete `_tool` directory hash and compares it with `ToolHash`;
-4. executes that DLL for `prune-published`;
-5. validates all pending package hashes before invoking 1ES;
-6. executes the same DLL for `verify` with the same expected plan hash.
+1. downloads the stage's exact prepared artifact without checking out source;
+2. verifies the copied `global.json` and integrity-helper hashes;
+3. installs the SDK selected by the copied `global.json`;
+4. compares raw plan bytes with `ReleasePlanHash`;
+5. recomputes the complete `_tool` directory hash and compares it with `ToolHash`;
+6. executes that DLL for `prune-published`;
+7. validates all pending package hashes before invoking 1ES;
+8. executes the same DLL for `verify` with the same expected plan hash.
 
 Unexpected `.nupkg` files, missing pending files, and changed package bytes fail closed.
 Companion JSON and executable files are excluded by the `.nupkg` enumeration.
