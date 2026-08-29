@@ -71,9 +71,10 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var handler = CreateHandler(new ImageButtonStub());
 					var platformView = Assert.IsType<MauiShapeableImageView>(handler.PlatformView);
+					var themedContext = Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
 
-					Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
-					Assert.Same(MauiContext.Context.GetActivity(), platformView.Context.GetActivity());
+					Assert.True(themedContext.UseMaterial3);
+					Assert.Same(MauiContext.Context.GetActivity(), themedContext.GetActivity());
 				}
 				finally
 				{
