@@ -125,22 +125,26 @@ namespace Microsoft.Maui.ApplicationModel
 
 		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode)
 		{
-#if __IOS__
-			if (navigationMode == NavigationMode.Bicycling)
-			{
-				return OperatingSystem.IsIOSVersionAtLeast(14)
+#if IOS || MACCATALYST
+			var bicyclingMode =
+				OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)
 					? MKDirectionsMode.Cycling
 					: MKDirectionsMode.Default;
-			}
+#else
+			var bicyclingMode = MKDirectionsMode.Default;
 #endif
 
-			return navigationMode switch
+			return GetDirectionsMode(navigationMode, bicyclingMode);
+		}
+
+		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode, MKDirectionsMode bicyclingMode) =>
+			navigationMode switch
 			{
+				NavigationMode.Bicycling => bicyclingMode,
 				NavigationMode.Driving => MKDirectionsMode.Driving,
 				NavigationMode.Transit => MKDirectionsMode.Transit,
 				NavigationMode.Walking => MKDirectionsMode.Walking,
 				_ => MKDirectionsMode.Default,
 			};
-		}
 	}
 }
