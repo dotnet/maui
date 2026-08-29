@@ -4,10 +4,6 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue19338">
     <StackLayout>
-        <!-- TEMPORARY FIX: Using CV2 directly due to output image differ from CV1 and CV2
-             - Getting random output images in CI for each run
-             - To eliminate flakiness, we're using CV2 directly until the CV1 issue is resolved
-             - Remove this local reference and revert to CV1 once the bug is fixed https://github.com/dotnet/maui/issues/26970 -->
         <local:CollectionView2
             x:Name="CV"
             HeightRequest="300"

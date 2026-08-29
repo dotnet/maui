@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || WINDOWS
 using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
 #else
 using Microsoft.Maui.Controls.Handlers.Items;
