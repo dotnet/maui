@@ -40,6 +40,7 @@ public sealed class WpfDispatcherTests
 				? new AggregateException(new InvalidOperationException("first"), new ArgumentException("second"))
 				: new InvalidOperationException("sentinel");
 
+			Assert.False(_fixture.WpfDispatcher.CheckAccess());
 			await DispatcherTestHelpers.AssertFailure(_fixture.WpfDispatcher, workItemKind, exception);
 			await _fixture.WpfNativeDispatcher.InvokeAsync(() => { }).Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -52,11 +53,17 @@ public sealed class WpfDispatcherTests
 	}
 
 	[Theory]
-	[InlineData(DispatcherWorkItemKind.Action)]
-	[InlineData(DispatcherWorkItemKind.AsyncAction)]
-	[InlineData(DispatcherWorkItemKind.Function)]
-	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
-	public async Task CancellationCancelsReturnedTask(DispatcherWorkItemKind workItemKind)
+	[InlineData(DispatcherWorkItemKind.Action, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, true)]
+	[InlineData(DispatcherWorkItemKind.Function, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, true)]
+	[InlineData(DispatcherWorkItemKind.Action, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, false)]
+	[InlineData(DispatcherWorkItemKind.Function, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, false)]
+	public async Task OperationCanceledExceptionCancelsReturnedTask(
+		DispatcherWorkItemKind workItemKind,
+		bool cancellationRequested)
 	{
 		var unhandled = new ConcurrentQueue<Exception>();
 		DispatcherUnhandledExceptionEventHandler handler = (_, args) =>
@@ -69,8 +76,12 @@ public sealed class WpfDispatcherTests
 		try
 		{
 			using var cancellation = new CancellationTokenSource();
-			cancellation.Cancel();
+			if (cancellationRequested)
+			{
+				cancellation.Cancel();
+			}
 
+			Assert.False(_fixture.WpfDispatcher.CheckAccess());
 			await DispatcherTestHelpers.AssertCancellation(
 				_fixture.WpfDispatcher,
 				workItemKind,
@@ -92,4 +103,41 @@ public sealed class WpfDispatcherTests
 		DispatcherTestHelpers.AssertAsyncWorkItemResumesOnDispatcherThread(
 			_fixture.WpfDispatcher,
 			workItemKind);
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.Action)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction)]
+	[InlineData(DispatcherWorkItemKind.Function)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
+	public Task CheckAccessFastPathPreservesFailureSemantics(DispatcherWorkItemKind workItemKind) =>
+		_fixture.InvokeOnWpfDispatcher(async () =>
+		{
+			Assert.True(_fixture.WpfDispatcher.CheckAccess());
+
+			await DispatcherTestHelpers.AssertFailure(
+				_fixture.WpfDispatcher,
+				workItemKind,
+				new InvalidOperationException("sentinel"));
+
+			using var canceled = new CancellationTokenSource();
+			canceled.Cancel();
+			await DispatcherTestHelpers.AssertCancellation(
+				_fixture.WpfDispatcher,
+				workItemKind,
+				canceled.Token);
+			await DispatcherTestHelpers.AssertCancellation(
+				_fixture.WpfDispatcher,
+				workItemKind,
+				CancellationToken.None);
+		});
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.AsyncAction)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
+	public Task AsyncWorkItemsResumeOnDispatcherThreadWhenAlreadyOnDispatcher(
+		DispatcherWorkItemKind workItemKind) =>
+		_fixture.InvokeOnWpfDispatcher(() =>
+			DispatcherTestHelpers.AssertAsyncWorkItemResumesOnDispatcherThread(
+				_fixture.WpfDispatcher,
+				workItemKind));
 }

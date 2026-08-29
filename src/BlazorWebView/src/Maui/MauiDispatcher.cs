@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return !_dispatcher.IsDispatchRequired;
 		}
 
+		// Await to normalize OperationCanceledException to canceled tasks, matching the Blazor dispatcher contract.
 		public override async Task InvokeAsync(Action workItem)
 		{
 			await _dispatcher.DispatchAsync(workItem).ConfigureAwait(false);

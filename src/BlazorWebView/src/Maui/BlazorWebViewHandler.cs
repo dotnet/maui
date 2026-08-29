@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (_webviewManager != null)
 			{
 				// Dispatch because this is going to be async, and we want to catch any errors
-				_ = _webviewManager.Dispatcher.InvokeAsync(async () =>
+				_webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
 					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
 					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
-				});
+				}).FireAndForget(this);
 			}
 		}
 #endif

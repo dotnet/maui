@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
 		{
-			_ = Dispatcher.InvokeAsync(async () =>
+			Dispatcher.InvokeAsync(async () =>
 			{
 				var isWebviewInitialized = await _webviewReadyTask;
 
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 					_logger.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
 				}
-			});
+			}).FireAndForget(_logger);
 		}
 
 		/// <inheritdoc />

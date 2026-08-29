@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.AspNetCore.Components.WebView;
+using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.MauiBlazorWebView.UnitTests;
@@ -60,6 +62,20 @@ public sealed class MauiDispatcherTests
 		Assert.False(task.IsFaulted);
 	}
 
+	[Fact]
+	public async Task FireAndForgetLogsFailure()
+	{
+		var exception = new InvalidOperationException("sentinel");
+		var loggedException = new TaskCompletionSource<Exception>(
+			TaskCreationOptions.RunContinuationsAsynchronously);
+
+		Task.FromException(exception).FireAndForget(new CallbackLogger(loggedException));
+
+		Assert.Same(
+			exception,
+			await loggedException.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+	}
+
 	private Task InvokeFailure(DispatcherWorkItemKind workItemKind, Exception exception) =>
 		workItemKind switch
 		{
@@ -104,5 +120,25 @@ public sealed class MauiDispatcherTests
 
 		public IDispatcherTimer CreateTimer() =>
 			throw new NotSupportedException();
+	}
+
+	private sealed class CallbackLogger(TaskCompletionSource<Exception> loggedException) : ILogger
+	{
+		public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+		public bool IsEnabled(LogLevel logLevel) => true;
+
+		public void Log<TState>(
+			LogLevel logLevel,
+			EventId eventId,
+			TState state,
+			Exception? exception,
+			Func<TState, Exception?, string> formatter)
+		{
+			if (exception is not null)
+			{
+				loggedException.TrySetResult(exception);
+			}
+		}
 	}
 }

@@ -1,8 +1,8 @@
 ﻿using System.Windows.Forms;
 using ComponentsDispatcher = Microsoft.AspNetCore.Components.Dispatcher;
 using DispatcherPriority = System.Windows.Threading.DispatcherPriority;
-using WinFormsApplication = System.Windows.Forms.Application;
 using WindowsDispatcher = System.Windows.Threading.Dispatcher;
+using WinFormsApplication = System.Windows.Forms.Application;
 
 namespace Microsoft.AspNetCore.Components.WebView.Windows.UnitTests;
 
@@ -81,6 +81,24 @@ public sealed class WindowsDispatcherFixture : IDisposable
 	public Control WindowsFormsControl { get; }
 
 	public ComponentsDispatcher WindowsFormsDispatcher { get; }
+
+	public async Task InvokeOnWpfDispatcher(Func<Task> workItem)
+	{
+		var task = await WpfNativeDispatcher
+			.InvokeAsync(workItem)
+			.Task
+			.WaitAsync(TimeSpan.FromSeconds(5));
+		await task.WaitAsync(TimeSpan.FromSeconds(5));
+	}
+
+	public async Task InvokeOnWindowsFormsDispatcher(Func<Task> workItem)
+	{
+		var asyncResult = WindowsFormsControl.BeginInvoke(workItem);
+		var task = await Task<Task>.Factory
+			.FromAsync(asyncResult, result => (Task)WindowsFormsControl.EndInvoke(result)!)
+			.WaitAsync(TimeSpan.FromSeconds(5));
+		await task.WaitAsync(TimeSpan.FromSeconds(5));
+	}
 
 	public void Dispose()
 	{
