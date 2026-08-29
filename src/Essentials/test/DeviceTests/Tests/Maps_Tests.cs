@@ -46,13 +46,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData(NavigationMode.Transit, MKDirectionsMode.Transit)]
 		[InlineData(NavigationMode.Walking, MKDirectionsMode.Walking)]
 		public void NavigationModeUsesExpectedDirectionsMode(NavigationMode navigationMode, MKDirectionsMode expected) =>
-			Assert.Equal(expected, MapImplementation.GetDirectionsMode(navigationMode, MKDirectionsMode.Cycling));
+			Assert.Equal(expected, MapImplementation.GetDirectionsMode(navigationMode, isCyclingAvailable: true));
+
+		[Fact]
+		public void BicyclingNavigationModeUsesCyclingDirections() =>
+			Assert.Equal(MKDirectionsMode.Cycling, MapImplementation.GetDirectionsMode(NavigationMode.Bicycling));
 
 		[Fact]
 		public void BicyclingNavigationModeFallsBackWhenCyclingIsUnavailable() =>
-			Assert.Equal(
-				MKDirectionsMode.Default,
-				MapImplementation.GetDirectionsMode(NavigationMode.Bicycling, MKDirectionsMode.Default));
+			Assert.Equal(MKDirectionsMode.Default, MapImplementation.GetDirectionsMode(NavigationMode.Bicycling, isCyclingAvailable: false));
 #endif
 
 		[Fact]
