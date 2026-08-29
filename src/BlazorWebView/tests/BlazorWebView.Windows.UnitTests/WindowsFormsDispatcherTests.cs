@@ -30,7 +30,11 @@ public sealed class WindowsFormsDispatcherTests
 	{
 		var unhandled = new ConcurrentQueue<Exception>();
 		ThreadExceptionEventHandler handler = (_, args) => unhandled.Enqueue(args.Exception);
-		WinFormsApplication.ThreadException += handler;
+		await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+		{
+			WinFormsApplication.ThreadException += handler;
+			return Task.CompletedTask;
+		});
 
 		try
 		{
@@ -46,7 +50,11 @@ public sealed class WindowsFormsDispatcherTests
 		}
 		finally
 		{
-			WinFormsApplication.ThreadException -= handler;
+			await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+			{
+				WinFormsApplication.ThreadException -= handler;
+				return Task.CompletedTask;
+			});
 		}
 	}
 
@@ -65,7 +73,11 @@ public sealed class WindowsFormsDispatcherTests
 	{
 		var unhandled = new ConcurrentQueue<Exception>();
 		ThreadExceptionEventHandler handler = (_, args) => unhandled.Enqueue(args.Exception);
-		WinFormsApplication.ThreadException += handler;
+		await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+		{
+			WinFormsApplication.ThreadException += handler;
+			return Task.CompletedTask;
+		});
 
 		try
 		{
@@ -86,7 +98,11 @@ public sealed class WindowsFormsDispatcherTests
 		}
 		finally
 		{
-			WinFormsApplication.ThreadException -= handler;
+			await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+			{
+				WinFormsApplication.ThreadException -= handler;
+				return Task.CompletedTask;
+			});
 		}
 	}
 

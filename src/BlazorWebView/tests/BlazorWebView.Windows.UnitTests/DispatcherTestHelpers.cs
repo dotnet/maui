@@ -1,4 +1,5 @@
-﻿using ComponentsDispatcher = Microsoft.AspNetCore.Components.Dispatcher;
+﻿using System.Runtime.CompilerServices;
+using ComponentsDispatcher = Microsoft.AspNetCore.Components.Dispatcher;
 
 namespace Microsoft.AspNetCore.Components.WebView.Windows.UnitTests;
 
@@ -112,6 +113,7 @@ internal static class DispatcherTestHelpers
 		Assert.Equal(initialThreadId, continuationThreadId);
 	}
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static void Throw(Exception exception) => throw exception;
 
 	private static async Task ThrowAsync(Exception exception)

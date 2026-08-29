@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Logging;
@@ -99,6 +100,7 @@ public sealed class MauiDispatcherTests
 			_ => throw new ArgumentOutOfRangeException(nameof(workItemKind)),
 		};
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static void Throw(Exception exception) => throw exception;
 
 	private static async Task ThrowAsync(Exception exception)
