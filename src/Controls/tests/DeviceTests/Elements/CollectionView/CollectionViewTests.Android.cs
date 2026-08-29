@@ -107,41 +107,92 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task GroupedCollectionViewEmptyViewTracksGroups()
+		public async Task GroupedCollectionViewEmptyViewTracksOuterGroupCount()
 		{
-				SetupBuilder();
+			SetupBuilder();
 
-				var groups = new ObservableCollection<ObservableCollection<string>>
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new()
+			};
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				EmptyView = new Label { Text = "Empty" }
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+
+				groups.Add(new());
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is not EmptyViewAdapter);
+
+				groups[0].Add("Item 1");
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 1);
+
+				groups[0].RemoveAt(0);
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+					handler.PlatformView.GetAdapter().ItemCount == 0);
+
+				groups.Add(new() { "Item 1", "Item 2" });
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
+
+				groups.RemoveAt(1);
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+					handler.PlatformView.GetAdapter().ItemCount == 0);
+
+				groups.Add(new() { "Item 1", "Item 2" });
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
+
+				groups.RemoveAt(0);
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+					handler.PlatformView.GetAdapter().ItemCount == 2);
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+			});
+		}
+
+		[Fact]
+		public async Task GroupedCollectionViewWithHeaderEmptyViewTracksOuterGroupCount()
+		{
+			SetupBuilder();
+
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new()
+			};
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				GroupHeaderTemplate = new DataTemplate(() => new Label { Text = "Group" }),
+				ItemsSource = groups,
+				EmptyView = new Label { Text = "Empty" }
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				await AssertEventually(() =>
 				{
-					new()
-				};
-				var collectionView = new CollectionView
-				{
-					IsGrouped = true,
-					ItemsSource = groups,
-					EmptyView = new Label { Text = "Empty" }
-				};
-				var frame = collectionView.Frame;
-
-				await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
-				{
-					await WaitForUIUpdate(frame, collectionView);
-					Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
-
-					groups.RemoveAt(0);
-					await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
-
-					groups.Add(new());
-					await AssertEventually(() => handler.PlatformView.GetAdapter() is not EmptyViewAdapter);
-
-					groups.Add(new() { "Item 1", "Item 2" });
-					await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
-
-					groups.RemoveAt(1);
-					await AssertEventually(() =>
-						handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
-						handler.PlatformView.GetAdapter().ItemCount == 0);
+					var adapter = handler.PlatformView.GetAdapter();
+					return adapter is not EmptyViewAdapter && adapter.ItemCount == 1;
 				});
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
+			});
 		}
 
 		//src/Compatibility/Core/tests/Android/RendererTests.cs
