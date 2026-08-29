@@ -6,6 +6,7 @@ parameters:
   pool: ''
 
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+  CeapexServiceConnection: ''
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
   SourcesDirectory: $(System.DefaultWorkingDirectory)
@@ -73,6 +74,13 @@ jobs:
         displayName: Generate LocProject.json
         condition: ${{ parameters.condition }}
 
+    - ${{ if ne(parameters.CeapexServiceConnection, '') }}:
+      - template: /eng/common/templates/steps/get-federated-access-token.yml
+        parameters:
+          federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
+          outputVariableName: CeapexEntraToken
+          condition: ${{ parameters.condition }}
+
     - task: OneLocBuild@2
       displayName: OneLocBuild
       env:
@@ -88,7 +96,10 @@ jobs:
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
           isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
-        patVariable: ${{ parameters.CeapexPat }}
+        ${{ if ne(parameters.CeapexServiceConnection, '') }}:
+          patVariable: $(CeapexEntraToken)
+        ${{ else }}:
+          patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
           gitHubPatVariable: "${{ parameters.GithubPat }}"
