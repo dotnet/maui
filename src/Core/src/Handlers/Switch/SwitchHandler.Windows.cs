@@ -67,7 +67,10 @@ namespace Microsoft.Maui.Handlers
 			// Update the native ToggleSwitch MinWidth to reflect the MAUI view's MinimumWidth,
 			// overriding the default WinUI MinWidth (154) since we're not supporting OnContent and OffContent.
 			// This ensures the control does not reserve unnecessary space for labels.
-			handler.PlatformView?.UpdateMinWidth(view);
+			if (handler is SwitchHandler switchHandler)
+			{
+				switchHandler.PlatformView?.UpdateMinWidth(view);
+			}
 		}
 
 		void OnToggled(object sender, UI.Xaml.RoutedEventArgs e)
