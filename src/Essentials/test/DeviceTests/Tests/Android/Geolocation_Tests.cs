@@ -113,27 +113,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			var allProviders = new[] { "custom", AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
 
-			var providers = GeolocationImplementation.GetProviders(allProviders, "custom", includeSelectedProvider: false);
+			var providers = GeolocationImplementation.GetProviders(allProviders, "custom", useExplicitProvider: false);
 
 			Assert.Equal(new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider }, providers);
 		}
 
-		[Fact]
-		public void GetProviders_IncludesExplicitProviderAndEnabledFallbacks()
+		[Theory]
+		[InlineData(AndroidLocationManager.FusedProvider)]
+		[InlineData(AndroidLocationManager.GpsProvider)]
+		[InlineData(AndroidLocationManager.NetworkProvider)]
+		public void GetProviders_UsesOnlyExplicitProvider(string selectedProvider)
 		{
 			var enabledProviders = new[] { AndroidLocationManager.FusedProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
 
-			var providers = GeolocationImplementation.GetProviders(enabledProviders, AndroidLocationManager.FusedProvider, includeSelectedProvider: true);
+			var providers = GeolocationImplementation.GetProviders(enabledProviders, selectedProvider, useExplicitProvider: true);
 
-			Assert.Equal(
-				new[] { AndroidLocationManager.FusedProvider, AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider },
-				providers);
+			Assert.Equal(new[] { selectedProvider }, providers);
 		}
 
 		[Fact]
 		public void GetProviders_UsesLegacyFallbackWhenStandardProvidersAreUnavailable()
 		{
-			var providers = GeolocationImplementation.GetProviders(new[] { "custom" }, "custom", includeSelectedProvider: false);
+			var providers = GeolocationImplementation.GetProviders(new[] { "custom" }, "custom", useExplicitProvider: false);
 
 			Assert.Equal(new[] { "custom" }, providers);
 		}
@@ -143,7 +144,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("custom")]
 		public void GetProviders_UsesFallbackWhenStandardProvidersAreUnavailable(string fallbackProvider)
 		{
-			var providers = GeolocationImplementation.GetProviders(new[] { fallbackProvider }, fallbackProvider, includeSelectedProvider: true);
+			var providers = GeolocationImplementation.GetProviders(new[] { fallbackProvider }, fallbackProvider, useExplicitProvider: true);
 
 			Assert.Equal(new[] { fallbackProvider }, providers);
 		}

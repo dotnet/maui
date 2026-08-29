@@ -73,8 +73,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			var enabledProviders = LocationManager.GetProviders(true);
-			if (enabledProviders is null ||
-				!enabledProviders.Any(p => !ignoredProviders.Contains(p)))
+			if (!enabledProviders.Any(p => !ignoredProviders.Contains(p)))
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			// get the best possible provider for the requested accuracy
@@ -157,8 +156,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			var enabledProviders = LocationManager.GetProviders(true);
-			if (enabledProviders is null ||
-				!enabledProviders.Any(p => !ignoredProviders.Contains(p)))
+			if (!enabledProviders.Any(p => !ignoredProviders.Contains(p)))
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			// get the best possible provider for the requested accuracy
@@ -301,17 +299,16 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal static string? SelectFallbackProvider(IList<string>? enabledProviders) =>
 			enabledProviders?.FirstOrDefault(provider => !ignoredProviders.Contains(provider));
 
-		internal static List<string> GetProviders(IList<string> availableProviders, string selectedProvider, bool includeSelectedProvider)
+		internal static List<string> GetProviders(IList<string> availableProviders, string selectedProvider, bool useExplicitProvider)
 		{
+			if (useExplicitProvider)
+				return new List<string> { selectedProvider };
+
 			var providers = new List<string>();
 
-			if (includeSelectedProvider)
-				providers.Add(selectedProvider);
-			if (availableProviders.Contains(LocationManager.GpsProvider) &&
-				!providers.Contains(LocationManager.GpsProvider))
+			if (availableProviders.Contains(LocationManager.GpsProvider))
 				providers.Add(LocationManager.GpsProvider);
-			if (availableProviders.Contains(LocationManager.NetworkProvider) &&
-				!providers.Contains(LocationManager.NetworkProvider))
+			if (availableProviders.Contains(LocationManager.NetworkProvider))
 				providers.Add(LocationManager.NetworkProvider);
 			if (providers.Count == 0)
 				providers.Add(selectedProvider);
