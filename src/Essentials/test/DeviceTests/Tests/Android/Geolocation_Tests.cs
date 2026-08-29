@@ -53,9 +53,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void SelectProvider_PrefersFusedProvider()
 		{
-			if (!OperatingSystem.IsAndroidVersionAtLeast(31))
-				return;
-
 			var enabledProviders = new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.FusedProvider };
 
 			var provider = GeolocationImplementation.SelectProvider(enabledProviders, GeolocationAccuracy.Best);
@@ -73,14 +70,62 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Equal("custom", provider);
 		}
 
+		[Theory]
+		[InlineData(GeolocationAccuracy.Best, AndroidLocationManager.NetworkProvider)]
+		[InlineData(GeolocationAccuracy.Lowest, AndroidLocationManager.GpsProvider)]
+		public void SelectProvider_UsesAlternateStandardProvider(GeolocationAccuracy accuracy, string enabledProvider)
+		{
+			var provider = GeolocationImplementation.SelectProvider(new[] { enabledProvider }, accuracy);
+
+			Assert.Equal(enabledProvider, provider);
+		}
+
 		[Fact]
-		public void GetProviders_UsesGpsAndNetworkWhenAvailable()
+		public void SelectProvider_ReturnsNullWhenOnlyIgnoredProvidersAreEnabled()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.PassiveProvider, "local_database" };
+
+			var provider = GeolocationImplementation.SelectProvider(enabledProviders, GeolocationAccuracy.Default);
+
+			Assert.Null(provider);
+		}
+
+		[Fact]
+		public void SelectProvider_ReturnsNullWhenProvidersAreUnavailable()
+		{
+			var provider = GeolocationImplementation.SelectProvider(null, GeolocationAccuracy.Default);
+
+			Assert.Null(provider);
+		}
+
+		[Fact]
+		public void GetProviders_UsesGpsAndNetworkForLegacySelection()
 		{
 			var allProviders = new[] { "custom", AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
 
-			var providers = GeolocationImplementation.GetProviders(allProviders, "custom");
+			var providers = GeolocationImplementation.GetProviders(allProviders, "custom", includeSelectedProvider: false);
 
 			Assert.Equal(new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider }, providers);
+		}
+
+		[Fact]
+		public void GetProviders_IncludesExplicitProviderAndEnabledFallbacks()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.FusedProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
+
+			var providers = GeolocationImplementation.GetProviders(enabledProviders, AndroidLocationManager.FusedProvider, includeSelectedProvider: true);
+
+			Assert.Equal(
+				new[] { AndroidLocationManager.FusedProvider, AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider },
+				providers);
+		}
+
+		[Fact]
+		public void GetProviders_UsesLegacyFallbackWhenStandardProvidersAreUnavailable()
+		{
+			var providers = GeolocationImplementation.GetProviders(new[] { "custom" }, "custom", includeSelectedProvider: false);
+
+			Assert.Equal(new[] { "custom" }, providers);
 		}
 
 		[Theory]
@@ -88,7 +133,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("custom")]
 		public void GetProviders_UsesFallbackWhenStandardProvidersAreUnavailable(string fallbackProvider)
 		{
-			var providers = GeolocationImplementation.GetProviders(new[] { fallbackProvider }, fallbackProvider);
+			var providers = GeolocationImplementation.GetProviders(new[] { fallbackProvider }, fallbackProvider, includeSelectedProvider: true);
 
 			Assert.Equal(new[] { fallbackProvider }, providers);
 		}
