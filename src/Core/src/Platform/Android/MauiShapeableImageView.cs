@@ -37,7 +37,13 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		internal MauiShapeableImageView(Context? context, bool useMaterial3)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class,
+		/// optionally applying the .NET MAUI Material 3 theme to the context.
+		/// </summary>
+		/// <param name="context">The Android context for the view.</param>
+		/// <param name="useMaterial3">Whether to apply the .NET MAUI Material 3 theme.</param>
+		public MauiShapeableImageView(Context? context, bool useMaterial3)
 			: base(GetThemedContext(context, useMaterial3))
 		{
 		}
@@ -56,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			if (!useMaterial3 || context is null)
 				return context;
 
-			return MauiMaterialContextThemeWrapper.Create(context);
+			return MauiMaterialContextThemeWrapper.Create(context, useMaterial3);
 		}
 
 		/// <inheritdoc />

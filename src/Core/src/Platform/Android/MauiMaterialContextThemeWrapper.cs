@@ -5,26 +5,38 @@ namespace Microsoft.Maui.Platform;
 
 public class MauiMaterialContextThemeWrapper : ContextThemeWrapper
 {
-    // IsMaterial3Enabled Flag needed for Control Level theming. App Level theming is handled in MauiAppCompatActivity
-    public MauiMaterialContextThemeWrapper(Context context)
-        : this(context, RuntimeFeature.IsMaterial3Enabled
-            ? Resource.Style.Maui_Material3_Theme_Base
-            : Resource.Style.Maui_MainTheme_Base)
-    {
-    }
+	// IsMaterial3Enabled Flag needed for Control Level theming. App Level theming is handled in MauiAppCompatActivity
+	public MauiMaterialContextThemeWrapper(Context context)
+		: this(context, RuntimeFeature.IsMaterial3Enabled
+			? Resource.Style.Maui_Material3_Theme_Base
+			: Resource.Style.Maui_MainTheme_Base)
+	{
+	}
 
-    MauiMaterialContextThemeWrapper(Context context, int themeResId) : base(context, themeResId)
-    {
+	MauiMaterialContextThemeWrapper(Context context, int themeResId) : base(context, themeResId)
+	{
 
-    }
+	}
 
-    public static MauiMaterialContextThemeWrapper Create(Context context)
-    {
-        if (context is MauiMaterialContextThemeWrapper materialContext)
-        {
-            return materialContext;
-        }
+	public static MauiMaterialContextThemeWrapper Create(Context context)
+	{
+		if (context is MauiMaterialContextThemeWrapper materialContext)
+		{
+			return materialContext;
+		}
 
-        return new MauiMaterialContextThemeWrapper(context);
-    }
+		return new MauiMaterialContextThemeWrapper(context);
+	}
+
+	internal static MauiMaterialContextThemeWrapper Create(Context context, bool useMaterial3)
+	{
+		if (context is MauiMaterialContextThemeWrapper materialContext)
+		{
+			return materialContext;
+		}
+
+		return new MauiMaterialContextThemeWrapper(
+			context,
+			useMaterial3 ? Resource.Style.Maui_Material3_Theme_Base : Resource.Style.Maui_MainTheme_Base);
+	}
 }
