@@ -279,6 +279,8 @@
             <!-- If any resolved paths were missing OriginalProjectReferenceItemSpec or NearestTargetFramework, fall back to the 
                  previous functionality with using the ProjectReference items and the CURRENT project's TargetFramework -->
             <_ResizetizeCollectItemsProject Include="@(ProjectReference)" Exclude="@(_ResizetizeCollectItemsProject)" NearestTargetFramework="$(TargetFramework)" />
+            <!-- Restore metadata that is not retained when converting the resolved reference back to its original item spec. -->
+            <_ResizetizeCollectItemsProject Update="@(ProjectReference)" AdditionalProperties="%(ProjectReference.AdditionalProperties)" />
         </ItemGroup>
         <MSBuild
             Targets="GetMauiItems"
