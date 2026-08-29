@@ -9,19 +9,39 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		[Fact(DisplayName = "ImageButton uses MauiShapeableImageView with expected theme context")]
-		public Task ImageButtonUsesMauiShapeableImageViewWithExpectedThemeContext()
+		[Fact(DisplayName = "ImageButton uses MauiShapeableImageView with expected activity context")]
+		public Task ImageButtonUsesMauiShapeableImageViewWithExpectedActivityContext()
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(new ImageButtonStub());
 
 				var platformView = Assert.IsType<MauiShapeableImageView>(handler.PlatformView);
+				Assert.Same(MauiContext.Context.GetActivity(), platformView.Context.GetActivity());
+			});
+		}
 
-				if (RuntimeFeature.IsMaterial3Enabled)
-					Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
-				else
-					Assert.Same(MauiContext.Context, platformView.Context);
+		[Fact(DisplayName = "MauiShapeableImageView preserves public constructor context behavior")]
+		public Task MauiShapeableImageViewPreservesPublicConstructorContextBehavior()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = new MauiShapeableImageView(MauiContext.Context);
+
+				Assert.Same(MauiContext.Context.GetActivity(), platformView.Context.GetActivity());
+				Assert.IsNotType<MauiMaterialContextThemeWrapper>(platformView.Context);
+			});
+		}
+
+		[Fact(DisplayName = "MauiShapeableImageView applies Material 3 theme when requested")]
+		public Task MauiShapeableImageViewAppliesMaterial3ThemeWhenRequested()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = new MauiShapeableImageView(MauiContext.Context, useMaterial3: true);
+
+				Assert.IsType<MauiMaterialContextThemeWrapper>(platformView.Context);
+				Assert.Same(MauiContext.Context.GetActivity(), platformView.Context.GetActivity());
 			});
 		}
 

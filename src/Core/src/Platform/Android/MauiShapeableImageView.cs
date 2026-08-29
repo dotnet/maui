@@ -6,7 +6,7 @@ using Google.Android.Material.ImageView;
 namespace Microsoft.Maui.Platform
 {
 	/// <summary>
-	/// A <see cref="ShapeableImageView"/> that applies the .NET MAUI Material 3 theme when enabled and normalizes padding during measurement.
+	/// A <see cref="ShapeableImageView"/> that normalizes padding during measurement.
 	/// </summary>
 	public class MauiShapeableImageView : ShapeableImageView
 	{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		/// Initializes a new instance of the <see cref="MauiShapeableImageView"/> class.
 		/// </summary>
 		/// <param name="context">The Android context for the view.</param>
-		public MauiShapeableImageView(Context? context) : base(GetThemedContext(context))
+		public MauiShapeableImageView(Context? context) : base(context)
 		{
 		}
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="context">The Android context for the view.</param>
 		/// <param name="attrs">The attributes for the view.</param>
-		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(GetThemedContext(context), attrs)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(context, attrs)
 		{
 		}
 
@@ -33,7 +33,12 @@ namespace Microsoft.Maui.Platform
 		/// <param name="context">The Android context for the view.</param>
 		/// <param name="attrs">The attributes for the view.</param>
 		/// <param name="defStyle">The default style attribute for the view.</param>
-		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(GetThemedContext(context), attrs, defStyle)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(context, attrs, defStyle)
+		{
+		}
+
+		internal MauiShapeableImageView(Context? context, bool useMaterial3)
+			: base(GetThemedContext(context, useMaterial3))
 		{
 		}
 
@@ -46,9 +51,9 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		static Context? GetThemedContext(Context? context)
+		static Context? GetThemedContext(Context? context, bool useMaterial3)
 		{
-			if (!RuntimeFeature.IsMaterial3Enabled || context is null)
+			if (!useMaterial3 || context is null)
 				return context;
 
 			return MauiMaterialContextThemeWrapper.Create(context);

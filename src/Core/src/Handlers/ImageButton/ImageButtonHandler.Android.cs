@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ShapeableImageView CreatePlatformView()
 		{
-			var platformView = new MauiShapeableImageView(Context);
+			var platformView = new MauiShapeableImageView(Context, RuntimeFeature.IsMaterial3Enabled);
 
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);
