@@ -8,7 +8,11 @@ public class SkiaCanvasTests
 {
 	[Theory]
 	[InlineData(25, 18, 30, 240, false, LineCap.Butt, -30, -210)]
+	[InlineData(25, 18, 30, 240, false, LineCap.Round, -30, -210)]
+	[InlineData(25, 18, 30, 240, false, LineCap.Square, -30, -210)]
 	[InlineData(25, 18, 30, 240, true, LineCap.Butt, -30, 150)]
+	[InlineData(25, 18, 30, 240, true, LineCap.Round, -30, 150)]
+	[InlineData(25, 18, 30, 240, true, LineCap.Square, -30, 150)]
 	[InlineData(25, 18, 0, 360, false, LineCap.Butt, 0, -360)]
 	[InlineData(25, 18, 0, 360, false, LineCap.Round, 0, -360)]
 	[InlineData(25, 18, 0, 360, false, LineCap.Square, 0, -360)]
