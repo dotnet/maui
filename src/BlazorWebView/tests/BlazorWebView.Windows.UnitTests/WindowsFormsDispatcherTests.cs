@@ -1,0 +1,153 @@
+﻿using System.Collections.Concurrent;
+using System.Threading;
+using System.Windows.Forms;
+using WinFormsApplication = System.Windows.Forms.Application;
+
+namespace Microsoft.AspNetCore.Components.WebView.Windows.UnitTests;
+
+[Collection(WindowsDispatcherCollection.Name)]
+public sealed class WindowsFormsDispatcherTests
+{
+	private readonly WindowsDispatcherFixture _fixture;
+
+	public WindowsFormsDispatcherTests(WindowsDispatcherFixture fixture)
+	{
+		_fixture = fixture;
+	}
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.Action, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, false)]
+	[InlineData(DispatcherWorkItemKind.Function, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, false)]
+	[InlineData(DispatcherWorkItemKind.Action, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, true)]
+	[InlineData(DispatcherWorkItemKind.Function, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, true)]
+	public async Task ExceptionsOnlyFaultReturnedTask(
+		DispatcherWorkItemKind workItemKind,
+		bool useAggregateException)
+	{
+		var unhandled = new ConcurrentQueue<Exception>();
+		ThreadExceptionEventHandler handler = (_, args) => unhandled.Enqueue(args.Exception);
+		await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+		{
+			WinFormsApplication.ThreadException += handler;
+			return Task.CompletedTask;
+		});
+
+		try
+		{
+			Exception exception = useAggregateException
+				? new AggregateException(new InvalidOperationException("first"), new ArgumentException("second"))
+				: new InvalidOperationException("sentinel");
+
+			Assert.False(_fixture.WindowsFormsDispatcher.CheckAccess());
+			await DispatcherTestHelpers.AssertFailure(_fixture.WindowsFormsDispatcher, workItemKind, exception);
+			await _fixture.WindowsFormsDispatcher.InvokeAsync(() => { }).WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Empty(unhandled);
+		}
+		finally
+		{
+			await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+			{
+				WinFormsApplication.ThreadException -= handler;
+				return Task.CompletedTask;
+			});
+		}
+	}
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.Action, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, true)]
+	[InlineData(DispatcherWorkItemKind.Function, true)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, true)]
+	[InlineData(DispatcherWorkItemKind.Action, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction, false)]
+	[InlineData(DispatcherWorkItemKind.Function, false)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction, false)]
+	public async Task OperationCanceledExceptionCancelsReturnedTask(
+		DispatcherWorkItemKind workItemKind,
+		bool cancellationRequested)
+	{
+		var unhandled = new ConcurrentQueue<Exception>();
+		ThreadExceptionEventHandler handler = (_, args) => unhandled.Enqueue(args.Exception);
+		await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+		{
+			WinFormsApplication.ThreadException += handler;
+			return Task.CompletedTask;
+		});
+
+		try
+		{
+			using var cancellation = new CancellationTokenSource();
+			if (cancellationRequested)
+			{
+				cancellation.Cancel();
+			}
+
+			Assert.False(_fixture.WindowsFormsDispatcher.CheckAccess());
+			await DispatcherTestHelpers.AssertCancellation(
+				_fixture.WindowsFormsDispatcher,
+				workItemKind,
+				cancellation.Token);
+			await _fixture.WindowsFormsDispatcher.InvokeAsync(() => { }).WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Empty(unhandled);
+		}
+		finally
+		{
+			await _fixture.InvokeOnWindowsFormsDispatcher(() =>
+			{
+				WinFormsApplication.ThreadException -= handler;
+				return Task.CompletedTask;
+			});
+		}
+	}
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.AsyncAction)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
+	public Task AsyncWorkItemsResumeOnDispatcherThread(DispatcherWorkItemKind workItemKind) =>
+		DispatcherTestHelpers.AssertAsyncWorkItemResumesOnDispatcherThread(
+			_fixture.WindowsFormsDispatcher,
+			workItemKind);
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.Action)]
+	[InlineData(DispatcherWorkItemKind.AsyncAction)]
+	[InlineData(DispatcherWorkItemKind.Function)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
+	public Task CheckAccessFastPathPreservesFailureSemantics(DispatcherWorkItemKind workItemKind) =>
+		_fixture.InvokeOnWindowsFormsDispatcher(async () =>
+		{
+			Assert.True(_fixture.WindowsFormsDispatcher.CheckAccess());
+
+			await DispatcherTestHelpers.AssertFailure(
+				_fixture.WindowsFormsDispatcher,
+				workItemKind,
+				new InvalidOperationException("sentinel"));
+
+			using var canceled = new CancellationTokenSource();
+			canceled.Cancel();
+			await DispatcherTestHelpers.AssertCancellation(
+				_fixture.WindowsFormsDispatcher,
+				workItemKind,
+				canceled.Token);
+			await DispatcherTestHelpers.AssertCancellation(
+				_fixture.WindowsFormsDispatcher,
+				workItemKind,
+				CancellationToken.None);
+		});
+
+	[Theory]
+	[InlineData(DispatcherWorkItemKind.AsyncAction)]
+	[InlineData(DispatcherWorkItemKind.AsyncFunction)]
+	public Task AsyncWorkItemsResumeOnDispatcherThreadWhenAlreadyOnDispatcher(
+		DispatcherWorkItemKind workItemKind) =>
+		_fixture.InvokeOnWindowsFormsDispatcher(() =>
+			DispatcherTestHelpers.AssertAsyncWorkItemResumesOnDispatcherThread(
+				_fixture.WindowsFormsDispatcher,
+				workItemKind));
+}
