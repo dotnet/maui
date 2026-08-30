@@ -684,6 +684,14 @@ Describe 'MAUI Copilot pipeline argument contracts' {
         $prepareBlock | Should -Not -Match 'if \(\$LASTEXITCODE'
         $prepareBlock | Should -Match '\$global:LASTEXITCODE = 0'
     }
+
+    It 'clears handled GitHub CLI failures after duplicate and eligibility checks' {
+        $checkIndex = $script:Pipeline.IndexOf("displayName: 'Check for an existing fix pull request'")
+        $checkStart = $script:Pipeline.LastIndexOf('- pwsh:', $checkIndex)
+        $checkBlock = $script:Pipeline.Substring($checkStart, $checkIndex - $checkStart)
+        $checkBlock | Should -Match 'Read the issue state anonymously'
+        $checkBlock | Should -Match '\$global:LASTEXITCODE = 0'
+    }
 }
 
 Describe 'The trusted publisher stages every module its gate loads' {

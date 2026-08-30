@@ -906,6 +906,10 @@ stages:
               } catch {
                 Write-Host "##vso[task.logissue type=warning]Could not cross-reference the upstream branch: $($_.Exception.Message)"
               }
+              # Every native gh failure above is either handled or replaced by a
+              # successful anonymous read. Prevent the task host from propagating
+              # that stale native exit code after all trusted postconditions pass.
+              $global:LASTEXITCODE = 0
             name: ReplicationDuplicateCheck
             displayName: 'Check for an existing fix pull request'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
