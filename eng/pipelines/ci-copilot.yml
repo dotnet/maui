@@ -416,8 +416,15 @@ stages:
           # to PR-controlled content.
           - bash: |
              set -euo pipefail
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-             STAGED_SOURCE="$(Agent.TempDirectory)/trusted-source"
+             to_bash_path() {
+               if command -v cygpath >/dev/null 2>&1; then
+                 cygpath -u "$1"
+               else
+                 printf '%s\n' "$1"
+               fi
+             }
+             TRUSTED="$(to_bash_path "$(Build.ArtifactStagingDirectory)")/trusted-github"
+             STAGED_SOURCE="$(to_bash_path "$(Agent.TempDirectory)")/trusted-source"
              SOURCE_VERSION="$(Build.SourceVersion)"
              if ! [[ "${SOURCE_VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
                echo "##vso[task.logissue type=error]Build.SourceVersion is not an immutable commit SHA."
@@ -709,9 +716,6 @@ stages:
               }
 
               & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
-              if ($LASTEXITCODE -ne 0) {
-                throw "Preparing the sanitized issue context failed."
-              }
               Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.json") -Destination $contextDir -Force
               Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.md") -Destination $contextDir -Force
               $screenshots = Join-Path $privateContextDir "screenshots"
@@ -3909,8 +3913,15 @@ stages:
           # the PR head, and recapturing here would bless PR-controlled scripts.
           - bash: |
              set -euo pipefail
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-             STAGED_SOURCE="$(Agent.TempDirectory)/trusted-deep-source"
+             to_bash_path() {
+               if command -v cygpath >/dev/null 2>&1; then
+                 cygpath -u "$1"
+               else
+                 printf '%s\n' "$1"
+               fi
+             }
+             TRUSTED="$(to_bash_path "$(Build.ArtifactStagingDirectory)")/trusted-github"
+             STAGED_SOURCE="$(to_bash_path "$(Agent.TempDirectory)")/trusted-deep-source"
              SOURCE_VERSION="$(Build.SourceVersion)"
              if ! [[ "${SOURCE_VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
                echo "##vso[task.logissue type=error]Build.SourceVersion is not an immutable commit SHA."

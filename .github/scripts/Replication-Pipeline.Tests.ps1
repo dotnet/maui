@@ -675,6 +675,14 @@ Describe 'MAUI Copilot pipeline argument contracts' {
         $entry.Success | Should -BeTrue
         $entry.Groups['body'].Value | Should -Match '-AllowAnonymousFallback:\$AllowAnonymousFallback'
     }
+
+    It 'does not treat a recovered GitHub CLI exit code as issue-context failure' {
+        $prepareIndex = $script:Pipeline.IndexOf("displayName: 'Prepare sanitized issue context'")
+        $prepareStart = $script:Pipeline.LastIndexOf('- pwsh:', $prepareIndex)
+        $prepareBlock = $script:Pipeline.Substring($prepareStart, $prepareIndex - $prepareStart)
+        $prepareBlock | Should -Match 'Get-ReplicationIssueContext\.ps1'
+        $prepareBlock | Should -Not -Match '\$LASTEXITCODE'
+    }
 }
 
 Describe 'The trusted publisher stages every module its gate loads' {
@@ -2093,6 +2101,7 @@ Describe 'The trusted tree is attested rather than merely made read-only' {
         $script:Pipeline | Should -Match 'New-TrustedTreeAttestation'
         $script:Pipeline | Should -Match 'Assert-TrustedTreeAttestation'
         $script:Pipeline | Should -Match 'git archive "\$\{SOURCE_VERSION\}"'
+        $script:Pipeline | Should -Match 'cygpath -u'
         $script:Pipeline | Should -Match 'trusted-source/eng/pipelines/ci-copilot\.yml'
         $script:Pipeline | Should -Match '-PipelineDefinitionPath'
         # The document may not live inside the tree it describes.
