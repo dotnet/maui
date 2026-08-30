@@ -9189,6 +9189,15 @@ try {
         throw 'DeviceUdid contains an unresolved pipeline variable.'
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
+    $trustedIsolationManifest = Join-Path $TrustedRoot (
+        'source-overrides/ReplicationNetworkIsolationManifest.xml')
+    if (-not (Test-Path -LiteralPath $trustedIsolationManifest -PathType Leaf)) {
+        throw 'Trusted Android replication network-isolation manifest is missing.'
+    }
+    $relativeIsolationManifest = [IO.Path]::GetRelativePath(
+        $sandboxDir,
+        $trustedIsolationManifest
+    ).Replace('\', '/')
     Invoke-ReplicationTrustedRestore `
         -Target $sandboxProjectPath `
         -AdditionalArguments @('-p:TargetFramework=net10.0-android')
@@ -9200,7 +9209,7 @@ try {
             '-c', 'Debug',
             '--no-restore',
             '-p:EmbedAssembliesIntoApk=true',
-            '-p:AndroidManifest=Platforms/Android/ReplicationNetworkIsolationManifest.xml'
+            "-p:AndroidManifest=$relativeIsolationManifest"
         )
     $null = Get-ReplicationNetworkIsolatedCommand `
         -Platform $Platform `

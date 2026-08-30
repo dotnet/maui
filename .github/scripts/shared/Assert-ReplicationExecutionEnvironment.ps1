@@ -323,6 +323,7 @@ function Assert-ReplicationOutboundNetworkIsolation {
         [ValidateSet('android', 'ios', 'catalyst', 'windows')]
         [string]$Platform,
         [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [string]$TrustedRoot = '',
         [scriptblock]$DnsProbe,
         [scriptblock]$TcpProbe,
         [scriptblock]$HttpProbe
@@ -333,8 +334,12 @@ function Assert-ReplicationOutboundNetworkIsolation {
     }
 
     if ($Platform -ceq 'android') {
-        $manifestPath = Join-Path $RepositoryRoot (
-            'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml')
+        $manifestPath = if (-not [string]::IsNullOrWhiteSpace($TrustedRoot)) {
+            Join-Path $TrustedRoot 'source-overrides/ReplicationNetworkIsolationManifest.xml'
+        } else {
+            Join-Path $RepositoryRoot (
+                'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml')
+        }
         if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
             throw 'Android replication network isolation manifest is missing.'
         }

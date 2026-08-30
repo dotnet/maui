@@ -444,6 +444,7 @@ stages:
                .github/skills \
                eng/scripts \
                .github/patches/catalyst-retina-screenshot.patch \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml \
                eng/pipelines/ci-copilot.yml |
                tar -xf - -C "$STAGED_SOURCE"
              cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
@@ -451,6 +452,7 @@ stages:
              cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"
              mkdir -p "$TRUSTED/source-overrides"
              cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
              chmod -R a-w "$TRUSTED"
              echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted test infrastructure'
@@ -3093,6 +3095,7 @@ stages:
                 .github/skills `
                 eng/scripts `
                 .github/patches/catalyst-retina-screenshot.patch `
+                src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml `
                 eng/pipelines/ci-copilot.yml
               if ($LASTEXITCODE -ne 0) {
                 throw 'Unable to materialize trusted validators from the pinned Git revision.'
@@ -3117,6 +3120,8 @@ stages:
                 -Destination (Join-Path $cleanValidatorRoot 'eng-scripts') -Recurse -Force
               New-Item -ItemType Directory -Path (Join-Path $cleanValidatorRoot 'source-overrides') -Force | Out-Null
               Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/patches/catalyst-retina-screenshot.patch') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml') `
                 -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
 
               # Every script this job runs, checked for existence up front so a
@@ -3961,13 +3966,15 @@ stages:
                .github/scripts \
                .github/skills \
                eng/scripts \
-               .github/patches/catalyst-retina-screenshot.patch |
+               .github/patches/catalyst-retina-screenshot.patch \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml |
                tar -xf - -C "$STAGED_SOURCE"
              cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
              cp -r "$STAGED_SOURCE/.github/skills"  "$TRUSTED/skills"
              cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"
              mkdir -p "$TRUSTED/source-overrides"
              cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
              chmod -R a-w "$TRUSTED"
              echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted scripts for deep UI tests'

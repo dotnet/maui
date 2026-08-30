@@ -63,6 +63,9 @@ param(
     [switch]$EnforceNetworkIsolation,
 
     [Parameter(Mandatory=$false)]
+    [string]$NetworkIsolationManifestPath,
+
+    [Parameter(Mandatory=$false)]
     [switch]$NoRestore
 )
 
@@ -141,14 +144,24 @@ if ($Platform -eq "android") {
     # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
     if ($EnforceNetworkIsolation) {
-        $isolationManifest = Join-Path (Split-Path -Parent $ProjectPath) (
-            'Platforms/Android/ReplicationNetworkIsolationManifest.xml')
+        if ([string]::IsNullOrWhiteSpace($NetworkIsolationManifestPath)) {
+            throw 'Android replication requires a trusted network-isolation manifest path.'
+        }
+        $isolationManifest = [IO.Path]::GetFullPath($NetworkIsolationManifestPath)
         if (-not (Test-Path -LiteralPath $isolationManifest -PathType Leaf)) {
             throw 'Android replication network-isolation manifest is missing.'
         }
+        $isolationManifestItem = Get-Item -LiteralPath $isolationManifest -Force
+        if ($isolationManifestItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Android replication network-isolation manifest must be a regular file.'
+        }
         # Microsoft.Android resolves AndroidManifest relative to the project
         # directory even when MSBuild receives an absolute path.
-        $buildArgs += '-p:AndroidManifest=Platforms/Android/ReplicationNetworkIsolationManifest.xml'
+        $relativeIsolationManifest = [IO.Path]::GetRelativePath(
+            (Split-Path -Parent $ProjectPath),
+            $isolationManifest
+        ).Replace('\', '/')
+        $buildArgs += "-p:AndroidManifest=$relativeIsolationManifest"
     }
     if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {

@@ -76,6 +76,8 @@ function Assert-ReplicationPrivilegeEscapesBlocked {
 
 $root = [IO.Path]::GetFullPath($RepositoryRoot)
 $target = [IO.Path]::GetFullPath($ScriptPath)
+$trustedRoot = [IO.Path]::GetFullPath(
+    (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)))
 if (-not (Test-Path -LiteralPath $root -PathType Container) -or
     -not (Test-Path -LiteralPath $target -PathType Leaf)) {
     throw 'Network-isolated execution received an invalid repository or script path.'
@@ -112,7 +114,8 @@ try {
     }
     $null = Assert-ReplicationOutboundNetworkIsolation `
         -Platform $Platform `
-        -RepositoryRoot $root
+        -RepositoryRoot $root `
+        -TrustedRoot $trustedRoot
 } finally {
     [Environment]::SetEnvironmentVariable('MAUI_REPLICATION_EGRESS_ISOLATED', $null)
 }

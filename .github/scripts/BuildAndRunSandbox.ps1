@@ -258,6 +258,11 @@ $buildDeployParams = @{
     EnforceNetworkIsolation = $EnforceNetworkIsolation
     NoRestore = $EnforceNetworkIsolation
 }
+if ($EnforceNetworkIsolation) {
+    $buildDeployParams.NetworkIsolationManifestPath = Join-Path (
+        Split-Path -Parent $PSScriptRoot
+    ) 'source-overrides/ReplicationNetworkIsolationManifest.xml'
+}
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
     $buildDeployParams.BundleId = $AppBundleId

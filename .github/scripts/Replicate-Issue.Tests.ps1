@@ -2707,15 +2707,13 @@ InitializeComponent();
         $replicationManifest | Should -Match 'tools:node="remove"'
         $windowsManifest | Should -Not -Match '(?i)internetClient|privateNetworkClientServer'
         $script:Source | Should -Match "'-EnforceNetworkIsolation'"
-        $script:Source | Should -Match (
-            "'-p:AndroidManifest=Platforms/Android/" +
-            "ReplicationNetworkIsolationManifest\.xml'")
+        $script:Source | Should -Match 'source-overrides/ReplicationNetworkIsolationManifest\.xml'
+        $script:Source | Should -Match 'GetRelativePath\('
         $buildDeploy = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') -Raw
-        $buildDeploy | Should -Match (
-            "'-p:AndroidManifest=Platforms/Android/" +
-            "ReplicationNetworkIsolationManifest\.xml'")
-        $buildDeploy | Should -Not -Match '-p:AndroidManifest=\$isolationManifest'
+        $buildDeploy | Should -Match 'NetworkIsolationManifestPath'
+        $buildDeploy | Should -Match 'GetRelativePath\('
+        $buildDeploy | Should -Match '-p:AndroidManifest=\$relativeIsolationManifest'
 
         [xml]$ordinary = $androidManifest
         [xml]$isolated = $replicationManifest
@@ -2759,6 +2757,9 @@ InitializeComponent();
         $isolationSource | Should -Match "(?s)Platform -ne 'android'.*?withheld"
         $wrapperSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1') -Raw
+        $wrapperSource | Should -Match (
+            '(?s)Assert-ReplicationOutboundNetworkIsolation.*?' +
+            '-TrustedRoot \$trustedRoot')
         $attestation = $wrapperSource.IndexOf(
             "SetEnvironmentVariable('MAUI_REPLICATION_EGRESS_ISOLATED', '1')",
             [StringComparison]::Ordinal)
