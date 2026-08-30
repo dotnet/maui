@@ -181,16 +181,18 @@ the next one. A mutated file that kept its name, an added file, a deleted file, 
 symlink replacing a regular file, and a changed mode all fail closed. No
 agent-authored artifact can replace a trusted script or gate.
 
-Product fixes are baseline-differential and syntax-aware, not added-line scans.
-Trusted validation applies the strictly parsed patch to a clean checkout and
-compares the result with the trusted `HEAD` pre-image. Offline Roslyn parsing
-scans every changed C# member and added declaration/import as a complete region;
-XML parsing does the same for changed XAML element declarations and new
-subtrees. This catches deletion-only guard removal or condition inversion around
-an existing process/network/file/native/reflection sink without rejecting an
-unrelated safe edit merely because another unchanged member has trusted
-capabilities. The publisher repeats the same apply/scan/restore check before
-credentials. Unsupported syntax and whole-member removal fail closed.
+Product fixes are complete-source and syntax-aware, not added-line scans.
+Trusted validation applies the strictly parsed patch to a clean checkout,
+compares the result with the trusted `HEAD` pre-image, and capability-scans every
+complete resulting source file. Offline Roslyn and XML parsing additionally
+compare changed C# members, conditional regions, declarations, and XAML
+elements. This catches deletion-only guard removal, condition inversion, and
+cross-member activation of an existing process/network/file/native/reflection
+sink. The policy is deliberately conservative: a file that already contains a
+prohibited capability is outside model-authored fix scope even when the proposed
+edit is elsewhere in that file. The publisher repeats the same
+apply/scan/restore check before credentials. Unsupported syntax and whole-member
+removal fail closed.
 
 ### Environment allowlist for generated execution
 

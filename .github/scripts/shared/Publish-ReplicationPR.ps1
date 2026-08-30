@@ -473,13 +473,13 @@ function Get-ReplicationQualityDisclosureBlock {
     } else { @() }
     $adjacent = @($adjacentValues | ForEach-Object {
         ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 160
-    } | Where-Object { $_ }) | Select-Object -First 8
+    } | Where-Object { $_ } | Select-Object -First 8)
     $lifecycle = @($lifecycleValues | ForEach-Object {
         ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 160
-    } | Where-Object { $_ }) | Select-Object -First 8
+    } | Where-Object { $_ } | Select-Object -First 8)
     $consumers = @($consumerValues | ForEach-Object {
         ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 160
-    } | Where-Object { $_ }) | Select-Object -First 8
+    } | Where-Object { $_ } | Select-Object -First 8)
     $findingLines = @()
     $review = & $getQualitySection $contract 'review'
     $reviewFindings = if ($review -is [System.Collections.IDictionary] -and $review.Contains('findings')) {

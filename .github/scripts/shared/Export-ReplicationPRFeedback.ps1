@@ -97,7 +97,7 @@ function Get-FeedbackSelectorDisclosure {
     $raw = Get-FeedbackBodyLine -Body $Body -Label 'Raw runner selector' -MaximumLength 512
     $normalized = [regex]::Match(
         $Body,
-        '(?im)^\s*-\s*Normalized selector:\s*project\s+``(?<project>[^`]+)``\s+\(``(?<path>[^`]+)``\),\s*class\s+``(?<class>[^`]+)``\s*,\s*method\s+``(?<method>[^`]+)``\s*,\s*platform\s+``(?<platform>[^`]+)``')
+        '(?im)^\s*-\s*Normalized selector:\s*project\s+`(?<project>[^`]+)`\s+\(`(?<path>[^`]+)`\),\s*class\s+`(?<class>[^`]+)`\s*,\s*method\s+`(?<method>[^`]+)`\s*,\s*platform\s+`(?<platform>[^`]+)`')
     $counts = [regex]::Match(
         $Body,
         '(?im)^\s*-\s*Trusted selector counts:\s*(?<discovered>\d+)\s+discovered\s*/\s*(?<executed>\d+)\s+executed')
@@ -170,10 +170,12 @@ function Get-FeedbackQualityDisclosure {
     $quality.scenario.transition = Get-FeedbackBodyLine $Body 'Transition' 500
     $quality.scenario.observableIdentity = Get-FeedbackBodyLine $Body 'Observable identity' 500
     $quality.semanticBlastRadius.affectedType = Get-FeedbackBodyLine $Body 'Semantic blast radius' 800
-    $quality.mediaAlignment = Get-FeedbackBodyLine $Body 'Media alignment' 32
-    if ($quality.mediaAlignment -notin @('verified', 'partial', 'not-measured')) {
-        $quality.mediaAlignment = 'not-measured'
-    }
+    $mediaMatch = [regex]::Match(
+        $Body,
+        '(?im)^\s*-\s*Media alignment:\s*`(?<value>verified|partial|not-measured)`')
+    $quality.mediaAlignment = if ($mediaMatch.Success) {
+        $mediaMatch.Groups['value'].Value.ToLowerInvariant()
+    } else { 'not-measured' }
     return $quality
 }
 
@@ -187,21 +189,21 @@ function Get-FeedbackReviewDisclosure {
     foreach ($finding in @($Quality.review.findings | Select-Object -First 8)) {
         [void]$findings.Add($finding)
     }
-    foreach ($match in [regex]::Matches(
-            $Body,
-            '(?im)^\s*-\s*\*\*(?:(?<severity>[A-Za-z-]+)\.\*\*\s+.+?\((?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative);\s*grounding\s+(?<grounding>[^,]+),\s*confidence\s+(?<confidence>[^,]+),\s*corroboration\s+(?<corroboration>[^;)]+)|(?<category2>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative)\.\*\*\s+\((?<grounding2>[^,]+),\s*(?<confidence2>[^,]+),\s*(?<corroboration2>[^;)]+))')) {
+    foreach ($pattern in @(
+            '(?im)^\s*-\s*\*\*[A-Za-z-]+\.\*\*\s+.+?\s+\(`(?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative)`;\s*grounding\s*`(?<grounding>[^`]+)`,\s*confidence\s*`(?<confidence>[^`]+)`,\s*corroboration\s*`(?<corroboration>[^`]+)`;\s*advisory\)',
+            '(?im)^\s*-\s*\*\*(?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative)\*\*\s+\(`(?<grounding>[^`]+)`,\s*`(?<confidence>[^`]+)`,\s*`(?<corroboration>[^`]+)`\):'
+        )) {
+        foreach ($match in [regex]::Matches($Body, $pattern)) {
+            if ($findings.Count -ge 8) { break }
+            [void]$findings.Add([ordered]@{
+                category = $match.Groups['category'].Value
+                grounding = ConvertTo-FeedbackText $match.Groups['grounding'].Value 48
+                confidence = ConvertTo-FeedbackText $match.Groups['confidence'].Value 16
+                corroboration = ConvertTo-FeedbackText $match.Groups['corroboration'].Value 24
+                detail = 'See the bounded advisory finding in the pull request body.'
+            })
+        }
         if ($findings.Count -ge 8) { break }
-        $category = if ($match.Groups['category'].Success) { $match.Groups['category'].Value } else { $match.Groups['category2'].Value }
-        $grounding = if ($match.Groups['grounding'].Success) { $match.Groups['grounding'].Value } else { $match.Groups['grounding2'].Value }
-        $confidence = if ($match.Groups['confidence'].Success) { $match.Groups['confidence'].Value } else { $match.Groups['confidence2'].Value }
-        $corroboration = if ($match.Groups['corroboration'].Success) { $match.Groups['corroboration'].Value } else { $match.Groups['corroboration2'].Value }
-        [void]$findings.Add([ordered]@{
-            category = $category
-            grounding = ConvertTo-FeedbackText $grounding 48
-            confidence = ConvertTo-FeedbackText $confidence 16
-            corroboration = ConvertTo-FeedbackText $corroboration 24
-            detail = 'See the bounded advisory finding in the pull request body.'
-        })
     }
     return [ordered]@{ findings = @($findings.ToArray() | Select-Object -First 8) }
 }

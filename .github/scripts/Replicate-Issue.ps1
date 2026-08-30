@@ -9178,7 +9178,11 @@ $selectorContract = New-ReplicationUnknownSelector
 $recordingTestAlignment = 'not-measured'
 
 try {
-$sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
+    if ($Platform -ne 'android') {
+        throw ("Unsupported replication scenario: $Platform replication is withheld because " +
+            'this pool has no enforceable process-tree and app outbound-network deny boundary.')
+    }
+    $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
     Invoke-ReplicationTrustedRestore `
         -Target $sandboxProjectPath `
         -AdditionalArguments @('-p:TargetFramework=net10.0-android')
@@ -9232,7 +9236,6 @@ Clear-TransientAppiumDirectory
     $sandboxSucceeded = $false
     for ($attempt = 1; $attempt -le $MaxSandboxAttempts; $attempt++) {
         $sandboxAttempts = $attempt
-        $wrapperPath = Join-Path $ArtifactRoot "run-sandbox-attempt-$attempt.ps1"
         try {
             Invoke-ReplicationCopilot `
                 -PhaseName 'sandbox' `
@@ -9299,28 +9302,26 @@ Clear-TransientAppiumDirectory
                 -AllowDeviceControl `
                 -TimeoutSeconds 300
 
-            $escapedRepoRoot = $repoRoot.Replace("'", "''")
-            $wrapperArgs = @(
-                '$ErrorActionPreference = ''Stop''',
-                '$arguments = @(''-Platform'', ' + "'$Platform'" +
-                    ', ''-Configuration'', ''Debug'', ''-RepoRoot'', ' +
-                    "'$escapedRepoRoot'" + ', ''-SkipBuildDeploy'', ''-EnforceNetworkIsolation'')'
+            $replayArguments = @(
+                '-Platform', $Platform,
+                '-Configuration', 'Debug',
+                '-RepoRoot', $repoRoot,
+                '-SkipBuildDeploy',
+                '-EnforceNetworkIsolation'
             )
             if ($DeviceUdid) {
-                $escapedDevice = $DeviceUdid.Replace("'", "''")
-                $wrapperArgs += '$arguments += @(''-DeviceUdid'', ' + "'$escapedDevice'" + ')'
+                $replayArguments += @('-DeviceUdid', $DeviceUdid)
             }
-            $escapedBuildScript = (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1').Replace("'", "''")
-            $wrapperArgs += @(
-                "& pwsh -NoLogo -NoProfile -NonInteractive -File '$escapedBuildScript' @arguments",
-                'exit $LASTEXITCODE'
-            )
-            $wrapperArgs | Set-Content -LiteralPath $wrapperPath -Encoding utf8NoBOM
+            $replayPayload = [Convert]::ToBase64String(
+                [Text.Encoding]::UTF8.GetBytes(
+                    (ConvertTo-Json -InputObject @($replayArguments) -Compress -Depth 3)))
+            $replayScriptPath = Join-Path $trustedScripts 'BuildAndRunSandbox.ps1'
 
             $recordArguments = @(
                 '-Platform', $Platform,
                 '-EvidenceDir', $evidenceDir,
-                '-ReproductionScriptPath', $wrapperPath,
+                '-ReproductionScriptPath', $replayScriptPath,
+                '-ReproductionArgumentsPayload', $replayPayload,
                 '-MaxDurationSeconds', '180',
                 '-MaxVideoBytes', [string](64MB)
             )
@@ -9360,8 +9361,8 @@ Clear-TransientAppiumDirectory
                     -TimeoutSeconds 300
             }
             Invoke-LoggedChildProcess `
-                -ScriptPath $wrapperPath `
-                -Arguments @() `
+                -ScriptPath $replayScriptPath `
+                -Arguments $replayArguments `
                 -LogPath (Join-Path $sandboxArtifactDir "confirm-attempt-$attempt.log") `
                 -Description 'Confirming the on-device reproduction repeats' `
                 -AllowDeviceControl `
@@ -9611,9 +9612,6 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
 "@
             }
             Restore-TransientSandbox
-        }
-        finally {
-            Remove-Item -LiteralPath $wrapperPath -Force -ErrorAction SilentlyContinue
         }
     }
     if (-not $sandboxSucceeded) {

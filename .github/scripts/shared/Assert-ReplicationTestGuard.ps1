@@ -864,8 +864,11 @@ function Assert-ReplicationProductFixDeltaSafety {
     if ($BeforeContent -ceq $AfterContent) {
         throw "Product fix source '$Path' is unchanged."
     }
-    # A guard or field edit can activate a dangerous sink in any unchanged
-    # member, so the security boundary is the complete resulting file.
+    # A guard, helper call, alias, field, property, or XAML visibility edit can
+    # activate a dangerous sink in an otherwise unchanged member/subtree. The
+    # complete resulting file is therefore the security boundary. This is
+    # intentionally conservative: files that already contain prohibited
+    # capabilities are outside model-authored fix scope.
     Assert-ReplicationProductFixSafety -Content $AfterContent -Path $Path
 
     $extension = [IO.Path]::GetExtension($Path).ToLowerInvariant()

@@ -2725,6 +2725,17 @@ InitializeComponent();
     It 'fails unsupported lanes before generated execution and never sets its own isolation marker' {
         $script:Source | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
         $script:Source | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED\s*='
+        $script:Source | Should -Match (
+            "(?s)if \(\`$Platform -ne 'android'\).*?" +
+            'Unsupported replication scenario:.*?replication is withheld')
+        $unsupported = $script:Source.IndexOf(
+            "if (`$Platform -ne 'android')",
+            [StringComparison]::Ordinal)
+        $prewarm = $script:Source.IndexOf(
+            'Invoke-ReplicationTrustedRestore `',
+            [StringComparison]::Ordinal)
+        $unsupported | Should -BeGreaterOrEqual 0
+        $unsupported | Should -BeLessThan $prewarm
         $isolationSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Assert-ReplicationExecutionEnvironment.ps1') -Raw
         $isolationSource | Should -Match "(?s)Platform -ne 'android'.*?withheld"
@@ -2751,6 +2762,14 @@ InitializeComponent();
             'Get-ReplicationNetworkIsolatedCommand.*?' +
             'Stop-ReplicationNetworkIsolationUnit.*?' +
             'Assert-ReplicationAndroidGuestNetworkIsolation.*?-VerifyOnly')
+    }
+
+    It 'replays the Sandbox through a trusted script instead of an artifact executable' {
+        $script:Source | Should -Not -Match 'run-sandbox-attempt-\$attempt\.ps1'
+        $script:Source | Should -Match (
+            '(?s)\$replayScriptPath = Join-Path \$trustedScripts ' +
+            '''BuildAndRunSandbox\.ps1''.*?-ReproductionScriptPath'', ' +
+            '\$replayScriptPath.*?-ReproductionArgumentsPayload'', \$replayPayload')
     }
 
     It 'prewarms trusted inputs and forbids restore during isolated execution' {

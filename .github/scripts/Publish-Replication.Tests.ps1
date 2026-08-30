@@ -286,6 +286,45 @@ Describe 'Trusted replication pull request publishing' {
             '`not-corroborated`\): Adjacent lifecycle state was not measured')
     }
 
+    It 'renders an unknown quality contract with empty lists under strict mode' {
+        Set-StrictMode -Version 3.0
+        try {
+            $candidate = [pscustomobject]@{
+                qualityContract = [ordered]@{
+                    userVisible = [ordered]@{ contract = 'unknown'; trigger = 'unknown' }
+                    oracle = [ordered]@{
+                        primary = 'unknown'; independent = $null
+                        independence = 'unknown'; rationale = 'unknown'
+                    }
+                    scenario = [ordered]@{
+                        name = 'unknown'; precondition = 'unknown'; trigger = 'unknown'
+                        transition = 'unknown'; observableIdentity = 'unknown'
+                        affectedControl = $null
+                    }
+                    risk = [ordered]@{
+                        adjacentStates = @(); lifecycleStates = @()
+                        statelessApplicability = 'unknown'
+                    }
+                    semanticBlastRadius = [ordered]@{
+                        affectedType = 'unknown'; affectedControl = 'unknown'
+                        ownership = 'unknown'; sharedConsumers = @()
+                        unchangedBehavior = 'unknown'
+                    }
+                    mediaAlignment = 'not-measured'
+                    review = [ordered]@{ findings = @() }
+                }
+            }
+
+            $block = Get-ReplicationQualityDisclosureBlock -Candidate $candidate
+
+            $block | Should -Match 'Risk adjacent states: not measured'
+            $block | Should -Match 'Risk lifecycle states: not measured'
+            $block | Should -Match 'shared consumers=not measured'
+        } finally {
+            Set-StrictMode -Off
+        }
+    }
+
     It 'states the evidence level so a reviewer need not infer it' {
         $validated = [ordered]@{
             schemaVersion = 1
