@@ -7637,6 +7637,7 @@ function Get-ReplicationRuntimeEnvironment {
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
     return Get-ReplicationExecutionEnvironment -Additional @{
+        CI = 'true'
         GRADLE_USER_HOME = $replicationGradleHome
         DOTNET_CLI_HOME = $replicationDotnetHome
         NUGET_PACKAGES = $replicationNugetPackages

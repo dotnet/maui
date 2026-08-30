@@ -22,6 +22,7 @@ BeforeAll {
             # The real PATH, because one of these tests starts a grandchild
             # process and a fabricated PATH would prove only that pwsh is missing.
             PATH = [Environment]::GetEnvironmentVariable('PATH')
+            CI = 'true'
             HOME = [Environment]::GetEnvironmentVariable('HOME')
             TMPDIR = [IO.Path]::GetTempPath()
             DOTNET_ROOT = '/usr/share/dotnet'
@@ -70,7 +71,7 @@ Describe 'Constructing the environment a generated process sees' {
 
     It 'keeps only the runtime variables a build and a device run need' {
         foreach ($name in @(
-            'PATH', 'HOME', 'TMPDIR', 'DOTNET_ROOT', 'DOTNET_NOLOGO',
+            'PATH', 'CI', 'HOME', 'TMPDIR', 'DOTNET_ROOT', 'DOTNET_NOLOGO',
             'DOTNET_CLI_HOME', 'GRADLE_USER_HOME',
             'JAVA_HOME', 'ANDROID_HOME', 'ANDROID_SDK_ROOT', 'APPIUM_HOME',
             'DEVICE_UDID')) {

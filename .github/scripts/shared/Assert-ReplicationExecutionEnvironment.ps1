@@ -97,6 +97,7 @@ $script:ReplicationForbiddenEnvironmentPatterns = @(
 $script:ReplicationAllowedEnvironmentNames = @(
     'PATH',
     'Path',
+    'CI',
     'HOME',
     'USERPROFILE',
     'HOMEDRIVE',

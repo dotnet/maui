@@ -2819,6 +2819,7 @@ InitializeComponent();
         $script:Source | Should -Match "-Verb build"
         $script:Source | Should -Match 'GRADLE_USER_HOME'
         $script:Source | Should -Match 'DOTNET_CLI_HOME'
+        $script:Source | Should -Match "CI = 'true'"
         $script:Source | Should -Match '\$replicationRuntimeParent = if .*AGENT_TEMPDIRECTORY'
         $script:Source | Should -Not -Match 'Join-Path \$ArtifactRoot ''runtime'''
         $script:Source | Should -Match 'Remove-Item -LiteralPath \$replicationRuntimeRoot -Recurse'
