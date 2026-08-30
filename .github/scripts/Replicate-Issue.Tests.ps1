@@ -2734,7 +2734,16 @@ InitializeComponent();
         $prewarm = $script:Source.IndexOf(
             'Invoke-ReplicationTrustedRestore `',
             [StringComparison]::Ordinal)
+        $attemptKinds = $script:Source.IndexOf(
+            '$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()',
+            [StringComparison]::Ordinal)
+        $deviceValidation = $script:Source.IndexOf(
+            "throw 'DeviceUdid is required for android replication.'",
+            [StringComparison]::Ordinal)
+        $attemptKinds | Should -BeGreaterOrEqual 0
+        $attemptKinds | Should -BeLessThan $unsupported
         $unsupported | Should -BeGreaterOrEqual 0
+        $unsupported | Should -BeLessThan $deviceValidation
         $unsupported | Should -BeLessThan $prewarm
         $isolationSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Assert-ReplicationExecutionEnvironment.ps1') -Raw

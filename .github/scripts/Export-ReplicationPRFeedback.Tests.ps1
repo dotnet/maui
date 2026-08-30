@@ -88,18 +88,22 @@ Describe 'Replication PR feedback export' {
         $contract = [ordered]@{
             userVisible = [ordered]@{ contract = 'Visible'; trigger = 'Tap' }
             oracle = [ordered]@{
-                primary = 'Text'; independent = $null
+                primary = 'Text'; independent = 'Native text'
                 independence = 'not-applicable'; rationale = 'one signal'
             }
             scenario = [ordered]@{
                 name = 'tap'; precondition = 'ready'; trigger = 'tap'
                 transition = 'changed'; observableIdentity = 'status'
-                affectedControl = $null
+                affectedControl = [ordered]@{ id = 'status'; type = 'Label' }
             }
-            risk = [ordered]@{ adjacentStates = @(); lifecycleStates = @(); statelessApplicability = 'not-applicable' }
+            risk = [ordered]@{
+                adjacentStates = @('disabled', 'enabled')
+                lifecycleStates = @('connected', 'reconnected')
+                statelessApplicability = 'applicable'
+            }
             semanticBlastRadius = [ordered]@{
                 affectedType = 'Button'; affectedControl = 'status'; ownership = 'Controls'
-                sharedConsumers = @(); unchangedBehavior = 'other buttons'
+                sharedConsumers = @('Shell', 'Toolbar'); unchangedBehavior = 'other buttons'
             }
             mediaAlignment = 'verified'
             review = [ordered]@{
@@ -118,9 +122,22 @@ Describe 'Replication PR feedback export' {
         $review = Get-FeedbackReviewDisclosure -Body $qualityBody -Quality $quality
 
         $quality.mediaAlignment | Should -BeExactly 'verified'
+        $quality.oracle.independent | Should -BeExactly 'Native text'
+        $quality.scenario.affectedControl.id | Should -BeExactly 'status'
+        $quality.scenario.affectedControl.type | Should -BeExactly 'Label'
+        $quality.risk.adjacentStates | Should -Be @('disabled', 'enabled')
+        $quality.risk.lifecycleStates | Should -Be @('connected', 'reconnected')
+        $quality.risk.statelessApplicability | Should -BeExactly 'applicable'
+        $quality.semanticBlastRadius.affectedType | Should -BeExactly 'Button'
+        $quality.semanticBlastRadius.affectedControl | Should -BeExactly 'status'
+        $quality.semanticBlastRadius.ownership | Should -BeExactly 'Controls'
+        $quality.semanticBlastRadius.sharedConsumers | Should -Be @('Shell', 'Toolbar')
+        $quality.semanticBlastRadius.unchangedBehavior | Should -BeExactly 'other buttons'
         $review.findings.Count | Should -Be 1
         $review.findings[0].category | Should -BeExactly 'advisory-hardening'
         $review.findings[0].grounding | Should -BeExactly 'source'
+        $quality.review.findings = @($review.findings)
+        $quality.review.findings.Count | Should -Be 1
 
         $independentBody = Get-ReplicationIndependentReviewBlock -Candidate ([pscustomobject]@{
             fixIndependentReview = [pscustomobject]@{

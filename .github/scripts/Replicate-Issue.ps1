@@ -9146,12 +9146,6 @@ if (-not (Test-Path -LiteralPath (Join-Path $trustedScripts 'BuildAndRunSandbox.
 if (-not (Test-Path -LiteralPath (Join-Path $trustedSkills 'replicate-issue/SKILL.md') -PathType Leaf)) {
     throw 'Trusted replicate-issue skill is missing.'
 }
-if ($Platform -in @('android', 'ios') -and [string]::IsNullOrWhiteSpace($DeviceUdid)) {
-    throw "DeviceUdid is required for $Platform replication."
-}
-if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
-    throw 'DeviceUdid contains an unresolved pipeline variable.'
-}
 $selectedDeviceId = if ($DeviceUdid) {
     $DeviceUdid
 } elseif ($Platform -eq 'catalyst') {
@@ -9176,11 +9170,19 @@ $plannedQualityContract = New-ReplicationUnknownQualityContract
 $qualityContract = New-ReplicationUnknownQualityContract
 $selectorContract = New-ReplicationUnknownSelector
 $recordingTestAlignment = 'not-measured'
+$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
+$testAttemptKinds = [System.Collections.Generic.List[string]]::new()
 
 try {
     if ($Platform -ne 'android') {
         throw ("Unsupported replication scenario: $Platform replication is withheld because " +
             'this pool has no enforceable process-tree and app outbound-network deny boundary.')
+    }
+    if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
+        throw 'DeviceUdid is required for android replication.'
+    }
+    if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
+        throw 'DeviceUdid contains an unresolved pipeline variable.'
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
     Invoke-ReplicationTrustedRestore `
@@ -9221,8 +9223,6 @@ Clear-TransientAppiumDirectory
     }
     $sandboxFailureSummary = ''
     $sandboxFailureHistory = [ordered]@{}
-    $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
-    $testAttemptKinds = [System.Collections.Generic.List[string]]::new()
     $script:RequireAppClosedAssertion = $false
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0

@@ -319,7 +319,7 @@ Describe 'Trusted replication pull request publishing' {
 
             $block | Should -Match 'Risk adjacent states: not measured'
             $block | Should -Match 'Risk lifecycle states: not measured'
-            $block | Should -Match 'shared consumers=not measured'
+            $block | Should -Match 'Blast radius shared consumers: not measured'
         } finally {
             Set-StrictMode -Off
         }

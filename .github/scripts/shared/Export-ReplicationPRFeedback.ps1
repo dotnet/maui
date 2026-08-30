@@ -154,6 +154,11 @@ function Get-FeedbackQualityDisclosure {
     $quality.userVisible.contract = Get-FeedbackBodyLine $Body 'User-visible contract' 500
     $quality.userVisible.trigger = Get-FeedbackBodyLine $Body 'User-visible trigger' 500
     $quality.oracle.primary = Get-FeedbackBodyLine $Body 'Primary oracle' 500
+    $independentOracle = Get-FeedbackBodyLine $Body 'Independent oracle' 500
+    $quality.oracle.independent = if ($independentOracle -and
+        $independentOracle -notin @('unknown', 'not measured', 'not applicable')) {
+        $independentOracle
+    } else { $null }
     $independenceLine = Get-FeedbackBodyLine $Body 'Oracle independence' 160
     $independenceMatch = [regex]::Match(
         $independenceLine,
@@ -169,7 +174,51 @@ function Get-FeedbackQualityDisclosure {
     $quality.scenario.trigger = Get-FeedbackBodyLine $Body 'Trigger' 500
     $quality.scenario.transition = Get-FeedbackBodyLine $Body 'Transition' 500
     $quality.scenario.observableIdentity = Get-FeedbackBodyLine $Body 'Observable identity' 500
-    $quality.semanticBlastRadius.affectedType = Get-FeedbackBodyLine $Body 'Semantic blast radius' 800
+    $affectedControl = Get-FeedbackBodyLine $Body 'Affected control' 300
+    $affectedControlMatch = [regex]::Match(
+        $affectedControl,
+        '^(?<id>.+?)\s+\((?<type>[^()]+)\)$')
+    $quality.scenario.affectedControl = if ($affectedControlMatch.Success) {
+        [ordered]@{
+            id = ConvertTo-FeedbackText $affectedControlMatch.Groups['id'].Value 120
+            type = ConvertTo-FeedbackText $affectedControlMatch.Groups['type'].Value 120
+        }
+    } else { $null }
+    $parseStateList = {
+        param([string]$Label)
+        $value = Get-FeedbackBodyLine $Body $Label 1400
+        if ([string]::IsNullOrWhiteSpace($value) -or $value -eq 'not measured') {
+            return @()
+        }
+        return @($value -split ';\s*' | ForEach-Object {
+            ConvertTo-FeedbackText $_ 160
+        } | Where-Object { $_ } | Select-Object -First 8)
+    }
+    $quality.risk.adjacentStates = @(& $parseStateList 'Risk adjacent states')
+    $quality.risk.lifecycleStates = @(& $parseStateList 'Risk lifecycle states')
+    $stateless = Get-FeedbackBodyLine $Body 'Stateless applicability' 32
+    $quality.risk.statelessApplicability = if ($stateless -in @(
+            'applicable', 'not-applicable', 'unknown')) {
+        $stateless
+    } else { 'unknown' }
+    $quality.semanticBlastRadius.affectedType =
+        Get-FeedbackBodyLine $Body 'Blast radius affected type' 240
+    $quality.semanticBlastRadius.affectedControl =
+        Get-FeedbackBodyLine $Body 'Blast radius affected control' 240
+    $quality.semanticBlastRadius.ownership =
+        Get-FeedbackBodyLine $Body 'Blast radius ownership' 240
+    $consumerLine = Get-FeedbackBodyLine $Body 'Blast radius shared consumers' 1400
+    $quality.semanticBlastRadius.sharedConsumers = if (
+        [string]::IsNullOrWhiteSpace($consumerLine) -or
+        $consumerLine -eq 'not measured') {
+        @()
+    } else {
+        @($consumerLine -split ';\s*' | ForEach-Object {
+            ConvertTo-FeedbackText $_ 160
+        } | Where-Object { $_ } | Select-Object -First 8)
+    }
+    $quality.semanticBlastRadius.unchangedBehavior =
+        Get-FeedbackBodyLine $Body 'Blast radius unchanged behavior' 500
     $mediaMatch = [regex]::Match(
         $Body,
         '(?im)^\s*-\s*Media alignment:\s*`(?<value>verified|partial|not-measured)`')
@@ -250,6 +299,7 @@ foreach ($pull in $pulls) {
     $selector = Get-FeedbackSelectorDisclosure -Body ([string]$pull.body)
     $quality = Get-FeedbackQualityDisclosure -Body ([string]$pull.body) -Selector $selector
     $review = Get-FeedbackReviewDisclosure -Body ([string]$pull.body) -Quality $quality
+    $quality.review.findings = @($review.findings)
     $evidence = Get-FeedbackEvidenceDisclosure -Body ([string]$pull.body) -Quality $quality
     $exportedPulls.Add([ordered]@{
         number = $number

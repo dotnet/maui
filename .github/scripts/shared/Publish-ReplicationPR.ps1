@@ -518,11 +518,13 @@ function Get-ReplicationQualityDisclosureBlock {
         } else { 'not applicable' }))
         ('- Risk adjacent states: ' + $(if ($adjacent.Count) { $adjacent -join '; ' } else { 'not measured' }))
         ('- Risk lifecycle states: ' + $(if ($lifecycle.Count) { $lifecycle -join '; ' } else { 'not measured' }))
-        ('- Semantic blast radius: type=' + (& $read $blast 'affectedType' 240) +
-            '; control=' + (& $read $blast 'affectedControl' 240) +
-            '; ownership=' + (& $read $blast 'ownership' 240) +
-            '; shared consumers=' + $(if ($consumers.Count) { $consumers -join '; ' } else { 'not measured' }) +
-            '; unchanged behavior=' + (& $read $blast 'unchangedBehavior' 500))
+        ('- Stateless applicability: `' + (& $read $risk 'statelessApplicability' 32) + '`')
+        ('- Blast radius affected type: ' + (& $read $blast 'affectedType' 240))
+        ('- Blast radius affected control: ' + (& $read $blast 'affectedControl' 240))
+        ('- Blast radius ownership: ' + (& $read $blast 'ownership' 240))
+        ('- Blast radius shared consumers: ' +
+            $(if ($consumers.Count) { $consumers -join '; ' } else { 'not measured' }))
+        ('- Blast radius unchanged behavior: ' + (& $read $blast 'unchangedBehavior' 500))
         ('- Media alignment: `' + $media + '` (derived from trusted recording/test comparison)')
         ''
         $(if ($findingLines.Count) {
