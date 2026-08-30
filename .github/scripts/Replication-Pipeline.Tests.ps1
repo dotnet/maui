@@ -681,7 +681,8 @@ Describe 'MAUI Copilot pipeline argument contracts' {
         $prepareStart = $script:Pipeline.LastIndexOf('- pwsh:', $prepareIndex)
         $prepareBlock = $script:Pipeline.Substring($prepareStart, $prepareIndex - $prepareStart)
         $prepareBlock | Should -Match 'Get-ReplicationIssueContext\.ps1'
-        $prepareBlock | Should -Not -Match '\$LASTEXITCODE'
+        $prepareBlock | Should -Not -Match 'if \(\$LASTEXITCODE'
+        $prepareBlock | Should -Match '\$global:LASTEXITCODE = 0'
     }
 }
 

@@ -716,6 +716,11 @@ stages:
               }
 
               & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
+              # The reader can recover from a rejected gh credential by reading
+              # the public issue anonymously. PowerShell still retains gh's
+              # native exit code after that successful recovery, and the Azure
+              # task host otherwise exits 1 when this inline script completes.
+              $global:LASTEXITCODE = 0
               Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.json") -Destination $contextDir -Force
               Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.md") -Destination $contextDir -Force
               $screenshots = Join-Path $privateContextDir "screenshots"
