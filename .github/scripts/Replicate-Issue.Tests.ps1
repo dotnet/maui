@@ -2824,6 +2824,16 @@ InitializeComponent();
         $device | Should -Match '\$buildArgs \+= ''--no-restore'''
     }
 
+    It 'surfaces bounded trusted-restore diagnostics' {
+        $restore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Invoke-ReplicationTrustedRestore\b.*?^}').Value
+
+        $restore | Should -Match 'Get-ReplicationFailureDetails -Output'
+        $restore | Should -Match 'exit \$\(\[int\]\$result\.ExitCode\)'
+        $restore | Should -Match 'timedOut='
+    }
+
     It 'does not offer host-executed generated UI tests to replication' {
         $proposal = [regex]::Match(
             $script:Source,

@@ -7671,7 +7671,11 @@ function Invoke-ReplicationTrustedRestore {
         $null = Assert-ReplicationTrustedTree -Context "after trusted restore of $(Split-Path -Leaf $fullTarget)"
     }
     if ($result.TimedOut -or [int]$result.ExitCode -ne 0) {
-        throw "Trusted restore failed for $(Split-Path -Leaf $fullTarget)."
+        $details = Get-ReplicationFailureDetails -Output @($result.Output)
+        throw (
+            "Trusted restore failed for $(Split-Path -Leaf $fullTarget) " +
+            "(exit $([int]$result.ExitCode), timedOut=$([bool]$result.TimedOut)). " +
+            $details)
     }
 }
 
