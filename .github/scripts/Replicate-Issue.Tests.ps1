@@ -2719,6 +2719,9 @@ InitializeComponent();
             Join-Path $PSScriptRoot '../../src/Controls/samples/Directory.Build.targets') -Raw
         $sampleTargets | Should -Match "MSBuildProjectName.*Maui\.Controls\.Sample\.Sandbox"
         $sampleTargets | Should -Match '<AndroidManifest>\$\(_MauiReplicationAndroidManifest\)</AndroidManifest>'
+        $sampleTargets | Should -Match 'Name="_VerifyMauiReplicationAndroidManifest"'
+        $sampleTargets | Should -Match 'trusted replication Android manifest was overridden'
+        $buildDeploy | Should -Match 'IsPathRooted\(\$relativeIsolationManifest\)'
 
         [xml]$ordinary = $androidManifest
         [xml]$isolated = $replicationManifest

@@ -4,4 +4,11 @@
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Maui.Controls.Sample.Sandbox' and '$(_MauiReplicationAndroidManifest)' != '' and $(TargetFramework.Contains('-android'))">
     <AndroidManifest>$(_MauiReplicationAndroidManifest)</AndroidManifest>
   </PropertyGroup>
+  <Target Name="_VerifyMauiReplicationAndroidManifest"
+      BeforeTargets="_GetAndroidPackageName"
+      Condition="'$(MSBuildProjectName)' == 'Maui.Controls.Sample.Sandbox' and '$(_MauiReplicationAndroidManifest)' != '' and $(TargetFramework.Contains('-android'))">
+    <Error
+        Condition="'$(AndroidManifest)' != '$(_MauiReplicationAndroidManifest)'"
+        Text="The trusted replication Android manifest was overridden." />
+  </Target>
 </Project>

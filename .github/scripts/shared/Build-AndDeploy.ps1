@@ -161,6 +161,9 @@ if ($Platform -eq "android") {
             (Split-Path -Parent $ProjectPath),
             $isolationManifest
         ).Replace('\', '/')
+        if ([IO.Path]::IsPathRooted($relativeIsolationManifest)) {
+            throw 'Android replication network-isolation manifest must be reachable relative to the project directory.'
+        }
         $buildArgs += "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
     }
     if ($NoRestore) { $buildArgs += "--no-restore" }
