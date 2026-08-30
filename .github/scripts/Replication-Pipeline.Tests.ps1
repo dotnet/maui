@@ -37,6 +37,7 @@ Describe 'MAUI Copilot mode routing' {
     It 'requires exactly the target number for the selected mode' {
         $script:Pipeline | Should -Match 'Mode=review requires PRNumber > 0 and IssueNumber = 0'
         $script:Pipeline | Should -Match 'Mode=replicate requires IssueNumber > 0 and PRNumber = 0'
+        $script:Pipeline | Should -Match 'Mode=replicate currently requires Platform=android'
         $script:Pipeline | Should -Match 'PARAM_MODE: \$\{\{ parameters\.Mode \}\}'
         $script:Pipeline | Should -Match 'PARAM_ISSUE_NUMBER: \$\{\{ parameters\.IssueNumber \}\}'
     }

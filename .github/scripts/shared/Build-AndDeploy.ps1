@@ -275,6 +275,7 @@ if ($Platform -eq "android") {
     # main pipeline never sets _MustTrim and does not hit MT0180 on the Tahoe pool,
     # so matching its recipe fixes the link failure without reintroducing MT0180.
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:BuildIpa=true", "-p:_UseNativeAot=false", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }

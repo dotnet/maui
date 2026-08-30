@@ -561,6 +561,7 @@ function Get-ReplicationNetworkIsolatedCommand {
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Environment,
         [Parameter(Mandatory = $true)][ValidateCount(1, 4)][string[]]$WritableRoots,
         [string]$DeviceUdid = '',
+        [ValidateRange(1, 10800)][int]$TimeoutSeconds = 1800,
         [ValidateSet('linux', 'macos', 'windows')]
         [string]$OperatingSystem = $(if ([OperatingSystem]::IsLinux()) {
             'linux'
@@ -617,6 +618,8 @@ function Get-ReplicationNetworkIsolatedCommand {
     if ($UserId -notmatch '^\d+$' -or $GroupId -notmatch '^\d+$') {
         throw 'Linux replication network isolation could not resolve the agent uid/gid.'
     }
+    $unitBaseName = "maui-replication-$PID-$([guid]::NewGuid().ToString('N'))"
+    $unitName = "$unitBaseName.service"
 
     $systemdArguments = @(
         '-n',
@@ -625,9 +628,13 @@ function Get-ReplicationNetworkIsolatedCommand {
         '--wait',
         '--pipe',
         '--collect',
+        "--unit=$unitBaseName",
         "--uid=$UserId",
         "--gid=$GroupId",
         "--working-directory=$RepositoryRoot",
+        "--property=RuntimeMaxSec=$($TimeoutSeconds)s",
+        '--property=TimeoutStopSec=15s',
+        '--property=KillMode=control-group',
         '--property=IPAddressDeny=any',
         '--property=IPAddressAllow=localhost',
         '--property=NoNewPrivileges=yes',
@@ -682,6 +689,44 @@ function Get-ReplicationNetworkIsolatedCommand {
         Arguments = $systemdArguments
         Environment = $Environment
         Boundary = 'systemd-cgroup-loopback-only'
+        UnitName = $unitName
+    }
+}
+
+function Stop-ReplicationNetworkIsolationUnit {
+    <#
+    .SYNOPSIS
+        Stops and verifies the transient systemd unit that owns generated work.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$UnitName,
+        [scriptblock]$SystemctlInvoker
+    )
+
+    if ($UnitName -notmatch '^maui-replication-[0-9]+-[0-9a-f]{32}\.service$') {
+        throw 'Generated execution cleanup received an invalid systemd unit name.'
+    }
+    if ($null -eq $SystemctlInvoker) {
+        $SystemctlInvoker = {
+            param([string[]]$Arguments)
+            $output = @(& /usr/bin/sudo -n /usr/bin/systemctl @Arguments 2>&1)
+            [pscustomobject]@{
+                ExitCode = $LASTEXITCODE
+                Output = ($output | ForEach-Object { [string]$_ }) -join "`n"
+            }
+        }
+    }
+
+    $null = & $SystemctlInvoker @('stop', $UnitName)
+    $active = & $SystemctlInvoker @('is-active', '--quiet', $UnitName)
+    if ([int]$active.ExitCode -eq 0) {
+        $null = & $SystemctlInvoker @(
+            'kill', '--kill-whom=all', '--signal=KILL', $UnitName)
+        $active = & $SystemctlInvoker @('is-active', '--quiet', $UnitName)
+    }
+    if ([int]$active.ExitCode -eq 0) {
+        throw "Generated execution systemd unit remained active after cleanup: $UnitName"
     }
 }
 

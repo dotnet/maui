@@ -387,6 +387,7 @@ Describe 'Selecting a real process isolation boundary' {
             -Environment $script:MinimalEnvironment `
             -WritableRoots @($script:IsolationPlanRepo) `
             -DeviceUdid 'emulator-5554' `
+            -TimeoutSeconds 42 `
             -OperatingSystem linux `
             -UserId 1000 `
             -GroupId 1000
@@ -395,6 +396,11 @@ Describe 'Selecting a real process isolation boundary' {
         $command.Boundary | Should -BeExactly 'systemd-cgroup-loopback-only'
         $command.Arguments | Should -Contain '--property=IPAddressDeny=any'
         $command.Arguments | Should -Contain '--property=IPAddressAllow=localhost'
+        $command.Arguments | Should -Contain '--property=RuntimeMaxSec=42s'
+        $command.Arguments | Should -Contain '--property=TimeoutStopSec=15s'
+        $command.Arguments | Should -Contain '--property=KillMode=control-group'
+        ($command.Arguments -join "`n") | Should -Match '--unit=maui-replication-[0-9]+-[0-9a-f]{32}'
+        $command.UnitName | Should -Match '^maui-replication-[0-9]+-[0-9a-f]{32}\.service$'
         ($command.Arguments -join "`n") | Should -Not -Match 'IPAddressAllow=192\.0\.2\.'
         $command.Arguments | Should -Contain '--property=NoNewPrivileges=yes'
         $command.Arguments | Should -Contain '--property=CapabilityBoundingSet='
@@ -468,6 +474,48 @@ Describe 'Selecting a real process isolation boundary' {
         $escape | Should -BeGreaterOrEqual 0
         $escape | Should -BeLessThan $network
         $network | Should -BeLessThan $launch
+    }
+
+    It 'stops and verifies the transient unit after generated execution' {
+        $script:unitCleanupCalls = [Collections.Generic.List[string]]::new()
+        $script:unitActiveChecks = 0
+        $invoker = {
+            param([string[]]$Arguments)
+            $script:unitCleanupCalls.Add(($Arguments -join ' '))
+            if ($Arguments[0] -eq 'is-active') {
+                $script:unitActiveChecks++
+                return [pscustomobject]@{
+                    ExitCode = $(if ($script:unitActiveChecks -eq 1) { 0 } else { 3 })
+                    Output = ''
+                }
+            }
+            [pscustomobject]@{ ExitCode = 0; Output = '' }
+        }
+
+        {
+            Stop-ReplicationNetworkIsolationUnit `
+                -UnitName 'maui-replication-1234-0123456789abcdef0123456789abcdef.service' `
+                -SystemctlInvoker $invoker
+        } | Should -Not -Throw
+        $script:unitCleanupCalls | Should -Contain 'stop maui-replication-1234-0123456789abcdef0123456789abcdef.service'
+        ($script:unitCleanupCalls -join "`n") | Should -Match 'kill --kill-whom=all --signal=KILL'
+        $script:unitActiveChecks | Should -Be 2
+    }
+
+    It 'fails closed when the transient unit remains active' {
+        $invoker = {
+            param([string[]]$Arguments)
+            [pscustomobject]@{
+                ExitCode = $(if ($Arguments[0] -eq 'is-active') { 0 } else { 0 })
+                Output = ''
+            }
+        }
+
+        {
+            Stop-ReplicationNetworkIsolationUnit `
+                -UnitName 'maui-replication-1234-0123456789abcdef0123456789abcdef.service' `
+                -SystemctlInvoker $invoker
+        } | Should -Throw '*remained active*'
     }
 
 }

@@ -7662,6 +7662,9 @@ function Get-ReplicationPlannedRestoreTargets {
             '^src/Graphics/tests/DeviceTests/' {
                 'src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj'; break
             }
+            '^src/BlazorWebView/tests/DeviceTests/' {
+                'src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj'; break
+            }
             default { throw 'The planned device-test path has no trusted restore mapping.' }
         }
         $targets.Add([pscustomobject]@{
@@ -7709,6 +7712,7 @@ function Invoke-LoggedChildProcess {
     # trusted script would read if one ever ran without the allowlist.
     $childEnvironment = Get-ReplicationRuntimeEnvironment
     $null = Assert-ReplicationTrustedTree -Context "before $Description"
+    $isolatedCommand = $null
     try {
         $isolatedCommand = Get-ReplicationNetworkIsolatedCommand `
             -Platform $Platform `
@@ -7717,7 +7721,8 @@ function Invoke-LoggedChildProcess {
             -Arguments $Arguments `
             -Environment $childEnvironment `
             -WritableRoots @($repoRoot, $ArtifactRoot) `
-            -DeviceUdid $DeviceUdid
+            -DeviceUdid $DeviceUdid `
+            -TimeoutSeconds $TimeoutSeconds
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath $isolatedCommand.FilePath `
@@ -7726,7 +7731,16 @@ function Invoke-LoggedChildProcess {
                 -Environment $isolatedCommand.Environment
         }
     } finally {
-        $null = Assert-ReplicationTrustedTree -Context "after $Description"
+        try {
+            if ($isolatedCommand -and
+                $isolatedCommand.PSObject.Properties['UnitName'] -and
+                -not [string]::IsNullOrWhiteSpace([string]$isolatedCommand.UnitName)) {
+                Stop-ReplicationNetworkIsolationUnit `
+                    -UnitName ([string]$isolatedCommand.UnitName)
+            }
+        } finally {
+            $null = Assert-ReplicationTrustedTree -Context "after $Description"
+        }
     }
     $output = @($runResult.Output)
     $exitCode = [int]$runResult.ExitCode

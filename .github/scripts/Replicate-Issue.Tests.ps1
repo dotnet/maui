@@ -2737,6 +2737,7 @@ InitializeComponent();
         $prewarm | Should -BeGreaterOrEqual 0
         $prewarm | Should -BeLessThan $isolation
         $script:Source | Should -Match 'Get-ReplicationPlannedRestoreTargets'
+        $script:Source | Should -Match 'MauiBlazorWebView\.DeviceTests\.csproj'
         $script:Source | Should -Match "-Verb build"
         $script:Source | Should -Match 'GRADLE_USER_HOME'
         $script:Source | Should -Match 'DOTNET_CLI_HOME'
@@ -16102,6 +16103,8 @@ Describe 'The trusted tree is re-verified around everything untrusted' {
         $network | Should -BeGreaterThan $before
         $network | Should -BeLessThan $invocation
         $invocation | Should -BeLessThan $after
+        $body | Should -Match 'Stop-ReplicationNetworkIsolationUnit'
+        $body | Should -Match '-TimeoutSeconds \$TimeoutSeconds'
         $body | Should -Match '(?s)\} finally \{.*?Assert-ReplicationTrustedTree -Context "after \$Description"'
     }
 

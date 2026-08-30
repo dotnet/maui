@@ -33,10 +33,10 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'delays-or-background-work'; Scope = 'code'; Pattern = '(?i)\bThread\s*\.\s*Sleep\b|\bTask\s*\.\s*(?:Delay|Run|Factory)\b|\b(?:DispatcherTimer|IDispatcherTimer)\b|\bSystem\s*\.\s*(?:Timers|Threading)\s*\.\s*Timer\b|\bnew\s+\w*Timer\s*\(|\b(?:Create|Start)Timer\s*\(|\bDispatchDelayed\b'; Remedy = 'Write one of these instead. Subscribe to the event that reports the change (Loaded, SizeChanged, PropertyChanged, or the control''s own event) and publish the result from its handler. Or post the measurement with Dispatcher.Dispatch(() => ...), which runs after the pending layout pass without waiting on the clock. Or give the page a separate check control and let the Appium plan tap trigger, wait, then tap check. Waiting on wall-clock time inside the app is never accepted, so re-sending it will fail this attempt again.' },
         [pscustomobject]@{ Code = 'shell-execution'; Scope = 'code'; Pattern = '(?i)\b(?:powershell|pwsh)(?:\.exe)?\s*(?:-|\.exe\b)|\bcmd\.exe\b|/(?:bin/)?(?:ba|z)?sh\b|\bbash\s+-|\bSystem\s*\.\s*Management\s*\.\s*Automation\b' },
         [pscustomobject]@{ Code = 'remote-url'; Scope = 'raw'; Pattern = '(?i)(?:\b(?:https?|ftps?|wss?|file|data|javascript|mailto)\s*:\s*(?://|[^\s<>\[\]]+)|://)' },
-        [pscustomobject]@{ Code = 'encoded-url'; Scope = 'code'; Pattern = '(?i)\bFromBase64String\b|\b(?:Char|System\s*\.\s*Char)\s*\.\s*ConvertFromUtf32\b|\bSystem\s*\.\s*Text\s*\.\s*Encoding\b|\bEncoding\s*\.\s*(?:UTF8|Unicode|ASCII|BigEndianUnicode)\s*\.\s*GetString\b|\(\s*char\s*\)\s*(?:0x[0-9a-f]{1,8}|\d{2,7})|\bnew\s+string\s*\(\s*(?:(?:new\s+)?(?:char|byte)\s*\[|new\s*\[\s*\]\s*\{)' },
+        [pscustomobject]@{ Code = 'encoded-url'; Scope = 'code'; Pattern = '(?i)\bFromBase64String\b|\b(?:Char|System\s*\.\s*Char)\s*\.\s*ConvertFromUtf32\b|\bSystem\s*\.\s*Text\s*\.\s*Encoding\b|\bEncoding\s*\.\s*(?:UTF8|Unicode|ASCII|BigEndianUnicode)\s*\.\s*GetString\b|\(\s*char\s*\)\s*\(?\s*(?:0x[0-9a-f]{1,8}|\d{2,7})\s*\)?|\bnew\s+string\s*\(\s*(?:(?:new\s+)?(?:char|byte)\s*\[|new\s*\[\s*\]\s*\{)' },
         [pscustomobject]@{ Code = 'package-reference'; Scope = 'raw'; Pattern = '(?i)\b(?:PackageReference|PackageDownload|dotnet\s+add\s+package|nuget\s*:|nuget\.exe)\b|#(?:r|load)\b' },
         [pscustomobject]@{ Code = 'project-build-script'; Scope = 'raw'; Pattern = '(?i)\b(?:ProjectReference|Directory\.Build|\.csproj\b|\.props\b|\.targets\b|<Project\b|<Target\b|<PropertyGroup\b|<ItemGroup\b|dotnet\s+(?:build|test|run|pack|restore)\b)\b' },
-        [pscustomobject]@{ Code = 'obfuscated-source'; Scope = 'literal'; Pattern = '(?i)\\(?:x(?:2f|3a|68|70|73|74)|u00(?:2f|3a|68|70|73|74)|U000000(?:2f|3a|68|70|73|74))|&#(?:x(?:2f|3a|68|70|73|74)|(?:47|58|104|112|115|116));' },
+        [pscustomobject]@{ Code = 'obfuscated-source'; Scope = 'literal'; Pattern = '(?i)\\(?:x0{0,3}(?:2f|3a|68|70|73|74)|u00(?:2f|3a|68|70|73|74)|U000000(?:2f|3a|68|70|73|74))|&#(?:x0*(?:2f|3a|68|70|73|74)|0*(?:47|58|104|112|115|116));' },
         [pscustomobject]@{ Code = 'prompt-injection'; Scope = 'literal'; Pattern = '(?i)<\|(?:system|developer|assistant|user|tool)\|>|\[/?INST\]|<</?SYS>>|\b(?:ignore|disregard|override|forget)\b[^\r\n]{0,80}\b(?:instructions?|prompts?|messages?)\b' },
         [pscustomobject]@{ Code = 'pipeline-log-command'; Scope = 'literal'; Pattern = '(?i)##vso\[|##\[|::(?:set-output|add-mask|error|warning|notice)\b' },
         [pscustomobject]@{ Code = 'artifact-reference'; Scope = 'literal'; Pattern = '(?i)\b(?:candidate|reproduction-result|verification-result|fix|test)\.(?:json|patch)\b|\b(?:issue-(?:agent-)?context|CustomAgentLogsTmp|IssueReplication|trusted-github)\b' },
@@ -476,6 +476,22 @@ function Invoke-ReplicationUnsafeSourceCapabilities {
     )
 
     $scan = Get-ReplicationSourceSafetyScanContext -Content $Content -Path $Path
+    if ([IO.Path]::GetExtension($Path) -ieq '.cs') {
+        try {
+            $syntaxTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText($Content)
+            foreach ($token in $syntaxTree.GetRoot().DescendantTokens()) {
+                if ($token.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::IdentifierToken -and
+                    $token.Text -match '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})') {
+                    throw "Candidate source '$Path' contains prohibited 'obfuscated-source' Unicode escapes in an executable identifier."
+                }
+            }
+        } catch {
+            if ($_.Exception.Message -match "prohibited 'obfuscated-source'") {
+                throw $_.Exception
+            }
+            throw "Candidate source '$Path' could not be tokenized by the offline Roslyn parser."
+        }
+    }
     foreach ($entry in $Patterns) {
         $scope = if ($entry.PSObject.Properties['Scope']) { [string]$entry.Scope } else { 'raw' }
         $target = switch ($scope) {
@@ -774,6 +790,9 @@ function Get-ReplicationXamlElementRecords {
         $records.Add([pscustomobject]@{
             Key = $segments -join '/'
             Header = "<$($element.Name) $($attributes -join ' ')>"
+            DirectText = (@($element.ChildNodes | Where-Object {
+                $_.NodeType -in @([Xml.XmlNodeType]::Text, [Xml.XmlNodeType]::CDATA)
+            } | ForEach-Object { $_.Value }) -join '')
             Full = $element.OuterXml
         })
     }
@@ -793,6 +812,12 @@ function Assert-ReplicationProductFixDeltaSafety {
     if ($BeforeContent -ceq $AfterContent) {
         throw "Product fix source '$Path' is unchanged."
     }
+    # The entire post-patch file is the security boundary, not only changed
+    # members. A guard or field edit can activate a dangerous sink in an
+    # otherwise unchanged member, so any changed file retaining such a sink is
+    # outside model-authored fix scope.
+    Assert-ReplicationProductFixSafety -Content $AfterContent -Path $Path
+
     $extension = [IO.Path]::GetExtension($Path).ToLowerInvariant()
     if ($extension -eq '.xaml') {
         $beforeRecords = @{}
@@ -814,20 +839,20 @@ function Assert-ReplicationProductFixDeltaSafety {
             -not $beforeRecords.ContainsKey($_) -or
             $afterRecords[$_].Full -cne $beforeRecords[$_].Full
         })
-        $smallestChangedKeys = @($changedKeys | Where-Object {
-            $candidate = "$_/"
-            -not @($changedKeys | Where-Object {
-                $_.StartsWith($candidate, [StringComparison]::Ordinal)
-            }).Count
-        })
-        foreach ($key in $smallestChangedKeys) {
+        foreach ($key in $changedKeys) {
             $record = $afterRecords[$key]
             if (-not $beforeRecords.ContainsKey($key)) {
-                Assert-ReplicationProductFixSafety -Content $record.Full -Path $Path
+                Assert-ReplicationProductFixSafety -Content $record.Header -Path $Path
+                if (-not [string]::IsNullOrWhiteSpace($record.DirectText)) {
+                    Assert-ReplicationProductFixSafety -Content $record.DirectText -Path $Path
+                }
             } elseif ($record.Header -cne $beforeRecords[$record.Key].Header) {
                 Assert-ReplicationProductFixSafety -Content $record.Header -Path $Path
-            } else {
-                Assert-ReplicationProductFixSafety -Content $record.Full -Path $Path
+            }
+            if ($beforeRecords.ContainsKey($key) -and
+                $record.DirectText -cne $beforeRecords[$record.Key].DirectText -and
+                -not [string]::IsNullOrWhiteSpace($record.DirectText)) {
+                Assert-ReplicationProductFixSafety -Content $record.DirectText -Path $Path
             }
         }
         return
@@ -927,7 +952,10 @@ function Get-ReplicationFixPathPolicyRejection {
         return 'is outside the established runtime product source directories'
     }
 
-    if ($normalized -match '(?i)(?:^|/)[^/]*(?:BindingSourceGen|SourceGen|SourceGenerator|Generator|Analyzer|CodeFix|Build[._-]?Tasks?|BuildTargets?|Targets?|(?:Core|Xaml)\.Design|Resizetizer|Tooling|Tools|Provisioning|Workloads?|Packaging|Packs?)[^/]*(?:/|$)') {
+    $directoryPath = $normalized.Substring(0, $normalized.LastIndexOf('/') + 1)
+    if ($directoryPath -match '(?i)(?:^|/)[^/]*(?:BindingSourceGen|SourceGen|SourceGenerator|Generator|Analyzer|CodeFix|Build[._-]?Tasks?|BuildTargets?|Targets?|(?:Core|Xaml)\.Design|Resizetizer|Tooling|Tools|Provisioning|Workloads?|Packaging|Packs?)[^/]*(?:/|$)' -or
+        $normalized -match '(?i)^src/SingleProject/Resizetizer/src/' -or
+        [IO.Path]::GetFileName($normalized) -match '(?i)(?:Generator|Analyzer|CodeFixProvider)\.cs$') {
         return 'targets source-generation, analyzer, build-task, tooling, provisioning, workload, or packaging code'
     }
     if ($normalized -match '(?i)(?:^|/)(?:tests?|testcases[^/]*|obj|bin|snapshots?)(?:/|$)') {

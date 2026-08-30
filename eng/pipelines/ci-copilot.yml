@@ -248,6 +248,10 @@ stages:
                     echo "##vso[task.logissue type=error]Mode=replicate requires IssueNumber > 0 and PRNumber = 0."
                     exit 1
                   fi
+                  if [ "${PARAM_PLATFORM}" != "android" ]; then
+                    echo "##vso[task.logissue type=error]Mode=replicate currently requires Platform=android because other lanes do not provide a verified process-tree and app egress boundary."
+                    exit 1
+                  fi
                   ;;
                 *)
                   echo "##vso[task.logissue type=error]Mode must be review or replicate, got: '${MODE}'"
