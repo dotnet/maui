@@ -260,6 +260,9 @@ function ConvertTo-BoundedComparableFailureMessage {
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
 }
+if ($Platform -eq 'windows' -and $TestType -ne 'DeviceTest') {
+    throw 'Windows replication permits only packaged Controls device tests.'
+}
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $resultPath = Join-Path $OutputDirectory 'verification-result.json'
@@ -308,6 +311,7 @@ function Invoke-SingleVerificationRun {
             $trustedSkillsRoot = Split-Path -Parent (
                 Split-Path -Parent (
                     Split-Path -Parent $VerifierPath))
+            $trustedRoot = Split-Path -Parent $trustedSkillsRoot
             $deviceTestScriptPath = Join-Path `
                 $trustedSkillsRoot `
                 'run-device-tests/scripts/Run-DeviceTests.ps1'
@@ -315,6 +319,12 @@ function Invoke-SingleVerificationRun {
                 throw "Trusted device-test runner was not found: $deviceTestScriptPath"
             }
             $arguments += @('-DeviceTestScriptPath', $deviceTestScriptPath)
+            if ($Platform -eq 'windows') {
+                $arguments += @(
+                    '-RequireWindowsAppContainer',
+                    '-ReplicationTrustedRoot', $trustedRoot
+                )
+            }
         }
 
         $output = @(& pwsh @arguments 2>&1)

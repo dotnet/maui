@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  IgnorableNamespaces="uap uap10">
+  <Identity Publisher="CN=DotNetMauiReplication" />
+  <Properties>
+    <DisplayName>Controls replication tests</DisplayName>
+    <PublisherDisplayName>.NET MAUI replication</PublisherDisplayName>
+    <Logo>appiconStoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application
+      Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="$targetentrypoint$"
+      uap10:RuntimeBehavior="packagedClassicApp"
+      uap10:TrustLevel="appContainer">
+      <uap:VisualElements
+        DisplayName="Controls replication tests"
+        Description="Controls replication tests"
+        BackgroundColor="transparent"
+        Square150x150Logo="appiconMediumTile.png"
+        Square44x44Logo="appiconLogo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="appiconWideTile.png"
+          Square71x71Logo="appiconSmallTile.png"
+          Square310x310Logo="appiconLargeTile.png"
+          ShortName="Controls replication tests" />
+        <uap:SplashScreen Image="appiconfgSplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+</Package>

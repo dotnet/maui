@@ -287,6 +287,80 @@ Describe 'Fail-closed outbound network isolation' {
 '@
     }
 
+    Describe 'Windows AppContainer trusted host command allowlist' {
+        BeforeEach {
+            $script:WindowsTrustedRoot = Join-Path $script:ScratchRoot (
+                'windows-' + [guid]::NewGuid().ToString('N'))
+            foreach ($relative in @(
+                'scripts/BuildAndRunSandbox.ps1',
+                'scripts/shared/Record-Reproduction.ps1',
+                'scripts/shared/Invoke-ReplicationTestVerification.ps1',
+                'scripts/Other.ps1'
+            )) {
+                $path = Join-Path $script:WindowsTrustedRoot $relative
+                New-Item -ItemType Directory -Path (Split-Path -Parent $path) -Force |
+                    Out-Null
+                Set-Content -LiteralPath $path -Value '# trusted test fixture'
+            }
+            $script:WindowsEnvironment = @{
+                PATH = [Environment]::GetEnvironmentVariable('PATH')
+            }
+        }
+
+        It 'admits the exact packaged Sandbox runner with the boundary switch' {
+            $command = Get-ReplicationWindowsAppContainerCommand `
+                -TrustedRoot $script:WindowsTrustedRoot `
+                -ScriptPath (Join-Path $script:WindowsTrustedRoot (
+                    'scripts/BuildAndRunSandbox.ps1')) `
+                -Arguments @(
+                    '-Platform', 'windows',
+                    '-PrepareOnly',
+                    '-EnforceNetworkIsolation'
+                ) `
+                -Environment $script:WindowsEnvironment `
+                -OperatingSystem windows
+
+            $command.Boundary | Should -BeExactly 'windows-appcontainer'
+            $command.Arguments | Should -Contain '-EnforceNetworkIsolation'
+        }
+
+        It 'rejects a Sandbox run without AppContainer enforcement' {
+            {
+                Get-ReplicationWindowsAppContainerCommand `
+                    -TrustedRoot $script:WindowsTrustedRoot `
+                    -ScriptPath (Join-Path $script:WindowsTrustedRoot (
+                        'scripts/BuildAndRunSandbox.ps1')) `
+                    -Arguments @('-Platform', 'windows', '-PrepareOnly') `
+                    -Environment $script:WindowsEnvironment `
+                    -OperatingSystem windows
+            } | Should -Throw '*requires the AppContainer boundary*'
+        }
+
+        It 'rejects unlisted trusted scripts and host-executed test tiers' {
+            {
+                Get-ReplicationWindowsAppContainerCommand `
+                    -TrustedRoot $script:WindowsTrustedRoot `
+                    -ScriptPath (Join-Path $script:WindowsTrustedRoot 'scripts/Other.ps1') `
+                    -Arguments @('-Platform', 'windows') `
+                    -Environment $script:WindowsEnvironment `
+                    -OperatingSystem windows
+            } | Should -Throw '*limited to exact trusted runners*'
+
+            {
+                Get-ReplicationWindowsAppContainerCommand `
+                    -TrustedRoot $script:WindowsTrustedRoot `
+                    -ScriptPath (Join-Path $script:WindowsTrustedRoot (
+                        'scripts/shared/Invoke-ReplicationTestVerification.ps1')) `
+                    -Arguments @(
+                        '-Platform', 'windows',
+                        '-TestType', 'UnitTest'
+                    ) `
+                    -Environment $script:WindowsEnvironment `
+                    -OperatingSystem windows
+            } | Should -Throw '*only packaged device tests*'
+        }
+    }
+
     AfterEach {
         [Environment]::SetEnvironmentVariable(
             'MAUI_REPLICATION_EGRESS_ISOLATED',

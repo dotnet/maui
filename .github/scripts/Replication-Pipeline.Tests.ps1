@@ -37,7 +37,7 @@ Describe 'MAUI Copilot mode routing' {
     It 'requires exactly the target number for the selected mode' {
         $script:Pipeline | Should -Match 'Mode=review requires PRNumber > 0 and IssueNumber = 0'
         $script:Pipeline | Should -Match 'Mode=replicate requires IssueNumber > 0 and PRNumber = 0'
-        $script:Pipeline | Should -Match 'Mode=replicate currently requires Platform=android'
+        $script:Pipeline | Should -Match 'Mode=replicate requires Platform=android or Platform=windows'
         $script:Pipeline | Should -Match 'PARAM_MODE: \$\{\{ parameters\.Mode \}\}'
         $script:Pipeline | Should -Match 'PARAM_ISSUE_NUMBER: \$\{\{ parameters\.IssueNumber \}\}'
     }
@@ -101,6 +101,13 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'git restore --source \$baseSha --staged --worktree -- \.'
         $script:Pipeline | Should -Match '(?s)- name: APPIUM_HOME\s+value: \$\(Agent\.TempDirectory\)/\.appium/'
         $script:Pipeline | Should -Match "displayName: 'Install reproduction recording tools'"
+        $script:Pipeline | Should -Match (
+            "displayName: 'Verify Windows packaged-device prerequisites'")
+        $script:Pipeline | Should -Match 'AllowDevelopmentWithoutDevLicense'
+        $script:Pipeline | Should -Match 'WinAppDriver\.exe is unavailable'
+        $script:Pipeline | Should -Match 'ReplicationWindowsSandboxManifest\.xml'
+        $script:Pipeline | Should -Match (
+            'ReplicationWindowsControlsDeviceTestsManifest\.xml')
         $script:Pipeline | Should -Match "(?s)displayName: 'Install reproduction recording tools'.*?eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "REPLICATION_AGENT_CONTEXT_PATH.*?issue-agent-context\.json"
         $script:Pipeline | Should -Match "(?s)name: RunReplication.*?COPILOT_GITHUB_TOKEN: \$\(COPILOT_TOKEN\)"
@@ -1265,7 +1272,8 @@ Describe 'every blocked code is deliberately classified as an answer or a defect
         $runtimeBlocked = @('harness_unavailable')
         $defects = @(
             'copilot_cli_unavailable', 'copilot_service_unavailable',
-            'sandbox_inconclusive', 'verification_inconclusive')
+            'sandbox_inconclusive', 'verification_inconclusive',
+            'cleanup_failed')
 
         foreach ($code in $script:ProducibleCodes) {
             ($answers + $runtimeBlocked + $defects) | Should -Contain $code -Because `

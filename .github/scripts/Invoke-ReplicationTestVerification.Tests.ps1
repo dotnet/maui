@@ -80,9 +80,12 @@ param(
     [string]`$TestMethod,
     [string]`$MachineResultPath,
     [string]`$DeviceTestScriptPath,
+    [switch]`$RequireWindowsAppContainer,
+    [string]`$ReplicationTrustedRoot,
     [string]`$PRNumber
 )
 if (-not [string]::IsNullOrWhiteSpace(`$DeviceTestScriptPath)) { Set-Content -LiteralPath (`$MachineResultPath + '.device-runner-path') -Value `$DeviceTestScriptPath -Encoding utf8NoBOM }
+if (`$RequireWindowsAppContainer) { Set-Content -LiteralPath (`$MachineResultPath + '.windows-appcontainer') -Value `$ReplicationTrustedRoot -Encoding utf8NoBOM }
 Add-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt') -Value 'run' -Encoding utf8NoBOM
 if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'fail-after-first.flag')) {
     if ((Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count -gt 1) {
@@ -478,6 +481,56 @@ Describe 'Replication failure-only verification' {
         $capturedPath = Get-Content -LiteralPath (
             Join-Path $output 'verifier-machine-result.json.device-runner-path') -Raw
         $capturedPath.Trim() | Should -BeExactly $deviceRunner
+    }
+
+    It 'requires the packaged device boundary for Windows and rejects host test tiers' {
+        $trustedRoot = Join-Path $TestDrive 'windows-trusted-github'
+        $verifier = Join-Path `
+            $trustedRoot `
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        $deviceRunner = Join-Path `
+            $trustedRoot `
+            'skills/run-device-tests/scripts/Run-DeviceTests.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verifier) -Force |
+            Out-Null
+        New-Item -ItemType Directory -Path (Split-Path -Parent $deviceRunner) -Force |
+            Out-Null
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Issue37540 expected green but observed red'
+        'trusted runner' | Set-Content -LiteralPath $deviceRunner -Encoding utf8NoBOM
+
+        $output = Join-Path $TestDrive 'windows-device-success'
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 37540 `
+            -Platform windows `
+            -TestType DeviceTest `
+            -TestFilter Issue37540 `
+            -TestProject Controls `
+            -TestProjectPath src/Controls/tests/DeviceTests/Issue37540.Windows.cs `
+            -TestClass Microsoft.Maui.DeviceTests.Issue37540 `
+            -TestMethod DynamicResourceBackgroundUpdates `
+            -ExpectedFailureSignature Issue37540 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        Get-Content -LiteralPath (
+            Join-Path $output 'verifier-machine-result.json.windows-appcontainer') |
+            Should -BeExactly $trustedRoot
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 37540 `
+            -Platform windows `
+            -TestType UnitTest `
+            -TestFilter Issue37540 `
+            -TestClass Microsoft.Maui.Tests.Issue37540 `
+            -TestMethod DynamicResourceBackgroundUpdates `
+            -ExpectedFailureSignature Issue37540 `
+            -VerifierPath $verifier `
+            -OutputDirectory (Join-Path $TestDrive 'windows-unit-refused') *> $null
+
+        $LASTEXITCODE | Should -Not -Be 0
     }
 }
 

@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Test-IsWindowsDeviceCleanupError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -1502,6 +1502,23 @@ Describe 'Windows baseline no-result correlation' {
                 -Phase WithFix `
                 -RunPlatform windows `
                 -TestType DeviceTest |
+                Should -BeFalse
+        }
+    }
+
+    Describe 'Windows AppContainer cleanup correlation' {
+        It 'recognizes cleanup as infrastructure without crediting a reproduction' {
+            $entry = @{ Type = 'DeviceTest' }
+            Test-IsWindowsDeviceCleanupError `
+                -RunPlatform windows `
+                -TestEntry $entry `
+                -Message 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED: package removal failed' |
+                Should -BeTrue
+
+            Test-IsWindowsDeviceNoResultsError `
+                -RunPlatform windows `
+                -TestEntry $entry `
+                -Message 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED: package removal failed' |
                 Should -BeFalse
         }
     }

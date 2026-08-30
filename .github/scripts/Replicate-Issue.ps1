@@ -177,7 +177,8 @@ if (-not (Test-Path -LiteralPath $guardValidatorPath -PathType Leaf)) {
 foreach ($trustedModuleRelative in @(
     'shared/Assert-TrustedTreeAttestation.ps1',
     'shared/Assert-ReplicationExecutionEnvironment.ps1',
-    'shared/Assert-ReplicationCertificationBinding.ps1'
+    'shared/Assert-ReplicationCertificationBinding.ps1',
+    'shared/Assert-ReplicationWindowsAppContainer.ps1'
 )) {
     $trustedModulePath = Join-Path $trustedScripts $trustedModuleRelative
     if (-not (Test-Path -LiteralPath $trustedModulePath -PathType Leaf)) {
@@ -1001,6 +1002,11 @@ function Get-ReplicationBlockedCode {
     }
     if ($RawReason.StartsWith('Copilot service unavailable during ', [StringComparison]::Ordinal)) {
         return 'copilot_service_unavailable'
+    }
+    if ($RawReason.StartsWith(
+            'REPLICATION_SANDBOX_CLEANUP_FAILED:',
+            [StringComparison]::Ordinal)) {
+        return 'cleanup_failed'
     }
     if ($Stage -eq 'sandbox') {
         if (Test-ReplicationNonReproductionIsConclusive $AttemptKinds) {
@@ -6299,6 +6305,25 @@ function Read-TestProposal {
     $proposedFiles = @(Get-ProposedTestFiles `
         -Proposal $proposal `
         -ValidateNewTargets:$ValidateNewTargets)
+    $proposalPlatform = [string](Get-Variable `
+            -Name Platform `
+            -Scope Script `
+            -ValueOnly `
+            -ErrorAction SilentlyContinue)
+    if ($proposalPlatform -eq 'windows') {
+        if ([string]$proposal.testType -cne 'device') {
+            throw 'Windows replication permits only a packaged Controls device test.'
+        }
+        if ($proposedFiles.Count -ne 1 -or
+            -not $proposedFiles[0].StartsWith(
+                'src/Controls/tests/DeviceTests/',
+                [StringComparison]::Ordinal) -or
+            -not $proposedFiles[0].EndsWith(
+                '.Windows.cs',
+                [StringComparison]::Ordinal)) {
+            throw 'Windows replication requires exactly one Windows-only C# file in Controls.DeviceTests.'
+        }
+    }
     if ($PSBoundParameters.ContainsKey('ActualFiles')) {
         $actual = @($ActualFiles | Sort-Object -Unique)
         if (($proposedFiles -join "`n") -cne ($actual -join "`n")) {
@@ -6679,6 +6704,14 @@ function Get-ReplicationUnbuildableTestTiers {
         }
     }
 
+    if ($Platform -eq 'windows') {
+        foreach ($tier in @('unit', 'xaml')) {
+            if (-not $unbuildable.Contains($tier)) {
+                $unbuildable.Add($tier) | Out-Null
+            }
+        }
+    }
+
     return $unbuildable.ToArray()
 }
 
@@ -6806,11 +6839,23 @@ $retryGuidance
 "@
         }
         'test-plan' {
-            $approvedRoots = ($approvedTestRoots | ForEach-Object { "- $_" }) -join [Environment]::NewLine
+            $planningRoots = if ($Platform -eq 'windows') {
+                @('src/Controls/tests/DeviceTests/')
+            } else {
+                $approvedTestRoots
+            }
+            $approvedRoots = ($planningRoots | ForEach-Object { "- $_" }) -join [Environment]::NewLine
             $existingIssuePaths = @(Get-ReplicationExistingIssueTestPaths `
                     -RepositoryRoot $repoRoot `
-                    -ApprovedRoots $approvedTestRoots `
+                    -ApprovedRoots $planningRoots `
                     -IssueNumber $IssueNumber)
+            $windowsBoundaryGuidance = if ($Platform -eq 'windows') {
+                @"
+WINDOWS PACKAGED BOUNDARY: testType must be device. Propose exactly one new .Windows.cs file under src/Controls/tests/DeviceTests/ so it is compiled only into the audited Controls AppContainer package. Unit, XAML, UI, shared cross-platform device files, and every other device-test project are unavailable because they would execute model-authored code outside this package boundary. The class must carry only [Category("Issue$IssueNumber")], and the single method must prove the rendered/native state from inside the package. Do not use Launcher, WebView, URI activation, COM/WinRT activation, XamlReader/LoadFromXaml, reflection, native loading, process, or filesystem APIs.
+"@
+            } else {
+                ''
+            }
             $existingIssueGuidance = ''
             if ($existingIssuePaths.Count -gt 0) {
                 $existingList = ($existingIssuePaths | ForEach-Object { "- $_" }) -join [Environment]::NewLine
@@ -6825,6 +6870,7 @@ Reproduction tests are add-only, so every proposed path must be new. Do not prop
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second. Host-executed generated UI tests are withheld because they require privileged adb control, so ``ui`` is not selectable. The unit and XAML tiers are only available for a defect that is purely managed. Controls.Core.UnitTests, Core.UnitTests and Controls.Xaml.UnitTests each declare a single non-platform TargetFramework, so there is no platform build of those assemblies and a test placed in them cannot be evidence for behaviour recorded on a device. If proving the defect requires a handler, a native view, a window, a MauiContext, or any platform runtime, select device and say so in lighterTypesRejected. If a device test cannot reproduce a navigation-only scenario, declare it blocked rather than selecting UI.
+$windowsBoundaryGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, or {"unit":"reason","xaml":"reason"} for device. Each reason must be a non-empty single-line string of at most 300 characters.
@@ -7765,21 +7811,29 @@ function Invoke-LoggedChildProcess {
     try {
         # Guest firewall setup stays in the trusted parent so host-generated
         # tests can run without seeing adb inside their isolated process tree.
-        if ($effectiveDeviceControl) {
+        if ($Platform -eq 'android' -and $effectiveDeviceControl) {
             $null = Assert-ReplicationAndroidGuestNetworkIsolation `
                 -DeviceUdid $DeviceUdid
         }
-        $isolatedCommand = Get-ReplicationNetworkIsolatedCommand `
-            -Platform $Platform `
-            -RepositoryRoot $repoRoot `
-            -TrustedRoot $TrustedRoot `
-            -ScriptPath $ScriptPath `
-            -Arguments $Arguments `
-            -Environment $childEnvironment `
-            -WritableRoots @($repoRoot, $ArtifactRoot) `
-            -AllowDeviceControl:$effectiveDeviceControl `
-            -DeviceUdid $DeviceUdid `
-            -TimeoutSeconds $effectiveTimeoutSeconds
+        $isolatedCommand = if ($Platform -eq 'windows') {
+            Get-ReplicationWindowsAppContainerCommand `
+                -TrustedRoot $TrustedRoot `
+                -ScriptPath $ScriptPath `
+                -Arguments $Arguments `
+                -Environment $childEnvironment
+        } else {
+            Get-ReplicationNetworkIsolatedCommand `
+                -Platform $Platform `
+                -RepositoryRoot $repoRoot `
+                -TrustedRoot $TrustedRoot `
+                -ScriptPath $ScriptPath `
+                -Arguments $Arguments `
+                -Environment $childEnvironment `
+                -WritableRoots @($repoRoot, $ArtifactRoot) `
+                -AllowDeviceControl:$effectiveDeviceControl `
+                -DeviceUdid $DeviceUdid `
+                -TimeoutSeconds $effectiveTimeoutSeconds
+        }
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath $isolatedCommand.FilePath `
@@ -7798,7 +7852,7 @@ function Invoke-LoggedChildProcess {
             }
         } finally {
             try {
-                if ($effectiveDeviceControl) {
+                if ($Platform -eq 'android' -and $effectiveDeviceControl) {
                     $null = Assert-ReplicationAndroidGuestNetworkIsolation `
                         -DeviceUdid $DeviceUdid `
                         -VerifyOnly
@@ -7880,11 +7934,29 @@ function Clear-TransientAppiumDirectory {
 }
 
 function Restore-TransientSandbox {
-    & git restore --source $BaseSha --staged --worktree -- .
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Failed to restore the pinned tracked replication baseline.'
+    try {
+        & git restore --source $BaseSha --staged --worktree -- .
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to restore the pinned tracked replication baseline.'
+        }
+        if ($Platform -eq 'windows' -and [OperatingSystem]::IsWindows()) {
+            & (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+                -Platform windows `
+                -RepoRoot $repoRoot `
+                -Cleanup `
+                -EnforceNetworkIsolation
+        }
+        Clear-TransientAppiumDirectory
+    } catch {
+        $message = [string]$_.Exception.Message
+        if ($message.StartsWith(
+                'REPLICATION_SANDBOX_CLEANUP_FAILED:',
+                [StringComparison]::Ordinal)) {
+            throw
+        }
+        throw ("REPLICATION_SANDBOX_CLEANUP_FAILED: " +
+            (ConvertTo-ReplicationSafeLog $message 500))
     }
-    Clear-TransientAppiumDirectory
 }
 
 function Restore-TrackedVerificationSideEffects {
@@ -9183,49 +9255,105 @@ $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
 $testAttemptKinds = [System.Collections.Generic.List[string]]::new()
 
 try {
-    if ($Platform -ne 'android') {
+    if ($Platform -notin @('android', 'windows')) {
         throw ("Unsupported replication scenario: $Platform replication is withheld because " +
             'this pool has no enforceable process-tree and app outbound-network deny boundary.')
     }
-    if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
-        throw 'DeviceUdid is required for android replication.'
-    }
-    if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
-        throw 'DeviceUdid contains an unresolved pipeline variable.'
-    }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
-    $trustedIsolationManifest = Join-Path $TrustedRoot (
-        'source-overrides/ReplicationNetworkIsolationManifest.xml')
-    if (-not (Test-Path -LiteralPath $trustedIsolationManifest -PathType Leaf)) {
-        throw 'Trusted Android replication network-isolation manifest is missing.'
-    }
-    $relativeIsolationManifest = [IO.Path]::GetRelativePath(
-        $sandboxDir,
-        $trustedIsolationManifest
-    ).Replace('\', '/')
     Invoke-ReplicationTrustedRestore -Target $sandboxProjectPath
-    Invoke-ReplicationTrustedRestore `
-        -Target $sandboxProjectPath `
-        -Verb build `
-        -AdditionalArguments @(
-            '-f', 'net10.0-android',
-            '-c', 'Debug',
-            '--no-restore',
-            '-p:EmbedAssembliesIntoApk=true',
-            "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
-        )
-    $null = Get-ReplicationNetworkIsolatedCommand `
-        -Platform $Platform `
-        -RepositoryRoot $repoRoot `
-        -TrustedRoot $TrustedRoot `
-        -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
-        -Arguments @('-Platform', $Platform, '-PrepareOnly', '-EnforceNetworkIsolation') `
-        -Environment (Get-ReplicationRuntimeEnvironment) `
-        -WritableRoots @($repoRoot, $ArtifactRoot) `
-        -DeviceUdid $DeviceUdid
-Restore-TrackedVerificationSideEffects -PreservedFiles @()
-Assert-InitialReplicationWorktree
-Clear-TransientAppiumDirectory
+    if ($Platform -eq 'android') {
+        if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
+            throw 'DeviceUdid is required for android replication.'
+        }
+        if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
+            throw 'DeviceUdid contains an unresolved pipeline variable.'
+        }
+        $trustedIsolationManifest = Join-Path $TrustedRoot (
+            'source-overrides/ReplicationNetworkIsolationManifest.xml')
+        if (-not (Test-Path -LiteralPath $trustedIsolationManifest -PathType Leaf)) {
+            throw 'Trusted Android replication network-isolation manifest is missing.'
+        }
+        $relativeIsolationManifest = [IO.Path]::GetRelativePath(
+            $sandboxDir,
+            $trustedIsolationManifest
+        ).Replace('\', '/')
+        Invoke-ReplicationTrustedRestore `
+            -Target $sandboxProjectPath `
+            -Verb build `
+            -AdditionalArguments @(
+                '-f', 'net10.0-android',
+                '-c', 'Debug',
+                '--no-restore',
+                '-p:EmbedAssembliesIntoApk=true',
+                "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
+            )
+        $null = Get-ReplicationNetworkIsolatedCommand `
+            -Platform $Platform `
+            -RepositoryRoot $repoRoot `
+            -TrustedRoot $TrustedRoot `
+            -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+            -Arguments @('-Platform', $Platform, '-PrepareOnly', '-EnforceNetworkIsolation') `
+            -Environment (Get-ReplicationRuntimeEnvironment) `
+            -WritableRoots @($repoRoot, $ArtifactRoot) `
+            -DeviceUdid $DeviceUdid
+    } else {
+        if (-not [OperatingSystem]::IsWindows()) {
+            throw 'Windows replication requires the Windows packaged-device pool.'
+        }
+        foreach ($manifestName in @(
+            'ReplicationWindowsSandboxManifest.xml',
+            'ReplicationWindowsControlsDeviceTestsManifest.xml'
+        )) {
+            $manifestPath = Join-Path $TrustedRoot "source-overrides/$manifestName"
+            $null = Assert-ReplicationWindowsAppContainerManifest `
+                -Path $manifestPath
+        }
+        $controlsDeviceProject = Join-Path $repoRoot (
+            'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
+        Invoke-ReplicationTrustedRestore -Target $controlsDeviceProject
+        foreach ($prewarm in @(
+            [pscustomobject]@{
+                Path = $sandboxProjectPath
+                Arguments = @(
+                    '-f', 'net10.0-windows10.0.19041.0',
+                    '-c', 'Debug',
+                    '--no-restore',
+                    '-p:RuntimeIdentifierOverride=win-x64',
+                    '-p:WindowsPackageType=None',
+                    '-p:_MauiReplicationUnpackaged=true'
+                )
+            },
+            [pscustomobject]@{
+                Path = $controlsDeviceProject
+                Arguments = @(
+                    '-f', 'net10.0-windows10.0.19041.0',
+                    '-c', 'Release',
+                    '--no-restore',
+                    '-p:RuntimeIdentifierOverride=win-x64',
+                    '-p:WindowsPackageType=None',
+                    '-p:_MauiDeviceTestUnpackaged=true',
+                    '-p:SelfContained=true'
+                )
+            }
+        )) {
+            Invoke-ReplicationTrustedRestore `
+                -Target $prewarm.Path `
+                -Verb build `
+                -AdditionalArguments $prewarm.Arguments
+        }
+        $null = Get-ReplicationWindowsAppContainerCommand `
+            -TrustedRoot $TrustedRoot `
+            -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+            -Arguments @(
+                '-Platform', 'windows',
+                '-PrepareOnly',
+                '-EnforceNetworkIsolation'
+            ) `
+            -Environment (Get-ReplicationRuntimeEnvironment)
+    }
+    Restore-TrackedVerificationSideEffects -PreservedFiles @()
+    Assert-InitialReplicationWorktree
+    Clear-TransientAppiumDirectory
 
     if (Test-Path -LiteralPath $structuredContextPath -PathType Leaf) {
         $structuredContext = Get-Content -LiteralPath $structuredContextPath -Raw |
@@ -9365,10 +9493,9 @@ Clear-TransientAppiumDirectory
             # the verdict was not already latched, defeated by the verdict the
             # first run had latched. That rejected a reproduction for being
             # unreliable when it had in fact reproduced twice.
-            # Windows is excluded because its launch is a bare Start-Process and
-            # would leave two Sandboxes running; Catalyst already starts a fresh
-            # process for every run.
-            if ($Platform -in @('android', 'ios')) {
+            # Android, iOS, and the packaged Windows AppContainer all support a
+            # trusted cold relaunch. Catalyst starts a fresh process itself.
+            if ($Platform -in @('android', 'ios', 'windows')) {
                 Invoke-LoggedChildProcess `
                     -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
                     -Arguments $launchArgs `

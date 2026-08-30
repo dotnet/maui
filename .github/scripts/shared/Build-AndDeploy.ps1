@@ -66,12 +66,19 @@ param(
     [string]$NetworkIsolationManifestPath,
 
     [Parameter(Mandatory=$false)]
-    [switch]$NoRestore
+    [switch]$NoRestore,
+
+    [Parameter(Mandatory=$false)]
+    [string]$WindowsAppContainerManifestPath,
+
+    [Parameter(Mandatory=$false)]
+    [string]$WindowsPackageStatePath
 )
 
 # Import shared utilities
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $scriptDir "shared-utils.ps1")
+. (Join-Path $scriptDir "Assert-ReplicationWindowsAppContainer.ps1")
 
 function Test-TransientAndroidDeployFailure {
     param(
@@ -550,49 +557,118 @@ if ($Platform -eq "android") {
     
     #endregion
 } elseif ($Platform -eq "windows") {
-    #region Windows Build (no deploy step - runs on host)
+    #region Windows Build
     
     Write-Step "Building $projectName for Windows..."
-    
-    # Hosted Windows agents do not reliably have the matching Windows App
-    # Runtime registered. Bundle it beside the unpackaged Sandbox executable
-    # so launch does not depend on machine-wide DeploymentManager activation.
-    # Do not pass WindowsAppSDKSelfContained on the command line because global
-    # properties propagate to library project references that have no Windows
-    # architecture. The Sandbox project scopes that property to its Windows app.
-    $buildArgs = @(
-        $ProjectPath,
-        "-f", $TargetFramework,
-        "-c", $Configuration,
-        "-p:RuntimeIdentifierOverride=win-x64",
-        "-p:WindowsPackageType=None",
-        "-p:_MauiReplicationUnpackaged=true"
-    ) + $hostAppBuildProps
-    if ($NoRestore) { $buildArgs += "--no-restore" }
-    if ($Rebuild) {
-        $buildArgs += "--no-incremental"
+
+    if (-not $EnforceNetworkIsolation) {
+        # The ordinary developer path remains unpackaged. Replication never uses
+        # this branch because model-authored code may not execute with host trust.
+        $buildArgs = @(
+            $ProjectPath,
+            "-f", $TargetFramework,
+            "-c", $Configuration,
+            "-p:RuntimeIdentifierOverride=win-x64",
+            "-p:WindowsPackageType=None",
+            "-p:_MauiReplicationUnpackaged=true"
+        ) + $hostAppBuildProps
+        if ($NoRestore) { $buildArgs += "--no-restore" }
+        if ($Rebuild) { $buildArgs += "--no-incremental" }
+
+        Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
+        $buildStartTime = Get-Date
+        & dotnet build @buildArgs
+        $buildExitCode = $LASTEXITCODE
+        $buildDuration = (Get-Date) - $buildStartTime
+        if ($buildExitCode -ne 0) {
+            throw "Build failed with exit code $buildExitCode"
+        }
+        Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
+        Write-Success "Windows app ready (runs on host Windows)"
+    } else {
+        if (-not [OperatingSystem]::IsWindows()) {
+            throw 'Windows replication AppContainer packaging requires a Windows host.'
+        }
+        if (-not $NoRestore) {
+            throw 'Windows replication AppContainer packaging requires --no-restore.'
+        }
+        if ([string]::IsNullOrWhiteSpace($WindowsAppContainerManifestPath) -or
+            [string]::IsNullOrWhiteSpace($WindowsPackageStatePath)) {
+            throw 'Windows replication requires trusted manifest and package-state paths.'
+        }
+
+        $manifestPath = [IO.Path]::GetFullPath($WindowsAppContainerManifestPath)
+        $statePath = [IO.Path]::GetFullPath($WindowsPackageStatePath)
+        $null = Assert-ReplicationWindowsAppContainerManifest -Path $manifestPath
+        $stateDirectory = Split-Path -Parent $statePath
+        New-Item -ItemType Directory -Path $stateDirectory -Force | Out-Null
+        $packageOutput = Join-Path $stateDirectory 'windows-appcontainer-package'
+        if (Test-Path -LiteralPath $packageOutput) {
+            Remove-Item -LiteralPath $packageOutput -Recurse -Force
+        }
+        New-Item -ItemType Directory -Path $packageOutput -Force | Out-Null
+        Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
+
+        $signingCertificate = $null
+        try {
+            $signingCertificate = New-ReplicationWindowsSigningCertificate
+            $buildArgs = @(
+                $ProjectPath,
+                "-f", $TargetFramework,
+                "-c", $Configuration,
+                "-p:RuntimeIdentifierOverride=win-x64",
+                "-p:WindowsPackageType=MSIX",
+                "-p:GenerateAppxPackageOnBuild=true",
+                "-p:AppxPackageSigningEnabled=true",
+                "-p:PackageCertificateThumbprint=$($signingCertificate.Thumbprint)",
+                "-p:SelfContained=true",
+                "-p:ExtraDefineConstants=PACKAGED",
+                "-p:PackageManifest=$manifestPath",
+                "-p:AppxPackageDir=$($packageOutput.TrimEnd('\', '/'))$([IO.Path]::DirectorySeparatorChar)",
+                "--no-restore"
+            ) + $hostAppBuildProps
+            if ($Rebuild) { $buildArgs += "--no-incremental" }
+
+            Write-Info "Build command: dotnet publish $($buildArgs -join ' ')"
+            $buildStartTime = Get-Date
+            & dotnet publish @buildArgs
+            $buildExitCode = $LASTEXITCODE
+            $buildDuration = (Get-Date) - $buildStartTime
+            if ($buildExitCode -ne 0) {
+                throw "Packaged Windows build failed with exit code $buildExitCode"
+            }
+
+            $packages = @(
+                Get-ChildItem -LiteralPath $packageOutput -Filter '*.msix' -File -Recurse |
+                    Where-Object {
+                        $_.FullName -notmatch '(?i)[\\/]Dependencies[\\/]'
+                    }
+            )
+            if ($packages.Count -ne 1) {
+                throw "Expected exactly one Windows replication MSIX under '$packageOutput'; found $($packages.Count)."
+            }
+            $installedPackage = Install-ReplicationWindowsAppContainerPackage `
+                -PackagePath $packages[0].FullName
+            [ordered]@{
+                schemaVersion = 1
+                packageName = $installedPackage.Name
+                packageFullName = $installedPackage.PackageFullName
+                packageFamilyName = $installedPackage.PackageFamilyName
+                packagePath = $installedPackage.PackagePath
+                packageSha256 = $installedPackage.PackageSha256
+                processId = 0
+                mainWindowHandle = 0
+            } | ConvertTo-Json -Depth 4 |
+                Set-Content -LiteralPath $statePath -Encoding utf8NoBOM
+
+            Write-Success "Packaged Windows AppContainer built, audited, and installed in $($buildDuration.TotalSeconds) seconds"
+        } finally {
+            if ($null -ne $signingCertificate) {
+                Remove-ReplicationWindowsSigningCertificate `
+                    -SigningCertificate $signingCertificate
+            }
+        }
     }
-    
-    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
-    
-    $buildStartTime = Get-Date
-    
-    # Build app
-    & dotnet build @buildArgs
-    
-    $buildExitCode = $LASTEXITCODE
-    $buildDuration = (Get-Date) - $buildStartTime
-    
-    if ($buildExitCode -ne 0) {
-        Write-Error "Build failed with exit code $buildExitCode"
-        exit $buildExitCode
-    }
-    
-    Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
-    
-    # Windows apps run directly on the host - no install step needed
-    # The test framework (Appium/WinAppDriver) will launch the app directly
-    Write-Success "Windows app ready (runs on host Windows)"
     
     #endregion
 }

@@ -120,7 +120,13 @@ param(
     [string]$RepositoryRoot,
 
     [Parameter(Mandatory = $false)]
-    [switch]$SkipXcodeVersionCheck
+    [switch]$SkipXcodeVersionCheck,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireWindowsAppContainer,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ReplicationTrustedRoot
 )
 
 $ErrorActionPreference = "Stop"
@@ -174,6 +180,7 @@ $WindowsDeviceTestPackageIds = @{
 
 $WindowsDeviceNoResultsMarker = "WINDOWS_DEVICE_TEST_NO_RESULTS:"
 $WindowsDeviceTargetTimeoutMarker = "WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:"
+$WindowsDeviceCleanupFailureMarker = "WINDOWS_DEVICE_TEST_CLEANUP_FAILED:"
 
 function ConvertTo-AzdoSafeConsole {
     param([string]$Text)
@@ -380,7 +387,8 @@ function New-XHarnessRunOutputDirectory {
 function Select-WindowsDeviceTestCategories {
     param(
         [string[]]$AllCategories,
-        [string]$Filter
+        [string]$Filter,
+        [switch]$RequireExact
     )
 
     $filters = @(Get-CategoryFiltersFromTestFilter -Filter $Filter)
@@ -402,6 +410,8 @@ function Select-WindowsDeviceTestCategories {
         $exact = @($AllCategories | Where-Object { $_.Equals($token, [System.StringComparison]::OrdinalIgnoreCase) })
         $candidates = if ($exact.Count -gt 0) {
             $exact
+        } elseif ($RequireExact) {
+            @()
         } else {
             @($AllCategories | Where-Object { $_.IndexOf($token, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
         }
@@ -433,15 +443,34 @@ function Test-WindowsDeviceTestCategoryDiscovery {
 
 function Start-WindowsDeviceTestProcess {
     param(
-        [Parameter(Mandatory = $true)]
-        [string]$AppPath,
+        [string]$AppPath = '',
 
         [Parameter(Mandatory = $true)]
         [string[]]$ArgumentList,
 
-        [string]$IncludeClasses
+        [string]$IncludeClasses,
+
+        [switch]$RequireAppContainer,
+
+        [string]$PackageName = ''
     )
 
+    if ($RequireAppContainer) {
+        if ([string]::IsNullOrWhiteSpace($PackageName)) {
+            throw 'Windows AppContainer device-test launch requires a package name.'
+        }
+        $appArguments = ConvertTo-ReplicationWindowsAppArguments `
+            -Arguments $ArgumentList
+        $launch = Start-ReplicationWindowsAppContainerProcess `
+            -PackageName $PackageName `
+            -AppArguments $appArguments `
+            -RequireWindow
+        return $launch.Process
+    }
+
+    if ([string]::IsNullOrWhiteSpace($AppPath)) {
+        throw 'Windows unpackaged device-test launch requires an executable path.'
+    }
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = [System.IO.Path]::GetFullPath($AppPath)
     $startInfo.WorkingDirectory = [System.IO.Path]::GetDirectoryName($startInfo.FileName)
@@ -762,8 +791,7 @@ function Get-DeviceTestResultSummary {
 
 function Invoke-WindowsDeviceTestApp {
     param(
-        [Parameter(Mandatory = $true)]
-        [string]$AppPath,
+        [string]$AppPath = '',
 
         [Parameter(Mandatory = $true)]
         [string]$Project,
@@ -780,7 +808,13 @@ function Invoke-WindowsDeviceTestApp {
 
         [string]$IncludeMethods,
 
-        [string]$Timeout = "01:00:00"
+        [string]$Timeout = "01:00:00",
+
+        [switch]$RequireAppContainer,
+
+        [string]$PackageName = '',
+
+        [string]$PackageLocalStatePath = ''
     )
 
     $timeoutSeconds = [int][TimeSpan]::Parse($Timeout).TotalSeconds
@@ -802,9 +836,53 @@ function Invoke-WindowsDeviceTestApp {
         $packageId = $AppName
     }
 
-    $resultBase = Join-Path $OutputDirectory "TestResults-$($packageId.Replace('.', '_'))"
+    $executionOutputDirectory = if ($RequireAppContainer) {
+        if ([string]::IsNullOrWhiteSpace($PackageName) -or
+            [string]::IsNullOrWhiteSpace($PackageLocalStatePath)) {
+            throw 'Windows AppContainer device tests require package identity and LocalState paths.'
+        }
+        [IO.Path]::GetFullPath($PackageLocalStatePath)
+    } else {
+        $OutputDirectory
+    }
+    if ($RequireAppContainer) {
+        $localAppDataRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA).TrimEnd(
+            '\',
+            '/') + [IO.Path]::DirectorySeparatorChar
+        $normalizedOutput = [IO.Path]::GetFullPath($executionOutputDirectory)
+        if (-not $normalizedOutput.StartsWith(
+                $localAppDataRoot,
+                [StringComparison]::OrdinalIgnoreCase) -or
+            $normalizedOutput.IndexOf(
+                "$([IO.Path]::DirectorySeparatorChar)Packages$([IO.Path]::DirectorySeparatorChar)",
+                [StringComparison]::OrdinalIgnoreCase) -lt 0 -or
+            -not $normalizedOutput.EndsWith(
+                "$([IO.Path]::DirectorySeparatorChar)LocalState",
+                [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Windows AppContainer result root is not a canonical package LocalState directory.'
+        }
+    }
+    if (-not (Test-Path -LiteralPath $executionOutputDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Path $executionOutputDirectory -Force | Out-Null
+    }
+    if ($RequireAppContainer) {
+        $current = [IO.Path]::GetFullPath($executionOutputDirectory)
+        while ($true) {
+            $item = Get-Item -LiteralPath $current -Force -ErrorAction Stop
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw "Windows AppContainer result root contains a reparse point: $current"
+            }
+            $parent = Split-Path -Parent $current
+            if ([string]::IsNullOrWhiteSpace($parent) -or $parent -ceq $current) {
+                break
+            }
+            $current = $parent
+        }
+    }
+
+    $resultBase = Join-Path $executionOutputDirectory "TestResults-$($packageId.Replace('.', '_'))"
     $resultFile = "$resultBase.xml"
-    $categoriesFile = Join-Path $OutputDirectory "devicetestcategories.txt"
+    $categoriesFile = Join-Path $executionOutputDirectory "devicetestcategories.txt"
     Remove-Item -LiteralPath $categoriesFile -Force -ErrorAction SilentlyContinue
     Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
 
@@ -830,7 +908,9 @@ function Invoke-WindowsDeviceTestApp {
         $discoveryProcess = Start-WindowsDeviceTestProcess `
             -AppPath $AppPath `
             -ArgumentList @($resultFile, "-1") `
-            -IncludeClasses $IncludeClasses
+            -IncludeClasses $IncludeClasses `
+            -RequireAppContainer:$RequireAppContainer `
+            -PackageName $PackageName
         if (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess) {
             $useCategoryFiltering = $true
         } else {
@@ -845,8 +925,19 @@ function Invoke-WindowsDeviceTestApp {
     }
 
     if ($useCategoryFiltering) {
-        $allCategories = @(Get-Content $categoriesFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-        $selectedCategories = @(Select-WindowsDeviceTestCategories -AllCategories $allCategories -Filter $TestFilter)
+        $allCategories = @(
+            Get-Content -LiteralPath $categoriesFile |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+        foreach ($category in $allCategories) {
+            if ($category -cnotmatch '^[A-Za-z0-9_.+ -]{1,128}$') {
+                throw "Windows device test category contains an unsafe value."
+            }
+        }
+        $selectedCategories = @(Select-WindowsDeviceTestCategories `
+            -AllCategories $allCategories `
+            -Filter $TestFilter `
+            -RequireExact:$RequireAppContainer)
         if ($selectedCategories.Count -eq 0) {
             throw "Test filter '$TestFilter' matched 0 Windows device test categories. Available categories: $($allCategories -join ', ')"
         }
@@ -860,13 +951,30 @@ function Invoke-WindowsDeviceTestApp {
             }
 
             $categoryResultFile = "$resultBase`_$category.xml"
+            $categoryResultFile = [IO.Path]::GetFullPath($categoryResultFile)
+            $resultRootPrefix = [IO.Path]::GetFullPath(
+                $executionOutputDirectory
+            ).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+            if (-not $categoryResultFile.StartsWith(
+                    $resultRootPrefix,
+                    [StringComparison]::OrdinalIgnoreCase)) {
+                throw 'Windows device-test result path escapes the trusted output root.'
+            }
+            $resultItem = Get-Item -LiteralPath $categoryResultFile -Force `
+                -ErrorAction SilentlyContinue
+            if ($resultItem -and
+                $resultItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw 'Windows device-test result path is a reparse point.'
+            }
             $categoryRunTimeoutSeconds = if ($IncludeClasses) { $classRunTimeoutSeconds } else { $timeoutSeconds }
             Remove-Item -LiteralPath $categoryResultFile -Force -ErrorAction SilentlyContinue
             Write-Host "Running Windows device test category '$category' (index $categoryIndex)..." -ForegroundColor Gray
             $process = Start-WindowsDeviceTestProcess `
                 -AppPath $AppPath `
                 -ArgumentList @($resultFile, [string]$categoryIndex) `
-                -IncludeClasses $IncludeClasses
+                -IncludeClasses $IncludeClasses `
+                -RequireAppContainer:$RequireAppContainer `
+                -PackageName $PackageName
             $categoryStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
             if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $categoryRunTimeoutSeconds -Process $process)) {
                 if ($process -and $process.HasExited) {
@@ -933,7 +1041,9 @@ function Invoke-WindowsDeviceTestApp {
         $process = Start-WindowsDeviceTestProcess `
             -AppPath $AppPath `
             -ArgumentList @($resultFile) `
-            -IncludeClasses $IncludeClasses
+            -IncludeClasses $IncludeClasses `
+            -RequireAppContainer:$RequireAppContainer `
+            -PackageName $PackageName
 
         # A full-suite app creates its single results file and finalizes it only when the
         # whole run completes, so waiting for the file to merely APPEAR races the writer
@@ -958,9 +1068,17 @@ function Invoke-WindowsDeviceTestApp {
                             -ResultFiles @($resultFile) `
                             -IncludeClasses $IncludeClasses `
                             -IncludeMethods $IncludeMethods `
-                            -RequireClassIsolation
+                            -RequireClassIsolation:(-not $RequireAppContainer)
                         $script:WindowsDeviceTestSummary = $completedSummary
-                        $script:WindowsDeviceTestResultFiles = @($resultFile)
+                        if ($RequireAppContainer) {
+                            $publishedResult = Join-Path $OutputDirectory (
+                                [IO.Path]::GetFileName($resultFile))
+                            Copy-Item -LiteralPath $resultFile `
+                                -Destination $publishedResult -Force
+                            $script:WindowsDeviceTestResultFiles = @($publishedResult)
+                        } else {
+                            $script:WindowsDeviceTestResultFiles = @($resultFile)
+                        }
                         Write-Warning "Windows device test process exceeded ${processTimeoutSeconds}s after writing complete scoped results; using the verified target-test result."
                         return $(if (($completedSummary.Failed + $completedSummary.Errors) -eq 0) { 0 } else { 1 })
                     } catch {
@@ -990,9 +1108,27 @@ function Invoke-WindowsDeviceTestApp {
         -ResultFiles $resultFiles `
         -IncludeClasses $summaryClassFilter `
         -IncludeMethods $summaryMethodFilter `
-        -RequireClassIsolation:(-not [string]::IsNullOrWhiteSpace($IncludeClasses))
+        -RequireClassIsolation:(
+            -not $RequireAppContainer -and
+            -not [string]::IsNullOrWhiteSpace($IncludeClasses))
     $script:WindowsDeviceTestSummary = $summary
-    $script:WindowsDeviceTestResultFiles = $resultFiles
+    if ($RequireAppContainer) {
+        $publishedFiles = [Collections.Generic.List[string]]::new()
+        foreach ($resultPath in $resultFiles) {
+            $destination = Join-Path $OutputDirectory (
+                [IO.Path]::GetFileName($resultPath))
+            Copy-Item -LiteralPath $resultPath -Destination $destination -Force
+            $publishedFiles.Add($destination)
+        }
+        if (Test-Path -LiteralPath $categoriesFile -PathType Leaf) {
+            Copy-Item -LiteralPath $categoriesFile `
+                -Destination (Join-Path $OutputDirectory 'devicetestcategories.txt') `
+                -Force
+        }
+        $script:WindowsDeviceTestResultFiles = $publishedFiles.ToArray()
+    } else {
+        $script:WindowsDeviceTestResultFiles = $resultFiles
+    }
 
     if (($summary.Failed + $summary.Errors) -eq 0) {
         return 0
@@ -1065,6 +1201,40 @@ if (-not $RepoRoot -or -not (Test-Path -LiteralPath (Join-Path $RepoRoot '.git')
 # Import shared utilities
 $SharedScriptsDir = Join-Path $RepoRoot ".github/scripts/shared"
 . (Join-Path $SharedScriptsDir "shared-utils.ps1")
+if ($RequireWindowsAppContainer) {
+    if ($Platform -ne 'windows' -or -not [OperatingSystem]::IsWindows()) {
+        throw 'The replication AppContainer mode is available only for Windows device tests.'
+    }
+    if (-not $NoRestore) {
+        throw 'Windows replication AppContainer tests require --no-restore.'
+    }
+    if ($Project -ne 'Controls') {
+        throw 'Windows replication permits only the Controls device-test package.'
+    }
+    if ($TestFilter -cnotmatch '^Issue[1-9][0-9]*$' -or
+        [string]::IsNullOrWhiteSpace($IncludeClasses) -or
+        [string]::IsNullOrWhiteSpace($IncludeMethods)) {
+        throw 'Windows replication requires one issue-keyed Controls test with exact class and method selectors.'
+    }
+    if ([string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
+        throw 'Windows replication requires the attested trusted root.'
+    }
+    $ReplicationTrustedRoot = [IO.Path]::GetFullPath($ReplicationTrustedRoot)
+    $windowsHelperPath = Join-Path $ReplicationTrustedRoot (
+        'scripts/shared/Assert-ReplicationWindowsAppContainer.ps1')
+    $windowsManifestPath = Join-Path $ReplicationTrustedRoot (
+        'source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml')
+    foreach ($trustedPath in @($windowsHelperPath, $windowsManifestPath)) {
+        if (-not (Test-Path -LiteralPath $trustedPath -PathType Leaf) -or
+            (Get-Item -LiteralPath $trustedPath -Force).Attributes -band
+                [IO.FileAttributes]::ReparsePoint) {
+            throw "Windows replication trusted input is unavailable: $trustedPath"
+        }
+    }
+    . $windowsHelperPath
+    $null = Assert-ReplicationWindowsAppContainerManifest `
+        -Path $windowsManifestPath
+}
 
 # Align device-test TargetFrameworks with the checked-out branch (e.g. net11.0-android on the
 # net11.0 branch) instead of the hardcoded net10.0 defaults in $PlatformConfigs above.
@@ -1077,6 +1247,8 @@ Push-Location $RepoRoot
 
 $platformConfig = $PlatformConfigs[$Platform]
 $classFilterInjection = $null
+$windowsSigningCertificate = $null
+$windowsInstalledPackage = $null
 
 try {
     # Validate prerequisites
@@ -1153,8 +1325,9 @@ try {
         Write-Host "✓ Prepared trusted Android XHarness class-filter injection" -ForegroundColor Green
     }
 
+    $buildVerb = if ($RequireWindowsAppContainer) { 'publish' } else { 'build' }
     $buildArgs = @(
-        "build"
+        $buildVerb
         $projectPath
         "-c", $Configuration
         "-f", $platformConfig.Tfm
@@ -1201,28 +1374,33 @@ try {
             $buildArgs += "/p:AndroidPackageFormat=apk"
         }
         "windows" {
-            # NOTE: WindowsAppSDKSelfContained MUST NOT be passed via command line because it
-            # propagates to ALL referenced projects (including library dependencies like
-            # Graphics.csproj) and breaks them with:
-            #   "WindowsAppSDKSelfContained requires a supported Windows architecture"
-            # Instead, pass _MauiDeviceTestUnpackaged=true. The
-            # Microsoft.Maui.TestUtils.DeviceTests.Runners.props file (imported from each
-            # device test csproj) converts that signal into WindowsAppSDKSelfContained=true
-            # ONLY on the device test project itself.
-            #
-            # Also: use RuntimeIdentifierOverride (NOT `-r`/RuntimeIdentifier) so the RID
-            # propagates to every ProjectReference (e.g. TestUtils.DeviceTests). Plain
-            # RuntimeIdentifier is auto-suppressed on non-leaf project references, which
-            # leaves dependency PRI/asset files in the non-RID output folder while the
-            # test app itself is built at the RID-specific path, producing PRI175 errors.
-            #
-            # See eng/devices/windows.cake (buildOnly task, lines 145-188) for the
-            # canonical CI pattern.
             $buildArgs += "/p:RuntimeIdentifierOverride=$($platformConfig.RuntimeIdentifier)"
-            $buildArgs += "/p:WindowsPackageType=None"
-            $buildArgs += "/p:SelfContained=true"
-            $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
-            $buildArgs += "/p:UseMonoRuntime=false"
+            if ($RequireWindowsAppContainer) {
+                $windowsPackageOutput = Join-Path $OutputDirectory 'windows-appcontainer-package'
+                $windowsPackageOutput = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(
+                    $windowsPackageOutput)
+                if (Test-Path -LiteralPath $windowsPackageOutput) {
+                    Remove-Item -LiteralPath $windowsPackageOutput -Recurse -Force
+                }
+                New-Item -ItemType Directory -Path $windowsPackageOutput -Force | Out-Null
+                $windowsSigningCertificate =
+                    New-ReplicationWindowsSigningCertificate
+                $buildArgs += "/p:WindowsPackageType=MSIX"
+                $buildArgs += "/p:GenerateAppxPackageOnBuild=true"
+                $buildArgs += "/p:AppxPackageSigningEnabled=true"
+                $buildArgs += "/p:PackageCertificateThumbprint=$($windowsSigningCertificate.Thumbprint)"
+                $buildArgs += "/p:SelfContained=true"
+                $buildArgs += "/p:ExtraDefineConstants=PACKAGED"
+                $buildArgs += "/p:PackageManifest=$windowsManifestPath"
+                $buildArgs += "/p:AppxPackageDir=$($windowsPackageOutput.TrimEnd('\', '/'))$([IO.Path]::DirectorySeparatorChar)"
+            } else {
+                # Keep ordinary local device-test execution unchanged. Replication
+                # never takes this full-trust, unpackaged branch.
+                $buildArgs += "/p:WindowsPackageType=None"
+                $buildArgs += "/p:SelfContained=true"
+                $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
+                $buildArgs += "/p:UseMonoRuntime=false"
+            }
         }
     }
 
@@ -1275,12 +1453,29 @@ try {
             }
         }
         "windows" {
-            $exeSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
-            $exeFile = Get-ChildItem -Path $exeSearchPath -Filter "$appName.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($exeFile) {
-                $appPath = $exeFile.FullName
+            if ($RequireWindowsAppContainer) {
+                $msixFiles = @(
+                    Get-ChildItem -LiteralPath $windowsPackageOutput `
+                        -Filter '*.msix' -File -Recurse |
+                        Where-Object {
+                            $_.FullName -notmatch '(?i)[\\/]Dependencies[\\/]'
+                        }
+                )
+                if ($msixFiles.Count -ne 1) {
+                    throw "Expected exactly one Windows device-test MSIX; found $($msixFiles.Count)."
+                }
+                $appPath = $msixFiles[0].FullName
+                $windowsInstalledPackage =
+                    Install-ReplicationWindowsAppContainerPackage `
+                        -PackagePath $appPath
             } else {
-                $appPath = "$exeSearchPath/$ridFolder/$appName.exe"
+                $exeSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
+                $exeFile = Get-ChildItem -Path $exeSearchPath -Filter "$appName.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($exeFile) {
+                    $appPath = $exeFile.FullName
+                } else {
+                    $appPath = "$exeSearchPath/$ridFolder/$appName.exe"
+                }
             }
         }
     }
@@ -1542,8 +1737,12 @@ try {
         # WINDOWS DEVICE TEST EXECUTION
         # ═══════════════════════════════════════════════════════════
 
-        Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
-        Write-Host "This matches eng/devices/windows.cake and avoids VSTest/testhost for MAUI Windows device apps." -ForegroundColor Gray
+        if ($RequireWindowsAppContainer) {
+            Write-Host "Running the Windows device test inside the audited AppContainer package..." -ForegroundColor Gray
+        } else {
+            Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
+        }
+        Write-Host "This matches the packaged/device runner and avoids VSTest/testhost for MAUI Windows device apps." -ForegroundColor Gray
         Write-Host ""
 
         $testExitCode = Invoke-WindowsDeviceTestApp `
@@ -1554,7 +1753,14 @@ try {
             -TestFilter $TestFilter `
             -IncludeClasses $IncludeClasses `
             -IncludeMethods $IncludeMethods `
-            -Timeout $Timeout
+            -Timeout $Timeout `
+            -RequireAppContainer:$RequireWindowsAppContainer `
+            -PackageName $(if ($windowsInstalledPackage) {
+                    $windowsInstalledPackage.Name
+                } else { '' }) `
+            -PackageLocalStatePath $(if ($windowsInstalledPackage) {
+                    $windowsInstalledPackage.LocalStatePath
+                } else { '' })
 
         if ($script:WindowsDeviceTestSummary) {
             Write-Host ""
@@ -1635,8 +1841,30 @@ try {
     exit $testExitCode
 
 } finally {
+    $windowsCleanupErrors = [Collections.Generic.List[string]]::new()
+    if ($windowsInstalledPackage) {
+        try {
+            Remove-ReplicationWindowsAppContainerPackage `
+                -PackageName $windowsInstalledPackage.Name
+        } catch {
+            $windowsCleanupErrors.Add(
+                "package cleanup failed: $($_.Exception.Message)")
+        }
+    }
+    if ($windowsSigningCertificate) {
+        try {
+            Remove-ReplicationWindowsSigningCertificate `
+                -SigningCertificate $windowsSigningCertificate
+        } catch {
+            $windowsCleanupErrors.Add(
+                "signing-certificate cleanup failed: $($_.Exception.Message)")
+        }
+    }
     if ($classFilterInjection -and $classFilterInjection.Directory -and (Test-Path $classFilterInjection.Directory)) {
         Remove-Item -LiteralPath $classFilterInjection.Directory -Recurse -Force -ErrorAction SilentlyContinue
     }
     Pop-Location
+    if ($windowsCleanupErrors.Count -gt 0) {
+        throw "$WindowsDeviceCleanupFailureMarker $($windowsCleanupErrors -join '; ')"
+    }
 }
