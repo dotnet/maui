@@ -154,5 +154,11 @@ Describe 'Replication PR feedback export' {
             -Quality ([ordered]@{ review = [ordered]@{ findings = @() } })
         $independent.findings.Count | Should -Be 1
         $independent.findings[0].category | Should -BeExactly 'grounded-product-defect'
+
+        $unknown = Get-FeedbackReviewDisclosure `
+            -Body '- **unknown** (`none`, `unknown`, `none`): Not classified' `
+            -Quality ([ordered]@{ review = [ordered]@{ findings = @() } })
+        $unknown.findings.Count | Should -Be 1
+        $unknown.findings[0].category | Should -BeExactly 'unknown'
     }
 }

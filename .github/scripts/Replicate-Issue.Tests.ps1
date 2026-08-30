@@ -2773,6 +2773,18 @@ InitializeComponent();
             'Assert-ReplicationAndroidGuestNetworkIsolation.*?-VerifyOnly')
     }
 
+    It 'initializes catch-state lists before any main orchestration failure' {
+        $attemptKinds = $script:Source.IndexOf(
+            '$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()',
+            [StringComparison]::Ordinal)
+        $mainTry = $script:Source.IndexOf(
+            "if (`$Platform -ne 'android')",
+            [StringComparison]::Ordinal)
+
+        $attemptKinds | Should -BeGreaterOrEqual 0
+        $mainTry | Should -BeGreaterThan $attemptKinds
+    }
+
     It 'replays the Sandbox through a trusted script instead of an artifact executable' {
         $script:Source | Should -Not -Match 'run-sandbox-attempt-\$attempt\.ps1'
         $script:Source | Should -Match (

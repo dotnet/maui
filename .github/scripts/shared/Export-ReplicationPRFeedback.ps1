@@ -239,8 +239,8 @@ function Get-FeedbackReviewDisclosure {
         [void]$findings.Add($finding)
     }
     foreach ($pattern in @(
-            '(?im)^\s*-\s*\*\*[A-Za-z-]+\.\*\*\s+.+?\s+\(`(?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative)`;\s*grounding\s*`(?<grounding>[^`]+)`,\s*confidence\s*`(?<confidence>[^`]+)`,\s*corroboration\s*`(?<corroboration>[^`]+)`;\s*advisory\)',
-            '(?im)^\s*-\s*\*\*(?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative)\*\*\s+\(`(?<grounding>[^`]+)`,\s*`(?<confidence>[^`]+)`,\s*`(?<corroboration>[^`]+)`\):'
+            '(?im)^\s*-\s*\*\*[A-Za-z-]+\.\*\*\s+.+?\s+\(`(?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative|unknown)`;\s*grounding\s*`(?<grounding>[^`]+)`,\s*confidence\s*`(?<confidence>[^`]+)`,\s*corroboration\s*`(?<corroboration>[^`]+)`;\s*advisory\)',
+            '(?im)^\s*-\s*\*\*(?<category>grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative|unknown)\*\*\s+\(`(?<grounding>[^`]+)`,\s*`(?<confidence>[^`]+)`,\s*`(?<corroboration>[^`]+)`\):'
         )) {
         foreach ($match in [regex]::Matches($Body, $pattern)) {
             if ($findings.Count -ge 8) { break }
