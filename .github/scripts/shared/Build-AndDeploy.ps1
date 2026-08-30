@@ -146,7 +146,9 @@ if ($Platform -eq "android") {
         if (-not (Test-Path -LiteralPath $isolationManifest -PathType Leaf)) {
             throw 'Android replication network-isolation manifest is missing.'
         }
-        $buildArgs += "-p:AndroidManifest=$isolationManifest"
+        # Microsoft.Android resolves AndroidManifest relative to the project
+        # directory even when MSBuild receives an absolute path.
+        $buildArgs += '-p:AndroidManifest=Platforms/Android/ReplicationNetworkIsolationManifest.xml'
     }
     if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {

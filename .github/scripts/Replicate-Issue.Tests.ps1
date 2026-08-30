@@ -2707,6 +2707,15 @@ InitializeComponent();
         $replicationManifest | Should -Match 'tools:node="remove"'
         $windowsManifest | Should -Not -Match '(?i)internetClient|privateNetworkClientServer'
         $script:Source | Should -Match "'-EnforceNetworkIsolation'"
+        $script:Source | Should -Match (
+            "'-p:AndroidManifest=Platforms/Android/" +
+            "ReplicationNetworkIsolationManifest\.xml'")
+        $buildDeploy = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') -Raw
+        $buildDeploy | Should -Match (
+            "'-p:AndroidManifest=Platforms/Android/" +
+            "ReplicationNetworkIsolationManifest\.xml'")
+        $buildDeploy | Should -Not -Match '-p:AndroidManifest=\$isolationManifest'
 
         [xml]$ordinary = $androidManifest
         [xml]$isolated = $replicationManifest

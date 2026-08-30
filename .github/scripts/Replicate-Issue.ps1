@@ -9200,7 +9200,7 @@ try {
             '-c', 'Debug',
             '--no-restore',
             '-p:EmbedAssembliesIntoApk=true',
-            "-p:AndroidManifest=$(Join-Path $sandboxDir 'Platforms/Android/ReplicationNetworkIsolationManifest.xml')"
+            '-p:AndroidManifest=Platforms/Android/ReplicationNetworkIsolationManifest.xml'
         )
     $null = Get-ReplicationNetworkIsolatedCommand `
         -Platform $Platform `
