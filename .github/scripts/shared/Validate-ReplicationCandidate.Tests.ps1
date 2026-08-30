@@ -5,11 +5,10 @@ BeforeAll {
     $script:validatorPath = Join-Path $PSScriptRoot 'Validate-ReplicationCandidate.ps1'
     . $script:validatorPath
 
-    $script:scratchRoot = Join-Path $PSScriptRoot '.Validate-ReplicationCandidate.Tests.work'
-    if (Test-Path -LiteralPath $script:scratchRoot) {
-        Remove-Item -LiteralPath $script:scratchRoot -Recurse -Force
-    }
-    New-Item -ItemType Directory -Path $script:scratchRoot | Out-Null
+    $scratchParent = Join-Path $PSScriptRoot '.Validate-ReplicationCandidate.Tests.work'
+    New-Item -ItemType Directory -Path $scratchParent -Force | Out-Null
+    $script:scratchRoot = Join-Path $scratchParent "$PID-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $script:scratchRoot -Force | Out-Null
 
     $script:successfulProbe = {
         param($Path, $Kind)
@@ -415,7 +414,16 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
         Write-TestText -Path (Join-Path $Fixture.RepoRoot 'README') -Value 'trusted base'
         Write-TestText `
             -Path (Join-Path $Fixture.RepoRoot 'src/Controls/src/Core/Button/Button.cs') `
-            -Value "namespace Microsoft.Maui.Controls;`n"
+            -Value @'
+namespace Microsoft.Maui.Controls;
+
+	public partial class Button
+	{
+		void Update()
+			=> Handler?.UpdateValue(nameof(Text));
+	}
+
+'@
         & git -C $Fixture.RepoRoot add README src/Controls/src/Core/Button/Button.cs
         & git -C $Fixture.RepoRoot commit --quiet --no-gpg-sign -m 'base'
         if ($LASTEXITCODE -ne 0) {
@@ -1086,6 +1094,103 @@ static void LoadInlineXaml()
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw $expectedError -Because "$Kind must not occur in generated test or Sandbox source"
+    }
+
+    It 'rejects every URL-capable XML and native platform sink' -TestCases @(
+        @{
+            Name = 'integer-char XmlTextReader'
+            Snippet = 'var address = new string(new[] { (char)104, (char)116, (char)116, (char)112, (char)58, (char)47, (char)47 }); var reader = new XmlTextReader(address);'
+        }
+        @{
+            Name = 'aliased XML reader'
+            Snippet = 'using R = System.Xml.XmlTextReader; var reader = new R(string.Concat("ht", "tp", "://169.254.169.254"));'
+        }
+        @{
+            Name = 'XML resolver'
+            Snippet = 'var settings = new XmlReaderSettings { XmlResolver = new XmlUrlResolver() }; XmlReader.Create(address, settings);'
+        }
+        @{
+            Name = 'DataSet transitive XML URL'
+            Snippet = 'var d = new System.Data.DataSet(); d.ReadXml(address);'
+        }
+        @{
+            Name = 'aliased DataTable transitive XML URL'
+            Snippet = 'using T = System.Data.DataTable; var address = string.Concat("ht", "tp", "://169.254.169.254"); var d = new T(); d.ReadXml(address);'
+        }
+        @{
+            Name = 'DataSet inferred XML schema URL'
+            Snippet = 'var d = new System.Data.DataSet(); d.InferXmlSchema(address, null);'
+        }
+        @{
+            Name = 'DataTable XML schema URL'
+            Snippet = 'var d = new System.Data.DataTable(); d.ReadXmlSchema(address);'
+        }
+        @{
+            Name = 'DataSet XML write path'
+            Snippet = 'var d = new System.Data.DataSet(); d.WriteXml(address);'
+        }
+        @{
+            Name = 'base64 XML source'
+            Snippet = 'var address = Encoding.UTF8.GetString(Convert.FromBase64String("aHR0cDovLzE2OS4yNTQuMTY5LjI1NA==")); XmlReader.Create(address);'
+        }
+        @{
+            Name = 'WKWebView request'
+            Snippet = 'var request = new NSUrlRequest(NSUrl.FromString(address)); webView.LoadRequest(request);'
+        }
+        @{
+            Name = 'Android WebView URL'
+            Snippet = 'var uri = Android.Net.Uri.Parse(address); new Android.Webkit.WebView(context).LoadUrl(address);'
+        }
+        @{
+            Name = 'Android Intent URL'
+            Snippet = 'var intent = new Android.Content.Intent(Android.Content.Intent.ActionView, Android.Net.Uri.Parse(address));'
+        }
+        @{
+            Name = 'Windows WebView2 URL'
+            Snippet = 'var web = new Microsoft.Web.WebView2.Wpf.WebView2(); web.Source = new Uri(address);'
+        }
+        @{
+            Name = 'Windows URI launcher'
+            Snippet = 'await Windows.System.Launcher.LaunchUriAsync(new Windows.Foundation.Uri(address));'
+        }
+        @{
+            Name = 'service model channel'
+            Snippet = 'var channel = new System.ServiceModel.ChannelFactory<IService>(binding, address);'
+        }
+        @{
+            Name = 'DNS'
+            Snippet = 'var addresses = Dns.GetHostAddresses(host);'
+        }
+        @{
+            Name = 'HTTP'
+            Snippet = 'var response = await new HttpClient().GetAsync(address);'
+        }
+    ) {
+        param($Name, $Snippet)
+
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $Snippet -Path 'Issue1.cs'
+        } | Should -Throw -Because "$Name must be rejected before generated code can execute"
+        {
+            Assert-ReplicationProductFixSafety -Content $Snippet -Path 'Product.cs'
+        } | Should -Throw -Because "$Name must be rejected from complete product fix files"
+    }
+
+    It 'rejects filesystem verb families rather than a suffix allowlist' -TestCases @(
+        @{ Snippet = 'File.ReadAllTextAsync(path)' },
+        @{ Snippet = 'File.WriteAllBytesAsync(path, bytes)' },
+        @{ Snippet = 'File.AppendAllLines(path, lines)' },
+        @{ Snippet = 'File.OpenHandle(path)' },
+        @{ Snippet = 'File.CreateSymbolicLink(path, target)' },
+        @{ Snippet = 'File.SetUnixFileMode(path, mode)' },
+        @{ Snippet = 'Directory.CreateDirectory(path)' },
+        @{ Snippet = 'Directory.CreateTempSubdirectory()' },
+        @{ Snippet = 'Directory.ResolveLinkTarget(path, true)' }
+    ) {
+        param($Snippet)
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $Snippet -Path 'Issue1.cs'
+        } | Should -Throw '*file-system*'
     }
 
     It 'rejects split reflective process execution' {
@@ -2261,6 +2366,18 @@ Describe 'Every guard that exists is enforced by the publishing gate' {
             [string[]]@([regex]::Matches($gateSource, 'Assert-Replication\w+') |
                 ForEach-Object { $_.Value }),
             [System.StringComparer]::Ordinal)
+        if (
+            $invoked.Contains('Assert-ReplicationFixSources') -and
+            $guardSource -match '(?s)function\s+Assert-ReplicationFixSources\b.*?Assert-ReplicationProductFixDeltaSafety'
+        ) {
+            [void]$invoked.Add('Assert-ReplicationProductFixDeltaSafety')
+        }
+        if (
+            $invoked.Contains('Assert-ReplicationProductFixDeltaSafety') -and
+            $guardSource -match '(?s)function\s+Assert-ReplicationProductFixDeltaSafety\b.*?Assert-ReplicationProductFixSafety'
+        ) {
+            [void]$invoked.Add('Assert-ReplicationProductFixSafety')
+        }
 
         $missing = @($defined | Where-Object { -not $invoked.Contains($_) })
         $missing -join ', ' | Should -BeExactly ''
@@ -3274,17 +3391,17 @@ Describe 'The fix patch is the inverse of the test patch' {
         function script:New-FixPatchText {
             param(
                 [string]$Target = 'src/Controls/src/Core/Button/Button.cs',
-                [string]$Hunk = @'
-@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
- 	public partial class Button
- 	{
- 		void Update()
--			=> Handler?.UpdateValue(nameof(Text));
-+			=> Handler?.UpdateValue(nameof(Text), force: true);
- 	}
- }
- 
-'@
+                [string]$Hunk = (@(
+                    '@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls'
+                    " `tpublic partial class Button"
+                    " `t{"
+                    " `t`tvoid Update()"
+                    "-`t`t`t=> Handler?.UpdateValue(nameof(Text));"
+                    "+`t`t`t=> Handler?.UpdateValue(nameof(Text), force: true);"
+                    " `t}"
+                    ' }'
+                    ' '
+                ) -join "`n")
             )
 
             return @"
@@ -3575,7 +3692,6 @@ Describe 'Which product files a fix is allowed to touch' {
             'src/Graphics/src/Graphics/Canvas.cs',
             'src/BlazorWebView/src/Maui/BlazorWebView.cs',
             'src/Compatibility/Core/src/Foo.cs',
-            'src/SingleProject/Resizetizer/src/Foo.cs',
             'src/Controls/src/Core/Templates/Bar.xaml'
         )
 
@@ -3600,7 +3716,20 @@ Describe 'Which product files a fix is allowed to touch' {
             'src/Controls/src/Core/GlobalUsings.cs',
             'src/Controls/src/Core/AssemblyInfo.cs',
             'src/Controls/src/Core/obj/Generated.cs',
-            'src/Controls/src/Core/snapshots/Button.cs'
+            'src/Controls/src/Core/snapshots/Button.cs',
+            'src/Controls/src/SourceGen/XamlGenerator.cs',
+            'src/Controls/src/BindingSourceGen/BindingSourceGenerator.cs',
+            'src/Controls/src/Build.Tasks/CompileXamlTask.cs',
+            'src/Controls/src/Core/BuildTargets/Generate.cs',
+            'src/Controls/src/UITest.Analyzers/DiagnosticDescriptors.cs',
+            'src/Controls/src/RuntimeGenerator/GeneratedRuntime.cs',
+            'src/Controls/src/Packaging/PackTask.cs',
+            'src/Controls/src/Workload/Manifest.cs',
+            'src/Controls/src/Provisioning/Install.cs',
+            'src/Controls/src/Core/Foo.AssemblyAttributes.cs',
+            'src/Controls/src/Core.Design/DesignTool.cs',
+            'src/Controls/src/Xaml.Design/XamlTool.cs',
+            'src/SingleProject/Resizetizer/src/Resizetizer.cs'
         )
 
         foreach ($path in $rejected) {
@@ -3620,6 +3749,286 @@ Describe 'Which product files a fix is allowed to touch' {
             { Assert-ReplicationFixPath -Path $path -AllowedPaths @($path) } |
                 Should -Throw -Because "$path is not a repository-relative product path"
         }
+    }
+}
+
+Describe 'Complete post-patch product source scanning' {
+    BeforeAll {
+        function script:New-CompleteFilePatch {
+            param(
+                [Parameter(Mandatory = $true)][string]$Before,
+                [Parameter(Mandatory = $true)][string]$After
+            )
+
+            Set-Content -LiteralPath $script:completeFile -Value $Before -Encoding utf8NoBOM
+            git -C $script:completeRepo add -- $script:completePath
+            git -C $script:completeRepo commit -qm baseline
+            Set-Content -LiteralPath $script:completeFile -Value $After -Encoding utf8NoBOM
+            $patch = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).patch"
+            [IO.File]::WriteAllText(
+                $patch,
+                ((git -C $script:completeRepo diff --binary HEAD -- $script:completePath) -join "`n") + "`n",
+                [Text.UTF8Encoding]::new($false))
+            git -C $script:completeRepo checkout -q HEAD -- $script:completePath
+            return $patch
+        }
+    }
+
+    BeforeEach {
+        $script:completeRepo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:completePath = 'src/Core/src/Handlers/SafeHandler.cs'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        git -C $script:completeRepo init -q
+        git -C $script:completeRepo config user.email test@example.com
+        git -C $script:completeRepo config user.name Test
+    }
+
+    It 'rejects a condition inversion that activates a pre-existing <Kind> sink' -TestCases @(
+        @{
+            Kind = 'network'
+            Sink = 'Browser.OpenAsync(address);'
+            Error = 'device-external-access'
+        },
+        @{
+            Kind = 'file'
+            Sink = 'File.ReadAllTextAsync(address);'
+            Error = 'file-system'
+        },
+        @{
+            Kind = 'process'
+            Sink = 'Process.Start(address);'
+            Error = 'process-start'
+        },
+        @{
+            Kind = 'native'
+            Sink = 'NativeLibrary.Load(address);'
+            Error = 'native-code'
+        },
+        @{
+            Kind = 'reflection'
+            Sink = 'Assembly.Load(address);'
+            Error = 'reflection'
+        }
+    ) {
+        param($Kind, $Sink, $Error)
+
+        $before = "class SafeHandler { void Run(string address) { if (false) { $Sink } } }"
+        $after = "class SafeHandler { void Run(string address) { if (true) { $Sink } } }"
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw "*$Error*"
+        Get-Content -LiteralPath $script:completeFile -Raw | Should -Match 'if \(false\)'
+    }
+
+    It 'rejects deletion-only removal of a guard around an existing sink' {
+        $before = @'
+class SafeHandler
+{
+    void Run(bool allowExternal, string address)
+    {
+        if (!allowExternal)
+            return;
+        Browser.OpenAsync(address);
+    }
+}
+'@
+        $after = @'
+class SafeHandler
+{
+    void Run(bool allowExternal, string address)
+    {
+        Browser.OpenAsync(address);
+    }
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'accepts a complete safe post-patch file and restores the checkout' {
+        $patch = script:New-CompleteFilePatch `
+            -Before 'class SafeHandler { bool Enabled => false; }' `
+            -After 'class SafeHandler { bool Enabled => true; }'
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+        Get-Content -LiteralPath $script:completeFile -Raw | Should -Match 'false'
+    }
+
+    It 'allows a safe member edit when a dangerous trusted member is unchanged' {
+        $before = @'
+class SafeHandler
+{
+    void Existing(string address) => Browser.OpenAsync(address);
+    event EventHandler Changed;
+    void Safe() { var separator = '\u2028'; }
+}
+'@
+        $after = @'
+class SafeHandler
+{
+    void Existing(string address) => Browser.OpenAsync(address);
+    event EventHandler Changed;
+    void Safe() { var separator = '\u2029'; Changed?.Invoke(this, EventArgs.Empty); /* https://example.invalid/docs */ }
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+    }
+
+    It 'rejects compilation-unit runtime policy attributes and preprocessor activation' -TestCases @(
+        @{
+            Before = 'class SafeHandler { }'
+            After = '[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling] class SafeHandler { }'
+            Error = 'assembly-runtime-policy'
+        },
+        @{
+            Before = "#if DANGEROUS`nclass SafeHandler { void Run(string p) => File.ReadAllText(p); }`n#endif`nclass Other { }"
+            After = "#define DANGEROUS`n#if DANGEROUS`nclass SafeHandler { void Run(string p) => File.ReadAllText(p); }`n#endif`nclass Other { }"
+            Error = 'preprocessor-symbol'
+        }
+    ) {
+        param($Before, $After, $Error)
+        $patch = script:New-CompleteFilePatch -Before $Before -After $After
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw "*$Error*"
+    }
+
+    It 'resolves unchanged aliases and fields used by a changed member' -TestCases @(
+        @{
+            Before = 'using R = System.Xml.XmlTextReader; class SafeHandler { void Safe(string address) { } }'
+            After = 'using R = System.Xml.XmlTextReader; class SafeHandler { void Safe(string address) { var reader = new R(address); } }'
+            Error = 'xml-external-access'
+        },
+        @{
+            Before = 'class SafeHandler { HttpClient client; void Safe(string address) { } }'
+            After = 'class SafeHandler { HttpClient client; void Safe(string address) { client.GetAsync(address); } }'
+            Error = 'http-client'
+        }
+    ) {
+        param($Before, $After, $Error)
+        $patch = script:New-CompleteFilePatch -Before $Before -After $After
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw "*$Error*"
+    }
+
+    It 'allows an inert standard XAML namespace and safe existing element edit' {
+        $script:completePath = 'src/Controls/src/Core/Views/SafeView.xaml'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $patch = script:New-CompleteFilePatch `
+            -Before '<ContentPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><Label Text="Before" /></ContentPage>' `
+            -After '<ContentPage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><Label Text="After" /></ContentPage>'
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+    }
+
+    It 'rejects changed XAML property text that activates a remote WebView source' {
+        $script:completePath = 'src/Controls/src/Core/Views/SafeView.xaml'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $before = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"><WebView><WebView.Source>local.html</WebView.Source></WebView></ContentPage>'
+        $after = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"><WebView><WebView.Source>https://169.254.169.254/</WebView.Source></WebView></ContentPage>'
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*prohibited*'
+    }
+
+    It 'rejects a changed XAML source markup extension' {
+        $script:completePath = 'src/Controls/src/Core/Views/SafeView.xaml'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $patch = script:New-CompleteFilePatch `
+            -Before '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"><Image Source="{Binding Local}" /></ContentPage>' `
+            -After '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"><Image Source="{Binding Remote}" /></ContentPage>'
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'fails closed when a complete XAML guard or setter element is removed' {
+        $script:completePath = 'src/Controls/src/Core/Views/SafeView.xaml'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $patch = script:New-CompleteFilePatch `
+            -Before '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"><ContentPage.Resources><Style TargetType="Button"><Setter Property="IsEnabled" Value="False" /></Style></ContentPage.Resources></ContentPage>' `
+            -After '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"><ContentPage.Resources><Style TargetType="Button" /></ContentPage.Resources></ContentPage>'
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*removes a complete XAML element*'
+    }
+
+    It 'scans the complete in-place file used by untrusted candidate and repair phases' {
+        Set-Content -LiteralPath $script:completeFile `
+            -Value 'class SafeHandler { bool Enabled => false; }' `
+            -Encoding utf8NoBOM
+        git -C $script:completeRepo add -- $script:completePath
+        git -C $script:completeRepo commit -qm baseline
+        Set-Content -LiteralPath $script:completeFile `
+            -Value 'class SafeHandler { string Read(string path) => File.ReadAllTextAsync(path).Result; }' `
+            -Encoding utf8NoBOM
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath)
+        } | Should -Throw '*file-system*'
+        Get-Content -LiteralPath $script:completeFile -Raw | Should -Match 'ReadAllTextAsync'
     }
 }
 
@@ -3699,21 +4108,48 @@ public void Issue12345()
                 [switch]$SkipProductFile
             )
 
+            $baselineSource = @'
+namespace Microsoft.Maui.Controls;
+
+	public partial class Button
+	{
+		void Update()
+			=> Handler?.UpdateValue(nameof(Text));
+	}
+
+'@
             if (-not $SkipProductFile) {
                 Write-TestText `
                     -Path (Join-Path $Fixture.RepoRoot $Target) `
-                    -Value "namespace Microsoft.Maui.Controls;`n"
+                    -Value $baselineSource
             } elseif (Test-Path -LiteralPath (Join-Path $Fixture.RepoRoot $Target)) {
                 Remove-Item -LiteralPath (Join-Path $Fixture.RepoRoot $Target) -Force
             }
 
             $fixPatchPath = Join-Path $Fixture.Root 'fix.patch'
-            Write-TestText -Path $fixPatchPath -Value @"
+            $tracked = -not $SkipProductFile
+            if ($tracked) {
+                git -C $Fixture.RepoRoot ls-files --error-unmatch -- $Target 2>$null |
+                    Out-Null
+                $tracked = $LASTEXITCODE -eq 0
+            }
+            if ($tracked) {
+                $fixedSource = $baselineSource.Replace(
+                    '=> Handler?.UpdateValue(nameof(Text));',
+                    '=> Handler?.UpdateValue(nameof(Text), force: true);')
+                Write-TestText -Path (Join-Path $Fixture.RepoRoot $Target) -Value $fixedSource
+                [IO.File]::WriteAllText(
+                    $fixPatchPath,
+                    ((git -C $Fixture.RepoRoot diff --binary HEAD -- $Target) -join "`n") + "`n",
+                    [Text.UTF8Encoding]::new($false))
+                git -C $Fixture.RepoRoot checkout -q HEAD -- $Target
+            } else {
+                Write-TestText -Path $fixPatchPath -Value @"
 diff --git a/$Target b/$Target
 index cc87be1f60..4791badc38 100644
 --- a/$Target
 +++ b/$Target
-@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
+@@ -10,6 +10,6 @@ namespace Microsoft.Maui.Controls
  	public partial class Button
  	{
  		void Update()
@@ -3721,8 +4157,8 @@ index cc87be1f60..4791badc38 100644
 +			=> Handler?.UpdateValue(nameof(Text), force: true);
  	}
  }
- 
 "@
+            }
 
             $declared = if ($PSBoundParameters.ContainsKey('DeclaredFiles')) { @($DeclaredFiles) } else { @($Target) }
             $scope = if ($PSBoundParameters.ContainsKey('ScopeFiles')) { @($ScopeFiles) } else { @($Target) }
@@ -3979,7 +4415,7 @@ index cc87be1f60..4791badc38 100644
         Write-TestText -Path $fixPatchPath -Value $patch
 
         { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
-            Should -Throw '*prohibited*' -Because "$Name must never reach a trusted build or run"
+            Should -Throw -Because "$Name must never reach a trusted build or run"
     }
 
     It 'allows a small safe product fix and ignores an executable-looking comment' {
@@ -4306,7 +4742,15 @@ Describe 'The publisher accepts every product root the orchestrator will scope' 
         # Roots deliberately outside a fix scope: test infrastructure, project
         # templates and AOT profile tooling are not runtime product code, so a
         # device test could never validate a change to them.
-        $script:excludedRoots = @('src/TestUtils/', 'src/Templates/', 'src/ProfiledAot/')
+        $script:excludedRoots = @(
+            'src/TestUtils/',
+            'src/Templates/',
+            'src/ProfiledAot/',
+            'src/Controls/src/BindingSourceGen/',
+            'src/Controls/src/SourceGen/',
+            'src/Controls/src/Build.Tasks/',
+            'src/SingleProject/Resizetizer/src/'
+        )
 
         Push-Location $script:repoRoot
         try { $tracked = git ls-files 'src/*.cs' } finally { Pop-Location }
@@ -4355,18 +4799,18 @@ Describe 'The publisher accepts every product root the orchestrator will scope' 
             if (-not $sample) { continue }
 
             { Assert-ReplicationFixPath -Path "$sample/Thing.cs" -AllowedPaths @("$sample/Thing.cs") } |
-                Should -Throw -ExpectedMessage '*outside the established product source directories*'
+                Should -Throw -ExpectedMessage '*outside the established runtime product source directories*'
         }
     }
 
     It 'refuses a src/ directory that does not ship' {
         { Assert-ReplicationFixPath -Path 'src/Evil/src/Thing.cs' -AllowedPaths @('src/Evil/src/Thing.cs') } |
-            Should -Throw -ExpectedMessage '*outside the established product source directories*'
+            Should -Throw -ExpectedMessage '*outside the established runtime product source directories*'
     }
 
     It 'matches product roots case-sensitively' {
         { Assert-ReplicationFixPath -Path 'src/controls/src/Thing.cs' -AllowedPaths @('src/controls/src/Thing.cs') } |
-            Should -Throw -ExpectedMessage '*outside the established product source directories*'
+            Should -Throw -ExpectedMessage '*outside the established runtime product source directories*'
     }
 }
 
@@ -4533,23 +4977,26 @@ Describe 'The clean gate validates selector and quality disclosures' {
     It 'withholds a fix when trusted negative-control evidence is missing' {
         $fixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
         $fixPath = Join-Path $fixture.Root 'fix.patch'
-        Write-TestText -Path $fixPath -Value @"
-diff --git a/src/Controls/src/Core/Button/Button.cs b/src/Controls/src/Core/Button/Button.cs
-index 1111111..2222222 100644
---- a/src/Controls/src/Core/Button/Button.cs
-+++ b/src/Controls/src/Core/Button/Button.cs
-@@ -1 +1 @@
--namespace Microsoft.Maui.Controls;
-+namespace Microsoft.Maui.Controls; // narrow fix
-"@
+        $productPath = 'src/Controls/src/Core/Button/Button.cs'
+        $productFile = Join-Path $fixture.RepoRoot $productPath
+        $productSource = Get-Content -LiteralPath $productFile -Raw
+        Write-TestText -Path $productFile -Value (
+            $productSource.Replace(
+                'namespace Microsoft.Maui.Controls;',
+                'namespace Microsoft.Maui.Controls; // narrow fix'))
+        [IO.File]::WriteAllText(
+            $fixPath,
+            ((git -C $fixture.RepoRoot diff --binary HEAD -- $productPath) -join "`n") + "`n",
+            [Text.UTF8Encoding]::new($false))
+        git -C $fixture.RepoRoot checkout -q HEAD -- $productPath
         $manifest = Get-Content -Raw -LiteralPath $fixture.ManifestPath | ConvertFrom-Json
         $manifest | Add-Member -NotePropertyName fixFiles `
-            -NotePropertyValue @('src/Controls/src/Core/Button/Button.cs') -Force
+            -NotePropertyValue @($productPath) -Force
         $manifest | Add-Member -NotePropertyName fixPatch `
             -NotePropertyValue 'fix.patch' -Force
         Write-TestJson -Path $fixture.ManifestPath -Value $manifest
         Write-FixtureFixScope -Fixture $fixture `
-            -Files @('src/Controls/src/Core/Button/Button.cs')
+            -Files @($productPath)
 
         $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPath
         $result.fixFiles | Should -BeNullOrEmpty

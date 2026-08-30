@@ -15,7 +15,9 @@ The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
 2. Set `Mode` to `replicate`.
 3. Set `PRNumber` to `0`.
 4. Set `IssueNumber` to the `dotnet/maui` issue number.
-5. Choose `android`, `ios`, `catalyst`, or `windows`. Android is the default.
+5. Choose `android`. The iOS Simulator, Mac Catalyst, and Windows values remain
+   available to review mode, but replication fails closed on those lanes until
+   their pools provide a verified process-tree and app egress boundary.
 
 Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` replication PRs, and skips device reproduction. It does not create or migrate pull requests.
 
@@ -147,7 +149,9 @@ Issue content and generated code are untrusted.
 - The replication agent has no shell, network, GitHub, Azure, or publishing capability.
 - Copilot write approval is exact-file only, and never names a trusted root or anything under one. A planning pass selects new issue-specific test paths, trusted code validates them, and later authoring/repair passes can modify only those files and their proposal manifest.
 - Appium interactions are bounded JSON data interpreted by trusted code; the agent cannot author host-executable Appium code.
-- Generated Sandbox and test sources are capability-scanned before any credentialless execution.
+- Generated Sandbox and test sources are capability-scanned before any credentialless execution. URL-capable XML readers/resolvers (including the `DataSet`/`DataTable` filename overloads), service-model channels, platform-native web/network APIs, URI/image/browser sinks, and constructed/encoded addresses are rejected.
+- Generated execution is launched inside an enforced outbound-network boundary and must fail live DNS, direct metadata TCP, and HTTP probes before it starts. Linux/Android uses a loopback-only, privilege-dropped systemd cgroup plus a replication-only Android manifest without `INTERNET`; trusted setup also enables airplane mode, disables Wi-Fi/mobile data, installs IPv4/IPv6 guest OUTPUT chains that reject everything except loopback, and removes both guest default routes so another Android app cannot act as a networked deputy or reach the emulator host alias. iOS Simulator, Mac Catalyst, and Windows replication are withheld until their pools provide an equally enforceable process-tree and app boundary.
+- Product-fix scope uses one default-deny classifier everywhere. Source generators, analyzers, build tasks/targets, tooling, Resizetizer, provisioning, workload/packaging roots, generated/assembly-wide inputs, and tests can never be model-authored fix paths.
 - Trusted scripts run builds, tests, Appium, recording, patch validation, uploads, and publication.
 - The publisher runs from a clean trusted checkout, validates artifacts before extracting the persisted checkout credential, and never executes generated code.
 - The checkout credential is scoped to immutable asset publication, fix-branch push, and draft PR creation, then cleared.
@@ -177,6 +181,17 @@ the next one. A mutated file that kept its name, an added file, a deleted file, 
 symlink replacing a regular file, and a changed mode all fail closed. No
 agent-authored artifact can replace a trusted script or gate.
 
+Product fixes are baseline-differential and syntax-aware, not added-line scans.
+Trusted validation applies the strictly parsed patch to a clean checkout and
+compares the result with the trusted `HEAD` pre-image. Offline Roslyn parsing
+scans every changed C# member and added declaration/import as a complete region;
+XML parsing does the same for changed XAML element declarations and new
+subtrees. This catches deletion-only guard removal or condition inversion around
+an existing process/network/file/native/reflection sink without rejecting an
+unrelated safe edit merely because another unchanged member has trusted
+capabilities. The publisher repeats the same apply/scan/restore check before
+credentials. Unsupported syntax and whole-member removal fail closed.
+
 ### Environment allowlist for generated execution
 
 Generated code and everything it starts get a constructed environment rather than
@@ -193,6 +208,13 @@ A per-run tracer, `MAUI_REPLICATION_SECRET_CANARY`, is set only on the replicate
 step. It must never reach a generated process, an artifact, a log, a patch, or a
 JSON document; `Assert-ReplicationNoSecretMarkers` fails the run when it — or a
 real credential shape — appears in what the run published.
+
+The allowlisted environment is passed to a trusted isolation launcher.
+`Invoke-ReplicationNetworkIsolatedProcess.ps1` runs inside the platform boundary,
+sets a private attestation marker, proves DNS, direct TCP, and HTTP cannot leave
+the job, removes the marker, and only then starts the requested runner. A missing
+tool, failed isolation setup, successful egress probe, or unsupported lane stops
+before generated code executes.
 
 ### Certification binding
 

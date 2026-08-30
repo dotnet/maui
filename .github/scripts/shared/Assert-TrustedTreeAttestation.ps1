@@ -46,6 +46,7 @@ $script:TrustedTreeKeyScriptPaths = @(
     'scripts/shared/Assert-TrustedTreeAttestation.ps1',
     'scripts/shared/Assert-ReplicationCertificationBinding.ps1',
     'scripts/shared/Assert-ReplicationExecutionEnvironment.ps1',
+    'scripts/shared/Invoke-ReplicationNetworkIsolatedProcess.ps1',
     'scripts/shared/Get-ReplicationCertification.ps1',
     'scripts/shared/Invoke-ReplicationTestVerification.ps1',
     'scripts/shared/Record-Reproduction.ps1',

@@ -2086,6 +2086,14 @@ Describe 'Certification happens on a fresh agent that holds no credential' {
         $recheckIndex | Should -BeLessThan $credentialIndex
 
         $script:PublishStage | Should -Match 'Assert-ReplicationCertificationBinding'
+        $completeScanIndex = $script:PublishStage.IndexOf(
+            'Assert-ReplicationFixSources')
+        $bindingIndex = $script:PublishStage.IndexOf(
+            'Assert-ReplicationCertificationBinding `')
+        $completeScanIndex | Should -BeGreaterThan -1
+        $completeScanIndex | Should -BeLessThan $bindingIndex
+        $completeScanIndex | Should -BeLessThan $credentialIndex
+        $script:PublishStage | Should -Match "Assert-ReplicationTestGuard\.ps1"
         $script:PublishStage | Should -Match "-Context 'publisher recheck'"
         $script:PublishStage | Should -Match 'The replication artifacts changed after validation'
         $script:PublishStage | Should -Match 'Assert-ReplicationNoSecretMarkers'

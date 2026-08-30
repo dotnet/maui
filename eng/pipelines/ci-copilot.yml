@@ -3494,6 +3494,7 @@ stages:
                 'shared/Assert-TrustedTreeAttestation.ps1',
                 'shared/Assert-ReplicationCertificationBinding.ps1',
                 'shared/Assert-ReplicationExecutionEnvironment.ps1',
+                'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1',
                 'shared/Validate-ReplicationCandidate.ps1',
                 'shared/Publish-ReplicationOutcome.ps1',
                 'shared/Publish-ReplicationEvidence.ps1',
@@ -3587,6 +3588,7 @@ stages:
               }
               . (Join-Path $publisherRoot 'Assert-ReplicationCertificationBinding.ps1')
               . (Join-Path $publisherRoot 'Assert-ReplicationExecutionEnvironment.ps1')
+              . (Join-Path $publisherRoot 'Assert-ReplicationTestGuard.ps1')
 
               $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
               $validationRoot = "$(Pipeline.Workspace)/ReplicationValidation"
@@ -3637,6 +3639,16 @@ stages:
               if ($validated.validationPassed -ne $true) {
                 throw 'The validation summary claims a validated candidate the validated document does not.'
               }
+              $validatedFixFiles = @($validated.fixFiles | Where-Object {
+                  -not [string]::IsNullOrWhiteSpace([string]$_)
+                })
+              if ($validatedFixFiles.Count -eq 0) {
+                throw 'The validated candidate names no complete product fix to rescan.'
+              }
+              Assert-ReplicationFixSources `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -Paths $validatedFixFiles `
+                -PatchPath (Join-Path $artifactRoot 'fix.patch')
 
               $bindingPath = Join-Path $artifactRoot 'certification-binding.json'
               $recheck = Assert-ReplicationCertificationBinding `

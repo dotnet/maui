@@ -2737,49 +2737,9 @@ function Assert-ReplicationFixPath {
 
     $fixPath = Assert-CandidatePathShape -Path $Path -Context 'Fix'
 
-    $extension = [System.IO.Path]::GetExtension($fixPath).ToLowerInvariant()
-    if ($extension -notin @('.cs', '.xaml')) {
-        throw 'Fix path has an unexpected extension.'
-    }
-
-    # This list is an allowlist and stays one: it runs in the job that holds the
-    # credential, so "everything not named is allowed" is the wrong shape here.
-    #
-    # It was incomplete, and the omission cost a whole certified run. Build
-    # 15076525 cleared its control, scoped `src/Core/maps/src/...`, ran the
-    # panel, passed the fix arm 3 of 3 and the restoration arm 3 of 3 - a full
-    # four-arm `certified-oracle` - and was thrown away here, because Maps ships
-    # from three roots and none of them was named.
-    #
-    # The orchestrator's own scope validator asks only that a path be under
-    # `src/`, not test code, `.cs` or `.xaml`, and tracked. So the two halves of
-    # one system were reading different rules, and everything between scoping
-    # and publication was spent before they disagreed. A test reads the
-    # repository and fails when a shipping product root is missing from this
-    # list, because a hand-maintained enumeration drifts exactly once and then
-    # costs a certified run.
-    $allowed = $fixPath -cmatch ('^src/(?:' +
-        'Controls/(?:Maps/|Foldable/)?src' +
-        '|Core/(?:maps/)?src' +
-        '|Essentials/src' +
-        '|Graphics/src' +
-        '|BlazorWebView/src' +
-        '|Compatibility/(?:Core|Maps|Material|Android\.AppLinks)/src' +
-        '|SingleProject/Resizetizer/src' +
-        ')/')
-    if (-not $allowed) {
-        throw 'Fix path is outside the established product source directories.'
-    }
-
-    foreach ($segment in $fixPath.Split('/')) {
-        if ($segment -match '(?i)^(?:tests?|.*\.(?:unit|device|ui)?tests?|testcases.*)$') {
-            throw 'Fix path targets test code rather than product code.'
-        }
-    }
-
-    $fileName = [System.IO.Path]::GetFileName($fixPath)
-    if ($fileName -match '(?i)\.(?:g|designer|generated)\.cs$') {
-        throw 'Fix path targets generated source.'
+    $policyRejection = Get-ReplicationFixPathPolicyRejection -Path $fixPath
+    if ($policyRejection) {
+        throw "Fix path $policyRejection."
     }
 
     if ($fixPath -cnotin $AllowedPaths) {
@@ -5853,11 +5813,10 @@ function Invoke-ReplicationCandidateValidation {
             Assert-ReplicationFixPathsExist `
                 -Repository $repoPath `
                 -Paths $patchedPaths
-            foreach ($fixFile in $fixFiles) {
-                Assert-ReplicationProductFixSafety `
-                    -AddedContent ([string]$fixFile.AddedContent) `
-                    -Path ([string]$fixFile.Path)
-            }
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $repoPath `
+                -Paths $patchedPaths `
+                -PatchPath $FixPatchPath
         } elseif (@($manifest.FixFiles).Count -gt 0) {
             throw 'The manifest names fix files but no fix patch was provided.'
         }

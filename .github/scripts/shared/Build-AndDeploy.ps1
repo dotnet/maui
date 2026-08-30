@@ -57,7 +57,13 @@ param(
     [string]$BundleId,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$EnforceNetworkIsolation,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$NoRestore
 )
 
 # Import shared utilities
@@ -134,6 +140,15 @@ if ($Platform -eq "android") {
     # APK makes it self-contained so any install/relaunch works — this is exactly what the
     # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
+    if ($EnforceNetworkIsolation) {
+        $isolationManifest = Join-Path (Split-Path -Parent $ProjectPath) (
+            'Platforms/Android/ReplicationNetworkIsolationManifest.xml')
+        if (-not (Test-Path -LiteralPath $isolationManifest -PathType Leaf)) {
+            throw 'Android replication network-isolation manifest is missing.'
+        }
+        $buildArgs += "-p:AndroidManifest=$isolationManifest"
+    }
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -393,6 +408,7 @@ if ($Platform -eq "android") {
     $macRid = if ($macArch -eq "x64") { "maccatalyst-x64" } else { "maccatalyst-arm64" }
     Write-Info "MacCatalyst RuntimeIdentifier: $macRid"
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $macRid, "-p:BuildIpa=true", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -533,6 +549,7 @@ if ($Platform -eq "android") {
         "-p:WindowsPackageType=None",
         "-p:_MauiReplicationUnpackaged=true"
     ) + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }

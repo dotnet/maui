@@ -85,6 +85,9 @@ param(
     [switch]$Rebuild,
 
     [Parameter(Mandatory = $false)]
+    [switch]$NoRestore,
+
+    [Parameter(Mandatory = $false)]
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
@@ -1157,6 +1160,9 @@ try {
         "-f", $platformConfig.Tfm
         "/p:TreatWarningsAsErrors=false"
     )
+    if ($NoRestore) {
+        $buildArgs += '--no-restore'
+    }
 
     if ($Rebuild) {
         $buildArgs += "-t:Rebuild"

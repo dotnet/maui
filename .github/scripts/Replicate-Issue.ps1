@@ -229,6 +229,11 @@ $fixPatchPath = Join-Path $ArtifactRoot 'fix.patch'
 $fixScopePath = Join-Path $agentDir 'fix-scope.json'
 $fixWinnerPath = Join-Path $agentDir 'fix-winner.json'
 $fixReviewPath = Join-Path $agentDir 'fix-review.json'
+$replicationRuntimeRoot = Join-Path $ArtifactRoot 'runtime'
+$replicationGradleHome = Join-Path $replicationRuntimeRoot 'gradle'
+$replicationDotnetHome = Join-Path $replicationRuntimeRoot 'dotnet'
+$replicationNugetPackages = Join-Path $replicationRuntimeRoot 'nuget-packages'
+$replicationAndroidHome = Join-Path $replicationRuntimeRoot 'android'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
 $sandboxCodePath = Join-Path $sandboxDir 'MainPage.xaml.cs'
@@ -4838,19 +4843,14 @@ function Invoke-ReplicationFixPanel {
                     Rejection = $eligibility.Rejection
                 }
             } else {
-                # Scan only repository-derived added lines.  The candidate's
-                # prose, result.txt, and review cannot expand this content or
-                # authorize a verifier invocation.
+                # Scan every complete repository-derived changed file. The
+                # candidate's prose, result.txt, and review cannot expand this
+                # content or authorize a verifier invocation.
                 $safetyFailure = $null
                 try {
-                    foreach ($changedPath in $changed) {
-                        $addedContent = Get-ReplicationFixAddedSource `
-                            -Path $changedPath `
-                            -ScopeFiles $ScopeFiles
-                        Assert-ReplicationProductFixSafety `
-                            -AddedContent $addedContent `
-                            -Path $changedPath
-                    }
+                    Assert-ReplicationFixSources `
+                        -RepositoryRoot $repoRoot `
+                        -Paths $changed
                 } catch {
                     $safetyFailure = ConvertTo-BoundedAgentLine `
                         -Value $_.Exception.Message `
@@ -5213,22 +5213,11 @@ function Get-ReplicationFixScopePathRejection {
     if (($Path -split '/') -contains '..') {
         return 'escapes the repository with a ".." segment'
     }
-    if ($Path -notmatch '^src/') {
-        return 'is outside src/, so it is not product code'
-    }
-
-    # A fix that edits a test is a fix that moves the goalposts. The oracle and
-    # every other test have to be read-only for this to mean anything.
-    $testMarkers = @('/tests/', '/test/', '.UnitTests/', 'DeviceTests/', 'TestCases')
-    foreach ($marker in $testMarkers) {
-        if ($Path -like "*$marker*") {
-            return "is test code ('$marker')"
-        }
-    }
-
-    $extension = [IO.Path]::GetExtension($Path)
-    if ($extension -notin @('.cs', '.xaml')) {
-        return "has extension '$extension'; a fix may only change .cs or .xaml product source"
+    $policyRejection = Get-ReplicationFixPathPolicyRejection `
+        -Path $Path `
+        -RepositoryRoot $RepositoryRoot
+    if ($policyRejection) {
+        return $policyRejection
     }
 
     $fullPath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot $Path))
@@ -7588,6 +7577,120 @@ function Get-ReplicationPwshArguments {
     @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments
 }
 
+function Get-ReplicationRuntimeEnvironment {
+    foreach ($directory in @(
+        $replicationRuntimeRoot,
+        $replicationGradleHome,
+        $replicationDotnetHome,
+        $replicationNugetPackages,
+        $replicationAndroidHome
+    )) {
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    }
+    return Get-ReplicationExecutionEnvironment -Additional @{
+        GRADLE_USER_HOME = $replicationGradleHome
+        DOTNET_CLI_HOME = $replicationDotnetHome
+        NUGET_PACKAGES = $replicationNugetPackages
+        ANDROID_USER_HOME = $replicationAndroidHome
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
+    }
+}
+
+function Invoke-ReplicationTrustedRestore {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Target,
+        [AllowEmptyCollection()][string[]]$AdditionalArguments = @(),
+        [ValidateSet('restore', 'build')][string]$Verb = 'restore',
+        [int]$TimeoutSeconds = 1800
+    )
+
+    $fullTarget = [IO.Path]::GetFullPath($Target)
+    if (-not (Test-Path -LiteralPath $fullTarget -PathType Leaf)) {
+        throw "Trusted restore target does not exist: $fullTarget"
+    }
+    $null = Assert-ReplicationTrustedTree -Context "before trusted restore of $(Split-Path -Leaf $fullTarget)"
+    try {
+        $result = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
+            Invoke-BoundedProcess `
+                -FilePath 'dotnet' `
+                -Arguments (@($Verb, $fullTarget) + @($AdditionalArguments)) `
+                -TimeoutSeconds $TimeoutSeconds `
+                -Environment (Get-ReplicationRuntimeEnvironment)
+        }
+    } finally {
+        $null = Assert-ReplicationTrustedTree -Context "after trusted restore of $(Split-Path -Leaf $fullTarget)"
+    }
+    if ($result.TimedOut -or [int]$result.ExitCode -ne 0) {
+        throw "Trusted restore failed for $(Split-Path -Leaf $fullTarget)."
+    }
+}
+
+function Get-ReplicationPlannedRestoreTargets {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Proposal,
+        [Parameter(Mandatory = $true)][string[]]$Files
+    )
+
+    $targets = [Collections.Generic.List[object]]::new()
+    $type = ([string]$Proposal.testType).ToLowerInvariant()
+    if ($type -eq 'ui') {
+        foreach ($relative in @(
+            'src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj',
+            'src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj'
+        )) {
+            $targets.Add([pscustomobject]@{
+                Path = Join-Path $repoRoot $relative
+                Arguments = @('-p:TargetFramework=net10.0-android')
+            })
+        }
+        return @($targets)
+    }
+
+    if ($type -eq 'device') {
+        $relative = switch -Regex ($Files[0]) {
+            '^src/Controls/tests/DeviceTests/' {
+                'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'; break
+            }
+            '^src/Core/tests/DeviceTests(?:\.Shared)?/' {
+                'src/Core/tests/DeviceTests/Core.DeviceTests.csproj'; break
+            }
+            '^src/Essentials/test/DeviceTests/' {
+                'src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj'; break
+            }
+            '^src/Graphics/tests/DeviceTests/' {
+                'src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj'; break
+            }
+            default { throw 'The planned device-test path has no trusted restore mapping.' }
+        }
+        $targets.Add([pscustomobject]@{
+            Path = Join-Path $repoRoot $relative
+            Arguments = @('-p:TargetFramework=net10.0-android')
+        })
+        return @($targets)
+    }
+
+    $directory = Split-Path -Parent (Join-Path $repoRoot $Files[0])
+    while ($directory -and (Test-PathInsideRoot -Path $directory -Root $repoRoot)) {
+        $projects = @(Get-ChildItem -LiteralPath $directory -Filter '*.csproj' -File)
+        if ($projects.Count -eq 1) {
+            $targets.Add([pscustomobject]@{
+                Path = $projects[0].FullName
+                Arguments = @()
+            })
+            return @($targets)
+        }
+        if ($projects.Count -gt 1) {
+            throw 'The planned test path has an ambiguous trusted restore project.'
+        }
+        $parent = Split-Path -Parent $directory
+        if ($parent -eq $directory) { break }
+        $directory = $parent
+    }
+    throw 'The planned test path has no trusted restore project.'
+}
+
 function Invoke-LoggedChildProcess {
     param(
         [Parameter(Mandatory = $true)][string]$ScriptPath,
@@ -7604,15 +7707,23 @@ function Invoke-LoggedChildProcess {
     # rather than the agent's. Clearing named secrets on top of that is
     # redundant and kept anyway: this process's own environment is what a
     # trusted script would read if one ever ran without the allowlist.
-    $childEnvironment = Get-ReplicationExecutionEnvironment
+    $childEnvironment = Get-ReplicationRuntimeEnvironment
     $null = Assert-ReplicationTrustedTree -Context "before $Description"
     try {
+        $isolatedCommand = Get-ReplicationNetworkIsolatedCommand `
+            -Platform $Platform `
+            -RepositoryRoot $repoRoot `
+            -ScriptPath $ScriptPath `
+            -Arguments $Arguments `
+            -Environment $childEnvironment `
+            -WritableRoots @($repoRoot, $ArtifactRoot) `
+            -DeviceUdid $DeviceUdid
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
-                -FilePath 'pwsh' `
-                -Arguments (Get-ReplicationPwshArguments -ScriptPath $ScriptPath -Arguments $Arguments) `
+                -FilePath $isolatedCommand.FilePath `
+                -Arguments $isolatedCommand.Arguments `
                 -TimeoutSeconds $TimeoutSeconds `
-                -Environment $childEnvironment
+                -Environment $isolatedCommand.Environment
         }
     } finally {
         $null = Assert-ReplicationTrustedTree -Context "after $Description"
@@ -8089,25 +8200,6 @@ function New-TestPatch {
         $patchPath, (($patch -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
 }
 
-function Get-ReplicationFixAddedSource {
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string[]]$ScopeFiles
-    )
-
-    if ($ScopeFiles -notcontains $Path) { return '' }
-    $lines = @(& git diff --no-ext-diff --unified=0 HEAD -- $Path 2>$null)
-    if ($LASTEXITCODE -ne 0) { return '' }
-    $added = [Collections.Generic.List[string]]::new()
-    foreach ($line in $lines) {
-        if ($line.StartsWith('+++', [StringComparison]::Ordinal)) { continue }
-        if ($line.StartsWith('+', [StringComparison]::Ordinal)) {
-            [void]$added.Add($line.Substring(1))
-        }
-    }
-    return ($added -join "`n")
-}
-
 function Invoke-ReplicationFixRepairPass {
     <#
     .SYNOPSIS
@@ -8165,7 +8257,14 @@ function Invoke-ReplicationFixRepairPass {
             ForEach-Object { Join-Path $repairOutput $_ })
 
     $protectedSnapshot = Get-ReplicationFixProtectedSnapshot -Paths $ProtectedPaths
-    $before = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths)
+    $beforeDiff = (@(& git diff --binary --no-ext-diff HEAD -- @ScopeFiles) -join "`n")
+    $beforePaths = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths)
+    $beforeOutOfScope = @($beforePaths | Where-Object { $ScopeFiles -cnotcontains $_ })
+    if ($beforeOutOfScope.Count -gt 0) {
+        Write-Host ('The grounded repair was not started because the tree already contains ' +
+            "out-of-scope changes: $($beforeOutOfScope -join ', ')")
+        return $null
+    }
     try {
         Invoke-ReplicationCopilot `
             -PhaseName 'fix-repair' `
@@ -8192,26 +8291,27 @@ function Invoke-ReplicationFixRepairPass {
     }
 
     $changed = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths)
-    $newPaths = @($changed | Where-Object { $before -cnotcontains $_ })
-    $outOfScope = @($newPaths | Where-Object { $ScopeFiles -cnotcontains $_ })
-    if ($outOfScope.Count -gt 0 -or $newPaths.Count -eq 0) {
+    $outOfScope = @($changed | Where-Object { $ScopeFiles -cnotcontains $_ })
+    $scopedChanged = @($changed | Where-Object { $ScopeFiles -ccontains $_ })
+    if ($outOfScope.Count -gt 0 -or $scopedChanged.Count -eq 0) {
         Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
         return $null
     }
-    foreach ($path in $newPaths) {
-        try {
-            $addedSource = Get-ReplicationFixAddedSource -Path $path -ScopeFiles $ScopeFiles
-            Assert-ReplicationProductFixSafety -AddedContent $addedSource -Path $path
-        } catch {
-            Write-Host ('The grounded repair was blocked before re-verification; the original winner remains selected. ' +
-                (ConvertTo-ReplicationSafeLog $_.Exception.Message 500))
-            Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
-            return $null
-        }
+    try {
+        Assert-ReplicationFixSources `
+            -RepositoryRoot $repoRoot `
+            -Paths $scopedChanged
+    } catch {
+        Write-Host ('The grounded repair was blocked before re-verification; the original winner remains selected. ' +
+            (ConvertTo-ReplicationSafeLog $_.Exception.Message 500))
+        Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
+        return $null
     }
 
     $newDiff = (@(& git diff --binary --no-ext-diff HEAD -- @ScopeFiles) -join "`n")
-    if ([string]::IsNullOrWhiteSpace($newDiff) -or $newDiff -ceq [string]$WinnerAttempt.Diff) {
+    if ([string]::IsNullOrWhiteSpace($newDiff) -or
+        $newDiff -ceq $beforeDiff -or
+        $newDiff -ceq [string]$WinnerAttempt.Diff) {
         Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
         return $null
     }
@@ -8244,7 +8344,7 @@ function Invoke-ReplicationFixRepairPass {
             -Value (Get-Content -LiteralPath (Join-Path $repairOutput 'analysis.md') -Raw -ErrorAction SilentlyContinue) `
             2000)
         Diff = $newDiff
-        ChangedPaths = $newPaths
+        ChangedPaths = $changed
         ModelResult = ''
         ModelSelfReviewed = (Test-Path -LiteralPath (Join-Path $repairOutput 'reviewer-findings.json') -PathType Leaf)
         TrustedDetail = ''
@@ -8963,6 +9063,7 @@ if (-not (Test-PathInsideRoot -Path $ContextPath -Root $ArtifactRoot)) {
 if (-not (Test-Path -LiteralPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Record-Reproduction.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') -PathType Leaf) -or
+    -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Detect-TestsInDiff.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath $trustedAppiumRunnerPath -PathType Leaf)) {
     throw 'Trusted replication scripts are incomplete.'
@@ -8985,6 +9086,28 @@ $selectedDeviceId = if ($DeviceUdid) {
 } else {
     'host'
 }
+$sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
+Invoke-ReplicationTrustedRestore `
+    -Target $sandboxProjectPath `
+    -AdditionalArguments @('-p:TargetFramework=net10.0-android')
+Invoke-ReplicationTrustedRestore `
+    -Target $sandboxProjectPath `
+    -Verb build `
+    -AdditionalArguments @(
+        '-f', 'net10.0-android',
+        '-c', 'Debug',
+        '--no-restore',
+        '-p:EmbedAssembliesIntoApk=true',
+        "-p:AndroidManifest=$(Join-Path $sandboxDir 'Platforms/Android/ReplicationNetworkIsolationManifest.xml')"
+    )
+$null = Get-ReplicationNetworkIsolatedCommand `
+    -Platform $Platform `
+    -RepositoryRoot $repoRoot `
+    -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+    -Arguments @('-Platform', $Platform, '-PrepareOnly', '-EnforceNetworkIsolation') `
+    -Environment (Get-ReplicationRuntimeEnvironment) `
+    -WritableRoots @($repoRoot, $ArtifactRoot) `
+    -DeviceUdid $DeviceUdid
 Assert-InitialReplicationWorktree
 Clear-TransientAppiumDirectory
 
@@ -9061,13 +9184,15 @@ try {
                 -LiteralPath $trustedAppiumRunnerPath `
                 -Destination $appiumScriptPath `
                 -Force
+            Invoke-ReplicationTrustedRestore -Target $appiumScriptPath
 
             $prepareLog = Join-Path $sandboxArtifactDir "prepare-attempt-$attempt.log"
             $prepareArgs = @(
                 '-Platform', $Platform,
                 '-Configuration', 'Debug',
                 '-RepoRoot', $repoRoot,
-                '-PrepareOnly'
+                '-PrepareOnly',
+                '-EnforceNetworkIsolation'
             )
             if ($DeviceUdid) {
                 $prepareArgs += @('-DeviceUdid', $DeviceUdid)
@@ -9084,7 +9209,8 @@ try {
                 '-Configuration', 'Debug',
                 '-RepoRoot', $repoRoot,
                 '-SkipBuildDeploy',
-                '-LaunchOnly'
+                '-LaunchOnly',
+                '-EnforceNetworkIsolation'
             )
             if ($DeviceUdid) {
                 $launchArgs += @('-DeviceUdid', $DeviceUdid)
@@ -9101,7 +9227,7 @@ try {
                 '$ErrorActionPreference = ''Stop''',
                 '$arguments = @(''-Platform'', ' + "'$Platform'" +
                     ', ''-Configuration'', ''Debug'', ''-RepoRoot'', ' +
-                    "'$escapedRepoRoot'" + ', ''-SkipBuildDeploy'')'
+                    "'$escapedRepoRoot'" + ', ''-SkipBuildDeploy'', ''-EnforceNetworkIsolation'')'
             )
             if ($DeviceUdid) {
                 $escapedDevice = $DeviceUdid.Replace("'", "''")
@@ -9491,6 +9617,13 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
             }
         }
         $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
+        foreach ($restoreTarget in @(Get-ReplicationPlannedRestoreTargets `
+                -Proposal $plannedTestProposal `
+                -Files $plannedTestFiles)) {
+            Invoke-ReplicationTrustedRestore `
+                -Target $restoreTarget.Path `
+                -AdditionalArguments @($restoreTarget.Arguments)
+        }
         $repairFailureSummary = ''
         $testFailureHistory = [ordered]@{}
 

@@ -52,7 +52,9 @@ param(
 
     [switch]$SkipBuildDeploy,
 
-    [switch]$LaunchOnly
+    [switch]$LaunchOnly,
+
+    [switch]$EnforceNetworkIsolation
 )
 
 if ($PrepareOnly -and ($SkipBuildDeploy -or $LaunchOnly)) {
@@ -253,6 +255,8 @@ $buildDeployParams = @{
     TargetFramework = $TargetFramework
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
+    EnforceNetworkIsolation = $EnforceNetworkIsolation
+    NoRestore = $EnforceNetworkIsolation
 }
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
@@ -480,7 +484,11 @@ try {
     
     # Force file-based mode so project files in the working directory cannot
     # bypass the trusted runner's package and Windows App SDK properties.
-    $appiumOutput = "" | & dotnet run --file $AppiumTestScript 2>&1
+    $appiumRunArguments = @('run', '--file', $AppiumTestScript)
+    if ($EnforceNetworkIsolation) {
+        $appiumRunArguments += '--no-restore'
+    }
+    $appiumOutput = "" | & dotnet @appiumRunArguments 2>&1
     
     # Display appium test output
     $appiumOutput | ForEach-Object { Write-Host $_ }

@@ -290,6 +290,7 @@ function Invoke-SingleVerificationRun {
             '-TestMethod', $TestMethod,
             '-MachineResultPath', $machineResultPath,
             '-PRNumber', [string]$IssueNumber,
+            '-NoRestore',
             # Tell the verifier what it is being asked to prove. Without this it
             # prints "VERIFICATION PASSED / This proves the tests correctly
             # reproduce the bug" during a negative control, where a failing test

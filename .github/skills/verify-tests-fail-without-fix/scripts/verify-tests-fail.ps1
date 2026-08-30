@@ -145,7 +145,10 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("UITest", "UnitTest", "XamlUnitTest", "DeviceTest")]
-    [string]$TestType
+    [string]$TestType,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$NoRestore
 )
 
 $ErrorActionPreference = "Stop"
@@ -551,6 +554,7 @@ function Invoke-TestRun {
                 Platform   = $Platform
                 TestFilter = $Filter
                 Rebuild    = $true
+                NoRestore  = $NoRestore
             }
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
@@ -591,6 +595,9 @@ function Invoke-TestRun {
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
+            if ($NoRestore) {
+                $testArgs += '--no-restore'
+            }
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -633,6 +640,9 @@ function Invoke-TestRun {
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
+            if ($NoRestore) {
+                $testArgs += '--no-restore'
+            }
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -682,6 +692,7 @@ function Invoke-TestRun {
                 # artifacts/obj tree. Always rebuild the full P2P graph so a dependency
                 # compiled for the baseline cannot be reused for the with-fix run.
                 Rebuild = $true
+                NoRestore = $NoRestore
             }
             Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray
 
@@ -4210,6 +4221,9 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
         "-t:Rebuild",
         "-p:TreatWarningsAsErrors=false"
     ) + $hostOnlyTargetFrameworkArgs
+    if ($NoRestore) {
+        $buildArgs += '--no-restore'
+    }
     $buildOut = Invoke-WithoutGhTokens { & dotnet @buildArgs 2>&1 }
     $buildExit = $LASTEXITCODE
     $combined = @($buildOut)
@@ -4220,6 +4234,9 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
             "--logger", "console;verbosity=normal",
             "-p:TreatWarningsAsErrors=false"
         ) + $hostOnlyTargetFrameworkArgs + @("--filter", $retryEntry.Filter)
+        if ($NoRestore) {
+            $testArgs += '--no-restore'
+        }
         $testOut = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
         $combined += @($testOut)
     }

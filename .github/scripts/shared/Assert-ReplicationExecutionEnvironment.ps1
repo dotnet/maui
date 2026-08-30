@@ -44,6 +44,7 @@ $script:ReplicationForbiddenEnvironmentNames = @(
     'SYSTEM_ACCESSTOKEN',
     'ACCESSTOKEN',
     'MAUI_REPLICATION_SECRET_CANARY',
+    'MAUI_REPLICATION_EGRESS_ISOLATED',
     'GIT_ASKPASS',
     'SSH_ASKPASS',
     'GIT_CONFIG',
@@ -124,7 +125,9 @@ $script:ReplicationAllowedEnvironmentNames = @(
     'PROGRAMFILES(X86)',
     'PROGRAMDATA',
     'MSBUILDDISABLENODEREUSE',
+    'DOTNET_CLI_HOME',
     'NUGET_PACKAGES',
+    'GRADLE_USER_HOME',
     'JAVA_HOME',
     'ANDROID_HOME',
     'ANDROID_SDK_ROOT',
@@ -136,7 +139,6 @@ $script:ReplicationAllowedEnvironmentNames = @(
     'APPIUM_HOME',
     'NODE_PATH',
     'DISPLAY',
-    'XDG_RUNTIME_DIR',
     'DEVICE_UDID',
     'MAUI_REPLICATION_DEVICE_UDID'
 )
@@ -301,6 +303,386 @@ function Assert-ReplicationExecutionEnvironment {
     }
 
     return $true
+}
+
+function Assert-ReplicationOutboundNetworkIsolation {
+    <#
+        .SYNOPSIS
+        Proves a job-level egress boundary is active before generated code runs.
+
+        .DESCRIPTION
+        The replication pools must install an OS or hypervisor boundary that
+        denies outbound traffic while preserving only loopback. A pool
+        capability alone is not evidence, so this
+        assertion also performs independent DNS, direct TCP, and HTTP probes.
+        Any successful probe, missing capability, or probe error fails closed.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [scriptblock]$DnsProbe,
+        [scriptblock]$TcpProbe,
+        [scriptblock]$HttpProbe
+    )
+
+    if ([Environment]::GetEnvironmentVariable('MAUI_REPLICATION_EGRESS_ISOLATED') -cne '1') {
+        throw "Generated execution for '$Platform' requires a verified job-level outbound-network deny boundary."
+    }
+
+    if ($Platform -ceq 'android') {
+        $manifestPath = Join-Path $RepositoryRoot (
+            'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml')
+        if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+            throw 'Android replication network isolation manifest is missing.'
+        }
+        $manifest = [IO.File]::ReadAllText($manifestPath)
+        if ($manifest -notmatch '(?is)<uses-permission\s+android:name="android\.permission\.INTERNET"\s+tools:node="remove"\s*/>') {
+            throw 'Android replication must remove INTERNET permission at the package boundary.'
+        }
+    }
+
+    if ($null -eq $DnsProbe) {
+        $DnsProbe = {
+            $udp = [Net.Sockets.UdpClient]::new()
+            try {
+                $udp.Client.ReceiveTimeout = 1500
+                $udp.Connect('1.1.1.1', 53)
+                $id = [BitConverter]::GetBytes([uint16](Get-Random -Minimum 1 -Maximum 65535))
+                if ([BitConverter]::IsLittleEndian) { [Array]::Reverse($id) }
+                $query = [Collections.Generic.List[byte]]::new()
+                $query.AddRange($id)
+                $query.AddRange([byte[]](0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00))
+                foreach ($label in @('maui-egress-probe', 'invalid')) {
+                    $bytes = [Text.Encoding]::ASCII.GetBytes($label)
+                    $query.Add([byte]$bytes.Length)
+                    $query.AddRange($bytes)
+                }
+                $query.AddRange([byte[]](0x00, 0x00, 0x01, 0x00, 0x01))
+                [void]$udp.Send($query.ToArray(), $query.Count)
+                $remote = [Net.IPEndPoint]::new([Net.IPAddress]::Any, 0)
+                $response = $udp.Receive([ref]$remote)
+                $null -ne $response -and $response.Length -gt 0
+            } catch {
+                $false
+            } finally {
+                $udp.Dispose()
+            }
+        }
+    }
+    if ($null -eq $TcpProbe) {
+        $TcpProbe = {
+            $client = [Net.Sockets.TcpClient]::new()
+            try {
+                $task = $client.ConnectAsync('169.254.169.254', 80)
+                $task.Wait(1500) -and $client.Connected
+            } catch {
+                $false
+            } finally {
+                $client.Dispose()
+            }
+        }
+    }
+    if ($null -eq $HttpProbe) {
+        $HttpProbe = {
+            $handler = [Net.Http.HttpClientHandler]::new()
+            $handler.UseProxy = $false
+            $client = [Net.Http.HttpClient]::new($handler)
+            $client.Timeout = [TimeSpan]::FromSeconds(2)
+            try {
+                $response = $client.GetAsync('http://1.1.1.1/').GetAwaiter().GetResult()
+                $response.Dispose()
+                $true
+            } catch {
+                $false
+            } finally {
+                $client.Dispose()
+                $handler.Dispose()
+            }
+        }
+    }
+
+    foreach ($probe in @(
+        @{ Name = 'DNS'; Run = $DnsProbe },
+        @{ Name = 'direct metadata TCP'; Run = $TcpProbe },
+        @{ Name = 'HTTP'; Run = $HttpProbe }
+    )) {
+        try {
+            $escaped = & $probe.Run
+        } catch {
+            throw "Generated execution network-isolation $($probe.Name) probe failed closed."
+        }
+        if ($escaped -ne $false) {
+            throw "Generated execution network isolation allowed $($probe.Name) egress."
+        }
+    }
+
+    return [pscustomobject]@{
+        Platform = $Platform
+        Boundary = 'job'
+        DnsDenied = $true
+        DirectTcpDenied = $true
+        HttpDenied = $true
+    }
+}
+
+function Assert-ReplicationAndroidGuestNetworkIsolation {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$DeviceUdid,
+        [scriptblock]$AdbInvoker
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DeviceUdid) -or
+        $DeviceUdid -notmatch '^[A-Za-z0-9._:-]{1,128}$') {
+        throw 'Android guest network isolation requires a validated device identifier.'
+    }
+    if ($null -eq $AdbInvoker) {
+        $AdbInvoker = {
+            param([string[]]$Arguments)
+            $output = @(& adb @Arguments 2>&1)
+            [pscustomobject]@{
+                ExitCode = $LASTEXITCODE
+                Output = ($output | ForEach-Object { [string]$_ }) -join "`n"
+            }
+        }
+    }
+
+    $invoke = {
+        param(
+            [string[]]$Arguments,
+            [string]$Description,
+            [switch]$AllowFailure
+        )
+        $result = & $AdbInvoker $Arguments
+        if ($null -eq $result) {
+            throw "Android guest network isolation could not $Description."
+        }
+        if ([int]$result.ExitCode -ne 0 -and -not $AllowFailure) {
+            throw "Android guest network isolation could not $Description."
+        }
+        return $result
+    }
+
+    & $invoke @('-s', $DeviceUdid, 'root') 'restart adb as root' | Out-Null
+    & $invoke @('-s', $DeviceUdid, 'wait-for-device') 'wait for the rooted emulator' | Out-Null
+    & $invoke @('-s', $DeviceUdid, 'shell', 'cmd', 'connectivity', 'airplane-mode', 'enable') `
+        'enable airplane mode' | Out-Null
+    & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
+        'disable guest Wi-Fi' | Out-Null
+    & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
+        'disable guest mobile data' | Out-Null
+
+    $chain = 'MAUI_REPLICATION'
+    foreach ($tool in @('iptables', 'ip6tables')) {
+        $jump = & $invoke @(
+            '-s', $DeviceUdid, 'shell', $tool, '-C', 'OUTPUT', '-j', $chain
+        ) "inspect the $tool OUTPUT chain" -AllowFailure
+        if ([int]$jump.ExitCode -ne 0) {
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', $tool, '-N', $chain
+            ) "create the $tool isolation chain" | Out-Null
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', $tool, '-A', $chain,
+                '-o', 'lo', '-j', 'RETURN'
+            ) "allow $tool loopback" | Out-Null
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', $tool, '-A', $chain, '-j', 'REJECT'
+            ) "deny new $tool guest egress" | Out-Null
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', $tool, '-I', 'OUTPUT', '1', '-j', $chain
+            ) "install the $tool isolation chain" | Out-Null
+        }
+        foreach ($rule in @(
+            @('-C', 'OUTPUT', '-j', $chain),
+            @('-C', $chain, '-o', 'lo', '-j', 'RETURN'),
+            @('-C', $chain, '-j', 'REJECT')
+        )) {
+            & $invoke (@('-s', $DeviceUdid, 'shell', $tool) + $rule) `
+                "verify the $tool isolation rules" | Out-Null
+        }
+    }
+
+    foreach ($family in @('-4', '-6')) {
+        for ($attempt = 0; $attempt -lt 4; $attempt++) {
+            $routes = (& $invoke @(
+                '-s', $DeviceUdid, 'shell', 'ip', $family, 'route', 'show', 'default'
+            ) 'inspect guest routes').Output
+            if ([string]::IsNullOrWhiteSpace([string]$routes)) { break }
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', 'ip', $family, 'route', 'del', 'default'
+            ) 'remove a guest default route' | Out-Null
+        }
+        $remaining = (& $invoke @(
+            '-s', $DeviceUdid, 'shell', 'ip', $family, 'route', 'show', 'default'
+        ) 'verify guest routes').Output
+        if (-not [string]::IsNullOrWhiteSpace([string]$remaining)) {
+            throw "Android guest network isolation left an IPv$($family.TrimStart('-')) default route."
+        }
+    }
+
+    $airplane = ([string](& $invoke @(
+        '-s', $DeviceUdid, 'shell', 'settings', 'get', 'global', 'airplane_mode_on'
+    ) 'verify airplane mode').Output).Trim()
+    if ($airplane -cne '1') {
+        throw 'Android guest network isolation could not prove airplane mode.'
+    }
+
+    return [pscustomobject]@{
+        Platform = 'android'
+        AirplaneMode = $true
+        DefaultRoutesRemoved = $true
+        NewConnectionsDenied = $true
+    }
+}
+
+function Get-ReplicationNetworkIsolatedCommand {
+    <#
+        .SYNOPSIS
+        Builds the fail-closed process command for generated execution.
+
+        .DESCRIPTION
+        Android on Linux runs the complete host process tree in a systemd
+        egress-denied cgroup and removes the emulator's guest default routes.
+        The other lanes do not currently provide a trustworthy process-tree and
+        app boundary, so they are explicitly withheld instead of running
+        generated code with a best-effort proxy or process-name rule.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$ScriptPath,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Arguments,
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Environment,
+        [Parameter(Mandatory = $true)][ValidateCount(1, 4)][string[]]$WritableRoots,
+        [string]$DeviceUdid = '',
+        [ValidateSet('linux', 'macos', 'windows')]
+        [string]$OperatingSystem = $(if ([OperatingSystem]::IsLinux()) {
+            'linux'
+        } elseif ([OperatingSystem]::IsMacOS()) {
+            'macos'
+        } elseif ([OperatingSystem]::IsWindows()) {
+            'windows'
+        } else {
+            throw 'Generated execution is unsupported on this operating system.'
+        }),
+        [string]$UserId = '',
+        [string]$GroupId = ''
+    )
+
+    $validateHostTools = -not $PSBoundParameters.ContainsKey('OperatingSystem')
+    if ($Platform -ne 'android') {
+        throw "$Platform replication is withheld because this pool has no enforceable process-tree and app outbound-network deny boundary."
+    }
+    if ($Platform -ceq 'android' -and $OperatingSystem -cne 'linux') {
+        throw 'Android replication requires the Linux network-isolated runner.'
+    }
+    if ($DeviceUdid -notmatch '^emulator-[0-9]{4,6}$') {
+        throw 'Android replication requires a local emulator transport; network-connected devices are not permitted.'
+    }
+    $wrapperPath = Join-Path $PSScriptRoot 'Invoke-ReplicationNetworkIsolatedProcess.ps1'
+    if (-not (Test-Path -LiteralPath $wrapperPath -PathType Leaf)) {
+        throw 'Trusted replication network-isolation wrapper is missing.'
+    }
+    $argumentJson = ConvertTo-Json -InputObject @($Arguments) -Compress -Depth 4
+    $argumentPayload = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($argumentJson))
+    $wrapperArguments = @(
+        '-NoLogo', '-NoProfile', '-NonInteractive',
+        '-File', $wrapperPath,
+        '-Platform', $Platform,
+        '-RepositoryRoot', $RepositoryRoot,
+        '-ScriptPath', $ScriptPath,
+        '-ArgumentPayload', $argumentPayload,
+        '-DeviceUdid', $DeviceUdid
+    )
+
+    if ($validateHostTools) {
+        foreach ($required in @('/usr/bin/sudo', '/usr/bin/systemd-run')) {
+            if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+                throw "Linux replication network isolation requires $required."
+            }
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($UserId)) {
+        $UserId = ([string](& /usr/bin/id -u)).Trim()
+    }
+    if ([string]::IsNullOrWhiteSpace($GroupId)) {
+        $GroupId = ([string](& /usr/bin/id -g)).Trim()
+    }
+    if ($UserId -notmatch '^\d+$' -or $GroupId -notmatch '^\d+$') {
+        throw 'Linux replication network isolation could not resolve the agent uid/gid.'
+    }
+
+    $systemdArguments = @(
+        '-n',
+        '/usr/bin/systemd-run',
+        '--quiet',
+        '--wait',
+        '--pipe',
+        '--collect',
+        "--uid=$UserId",
+        "--gid=$GroupId",
+        "--working-directory=$RepositoryRoot",
+        '--property=IPAddressDeny=any',
+        '--property=IPAddressAllow=localhost',
+        '--property=NoNewPrivileges=yes',
+        '--property=CapabilityBoundingSet=',
+        '--property=RestrictSUIDSGID=yes',
+        '--property=RestrictNamespaces=yes',
+        '--property=PrivateTmp=yes',
+        '--property=ProtectSystem=strict',
+        '--property=ProtectHome=yes',
+        '--property=ProtectControlGroups=yes',
+        '--property=ProtectKernelModules=yes',
+        '--property=ProtectKernelTunables=yes',
+        '--property=ProtectProc=invisible',
+        '--property=ProcSubset=pid',
+        '--property=LockPersonality=yes',
+        '--property=RestrictRealtime=yes',
+        '--property=RemoveIPC=yes',
+        "--property=InaccessiblePaths=-/run/user/$UserId -/usr/bin/sudo -/bin/sudo -/usr/bin/systemd-run -/bin/systemd-run -/usr/bin/systemctl -/bin/systemctl -/usr/bin/busctl -/usr/bin/dbus-send",
+        '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
+    )
+    foreach ($writableRoot in @($WritableRoots | Sort-Object -Unique)) {
+        $fullWritableRoot = [IO.Path]::GetFullPath($writableRoot)
+        if (-not (Test-Path -LiteralPath $fullWritableRoot -PathType Container) -or
+            $fullWritableRoot -ceq [IO.Path]::GetPathRoot($fullWritableRoot) -or
+            $fullWritableRoot -ceq [Environment]::GetFolderPath(
+                [Environment+SpecialFolder]::UserProfile)) {
+            throw "Generated execution received an unsafe writable root: $writableRoot"
+        }
+        $systemdArguments += "--property=BindPaths=$fullWritableRoot"
+    }
+    foreach ($candidate in @(
+        $Environment['APPIUM_HOME'],
+        $Environment['ANDROID_AVD_HOME'],
+        $Environment['ANDROID_USER_HOME'],
+        $Environment['GRADLE_USER_HOME'],
+        $Environment['DOTNET_CLI_HOME']
+    )) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$candidate) -and
+            [IO.Path]::IsPathRooted([string]$candidate) -and
+            (Test-Path -LiteralPath ([string]$candidate) -PathType Container)) {
+            $systemdArguments += "--property=BindPaths=$([IO.Path]::GetFullPath([string]$candidate))"
+        }
+    }
+    foreach ($name in @($Environment.Keys | Sort-Object)) {
+        $systemdArguments += "--setenv=$name=$([string]$Environment[$name])"
+    }
+    $systemdArguments += @('--', (Get-Command pwsh -ErrorAction Stop).Source)
+    $systemdArguments += $wrapperArguments
+
+    return [pscustomobject]@{
+        FilePath = '/usr/bin/sudo'
+        Arguments = $systemdArguments
+        Environment = $Environment
+        Boundary = 'systemd-cgroup-loopback-only'
+    }
 }
 
 function Get-ReplicationSecretMarkerPatterns {

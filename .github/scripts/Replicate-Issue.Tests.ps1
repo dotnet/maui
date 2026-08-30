@@ -114,6 +114,7 @@ BeforeAll {
     'Test-ReplicationFixBaselineStillRed',
     'Get-ReplicationUnbuildableTestTiers',
         'Test-ReplicationPathChanged',
+        'Get-ReplicationGitStatus',
         'Assert-NoDuplicateJsonProperties',
         'Test-TimingSensitiveIssueContext',
         'Test-CrashReportingIssueContext',
@@ -135,6 +136,9 @@ BeforeAll {
         'Assert-GeneratedTestContent',
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
+        'Get-ReplicationRuntimeEnvironment',
+        'Invoke-ReplicationTrustedRestore',
+        'Get-ReplicationPlannedRestoreTargets',
         'Test-TransientCopilotServiceFailure',
         'Test-TransientReproductionInfrastructureFailure',
         'Test-ReplicationSandboxBuildFailure',
@@ -157,7 +161,6 @@ BeforeAll {
         'Get-ReplicationSandboxAutomationIdSurvey',
         'Test-ReplicationSurveyLiteral',
         'Invoke-ReplicationFixPanel',
-        'Get-ReplicationFixAddedSource',
         'Invoke-ReplicationFixRepairPass',
         'Get-ReplicationGroundedFixFindings',
         'Get-ReplicationFixScopeValue',
@@ -2601,7 +2604,9 @@ InitializeComponent();
         $script:TrustedAppiumSource |
             Should -Match 'options\.DeviceName\s*=\s*"WindowsPC"'
         $script:BuildSandboxSource |
-            Should -Match 'dotnet run --file \$AppiumTestScript'
+            Should -Match "\`$appiumRunArguments = @\('run', '--file', \`$AppiumTestScript\)"
+        $script:BuildSandboxSource |
+            Should -Match '& dotnet @appiumRunArguments'
         $script:BuildSandboxSource |
             Should -Not -Match 'dotnet run RunWithAppiumTest\.cs'
         $script:BuildDeploySource |
@@ -2666,6 +2671,87 @@ InitializeComponent();
         $script:Source | Should -Match "'GH_TOKEN'"
         $script:Source | Should -Not -Match 'GH_REPLICATION_TOKEN'
         $script:Source | Should -Match 'Invoke-WithoutReplicationSecrets'
+    }
+
+    It 'denies Sandbox network capability at the platform package boundary where supported' {
+        $androidManifest = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/AndroidManifest.xml') -Raw
+        $replicationManifest = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml') -Raw
+        $windowsManifest = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/Package.appxmanifest') -Raw
+
+        $androidManifest | Should -Not -Match 'tools:node="remove"'
+        $replicationManifest | Should -Match 'android\.permission\.INTERNET'
+        $replicationManifest | Should -Match 'tools:node="remove"'
+        $windowsManifest | Should -Not -Match '(?i)internetClient|privateNetworkClientServer'
+        $script:Source | Should -Match "'-EnforceNetworkIsolation'"
+
+        [xml]$ordinary = $androidManifest
+        [xml]$isolated = $replicationManifest
+        $androidNamespace = 'http://schemas.android.com/apk/res/android'
+        $ordinaryNodes = @($ordinary.manifest.ChildNodes | Where-Object {
+            $_.NodeType -eq [Xml.XmlNodeType]::Element
+        } | ForEach-Object { $_.OuterXml -replace '\s+xmlns:tools="[^"]+"', '' })
+        $isolatedNodes = @($isolated.manifest.ChildNodes | Where-Object {
+            $_.NodeType -eq [Xml.XmlNodeType]::Element -and
+            -not ($_.LocalName -eq 'uses-permission' -and
+                $_.GetAttribute('name', $androidNamespace) -eq 'android.permission.INTERNET')
+        } | ForEach-Object { $_.OuterXml -replace '\s+xmlns:tools="[^"]+"', '' })
+        ($isolatedNodes -join "`n") | Should -BeExactly ($ordinaryNodes -join "`n")
+    }
+
+    It 'fails unsupported lanes before generated execution and never sets its own isolation marker' {
+        $script:Source | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
+        $script:Source | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED\s*='
+        $isolationSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Assert-ReplicationExecutionEnvironment.ps1') -Raw
+        $isolationSource | Should -Match "(?s)Platform -ne 'android'.*?withheld"
+        $wrapperSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1') -Raw
+        $attestation = $wrapperSource.IndexOf(
+            "SetEnvironmentVariable('MAUI_REPLICATION_EGRESS_ISOLATED', '1')",
+            [StringComparison]::Ordinal)
+        $probe = $wrapperSource.IndexOf(
+            'Assert-ReplicationOutboundNetworkIsolation',
+            [StringComparison]::Ordinal)
+        $clear = $wrapperSource.IndexOf(
+            "SetEnvironmentVariable('MAUI_REPLICATION_EGRESS_ISOLATED', `$null)",
+            [StringComparison]::Ordinal)
+        $launch = $wrapperSource.LastIndexOf(
+            '& (Get-Command pwsh',
+            [StringComparison]::Ordinal)
+        $attestation | Should -BeGreaterOrEqual 0
+        $attestation | Should -BeLessThan $probe
+        $probe | Should -BeLessThan $clear
+        $clear | Should -BeLessThan $launch
+    }
+
+    It 'prewarms trusted inputs and forbids restore during isolated execution' {
+        $prewarm = $script:Source.IndexOf(
+            'Invoke-ReplicationTrustedRestore `',
+            [StringComparison]::Ordinal)
+        $isolation = $script:Source.IndexOf(
+            '$null = Get-ReplicationNetworkIsolatedCommand `',
+            [StringComparison]::Ordinal)
+        $prewarm | Should -BeGreaterOrEqual 0
+        $prewarm | Should -BeLessThan $isolation
+        $script:Source | Should -Match 'Get-ReplicationPlannedRestoreTargets'
+        $script:Source | Should -Match "-Verb build"
+        $script:Source | Should -Match 'GRADLE_USER_HOME'
+        $script:Source | Should -Match 'DOTNET_CLI_HOME'
+
+        $verification = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1') -Raw
+        $verifier = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1') -Raw
+        $sandbox = Get-Content -LiteralPath $script:BuildSandboxPath -Raw
+        $device = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../skills/run-device-tests/scripts/Run-DeviceTests.ps1') -Raw
+        $verification | Should -Match "'-NoRestore'"
+        $verifier | Should -Match '\$testArgs \+= ''--no-restore'''
+        $sandbox | Should -Match '\$appiumRunArguments \+= ''--no-restore'''
+        $device | Should -Match '\$buildArgs \+= ''--no-restore'''
     }
 
     It 'has exactly one capability set, with no parameter that can widen it' {
@@ -9097,17 +9183,19 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
         New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src/Handlers') -Force | Out-Null
         New-Item -ItemType Directory -Path (Join-Path $root 'src/Controls/tests/Core.UnitTests') -Force | Out-Null
         New-Item -ItemType Directory -Path (Join-Path $root 'src/Core/src/Handlers/Folder.cs') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Controls/src/SourceGen') -Force | Out-Null
         Set-Content -LiteralPath (Join-Path $root 'src/Core/src/Handlers/EntryHandler.cs') -Value 'class C {}'
         Set-Content -LiteralPath (Join-Path $root 'src/Core/src/Handlers/View.xaml') -Value '<View/>'
         Set-Content -LiteralPath (Join-Path $root 'src/Core/src/Core.csproj') -Value '<Project/>'
         Set-Content -LiteralPath (Join-Path $root 'src/Controls/tests/Core.UnitTests/EntryTests.cs') -Value 'class T {}'
+        Set-Content -LiteralPath (Join-Path $root 'src/Controls/src/SourceGen/XamlGenerator.cs') -Value 'class G {}'
         $script:repoRoot = $root
         $script:fixScopePath = Join-Path $root 'fix-scope.json'
     }
 
     Context 'a path that is not product source cannot be made writable' {
         It 'refuses <label>' -TestCases @(
-            @{ Path = 'src/Controls/tests/Core.UnitTests/EntryTests.cs'; Label = 'a test file'; Expect = 'is test code' }
+            @{ Path = 'src/Controls/tests/Core.UnitTests/EntryTests.cs'; Label = 'a test file'; Expect = 'outside the established runtime product source directories|test code' }
             @{ Path = 'src/Core/src/Core.csproj'; Label = 'a project file'; Expect = "extension '.csproj'" }
             @{ Path = 'src/Core/src/Handlers/Missing.cs'; Label = 'a file that does not exist'; Expect = 'does not exist' }
             @{ Path = 'src/Core/src/Handlers'; Label = 'a directory'; Expect = "extension ''" }
@@ -9117,8 +9205,9 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
             @{ Path = '/etc/passwd.cs'; Label = 'an absolute path'; Expect = 'is absolute' }
             @{ Path = 'C:\Windows\a.cs'; Label = 'a Windows absolute path'; Expect = 'backslash|is absolute' }
             @{ Path = 'src\Core\a.cs'; Label = 'a backslash path'; Expect = 'backslash' }
-            @{ Path = '.github/workflows/ci.yml'; Label = 'a workflow'; Expect = 'outside src/' }
-            @{ Path = 'eng/Versions.props'; Label = 'a build property file'; Expect = 'outside src/' }
+            @{ Path = '.github/workflows/ci.yml'; Label = 'a workflow'; Expect = 'outside the established runtime product source directories|outside src/' }
+            @{ Path = 'eng/Versions.props'; Label = 'a build property file'; Expect = 'outside the established runtime product source directories|outside src/' }
+            @{ Path = 'src/Controls/src/SourceGen/XamlGenerator.cs'; Label = 'a source generator'; Expect = 'source-generation|generator' }
             @{ Path = ' src/Core/src/Handlers/EntryHandler.cs'; Label = 'a padded path'; Expect = 'whitespace' }
             @{ Path = ''; Label = 'an empty path'; Expect = 'is empty' }
         ) {
@@ -9268,7 +9357,7 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
             @{ Path = '..\..\evil.cs'; Label = 'a backslash traversal'; Expect = 'escapes the repository' }
             @{ Path = 'src/..\..\evil.cs'; Label = 'a mixed-separator traversal'; Expect = 'escapes the repository' }
             @{ Path = 'C:\Windows\a.cs'; Label = 'a Windows drive path'; Expect = 'is absolute' }
-            @{ Path = 'src\Controls\tests\Core.UnitTests\EntryTests.cs'; Label = 'a backslash test path'; Expect = 'is test code' }
+            @{ Path = 'src\Controls\tests\Core.UnitTests\EntryTests.cs'; Label = 'a backslash test path'; Expect = 'outside the established runtime product source directories' }
             @{ Path = 'src\Core\src\Handlers\Missing.cs'; Label = 'a backslash path to nothing'; Expect = 'does not exist' }
         ) {
             New-Scope -Files @(@{ path = $Path; reason = 'r' })
@@ -9649,6 +9738,7 @@ Describe 'Only trusted code may call a fix candidate a pass' {
         $verify | Should -Not -Match 'Invoke-BoundedProcess'
         $logged | Should -Match 'Invoke-WithoutReplicationSecrets'
         $logged | Should -Match '\$allSecretNames'
+        $logged | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
     }
 
     It 'does not let an injected model Pass become the panel verdict' {
@@ -9657,6 +9747,9 @@ Describe 'Only trusted code may call a fix candidate a pass' {
         # and the panel must agree with the verifier.
         $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $script:repoRoot -Force | Out-Null
+        $productFile = Join-Path $script:repoRoot 'src/Core/src/Handlers/EntryHandler.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $productFile) -Force | Out-Null
+        Set-Content -LiteralPath $productFile -Value 'class EntryHandler { bool Enabled => true; }'
         $script:IssueNumber = 12345
         $script:agentDir = $script:repoRoot
         $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
@@ -9686,6 +9779,9 @@ Describe 'Only trusted code may call a fix candidate a pass' {
             [pscustomobject]@{ Ran = $true; Passed = $false
                                Detail = 'Assert.True() Failure: expected 10, got 0' }
         }
+        function Assert-ReplicationFixSources {
+            param($RepositoryRoot, $Paths, $PatchPath)
+        }
 
         $results = @(Invoke-ReplicationFixPanel `
             -ScopeFiles @('src/Core/src/Handlers/EntryHandler.cs') `
@@ -9705,6 +9801,9 @@ Describe 'Only trusted code may call a fix candidate a pass' {
     It 'does let a trusted pass through, so the gate is not merely refusing everything' {
         $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $script:repoRoot -Force | Out-Null
+        $productFile = Join-Path $script:repoRoot 'src/Core/src/Handlers/EntryHandler.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $productFile) -Force | Out-Null
+        Set-Content -LiteralPath $productFile -Value 'class EntryHandler { bool Enabled => true; }'
         $script:IssueNumber = 12345
         $script:agentDir = $script:repoRoot
         $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
@@ -9729,6 +9828,9 @@ Describe 'Only trusted code may call a fix candidate a pass' {
         function Invoke-ReplicationFixCandidateVerification {
             param($VerificationScriptPath, $BaseVerificationArguments, $OutputDirectory, $TimeoutSeconds)
             [pscustomobject]@{ Ran = $true; Passed = $true; Detail = '' }
+        }
+        function Assert-ReplicationFixSources {
+            param($RepositoryRoot, $Paths, $PatchPath)
         }
 
         $results = @(Invoke-ReplicationFixPanel `
@@ -9787,6 +9889,9 @@ Describe 'A fix candidate that is really a prompt injection' {
         BeforeEach {
             $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
             New-Item -ItemType Directory -Path $script:repoRoot -Force | Out-Null
+            $productFile = Join-Path $script:repoRoot 'src/Core/src/Handlers/EntryHandler.cs'
+            New-Item -ItemType Directory -Path (Split-Path -Parent $productFile) -Force | Out-Null
+            Set-Content -LiteralPath $productFile -Value 'class EntryHandler { bool Enabled => true; }'
             $script:IssueNumber = 12345
             $script:agentDir = $script:repoRoot
             $script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
@@ -9814,6 +9919,9 @@ Describe 'A fix candidate that is really a prompt injection' {
             function Restore-ReplicationFixTree { param($TrustedScriptRoot, $ScopeFiles) $true }
             function Get-ReplicationHeadSha { 'sha' }
             function Restore-ReplicationFixHead { param($ExpectedSha, $Attempt) $false }
+            function Assert-ReplicationFixSources {
+                param($RepositoryRoot, $Paths, $PatchPath)
+            }
             function Read-ReplicationFixCandidateArtifacts {
                 param($AttemptDirectory, $TranscriptPath)
                 # Every hostile field at once, including a forged trusted result.
@@ -9833,7 +9941,6 @@ Describe 'A fix candidate that is really a prompt injection' {
                 [pscustomobject]@{ Ran = $true; Passed = $false
                                    Detail = 'Assert.True() Failure: expected 10, got 0' }
             }
-
             $script:panelArgs = @{
                 ScopeFiles = @($script:scopeFile)
                 BaselineRelativePath = 'src/Controls/tests/Issue12345.cs'
@@ -10236,6 +10343,9 @@ Describe 'A failed fix never costs us a good reproduction' {
     BeforeEach {
         $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $script:repoRoot -Force | Out-Null
+        $productFile = Join-Path $script:repoRoot 'src/Core/src/Handlers/EntryHandler.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $productFile) -Force | Out-Null
+        Set-Content -LiteralPath $productFile -Value 'class EntryHandler { bool Enabled => true; }'
         $script:IssueNumber = 12345
         $script:invocations = [Collections.Generic.List[object]]::new()
         $script:restoreCalls = 0
@@ -10295,6 +10405,9 @@ Describe 'A failed fix never costs us a good reproduction' {
                 Ran = $script:verificationRan
                 Passed = $script:verificationPassed
                 Detail = $(if ($script:verificationPassed) { '' } else { 'Expected 10 but was 0' }) }
+        }
+        function Assert-ReplicationFixSources {
+            param($RepositoryRoot, $Paths, $PatchPath)
         }
         # Stubbed to a constant rather than reimplemented: what these Describes
         # measure is that the panel asks once per candidate. The rewind itself
@@ -10529,8 +10642,41 @@ Describe 'A failed fix never costs us a good reproduction' {
             -ScopeFiles $script:gitPaths -CandidateCount 1 -ProtectedPaths @($guarded))
 
         $results[0].Result | Should -Be 'Blocked'
+        $script:verificationCalls.Count | Should -Be 0
+    }
+
+    It 'never builds or verifies a complete file containing a URL-capable sink' {
+        $file = 'src/Core/src/Handlers/EntryHandler.cs'
+        $full = Join-Path $script:repoRoot $file
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, [switch]$AllowShell,
+                  $ModelOverride, $MaxAiCreditsOverride, $TimeoutMinutesOverride)
+            $script:invocations.Add([pscustomobject]@{ Attempt = $Attempt })
+            Set-Content -LiteralPath $full -Value @'
+class EntryHandler
+{
+    void Run(string address)
+    {
+        var reader = new System.Xml.XmlTextReader(address);
+    }
+}
+'@
+        }
+        function Assert-ReplicationFixSources {
+            param($RepositoryRoot, $Paths, $PatchPath)
+            foreach ($relative in $Paths) {
+                $content = Get-Content -LiteralPath (Join-Path $RepositoryRoot $relative) -Raw
+                Assert-ReplicationProductFixSafety -Content $content -Path $relative
+            }
+        }
+
+        $results = @(Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @($file) -CandidateCount 1)
+
+        $results[0].Result | Should -Be 'Blocked'
+        $results[0].Rejection | Should -Match 'xml-external-access'
         $script:verificationCalls.Count | Should -Be 0 -Because (
-            'a tampered oracle is refused before any device time is spent on it')
+            'the generated file must be rejected before any build, test, DNS, or HTTP can occur')
     }
 
     It 'tells later candidates what earlier ones did' {
@@ -15663,8 +15809,13 @@ Describe 'Grounded fix review and bounded repair' {
         $repair.Success | Should -BeTrue
         $repair.Value | Should -Match 'Get-ReplicationGroundedFixFindings'
         $repair.Value | Should -Match 'Invoke-ReplicationFixArms'
-        $repair.Value | Should -Match 'Assert-ReplicationProductFixSafety'
-        $repair.Value | Should -Match '\$outOfScope = @\(\$newPaths'
+        $repair.Value | Should -Match 'Assert-ReplicationFixSources'
+        $repair.Value | Should -Match '\$beforeDiff ='
+        $repair.Value | Should -Match '\$beforeOutOfScope = @\(\$beforePaths'
+        $repair.Value | Should -Match '\$outOfScope = @\(\$changed'
+        $repair.Value | Should -Match '\$scopedChanged = @\(\$changed'
+        $repair.Value | Should -Match '\$newDiff -ceq \$beforeDiff'
+        $repair.Value | Should -Not -Match '\$newPaths'
         $repair.Value | Should -Match '-TimeoutSeconds \$ArmTimeoutSeconds'
         $phase = [regex]::Match(
             $source,
@@ -15682,11 +15833,172 @@ Describe 'Grounded fix review and bounded repair' {
         ([regex]::Matches($source, "Phase 'fix-repair'")).Count | Should -Be 1
     }
 
+    Context 'repair diff identity' {
+        BeforeEach {
+            $script:repairRepo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+            $script:repairPath = 'src/Core/src/Handlers/EntryHandler.cs'
+            $script:repairFile = Join-Path $script:repairRepo $script:repairPath
+            New-Item -ItemType Directory -Path (Split-Path -Parent $script:repairFile) -Force |
+                Out-Null
+            Set-Content -LiteralPath $script:repairFile `
+                -Value 'class EntryHandler { int Value => 0; }' `
+                -Encoding utf8NoBOM
+            git -C $script:repairRepo init -q
+            git -C $script:repairRepo config user.email test@example.com
+            git -C $script:repairRepo config user.name Test
+            git -C $script:repairRepo add -- $script:repairPath
+            git -C $script:repairRepo commit -qm baseline
+            Set-Content -LiteralPath $script:repairFile `
+                -Value 'class EntryHandler { int Value => 1; }' `
+                -Encoding utf8NoBOM
+
+            $script:repoRoot = $script:repairRepo
+            $script:fixDir = Join-Path $script:repairRepo 'repair-artifacts'
+            $script:FixCandidateTimeoutMinutes = 1
+            $script:repairMutation = 'same-file'
+            $script:repairArmCalls = 0
+
+            function Get-ReplicationGroundedFixFindings {
+                param($Review)
+                @([pscustomobject]@{ Detail = 'Change the value.' })
+            }
+            function Get-ReplicationFixProtectedSnapshot { param($Paths) @{} }
+            function Get-ReplicationFixTamperedPaths { param($Snapshot) @() }
+            function Get-ReplicationFixCandidateChanges {
+                param($ExcludePaths)
+                @(
+                    git -C $script:repairRepo diff --name-only HEAD --
+                    git -C $script:repairRepo ls-files --others --exclude-standard
+                ) | Where-Object { $_ -and $ExcludePaths -cnotcontains $_ } |
+                    Sort-Object -Unique
+            }
+            function New-CopilotPrompt {
+                param($Phase, $FailureSummary, $BaselineRelativePath, $OutputDirectory)
+                'repair prompt'
+            }
+            function Get-ReplicationFixCandidateModel { param($Attempt) 'test-model' }
+            function Invoke-ReplicationCopilot {
+                param(
+                    $PhaseName,
+                    $Prompt,
+                    $WritePaths,
+                    $Attempt,
+                    $ModelOverride,
+                    $TimeoutMinutesOverride
+                )
+                if ($script:repairMutation -eq 'same-file') {
+                    Set-Content -LiteralPath $script:repairFile `
+                        -Value 'class EntryHandler { int Value => 2; }' `
+                        -Encoding utf8NoBOM
+                } elseif ($script:repairMutation -eq 'out-of-scope') {
+                    Set-Content -LiteralPath $script:repairFile `
+                        -Value 'class EntryHandler { int Value => 2; }' `
+                        -Encoding utf8NoBOM
+                    New-Item -ItemType Directory -Path (Join-Path $script:repairRepo 'eng') -Force |
+                        Out-Null
+                    Set-Content -LiteralPath (Join-Path $script:repairRepo 'eng/unsafe.txt') `
+                        -Value 'changed' -Encoding utf8NoBOM
+                }
+            }
+            function Invoke-ReplicationFixArms {
+                param(
+                    $WinnerDiff,
+                    $ScopeFiles,
+                    $BaseVerificationArguments,
+                    $TrustedScriptRoot,
+                    $PatchPath,
+                    $FixOutputDirectory,
+                    $RestorationOutputDirectory,
+                    $ReproductionPaths,
+                    $TimeoutSeconds
+                )
+                $script:repairArmCalls++
+                [pscustomobject]@{ Passed = $true }
+            }
+            function Restore-ReplicationFixTree {
+                param($TrustedScriptRoot, $ScopeFiles)
+                git -C $script:repairRepo checkout -q HEAD -- @ScopeFiles
+                return $true
+            }
+
+            $script:repairWinner = [pscustomobject]@{
+                Attempt = 1
+                Model = 'test-model'
+                Diff = ((git -C $script:repairRepo diff --binary HEAD -- $script:repairPath) -join "`n")
+            }
+            $script:repairReview = [pscustomobject]@{ Findings = @([pscustomobject]@{
+                Detail = 'Change the value.'
+            }) }
+            Push-Location $script:repairRepo
+        }
+
+        AfterEach {
+            Pop-Location
+        }
+
+        It 're-certifies a repair that changes content in the same scoped file' {
+            $result = Invoke-ReplicationFixRepairPass `
+                -Review $script:repairReview `
+                -WinnerAttempt $script:repairWinner `
+                -ScopeFiles @($script:repairPath) `
+                -ReproductionPaths @('tests/Issue1.cs') `
+                -BaselineRelativePath 'tests/Issue1.cs' `
+                -TrustedScriptRoot $script:repairRepo `
+                -VerificationScriptPath 'verify.ps1' `
+                -BaseVerificationArguments @('-IssueNumber', '1') `
+                -VerificationRoot (Join-Path $script:repairRepo 'verification') `
+                -FailureSummary 'review finding' `
+                -ArmTimeoutSeconds 60
+
+            $result | Should -Not -BeNullOrEmpty
+            $script:repairArmCalls | Should -Be 1
+            $result.WinnerAttempt.ChangedPaths | Should -Contain $script:repairPath
+        }
+
+        It 'does not re-certify an unchanged repair diff' {
+            $script:repairMutation = 'unchanged'
+            $result = Invoke-ReplicationFixRepairPass `
+                -Review $script:repairReview `
+                -WinnerAttempt $script:repairWinner `
+                -ScopeFiles @($script:repairPath) `
+                -ReproductionPaths @('tests/Issue1.cs') `
+                -BaselineRelativePath 'tests/Issue1.cs' `
+                -TrustedScriptRoot $script:repairRepo `
+                -VerificationScriptPath 'verify.ps1' `
+                -BaseVerificationArguments @('-IssueNumber', '1') `
+                -VerificationRoot (Join-Path $script:repairRepo 'verification') `
+                -FailureSummary 'review finding' `
+                -ArmTimeoutSeconds 60
+
+            $result | Should -BeNullOrEmpty
+            $script:repairArmCalls | Should -Be 0
+        }
+
+        It 'does not re-certify a repair that creates an out-of-scope path' {
+            $script:repairMutation = 'out-of-scope'
+            $result = Invoke-ReplicationFixRepairPass `
+                -Review $script:repairReview `
+                -WinnerAttempt $script:repairWinner `
+                -ScopeFiles @($script:repairPath) `
+                -ReproductionPaths @('tests/Issue1.cs') `
+                -BaselineRelativePath 'tests/Issue1.cs' `
+                -TrustedScriptRoot $script:repairRepo `
+                -VerificationScriptPath 'verify.ps1' `
+                -BaseVerificationArguments @('-IssueNumber', '1') `
+                -VerificationRoot (Join-Path $script:repairRepo 'verification') `
+                -FailureSummary 'review finding' `
+                -ArmTimeoutSeconds 60
+
+            $result | Should -BeNullOrEmpty
+            $script:repairArmCalls | Should -Be 0
+        }
+    }
+
     It 'runs the product-fix safety scan before candidate verification' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
         $panel = [regex]::Match($source, '(?ms)^function Invoke-ReplicationFixPanel\b.*?^}')
         $panel.Success | Should -BeTrue
-        $safety = $panel.Value.IndexOf('Assert-ReplicationProductFixSafety', [StringComparison]::Ordinal)
+        $safety = $panel.Value.IndexOf('Assert-ReplicationFixSources', [StringComparison]::Ordinal)
         $verifier = $panel.Value.IndexOf('Invoke-ReplicationFixCandidateVerification', [StringComparison]::Ordinal)
         $safety | Should -BeGreaterOrEqual 0
         $verifier | Should -BeGreaterOrEqual 0
@@ -15783,9 +16095,12 @@ Describe 'The trusted tree is re-verified around everything untrusted' {
         $before = $body.IndexOf('Assert-ReplicationTrustedTree -Context "before $Description"', [StringComparison]::Ordinal)
         $invocation = $body.IndexOf('Invoke-BoundedProcess', [StringComparison]::Ordinal)
         $after = $body.IndexOf('Assert-ReplicationTrustedTree -Context "after $Description"', [StringComparison]::Ordinal)
+        $network = $body.IndexOf('Get-ReplicationNetworkIsolatedCommand', [StringComparison]::Ordinal)
 
         $before | Should -BeGreaterOrEqual 0
         $before | Should -BeLessThan $invocation
+        $network | Should -BeGreaterThan $before
+        $network | Should -BeLessThan $invocation
         $invocation | Should -BeLessThan $after
         $body | Should -Match '(?s)\} finally \{.*?Assert-ReplicationTrustedTree -Context "after \$Description"'
     }
@@ -15827,7 +16142,8 @@ Describe 'Generated execution gets a constructed environment, not the agent''s' 
 
     It 'builds the child environment from an allowlist' {
         $body = script:Get-EnvFunctionText -Name 'Invoke-LoggedChildProcess'
-        $body | Should -Match '\$childEnvironment = Get-ReplicationExecutionEnvironment'
+        $body | Should -Match '\$childEnvironment = Get-ReplicationRuntimeEnvironment'
+        $script:Source | Should -Match '(?s)function Get-ReplicationRuntimeEnvironment\b.*?Get-ReplicationExecutionEnvironment'
         $body | Should -Match '-Environment \$childEnvironment'
     }
 

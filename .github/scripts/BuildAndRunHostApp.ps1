@@ -64,7 +64,9 @@ param(
 
     [string]$DeviceUdid,
 
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [switch]$NoRestore
 )
 
 function Get-AndroidRetryClassification {
@@ -316,6 +318,7 @@ $buildDeployParams = @{
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
     Rebuild = $Rebuild
+    NoRestore = $NoRestore
 }
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
@@ -617,6 +620,9 @@ try {
         "--logger", "console;verbosity=normal",
         "--results-directory", $trxResultsDir,
         "/p:VStestUseMSBuildOutput=false")
+    if ($NoRestore) {
+        $testArgs += '--no-restore'
+    }
     if ($effectiveFilter) {
         $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
     }
