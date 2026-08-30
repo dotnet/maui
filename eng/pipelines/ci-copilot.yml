@@ -768,9 +768,50 @@ stages:
                   $existing = @($matchingPulls |
                     Where-Object { ([string]$_.body) -match '(?m)^## Proposed fix\s*$' }) |
                     Select-Object -First 1
+                  if ($existing) {
+                    $existing | Add-Member -NotePropertyName isProductFix `
+                      -NotePropertyValue $true -Force
+                  }
                   if (-not $existing) {
                     $existing = $matchingPulls | Select-Object -First 1
                   }
+                }
+                $upstreamFix = $null
+                # The rollout fork marker covers generated fixes. A human or bot
+                # product fix in dotnet/maui has no marker, so always query the
+                # upstream open set too. `--state open` includes drafts.
+                $issueNumber = '${{ parameters.IssueNumber }}'
+                $upstreamJson = & gh pr list `
+                  --repo 'dotnet/maui' `
+                  --state open `
+                  --search "$issueNumber in:body" `
+                  --limit 100 `
+                  --json 'body,isDraft,number,title,url'
+                if ($LASTEXITCODE -ne 0) {
+                  throw 'Unable to query upstream open pull requests.'
+                }
+                $upstreamPulls = @($upstreamJson | ConvertFrom-Json)
+                $closingReference = (
+                  '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)(?:\s*:\s*|\s+)' +
+                  '(?:(?:dotnet/maui)?#' + [regex]::Escape($issueNumber) +
+                  '(?!\d)|https://github\.com/dotnet/maui/issues/' +
+                  [regex]::Escape($issueNumber) + '(?!\d))')
+                $upstreamMatches = @($upstreamPulls | Where-Object {
+                    ([string]$_.body) -match $closingReference
+                  })
+                Write-Host (
+                  "Upstream duplicate search returned $($upstreamPulls.Count) open PR(s); " +
+                  "$($upstreamMatches.Count) carried an exact closing reference.")
+                foreach ($match in $upstreamMatches) {
+                  Write-Host "Upstream product-fix match: $($match.url)"
+                }
+                $upstreamFix = $upstreamMatches | Select-Object -First 1
+                if ($upstreamFix) {
+                  $upstreamFix | Add-Member -NotePropertyName isProductFix `
+                    -NotePropertyValue $true -Force
+                  # A real upstream product fix outranks a marker-matching
+                  # reproduction-only rollout PR in the testing fork.
+                  $existing = $upstreamFix
                 }
               } catch {
                 Write-Host "##vso[task.logissue type=warning]Could not check for an existing fix pull request: $($_.Exception.Message)"
@@ -778,7 +819,8 @@ stages:
 
               $supersedeExisting = [bool]::Parse('${{ parameters.SupersedeExisting }}')
               $existingCarriesFix = $existing -and
-                ([string]$existing.body) -match '(?m)^## Proposed fix\s*$'
+                ($existing.isProductFix -eq $true -or
+                  ([string]$existing.body) -match '(?m)^## Proposed fix\s*$')
               if ($existingCarriesFix -and -not $supersedeExisting) {
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
@@ -1770,6 +1812,15 @@ stages:
                 throw 'WinAppDriver.exe is unavailable on the trusted Windows pool.'
               }
               Write-Host "Windows packaged-device prerequisites verified."
+              $trustedAppx = Join-Path "$(Build.ArtifactStagingDirectory)/trusted-github" `
+                'scripts/shared/Assert-ReplicationWindowsAppContainer.ps1'
+              . $trustedAppx
+              $probe = Get-ReplicationWindowsInstalledPackage `
+                -PackageName 'Maui.Replication.Appx.Module.Probe'
+              if ($null -ne $probe) {
+                throw 'The AppX compatibility probe unexpectedly matched an installed package.'
+              }
+              Write-Host "Windows PowerShell 5.1 AppX bridge verified."
             displayName: 'Verify Windows packaged-device prerequisites'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'windows'))
             env:

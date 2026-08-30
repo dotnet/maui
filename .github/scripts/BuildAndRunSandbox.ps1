@@ -384,18 +384,17 @@ if ($Platform -eq "windows") {
             [string]$windowsPackageState.packageSha256 -cnotmatch '^[0-9a-f]{64}$') {
             throw 'Windows replication package state is malformed.'
         }
-        $package = @(Get-AppxPackage `
-                -Name ([string]$windowsPackageState.packageName) `
-                -ErrorAction Stop)
-        if ($package.Count -ne 1 -or
-            [string]$package[0].PackageFullName -cne
+        $package = Get-ReplicationWindowsInstalledPackage `
+            -PackageName ([string]$windowsPackageState.packageName)
+        if ($null -eq $package -or
+            [string]$package.packageFullName -cne
                 [string]$windowsPackageState.packageFullName -or
-            [string]$package[0].PackageFamilyName -cne
+            [string]$package.packageFamilyName -cne
                 [string]$windowsPackageState.packageFamilyName) {
             throw 'Installed Windows replication package does not match trusted state.'
         }
         $null = Assert-ReplicationInstalledWindowsAppContainerPackage `
-            -Package $package[0]
+            -Package $package
     } else {
         $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
         $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
