@@ -118,7 +118,7 @@ This unrelated template section is intentionally omitted.
         $context = Read-TestContext $output
         $context.issueNumber | Should -Be 123
         $context.title | Should -Be 'Sample replication issue'
-        $context.url | Should -Be 'https://github.com/dotnet/maui/issues/123'
+        @($context.PSObject.Properties.Name) | Should -Not -Contain 'url'
         $context.selectedPlatform | Should -Be 'android'
         @($context.labels) | Should -Be @('a-first', 'z-last')
         $context.sections.description | Should -Match 'layout fails in Grid'
@@ -247,7 +247,10 @@ This unrelated template section is intentionally omitted.
 ### Description
 
 See [the docs](https://evil.example/docs), ![remote](https://evil.example/image.png),
-and https://outside.example/path.
+https://outside.example/path, mailto:reporter@outside.example, //cdn.outside.example/path,
+ssh://encoded.outside.example/path, and https%3A%2F%2Fencoded.outside.example/path.
+[relative link][untrusted-relative]
+[untrusted-relative]: ../untrusted/location
 <a href="https://evil.example/anchor">anchor text</a>
 <script>maliciousCall()</script>
 '@
@@ -263,7 +266,7 @@ and https://outside.example/path.
         $description = [string] (Read-TestContext $output).sections.description
         $description | Should -Match 'the docs'
         $description | Should -Match 'anchor text'
-        $description | Should -Not -Match 'evil\.example|outside\.example|https://'
+        $description | Should -Not -Match 'evil\.example|outside\.example|https?://|ssh://|mailto:|//cdn|https%3A|\.\./untrusted'
         $description | Should -Not -Match '!\['
         $description | Should -Not -Match '<(?:a|script)\b'
         $description | Should -Not -Match 'maliciousCall'
@@ -329,8 +332,10 @@ $second
 
         $context = Read-TestContext $output
         @($context.screenshots).Count | Should -Be 2
-        @($context.screenshots.sourceUrl) | Should -Be @($first, $second)
         @($context.screenshots.localPath | Where-Object { $_ }).Count | Should -Be 0
+        foreach ($record in @($context.screenshots)) {
+            @($record.PSObject.Properties.Name) | Should -Not -Contain 'sourceUrl'
+        }
         Test-AllowedScreenshotUrl $first | Should -BeTrue
         Test-AllowedScreenshotUrl 'http://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111' |
             Should -BeFalse
@@ -397,6 +402,56 @@ $second
             $OutputPath.EndsWith('screenshot-001.png') -and
             $MaxBytes -eq 1024
         }
+        @($context.screenshots[0].PSObject.Properties.Name) | Should -Not -Contain 'sourceUrl'
+        (Get-Content -LiteralPath (Join-Path $output 'issue-context.json') -Raw) |
+            Should -Not -Match [regex]::Escape($url)
+    }
+
+    It 'keeps an allowlisted screenshot URL transient to the trusted downloader' {
+        $url = 'https://github.com/user-attachments/assets/cccccccc-cccc-cccc-cccc-cccccccccccc'
+        $fixture = Write-TestIssueJson -Body "### Description`n![screen]($url)"
+        $reporterUrl = 'https://reporter.example.invalid/private/source'
+        $rawIssue = Get-Content -LiteralPath $fixture -Raw | ConvertFrom-Json
+        $rawIssue | Add-Member -NotePropertyName html_url -NotePropertyValue $reporterUrl
+        [System.IO.File]::WriteAllText(
+            $fixture,
+            ($rawIssue | ConvertTo-Json -Depth 8),
+            [System.Text.UTF8Encoding]::new($false))
+        $output = Join-Path $TestDrive 'transient-screenshot-url'
+        $script:TransientPngBytes = [byte[]] @(
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x00)
+        Mock Invoke-ScreenshotHttpRequest {
+            [pscustomobject]@{ ContentType = 'image/png'; Bytes = $script:TransientPngBytes }
+        }
+        Mock ConvertTo-SafeScreenshotPng {
+            [System.IO.File]::WriteAllBytes(
+                $OutputPath,
+                [byte[]] @(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A))
+        }
+
+        $result = Invoke-GetReplicationIssueContext `
+            -IssueNumber 123 `
+            -Platform android `
+            -OutputDir $output `
+            -IssueJsonPath $fixture `
+            -DownloadScreenshots
+
+        Should -Invoke Invoke-ScreenshotHttpRequest -Times 1 -Exactly -ParameterFilter {
+            $Url -eq $url
+        }
+        foreach ($path in @(
+                $result.JsonPath,
+                $result.MarkdownPath,
+                $result.AgentJsonPath,
+                $result.AgentMarkdownPath)) {
+            $content = Get-Content -LiteralPath $path -Raw
+            $content | Should -Not -Match [regex]::Escape($url)
+            $content | Should -Not -Match [regex]::Escape($reporterUrl)
+            $content | Should -Not -Match '(?i)sourceUrl|https?://'
+        }
+        (Read-TestContext $output).screenshots[0].localPath |
+            Should -Be 'screenshots/screenshot-001.png'
     }
 
     It 'rejects SVG, MIME and magic mismatches, and oversized screenshot bytes' {
@@ -525,6 +580,9 @@ Android
         $firstAgentJson | Should -Not -Match '(?i)https?://'
         $firstAgentJson | Should -Not -Match 'sourceUrl'
         $firstAgentMarkdown | Should -Not -Match '(?m)^- URL:'
+        foreach ($content in @($firstJson, $firstMarkdown, $firstAgentJson, $firstAgentMarkdown)) {
+            $content | Should -Not -Match '(?i)https?://|sourceUrl|(?m)^- URL:'
+        }
     }
 }
 

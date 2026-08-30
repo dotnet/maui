@@ -757,9 +757,10 @@ Describe 'Reviewer pipeline timeout containment' {
 
         $captureStart | Should -BeGreaterThan -1
         $captureStart | Should -BeLessThan $resolveStart
-        $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
-        $captureBlock | Should -Match ([regex]::Escape('cp -r eng/scripts     "$TRUSTED/eng-scripts"'))
-        $captureBlock | Should -Match ([regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('git archive "${SOURCE_VERSION}"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
@@ -777,8 +778,9 @@ Describe 'Reviewer pipeline timeout containment' {
 
         $captureStart | Should -BeGreaterThan -1
         $captureStart | Should -BeLessThan $resolveStart
-        $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
-        $captureBlock | Should -Match ([regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('git archive "${SOURCE_VERSION}"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
@@ -849,10 +851,15 @@ Describe 'Reviewer pipeline timeout containment' {
     }
 
     It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {
-        ([regex]::Matches(
-            $pipelineContent,
-            [regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"')
-        )).Count | Should -Be 2
+        $trustedOverrideCopies = @(
+            [regex]::Matches(
+                $pipelineContent,
+                [regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+            [regex]::Matches(
+                $pipelineContent,
+                [regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
+        )
+        $trustedOverrideCopies.Count | Should -Be 2
 
         $content | Should -Match ([regex]::Escape("source-overrides/catalyst-retina-screenshot.patch"))
         $content | Should -Match ([regex]::Escape('git apply --reverse --check --whitespace=nowarn'))

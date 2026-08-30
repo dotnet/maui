@@ -42,6 +42,9 @@ BeforeAll {
     foreach ($name in @(
         'ConvertTo-ReplicationSingleLine',
         'ConvertTo-ReplicationInlineCode',
+        'Get-ReplicationCandidateSelector',
+        'Get-ReplicationQualityDisclosureBlock',
+        'Test-ReplicationQualityPublicationAllowed',
         'Get-ReplicationPullRequestMarker',
         'New-ReplicationBranchName',
         'Get-ReplicationCandidateText',
@@ -216,6 +219,60 @@ Describe 'Trusted replication pull request publishing' {
             -BuildUrl 'https://example.com/build/1'
         $namedBody |
             Should -Match 'Microsoft\.Maui\.TestCases\.Tests\.Issues\.Issue37440\.ReproducesIssue37440'
+    }
+
+    It 'renders the centralized selector and quality contract without choosing a grammar' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 12345
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue12345'
+            testFilter = 'Issue12345'
+            testClassName = 'Microsoft.Maui.DeviceTests.Issue12345'
+            testMethodName = 'Reproduces'
+            expectedFailureSignature = 'Control disappeared'
+            observedFailureSignature = 'Control disappeared'
+            actualFailureMessage = 'Control disappeared'
+            verificationRunCount = 2
+            reproductionSteps = @('Open page', 'Trigger issue')
+            fixFiles = @()
+            selector = [ordered]@{
+                variant = 'device-category-only'
+                raw = 'Category=Issue12345'
+                project = 'Core.DeviceTests'
+                projectPath = 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj'
+                class = 'Microsoft.Maui.DeviceTests.Issue12345'
+                method = 'Reproduces'
+                platform = 'android'
+                discoveredCount = 1
+                executedCount = 1
+                fixture = ''
+            }
+            qualityContract = [ordered]@{
+                schemaVersion = 1
+                userVisible = [ordered]@{ contract = 'Control stays visible'; trigger = 'Apply transition' }
+                oracle = [ordered]@{ primary = 'Native control is visible'; independent = $null; independence = 'not-applicable'; rationale = 'No second observation' }
+                scenario = [ordered]@{ name = 'static control'; precondition = 'Attached'; trigger = 'Apply transition'; transition = 'Control changes'; observableIdentity = 'control-1'; affectedControl = $null }
+                risk = [ordered]@{ adjacentStates = @('null'); lifecycleStates = @(); statelessApplicability = 'not-applicable' }
+                semanticBlastRadius = [ordered]@{ affectedType = 'Button'; affectedControl = 'control-1'; ownership = 'Controls'; sharedConsumers = @('ButtonHandler'); unchangedBehavior = 'Other buttons unchanged' }
+                mediaAlignment = 'verified'
+                review = [ordered]@{ findings = @() }
+            }
+        }
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence ([pscustomobject]@{ blobs = [pscustomobject]@{ video = 'v'; preview = 'p'; manifest = 'm' } }) `
+            -IssueTitle 'Selector contract' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl ''
+        $body | Should -Match 'Selector variant'
+        $body | Should -Match 'Category=Issue12345'
+        $body | Should -Match 'Trusted selector counts: 1 discovered / 1 executed'
+        $body | Should -Match 'Quality contract'
+        $body | Should -Match 'Media alignment: `verified`'
     }
 
     It 'states the evidence level so a reviewer need not infer it' {
@@ -524,6 +581,7 @@ Describe 'Trusted replication pull request publishing' {
                 'Remove-UnsafeIssueCharacters',
                 'Remove-AzureLoggingCommands',
                 'Remove-IssueInstructionMarkers',
+                'Remove-IssueUrls',
                 'Limit-IssueLine',
                 'ConvertTo-SafeIssueProse'
             )) {
@@ -698,7 +756,7 @@ Describe 'Trusted replication pull request publishing' {
             issueNumber = 33333
             platform = 'android'
             baseSha = 'abc123'
-            testType = 'UnitTest'
+            testType = 'unit'
             testFilter = 'Issue33333'
             expectedFailureSignature = 'Expected: 1; Actual: 0'
             actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
@@ -807,6 +865,7 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match '-X POST'
         $script:PrSource | Should -Match 'creating one failed'
         $script:PrSource | Should -Match 'did not become writable within 60 seconds'
+        $script:PrSource | Should -Match '\$matches = @\(\s*@\(\$response\.data\.viewer\.repositories\.nodes\) \|'
         $script:PrSource | Should -Match "'replication-fork'"
         $script:PrSource.Contains("[string]`$TargetOwner = 'kubaflo'") | Should -BeTrue
         $script:PrSource | Should -Match '-ParentOwner \$IssueOwner'
@@ -2629,11 +2688,14 @@ Describe 'Reproduction-only runs are never published' {
         $topLevel = $ast.EndBlock.Statements | Where-Object {
             $_ -isnot [System.Management.Automation.Language.FunctionDefinitionAst]
         }
+
         $gate = $topLevel | Where-Object {
-            $_.Extent.Text -match 'Test-ReplicationPublishableFix' -and
+            $_ -is [System.Management.Automation.Language.IfStatementAst] -and
             $_.Extent.Text -match 'withheldReason'
         }
         @($gate).Count | Should -BeGreaterThan 0
+        ($topLevel.Extent.Text -join "`n") |
+            Should -Match '\$publishableFix = Test-ReplicationPublishableFix'
 
         # And it must stand down rather than fall through into publication.
         $gateText = ($gate | Select-Object -First 1).Extent.Text
@@ -2651,7 +2713,7 @@ Describe 'Reproduction-only runs are never published' {
 
         $gate = $ast.EndBlock.Statements | Where-Object {
             $_ -is [System.Management.Automation.Language.IfStatementAst] -and
-            $_.Extent.Text -match 'Test-ReplicationPublishableFix'
+            $_.Extent.Text -match 'withheldReason'
         } | Select-Object -First 1
         $gate | Should -Not -BeNullOrEmpty
 
@@ -2660,11 +2722,46 @@ Describe 'Reproduction-only runs are never published' {
         # A reproduction with no fix: the condition must be TRUE, so the gate body
         # (which withholds) runs.
         $candidate = [pscustomobject]@{ files = @('tests/Issue1Tests.cs') }
+        $publishableFix = Test-ReplicationPublishableFix -Candidate $candidate
+        $qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed -Candidate $candidate
         & $condition | Should -BeTrue -Because 'a run without a fix must stand down'
 
-        # A real fix: the condition must be FALSE, so publication proceeds.
+        # A claimed fix without the trusted trigger-removed control is withheld.
         $candidate = [pscustomobject]@{ fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.iOS.cs') }
-        & $condition | Should -BeFalse -Because 'a run carrying a fix must still publish'
+        $publishableFix = Test-ReplicationPublishableFix -Candidate $candidate
+        $qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed -Candidate $candidate
+        & $condition | Should -BeTrue -Because 'a claimed fix without a legitimate control must stand down'
+    }
+
+    It 'withholds a claimed fix when the trusted trigger-removed control is absent' {
+        $candidate = [pscustomobject]@{
+            fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.cs')
+            qualityContract = [ordered]@{
+                schemaVersion = 1
+                scenario = [ordered]@{ name = 'scenario' }
+                oracle = [ordered]@{ primary = 'oracle' }
+            }
+        }
+        Test-ReplicationQualityPublicationAllowed -Candidate $candidate | Should -BeFalse
+    }
+
+    It 'allows only trusted complete control evidence, never a quality disclosure' {
+        $candidate = [pscustomobject]@{
+            fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.cs')
+            qualityContract = [ordered]@{
+                schemaVersion = 1
+                scenario = [ordered]@{ name = 'model says publish' }
+                oracle = [ordered]@{ primary = 'model says pass' }
+            }
+            negativeControl = [ordered]@{
+                runCount = 3
+                passCount = 3
+                result = 'verification/negative-control-result.json'
+            }
+        }
+        Test-ReplicationQualityPublicationAllowed -Candidate $candidate | Should -BeTrue
+        $candidate.qualityContract.scenario.name = 'model says withhold'
+        Test-ReplicationQualityPublicationAllowed -Candidate $candidate | Should -BeTrue
     }
 
     It 'declares withheldReason on the manifest so a withheld run is distinguishable' {        # Without the property the manifest of a withheld run is shaped exactly
@@ -2672,6 +2769,8 @@ Describe 'Reproduction-only runs are never published' {
         # pipeline would fail a green outcome.
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
         $source | Should -Match 'withheldReason\s*=\s*\$null'
+        $source | Should -Match '\$qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed'
+        $source | Should -Match 'if \(-not \$qualityPublicationAllowed\)'
     }
 }
 

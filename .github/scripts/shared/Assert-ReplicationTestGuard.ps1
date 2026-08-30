@@ -7,21 +7,34 @@ function Get-ReplicationUnsafeSourcePatterns {
     # their payload there still matters. Scope 'code' rules describe executable
     # API shape, so they scan with comments removed and must not match ordinary
     # English prose such as "process", "assembly", "timer" or "browser".
+    # 'literal' follows the same comment-free path, but retains plain XAML
+    # attribute values so a URL cannot hide in Source="...".
     return @(
-        [pscustomobject]@{ Code = 'file-system'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*IO\b|\b(?:File|Directory)\s*\.\s*(?:Exists|Open|Create|Delete|Read|Write|Append|Copy|Move|Replace|Enumerate|Get|Set)|\bPath\s*\.\s*(?:Combine|Join|GetFullPath|GetTempPath|GetTempFileName|GetDirectoryName|GetFileName|GetFileNameWithoutExtension|GetExtension|GetRandomFileName|GetPathRoot)|\b(?:FileInfo|DirectoryInfo|FileStream|StreamReader|StreamWriter|FileSystemWatcher|StorageFile|StorageFolder|NSFileManager|NSData)\b|\b(?:Java|Android)\s*\.\s*IO\b|\b(?:XmlDocument|XDocument)\s*\.\s*Load\b|\bXmlReader\s*\.\s*Create\b' },
+        [pscustomobject]@{ Code = 'file-system'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*IO\b|\b(?:File|Directory)\s*\.\s*(?:Exists|Open(?:Read|Write|Text)?|Create|Delete|Read(?:All(?:Text|Bytes|Lines)|Text|Bytes|Lines)?|Write(?:All(?:Text|Bytes|Lines)|Text|Bytes|Lines)?|Append(?:AllText|Text)?|Copy|Move|Replace|Enumerate(?:Files|Directories|FileSystemEntries)?|Get(?:Files|Directories|FileSystemEntries|CurrentDirectory)?|Set(?:CurrentDirectory|Attributes|CreationTime|LastWriteTime)?)\b|\bPath\s*\.\s*(?:Combine|Join|GetFullPath|GetTempPath|GetTempFileName|GetDirectoryName|GetFileName|GetFileNameWithoutExtension|GetExtension|GetRandomFileName|GetPathRoot)\b|\b(?:FileInfo|DirectoryInfo|DriveInfo|FileStream|StreamReader|StreamWriter|FileSystemWatcher|IsolatedStorage|StorageFile|StorageFolder|NSFileManager|NSData)\b|\b(?:Java|Android)\s*\.\s*IO\b|\b(?:XmlDocument|XDocument)\s*\.\s*Load\b|\bXmlReader\s*\.\s*Create\b' },
         [pscustomobject]@{ Code = 'http-client'; Scope = 'code'; Pattern = '(?i)\b(?:HttpClient|HttpMessageHandler|HttpRequestMessage|HttpWebRequest|SocketsHttpHandler|RestClient|GrpcChannel)\b' },
-        [pscustomobject]@{ Code = 'network'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Net\b|\b(?:Dns|WebClient|WebRequest|TcpClient|TcpListener|UdpClient|WebSocket|ClientWebSocket|NSUrlSession|NSURLSession)\b|\bSocket\s*[.(]|\bnew\s+\w*Socket\b|\b(?:Java|Android)\s*\.\s*Net\b' },
-        [pscustomobject]@{ Code = 'process-start'; Scope = 'code'; Pattern = '\bSystem\s*\.\s*Diagnostics\s*\.\s*Process\b|\bProcess\s*\.\s*(?:Start|GetCurrentProcess|GetProcess|GetProcesses|GetProcessById|EnterDebugMode)\b|\bnew\s+Process\s*[({]|(?i)\b(?:ProcessStartInfo|UseShellExecute|RedirectStandardOutput|WaitForExit|Win32Exception|ManagementObject|NSTask|NSWorkspace)\b' },
-        [pscustomobject]@{ Code = 'reflection'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Reflection\b|\bAssembly\s*\.|\.\s*Assembly\b|\b(?:Activator|AppDomain|MethodInfo|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|InvokeMember|GetMethod|GetField)\b|(?<!Mapper\s*\.\s*)\bGetProperty\b|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
+        [pscustomobject]@{ Code = 'network'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Net\b|\b(?:Dns|WebClient|WebRequest|TcpClient|TcpListener|UdpClient|WebSocket|ClientWebSocket|NSUrlSession|NSURLSession|NetworkStream)\b|\bSocket\s*[.(]|\bnew\s+\w*Socket\b|\b(?:Java|Android)\s*\.\s*Net\b' },
+        [pscustomobject]@{ Code = 'process-start'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Diagnostics\s*\.\s*Process\b|\bProcess\s*\.\s*(?:Start|GetCurrentProcess|GetProcess|GetProcesses|GetProcessById|EnterDebugMode|Kill)\b|\bnew\s+Process\s*[({]|\b(?:ProcessStartInfo|UseShellExecute|RedirectStandardOutput|RedirectStandardError|WaitForExit|Win32Exception|ManagementObject|NSTask|NSWorkspace|CreateProcess|ShellExecute|Runtime\s*\.\s*GetRuntime)\b' },
+        [pscustomobject]@{ Code = 'reflection'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*(?:Reflection|Runtime\s*\.\s*Loader|Type)\b|\b(?:Assembly|Type|Activator|AppDomain|MethodInfo|MethodBase|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|Delegate)\s*\.\s*(?:Load|LoadFrom|LoadFile|LoadWithPartialName|CreateInstance|CreateDelegate|DynamicInvoke|Invoke|InvokeMember|GetMethod|GetMethods|GetField|GetFields|GetProperty|GetProperties|GetMember|GetMembers|GetTypes|GetConstructors|GetNestedTypes|GetRuntimeMethod|GetRuntimeMethods|GetRuntimeField|GetRuntimeFields|GetRuntimeProperty|GetRuntimeProperties|GetTypeFromHandle|GetType)\b|\b(?:Activator|AppDomain|MethodInfo|MethodBase|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|RuntimeMethodHandle|InvokeMember|GetMethod|GetMethods|GetField|GetFields|GetMember|GetMembers|GetProperties|GetConstructors|GetNestedTypes|GetRuntimeMethod|GetRuntimeMethods|GetRuntimeField|GetRuntimeFields|GetRuntimeProperty|GetRuntimeProperties)\b|(?<!Mapper\s*\.\s*)\bGetProperty\b|\bType\s*\.\s*GetType\b|\btypeof\s*\([^)]*\)\s*\.\s*Assembly\b|\.\s*Invoke\s*\(|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
+        [pscustomobject]@{ Code = 'dynamic-loading'; Scope = 'code'; Pattern = '(?i)\b(?:dynamic|ExpandoObject|CallSite|DynamicMetaObject|IDynamicMetaObjectProvider)\b|\bRuntimeHelpers\s*\.\s*(?:GetUninitializedObject|PrepareMethod|RunClassConstructor)\b' },
         [pscustomobject]@{ Code = 'native-code'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Runtime\s*\.\s*InteropServices\b(?!\s*\.\s*COMException\b)|\b(?:DllImport|LibraryImport|GeneratedDllImport|NativeLibrary|UnmanagedCallersOnly|GetDelegateForFunctionPointer|GCHandle)\b|\bMarshal\s*\.|(?-i:\bunsafe\s*[{(]|\bunsafe\s+(?:static|void|partial|class|struct|int|byte|char|fixed)\b|\bstackalloc\b|\bextern\s+(?:static|alias)\b|\bstatic\s+extern\b)' },
-        [pscustomobject]@{ Code = 'environment-secrets'; Scope = 'raw'; Pattern = '(?i)\bEnvironment\s*\.|\bEnvironmentVariableTarget\b|\b(?:GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|AZURE_STORAGE_KEY|AZURE_STORAGE_SAS_TOKEN)\b' },
-        [pscustomobject]@{ Code = 'device-external-access'; Scope = 'code'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|Preferences)\s*\.|\b(?:HybridWebView|BlazorWebView|UrlWebViewSource|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b' },
+        [pscustomobject]@{ Code = 'environment-secrets'; Scope = 'code'; Pattern = '(?i)\busing\s+[A-Za-z_]\w*\s*=\s*(?:global\s*::)?System\s*\.\s*Environment\s*;|\b(?:System\s*\.\s*)?Environment\s*\.\s*(?:GetEnvironmentVariable|GetEnvironmentVariables|SetEnvironmentVariable|ExpandEnvironmentVariables)\b|\bEnvironmentVariableTarget\b|\b(?:System\s*\.\s*)?AppContext\s*\.\s*(?:GetData|SetData|BaseDirectory)\b|\b(?:GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|AZURE_STORAGE_KEY|AZURE_STORAGE_SAS_TOKEN)\b' },
+        [pscustomobject]@{ Code = 'device-external-access'; Scope = 'code'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|Preferences)\s*\.|\b(?:ImageSource|HybridWebView|BlazorWebView|UrlWebViewSource|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b|(?<![A-Za-z0-9_])(?:Source|BackgroundImageSource|ImageSource|IconImageSource)\s*=(?!=)|\bSetValue\s*\(\s*[A-Za-z_]\w*\s*\.\s*(?:Source|BackgroundImageSource|ImageSource|IconImageSource)Property\b' },
+        [pscustomobject]@{ Code = 'webview'; Scope = 'literal'; Pattern = '(?i)<\s*(?:[A-Za-z_]\w*\s*:\s*)?(?:WebView|WebView2|HybridWebView|BlazorWebView)\b|\busing\s+[A-Za-z_]\w*\s*=\s*(?:(?:global\s*::)?[A-Za-z_]\w*\s*\.\s*)*(?:WebView|WebView2|HybridWebView|BlazorWebView|UrlWebViewSource|HtmlWebViewSource)\s*;|\bnew\s+(?:(?:global\s*::)?[A-Za-z_]\w*\s*\.\s*)*(?:WebView|WebView2|HybridWebView|BlazorWebView|UrlWebViewSource|HtmlWebViewSource)\b|\b(?:WebView|WebView2|HybridWebView|BlazorWebView|UrlWebViewSource|HtmlWebViewSource)\s*(?:<|\(|\.|[A-Za-z_]\w*\s*(?:[=;,)])|[),])|\b(?:as|typeof)\s*\(?\s*(?:(?:global\s*::)?[A-Za-z_]\w*\s*\.\s*)*(?:WebView|WebView2|HybridWebView|BlazorWebView)\b' },
+        [pscustomobject]@{ Code = 'uri-construction'; Scope = 'code'; Pattern = '(?i)\b(?:System\s*\.\s*)?Uri(?:Builder)?\b|\b(?:Uri|UriBuilder)\s*\.\s*(?:Parse|TryCreate|EscapeDataString|UnescapeDataString)\b' },
+        [pscustomobject]@{ Code = 'source-generator-analyzer'; Scope = 'code'; Pattern = '(?i)\bMicrosoft\s*\.\s*CodeAnalysis\b|\b(?:ISourceGenerator|IIncrementalGenerator|GeneratorInitializationContext|IncrementalGeneratorInitializationContext|GeneratorExecutionContext|DiagnosticAnalyzer(?:Attribute)?|AnalysisContext|GeneratorDriver|CSharpGeneratorDriver|Register(?:SourceOutput|ImplementationSourceOutput|PostInitializationOutput))\b|\[\s*(?:[A-Za-z_]\w*\s*\.\s*)?(?:Generator|DiagnosticAnalyzer)(?:Attribute)?\b' },
+        [pscustomobject]@{ Code = 'module-initializer'; Scope = 'code'; Pattern = '(?i)\[\s*(?:[A-Za-z_]\w*\s*\.\s*)?ModuleInitializer(?:Attribute)?\b' },
+        [pscustomobject]@{ Code = 'static-constructor'; Scope = 'code'; Pattern = '(?im)(?:^|[;{}])\s*(?:(?:public|internal|protected|private)\s+)?static\s+(?!class\b|struct\b|interface\b|void\b)[A-Za-z_]\w*\s*\(\s*\)' },
         [pscustomobject]@{ Code = 'global-exception-suppression'; Scope = 'code'; Pattern = '(?i)\b(?:UnhandledException|UnobservedTaskException|FirstChanceException|MarshalManagedException|AndroidEnvironment)\b'; Remedy = 'A reproduction must not take over the process-wide failure path. Suppressing the crash puts the app in a state a user never sees, and it hides the one symptom the harness can observe without the app reporting on itself. End the Appium plan with assertAppClosed instead, which now works on every platform. If the report names an exact managed exception type, wrap only the reported trigger in a try/catch for that exact type and set the semantic result element from the catch.' },
         [pscustomobject]@{ Code = 'delays-or-background-work'; Scope = 'code'; Pattern = '(?i)\bThread\s*\.\s*Sleep\b|\bTask\s*\.\s*(?:Delay|Run|Factory)\b|\b(?:DispatcherTimer|IDispatcherTimer)\b|\bSystem\s*\.\s*(?:Timers|Threading)\s*\.\s*Timer\b|\bnew\s+\w*Timer\s*\(|\b(?:Create|Start)Timer\s*\(|\bDispatchDelayed\b'; Remedy = 'Write one of these instead. Subscribe to the event that reports the change (Loaded, SizeChanged, PropertyChanged, or the control''s own event) and publish the result from its handler. Or post the measurement with Dispatcher.Dispatch(() => ...), which runs after the pending layout pass without waiting on the clock. Or give the page a separate check control and let the Appium plan tap trigger, wait, then tap check. Waiting on wall-clock time inside the app is never accepted, so re-sending it will fail this attempt again.' },
         [pscustomobject]@{ Code = 'shell-execution'; Scope = 'code'; Pattern = '(?i)\b(?:powershell|pwsh)(?:\.exe)?\s*(?:-|\.exe\b)|\bcmd\.exe\b|/(?:bin/)?(?:ba|z)?sh\b|\bbash\s+-|\bSystem\s*\.\s*Management\s*\.\s*Automation\b' },
-        [pscustomobject]@{ Code = 'remote-url'; Scope = 'raw'; Pattern = '(?i)\b(?:https?|ftps?|wss?|file)\b\s*(?::|["'']\s*\+\s*["'']\s*:)|://' },
+        [pscustomobject]@{ Code = 'remote-url'; Scope = 'raw'; Pattern = '(?i)(?:\b(?:https?|ftps?|wss?|file|data|javascript|mailto)\s*:\s*(?://|[^\s<>\[\]]+)|://)' },
+        [pscustomobject]@{ Code = 'encoded-url'; Scope = 'code'; Pattern = '(?i)\bFromBase64String\b|\b(?:Char|System\s*\.\s*Char)\s*\.\s*ConvertFromUtf32\b|\bSystem\s*\.\s*Text\s*\.\s*Encoding\b|\bEncoding\s*\.\s*(?:UTF8|Unicode|ASCII|BigEndianUnicode)\s*\.\s*GetString\b|\(\s*char\s*\)\s*(?:0x[0-9a-f]{1,8}|\d{2,7})|\bnew\s+string\s*\(\s*(?:(?:new\s+)?(?:char|byte)\s*\[|new\s*\[\s*\]\s*\{)' },
         [pscustomobject]@{ Code = 'package-reference'; Scope = 'raw'; Pattern = '(?i)\b(?:PackageReference|PackageDownload|dotnet\s+add\s+package|nuget\s*:|nuget\.exe)\b|#(?:r|load)\b' },
-        [pscustomobject]@{ Code = 'obfuscated-source'; Scope = 'raw'; Pattern = '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})' },
+        [pscustomobject]@{ Code = 'project-build-script'; Scope = 'raw'; Pattern = '(?i)\b(?:ProjectReference|Directory\.Build|\.csproj\b|\.props\b|\.targets\b|<Project\b|<Target\b|<PropertyGroup\b|<ItemGroup\b|dotnet\s+(?:build|test|run|pack|restore)\b)\b' },
+        [pscustomobject]@{ Code = 'obfuscated-source'; Scope = 'literal'; Pattern = '\\(?:x[0-9a-fA-F]{1,4}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|&#(?:x[0-9a-fA-F]{1,8}|\d{1,8});' },
+        [pscustomobject]@{ Code = 'prompt-injection'; Scope = 'literal'; Pattern = '(?i)<\|(?:system|developer|assistant|user|tool)\|>|\[/?INST\]|<</?SYS>>|\b(?:ignore|disregard|override|forget)\b[^\r\n]{0,80}\b(?:instructions?|prompts?|messages?)\b' },
+        [pscustomobject]@{ Code = 'pipeline-log-command'; Scope = 'literal'; Pattern = '(?i)##vso\[|##\[|::(?:set-output|add-mask|error|warning|notice)\b' },
+        [pscustomobject]@{ Code = 'artifact-reference'; Scope = 'literal'; Pattern = '(?i)\b(?:candidate|reproduction-result|verification-result|fix|test)\.(?:json|patch)\b|\b(?:issue-(?:agent-)?context|CustomAgentLogsTmp|IssueReplication|trusted-github)\b' },
         [pscustomobject]@{ Code = 'verification-spoof'; Scope = 'raw'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|##\[|::set-output' },
         [pscustomobject]@{ Code = 'conditional-reproduction'; Scope = 'raw'; Pattern = '\bMAUI_REPRODUCTION_ISSUE\b' },
         [pscustomobject]@{ Code = 'framework-behavior-switch'; Scope = 'raw'; Pattern = '(?i)\bSkipMeasureInvalidatedPropagation\s*=' }
@@ -38,7 +51,8 @@ function Get-ReplicationCommentFreeText {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text,
-        [Parameter(Mandatory = $true)][string]$Path
+        [Parameter(Mandatory = $true)][string]$Path,
+        [switch]$PreserveXamlAttributeValues
     )
 
     $builder = [Text.StringBuilder]::new($Text)
@@ -61,10 +75,12 @@ function Get-ReplicationCommentFreeText {
         # visible made a caption reading "WebView Sizing Demo" look like use of
         # the control. Markup extensions stay visible because they do resolve to
         # real members, and every 'raw' rule still scans the untouched source.
-        foreach ($m in [regex]::Matches($Text, '=\s*(?<quote>["''])(?<value>[^"'']*)\k<quote>')) {
-            $value = $m.Groups['value']
-            if ($value.Value.Contains('{')) { continue }
-            & $blank $value.Index ($value.Index + $value.Length)
+        if (-not $PreserveXamlAttributeValues) {
+            foreach ($m in [regex]::Matches($Text, '=\s*(?<quote>["''])(?<value>[^"'']*)\k<quote>')) {
+                $value = $m.Groups['value']
+                if ($value.Value.Contains('{')) { continue }
+                & $blank $value.Index ($value.Index + $value.Length)
+            }
         }
 
         return $builder.ToString()
@@ -154,10 +170,10 @@ function Get-ReplicationUnsafeMatchDetail {
     return "matched text '$token' on line $lineNumber -> $context"
 }
 
-function Assert-ReplicationGeneratedSourceSafety {
+function Get-ReplicationSourceSafetyScanContext {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
         [Parameter(Mandatory = $true)][string]$Path
     )
 
@@ -167,17 +183,297 @@ function Assert-ReplicationGeneratedSourceSafety {
         '(?i)http://schemas\.microsoft\.com/(?:dotnet/2021/maui|winfx/2009/xaml)(?=["''])',
         ''
     )
-    if ([System.IO.Path]::GetExtension($Path) -ieq '.xaml') {
+    $isXaml = [System.IO.Path]::GetExtension($Path) -ieq '.xaml'
+    if ($isXaml) {
         $scanText = [regex]::Replace(
             $scanText,
             '(?i)(\bxmlns(?::[A-Za-z_]\w*)?\s*=\s*["''][^"'']*);assembly=[^"'']+(?=["''])',
             '$1'
         )
     }
+
     $codeText = Get-ReplicationCommentFreeText -Text $scanText -Path $Path
-    foreach ($entry in Get-ReplicationUnsafeSourcePatterns) {
+    $literalText = if ($isXaml) {
+        Get-ReplicationCommentFreeText `
+            -Text $scanText `
+            -Path $Path `
+            -PreserveXamlAttributeValues
+    } else {
+        $codeText
+    }
+
+    return [pscustomobject]@{
+        ScanText = $scanText
+        CodeText = $codeText
+        LiteralText = $literalText
+    }
+}
+
+function Get-ReplicationLiteralFragments {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text)
+
+    $fragments = [System.Collections.Generic.List[string]]::new()
+    foreach ($match in [regex]::Matches(
+            $Text,
+            '(?s)(?:\$+)?(?<delimiter>"{3,})(?<value>.*?)(?:\k<delimiter>)'
+        )) {
+        $value = $match.Groups['value'].Value
+        if ($value.Length -le 4096) {
+            [void]$fragments.Add($value)
+        }
+    }
+    foreach ($match in [regex]::Matches(
+            $Text,
+            '(?s)(?:\$@|@\$|\$|@)?"(?<value>(?:""|\\.|[^"])*)"'
+        )) {
+        $value = $match.Groups['value'].Value.Replace('""', '"')
+        $value = [regex]::Replace($value, '\\(?<escaped>["\\])', '${escaped}')
+        if ($value.Length -le 4096) {
+            [void]$fragments.Add($value)
+        }
+    }
+    foreach ($match in [regex]::Matches($Text, "(?s)'(?<value>\\.|[^'])'")) {
+        $value = $match.Groups['value'].Value
+        if ($value.Length -le 4096) {
+            [void]$fragments.Add($value)
+        }
+    }
+
+    return $fragments.ToArray()
+}
+
+function Test-ReplicationRemoteUrlText {
+    [CmdletBinding()]
+    param([AllowEmptyString()][string]$Text)
+
+    $pattern = '(?i)(?:\b(?:https?|ftps?|wss?|file|data|javascript|mailto)\s*:\s*(?://|[^\s<>\[\]]+)|://)'
+    $candidate = [string]$Text
+    if ([regex]::IsMatch($candidate, $pattern)) {
+        return $true
+    }
+    if ($candidate -match '(?i)\bhttps?[A-Za-z0-9_.{}-]{0,32}//') {
+        return $true
+    }
+
+    for ($pass = 0; $pass -lt 2 -and $candidate -match '%[0-9a-fA-F]{2}'; $pass++) {
+        try {
+            $decoded = [uri]::UnescapeDataString($candidate)
+        } catch {
+            break
+        }
+        if ($decoded -ceq $candidate) {
+            break
+        }
+        $candidate = $decoded
+        if ([regex]::IsMatch($candidate, $pattern)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-ReplicationBase64Url {
+    [CmdletBinding()]
+    param([AllowEmptyString()][string]$Text)
+
+    $candidate = ([string]$Text).Trim()
+    if (
+        $candidate.Length -lt 8 -or
+        $candidate.Length -gt 4096 -or
+        $candidate.Length % 4 -ne 0 -or
+        $candidate -notmatch '^[A-Za-z0-9+/]+={0,2}$'
+    ) {
+        return $false
+    }
+
+    try {
+        $bytes = [Convert]::FromBase64String($candidate)
+        $decoded = [Text.UTF8Encoding]::new($false, $true).GetString($bytes)
+    } catch {
+        return $false
+    }
+
+    return Test-ReplicationRemoteUrlText -Text $decoded
+}
+
+function Get-ReplicationSimpleStringBindings {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$CodeText)
+
+    $bindings = @{}
+    for ($pass = 0; $pass -lt 4; $pass++) {
+        $changed = $false
+        foreach ($match in [regex]::Matches(
+                $CodeText,
+                '(?is)\b(?:const\s+string|string|var)\s+(?<name>[A-Za-z_]\w*)\s*=\s*(?<expression>[^;]{1,4096});'
+            )) {
+            $name = $match.Groups['name'].Value
+            if ($bindings.ContainsKey($name)) { continue }
+
+            $expression = $match.Groups['expression'].Value
+            $resolved = [regex]::Replace(
+                $expression,
+                '\b[A-Za-z_]\w*\b',
+                {
+                    param($identifier)
+                    if ($bindings.ContainsKey($identifier.Value)) {
+                        '"' + [string]$bindings[$identifier.Value] + '"'
+                    } else {
+                        $identifier.Value
+                    }
+                }
+            )
+            $fragments = @(Get-ReplicationLiteralFragments -Text $resolved)
+            $remainder = [regex]::Replace(
+                $resolved,
+                '(?s)(?:\$@|@\$|\$|@)?"(?:""|\\.|[^"])*"',
+                ''
+            )
+            $remainder = [regex]::Replace($remainder, '\s*\+\s*', '')
+            if ($fragments.Count -gt 0 -and [string]::IsNullOrWhiteSpace($remainder)) {
+                $bindings[$name] = [string]::Concat([string[]]$fragments)
+                $changed = $true
+            }
+        }
+        if (-not $changed) { break }
+    }
+
+    return $bindings
+}
+
+function Invoke-ReplicationJoinedLiteralSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Patterns,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if (Test-ReplicationRemoteUrlText -Text $Text) {
+        throw "Candidate source '$Path' contains prohibited 'remote-url' content assembled from literals."
+    }
+    if (Test-ReplicationBase64Url -Text $Text) {
+        throw "Candidate source '$Path' contains prohibited 'encoded-url' content assembled from literals."
+    }
+
+    foreach ($entry in $Patterns) {
+        $match = [regex]::Match($Text, $entry.Pattern)
+        if ($match.Success) {
+            throw "Candidate source '$Path' contains prohibited '$($entry.Code)' content assembled from literals."
+        }
+    }
+}
+
+function Invoke-ReplicationObfuscatedUrlSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$CodeText,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$LiteralText,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Patterns
+    )
+
+    $literalFragments = @(Get-ReplicationLiteralFragments -Text $LiteralText)
+    foreach ($fragment in $literalFragments) {
+        if (Test-ReplicationRemoteUrlText -Text $fragment) {
+            throw "Candidate source '$Path' contains prohibited 'remote-url' content encoded in a literal."
+        }
+        if (Test-ReplicationBase64Url -Text $fragment) {
+            throw "Candidate source '$Path' contains prohibited 'encoded-url' content encoded in a literal."
+        }
+    }
+
+    $bindings = Get-ReplicationSimpleStringBindings -CodeText $CodeText
+    foreach ($binding in $bindings.GetEnumerator()) {
+        Invoke-ReplicationJoinedLiteralSafety `
+            -Text ([string]$binding.Value) `
+            -Patterns $Patterns `
+            -Path $Path
+    }
+
+    $allFragments = @(Get-ReplicationLiteralFragments -Text $CodeText)
+    if ($allFragments.Count -gt 1) {
+        Invoke-ReplicationJoinedLiteralSafety `
+            -Text ([string]::Concat([string[]]$allFragments)) `
+            -Patterns $Patterns `
+            -Path $Path
+    }
+
+    foreach ($statement in ($CodeText -split ';')) {
+        if ($statement -notmatch '(?i)(?:\+|\.\s*(?:Concat|Join|Append|Format|Replace|Insert|Substring)\s*\()') {
+            continue
+        }
+        if ($statement.Length -gt 4096) {
+            throw "Candidate source '$Path' contains an oversized concatenated string that could obscure a URL."
+        }
+
+        $resolvedStatement = $statement
+        foreach ($binding in $bindings.GetEnumerator()) {
+            $resolvedStatement = [regex]::Replace(
+                $resolvedStatement,
+                "(?<![A-Za-z0-9_])$([regex]::Escape([string]$binding.Key))(?![A-Za-z0-9_])",
+                '"' + [string]$binding.Value + '"')
+        }
+        $fragments = @(Get-ReplicationLiteralFragments -Text $resolvedStatement)
+        if ($fragments.Count -eq 0) {
+            continue
+        }
+        $joined = [string]::Concat([string[]]$fragments)
+        Invoke-ReplicationJoinedLiteralSafety `
+            -Text $joined `
+            -Patterns $Patterns `
+            -Path $Path
+    }
+
+    foreach ($interpolation in [regex]::Matches(
+            $CodeText,
+            '(?s)(?:\$@|@\$|\$)"(?<value>(?:""|\\.|[^"])*)"'
+        )) {
+        $resolved = $interpolation.Groups['value'].Value
+        for ($pass = 0; $pass -lt 4; $pass++) {
+            $previous = $resolved
+            $resolved = [regex]::Replace(
+                $resolved,
+                '\{\s*(?<name>[A-Za-z_]\w*)\s*(?:,\s*-?\d+)?(?:\:[^}]*)?\}',
+                {
+                    param($reference)
+                    $name = $reference.Groups['name'].Value
+                    if ($bindings.ContainsKey($name)) {
+                        [string]$bindings[$name]
+                    } else {
+                        $reference.Value
+                    }
+                }
+            )
+            if ($resolved -ceq $previous) { break }
+        }
+        if ($resolved -cne $interpolation.Groups['value'].Value) {
+            Invoke-ReplicationJoinedLiteralSafety `
+                -Text $resolved `
+                -Patterns $Patterns `
+                -Path $Path
+        }
+    }
+}
+
+function Invoke-ReplicationUnsafeSourceCapabilities {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Patterns
+    )
+
+    $scan = Get-ReplicationSourceSafetyScanContext -Content $Content -Path $Path
+    foreach ($entry in $Patterns) {
         $scope = if ($entry.PSObject.Properties['Scope']) { [string]$entry.Scope } else { 'raw' }
-        $target = if ($scope -eq 'code') { $codeText } else { $scanText }
+        $target = switch ($scope) {
+            'code' { $scan.CodeText }
+            'literal' { $scan.LiteralText }
+            default { $scan.ScanText }
+        }
         $match = [regex]::Match($target, $entry.Pattern)
         if ($match.Success) {
             $detail = "Candidate source '$Path' contains prohibited '$($entry.Code)' content: $(Get-ReplicationUnsafeMatchDetail -ScanText $target -Match $match)"
@@ -189,18 +485,106 @@ function Assert-ReplicationGeneratedSourceSafety {
         }
     }
 
+    Invoke-ReplicationObfuscatedUrlSafety `
+        -CodeText $scan.CodeText `
+        -LiteralText $scan.LiteralText `
+        -Path $Path `
+        -Patterns $Patterns
+    return $scan
+}
+
+function Get-ReplicationProductFixUnsafePatterns {
+    $productFixCodes = @(
+        'file-system',
+        'http-client',
+        'network',
+        'process-start',
+        'reflection',
+        'dynamic-loading',
+        'native-code',
+        'environment-secrets',
+        'device-external-access',
+        'webview',
+        'uri-construction',
+        'source-generator-analyzer',
+        'module-initializer',
+        'static-constructor',
+        'shell-execution',
+        'remote-url',
+        'encoded-url',
+        'package-reference',
+        'project-build-script',
+        'obfuscated-source',
+        'prompt-injection',
+        'pipeline-log-command',
+        'artifact-reference',
+        'verification-spoof'
+    )
+
+    return @(Get-ReplicationUnsafeSourcePatterns |
+        Where-Object { $_.Code -in $productFixCodes })
+}
+
+function Assert-ReplicationProductFixSafety {
+    <#
+    .SYNOPSIS
+        Rejects capabilities introduced by the added lines of an agent fix.
+
+    .DESCRIPTION
+        The product tree already contains trusted code with capabilities that a
+        generated patch must not add. Callers therefore pass only added hunk
+        lines, never the full existing product file.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Alias('Content', 'AddedLines')]
+        [AllowEmptyString()]
+        [string]$AddedContent,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $extension = [IO.Path]::GetExtension($Path).ToLowerInvariant()
+    if ($extension -notin @('.cs', '.xaml')) {
+        throw "Product fix source '$Path' has an unsupported extension."
+    }
+    if ($AddedContent.Contains("`r")) {
+        throw "Product fix source '$Path' contains non-normalized line endings."
+    }
+    if ([string]::IsNullOrWhiteSpace($AddedContent)) {
+        return
+    }
+
+    $null = Invoke-ReplicationUnsafeSourceCapabilities `
+        -Content $AddedContent `
+        -Path $Path `
+        -Patterns @(Get-ReplicationProductFixUnsafePatterns)
+}
+
+function Assert-ReplicationGeneratedSourceSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $scan = Invoke-ReplicationUnsafeSourceCapabilities `
+        -Content $Content `
+        -Path $Path `
+        -Patterns @(Get-ReplicationUnsafeSourcePatterns)
+
     # MAUI permits AutomationId to be set only once, so reassigning it to signal
     # progress throws InvalidOperationException and produces a failure that has
     # nothing to do with the reported bug.
     $automationAssignments = [regex]::Matches(
-        $codeText,
+        $scan.CodeText,
         '(?<target>[A-Za-z_]\w*)\s*\.\s*AutomationId\s*=(?!=)')
     foreach ($group in ($automationAssignments | Group-Object { $_.Groups['target'].Value })) {
         if ($group.Count -le 1) {
             continue
         }
 
-        $detail = Get-ReplicationUnsafeMatchDetail -ScanText $codeText -Match $group.Group[1]
+        $detail = Get-ReplicationUnsafeMatchDetail -ScanText $scan.CodeText -Match $group.Group[1]
         throw "Candidate source '$Path' assigns '$($group.Name).AutomationId' $($group.Count) times: $detail. MAUI allows AutomationId to be set only once, so change a dedicated result element's Text to signal progress instead."
     }
 }
