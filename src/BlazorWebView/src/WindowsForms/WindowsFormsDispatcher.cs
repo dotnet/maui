@@ -76,6 +76,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				}
 				catch (Exception ex)
 				{
+					// Preserve the exception here; awaiting completion below lets the outer async method
+					// classify an OperationCanceledException as cancellation without replacing its instance.
 					completion.TrySetException(ex);
 				}
 			};
